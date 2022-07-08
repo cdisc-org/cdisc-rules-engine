@@ -1,0 +1,512 @@
+{
+  "_links": {
+    "model": {
+      "href": "/mdr/sdtm/1-2",
+      "title": "Study Data Tabulation Model Version 1.2",
+      "type": "Foundational Model"
+    },
+    "self": {
+      "href": "/mdr/sdtmig/3-1-2",
+      "title": "Study Data Tabulation Model Implementation Guide: Human Clinical Trials Version 3.1.2 (Final)",
+      "type": "Implementation Guide"
+    }
+  },
+  "description": "CDISC Version 3.1.2 (V3.1.2) Study Data Tabulation Model Implementation Guide for Human Clinical Trials (SDTMIG) is intended to guide the organization, structure, and format of standard clinical trial tabulation datasets submitted to a regulatory authority such as the US Food and Drug Administration (FDA).",
+  "effectiveDate": "2008-11-12",
+  "label": "Study Data Tabulation Model Implementation Guide: Human Clinical Trials Version 3.1.2 (Final)",
+  "name": "SDTMIG v3.1.2",
+  "registrationStatus": "Final",
+  "source": "Prepared by the CDISC Submission Data Standards Team",
+  "version": "3.1.2",
+  "classes": [
+    {
+      "_links": {
+        "modelClass": {
+          "href": "/mdr/sdtm/1-2/classes/GeneralObservations",
+          "title": "General Observation Class",
+          "type": "Class"
+        },
+        "parentProduct": {
+          "href": "/mdr/sdtmig/3-1-2",
+          "title": "Study Data Tabulation Model Implementation Guide: Human Clinical Trials Version 3.1.2 (Final)",
+          "type": "Implementation Guide"
+        },
+        "self": {
+          "href": "/mdr/sdtmig/3-1-2/classes/GeneralObservations",
+          "title": "General Observation Class",
+          "type": "Class"
+        },
+        "subclasses": [
+          {
+            "href": "/mdr/sdtmig/3-1-2/classes/Interventions",
+            "title": "Interventions Observation Class",
+            "type": "Class"
+          },
+          {
+            "href": "/mdr/sdtmig/3-1-2/classes/Events",
+            "title": "Events Observation Class",
+            "type": "Class"
+          },
+          {
+            "href": "/mdr/sdtmig/3-1-2/classes/Findings",
+            "title": "Findings Observation Class",
+            "type": "Class"
+          }
+        ]
+      },
+      "description": "The majority of observations collected during a study can be divided among three general classes: Interventions, Events, or Findings.  Datasets based on any of the general observation classes share a set of common Identifier and Timing variables. As a general rule, any valid Identifier or Timing variable is permissible for use in any submission dataset based on a general observation class. (Source: SDTM v1.2, Section 2.2)",
+      "label": "General Observation Class",
+      "name": "General Observations",
+      "ordinal": "1"
+    },
+    {
+      "_links": {
+        "modelClass": {
+          "href": "/mdr/sdtm/1-2/classes/SpecialPurpose",
+          "title": "Special-Purpose Datasets",
+          "type": "Class"
+        },
+        "parentProduct": {
+          "href": "/mdr/sdtmig/3-1-2",
+          "title": "Study Data Tabulation Model Implementation Guide: Human Clinical Trials Version 3.1.2 (Final)",
+          "type": "Implementation Guide"
+        },
+        "self": {
+          "href": "/mdr/sdtmig/3-1-2/classes/SpecialPurpose",
+          "title": "Special-Purpose Datasets",
+          "type": "Class"
+        }
+      },
+      "datasets": [
+        {
+          "_links": {
+            "modelDataset": {
+              "href": "/mdr/sdtm/1-2/datasets/DM",
+              "title": "Subject Demographics",
+              "type": "SDTM Dataset"
+            },
+            "parentClass": {
+              "href": "/mdr/sdtmig/3-1-2/classes/SpecialPurpose",
+              "title": "Special-Purpose Datasets",
+              "type": "Class"
+            },
+            "parentProduct": {
+              "href": "/mdr/sdtmig/3-1-2",
+              "title": "Study Data Tabulation Model Implementation Guide: Human Clinical Trials Version 3.1.2 (Final)",
+              "type": "Implementation Guide"
+            },
+            "self": {
+              "href": "/mdr/sdtmig/3-1-2/datasets/DM",
+              "title": "Demographics",
+              "type": "SDTM Dataset"
+            }
+          },
+          "datasetStructure": "One record per subject",
+          "datasetVariables": [
+            {
+              "_links": {
+                "modelDatasetVariable": {
+                  "href": "/mdr/sdtm/1-2/datasets/DM/variables/STUDYID",
+                  "title": "Study Identifier",
+                  "type": "SDTM Dataset Variable"
+                },
+                "parentDataset": {
+                  "href": "/mdr/sdtmig/3-1-2/datasets/DM",
+                  "title": "Demographics",
+                  "type": "SDTM Dataset"
+                },
+                "parentProduct": {
+                  "href": "/mdr/sdtmig/3-1-2",
+                  "title": "Study Data Tabulation Model Implementation Guide: Human Clinical Trials Version 3.1.2 (Final)",
+                  "type": "Implementation Guide"
+                },
+                "rootItem": {
+                  "href": "/mdr/root/sdtmig/datasets/DM/variables/STUDYID",
+                  "title": "Version-agnostic anchor resource for SDTMIG variable DM.STUDYID",
+                  "type": "Root Data Element"
+                },
+                "self": {
+                  "href": "/mdr/sdtmig/3-1-2/datasets/DM/variables/STUDYID",
+                  "title": "Study Identifier",
+                  "type": "SDTM Dataset Variable"
+                }
+              },
+              "core": "Req",
+              "description": "Unique identifier for a study.",
+              "label": "Study Identifier",
+              "name": "STUDYID",
+              "ordinal": "1",
+              "role": "Identifier",
+              "simpleDatatype": "Char"
+            },
+            {
+              "_links": {
+                "modelDatasetVariable": {
+                  "href": "/mdr/sdtm/1-2/datasets/DM/variables/DOMAIN",
+                  "title": "Domain Abbreviation",
+                  "type": "SDTM Dataset Variable"
+                },
+                "parentDataset": {
+                  "href": "/mdr/sdtmig/3-1-2/datasets/DM",
+                  "title": "Demographics",
+                  "type": "SDTM Dataset"
+                },
+                "parentProduct": {
+                  "href": "/mdr/sdtmig/3-1-2",
+                  "title": "Study Data Tabulation Model Implementation Guide: Human Clinical Trials Version 3.1.2 (Final)",
+                  "type": "Implementation Guide"
+                },
+                "rootItem": {
+                  "href": "/mdr/root/sdtmig/datasets/DM/variables/DOMAIN",
+                  "title": "Version-agnostic anchor resource for SDTMIG variable DM.DOMAIN",
+                  "type": "Root Data Element"
+                },
+                "self": {
+                  "href": "/mdr/sdtmig/3-1-2/datasets/DM/variables/DOMAIN",
+                  "title": "Domain Abbreviation",
+                  "type": "SDTM Dataset Variable"
+                }
+              },
+              "core": "Req",
+              "description": "Two-character abbreviation for the domain.",
+              "label": "Domain Abbreviation",
+              "name": "DOMAIN",
+              "ordinal": "2",
+              "role": "Identifier",
+              "simpleDatatype": "Char",
+              "valueList": [
+                "DM"
+              ]
+            }
+          ],
+          "description": "A special-purpose domain that includes a set of essential standard variables that describe each subject in a clinical study. It is the parent domain for all other observations for human clinical subjects. (Source: CDISC Controlled Terminology, DOMAIN, C49572, 2018-06-29)",
+          "label": "Demographics",
+          "name": "DM",
+          "ordinal": "1"
+        },
+        {
+          "_links": {
+            "modelDataset": {
+              "href": "/mdr/sdtm/1-2/datasets/CO",
+              "title": "Comments",
+              "type": "SDTM Dataset"
+            },
+            "parentClass": {
+              "href": "/mdr/sdtmig/3-1-2/classes/SpecialPurpose",
+              "title": "Special-Purpose Datasets",
+              "type": "Class"
+            },
+            "parentProduct": {
+              "href": "/mdr/sdtmig/3-1-2",
+              "title": "Study Data Tabulation Model Implementation Guide: Human Clinical Trials Version 3.1.2 (Final)",
+              "type": "Implementation Guide"
+            },
+            "self": {
+              "href": "/mdr/sdtmig/3-1-2/datasets/CO",
+              "title": "Comments",
+              "type": "SDTM Dataset"
+            }
+          },
+          "datasetStructure": "One record per comment per subject",
+          "datasetVariables": [
+            {
+              "_links": {
+                "modelDatasetVariable": {
+                  "href": "/mdr/sdtm/1-2/datasets/CO/variables/STUDYID",
+                  "title": "Study Identifier",
+                  "type": "SDTM Dataset Variable"
+                },
+                "parentDataset": {
+                  "href": "/mdr/sdtmig/3-1-2/datasets/CO",
+                  "title": "Comments",
+                  "type": "SDTM Dataset"
+                },
+                "parentProduct": {
+                  "href": "/mdr/sdtmig/3-1-2",
+                  "title": "Study Data Tabulation Model Implementation Guide: Human Clinical Trials Version 3.1.2 (Final)",
+                  "type": "Implementation Guide"
+                },
+                "rootItem": {
+                  "href": "/mdr/root/sdtmig/datasets/CO/variables/STUDYID",
+                  "title": "Version-agnostic anchor resource for SDTMIG variable CO.STUDYID",
+                  "type": "Root Data Element"
+                },
+                "self": {
+                  "href": "/mdr/sdtmig/3-1-2/datasets/CO/variables/STUDYID",
+                  "title": "Study Identifier",
+                  "type": "SDTM Dataset Variable"
+                }
+              },
+              "core": "Req",
+              "description": "Unique identifier for a study.",
+              "label": "Study Identifier",
+              "name": "STUDYID",
+              "ordinal": "1",
+              "role": "Identifier",
+              "simpleDatatype": "Char"
+            },
+            {
+              "_links": {
+                "modelDatasetVariable": {
+                  "href": "/mdr/sdtm/1-2/datasets/CO/variables/DOMAIN",
+                  "title": "Domain Abbreviation",
+                  "type": "SDTM Dataset Variable"
+                },
+                "parentDataset": {
+                  "href": "/mdr/sdtmig/3-1-2/datasets/CO",
+                  "title": "Comments",
+                  "type": "SDTM Dataset"
+                },
+                "parentProduct": {
+                  "href": "/mdr/sdtmig/3-1-2",
+                  "title": "Study Data Tabulation Model Implementation Guide: Human Clinical Trials Version 3.1.2 (Final)",
+                  "type": "Implementation Guide"
+                },
+                "rootItem": {
+                  "href": "/mdr/root/sdtmig/datasets/CO/variables/DOMAIN",
+                  "title": "Version-agnostic anchor resource for SDTMIG variable CO.DOMAIN",
+                  "type": "Root Data Element"
+                },
+                "self": {
+                  "href": "/mdr/sdtmig/3-1-2/datasets/CO/variables/DOMAIN",
+                  "title": "Domain Abbreviation",
+                  "type": "SDTM Dataset Variable"
+                }
+              },
+              "core": "Req",
+              "description": "Two-character abbreviation for the domain.",
+              "label": "Domain Abbreviation",
+              "name": "DOMAIN",
+              "ordinal": "2",
+              "role": "Identifier",
+              "simpleDatatype": "Char",
+              "valueList": [
+                "CO"
+              ]
+            }
+          ],
+          "description": "A special-purpose domain that contains comments that may be collected alongside other data. (Source: CDISC Controlled Terminology, DOMAIN, C49569, 2018-06-29)",
+          "label": "Comments",
+          "name": "CO",
+          "ordinal": "2"
+        },
+        {
+          "_links": {
+            "modelDataset": {
+              "href": "/mdr/sdtm/1-2/datasets/SE",
+              "title": "Subject Elements",
+              "type": "SDTM Dataset"
+            },
+            "parentClass": {
+              "href": "/mdr/sdtmig/3-1-2/classes/SpecialPurpose",
+              "title": "Special-Purpose Datasets",
+              "type": "Class"
+            },
+            "parentProduct": {
+              "href": "/mdr/sdtmig/3-1-2",
+              "title": "Study Data Tabulation Model Implementation Guide: Human Clinical Trials Version 3.1.2 (Final)",
+              "type": "Implementation Guide"
+            },
+            "self": {
+              "href": "/mdr/sdtmig/3-1-2/datasets/SE",
+              "title": "Subject Elements",
+              "type": "SDTM Dataset"
+            }
+          },
+          "datasetStructure": "One record per actual Element per subject",
+          "datasetVariables": [
+            {
+              "_links": {
+                "modelDatasetVariable": {
+                  "href": "/mdr/sdtm/1-2/datasets/SE/variables/STUDYID",
+                  "title": "Study Identifier",
+                  "type": "SDTM Dataset Variable"
+                },
+                "parentDataset": {
+                  "href": "/mdr/sdtmig/3-1-2/datasets/SE",
+                  "title": "Subject Elements",
+                  "type": "SDTM Dataset"
+                },
+                "parentProduct": {
+                  "href": "/mdr/sdtmig/3-1-2",
+                  "title": "Study Data Tabulation Model Implementation Guide: Human Clinical Trials Version 3.1.2 (Final)",
+                  "type": "Implementation Guide"
+                },
+                "rootItem": {
+                  "href": "/mdr/root/sdtmig/datasets/SE/variables/STUDYID",
+                  "title": "Version-agnostic anchor resource for SDTMIG variable SE.STUDYID",
+                  "type": "Root Data Element"
+                },
+                "self": {
+                  "href": "/mdr/sdtmig/3-1-2/datasets/SE/variables/STUDYID",
+                  "title": "Study Identifier",
+                  "type": "SDTM Dataset Variable"
+                }
+              },
+              "core": "Req",
+              "description": "Unique identifier for a study.",
+              "label": "Study Identifier",
+              "name": "STUDYID",
+              "ordinal": "1",
+              "role": "Identifier",
+              "simpleDatatype": "Char"
+            },
+            {
+              "_links": {
+                "modelDatasetVariable": {
+                  "href": "/mdr/sdtm/1-2/datasets/SE/variables/DOMAIN",
+                  "title": "Domain Abbreviation",
+                  "type": "SDTM Dataset Variable"
+                },
+                "parentDataset": {
+                  "href": "/mdr/sdtmig/3-1-2/datasets/SE",
+                  "title": "Subject Elements",
+                  "type": "SDTM Dataset"
+                },
+                "parentProduct": {
+                  "href": "/mdr/sdtmig/3-1-2",
+                  "title": "Study Data Tabulation Model Implementation Guide: Human Clinical Trials Version 3.1.2 (Final)",
+                  "type": "Implementation Guide"
+                },
+                "rootItem": {
+                  "href": "/mdr/root/sdtmig/datasets/SE/variables/DOMAIN",
+                  "title": "Version-agnostic anchor resource for SDTMIG variable SE.DOMAIN",
+                  "type": "Root Data Element"
+                },
+                "self": {
+                  "href": "/mdr/sdtmig/3-1-2/datasets/SE/variables/DOMAIN",
+                  "title": "Domain Abbreviation",
+                  "type": "SDTM Dataset Variable"
+                }
+              },
+              "core": "Req",
+              "description": "Two-character abbreviation for the domain.",
+              "label": "Domain Abbreviation",
+              "name": "DOMAIN",
+              "ordinal": "2",
+              "role": "Identifier",
+              "simpleDatatype": "Char",
+              "valueList": [
+                "SE"
+              ]
+            }
+          ],
+          "description": "A special-purpose domain that contains the actual order of elements followed by the subject, together with the start date/time and end date/time for each element. (Source: CDISC Controlled Terminology, DOMAIN, C49616, 2018-06-29)",
+          "label": "Subject Elements",
+          "name": "SE",
+          "ordinal": "3"
+        },
+        {
+          "_links": {
+            "modelDataset": {
+              "href": "/mdr/sdtm/1-2/datasets/SV",
+              "title": "Subject Visits",
+              "type": "SDTM Dataset"
+            },
+            "parentClass": {
+              "href": "/mdr/sdtmig/3-1-2/classes/SpecialPurpose",
+              "title": "Special-Purpose Datasets",
+              "type": "Class"
+            },
+            "parentProduct": {
+              "href": "/mdr/sdtmig/3-1-2",
+              "title": "Study Data Tabulation Model Implementation Guide: Human Clinical Trials Version 3.1.2 (Final)",
+              "type": "Implementation Guide"
+            },
+            "self": {
+              "href": "/mdr/sdtmig/3-1-2/datasets/SV",
+              "title": "Subject Visits",
+              "type": "SDTM Dataset"
+            }
+          },
+          "datasetStructure": "One record per subject per actual visit",
+          "datasetVariables": [
+            {
+              "_links": {
+                "modelDatasetVariable": {
+                  "href": "/mdr/sdtm/1-2/datasets/SV/variables/STUDYID",
+                  "title": "Study Identifier",
+                  "type": "SDTM Dataset Variable"
+                },
+                "parentDataset": {
+                  "href": "/mdr/sdtmig/3-1-2/datasets/SV",
+                  "title": "Subject Visits",
+                  "type": "SDTM Dataset"
+                },
+                "parentProduct": {
+                  "href": "/mdr/sdtmig/3-1-2",
+                  "title": "Study Data Tabulation Model Implementation Guide: Human Clinical Trials Version 3.1.2 (Final)",
+                  "type": "Implementation Guide"
+                },
+                "rootItem": {
+                  "href": "/mdr/root/sdtmig/datasets/SV/variables/STUDYID",
+                  "title": "Version-agnostic anchor resource for SDTMIG variable SV.STUDYID",
+                  "type": "Root Data Element"
+                },
+                "self": {
+                  "href": "/mdr/sdtmig/3-1-2/datasets/SV/variables/STUDYID",
+                  "title": "Study Identifier",
+                  "type": "SDTM Dataset Variable"
+                }
+              },
+              "core": "Req",
+              "description": "Unique identifier for a study.",
+              "label": "Study Identifier",
+              "name": "STUDYID",
+              "ordinal": "1",
+              "role": "Identifier",
+              "simpleDatatype": "Char"
+            },
+            {
+              "_links": {
+                "modelDatasetVariable": {
+                  "href": "/mdr/sdtm/1-2/datasets/SV/variables/DOMAIN",
+                  "title": "Domain Abbreviation",
+                  "type": "SDTM Dataset Variable"
+                },
+                "parentDataset": {
+                  "href": "/mdr/sdtmig/3-1-2/datasets/SV",
+                  "title": "Subject Visits",
+                  "type": "SDTM Dataset"
+                },
+                "parentProduct": {
+                  "href": "/mdr/sdtmig/3-1-2",
+                  "title": "Study Data Tabulation Model Implementation Guide: Human Clinical Trials Version 3.1.2 (Final)",
+                  "type": "Implementation Guide"
+                },
+                "rootItem": {
+                  "href": "/mdr/root/sdtmig/datasets/SV/variables/DOMAIN",
+                  "title": "Version-agnostic anchor resource for SDTMIG variable SV.DOMAIN",
+                  "type": "Root Data Element"
+                },
+                "self": {
+                  "href": "/mdr/sdtmig/3-1-2/datasets/SV/variables/DOMAIN",
+                  "title": "Domain Abbreviation",
+                  "type": "SDTM Dataset Variable"
+                }
+              },
+              "core": "Req",
+              "description": "Two-character abbreviation for the domain.",
+              "label": "Domain Abbreviation",
+              "name": "DOMAIN",
+              "ordinal": "2",
+              "role": "Identifier",
+              "simpleDatatype": "Char",
+              "valueList": [
+                "SV"
+              ]
+            }
+          ],
+          "description": "A special-purpose domain that contains the actual start and end data/time for each visit of each individual subject. (Source: CDISC Controlled Terminology, DOMAIN, C49617, 2018-06-29)",
+          "label": "Subject Visits",
+          "name": "SV",
+          "ordinal": "4"
+        }
+      ],
+      "description": "This SDTM class contains a set of domains which do not conform to the Findings, Events or Interventions observation classes. The domains included are DM, CO, SE and SV. (Source: CDISC Controlled Terminology, GNRLOBSC, C103377, 2018-06-29)",
+      "label": "Special-Purpose Datasets",
+      "name": "Special-Purpose",
+      "ordinal": "2"
+    }
+  ]
+}
