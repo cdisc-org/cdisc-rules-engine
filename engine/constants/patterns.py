@@ -1,0 +1,11 @@
+XPT_LABEL_PATTERN: str = (
+    "HEADER RECORD\\*{7}MEMBER {2}HEADER RECORD!{7}0{17}160{8}140 "
+    "{2}HEADER RECORD\\*{7}DSCRPTR HEADER RECORD!{7}0{30}"
+    "  SAS\\s{5}.{8}SASDATA .{16}\\s{24}.{16}.{16}\\s{16}(?P<label>.{40})"
+)
+
+XPT_MODIFIED_DATE_PATTERN: str = (
+    "HEADER RECORD\\*{7}MEMBER {2}HEADER RECORD!{7}0{17}160{8}140 "
+    "{2}HEADER RECORD\\*{7}DSCRPTR HEADER RECORD!{7}0{30}"
+    "  SAS\\s{5}.{8}SASDATA .{16}\\s{24}.{16}(?P<modified_date>.{16})\\s{16}.{40}"
+)

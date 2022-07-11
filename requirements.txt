@@ -1,0 +1,11 @@
+pytest==7.1.2
+pandas==1.4.3
+business-rules-enhanced==1.2.1
+python-dotenv==0.20.0
+cdisc-library-client==0.1.4
+pytest-asyncio==0.18.3
+azure-storage-blob==12.3.1
+azure-cosmos==4.3.0
+odmlib==0.1.4
+xport==3.6.1
+redis==4.0.2
