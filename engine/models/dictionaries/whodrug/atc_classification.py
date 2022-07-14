@@ -13,7 +13,7 @@ class AtcClassification(BaseWhoDrugTerm):
         self.code: str = record_params["code"]  # ATC Code
 
     @classmethod
-    def from_txt_line(cls, dictionary_id: str, line: str) -> "AtcClassification":
+    def from_txt_line(cls, line: str) -> "AtcClassification":
         return cls(
             {
                 "parentCode": line[:6].strip(),

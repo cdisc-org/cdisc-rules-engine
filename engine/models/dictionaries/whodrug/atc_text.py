@@ -14,7 +14,7 @@ class AtcText(BaseWhoDrugTerm):
         self.text: str = record_params["text"]
 
     @classmethod
-    def from_txt_line(cls, dictionary_id: str, line: str) -> "AtcText":
+    def from_txt_line(cls, line: str) -> "AtcText":
         return cls(
             {
                 "parentCode": line[:7].strip(),

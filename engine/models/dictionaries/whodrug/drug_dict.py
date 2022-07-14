@@ -13,7 +13,7 @@ class DrugDictionary(BaseWhoDrugTerm):
         self.drugName: str = record_params["drugName"]
 
     @classmethod
-    def from_txt_line(cls, dictionary_id: str, line: str) -> "DrugDictionary":
+    def from_txt_line(cls, line: str) -> "DrugDictionary":
         return cls(
             {
                 "code": line[:6],

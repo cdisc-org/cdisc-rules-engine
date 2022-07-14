@@ -12,7 +12,7 @@ class BaseWhoDrugTerm(ABC):
 
     @classmethod
     @abstractmethod
-    def from_txt_line(cls, dictionary_id: str, line: str) -> "BaseWhoDrugTerm":
+    def from_txt_line(cls, line: str) -> "BaseWhoDrugTerm":
         """
         Creates an instance from the given line.
         Does not save it to the DB.
