@@ -40,3 +40,6 @@ class CacheServiceInterface(ABC):
 
     def clear_all(self, prefix: str = None):
         raise NotImplementedError
+
+    def add_all(self, data: dict):
+        raise NotImplementedError
