@@ -3,11 +3,17 @@ This module contains utility functions
 that can be reused.
 """
 import copy
+import os.path
 import re
 from datetime import datetime
 from typing import List, Set, Callable, Optional
 
-from engine.constants.domains import SUPP_DOMAIN, AP_DOMAIN, APFA_DOMAIN, APRELSUB_DOMAIN
+from engine.constants.domains import (
+    SUPP_DOMAIN,
+    AP_DOMAIN,
+    APFA_DOMAIN,
+    APRELSUB_DOMAIN,
+)
 from engine.enums.execution_status import ExecutionStatus
 from engine.models.base_validation_entity import BaseValidationEntity
 from engine.models.rule_conditions import ConditionInterface
@@ -21,8 +27,8 @@ def convert_file_size(size_in_bytes: int, desired_unit: str) -> float:
     """
     unit_to_denominator_map: dict = {
         "KB": 1024,
-        "MB": 1024**2,
-        "GB": 1024**3,
+        "MB": 1024 ** 2,
+        "GB": 1024 ** 3,
     }
     return size_in_bytes / unit_to_denominator_map[desired_unit]
 
@@ -166,7 +172,7 @@ def get_operations_cache_key(
     domain: str = None,
     operation_name: str = None,
     grouping: str = None,
-    target_variable: str = None
+    target_variable: str = None,
 ) -> str:
     """
     Creates the cache key for operations.
@@ -177,6 +183,7 @@ def get_operations_cache_key(
         if item:
             key = f"{key}/{item}"
     return key
+
 
 def get_directory_path(dataset_path):
     return "/".join(dataset_path.split("/")[:-1])
@@ -200,8 +207,10 @@ def serialize_rule(rule: dict) -> dict:
     serialized_rule["conditions"] = conditions.to_dict()
     return serialized_rule
 
+
 def get_cache_last_updated_key() -> str:
     return "CACHE_LAST_UPDATED"
+
 
 def remove_none_keys_from_dict(dict_to_remove: dict):
     """
@@ -289,14 +298,11 @@ def is_valid_uuid(string_to_validate: str) -> bool:
     return True
 
 
-def get_dictionary_path(dictionary_id: str, file_name: str = None) -> str:
+def get_dictionary_path(directory_path: str, file_name: str) -> str:
     """
     Creates a path to dictionary directory or file.
     """
-    path: str = f"dictionaries/{dictionary_id}"
-    if file_name:
-        path += f"/{file_name}"
-    return path
+    return os.path.join(directory_path, file_name)
 
 
 def decode_line(line: bytes) -> str:
