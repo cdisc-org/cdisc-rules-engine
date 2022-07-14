@@ -13,13 +13,10 @@ class TermsFactoryInterface(ABC):
         """
 
     @abstractmethod
-    async def install_terms(
+    def install_terms(
         self,
-        dictionary_id: str,
         directory_path: str,
-        file_name: str,
-        file_contents: bytes,
-    ):
+    ) -> dict:
         """
         Accepts file contents and saves it to the DB.
         """

@@ -23,12 +23,9 @@ class WhoDrugTermsFactory(TermsFactoryInterface):
             WhodrugFileNames.INA_FILE_NAME.value: AtcText,
         }
 
-    async def install_terms(
+    def install_terms(
         self,
-        dictionary_id: str,
         directory_path: str,
-        file_name: str,
-        file_contents: bytes,
     ) -> dict:
         """
         Accepts directory path and creates
