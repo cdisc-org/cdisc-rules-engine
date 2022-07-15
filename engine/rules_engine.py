@@ -10,10 +10,13 @@ from engine.enums.execution_status import ExecutionStatus
 from engine.enums.rule_types import RuleTypes
 from engine.exceptions.custom_exceptions import DatasetNotFoundError
 from engine.services import logger
+from engine.services.cache.in_memory_cache_service import InMemoryCacheService
 from engine.services.define_xml_reader import DefineXMLReader
 from engine.constants.define_xml_constants import DEFINE_XML_FILE_NAME
 from engine.dummy_models.dummy_dataset import DummyDataset
-from engine import data_service_factory, cache_service_obj
+from engine.services.data_service_factory import DataServiceFactory
+from engine.services.cache.cache_service_factory import CacheServiceFactory
+from engine.config import config
 from engine.exceptions.custom_exceptions import (
     RuleFormatError,
     VariableMetadataNotFoundError,
@@ -40,10 +43,11 @@ from engine.utilities.utils import (
 
 
 class RulesEngine:
-    def __init__(self, **kwargs):
-        self.data_service = data_service_factory.get_data_service()
-        self.rule_processor = RuleProcessor(self.data_service)
-        self.data_processor = DataProcessor(self.data_service)
+    def __init__(self, cache = None, data_service = None, **kwargs):
+        self.cache = cache or CacheServiceFactory(config).get_cache_service()
+        self.data_service = data_service or DataServiceFactory(config, self.cache).get_data_service()
+        self.rule_processor = RuleProcessor(self.data_service, self.cache)
+        self.data_processor = DataProcessor(self.data_service, self.cache)
         self.standard = kwargs.get("standard")
         self.standard_version = kwargs.get("standard_version")
         self.ct_package = kwargs.get("ct_package")
@@ -58,7 +62,7 @@ class RulesEngine:
         datasets: List[DummyDataset],
         dataset_domain: str,
     ):
-        self.data_service = data_service_factory.get_dummy_data_service(datasets)
+        self.data_service = DataServiceFactory(config, InMemoryCacheService.get_instance()).get_dummy_data_service(datasets)
         dataset_dicts = []
         for domain in datasets:
             dataset_dicts.append({"domain": domain.domain, "filename": domain.filename})
@@ -268,9 +272,9 @@ class RulesEngine:
         variable_codelist_map_key = get_standard_codelist_cache_key(
             self.standard, self.standard_version
         )
-        variable_codelist_map = cache_service_obj.get(variable_codelist_map_key) or {}
+        variable_codelist_map = self.cache.get(variable_codelist_map_key) or {}
         codelist_term_maps = [
-            cache_service_obj.get(package) or {} for package in self.ct_package
+            self.cache.get(package) or {} for package in self.ct_package
         ]
         return self.execute_rule(
             rule,
@@ -319,7 +323,7 @@ class RulesEngine:
             3. Extract variable value from dataset.
         """
         # get metadata from library and define
-        library_metadata: dict = cache_service_obj.get(
+        library_metadata: dict = self.cache.get(
             get_library_variables_metadata_cache_key(
                 self.standard, self.standard_version
             )
@@ -352,7 +356,7 @@ class RulesEngine:
         """
         # get metadata from library
         library_metadata: dict = (
-            cache_service_obj.get(
+            self.cache.get(
                 get_library_variables_metadata_cache_key(
                     self.standard, self.standard_version
                 )
@@ -483,7 +487,7 @@ class RulesEngine:
         dataset = deepcopy(dataset)
         # preprocess dataset
         dataset_preprocessor = DatasetPreprocessor(
-            dataset, domain, dataset_path, self.data_service
+            dataset, domain, dataset_path, self.data_service, self.cache
         )
         dataset = dataset_preprocessor.preprocess(rule, datasets)
         dataset = self.rule_processor.perform_rule_operations(
@@ -530,7 +534,7 @@ class RulesEngine:
         )
         define_xml_reader = DefineXMLReader.from_file_contents(
             define_xml_contents,
-            cache_service_obj=cache_service_obj
+            cache_service_obj=self.cache
         )
         return define_xml_reader.extract_domain_metadata(domain_name=domain_name)
 
@@ -547,7 +551,7 @@ class RulesEngine:
         )
         define_xml_reader = DefineXMLReader.from_file_contents(
             define_xml_contents,
-            cache_service_obj=cache_service_obj
+            cache_service_obj=self.cache
         )
         return define_xml_reader.extract_variables_metadata(domain_name=domain_name)
 
@@ -568,7 +572,7 @@ class RulesEngine:
         """
         # request standard details from cache
         standard_details: dict = (
-            cache_service_obj.get(
+            self.cache.get(
                 get_standard_details_cache_key(self.standard, self.standard_version)
             )
             or {}
@@ -590,7 +594,7 @@ class RulesEngine:
         )
         define_xml_reader = DefineXMLReader.from_file_contents(
             define_xml_contents,
-            cache_service_obj=cache_service_obj
+            cache_service_obj=self.cache
         )
         return define_xml_reader.extract_value_level_metadata(domain_name=domain_name)
 

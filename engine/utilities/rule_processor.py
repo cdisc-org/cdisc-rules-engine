@@ -9,7 +9,6 @@ from engine.services import logger
 from engine.utilities.utils import search_in_list_of_dicts
 from engine.constants.classes import DETECTABLE_CLASSES
 from engine.constants.domains import SUPP_DOMAIN, AP_DOMAIN, APFA_DOMAIN
-from engine import cache_service_obj
 from engine.models.rule_conditions import (
     ConditionCompositeFactory,
     ConditionInterface,
@@ -20,8 +19,9 @@ from engine.utilities.utils import is_supp_domain, get_operations_cache_key, is_
 
 
 class RuleProcessor:
-    def __init__(self, data_service):
+    def __init__(self, data_service, cache):
         self.data_service = data_service
+        self.cache = cache
 
     def rule_applies_to_domain(
             self, dataset_domain: str, rule: dict, is_split_domain: bool
@@ -168,7 +168,7 @@ class RuleProcessor:
             if operator in study_operator_map:
                 # Perform study wide operation
                 result = study_operator_map.get(operator)(
-                    target_variable, datasets, directory_path, self.data_service, standard=standard,
+                    target_variable, datasets, directory_path, self.data_service, self.cache, standard=standard,
                     standard_version=standard_version
                 )
             else:
@@ -181,7 +181,7 @@ class RuleProcessor:
                     target_variable=target_variable
                 )
                 operation = domain_operator_map.get(operator)
-                result = cache_service_obj.get(cache_key)
+                result = self.cache.get(cache_key)
                 if result is None:
                     result = self.execute_operation(
                         operation,
@@ -195,7 +195,7 @@ class RuleProcessor:
                     )
 
                 if not DataProcessor.is_dummy_data(self.data_service):
-                    cache_service_obj.add(cache_key, result)
+                    self.cache.add(cache_key, result)
 
             if group_by:
                 # Handle grouped results
@@ -232,7 +232,7 @@ class RuleProcessor:
     ):
         if self.is_current_domain(dataset, target_domain):
             result = operation(
-                dataset, target_variable, group_by, dataset_path=dataset_path
+                dataset, target_variable, group_by, dataset_path=dataset_path, data_service=self.data_service
             )
         else:
             domain_details: dict = search_in_list_of_dicts(
@@ -242,7 +242,7 @@ class RuleProcessor:
             file_path = get_directory_path(dataset_path) + f"/{file_name}"
             dataframe = self.data_service.get_dataset(dataset_name=file_path)
             result = operation(
-                dataframe, target_variable, group_by, dataset_path=dataset_path
+                dataframe, target_variable, group_by, dataset_path=dataset_path, data_service=self.data_service
             )
         return result
 

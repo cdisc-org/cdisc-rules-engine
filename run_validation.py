@@ -1,50 +1,45 @@
 import logging
+from multiprocessing.managers import SyncManager
+from engine.services.cache.in_memory_cache_service import InMemoryCacheService
+
+from engine.services.cache.redis_cache_service import RedisCacheService
 logging.getLogger("asyncio").disabled = True
 logging.getLogger('xmlschema').disabled = True
-from engine.rules_engine import RulesEngine
-from engine.services import logger as engine_logger
-from engine.constants.define_xml_constants import DEFINE_XML_FILE_NAME
-import logging
-from engine.services.cache.cache_service_factory import CacheServiceFactory
-from engine.services.data_service_factory import DataServiceFactory
-from engine.services.base_data_service import BaseDataService
-from engine.config import config
-import asyncio
-from engine.models.rule_conditions import ConditionCompositeFactory
 import itertools
-from concurrent.futures import ThreadPoolExecutor
+from multiprocessing import Pool
+from functools import partial
 import os
 import time
 import argparse
 import pickle
+from engine.rules_engine import RulesEngine
+from engine.services import logger as engine_logger
+from engine.constants.define_xml_constants import DEFINE_XML_FILE_NAME
+from engine.services.cache.cache_service_factory import CacheServiceFactory
+from engine.services.data_service_factory import DataServiceFactory
+from engine.services.base_data_service import BaseDataService
+from engine.config import config
+from engine.models.rule_conditions import ConditionCompositeFactory
 
-async def validate(rule, dataset_path, dataset_list, domain):
-    engine = RulesEngine()
-    loop = asyncio.get_event_loop()
-    data = await loop.run_in_executor(None, engine.validate_single_rule, rule, dataset_path, dataset_list, domain)
-    return data
 
-async def validate_single_rule(rule, path, datasets):
+class CacheManager(SyncManager): pass
+
+def validate_single_rule(cache, path, datasets, rule, log_level="disabled"):
     # call rule engine
+    set_log_level(log_level)
     rule["conditions"] = ConditionCompositeFactory.get_condition_composite(rule["conditions"])
-    coroutines = [
-        validate(rule, f"{path}/{dataset['filename']}", datasets, dataset["domain"]) for dataset in datasets
+    engine = RulesEngine(cache=cache)
+    results = [
+        engine.validate_single_rule(rule, f"{path}/{dataset['filename']}", datasets, dataset["domain"]) for dataset in datasets
     ]
-    results = await asyncio.gather(*coroutines)
     # show_elapsed_time(rule, end-start)
     results = list(itertools.chain(*results))
     return results
 
-def run_rule(rule, dataset_path, datasets):
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    data = loop.run_until_complete(validate_single_rule(rule, dataset_path, datasets))
-    loop.close()
-    return data
-
 def parse_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument("-ca", "--cache", help="Cache location", default="resources/cache")
+    parser.add_argument("-p", "--pool_size", help="Number of parallel processes for validation", type=int, default=10)
     parser.add_argument("-d", "--data", help="Data location", required=True)
     parser.add_argument("-l", "--log_level", help="Log level", default="disabled")
     args = parser.parse_args()
@@ -84,6 +79,13 @@ def set_log_level(level):
     else:
         engine_logger.setLevel(levels.get(level, logging.ERROR))
 
+def get_cache_service(manager):
+    cache_service_type = config.getValue("CACHE_TYPE")
+    if cache_service_type == "redis":
+        return manager.RedisCacheService(config.getValue("REDIS_HOST_NAME"), config.getValue("REDIS_ACCESS_KEY"))
+    else:
+        return manager.InMemoryCacheService()
+
 def main():
     args = parse_arguments()
     set_log_level(args.log_level.lower())
@@ -93,19 +95,23 @@ def main():
     data_path: str = (
         f"{os.path.dirname(__file__)}/{args.data}"
     )
-    cache_service_obj = CacheServiceFactory(config).get_cache_service()
-    cache_service_obj = fill_cache(cache_service_obj, cache_path)
-    rules = cache_service_obj.get_all_by_prefix("rules/")
-    data_service = DataServiceFactory(config, cache_service_obj).get_data_service()
+
+    pool = Pool(args.pool_size)
+
+    CacheManager.register("RedisCacheService", RedisCacheService)
+    CacheManager.register("InMemoryCacheService", InMemoryCacheService)
+    manager = CacheManager()
+    manager.start()
+    shared_cache = get_cache_service(manager)
+    shared_cache = fill_cache(shared_cache, cache_path)
+    rules = shared_cache.get_all_by_prefix("rules/")
+    data_service = DataServiceFactory(config, shared_cache).get_data_service()
     datasets = get_datasets(data_service, data_path)
-    executor = ThreadPoolExecutor(10)
-    jobs = []
     start = time.time()
-    for rule in rules:
-        future = executor.submit(run_rule, rule, data_path, datasets)
-        jobs.append(future)
-    executor.shutdown(wait=True)
-    results = [f.result() for f in jobs]
+    #TODO: Convert results to excel output
+    results = pool.map(partial(validate_single_rule, shared_cache, data_path, datasets, log_level=args.log_level), rules)
+    pool.close()
+    pool.join()
     end = time.time()
     print(f"Total time = {end-start} seconds")
 
