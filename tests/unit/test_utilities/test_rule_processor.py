@@ -2,6 +2,7 @@ from typing import Set, List
 from unittest import mock
 
 from engine.models.rule_conditions import ConditionCompositeFactory
+from engine.services.cache.in_memory_cache_service import InMemoryCacheService
 from engine.utilities.rule_processor import RuleProcessor
 from unittest.mock import patch, MagicMock
 import pytest
@@ -36,7 +37,7 @@ from conftest import mock_data_service
     ],
 )
 def test_rule_applies_to_domain(mock_data_service, domain, rule_metadata, outcome):
-    processor = RuleProcessor(mock_data_service)
+    processor = RuleProcessor(mock_data_service, InMemoryCacheService())
     assert processor.rule_applies_to_domain(domain, rule_metadata, False) == outcome
 
 
@@ -190,7 +191,7 @@ def test_rule_applies_to_domain_split_datasets(
         {"domain": "SUPPQS", "is_split": True},  # Two datasets with SUPPQS domain
         {"domain": "SUPPQS", "is_split": True},
     ]
-    processor = RuleProcessor(mock_data_service)
+    processor = RuleProcessor(mock_data_service, InMemoryCacheService())
     results = [
         processor.rule_applies_to_domain(domain["domain"], rule, domain["is_split"])
         for domain in domains
@@ -300,7 +301,7 @@ def test_rule_applies_to_class(
     class_name,
     outcome,
 ):
-    processor = RuleProcessor(mock_data_service)
+    processor = RuleProcessor(mock_data_service, InMemoryCacheService())
     dataset_mock = pd.DataFrame.from_dict(data)
     mock_data_service.get_dataset_class.return_value = class_name
     with patch(
@@ -361,7 +362,7 @@ def test_perform_rule_operation(mock_data_service):
         ],
     }
     df = pd.DataFrame.from_dict({"AESTDY": [11, 12, 40, 59, 59], "DOMAIN": ["AE", "AE", "AE", "AE", "AE"]})
-    processor = RuleProcessor(mock_data_service)
+    processor = RuleProcessor(mock_data_service, InMemoryCacheService())
     with patch(
         "engine.services.blob_data_service.BlobDataService.get_dataset", return_value=df
     ):
@@ -435,7 +436,7 @@ def test_perform_rule_operation_with_grouping(mock_data_service):
     df = pd.DataFrame.from_dict(
         {"AESTDY": [10, 11, 40, 59], "USUBJID": [1, 200, 1, 200], "AESEQ": [1, 2, 3, 4], "DOMAIN": ["AE", "AE", "AE", "AE"]}
     )
-    processor = RuleProcessor(mock_data_service)
+    processor = RuleProcessor(mock_data_service, InMemoryCacheService())
     with patch(
         "engine.services.blob_data_service.BlobDataService.get_dataset", return_value=df
     ):
@@ -535,7 +536,7 @@ def test_perform_rule_operation_with_multi_key_grouping(mock_data_service):
             "STUDYID": ["A", "A", "A", "A", "B", "B"],
         }
     )
-    processor = RuleProcessor(mock_data_service)
+    processor = RuleProcessor(mock_data_service, InMemoryCacheService())
     with patch(
         "engine.services.blob_data_service.BlobDataService.get_dataset", return_value=df
     ):
@@ -578,7 +579,7 @@ def test_perform_rule_operation_with_null_operations(mock_data_service):
     df = pd.DataFrame.from_dict(
         {"AESTDY": [11, 12, 40, 59], "USUBJID": [1, 200, 1, 200]}
     )
-    processor = RuleProcessor(mock_data_service)
+    processor = RuleProcessor(mock_data_service, InMemoryCacheService())
     new_data = processor.perform_rule_operations(
         rule, df, "AE", [{"domain": "AE", "filename": "ae.xpt"}], "test/", standard="sdtmig",
             standard_version="3-1-2"
@@ -628,7 +629,14 @@ def test_perform_extract_metadata_operation(
     
     mock = MagicMock()
     mock.get_dataset.return_value = dataset
-    processor = RuleProcessor(mock)
+    mock.get_dataset_metadata.return_value = pd.DataFrame.from_dict(
+        {
+            "dataset_name": [
+                "SUPPEC",
+            ],
+        }
+    )
+    processor = RuleProcessor(mock, InMemoryCacheService())
     dataset_after_operation = processor.perform_rule_operations(
         rule=rule_equal_to_with_extract_metadata_operation,
         dataset=dataset,
@@ -646,6 +654,8 @@ def test_perform_extract_metadata_operation(
         "SUPPEC",
         "SUPPEC",
     ]
+    print(dataset_after_operation)
+    print(expected_dataset)
     assert dataset_after_operation.equals(expected_dataset)
 
 
@@ -664,7 +674,7 @@ def test_add_comparator_to_conditions(mock_data_service):
         "dataset_label": "Adverse Events",
         "dataset_location": "ae.xpt",
     }
-    processor = RuleProcessor(mock_data_service)
+    processor = RuleProcessor(mock_data_service, InMemoryCacheService())
     processor.add_comparator_to_rule_conditions(rule, comparator)
     assert rule["conditions"].to_dict() == {
         "all": [
@@ -709,7 +719,7 @@ def test_add_comparator_to_conditions_nested_conditions(mock_data_service):
         "dataset_label": "Adverse Events",
         "dataset_location": "ae.xpt",
     }
-    processor = RuleProcessor(mock_data_service)
+    processor = RuleProcessor(mock_data_service, InMemoryCacheService())
     processor.add_comparator_to_rule_conditions(rule, comparator=comparator)
     assert rule["conditions"].to_dict() == {
         "all": [
@@ -766,7 +776,7 @@ def test_add_operator_to_conditions(mock_data_service):
         ]
     }
     rule = {"conditions": ConditionCompositeFactory.get_condition_composite(conditions)}
-    processor = RuleProcessor(mock_data_service)
+    processor = RuleProcessor(mock_data_service, InMemoryCacheService())
     target_to_operator_map: dict = {
         "STUDYID": "equal_to",
         "DOMAIN": [
@@ -1021,5 +1031,5 @@ def test_get_size_unit_from_rule(conditions: dict):
     rule: dict = {
         "conditions": ConditionCompositeFactory.get_condition_composite(conditions),
     }
-    processor = RuleProcessor(mock_data_service)
+    processor = RuleProcessor(mock_data_service, InMemoryCacheService())
     assert processor.get_size_unit_from_rule(rule) == "MB"
