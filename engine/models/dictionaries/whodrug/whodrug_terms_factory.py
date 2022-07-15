@@ -1,6 +1,7 @@
 import os
 from collections import defaultdict
 
+from engine.services.data_services import BaseDataService
 from .atc_text import AtcText
 from .atc_classification import AtcClassification
 from .base_whodrug_term import BaseWhoDrugTerm
@@ -16,7 +17,7 @@ class WhoDrugTermsFactory(TermsFactoryInterface):
     and contents and creates a term record for each line.
     """
 
-    def __init__(self, data_service=None):
+    def __init__(self, data_service: BaseDataService):
         self.__data_service = data_service
         self.__file_name_model_map: dict = {
             WhodrugFileNames.DD_FILE_NAME.value: DrugDictionary,

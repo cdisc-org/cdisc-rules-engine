@@ -7,6 +7,7 @@ from engine.models.dictionaries.terms_factory_interface import (
 )
 from typing import List
 from engine.exceptions.custom_exceptions import MissingDataError
+from engine.services.data_services import BaseDataService
 from engine.utilities.utils import get_dictionary_path
 from uuid import uuid4
 import asyncio
@@ -19,7 +20,7 @@ class MedDRATermsFactory(TermsFactoryInterface):
     and contents and creates a term record for each line.
     """
 
-    def __init__(self, data_service=None):
+    def __init__(self, data_service: BaseDataService):
         self.data_service = data_service
 
     def chunks(self, lst, n):

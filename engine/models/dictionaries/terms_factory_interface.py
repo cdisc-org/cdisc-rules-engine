@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+from engine.services.data_services import BaseDataService
+
 
 class TermsFactoryInterface(ABC):
     """
@@ -7,7 +9,7 @@ class TermsFactoryInterface(ABC):
     """
 
     @abstractmethod
-    def __init__(self, data_service):
+    def __init__(self, data_service: BaseDataService):
         """
         Initializes a factory object.
         """
