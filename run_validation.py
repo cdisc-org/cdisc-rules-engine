@@ -3,6 +3,7 @@ logging.getLogger("asyncio").disabled = True
 logging.getLogger('xmlschema').disabled = True
 from engine.rules_engine import RulesEngine
 from engine.services import logger as engine_logger
+from engine.constants.define_xml_constants import DEFINE_XML_FILE_NAME
 import logging
 from engine.services.cache.cache_service_factory import CacheServiceFactory
 from engine.services.data_service_factory import DataServiceFactory
@@ -32,6 +33,7 @@ async def validate_single_rule(rule, path, datasets):
     results = await asyncio.gather(*coroutines)
     # show_elapsed_time(rule, end-start)
     results = list(itertools.chain(*results))
+    return results
 
 def run_rule(rule, dataset_path, datasets):
     loop = asyncio.new_event_loop()
@@ -57,7 +59,7 @@ def fill_cache(cache, cache_path: str):
     return cache
 
 def get_datasets(data_service: BaseDataService, data_path: str):
-    data_files = [f for f in next(os.walk(data_path), (None, None, []))[2] if f != "define.xml"]
+    data_files = [f for f in next(os.walk(data_path), (None, None, []))[2] if f != DEFINE_XML_FILE_NAME]
     datasets = []
     for data_file in data_files:
         dataset_name = f"{data_path}/{data_file}"
