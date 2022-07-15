@@ -2,6 +2,7 @@ import os
 from collections import defaultdict
 
 from engine.services.data_services import BaseDataService
+from engine.utilities.utils import get_dictionary_path
 from .atc_text import AtcText
 from .atc_classification import AtcClassification
 from .base_whodrug_term import BaseWhoDrugTerm
@@ -47,7 +48,7 @@ class WhoDrugTermsFactory(TermsFactoryInterface):
         # for each whodrug file in the directory:
         for dictionary_filename in self.__file_name_model_map:
             # check if the file exists
-            file_path: str = f"{directory_path}/{dictionary_filename}"
+            file_path: str = get_dictionary_path(directory_path, dictionary_filename)
             if not os.path.exists(file_path):
                 logger.warning(
                     f"File {dictionary_filename} does not exist in directory {directory_path}"
