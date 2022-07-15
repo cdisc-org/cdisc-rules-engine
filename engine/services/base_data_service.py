@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from functools import wraps
 
-from typing import Callable, List
+from typing import Callable, List, TextIO
 
 import numpy as np
 import pandas as pd
@@ -10,10 +10,8 @@ from engine.services import logger
 from engine.utilities.utils import search_in_list_of_dicts
 from engine.models.dataset_types import DatasetTypes
 from engine.constants.domains import AP_DOMAIN_LENGTH
-from engine.utilities.utils import (
-    get_dataset_cache_key_from_path,
-    get_directory_path
-)
+from engine.utilities.utils import get_dataset_cache_key_from_path, get_directory_path
+
 
 def cached_dataset(dataset_type: str):
     """
@@ -62,7 +60,7 @@ class BaseDataService:
     @abstractmethod
     def get_dataset(self, dataset_name: str, **params) -> pd.DataFrame:
         """
-                Gets dataset from blob storage.
+        Gets dataset from blob storage.
         """
 
     @abstractmethod
@@ -72,9 +70,7 @@ class BaseDataService:
         """
 
     @abstractmethod
-    def join_split_datasets(
-        self, func_to_call: Callable, dataset_names, **kwargs
-    ):
+    def join_split_datasets(self, func_to_call: Callable, dataset_names, **kwargs):
         """
         Accepts a list of split dataset filenames,
         downloads all of them and merges into a single DataFrame.
@@ -88,25 +84,28 @@ class BaseDataService:
         elif self._contains_topic_variable(dataset, "TESTCD"):
             return "Findings"
         elif self._is_associated_persons(dataset):
-            return self._get_associated_persons_inherit_class(dataset, file_path, datasets)
+            return self._get_associated_persons_inherit_class(
+                dataset, file_path, datasets
+            )
         else:
-            #Default case, unknown class
+            # Default case, unknown class
             return None
-
 
     def _is_associated_persons(self, dataset) -> bool:
         """
-                        Check if AP-- domain.
+        Check if AP-- domain.
         """
         return (
-                "DOMAIN" in dataset and
-                self._domain_starts_with(dataset["DOMAIN"].values[0], "AP") and
-                len(dataset["DOMAIN"].values[0]) == AP_DOMAIN_LENGTH
+            "DOMAIN" in dataset
+            and self._domain_starts_with(dataset["DOMAIN"].values[0], "AP")
+            and len(dataset["DOMAIN"].values[0]) == AP_DOMAIN_LENGTH
         )
 
-    def _get_associated_persons_inherit_class(self, dataset, file_path, datasets: List[dict]):
+    def _get_associated_persons_inherit_class(
+        self, dataset, file_path, datasets: List[dict]
+    ):
         """
-                Check with inherit class AP-- belongs to.
+        Check with inherit class AP-- belongs to.
         """
         domain = dataset["DOMAIN"].values[0]
         ap_suffix = domain[2:]
@@ -116,7 +115,7 @@ class BaseDataService:
                 datasets, lambda item: item.get("domain") == ap_suffix
             )
             if domain_details:
-                file_name = domain_details['filename']
+                file_name = domain_details["filename"]
                 new_file_path = f"{directory_path}/{file_name}"
                 new_domain_dataset = self.get_dataset(dataset_name=new_file_path)
             else:
@@ -126,7 +125,6 @@ class BaseDataService:
             return self.get_dataset_class(new_domain_dataset, new_file_path, datasets)
         else:
             return None
-
 
     def _contains_topic_variable(self, dataset, variable):
         """
@@ -142,7 +140,6 @@ class BaseDataService:
         """
         return domain.startswith(variable)
 
-
     @staticmethod
     def _replace_nans_in_numeric_cols_with_none(dataset: pd.DataFrame):
         """
@@ -152,3 +149,9 @@ class BaseDataService:
         dataset[numeric_columns] = dataset[numeric_columns].apply(
             lambda x: x.replace({np.nan: None})
         )
+
+    @abstractmethod
+    def read_data(self, file_path: str, read_mode: str = "r") -> TextIO:
+        """
+        Reads data from the given path and returns TextIO instance.
+        """

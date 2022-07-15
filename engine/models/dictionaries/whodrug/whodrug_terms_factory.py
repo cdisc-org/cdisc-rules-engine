@@ -17,6 +17,7 @@ class WhoDrugTermsFactory(TermsFactoryInterface):
     """
 
     def __init__(self, data_service=None):
+        self.__data_service = data_service
         self.__file_name_model_map: dict = {
             WhodrugFileNames.DD_FILE_NAME.value: DrugDictionary,
             WhodrugFileNames.DDA_FILE_NAME.value: AtcClassification,
@@ -69,7 +70,7 @@ class WhoDrugTermsFactory(TermsFactoryInterface):
         model_class: BaseWhoDrugTerm = self.__file_name_model_map[dictionary_filename]
 
         # open a file
-        with open(file_path) as file:
+        with self.__data_service.read_data(file_path) as file:
             # create a term object for each line and append it to the mapping
             for line in file:
                 term_obj: BaseWhoDrugTerm = model_class.from_txt_line(line)

@@ -1,3 +1,5 @@
+from unittest.mock import MagicMock
+
 from engine.models.dictionaries.whodrug import (
     WhoDrugTermsFactory,
     WhodrugFileNames,
@@ -6,6 +8,7 @@ from engine.models.dictionaries.whodrug import (
     AtcClassification,
     DrugDictionary,
 )
+from engine.services.local_data_service import LocalDataService
 
 
 def test_install_terms(tmp_path):
@@ -32,7 +35,9 @@ def test_install_terms(tmp_path):
     )
 
     # run the factory
-    terms: dict = WhoDrugTermsFactory().install_terms(str(tmp_path))
+    local_data_service = LocalDataService.get_instance(cache_service=MagicMock())
+    factory = WhoDrugTermsFactory(local_data_service)
+    terms: dict = factory.install_terms(str(tmp_path))
 
     # check returned data
     assert len(terms[WhodrugRecordTypes.ATC_TEXT.value]) == 3

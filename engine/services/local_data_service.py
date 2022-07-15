@@ -2,6 +2,7 @@ from concurrent.futures import ThreadPoolExecutor
 from typing import List, Callable, Iterator
 
 import pandas
+from typing import TextIO
 
 from engine.models.dataset_types import DatasetTypes
 from engine.services.base_data_service import BaseDataService, cached_dataset
@@ -29,7 +30,9 @@ class LocalDataService(BaseDataService):
         return cls._instance
 
     def has_all_files(self, prefix: str, file_names: List[str]) -> bool:
-        files = [f for f in os.listdir(prefix) if os.path.isfile(os.path.join(prefix, f))]
+        files = [
+            f for f in os.listdir(prefix) if os.path.isfile(os.path.join(prefix, f))
+        ]
         return all(item in files for item in file_names)
 
     @cached_dataset(DatasetTypes.CONTENTS.value)
@@ -67,7 +70,9 @@ class LocalDataService(BaseDataService):
         """
         metadata: dict = self.read_metadata(dataset_name)
         contents_metadata: dict = metadata["contents_metadata"]
-        metadata_to_return: VariableMetadataContainer = VariableMetadataContainer(contents_metadata)
+        metadata_to_return: VariableMetadataContainer = VariableMetadataContainer(
+            contents_metadata
+        )
         return pandas.DataFrame.from_dict(metadata_to_return.to_representation())
 
     @cached_dataset(DatasetTypes.CONTENTS.value)
@@ -130,16 +135,13 @@ class LocalDataService(BaseDataService):
                 lambda name: function_to_call(dataset_name=name, **kwargs),
                 dataset_names,
             )
-    
-    def read_metadata(
-        self,
-        file_path: str
-    ):
+
+    def read_metadata(self, file_path: str) -> dict:
         file_size = os.path.getsize(file_path)
         file_metadata = {
             "path": file_path,
             "name": extract_file_name_from_path_string(file_path),
-            "size": file_size
+            "size": file_size,
         }
         with open(file_path, "rb") as f:
             contents_metadata = DatasetMetadataReader(f.read()).read()
@@ -148,3 +150,6 @@ class LocalDataService(BaseDataService):
             "file_metadata": file_metadata,
             "contents_metadata": contents_metadata,
         }
+
+    def read_data(self, file_path: str, read_mode: str = "r") -> TextIO:
+        return open(file_path, read_mode)
