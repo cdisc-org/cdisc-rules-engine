@@ -1,5 +1,5 @@
-from engine.services.local_data_service import LocalDataService
 from engine.dummy_services.dummy_data_service import DummyDataService
+from .local_data_service import LocalDataService
 
 
 class DataServiceFactory:

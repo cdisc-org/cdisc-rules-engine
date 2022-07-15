@@ -8,7 +8,7 @@ from engine.models.dictionaries.whodrug import (
     AtcClassification,
     DrugDictionary,
 )
-from engine.services.local_data_service import LocalDataService
+from engine.services.data_services import LocalDataService
 
 
 def test_install_terms(tmp_path):

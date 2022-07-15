@@ -7,7 +7,7 @@ from engine.utilities.utils import search_in_list_of_dicts
 from engine import data_service_factory
 from engine.utilities.data_processor import DataProcessor
 from engine.utilities.rule_processor import RuleProcessor
-from engine.services.base_data_service import BaseDataService
+from engine.services.data_services import BaseDataService
 from engine.utilities.utils import replace_pattern_in_list_of_strings
 
 

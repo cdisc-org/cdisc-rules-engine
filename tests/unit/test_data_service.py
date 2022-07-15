@@ -2,7 +2,7 @@ from typing import List
 from unittest.mock import Mock
 
 from engine.models.dataset_types import DatasetTypes
-from engine.services.base_data_service import BaseDataService, cached_dataset
+from engine.services.data_services import BaseDataService, cached_dataset
 import pandas as pd
 import pytest
 from unittest.mock import patch
@@ -12,10 +12,25 @@ from engine.utilities.utils import get_dataset_cache_key_from_path
 @pytest.mark.parametrize(
     "dataset, data, expected_class, filename",
     [
-        ([{"domain": "AE", "filename": "ae.xpt"}], {"AETERM": ["test"]}, "Events", "ae.xpt"),
-        ([{"domain": "AE", "filename": "ae.xpt"}], {"AETRT": ["test"]}, "Interventions", "ae.xpt"),
-        ([{"domain": "AE", "filename": "ae.xpt"}], {"AETESTCD": ["test"]}, "Findings", "ae.xpt"),
-        ([{"domain": "AE", "filename": "ae.xpt"}], {"UNKNOWN": ["test"]}, None, 'None'),
+        (
+            [{"domain": "AE", "filename": "ae.xpt"}],
+            {"AETERM": ["test"]},
+            "Events",
+            "ae.xpt",
+        ),
+        (
+            [{"domain": "AE", "filename": "ae.xpt"}],
+            {"AETRT": ["test"]},
+            "Interventions",
+            "ae.xpt",
+        ),
+        (
+            [{"domain": "AE", "filename": "ae.xpt"}],
+            {"AETESTCD": ["test"]},
+            "Findings",
+            "ae.xpt",
+        ),
+        ([{"domain": "AE", "filename": "ae.xpt"}], {"UNKNOWN": ["test"]}, None, "None"),
     ],
 )
 def test_get_dataset_class(dataset, data, expected_class, filename):
@@ -24,6 +39,7 @@ def test_get_dataset_class(dataset, data, expected_class, filename):
     class_name = data_service.get_dataset_class(dataset, filename, dataset)
     assert class_name == expected_class
 
+
 def test_get_dataset_class_associated_domains():
     datasets: List[dict] = [
         {"domain": "APCE", "filename": "ap.xpt"},
@@ -31,20 +47,21 @@ def test_get_dataset_class_associated_domains():
     ]
     ap_dataset = pd.DataFrame.from_dict({"DOMAIN": ["APCE"]})
     ce_dataset = pd.DataFrame.from_dict({"CETERM": ["test"]})
-    data_bundle_path = 'cdisc/databundle'
+    data_bundle_path = "cdisc/databundle"
     path_to_dataset_map: dict = {
         f"{data_bundle_path}/ap.xpt": ap_dataset,
         f"{data_bundle_path}/ce.xpt": ce_dataset,
     }
     with patch(
-            "engine.services.base_data_service.BaseDataService.get_dataset",
-            return_value=ap_dataset,
-            side_effect=lambda dataset_name: path_to_dataset_map[dataset_name],
+        "engine.services.base_data_service.BaseDataService.get_dataset",
+        return_value=ap_dataset,
+        side_effect=lambda dataset_name: path_to_dataset_map[dataset_name],
     ):
         data_service = BaseDataService()
-        filepath = f'{data_bundle_path}/ce.xpt'
+        filepath = f"{data_bundle_path}/ce.xpt"
         class_name = data_service.get_dataset_class(ap_dataset, filepath, datasets)
-        assert class_name == 'Events'
+        assert class_name == "Events"
+
 
 def test_cached_data_cache_exists():
     """

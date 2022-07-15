@@ -4,8 +4,8 @@ from typing import List, Callable, Iterator
 import pandas
 from typing import TextIO
 
+from .base_data_service import BaseDataService, cached_dataset
 from engine.models.dataset_types import DatasetTypes
-from engine.services.base_data_service import BaseDataService, cached_dataset
 from engine.utilities.utils import convert_file_size
 from engine.services.data_readers.data_reader_factory import DataReaderFactory
 from engine.utilities.utils import extract_file_name_from_path_string
@@ -18,6 +18,7 @@ class LocalDataService(BaseDataService):
     _instance = None
 
     def __init__(self, **params):
+        super(LocalDataService, self).__init__(**params)
         self.cache_service = None
         self.reader_factory = DataReaderFactory()
 
