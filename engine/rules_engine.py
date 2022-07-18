@@ -14,7 +14,7 @@ from engine.services.cache.in_memory_cache_service import InMemoryCacheService
 from engine.services.define_xml_reader import DefineXMLReader
 from engine.constants.define_xml_constants import DEFINE_XML_FILE_NAME
 from engine.dummy_models.dummy_dataset import DummyDataset
-from engine.services.data_service_factory import DataServiceFactory
+from engine.services.data_services import DataServiceFactory
 from engine.services.cache.cache_service_factory import CacheServiceFactory
 from engine.config import config
 from engine.exceptions.custom_exceptions import (
