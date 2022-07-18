@@ -1,0 +1,31 @@
+# This workflow will create venv, install requirements & run pytest.
+# The purpose is to run unit tests automatically when we push a new to commit to a remote branch.
+
+name: CI
+
+# Controls when the workflow will run
+on: [push]
+
+  
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  test:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+          
+    # Installing all dependencies
+      - name: Install requirements
+        run: |
+          pip install -r requirements.txt
+      
+    # running the tests
+      - name: Running Tests
+        run: |
+          python -m pytest tests/unit/
