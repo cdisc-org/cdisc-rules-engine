@@ -15,7 +15,7 @@ def test_add_conditions():
                 "target": "$dataset_name",
                 "comparator": "RDOMAIN",
                 "suffix": 2,
-            }
+            },
         }
     )
     single_condition_1 = SingleCondition(
@@ -25,7 +25,7 @@ def test_add_conditions():
             "value": {
                 "target": "AESTDY",
                 "comparator": "TEST",
-            }
+            },
         }
     )
     composite.add_conditions("all", [single_condition, single_condition_1])
@@ -51,7 +51,7 @@ def test_values():
                 "target": "$dataset_name",
                 "comparator": "RDOMAIN",
                 "suffix": 2,
-            }
+            },
         }
     )
     single_condition_1 = SingleCondition(
@@ -61,7 +61,7 @@ def test_values():
             "value": {
                 "target": "AESTDY",
                 "comparator": "TEST",
-            }
+            },
         }
     )
     composite.add_conditions("all", [single_condition, single_condition_1])
@@ -85,7 +85,7 @@ def test_items():
                 "target": "$dataset_name",
                 "comparator": "RDOMAIN",
                 "suffix": 2,
-            }
+            },
         }
     )
     single_condition_1 = SingleCondition(
@@ -95,7 +95,7 @@ def test_items():
             "value": {
                 "target": "AESTDY",
                 "comparator": "TEST",
-            }
+            },
         }
     )
     composite.add_conditions("all", [single_condition, single_condition_1])
@@ -106,6 +106,6 @@ def test_items():
             [
                 single_condition.to_dict(),
                 single_condition_1.to_dict(),
-            ]
+            ],
         )
     ]

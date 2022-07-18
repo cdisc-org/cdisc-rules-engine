@@ -8,11 +8,7 @@ def test_to_dict():
     condition_dict = {
         "name": "get_dataset",
         "operator": "suffix_not_equal_to",
-        "value": {
-            "target": "$dataset_name",
-            "comparator": "RDOMAIN",
-            "suffix": 2
-        }
+        "value": {"target": "$dataset_name", "comparator": "RDOMAIN", "suffix": 2},
     }
     condition = SingleCondition(condition_dict)
     assert condition.to_dict() == condition_dict
@@ -25,11 +21,7 @@ def test_values():
     condition_dict = {
         "name": "get_dataset",
         "operator": "suffix_not_equal_to",
-        "value": {
-            "target": "$dataset_name",
-            "comparator": "RDOMAIN",
-            "suffix": 2
-        }
+        "value": {"target": "$dataset_name", "comparator": "RDOMAIN", "suffix": 2},
     }
     condition = SingleCondition(condition_dict)
     assert condition.values() == [condition_dict]

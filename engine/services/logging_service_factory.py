@@ -2,6 +2,7 @@ import logging
 from engine.constants import LOG_FORMAT
 from engine.config import ConfigService
 
+
 class LoggingServiceFactory:
     _instance = None
 
@@ -13,4 +14,3 @@ class LoggingServiceFactory:
             logger = logging.getLogger()
             cls._instance = logger
         return cls._instance
-

@@ -12,4 +12,4 @@ XPT_MODIFIED_DATE_PATTERN: str = (
     "  SAS\\s{5}.{8}SASDATA .{16}\\s{24}.{16}(?P<modified_date>.{16})\\s{16}.{40}"
 )
 
-REPORT_TEMPLATE_PATH="/templates/report-template.xlsx"
+REPORT_TEMPLATE_PATH = "/templates/report-template.xlsx"

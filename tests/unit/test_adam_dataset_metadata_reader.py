@@ -18,4 +18,9 @@ def test_read_metadata():
         file_contents: bytes = file.read()
         reader = DatasetMetadataReader(file_contents)
         metadata: dict = reader.read()
-        assert metadata['adam_info'] == {'categorization_scheme': {'CRIT1': 1}, 'w_indexes': {'R2BASE': 2}, 'period': {}, 'selection_algorithm': {}}
+        assert metadata["adam_info"] == {
+            "categorization_scheme": {"CRIT1": 1},
+            "w_indexes": {"R2BASE": 2},
+            "period": {},
+            "selection_algorithm": {},
+        }

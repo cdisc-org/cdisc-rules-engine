@@ -7,7 +7,10 @@ from odmlib.define_2_1.rules.metadata_schema import MetadataSchema
 from engine.services import logger
 from engine.models.define import ValueLevelMetadata
 
-from engine.constants.define_xml_constants import DEFINE_XML_MODEL_PACKAGE, DEFINE_XML_VERSION
+from engine.constants.define_xml_constants import (
+    DEFINE_XML_MODEL_PACKAGE,
+    DEFINE_XML_VERSION,
+)
 from engine.exceptions.custom_exceptions import DomainNotFoundInDefineXMLError
 from engine.utilities.decorators import cached
 
