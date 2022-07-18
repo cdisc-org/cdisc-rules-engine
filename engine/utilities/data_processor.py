@@ -1,7 +1,6 @@
 import asyncio
 from typing import List, Optional, Set
 from datetime import datetime
-from multiprocessing.pool import ThreadPool
 from collections import Counter
 import pandas as pd
 
@@ -9,20 +8,19 @@ from engine.utilities.utils import search_in_list_of_dicts, get_rules_cache_key
 from engine.config import config
 from engine.services.cdisc_library_service import CDISCLibraryService
 from engine.services.cache.cache_service_factory import CacheServiceFactory
+from engine.services.cache.cache_service_interface import CacheServiceInterface
+from engine.services.data_service_factory import DataServiceFactory
 from engine.utilities.utils import get_operations_cache_key, get_standard_details_cache_key
-from engine import cache_service_obj
 from engine.exceptions.custom_exceptions import InvalidMatchKeyError
-from engine import data_service_factory
 from engine.services.base_data_service import BaseDataService
 from engine.dummy_services.dummy_data_service import DummyDataService
 from engine.utilities.utils import is_split_dataset, get_corresponding_datasets
 
-thread_pool = ThreadPool(processes=10)
-
 
 class DataProcessor:
-    def __init__(self, data_service=None):
-        self.data_service = data_service or data_service_factory.get_data_service()
+    def __init__(self, data_service=None, cache: CacheServiceInterface =None):
+        self.cache = cache or CacheServiceFactory(config).get_cache_service()
+        self.data_service = data_service or DataServiceFactory(config, self.cache).get_data_service()
 
     @staticmethod
     def calc_min(dataframe, target, grouping: List = None, **kwargs):
@@ -130,18 +128,18 @@ class DataProcessor:
         return delta
 
     @staticmethod
-    def study_variable_value_occurrence_count(target, datasets, directory_path, data_service, **kwargs) -> int:
+    def study_variable_value_occurrence_count(target, datasets, directory_path, data_service, cache, **kwargs) -> int:
         """
         Returns a boolean if the target, is a variable in any dataset in the study.
         """
         cache_key = get_operations_cache_key(directory_path, operation_name=f"study_value_count_{target}")
         # Only cache when not using dummy dataservice, so that subsequent calls with different data are not cached.
-        variable_value_count = cache_service_obj.get(cache_key) if not DataProcessor.is_dummy_data(data_service) else None
+        variable_value_count = cache.get(cache_key) if not DataProcessor.is_dummy_data(data_service) else None
         if not variable_value_count:
 
             variable_value_count = asyncio.run(DataProcessor.get_all_study_variable_value_counts(target, directory_path, data_service, datasets))
             if not DataProcessor.is_dummy_data(data_service):
-                cache_service_obj.add(cache_key, variable_value_count)
+                cache.add(cache_key, variable_value_count)
         return variable_value_count
 
     @staticmethod
@@ -152,8 +150,8 @@ class DataProcessor:
         Extracts domain metadata for the given target and returns it as a Series.
         """
         # get metadata
-        data_service = data_service_factory.get_data_service()
         dataset_path: str = kwargs["dataset_path"]
+        data_service = kwargs["data_service"]
         metadata: pd.DataFrame = data_service.get_dataset_metadata(
             dataset_name=dataset_path
         )
@@ -170,17 +168,6 @@ class DataProcessor:
         return target in dataframe
 
     @staticmethod
-    def get_multiindex(dataframe, index_keys, dataset_path):
-        cache_key = f"multiindex_{dataset_path}_{'_'.join(index_keys)}"
-        cache_data = cache_service_obj.get(cache_key)
-        if cache_data is not None:
-            return cache_data
-        else:
-            index = pd.MultiIndex.from_frame(dataframe[index_keys])
-            cache_service_obj.add(cache_key, index)
-            return index
-
-    @staticmethod
     def get_unique_record(dataframe):
         if len(dataframe.index) > 1:
             raise InvalidMatchKeyError("Match key did not return a unique record")
@@ -195,20 +182,6 @@ class DataProcessor:
     def get_record_by_single_value(dataframe, index_key, index_value):
         target_frame = dataframe[dataframe[index_key] == index_value]
         return DataProcessor.get_unique_record(target_frame)
-
-    @staticmethod
-    def get_corresponding_record(dataset_path, dataset, index_keys, index_values):
-        if len(index_keys) > 1:
-            multi_index = DataProcessor.get_multiindex(
-                dataset, index_keys, dataset_path
-            )
-            return DataProcessor.get_record_by_multiindex_values(
-                dataset, multi_index, index_values
-            )
-        else:
-            return DataProcessor.get_record_by_single_value(
-                dataset, index_keys[0], index_values
-            )
 
     def preprocess_relationship_dataset(
         self, dataset_path: str, dataset: pd.DataFrame, datasets: List[dict]

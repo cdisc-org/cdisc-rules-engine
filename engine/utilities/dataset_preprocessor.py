@@ -3,8 +3,8 @@ from typing import List
 import pandas as pd
 
 from engine.services import logger
+from engine.services.cache.cache_service_interface import CacheServiceInterface
 from engine.utilities.utils import search_in_list_of_dicts
-from engine import data_service_factory
 from engine.utilities.data_processor import DataProcessor
 from engine.utilities.rule_processor import RuleProcessor
 from engine.services.base_data_service import BaseDataService
@@ -30,13 +30,14 @@ class DatasetPreprocessor:
         dataset: pd.DataFrame,
         dataset_domain: str,
         dataset_path: str,
-        data_service: BaseDataService = None,
+        data_service: BaseDataService,
+        cache_service: CacheServiceInterface
     ):
         self._dataset: pd.DataFrame = dataset
         self._dataset_domain: str = dataset_domain
         self._dataset_path: str = dataset_path
-        self._data_service = data_service or data_service_factory.get_data_service()
-        self._rule_processor = RuleProcessor(self._data_service)
+        self._data_service = data_service
+        self._rule_processor = RuleProcessor(self._data_service, cache_service)
 
     def preprocess(self, rule: dict, datasets: List[dict]) -> pd.DataFrame:
         """

@@ -57,3 +57,6 @@ class InMemoryCacheService(CacheServiceInterface):
                     self.cache.pop(key)
         else:
             self.cache = {}
+
+    def add_all(self, data: dict):
+        self.cache = {**self.cache, **data}
