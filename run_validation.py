@@ -22,6 +22,11 @@ from engine.config import config
 from engine.models.rule_conditions import ConditionCompositeFactory
 
 
+"""
+Sync manager used to manage instances of the cache between processes.
+Cache types are registered to this manager, and only one instance of the
+cache is created at startup and provided to each process.
+"""
 class CacheManager(SyncManager): pass
 
 def validate_single_rule(cache, path, datasets, rule, log_level="disabled"):
