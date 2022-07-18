@@ -9,22 +9,27 @@ from engine.services import logger
 from engine.utilities.utils import search_in_list_of_dicts
 from engine.constants.classes import DETECTABLE_CLASSES
 from engine.constants.domains import SUPP_DOMAIN, AP_DOMAIN, APFA_DOMAIN
-from engine import cache_service_obj
 from engine.models.rule_conditions import (
     ConditionCompositeFactory,
     ConditionInterface,
     AllowedConditionsKeys,
 )
 from engine.utilities.data_processor import DataProcessor
-from engine.utilities.utils import is_supp_domain, get_operations_cache_key, is_ap_domain, get_directory_path
+from engine.utilities.utils import (
+    is_supp_domain,
+    get_operations_cache_key,
+    is_ap_domain,
+    get_directory_path,
+)
 
 
 class RuleProcessor:
-    def __init__(self, data_service):
+    def __init__(self, data_service, cache):
         self.data_service = data_service
+        self.cache = cache
 
     def rule_applies_to_domain(
-            self, dataset_domain: str, rule: dict, is_split_domain: bool
+        self, dataset_domain: str, rule: dict, is_split_domain: bool
     ):
         """
         If included domains are specified, and the domain is not in the list of included classes return false.
@@ -68,8 +73,7 @@ class RuleProcessor:
                 is_excluded = True
             # check supp domains with SUPP-- naming pattern
             matches_supp_naming_pattern = any(
-                is_supp_domain(dataset_domain)
-                and excluded_domain == f"{SUPP_DOMAIN}--"
+                is_supp_domain(dataset_domain) and excluded_domain == f"{SUPP_DOMAIN}--"
                 for excluded_domain in excluded_domains
             )
             # check domains with AP--/ APFA-- / APRELSUB naming pattern
@@ -130,14 +134,15 @@ class RuleProcessor:
         return True
 
     def perform_rule_operations(
-            self,
-            rule: dict,
-            dataset: pd.DataFrame,
-            domain: str,
-            datasets: List[dict],
-            dataset_path: str,
-            standard: str,
-            standard_version: str) -> pd.DataFrame:
+        self,
+        rule: dict,
+        dataset: pd.DataFrame,
+        domain: str,
+        datasets: List[dict],
+        dataset_path: str,
+        standard: str,
+        standard_version: str,
+    ) -> pd.DataFrame:
         domain_operator_map = {
             "min": DataProcessor.calc_min,
             "max": DataProcessor.calc_max,
@@ -147,11 +152,11 @@ class RuleProcessor:
             "max_date": DataProcessor.calc_max_date,
             "dy": DataProcessor.calc_dy,
             "extract_metadata": DataProcessor.extract_metadata,
-            "variable_exists": DataProcessor.variable_exists
+            "variable_exists": DataProcessor.variable_exists,
         }
         study_operator_map = {
             "variable_value_count": DataProcessor.study_variable_value_occurrence_count,
-            "variable_names": DataProcessor.get_variable_names_for_given_standard
+            "variable_names": DataProcessor.get_variable_names_for_given_standard,
         }
         dataset_copy = dataset.copy()
         directory_path = get_directory_path(dataset_path)
@@ -168,8 +173,13 @@ class RuleProcessor:
             if operator in study_operator_map:
                 # Perform study wide operation
                 result = study_operator_map.get(operator)(
-                    target_variable, datasets, directory_path, self.data_service, standard=standard,
-                    standard_version=standard_version
+                    target_variable,
+                    datasets,
+                    directory_path,
+                    self.data_service,
+                    self.cache,
+                    standard=standard,
+                    standard_version=standard_version,
                 )
             else:
                 # Domain specific operation
@@ -178,10 +188,10 @@ class RuleProcessor:
                     operation_name=operator,
                     domain=target_domain,
                     grouping=";".join(group_by),
-                    target_variable=target_variable
+                    target_variable=target_variable,
                 )
                 operation = domain_operator_map.get(operator)
-                result = cache_service_obj.get(cache_key)
+                result = self.cache.get(cache_key)
                 if result is None:
                     result = self.execute_operation(
                         operation,
@@ -191,11 +201,11 @@ class RuleProcessor:
                         target_domain,
                         domain,
                         target_variable,
-                        group_by
+                        group_by,
                     )
 
                 if not DataProcessor.is_dummy_data(self.data_service):
-                    cache_service_obj.add(cache_key, result)
+                    self.cache.add(cache_key, result)
 
             if group_by:
                 # Handle grouped results
@@ -220,19 +230,23 @@ class RuleProcessor:
         return dataset_copy
 
     def execute_operation(
-            self,
-            operation: Callable,
-            datasets: List[dict],
-            dataset_path: str,
-            dataset: pd.DataFrame,
-            target_domain: str,
-            domain: str,
-            target_variable: str,
-            group_by: List = None,
+        self,
+        operation: Callable,
+        datasets: List[dict],
+        dataset_path: str,
+        dataset: pd.DataFrame,
+        target_domain: str,
+        domain: str,
+        target_variable: str,
+        group_by: List = None,
     ):
         if self.is_current_domain(dataset, target_domain):
             result = operation(
-                dataset, target_variable, group_by, dataset_path=dataset_path
+                dataset,
+                target_variable,
+                group_by,
+                dataset_path=dataset_path,
+                data_service=self.data_service,
             )
         else:
             domain_details: dict = search_in_list_of_dicts(
@@ -242,7 +256,11 @@ class RuleProcessor:
             file_path = get_directory_path(dataset_path) + f"/{file_name}"
             dataframe = self.data_service.get_dataset(dataset_name=file_path)
             result = operation(
-                dataframe, target_variable, group_by, dataset_path=dataset_path
+                dataframe,
+                target_variable,
+                group_by,
+                dataset_path=dataset_path,
+                data_service=self.data_service,
             )
         return result
 
@@ -274,7 +292,7 @@ class RuleProcessor:
                 return value.get("unit")
 
     def add_operator_to_rule_conditions(
-            self, rule: dict, target_to_operator_map: dict, domain: str
+        self, rule: dict, target_to_operator_map: dict, domain: str
     ):
         """
         Adds "operator" key to rule condition.
@@ -301,7 +319,7 @@ class RuleProcessor:
                 condition[AllowedConditionsKeys.ANY.value] = nested_conditions
 
     def add_comparator_to_rule_conditions(
-            self, rule: dict, comparator: dict = None, target_prefix=None
+        self, rule: dict, comparator: dict = None, target_prefix=None
     ):
         """
         Adds "comparator" key to rule conditions.value key.
@@ -383,7 +401,7 @@ class RuleProcessor:
 
     @staticmethod
     def create_list_of_target_conditions(
-            condition_list: List[dict], targets: List[str]
+        condition_list: List[dict], targets: List[str]
     ) -> List[dict]:
         """
         Accepts a list of conditions and targets.
@@ -403,17 +421,17 @@ class RuleProcessor:
         return result
 
     def is_suitable_for_validation(
-            self,
-            rule: dict,
-            dataset_domain: str,
-            file_path: str,
-            is_split_domain: bool,
-            datasets: List[dict],
+        self,
+        rule: dict,
+        dataset_domain: str,
+        file_path: str,
+        is_split_domain: bool,
+        datasets: List[dict],
     ) -> bool:
         is_suitable: bool = (
-                self.valid_rule_structure(rule)
-                and self.rule_applies_to_domain(dataset_domain, rule, is_split_domain)
-                and self.rule_applies_to_class(rule, file_path, datasets)
+            self.valid_rule_structure(rule)
+            and self.rule_applies_to_domain(dataset_domain, rule, is_split_domain)
+            and self.rule_applies_to_class(rule, file_path, datasets)
         )
         logger.info(
             f"is_suitable_for_validation. rule id={rule.get('core_id')}, domain={dataset_domain}, result={is_suitable}"
@@ -422,7 +440,7 @@ class RuleProcessor:
 
     @staticmethod
     def extract_target_names_from_rule(
-            rule: dict, domain: str, column_names: List[str]
+        rule: dict, domain: str, column_names: List[str]
     ) -> Set[str]:
         """
         Extracts target from each item of condition list.

@@ -437,7 +437,9 @@ class CDISCLibraryService:
                 result[key] = new_map[key]
         return result
 
-    def _extract_domain_names_from_tabulation_standard(self, standard_data: dict) -> Set[str]:
+    def _extract_domain_names_from_tabulation_standard(
+        self, standard_data: dict
+    ) -> Set[str]:
         """
         Accepts tabulation standard data and extracts domain names.
         Input example:

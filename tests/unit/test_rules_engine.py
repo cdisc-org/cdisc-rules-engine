@@ -4,11 +4,14 @@ import pandas as pd
 from typing import List
 from unittest.mock import patch, MagicMock
 
-from engine import cache_service_obj
 from engine.exceptions.custom_exceptions import VariableMetadataNotFoundError
 from engine.models.rule_conditions import ConditionCompositeFactory
 from engine.rules_engine import RulesEngine
-from engine.utilities.utils import get_library_variables_metadata_cache_key
+from engine.services.cache.in_memory_cache_service import InMemoryCacheService
+from engine.utilities.utils import (
+    get_library_variables_metadata_cache_key,
+    get_standard_details_cache_key,
+)
 from engine.utilities.rule_processor import RuleProcessor
 from engine.enums.execution_status import ExecutionStatus
 
@@ -1420,13 +1423,17 @@ def test_validate_define_ct_allowed_terms(
     allowed_terms_map: pd.DataFrame,
     expected_validation_result: List[dict],
 ):
+    cache = InMemoryCacheService()
     ct_package = "sdtmct-2021-12-17"
     standard = "sdtmig"
     standard_version = "3-3"
-    cache_service_obj.add(ct_package, allowed_terms_map)
+    cache.add(ct_package, allowed_terms_map)
     mock_get_define_xml_variables_metadata.return_value = variable_metadata
     rules_engine = RulesEngine(
-        ct_package=ct_package, standard=standard, standard_version=standard_version
+        cache=cache,
+        ct_package=ct_package,
+        standard=standard,
+        standard_version=standard_version,
     )
     result = rules_engine.validate_define_xml(
         define_xml_allowed_terms_check_rule,
@@ -1643,9 +1650,10 @@ def test_validate_dataset_contents_against_define_and_library_variable_metadata(
             "core": "Perm",
         },
     }
+    cache = InMemoryCacheService()
     standard: str = "sdtmig"
     standard_version: str = "3-1-2"
-    cache_service_obj.add(
+    cache.add(
         get_library_variables_metadata_cache_key(standard, standard_version),
         variables_metadata,
     )
@@ -1669,6 +1677,7 @@ def test_validate_dataset_contents_against_define_and_library_variable_metadata(
 
     # run the validation and check result
     rules_engine = RulesEngine(
+        cache=cache,
         standard=standard,
         standard_version=standard_version,
     )
@@ -1736,7 +1745,8 @@ def test_validate_dataset_contents_against_library_metadata(
             "core": "Exp",
         },
     }
-    cache_service_obj.add(
+    cache = InMemoryCacheService()
+    cache.add(
         get_library_variables_metadata_cache_key(standard, standard_version),
         variables_metadata,
     )
@@ -1754,6 +1764,7 @@ def test_validate_dataset_contents_against_library_metadata(
 
     # run the validation and check result
     rules_engine = RulesEngine(
+        cache=cache,
         standard=standard,
         standard_version=standard_version,
     )
@@ -1835,7 +1846,8 @@ def test_validate_dataset_contents_against_library_metadata_no_required_column(
             "core": "Exp",
         },
     }
-    cache_service_obj.add(
+    cache = InMemoryCacheService()
+    cache.add(
         get_library_variables_metadata_cache_key(standard, standard_version),
         variables_metadata,
     )
@@ -1852,6 +1864,7 @@ def test_validate_dataset_contents_against_library_metadata_no_required_column(
 
     # run the validation and check result
     rules_engine = RulesEngine(
+        cache=cache,
         standard=standard,
         standard_version=standard_version,
     )
@@ -1917,9 +1930,6 @@ def test_validate_dataset_contents_against_library_metadata_variable_metadata_no
     """
     mock_get_dataset.return_value = pd.DataFrame()
 
-    # use in-memory cache
-    os.environ.pop("CACHE_TYPE", None)
-
     # save library metadata to cache
     standard: str = "sdtmig"
     standard_version: str = "3-1-2"
@@ -1931,13 +1941,15 @@ def test_validate_dataset_contents_against_library_metadata_variable_metadata_no
             "core": "Exp",
         },
     }
-    cache_service_obj.add(
+    cache = InMemoryCacheService()
+    cache.add(
         get_library_variables_metadata_cache_key(standard, standard_version),
         variables_metadata,
     )
 
     # run the validation and check result
     rules_engine = RulesEngine(
+        cache=cache,
         standard=standard,
         standard_version=standard_version,
     )
@@ -2136,18 +2148,26 @@ def test_validate_extract_metadata_operation(
     ]
 
 
-@patch("engine.rules_engine.cache_service_obj.get")
-def test_is_custom_domain(mock_get: MagicMock):
+def test_is_custom_domain():
     """
     Unit test for RulesEngine.is_custom_domain() function.
     """
-    mock_get.return_value = {
-        "domains": {
-            "AE",
-            "EC",
-            "DM",
-        }
-    }
-    engine = RulesEngine(standard="sdtmig", standard_version="3-1-2")
+    cache = InMemoryCacheService()
+    standard = "sdtmig"
+    standard_version = "3-1-2"
+    cache_key = get_standard_details_cache_key(standard, standard_version)
+    cache.add(
+        cache_key,
+        {
+            "domains": {
+                "AE",
+                "EC",
+                "DM",
+            }
+        },
+    )
+    engine = RulesEngine(
+        cache=cache, standard=standard, standard_version=standard_version
+    )
     assert engine.is_custom_domain("AP")
     assert not engine.is_custom_domain("AE")

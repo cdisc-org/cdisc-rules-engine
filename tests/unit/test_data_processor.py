@@ -1,6 +1,7 @@
 import json
 import os
 from typing import List
+from engine.services.cache.in_memory_cache_service import InMemoryCacheService
 
 from engine.utilities.data_processor import DataProcessor
 import pandas as pd
@@ -13,76 +14,30 @@ from unittest.mock import patch, MagicMock
     "data, expected",
     [
         (
-            pd.DataFrame.from_dict(
-                {
-                    "dates": ["2001-01-01", "", "2022-01-05"]
-                }
-            ), pd.to_datetime("2022-01-05").isoformat()
+            pd.DataFrame.from_dict({"dates": ["2001-01-01", "", "2022-01-05"]}),
+            pd.to_datetime("2022-01-05").isoformat(),
         ),
-        (
-            pd.DataFrame.from_dict(
-                {
-                    "dates": [None, None]
-                }
-            ), ""
-        )
-
+        (pd.DataFrame.from_dict({"dates": [None, None]}), ""),
     ],
 )
 def test_max_date(data, expected):
     max_date = DataProcessor.calc_max_date(data, "dates")
     assert max_date == expected
 
+
 @pytest.mark.parametrize(
     "data, expected",
     [
         (
-            pd.DataFrame.from_dict(
-                {
-                    "dates": ["2001-01-01", "", "2022-01-01"]
-                }
-            ), pd.to_datetime("2001-01-01").isoformat()
+            pd.DataFrame.from_dict({"dates": ["2001-01-01", "", "2022-01-01"]}),
+            pd.to_datetime("2001-01-01").isoformat(),
         ),
-        (
-            pd.DataFrame.from_dict(
-                {
-                    "dates": [None, None]
-                }
-            ), ""
-        )
-
+        (pd.DataFrame.from_dict({"dates": [None, None]}), ""),
     ],
 )
 def test_min_date(data, expected):
     min_date = DataProcessor.calc_min_date(data, "dates")
     assert min_date == expected
-
-def test_get_corresponding_record():
-    dataset = pd.DataFrame.from_dict(
-        {
-            "AESTDY": [11, 12, 40, 59],
-            "USUBJID": [1, 200, 1, 200],
-            "STUDYID": [1, 1, 2, 2],
-        }
-    )
-    corresponding_record = DataProcessor.get_corresponding_record(
-        "test", dataset, ["USUBJID", "STUDYID"], (1, 2)
-    )
-    assert corresponding_record["AESTDY"] == 40
-
-
-def test_get_corresponding_record_non_unique_key():
-    dataset = pd.DataFrame.from_dict(
-        {
-            "AESTDY": [11, 12, 40, 59],
-            "USUBJID": [1, 200, 1, 200],
-            "STUDYID": [1, 1, 2, 2],
-        }
-    )
-    with pytest.raises(InvalidMatchKeyError):
-        corresponding_record = DataProcessor.get_corresponding_record(
-            "test", dataset, ["USUBJID"], (200)
-        )
 
 
 @pytest.mark.parametrize(
@@ -144,7 +99,7 @@ def test_preprocess_relationship_dataset(data):
         "engine.services.local_data_service.LocalDataService.get_dataset",
         side_effect=lambda dataset_name: path_to_dataset_map[dataset_name],
     ):
-        data_processor = DataProcessor()
+        data_processor = DataProcessor(cache=InMemoryCacheService())
         reference_data = data_processor.preprocess_relationship_dataset(
             "path", data, datasets
         )
@@ -450,6 +405,7 @@ def test_merge_datasets_on_string_relationship_columns():
     )
     assert merged_df.equals(expected_df)
 
+
 @pytest.mark.parametrize(
     "target, expected_result",
     [
@@ -457,49 +413,55 @@ def test_merge_datasets_on_string_relationship_columns():
         ("STUDYID", {4: 2, 7: 1, 9: 1, 8: 1, 12: 1}),
         ("AESEQ", {1: 1, 2: 1, 3: 1}),
         ("EXSEQ", {1: 1, 2: 1, 3: 1}),
-        ("COOLVAR", {})
-    ]
+        ("COOLVAR", {}),
+    ],
 )
-def test_study_variable_value_occurrence_count(mock_data_service, target, expected_result):
+def test_study_variable_value_occurrence_count(
+    mock_data_service, target, expected_result
+):
     dataset_path = "study/bundle/blah"
     datasets_map = {
-        "AE": pd.DataFrame.from_dict({
-            "STUDYID": [4, 7, 9],
-            "AESEQ": [1,2,3],
-            "DOMAIN": [12, 6, 1]
-        }),
-        "EX": pd.DataFrame.from_dict({
-            "STUDYID": [4, 8, 12],
-            "EXSEQ": [1,2,3],
-            "DOMAIN": [12, 6, 1]
-        }),
-        "AE2": pd.DataFrame.from_dict({
-            "STUDYID": [4, 7, 9],
-            "AESEQ": [1, 2, 3],
-            "DOMAIN": [12, 6, 1]
-        })
+        "AE": pd.DataFrame.from_dict(
+            {"STUDYID": [4, 7, 9], "AESEQ": [1, 2, 3], "DOMAIN": [12, 6, 1]}
+        ),
+        "EX": pd.DataFrame.from_dict(
+            {"STUDYID": [4, 8, 12], "EXSEQ": [1, 2, 3], "DOMAIN": [12, 6, 1]}
+        ),
+        "AE2": pd.DataFrame.from_dict(
+            {"STUDYID": [4, 7, 9], "AESEQ": [1, 2, 3], "DOMAIN": [12, 6, 1]}
+        ),
     }
 
-    datasets = [{"domain": "AE", "filename": "AE"}, {"domain": "EX", "filename": "EX"}, {"domain": "AE", "filename": "AE2"}]
-    mock_data_service.get_dataset.side_effect = lambda name: datasets_map.get(name.split("/")[-1])
-    mock_data_service.join_split_datasets.side_effect = lambda func, files: pd.concat([func(f) for f in files])
-    result = DataProcessor.study_variable_value_occurrence_count(target, datasets, dataset_path, mock_data_service)
+    datasets = [
+        {"domain": "AE", "filename": "AE"},
+        {"domain": "EX", "filename": "EX"},
+        {"domain": "AE", "filename": "AE2"},
+    ]
+    mock_data_service.get_dataset.side_effect = lambda name: datasets_map.get(
+        name.split("/")[-1]
+    )
+    mock_data_service.join_split_datasets.side_effect = lambda func, files: pd.concat(
+        [func(f) for f in files]
+    )
+    result = DataProcessor.study_variable_value_occurrence_count(
+        target, datasets, dataset_path, mock_data_service, InMemoryCacheService()
+    )
     assert result == expected_result
+
 
 @pytest.mark.parametrize(
     "target, standard, standard_version, expected_result",
-    [
-        (
-                {'STUDYID', 'DOMAIN'},
-                "sdtmig",
-                "3-1-2",
-                {'STUDYID', 'DOMAIN'}
-        )
-    ]
+    [({"STUDYID", "DOMAIN"}, "sdtmig", "3-1-2", {"STUDYID", "DOMAIN"})],
 )
 @patch("engine.services.cdisc_library_service.CDISCLibraryClient.get_sdtmig")
-def test_get_variable_names_for_given_standard(mock_get_sdtmig: MagicMock, target, standard, standard_version, expected_result,
-                                               mock_data_service):
+def test_get_variable_names_for_given_standard(
+    mock_get_sdtmig: MagicMock,
+    target,
+    standard,
+    standard_version,
+    expected_result,
+    mock_data_service,
+):
     with open(
         f"{os.path.dirname(__file__)}/../resources/mock_library_responses/get_sdtmig_response.json"
     ) as file:
@@ -507,23 +469,30 @@ def test_get_variable_names_for_given_standard(mock_get_sdtmig: MagicMock, targe
     mock_get_sdtmig.return_value = mock_sdtmig_details
     dataset_path = "study/bundle/blah"
     datasets_map = {
-        "AE": pd.DataFrame.from_dict({
-            "STUDYID": [4, 7, 9],
-            "DOMAIN": [12, 6, 1]
-        }),
-        "EX": pd.DataFrame.from_dict({
-            "STUDYID": [4, 8, 12],
-            "DOMAIN": [12, 6, 1]
-        }),
-        "AE2": pd.DataFrame.from_dict({
-            "STUDYID": [4, 7, 9],
-            "DOMAIN": [12, 6, 1]
-        })
+        "AE": pd.DataFrame.from_dict({"STUDYID": [4, 7, 9], "DOMAIN": [12, 6, 1]}),
+        "EX": pd.DataFrame.from_dict({"STUDYID": [4, 8, 12], "DOMAIN": [12, 6, 1]}),
+        "AE2": pd.DataFrame.from_dict({"STUDYID": [4, 7, 9], "DOMAIN": [12, 6, 1]}),
     }
 
-    datasets = [{"domain": "AE", "filename": "AE"}, {"domain": "EX", "filename": "EX"}, {"domain": "AE", "filename": "AE2"}]
-    mock_data_service.get_dataset.side_effect = lambda name: datasets_map.get(name.split("/")[-1])
-    mock_data_service.join_split_datasets.side_effect = lambda func, files: pd.concat([func(f) for f in files])
-    assert DataProcessor.get_variable_names_for_given_standard(target, datasets, dataset_path, mock_data_service,
-                                                               standard=standard, standard_version=standard_version) == expected_result
-
+    datasets = [
+        {"domain": "AE", "filename": "AE"},
+        {"domain": "EX", "filename": "EX"},
+        {"domain": "AE", "filename": "AE2"},
+    ]
+    mock_data_service.get_dataset.side_effect = lambda name: datasets_map.get(
+        name.split("/")[-1]
+    )
+    mock_data_service.join_split_datasets.side_effect = lambda func, files: pd.concat(
+        [func(f) for f in files]
+    )
+    assert (
+        DataProcessor.get_variable_names_for_given_standard(
+            target,
+            datasets,
+            dataset_path,
+            mock_data_service,
+            standard=standard,
+            standard_version=standard_version,
+        )
+        == expected_result
+    )
