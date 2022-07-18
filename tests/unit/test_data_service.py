@@ -53,7 +53,7 @@ def test_get_dataset_class_associated_domains():
         f"{data_bundle_path}/ce.xpt": ce_dataset,
     }
     with patch(
-        "engine.services.base_data_service.BaseDataService.get_dataset",
+        "engine.services.data_services.BaseDataService.get_dataset",
         return_value=ap_dataset,
         side_effect=lambda dataset_name: path_to_dataset_map[dataset_name],
     ):

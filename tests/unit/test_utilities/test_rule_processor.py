@@ -614,7 +614,7 @@ def test_perform_rule_operation_with_null_operations(mock_data_service):
     assert df.equals(new_data)
 
 
-@patch("engine.services.local_data_service.LocalDataService.get_dataset_metadata")
+@patch("engine.services.data_services.LocalDataService.get_dataset_metadata")
 def test_perform_extract_metadata_operation(
     mock_get_dataset_metadata: MagicMock,
     rule_equal_to_with_extract_metadata_operation: dict,
