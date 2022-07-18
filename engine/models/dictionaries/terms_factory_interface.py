@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+from engine.services.data_services import BaseDataService
+
 
 class TermsFactoryInterface(ABC):
     """
@@ -7,19 +9,16 @@ class TermsFactoryInterface(ABC):
     """
 
     @abstractmethod
-    def __init__(self, data_service):
+    def __init__(self, data_service: BaseDataService):
         """
         Initializes a factory object.
         """
 
     @abstractmethod
-    async def install_terms(
+    def install_terms(
         self,
-        dictionary_id: str,
         directory_path: str,
-        file_name: str,
-        file_contents: bytes,
-    ):
+    ) -> dict:
         """
         Accepts file contents and saves it to the DB.
         """

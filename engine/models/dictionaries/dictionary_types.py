@@ -1,4 +1,4 @@
-from common_code.enums.base_enum import BaseEnum
+from engine.enums.base_enum import BaseEnum
 
 
 class DictionaryTypes(BaseEnum):

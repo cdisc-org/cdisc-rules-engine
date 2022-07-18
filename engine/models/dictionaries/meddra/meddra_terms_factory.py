@@ -7,6 +7,7 @@ from engine.models.dictionaries.terms_factory_interface import (
 )
 from typing import List
 from engine.exceptions.custom_exceptions import MissingDataError
+from engine.services.data_services import BaseDataService
 from engine.utilities.utils import get_dictionary_path
 from uuid import uuid4
 import asyncio
@@ -19,7 +20,7 @@ class MedDRATermsFactory(TermsFactoryInterface):
     and contents and creates a term record for each line.
     """
 
-    def __init__(self, data_service=None):
+    def __init__(self, data_service: BaseDataService):
         self.data_service = data_service
 
     def chunks(self, lst, n):
@@ -27,12 +28,9 @@ class MedDRATermsFactory(TermsFactoryInterface):
         for i in range(0, len(lst), n):
             yield lst[i : i + n]
 
-    async def install_terms(
+    def install_terms(
         self,
-        dictionary_id: str,
         directory_path: str,
-        file_name: str,
-        file_contents: bytes,
     ):
         """
         Insert MedDRA dictionary terms into appropriate storage.
@@ -57,12 +55,12 @@ class MedDRATermsFactory(TermsFactoryInterface):
             raise MissingDataError(message="Necessary meddra files missing")
         # Load data
         for file_name, data_type in files.items():
-            file_path = get_dictionary_path(dictionary_id, file_name=file_name)
-            data[data_type] = self.read_data(file_path, data_type, dictionary_id)
+            file_path = get_dictionary_path(directory_path, file_name)
+            data[data_type] = self.read_data(file_path, data_type)
 
         # Load relationships
         for file_name in relationship_files:
-            data = self.update_relationship_data(dictionary_id, file_name, data)
+            data = self.update_relationship_data(directory_path, file_name, data)
 
         hierarchy = [
             TermTypes.SOC.value,
@@ -87,7 +85,7 @@ class MedDRATermsFactory(TermsFactoryInterface):
     async def save_terms(self, terms: List[MedDRATerm]):
         MedDRATerm.bulk_insert_items("type", terms)
 
-    def read_data(self, file_path, data_type: str, dictionary_id: str) -> dict:
+    def read_data(self, file_path, data_type: str) -> dict:
         """
         Parse file and generate appropriate MedDRATerms
         """
@@ -103,18 +101,20 @@ class MedDRATermsFactory(TermsFactoryInterface):
         data = {}
         for line in file_data:
             line = line.decode("utf-8")
-            value = parser(line, dictionary_id)
+            value = parser(line)
             data[value.code] = value
         return data
 
-    def update_relationship_data(self, dictionary_id, file_name, data) -> dict:
+    def update_relationship_data(
+        self, directory_path: str, file_name: str, data: dict
+    ) -> dict:
         """
         Iterates over lines in a relationship file, and sets the
         parent relationship on the appropriate term
         """
         origin_type, target_type = file_name.split("_")
         target_type = target_type.split(".")[0]
-        file_path = get_dictionary_path(dictionary_id, file_name=file_name)
+        file_path = get_dictionary_path(directory_path, file_name)
         file_data = BytesIO(self.data_service.read_data(file_path))
         for line in file_data:
             line = line.decode("utf-8")
@@ -125,7 +125,7 @@ class MedDRATermsFactory(TermsFactoryInterface):
 
         return data
 
-    def _parse_pt_item(self, item: str, dictionary_id: str) -> MedDRATerm:
+    def _parse_pt_item(self, item: str) -> MedDRATerm:
         """
         Parses a row from pt.asc and creates a MedDRATerm
         """
@@ -137,13 +137,10 @@ class MedDRATermsFactory(TermsFactoryInterface):
                 "term": values[1],
                 "parentCode": values[3],
                 "type": TermTypes.PT.value,
-                "id": str(uuid4()),
-                "dictionaryType": DictionaryTypes.MEDDRA.value,
-                "dictionaryId": dictionary_id,
             }
         )
 
-    def _parse_hlt_item(self, item: str, dictionary_id: str) -> MedDRATerm:
+    def _parse_hlt_item(self, item: str) -> MedDRATerm:
         """
         Parses a row from hlt.asc and creates a MedDRATerm
         """
@@ -154,13 +151,10 @@ class MedDRATermsFactory(TermsFactoryInterface):
                 "code": values[0],
                 "term": values[1],
                 "type": TermTypes.HLT.value,
-                "id": str(uuid4()),
-                "dictionaryType": DictionaryTypes.MEDDRA.value,
-                "dictionaryId": dictionary_id,
             }
         )
 
-    def _parse_llt_item(self, item: str, dictionary_id: str) -> MedDRATerm:
+    def _parse_llt_item(self, item: str) -> MedDRATerm:
         """
         Parses a row from llt.asc and creates a MedDRATerm
         """
@@ -172,13 +166,10 @@ class MedDRATermsFactory(TermsFactoryInterface):
                 "term": values[1],
                 "type": TermTypes.LLT.value,
                 "parentCode": values[2],
-                "id": str(uuid4()),
-                "dictionaryType": DictionaryTypes.MEDDRA.value,
-                "dictionaryId": dictionary_id,
             }
         )
 
-    def _parse_hlgt_item(self, item: str, dictionary_id: str) -> MedDRATerm:
+    def _parse_hlgt_item(self, item: str) -> MedDRATerm:
         """
         Parses a row from hlgt.asc and creates a MedDRATerm
         """
@@ -189,13 +180,10 @@ class MedDRATermsFactory(TermsFactoryInterface):
                 "code": values[0],
                 "term": values[1],
                 "type": TermTypes.HLGT.value,
-                "id": str(uuid4()),
-                "dictionaryType": DictionaryTypes.MEDDRA.value,
-                "dictionaryId": dictionary_id,
             }
         )
 
-    def _parse_soc_item(self, item: str, dictionary_id: str) -> MedDRATerm:
+    def _parse_soc_item(self, item: str) -> MedDRATerm:
         """
         Parses a row from soc.asc and creates a MedDRATerm
         """
@@ -209,8 +197,5 @@ class MedDRATermsFactory(TermsFactoryInterface):
                 "abbreviation": values[2],
                 "codeHierarchy": values[0],
                 "termHierarchy": values[1],
-                "id": str(uuid4()),
-                "dictionaryType": DictionaryTypes.MEDDRA.value,
-                "dictionaryId": dictionary_id,
             }
         )

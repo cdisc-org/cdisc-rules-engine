@@ -4,7 +4,7 @@ import pandas as pd
 
 from engine.dummy_models.dummy_dataset import DummyDataset
 from engine.exceptions.custom_exceptions import DatasetNotFoundError
-from engine.services.base_data_service import BaseDataService
+from engine.services.data_services import BaseDataService
 
 
 class DummyDataService(BaseDataService):

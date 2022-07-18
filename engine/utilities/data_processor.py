@@ -9,13 +9,13 @@ from engine.config import config
 from engine.services.cdisc_library_service import CDISCLibraryService
 from engine.services.cache.cache_service_factory import CacheServiceFactory
 from engine.services.cache.cache_service_interface import CacheServiceInterface
-from engine.services.data_service_factory import DataServiceFactory
+from engine.services.data_services import DataServiceFactory
 from engine.utilities.utils import (
     get_operations_cache_key,
     get_standard_details_cache_key,
 )
 from engine.exceptions.custom_exceptions import InvalidMatchKeyError
-from engine.services.base_data_service import BaseDataService
+from engine.services.data_services import BaseDataService
 from engine.dummy_services.dummy_data_service import DummyDataService
 from engine.utilities.utils import is_split_dataset, get_corresponding_datasets
 

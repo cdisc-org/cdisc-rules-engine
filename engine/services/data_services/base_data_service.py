@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from functools import wraps
 
-from typing import Callable, List
+from typing import Callable, List, TextIO
 
 import numpy as np
 import pandas as pd
@@ -149,3 +149,9 @@ class BaseDataService:
         dataset[numeric_columns] = dataset[numeric_columns].apply(
             lambda x: x.replace({np.nan: None})
         )
+
+    @abstractmethod
+    def read_data(self, file_path: str, read_mode: str = "r") -> TextIO:
+        """
+        Reads data from the given path and returns TextIO instance.
+        """

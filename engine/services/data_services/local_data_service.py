@@ -2,20 +2,23 @@ from concurrent.futures import ThreadPoolExecutor
 from typing import List, Callable, Iterator
 
 import pandas
+from typing import TextIO
 
+from .base_data_service import BaseDataService, cached_dataset
 from engine.models.dataset_types import DatasetTypes
-from engine.services.base_data_service import BaseDataService, cached_dataset
-from engine.services.blob_storage_service import BlobStorageService
 from engine.utilities.utils import convert_file_size
 from engine.services.data_readers.data_reader_factory import DataReaderFactory
+from engine.utilities.utils import extract_file_name_from_path_string
+from engine.services.dataset_metadata_reader import DatasetMetadataReader
 from engine.models.variable_metadata_container import VariableMetadataContainer
+import os
 
 
-class BlobDataService(BaseDataService):
+class LocalDataService(BaseDataService):
     _instance = None
 
     def __init__(self, **params):
-        self.blob_service = None
+        super(LocalDataService, self).__init__(**params)
         self.cache_service = None
         self.reader_factory = DataReaderFactory()
 
@@ -23,22 +26,20 @@ class BlobDataService(BaseDataService):
     def get_instance(cls, **params):
         if cls._instance is None:
             service = cls()
-            service.blob_service = BlobStorageService(
-                params.get("blob_storage_connection_string"), params.get("container")
-            )
             service.cache_service = params["cache_service"]
             cls._instance = service
         return cls._instance
 
     def has_all_files(self, prefix: str, file_names: List[str]) -> bool:
-        blobs = self.blob_service.get_all_file_names(prefix)
-        return all(item in blobs for item in file_names)
+        files = [
+            f for f in os.listdir(prefix) if os.path.isfile(os.path.join(prefix, f))
+        ]
+        return all(item in files for item in file_names)
 
     @cached_dataset(DatasetTypes.CONTENTS.value)
     def get_dataset(self, dataset_name: str, **params) -> pandas.DataFrame:
-        data = self.blob_service.read_data(dataset_name)
         reader = self.reader_factory.get_reader()
-        df = reader.read(data)
+        df = reader.from_file(dataset_name)
         self._replace_nans_in_numeric_cols_with_none(df)
         return df
 
@@ -49,7 +50,7 @@ class BlobDataService(BaseDataService):
         """
         Gets metadata of a dataset and returns it as a DataFrame.
         """
-        metadata: dict = self.blob_service.read_metadata(dataset_name)
+        metadata: dict = self.read_metadata(dataset_name)
         file_metadata: dict = metadata["file_metadata"]
         file_size = file_metadata["size"]
         if size_unit:  # convert file size from bytes to desired unit if needed
@@ -68,7 +69,7 @@ class BlobDataService(BaseDataService):
         """
         Gets dataset from blob storage and returns metadata of a certain variable.
         """
-        metadata: dict = self.blob_service.read_metadata(dataset_name)
+        metadata: dict = self.read_metadata(dataset_name)
         contents_metadata: dict = metadata["contents_metadata"]
         metadata_to_return: VariableMetadataContainer = VariableMetadataContainer(
             contents_metadata
@@ -78,10 +79,10 @@ class BlobDataService(BaseDataService):
     @cached_dataset(DatasetTypes.CONTENTS.value)
     def get_define_xml_contents(self, dataset_name: str) -> bytes:
         """
-        Downloads define XML from blob storage and
-        returns its contents as bytes.
+        Reads local define xml file as bytes
         """
-        return self.blob_service.read_data(dataset_name)
+        with os.open(dataset_name, "rb") as f:
+            return f.read()
 
     def get_dataset_by_type(
         self, dataset_name: str, dataset_type: str, **params
@@ -135,3 +136,21 @@ class BlobDataService(BaseDataService):
                 lambda name: function_to_call(dataset_name=name, **kwargs),
                 dataset_names,
             )
+
+    def read_metadata(self, file_path: str) -> dict:
+        file_size = os.path.getsize(file_path)
+        file_metadata = {
+            "path": file_path,
+            "name": extract_file_name_from_path_string(file_path),
+            "size": file_size,
+        }
+        with open(file_path, "rb") as f:
+            contents_metadata = DatasetMetadataReader(f.read()).read()
+
+        return {
+            "file_metadata": file_metadata,
+            "contents_metadata": contents_metadata,
+        }
+
+    def read_data(self, file_path: str, read_mode: str = "r") -> TextIO:
+        return open(file_path, read_mode)

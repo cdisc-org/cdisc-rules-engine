@@ -3,7 +3,7 @@ from unittest.mock import patch, MagicMock
 
 import pandas as pd
 from engine.services.cache.in_memory_cache_service import InMemoryCacheService
-from engine.services.local_data_service import LocalDataService
+from engine.services.data_services import LocalDataService
 
 from engine.utilities.dataset_preprocessor import DatasetPreprocessor
 
@@ -34,7 +34,7 @@ def test_preprocess_no_datasets_in_rule(dataset_rule_equal_to_error_objects: dic
     assert preprocessed_dataset.equals(dataset)
 
 
-@patch("engine.services.local_data_service.LocalDataService.get_dataset")
+@patch("engine.services.data_services.LocalDataService.get_dataset")
 def test_preprocess(mock_get_dataset: MagicMock, dataset_rule_equal_to: dict):
     """
     Unit test for preprocess method. Checks the case when
@@ -185,7 +185,7 @@ def test_preprocess(mock_get_dataset: MagicMock, dataset_rule_equal_to: dict):
     assert preprocessed_dataset.equals(expected_dataset)
 
 
-@patch("engine.services.local_data_service.LocalDataService.get_dataset")
+@patch("engine.services.data_services.LocalDataService.get_dataset")
 def test_preprocess_relationship_dataset(
     mock_get_dataset: MagicMock, dataset_rule_record_in_parent_domain_equal_to: dict
 ):
@@ -319,7 +319,7 @@ def test_preprocess_relationship_dataset(
     assert preprocessed_dataset.equals(expected_dataset)
 
 
-@patch("engine.services.local_data_service.LocalDataService.get_dataset")
+@patch("engine.services.data_services.LocalDataService.get_dataset")
 def test_preprocess_with_merge_comparison(
     mock_get_dataset: MagicMock,
     dataset_rule_equal_to_compare_same_value: dict,

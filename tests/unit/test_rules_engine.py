@@ -74,7 +74,7 @@ def test_validate_rule_invalid_suffix(
         }
     )
     with patch(
-        "engine.services.local_data_service.LocalDataService.get_dataset",
+        "engine.services.data_services.LocalDataService.get_dataset",
         return_value=dataset_mock,
     ):
         validation_result: List[str] = RulesEngine().validate_single_rule(
@@ -102,7 +102,7 @@ def test_validate_rule_invalid_prefix(
         }
     )
     with patch(
-        "engine.services.local_data_service.LocalDataService.get_dataset",
+        "engine.services.data_services.LocalDataService.get_dataset",
         return_value=dataset_mock,
     ):
         validation_result: List[str] = RulesEngine().validate_single_rule(
@@ -183,7 +183,7 @@ def test_validate_rule_cross_dataset_check(dataset_rule_equal_to: dict):
         "path/ec.xpt": ec_dataset,
     }
     with patch(
-        "engine.services.local_data_service.LocalDataService.get_dataset",
+        "engine.services.data_services.LocalDataService.get_dataset",
         side_effect=lambda dataset_name: path_to_dataset_map[dataset_name],
     ):
         datasets: List[dict] = [
@@ -271,7 +271,7 @@ def test_validate_one_to_one_rel_across_datasets(dataset_rule_one_to_one_related
         "path/ec.xpt": ec_dataset,
     }
     with patch(
-        "engine.services.local_data_service.LocalDataService.get_dataset",
+        "engine.services.data_services.LocalDataService.get_dataset",
         side_effect=lambda dataset_name: path_to_dataset_map[dataset_name],
     ):
         validation_result: List[str] = RulesEngine().validate_single_rule(
@@ -295,7 +295,7 @@ def test_validate_rule_single_dataset_check(dataset_rule_greater_than: dict):
         }
     )
     with patch(
-        "engine.services.local_data_service.LocalDataService.get_dataset",
+        "engine.services.data_services.LocalDataService.get_dataset",
         return_value=dataset_mock,
     ):
         validation_result: List[str] = RulesEngine().validate_single_rule(
@@ -321,7 +321,7 @@ def test_validate_rule_equal_length(dataset_rule_has_equal_length: dict):
         }
     )
     with patch(
-        "engine.services.local_data_service.LocalDataService.get_dataset",
+        "engine.services.data_services.LocalDataService.get_dataset",
         return_value=dataset_mock,
     ):
         validation_result: List[str] = RulesEngine().validate_single_rule(
@@ -347,7 +347,7 @@ def test_validate_is_contained_by_distinct(mock_rule_distinct_operation: dict):
         "path/dm.xpt": dm_dataset,
     }
     with patch(
-        "engine.services.local_data_service.LocalDataService.get_dataset",
+        "engine.services.data_services.LocalDataService.get_dataset",
         side_effect=lambda dataset_name: path_to_dataset_map[dataset_name],
     ):
         validation_result: List[str] = RulesEngine().validate_single_rule(
@@ -375,7 +375,7 @@ def test_validate_rule_not_equal_length(dataset_rule_has_not_equal_length: dict)
         }
     )
     with patch(
-        "engine.services.local_data_service.LocalDataService.get_dataset",
+        "engine.services.data_services.LocalDataService.get_dataset",
         return_value=dataset_mock,
     ):
         validation_result: List[str] = RulesEngine().validate_single_rule(
@@ -395,7 +395,7 @@ def test_validate_rule_multiple_conditions(dataset_rule_multiple_conditions: dic
         }
     )
     with patch(
-        "engine.services.local_data_service.LocalDataService.get_dataset",
+        "engine.services.data_services.LocalDataService.get_dataset",
         return_value=dataset_mock,
     ):
         validation_result: List[str] = RulesEngine().validate_single_rule(
@@ -415,7 +415,7 @@ def test_validate_record_rule_numbers_separated_by_dash_pattern():
     rule: dict = get_matches_regex_pattern_rule(number_number_pattern)
     dataset_mock = pd.DataFrame.from_dict({"AESTDY": ["5-5", "10-10", "test"]})
     with patch(
-        "engine.services.local_data_service.LocalDataService.get_dataset",
+        "engine.services.data_services.LocalDataService.get_dataset",
         return_value=dataset_mock,
     ):
         validation_result: List[str] = RulesEngine().validate_single_rule(
@@ -434,7 +434,7 @@ def test_validate_record_rule_semi_colon_delimited_pattern():
     rule: dict = get_matches_regex_pattern_rule(semi_colon_delimited_pattern)
     dataset_mock = pd.DataFrame.from_dict({"AESTDY": ["5;5", "alex;alex", "test"]})
     with patch(
-        "engine.services.local_data_service.LocalDataService.get_dataset",
+        "engine.services.data_services.LocalDataService.get_dataset",
         return_value=dataset_mock,
     ):
         validation_result: List[str] = RulesEngine().validate_single_rule(
@@ -455,7 +455,7 @@ def test_validate_record_rule_no_letters_numbers_underscores():
     rule: dict = get_matches_regex_pattern_rule(does_not_contain_pattern)
     dataset_mock = pd.DataFrame.from_dict({"AESTDY": ["[.*)]#@", "alex", "|>.§!"]})
     with patch(
-        "engine.services.local_data_service.LocalDataService.get_dataset",
+        "engine.services.data_services.LocalDataService.get_dataset",
         return_value=dataset_mock,
     ):
         validation_result: List[str] = RulesEngine().validate_single_rule(
@@ -484,7 +484,7 @@ def test_validate_dataset_metadata(dataset_metadata_not_equal_to_rule: dict):
         }
     )
     with patch(
-        "engine.services.local_data_service.LocalDataService.get_dataset_metadata",
+        "engine.services.data_services.LocalDataService.get_dataset_metadata",
         return_value=dataset_mock,
     ):
         validation_result: List[str] = RulesEngine().validate_single_rule(
@@ -522,7 +522,7 @@ def test_validate_dataset_metadata_wrong_metadata(
         }
     )
     with patch(
-        "engine.services.local_data_service.LocalDataService.get_dataset_metadata",
+        "engine.services.data_services.LocalDataService.get_dataset_metadata",
         return_value=dataset_mock,
     ):
         validation_result: List[dict] = RulesEngine().validate_single_rule(
@@ -561,7 +561,7 @@ def test_validate_variable_metadata(variables_metadata_rule: dict):
         }
     )
     with patch(
-        "engine.services.local_data_service.LocalDataService.get_variables_metadata",
+        "engine.services.data_services.LocalDataService.get_variables_metadata",
         return_value=dataset_mock,
     ):
         validation_result: List[dict] = RulesEngine().validate_single_rule(
@@ -595,7 +595,7 @@ def test_validate_variable_metadata_wrong_metadata(variables_metadata_rule: dict
         }
     )
     with patch(
-        "engine.services.local_data_service.LocalDataService.get_variables_metadata",
+        "engine.services.data_services.LocalDataService.get_variables_metadata",
         return_value=dataset_mock,
     ):
         validation_result: List[str] = RulesEngine().validate_single_rule(
@@ -659,7 +659,7 @@ def test_rule_with_domain_prefix_replacement():
     }
     df = pd.DataFrame.from_dict({"AESTDY": [11, 12, 40, 59, 59]})
     with patch(
-        "engine.services.local_data_service.LocalDataService.get_dataset",
+        "engine.services.data_services.LocalDataService.get_dataset",
         return_value=df,
     ):
         validation_result: List[str] = RulesEngine().validate_single_rule(
@@ -745,7 +745,7 @@ def test_validate_single_rule(dataset_rule_equal_to_error_objects: dict):
         }
     )
     with patch(
-        "engine.services.local_data_service.LocalDataService.get_dataset",
+        "engine.services.data_services.LocalDataService.get_dataset",
         return_value=df,
     ):
         dataset_domain: str = "AE"
@@ -820,7 +820,7 @@ def test_validate_single_rule_not_equal_to(
         }
     )
     with patch(
-        "engine.services.local_data_service.LocalDataService.get_dataset",
+        "engine.services.data_services.LocalDataService.get_dataset",
         return_value=df,
     ):
         dataset_domain: str = "AE"
@@ -947,7 +947,7 @@ def test_validate_dataset_metadata_against_define_xml(
     """
     mock_get_define_xml_metadata_for_domain.return_value = define_xml_metadata
     with patch(
-        "engine.services.local_data_service.LocalDataService.get_dataset_metadata",
+        "engine.services.data_services.LocalDataService.get_dataset_metadata",
         return_value=dataset_mock,
     ):
         datasets: List[dict] = [{"domain": "AE", "filename": "ae.xpt"}]
@@ -1046,7 +1046,7 @@ def test_validate_variable_metadata_against_define_xml(
     """
     mock_get_define_xml_variables_metadata.return_value = variable_metadata
     with patch(
-        "engine.services.local_data_service.LocalDataService.get_variables_metadata",
+        "engine.services.data_services.LocalDataService.get_variables_metadata",
         return_value=dataset_mock,
     ):
         validation_result: List[dict] = RulesEngine().validate_single_rule(
@@ -1095,7 +1095,7 @@ def test_validate_value_level_metadata_against_define_xml(
         }
     ]
     with patch(
-        "engine.services.local_data_service.LocalDataService.get_dataset",
+        "engine.services.data_services.LocalDataService.get_dataset",
         return_value=df,
     ):
         validation_result: List[dict] = RulesEngine().validate_single_rule(
@@ -1227,7 +1227,7 @@ def test_validate_split_dataset_contents(
     )
     # mock blob storage call and execute the validation
     with patch(
-        "engine.services.local_data_service.LocalDataService._async_get_datasets",
+        "engine.services.data_services.LocalDataService._async_get_datasets",
         return_value=[first_dataset_part, second_dataset_part],
     ):
         validation_result: List[dict] = RulesEngine().validate_single_rule(
@@ -1282,7 +1282,7 @@ def test_validate_split_dataset_metadata(dataset_metadata_not_equal_to_rule: dic
     )
     # mock blob storage call and execute the validation
     with patch(
-        "engine.services.local_data_service.LocalDataService._async_get_datasets",
+        "engine.services.data_services.LocalDataService._async_get_datasets",
         return_value=[first_dataset_part, second_dataset_part],
     ):
         validation_result: List[dict] = RulesEngine().validate_single_rule(
@@ -1339,7 +1339,7 @@ def test_validate_split_dataset_variables_metadata(variables_metadata_rule: dict
         }
     )
     with patch(
-        "engine.services.local_data_service.LocalDataService._async_get_datasets",
+        "engine.services.data_services.LocalDataService._async_get_datasets",
         return_value=[
             first_dataset_part,
             second_dataset_part,
@@ -1512,7 +1512,7 @@ def test_validate_record_in_parent_domain(
         "path/suppec.xpt": suppec_dataset,
     }
     with patch(
-        "engine.services.local_data_service.LocalDataService.get_dataset",
+        "engine.services.data_services.LocalDataService.get_dataset",
         side_effect=lambda dataset_name: path_to_dataset_map[dataset_name],
     ):
         datasets: List[dict] = [
@@ -1570,7 +1570,7 @@ def test_validate_additional_columns(dataset_rule_additional_columns_not_null: d
         }
     )
     with patch(
-        "engine.services.local_data_service.LocalDataService.get_dataset",
+        "engine.services.data_services.LocalDataService.get_dataset",
         return_value=dataset,
     ):
         validation_result: List[dict] = RulesEngine().validate_single_rule(
@@ -1614,8 +1614,8 @@ def test_validate_additional_columns(dataset_rule_additional_columns_not_null: d
         ]
 
 
-@patch("engine.services.local_data_service.LocalDataService.get_define_xml_contents")
-@patch("engine.services.local_data_service.LocalDataService.get_dataset")
+@patch("engine.services.data_services.LocalDataService.get_define_xml_contents")
+@patch("engine.services.data_services.LocalDataService.get_dataset")
 def test_validate_dataset_contents_against_define_and_library_variable_metadata(
     mock_get_dataset: MagicMock,
     mock_get_define_xml_contents: MagicMock,
@@ -1712,7 +1712,7 @@ def test_validate_dataset_contents_against_define_and_library_variable_metadata(
     ]
 
 
-@patch("engine.services.local_data_service.LocalDataService.get_dataset")
+@patch("engine.services.data_services.LocalDataService.get_dataset")
 def test_validate_dataset_contents_against_library_metadata(
     mock_get_dataset: MagicMock,
     rule_check_dataset_contents_against_library_metadata: dict,
@@ -1817,7 +1817,7 @@ def test_validate_dataset_contents_against_library_metadata(
     ]
 
 
-@patch("engine.services.local_data_service.LocalDataService.get_dataset")
+@patch("engine.services.data_services.LocalDataService.get_dataset")
 def test_validate_dataset_contents_against_library_metadata_no_required_column(
     mock_get_dataset: MagicMock,
     rule_check_dataset_contents_against_library_metadata: dict,
@@ -1917,7 +1917,7 @@ def test_validate_dataset_contents_against_library_metadata_no_required_column(
     ]
 
 
-@patch("engine.services.local_data_service.LocalDataService.get_dataset")
+@patch("engine.services.data_services.LocalDataService.get_dataset")
 def test_validate_dataset_contents_against_library_metadata_variable_metadata_not_found(
     mock_get_dataset: MagicMock,
     rule_check_dataset_contents_against_library_metadata: dict,
@@ -1980,7 +1980,7 @@ def test_validate_dataset_contents_against_library_metadata_variable_metadata_no
     ]
 
 
-@patch("engine.services.local_data_service.LocalDataService.get_dataset")
+@patch("engine.services.data_services.LocalDataService.get_dataset")
 def test_validate_single_rule_operation_dataset_larger_than_target_dataset(
     mock_get_dataset: MagicMock,
     rule_distinct_operation_is_not_contained_by: dict,
@@ -2059,8 +2059,8 @@ def test_validate_single_rule_operation_dataset_larger_than_target_dataset(
     ]
 
 
-@patch("engine.services.local_data_service.LocalDataService.get_dataset")
-@patch("engine.services.local_data_service.LocalDataService.get_dataset_metadata")
+@patch("engine.services.data_services.LocalDataService.get_dataset")
+@patch("engine.services.data_services.LocalDataService.get_dataset_metadata")
 def test_validate_extract_metadata_operation(
     mock_get_dataset_metadata: MagicMock,
     mock_get_dataset: MagicMock,

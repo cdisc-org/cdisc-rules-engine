@@ -305,7 +305,7 @@ def test_rule_applies_to_class(
     dataset_mock = pd.DataFrame.from_dict(data)
     mock_data_service.get_dataset_class.return_value = class_name
     with patch(
-        "engine.services.blob_data_service.BlobDataService.get_dataset",
+        "engine.services.data_services.LocalDataService.get_dataset",
         return_value=dataset_mock,
     ):
         assert (
@@ -366,7 +366,7 @@ def test_perform_rule_operation(mock_data_service):
     )
     processor = RuleProcessor(mock_data_service, InMemoryCacheService())
     with patch(
-        "engine.services.blob_data_service.BlobDataService.get_dataset", return_value=df
+        "engine.services.data_services.LocalDataService.get_dataset", return_value=df
     ):
         result = processor.perform_rule_operations(
             rule,
@@ -450,7 +450,7 @@ def test_perform_rule_operation_with_grouping(mock_data_service):
     )
     processor = RuleProcessor(mock_data_service, InMemoryCacheService())
     with patch(
-        "engine.services.blob_data_service.BlobDataService.get_dataset", return_value=df
+        "engine.services.data_services.LocalDataService.get_dataset", return_value=df
     ):
         data = processor.perform_rule_operations(
             rule,
@@ -555,7 +555,7 @@ def test_perform_rule_operation_with_multi_key_grouping(mock_data_service):
     )
     processor = RuleProcessor(mock_data_service, InMemoryCacheService())
     with patch(
-        "engine.services.blob_data_service.BlobDataService.get_dataset", return_value=df
+        "engine.services.data_services.LocalDataService.get_dataset", return_value=df
     ):
         data = processor.perform_rule_operations(
             rule,
@@ -614,7 +614,7 @@ def test_perform_rule_operation_with_null_operations(mock_data_service):
     assert df.equals(new_data)
 
 
-@patch("engine.services.local_data_service.LocalDataService.get_dataset_metadata")
+@patch("engine.services.data_services.LocalDataService.get_dataset_metadata")
 def test_perform_extract_metadata_operation(
     mock_get_dataset_metadata: MagicMock,
     rule_equal_to_with_extract_metadata_operation: dict,

@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock
 import pytest
 
-from engine.services.local_data_service import LocalDataService
+from engine.services.data_services import LocalDataService
 import os
 import pandas as pd
 

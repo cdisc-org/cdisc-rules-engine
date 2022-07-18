@@ -96,7 +96,7 @@ def test_preprocess_relationship_dataset(data):
         "path/data.xpt": data,
     }
     with patch(
-        "engine.services.local_data_service.LocalDataService.get_dataset",
+        "engine.services.data_services.LocalDataService.get_dataset",
         side_effect=lambda dataset_name: path_to_dataset_map[dataset_name],
     ):
         data_processor = DataProcessor(cache=InMemoryCacheService())
