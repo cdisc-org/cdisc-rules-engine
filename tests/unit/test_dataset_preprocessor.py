@@ -3,7 +3,7 @@ from unittest.mock import patch, MagicMock
 
 import pandas as pd
 from engine.services.cache.in_memory_cache_service import InMemoryCacheService
-from engine.services.local_data_service import LocalDataService
+from engine.services.data_services import LocalDataService
 
 from engine.utilities.dataset_preprocessor import DatasetPreprocessor
 
