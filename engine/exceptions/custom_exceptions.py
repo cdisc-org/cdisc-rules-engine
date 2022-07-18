@@ -44,6 +44,7 @@ class VariableMetadataNotFoundError(EngineError):
         "Variable metadata is not found in CDISC Library for the provided standard"
     )
 
+
 class DomainNotFoundInDefineXMLError(Exception):
     code = 400
     description = "Domain is not found in Define XML file"
@@ -52,6 +53,7 @@ class DomainNotFoundInDefineXMLError(Exception):
 class InvalidDatasetFormat(Exception):
     code = 400
     description = "Dataset data is malformed."
+
 
 class NumberOfAttemptsExceeded(Exception):
     pass

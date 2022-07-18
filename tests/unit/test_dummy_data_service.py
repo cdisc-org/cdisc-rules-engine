@@ -13,11 +13,36 @@ def test_get_dataset():
             "filename": "ae.xpt",
             "name": "AE",
             "records": {
-                "AESEQ": [1, 2, 3, 4, ],
-                "AENUM": [1.0, 2.0, 3.0, 4.0, ],
-                "AEDY": [1, np.nan, np.nan, np.nan, ],
-                "AEORNRLO": ["", "", "", "TEST", ],
-                "AESTNRHI": [None, None, None, None, ],
+                "AESEQ": [
+                    1,
+                    2,
+                    3,
+                    4,
+                ],
+                "AENUM": [
+                    1.0,
+                    2.0,
+                    3.0,
+                    4.0,
+                ],
+                "AEDY": [
+                    1,
+                    np.nan,
+                    np.nan,
+                    np.nan,
+                ],
+                "AEORNRLO": [
+                    "",
+                    "",
+                    "",
+                    "TEST",
+                ],
+                "AESTNRHI": [
+                    None,
+                    None,
+                    None,
+                    None,
+                ],
             },
         }
     ]
@@ -25,12 +50,37 @@ def test_get_dataset():
     data_service = DummyDataService(datasets)
     dataset = data_service.get_dataset("ae.xpt")
     assert isinstance(dataset, pd.DataFrame)
-    assert dataset["AESEQ"].to_list() == [1, 2, 3, 4, ]
-    assert dataset["AEDY"].to_list() == [1, None, None, None, ]
-    assert dataset["AENUM"].to_list() == [1.0, 2.0, 3.0, 4.0, ]
+    assert dataset["AESEQ"].to_list() == [
+        1,
+        2,
+        3,
+        4,
+    ]
+    assert dataset["AEDY"].to_list() == [
+        1,
+        None,
+        None,
+        None,
+    ]
+    assert dataset["AENUM"].to_list() == [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+    ]
     assert dataset["AENUM"].dtype == "float64"
-    assert dataset["AEORNRLO"].to_list() == ["", "", "", "TEST", ]
-    assert dataset["AESTNRHI"].to_list() == [None, None, None, None, ]
+    assert dataset["AEORNRLO"].to_list() == [
+        "",
+        "",
+        "",
+        "TEST",
+    ]
+    assert dataset["AESTNRHI"].to_list() == [
+        None,
+        None,
+        None,
+        None,
+    ]
 
 
 def test_get_dataset_metadata():

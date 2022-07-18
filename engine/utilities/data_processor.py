@@ -10,7 +10,10 @@ from engine.services.cdisc_library_service import CDISCLibraryService
 from engine.services.cache.cache_service_factory import CacheServiceFactory
 from engine.services.cache.cache_service_interface import CacheServiceInterface
 from engine.services.data_service_factory import DataServiceFactory
-from engine.utilities.utils import get_operations_cache_key, get_standard_details_cache_key
+from engine.utilities.utils import (
+    get_operations_cache_key,
+    get_standard_details_cache_key,
+)
 from engine.exceptions.custom_exceptions import InvalidMatchKeyError
 from engine.services.base_data_service import BaseDataService
 from engine.dummy_services.dummy_data_service import DummyDataService
@@ -18,9 +21,11 @@ from engine.utilities.utils import is_split_dataset, get_corresponding_datasets
 
 
 class DataProcessor:
-    def __init__(self, data_service=None, cache: CacheServiceInterface =None):
+    def __init__(self, data_service=None, cache: CacheServiceInterface = None):
         self.cache = cache or CacheServiceFactory(config).get_cache_service()
-        self.data_service = data_service or DataServiceFactory(config, self.cache).get_data_service()
+        self.data_service = (
+            data_service or DataServiceFactory(config, self.cache).get_data_service()
+        )
 
     @staticmethod
     def calc_min(dataframe, target, grouping: List = None, **kwargs):
@@ -82,10 +87,15 @@ class DataProcessor:
         return set().union(*dataset_variables)
 
     @staticmethod
-    async def get_dataset_variable_value_count(target: str, study_path: str, datasets: List[dict], dataset: dict, data_service) -> Counter:
+    async def get_dataset_variable_value_count(
+        target: str, study_path: str, datasets: List[dict], dataset: dict, data_service
+    ) -> Counter:
         domain = dataset.get("domain")
         if is_split_dataset(datasets, domain):
-            files = [f"{study_path}/{dataset.get('filename')}" for dataset in get_corresponding_datasets(datasets, domain)]
+            files = [
+                f"{study_path}/{dataset.get('filename')}"
+                for dataset in get_corresponding_datasets(datasets, domain)
+            ]
             data = data_service.join_split_datasets(data_service.get_dataset, files)
         else:
             data = data_service.get_dataset(f"{study_path}/{dataset.get('filename')}")
@@ -96,12 +106,21 @@ class DataProcessor:
             return Counter()
 
     @staticmethod
-    async def get_all_study_variable_value_counts(target, study_path, data_service, datasets) -> dict:
+    async def get_all_study_variable_value_counts(
+        target, study_path, data_service, datasets
+    ) -> dict:
         """
         Returns a mapping of variable values to the number of times that value appears in the study.
         """
-        datasets_with_unique_domains = list({dataset["domain"]: dataset for dataset in datasets}.values())
-        coroutines = [ DataProcessor.get_dataset_variable_value_count(target, study_path, datasets, dataset, data_service) for dataset in datasets_with_unique_domains]
+        datasets_with_unique_domains = list(
+            {dataset["domain"]: dataset for dataset in datasets}.values()
+        )
+        coroutines = [
+            DataProcessor.get_dataset_variable_value_count(
+                target, study_path, datasets, dataset, data_service
+            )
+            for dataset in datasets_with_unique_domains
+        ]
         dataset_variable_value_counts: List[Counter] = await asyncio.gather(*coroutines)
         return dict(sum(dataset_variable_value_counts, Counter()))
 
@@ -128,16 +147,28 @@ class DataProcessor:
         return delta
 
     @staticmethod
-    def study_variable_value_occurrence_count(target, datasets, directory_path, data_service, cache, **kwargs) -> int:
+    def study_variable_value_occurrence_count(
+        target, datasets, directory_path, data_service, cache, **kwargs
+    ) -> int:
         """
         Returns a boolean if the target, is a variable in any dataset in the study.
         """
-        cache_key = get_operations_cache_key(directory_path, operation_name=f"study_value_count_{target}")
+        cache_key = get_operations_cache_key(
+            directory_path, operation_name=f"study_value_count_{target}"
+        )
         # Only cache when not using dummy dataservice, so that subsequent calls with different data are not cached.
-        variable_value_count = cache.get(cache_key) if not DataProcessor.is_dummy_data(data_service) else None
+        variable_value_count = (
+            cache.get(cache_key)
+            if not DataProcessor.is_dummy_data(data_service)
+            else None
+        )
         if not variable_value_count:
 
-            variable_value_count = asyncio.run(DataProcessor.get_all_study_variable_value_counts(target, directory_path, data_service, datasets))
+            variable_value_count = asyncio.run(
+                DataProcessor.get_all_study_variable_value_counts(
+                    target, directory_path, data_service, datasets
+                )
+            )
             if not DataProcessor.is_dummy_data(data_service):
                 cache.add(cache_key, variable_value_count)
         return variable_value_count
@@ -523,10 +554,11 @@ class DataProcessor:
         return isinstance(data_service, DummyDataService)
 
     @staticmethod
-    def get_variable_names_for_given_standard(target=None, datasets=None, dataset_path=None,
-                                              data_service=None, **kwargs) -> set:
+    def get_variable_names_for_given_standard(
+        target=None, datasets=None, dataset_path=None, data_service=None, **kwargs
+    ) -> set:
         """
-                Return the set of variable names for the given standard
+        Return the set of variable names for the given standard
         """
         standard = kwargs.get("standard")
         standard_version = kwargs.get("standard_version")
@@ -537,4 +569,8 @@ class DataProcessor:
             return set(variable_details.keys())
         else:
             cdisc_library_service = CDISCLibraryService(config, cache_service_obj)
-            return set(cdisc_library_service.get_variables_details(standard, standard_version).keys())
+            return set(
+                cdisc_library_service.get_variables_details(
+                    standard, standard_version
+                ).keys()
+            )

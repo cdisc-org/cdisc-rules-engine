@@ -19,9 +19,7 @@ class DataServiceFactory:
                 cache_service=self.cache_service,
             )
         else:
-            return LocalDataService.get_instance(
-                cache_service=self.cache_service
-            )
+            return LocalDataService.get_instance(cache_service=self.cache_service)
 
     def get_dummy_data_service(self, data):
         return DummyDataService(data)

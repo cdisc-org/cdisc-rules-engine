@@ -23,8 +23,8 @@ class ConfigService:
                 "CDISC_LIBRARY_URL",
                 "DICTIONARIES_TABLE_NAME",
                 "WHODRUG_TERMS_TABLE_NAME",
-                "MEDDRA_TERMS_TABLE_NAME"
-                "DATA_SERVICE_TYPE"
+                "MEDDRA_TERMS_TABLE_NAME",
+                "DATA_SERVICE_TYPE",
             ]
 
         return cls._instance

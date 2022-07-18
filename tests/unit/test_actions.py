@@ -37,7 +37,8 @@ def test_targeted_error_object_with_partial_missing_targets():
     for error in result.errors:
         assert "MISSING" in error.value
         assert error.value["MISSING"] == "Not in dataset"
-    
+
+
 def test_targeted_error_object_with_dataset_sensitivity():
     dummy_rule = {
         "core_id": "MockRule",
@@ -62,12 +63,9 @@ def test_targeted_error_object_with_dataset_sensitivity():
                 },
             }
         ],
-        "output_variables": [
-            "TEST",
-            "MISSING"
-        ],
+        "output_variables": ["TEST", "MISSING"],
     }
-    df = pd.DataFrame.from_dict({"TEST": [1,2,3,4]})
+    df = pd.DataFrame.from_dict({"TEST": [1, 2, 3, 4]})
     variable = DatasetVariable(df)
     action = COREActions([], variable, "TV", dummy_rule)
     targets = set(dummy_rule["output_variables"])
@@ -75,7 +73,4 @@ def test_targeted_error_object_with_dataset_sensitivity():
     assert len(result.errors) == 1
     error = result.errors[0].to_representation()
     assert "row" not in error
-    assert error["value"] == {
-        "TEST": 1,
-        "MISSING": "Not in dataset"
-    }
+    assert error["value"] == {"TEST": 1, "MISSING": "Not in dataset"}

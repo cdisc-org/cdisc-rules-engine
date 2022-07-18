@@ -20,7 +20,7 @@ from engine.config import config
 from engine.exceptions.custom_exceptions import (
     RuleFormatError,
     VariableMetadataNotFoundError,
-    DomainNotFoundInDefineXMLError
+    DomainNotFoundInDefineXMLError,
 )
 from engine.models.actions import COREActions
 from engine.models.dataset_types import DatasetTypes
@@ -43,9 +43,11 @@ from engine.utilities.utils import (
 
 
 class RulesEngine:
-    def __init__(self, cache = None, data_service = None, **kwargs):
+    def __init__(self, cache=None, data_service=None, **kwargs):
         self.cache = cache or CacheServiceFactory(config).get_cache_service()
-        self.data_service = data_service or DataServiceFactory(config, self.cache).get_data_service()
+        self.data_service = (
+            data_service or DataServiceFactory(config, self.cache).get_data_service()
+        )
         self.rule_processor = RuleProcessor(self.data_service, self.cache)
         self.data_processor = DataProcessor(self.data_service, self.cache)
         self.standard = kwargs.get("standard")
@@ -62,7 +64,9 @@ class RulesEngine:
         datasets: List[DummyDataset],
         dataset_domain: str,
     ):
-        self.data_service = DataServiceFactory(config, InMemoryCacheService.get_instance()).get_dummy_data_service(datasets)
+        self.data_service = DataServiceFactory(
+            config, InMemoryCacheService.get_instance()
+        ).get_dummy_data_service(datasets)
         dataset_dicts = []
         for domain in datasets:
             dataset_dicts.append({"domain": domain.domain, "filename": domain.filename})
@@ -491,8 +495,13 @@ class RulesEngine:
         )
         dataset = dataset_preprocessor.preprocess(rule, datasets)
         dataset = self.rule_processor.perform_rule_operations(
-            rule, dataset, domain, datasets, dataset_path, standard=self.standard,
-            standard_version=self.standard_version
+            rule,
+            dataset,
+            domain,
+            datasets,
+            dataset_path,
+            standard=self.standard,
+            standard_version=self.standard_version,
         )
         relationship_data = {}
         if self.rule_processor.is_relationship_dataset(domain):
@@ -533,8 +542,7 @@ class RulesEngine:
             dataset_name=define_xml_path
         )
         define_xml_reader = DefineXMLReader.from_file_contents(
-            define_xml_contents,
-            cache_service_obj=self.cache
+            define_xml_contents, cache_service_obj=self.cache
         )
         return define_xml_reader.extract_domain_metadata(domain_name=domain_name)
 
@@ -550,8 +558,7 @@ class RulesEngine:
             dataset_name=define_xml_path
         )
         define_xml_reader = DefineXMLReader.from_file_contents(
-            define_xml_contents,
-            cache_service_obj=self.cache
+            define_xml_contents, cache_service_obj=self.cache
         )
         return define_xml_reader.extract_variables_metadata(domain_name=domain_name)
 
@@ -593,8 +600,7 @@ class RulesEngine:
             dataset_name=define_xml_path
         )
         define_xml_reader = DefineXMLReader.from_file_contents(
-            define_xml_contents,
-            cache_service_obj=self.cache
+            define_xml_contents, cache_service_obj=self.cache
         )
         return define_xml_reader.extract_value_level_metadata(domain_name=domain_name)
 

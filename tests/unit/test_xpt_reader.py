@@ -1,6 +1,7 @@
 from engine.services.data_readers.xpt_reader import XPTReader
 import os
 
+
 def test_read():
     test_dataset_path: str = (
         f"{os.path.dirname(__file__)}/../resources/test_dataset.xpt"
@@ -14,4 +15,4 @@ def test_read():
         """
         Verify that the rounding of incredibly small values to 0 is applied.
         """
-        assert value == 0 or abs(value) > 10 ** -16
+        assert value == 0 or abs(value) > 10**-16

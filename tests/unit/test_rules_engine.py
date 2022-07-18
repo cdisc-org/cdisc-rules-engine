@@ -8,7 +8,10 @@ from engine.exceptions.custom_exceptions import VariableMetadataNotFoundError
 from engine.models.rule_conditions import ConditionCompositeFactory
 from engine.rules_engine import RulesEngine
 from engine.services.cache.in_memory_cache_service import InMemoryCacheService
-from engine.utilities.utils import get_library_variables_metadata_cache_key, get_standard_details_cache_key
+from engine.utilities.utils import (
+    get_library_variables_metadata_cache_key,
+    get_standard_details_cache_key,
+)
 from engine.utilities.rule_processor import RuleProcessor
 from engine.enums.execution_status import ExecutionStatus
 
@@ -1427,7 +1430,10 @@ def test_validate_define_ct_allowed_terms(
     cache.add(ct_package, allowed_terms_map)
     mock_get_define_xml_variables_metadata.return_value = variable_metadata
     rules_engine = RulesEngine(
-        cache=cache, ct_package=ct_package, standard=standard, standard_version=standard_version
+        cache=cache,
+        ct_package=ct_package,
+        standard=standard,
+        standard_version=standard_version,
     )
     result = rules_engine.validate_define_xml(
         define_xml_allowed_terms_check_rule,
@@ -1858,7 +1864,7 @@ def test_validate_dataset_contents_against_library_metadata_no_required_column(
 
     # run the validation and check result
     rules_engine = RulesEngine(
-        cache = cache,
+        cache=cache,
         standard=standard,
         standard_version=standard_version,
     )
@@ -2150,13 +2156,18 @@ def test_is_custom_domain():
     standard = "sdtmig"
     standard_version = "3-1-2"
     cache_key = get_standard_details_cache_key(standard, standard_version)
-    cache.add(cache_key, {
-        "domains": {
-            "AE",
-            "EC",
-            "DM",
-        }
-    })
-    engine = RulesEngine(cache=cache, standard=standard, standard_version=standard_version)
+    cache.add(
+        cache_key,
+        {
+            "domains": {
+                "AE",
+                "EC",
+                "DM",
+            }
+        },
+    )
+    engine = RulesEngine(
+        cache=cache, standard=standard, standard_version=standard_version
+    )
     assert engine.is_custom_domain("AP")
     assert not engine.is_custom_domain("AE")

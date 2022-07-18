@@ -10,6 +10,7 @@ from engine.utilities.utils import convert_file_size
 from engine.services.data_readers.data_reader_factory import DataReaderFactory
 from engine.models.variable_metadata_container import VariableMetadataContainer
 
+
 class BlobDataService(BaseDataService):
     _instance = None
 
@@ -69,7 +70,9 @@ class BlobDataService(BaseDataService):
         """
         metadata: dict = self.blob_service.read_metadata(dataset_name)
         contents_metadata: dict = metadata["contents_metadata"]
-        metadata_to_return: VariableMetadataContainer = VariableMetadataContainer(contents_metadata)
+        metadata_to_return: VariableMetadataContainer = VariableMetadataContainer(
+            contents_metadata
+        )
         return pandas.DataFrame.from_dict(metadata_to_return.to_representation())
 
     @cached_dataset(DatasetTypes.CONTENTS.value)

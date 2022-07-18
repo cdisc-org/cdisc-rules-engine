@@ -7,7 +7,12 @@ import re
 from datetime import datetime
 from typing import List, Set, Callable, Optional
 
-from engine.constants.domains import SUPP_DOMAIN, AP_DOMAIN, APFA_DOMAIN, APRELSUB_DOMAIN
+from engine.constants.domains import (
+    SUPP_DOMAIN,
+    AP_DOMAIN,
+    APFA_DOMAIN,
+    APRELSUB_DOMAIN,
+)
 from engine.enums.execution_status import ExecutionStatus
 from engine.models.base_validation_entity import BaseValidationEntity
 from engine.models.rule_conditions import ConditionInterface
@@ -166,7 +171,7 @@ def get_operations_cache_key(
     domain: str = None,
     operation_name: str = None,
     grouping: str = None,
-    target_variable: str = None
+    target_variable: str = None,
 ) -> str:
     """
     Creates the cache key for operations.
@@ -177,6 +182,7 @@ def get_operations_cache_key(
         if item:
             key = f"{key}/{item}"
     return key
+
 
 def get_directory_path(dataset_path):
     return "/".join(dataset_path.split("/")[:-1])
@@ -200,8 +206,10 @@ def serialize_rule(rule: dict) -> dict:
     serialized_rule["conditions"] = conditions.to_dict()
     return serialized_rule
 
+
 def get_cache_last_updated_key() -> str:
     return "CACHE_LAST_UPDATED"
+
 
 def remove_none_keys_from_dict(dict_to_remove: dict):
     """

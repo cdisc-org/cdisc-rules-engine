@@ -9,3 +9,5 @@ azure-cosmos==4.3.0
 odmlib==0.1.4
 xport==3.6.1
 redis==4.0.2
+black==22.6.0
+pre-commit==2.20.0

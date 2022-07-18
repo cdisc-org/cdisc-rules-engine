@@ -7,6 +7,8 @@ from engine.services import logger
 
 xport.v56.LOG.disabled = True
 XPORT_LOG.disabled = True
+
+
 class DatasetMetadataReader:
     """
     Responsibility of the class is to read metadata
@@ -31,18 +33,26 @@ class DatasetMetadataReader:
         self._metadata_container = {
             "variable_labels": list(dataset.contents.Label.values),
             "variable_names": list(dataset.contents.Variable.values),
-            "variable_name_to_label_map": pd.Series(dataset.contents.Label.values,index=dataset.contents.Variable).to_dict(),
-            "variable_name_to_data_type_map": pd.Series(dataset.contents.Type.values,index=dataset.contents.Variable).to_dict(),
-            "variable_name_to_size_map": pd.Series(dataset.contents.Length.values,index=dataset.contents.Variable).to_dict(),
+            "variable_name_to_label_map": pd.Series(
+                dataset.contents.Label.values, index=dataset.contents.Variable
+            ).to_dict(),
+            "variable_name_to_data_type_map": pd.Series(
+                dataset.contents.Type.values, index=dataset.contents.Variable
+            ).to_dict(),
+            "variable_name_to_size_map": pd.Series(
+                dataset.contents.Length.values, index=dataset.contents.Variable
+            ).to_dict(),
             "number_of_variables": len(dataset.columns),
             "dataset_label": dataset.dataset_label,
             "domain_name": self._domain_name,
             "dataset_name": dataset.name,
-            "dataset_modification_date": dataset.modified.isoformat()
+            "dataset_modification_date": dataset.modified.isoformat(),
         }
         self._domain_name = self._extract_domain_name(dataset)
         self._convert_variable_types()
-        self._metadata_container['adam_info'] = self._extract_adam_info(self._metadata_container["variable_names"])
+        self._metadata_container["adam_info"] = self._extract_adam_info(
+            self._metadata_container["variable_names"]
+        )
         logger.info(f"Extracted dataset metadata. metadata={self._metadata_container}")
         return self._metadata_container
 
@@ -65,9 +75,11 @@ class DatasetMetadataReader:
             "string": "Char",
             "double": "Num",
             "Character": "Char",
-            "Numeric": "Num"
+            "Numeric": "Num",
         }
-        for key, value in self._metadata_container["variable_name_to_data_type_map"].items():
+        for key, value in self._metadata_container[
+            "variable_name_to_data_type_map"
+        ].items():
             self._metadata_container["variable_name_to_data_type_map"][
                 key
             ] = rule_author_type_map[value]
@@ -97,8 +109,10 @@ class DatasetMetadataReader:
             ad.check_y(column)
             ad.check_w(column)
             ad.check_xx_zz(column)
-        adam_info_dict = {'categorization_scheme': ad.categorization_scheme,
-                          'w_indexes': ad.w_indexes,
-                          'period': ad.period,
-                          'selection_algorithm': ad.selection_algorithm}
+        adam_info_dict = {
+            "categorization_scheme": ad.categorization_scheme,
+            "w_indexes": ad.w_indexes,
+            "period": ad.period,
+            "selection_algorithm": ad.selection_algorithm,
+        }
         return adam_info_dict

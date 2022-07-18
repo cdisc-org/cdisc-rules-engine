@@ -361,14 +361,21 @@ def test_perform_rule_operation(mock_data_service):
             },
         ],
     }
-    df = pd.DataFrame.from_dict({"AESTDY": [11, 12, 40, 59, 59], "DOMAIN": ["AE", "AE", "AE", "AE", "AE"]})
+    df = pd.DataFrame.from_dict(
+        {"AESTDY": [11, 12, 40, 59, 59], "DOMAIN": ["AE", "AE", "AE", "AE", "AE"]}
+    )
     processor = RuleProcessor(mock_data_service, InMemoryCacheService())
     with patch(
         "engine.services.blob_data_service.BlobDataService.get_dataset", return_value=df
     ):
         result = processor.perform_rule_operations(
-            rule, df, "AE", [{"domain": "AE", "filename": "ae.xpt"}], "test/", standard="sdtmig",
-            standard_version="3-1-2"
+            rule,
+            df,
+            "AE",
+            [{"domain": "AE", "filename": "ae.xpt"}],
+            "test/",
+            standard="sdtmig",
+            standard_version="3-1-2",
         )
         assert "$avg_aestdy" in result
         assert "$unique_aestdy" in result
@@ -434,15 +441,25 @@ def test_perform_rule_operation_with_grouping(mock_data_service):
         ],
     }
     df = pd.DataFrame.from_dict(
-        {"AESTDY": [10, 11, 40, 59], "USUBJID": [1, 200, 1, 200], "AESEQ": [1, 2, 3, 4], "DOMAIN": ["AE", "AE", "AE", "AE"]}
+        {
+            "AESTDY": [10, 11, 40, 59],
+            "USUBJID": [1, 200, 1, 200],
+            "AESEQ": [1, 2, 3, 4],
+            "DOMAIN": ["AE", "AE", "AE", "AE"],
+        }
     )
     processor = RuleProcessor(mock_data_service, InMemoryCacheService())
     with patch(
         "engine.services.blob_data_service.BlobDataService.get_dataset", return_value=df
     ):
         data = processor.perform_rule_operations(
-            rule, df, "AE", [{"domain": "AE", "filename": "ae.xpt"}], "test/", standard="sdtmig",
-            standard_version="3-1-2"
+            rule,
+            df,
+            "AE",
+            [{"domain": "AE", "filename": "ae.xpt"}],
+            "test/",
+            standard="sdtmig",
+            standard_version="3-1-2",
         )
         assert "$avg_aestdy" in data
         assert data["$avg_aestdy"].values.tolist() == [25, 35, 25, 35]
@@ -541,8 +558,13 @@ def test_perform_rule_operation_with_multi_key_grouping(mock_data_service):
         "engine.services.blob_data_service.BlobDataService.get_dataset", return_value=df
     ):
         data = processor.perform_rule_operations(
-            rule, df, "AE", [{"domain": "AE", "filename": "ae.xpt"}], "test/", standard="sdtmig",
-            standard_version="3-1-2"
+            rule,
+            df,
+            "AE",
+            [{"domain": "AE", "filename": "ae.xpt"}],
+            "test/",
+            standard="sdtmig",
+            standard_version="3-1-2",
         )
         assert "$avg_aestdy" in data
         assert data["$avg_aestdy"].values.tolist() == [25, 35, 25, 35, 30, 112]
@@ -581,8 +603,13 @@ def test_perform_rule_operation_with_null_operations(mock_data_service):
     )
     processor = RuleProcessor(mock_data_service, InMemoryCacheService())
     new_data = processor.perform_rule_operations(
-        rule, df, "AE", [{"domain": "AE", "filename": "ae.xpt"}], "test/", standard="sdtmig",
-            standard_version="3-1-2"
+        rule,
+        df,
+        "AE",
+        [{"domain": "AE", "filename": "ae.xpt"}],
+        "test/",
+        standard="sdtmig",
+        standard_version="3-1-2",
     )
     assert df.equals(new_data)
 
@@ -626,7 +653,7 @@ def test_perform_extract_metadata_operation(
             ],
         }
     )
-    
+
     mock = MagicMock()
     mock.get_dataset.return_value = dataset
     mock.get_dataset_metadata.return_value = pd.DataFrame.from_dict(
@@ -644,7 +671,7 @@ def test_perform_extract_metadata_operation(
         datasets=[{"domain": "SUPPEC", "filename": "suppec.xpt"}],
         dataset_path="study/data_bundle/suppec.xpt",
         standard="sdtmig",
-        standard_version="3-1-2"
+        standard_version="3-1-2",
     )
 
     # check result

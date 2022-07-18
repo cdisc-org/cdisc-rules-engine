@@ -1,4 +1,3 @@
-
 import uuid
 from typing import List
 
@@ -11,7 +10,7 @@ from engine.enums.optional_condition_parameters import OptionalConditionParamete
 class Rule(RepresentationInterface):
     """
     This class represents a rule DB record.
-    A rule DB record represents a proprietary rule, but 
+    A rule DB record represents a proprietary rule, but
     the structure will match the CDISC rules format
     """
 
@@ -45,21 +44,29 @@ class Rule(RepresentationInterface):
             executable_rule["severity"] = rule_metadata.get("Severity").lower()
             executable_rule["description"] = rule_metadata.get("Description")
             executable_rule["authority"] = rule_metadata.get("Authority")
-            executable_rule["standards"] = rule_metadata.get("Scopes", {}).get("Standards")
+            executable_rule["standards"] = rule_metadata.get("Scopes", {}).get(
+                "Standards"
+            )
             executable_rule["classes"] = rule_metadata.get("Scopes", {}).get("Classes")
             executable_rule["domains"] = rule_metadata.get("Scopes", {}).get("Domains")
             executable_rule["rule_type"] = rule_metadata.get("Rule_Type")
-            executable_rule["conditions"] = cls.parse_conditions(rule_metadata.get("Check"))
+            executable_rule["conditions"] = cls.parse_conditions(
+                rule_metadata.get("Check")
+            )
             executable_rule["actions"] = cls.parse_actions(rule_metadata.get("Outcome"))
 
             if "Operations" in rule_metadata:
                 executable_rule["operations"] = rule_metadata.get("Operations")
 
             if "Match_Datasets" in rule_metadata:
-                executable_rule["datasets"] = cls.parse_datasets(rule_metadata.get("Match_Datasets"))
+                executable_rule["datasets"] = cls.parse_datasets(
+                    rule_metadata.get("Match_Datasets")
+                )
 
             if "Output_Variables" in rule_metadata.get("Outcome", {}):
-                executable_rule["output_variables"] = rule_metadata.get("Outcome", {})["Output_Variables"]
+                executable_rule["output_variables"] = rule_metadata.get("Outcome", {})[
+                    "Output_Variables"
+                ]
             return executable_rule
         else:
             return rule_metadata
@@ -91,17 +98,11 @@ class Rule(RepresentationInterface):
 
         for condition in conditions_data:
             if "all" in condition:
-                conditions.append({
-                    "all": cls.build_conditions(condition.get("all"))
-                })
+                conditions.append({"all": cls.build_conditions(condition.get("all"))})
             elif "any" in condition:
-                conditions.append({
-                    "any": cls.build_conditions(condition.get("any"))
-                })
+                conditions.append({"any": cls.build_conditions(condition.get("any"))})
             elif "not" in condition:
-                conditions.append({
-                    "not": cls.parse_conditions(condition.get("not"))
-                })
+                conditions.append({"not": cls.parse_conditions(condition.get("not"))})
             else:
                 conditions.append(cls.build_condition(condition, function))
 
@@ -114,8 +115,8 @@ class Rule(RepresentationInterface):
             "operator": condition.get("operator"),
             "value": {
                 "target": condition.get("name"),
-                "comparator": condition.get("value")
-            }
+                "comparator": condition.get("value"),
+            },
         }
         for optional_parameter in OptionalConditionParameters.values():
             if optional_parameter in condition:
@@ -127,12 +128,7 @@ class Rule(RepresentationInterface):
         if not actions_data:
             raise ValueError("No actions data provided")
         action = "generate_dataset_error_objects"
-        return [{
-            "name": action,
-            "params": {
-                "message": actions_data.get("Message")
-            }
-        }]
+        return [{"name": action, "params": {"message": actions_data.get("Message")}}]
 
     @classmethod
     def parse_datasets(cls, match_key_data: List[dict]) -> List[dict]:
@@ -140,7 +136,7 @@ class Rule(RepresentationInterface):
         # As more standard rules are written.
         relationship_columns = {
             "column_with_names": "IDVAR",
-            "column_with_values": "IDVARVAL"
+            "column_with_values": "IDVARVAL",
         }
         if not match_key_data:
             return None
@@ -169,7 +165,7 @@ class Rule(RepresentationInterface):
             "standards": self.standards,
             "rule_type": self.rule_type,
             "conditions": self.conditions,
-            "actions": self.actions
+            "actions": self.actions,
         }
 
         if self.classes:

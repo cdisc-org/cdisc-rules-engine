@@ -32,7 +32,10 @@ class BlobStorageService:
         )
 
     def get_all_file_names(self, prefix: str):
-        return [blob.name for blob in self.blob_container.list_blobs(name_starts_with=prefix)]
+        return [
+            blob.name
+            for blob in self.blob_container.list_blobs(name_starts_with=prefix)
+        ]
 
     def read_data(self, blob_name) -> bytes:
         blob: StorageStreamDownloader = self._download_blob(blob_name)

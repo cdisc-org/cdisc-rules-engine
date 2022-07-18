@@ -69,7 +69,7 @@ def test_extract_domain_metadata():
             "dataset_location": "ts.xml",
             "dataset_class": "TRIAL DESIGN",
             "dataset_structure": "One record per trial summary parameter value",
-            "dataset_is_non_standard": "None"
+            "dataset_is_non_standard": "None",
         }
 
 
