@@ -1,6 +1,7 @@
 import json
 import os
 from typing import List
+from engine.services.cache.in_memory_cache_service import InMemoryCacheService
 
 from engine.utilities.data_processor import DataProcessor
 import pandas as pd
@@ -56,34 +57,6 @@ def test_max_date(data, expected):
 def test_min_date(data, expected):
     min_date = DataProcessor.calc_min_date(data, "dates")
     assert min_date == expected
-
-def test_get_corresponding_record():
-    dataset = pd.DataFrame.from_dict(
-        {
-            "AESTDY": [11, 12, 40, 59],
-            "USUBJID": [1, 200, 1, 200],
-            "STUDYID": [1, 1, 2, 2],
-        }
-    )
-    corresponding_record = DataProcessor.get_corresponding_record(
-        "test", dataset, ["USUBJID", "STUDYID"], (1, 2)
-    )
-    assert corresponding_record["AESTDY"] == 40
-
-
-def test_get_corresponding_record_non_unique_key():
-    dataset = pd.DataFrame.from_dict(
-        {
-            "AESTDY": [11, 12, 40, 59],
-            "USUBJID": [1, 200, 1, 200],
-            "STUDYID": [1, 1, 2, 2],
-        }
-    )
-    with pytest.raises(InvalidMatchKeyError):
-        corresponding_record = DataProcessor.get_corresponding_record(
-            "test", dataset, ["USUBJID"], (200)
-        )
-
 
 @pytest.mark.parametrize(
     "data",
@@ -144,7 +117,7 @@ def test_preprocess_relationship_dataset(data):
         "engine.services.local_data_service.LocalDataService.get_dataset",
         side_effect=lambda dataset_name: path_to_dataset_map[dataset_name],
     ):
-        data_processor = DataProcessor()
+        data_processor = DataProcessor(cache=InMemoryCacheService())
         reference_data = data_processor.preprocess_relationship_dataset(
             "path", data, datasets
         )
@@ -483,7 +456,7 @@ def test_study_variable_value_occurrence_count(mock_data_service, target, expect
     datasets = [{"domain": "AE", "filename": "AE"}, {"domain": "EX", "filename": "EX"}, {"domain": "AE", "filename": "AE2"}]
     mock_data_service.get_dataset.side_effect = lambda name: datasets_map.get(name.split("/")[-1])
     mock_data_service.join_split_datasets.side_effect = lambda func, files: pd.concat([func(f) for f in files])
-    result = DataProcessor.study_variable_value_occurrence_count(target, datasets, dataset_path, mock_data_service)
+    result = DataProcessor.study_variable_value_occurrence_count(target, datasets, dataset_path, mock_data_service, InMemoryCacheService())
     assert result == expected_result
 
 @pytest.mark.parametrize(

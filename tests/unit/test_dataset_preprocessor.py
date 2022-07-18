@@ -2,6 +2,8 @@ from typing import List
 from unittest.mock import patch, MagicMock
 
 import pandas as pd
+from engine.services.cache.in_memory_cache_service import InMemoryCacheService
+from engine.services.local_data_service import LocalDataService
 
 from engine.utilities.dataset_preprocessor import DatasetPreprocessor
 
@@ -23,7 +25,7 @@ def test_preprocess_no_datasets_in_rule(dataset_rule_equal_to_error_objects: dic
         }
     )
     datasets: List[dict] = [{"domain": "AE", "filename": "ae.xpt"}]
-    preprocessor = DatasetPreprocessor(dataset, "AE", "path")
+    preprocessor = DatasetPreprocessor(dataset, "AE", "path", LocalDataService(), InMemoryCacheService())
     preprocessed_dataset: pd.DataFrame = preprocessor.preprocess(
         dataset_rule_equal_to_error_objects, datasets
     )
@@ -136,7 +138,7 @@ def test_preprocess(mock_get_dataset: MagicMock, dataset_rule_equal_to: dict):
         {"domain": "AE", "filename": "ae.xpt"},
         {"domain": "TS", "filename": "ts.xpt"},
     ]
-    preprocessor = DatasetPreprocessor(ec_dataset, "EC", "path/ec.xpt")
+    preprocessor = DatasetPreprocessor(ec_dataset, "EC", "path/ec.xpt",LocalDataService(), InMemoryCacheService())
     preprocessed_dataset: pd.DataFrame = preprocessor.preprocess(
         dataset_rule_equal_to, datasets
     )
@@ -266,7 +268,7 @@ def test_preprocess_relationship_dataset(
             "filename": "suppec.xpt",
         },
     ]
-    preprocessor = DatasetPreprocessor(ec_dataset, "EC", "path/ec.xpt")
+    preprocessor = DatasetPreprocessor(ec_dataset, "EC", "path/ec.xpt", LocalDataService(), InMemoryCacheService())
     preprocessed_dataset: pd.DataFrame = preprocessor.preprocess(
         dataset_rule_record_in_parent_domain_equal_to, datasets
     )
@@ -360,7 +362,7 @@ def test_preprocess_with_merge_comparison(
     mock_get_dataset.side_effect = lambda dataset_name: path_to_dataset_map[
         dataset_name
     ]
-    preprocessor = DatasetPreprocessor(target_dataset, "EC", "study_id/data_bundle_id/ec.xpt")
+    preprocessor = DatasetPreprocessor(target_dataset, "EC", "study_id/data_bundle_id/ec.xpt", LocalDataService(), InMemoryCacheService())
     result: pd.DataFrame = preprocessor.preprocess(
         rule=dataset_rule_equal_to_compare_same_value,
         datasets=[
