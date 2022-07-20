@@ -4,6 +4,7 @@ from datetime import datetime
 from collections import Counter
 import pandas as pd
 
+from engine.models.dictionaries.whodrug import WhodrugRecordTypes
 from engine.utilities.utils import search_in_list_of_dicts, get_rules_cache_key
 from engine.config import config
 from engine.services.cdisc_library_service import CDISCLibraryService
@@ -213,6 +214,18 @@ class DataProcessor:
     def get_record_by_single_value(dataframe, index_key, index_value):
         target_frame = dataframe[dataframe[index_key] == index_value]
         return DataProcessor.get_unique_record(target_frame)
+
+    @staticmethod
+    def valid_whodrug_references(
+        dataframe: pd.DataFrame, target: str, domain: str, **kwargs
+    ):
+        """
+        Checks if a reference to whodrug term points to the existing code in Atc Text (INA) file.
+        """
+        dictionaries_path: str = kwargs.get("dictionaries_path")
+        cache_service_obj = CacheServiceFactory(config).get_cache_service()
+        terms: dict = cache_service_obj.get(dictionaries_path)
+        return dataframe[target].isin(terms[WhodrugRecordTypes.ATC_TEXT.value])
 
     def preprocess_relationship_dataset(
         self, dataset_path: str, dataset: pd.DataFrame, datasets: List[dict]
