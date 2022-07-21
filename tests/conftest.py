@@ -1313,6 +1313,9 @@ def rule_dataset_references_invalid_whodrug_terms() -> dict:
                 "params": {"message": "Dataset references invalid codes"},
             }
         ],
+        "output_variables": [
+            "AEINA",
+        ],
     }
 
 
