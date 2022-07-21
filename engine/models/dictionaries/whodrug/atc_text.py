@@ -15,9 +15,11 @@ class AtcText(BaseWhoDrugTerm):
 
     @classmethod
     def from_txt_line(cls, line: str) -> "AtcText":
+        parent_code: str = line[:7].strip()
         return cls(
             {
-                "parentCode": line[:7].strip(),
+                "parentCode": parent_code,  # ATC Code
+                "code": parent_code,  # ATC Code
                 "level": int(line[7]),
                 "text": line[8:].strip(),
                 "type": WhodrugRecordTypes.ATC_TEXT.value,

@@ -1,5 +1,5 @@
 import asyncio
-from typing import List, Optional, Set
+from typing import List, Optional, Set, Generator
 from datetime import datetime
 from collections import Counter
 import pandas as pd
@@ -225,7 +225,10 @@ class DataProcessor:
         dictionaries_path: str = kwargs.get("dictionaries_path")
         cache_service_obj = CacheServiceFactory(config).get_cache_service()
         terms: dict = cache_service_obj.get(dictionaries_path)
-        return dataframe[target].isin(terms[WhodrugRecordTypes.ATC_TEXT.value])
+        valid_codes: Generator = (
+            term.code for term in terms[WhodrugRecordTypes.ATC_TEXT.value]
+        )
+        return dataframe[target].isin(valid_codes)
 
     def preprocess_relationship_dataset(
         self, dataset_path: str, dataset: pd.DataFrame, datasets: List[dict]
