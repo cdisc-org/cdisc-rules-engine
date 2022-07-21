@@ -223,6 +223,11 @@ class DataProcessor:
         Checks if a reference to whodrug term points to the existing code in Atc Text (INA) file.
         """
         dictionaries_path: str = kwargs.get("dictionaries_path")
+        if not dictionaries_path:
+            raise ValueError(
+                "Can't execute the operation, no dictionaries path provided"
+            )
+
         cache_service_obj = CacheServiceFactory(config).get_cache_service()
         terms: dict = cache_service_obj.get(dictionaries_path)
         valid_codes: Generator = (

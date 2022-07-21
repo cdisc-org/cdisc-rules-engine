@@ -501,21 +501,10 @@ def test_get_variable_names_for_given_standard(
     )
 
 
-def test_valid_whodrug_references():
+def test_valid_whodrug_references(installed_whodrug_dictionaries: str):
     """
     Unit test for valid_whodrug_references function.
     """
-    # install dictionaries and save to cache
-    cache_service = InMemoryCacheService.get_instance()
-    local_data_service = LocalDataService.get_instance(cache_service=cache_service)
-    factory = WhoDrugTermsFactory(local_data_service)
-
-    directory_path: str = (
-        f"{os.path.dirname(__file__)}/../resources/dictionaries/whodrug"
-    )
-    terms: dict = factory.install_terms(directory_path)
-    cache_service.add(directory_path, terms)
-
     # create a dataset where 2 rows reference invalid terms
     invalid_df = pd.DataFrame.from_dict(
         {
@@ -531,6 +520,6 @@ def test_valid_whodrug_references():
 
     # call the operation and check result
     result = DataProcessor.valid_whodrug_references(
-        invalid_df, "AEINA", "AE", dictionaries_path=directory_path
+        invalid_df, "AEINA", "AE", dictionaries_path=installed_whodrug_dictionaries
     )
     assert result.equals(pd.Series([True, True, False, False]))
