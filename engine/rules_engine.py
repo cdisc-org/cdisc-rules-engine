@@ -26,7 +26,6 @@ from engine.models.actions import COREActions
 from engine.models.dataset_types import DatasetTypes
 from engine.models.dataset_variable import DatasetVariable
 from engine.models.failed_validation_entity import FailedValidationEntity
-from engine.models.rule_conditions import ConditionInterface
 from engine.models.validation_error_container import ValidationErrorContainer
 from engine.utilities.data_processor import DataProcessor
 from engine.utilities.dataset_preprocessor import DatasetPreprocessor

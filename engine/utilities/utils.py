@@ -242,7 +242,7 @@ def extract_file_name_from_path_string(path: str) -> str:
 
 
 def generate_report_filename(
-    study_name: str, data_bundle_name: str, generation_time: str
+    generation_time: str
 ) -> str:
     timestamp = (
         datetime.fromisoformat(generation_time)
@@ -250,7 +250,7 @@ def generate_report_filename(
         .isoformat()
         .replace(":", "-")
     )
-    return f"CORE-{study_name}-{data_bundle_name}-{timestamp}-Report.xlsx"
+    return f"CORE-Report-{timestamp}.xlsx"
 
 
 def get_rules_cache_key(standard: str, version: str, rule_id: str = None) -> str:

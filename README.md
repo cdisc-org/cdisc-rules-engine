@@ -28,4 +28,6 @@ Command line arguments:
 * -ca, --cache: Relative path to cache files containing pre loaded metadata and rules
 * -d, --data: Relative path to directory containing data files
 * -l, --log_level: Sets log level for engine logs, logs are disabled by default
+* -s, --standard: Standard to validate against
+* -v, --version: Standard version to validat against
 ```
