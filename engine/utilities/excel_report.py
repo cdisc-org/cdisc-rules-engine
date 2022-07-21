@@ -16,7 +16,7 @@ class ExcelReport:
         data_path: str,
         validation_results: dict,
         elapsed_time: float,
-        report_template: TextIO
+        report_template: TextIO,
     ):
         self._data_path: str = data_path
         self._elapsed_time: int = elapsed_time
@@ -51,7 +51,7 @@ class ExcelReport:
                                 validation_result.id,  # rule id
                                 result.get("message"),
                                 validation_result.severity,
-                                len(result.get("errors"))
+                                len(result.get("errors")),
                             ]
                         ]
         return sorted(summary_data, key=lambda x: (x[0], x[1]))
@@ -64,9 +64,7 @@ class ExcelReport:
             )
         return sorted(detailed_data, key=lambda x: (x[0], x[3]))
 
-    def _generate_error_details(
-        self, validation_result
-    ) -> List[List]:
+    def _generate_error_details(self, validation_result) -> List[List]:
         """
         Generates the Issue details data that goes into the excel export.
         Each row is represented by a list containing the following information:
@@ -97,7 +95,10 @@ class ExcelReport:
                         error.get("seq", ""),
                         ", ".join(variables),
                         ", ".join(
-                            [str(error.get("value", {}).get(variable)) for variable in variables]
+                            [
+                                str(error.get("value", {}).get(variable))
+                                for variable in variables
+                            ]
                         ),
                     ]
                     for error in result.get("errors")
@@ -146,17 +147,13 @@ class ExcelReport:
         wb["Conformance Details"]["B2"] = self._data_path
         # write conformance data
         wb["Conformance Details"]["B3"] = (
-            datetime.now()
-            .replace(microsecond=0)
-            .isoformat()
+            datetime.now().replace(microsecond=0).isoformat()
         )
         if self._elapsed_time:
             wb["Conformance Details"]["B4"] = f"{round(self._elapsed_time, 2)} seconds"
         # write bundle details
         wb["Conformance Details"]["B8"] = standard.upper()
-        wb["Conformance Details"][
-            "B9"
-        ] = f"V{version}"
+        wb["Conformance Details"]["B9"] = f"V{version}"
         wb["Conformance Details"]["B10"] = ", ".join(cdiscCt)
         wb["Conformance Details"]["B11"] = define_version
         return wb

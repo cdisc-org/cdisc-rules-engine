@@ -27,8 +27,8 @@ def convert_file_size(size_in_bytes: int, desired_unit: str) -> float:
     """
     unit_to_denominator_map: dict = {
         "KB": 1024,
-        "MB": 1024 ** 2,
-        "GB": 1024 ** 3,
+        "MB": 1024**2,
+        "GB": 1024**3,
     }
     return size_in_bytes / unit_to_denominator_map[desired_unit]
 
@@ -241,9 +241,7 @@ def extract_file_name_from_path_string(path: str) -> str:
     return path.split("/")[-1]
 
 
-def generate_report_filename(
-    generation_time: str
-) -> str:
+def generate_report_filename(generation_time: str) -> str:
     timestamp = (
         datetime.fromisoformat(generation_time)
         .replace(microsecond=0)
