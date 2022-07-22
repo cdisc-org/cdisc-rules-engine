@@ -1,5 +1,7 @@
 from typing import List, TextIO
 from datetime import datetime
+from engine.models.rule_validation_result import RuleValidationResult
+from openpyxl import Workbook
 from engine.utilities.excel_writer import (
     excel_open_workbook,
     excel_update_worksheet,
@@ -14,13 +16,13 @@ class ExcelReport:
     def __init__(
         self,
         data_path: str,
-        validation_results: dict,
+        validation_results: List[RuleValidationResult],
         elapsed_time: float,
         report_template: TextIO,
     ):
         self._data_path: str = data_path
         self._elapsed_time: int = elapsed_time
-        self._results: dict = validation_results
+        self._results: List[RuleValidationResult] = validation_results
         self._template: TextIO = report_template
 
     def get_summary_data(self) -> List[List]:
@@ -45,15 +47,17 @@ class ExcelReport:
                         result.get("errors")
                         and result.get("executionStatus") == "success"
                     ):
-                        summary_data = summary_data + [
+                        summary_data.extend(
                             [
-                                dataset,
-                                validation_result.id,  # rule id
-                                result.get("message"),
-                                validation_result.severity,
-                                len(result.get("errors")),
+                                [
+                                    dataset,
+                                    validation_result.id,  # rule id
+                                    result.get("message"),
+                                    validation_result.severity,
+                                    len(result.get("errors")),
+                                ]
                             ]
-                        ]
+                        )
         return sorted(summary_data, key=lambda x: (x[0], x[1]))
 
     def get_detailed_data(self) -> List[List]:
@@ -130,7 +134,7 @@ class ExcelReport:
             )
         return sorted(rules_report, key=lambda x: x[0])
 
-    def get_excel_export(self, define_version, cdiscCt, standard, version):
+    def get_excel_export(self, define_version, cdiscCt, standard, version) -> Workbook:
         """
         Populates the excel workbook template found in the file "CORE-Report-Template.xlsx" with
         data from validation results
@@ -149,8 +153,7 @@ class ExcelReport:
         wb["Conformance Details"]["B3"] = (
             datetime.now().replace(microsecond=0).isoformat()
         )
-        if self._elapsed_time:
-            wb["Conformance Details"]["B4"] = f"{round(self._elapsed_time, 2)} seconds"
+        wb["Conformance Details"]["B4"] = f"{round(self._elapsed_time, 2)} seconds"
         # write bundle details
         wb["Conformance Details"]["B8"] = standard.upper()
         wb["Conformance Details"]["B9"] = f"V{version}"

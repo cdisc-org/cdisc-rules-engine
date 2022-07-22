@@ -162,6 +162,7 @@ def get_cache_service(manager):
 
 
 def main():
+    logger = logging.getLogger("validator")
     args = parse_arguments()
     set_log_level(args.log_level.lower())
     cache_path: str = f"{os.path.dirname(__file__)}/{args.cache}"
@@ -200,6 +201,7 @@ def main():
         with open(args.output, "wb") as f:
             f.write(excel_workbook_to_stream(report_data))
     except Exception as e:
+        logger.error(e)
         raise e
     finally:
         report_template.close()
