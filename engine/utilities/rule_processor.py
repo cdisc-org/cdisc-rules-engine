@@ -159,8 +159,9 @@ class RuleProcessor:
             "variable_value_count": DataProcessor.study_variable_value_occurrence_count,
             "variable_names": DataProcessor.get_variable_names_for_given_standard,
         }
+        data_processor = DataProcessor(self.data_service, self.cache)
         dictionary_operator_map = {
-            "valid_whodrug_references": DataProcessor.valid_whodrug_references,
+            "valid_whodrug_references": data_processor.valid_whodrug_references,
         }
         dataset_copy = dataset.copy()
         directory_path = get_directory_path(dataset_path)

@@ -1320,7 +1320,7 @@ def rule_dataset_references_invalid_whodrug_terms() -> dict:
 
 
 @pytest.fixture(scope="function")
-def installed_whodrug_dictionaries(request) -> str:
+def installed_whodrug_dictionaries(request) -> dict:
     """
     Installs whodrug dictionaries and saves to cache.
     Deletes them afterwards.
@@ -1339,4 +1339,7 @@ def installed_whodrug_dictionaries(request) -> str:
 
     request.addfinalizer(delete_terms_from_cache)
 
-    return directory_path
+    return {
+        "directory_path": directory_path,
+        "cache_service": cache_service,
+    }

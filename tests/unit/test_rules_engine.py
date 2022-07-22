@@ -2152,7 +2152,7 @@ def test_validate_extract_metadata_operation(
 def test_dataset_references_invalid_whodrug_terms(
     mock_get_dataset: MagicMock,
     rule_dataset_references_invalid_whodrug_terms: dict,
-    installed_whodrug_dictionaries: str,
+    installed_whodrug_dictionaries: dict,
 ):
     """
     Unit test for validate_single_rule function.
@@ -2173,7 +2173,9 @@ def test_dataset_references_invalid_whodrug_terms(
     mock_get_dataset.return_value = invalid_df
 
     # run validation
-    engine = RulesEngine(dictionaries_path=installed_whodrug_dictionaries)
+    engine = RulesEngine(
+        dictionaries_path=installed_whodrug_dictionaries["directory_path"]
+    )
     validation_result: List[dict] = engine.validate_single_rule(
         rule=rule_dataset_references_invalid_whodrug_terms,
         dataset_path="dataset_path",

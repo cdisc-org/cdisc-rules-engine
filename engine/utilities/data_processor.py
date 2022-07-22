@@ -215,9 +215,8 @@ class DataProcessor:
         target_frame = dataframe[dataframe[index_key] == index_value]
         return DataProcessor.get_unique_record(target_frame)
 
-    @staticmethod
     def valid_whodrug_references(
-        dataframe: pd.DataFrame, target: str, domain: str, **kwargs
+        self, dataframe: pd.DataFrame, target: str, domain: str, **kwargs
     ):
         """
         Checks if a reference to whodrug term points to the existing code in Atc Text (INA) file.
@@ -228,8 +227,7 @@ class DataProcessor:
                 "Can't execute the operation, no dictionaries path provided"
             )
 
-        cache_service_obj = CacheServiceFactory(config).get_cache_service()
-        terms: dict = cache_service_obj.get(dictionaries_path)
+        terms: dict = self.cache.get(dictionaries_path)
         valid_codes: Generator = (
             term.code for term in terms[WhodrugRecordTypes.ATC_TEXT.value]
         )
