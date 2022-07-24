@@ -28,4 +28,10 @@ Command line arguments:
 * -ca, --cache: Relative path to cache files containing pre loaded metadata and rules
 * -d, --data: Relative path to directory containing data files
 * -l, --log_level: Sets log level for engine logs, logs are disabled by default
+* -s, --standard: Standard to validate against
+* -v, --version: Standard version to validate against
+* -ct, --controlled_terminology_package: CT package(s) to validate against, can supply more than one
+* -dv, --define_version: Define XML version to use for validation.
+* -rt, --report_template: Report template to use for excel output
+* -o, --output: Output file destination
 ```

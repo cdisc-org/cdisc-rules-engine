@@ -27,8 +27,8 @@ def convert_file_size(size_in_bytes: int, desired_unit: str) -> float:
     """
     unit_to_denominator_map: dict = {
         "KB": 1024,
-        "MB": 1024 ** 2,
-        "GB": 1024 ** 3,
+        "MB": 1024**2,
+        "GB": 1024**3,
     }
     return size_in_bytes / unit_to_denominator_map[desired_unit]
 
@@ -241,16 +241,14 @@ def extract_file_name_from_path_string(path: str) -> str:
     return path.split("/")[-1]
 
 
-def generate_report_filename(
-    study_name: str, data_bundle_name: str, generation_time: str
-) -> str:
+def generate_report_filename(generation_time: str) -> str:
     timestamp = (
         datetime.fromisoformat(generation_time)
         .replace(microsecond=0)
         .isoformat()
         .replace(":", "-")
     )
-    return f"CORE-{study_name}-{data_bundle_name}-{timestamp}-Report.xlsx"
+    return f"CORE-Report-{timestamp}.xlsx"
 
 
 def get_rules_cache_key(standard: str, version: str, rule_id: str = None) -> str:
