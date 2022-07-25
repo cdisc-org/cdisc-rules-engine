@@ -1,31 +1,33 @@
-import logging
-from multiprocessing.managers import SyncManager
-import itertools
-from multiprocessing import Pool
-from functools import partial
-import os
-import time
 import argparse
+import itertools
+import logging
+import os
 import pickle
+import time
 from datetime import datetime
+from functools import partial
+from multiprocessing import Pool
+from multiprocessing.managers import SyncManager
 
 logging.getLogger("asyncio").disabled = True
 logging.getLogger("xmlschema").disabled = True
 
-from engine.services.cache.in_memory_cache_service import InMemoryCacheService
-from engine.services.cache.redis_cache_service import RedisCacheService
+from engine.config import config
+from engine.constants.define_xml_constants import DEFINE_XML_FILE_NAME
+from engine.models.dictionaries import DictionaryTypes, TermsFactoryInterface
+from engine.models.dictionaries.meddra import MedDRATermsFactory
+from engine.models.dictionaries.whodrug import WhoDrugTermsFactory
+from engine.models.rule_conditions import ConditionCompositeFactory
+from engine.models.rule_validation_result import RuleValidationResult
 from engine.rules_engine import RulesEngine
 from engine.services import logger as engine_logger
-from engine.constants.define_xml_constants import DEFINE_XML_FILE_NAME
-from engine.services.data_services.data_service_factory import DataServiceFactory
-from engine.models.rule_validation_result import RuleValidationResult
-from engine.services.data_services.base_data_service import BaseDataService
-from engine.config import config
-from engine.models.rule_conditions import ConditionCompositeFactory
+from engine.services.cache.cache_service_interface import CacheServiceInterface
+from engine.services.cache.in_memory_cache_service import InMemoryCacheService
+from engine.services.cache.redis_cache_service import RedisCacheService
+from engine.services.data_services import BaseDataService, DataServiceFactory
 from engine.utilities.excel_report import ExcelReport
-from engine.utilities.utils import get_rules_cache_key, generate_report_filename
 from engine.utilities.excel_writer import excel_workbook_to_stream
-
+from engine.utilities.utils import generate_report_filename, get_rules_cache_key
 
 """
 Sync manager used to manage instances of the cache between processes.
@@ -38,17 +40,20 @@ class CacheManager(SyncManager):
     pass
 
 
-def validate_single_rule(cache, path, datasets, args, rule):
-    # call rule engine
+def validate_single_rule(
+    cache, path, datasets, args, dictionaries_path: str = None, rule: dict = None
+):
     set_log_level(args.log_level)
     rule["conditions"] = ConditionCompositeFactory.get_condition_composite(
         rule["conditions"]
     )
+    # call rule engine
     engine = RulesEngine(
         cache=cache,
         standard=args.standard,
         standard_version=args.version.replace(".", "-"),
         ct_package=args.controlled_terminology_package,
+        dictionaries_path=dictionaries_path,
     )
     results = [
         engine.validate_single_rule(
@@ -104,17 +109,42 @@ def parse_arguments():
         help="Define version used for validation",
         default="2.1",
     )
+    parser.add_argument(
+        "-dp", "--dictionaries_path", help="Path to directory with dictionaries files"
+    )
+    parser.add_argument(
+        "-dt", "--dictionary_type", help="Dictionary type (MedDra, WhoDrug)"
+    )
     args = parser.parse_args()
     return args
 
 
-def fill_cache(cache, cache_path: str):
+def fill_cache_with_provided_data(cache, cache_path: str):
     cache_files = next(os.walk(cache_path), (None, None, []))[2]
     for file_name in cache_files:
         with open(f"{cache_path}/{file_name}", "rb") as f:
             data = pickle.load(f)
             cache.add_all(data)
     return cache
+
+
+def fill_cache_with_dictionaries(
+    cache: CacheServiceInterface, dictionaries_path: str, dictionary_type: str
+):
+    """
+    Extracts file contents from provided dictionaries files
+    and saves to cache (inmemory or redis).
+    """
+    data_service = DataServiceFactory(config, cache).get_data_service()
+    dictionary_type_to_factory_map: dict = {
+        DictionaryTypes.MEDDRA.value: MedDRATermsFactory,
+        DictionaryTypes.WHODRUG.value: WhoDrugTermsFactory,
+    }
+    factory: TermsFactoryInterface = dictionary_type_to_factory_map[dictionary_type](
+        data_service
+    )
+    terms: dict = factory.install_terms(dictionaries_path)
+    cache.add(dictionaries_path, terms)
 
 
 def get_datasets(data_service: BaseDataService, data_path: str):
@@ -137,7 +167,7 @@ def get_datasets(data_service: BaseDataService, data_path: str):
     return datasets
 
 
-def set_log_level(level):
+def set_log_level(level: str):
     levels = {
         "info": logging.INFO,
         "debug": logging.DEBUG,
@@ -167,23 +197,40 @@ def main():
     set_log_level(args.log_level.lower())
     cache_path: str = f"{os.path.dirname(__file__)}/{args.cache}"
     data_path: str = f"{os.path.dirname(__file__)}/{args.data}"
+    dictionaries_path: str = args.dictionaries_path
+    dictionary_type: str = args.dictionary_type
 
-    pool = Pool(args.pool_size)
-
+    # fill cache
     CacheManager.register("RedisCacheService", RedisCacheService)
     CacheManager.register("InMemoryCacheService", InMemoryCacheService)
     manager = CacheManager()
     manager.start()
     shared_cache = get_cache_service(manager)
-    shared_cache = fill_cache(shared_cache, cache_path)
+    shared_cache = fill_cache_with_provided_data(shared_cache, cache_path)
+
+    # install dictionaries if needed
+    if dictionaries_path:
+        assert dictionary_type, "Obligatory parameter dictionary_type is not provided"
+        fill_cache_with_dictionaries(shared_cache, dictionaries_path, dictionary_type)
+
     rules = shared_cache.get_all_by_prefix(
         get_rules_cache_key(args.standard, args.version.replace(".", "-"))
     )
     data_service = DataServiceFactory(config, shared_cache).get_data_service()
     datasets = get_datasets(data_service, data_path)
+
     start = time.time()
+    pool = Pool(args.pool_size)
     results = pool.map(
-        partial(validate_single_rule, shared_cache, data_path, datasets, args), rules
+        partial(
+            validate_single_rule,
+            shared_cache,
+            data_path,
+            datasets,
+            args,
+            dictionaries_path,
+        ),
+        rules,
     )
     pool.close()
     pool.join()

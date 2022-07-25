@@ -1,7 +1,10 @@
 import json
 import os
 from typing import List
+
+from engine.models.dictionaries.whodrug import WhoDrugTermsFactory
 from engine.services.cache.in_memory_cache_service import InMemoryCacheService
+from engine.services.data_services import LocalDataService
 
 from engine.utilities.data_processor import DataProcessor
 import pandas as pd
@@ -496,3 +499,33 @@ def test_get_variable_names_for_given_standard(
         )
         == expected_result
     )
+
+
+def test_valid_whodrug_references(installed_whodrug_dictionaries: dict):
+    """
+    Unit test for valid_whodrug_references function.
+    """
+    # create a dataset where 2 rows reference invalid terms
+    invalid_df = pd.DataFrame.from_dict(
+        {
+            "DOMAIN": [
+                "AE",
+                "AE",
+                "AE",
+                "AE",
+            ],
+            "AEINA": ["A", "A01", "A01AC", "A01AD"],
+        }
+    )
+
+    # call the operation and check result
+    data_processor = DataProcessor(
+        MagicMock(), installed_whodrug_dictionaries["cache_service"]
+    )
+    result = data_processor.valid_whodrug_references(
+        invalid_df,
+        "AEINA",
+        "AE",
+        dictionaries_path=installed_whodrug_dictionaries["directory_path"],
+    )
+    assert result.equals(pd.Series([True, True, False, False]))

@@ -9,6 +9,7 @@ class BaseWhoDrugTerm(ABC):
 
     def __init__(self, record_params: dict):
         self.type: str = record_params["type"]
+        self.code: str = record_params["code"]
 
     @classmethod
     @abstractmethod

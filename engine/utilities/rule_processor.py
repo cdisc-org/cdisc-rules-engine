@@ -142,6 +142,7 @@ class RuleProcessor:
         dataset_path: str,
         standard: str,
         standard_version: str,
+        **kwargs,
     ) -> pd.DataFrame:
         domain_operator_map = {
             "min": DataProcessor.calc_min,
@@ -158,6 +159,10 @@ class RuleProcessor:
             "variable_value_count": DataProcessor.study_variable_value_occurrence_count,
             "variable_names": DataProcessor.get_variable_names_for_given_standard,
         }
+        data_processor = DataProcessor(self.data_service, self.cache)
+        dictionary_operator_map = {
+            "valid_whodrug_references": data_processor.valid_whodrug_references,
+        }
         dataset_copy = dataset.copy()
         directory_path = get_directory_path(dataset_path)
         for operation in rule.get("operations") or []:
@@ -170,7 +175,11 @@ class RuleProcessor:
                 # Not a study wide operation
                 target_variable = target_variable.replace("--", domain)
                 target_domain = target_domain.replace("--", domain)
-            if operator in study_operator_map:
+            if operator in dictionary_operator_map:
+                result = dictionary_operator_map.get(operator)(
+                    dataset, target_variable, target_domain, **kwargs
+                )
+            elif operator in study_operator_map:
                 # Perform study wide operation
                 result = study_operator_map.get(operator)(
                     target_variable,

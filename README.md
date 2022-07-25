@@ -34,4 +34,6 @@ Command line arguments:
 * -dv, --define_version: Define XML version to use for validation.
 * -rt, --report_template: Report template to use for excel output
 * -o, --output: Output file destination
+* -dp, --dictionaries_path: Path to directory with dictionaries files
+* -dt, --dictionary_type: Dictionary type (MedDra, WhoDrug). Required if dictionaries_path is provided.
 ```

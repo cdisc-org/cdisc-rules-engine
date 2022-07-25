@@ -1,6 +1,12 @@
+import os
+
 import pytest
 from unittest.mock import MagicMock
 import pandas as pd
+
+from engine.models.dictionaries.whodrug import WhoDrugTermsFactory
+from engine.services.cache.in_memory_cache_service import InMemoryCacheService
+from engine.services.data_services import LocalDataService
 
 
 @pytest.fixture
@@ -1266,4 +1272,74 @@ def dataset_rule_get_variable_names_in_given_standard() -> dict:
                 "params": {"message": "Variable names are not present"},
             }
         ],
+    }
+
+
+@pytest.fixture(scope="function")
+def rule_dataset_references_invalid_whodrug_terms() -> dict:
+    """
+    This rule validates that dataset codes reference valid whodrug terms.
+    """
+    return {
+        "core_id": "MockRule",
+        "standards": [{"Name": "SDTMIG", "Version": "3.3"}],
+        "classes": {"Include": ["All"]},
+        "domains": {"Include": ["All"]},
+        "operations": [
+            {
+                "operator": "valid_whodrug_references",
+                "domain": "AE",
+                "name": "AEINA",
+                "id": "$valid_whodrug_reference",
+            }
+        ],
+        "conditions": ConditionCompositeFactory.get_condition_composite(
+            {
+                "all": [
+                    {
+                        "name": "get_dataset",
+                        "operator": "equal_to",
+                        "value": {
+                            "target": "$valid_whodrug_reference",
+                            "comparator": False,
+                        },
+                    },
+                ]
+            }
+        ),
+        "actions": [
+            {
+                "name": "generate_dataset_error_objects",
+                "params": {"message": "Dataset references invalid codes"},
+            }
+        ],
+        "output_variables": [
+            "AEINA",
+        ],
+    }
+
+
+@pytest.fixture(scope="function")
+def installed_whodrug_dictionaries(request) -> dict:
+    """
+    Installs whodrug dictionaries and saves to cache.
+    Deletes them afterwards.
+    """
+    # install dictionaries and save to cache
+    cache_service = InMemoryCacheService.get_instance()
+    local_data_service = LocalDataService.get_instance(cache_service=cache_service)
+    factory = WhoDrugTermsFactory(local_data_service)
+
+    directory_path: str = f"{os.path.dirname(__file__)}/resources/dictionaries/whodrug"
+    terms: dict = factory.install_terms(directory_path)
+    cache_service.add(directory_path, terms)
+
+    def delete_terms_from_cache():
+        cache_service.clear(directory_path)
+
+    request.addfinalizer(delete_terms_from_cache)
+
+    return {
+        "directory_path": directory_path,
+        "cache_service": cache_service,
     }
