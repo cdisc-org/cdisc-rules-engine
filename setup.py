@@ -10,4 +10,5 @@ setuptools.setup(
     url="https://github.com/cdisc-org/cdisc-rules-engine",
     packages=["engine"],
     license="MIT",
+    entry_points={"console_scripts": ["validate=engine.run_validation:main"]},
 )
