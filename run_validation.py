@@ -1,16 +1,5 @@
 import logging
 from multiprocessing.managers import SyncManager
-
-from engine.models.dictionaries import DictionaryTypes, TermsFactoryInterface
-from engine.models.dictionaries.meddra import MedDRATermsFactory
-from engine.models.dictionaries.whodrug import WhoDrugTermsFactory
-from engine.services.cache.cache_service_interface import CacheServiceInterface
-from engine.services.cache.in_memory_cache_service import InMemoryCacheService
-
-from engine.services.cache.redis_cache_service import RedisCacheService
-
-logging.getLogger("asyncio").disabled = True
-logging.getLogger("xmlschema").disabled = True
 import itertools
 from multiprocessing import Pool
 from functools import partial
@@ -18,13 +7,28 @@ import os
 import time
 import argparse
 import pickle
+from datetime import datetime
+
+logging.getLogger("asyncio").disabled = True
+logging.getLogger("xmlschema").disabled = True
+
+from engine.config import config
+from engine.constants.define_xml_constants import DEFINE_XML_FILE_NAME
+from engine.models.dictionaries import DictionaryTypes, TermsFactoryInterface
+from engine.models.dictionaries.meddra import MedDRATermsFactory
+from engine.models.dictionaries.whodrug import WhoDrugTermsFactory
+from engine.models.rule_validation_result import RuleValidationResult
+from engine.models.rule_conditions import ConditionCompositeFactory
 from engine.rules_engine import RulesEngine
 from engine.services import logger as engine_logger
-from engine.constants.define_xml_constants import DEFINE_XML_FILE_NAME
+from engine.services.cache.in_memory_cache_service import InMemoryCacheService
+from engine.services.cache.redis_cache_service import RedisCacheService
+from engine.services.cache.cache_service_interface import CacheServiceInterface
 from engine.services.data_services import DataServiceFactory
 from engine.services.data_services import BaseDataService
-from engine.config import config
-from engine.models.rule_conditions import ConditionCompositeFactory
+from engine.utilities.excel_report import ExcelReport
+from engine.utilities.utils import get_rules_cache_key, generate_report_filename
+from engine.utilities.excel_writer import excel_workbook_to_stream
 
 
 """
@@ -39,23 +43,28 @@ class CacheManager(SyncManager):
 
 
 def validate_single_rule(
-    cache, path, datasets, rule, log_level="disabled", dictionaries_path: str = None
+    cache, path, datasets, args, dictionaries_path: str = None, rule: dict = None
 ):
-    # call rule engine
-    set_log_level(log_level)
+    set_log_level(args.log_level)
     rule["conditions"] = ConditionCompositeFactory.get_condition_composite(
         rule["conditions"]
     )
-    engine = RulesEngine(cache=cache, dictionaries_path=dictionaries_path)
+    # call rule engine
+    engine = RulesEngine(
+        cache=cache,
+        standard=args.standard,
+        standard_version=args.version.replace(".", "-"),
+        ct_package=args.controlled_terminology_package,
+        dictionaries_path=dictionaries_path,
+    )
     results = [
         engine.validate_single_rule(
             rule, f"{path}/{dataset['filename']}", datasets, dataset["domain"]
         )
         for dataset in datasets
     ]
-    # show_elapsed_time(rule, end-start)
     results = list(itertools.chain(*results))
-    return results
+    return RuleValidationResult(rule, results)
 
 
 def parse_arguments():
@@ -72,6 +81,36 @@ def parse_arguments():
     )
     parser.add_argument("-d", "--data", help="Data location", required=True)
     parser.add_argument("-l", "--log_level", help="Log level", default="disabled")
+    parser.add_argument(
+        "-rt",
+        "--report_template",
+        help="File Path of report template",
+        default="resources/templates/report-template.xlsx",
+    )
+    parser.add_argument(
+        "-s", "--standard", help="CDISC standard to validate against", required=True
+    )
+    parser.add_argument(
+        "-v", "--version", help="Standard version to validate against", required=True
+    )
+    parser.add_argument(
+        "-ct",
+        "--controlled_terminology_package",
+        action="append",
+        help="Controlled terminology package to validate against",
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
+        help="Report output file",
+        default=generate_report_filename(datetime.now().isoformat()),
+    )
+    parser.add_argument(
+        "-dv",
+        "--define_version",
+        help="Define version used for validation",
+        default="2.1",
+    )
     parser.add_argument(
         "-dp", "--dictionaries_path", help="Path to directory with dictionaries files"
     )
@@ -130,7 +169,7 @@ def get_datasets(data_service: BaseDataService, data_path: str):
     return datasets
 
 
-def set_log_level(level):
+def set_log_level(level: str):
     levels = {
         "info": logging.INFO,
         "debug": logging.DEBUG,
@@ -155,6 +194,7 @@ def get_cache_service(manager):
 
 
 def main():
+    logger = logging.getLogger("validator")
     args = parse_arguments()
     set_log_level(args.log_level.lower())
     cache_path: str = f"{os.path.dirname(__file__)}/{args.cache}"
@@ -175,11 +215,12 @@ def main():
         assert dictionary_type, "Obligatory parameter dictionary_type is not provided"
         fill_cache_with_dictionaries(shared_cache, dictionaries_path, dictionary_type)
 
-    rules = shared_cache.get_all_by_prefix("rules/")
+    rules = shared_cache.get_all_by_prefix(
+        get_rules_cache_key(args.standard, args.version.replace(".", "-"))
+    )
     data_service = DataServiceFactory(config, shared_cache).get_data_service()
     datasets = get_datasets(data_service, data_path)
 
-    # TODO: Convert results to excel output
     start = time.time()
     pool = Pool(args.pool_size)
     results = pool.map(
@@ -188,15 +229,31 @@ def main():
             shared_cache,
             data_path,
             datasets,
-            log_level=args.log_level,
-            dictionaries_path=dictionaries_path,
+            args,
+            dictionaries_path,
         ),
         rules,
     )
     pool.close()
     pool.join()
     end = time.time()
-    print(f"Total time = {end-start} seconds")
+    elapsed_time = end - start
+    report_template = data_service.read_data(args.report_template, "rb")
+    try:
+        report = ExcelReport(data_path, results, elapsed_time, report_template.read())
+        report_data = report.get_excel_export(
+            args.define_version,
+            args.controlled_terminology_package,
+            args.standard,
+            args.version.replace("-", "."),
+        )
+        with open(args.output, "wb") as f:
+            f.write(excel_workbook_to_stream(report_data))
+    except Exception as e:
+        logger.error(e)
+        raise e
+    finally:
+        report_template.close()
 
 
 if __name__ == "__main__":
