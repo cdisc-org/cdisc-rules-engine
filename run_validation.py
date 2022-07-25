@@ -1,13 +1,13 @@
-import logging
-from multiprocessing.managers import SyncManager
-import itertools
-from multiprocessing import Pool
-from functools import partial
-import os
-import time
 import argparse
+import itertools
+import logging
+import os
 import pickle
+import time
 from datetime import datetime
+from functools import partial
+from multiprocessing import Pool
+from multiprocessing.managers import SyncManager
 
 logging.getLogger("asyncio").disabled = True
 logging.getLogger("xmlschema").disabled = True
@@ -17,19 +17,17 @@ from engine.constants.define_xml_constants import DEFINE_XML_FILE_NAME
 from engine.models.dictionaries import DictionaryTypes, TermsFactoryInterface
 from engine.models.dictionaries.meddra import MedDRATermsFactory
 from engine.models.dictionaries.whodrug import WhoDrugTermsFactory
-from engine.models.rule_validation_result import RuleValidationResult
 from engine.models.rule_conditions import ConditionCompositeFactory
+from engine.models.rule_validation_result import RuleValidationResult
 from engine.rules_engine import RulesEngine
 from engine.services import logger as engine_logger
+from engine.services.cache.cache_service_interface import CacheServiceInterface
 from engine.services.cache.in_memory_cache_service import InMemoryCacheService
 from engine.services.cache.redis_cache_service import RedisCacheService
-from engine.services.cache.cache_service_interface import CacheServiceInterface
-from engine.services.data_services import DataServiceFactory
-from engine.services.data_services import BaseDataService
+from engine.services.data_services import BaseDataService, DataServiceFactory
 from engine.utilities.excel_report import ExcelReport
-from engine.utilities.utils import get_rules_cache_key, generate_report_filename
 from engine.utilities.excel_writer import excel_workbook_to_stream
-
+from engine.utilities.utils import generate_report_filename, get_rules_cache_key
 
 """
 Sync manager used to manage instances of the cache between processes.
