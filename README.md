@@ -37,3 +37,8 @@ Command line arguments:
 * -dp, --dictionaries_path: Path to directory with dictionaries files
 * -dt, --dictionary_type: Dictionary type (MedDra, WhoDrug). Required if dictionaries_path is provided.
 ```
+
+### Creating an executable version
+Run the following command:
+
+`pyinstaller run_validation.py --add-data=venv/lib/python3.9/site-packages/xmlschema/schemas:xmlschema/schemas`

@@ -6,7 +6,7 @@ import pickle
 import time
 from datetime import datetime
 from functools import partial
-from multiprocessing import Pool
+from multiprocessing import Pool, freeze_support
 from multiprocessing.managers import SyncManager
 
 logging.getLogger("asyncio").disabled = True
@@ -96,6 +96,7 @@ def parse_arguments():
         "--controlled_terminology_package",
         action="append",
         help="Controlled terminology package to validate against",
+        default=[],
     )
     parser.add_argument(
         "-o",
@@ -255,4 +256,5 @@ def main():
 
 
 if __name__ == "__main__":
+    freeze_support()
     main()
