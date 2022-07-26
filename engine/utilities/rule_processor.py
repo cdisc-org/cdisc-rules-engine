@@ -162,6 +162,9 @@ class RuleProcessor:
         data_processor = DataProcessor(self.data_service, self.cache)
         dictionary_operator_map = {
             "valid_whodrug_references": data_processor.valid_whodrug_references,
+            "valid_meddra_code_references": data_processor.valid_meddra_code_references,
+            "valid_meddra_term_references": data_processor.valid_meddra_term_references,
+            "valid_meddra_code_term_pairs": data_processor.valid_meddra_code_term_pairs,
         }
         dataset_copy = dataset.copy()
         directory_path = get_directory_path(dataset_path)
