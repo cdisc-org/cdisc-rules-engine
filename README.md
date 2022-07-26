@@ -42,3 +42,6 @@ Command line arguments:
 Run the following command:
 
 `pyinstaller run_validation.py --add-data=venv/lib/python3.9/site-packages/xmlschema/schemas:xmlschema/schemas`
+
+This will create an executable version in the `dist` folder. The version does not require having Python installed and
+can be launched by running `./run_validation` with all necessary CLI arguments.
