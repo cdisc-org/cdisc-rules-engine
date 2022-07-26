@@ -8,20 +8,25 @@ from engine.models.dictionaries.whodrug import WhoDrugTermsFactory
 from engine.services.cache.in_memory_cache_service import InMemoryCacheService
 from engine.services.data_services import LocalDataService
 
-
-@pytest.fixture
-def mock_data_service():
-    yield MagicMock()
-
-
 from engine.enums.rule_types import RuleTypes
 
 # from engine.utilities.testing_utils.common_fixtures import *
 from engine.models.rule_conditions import ConditionCompositeFactory
 
 
-@pytest.fixture
-def mock_record_rule_less_than():
+def mock_get_dataset(dataset_name):
+    dataframe_map = {
+        "ae.xpt": pd.DataFrame.from_dict(
+            {"AESTDY": [1, 2, 40, 59], "USUBJID": [1, 2, 3, 45]}
+        ),
+        "ec.xpt": pd.DataFrame.from_dict(
+            {"ECCOOLVAR": [3, 4, 5000, 35], "USUBJID": [1, 2, 3, 45]}
+        ),
+    }
+    return dataframe_map.get(dataset_name.split("/")[-1])
+
+
+def get_matches_regex_pattern_rule(pattern: str) -> dict:
     return {
         "core_id": "MockRule",
         "standards": [{"Name": "SDTMIG", "Version": "3.3"}],
@@ -30,10 +35,12 @@ def mock_record_rule_less_than():
             {
                 "all": [
                     {
-                        "name": "check_value",
-                        "params": {"target": "AESTDY"},
-                        "operator": "less_than",
-                        "value": 10,
+                        "name": "get_dataset",
+                        "operator": "matches_regex",
+                        "value": {
+                            "target": "AESTDY",
+                            "comparator": pattern,
+                        },
                     }
                 ]
             }
@@ -41,38 +48,15 @@ def mock_record_rule_less_than():
         "actions": [
             {
                 "name": "generate_dataset_errors",
-                "params": {"message": "Value for AESTDY less than 10."},
+                "params": {"message": f"Records have the following pattern: {pattern}"},
             }
         ],
     }
 
 
 @pytest.fixture
-def mock_ec_record_rule_greater_than():
-    return {
-        "core_id": "MockRule2",
-        "standards": [{"Name": "SDTMIG", "Version": "3.3"}],
-        "domains": {"Include": ["EC"]},
-        "output_variables": ["ECCOOLVAR"],
-        "conditions": ConditionCompositeFactory.get_condition_composite(
-            {
-                "all": [
-                    {
-                        "name": "check_value",
-                        "params": {"target": "ECCOOLVAR"},
-                        "operator": "greater_than",
-                        "value": 30,
-                    }
-                ]
-            }
-        ),
-        "actions": [
-            {
-                "name": "generate_dataset_errors",
-                "params": {"message": "Value for ECCOOLVAR greater than 30."},
-            }
-        ],
-    }
+def mock_data_service():
+    yield MagicMock()
 
 
 @pytest.fixture
@@ -193,64 +177,6 @@ def dataset_rule_has_not_equal_length() -> dict:
 
 
 @pytest.fixture
-def mock_record_rule_less_than():
-    return {
-        "core_id": "MockRule",
-        "standards": [{"Name": "SDTMIG", "Version": "3.3"}],
-        "domains": {"Include": ["AE"]},
-        "output_variables": ["AESTDY"],
-        "conditions": ConditionCompositeFactory.get_condition_composite(
-            {
-                "all": [
-                    {
-                        "name": "get_dataset",
-                        "operator": "less_than",
-                        "value": {"target": "AESTDY", "comparator": 10},
-                    }
-                ]
-            }
-        ),
-        "actions": [
-            {
-                "name": "generate_dataset_errors",
-                "params": {
-                    "message": "Value for AESTDY less than 10.",
-                },
-            }
-        ],
-    }
-
-
-@pytest.fixture
-def mock_record_rule_less_than_with_cross_data_set_check():
-    return {
-        "core_id": "MockRule",
-        "standards": [{"Name": "SDTMIG", "Version": "3.3"}],
-        "domains": {"Include": ["AE"]},
-        "conditions": ConditionCompositeFactory.get_condition_composite(
-            {
-                "all": [
-                    {
-                        "name": "get_dataset",
-                        "operator": "less_than",
-                        "value": "$target:EC.ECCOOLVAR",
-                        "match_keys": ["STUDYID", "USUBJID"],
-                    }
-                ]
-            }
-        ),
-        "actions": [
-            {
-                "name": "generate_dataset_errors",
-                "params": {
-                    "message": "Value for AESTDY less than 10.",
-                },
-            }
-        ],
-    }
-
-
-@pytest.fixture
 def mock_record_rule_equal_to_string_prefix():
     return {
         "core_id": "MockRule",
@@ -277,34 +203,6 @@ def mock_record_rule_equal_to_string_prefix():
                 "name": "generate_dataset_errors",
                 "params": {
                     "message": "Prefix of AESTDY is equal to test.",
-                },
-            }
-        ],
-    }
-
-
-@pytest.fixture
-def mock_ec_record_rule_greater_than():
-    return {
-        "core_id": "MockRule2",
-        "standards": [{"Name": "SDTMIG", "Version": "3.3"}],
-        "domains": {"Include": ["EC"]},
-        "conditions": ConditionCompositeFactory.get_condition_composite(
-            {
-                "all": [
-                    {
-                        "name": "get_dataset",
-                        "operator": "greater_than",
-                        "value": {"target": "ECCOOLVAR", "comparator": 30},
-                    }
-                ]
-            }
-        ),
-        "actions": [
-            {
-                "name": "generate_dataset_errors",
-                "params": {
-                    "message": "Value for ECCOOLVAR greater than 30.",
                 },
             }
         ],
@@ -340,49 +238,6 @@ def mock_ae_record_rule_equal_to_suffix() -> dict:
                     "message": "Suffix of AESTDY is equal to test.",
                 },
             }
-        ],
-    }
-
-
-@pytest.fixture
-def mock_record_rule_less_than_with_operation():
-    return {
-        "core_id": "MockRule",
-        "standards": [{"Name": "SDTMIG", "Version": "3.3"}],
-        "domains": {"Include": ["AE"]},
-        "datasets": [
-            {"domain_name": "AE", "match_key": ["USUBJID"]},
-            {"domain_name": "EC", "match_key": ["USUBJID"]},
-        ],
-        "operations": [
-            {
-                "operator": "min",
-                "domain": "EC",
-                "name": "ECCOOLVAR",
-                "id": "$min_eccoolvar",
-            }
-        ],
-        "conditions": ConditionCompositeFactory.get_condition_composite(
-            {
-                "all": [
-                    {
-                        "name": "get_dataset",
-                        "operator": "less_than",
-                        "value": {"comparator": "$min_eccoolvar", "target": "AESTDY"},
-                    }
-                ]
-            }
-        ),
-        "actions": [
-            {
-                "name": "generate_dataset_errors",
-                "params": {
-                    "message": "Value for AESTDY less than $min_eccoolvar.",
-                },
-            }
-        ],
-        "output_variables": [
-            "AESTDY",
         ],
     }
 
@@ -500,37 +355,6 @@ def rule_distinct_operation_is_not_contained_by() -> dict:
             {
                 "name": "generate_dataset_error_objects",
                 "params": {"message": "IETEST is not in TI.IETEST"},
-            }
-        ],
-    }
-
-
-@pytest.fixture
-def mock_ec_record_rule_greater_than_with_operation():
-    return {
-        "core_id": "MockRule2",
-        "standards": [{"Name": "SDTMIG", "Version": "3.3"}],
-        "domains": {"Include": ["EC"]},
-        "operations": [
-            {"operator": "max", "domain": "AE", "name": "AESTDY", "id": "$max_aestdy"}
-        ],
-        "conditions": ConditionCompositeFactory.get_condition_composite(
-            {
-                "all": [
-                    {
-                        "name": "get_dataset",
-                        "operator": "greater_than",
-                        "value": {"comparator": "$max_aestdy", "target": "ECCOOLVAR"},
-                    }
-                ]
-            }
-        ),
-        "actions": [
-            {
-                "name": "generate_dataset_errors",
-                "params": {
-                    "message": "Value for ECCOOLVAR greater than the Max AESTDY value: $max_aestdy.",
-                },
             }
         ],
     }
@@ -840,46 +664,6 @@ def variables_metadata_rule() -> dict:
                 "params": {
                     "message": "Variable metadata is wrong.",
                 },
-            }
-        ],
-    }
-
-
-def mock_get_dataset(dataset_name):
-    dataframe_map = {
-        "ae.xpt": pd.DataFrame.from_dict(
-            {"AESTDY": [1, 2, 40, 59], "USUBJID": [1, 2, 3, 45]}
-        ),
-        "ec.xpt": pd.DataFrame.from_dict(
-            {"ECCOOLVAR": [3, 4, 5000, 35], "USUBJID": [1, 2, 3, 45]}
-        ),
-    }
-    return dataframe_map.get(dataset_name.split("/")[-1])
-
-
-def get_matches_regex_pattern_rule(pattern: str) -> dict:
-    return {
-        "core_id": "MockRule",
-        "standards": [{"Name": "SDTMIG", "Version": "3.3"}],
-        "domains": {"Include": ["AE"]},
-        "conditions": ConditionCompositeFactory.get_condition_composite(
-            {
-                "all": [
-                    {
-                        "name": "get_dataset",
-                        "operator": "matches_regex",
-                        "value": {
-                            "target": "AESTDY",
-                            "comparator": pattern,
-                        },
-                    }
-                ]
-            }
-        ),
-        "actions": [
-            {
-                "name": "generate_dataset_errors",
-                "params": {"message": f"Records have the following pattern: {pattern}"},
             }
         ],
     }
