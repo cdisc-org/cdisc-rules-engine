@@ -47,7 +47,7 @@ def get_matches_regex_pattern_rule(pattern: str) -> dict:
         ),
         "actions": [
             {
-                "name": "generate_dataset_errors",
+                "name": "generate_dataset_error_objects",
                 "params": {"message": f"Records have the following pattern: {pattern}"},
             }
         ],
@@ -78,7 +78,7 @@ def dataset_rule_greater_than() -> dict:
         ),
         "actions": [
             {
-                "name": "generate_dataset_errors",
+                "name": "generate_dataset_error_objects",
                 "params": {
                     "message": "Value for ECCOOLVAR greater than 30.",
                 },
@@ -111,7 +111,7 @@ def dataset_rule_multiple_conditions() -> dict:
         ),
         "actions": [
             {
-                "name": "generate_dataset_errors",
+                "name": "generate_dataset_error_objects",
                 "params": {
                     "message": "Length of ECCOOLVAR is not equal to 5 or ECCOOLVAR == cool.",
                 },
@@ -139,7 +139,7 @@ def dataset_rule_has_equal_length() -> dict:
         ),
         "actions": [
             {
-                "name": "generate_dataset_errors",
+                "name": "generate_dataset_error_objects",
                 "params": {
                     "message": "Length of ECCOOLVAR is equal to 5.",
                 },
@@ -167,7 +167,7 @@ def dataset_rule_has_not_equal_length() -> dict:
         ),
         "actions": [
             {
-                "name": "generate_dataset_errors",
+                "name": "generate_dataset_error_objects",
                 "params": {
                     "message": "Length of ECCOOLVAR is not equal to 5.",
                 },
@@ -200,7 +200,7 @@ def mock_record_rule_equal_to_string_prefix():
         ),
         "actions": [
             {
-                "name": "generate_dataset_errors",
+                "name": "generate_dataset_error_objects",
                 "params": {
                     "message": "Prefix of AESTDY is equal to test.",
                 },
@@ -233,7 +233,7 @@ def mock_ae_record_rule_equal_to_suffix() -> dict:
         ),
         "actions": [
             {
-                "name": "generate_dataset_errors",
+                "name": "generate_dataset_error_objects",
                 "params": {
                     "message": "Suffix of AESTDY is equal to test.",
                 },
@@ -555,7 +555,7 @@ def dataset_rule_one_to_one_related() -> dict:
         ),
         "actions": [
             {
-                "name": "generate_dataset_errors",
+                "name": "generate_dataset_error_objects",
                 "params": {
                     "message": "VISITNUM is not one-to-one related to VISIT",
                 },
@@ -724,7 +724,7 @@ def domain_presence_rule() -> dict:
         ),
         "actions": [
             {
-                "name": "generate_dataset_errors",
+                "name": "generate_dataset_error_objects",
                 "params": {
                     "message": "Domain AE exists",
                 },
