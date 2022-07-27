@@ -357,9 +357,14 @@ def test_validate_rule_equal_length(dataset_rule_has_equal_length: dict):
         validation_result: List[dict] = RulesEngine().validate_single_rule(
             dataset_rule_has_equal_length, "study/bundle", [{}], "EC"
         )
-        assert len(validation_result) == 1
-        assert validation_result[0].get("errors", None) == [
-            {"value": {"ECCOOLVAR": "equal"}, "row": 2}
+        assert validation_result == [
+            {
+                "executionStatus": "success",
+                "domain": "EC",
+                "variables": ["ECCOOLVAR"],
+                "message": "Length of ECCOOLVAR is equal to 5.",
+                "errors": [{"value": {"ECCOOLVAR": "equal"}, "row": 2}],
+            }
         ]
 
 
