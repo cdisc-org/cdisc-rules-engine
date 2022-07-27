@@ -670,36 +670,6 @@ def variables_metadata_rule() -> dict:
 
 
 @pytest.fixture
-def mock_class_rule() -> dict:
-    return {
-        "core_id": "MockRule",
-        "standards": [{"Name": "SDTMIG", "Version": "3.3"}],
-        "classes": {"Include": ["Events"]},
-        "rule_type": "content",
-        "conditions": ConditionCompositeFactory.get_condition_composite(
-            {
-                "all": [
-                    {
-                        "name": "get_dataset",
-                        "operator": "greater_than",
-                        "value": {
-                            "target": "AESTDY",
-                            "comparator": 30,
-                        },
-                    }
-                ]
-            }
-        ),
-        "actions": [
-            {
-                "name": "generate_dataset_errors",
-                "params": {"message": f"Class Error"},
-            }
-        ],
-    }
-
-
-@pytest.fixture
 def domain_presence_rule() -> dict:
     """
     Rule that validates domain presence against datasets provided.
