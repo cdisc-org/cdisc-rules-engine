@@ -6,12 +6,6 @@ from run_validation import run_validation
 from engine.utilities.utils import generate_report_filename
 
 
-class AttrDict(dict):
-    def __init__(self, *args, **kwargs):
-        super(AttrDict, self).__init__(*args, **kwargs)
-        self.__dict__ = self
-
-
 @click.group()
 def cli():
     pass
