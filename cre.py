@@ -1,6 +1,7 @@
 import click
 import logging
 from datetime import datetime
+from collections import namedtuple
 from run_validation import run_validation
 from engine.utilities.utils import generate_report_filename
 
@@ -95,22 +96,38 @@ def validate(
         )
         ctx.abort()
 
+    Arguments = namedtuple(
+        "Arguments",
+        [
+            "cache",
+            "pool_size",
+            "data",
+            "log_level",
+            "report_template",
+            "standard",
+            "version",
+            "controlled_terminology_package",
+            "output",
+            "define_version",
+            "dictionaries_path",
+            "dictionary_type",
+        ],
+    )
+
     run_validation(
-        AttrDict(
-            {
-                "cache": cache,
-                "pool_size": pool_size,
-                "data": data,
-                "log_level": log_level,
-                "report_template": report_template,
-                "standard": standard,
-                "version": version,
-                "controlled_terminology_package": controlled_terminology_package,
-                "output": output,
-                "define_version": define_version,
-                "dictionaries_path": dictionaries_path,
-                "dictionary_type": dictionary_type,
-            }
+        Arguments(
+            cache,
+            pool_size,
+            data,
+            log_level,
+            report_template,
+            standard,
+            version,
+            controlled_terminology_package,
+            output,
+            define_version,
+            dictionaries_path,
+            dictionary_type,
         )
     )
 
