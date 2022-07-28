@@ -1,10 +1,10 @@
-from collections import namedtuple
 import itertools
 import logging
 import os
 import pickle
 import time
 from functools import partial
+from collections import namedtuple
 from multiprocessing import Pool
 from multiprocessing.managers import SyncManager
 
