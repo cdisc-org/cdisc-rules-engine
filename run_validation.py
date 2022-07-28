@@ -1,3 +1,4 @@
+from collections import namedtuple
 import itertools
 import logging
 import os
@@ -135,7 +136,7 @@ def get_cache_service(manager):
         return manager.InMemoryCacheService()
 
 
-def run_validation(args: dict):
+def run_validation(args: namedtuple):
     logger = logging.getLogger("validator")
     set_log_level(args.log_level.lower())
     cache_path: str = f"{os.path.dirname(__file__)}/{args.cache}"
