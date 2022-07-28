@@ -96,8 +96,8 @@ def validate(
         )
         ctx.abort()
 
-    Arguments = namedtuple(
-        "Arguments",
+    Validation_args = namedtuple(
+        "Validation_args",
         [
             "cache",
             "pool_size",
@@ -115,7 +115,7 @@ def validate(
     )
 
     run_validation(
-        Arguments(
+        Validation_args(
             cache,
             pool_size,
             data,
