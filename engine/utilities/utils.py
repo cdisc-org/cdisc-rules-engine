@@ -9,7 +9,7 @@ from datetime import datetime
 from typing import List, Set, Callable, Optional
 
 from engine.constants.domains import (
-    SUPP_DOMAIN,
+    SUPPLEMENTARY_DOMAINS,
     AP_DOMAIN,
     APFA_DOMAIN,
     APRELSUB_DOMAIN,
@@ -131,10 +131,9 @@ def get_dataset_cache_key_from_path(dataset_path: str, dataset_type: str) -> str
 
 def is_supp_domain(dataset_domain: str) -> bool:
     """
-    Returns true if domain name is like SUPPAE, SUPPEC etc.
+    Returns true if domain name starts with SUPP or SQ
     """
-    regex = r"^" + re.escape(SUPP_DOMAIN) + "[a-zA-Z]{2,4}$"
-    return bool(re.match(regex, dataset_domain))
+    return dataset_domain.startswith(SUPPLEMENTARY_DOMAINS)
 
 
 def is_ap_domain(dataset_domain: str) -> bool:
