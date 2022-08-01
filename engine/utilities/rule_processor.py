@@ -52,7 +52,7 @@ class RuleProcessor:
                 # check supp domains with SUPP-- naming pattern
                 matches_supp_naming_pattern = is_supp_domain(
                     dataset_domain
-                ) and RuleProcessor._supp_domain_in_domains(included_domains)
+                ) and RuleProcessor._domain_in_supp_domains(included_domains)
                 # check domains with AP--/ APFA-- / APRELSUB naming pattern
                 matches_ap_naming_pattern = any(
                     is_ap_domain(dataset_domain)
@@ -72,7 +72,7 @@ class RuleProcessor:
             # check supp domains with SUPP-- naming pattern
             matches_supp_naming_pattern = is_supp_domain(
                 dataset_domain
-            ) and RuleProcessor._supp_domain_in_domains(excluded_domains)
+            ) and RuleProcessor._domain_in_supp_domains(excluded_domains)
             # check domains with AP--/ APFA-- / APRELSUB naming pattern
             matches_ap_naming_pattern = any(
                 is_ap_domain(dataset_domain)
@@ -90,12 +90,9 @@ class RuleProcessor:
         return is_included and not is_excluded
 
     @staticmethod
-    def _supp_domain_in_domains(domains):
+    def _domain_in_supp_domains(domains):
         supp_domains = [f"{domain}--" for domain in SUPPLEMENTARY_DOMAINS]
-        for domain in domains:
-            if domain in supp_domains:
-                return True
-        return False
+        return any(domain in supp_domains for domain in domains)
 
     def rule_applies_to_class(self, rule, file_path, datasets: List[dict]):
         """
