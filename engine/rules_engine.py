@@ -38,6 +38,7 @@ from engine.utilities.utils import (
     is_split_dataset,
     get_corresponding_datasets,
     serialize_rule,
+    search_in_list_of_dicts,
 )
 
 
@@ -168,15 +169,16 @@ class RulesEngine:
         functions should have the same interface or kwargs specified.
         """
         rule_type_validator_map: dict = {
-            RuleTypes.DATASET_METADATA_CHECK.value: self.validate_dataset_metadata,
-            RuleTypes.DATASET_METADATA_CHECK_AGAINST_DEFINE.value: self.validate_dataset_metadata_against_define_xml,
-            RuleTypes.VARIABLE_METADATA_CHECK.value: self.validate_variables_metadata,
-            RuleTypes.DOMAIN_PRESENCE_CHECK.value: self.validate_domain_presence,
-            RuleTypes.VARIABLE_METADATA_CHECK_AGAINST_DEFINE.value: self.validate_variable_metadata_against_define_xml,
-            RuleTypes.VALUE_LEVEL_METADATA_CHECK_AGAINST_DEFINE.value: self.validate_value_level_metadata_against_define_xml,
             RuleTypes.DATASET_CONTENTS_CHECK_AGAINST_DEFINE_AND_LIBRARY_METADATA.value: self.validate_dataset_contents_against_define_and_library_variable_metadata,
             RuleTypes.DATASET_CONTENTS_CHECK_AGAINST_LIBRARY_METADATA.value: self.validate_dataset_contents_against_library_metadata,
+            RuleTypes.DATASET_METADATA_CHECK.value: self.validate_dataset_metadata,
+            RuleTypes.DATASET_METADATA_CHECK_AGAINST_DEFINE.value: self.validate_dataset_metadata_against_define_xml,
             RuleTypes.DEFINE.value: self.validate_define_xml,
+            RuleTypes.DOMAIN_PRESENCE_CHECK.value: self.validate_domain_presence,
+            RuleTypes.VALUE_LEVEL_METADATA_CHECK_AGAINST_DEFINE.value: self.validate_value_level_metadata_against_define_xml,
+            RuleTypes.VARIABLE_ORDER_AGAINST_LIBRARY_METADATA_CHECK.value: self.validate_variables_order_against_library_metadata,
+            RuleTypes.VARIABLE_METADATA_CHECK.value: self.validate_variables_metadata,
+            RuleTypes.VARIABLE_METADATA_CHECK_AGAINST_DEFINE.value: self.validate_variable_metadata_against_define_xml,
         }
         return rule_type_validator_map.get(
             rule_type,
@@ -397,6 +399,55 @@ class RulesEngine:
 
         # execute the rule
         return self.execute_rule(rule, dataset, dataset_path, datasets, domain)
+
+    def validate_variables_order_against_library_metadata(
+        self, rule: dict, dataset_path: str, datasets: List[dict], domain: str, **kwargs
+    ) -> List[Union[dict, str]]:
+        """
+        Validates variable order according to the library metadata.
+
+        Fetches the expected order from the library and
+        uses it as a comparator in the rule conditions.
+
+        Then, creates a df that maps variable name to its order like:
+        DOMAIN	SUBJECTID	AESEQ
+        1	    2	        3
+
+        Finally, executes the rule against the created df.
+        """
+        # get dataset class
+        dataset: pd.DataFrame = self.get_dataset_to_validate(
+            DatasetTypes.CONTENTS.value, dataset_path, datasets, domain
+        )
+        dataset_class: str = self.data_service.get_dataset_class(
+            dataset, dataset_path, datasets
+        )
+
+        # get metadata for this class from the cache
+        standard_details: dict = self.cache.get(
+            get_standard_details_cache_key(self.standard, self.standard_version)
+        )
+        class_metadata: dict = search_in_list_of_dicts(
+            standard_details["classes"], lambda item: item["name"] == dataset_class
+        )
+        current_domain_metadata: dict = search_in_list_of_dicts(
+            class_metadata.get("datasets", []), lambda item: item["name"] == domain
+        )
+
+        # fill rule conditions with expected variable ordinal
+        targets: List[str] = []
+        comparator: dict = {}
+        for variable in current_domain_metadata["datasetVariables"]:
+            targets.append(variable["name"])
+            comparator[variable["name"]] = variable["ordinal"]
+        self.rule_processor.create_list_of_conditions_for_each_target(rule, targets)
+        self.rule_processor.add_comparator_to_rule_conditions(rule, comparator)
+
+        # create a df that maps variable name to its order and execute the rule
+        df_to_validate = pd.DataFrame()
+        for index, col in enumerate(dataset):
+            df_to_validate[col] = [index + 1]
+        return self.execute_rule(rule, df_to_validate, dataset_path, datasets, domain)
 
     def validate_variables_metadata(
         self, rule: dict, dataset_path: str, datasets: List[dict], domain: str, **kwargs

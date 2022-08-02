@@ -1319,6 +1319,36 @@ def rule_dataset_references_invalid_whodrug_terms() -> dict:
     }
 
 
+@pytest.fixture
+def rule_validate_columns_order_against_library_metadata() -> dict:
+    """
+    Rule that can be used to validate columns order against library metadata.
+    """
+    return {
+        "core_id": "MockRule",
+        "standards": [{"Name": "SDTMIG", "Version": "3.3"}],
+        "classes": {"Include": ["Events"]},
+        "domains": {"Include": ["AE"]},
+        "rule_type": RuleTypes.VARIABLE_ORDER_AGAINST_LIBRARY_METADATA_CHECK.value,
+        "conditions": ConditionCompositeFactory.get_condition_composite(
+            {
+                "any": [
+                    {
+                        "name": "get_dataset",
+                        "operator": "not_equal_to",
+                    },
+                ]
+            }
+        ),
+        "actions": [
+            {
+                "name": "generate_dataset_error_objects",
+                "params": {"message": "Order of variables is invalid"},
+            }
+        ],
+    }
+
+
 @pytest.fixture(scope="function")
 def installed_whodrug_dictionaries(request) -> dict:
     """

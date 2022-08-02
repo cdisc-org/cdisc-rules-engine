@@ -8,6 +8,9 @@ class RuleTypes(BaseEnum):
     RANGE_CHECK = "Range & Limit"
     DATASET_METADATA_CHECK = "Dataset Metadata Check"
     DATASET_METADATA_CHECK_AGAINST_DEFINE = "Dataset Metadata Check against Define XML"
+    VARIABLE_ORDER_AGAINST_LIBRARY_METADATA_CHECK = (
+        "VARIABLE_ORDER_AGAINST_LIBRARY_METADATA_CHECK"
+    )
     VARIABLE_METADATA_CHECK_AGAINST_DEFINE = (
         "Variable Metadata Check against Define XML"
     )
