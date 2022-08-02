@@ -19,6 +19,10 @@ from engine.exceptions.custom_exceptions import InvalidMatchKeyError
 from engine.services.data_services import BaseDataService
 from engine.dummy_services.dummy_data_service import DummyDataService
 from engine.utilities.utils import is_split_dataset, get_corresponding_datasets
+from engine.models.dictionaries.meddra.meddra_variables import MedDRAVariables
+from engine.models.dictionaries.meddra.terms.term_types import TermTypes
+from engine.models.dictionaries.meddra.terms.meddra_term import MedDRATerm
+from uuid import uuid4
 
 
 class DataProcessor:
@@ -214,6 +218,146 @@ class DataProcessor:
     def get_record_by_single_value(dataframe, index_key, index_value):
         target_frame = dataframe[dataframe[index_key] == index_value]
         return DataProcessor.get_unique_record(target_frame)
+
+    def valid_meddra_code_references(self, dataframe, target, domain, **kwargs):
+        dictionaries_path: str = kwargs.get("dictionaries_path")
+        if not dictionaries_path:
+            raise ValueError(
+                "Can't execute the operation, no dictionaries path provided"
+            )
+        code_variables = [
+            MedDRAVariables.SOCCD.value,
+            MedDRAVariables.HLGTCD.value,
+            MedDRAVariables.HLTCD.value,
+            MedDRAVariables.PTCD.value,
+            MedDRAVariables.LLTCD.value,
+        ]
+        code_strings = [f"{domain}{variable}" for variable in code_variables]
+        cache_key = f"meddra_valid_code_hierarchies_{dictionaries_path}"
+        valid_code_hierarchies = self.cache.get(cache_key)
+        if not valid_code_hierarchies:
+            terms: dict = self.cache.get(dictionaries_path)
+            valid_code_hierarchies = MedDRATerm.get_code_hierarchies(terms)
+            self.cache.add(cache_key, valid_code_hierarchies)
+        column = str(uuid4()) + "_codes"
+        dataframe[column] = dataframe[code_strings].agg("/".join, axis=1)
+        result = dataframe[column].isin(valid_code_hierarchies)
+        return result
+
+    def valid_meddra_term_references(self, dataframe, target, domain, **kwargs):
+        dictionaries_path: str = kwargs.get("dictionaries_path")
+        if not dictionaries_path:
+            raise ValueError(
+                "Can't execute the operation, no dictionaries path provided"
+            )
+        code_variables = [
+            MedDRAVariables.SOC.value,
+            MedDRAVariables.HLGT.value,
+            MedDRAVariables.HLT.value,
+            MedDRAVariables.DECOD.value,
+            MedDRAVariables.LLT.value,
+        ]
+        code_strings = [f"{domain}{variable}" for variable in code_variables]
+        cache_key = f"meddra_valid_term_hierarchies_{dictionaries_path}"
+        valid_term_hierarchies = self.cache.get(cache_key)
+        if not valid_term_hierarchies:
+            terms: dict = self.cache.get(dictionaries_path)
+            valid_term_hierarchies = MedDRATerm.get_term_hierarchies(terms)
+            self.cache.add(cache_key, valid_term_hierarchies)
+        column = str(uuid4()) + "_terms"
+        dataframe[column] = dataframe[code_strings].agg("/".join, axis=1)
+        result = dataframe[column].isin(valid_term_hierarchies)
+        return result
+
+    def valid_meddra_code_term_pairs(self, dataframe, target, domain, **kwargs):
+        dictionaries_path: str = kwargs.get("dictionaries_path")
+        if not dictionaries_path:
+            raise ValueError(
+                "Can't execute the operation, no dictionaries path provided"
+            )
+        variable_pair_map = {
+            f"{domain}{MedDRAVariables.SOC.value}": (
+                TermTypes.SOC.value,
+                (
+                    f"{domain}{MedDRAVariables.SOCCD.value}",
+                    f"{domain}{MedDRAVariables.SOC.value}",
+                ),
+            ),
+            f"{domain}{MedDRAVariables.SOCCD.value}": (
+                TermTypes.SOC.value,
+                (
+                    f"{domain}{MedDRAVariables.SOCCD.value}",
+                    f"{domain}{MedDRAVariables.SOC.value}",
+                ),
+            ),
+            f"{domain}{MedDRAVariables.HLGT.value}": (
+                TermTypes.HLGT.value,
+                (
+                    f"{domain}{MedDRAVariables.HLGTCD.value}",
+                    f"{domain}{MedDRAVariables.HLGT.value}",
+                ),
+            ),
+            f"{domain}{MedDRAVariables.HLGTCD.value}": (
+                TermTypes.HLGT.value,
+                (
+                    f"{domain}{MedDRAVariables.HLGTCD.value}",
+                    f"{domain}{MedDRAVariables.HLGT.value}",
+                ),
+            ),
+            f"{domain}{MedDRAVariables.HLT.value}": (
+                TermTypes.HLT.value,
+                (
+                    f"{domain}{MedDRAVariables.HLTCD.value}",
+                    f"{domain}{MedDRAVariables.HLT.value}",
+                ),
+            ),
+            f"{domain}{MedDRAVariables.HLTCD.value}": (
+                TermTypes.HLT.value,
+                (
+                    f"{domain}{MedDRAVariables.HLTCD.value}",
+                    f"{domain}{MedDRAVariables.HLT.value}",
+                ),
+            ),
+            f"{domain}{MedDRAVariables.DECOD.value}": (
+                TermTypes.PT.value,
+                (
+                    f"{domain}{MedDRAVariables.PTCD.value}",
+                    f"{domain}{MedDRAVariables.DECOD.value}",
+                ),
+            ),
+            f"{domain}{MedDRAVariables.PTCD.value}": (
+                TermTypes.PT.value,
+                (
+                    f"{domain}{MedDRAVariables.PTCD.value}",
+                    f"{domain}{MedDRAVariables.DECOD.value}",
+                ),
+            ),
+            f"{domain}{MedDRAVariables.LLT.value}": (
+                TermTypes.LLT.value,
+                (
+                    f"{domain}{MedDRAVariables.LLTCD.value}",
+                    f"{domain}{MedDRAVariables.LLT.value}",
+                ),
+            ),
+            f"{domain}{MedDRAVariables.LLTCD.value}": (
+                TermTypes.LLT.value,
+                (
+                    f"{domain}{MedDRAVariables.LLTCD.value}",
+                    f"{domain}{MedDRAVariables.LLT.value}",
+                ),
+            ),
+        }
+        term_type, columns = variable_pair_map.get(target)
+        cache_key = f"meddra_valid_code_term_pairs_{dictionaries_path}"
+        valid_code_term_pairs = self.cache.get(cache_key)
+        if not valid_code_term_pairs:
+            terms: dict = self.cache.get(dictionaries_path)
+            valid_code_term_pairs = MedDRATerm.get_code_term_pairs(terms)
+            self.cache.add(cache_key, valid_code_term_pairs)
+        column = str(uuid4()) + "_pairs"
+        dataframe[column] = list(zip(dataframe[columns[0]], dataframe[columns[1]]))
+        result = dataframe[column].isin(valid_code_term_pairs[term_type])
+        return result
 
     def valid_whodrug_references(
         self, dataframe: pd.DataFrame, target: str, domain: str, **kwargs

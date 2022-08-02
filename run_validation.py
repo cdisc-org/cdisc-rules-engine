@@ -110,10 +110,10 @@ def parse_arguments():
         default="2.1",
     )
     parser.add_argument(
-        "-dp", "--dictionaries_path", help="Path to directory with dictionaries files"
+        "--whodrug", help="Path to directory with whodrug dictionaries files"
     )
     parser.add_argument(
-        "-dt", "--dictionary_type", help="Dictionary type (MedDra, WhoDrug)"
+        "--meddra", help="Path to directory with meddra dictionary files"
     )
     args = parser.parse_args()
     return args
@@ -128,9 +128,7 @@ def fill_cache_with_provided_data(cache, cache_path: str):
     return cache
 
 
-def fill_cache_with_dictionaries(
-    cache: CacheServiceInterface, dictionaries_path: str, dictionary_type: str
-):
+def fill_cache_with_dictionaries(cache: CacheServiceInterface, args):
     """
     Extracts file contents from provided dictionaries files
     and saves to cache (inmemory or redis).
@@ -140,11 +138,19 @@ def fill_cache_with_dictionaries(
         DictionaryTypes.MEDDRA.value: MedDRATermsFactory,
         DictionaryTypes.WHODRUG.value: WhoDrugTermsFactory,
     }
-    factory: TermsFactoryInterface = dictionary_type_to_factory_map[dictionary_type](
-        data_service
-    )
-    terms: dict = factory.install_terms(dictionaries_path)
-    cache.add(dictionaries_path, terms)
+
+    dictionary_type_to_path_map: dict = {
+        DictionaryTypes.MEDDRA.value: args.meddra,
+        DictionaryTypes.WHODRUG.value: args.whodrug,
+    }
+
+    for dictionary_type, dictionary_path in dictionary_type_to_path_map.items():
+        if dictionary_path:
+            factory: TermsFactoryInterface = dictionary_type_to_factory_map[
+                dictionary_type
+            ](data_service)
+            terms: dict = factory.install_terms(dictionary_path)
+            cache.add(dictionary_path, terms)
 
 
 def get_datasets(data_service: BaseDataService, data_path: str):
@@ -209,9 +215,7 @@ def main():
     shared_cache = fill_cache_with_provided_data(shared_cache, cache_path)
 
     # install dictionaries if needed
-    if dictionaries_path:
-        assert dictionary_type, "Obligatory parameter dictionary_type is not provided"
-        fill_cache_with_dictionaries(shared_cache, dictionaries_path, dictionary_type)
+    fill_cache_with_dictionaries(shared_cache, args)
 
     rules = shared_cache.get_all_by_prefix(
         get_rules_cache_key(args.standard, args.version.replace(".", "-"))
