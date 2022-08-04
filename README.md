@@ -37,3 +37,18 @@ Command line arguments:
 * -dp, --dictionaries_path: Path to directory with dictionaries files
 * -dt, --dictionary_type: Dictionary type (MedDra, WhoDrug). Required if dictionaries_path is provided.
 ```
+
+### Creating an executable version
+
+**Linux**
+
+`pyinstaller run_validation.py --add-data=venv/lib/python3.9/site-packages/xmlschema/schemas:xmlschema/schemas`
+
+**Windows**
+
+`pyinstaller run_validation.py --add-data=".venv/Lib/site-packages/xmlschema/schemas;xmlschema/schemas"`
+
+_Note .venv should be replaced with path to python installation or virtual environment_
+
+This will create an executable version in the `dist` folder. The version does not require having Python installed and
+can be launched by running `run_validation` script with all necessary CLI arguments.
