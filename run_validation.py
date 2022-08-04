@@ -1,12 +1,11 @@
-import argparse
 import itertools
 import logging
 import os
 import pickle
 import time
-from datetime import datetime
 from functools import partial
-from multiprocessing import Pool, freeze_support
+from collections import namedtuple
+from multiprocessing import Pool
 from multiprocessing.managers import SyncManager
 
 logging.getLogger("asyncio").disabled = True
@@ -27,7 +26,7 @@ from engine.services.cache.redis_cache_service import RedisCacheService
 from engine.services.data_services import BaseDataService, DataServiceFactory
 from engine.utilities.excel_report import ExcelReport
 from engine.utilities.excel_writer import excel_workbook_to_stream
-from engine.utilities.utils import generate_report_filename, get_rules_cache_key
+from engine.utilities.utils import get_rules_cache_key
 
 """
 Sync manager used to manage instances of the cache between processes.
@@ -63,61 +62,6 @@ def validate_single_rule(
     ]
     results = list(itertools.chain(*results))
     return RuleValidationResult(rule, results)
-
-
-def parse_arguments():
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-ca", "--cache", help="Cache location", default="resources/cache"
-    )
-    parser.add_argument(
-        "-p",
-        "--pool_size",
-        help="Number of parallel processes for validation",
-        type=int,
-        default=10,
-    )
-    parser.add_argument("-d", "--data", help="Data location", required=True)
-    parser.add_argument("-l", "--log_level", help="Log level", default="disabled")
-    parser.add_argument(
-        "-rt",
-        "--report_template",
-        help="File Path of report template",
-        default="resources/templates/report-template.xlsx",
-    )
-    parser.add_argument(
-        "-s", "--standard", help="CDISC standard to validate against", required=True
-    )
-    parser.add_argument(
-        "-v", "--version", help="Standard version to validate against", required=True
-    )
-    parser.add_argument(
-        "-ct",
-        "--controlled_terminology_package",
-        action="append",
-        help="Controlled terminology package to validate against",
-        default=[],
-    )
-    parser.add_argument(
-        "-o",
-        "--output",
-        help="Report output file",
-        default=generate_report_filename(datetime.now().isoformat()),
-    )
-    parser.add_argument(
-        "-dv",
-        "--define_version",
-        help="Define version used for validation",
-        default="2.1",
-    )
-    parser.add_argument(
-        "--whodrug", help="Path to directory with whodrug dictionaries files"
-    )
-    parser.add_argument(
-        "--meddra", help="Path to directory with meddra dictionary files"
-    )
-    args = parser.parse_args()
-    return args
 
 
 def fill_cache_with_provided_data(cache, cache_path: str):
@@ -198,9 +142,8 @@ def get_cache_service(manager):
         return manager.InMemoryCacheService()
 
 
-def main():
+def run_validation(args: namedtuple):
     logger = logging.getLogger("validator")
-    args = parse_arguments()
     set_log_level(args.log_level.lower())
     cache_path: str = f"{os.path.dirname(__file__)}/{args.cache}"
     data_path: str = f"{os.path.dirname(__file__)}/{args.data}"
@@ -257,8 +200,3 @@ def main():
         raise e
     finally:
         report_template.close()
-
-
-if __name__ == "__main__":
-    freeze_support()
-    main()
