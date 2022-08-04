@@ -24,6 +24,21 @@ Clone the repository and run `core.py --help` to see the full list of commands.
 
 Run `core.py validate --help` to see the list of validation options.
 
+```
+* -ca, --cache TEXT                          Relative path to cache files containing pre loaded metadata and rules
+* -p, --pool_size INTEGER                    Number of parallel processes for validation
+* -d, --data TEXT                            Relative path to directory containing data files
+* -l, --log_level TEXT                       Sets log level for engine logs, logs are disabled by default
+* -rt, --report_template TEXT                File path of report template to use for excel output
+* -s, --standard TEXT                        CDISC standard to validate against
+* -v, --version TEXT                         Standard version to validate against
+* -ct, --controlled_terminology_package TEXT Controlled terminology package to validate against, can provide more than one
+* -o, --output TEXT                          Report output file destination
+* -dv, --define_version TEXT                 Define-XML version used for validation
+* --whodrug TEXT                             Path to directory with WHODrug dictionary files
+* --meddra TEXT                              Path to directory with MedDRA dictionary files
+```
+
 #### Validate folder
 To validate a folder using rules for SDTM-IG version 3.4 use the following command:
 

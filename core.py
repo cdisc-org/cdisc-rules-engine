@@ -13,7 +13,12 @@ def cli():
 
 
 @click.command()
-@click.option("-ca", "--cache", default="resources/cache", help="Cache location")
+@click.option(
+    "-ca",
+    "--cache",
+    default="resources/cache",
+    help="Relative path to cache files containing pre loaded metadata and rules",
+)
 @click.option(
     "-p",
     "--pool_size",
@@ -21,13 +26,23 @@ def cli():
     type=int,
     help="Number of parallel processes for validation",
 )
-@click.option("-d", "--data", required=True, help="Data location")
-@click.option("-l", "--log_level", default="disabled", help="Log level")
+@click.option(
+    "-d",
+    "--data",
+    required=True,
+    help="Relative path to directory containing data files",
+)
+@click.option(
+    "-l",
+    "--log_level",
+    default="disabled",
+    help="Sets log level for engine logs, logs are disabled by default",
+)
 @click.option(
     "-rt",
     "--report_template",
     default="resources/templates/report-template.xlsx",
-    help="File Path of report template",
+    help="File path of report template to use for excel output",
 )
 @click.option(
     "-s", "--standard", required=True, help="CDISC standard to validate against"
@@ -39,26 +54,22 @@ def cli():
     "-ct",
     "--controlled_terminology_package",
     multiple=True,
-    help="Controlled terminology package to validate against",
+    help="Controlled terminology package to validate against, can provide more than one",
 )
 @click.option(
     "-o",
     "--output",
     default=generate_report_filename(datetime.now().isoformat()),
-    help="Report output file",
+    help="Report output file destination",
 )
 @click.option(
-    "-dv", "--define_version", default="2.1", help="Define version used for validation"
+    "-dv",
+    "--define_version",
+    default="2.1",
+    help="Define-XML version used for validation",
 )
-@click.option(
-    "-dp", "--dictionaries_path", help="Path to directory with dictionaries files"
-)
-@click.option(
-    "-dt",
-    "--dictionary_type",
-    type=click.Choice(["WHODrug", "MedDRA"], case_sensitive=False),
-    help="Dictionary type (MedDRA, WHODrug). Required if dictionaries_path is provided.",
-)
+@click.option("--whodrug", help="Path to directory with WHODrug dictionary files")
+@click.option("--meddra", help="Path to directory with MedDRA dictionary files")
 @click.pass_context
 def validate(
     ctx,
@@ -72,8 +83,8 @@ def validate(
     controlled_terminology_package,
     output,
     define_version,
-    dictionaries_path,
-    dictionary_type,
+    whodrug,
+    meddra,
 ):
     """
     Validate data using CDISC Rules Engine
@@ -82,15 +93,6 @@ def validate(
 
     python core.py -s SDTM -v 3.4 -d /path/to/datasets
     """
-
-    logger = logging.getLogger("validator")
-    # Check dependent options
-    if dictionaries_path != None and dictionary_type == None:
-        logger.error(
-            "Option dictionary_type must be provided when dictionary_path is provided."
-        )
-        ctx.abort()
-
     Validation_args = namedtuple(
         "Validation_args",
         [
@@ -104,8 +106,8 @@ def validate(
             "controlled_terminology_package",
             "output",
             "define_version",
-            "dictionaries_path",
-            "dictionary_type",
+            "whodrug",
+            "meddra",
         ],
     )
 
@@ -121,8 +123,8 @@ def validate(
             controlled_terminology_package,
             output,
             define_version,
-            dictionaries_path,
-            dictionary_type,
+            whodrug,
+            meddra,
         )
     )
 
