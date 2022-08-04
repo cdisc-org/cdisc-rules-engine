@@ -4,6 +4,7 @@ from datetime import datetime
 from collections import namedtuple
 from run_validation import run_validation
 from engine.utilities.utils import generate_report_filename
+from multiprocessing import freeze_support
 
 
 @click.group()
@@ -129,4 +130,5 @@ def validate(
 cli.add_command(validate)
 
 if __name__ == "__main__":
+    freeze_support()
     cli()

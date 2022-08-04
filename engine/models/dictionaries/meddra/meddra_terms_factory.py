@@ -82,9 +82,6 @@ class MedDRATermsFactory(TermsFactoryInterface):
 
         return data
 
-    async def save_terms(self, terms: List[MedDRATerm]):
-        MedDRATerm.bulk_insert_items("type", terms)
-
     def read_data(self, file_path, data_type: str) -> dict:
         """
         Parse file and generate appropriate MedDRATerms
@@ -97,12 +94,13 @@ class MedDRATermsFactory(TermsFactoryInterface):
             TermTypes.HLGT.value: self._parse_hlgt_item,
         }
         parser = parser_map[data_type]
-        file_data = BytesIO(self.data_service.read_data(file_path))
         data = {}
-        for line in file_data:
-            line = line.decode("utf-8")
-            value = parser(line)
-            data[value.code] = value
+        with self.data_service.read_data(file_path, "rb") as f:
+            file_data = BytesIO(f.read())
+            for line in file_data:
+                line = line.decode("utf-8")
+                value = parser(line)
+                data[value.code] = value
         return data
 
     def update_relationship_data(
@@ -115,13 +113,14 @@ class MedDRATermsFactory(TermsFactoryInterface):
         origin_type, target_type = file_name.split("_")
         target_type = target_type.split(".")[0]
         file_path = get_dictionary_path(directory_path, file_name)
-        file_data = BytesIO(self.data_service.read_data(file_path))
-        for line in file_data:
-            line = line.decode("utf-8")
-            origin_code, target_code = line.split("$")[:2]
-            origin_item: MedDRATerm = data[origin_type][origin_code]
-            target_item: MedDRATerm = data[target_type][target_code]
-            target_item.set_parent(origin_item)
+        with self.data_service.read_data(file_path, "rb") as f:
+            file_data = BytesIO(f.read())
+            for line in file_data:
+                line = line.decode("utf-8")
+                origin_code, target_code = line.split("$")[:2]
+                origin_item: MedDRATerm = data[origin_type][origin_code]
+                target_item: MedDRATerm = data[target_type][target_code]
+                target_item.set_parent(origin_item)
 
         return data
 
