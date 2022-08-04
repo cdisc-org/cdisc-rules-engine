@@ -80,7 +80,7 @@ def validate(
 
     Example:
 
-    python cre.py -s SDTM -v 3.4 -d /path/to/datasets
+    python core.py -s SDTM -v 3.4 -d /path/to/datasets
     """
 
     logger = logging.getLogger("validator")

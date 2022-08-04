@@ -20,26 +20,26 @@ From the root of the project run the following command:
 `python -m pytest tests/unit/`
 ### Running a validation
 
-Clone the repository and run `cre.py --help` to see the full list of commands.
+Clone the repository and run `core.py --help` to see the full list of commands.
 
-Run `cre.py validate --help` to see the list of validation options.
+Run `core.py validate --help` to see the list of validation options.
 
 #### Validate folder
 To validate a folder using rules for SDTM-IG version 3.4 use the following command:
 
-`python cre.py -s SDTM -v 3.4 -d path/to/datasets`
+`python core.py -s SDTM -v 3.4 -d path/to/datasets`
 
 ### Creating an executable version
 
 **Linux**
 
-`pyinstaller cre.py --add-data=venv/lib/python3.9/site-packages/xmlschema/schemas:xmlschema/schemas`
+`pyinstaller core.py --add-data=venv/lib/python3.9/site-packages/xmlschema/schemas:xmlschema/schemas`
 
 **Windows**
 
-`pyinstaller cre.py --add-data=".venv/Lib/site-packages/xmlschema/schemas;xmlschema/schemas"`
+`pyinstaller core.py --add-data=".venv/Lib/site-packages/xmlschema/schemas;xmlschema/schemas"`
 
 _Note .venv should be replaced with path to python installation or virtual environment_
 
 This will create an executable version in the `dist` folder. The version does not require having Python installed and
-can be launched by running `cre` script with all necessary CLI arguments.
+can be launched by running `core` script with all necessary CLI arguments.
