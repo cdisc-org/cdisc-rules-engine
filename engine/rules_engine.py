@@ -1,5 +1,4 @@
-import copy
-from typing import List, Callable, Union, Set
+from typing import List, Callable, Union, Set, Optional
 from copy import deepcopy
 
 import pandas as pd
@@ -423,21 +422,20 @@ class RulesEngine:
             dataset, dataset_path, datasets
         )
 
-        # get metadata for this class from the cache
-        standard_details: dict = self.cache.get(
-            get_standard_details_cache_key(self.standard, self.standard_version)
+        # get metadata for this class and domain from the cache
+        domain_metadata: Optional[dict] = self._get_metadata_for_class_and_domain(
+            dataset_class, domain
         )
-        class_metadata: dict = search_in_list_of_dicts(
-            standard_details["classes"], lambda item: item["name"] == dataset_class
-        )
-        current_domain_metadata: dict = search_in_list_of_dicts(
-            class_metadata.get("datasets", []), lambda item: item["name"] == domain
-        )
+        if not domain_metadata:
+            raise ValueError(
+                f"Metadata for the following details is not found in CDISC Library: "
+                f"standard={self.standard}, version={self.standard_version}, class={dataset_class}, domain={domain}"
+            )
 
         # fill rule conditions with expected variable ordinal
         targets: List[str] = []
         comparator: dict = {}
-        for variable in current_domain_metadata["datasetVariables"]:
+        for variable in domain_metadata["datasetVariables"]:
             targets.append(variable["name"])
             comparator[variable["name"]] = variable["ordinal"]
         self.rule_processor.create_list_of_conditions_for_each_target(rule, targets)
@@ -626,6 +624,31 @@ class RulesEngine:
             f"{directory_path}/{dataset['filename']}"
             for dataset in get_corresponding_datasets(datasets, domain)
         ]
+
+    def _get_metadata_for_class_and_domain(
+        self, dataset_class: str, domain: str
+    ) -> Optional[dict]:
+        """
+        Gets metadata for the given class and domain from cache.
+        The cache stores CDISC Library metadata.
+        """
+        standard_details: dict = (
+            self.cache.get(
+                get_standard_details_cache_key(self.standard, self.standard_version)
+            )
+            or {}
+        )
+        class_metadata: dict = (
+            search_in_list_of_dicts(
+                standard_details.get("classes"),
+                lambda item: item["name"] == dataset_class,
+            )
+            or {}
+        )
+        current_domain_metadata: dict = search_in_list_of_dicts(
+            class_metadata.get("datasets", []), lambda item: item["name"] == domain
+        )
+        return current_domain_metadata
 
     def is_custom_domain(self, domain: str) -> bool:
         """
