@@ -22,6 +22,7 @@ class COREActions(BaseActions):
         domain: str,
         rule: dict,
         value_level_metadata: list = None,
+        report_seq: bool = True,
     ):
         if value_level_metadata is None:
             value_level_metadata = []
@@ -31,6 +32,7 @@ class COREActions(BaseActions):
         self.domain = domain
         self.rule = rule
         self.value_level_metadata = value_level_metadata
+        self.report_seq = report_seq
 
     @rule_action(params={"message": FIELD_TEXT, "target": FIELD_TEXT})
     def generate_record_message(self, message, target=None):
@@ -148,7 +150,7 @@ class COREActions(BaseActions):
             if isinstance(usubjid, pd.Series)
             else None,
             sequence=int(sequence[df_row.name])
-            if isinstance(sequence, pd.Series)
+            if isinstance(sequence, pd.Series) and self.report_seq
             else None,
         )
         return error_object

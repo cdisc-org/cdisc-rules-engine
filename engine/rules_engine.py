@@ -447,7 +447,9 @@ class RulesEngine:
         df_to_validate = pd.DataFrame()
         for index, col in enumerate(dataset):
             df_to_validate[col] = [index + 1]
-        return self.execute_rule(rule, df_to_validate, dataset_path, datasets, domain)
+        return self.execute_rule(
+            rule, df_to_validate, dataset_path, datasets, domain, report_seq=False
+        )
 
     def validate_variables_metadata(
         self, rule: dict, dataset_path: str, datasets: List[dict], domain: str, **kwargs
@@ -527,6 +529,7 @@ class RulesEngine:
         value_level_metadata: List[dict] = None,
         variable_codelist_map: dict = None,
         codelist_term_maps: list = None,
+        report_seq: bool = True,
     ) -> List[str]:
         """
         Executes the given rule on a given dataset.
@@ -578,6 +581,7 @@ class RulesEngine:
                 domain=domain,
                 rule=rule,
                 value_level_metadata=value_level_metadata,
+                report_seq=report_seq,
             ),
         )
         return results

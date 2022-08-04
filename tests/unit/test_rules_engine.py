@@ -2337,7 +2337,6 @@ def test_validate_variables_order(
             "errors": [
                 {
                     "row": 1,
-                    "seq": 2,
                     "value": {
                         "DOMAIN": 1,
                         "AESEQ": 2,
