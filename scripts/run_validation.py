@@ -50,8 +50,8 @@ def validate_single_rule(cache, path, datasets, args, rule: dict = None):
         standard=args.standard,
         standard_version=args.version.replace(".", "-"),
         ct_package=args.controlled_terminology_package,
-        meddra_path=args.meddra_path,
-        whoddrug_path=args.whoddrug_path,
+        meddra_path=args.meddra,
+        whodrug_path=args.whodrug,
     )
     results = [
         engine.validate_single_rule(
@@ -144,8 +144,8 @@ def get_cache_service(manager):
 def run_validation(args: namedtuple):
     logger = logging.getLogger("validator")
     set_log_level(args.log_level.lower())
-    cache_path: str = f"{os.path.dirname(__file__)}/{args.cache}"
-    data_path: str = f"{os.path.dirname(__file__)}/{args.data}"
+    cache_path: str = f"{os.path.dirname(__file__)}/../{args.cache}"
+    data_path: str = f"{os.path.dirname(__file__)}/../{args.data}"
 
     # fill cache
     CacheManager.register("RedisCacheService", RedisCacheService)

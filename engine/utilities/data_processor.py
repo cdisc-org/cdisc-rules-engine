@@ -359,9 +359,9 @@ class DataProcessor:
         """
         Checks if a reference to whodrug term points to the existing code in Atc Text (INA) file.
         """
-        dictionaries_path: str = kwargs.get("whoddrug_path")
+        dictionaries_path: str = kwargs.get("whodrug_path")
         if not dictionaries_path:
-            raise ValueError("Can't execute the operation, no whoddrug path provided")
+            raise ValueError("Can't execute the operation, no whodrug path provided")
 
         terms: dict = self.cache.get(dictionaries_path)
         valid_codes: Generator = (

@@ -53,7 +53,7 @@ class RulesEngine:
         self.standard_version = kwargs.get("standard_version")
         self.ct_package = kwargs.get("ct_package")
         self.meddra_path: str = kwargs.get("meddra_path")
-        self.whoddrug_path: str = kwargs.get("whoddrug_path")
+        self.whodrug_path: str = kwargs.get("whodrug_path")
 
     def get_schema(self):
         return export_rule_data(DatasetVariable, COREActions)
@@ -504,7 +504,7 @@ class RulesEngine:
             standard=self.standard,
             standard_version=self.standard_version,
             meddra_path=self.meddra_path,
-            whoddrug_path=self.whoddrug_path,
+            whodrug_path=self.whodrug_path,
         )
         relationship_data = {}
         if self.rule_processor.is_relationship_dataset(domain):

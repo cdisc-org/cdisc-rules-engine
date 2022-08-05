@@ -230,7 +230,7 @@ async def async_get_variables_metadata(
 
 
 def save_rules(cache: InMemoryCacheService, cache_path: str):
-    rules_data = cache.filter_cache("ruels")
+    rules_data = cache.filter_cache("rules")
     with open(f"{cache_path}/rules.pkl", "wb") as f:
         pickle.dump(rules_data, f)
 
