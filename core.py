@@ -70,6 +70,7 @@ def cli():
 )
 @click.option("--whodrug", help="Path to directory with WHODrug dictionary files")
 @click.option("--meddra", help="Path to directory with MedDRA dictionary files")
+@click.option("--dictionaries_path", help="Path to directory with dictionaries")
 @click.pass_context
 def validate(
     ctx,
@@ -85,6 +86,7 @@ def validate(
     define_version,
     whodrug,
     meddra,
+    dictionaries_path,
 ):
     """
     Validate data using CDISC Rules Engine
@@ -108,6 +110,7 @@ def validate(
             "define_version",
             "whodrug",
             "meddra",
+            "dictionaries_path",
         ],
     )
 
@@ -125,6 +128,7 @@ def validate(
             define_version,
             whodrug,
             meddra,
+            dictionaries_path,
         )
     )
 

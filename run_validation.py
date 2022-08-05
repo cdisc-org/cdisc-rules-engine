@@ -148,7 +148,6 @@ def run_validation(args: namedtuple):
     cache_path: str = f"{os.path.dirname(__file__)}/{args.cache}"
     data_path: str = f"{os.path.dirname(__file__)}/{args.data}"
     dictionaries_path: str = args.dictionaries_path
-    dictionary_type: str = args.dictionary_type
 
     # fill cache
     CacheManager.register("RedisCacheService", RedisCacheService)
