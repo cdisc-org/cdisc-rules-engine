@@ -220,11 +220,9 @@ class DataProcessor:
         return DataProcessor.get_unique_record(target_frame)
 
     def valid_meddra_code_references(self, dataframe, target, domain, **kwargs):
-        dictionaries_path: str = kwargs.get("dictionaries_path")
+        dictionaries_path: str = kwargs.get("meddra_path")
         if not dictionaries_path:
-            raise ValueError(
-                "Can't execute the operation, no dictionaries path provided"
-            )
+            raise ValueError("Can't execute the operation, no meddra path provided")
         code_variables = [
             MedDRAVariables.SOCCD.value,
             MedDRAVariables.HLGTCD.value,
@@ -245,11 +243,9 @@ class DataProcessor:
         return result
 
     def valid_meddra_term_references(self, dataframe, target, domain, **kwargs):
-        dictionaries_path: str = kwargs.get("dictionaries_path")
+        dictionaries_path: str = kwargs.get("meddra_path")
         if not dictionaries_path:
-            raise ValueError(
-                "Can't execute the operation, no dictionaries path provided"
-            )
+            raise ValueError("Can't execute the operation, no meddra path provided")
         code_variables = [
             MedDRAVariables.SOC.value,
             MedDRAVariables.HLGT.value,
@@ -270,11 +266,9 @@ class DataProcessor:
         return result
 
     def valid_meddra_code_term_pairs(self, dataframe, target, domain, **kwargs):
-        dictionaries_path: str = kwargs.get("dictionaries_path")
+        dictionaries_path: str = kwargs.get("meddra_path")
         if not dictionaries_path:
-            raise ValueError(
-                "Can't execute the operation, no dictionaries path provided"
-            )
+            raise ValueError("Can't execute the operation, no meddra path provided")
         variable_pair_map = {
             f"{domain}{MedDRAVariables.SOC.value}": (
                 TermTypes.SOC.value,
@@ -365,11 +359,9 @@ class DataProcessor:
         """
         Checks if a reference to whodrug term points to the existing code in Atc Text (INA) file.
         """
-        dictionaries_path: str = kwargs.get("dictionaries_path")
+        dictionaries_path: str = kwargs.get("whoddrug_path")
         if not dictionaries_path:
-            raise ValueError(
-                "Can't execute the operation, no dictionaries path provided"
-            )
+            raise ValueError("Can't execute the operation, no whoddrug path provided")
 
         terms: dict = self.cache.get(dictionaries_path)
         valid_codes: Generator = (

@@ -526,6 +526,6 @@ def test_valid_whodrug_references(installed_whodrug_dictionaries: dict):
         invalid_df,
         "AEINA",
         "AE",
-        dictionaries_path=installed_whodrug_dictionaries["directory_path"],
+        whoddrug_path=installed_whodrug_dictionaries["whoddrug_path"],
     )
     assert result.equals(pd.Series([True, True, False, False]))

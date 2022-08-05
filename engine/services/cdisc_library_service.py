@@ -8,10 +8,10 @@ from engine.models.rule import Rule
 
 
 class CDISCLibraryService:
-    def __init__(self, config, cache_service_obj):
-        self._api_key = config.getValue("CDISC_LIBRARY_API_KEY")
+    def __init__(self, api_key, cache_service_obj):
+        self._api_key = api_key
         self._client = CDISCLibraryClient(
-            self._api_key, base_api_url=config.getValue("CDISC_LIBRARY_URL")
+            self._api_key, base_api_url="https://api.library.cdisc.org/api"
         )
         self.cache = cache_service_obj
 
@@ -52,7 +52,7 @@ class CDISCLibraryService:
             }...
         ]
         """
-        data = self.cache_library_json(LibraryEndpoints.PACKAGES.value)
+        data = self._client.get_api_json(LibraryEndpoints.PACKAGES.value)
         return data["_links"].get("packages", [])
 
     def get_all_products(self) -> dict:
@@ -65,7 +65,7 @@ class CDISCLibraryService:
             "data-tabulation": [sdtm products]
         }
         """
-        data = self.cache_library_json(LibraryEndpoints.PRODUCTS.value)
+        data = self._client.get_api_json(LibraryEndpoints.PRODUCTS.value)
         return data["_links"]
 
     def get_all_tabulation_ig_standards(self) -> List[dict]:

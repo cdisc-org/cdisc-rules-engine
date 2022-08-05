@@ -39,9 +39,7 @@ class CacheManager(SyncManager):
     pass
 
 
-def validate_single_rule(
-    cache, path, datasets, args, dictionaries_path: str = None, rule: dict = None
-):
+def validate_single_rule(cache, path, datasets, args, rule: dict = None):
     set_log_level(args.log_level)
     rule["conditions"] = ConditionCompositeFactory.get_condition_composite(
         rule["conditions"]
@@ -52,7 +50,8 @@ def validate_single_rule(
         standard=args.standard,
         standard_version=args.version.replace(".", "-"),
         ct_package=args.controlled_terminology_package,
-        dictionaries_path=dictionaries_path,
+        meddra_path=args.meddra_path,
+        whoddrug_path=args.whoddrug_path,
     )
     results = [
         engine.validate_single_rule(
@@ -147,8 +146,6 @@ def run_validation(args: namedtuple):
     set_log_level(args.log_level.lower())
     cache_path: str = f"{os.path.dirname(__file__)}/{args.cache}"
     data_path: str = f"{os.path.dirname(__file__)}/{args.data}"
-    dictionaries_path: str = args.dictionaries_path
-    dictionary_type: str = args.dictionary_type
 
     # fill cache
     CacheManager.register("RedisCacheService", RedisCacheService)
@@ -170,14 +167,7 @@ def run_validation(args: namedtuple):
     start = time.time()
     pool = Pool(args.pool_size)
     results = pool.map(
-        partial(
-            validate_single_rule,
-            shared_cache,
-            data_path,
-            datasets,
-            args,
-            dictionaries_path,
-        ),
+        partial(validate_single_rule, shared_cache, data_path, datasets, args),
         rules,
     )
     pool.close()
