@@ -6,11 +6,11 @@ from engine.utilities.utils import generate_report_filename
 from multiprocessing import freeze_support
 from scripts.update_cache import (
     load_cache_data,
-    save_ct_packages,
-    save_rules,
-    save_standards_metadata,
-    save_variable_codelist_maps,
-    save_variables_metadata,
+    save_ct_packages_locally,
+    save_rules_locally,
+    save_standards_metadata_locally,
+    save_variable_codelist_maps_locally,
+    save_variables_metadata_locally,
 )
 import asyncio
 
@@ -145,30 +145,23 @@ def validate(
     help="Relative path to cache files containing pre loaded metadata and rules",
 )
 @click.option(
-    "-r",
-    "--refresh",
-    is_flag=True,
-    help="Provide this flag to refresh the cache",
-)
-@click.option(
     "--apikey",
     envvar="CDISC_LIBRARY_API_KEY",
     help="CDISC Library api key. Can be provided in the environment variable CDISC_LIBRARY_API_KEY",
     required=True,
 )
 @click.pass_context
-def cache(ctx, cache_path, refresh, apikey):
-    if refresh:
-        updated_cache = asyncio.run(load_cache_data(api_key=apikey))
-        save_rules(updated_cache, cache_path)
-        save_ct_packages(updated_cache, cache_path)
-        save_standards_metadata(updated_cache, cache_path)
-        save_variable_codelist_maps(updated_cache, cache_path)
-        save_variables_metadata(updated_cache, cache_path)
+def update_cache(ctx: click.Context, cache_path: str, apikey: str):
+    updated_cache = asyncio.run(load_cache_data(api_key=apikey))
+    save_rules_locally(updated_cache, cache_path)
+    save_ct_packages_locally(updated_cache, cache_path)
+    save_standards_metadata_locally(updated_cache, cache_path)
+    save_variable_codelist_maps_locally(updated_cache, cache_path)
+    save_variables_metadata_locally(updated_cache, cache_path)
 
 
 cli.add_command(validate)
-cli.add_command(cache)
+cli.add_command(update_cache)
 
 if __name__ == "__main__":
     freeze_support()

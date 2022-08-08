@@ -3,6 +3,7 @@ from functools import partial
 from typing import List, Optional, Iterable
 from engine.enums.library_endpoints import LibraryEndpoints
 from engine.services.cache.in_memory_cache_service import InMemoryCacheService
+from engine.services.cache.cache_service_interface import CacheServiceInterface
 import pickle
 
 from cdisc_library_client.custom_exceptions import (
@@ -19,8 +20,11 @@ from datetime import datetime, timedelta
 
 async def load_cache_data(api_key):
     """
-    The function is a cache feeder that is launched once a day.
-    The feeder polls CDISC Library API and saves rules to the cache.
+    This function populates an in memory cache with all data necessary for running
+    rules against local data. Including
+    * rules
+    * library metadata
+    * codelist metadata
     """
     # send request to get all rules
     cache_service_obj = InMemoryCacheService()
@@ -229,31 +233,46 @@ async def async_get_variables_metadata(
     }
 
 
-def save_rules(cache: InMemoryCacheService, cache_path: str):
+def save_rules_locally(cache: CacheServiceInterface, cache_path: str):
+    """
+    Store cached rules in rules.pkl in cache path directory
+    """
     rules_data = cache.filter_cache("rules")
     with open(f"{cache_path}/rules.pkl", "wb") as f:
         pickle.dump(rules_data, f)
 
 
-def save_ct_packages(cache: InMemoryCacheService, cache_path: str):
+def save_ct_packages_locally(cache: CacheServiceInterface, cache_path: str):
+    """
+    Store cached ct pacakage metadata in codelist_term_maps.pkl in cache path directory
+    """
     cts = cache.get_by_regex(".*ct.*")
     with open(f"{cache_path}/codelist_term_maps.pkl", "wb") as f:
         pickle.dump(cts, f)
 
 
-def save_variable_codelist_maps(cache: InMemoryCacheService, cache_path: str):
+def save_variable_codelist_maps_locally(cache: CacheServiceInterface, cache_path: str):
+    """
+    Store cached variable codelist metadata in variable_codelist_maps.pkl in cache path directory
+    """
     variable_codelist_maps = cache.get_by_regex(".*codelists.*")
     with open(f"{cache_path}/variable_codelist_maps.pkl", "wb") as f:
         pickle.dump(variable_codelist_maps, f)
 
 
-def save_standards_metadata(cache: InMemoryCacheService, cache_path: str):
+def save_standards_metadata_locally(cache: CacheServiceInterface, cache_path: str):
+    """
+    Store cached standards metadata in standards_details.pkl in cache path directory
+    """
     standards = cache.filter_cache("standards")
     with open(f"{cache_path}/standards_details.pkl", "wb") as f:
         pickle.dump(standards, f)
 
 
-def save_variables_metadata(cache: InMemoryCacheService, cache_path: str):
+def save_variables_metadata_locally(cache: CacheServiceInterface, cache_path: str):
+    """
+    Store cached variables metadata in variables_metadata.pkl in cache path directory
+    """
     variables_metadata = cache.filter_cache("library_variables_metadata")
     with open(f"{cache_path}/variables_metadata.pkl", "wb") as f:
         pickle.dump(variables_metadata, f)

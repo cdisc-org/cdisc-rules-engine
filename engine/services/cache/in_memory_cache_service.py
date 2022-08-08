@@ -44,10 +44,10 @@ class InMemoryCacheService(CacheServiceInterface):
                 items.append(self.cache[key])
         return items
 
-    def filter_cache(self, prefix):
+    def filter_cache(self, prefix: str) -> dict:
         return {k: self.cache[k] for k in self.cache.keys() if k.startswith(prefix)}
 
-    def get_by_regex(self, regex):
+    def get_by_regex(self, regex: str) -> dict:
         return {k: self.cache[k] for k in self.cache.keys() if re.search(regex, k)}
 
     def exists(self, cache_key):
