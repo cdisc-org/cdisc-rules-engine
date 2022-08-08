@@ -58,3 +58,31 @@ _Note .venv should be replaced with path to python installation or virtual envir
 
 This will create an executable version in the `dist` folder. The version does not require having Python installed and
 can be launched by running `core` script with all necessary CLI arguments.
+
+### Creating .whl file
+
+**Unix/MacOS**
+
+`python3 -m pip install --upgrade build`
+`python3 -m build`
+
+To install from dist folder
+`pip3 install {path_to_file}/cdisc_rules_engine-0.1.0-py3-none-any.whl`
+
+To upload built distributive to pypi
+
+`python3 -m pip install --upgrade twine`
+`python3 -m twine upload --repository {repository_name} dist/*`
+
+**Windows(Untested)**
+
+`py -m pip install --upgrade build`
+`py -m build`
+
+To install from dist folder
+`pip install {path_to_file}/cdisc_rules_engine-0.1.0-py3-none-any.whl`
+
+To upload built distributive to pypi
+
+`py -m pip install --upgrade twine`
+`py -m twine upload --repository {repository_name} dist/*`
