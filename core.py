@@ -1,9 +1,12 @@
-import click
-from datetime import datetime
+import asyncio
 from collections import namedtuple
-from scripts.run_validation import run_validation
-from engine.utilities.utils import generate_report_filename
+from datetime import datetime
 from multiprocessing import freeze_support
+
+import click
+
+from engine.utilities.utils import generate_report_filename
+from scripts.run_validation import run_validation
 from scripts.update_cache import (
     load_cache_data,
     save_ct_packages_locally,
@@ -12,7 +15,6 @@ from scripts.update_cache import (
     save_variable_codelist_maps_locally,
     save_variables_metadata_locally,
 )
-import asyncio
 
 
 @click.group()
