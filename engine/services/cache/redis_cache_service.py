@@ -74,3 +74,13 @@ class RedisCacheService(CacheServiceInterface):
         logger.info(f"Deleting all items with prefix = {prefix}")
         for key in self.client.scan_iter(prefix):
             self.client.delete(key)
+
+    def filter_cache(self, prefix: str) -> dict:
+        keys = [key for key in self.client.scan_iter(match=f"{prefix}*")]
+        key_value_pairs = zip(keys, self.client.mget(keys))
+        return {key: pickle.loads(value) for key, value in key_value_pairs}
+
+    def get_by_regex(self, regex: str) -> dict:
+        keys = [key for key in self.client.scan_iter(match=f"{regex}")]
+        key_value_pairs = zip(keys, self.client.mget(keys))
+        return {key: pickle.loads(value) for key, value in key_value_pairs}

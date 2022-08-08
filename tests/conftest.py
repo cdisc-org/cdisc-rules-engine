@@ -1084,16 +1084,16 @@ def installed_whodrug_dictionaries(request) -> dict:
     local_data_service = LocalDataService.get_instance(cache_service=cache_service)
     factory = WhoDrugTermsFactory(local_data_service)
 
-    directory_path: str = f"{os.path.dirname(__file__)}/resources/dictionaries/whodrug"
-    terms: dict = factory.install_terms(directory_path)
-    cache_service.add(directory_path, terms)
+    whodrug_path: str = f"{os.path.dirname(__file__)}/resources/dictionaries/whodrug"
+    terms: dict = factory.install_terms(whodrug_path)
+    cache_service.add(whodrug_path, terms)
 
     def delete_terms_from_cache():
-        cache_service.clear(directory_path)
+        cache_service.clear(whodrug_path)
 
     request.addfinalizer(delete_terms_from_cache)
 
     return {
-        "directory_path": directory_path,
+        "whodrug_path": whodrug_path,
         "cache_service": cache_service,
     }

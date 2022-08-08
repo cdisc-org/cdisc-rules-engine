@@ -1,10 +1,20 @@
-import click
-import logging
-from datetime import datetime
+import asyncio
 from collections import namedtuple
-from run_validation import run_validation
-from engine.utilities.utils import generate_report_filename
+from datetime import datetime
 from multiprocessing import freeze_support
+
+import click
+
+from engine.utilities.utils import generate_report_filename
+from scripts.run_validation import run_validation
+from scripts.update_cache import (
+    load_cache_data,
+    save_ct_packages_locally,
+    save_rules_locally,
+    save_standards_metadata_locally,
+    save_variable_codelist_maps_locally,
+    save_variables_metadata_locally,
+)
 
 
 @click.group()
@@ -129,7 +139,31 @@ def validate(
     )
 
 
+@click.command()
+@click.option(
+    "-c",
+    "--cache_path",
+    default="resources/cache",
+    help="Relative path to cache files containing pre loaded metadata and rules",
+)
+@click.option(
+    "--apikey",
+    envvar="CDISC_LIBRARY_API_KEY",
+    help="CDISC Library api key. Can be provided in the environment variable CDISC_LIBRARY_API_KEY",
+    required=True,
+)
+@click.pass_context
+def update_cache(ctx: click.Context, cache_path: str, apikey: str):
+    updated_cache = asyncio.run(load_cache_data(api_key=apikey))
+    save_rules_locally(updated_cache, cache_path)
+    save_ct_packages_locally(updated_cache, cache_path)
+    save_standards_metadata_locally(updated_cache, cache_path)
+    save_variable_codelist_maps_locally(updated_cache, cache_path)
+    save_variables_metadata_locally(updated_cache, cache_path)
+
+
 cli.add_command(validate)
+cli.add_command(update_cache)
 
 if __name__ == "__main__":
     freeze_support()

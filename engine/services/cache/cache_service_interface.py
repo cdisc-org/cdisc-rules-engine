@@ -43,3 +43,9 @@ class CacheServiceInterface(ABC):
 
     def add_all(self, data: dict):
         raise NotImplementedError
+
+    def filter_cache(self, prefix: str) -> dict:
+        raise NotImplementedError
+
+    def get_by_regex(self, regex: str) -> dict:
+        raise NotImplementedError
