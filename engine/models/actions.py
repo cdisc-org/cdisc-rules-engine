@@ -40,16 +40,6 @@ class COREActions(BaseActions):
         self.output_container.append(full_message)
 
     @rule_action(params={"message": FIELD_TEXT})
-    def generate_dataset_errors(self, message: str, results: pd.Series):
-        self.variable.dataset["results"] = results
-        rows_with_error = self.variable.dataset[
-            self.variable.dataset["results"].isin([True])
-        ]
-        self.output_container.append(
-            f"{rows_with_error.shape[0]} row(s) with error: {message}"
-        )
-
-    @rule_action(params={"message": FIELD_TEXT})
     def generate_dataset_error_objects(self, message: str, results: pd.Series):
         # leave only those columns where errors have been found
         self.variable.dataset["results"] = results

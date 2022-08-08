@@ -37,9 +37,9 @@ def test_get_schema():
             {"label": "Target", "name": "target", "fieldType": "text"},
         ],
     }
-    generate_dataset_errors_metadata = {
-        "name": "generate_dataset_errors",
-        "label": "Generate Dataset Errors",
+    generate_dataset_error_objects_metadata = {
+        "name": "generate_dataset_error_objects",
+        "label": "Generate Dataset Error Objects",
         "params": [
             {"label": "Message", "name": "message", "fieldType": "text"},
         ],
@@ -53,7 +53,7 @@ def test_get_schema():
         ],
     }
     assert generate_record_message_metadata in schema["actions"]
-    assert generate_dataset_errors_metadata in schema["actions"]
+    assert generate_dataset_error_objects_metadata in schema["actions"]
     assert generate_single_error_metadata in schema["actions"]
 
 
@@ -77,11 +77,17 @@ def test_validate_rule_invalid_suffix(
         "engine.services.data_services.LocalDataService.get_dataset",
         return_value=dataset_mock,
     ):
-        validation_result: List[str] = RulesEngine().validate_single_rule(
+        validation_result: List[dict] = RulesEngine().validate_single_rule(
             mock_ae_record_rule_equal_to_suffix, "study/bundle", [{}], "AE"
         )
         assert validation_result == [
-            "1 row(s) with error: Suffix of AESTDY is equal to test.",
+            {
+                "executionStatus": "success",
+                "domain": "AE",
+                "variables": ["AESTDY"],
+                "message": "Suffix of AESTDY is equal to test.",
+                "errors": [{"value": {"AESTDY": "valid-test"}, "row": 1}],
+            }
         ]
 
 
@@ -105,11 +111,17 @@ def test_validate_rule_invalid_prefix(
         "engine.services.data_services.LocalDataService.get_dataset",
         return_value=dataset_mock,
     ):
-        validation_result: List[str] = RulesEngine().validate_single_rule(
+        validation_result: List[dict] = RulesEngine().validate_single_rule(
             mock_record_rule_equal_to_string_prefix, "study/bundle", [{}], "AE"
         )
         assert validation_result == [
-            "1 row(s) with error: Prefix of AESTDY is equal to test.",
+            {
+                "executionStatus": "success",
+                "domain": "AE",
+                "variables": ["AESTDY"],
+                "message": "Prefix of AESTDY is equal to test.",
+                "errors": [{"value": {"AESTDY": "test-valid"}, "row": 1}],
+            }
         ]
 
 
@@ -274,11 +286,21 @@ def test_validate_one_to_one_rel_across_datasets(dataset_rule_one_to_one_related
         "engine.services.data_services.LocalDataService.get_dataset",
         side_effect=lambda dataset_name: path_to_dataset_map[dataset_name],
     ):
-        validation_result: List[str] = RulesEngine().validate_single_rule(
+        validation_result: List[dict] = RulesEngine().validate_single_rule(
             dataset_rule_one_to_one_related, "path/ec.xpt", datasets, "EC"
         )
         assert validation_result == [
-            "3 row(s) with error: VISITNUM is not one-to-one related to VISIT"
+            {
+                "executionStatus": "success",
+                "domain": "EC",
+                "variables": ["VISITNUM"],
+                "message": "VISITNUM is not one-to-one related to VISIT",
+                "errors": [
+                    {"value": {"VISITNUM": 1}, "row": 1},
+                    {"value": {"VISITNUM": 1}, "row": 3},
+                    {"value": {"VISITNUM": 3}, "row": 4},
+                ],
+            }
         ]
 
 
@@ -298,12 +320,20 @@ def test_validate_rule_single_dataset_check(dataset_rule_greater_than: dict):
         "engine.services.data_services.LocalDataService.get_dataset",
         return_value=dataset_mock,
     ):
-        validation_result: List[str] = RulesEngine().validate_single_rule(
+        validation_result: List[dict] = RulesEngine().validate_single_rule(
             dataset_rule_greater_than, "study/bundle", [{}], "EC"
         )
-        assert len(validation_result) == 1
         assert validation_result == [
-            "2 row(s) with error: Value for ECCOOLVAR greater than 30."
+            {
+                "executionStatus": "success",
+                "domain": "EC",
+                "variables": ["ECCOOLVAR"],
+                "message": "Value for ECCOOLVAR greater than 30.",
+                "errors": [
+                    {"value": {"ECCOOLVAR": 100}, "row": 2},
+                    {"value": {"ECCOOLVAR": 34}, "row": 4},
+                ],
+            }
         ]
 
 
@@ -324,12 +354,17 @@ def test_validate_rule_equal_length(dataset_rule_has_equal_length: dict):
         "engine.services.data_services.LocalDataService.get_dataset",
         return_value=dataset_mock,
     ):
-        validation_result: List[str] = RulesEngine().validate_single_rule(
+        validation_result: List[dict] = RulesEngine().validate_single_rule(
             dataset_rule_has_equal_length, "study/bundle", [{}], "EC"
         )
-        assert len(validation_result) == 1
         assert validation_result == [
-            "1 row(s) with error: Length of ECCOOLVAR is equal to 5."
+            {
+                "executionStatus": "success",
+                "domain": "EC",
+                "variables": ["ECCOOLVAR"],
+                "message": "Length of ECCOOLVAR is equal to 5.",
+                "errors": [{"value": {"ECCOOLVAR": "equal"}, "row": 2}],
+            }
         ]
 
 
@@ -350,15 +385,18 @@ def test_validate_is_contained_by_distinct(mock_rule_distinct_operation: dict):
         "engine.services.data_services.LocalDataService.get_dataset",
         side_effect=lambda dataset_name: path_to_dataset_map[dataset_name],
     ):
-        validation_result: List[str] = RulesEngine().validate_single_rule(
+        validation_result: List[dict] = RulesEngine().validate_single_rule(
             mock_rule_distinct_operation, "path/ae.xpt", datasets, "AE"
         )
-        assert len(validation_result) == 1
-        result = validation_result[0]
-        assert "errors" in result
-        assert len(result.get("errors")) == 1
-        error = result.get("errors")[0]
-        assert error["row"] == 4
+        assert validation_result == [
+            {
+                "executionStatus": "success",
+                "domain": "AE",
+                "variables": ["AESTDY"],
+                "message": "Value for AESTDY not in DM.USUBJID",
+                "errors": [{"value": {"AESTDY": 5000}, "row": 4}],
+            }
+        ]
 
 
 def test_validate_rule_not_equal_length(dataset_rule_has_not_equal_length: dict):
@@ -378,12 +416,17 @@ def test_validate_rule_not_equal_length(dataset_rule_has_not_equal_length: dict)
         "engine.services.data_services.LocalDataService.get_dataset",
         return_value=dataset_mock,
     ):
-        validation_result: List[str] = RulesEngine().validate_single_rule(
+        validation_result: List[dict] = RulesEngine().validate_single_rule(
             dataset_rule_has_not_equal_length, "study/bundle", [{}], "EC"
         )
-        assert len(validation_result) == 1
         assert validation_result == [
-            "1 row(s) with error: Length of ECCOOLVAR is not equal to 5."
+            {
+                "executionStatus": "success",
+                "domain": "EC",
+                "variables": ["ECCOOLVAR"],
+                "message": "Length of ECCOOLVAR is not equal to 5.",
+                "errors": [{"value": {"ECCOOLVAR": "first_string"}, "row": 1}],
+            }
         ]
 
 
@@ -398,12 +441,20 @@ def test_validate_rule_multiple_conditions(dataset_rule_multiple_conditions: dic
         "engine.services.data_services.LocalDataService.get_dataset",
         return_value=dataset_mock,
     ):
-        validation_result: List[str] = RulesEngine().validate_single_rule(
+        validation_result: List[dict] = RulesEngine().validate_single_rule(
             dataset_rule_multiple_conditions, "study/bundle", [{}], "EC"
         )
-        assert len(validation_result) == 1
         assert validation_result == [
-            "2 row(s) with error: Length of ECCOOLVAR is not equal to 5 or ECCOOLVAR == cool."
+            {
+                "executionStatus": "success",
+                "domain": "EC",
+                "variables": ["ECCOOLVAR"],
+                "message": "Length of ECCOOLVAR is not equal to 5 or ECCOOLVAR == cool.",
+                "errors": [
+                    {"value": {"ECCOOLVAR": "valid"}, "row": 2},
+                    {"value": {"ECCOOLVAR": "cool"}, "row": 3},
+                ],
+            }
         ]
 
 
@@ -411,18 +462,27 @@ def test_validate_record_rule_numbers_separated_by_dash_pattern():
     """
     The test checks matching "{number}-{number}" pattern.
     """
-    number_number_pattern: str = "^\d+\-\d+$"
+    number_number_pattern: str = r"^\d+\-\d+$"
     rule: dict = get_matches_regex_pattern_rule(number_number_pattern)
     dataset_mock = pd.DataFrame.from_dict({"AESTDY": ["5-5", "10-10", "test"]})
     with patch(
         "engine.services.data_services.LocalDataService.get_dataset",
         return_value=dataset_mock,
     ):
-        validation_result: List[str] = RulesEngine().validate_single_rule(
+        validation_result: List[dict] = RulesEngine().validate_single_rule(
             rule, "study/bundle", [{}], "AE"
         )
         assert validation_result == [
-            f"2 row(s) with error: Records have the following pattern: {number_number_pattern}"
+            {
+                "executionStatus": "success",
+                "domain": "AE",
+                "variables": ["AESTDY"],
+                "message": "Records have the following pattern: ^\\d+\\-\\d+$",
+                "errors": [
+                    {"value": {"AESTDY": "5-5"}, "row": 1},
+                    {"value": {"AESTDY": "10-10"}, "row": 2},
+                ],
+            }
         ]
 
 
@@ -437,11 +497,20 @@ def test_validate_record_rule_semi_colon_delimited_pattern():
         "engine.services.data_services.LocalDataService.get_dataset",
         return_value=dataset_mock,
     ):
-        validation_result: List[str] = RulesEngine().validate_single_rule(
+        validation_result: List[dict] = RulesEngine().validate_single_rule(
             rule, "study/bundle", [{}], "AE"
         )
         assert validation_result == [
-            f"2 row(s) with error: Records have the following pattern: {semi_colon_delimited_pattern}"
+            {
+                "executionStatus": "success",
+                "domain": "AE",
+                "variables": ["AESTDY"],
+                "message": "Records have the following pattern: [^,]*;[^,]*",
+                "errors": [
+                    {"value": {"AESTDY": "5;5"}, "row": 1},
+                    {"value": {"AESTDY": "alex;alex"}, "row": 2},
+                ],
+            }
         ]
 
 
@@ -458,11 +527,20 @@ def test_validate_record_rule_no_letters_numbers_underscores():
         "engine.services.data_services.LocalDataService.get_dataset",
         return_value=dataset_mock,
     ):
-        validation_result: List[str] = RulesEngine().validate_single_rule(
+        validation_result: List[dict] = RulesEngine().validate_single_rule(
             rule, "study/bundle", [{}], "AE"
         )
         assert validation_result == [
-            f"2 row(s) with error: Records have the following pattern: {does_not_contain_pattern}"
+            {
+                "executionStatus": "success",
+                "domain": "AE",
+                "variables": ["AESTDY"],
+                "message": "Records have the following pattern: ^((?![a-zA-Z0-9_]).)*$",
+                "errors": [
+                    {"value": {"AESTDY": "[.*)]#@"}, "row": 1},
+                    {"value": {"AESTDY": "|>.§!"}, "row": 3},
+                ],
+            }
         ]
 
 
@@ -690,7 +768,15 @@ def test_rule_with_domain_prefix_replacement():
                 {"domain": "AE", "filename": "ae.xpt"},
                 {"domain": "EC", "filename": "ec.xpt"},
             ],
-            ["1 row(s) with error: Domain AE exists"],
+            [
+                {
+                    "executionStatus": "success",
+                    "domain": "AE",
+                    "variables": ["AE"],
+                    "message": "Domain AE exists",
+                    "errors": [{"value": {"AE": "ae.xpt"}, "row": 1}],
+                }
+            ],
         ),
         (
             {},
