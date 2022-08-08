@@ -13,6 +13,12 @@ from conftest import mock_data_service
 @pytest.mark.parametrize(
     "domain, rule_metadata, outcome",
     [
+        ("SQAE", {"domains": {"Exclude": ["SUPP--"]}}, False),
+        ("SQAE", {"domains": {"Exclude": ["SUPP--", "SQ--"]}}, False),
+        ("SQAE", {"domains": {"Include": ["SQ--"]}}, True),
+        ("SQAE", {"domains": {"Exclude": ["All"]}}, False),
+        ("SQAE", {"domains": {"Include": ["SUPP--"]}}, True),
+        ("SQAE", {"domains": {"Include": ["All"]}}, True),
         ("AE", {"domains": {"Include": ["AE"]}}, True),
         ("AE", {"domains": {"Include": ["All"]}}, True),
         ("AE", {"domains": {"Exclude": ["AE"]}}, False),
