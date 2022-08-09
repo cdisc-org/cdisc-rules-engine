@@ -3,7 +3,7 @@ name: Release CORE Rules Engine
 on:
   push:
     branches:
-      - main
+      - 'ISS-38-deploy-fixes'
 
 jobs:
   build-linux:
