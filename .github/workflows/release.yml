@@ -41,10 +41,8 @@ jobs:
           python -m pip install --upgrade pip
           pip install setuptools wheel twine
           pip install -r requirements.txt
-      - name: Show python directory
-        run: ls $env:pythonLocation\Lib\site-packages\xmlschema\
       - name: Build Binary
-        run: pyinstaller core.py --dist ./dist/output/windows --add-data=$env:pythonLocation\Lib\site-packages\xmlschema\schemas;xmlschema\schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates
+        run: pyinstaller core.py --dist ./dist/output/windows --add-data=$env:pythonLocation\Lib\site-packages\xmlschema\schemas;xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates
       - name: Archive Windows Artifacts
         uses: actions/upload-artifact@v2
         with:
