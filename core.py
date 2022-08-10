@@ -16,6 +16,24 @@ from scripts.update_cache import (
     save_variables_metadata_locally,
 )
 
+Validation_args = namedtuple(
+    "Validation_args",
+    [
+        "cache",
+        "pool_size",
+        "data",
+        "log_level",
+        "report_template",
+        "standard",
+        "version",
+        "controlled_terminology_package",
+        "output",
+        "define_version",
+        "whodrug",
+        "meddra",
+    ],
+)
+
 
 @click.group()
 def cli():
@@ -103,24 +121,6 @@ def validate(
 
     python core.py -s SDTM -v 3.4 -d /path/to/datasets
     """
-    Validation_args = namedtuple(
-        "Validation_args",
-        [
-            "cache",
-            "pool_size",
-            "data",
-            "log_level",
-            "report_template",
-            "standard",
-            "version",
-            "controlled_terminology_package",
-            "output",
-            "define_version",
-            "whodrug",
-            "meddra",
-        ],
-    )
-
     run_validation(
         Validation_args(
             cache,
