@@ -61,6 +61,9 @@ can be launched by running `core` script with all necessary CLI arguments.
 
 ### Creating .whl file
 
+All non-python files should be listed in `MANIFEST.in` to be included in the distribution.
+Files must be in python package.
+
 **Unix/MacOS**
 
 `python3 -m pip install --upgrade build`
