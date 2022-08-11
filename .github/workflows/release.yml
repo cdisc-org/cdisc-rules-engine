@@ -78,6 +78,7 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@master
         with:
+          tag_name: test
           files: |
             dist/output/linux/core
             dist/output/windows/core
