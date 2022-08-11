@@ -1,9 +1,6 @@
 import pytest
 
-from engine.models.dictionaries.whodrug import (
-    AtcText,
-    WhodrugRecordTypes,
-)
+from cdisc_rules_engine.models.dictionaries.whodrug import AtcText, WhodrugRecordTypes
 
 
 @pytest.mark.parametrize(

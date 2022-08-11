@@ -1,8 +1,8 @@
 import pytest
 from requests import Response
 
-from engine.exceptions.custom_exceptions import NumberOfAttemptsExceeded
-from engine.utilities.decorators import retry_request
+from cdisc_rules_engine.exceptions.custom_exceptions import NumberOfAttemptsExceeded
+from cdisc_rules_engine.utilities.decorators import retry_request
 
 
 def test_retry_request_decorator():

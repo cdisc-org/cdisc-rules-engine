@@ -1,7 +1,7 @@
 import pytest
 
-from engine.exceptions.custom_exceptions import RuleFormatError
-from engine.models.rule_conditions import ConditionCompositeFactory
+from cdisc_rules_engine.exceptions.custom_exceptions import RuleFormatError
+from cdisc_rules_engine.models.rule_conditions import ConditionCompositeFactory
 
 
 def test_get_condition_composite():

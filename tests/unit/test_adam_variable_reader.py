@@ -1,5 +1,6 @@
 import pytest
-from engine.services.adam_variable_reader import AdamVariableReader
+
+from cdisc_rules_engine.services.adam_variable_reader import AdamVariableReader
 
 
 @pytest.mark.parametrize("columns", [["SITEGR7", "AFG", "AG3EGR", "AOCC02FL"]])

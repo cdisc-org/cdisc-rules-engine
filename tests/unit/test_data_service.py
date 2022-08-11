@@ -1,12 +1,12 @@
 from typing import List
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
-from engine.models.dataset_types import DatasetTypes
-from engine.services.data_services import BaseDataService, cached_dataset
 import pandas as pd
 import pytest
-from unittest.mock import patch
-from engine.utilities.utils import get_dataset_cache_key_from_path
+
+from cdisc_rules_engine.models.dataset_types import DatasetTypes
+from cdisc_rules_engine.services.data_services import BaseDataService, cached_dataset
+from cdisc_rules_engine.utilities.utils import get_dataset_cache_key_from_path
 
 
 @pytest.mark.parametrize(
@@ -53,7 +53,7 @@ def test_get_dataset_class_associated_domains():
         f"{data_bundle_path}/ce.xpt": ce_dataset,
     }
     with patch(
-        "engine.services.data_services.BaseDataService.get_dataset",
+        "cdisc_rules_engine.services.data_services.BaseDataService.get_dataset",
         return_value=ap_dataset,
         side_effect=lambda dataset_name: path_to_dataset_map[dataset_name],
     ):

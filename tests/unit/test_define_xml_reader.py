@@ -6,9 +6,10 @@ from typing import List
 
 import pytest
 
-from engine.exceptions.custom_exceptions import DomainNotFoundInDefineXMLError
-from engine.services.define_xml_reader import DefineXMLReader
-
+from cdisc_rules_engine.exceptions.custom_exceptions import (
+    DomainNotFoundInDefineXMLError,
+)
+from cdisc_rules_engine.services.define_xml_reader import DefineXMLReader
 
 test_define_file_path: str = (
     f"{os.path.dirname(__file__)}/../resources/test_defineV22-SDTM.xml"

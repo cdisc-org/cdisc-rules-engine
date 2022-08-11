@@ -1,5 +1,6 @@
-from engine.services.data_readers.xpt_reader import XPTReader
 import os
+
+from cdisc_rules_engine.services.data_readers.xpt_reader import XPTReader
 
 
 def test_read():

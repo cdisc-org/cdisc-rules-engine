@@ -1,8 +1,8 @@
+import os
 from typing import List
 
-from engine.utilities.excel_report import ExcelReport
-from engine.models.rule_validation_result import RuleValidationResult
-import os
+from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
+from cdisc_rules_engine.utilities.excel_report import ExcelReport
 
 test_report_template: str = (
     f"{os.path.dirname(__file__)}/../../resources/templates/report-template.xlsx"

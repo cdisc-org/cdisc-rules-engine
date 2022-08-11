@@ -1,4 +1,4 @@
-from engine.models.rule_conditions.single_condition import SingleCondition
+from cdisc_rules_engine.models.rule_conditions.single_condition import SingleCondition
 
 
 def test_to_dict():
