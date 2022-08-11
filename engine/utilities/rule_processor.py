@@ -43,6 +43,17 @@ class RuleProcessor:
         domains = rule.get("domains") or {}
         include_split_datasets: bool = domains.get("include_split_datasets")
 
+        is_excluded = False
+        excluded_domains = domains.get("Exclude", [])
+        if excluded_domains:
+            if dataset_domain in excluded_domains or "All" in excluded_domains:
+                is_excluded = True
+            is_supp, is_app = RuleProcessor._check_for_supp_and_ap(
+                dataset_domain, excluded_domains
+            )
+            if is_supp or is_app:
+                is_excluded = True
+
         included_domains = domains.get("Include", [])
         is_included = True
         if included_domains:
@@ -50,43 +61,20 @@ class RuleProcessor:
                 dataset_domain not in included_domains and "All" not in included_domains
             )
             if dataset_not_included:
-                matches_supp_naming_pattern = (
-                    RuleProcessor._domains_matched_supplementary_pattern(
-                        dataset_domain, included_domains
-                    )
-                )
-
-                matches_ap_naming_pattern = RuleProcessor._domains_matched_ap_pattern(
+                is_supp, is_app = RuleProcessor._check_for_supp_and_ap(
                     dataset_domain, included_domains
                 )
-                if not (matches_supp_naming_pattern or matches_ap_naming_pattern):
+                if not (is_supp or is_app):
                     is_included = False
-            else:
-                is_included = True
 
         # Case where included domains are not specified and include_split_datasets == True
         # Only include split datasets
-        elif include_split_datasets is True and not is_split_domain:
+        if (
+            not included_domains
+            and include_split_datasets is True
+            and not is_split_domain
+        ):
             is_included = False
-
-        is_excluded = False
-        excluded_domains = domains.get("Exclude", [])
-
-        if excluded_domains:
-            if dataset_domain in excluded_domains or "All" in excluded_domains:
-                is_excluded = True
-            matches_supp_naming_pattern = (
-                RuleProcessor._domains_matched_supplementary_pattern(
-                    dataset_domain, excluded_domains
-                )
-            )
-
-            matches_ap_naming_pattern = RuleProcessor._domains_matched_ap_pattern(
-                dataset_domain, excluded_domains
-            )
-            if matches_supp_naming_pattern or matches_ap_naming_pattern:
-                is_excluded = True
-
         # additional check for split domains based on the flag
         if include_split_datasets is True and is_split_domain and not is_excluded:
             is_included = True
@@ -96,29 +84,50 @@ class RuleProcessor:
         return is_included and not is_excluded
 
     @staticmethod
-    def _domains_matched_supplementary_pattern(dataset_domain, domains_to_check):
-        """Check domains with SUPP-- / SQ-- naming pattern"""
+    def _check_for_supp_and_ap(dataset_domain, excluded_domains):
+        matches_supp_naming_pattern = (
+            RuleProcessor._domains_matched_supplementary_pattern(
+                dataset_domain, excluded_domains
+            )
+        )
+        matches_ap_naming_pattern = RuleProcessor._domains_matched_ap_pattern(
+            dataset_domain, excluded_domains
+        )
+        return matches_supp_naming_pattern, matches_ap_naming_pattern
 
-        return is_supp_domain(dataset_domain) and RuleProcessor._domain_in_supp_domains(
+    @staticmethod
+    def _domains_matched_supplementary_pattern(
+        dataset_domain: str, domains_to_check: List[str]
+    ):
+        """Check domains to match with SUPP--/ SQ-- naming pattern
+
+        dataset_domain: domain name
+        domains_to_check: list of included or excluded domains
+        """
+
+        def _domains_intersects_with_supp_domains(compared_domains: List[str]):
+            supp_domains = {f"{domain}--" for domain in SUPPLEMENTARY_DOMAINS}
+            return any(set(compared_domains).intersection(supp_domains))
+
+        return is_supp_domain(dataset_domain) and _domains_intersects_with_supp_domains(
             domains_to_check
         )
 
     @staticmethod
-    def _domains_matched_ap_pattern(dataset_domain, domains_to_check):
-        """Check domains with AP--/ APFA-- / APRELSUB naming pattern"""
-        return is_ap_domain(dataset_domain) and RuleProcessor._domain_in_ap_domains(
+    def _domains_matched_ap_pattern(dataset_domain: str, domains_to_check: List[str]):
+        """Check domains to match AP--/ APFA--/ APRELSUB naming pattern
+
+        dataset_domain: domain name
+        domains_to_check: list of included or excluded domains
+        """
+
+        def _domains_intersects_with_ap_domains(compared_domains: List[str]):
+            ap_domains = {f"{AP_DOMAIN}--", f"{APFA_DOMAIN}--"}
+            return any(set(compared_domains).intersection(ap_domains))
+
+        return is_ap_domain(dataset_domain) and _domains_intersects_with_ap_domains(
             domains_to_check
         )
-
-    @staticmethod
-    def _domain_in_supp_domains(compared_domains: List[str]):
-        supp_domains = [f"{domain}--" for domain in SUPPLEMENTARY_DOMAINS]
-        return any(domain in supp_domains for domain in compared_domains)
-
-    @staticmethod
-    def _domain_in_ap_domains(compared_domains: List[str]):
-        ap_domains = [f"{AP_DOMAIN}--", f"{APFA_DOMAIN}--"]
-        return any(domain in ap_domains for domain in compared_domains)
 
     def rule_applies_to_class(self, rule, file_path, datasets: List[dict]):
         """
