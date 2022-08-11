@@ -80,7 +80,7 @@ jobs:
         uses: softprops/action-gh-release@master
         with:
           files: |
-            core-linux.zip
-            core-windows.zip
+            dist/output/linux/core
+            dist/output/windows/core
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
