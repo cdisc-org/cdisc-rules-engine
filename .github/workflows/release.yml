@@ -78,10 +78,10 @@ jobs:
           files: |
             core-linux.zip
             core-windows.zip
-            tag_name: ${{ github.ref }}
-            release_name: Release ${{ github.ref }}
-            token: ${{ secrets.RELEASE_TOKEN }}
-            draft: false
-            prerelease: false
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          token: ${{ secrets.RELEASE_TOKEN }}
+          draft: true
+          prerelease: true
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
