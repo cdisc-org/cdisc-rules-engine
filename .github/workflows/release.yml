@@ -1,10 +1,9 @@
 name: Release CORE Rules Engine
 
 on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
+  release:
+    types: [created]
+
 
 jobs:
   build-linux:
@@ -31,10 +30,10 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@master
         with:
-          tag_name: test
+          tag_name: ${{ github.ref }}
           files: core-linux.zip
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
   build-windows:
     runs-on: windows-latest
     steps:
@@ -59,29 +58,29 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@master
         with:
-          tag_name: test
+          tag_name: ${{ github.ref }}
           files: core-windows.zip
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  deploy-package:
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        id: pysetup
-        with:
-          python-version: '3.9'
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install setuptools wheel twine
-          pip install -r requirements.txt
-      - name: Publish
-        env:
-          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-        run: |
-          python setup.py sdist bdist_wheel
-          twine upload dist/* --skip-existing
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+  # deploy-package:
+  #   runs-on: ubuntu-latest
+  #   if: startsWith(github.ref, 'refs/tags/')
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Set up Python
+  #       uses: actions/setup-python@v2
+  #       id: pysetup
+  #       with:
+  #         python-version: '3.9'
+  #     - name: Install dependencies
+  #       run: |
+  #         python -m pip install --upgrade pip
+  #         pip install setuptools wheel twine
+  #         pip install -r requirements.txt
+  #     - name: Publish
+  #       env:
+  #         TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+  #         TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+  #       run: |
+  #         python setup.py sdist bdist_wheel
+  #         twine upload dist/* --skip-existing
