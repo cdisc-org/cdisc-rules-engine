@@ -88,7 +88,7 @@ jobs:
         with:
           tag_name: test
           files: |
-            core-linux.zip
-            core-windows.zip
+            /home/runner/work/cdisc-rules-engine/cdisc-rules-engine/core-linux/*
+            /home/runner/work/cdisc-rules-engine/cdisc-rules-engine/core-windows/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
