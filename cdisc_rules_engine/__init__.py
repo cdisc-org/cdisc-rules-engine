@@ -1,1 +1,1 @@
-from rules_engine import RulesEngine
+from cdisc_rules_engine.rules_engine import RulesEngine
