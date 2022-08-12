@@ -36,6 +36,36 @@ jobs:
           asset_path: ./core-linux.zip
           asset_name: core-linux.zip
           asset_content_type: application/zip
+  build-mac:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        id: pysetup
+        with:
+          python-version: '3.9'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install setuptools wheel twine
+          pip install -r requirements.txt
+      - name: Build Binary
+        run: pyinstaller core.py --dist ./dist/output/mac --add-data=$pythonLocation/lib/python3.9/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=cdisc_rules_engine/resources/cache:cdisc_rules_engine/resources/cache --add-data=cdisc_rules_engine/resources/templates:cdisc_rules_engine/resources/templates
+      - name: Archive Artifacts
+        uses: vimtor/action-zip@v1
+        with:
+          files: dist/output/mac/core/
+          dest: core-mac.zip
+      - name: Upload Mac Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./core-mac.zip
+          asset_name: core-mac.zip
+          asset_content_type: application/zip
   build-windows:
     runs-on: windows-latest
     steps:
