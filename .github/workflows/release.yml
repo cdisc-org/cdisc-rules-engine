@@ -1,10 +1,9 @@
 name: Release CORE Rules Engine
 
 on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
+  release:
+    types: [created]
+
 
 jobs:
   build-linux:
@@ -22,12 +21,21 @@ jobs:
           pip install setuptools wheel twine
           pip install -r requirements.txt
       - name: Build Binary
-        run: pyinstaller core.py --dist ./dist/output/linux --add-data=$pythonLocation/lib/python3.9/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates
+        run: pyinstaller core.py --dist ./dist/output/linux --add-data=$pythonLocation/lib/python3.9/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=cdisc_rules_engine/resources/cache:cdisc_rules_engine/resources/cache --add-data=cdisc_rules_engine/resources/templates:cdisc_rules_engine/resources/templates
       - name: Archive Artifacts
-        uses: actions/upload-artifact@v2
+        uses: vimtor/action-zip@v1
         with:
-          name: "core-linux"
-          path: dist/output/linux/core
+          files: dist/output/linux/core/
+          dest: core-linux.zip
+      - name: Upload Linux Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./core-linux.zip
+          asset_name: core-linux.zip
+          asset_content_type: application/zip
   build-windows:
     runs-on: windows-latest
     steps:
@@ -43,12 +51,21 @@ jobs:
           pip install setuptools wheel twine
           pip install -r requirements.txt
       - name: Build Binary
-        run: pyinstaller core.py --dist ./dist/output/windows --add-data="$env:pythonLocation\Lib\site-packages\xmlschema\schemas;xmlschema/schemas" --add-data="resources/cache;resources/cache" --add-data="resources/templates;resources/templates"
+        run: pyinstaller core.py --dist ./dist/output/windows --add-data="$env:pythonLocation\Lib\site-packages\xmlschema\schemas;xmlschema/schemas" --add-data="cdisc_rules_engine/resources/cache;cdisc_rules_engine/resources/cache" --add-data="cdisc_rules_engine/resources/templates;cdisc_rules_engine/resources/templates"
       - name: Archive Windows Artifacts
-        uses: actions/upload-artifact@v2
+        uses: vimtor/action-zip@v1
         with:
-          name: "core-windows"
-          path: dist/output/windows/core
+          files: dist/output/windows/core/
+          dest: core-windows.zip
+      - name: Upload Windows Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./core-windows.zip
+          asset_name: core-windows.zip
+          asset_content_type: application/zip
   deploy-package:
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
@@ -71,16 +88,3 @@ jobs:
         run: |
           python setup.py sdist bdist_wheel
           twine upload dist/* --skip-existing
-  deploy-artifacts:
-    runs-on: ubuntu-latest
-    needs: [ build-linux, build-windows ]
-    if: startsWith(github.ref, 'refs/tags/')
-    steps:
-      - name: Release
-        uses: softprops/action-gh-release@master
-        with:
-          files: |
-            core-linux.zip
-            core-windows.zip
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
