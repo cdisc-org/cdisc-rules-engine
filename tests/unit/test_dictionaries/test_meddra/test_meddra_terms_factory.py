@@ -1,10 +1,13 @@
-from engine.models.dictionaries.meddra.meddra_terms_factory import (
-    MedDRATermsFactory,
-)
-from engine.models.dictionaries.meddra.terms.term_types import TermTypes
-from engine.services.data_services.local_data_service import LocalDataService
 import os
 from unittest.mock import MagicMock
+
+from cdisc_rules_engine.models.dictionaries.meddra.meddra_terms_factory import (
+    MedDRATermsFactory,
+)
+from cdisc_rules_engine.models.dictionaries.meddra.terms.term_types import TermTypes
+from cdisc_rules_engine.services.data_services.local_data_service import (
+    LocalDataService,
+)
 
 dictionary_path = f"{os.path.dirname(__file__)}/../../../resources/dictionaries/meddra"
 

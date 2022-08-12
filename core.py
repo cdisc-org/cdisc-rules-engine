@@ -5,7 +5,6 @@ from multiprocessing import freeze_support
 
 import click
 
-from engine.utilities.utils import generate_report_filename
 from scripts.run_validation import run_validation
 from scripts.update_cache import (
     load_cache_data,
@@ -15,6 +14,7 @@ from scripts.update_cache import (
     save_variable_codelist_maps_locally,
     save_variables_metadata_locally,
 )
+from cdisc_rules_engine.utilities.utils import generate_report_filename
 
 Validation_args = namedtuple(
     "Validation_args",
@@ -44,7 +44,7 @@ def cli():
 @click.option(
     "-ca",
     "--cache",
-    default="resources/cache",
+    default="cdisc_rules_engine/resources/cache",
     help="Relative path to cache files containing pre loaded metadata and rules",
 )
 @click.option(
@@ -69,7 +69,7 @@ def cli():
 @click.option(
     "-rt",
     "--report_template",
-    default="resources/templates/report-template.xlsx",
+    default="cdisc_rules_engine/resources/templates/report-template.xlsx",
     help="File path of report template to use for excel output",
 )
 @click.option(

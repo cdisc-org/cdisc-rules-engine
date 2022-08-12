@@ -1,14 +1,14 @@
 from unittest.mock import MagicMock
 
-from engine.models.dictionaries.whodrug import (
-    WhoDrugTermsFactory,
+from cdisc_rules_engine.models.dictionaries.whodrug import (
+    AtcClassification,
+    AtcText,
+    DrugDictionary,
     WhodrugFileNames,
     WhodrugRecordTypes,
-    AtcText,
-    AtcClassification,
-    DrugDictionary,
+    WhoDrugTermsFactory,
 )
-from engine.services.data_services import LocalDataService
+from cdisc_rules_engine.services.data_services import LocalDataService
 
 
 def test_install_terms(tmp_path):

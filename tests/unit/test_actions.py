@@ -1,7 +1,8 @@
-from engine.models.actions import COREActions
-from engine.models.dataset_variable import DatasetVariable
 import pandas as pd
 import pytest
+
+from cdisc_rules_engine.models.actions import COREActions
+from cdisc_rules_engine.models.dataset_variable import DatasetVariable
 
 
 def test_targeted_error_object_with_partial_missing_targets():

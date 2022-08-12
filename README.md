@@ -48,11 +48,11 @@ To validate a folder using rules for SDTM-IG version 3.4 use the following comma
 
 **Linux**
 
-`pyinstaller core.py --add-data=venv/lib/python3.9/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates`
+`pyinstaller core.py --add-data=venv/lib/python3.9/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=cdisc_rules_engine/resources/cache:cdisc_rules_engine/resources/cache --add-data=cdisc_rules_engine/resources/templates:cdisc_rules_engine/resources/templates`
 
 **Windows**
 
-`pyinstaller core.py --add-data=".venv/Lib/site-packages/xmlschema/schemas;xmlschema/schemas" --add-data="resources/cache;resources/cache" --add-data="resources/templates;resources/templates"`
+`pyinstaller core.py --add-data=".venv/Lib/site-packages/xmlschema/schemas;xmlschema/schemas" --add-data="cdisc_rules_engine/resources/cache;cdisc_rules_engine/resources/cache" --add-data="cdisc_rules_engine/resources/templates;cdisc_rules_engine/resources/templates"`
 
 _Note .venv should be replaced with path to python installation or virtual environment_
 

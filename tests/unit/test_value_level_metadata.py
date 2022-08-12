@@ -1,9 +1,10 @@
 from unittest.mock import Mock
 
-from engine.models.define import ValueLevelMetadata
-import pytest
 import pandas
+import pytest
 from odmlib.define_2_1.model import CheckValue
+
+from cdisc_rules_engine.models.define import ValueLevelMetadata
 
 
 @pytest.mark.parametrize(

@@ -1,5 +1,7 @@
-from engine.models.rule_conditions.condition_composite import ConditionComposite
-from engine.models.rule_conditions.single_condition import SingleCondition
+from cdisc_rules_engine.models.rule_conditions.condition_composite import (
+    ConditionComposite,
+)
+from cdisc_rules_engine.models.rule_conditions.single_condition import SingleCondition
 
 
 def test_add_conditions():

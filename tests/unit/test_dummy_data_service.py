@@ -1,9 +1,9 @@
 import numpy as np
-
-from engine.dummy_services.dummy_data_service import DummyDataService
-from engine.dummy_models.dummy_dataset import DummyDataset
 import pandas as pd
 import pytest
+
+from cdisc_rules_engine.dummy_models.dummy_dataset import DummyDataset
+from cdisc_rules_engine.dummy_services.dummy_data_service import DummyDataService
 
 
 def test_get_dataset():

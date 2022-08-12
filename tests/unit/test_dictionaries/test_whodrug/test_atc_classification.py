@@ -1,6 +1,6 @@
 import pytest
 
-from engine.models.dictionaries.whodrug import (
+from cdisc_rules_engine.models.dictionaries.whodrug import (
     AtcClassification,
     WhodrugRecordTypes,
 )

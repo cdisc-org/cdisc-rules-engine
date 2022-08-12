@@ -6,11 +6,13 @@ import json
 import os
 from unittest.mock import MagicMock, patch
 
-from engine.config import config
-from engine.services.cdisc_library_service import CDISCLibraryService
+from cdisc_rules_engine.config import config
+from cdisc_rules_engine.services.cdisc_library_service import CDISCLibraryService
 
 
-@patch("engine.services.cdisc_library_service.CDISCLibraryClient.get_sdtmig")
+@patch(
+    "cdisc_rules_engine.services.cdisc_library_service.CDISCLibraryClient.get_sdtmig"
+)
 def test_get_standard_details(mock_get_sdtmig: MagicMock):
     """
     Unit test for get_standard_details method.

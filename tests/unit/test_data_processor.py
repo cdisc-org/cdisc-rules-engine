@@ -1,16 +1,18 @@
 import json
 import os
 from typing import List
+from unittest.mock import MagicMock, patch
 
-from engine.models.dictionaries.whodrug import WhoDrugTermsFactory
-from engine.services.cache.in_memory_cache_service import InMemoryCacheService
-from engine.services.data_services import LocalDataService
-
-from engine.utilities.data_processor import DataProcessor
 import pandas as pd
 import pytest
-from engine.exceptions.custom_exceptions import InvalidMatchKeyError
-from unittest.mock import patch, MagicMock
+
+from cdisc_rules_engine.exceptions.custom_exceptions import InvalidMatchKeyError
+from cdisc_rules_engine.models.dictionaries.whodrug import WhoDrugTermsFactory
+from cdisc_rules_engine.services.cache.in_memory_cache_service import (
+    InMemoryCacheService,
+)
+from cdisc_rules_engine.services.data_services import LocalDataService
+from cdisc_rules_engine.utilities.data_processor import DataProcessor
 
 
 @pytest.mark.parametrize(
@@ -99,7 +101,7 @@ def test_preprocess_relationship_dataset(data):
         "path/data.xpt": data,
     }
     with patch(
-        "engine.services.data_services.LocalDataService.get_dataset",
+        "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
         side_effect=lambda dataset_name: path_to_dataset_map[dataset_name],
     ):
         data_processor = DataProcessor(cache=InMemoryCacheService())
@@ -456,7 +458,9 @@ def test_study_variable_value_occurrence_count(
     "target, standard, standard_version, expected_result",
     [({"STUDYID", "DOMAIN"}, "sdtmig", "3-1-2", {"STUDYID", "DOMAIN"})],
 )
-@patch("engine.services.cdisc_library_service.CDISCLibraryClient.get_sdtmig")
+@patch(
+    "cdisc_rules_engine.services.cdisc_library_service.CDISCLibraryClient.get_sdtmig"
+)
 def test_get_variable_names_for_given_standard(
     mock_get_sdtmig: MagicMock,
     target,

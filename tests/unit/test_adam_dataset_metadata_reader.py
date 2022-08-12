@@ -3,7 +3,7 @@ This module contains unit tests for Adam DatasetMetadataReader class.
 """
 import os
 
-from engine.services.dataset_metadata_reader import DatasetMetadataReader
+from cdisc_rules_engine.services.dataset_metadata_reader import DatasetMetadataReader
 
 
 def test_read_metadata():
