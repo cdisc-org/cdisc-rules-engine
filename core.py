@@ -64,7 +64,7 @@ def cli():
     "-l",
     "--log_level",
     default="disabled",
-    help="Sets log level for cdisc_rules_engine logs, logs are disabled by default",
+    help="Sets log level for engine logs, logs are disabled by default",
 )
 @click.option(
     "-rt",

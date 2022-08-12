@@ -1724,7 +1724,7 @@ def test_validate_dataset_contents_against_define_and_library_variable_metadata(
 
     What the test does is:
     1. Saves library metadata to in-memory cache and uses it.
-       (The cdisc_rules_engine pulls variable metadata from cache).
+       (The engine pulls variable metadata from cache).
     2. Mocks Define XML download to return test file contents.
     3. Mocks dataset download to return a DataFrame with invalid columns.
     4. Asserts that the errors have been reported properly.
@@ -1813,12 +1813,12 @@ def test_validate_dataset_contents_against_library_metadata(
 ):
     """
     Test for validating dataset contents against library metadata.
-    The rule only provides variable names and the cdisc_rules_engine automatically
+    The rule only provides variable names and the engine automatically
     validates their values based on the library metadata.
 
     What the test does is:
     1. Saves library metadata to in-memory cache and uses it.
-       (The cdisc_rules_engine pulls variable metadata from cache).
+       (The engine pulls variable metadata from cache).
     2. Mocks dataset download to return a DataFrame with invalid columns.
     3. Asserts that the errors have been reported properly.
     """
@@ -1918,7 +1918,7 @@ def test_validate_dataset_contents_against_library_metadata_no_required_column(
 ):
     """
     Test for validating dataset contents against library metadata.
-    The rule only provides variable names and the cdisc_rules_engine automatically
+    The rule only provides variable names and the engine automatically
     validates their values based on the library metadata.
 
     The test checks the case when there is no Required column in the dataset.
@@ -2080,7 +2080,7 @@ def test_validate_single_rule_operation_dataset_larger_than_target_dataset(
     rule_distinct_operation_is_not_contained_by: dict,
 ):
     """
-    Unit test for the rules cdisc_rules_engine that ensures that
+    Unit test for the rules engine that ensures that
     if the operation result is longer than the target dataset
     the validation is being performed correctly.
     """

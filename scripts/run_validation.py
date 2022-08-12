@@ -52,7 +52,7 @@ def validate_single_rule(cache, path, datasets, args, rule: dict = None):
     rule["conditions"] = ConditionCompositeFactory.get_condition_composite(
         rule["conditions"]
     )
-    # call rule cdisc_rules_engine
+    # call rule engine
     engine = RulesEngine(
         cache=cache,
         standard=args.standard,

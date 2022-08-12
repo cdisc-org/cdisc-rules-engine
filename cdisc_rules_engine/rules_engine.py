@@ -360,7 +360,7 @@ class RulesEngine:
     ) -> List[Union[dict, str]]:
         """
         Validates dataset contents against Library variable metadata.
-        The rule only provides variable names and the cdisc_rules_engine automatically
+        The rule only provides variable names and the engine automatically
         validates their values based on the variable core status taken from library metadata.
         """
         # get metadata from library
@@ -525,7 +525,7 @@ class RulesEngine:
         )
         results = []
         run(
-            serialize_rule(rule),  # cdisc_rules_engine expects a JSON serialized dict
+            serialize_rule(rule),  # engine expects a JSON serialized dict
             defined_variables=dataset_variable,
             defined_actions=COREActions(
                 results,

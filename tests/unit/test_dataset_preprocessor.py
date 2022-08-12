@@ -327,7 +327,7 @@ def test_preprocess_with_merge_comparison(
     dataset_rule_equal_to_compare_same_value: dict,
 ):
     """
-    Unit test for the rules cdisc_rules_engine that ensures that
+    Unit test for the rules engine that ensures that
     the preprocess method correctly names variables from
     merged datasets.
     """

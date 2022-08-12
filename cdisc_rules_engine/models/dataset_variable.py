@@ -6,7 +6,7 @@ class DatasetVariable(BaseVariables):
     """
     The class represents a dataset variable which
     holds a pandas DataFrame as a dataset.
-    The cdisc_rules_engine uses operators like equal_to, matches_regex etc.
+    The engine uses operators like equal_to, matches_regex etc.
     to validate the dataset columns.
     """
 
