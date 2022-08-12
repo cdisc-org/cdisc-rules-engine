@@ -21,7 +21,7 @@ jobs:
           pip install setuptools wheel twine
           pip install -r requirements.txt
       - name: Build Binary
-        run: pyinstaller core.py --dist ./dist/output/linux --add-data=$pythonLocation/lib/python3.9/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates
+        run: pyinstaller core.py --dist ./dist/output/linux --add-data=$pythonLocation/lib/python3.9/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=cdisc_rules_engine/resources/cache:cdisc_rules_engine/resources/cache --add-data=cdisc_rules_engine/resources/templates:cdisc_rules_engine/resources/templates
       - name: Archive Artifacts
         uses: vimtor/action-zip@v1
         with:
@@ -51,7 +51,7 @@ jobs:
           pip install setuptools wheel twine
           pip install -r requirements.txt
       - name: Build Binary
-        run: pyinstaller core.py --dist ./dist/output/windows --add-data="$env:pythonLocation\Lib\site-packages\xmlschema\schemas;xmlschema/schemas" --add-data="resources/cache;resources/cache" --add-data="resources/templates;resources/templates"
+        run: pyinstaller core.py --dist ./dist/output/windows --add-data="$env:pythonLocation\Lib\site-packages\xmlschema\schemas;xmlschema/schemas" --add-data="cdisc_rules_engine/resources/cache;cdisc_rules_engine/resources/cache" --add-data="cdisc_rules_engine/resources/templates;cdisc_rules_engine/resources/templates"
       - name: Archive Windows Artifacts
         uses: vimtor/action-zip@v1
         with:
