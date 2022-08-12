@@ -8,7 +8,7 @@ setuptools.setup(
     description="Open source offering of the cdisc rules engine",
     author="cdisc-org",
     url="https://github.com/cdisc-org/cdisc-rules-engine",
-    packages=setuptools.find_packages(exclude=["tests"]),
+    packages=setuptools.find_packages(exclude=["scripts", "tests"]),
     license="MIT",
     include_package_data=True,
     python_requires=">=3.9",

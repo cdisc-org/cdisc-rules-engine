@@ -23,13 +23,11 @@ from cdisc_rules_engine.models.rule_conditions import ConditionCompositeFactory
 from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
 from cdisc_rules_engine.rules_engine import RulesEngine
 from cdisc_rules_engine.services import logger as engine_logger
-from cdisc_rules_engine.services.cache.cache_service_interface import (
+from cdisc_rules_engine.services.cache import (
     CacheServiceInterface,
-)
-from cdisc_rules_engine.services.cache.in_memory_cache_service import (
     InMemoryCacheService,
+    RedisCacheService,
 )
-from cdisc_rules_engine.services.cache.redis_cache_service import RedisCacheService
 from cdisc_rules_engine.services.data_services import (
     BaseDataService,
     DataServiceFactory,

@@ -5,8 +5,8 @@ from multiprocessing import freeze_support
 
 import click
 
-from cdisc_rules_engine.scripts.run_validation import run_validation
-from cdisc_rules_engine.scripts.update_cache import (
+from scripts.run_validation import run_validation
+from scripts.update_cache import (
     load_cache_data,
     save_ct_packages_locally,
     save_rules_locally,
