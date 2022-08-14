@@ -1,3 +1,4 @@
+from asyncore import write
 import itertools
 import logging
 import os
@@ -32,8 +33,7 @@ from cdisc_rules_engine.services.data_services import (
     BaseDataService,
     DataServiceFactory,
 )
-from cdisc_rules_engine.utilities.excel_report import ExcelReport
-from cdisc_rules_engine.utilities.excel_writer import excel_workbook_to_stream
+from cdisc_rules_engine.utilities.write_report import write_report
 from cdisc_rules_engine.utilities.utils import get_rules_cache_key
 
 """
@@ -182,19 +182,4 @@ def run_validation(args: namedtuple):
     pool.join()
     end = time.time()
     elapsed_time = end - start
-    report_template = data_service.read_data(args.report_template, "rb")
-    try:
-        report = ExcelReport(data_path, results, elapsed_time, report_template.read())
-        report_data = report.get_excel_export(
-            args.define_version,
-            args.controlled_terminology_package,
-            args.standard,
-            args.version.replace("-", "."),
-        )
-        with open(args.output, "wb") as f:
-            f.write(excel_workbook_to_stream(report_data))
-    except Exception as e:
-        logger.error(e)
-        raise e
-    finally:
-        report_template.close()
+    write_report(data_path, results, elapsed_time, data_service, args)
