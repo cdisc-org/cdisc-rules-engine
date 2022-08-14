@@ -28,5 +28,6 @@ setuptools.setup(
         "click==8.1.3",
         "pyinstaller==5.2",
         "click==8.1.3",
+        "tqdm==4.64.0",
     ],
 )

@@ -37,6 +37,7 @@ Run `core.py validate --help` to see the list of validation options.
 * -dv, --define_version TEXT                 Define-XML version used for validation
 * --whodrug TEXT                             Path to directory with WHODrug dictionary files
 * --meddra TEXT                              Path to directory with MedDRA dictionary files
+* --disable-progressbar                      Disable progress bar
 ```
 
 #### Validate folder

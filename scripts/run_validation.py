@@ -3,6 +3,8 @@ import logging
 import os
 import pickle
 import time
+import click
+import tqdm
 from collections import namedtuple
 from functools import partial
 from multiprocessing import Pool
@@ -174,10 +176,17 @@ def run_validation(args: namedtuple):
 
     start = time.time()
     pool = Pool(args.pool_size)
-    results = pool.map(
-        partial(validate_single_rule, shared_cache, data_path, datasets, args),
-        rules,
-    )
+    results = []
+
+    for rule_result in tqdm.tqdm(
+        pool.imap_unordered(partial(validate_single_rule, shared_cache, data_path, datasets, args), rules),
+        total=len(rules),
+        unit=" rule",
+        colour="#729c1f",
+        disable=args.disable_progressbar,
+        ):
+        results.append(rule_result)
+
     pool.close()
     pool.join()
     end = time.time()

@@ -31,6 +31,7 @@ Validation_args = namedtuple(
         "define_version",
         "whodrug",
         "meddra",
+        "disable_progressbar",
     ],
 )
 
@@ -98,6 +99,13 @@ def cli():
 )
 @click.option("--whodrug", help="Path to directory with WHODrug dictionary files")
 @click.option("--meddra", help="Path to directory with MedDRA dictionary files")
+@click.option(
+    "--disable-progressbar",
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help="Disable progress bar",
+)
 @click.pass_context
 def validate(
     ctx,
@@ -113,6 +121,7 @@ def validate(
     define_version,
     whodrug,
     meddra,
+    disable_progressbar,
 ):
     """
     Validate data using CDISC Rules Engine
@@ -135,6 +144,7 @@ def validate(
             define_version,
             whodrug,
             meddra,
+            disable_progressbar,
         )
     )
 
