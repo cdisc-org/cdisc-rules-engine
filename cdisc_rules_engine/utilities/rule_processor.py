@@ -243,29 +243,22 @@ class RuleProcessor:
         target_variable: str,
         group_by: List = None,
     ):
-        if self.is_current_domain(dataset, target_domain):
-            result = operation(
-                dataset,
-                target_variable,
-                group_by,
-                dataset_path=dataset_path,
-                data_service=self.data_service,
-            )
-        else:
+        if not self.is_current_domain(dataset, target_domain):
+            # get details of another domain
             domain_details: dict = search_in_list_of_dicts(
                 datasets, lambda item: item.get("domain") == target_domain
             )
-            file_name = domain_details["filename"]
-            file_path = get_directory_path(dataset_path) + f"/{file_name}"
-            dataframe = self.data_service.get_dataset(dataset_name=file_path)
-            result = operation(
-                dataframe,
-                target_variable,
-                group_by,
-                dataset_path=dataset_path,
-                data_service=self.data_service,
+            file_path = (
+                get_directory_path(dataset_path) + f"/{domain_details['filename']}"
             )
-        return result
+            dataset = self.data_service.get_dataset(dataset_name=file_path)
+        return operation(
+            dataset,
+            target_variable,
+            group_by,
+            dataset_path=dataset_path,
+            data_service=self.data_service,
+        )
 
     def _handle_operation_result(
         self,

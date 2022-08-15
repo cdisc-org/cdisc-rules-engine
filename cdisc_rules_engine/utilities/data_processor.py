@@ -9,6 +9,7 @@ import pandas as pd
 from cdisc_rules_engine.config import config
 from cdisc_rules_engine.dummy_services.dummy_data_service import DummyDataService
 from cdisc_rules_engine.exceptions.custom_exceptions import InvalidMatchKeyError
+from cdisc_rules_engine.models import OperationParams
 from cdisc_rules_engine.models.dictionaries.meddra.meddra_variables import (
     MedDRAVariables,
 )
@@ -28,7 +29,6 @@ from cdisc_rules_engine.utilities.utils import (
     get_corresponding_datasets,
     get_operations_cache_key,
     get_rules_cache_key,
-    get_standard_details_cache_key,
     is_split_dataset,
     search_in_list_of_dicts,
 )
@@ -42,78 +42,68 @@ class DataProcessor:
         )
 
     @staticmethod
-    def calc_min(
-        dataframe, target, grouping: List = None, **kwargs
-    ) -> Union[int, float, pd.DataFrame]:
-        if not grouping:
-            return dataframe[target].min()
+    def calc_min(params: OperationParams) -> Union[int, float, pd.DataFrame]:
+        if not params.grouping:
+            return params.dataframe[params.target].min()
         else:
-            return dataframe.groupby(grouping, as_index=False).min()
+            return params.dataframe.groupby(params.grouping, as_index=False).min()
 
     @staticmethod
-    def calc_max(
-        dataframe, target, grouping: List = None, **kwargs
-    ) -> Union[int, float, pd.DataFrame]:
-        if not grouping:
-            return dataframe[target].max()
+    def calc_max(params: OperationParams) -> Union[int, float, pd.DataFrame]:
+        if not params.grouping:
+            return params.dataframe[params.target].max()
         else:
-            return dataframe.groupby(grouping, as_index=False).max()
+            return params.dataframe.groupby(params.grouping, as_index=False).max()
 
     @staticmethod
-    def calc_mean(
-        dataframe, target, grouping: List = None, **kwargs
-    ) -> Union[int, float, pd.DataFrame]:
-        if not grouping:
-            return dataframe[target].mean()
+    def calc_mean(params: OperationParams) -> Union[int, float, pd.DataFrame]:
+        if not params.grouping:
+            return params.dataframe[params.target].mean()
         else:
-            return dataframe.groupby(grouping, as_index=False).mean()
+            return params.dataframe.groupby(params.grouping, as_index=False).mean()
 
     @staticmethod
     def get_unique_values(
-        dataframe, target, grouping: List = None, **kwargs
+        params: OperationParams,
     ) -> Union[List[set], pd.DataFrame]:
-        if not grouping:
-            data = dataframe[target].unique()
+        if not params.grouping:
+            data = params.dataframe[params.target].unique()
             if isinstance(data[0], bytes):
                 data = data.astype(str)
             data_converted_to_set = set(data)
-            return [data_converted_to_set] * len(dataframe)
+            return [data_converted_to_set] * len(params.dataframe)
         else:
-            grouped = dataframe.groupby(grouping, as_index=False)
-            return grouped[target].agg(lambda x: pd.Series([set(x.unique())]))
+            grouped = params.dataframe.groupby(params.grouping, as_index=False)
+            return grouped[params.target].agg(lambda x: pd.Series([set(x.unique())]))
 
     @staticmethod
-    def calc_min_date(
-        dataframe, target, grouping: List = None, **kwargs
-    ) -> Union[str, pd.DataFrame]:
-        if not grouping:
-            data = pd.to_datetime(dataframe[target])
+    def calc_min_date(params: OperationParams) -> Union[str, pd.DataFrame]:
+        if not params.grouping:
+            data = pd.to_datetime(params.dataframe[params.target])
             min_date = data.min()
             if isinstance(min_date, pd._libs.tslibs.nattype.NaTType):
                 return ""
             else:
                 return min_date.isoformat()
         else:
-            return dataframe.groupby(grouping, as_index=False).min()
+            return params.dataframe.groupby(params.grouping, as_index=False).min()
 
     @staticmethod
-    def calc_max_date(
-        dataframe, target, grouping: List = None, **kwargs
-    ) -> Union[str, pd.DataFrame]:
-        if not grouping:
-            data = pd.to_datetime(dataframe[target])
+    def calc_max_date(params: OperationParams) -> Union[str, pd.DataFrame]:
+        if not params.grouping:
+            data = pd.to_datetime(params.dataframe[params.target])
             max_date = data.max()
             if isinstance(max_date, pd._libs.tslibs.nattype.NaTType):
                 return ""
             else:
                 return max_date.isoformat()
         else:
-            return dataframe.groupby(grouping, as_index=False).max()
+            return params.dataframe.groupby(params.grouping, as_index=False).max()
 
     @staticmethod
-    def calc_dy(dataframe, target, grouping: List = None, **kwargs) -> pd.Series:
-        dtc_value = dataframe[target].map(datetime.fromisoformat)
-        rfstdtc_value = dataframe["RFSTDTC"].map(datetime.fromisoformat)
+    def calc_dy(params: OperationParams) -> pd.Series:
+        dtc_value = params.dataframe[params.target].map(datetime.fromisoformat)
+        rfstdtc_value = params.dataframe["RFSTDTC"].map(datetime.fromisoformat)
 
         # + 1 if --DTC is on or after RFSTDTC
         delta = (dtc_value - rfstdtc_value).map(
@@ -121,69 +111,60 @@ class DataProcessor:
         )
         return delta
 
-    @staticmethod
-    def extract_metadata(
-        dataframe, target, grouping: List = None, **kwargs
-    ) -> pd.Series:
+    def extract_metadata(self, params: OperationParams) -> pd.Series:
         """
         Extracts domain metadata for the given target and returns it as a Series.
         """
         # get metadata
-        dataset_path: str = kwargs["dataset_path"]
-        data_service = kwargs["data_service"]
-        metadata: pd.DataFrame = data_service.get_dataset_metadata(
-            dataset_name=dataset_path
+        metadata: pd.DataFrame = self.data_service.get_dataset_metadata(
+            dataset_name=params.dataset_path
         )
 
         # extract target value. Metadata df always has one row
-        target_value = metadata.get(target, pd.Series())[0]
-        return pd.Series([target_value] * len(dataframe))
+        target_value = metadata.get(params.target, pd.Series())[0]
+        return pd.Series([target_value] * len(params.dataframe))
 
     @staticmethod
-    def variable_exists(dataframe, target, grouping: List = None, **kwargs) -> bool:
+    def variable_exists(params: OperationParams) -> bool:
         """
         Returns a boolean if the target, is a variable in the dataset.
         """
-        return target in dataframe
+        return params.target in params.dataframe
 
-    @staticmethod
-    def study_variable_value_occurrence_count(
-        target, datasets, directory_path, data_service, cache, **kwargs
-    ) -> int:
+    def study_variable_value_occurrence_count(self, params: OperationParams) -> int:
         """
         Returns a boolean if the target, is a variable in any dataset in the study.
         """
         cache_key = get_operations_cache_key(
-            directory_path, operation_name=f"study_value_count_{target}"
+            params.directory_path,
+            operation_name=f"study_value_count_{params.target}",
         )
         # Only cache when not using dummy dataservice, so that subsequent calls with different data are not cached.
         variable_value_count = (
-            cache.get(cache_key)
-            if not DataProcessor.is_dummy_data(data_service)
+            self.cache.get(cache_key)
+            if not DataProcessor.is_dummy_data(self.data_service)
             else None
         )
         if not variable_value_count:
-
             variable_value_count = asyncio.run(
                 DataProcessor.get_all_study_variable_value_counts(
-                    target, directory_path, data_service, datasets
+                    params.target,
+                    params.directory_path,
+                    self.data_service,
+                    params.datasets,
                 )
             )
-            if not DataProcessor.is_dummy_data(data_service):
-                cache.add(cache_key, variable_value_count)
+            if not DataProcessor.is_dummy_data(self.data_service):
+                self.cache.add(cache_key, variable_value_count)
         return variable_value_count
 
     @staticmethod
-    def get_variable_names_for_given_standard(
-        target=None, datasets=None, dataset_path=None, data_service=None, **kwargs
-    ) -> set:
+    def get_variable_names_for_given_standard(params: OperationParams) -> set:
         """
         Return the set of variable names for the given standard
         """
-        standard = kwargs.get("standard")
-        standard_version = kwargs.get("standard_version")
         cache_service_obj = CacheServiceFactory(config).get_cache_service()
-        cache_key = get_rules_cache_key(standard, standard_version)
+        cache_key = get_rules_cache_key(params.standard, params.standard_version)
         variable_details: dict = cache_service_obj.get(cache_key)
         if variable_details is not None:
             return set(variable_details.keys())
@@ -191,15 +172,12 @@ class DataProcessor:
             cdisc_library_service = CDISCLibraryService(config, cache_service_obj)
             return set(
                 cdisc_library_service.get_variables_details(
-                    standard, standard_version
+                    params.standard, params.standard_version
                 ).keys()
             )
 
-    def valid_meddra_code_references(
-        self, dataframe, target, domain, **kwargs
-    ) -> pd.Series:
-        dictionaries_path: str = kwargs.get("meddra_path")
-        if not dictionaries_path:
+    def valid_meddra_code_references(self, params: OperationParams) -> pd.Series:
+        if not params.meddra_path:
             raise ValueError("Can't execute the operation, no meddra path provided")
         code_variables = [
             MedDRAVariables.SOCCD.value,
@@ -208,23 +186,20 @@ class DataProcessor:
             MedDRAVariables.PTCD.value,
             MedDRAVariables.LLTCD.value,
         ]
-        code_strings = [f"{domain}{variable}" for variable in code_variables]
-        cache_key = f"meddra_valid_code_hierarchies_{dictionaries_path}"
+        code_strings = [f"{params.domain}{variable}" for variable in code_variables]
+        cache_key = f"meddra_valid_code_hierarchies_{params.meddra_path}"
         valid_code_hierarchies = self.cache.get(cache_key)
         if not valid_code_hierarchies:
-            terms: dict = self.cache.get(dictionaries_path)
+            terms: dict = self.cache.get(params.meddra_path)
             valid_code_hierarchies = MedDRATerm.get_code_hierarchies(terms)
             self.cache.add(cache_key, valid_code_hierarchies)
         column = str(uuid4()) + "_codes"
-        dataframe[column] = dataframe[code_strings].agg("/".join, axis=1)
-        result = dataframe[column].isin(valid_code_hierarchies)
+        params.dataframe[column] = params.dataframe[code_strings].agg("/".join, axis=1)
+        result = params.dataframe[column].isin(valid_code_hierarchies)
         return result
 
-    def valid_meddra_term_references(
-        self, dataframe, target, domain, **kwargs
-    ) -> pd.Series:
-        dictionaries_path: str = kwargs.get("meddra_path")
-        if not dictionaries_path:
+    def valid_meddra_term_references(self, params: OperationParams) -> pd.Series:
+        if not params.meddra_path:
             raise ValueError("Can't execute the operation, no meddra path provided")
         code_variables = [
             MedDRAVariables.SOC.value,
@@ -233,123 +208,122 @@ class DataProcessor:
             MedDRAVariables.DECOD.value,
             MedDRAVariables.LLT.value,
         ]
-        code_strings = [f"{domain}{variable}" for variable in code_variables]
-        cache_key = f"meddra_valid_term_hierarchies_{dictionaries_path}"
+        code_strings = [f"{params.domain}{variable}" for variable in code_variables]
+        cache_key = f"meddra_valid_term_hierarchies_{params.meddra_path}"
         valid_term_hierarchies = self.cache.get(cache_key)
         if not valid_term_hierarchies:
-            terms: dict = self.cache.get(dictionaries_path)
+            terms: dict = self.cache.get(params.meddra_path)
             valid_term_hierarchies = MedDRATerm.get_term_hierarchies(terms)
             self.cache.add(cache_key, valid_term_hierarchies)
         column = str(uuid4()) + "_terms"
-        dataframe[column] = dataframe[code_strings].agg("/".join, axis=1)
-        result = dataframe[column].isin(valid_term_hierarchies)
+        params.dataframe[column] = params.dataframe[code_strings].agg("/".join, axis=1)
+        result = params.dataframe[column].isin(valid_term_hierarchies)
         return result
 
-    def valid_meddra_code_term_pairs(
-        self, dataframe, target, domain, **kwargs
-    ) -> pd.Series:
-        dictionaries_path: str = kwargs.get("meddra_path")
-        if not dictionaries_path:
+    def valid_meddra_code_term_pairs(self, params: OperationParams) -> pd.Series:
+        if not params.meddra_path:
             raise ValueError("Can't execute the operation, no meddra path provided")
         variable_pair_map = {
-            f"{domain}{MedDRAVariables.SOC.value}": (
+            f"{params.domain}{MedDRAVariables.SOC.value}": (
                 TermTypes.SOC.value,
                 (
-                    f"{domain}{MedDRAVariables.SOCCD.value}",
-                    f"{domain}{MedDRAVariables.SOC.value}",
+                    f"{params.domain}{MedDRAVariables.SOCCD.value}",
+                    f"{params.domain}{MedDRAVariables.SOC.value}",
                 ),
             ),
-            f"{domain}{MedDRAVariables.SOCCD.value}": (
+            f"{params.domain}{MedDRAVariables.SOCCD.value}": (
                 TermTypes.SOC.value,
                 (
-                    f"{domain}{MedDRAVariables.SOCCD.value}",
-                    f"{domain}{MedDRAVariables.SOC.value}",
+                    f"{params.domain}{MedDRAVariables.SOCCD.value}",
+                    f"{params.domain}{MedDRAVariables.SOC.value}",
                 ),
             ),
-            f"{domain}{MedDRAVariables.HLGT.value}": (
+            f"{params.domain}{MedDRAVariables.HLGT.value}": (
                 TermTypes.HLGT.value,
                 (
-                    f"{domain}{MedDRAVariables.HLGTCD.value}",
-                    f"{domain}{MedDRAVariables.HLGT.value}",
+                    f"{params.domain}{MedDRAVariables.HLGTCD.value}",
+                    f"{params.domain}{MedDRAVariables.HLGT.value}",
                 ),
             ),
-            f"{domain}{MedDRAVariables.HLGTCD.value}": (
+            f"{params.domain}{MedDRAVariables.HLGTCD.value}": (
                 TermTypes.HLGT.value,
                 (
-                    f"{domain}{MedDRAVariables.HLGTCD.value}",
-                    f"{domain}{MedDRAVariables.HLGT.value}",
+                    f"{params.domain}{MedDRAVariables.HLGTCD.value}",
+                    f"{params.domain}{MedDRAVariables.HLGT.value}",
                 ),
             ),
-            f"{domain}{MedDRAVariables.HLT.value}": (
+            f"{params.domain}{MedDRAVariables.HLT.value}": (
                 TermTypes.HLT.value,
                 (
-                    f"{domain}{MedDRAVariables.HLTCD.value}",
-                    f"{domain}{MedDRAVariables.HLT.value}",
+                    f"{params.domain}{MedDRAVariables.HLTCD.value}",
+                    f"{params.domain}{MedDRAVariables.HLT.value}",
                 ),
             ),
-            f"{domain}{MedDRAVariables.HLTCD.value}": (
+            f"{params.domain}{MedDRAVariables.HLTCD.value}": (
                 TermTypes.HLT.value,
                 (
-                    f"{domain}{MedDRAVariables.HLTCD.value}",
-                    f"{domain}{MedDRAVariables.HLT.value}",
+                    f"{params.domain}{MedDRAVariables.HLTCD.value}",
+                    f"{params.domain}{MedDRAVariables.HLT.value}",
                 ),
             ),
-            f"{domain}{MedDRAVariables.DECOD.value}": (
+            f"{params.domain}{MedDRAVariables.DECOD.value}": (
                 TermTypes.PT.value,
                 (
-                    f"{domain}{MedDRAVariables.PTCD.value}",
-                    f"{domain}{MedDRAVariables.DECOD.value}",
+                    f"{params.domain}{MedDRAVariables.PTCD.value}",
+                    f"{params.domain}{MedDRAVariables.DECOD.value}",
                 ),
             ),
-            f"{domain}{MedDRAVariables.PTCD.value}": (
+            f"{params.domain}{MedDRAVariables.PTCD.value}": (
                 TermTypes.PT.value,
                 (
-                    f"{domain}{MedDRAVariables.PTCD.value}",
-                    f"{domain}{MedDRAVariables.DECOD.value}",
+                    f"{params.domain}{MedDRAVariables.PTCD.value}",
+                    f"{params.domain}{MedDRAVariables.DECOD.value}",
                 ),
             ),
-            f"{domain}{MedDRAVariables.LLT.value}": (
+            f"{params.domain}{MedDRAVariables.LLT.value}": (
                 TermTypes.LLT.value,
                 (
-                    f"{domain}{MedDRAVariables.LLTCD.value}",
-                    f"{domain}{MedDRAVariables.LLT.value}",
+                    f"{params.domain}{MedDRAVariables.LLTCD.value}",
+                    f"{params.domain}{MedDRAVariables.LLT.value}",
                 ),
             ),
-            f"{domain}{MedDRAVariables.LLTCD.value}": (
+            f"{params.domain}{MedDRAVariables.LLTCD.value}": (
                 TermTypes.LLT.value,
                 (
-                    f"{domain}{MedDRAVariables.LLTCD.value}",
-                    f"{domain}{MedDRAVariables.LLT.value}",
+                    f"{params.domain}{MedDRAVariables.LLTCD.value}",
+                    f"{params.domain}{MedDRAVariables.LLT.value}",
                 ),
             ),
         }
-        term_type, columns = variable_pair_map.get(target)
-        cache_key = f"meddra_valid_code_term_pairs_{dictionaries_path}"
+        term_type, columns = variable_pair_map.get(params.target)
+        cache_key = f"meddra_valid_code_term_pairs_{params.meddra_path}"
         valid_code_term_pairs = self.cache.get(cache_key)
         if not valid_code_term_pairs:
-            terms: dict = self.cache.get(dictionaries_path)
+            terms: dict = self.cache.get(params.meddra_path)
             valid_code_term_pairs = MedDRATerm.get_code_term_pairs(terms)
             self.cache.add(cache_key, valid_code_term_pairs)
         column = str(uuid4()) + "_pairs"
-        dataframe[column] = list(zip(dataframe[columns[0]], dataframe[columns[1]]))
-        result = dataframe[column].isin(valid_code_term_pairs[term_type])
+        params.dataframe[column] = list(
+            zip(
+                params.dataframe[columns[0]],
+                params.dataframe[columns[1]],
+            )
+        )
+        result = params.dataframe[column].isin(valid_code_term_pairs[term_type])
         return result
 
-    def valid_whodrug_references(
-        self, dataframe: pd.DataFrame, target: str, domain: str, **kwargs
-    ) -> pd.Series:
+    def valid_whodrug_references(self, params: OperationParams) -> pd.Series:
         """
         Checks if a reference to whodrug term points to the existing code in Atc Text (INA) file.
         """
-        dictionaries_path: str = kwargs.get("whodrug_path")
-        if not dictionaries_path:
+        if not params.whodrug_path:
             raise ValueError("Can't execute the operation, no whodrug path provided")
 
-        terms: dict = self.cache.get(dictionaries_path)
+        terms: dict = self.cache.get(params.whodrug_path)
         valid_codes: Generator = (
             term.code for term in terms[WhodrugRecordTypes.ATC_TEXT.value]
         )
-        return dataframe[target].isin(valid_codes)
+        return params.dataframe[params.target].isin(valid_codes)
 
     @staticmethod
     async def get_dataset_variables(study_path, dataset, data_service) -> Set:
