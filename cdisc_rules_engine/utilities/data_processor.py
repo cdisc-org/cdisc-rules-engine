@@ -63,6 +63,17 @@ class DataProcessor:
             return dataframe.groupby(grouping, as_index=False).mean()
 
     @staticmethod
+    def get_unique_values(dataframe, target, grouping: List = None, **kwargs):
+        if not grouping:
+            data = dataframe[target].unique()
+            if isinstance(data[0], bytes):
+                data = data.astype(str)
+            return data
+        else:
+            grouped = dataframe.groupby(grouping, as_index=False)
+            return grouped[target].agg(lambda x: pd.Series([set(x.unique())]))
+
+    @staticmethod
     def calc_min_date(dataframe, target, grouping: List = None, **kwargs):
         if not grouping:
             data = pd.to_datetime(dataframe[target])
@@ -87,69 +98,6 @@ class DataProcessor:
             return dataframe.groupby(grouping, as_index=False).max()
 
     @staticmethod
-    async def get_dataset_variables(study_path, dataset, data_service) -> Set:
-        data = data_service.get_dataset(f"{study_path}/{dataset.get('filename')}")
-        return set(data.columns)
-
-    @staticmethod
-    async def get_all_study_variables(study_path, data_service, datasets) -> Set:
-        coroutines = [
-            DataProcessor.get_dataset_variables(study_path, dataset, data_service)
-            for dataset in datasets
-        ]
-        dataset_variables: List[Set] = await asyncio.gather(*coroutines)
-        return set().union(*dataset_variables)
-
-    @staticmethod
-    async def get_dataset_variable_value_count(
-        target: str, study_path: str, datasets: List[dict], dataset: dict, data_service
-    ) -> Counter:
-        domain = dataset.get("domain")
-        if is_split_dataset(datasets, domain):
-            files = [
-                f"{study_path}/{dataset.get('filename')}"
-                for dataset in get_corresponding_datasets(datasets, domain)
-            ]
-            data = data_service.join_split_datasets(data_service.get_dataset, files)
-        else:
-            data = data_service.get_dataset(f"{study_path}/{dataset.get('filename')}")
-        target_variable = target.replace("--", domain, 1)
-        if target_variable in data:
-            return Counter(list(DataProcessor.get_unique_values(data, target_variable)))
-        else:
-            return Counter()
-
-    @staticmethod
-    async def get_all_study_variable_value_counts(
-        target, study_path, data_service, datasets
-    ) -> dict:
-        """
-        Returns a mapping of variable values to the number of times that value appears in the study.
-        """
-        datasets_with_unique_domains = list(
-            {dataset["domain"]: dataset for dataset in datasets}.values()
-        )
-        coroutines = [
-            DataProcessor.get_dataset_variable_value_count(
-                target, study_path, datasets, dataset, data_service
-            )
-            for dataset in datasets_with_unique_domains
-        ]
-        dataset_variable_value_counts: List[Counter] = await asyncio.gather(*coroutines)
-        return dict(sum(dataset_variable_value_counts, Counter()))
-
-    @staticmethod
-    def get_unique_values(dataframe, target, grouping: List = None, **kwargs):
-        if not grouping:
-            data = dataframe[target].unique()
-            if isinstance(data[0], bytes):
-                data = data.astype(str)
-            return data
-        else:
-            grouped = dataframe.groupby(grouping, as_index=False)
-            return grouped[target].agg(lambda x: pd.Series([set(x.unique())]))
-
-    @staticmethod
     def calc_dy(dataframe, target, grouping: List = None, **kwargs):
         dtc_value = dataframe[target].map(datetime.fromisoformat)
         rfstdtc_value = dataframe["RFSTDTC"].map(datetime.fromisoformat)
@@ -159,6 +107,31 @@ class DataProcessor:
             lambda x: x.days if x.days < 0 else x.days + 1
         )
         return delta
+
+    @staticmethod
+    def extract_metadata(
+        dataframe, target, grouping: List = None, **kwargs
+    ) -> pd.Series:
+        """
+        Extracts domain metadata for the given target and returns it as a Series.
+        """
+        # get metadata
+        dataset_path: str = kwargs["dataset_path"]
+        data_service = kwargs["data_service"]
+        metadata: pd.DataFrame = data_service.get_dataset_metadata(
+            dataset_name=dataset_path
+        )
+
+        # extract target value. Metadata df always has one row
+        target_value = metadata.get(target, pd.Series())[0]
+        return pd.Series([target_value] * len(dataframe))
+
+    @staticmethod
+    def variable_exists(dataframe, target, grouping: List = None, **kwargs) -> bool:
+        """
+        Returns a boolean if the target, is a variable in the dataset.
+        """
+        return target in dataframe
 
     @staticmethod
     def study_variable_value_occurrence_count(
@@ -188,45 +161,26 @@ class DataProcessor:
         return variable_value_count
 
     @staticmethod
-    def extract_metadata(
-        dataframe, target, grouping: List = None, **kwargs
-    ) -> pd.Series:
+    def get_variable_names_for_given_standard(
+        target=None, datasets=None, dataset_path=None, data_service=None, **kwargs
+    ) -> set:
         """
-        Extracts domain metadata for the given target and returns it as a Series.
+        Return the set of variable names for the given standard
         """
-        # get metadata
-        dataset_path: str = kwargs["dataset_path"]
-        data_service = kwargs["data_service"]
-        metadata: pd.DataFrame = data_service.get_dataset_metadata(
-            dataset_name=dataset_path
-        )
-
-        # extract target value. Metadata df always has one row
-        target_value = metadata.get(target, pd.Series())[0]
-        return pd.Series([target_value] * len(dataframe))
-
-    @staticmethod
-    def variable_exists(dataframe, target, grouping: List = None, **kwargs) -> bool:
-        """
-        Returns a boolean if the target, is a variable in the dataset.
-        """
-        return target in dataframe
-
-    @staticmethod
-    def get_unique_record(dataframe):
-        if len(dataframe.index) > 1:
-            raise InvalidMatchKeyError("Match key did not return a unique record")
-        return dataframe.iloc[0]
-
-    @staticmethod
-    def get_record_by_multiindex_values(dataframe, multi_index, multiindex_values):
-        target_frame = dataframe[multi_index.isin([multiindex_values])]
-        return DataProcessor.get_unique_record(target_frame)
-
-    @staticmethod
-    def get_record_by_single_value(dataframe, index_key, index_value):
-        target_frame = dataframe[dataframe[index_key] == index_value]
-        return DataProcessor.get_unique_record(target_frame)
+        standard = kwargs.get("standard")
+        standard_version = kwargs.get("standard_version")
+        cache_service_obj = CacheServiceFactory(config).get_cache_service()
+        cache_key = get_rules_cache_key(standard, standard_version)
+        variable_details: dict = cache_service_obj.get(cache_key)
+        if variable_details is not None:
+            return set(variable_details.keys())
+        else:
+            cdisc_library_service = CDISCLibraryService(config, cache_service_obj)
+            return set(
+                cdisc_library_service.get_variables_details(
+                    standard, standard_version
+                ).keys()
+            )
 
     def valid_meddra_code_references(self, dataframe, target, domain, **kwargs):
         dictionaries_path: str = kwargs.get("meddra_path")
@@ -377,6 +331,64 @@ class DataProcessor:
             term.code for term in terms[WhodrugRecordTypes.ATC_TEXT.value]
         )
         return dataframe[target].isin(valid_codes)
+
+    @staticmethod
+    async def get_dataset_variables(study_path, dataset, data_service) -> Set:
+        data = data_service.get_dataset(f"{study_path}/{dataset.get('filename')}")
+        return set(data.columns)
+
+    @staticmethod
+    async def get_all_study_variables(study_path, data_service, datasets) -> Set:
+        coroutines = [
+            DataProcessor.get_dataset_variables(study_path, dataset, data_service)
+            for dataset in datasets
+        ]
+        dataset_variables: List[Set] = await asyncio.gather(*coroutines)
+        return set().union(*dataset_variables)
+
+    @staticmethod
+    async def get_dataset_variable_value_count(
+        target: str, study_path: str, datasets: List[dict], dataset: dict, data_service
+    ) -> Counter:
+        domain = dataset.get("domain")
+        if is_split_dataset(datasets, domain):
+            files = [
+                f"{study_path}/{dataset.get('filename')}"
+                for dataset in get_corresponding_datasets(datasets, domain)
+            ]
+            data = data_service.join_split_datasets(data_service.get_dataset, files)
+        else:
+            data = data_service.get_dataset(f"{study_path}/{dataset.get('filename')}")
+        target_variable = target.replace("--", domain, 1)
+        if target_variable in data:
+            return Counter(list(DataProcessor.get_unique_values(data, target_variable)))
+        else:
+            return Counter()
+
+    @staticmethod
+    async def get_all_study_variable_value_counts(
+        target, study_path, data_service, datasets
+    ) -> dict:
+        """
+        Returns a mapping of variable values to the number of times that value appears in the study.
+        """
+        datasets_with_unique_domains = list(
+            {dataset["domain"]: dataset for dataset in datasets}.values()
+        )
+        coroutines = [
+            DataProcessor.get_dataset_variable_value_count(
+                target, study_path, datasets, dataset, data_service
+            )
+            for dataset in datasets_with_unique_domains
+        ]
+        dataset_variable_value_counts: List[Counter] = await asyncio.gather(*coroutines)
+        return dict(sum(dataset_variable_value_counts, Counter()))
+
+    @staticmethod
+    def get_unique_record(dataframe):
+        if len(dataframe.index) > 1:
+            raise InvalidMatchKeyError("Match key did not return a unique record")
+        return dataframe.iloc[0]
 
     def preprocess_relationship_dataset(
         self, dataset_path: str, dataset: pd.DataFrame, datasets: List[dict]
@@ -716,25 +728,3 @@ class DataProcessor:
     @staticmethod
     def is_dummy_data(data_service: BaseDataService) -> bool:
         return isinstance(data_service, DummyDataService)
-
-    @staticmethod
-    def get_variable_names_for_given_standard(
-        target=None, datasets=None, dataset_path=None, data_service=None, **kwargs
-    ) -> set:
-        """
-        Return the set of variable names for the given standard
-        """
-        standard = kwargs.get("standard")
-        standard_version = kwargs.get("standard_version")
-        cache_service_obj = CacheServiceFactory(config).get_cache_service()
-        cache_key = get_rules_cache_key(standard, standard_version)
-        variable_details: dict = cache_service_obj.get(cache_key)
-        if variable_details is not None:
-            return set(variable_details.keys())
-        else:
-            cdisc_library_service = CDISCLibraryService(config, cache_service_obj)
-            return set(
-                cdisc_library_service.get_variables_details(
-                    standard, standard_version
-                ).keys()
-            )
