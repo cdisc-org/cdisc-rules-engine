@@ -55,7 +55,7 @@ mock_validation_results = [
 
 
 def test_get_rules_report_data():
-    report: ExcelReport = ExcelReport("test", mock_validation_results, 10.1, None)
+    report: ExcelReport = ExcelReport("test", mock_validation_results, 10.1, {}, None)
     report_data = report.get_rules_report_data()
     expected_reports = []
     for result in mock_validation_results:
@@ -67,7 +67,7 @@ def test_get_rules_report_data():
 
 
 def test_get_detailed_data():
-    report: ExcelReport = ExcelReport("test", mock_validation_results, 10.1, None)
+    report: ExcelReport = ExcelReport("test", mock_validation_results, 10.1, {}, None)
     detailed_data = report.get_detailed_data()
     errors = [
         [
@@ -111,7 +111,7 @@ def test_get_detailed_data():
 
 
 def test_get_summary_data():
-    report: ExcelReport = ExcelReport("test", mock_validation_results, 10.1, None)
+    report: ExcelReport = ExcelReport("test", mock_validation_results, 10.1, {}, None)
     summary_data = report.get_summary_data()
     errors = [
         [
@@ -131,11 +131,9 @@ def test_get_summary_data():
 
 def test_get_excel_export():
     with open(test_report_template, "rb") as f:
-        report: ExcelReport = ExcelReport(
-            "test", mock_validation_results, 10.1, f.read()
-        )
+        report: ExcelReport = ExcelReport("test", mock_validation_results, 10.1, {}, f)
         cdiscCt = ["sdtmct-03-2021"]
-        wb = report.get_excel_export(
+        wb = report.get_export(
             define_version="2.1", cdiscCt=cdiscCt, standard="sdtmig", version="3.4"
         )
         assert wb["Conformance Details"]["B2"].value == "test"

@@ -1,10 +1,15 @@
-from typing import List, TextIO
+from typing import List, TextIO, Union
+from openpyxl import Workbook
 from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
+from cdisc_rules_engine.models.validation_args import Validation_args
+from cdisc_rules_engine.services.data_services.local_data_service import (
+    LocalDataService,
+)
 
 
-class GenericReport:
+class BaseReport:
     """
-    Generates a generic report for a given set of validation results.
+    Generates a base report for a given set of validation results.
     """
 
     def __init__(
@@ -12,14 +17,13 @@ class GenericReport:
         data_path: str,
         validation_results: List[RuleValidationResult],
         elapsed_time: float,
-        report_template: TextIO = None,
-        item_type: str = "list",
+        args: Validation_args,
     ):
         self._data_path: str = data_path
         self._elapsed_time: int = elapsed_time
         self._results: List[RuleValidationResult] = validation_results
-        self._template: TextIO = report_template
-        self._item_type = item_type
+        self._item_type = ""
+        self._args = args
 
     def get_summary_data(self) -> List[List]:
         """
@@ -155,3 +159,9 @@ class GenericReport:
             rules_report,
             key=lambda x: x[0] if (self._item_type == "list") else x["rule_id"],
         )
+
+    def get_export() -> Union[dict, Workbook]:
+        raise NotImplementedError
+
+    def write_report():
+        raise NotImplementedError

@@ -4,14 +4,9 @@ import logging
 import os
 import pickle
 import time
-from collections import namedtuple
 from functools import partial
 from multiprocessing import Pool
 from multiprocessing.managers import SyncManager
-
-logging.getLogger("asyncio").disabled = True
-logging.getLogger("xmlschema").disabled = True
-
 from cdisc_rules_engine.config import config
 from cdisc_rules_engine.constants.define_xml_constants import DEFINE_XML_FILE_NAME
 from cdisc_rules_engine.models.dictionaries import (
@@ -33,8 +28,12 @@ from cdisc_rules_engine.services.data_services import (
     BaseDataService,
     DataServiceFactory,
 )
-from cdisc_rules_engine.utilities.write_report import write_report
 from cdisc_rules_engine.utilities.utils import get_rules_cache_key
+from cdisc_rules_engine.models.validation_args import Validation_args
+from cdisc_rules_engine.utilities.report_factory import ReportFactory
+
+logging.getLogger("asyncio").disabled = True
+logging.getLogger("xmlschema").disabled = True
 
 """
 Sync manager used to manage instances of the cache between processes.
@@ -149,8 +148,7 @@ def get_cache_service(manager):
         return manager.InMemoryCacheService()
 
 
-def run_validation(args: namedtuple):
-    logger = logging.getLogger("validator")
+def run_validation(args: Validation_args):
     set_log_level(args.log_level.lower())
     cache_path: str = f"{os.path.dirname(__file__)}/../{args.cache}"
     data_path: str = f"{os.path.dirname(__file__)}/../{args.data}"
@@ -182,4 +180,8 @@ def run_validation(args: namedtuple):
     pool.join()
     end = time.time()
     elapsed_time = end - start
-    write_report(data_path, results, elapsed_time, data_service, args)
+
+    reporting_service = ReportFactory(
+        data_path, results, elapsed_time, args, data_service
+    ).get_report_service()
+    reporting_service.write_report()

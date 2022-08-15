@@ -1,23 +1,36 @@
+import logging
 from datetime import datetime
+from typing import List, TextIO
+from cdisc_rules_engine.models.validation_args import Validation_args
+from cdisc_rules_engine.utilities.excel_writer import excel_workbook_to_stream
 from openpyxl import Workbook
+from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
 from cdisc_rules_engine.utilities.excel_writer import (
     excel_open_workbook,
     excel_update_worksheet,
 )
-from cdisc_rules_engine.utilities.generic_report import GenericReport
+from cdisc_rules_engine.utilities.base_report import BaseReport
 
 
-class ExcelReport(GenericReport):
+class ExcelReport(BaseReport):
     """
     Generates an excel report for a given set of validation results.
     """
 
-    def get_excel_export(self, define_version, cdiscCt, standard, version) -> Workbook:
-        """
-        Populates the excel workbook template found in the file "CORE-Report-Template.xlsx" with
-        data from validation results
-        """
-        wb = excel_open_workbook(self._template)
+    def __init__(
+        self,
+        data_path: str,
+        validation_results: List[RuleValidationResult],
+        elapsed_time: float,
+        args: Validation_args,
+        _template: TextIO,
+    ):
+        super().__init__(data_path, validation_results, elapsed_time, args)
+        self._template = _template
+        self._item_type = "list"
+
+    def get_export(self, define_version, cdiscCt, standard, version) -> Workbook:
+        wb = excel_open_workbook(self._template.read())
         summary_data = self.get_summary_data()
         detailed_data = self.get_detailed_data()
         rules_report_data = self.get_rules_report_data()
@@ -38,3 +51,21 @@ class ExcelReport(GenericReport):
         wb["Conformance Details"]["B10"] = ", ".join(cdiscCt)
         wb["Conformance Details"]["B11"] = define_version
         return wb
+
+    def write_report(self):
+        output_name = self._args.output + "." + self._args.output_format.lower()
+        logger = logging.getLogger("validator")
+        try:
+            report_data = self.get_export(
+                self._args.define_version,
+                self._args.controlled_terminology_package,
+                self._args.standard,
+                self._args.version.replace("-", "."),
+            )
+            with open(output_name, "wb") as f:
+                f.write(excel_workbook_to_stream(report_data))
+        except Exception as e:
+            logger.error(e)
+            raise e
+        finally:
+            self._template.close()

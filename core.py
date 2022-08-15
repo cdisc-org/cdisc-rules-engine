@@ -1,11 +1,10 @@
 import asyncio
 import logging
-from collections import namedtuple
 from datetime import datetime
 from multiprocessing import freeze_support
 
 import click
-
+from cdisc_rules_engine.models.validation_args import Validation_args
 from scripts.run_validation import run_validation
 from scripts.update_cache import (
     load_cache_data,
@@ -16,26 +15,6 @@ from scripts.update_cache import (
     save_variables_metadata_locally,
 )
 from cdisc_rules_engine.utilities.utils import generate_report_filename
-
-Validation_args = namedtuple(
-    "Validation_args",
-    [
-        "cache",
-        "pool_size",
-        "data",
-        "log_level",
-        "report_template",
-        "standard",
-        "version",
-        "controlled_terminology_package",
-        "output",
-        "output_format",
-        "raw_report",
-        "define_version",
-        "whodrug",
-        "meddra",
-    ],
-)
 
 
 @click.group()
@@ -65,7 +44,7 @@ def cli():
 )
 @click.option(
     "-l",
-    "--log_level",
+    "--log-level",
     default="disabled",
     type=click.Choice(["info", "debug", "error", "critical", "disabled"]),
     help="Sets log level for engine logs, logs are disabled by default",
@@ -145,7 +124,7 @@ def validate(
 
     # Validate conditional options
     logger = logging.getLogger("validator")
-    if (raw_report == True and output_format.lower() != "json"):
+    if raw_report == True and output_format.lower() != "json":
         logger.error("Flag --raw-report can be used only when --output-format is JSON")
         ctx.exit()
 
