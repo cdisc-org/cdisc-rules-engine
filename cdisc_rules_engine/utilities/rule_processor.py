@@ -2,7 +2,6 @@ import copy
 import re
 from typing import Callable, List, Optional, Set, Union
 
-import numpy as np
 import pandas as pd
 
 from cdisc_rules_engine.constants.classes import DETECTABLE_CLASSES
@@ -11,6 +10,7 @@ from cdisc_rules_engine.constants.domains import (
     APFA_DOMAIN,
     SUPPLEMENTARY_DOMAINS,
 )
+from cdisc_rules_engine.models import OperationParams
 from cdisc_rules_engine.models.rule_conditions import (
     AllowedConditionsKeys,
     ConditionCompositeFactory,
@@ -150,132 +150,96 @@ class RuleProcessor:
         standard_version: str,
         **kwargs,
     ) -> pd.DataFrame:
-        domain_operator_map = {
-            "min": DataProcessor.calc_min,
-            "max": DataProcessor.calc_max,
-            "mean": DataProcessor.calc_mean,
-            "distinct": DataProcessor.get_unique_values,
-            "min_date": DataProcessor.calc_min_date,
-            "max_date": DataProcessor.calc_max_date,
-            "dy": DataProcessor.calc_dy,
-            "extract_metadata": DataProcessor.extract_metadata,
-            "variable_exists": DataProcessor.variable_exists,
-        }
-        study_operator_map = {
-            "variable_value_count": DataProcessor.study_variable_value_occurrence_count,
-            "variable_names": DataProcessor.get_variable_names_for_given_standard,
-        }
-        data_processor = DataProcessor(self.data_service, self.cache)
-        dictionary_operator_map = {
-            "valid_whodrug_references": data_processor.valid_whodrug_references,
-            "valid_meddra_code_references": data_processor.valid_meddra_code_references,
-            "valid_meddra_term_references": data_processor.valid_meddra_term_references,
-            "valid_meddra_code_term_pairs": data_processor.valid_meddra_code_term_pairs,
-        }
+        """
+        Applies rule operations to the dataset.
+        Returns the processed dataset. Operation result is appended as a new column.
+        """
         dataset_copy = dataset.copy()
-        directory_path = get_directory_path(dataset_path)
-        for operation in rule.get("operations") or []:
-            operator = operation.get("operator")
-            target_domain = operation.get("domain", domain)
-            target_variable = operation.get("name")
-            value_id = operation.get("id")
-            group_by = operation.get("group", [])
-            if target_variable.startswith("--") and target_domain:
-                # Not a study wide operation
-                target_variable = target_variable.replace("--", domain)
-                target_domain = target_domain.replace("--", domain)
-            if operator in dictionary_operator_map:
-                result = dictionary_operator_map.get(operator)(
-                    dataset, target_variable, target_domain, **kwargs
-                )
-            elif operator in study_operator_map:
-                # Perform study wide operation
-                result = study_operator_map.get(operator)(
-                    target_variable,
-                    datasets,
-                    directory_path,
-                    self.data_service,
-                    self.cache,
-                    standard=standard,
-                    standard_version=standard_version,
-                )
-            else:
-                # Domain specific operation
-                cache_key = get_operations_cache_key(
-                    directory_path=directory_path,
-                    operation_name=operator,
-                    domain=target_domain,
-                    grouping=";".join(group_by),
-                    target_variable=target_variable,
-                )
-                operation = domain_operator_map.get(operator)
-                result = self.cache.get(cache_key)
-                if result is None:
-                    result = self.execute_operation(
-                        operation,
-                        datasets,
-                        dataset_path,
-                        dataset,
-                        target_domain,
-                        domain,
-                        target_variable,
-                        group_by,
-                    )
-
-                if not DataProcessor.is_dummy_data(self.data_service):
-                    self.cache.add(cache_key, result)
-
-            dataset_copy = self._handle_operation_result(
-                result, group_by, target_variable, value_id, dataset_copy
+        data_processor = DataProcessor(self.data_service, self.cache)
+        for operation in rule.get("operations", []):
+            operation_params = OperationParams(
+                operation_id=operation["id"],
+                operation_name=operation["operator"],
+                dataframe=dataset_copy,
+                target=operation["name"],
+                domain=operation.get("domain", domain),
+                dataset_path=dataset_path,
+                directory_path=get_directory_path(dataset_path),
+                datasets=datasets,
+                standard=standard,
+                standard_version=standard_version,
+                meddra_path=kwargs.get("meddra_path"),
+                whodrug_path=kwargs.get("whodrug_path"),
+                grouping=operation.get("group", []),
             )
-            logger.info(f"Processed rule operation. operation={operation}, rule={rule}")
+            operation_to_call: Callable = getattr(
+                data_processor, operation_params.operation_name
+            )
+            result = self._execute_operation(operation_to_call, operation_params)
+            dataset_copy = self._handle_operation_result(result, operation_params)
+            logger.info(
+                f"Processed rule operation. operation={operation_params.operation_name}, rule={rule}"
+            )
 
         return dataset_copy
 
-    def execute_operation(
-        self,
-        operation: Callable,
-        datasets: List[dict],
-        dataset_path: str,
-        dataset: pd.DataFrame,
-        target_domain: str,
-        domain: str,
-        target_variable: str,
-        group_by: List = None,
+    def _execute_operation(
+        self, operation_to_call: Callable, operation_params: OperationParams
     ):
-        if not self.is_current_domain(dataset, target_domain):
-            # get details of another domain
-            domain_details: dict = search_in_list_of_dicts(
-                datasets, lambda item: item.get("domain") == target_domain
-            )
-            file_path = (
-                get_directory_path(dataset_path) + f"/{domain_details['filename']}"
-            )
-            dataset = self.data_service.get_dataset(dataset_name=file_path)
-        return operation(
-            dataset,
-            target_variable,
-            group_by,
-            dataset_path=dataset_path,
-            data_service=self.data_service,
+        """
+        Internal method that executes the given operation.
+        Checks the cache first, if the operation result is not found
+        in cache -> executes it and adds to the cache.
+        """
+        # check cache
+        cache_key = get_operations_cache_key(
+            directory_path=operation_params.directory_path,
+            operation_name=operation_params.operation_name,
+            domain=operation_params.domain,
+            grouping=";".join(operation_params.grouping),
+            target_variable=operation_params.target,
         )
+        result = self.cache.get(cache_key)
+        if result:
+            return result
+
+        if not self.is_current_domain(
+            operation_params.dataframe, operation_params.domain
+        ):
+            # download other domain
+            domain_details: dict = search_in_list_of_dicts(
+                operation_params.datasets,
+                lambda item: item.get("domain") == operation_params.domain,
+            )
+            file_path: str = f"{get_directory_path(operation_params.dataset_path)}/{domain_details['filename']}"
+            operation_params.dataframe = self.data_service.get_dataset(
+                dataset_name=file_path
+            )
+
+        # call the operation
+        result = operation_to_call(operation_params)
+        if not DataProcessor.is_dummy_data(self.data_service):
+            self.cache.add(cache_key, result)
+        return result
 
     def _handle_operation_result(
-        self,
-        result,
-        group_by: List[str],
-        target_variable: str,
-        operation_id: str,
-        dataset: pd.DataFrame,
+        self, result, operation_params: OperationParams
     ) -> pd.DataFrame:
-        if group_by:
+        if operation_params.grouping:
             # Handle grouped results
-            result = result.rename(columns={target_variable: operation_id})
-            target_columns = group_by.append(operation_id)
-            dataset = dataset.merge(result[target_columns], on=group_by, how="left")
+            result = result.rename(
+                columns={operation_params.target: operation_params.operation_id}
+            )
+            target_columns = operation_params.grouping.append(
+                operation_params.operation_id
+            )
+            dataset = operation_params.dataframe.merge(
+                result[target_columns], on=operation_params.grouping, how="left"
+            )
         else:
             # Handle single results
-            dataset[operation_id] = result
+            operation_params.dataframe[operation_params.operation_id] = result
+            dataset = operation_params.dataframe
         return dataset
 
     def is_current_domain(self, dataset, target_domain):

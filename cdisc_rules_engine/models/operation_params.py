@@ -6,6 +6,8 @@ import pandas as pd
 
 @dataclass
 class OperationParams:
+    operation_id: str
+    operation_name: str
     dataframe: pd.DataFrame
     target: str
     domain: str
