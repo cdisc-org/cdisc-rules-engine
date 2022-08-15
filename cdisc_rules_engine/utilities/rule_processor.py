@@ -225,24 +225,9 @@ class RuleProcessor:
                 if not DataProcessor.is_dummy_data(self.data_service):
                     self.cache.add(cache_key, result)
 
-            if group_by:
-                # Handle grouped results
-                result = result.rename(columns={target_variable: value_id})
-                target_columns = group_by + [value_id]
-                dataset_copy = dataset_copy.merge(
-                    result[target_columns], on=group_by, how="left"
-                )
-            elif isinstance(result, np.ndarray):
-                # Case where distinct operator was used.
-                # add column with results, each value will be a set
-                list_of_result_sets: List[set] = [set(result)] * len(dataset_copy)
-                dataset_copy[value_id] = pd.Series(list_of_result_sets)
-            elif isinstance(result, dict):
-                list_of_results: List[dict] = [result] * len(dataset_copy)
-                dataset_copy[value_id] = list_of_results
-            else:
-                # Handle single results
-                dataset_copy[value_id] = result
+            dataset_copy = self._handle_operation_result(
+                result, group_by, target_variable, value_id, dataset_copy
+            )
             logger.info(f"Processed rule operation. operation={operation}, rule={rule}")
 
         return dataset_copy
@@ -281,6 +266,24 @@ class RuleProcessor:
                 data_service=self.data_service,
             )
         return result
+
+    def _handle_operation_result(
+        self,
+        result,
+        group_by: List[str],
+        target_variable: str,
+        operation_id: str,
+        dataset: pd.DataFrame,
+    ) -> pd.DataFrame:
+        if group_by:
+            # Handle grouped results
+            result = result.rename(columns={target_variable: operation_id})
+            target_columns = group_by.append(operation_id)
+            dataset = dataset.merge(result[target_columns], on=group_by, how="left")
+        else:
+            # Handle single results
+            dataset[operation_id] = result
+        return dataset
 
     def is_current_domain(self, dataset, target_domain):
         if not self.is_relationship_dataset(target_domain):

@@ -1,7 +1,7 @@
 import asyncio
 from collections import Counter
 from datetime import datetime
-from typing import Generator, List, Optional, Set
+from typing import Generator, List, Optional, Set, Union
 from uuid import uuid4
 
 import pandas as pd
@@ -42,39 +42,50 @@ class DataProcessor:
         )
 
     @staticmethod
-    def calc_min(dataframe, target, grouping: List = None, **kwargs):
+    def calc_min(
+        dataframe, target, grouping: List = None, **kwargs
+    ) -> Union[int, float, pd.DataFrame]:
         if not grouping:
             return dataframe[target].min()
         else:
             return dataframe.groupby(grouping, as_index=False).min()
 
     @staticmethod
-    def calc_max(dataframe, target, grouping: List = None, **kwargs):
+    def calc_max(
+        dataframe, target, grouping: List = None, **kwargs
+    ) -> Union[int, float, pd.DataFrame]:
         if not grouping:
             return dataframe[target].max()
         else:
             return dataframe.groupby(grouping, as_index=False).max()
 
     @staticmethod
-    def calc_mean(dataframe, target, grouping: List = None, **kwargs):
+    def calc_mean(
+        dataframe, target, grouping: List = None, **kwargs
+    ) -> Union[int, float, pd.DataFrame]:
         if not grouping:
             return dataframe[target].mean()
         else:
             return dataframe.groupby(grouping, as_index=False).mean()
 
     @staticmethod
-    def get_unique_values(dataframe, target, grouping: List = None, **kwargs):
+    def get_unique_values(
+        dataframe, target, grouping: List = None, **kwargs
+    ) -> Union[List[set], pd.DataFrame]:
         if not grouping:
             data = dataframe[target].unique()
             if isinstance(data[0], bytes):
                 data = data.astype(str)
-            return data
+            data_converted_to_set = set(data)
+            return [data_converted_to_set] * len(dataframe)
         else:
             grouped = dataframe.groupby(grouping, as_index=False)
             return grouped[target].agg(lambda x: pd.Series([set(x.unique())]))
 
     @staticmethod
-    def calc_min_date(dataframe, target, grouping: List = None, **kwargs):
+    def calc_min_date(
+        dataframe, target, grouping: List = None, **kwargs
+    ) -> Union[str, pd.DataFrame]:
         if not grouping:
             data = pd.to_datetime(dataframe[target])
             min_date = data.min()
@@ -86,7 +97,9 @@ class DataProcessor:
             return dataframe.groupby(grouping, as_index=False).min()
 
     @staticmethod
-    def calc_max_date(dataframe, target, grouping: List = None, **kwargs):
+    def calc_max_date(
+        dataframe, target, grouping: List = None, **kwargs
+    ) -> Union[str, pd.DataFrame]:
         if not grouping:
             data = pd.to_datetime(dataframe[target])
             max_date = data.max()
@@ -98,7 +111,7 @@ class DataProcessor:
             return dataframe.groupby(grouping, as_index=False).max()
 
     @staticmethod
-    def calc_dy(dataframe, target, grouping: List = None, **kwargs):
+    def calc_dy(dataframe, target, grouping: List = None, **kwargs) -> pd.Series:
         dtc_value = dataframe[target].map(datetime.fromisoformat)
         rfstdtc_value = dataframe["RFSTDTC"].map(datetime.fromisoformat)
 
@@ -182,7 +195,9 @@ class DataProcessor:
                 ).keys()
             )
 
-    def valid_meddra_code_references(self, dataframe, target, domain, **kwargs):
+    def valid_meddra_code_references(
+        self, dataframe, target, domain, **kwargs
+    ) -> pd.Series:
         dictionaries_path: str = kwargs.get("meddra_path")
         if not dictionaries_path:
             raise ValueError("Can't execute the operation, no meddra path provided")
@@ -205,7 +220,9 @@ class DataProcessor:
         result = dataframe[column].isin(valid_code_hierarchies)
         return result
 
-    def valid_meddra_term_references(self, dataframe, target, domain, **kwargs):
+    def valid_meddra_term_references(
+        self, dataframe, target, domain, **kwargs
+    ) -> pd.Series:
         dictionaries_path: str = kwargs.get("meddra_path")
         if not dictionaries_path:
             raise ValueError("Can't execute the operation, no meddra path provided")
@@ -228,7 +245,9 @@ class DataProcessor:
         result = dataframe[column].isin(valid_term_hierarchies)
         return result
 
-    def valid_meddra_code_term_pairs(self, dataframe, target, domain, **kwargs):
+    def valid_meddra_code_term_pairs(
+        self, dataframe, target, domain, **kwargs
+    ) -> pd.Series:
         dictionaries_path: str = kwargs.get("meddra_path")
         if not dictionaries_path:
             raise ValueError("Can't execute the operation, no meddra path provided")
@@ -318,7 +337,7 @@ class DataProcessor:
 
     def valid_whodrug_references(
         self, dataframe: pd.DataFrame, target: str, domain: str, **kwargs
-    ):
+    ) -> pd.Series:
         """
         Checks if a reference to whodrug term points to the existing code in Atc Text (INA) file.
         """
