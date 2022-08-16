@@ -101,10 +101,10 @@ class RuleProcessor:
         """
         if not excluded_domains:
             return False
-        domains = excluded_domains
-        if dataset_domain in domains or "All" in domains:
+
+        if dataset_domain in excluded_domains or "All" in excluded_domains:
             return True
-        if cls._domain_matched_ap_or_supp(dataset_domain, domains):
+        if cls._domain_matched_ap_or_supp(dataset_domain, excluded_domains):
             return True
         return False
 
