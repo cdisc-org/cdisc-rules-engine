@@ -1,9 +1,9 @@
 import asyncio
 import logging
+import click
 from datetime import datetime
 from multiprocessing import freeze_support
-
-import click
+from cdisc_rules_engine.enums.report_types import ReportTypes
 from cdisc_rules_engine.models.validation_args import Validation_args
 from scripts.run_validation import run_validation
 from scripts.update_cache import (
@@ -76,8 +76,8 @@ def cli():
 @click.option(
     "-of",
     "--output-format",
-    default="XLSX",
-    type=click.Choice(["JSON", "XLSX"], case_sensitive=False),
+    default=ReportTypes.XLSX.value,
+    type=click.Choice(ReportTypes.values(), case_sensitive=False),
     help="Output file format",
 )
 @click.option(
@@ -124,7 +124,7 @@ def validate(
 
     # Validate conditional options
     logger = logging.getLogger("validator")
-    if raw_report == True and output_format.lower() != "json":
+    if raw_report is True and output_format.upper() != ReportTypes.JSON.value:
         logger.error("Flag --raw-report can be used only when --output-format is JSON")
         ctx.exit()
 

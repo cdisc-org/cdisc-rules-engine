@@ -1,4 +1,5 @@
 from typing import List
+from cdisc_rules_engine.enums.report_types import ReportTypes
 from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
 from cdisc_rules_engine.models.validation_args import Validation_args
 from cdisc_rules_engine.utilities.excel_report import ExcelReport
@@ -36,9 +37,9 @@ class ReportFactory:
 
     def get_report_service(self):
         output_type = self._args.output_format.upper()
-        if output_type == "XLSX":
+        if output_type == ReportTypes.XLSX.value:
             if self._data_service != None:
-                self._template = self._data_service.read_data(
+                template = self._data_service.read_data(
                     self._args.report_template, "rb"
                 )
             return ExcelReport(
@@ -46,9 +47,9 @@ class ReportFactory:
                 self._results,
                 self._elapsed_time,
                 self._args,
-                self._template,
+                template,
             )
-        elif output_type == "JSON":
+        elif output_type == ReportTypes.JSON.value:
             return JsonReport(
                 self._data_path,
                 self._results,

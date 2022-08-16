@@ -1,5 +1,4 @@
 import os
-from typing import List
 
 from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
 from cdisc_rules_engine.utilities.excel_report import ExcelReport

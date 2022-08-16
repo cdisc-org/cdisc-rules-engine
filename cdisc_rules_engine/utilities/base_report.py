@@ -1,13 +1,11 @@
-from typing import List, TextIO, Union
+from abc import abstractmethod, ABC
+from typing import List, Union
 from openpyxl import Workbook
 from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
 from cdisc_rules_engine.models.validation_args import Validation_args
-from cdisc_rules_engine.services.data_services.local_data_service import (
-    LocalDataService,
-)
 
 
-class BaseReport:
+class BaseReport(ABC):
     """
     Generates a base report for a given set of validation results.
     """
@@ -160,8 +158,10 @@ class BaseReport:
             key=lambda x: x[0] if (self._item_type == "list") else x["rule_id"],
         )
 
+    @abstractmethod
     def get_export() -> Union[dict, Workbook]:
         raise NotImplementedError
 
+    @abstractmethod
     def write_report():
         raise NotImplementedError
