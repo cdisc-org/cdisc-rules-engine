@@ -1,6 +1,6 @@
 import copy
 import re
-from typing import Callable, List, Optional, Set, Union
+from typing import Callable, List, Optional, Set, Union, Tuple
 
 import numpy as np
 import pandas as pd
@@ -57,8 +57,12 @@ class RuleProcessor:
 
     @classmethod
     def _handle_split_domains(
-        cls, is_split_domain, include_split_datasets, is_excluded, is_included
-    ):
+        cls,
+        is_split_domain: bool,
+        include_split_datasets: bool,
+        is_excluded: bool,
+        is_included: bool,
+    ) -> Tuple[bool, bool]:
         """
         HANDLING SPLIT DOMAINS
 
