@@ -156,25 +156,33 @@ class RuleProcessor:
         """
         dataset_copy = dataset.copy()
         data_processor = DataProcessor(self.data_service, self.cache)
-        for operation in rule.get("operations", []):
+        operations: List[dict] = rule.get("operations", [])
+        for operation in operations:
+            # get necessary operation
             operation_params = OperationParams(
-                operation_id=operation["id"],
-                operation_name=operation["operator"],
+                operation_id=operation.get("id"),
+                operation_name=operation.get("operator"),
                 dataframe=dataset_copy,
-                target=operation["name"],
+                target=operation.get("name"),
                 domain=operation.get("domain", domain),
                 dataset_path=dataset_path,
                 directory_path=get_directory_path(dataset_path),
                 datasets=datasets,
+                grouping=operation.get("group", []),
                 standard=standard,
                 standard_version=standard_version,
                 meddra_path=kwargs.get("meddra_path"),
                 whodrug_path=kwargs.get("whodrug_path"),
-                grouping=operation.get("group", []),
             )
-            operation_to_call: Callable = getattr(
-                data_processor, operation_params.operation_name
+            operation_to_call: Optional[Callable] = getattr(
+                data_processor, operation_params.operation_name, None
             )
+            if not operation_to_call:
+                raise ValueError(
+                    f"Operation {operation_params.operation_name} doesn't exist"
+                )
+
+            # execute operation
             result = self._execute_operation(operation_to_call, operation_params)
             dataset_copy = self._handle_operation_result(result, operation_params)
             logger.info(

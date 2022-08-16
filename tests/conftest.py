@@ -5,6 +5,7 @@ import pandas as pd
 import pytest
 
 from cdisc_rules_engine.enums.rule_types import RuleTypes
+from cdisc_rules_engine.models import OperationParams
 from cdisc_rules_engine.models.dictionaries.whodrug import WhoDrugTermsFactory
 from cdisc_rules_engine.models.rule_conditions import ConditionCompositeFactory
 from cdisc_rules_engine.services.cache.in_memory_cache_service import (
@@ -1096,3 +1097,22 @@ def installed_whodrug_dictionaries(request) -> dict:
         "whodrug_path": whodrug_path,
         "cache_service": cache_service,
     }
+
+
+@pytest.fixture(scope="function")
+def operation_params() -> OperationParams:
+    return OperationParams(
+        operation_id="operation_id",
+        operation_name="operation_name",
+        dataframe=pd.DataFrame.from_dict({}),
+        target="target",
+        domain="domain",
+        dataset_path="dataset_path",
+        directory_path="directory_path",
+        datasets=[{}],
+        standard="standard",
+        standard_version="standard_version",
+        meddra_path="meddra_path",
+        whodrug_path="whodrug_path",
+        grouping=[],
+    )

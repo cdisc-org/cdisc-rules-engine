@@ -6,12 +6,10 @@ from unittest.mock import MagicMock, patch
 import pandas as pd
 import pytest
 
-from cdisc_rules_engine.exceptions.custom_exceptions import InvalidMatchKeyError
-from cdisc_rules_engine.models.dictionaries.whodrug import WhoDrugTermsFactory
+from cdisc_rules_engine.models import OperationParams
 from cdisc_rules_engine.services.cache.in_memory_cache_service import (
     InMemoryCacheService,
 )
-from cdisc_rules_engine.services.data_services import LocalDataService
 from cdisc_rules_engine.utilities.data_processor import DataProcessor
 
 
@@ -25,8 +23,10 @@ from cdisc_rules_engine.utilities.data_processor import DataProcessor
         (pd.DataFrame.from_dict({"dates": [None, None]}), ""),
     ],
 )
-def test_max_date(data, expected):
-    max_date = DataProcessor.max_date(data, "dates")
+def test_max_date(data, expected, operation_params: OperationParams):
+    operation_params.dataframe = data
+    operation_params.target = "dates"
+    max_date = DataProcessor().max_date(operation_params)
     assert max_date == expected
 
 
@@ -40,8 +40,10 @@ def test_max_date(data, expected):
         (pd.DataFrame.from_dict({"dates": [None, None]}), ""),
     ],
 )
-def test_min_date(data, expected):
-    min_date = DataProcessor.min_date(data, "dates")
+def test_min_date(data, expected, operation_params: OperationParams):
+    operation_params.dataframe = data
+    operation_params.target = "dates"
+    min_date = DataProcessor().min_date(operation_params)
     assert min_date == expected
 
 
@@ -422,7 +424,7 @@ def test_merge_datasets_on_string_relationship_columns():
     ],
 )
 def test_study_variable_value_occurrence_count(
-    mock_data_service, target, expected_result
+    mock_data_service, target, expected_result, operation_params: OperationParams
 ):
     dataset_path = "study/bundle/blah"
     datasets_map = {
@@ -448,9 +450,11 @@ def test_study_variable_value_occurrence_count(
     mock_data_service.join_split_datasets.side_effect = lambda func, files: pd.concat(
         [func(f) for f in files]
     )
-    result = DataProcessor.variable_value_count(
-        target, datasets, dataset_path, mock_data_service, InMemoryCacheService()
-    )
+    operation_params.target = target
+    operation_params.datasets = datasets
+    operation_params.dataset_path = dataset_path
+    data_processor = DataProcessor(mock_data_service, InMemoryCacheService())
+    result = data_processor.variable_value_count(operation_params)
     assert result == expected_result
 
 
@@ -468,6 +472,7 @@ def test_get_variable_names_for_given_standard(
     standard_version,
     expected_result,
     mock_data_service,
+    operation_params: OperationParams,
 ):
     with open(
         f"{os.path.dirname(__file__)}/../resources/mock_library_responses/get_sdtmig_response.json"
@@ -492,20 +497,18 @@ def test_get_variable_names_for_given_standard(
     mock_data_service.join_split_datasets.side_effect = lambda func, files: pd.concat(
         [func(f) for f in files]
     )
-    assert (
-        DataProcessor.variable_names(
-            target,
-            datasets,
-            dataset_path,
-            mock_data_service,
-            standard=standard,
-            standard_version=standard_version,
-        )
-        == expected_result
-    )
+    operation_params.target = target
+    operation_params.datasets = datasets
+    operation_params.dataset_path = dataset_path
+    operation_params.standard = standard
+    operation_params.standard_version = standard_version
+    data_processor = DataProcessor(data_service=mock_data_service)
+    assert data_processor.variable_names(operation_params) == expected_result
 
 
-def test_valid_whodrug_references(installed_whodrug_dictionaries: dict):
+def test_valid_whodrug_references(
+    installed_whodrug_dictionaries: dict, operation_params: OperationParams
+):
     """
     Unit test for valid_whodrug_references function.
     """
@@ -526,10 +529,9 @@ def test_valid_whodrug_references(installed_whodrug_dictionaries: dict):
     data_processor = DataProcessor(
         MagicMock(), installed_whodrug_dictionaries["cache_service"]
     )
-    result = data_processor.valid_whodrug_references(
-        invalid_df,
-        "AEINA",
-        "AE",
-        whodrug_path=installed_whodrug_dictionaries["whodrug_path"],
-    )
+    operation_params.dataframe = invalid_df
+    operation_params.target = "AEINA"
+    operation_params.domain = "AE"
+    operation_params.whodrug_path = installed_whodrug_dictionaries["whodrug_path"]
+    result = data_processor.valid_whodrug_references(operation_params)
     assert result.equals(pd.Series([True, True, False, False]))

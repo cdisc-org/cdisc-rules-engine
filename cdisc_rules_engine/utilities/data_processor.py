@@ -341,12 +341,16 @@ class DataProcessor:
                 f"{study_path}/{dataset.get('filename')}"
                 for dataset in get_corresponding_datasets(datasets, domain)
             ]
-            data = data_service.join_split_datasets(data_service.get_dataset, files)
+            data: pd.DataFrame = data_service.join_split_datasets(
+                data_service.get_dataset, files
+            )
         else:
-            data = data_service.get_dataset(f"{study_path}/{dataset.get('filename')}")
+            data: pd.DataFrame = data_service.get_dataset(
+                f"{study_path}/{dataset.get('filename')}"
+            )
         target_variable = target.replace("--", domain, 1)
         if target_variable in data:
-            return Counter(list(DataProcessor.distinct(data, target_variable)))
+            return Counter(data[target_variable].unique())
         else:
             return Counter()
 
