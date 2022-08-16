@@ -41,25 +41,25 @@ class DataProcessor:
             data_service or DataServiceFactory(config, self.cache).get_data_service()
         )
 
-    def calc_min(self, params: OperationParams) -> Union[int, float, pd.DataFrame]:
+    def min(self, params: OperationParams) -> Union[int, float, pd.DataFrame]:
         if not params.grouping:
             return params.dataframe[params.target].min()
         else:
             return params.dataframe.groupby(params.grouping, as_index=False).min()
 
-    def calc_max(self, params: OperationParams) -> Union[int, float, pd.DataFrame]:
+    def max(self, params: OperationParams) -> Union[int, float, pd.DataFrame]:
         if not params.grouping:
             return params.dataframe[params.target].max()
         else:
             return params.dataframe.groupby(params.grouping, as_index=False).max()
 
-    def calc_mean(self, params: OperationParams) -> Union[int, float, pd.DataFrame]:
+    def mean(self, params: OperationParams) -> Union[int, float, pd.DataFrame]:
         if not params.grouping:
             return params.dataframe[params.target].mean()
         else:
             return params.dataframe.groupby(params.grouping, as_index=False).mean()
 
-    def get_unique_values(
+    def distinct(
         self,
         params: OperationParams,
     ) -> Union[List[set], pd.DataFrame]:
@@ -73,7 +73,7 @@ class DataProcessor:
             grouped = params.dataframe.groupby(params.grouping, as_index=False)
             return grouped[params.target].agg(lambda x: pd.Series([set(x.unique())]))
 
-    def calc_min_date(self, params: OperationParams) -> Union[str, pd.DataFrame]:
+    def min_date(self, params: OperationParams) -> Union[str, pd.DataFrame]:
         if not params.grouping:
             data = pd.to_datetime(params.dataframe[params.target])
             min_date = data.min()
@@ -84,7 +84,7 @@ class DataProcessor:
         else:
             return params.dataframe.groupby(params.grouping, as_index=False).min()
 
-    def calc_max_date(self, params: OperationParams) -> Union[str, pd.DataFrame]:
+    def max_date(self, params: OperationParams) -> Union[str, pd.DataFrame]:
         if not params.grouping:
             data = pd.to_datetime(params.dataframe[params.target])
             max_date = data.max()
@@ -95,7 +95,7 @@ class DataProcessor:
         else:
             return params.dataframe.groupby(params.grouping, as_index=False).max()
 
-    def calc_dy(self, params: OperationParams) -> pd.Series:
+    def dy(self, params: OperationParams) -> pd.Series:
         dtc_value = params.dataframe[params.target].map(datetime.fromisoformat)
         rfstdtc_value = params.dataframe["RFSTDTC"].map(datetime.fromisoformat)
 
@@ -124,7 +124,7 @@ class DataProcessor:
         """
         return params.target in params.dataframe
 
-    def study_variable_value_occurrence_count(self, params: OperationParams) -> int:
+    def variable_value_count(self, params: OperationParams) -> int:
         """
         Returns a boolean if the target, is a variable in any dataset in the study.
         """
@@ -151,7 +151,7 @@ class DataProcessor:
                 self.cache.add(cache_key, variable_value_count)
         return variable_value_count
 
-    def get_variable_names_for_given_standard(self, params: OperationParams) -> set:
+    def variable_names(self, params: OperationParams) -> set:
         """
         Return the set of variable names for the given standard
         """
@@ -346,7 +346,7 @@ class DataProcessor:
             data = data_service.get_dataset(f"{study_path}/{dataset.get('filename')}")
         target_variable = target.replace("--", domain, 1)
         if target_variable in data:
-            return Counter(list(DataProcessor.get_unique_values(data, target_variable)))
+            return Counter(list(DataProcessor.distinct(data, target_variable)))
         else:
             return Counter()
 

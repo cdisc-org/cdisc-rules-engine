@@ -26,7 +26,7 @@ from cdisc_rules_engine.utilities.data_processor import DataProcessor
     ],
 )
 def test_max_date(data, expected):
-    max_date = DataProcessor.calc_max_date(data, "dates")
+    max_date = DataProcessor.max_date(data, "dates")
     assert max_date == expected
 
 
@@ -41,7 +41,7 @@ def test_max_date(data, expected):
     ],
 )
 def test_min_date(data, expected):
-    min_date = DataProcessor.calc_min_date(data, "dates")
+    min_date = DataProcessor.min_date(data, "dates")
     assert min_date == expected
 
 
@@ -448,7 +448,7 @@ def test_study_variable_value_occurrence_count(
     mock_data_service.join_split_datasets.side_effect = lambda func, files: pd.concat(
         [func(f) for f in files]
     )
-    result = DataProcessor.study_variable_value_occurrence_count(
+    result = DataProcessor.variable_value_count(
         target, datasets, dataset_path, mock_data_service, InMemoryCacheService()
     )
     assert result == expected_result
@@ -493,7 +493,7 @@ def test_get_variable_names_for_given_standard(
         [func(f) for f in files]
     )
     assert (
-        DataProcessor.get_variable_names_for_given_standard(
+        DataProcessor.variable_names(
             target,
             datasets,
             dataset_path,
