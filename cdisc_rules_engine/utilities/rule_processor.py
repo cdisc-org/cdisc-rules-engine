@@ -62,8 +62,8 @@ class RuleProcessor:
         cls,
         dataset_domain: str,
         included_domains: List[str],
-        include_split_datasets,
-        is_split_domain,
+        include_split_datasets: bool,
+        is_split_domain: bool,
     ) -> bool:
         """
         If included domains aren't specified
@@ -77,8 +77,6 @@ class RuleProcessor:
         In other cases domain is included
         """
         if not included_domains:
-            # Case where included domains are not specified and include_split_datasets == True
-            # Only include split datasets
             if include_split_datasets is True and not is_split_domain:
                 return False
             return True
