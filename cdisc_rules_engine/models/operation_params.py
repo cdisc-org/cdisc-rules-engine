@@ -6,6 +6,11 @@ import pandas as pd
 
 @dataclass
 class OperationParams:
+    """
+    This class defines input parameters for rule operations.
+    Rule operations are defined in DataProcessor class.
+    """
+
     operation_id: str
     operation_name: str
     dataframe: pd.DataFrame
