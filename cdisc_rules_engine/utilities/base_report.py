@@ -1,6 +1,7 @@
 from abc import abstractmethod, ABC
 from typing import List, Union
 from openpyxl import Workbook
+from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
 from cdisc_rules_engine.models.validation_args import Validation_args
 
@@ -75,7 +76,7 @@ class BaseReport(ABC):
             detailed_data,
             key=lambda x: (x[0], x[3])
             if (self._item_type == "list")
-            else (x["rule_id"], x["domain"]),
+            else (x["rule_id"], x["dataset"]),
         )
 
     def _generate_error_details(self, validation_result) -> List[List]:
@@ -103,7 +104,7 @@ class BaseReport(ABC):
                         "rule_id": validation_result.id,
                         "message": result.get("message"),
                         "severity": validation_result.severity,
-                        "domain": result.get("domain"),
+                        "dataset": result.get("domain"),
                         "uSubjId": error.get("uSubjId", ""),
                         "row": error.get("row", ""),
                         "seq": error.get("seq", ""),
@@ -144,9 +145,9 @@ class BaseReport(ABC):
                 "rule_id": validation_result.id,
                 "version": "1",
                 "message": validation_result.message,
-                "status": "SUCCESS"
-                if validation_result.execution_status == "success"
-                else "SKIPPED",
+                "status": ExecutionStatus.SUCCESS.value.upper()
+                if validation_result.execution_status == ExecutionStatus.SUCCESS.value
+                else ExecutionStatus.SKIPPED.value.upper(),
             }
             if self._item_type == "list":
                 rules_report.append([*rules_item.values()])
@@ -159,9 +160,11 @@ class BaseReport(ABC):
         )
 
     @abstractmethod
-    def get_export() -> Union[dict, Workbook]:
-        raise NotImplementedError
+    def get_export(
+        self, define_version, cdiscCt, standard, version, **kwargs
+    ) -> Union[dict, Workbook]:
+        pass
 
     @abstractmethod
-    def write_report():
-        raise NotImplementedError
+    def write_report(self):
+        pass
