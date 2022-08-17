@@ -154,9 +154,13 @@ class RuleProcessor:
         Applies rule operations to the dataset.
         Returns the processed dataset. Operation result is appended as a new column.
         """
+        operations: List[dict] = rule.get("operations") or []
+        if not operations:
+            # stop function execution if no operations have been provided
+            return dataset
+
         dataset_copy = dataset.copy()
         data_processor = DataProcessor(self.data_service, self.cache)
-        operations: List[dict] = rule.get("operations", [])
         for operation in operations:
             # get necessary operation
             operation_params = OperationParams(
@@ -184,7 +188,9 @@ class RuleProcessor:
 
             # execute operation
             result = self._execute_operation(operation_to_call, operation_params)
-            dataset_copy = self._handle_operation_result(result, operation_params)
+            dataset_copy = self._handle_operation_result(
+                result, operation_params, dataset_copy
+            )
             logger.info(
                 f"Processed rule operation. operation={operation_params.operation_name}, rule={rule}"
             )
@@ -231,23 +237,21 @@ class RuleProcessor:
         return result
 
     def _handle_operation_result(
-        self, result, operation_params: OperationParams
+        self, result, operation_params: OperationParams, dataset_copy: pd.DataFrame
     ) -> pd.DataFrame:
         if operation_params.grouping:
             # Handle grouped results
             result = result.rename(
                 columns={operation_params.target: operation_params.operation_id}
             )
-            target_columns = operation_params.grouping.append(
-                operation_params.operation_id
-            )
-            dataset = operation_params.dataframe.merge(
+            target_columns = operation_params.grouping + [operation_params.operation_id]
+            dataset = dataset_copy.merge(
                 result[target_columns], on=operation_params.grouping, how="left"
             )
         else:
             # Handle single results
-            operation_params.dataframe[operation_params.operation_id] = result
-            dataset = operation_params.dataframe
+            dataset_copy[operation_params.operation_id] = result
+            dataset = dataset_copy
         return dataset
 
     def is_current_domain(self, dataset, target_domain):

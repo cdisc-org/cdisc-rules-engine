@@ -62,13 +62,13 @@ class DataProcessor:
     def distinct(
         self,
         params: OperationParams,
-    ) -> Union[List[set], pd.DataFrame]:
+    ) -> Union[pd.Series, pd.DataFrame]:
         if not params.grouping:
             data = params.dataframe[params.target].unique()
             if isinstance(data[0], bytes):
                 data = data.astype(str)
             data_converted_to_set = set(data)
-            return [data_converted_to_set] * len(params.dataframe)
+            return pd.Series([data_converted_to_set] * len(params.dataframe))
         else:
             grouped = params.dataframe.groupby(params.grouping, as_index=False)
             return grouped[params.target].agg(lambda x: pd.Series([set(x.unique())]))
