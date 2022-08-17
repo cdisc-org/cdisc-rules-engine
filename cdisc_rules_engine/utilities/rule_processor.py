@@ -1,6 +1,6 @@
 import copy
 import re
-from typing import Callable, List, Optional, Set, Union
+from typing import Callable, List, Optional, Set, Union, Tuple
 
 import pandas as pd
 
@@ -32,71 +32,116 @@ class RuleProcessor:
         self.data_service = data_service
         self.cache = cache
 
+    @classmethod
     def rule_applies_to_domain(
-        self, dataset_domain: str, rule: dict, is_split_domain: bool
-    ):
+        cls, dataset_domain: str, rule: dict, is_split_domain: bool
+    ) -> bool:
         """
-        If included domains are specified, and the domain is not in the list of included classes return false.
-        If excluded domain are specified, and the domain is in the list of excluded classes return false
-        Else return true.
-
-        ### HANDLING SPLIT DOMAINS ###
-        If include_split_domains is True - add split domains to the list of included domains. If no included domains specified, only validate split domains
-        If include_split_domains is False - Exclude split domains
-        If include_split_domains is None - Do nothing
+        Check that rule is applicable to dataset domain
         """
         domains = rule.get("domains") or {}
+        include_split_datasets: bool = domains.get("include_split_datasets")
+
         included_domains = domains.get("Include", [])
         excluded_domains = domains.get("Exclude", [])
-        include_split_datasets: bool = domains.get("include_split_datasets")
-        is_included = True
-        is_excluded = False
-        if included_domains:
-            if dataset_domain not in included_domains and "All" not in included_domains:
-                # check supp domains with SUPP-- naming pattern
-                matches_supp_naming_pattern = is_supp_domain(
-                    dataset_domain
-                ) and RuleProcessor._domain_in_supp_domains(included_domains)
-                # check domains with AP--/ APFA-- / APRELSUB naming pattern
-                matches_ap_naming_pattern = any(
-                    is_ap_domain(dataset_domain)
-                    and included_domain in [f"{AP_DOMAIN}--", f"{APFA_DOMAIN}--"]
-                    for included_domain in included_domains
-                )
-                if not (matches_supp_naming_pattern or matches_ap_naming_pattern):
-                    is_included = False
-        # Case where included domains are not specified and include_split_datasets == True
-        # Only include split datasets
-        elif include_split_datasets is True and not is_split_domain:
-            is_included = False
 
-        if excluded_domains:
-            if dataset_domain in excluded_domains or "All" in excluded_domains:
-                is_excluded = True
-            # check supp domains with SUPP-- naming pattern
-            matches_supp_naming_pattern = is_supp_domain(
-                dataset_domain
-            ) and RuleProcessor._domain_in_supp_domains(excluded_domains)
-            # check domains with AP--/ APFA-- / APRELSUB naming pattern
-            matches_ap_naming_pattern = any(
-                is_ap_domain(dataset_domain)
-                and excluded_domain in [f"{AP_DOMAIN}--", f"{APFA_DOMAIN}--"]
-                for excluded_domain in excluded_domains
-            )
-            if matches_supp_naming_pattern or matches_ap_naming_pattern:
-                is_excluded = True
+        is_included = cls._is_domain_name_included(
+            dataset_domain, included_domains, include_split_datasets, is_split_domain
+        )
+        is_excluded = cls._is_domain_name_excluded(dataset_domain, excluded_domains)
+
         # additional check for split domains based on the flag
+        is_excluded, is_included = cls._handle_split_domains(
+            is_split_domain, include_split_datasets, is_excluded, is_included
+        )
+
+        return is_included and not is_excluded
+
+    @classmethod
+    def _is_domain_name_included(
+        cls,
+        dataset_domain: str,
+        included_domains: List[str],
+        include_split_datasets: bool,
+        is_split_domain: bool,
+    ) -> bool:
+        """
+        If included domains aren't specified
+         and include_split_datasets is True,
+         and it is not a split dataset
+         -> domain is not included
+        If included domains are specified,
+         and the domain is not in the list of included domains,
+         and domain doesn't match with AP / APFA / APRELSUB / SUPP / SQ naming pattern
+         -> domain is not included.
+        In other cases domain is included
+        """
+        if not included_domains:
+            if include_split_datasets is True and not is_split_domain:
+                return False
+            return True
+
+        if dataset_domain in included_domains or "All" in included_domains:
+            return True
+        if cls._domain_matched_ap_or_supp(dataset_domain, included_domains):
+            return True
+        return False
+
+    @classmethod
+    def _is_domain_name_excluded(
+        cls, dataset_domain: str, excluded_domains: List[str]
+    ) -> bool:
+        """
+        If excluded domains are specified,
+         and the domain is in the list of excluded domains,
+         or domain name match with AP / APFA / APRELSUB / SUPP / SQ naming pattern
+         domain is excluded.
+
+        In other cases domain is not excluded.
+        """
+        if not excluded_domains:
+            return False
+
+        if dataset_domain in excluded_domains or "All" in excluded_domains:
+            return True
+        if cls._domain_matched_ap_or_supp(dataset_domain, excluded_domains):
+            return True
+        return False
+
+    @classmethod
+    def _handle_split_domains(
+        cls,
+        is_split_domain: bool,
+        include_split_datasets: bool,
+        is_excluded: bool,
+        is_included: bool,
+    ) -> Tuple[bool, bool]:
+        """
+        HANDLING SPLIT DOMAINS
+
+        If include_split_datasets is True - add split domains to the list of included domains. If no included domains specified, only validate split domains
+        If include_split_datasets is False - Exclude split domains
+        If include_split_datasets is None - Do nothing
+        """
         if include_split_datasets is True and is_split_domain and not is_excluded:
             is_included = True
         if include_split_datasets is False and is_split_domain:
             is_excluded = True
+        return is_excluded, is_included
 
-        return is_included and not is_excluded
+    @classmethod
+    def _domain_matched_ap_or_supp(
+        cls, dataset_domain: str, domains_to_check: List[str]
+    ) -> bool:
+        """
+        Check that domain name match with ony AP / APFA / APRELSUB / SUPP / SQ naming pattern
+        """
+        supp_ap_domains = {f"{domain}--" for domain in SUPPLEMENTARY_DOMAINS}
+        supp_ap_domains.update({f"{AP_DOMAIN}--", f"{APFA_DOMAIN}--"})
 
-    @staticmethod
-    def _domain_in_supp_domains(domains):
-        supp_domains = [f"{domain}--" for domain in SUPPLEMENTARY_DOMAINS]
-        return any(domain in supp_domains for domain in domains)
+        return any(set(domains_to_check).intersection(supp_ap_domains)) and (
+            is_supp_domain(dataset_domain) or is_ap_domain(dataset_domain)
+        )
 
     def rule_applies_to_class(self, rule, file_path, datasets: List[dict]):
         """
