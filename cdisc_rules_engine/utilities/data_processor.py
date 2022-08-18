@@ -1,7 +1,7 @@
 import asyncio
 from collections import Counter
 from datetime import datetime
-from typing import Generator, List, Optional, Set, Union
+from typing import Generator, List, Optional, Set, Union, Tuple
 from uuid import uuid4
 
 import pandas as pd
@@ -31,6 +31,7 @@ from cdisc_rules_engine.utilities.utils import (
     get_rules_cache_key,
     is_split_dataset,
     search_in_list_of_dicts,
+    get_meddra_code_term_pairs_cache_key,
 )
 
 
@@ -215,6 +216,43 @@ class DataProcessor:
     def valid_meddra_code_term_pairs(self, params: OperationParams) -> pd.Series:
         if not params.meddra_path:
             raise ValueError("Can't execute the operation, no meddra path provided")
+        term_type, columns = self._get_columns_by_meddra_variable_name(params)
+        cache_key: str = get_meddra_code_term_pairs_cache_key(params.meddra_path)
+        valid_code_term_pairs = self.cache.get(cache_key)
+        if not valid_code_term_pairs:
+            terms: dict = self.cache.get(params.meddra_path)
+            valid_code_term_pairs = MedDRATerm.get_code_term_pairs(terms)
+            self.cache.add(cache_key, valid_code_term_pairs)
+        column = str(uuid4()) + "_pairs"
+        params.dataframe[column] = list(
+            zip(
+                params.dataframe[columns[0]],
+                params.dataframe[columns[1]],
+            )
+        )
+        result = params.dataframe[column].isin(valid_code_term_pairs[term_type])
+        return result
+
+    def valid_whodrug_references(self, params: OperationParams) -> pd.Series:
+        """
+        Checks if a reference to whodrug term points to the existing code in Atc Text (INA) file.
+        """
+        if not params.whodrug_path:
+            raise ValueError("Can't execute the operation, no whodrug path provided")
+
+        terms: dict = self.cache.get(params.whodrug_path)
+        valid_codes: Generator = (
+            term.code for term in terms[WhodrugRecordTypes.ATC_TEXT.value]
+        )
+        return params.dataframe[params.target].isin(valid_codes)
+
+    def _get_columns_by_meddra_variable_name(
+        self, params: OperationParams
+    ) -> Optional[Tuple[str, Tuple[str, str]]]:
+        """
+        Extracts target name from params and
+        returns associated term type and dataset columns.
+        """
         variable_pair_map = {
             f"{params.domain}{MedDRAVariables.SOC.value}": (
                 TermTypes.SOC.value,
@@ -287,35 +325,7 @@ class DataProcessor:
                 ),
             ),
         }
-        term_type, columns = variable_pair_map.get(params.target)
-        cache_key = f"meddra_valid_code_term_pairs_{params.meddra_path}"
-        valid_code_term_pairs = self.cache.get(cache_key)
-        if not valid_code_term_pairs:
-            terms: dict = self.cache.get(params.meddra_path)
-            valid_code_term_pairs = MedDRATerm.get_code_term_pairs(terms)
-            self.cache.add(cache_key, valid_code_term_pairs)
-        column = str(uuid4()) + "_pairs"
-        params.dataframe[column] = list(
-            zip(
-                params.dataframe[columns[0]],
-                params.dataframe[columns[1]],
-            )
-        )
-        result = params.dataframe[column].isin(valid_code_term_pairs[term_type])
-        return result
-
-    def valid_whodrug_references(self, params: OperationParams) -> pd.Series:
-        """
-        Checks if a reference to whodrug term points to the existing code in Atc Text (INA) file.
-        """
-        if not params.whodrug_path:
-            raise ValueError("Can't execute the operation, no whodrug path provided")
-
-        terms: dict = self.cache.get(params.whodrug_path)
-        valid_codes: Generator = (
-            term.code for term in terms[WhodrugRecordTypes.ATC_TEXT.value]
-        )
-        return params.dataframe[params.target].isin(valid_codes)
+        return variable_pair_map.get(params.target)
 
     @staticmethod
     async def get_dataset_variables(study_path, dataset, data_service) -> Set:

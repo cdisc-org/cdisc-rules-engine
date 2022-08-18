@@ -207,13 +207,21 @@ class RuleProcessor:
         dataset_copy = dataset.copy()
         data_processor = DataProcessor(self.data_service, self.cache)
         for operation in operations:
+            # change -- pattern to domain name
+            target: str = operation.get("name")
+            domain: str = operation.get("domain", domain)
+            if target.startswith("--") and domain:
+                # Not a study wide operation
+                target = target.replace("--", domain)
+                domain = domain.replace("--", domain)
+
             # get necessary operation
             operation_params = OperationParams(
                 operation_id=operation.get("id"),
                 operation_name=operation.get("operator"),
                 dataframe=dataset_copy,
-                target=operation.get("name"),
-                domain=operation.get("domain", domain),
+                target=target,
+                domain=domain,
                 dataset_path=dataset_path,
                 directory_path=get_directory_path(dataset_path),
                 datasets=datasets,
