@@ -4,7 +4,7 @@ import setuptools
 
 setuptools.setup(
     name="cdisc-rules-engine",
-    version="1.0.0",
+    version="0.3.0",
     description="Open source offering of the cdisc rules engine",
     author="cdisc-org",
     url="https://github.com/cdisc-org/cdisc-rules-engine",
