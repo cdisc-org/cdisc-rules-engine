@@ -2328,3 +2328,116 @@ def test_is_custom_domain():
     )
     assert engine.is_custom_domain("AP")
     assert not engine.is_custom_domain("AE")
+
+
+@patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset")
+def test_validate_variables_order_against_library_metadata(
+    mock_get_dataset: MagicMock,
+    rule_validate_columns_order_against_library_metadata: dict,
+):
+    """
+    The test validates order of dataset columns against the library metadata.
+    """
+    # mock dataset download
+    mock_get_dataset.return_value = pd.DataFrame.from_dict(
+        {
+            "DOMAIN": [
+                "AE",
+                "AE",
+            ],
+            "AESEQ": [
+                1,
+                2,
+            ],
+            "STUDYID": [
+                "TEST_STUDY",
+                "TEST_STUDY",
+            ],
+            "AETERM": [
+                "test",
+                "test",
+            ],
+        }
+    )
+
+    standard: str = "sdtmig"
+    standard_version: str = "3-1-2"
+
+    # mock cache
+    cache_mock = MagicMock()
+    cache: dict = {
+        get_standard_details_cache_key(standard, standard_version): {
+            "classes": [
+                {
+                    "name": "Events",
+                    "datasets": [
+                        {
+                            "name": "AE",
+                            "datasetVariables": [
+                                {
+                                    "name": "STUDYID",
+                                    "ordinal": 1,
+                                },
+                                {
+                                    "name": "DOMAIN",
+                                    "ordinal": 2,
+                                },
+                                {
+                                    "name": "AESEQ",
+                                    "ordinal": 3,
+                                },
+                                {
+                                    "name": "AETERM",
+                                    "ordinal": 4,
+                                },
+                            ],
+                        }
+                    ],
+                }
+            ]
+        }
+    }
+    cache_mock.get = lambda cache_key: cache.get(cache_key)
+
+    # run validation
+    engine = RulesEngine(
+        cache=cache_mock,
+        standard="sdtmig",
+        standard_version="3-1-2",
+    )
+    result: List[dict] = engine.validate_single_rule(
+        rule_validate_columns_order_against_library_metadata,
+        "dataset_path",
+        [
+            {"domain": "AE", "filename": "ae.xpt"},
+        ],
+        "AE",
+    )
+    assert result == [
+        {
+            "executionStatus": "success",
+            "domain": "AE",
+            "variables": ["$column_order_from_dataset", "$column_order_from_library"],
+            "message": RuleProcessor.extract_message_from_rule(
+                rule_validate_columns_order_against_library_metadata
+            ),
+            "errors": [
+                {
+                    "value": {
+                        "$column_order_from_library": [
+                            "STUDYID",
+                            "DOMAIN",
+                            "AESEQ",
+                            "AETERM",
+                        ],
+                        "$column_order_from_dataset": [
+                            "DOMAIN",
+                            "AESEQ",
+                            "STUDYID",
+                            "AETERM",
+                        ],
+                    }
+                }
+            ],
+        }
+    ]

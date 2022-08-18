@@ -10,6 +10,7 @@ from cdisc_rules_engine.models import OperationParams
 from cdisc_rules_engine.services.cache.in_memory_cache_service import (
     InMemoryCacheService,
 )
+from cdisc_rules_engine.services.data_services import LocalDataService
 from cdisc_rules_engine.utilities.data_processor import DataProcessor
 
 
@@ -535,3 +536,129 @@ def test_valid_whodrug_references(
     operation_params.whodrug_path = installed_whodrug_dictionaries["whodrug_path"]
     result = data_processor.valid_whodrug_references(operation_params)
     assert result.equals(pd.Series([True, True, False, False]))
+
+
+def test_get_column_order_from_dataset(operation_params: OperationParams):
+    """
+    Unit test for DataProcessor.get_column_order_from_dataset.
+    """
+    operation_params.dataframe = pd.DataFrame.from_dict(
+        {
+            "STUDYID": [
+                "CDISC01",
+                "CDISC01",
+            ],
+            "DOMAIN": [
+                "AE",
+                "AE",
+            ],
+            "AESEQ": [
+                1,
+                2,
+            ],
+            "USUBJID": [
+                "TEST1",
+                "TEST1",
+            ],
+        }
+    )
+    data_processor = DataProcessor()
+    result: pd.Series = data_processor.get_column_order_from_dataset(operation_params)
+    expected: pd.Series = pd.Series(
+        [
+            [
+                "STUDYID",
+                "DOMAIN",
+                "AESEQ",
+                "USUBJID",
+            ],
+            [
+                "STUDYID",
+                "DOMAIN",
+                "AESEQ",
+                "USUBJID",
+            ],
+        ]
+    )
+    assert result.equals(expected)
+
+
+def test_get_column_order_from_library(operation_params: OperationParams):
+    """
+    Unit test for DataProcessor.get_column_order_from_library.
+    Mocks cache call to return metadata.
+    """
+    operation_params.dataframe = pd.DataFrame.from_dict(
+        {
+            "STUDYID": [
+                "TEST_STUDY",
+                "TEST_STUDY",
+                "TEST_STUDY",
+            ],
+            "AETERM": [
+                "test",
+                "test",
+                "test",
+            ],
+        }
+    )
+    operation_params.domain = "AE"
+
+    cache_mock = MagicMock()
+    cache_mock.get = lambda cache_key: {
+        "classes": [
+            {
+                "name": "Events",
+                "datasets": [
+                    {
+                        "name": operation_params.domain,
+                        "datasetVariables": [
+                            {
+                                "name": "DOMAIN",
+                                "ordinal": 2,
+                            },
+                            {
+                                "name": "STUDYID",
+                                "ordinal": 1,
+                            },
+                            {
+                                "name": "AETERM",
+                                "ordinal": 4,
+                            },
+                            {
+                                "name": "AESEQ",
+                                "ordinal": 3,
+                            },
+                        ],
+                    }
+                ],
+            }
+        ]
+    }
+
+    data_service = LocalDataService.get_instance(cache_service=cache_mock)
+    data_processor = DataProcessor(data_service=data_service, cache=cache_mock)
+    result: pd.Series = data_processor.get_column_order_from_library(operation_params)
+    expected: pd.Series = pd.Series(
+        [
+            [
+                "STUDYID",
+                "DOMAIN",
+                "AESEQ",
+                "AETERM",
+            ],
+            [
+                "STUDYID",
+                "DOMAIN",
+                "AESEQ",
+                "AETERM",
+            ],
+            [
+                "STUDYID",
+                "DOMAIN",
+                "AESEQ",
+                "AETERM",
+            ],
+        ]
+    )
+    assert result.equals(expected)

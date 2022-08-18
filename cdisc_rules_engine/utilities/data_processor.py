@@ -32,6 +32,7 @@ from cdisc_rules_engine.utilities.utils import (
     is_split_dataset,
     search_in_list_of_dicts,
     get_meddra_code_term_pairs_cache_key,
+    get_standard_details_cache_key,
 )
 
 
@@ -106,6 +107,18 @@ class DataProcessor:
         )
         return delta
 
+    def get_column_order_from_dataset(self, params: OperationParams) -> pd.Series:
+        """
+        Returns dataset columns as a Series of lists like:
+        0    ["STUDYID", "DOMAIN", ...]
+        1    ["STUDYID", "DOMAIN", ...]
+        2    ["STUDYID", "DOMAIN", ...]
+        ...
+
+        Length of Series is equal to the length of given dataframe.
+        """
+        return pd.Series([params.dataframe.columns.to_list()] * len(params.dataframe))
+
     def extract_metadata(self, params: OperationParams) -> pd.Series:
         """
         Extracts domain metadata for the given target and returns it as a Series.
@@ -168,6 +181,41 @@ class DataProcessor:
                     params.standard, params.standard_version
                 ).keys()
             )
+
+    def get_column_order_from_library(self, params: OperationParams) -> pd.Series:
+        """
+        Fetches column order for a given domain from the CDISC library.
+        Returns it as a Series of lists like:
+        0    ["STUDYID", "DOMAIN", ...]
+        1    ["STUDYID", "DOMAIN", ...]
+        2    ["STUDYID", "DOMAIN", ...]
+        ...
+
+        Length of Series is equal to the length of given dataframe.
+        The lists with column names are sorted in accordance to "ordinal" key of library metadata.
+        """
+        # get dataset class
+        dataset_class: str = self.data_service.get_dataset_class(
+            params.dataframe, params.dataset_path, params.datasets
+        )
+
+        # get metadata for this class and domain from the cache
+        domain_metadata: Optional[dict] = self._get_metadata_for_class_and_domain(
+            dataset_class, params.domain, params.standard, params.standard_version
+        )
+        if not domain_metadata:
+            raise ValueError(
+                f"Metadata for the following details is not found in CDISC Library: "
+                f"standard={params.standard}, version={params.standard_version}, "
+                f"class={dataset_class}, domain={params.domain}"
+            )
+
+        # create a list of variable names in accordance to the "ordinal" key
+        domain_metadata["datasetVariables"].sort(key=lambda item: item["ordinal"])
+        variable_names_list = [
+            var["name"] for var in domain_metadata["datasetVariables"]
+        ]
+        return pd.Series([variable_names_list] * len(params.dataframe))
 
     def valid_meddra_code_references(self, params: OperationParams) -> pd.Series:
         if not params.meddra_path:
@@ -326,6 +374,29 @@ class DataProcessor:
             ),
         }
         return variable_pair_map.get(params.target)
+
+    def _get_metadata_for_class_and_domain(
+        self, dataset_class: str, domain: str, standard: str, standard_version: str
+    ) -> Optional[dict]:
+        """
+        Gets metadata for the given class and domain from cache.
+        The cache stores CDISC Library metadata.
+        """
+        standard_details: dict = (
+            self.cache.get(get_standard_details_cache_key(standard, standard_version))
+            or {}
+        )
+        class_metadata: dict = (
+            search_in_list_of_dicts(
+                standard_details.get("classes"),
+                lambda item: item["name"] == dataset_class,
+            )
+            or {}
+        )
+        current_domain_metadata: dict = search_in_list_of_dicts(
+            class_metadata.get("datasets", []), lambda item: item["name"] == domain
+        )
+        return current_domain_metadata
 
     @staticmethod
     async def get_dataset_variables(study_path, dataset, data_service) -> Set:
