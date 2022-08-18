@@ -29,3 +29,8 @@ jobs:
       - name: Running Tests
         run: |
           python -m pytest tests/unit/
+
+    # run flake8(need some tests)
+      - name: Run Flake8
+        run: |
+          git diff origin/main ./**/*py | flake8 --diff --isolated
