@@ -33,4 +33,4 @@ jobs:
     # run flake8(need some tests)
       - name: Run Flake8
         run: |
-          git diff origin/main ./**/*py | flake8 --diff --isolated
+          git diff main ./**/*py | flake8 --diff --isolated
