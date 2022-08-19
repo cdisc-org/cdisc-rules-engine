@@ -476,7 +476,7 @@ def test_get_variable_names_for_given_standard(
     operation_params: OperationParams,
 ):
     with open(
-        f"{os.path.dirname(__file__)}/../resources/mock_library_responses/get_sdtmig_response.json"
+        f"{os.path.dirname(__file__)}/../../resources/mock_library_responses/get_sdtmig_response.json"
     ) as file:
         mock_sdtmig_details: dict = json.loads(file.read())
     mock_get_sdtmig.return_value = mock_sdtmig_details
