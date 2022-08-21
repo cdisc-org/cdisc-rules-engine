@@ -50,7 +50,7 @@ def cli():
 )
 @click.option(
     "-p",
-    "--pool_size",
+    "--pool-size",
     default=10,
     type=int,
     help="Number of parallel processes for validation",
@@ -63,13 +63,13 @@ def cli():
 )
 @click.option(
     "-l",
-    "--log_level",
+    "--log-level",
     default="disabled",
     help="Sets log level for engine logs, logs are disabled by default",
 )
 @click.option(
     "-rt",
-    "--report_template",
+    "--report-template",
     default="cdisc_rules_engine/resources/templates/report-template.xlsx",
     help="File path of report template to use for excel output",
 )
@@ -81,7 +81,7 @@ def cli():
 )
 @click.option(
     "-ct",
-    "--controlled_terminology_package",
+    "--controlled-terminology-package",
     multiple=True,
     help="Controlled terminology package to validate against, can provide more than one",
 )
@@ -93,7 +93,7 @@ def cli():
 )
 @click.option(
     "-dv",
-    "--define_version",
+    "--define-version",
     default="2.1",
     help="Define-XML version used for validation",
 )

@@ -1,5 +1,6 @@
 import itertools
 import logging
+import multiprocessing
 import os
 import pickle
 import time
@@ -157,6 +158,7 @@ def run_validation(args: namedtuple):
     cache_path: str = f"{os.path.dirname(__file__)}/../{args.cache}"
     data_path: str = f"{os.path.dirname(__file__)}/../{args.data}"
 
+    start = time.time()
     # fill cache
     CacheManager.register("RedisCacheService", RedisCacheService)
     CacheManager.register("InMemoryCacheService", InMemoryCacheService)
@@ -175,20 +177,32 @@ def run_validation(args: namedtuple):
     datasets = get_datasets(data_service, data_path)
 
     start = time.time()
-    pool = Pool(args.pool_size)
     results = []
 
-    for rule_result in tqdm.tqdm(
-        pool.imap_unordered(partial(validate_single_rule, shared_cache, data_path, datasets, args), rules),
-        total=len(rules),
-        unit=" rule",
-        colour="#729c1f",
-        disable=args.disable_progressbar,
-        ):
-        results.append(rule_result)
+    # run each rule in a separate thread
+    with Pool(args.pool_size) as pool:
+        if args.disable_progressbar is True:
+            for rule_result in pool.imap_unordered(
+                partial(validate_single_rule, shared_cache, data_path, datasets, args),
+                rules,
+            ):
+                results.append(rule_result)
+        else:
+            with click.progressbar(
+                length=len(rules),
+                fill_char=click.style("\u2588", fg="green"),
+                empty_char=click.style("-", fg="white", dim=True),
+                show_eta=False,
+            ) as bar:
+                for rule_result in pool.imap_unordered(
+                    partial(
+                        validate_single_rule, shared_cache, data_path, datasets, args
+                    ),
+                    rules,
+                ):
+                    results.append(rule_result)
+                    bar.update(1)
 
-    pool.close()
-    pool.join()
     end = time.time()
     elapsed_time = end - start
     report_template = data_service.read_data(args.report_template, "rb")
