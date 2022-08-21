@@ -1,6 +1,5 @@
 import itertools
 import logging
-import multiprocessing
 import os
 import pickle
 import time
@@ -158,7 +157,6 @@ def run_validation(args: namedtuple):
     cache_path: str = f"{os.path.dirname(__file__)}/../{args.cache}"
     data_path: str = f"{os.path.dirname(__file__)}/../{args.data}"
 
-    start = time.time()
     # fill cache
     CacheManager.register("RedisCacheService", RedisCacheService)
     CacheManager.register("InMemoryCacheService", InMemoryCacheService)
