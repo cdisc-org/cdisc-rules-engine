@@ -4,9 +4,9 @@
 name: CI
 
 # Controls when the workflow will run
-on: [push]
+on: [ push ]
 
-  
+
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   test:
@@ -15,22 +15,29 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
           python-version: '3.9'
-          
-    # Installing all dependencies
+
+      # Installing all dependencies
       - name: Install requirements
         run: |
           pip install -r requirements.txt
-      
-    # running the tests
+
+      # running the tests
       - name: Running Tests
         run: |
           python -m pytest tests/unit/
 
-    # run flake8(need some tests)
+      - name: Run Black
+        run: black --diff --check $(git ls-files '*.py')
+
+      # run flake8 and black(need some tests)
       - name: Run Flake8
         run: |
-          git diff origin/main ./**/*py | flake8 --diff --isolated
+          # stop the build if there are Python syntax errors or undefined name
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 . --count --exit-zero --statistics
