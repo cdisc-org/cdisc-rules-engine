@@ -30,10 +30,12 @@ jobs:
         run: |
           python -m pytest tests/unit/
 
+      - name: Run Black
+      - run: black --diff --check $(git ls-files '*.py')
+
     # run flake8 and black(need some tests)
       - name: Run Flake8
-      - run: black --diff --check $(git ls-files '*.py')
-      - run: |
+        run: |
           flake8 $(git diff --staged --name-only HEAD) --count --select=E9,F63,F7,F82 --show-source --statistics
           # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
           flake8 $(git diff --staged --name-only HEAD) --count --exit-zero --statistics
