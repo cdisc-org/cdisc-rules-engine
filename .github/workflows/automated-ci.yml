@@ -33,9 +33,11 @@ jobs:
           python -m pytest tests/unit/
 
       - name: Run Black
-        run: black --diff --check $( git diff --name-only HEAD^ HEAD --diff-filter=ACMRT | grep .py$ )
+        run: black --diff --check $(git ls-files '*.py')
 
       # run flake8 and black(need some tests)
       - name: Run Flake8
         run: |
-          flake8 $( git diff --name-only HEAD^ HEAD --diff-filter=ACMRT | grep .py$ ) --count --statistics
+          # stop the build if there are Python syntax errors or undefined name
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 . --count --exit-zero --statistics
