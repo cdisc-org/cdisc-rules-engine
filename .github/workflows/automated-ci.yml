@@ -33,11 +33,9 @@ jobs:
           python -m pytest tests/unit/
 
       - name: Run Black
-        if: steps.check_file_changed.outputs.diff_exists == 'True'
         run: black --diff --check $( git diff --name-only HEAD^ HEAD --diff-filter=ACMRT | grep .py$ )
 
       # run flake8 and black(need some tests)
       - name: Run Flake8
-        if: steps.check_file_changed.outputs.diff_exists == 'True'
         run: |
           flake8 $( git diff --name-only HEAD^ HEAD --diff-filter=ACMRT | grep .py$ ) --count --statistics
