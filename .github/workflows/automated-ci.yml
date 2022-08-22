@@ -13,7 +13,7 @@ jobs:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
     env:
-     changed_files: $(git diff --name-only origin/HEAD)
+     changed_files: $(git diff --name-only main)
 
     steps:
       - uses: actions/checkout@v3
@@ -21,7 +21,7 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: '3.9'
-          
+
     # Installing all dependencies
       - name: Install requirements
         run: |
@@ -38,6 +38,7 @@ jobs:
     # run flake8 and black(need some tests)
       - name: Run Flake8
         run: |
-          echo 
+          echo git branch -r
+          echo "${{ env.changed_files }}"
           flake8 ${{env.changed_files}} --count --select=E9,F63,F7,F82 --show-source --statistics
           flake8 $(git diff --name-only origin/HEAD ) --count --exit-zero --statistics
