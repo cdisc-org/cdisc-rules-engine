@@ -31,7 +31,7 @@ jobs:
           python -m pytest tests/unit/
 
       - name: Run Black
-      - run: black --diff --check $(git ls-files '*.py')
+        run: black --diff --check $(git ls-files '*.py')
 
     # run flake8 and black(need some tests)
       - name: Run Flake8
