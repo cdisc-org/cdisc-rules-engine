@@ -7,7 +7,7 @@ from uuid import uuid4
 import pandas as pd
 
 from cdisc_rules_engine.config import config
-from cdisc_rules_engine.dummy_services.dummy_data_service import DummyDataService
+from cdisc_rules_engine.services.data_services.dummy_data_service import DummyDataService
 from cdisc_rules_engine.exceptions.custom_exceptions import InvalidMatchKeyError
 from cdisc_rules_engine.models.dictionaries.meddra.meddra_variables import (
     MedDRAVariables,
