@@ -12,9 +12,6 @@ jobs:
   test:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
-    outputs:
-      all: ${{ steps.changes.outputs.all}}
-      py: ${{ steps.changes.outputs.py }}
 
     steps:
       - uses: actions/checkout@v3
@@ -33,7 +30,7 @@ jobs:
       # running the tests
       - name: Running Tests
         run: |
-          python -m pytest tests/unit/§
+          python -m pytest tests/unit/
 
       - name: Run Black
         if: steps.check_file_changed.outputs.diff_exists == 'True'
