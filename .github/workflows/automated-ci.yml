@@ -36,7 +36,7 @@ jobs:
           python -m pytest tests/unit/
 
       - name: Get changed files
-      - shell: pwsh
+        shell: pwsh
         id: check_file_changed
         run: |
           # Diff HEAD with the previous commit
