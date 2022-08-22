@@ -4,9 +4,9 @@
 name: CI
 
 # Controls when the workflow will run
-on: [push]
+on: [ push ]
 
-  
+
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   test:
@@ -25,29 +25,32 @@ jobs:
         with:
           python-version: '3.9'
 
-    # Installing all dependencies
+      # Installing all dependencies
       - name: Install requirements
         run: |
           pip install -r requirements.txt
       
-    # running the tests
+      # running the tests
       - name: Running Tests
         run: |
           python -m pytest tests/unit/
 
       - name: Get changed files
-        id: changes
-
-        # Set outputs using the command.
+        id: check_file_changed
         run: |
-          echo "::set-output name=all::$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | xargs)"
-          echo "::set-output name=py::$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | grep .py$ | xargs)"
+          # Diff HEAD with the previous commit
+          $diffs = git diff --name-only HEAD^ HEAD --diff-filter=ACMRT | grep .py$ | xargs
+          $diff_exists = $diffs.Length -gt 0
+          echo "::set-output name=diff_exists::$diff_exists"
+          echo "::set-output name=diffs::$diffs"
 
       - name: Run Black
-        run: black --diff --check $(git ls-files '*.py')
+        if: steps.check_file_changed.outputs.diff_exists == 'True'
+        run: black --diff --check ${{ steps.check_file_changed.outputs.diffs }}
 
-    # run flake8 and black(need some tests)
+      # run flake8 and black(need some tests)
       - name: Run Flake8
+        if: steps.check_file_changed.outputs.diff_exists == 'True'
         run: |
-          flake8 ${{ steps.changes.outputs.py }} --count --select=E9,F63,F7,F82 --show-source --statistics
-          flake8 ${{ steps.changes.outputs.py }} --count --exit-zero --statistics
+          flake8 ${{ steps.check_file_changed.outputs.diffs }} --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 ${{ steps.check_file_changed.outputs.diffs }} --count --exit-zero --statistics
