@@ -15,8 +15,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-        with:
-          fetch-depth: 2
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
@@ -26,18 +24,39 @@ jobs:
       - name: Install requirements
         run: |
           pip install -r requirements.txt
-      
+
       # running the tests
       - name: Running Tests
         run: |
           python -m pytest tests/unit/
 
-      - name: Run Black
-        run: black --diff --check $(git ls-files '*.py')
-
-      # run flake8 and black(need some tests)
-      - name: Run Flake8
-        run: |
-          # stop the build if there are Python syntax errors or undefined name
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-          flake8 . --count --exit-zero --statistics
+  changed_files:
+      runs-on: ubuntu-latest
+      # Map a step output to a job output
+      outputs:
+        all: ${{ steps.changes.outputs.all}}
+        py: ${{ steps.changes.outputs.ts }}
+      steps:
+          # Make sure we have some code to diff.
+        - name: Checkout repository
+          uses: actions/checkout@v3
+          with:
+            fetch-depth: 2
+        - name: Get changed files
+          id: changes
+          # Set outputs using the command.
+          run: |
+            echo "::set-output name=all::$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | xargs)"
+            echo "::set-output name=py::$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | grep .py$ | xargs)"
+  lint:
+      runs-on: ubuntu-latest
+      # require the first job to have run
+      needs: changed_files
+      # only run there are changed files
+      if: ${{needs.changed_files.outputs.py}}
+      steps:
+        - name: echo changed files
+          run: |
+            echo ${{needs.changed_files.outputs.py}}
+            flake8 ${{needs.changed_files.outputs.py}} --count --select=E9,F63,F7,F82 --show-source --statistics
+            flake8 ${{needs.changed_files.outputs.py}} --count --exit-zero --statistics
