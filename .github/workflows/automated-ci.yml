@@ -39,7 +39,7 @@ jobs:
         id: check_file_changed
         run: |
           # Diff HEAD with the previous commit
-          $diffs = git diff --name-only HEAD^ HEAD --diff-filter=ACMRT | grep .py$ | xargs
+          $diffs = git diff --name-only HEAD^ HEAD --diff-filter=ACMRT | grep .py$
           $diff_exists = $diffs.Length -gt 0
           echo "::set-output name=diff_exists::$diff_exists"
           echo "::set-output name=diffs::$diffs"
