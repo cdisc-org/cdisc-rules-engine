@@ -12,6 +12,8 @@ jobs:
   test:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
+    env:
+     changed_files: $(git diff --name-only origin/main origin/${GITHUB_HEAD_REF})
 
     steps:
       - uses: actions/checkout@v3
@@ -36,6 +38,6 @@ jobs:
     # run flake8 and black(need some tests)
       - name: Run Flake8
         run: |
-          flake8 $(git diff --staged --name-only HEAD) --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 ${env.changed_files} --count --select=E9,F63,F7,F82 --show-source --statistics
           # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-          flake8 $(git diff --staged --name-only HEAD) --count --exit-zero --statistics
+          flake8 $(git diff --name-only origin/main origin/${GITHUB_HEAD_REF}) --count --exit-zero --statistics
