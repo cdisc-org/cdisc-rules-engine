@@ -46,14 +46,18 @@ jobs:
           id: changes
           # Set outputs using the command.
           run: |
+            echo ${{ github.event.pull_request.base.sha }}
+            echo ${{ github.sha }}
+            echo ${{needs.changed_files.outputs.all}}
             echo "::set-output name=all::$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | xargs)"
             echo "::set-output name=py::$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | grep .py$ | xargs)"
+
   lint:
       runs-on: ubuntu-latest
       # require the first job to have run
       needs: changed_files
       # only run there are changed files
-      if: ${{needs.changed_files.outputs.py}}
+      if: ${{needs.changed_files.outputs.py}}.length -gt 0
       steps:
         - name: echo changed files
           run: |
