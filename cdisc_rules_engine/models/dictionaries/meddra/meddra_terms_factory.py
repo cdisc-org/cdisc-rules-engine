@@ -28,6 +28,7 @@ class MedDRATermsFactory(TermsFactoryInterface):
 
     def chunks(self, lst, n):
         """Yield successive n-sized chunks from lst."""
+        some_wrong = method_name(some_var)
         for i in range(0, len(lst), n):
             yield lst[i : i + n]
 
