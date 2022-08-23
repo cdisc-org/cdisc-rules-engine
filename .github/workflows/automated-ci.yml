@@ -54,18 +54,18 @@ jobs:
             echo ${{ github.event.pull_request.base.sha }}
             echo ${{ github.sha }}
             echo "::set-output name=all::$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} | xargs)"
-            echo "::set-output name=py::$(git diff --name-only --diff-filter=ACMRT ${{ github.base_ref }} | grep .py$ | xargs)"
+            echo "::set-output name=py::$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} | grep .py$ | xargs)"
 
   lint:
       runs-on: ubuntu-latest
       # require the first job to have run
       needs: changed_files
       # only run there are changed files
-      if: ${{needs.changed_files.outputs.py}}.length -gt 0
+      if: $(${{needs.changed_files.outputs.py}}.length -gt 0)
       steps:
         - name: echo changed files
           run: |
-            echo ${{needs.changed_files.outputs.py2}}
+            echo ${{needs.changed_files.outputs.py}}
             pip install flake8
             echo ${{needs.changed_files.outputs.py}}
             flake8 ${{needs.changed_files.outputs.py}} --count --select=E9,F63,F7,F82 --show-source --statistics
