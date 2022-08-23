@@ -4,7 +4,7 @@
 name: CI
 
 # Controls when the workflow will run
-on: [ push, pull_request ]
+on: [ pull_request ]
 
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
@@ -31,8 +31,7 @@ jobs:
         run: |
           python -m pytest tests/unit/
 
-  changed_files:
-    if: ${{ github.event.pull_request}}
+  get_changed_files:
     runs-on: ubuntu-latest
     outputs:
       py: ${{ steps.changes.outputs.py }}
