@@ -33,27 +33,6 @@ jobs:
         run: |
           python -m pytest tests/unit/
 
-  on_push_changes:
-    # try to get changes on push event
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 2
-
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.9'
-
-      - name: echo changed files
-        run: |
-          echo ${GITHUB_HEAD_REF}
-          echo $(git diff --name-only origin/main origin/${GITHUB_HEAD_REF})
-          echo "::set-output name=py2::$(git diff --name-only origin/main origin/${GITHUB_HEAD_REF} | grep .py$)"
-
-
   # get changes on pull request
   changed_files:
       if: ${{ github.event.pull_request}}
@@ -61,7 +40,6 @@ jobs:
       # Map a step output to a job output
       outputs:
         all: ${{ steps.changes.outputs.all}}
-        py2: ${{ steps.changes.outputs.py2}}
         py: ${{ steps.changes.outputs.py }}
       steps:
           # Make sure we have some code to diff.
@@ -75,15 +53,15 @@ jobs:
           run: |
             echo ${{ github.event.pull_request.base.sha }}
             echo ${{ github.sha }}
-            echo "::set-output name=all::$(git diff --name-only --diff-filter=ACMRT ${{ github.base_ref }} ${{ github.head_ref }} | xargs)"
-            echo "::set-output name=py::$(git diff --name-only --diff-filter=ACMRT ${{ github.base_ref }} ${{ github.head_ref }} | grep .py$ | xargs)"
+            echo "::set-output name=all::$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} | xargs)"
+            echo "::set-output name=py::$(git diff --name-only --diff-filter=ACMRT ${{ github.base_ref }} | grep .py$ | xargs)"
 
   lint:
       runs-on: ubuntu-latest
       # require the first job to have run
-      # needs: changed_files
+      needs: changed_files
       # only run there are changed files
-      # if: ${{needs.changed_files.outputs.py}}.length -gt 0
+      if: ${{needs.changed_files.outputs.py}}.length -gt 0
       steps:
         - name: echo changed files
           run: |
