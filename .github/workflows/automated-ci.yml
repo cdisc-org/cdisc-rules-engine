@@ -4,7 +4,7 @@
 name: CI
 
 # Controls when the workflow will run
-on: [ push ]
+on: [ push, pull_request ]
 
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
@@ -15,6 +15,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
@@ -30,37 +33,55 @@ jobs:
         run: |
           python -m pytest tests/unit/
 
+  on_push_changes:
+    # try to get changes on push event
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+
+      - name: echo changed files
+        run: |
+          echo ${GITHUB_HEAD_REF}
+          echo $(git diff --name-only origin/main origin/${GITHUB_HEAD_REF})
+          echo "::set-output name=py2::$(git diff --name-only origin/main origin/${GITHUB_HEAD_REF} | grep .py$)"
+
+
+  # get changes on pull request
   changed_files:
+      if: ${{ github.event.pull_request}}
       runs-on: ubuntu-latest
       # Map a step output to a job output
       outputs:
         all: ${{ steps.changes.outputs.all}}
-        py: ${{ steps.changes.outputs.ts }}
+        py2: ${{ steps.changes.outputs.py2}}
+        py: ${{ steps.changes.outputs.py }}
       steps:
           # Make sure we have some code to diff.
         - name: Checkout repository
           uses: actions/checkout@v3
-          with:
-            fetch-depth: 0
         - name: Get changed files
           id: changes
           # Set outputs using the command.
           run: |
             echo ${{ github.event.pull_request.base.sha }}
             echo ${{ github.sha }}
-            echo ${{needs.changed_files.outputs.all}}
             echo "::set-output name=all::$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | xargs)"
             echo "::set-output name=py::$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | grep .py$ | xargs)"
 
   lint:
       runs-on: ubuntu-latest
       # require the first job to have run
-      needs: changed_files
+      # needs: changed_files
       # only run there are changed files
-      if: ${{needs.changed_files.outputs.py}}.length -gt 0
+      # if: ${{needs.changed_files.outputs.py}}.length -gt 0
       steps:
         - name: echo changed files
           run: |
+            echo ${{needs.changed_files.outputs.py2}}
+            pip install flake8
             echo ${{needs.changed_files.outputs.py}}
             flake8 ${{needs.changed_files.outputs.py}} --count --select=E9,F63,F7,F82 --show-source --statistics
             flake8 ${{needs.changed_files.outputs.py}} --count --exit-zero --statistics
