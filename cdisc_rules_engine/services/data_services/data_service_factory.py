@@ -1,4 +1,4 @@
-from cdisc_rules_engine.dummy_services.dummy_data_service import DummyDataService
+from cdisc_rules_engine.services.data_services import DummyDataService
 
 from .local_data_service import LocalDataService
 
