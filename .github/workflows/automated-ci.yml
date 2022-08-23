@@ -51,8 +51,6 @@ jobs:
           id: changes
           # Set outputs using the command.
           run: |
-            echo ${{ github.event.pull_request.base.sha }}
-            echo ${{ github.sha }}
             echo "::set-output name=all::$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} | xargs)"
             echo "::set-output name=py::$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} | grep .py$ | xargs)"
 
@@ -63,10 +61,17 @@ jobs:
       # only run there are changed files
       if: $(${{needs.changed_files.outputs.py}}.length -gt 0)
       steps:
-        - name: echo changed files
+        - name: Checkout repository
+          uses: actions/checkout@v3
+          with:
+            fetch-depth: '0'
+        - name: Install linters
           run: |
-            echo ${{needs.changed_files.outputs.py}}
             pip install flake8
-            echo ${{needs.changed_files.outputs.py}}
+            pip install black
+        - name: run flake
+          run: |
             flake8 ${{needs.changed_files.outputs.py}} --count --select=E9,F63,F7,F82 --show-source --statistics
-            flake8 ${{needs.changed_files.outputs.py}} --count --exit-zero --statistics
+            flake8 ${{needs.changed_files.outputs.py}} --count --statistics
+        - name: run black
+          run: black ${{needs.changed_files.outputs.py}}
