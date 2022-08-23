@@ -20,10 +20,6 @@ class ConfigService:
                 "REDIS_HOST_NAME",
                 "REDIS_ACCESS_KEY",
                 "CDISC_LIBRARY_API_KEY",
-                "CDISC_LIBRARY_URL",
-                "DICTIONARIES_TABLE_NAME",
-                "WHODRUG_TERMS_TABLE_NAME",
-                "MEDDRA_TERMS_TABLE_NAME",
                 "DATA_SERVICE_TYPE",
             ]
 
