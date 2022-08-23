@@ -15,8 +15,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-        with:
-          fetch-depth: 2
 
       - name: Set up Python
         uses: actions/setup-python@v2
@@ -42,8 +40,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-        with:
-          fetch-depth: '0'
       - name: Get changed files
         id: changes
         run: |
@@ -57,8 +53,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-        with:
-          fetch-depth: '0'
       - name: Install linters
         run: |
           pip install flake8
