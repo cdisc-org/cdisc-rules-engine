@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: changed_files
     # only run there are changed files
-    if: $(${{needs.changed_files.outputs.py}}.length -gt 0)
+    if: ${{needs.changed_files.outputs.py}}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
