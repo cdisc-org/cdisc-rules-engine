@@ -40,6 +40,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+        with:
+          fetch-depth: '0'
       - name: Get changed files
         id: changes
         run: |
@@ -53,6 +55,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+        with:
+          fetch-depth: '0'
       - name: Install linters
         run: |
           pip install flake8
@@ -61,7 +65,7 @@ jobs:
       - name: Run flake8
         run: |
           flake8 ${{needs.changed_files.outputs.py}} --count --select=E9,F63,F7,F82 --show-source --statistics
-          flake8 ${{needs.changed_files.outputs.py}} --count --statistics\
+          flake8 ${{needs.changed_files.outputs.py}} --count --statistics
 
       - name: Run black
         run: |
