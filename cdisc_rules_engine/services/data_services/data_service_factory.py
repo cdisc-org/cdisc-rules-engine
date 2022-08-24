@@ -33,7 +33,7 @@ class DataServiceFactory(FactoryInterface):
 
     @classmethod
     def get_service(cls, name: str, **kwargs) -> BaseDataService:
-        """Get class that matches searched implementation"""
+        """Get instance of service that matches searched implementation"""
         if name and name in cls._service_map.keys():
             return cls._service_map.get(name)(**kwargs)
         raise ValueError(f"No registered service named {name}")

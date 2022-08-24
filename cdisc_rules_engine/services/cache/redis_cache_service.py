@@ -11,11 +11,11 @@ from cdisc_rules_engine.services.cache.cache_service_interface import (
 
 
 class RedisCacheService(CacheServiceInterface):
-
     _instance = None
 
     @classmethod
-    def get_instance(cls, config: ConfigService):
+    def get_instance(cls, **kwargs):
+        config: ConfigService = kwargs.get("config")
         if cls._instance is None:
             instance = cls(
                 config.getValue("REDIS_HOST_NAME"), config.getValue("REDIS_ACCESS_KEY")
@@ -86,3 +86,6 @@ class RedisCacheService(CacheServiceInterface):
         keys = [key for key in self.client.scan_iter(match=f"{regex}")]
         key_value_pairs = zip(keys, self.client.mget(keys))
         return {key: pickle.loads(value) for key, value in key_value_pairs}
+
+    def add_all(self, data: dict):
+        pass

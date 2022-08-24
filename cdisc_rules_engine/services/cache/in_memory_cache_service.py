@@ -8,11 +8,10 @@ from cdisc_rules_engine.services.cache.cache_service_interface import (
 
 
 class InMemoryCacheService(CacheServiceInterface):
-
     _instance = None
 
     @classmethod
-    def get_instance(cls):
+    def get_instance(cls, **kwargs):
         if cls._instance is None:
             cls._instance = cls()
         return cls._instance
