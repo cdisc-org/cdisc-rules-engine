@@ -2,8 +2,8 @@ from typing import Type
 
 from cdisc_rules_engine.config import ConfigService
 from . import DummyDataService, BaseDataService, LocalDataService
-from ..cache import CacheServiceInterface
-from ..interfaces import FactoryInterface
+from cdisc_rules_engine.services.cache import CacheServiceInterface
+from cdisc_rules_engine.services.factory_interface import FactoryInterface
 
 
 class DataServiceFactory(FactoryInterface):
@@ -26,14 +26,13 @@ class DataServiceFactory(FactoryInterface):
         """
         Save mapping of service name and it's implementation
         """
-        if issubclass(service, BaseDataService):
-            cls._service_map[name] = service
-            return
-        raise TypeError("Implementation of BaseDataService required!")
+        if not issubclass(service, BaseDataService):
+            raise TypeError("Implementation of BaseDataService required!")
+        cls._service_map[name] = service
 
     @classmethod
     def get_service(cls, name: str, **kwargs) -> BaseDataService:
         """Get instance of service that matches searched implementation"""
-        if name and name in cls._service_map.keys():
+        if name and name in cls._service_map:
             return cls._service_map.get(name)(**kwargs)
         raise ValueError(f"No registered service named {name}")

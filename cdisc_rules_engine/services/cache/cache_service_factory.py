@@ -5,7 +5,7 @@ from cdisc_rules_engine.services.cache.in_memory_cache_service import (
     InMemoryCacheService,
 )
 from cdisc_rules_engine.services.cache.redis_cache_service import RedisCacheService
-from cdisc_rules_engine.services.interfaces import FactoryInterface
+from cdisc_rules_engine.services.factory_interface import FactoryInterface
 
 
 class CacheServiceFactory(FactoryInterface):
@@ -20,13 +20,12 @@ class CacheServiceFactory(FactoryInterface):
 
     @classmethod
     def register_service(cls, name: str, service: Type[CacheServiceInterface]):
-        if issubclass(service, CacheServiceInterface):
-            cls._service_map[name] = service
-            return
-        raise TypeError("Implementation of CacheServiceInterface required!")
+        if not issubclass(service, CacheServiceInterface):
+            raise TypeError("Implementation of CacheServiceInterface required!")
+        cls._service_map[name] = service
 
     @classmethod
     def get_service(cls, name: str, **kwargs) -> CacheServiceInterface:
-        if name and name in cls._service_map.keys():
+        if name and name in cls._service_map:
             return cls._service_map.get(name).get_instance(**kwargs)
         raise ValueError(f"No registered service named {name}")
