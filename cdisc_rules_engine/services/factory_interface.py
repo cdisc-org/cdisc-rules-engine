@@ -7,7 +7,6 @@ class FactoryInterface(ABC):
     def register_service(cls, name: str, service) -> None:
         pass
 
-    @classmethod
     @abstractmethod
-    def get_service(cls, name: str, **kwargs):
+    def get_service(self, name: str, **kwargs):
         pass

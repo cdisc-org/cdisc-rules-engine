@@ -20,12 +20,13 @@ class CacheServiceFactory(FactoryInterface):
 
     @classmethod
     def register_service(cls, name: str, service: Type[CacheServiceInterface]):
+        if not name:
+            raise ValueError("Service name must not be empty!")
         if not issubclass(service, CacheServiceInterface):
             raise TypeError("Implementation of CacheServiceInterface required!")
         cls._service_map[name] = service
 
-    @classmethod
-    def get_service(cls, name: str, **kwargs) -> CacheServiceInterface:
-        if name and name in cls._service_map:
-            return cls._service_map.get(name).get_instance(**kwargs)
-        raise ValueError(f"No registered service named {name}")
+    def get_service(self, name: str, **kwargs) -> CacheServiceInterface:
+        if name in self._service_map:
+            return self._service_map.get(name).get_instance(**kwargs)
+        raise ValueError(f"Service name must be in  {list(self._service_map.keys())}")

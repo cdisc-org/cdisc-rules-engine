@@ -53,7 +53,6 @@ def cached_dataset(dataset_type: str):
     return decorator
 
 
-# TODO: Rename to DataServiceInterface
 class BaseDataService:
     def __init__(self, **params):
         self.blob_service = None
