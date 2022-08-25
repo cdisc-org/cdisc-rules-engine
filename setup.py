@@ -11,7 +11,7 @@ setuptools.setup(
     packages=setuptools.find_packages(exclude=["scripts", "tests"]),
     license="MIT",
     include_package_data=True,
-    python_requires=">=3.9",
+    python_requires=">=3.8",
     install_requires=[
         "pytest==7.1.2",
         "pandas==1.3.5",
