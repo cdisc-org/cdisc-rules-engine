@@ -82,7 +82,10 @@ def cli():
     "-ct",
     "--controlled_terminology_package",
     multiple=True,
-    help="Controlled terminology package to validate against, can provide more than one",
+    help=(
+        "Controlled terminology package to validate against, "
+        "can provide more than one"
+    ),
 )
 @click.option(
     "-o",
@@ -143,13 +146,16 @@ def validate(
 @click.option(
     "-c",
     "--cache_path",
-    default="resources/cache",
+    default="cdisc_rules_engine/resources/cache",
     help="Relative path to cache files containing pre loaded metadata and rules",
 )
 @click.option(
     "--apikey",
     envvar="CDISC_LIBRARY_API_KEY",
-    help="CDISC Library api key. Can be provided in the environment variable CDISC_LIBRARY_API_KEY",
+    help=(
+        "CDISC Library api key. "
+        "Can be provided in the environment variable CDISC_LIBRARY_API_KEY"
+    ),
     required=True,
 )
 @click.pass_context

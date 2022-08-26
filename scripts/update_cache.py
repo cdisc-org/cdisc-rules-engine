@@ -1,6 +1,5 @@
 import asyncio
 import pickle
-from datetime import datetime, timedelta
 from functools import partial
 from typing import Iterable, List, Optional
 
@@ -62,6 +61,12 @@ async def load_cache_data(api_key):
     )
     cache_service_obj.add_batch(standards_details, "cache_key", pop_cache_key=True)
 
+    # save details of all standard's models to cache
+    standards_models: List[dict] = await async_get_details_of_all_standards_models(
+        library_service, standards_details
+    )
+    cache_service_obj.add_batch(standards_models, "cache_key", pop_cache_key=True)
+
     # save variables metadata to cache
     variables_metadata: Iterable[dict] = await get_variables_metadata(
         library_service, standards
@@ -99,7 +104,8 @@ async def async_get_rules_by_catalog(
 
 async def get_codelist_term_maps(library_service: CDISCLibraryService) -> List[dict]:
     """
-    For each CT package in CDISC library, generate a map of codelist to codelist term. Ex:
+    For each CT package in CDISC library,
+    generate a map of codelist to codelist term. Ex:
     {
         "package": "sdtmct-2021-12-17"
         "C123": {
@@ -193,6 +199,18 @@ async def async_get_standard_details(
     return standard_details
 
 
+async def async_get_details_of_all_standards_models(
+    library_service: CDISCLibraryService, standards_details: List[dict]
+) -> List[dict]:
+    """
+    Returns a list of dicts containing model metadata for each standard.
+    """
+
+
+async def async_get_standard_model_details():
+    pass
+
+
 async def get_variables_metadata(
     library_service: CDISCLibraryService, standards: List[dict]
 ) -> Iterable[dict]:
@@ -257,7 +275,8 @@ def save_ct_packages_locally(cache: CacheServiceInterface, cache_path: str):
 
 def save_variable_codelist_maps_locally(cache: CacheServiceInterface, cache_path: str):
     """
-    Store cached variable codelist metadata in variable_codelist_maps.pkl in cache path directory
+    Store cached variable codelist metadata in
+    variable_codelist_maps.pkl in cache path directory
     """
     variable_codelist_maps = cache.get_by_regex(".*codelists.*")
     with open(f"{cache_path}/variable_codelist_maps.pkl", "wb") as f:
