@@ -14,6 +14,10 @@ class DummyDataService(BaseDataService):
 
     def __init__(self, data):
         self.data: List[DummyDataset] = data
+        super().__init__()
+
+    def get_instance(self, **kwargs):
+        pass
 
     def check_dataset_exists(self, dataset_name):
         dataset_name = dataset_name.replace("/", "")

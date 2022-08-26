@@ -12,12 +12,13 @@ class DataServiceFactory(FactoryInterface):
     _service_map = {"local": LocalDataService, "dummy": DummyDataService}
 
     def __init__(self, config: ConfigService, cache_service: CacheServiceInterface):
+        self.data_service_name = config.getValue("DATA_SERVICE_TYPE")
         self.config = config
         self.cache_service = cache_service
 
     def get_data_service(self) -> BaseDataService:
         """Get local data service"""
-        return self.get_service("local", cache_service=self.cache_service)
+        return self.get_service("local")
 
     def get_dummy_data_service(self, data: List[DummyDataset]) -> BaseDataService:
         return self.get_service("dummy", data=data)
@@ -33,8 +34,11 @@ class DataServiceFactory(FactoryInterface):
             raise TypeError("Implementation of BaseDataService required!")
         cls._service_map[name] = service
 
-    def get_service(self, name: str, **kwargs) -> BaseDataService:
+    def get_service(self, name: str = None, **kwargs) -> BaseDataService:
         """Get instance of service that matches searched implementation"""
-        if name in self._service_map:
-            return self._service_map.get(name)(**kwargs)
+        service_name = name or self.data_service_name
+        if service_name in self._service_map:
+            return self._service_map.get(service_name).get_instance(
+                config=self.config, cache_service=self.cache_service, **kwargs
+            )
         raise ValueError(f"Service name must be in  {list(self._service_map.keys())}")
