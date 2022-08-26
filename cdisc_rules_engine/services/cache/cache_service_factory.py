@@ -13,10 +13,10 @@ class CacheServiceFactory(FactoryInterface):
 
     def __init__(self, config):
         self.config = config
+        self.cache_service_name = self.config.getValue("CACHE_TYPE") or "in_memory"
 
     def get_cache_service(self):
-        cache_service_type = self.config.getValue("CACHE_TYPE") or "in_memory"
-        return self.get_service(cache_service_type, config=self.config)
+        return self.get_service()
 
     @classmethod
     def register_service(cls, name: str, service: Type[CacheServiceInterface]):
@@ -26,7 +26,10 @@ class CacheServiceFactory(FactoryInterface):
             raise TypeError("Implementation of CacheServiceInterface required!")
         cls._service_map[name] = service
 
-    def get_service(self, name: str, **kwargs) -> CacheServiceInterface:
-        if name in self._service_map:
-            return self._service_map.get(name).get_instance(**kwargs)
+    def get_service(self, name: str = None, **kwargs) -> CacheServiceInterface:
+        service_name = name or self.cache_service_name
+        if service_name in self._service_map:
+            return self._service_map.get(service_name).get_instance(
+                config=self.config, **kwargs
+            )
         raise ValueError(f"Service name must be in  {list(self._service_map.keys())}")

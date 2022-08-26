@@ -12,12 +12,13 @@ class DummyDataService(BaseDataService):
     The class returns datasets from provided mock data.
     """
 
-    def __init__(self, data):
-        self.data: List[DummyDataset] = data
+    def __init__(self, data: List[DummyDataset]):
+        self.data = data
         super().__init__()
 
-    def get_instance(self, **kwargs):
-        pass
+    @classmethod
+    def get_instance(cls, data: List[DummyDataset], **kwargs):
+        return DummyDataService(data)
 
     def check_dataset_exists(self, dataset_name):
         dataset_name = dataset_name.replace("/", "")
