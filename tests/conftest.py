@@ -5,8 +5,8 @@ import pandas as pd
 import pytest
 
 from cdisc_rules_engine.enums.rule_types import RuleTypes
-from cdisc_rules_engine.models import OperationParams
 from cdisc_rules_engine.models.dictionaries.whodrug import WhoDrugTermsFactory
+from cdisc_rules_engine.models.operation_params import OperationParams
 from cdisc_rules_engine.models.rule_conditions import ConditionCompositeFactory
 from cdisc_rules_engine.services.cache.in_memory_cache_service import (
     InMemoryCacheService,
@@ -113,7 +113,9 @@ def dataset_rule_multiple_conditions() -> dict:
             {
                 "name": "generate_dataset_error_objects",
                 "params": {
-                    "message": "Length of ECCOOLVAR is not equal to 5 or ECCOOLVAR == cool.",
+                    "message": (
+                        "Length of ECCOOLVAR is not equal to 5 " "or ECCOOLVAR == cool."
+                    ),
                 },
             }
         ],
@@ -778,7 +780,10 @@ def define_xml_variable_validation_rule() -> dict:
             {
                 "name": "generate_dataset_error_objects",
                 "params": {
-                    "message": "Variable metadata variable_size does not match define variable size",
+                    "message": (
+                        "Variable metadata variable_size "
+                        "does not match define variable size"
+                    ),
                 },
             }
         ],
@@ -811,7 +816,10 @@ def define_xml_value_level_metadata_validation_rule() -> dict:
             {
                 "name": "generate_dataset_error_objects",
                 "params": {
-                    "message": "Variable data does not match length specified by value level metadata in define.xml",
+                    "message": (
+                        "Variable data does not match length "
+                        "specified by value level metadata in define.xml"
+                    ),
                 },
             }
         ],

@@ -10,7 +10,7 @@ from cdisc_rules_engine.constants.domains import (
     APFA_DOMAIN,
     SUPPLEMENTARY_DOMAINS,
 )
-from cdisc_rules_engine.models import OperationParams
+from cdisc_rules_engine.models.operation_params import OperationParams
 from cdisc_rules_engine.models.rule_conditions import (
     AllowedConditionsKeys,
     ConditionCompositeFactory,
@@ -119,7 +119,10 @@ class RuleProcessor:
         """
         HANDLING SPLIT DOMAINS
 
-        If include_split_datasets is True - add split domains to the list of included domains. If no included domains specified, only validate split domains
+        If include_split_datasets is True -
+        add split domains to the list of included domains.
+        If no included domains specified, only validate split domains
+
         If include_split_datasets is False - Exclude split domains
         If include_split_datasets is None - Do nothing
         """
@@ -134,7 +137,8 @@ class RuleProcessor:
         cls, dataset_domain: str, domains_to_check: List[str]
     ) -> bool:
         """
-        Check that domain name match with ony AP / APFA / APRELSUB / SUPP / SQ naming pattern
+        Check that domain name match with only
+        AP / APFA / APRELSUB / SUPP / SQ naming pattern
         """
         supp_ap_domains = {f"{domain}--" for domain in SUPPLEMENTARY_DOMAINS}
         supp_ap_domains.update({f"{AP_DOMAIN}--", f"{APFA_DOMAIN}--"})
@@ -145,17 +149,23 @@ class RuleProcessor:
 
     def rule_applies_to_class(self, rule, file_path, datasets: List[dict]):
         """
-        If included classes are specified, and the class is not in the list of included classes return false.
-        If excluded classes are specified, and the class is in the list of excluded classes return false
+        If included classes are specified and the class
+        is not in the list of included classes return false.
+
+        If excluded classes are specified and the class
+        is in the list of excluded classes return false
+
         Else return true.
+
+        Rule authors can specify classes to include that we cannot detect.
+        In this case, the get_dataset_class method will return None,
+        but included_classes will have values.
+        This will result in a rule not running when it is supposed to.
+        We filter out non-detectable classes here, so that rule authors
+        can specify them without it affecting if the rule runs or not.
         """
         classes = rule.get("classes") or {}
         included_classes = classes.get("Include", [])
-        # Rule authors can specify classes to include that we cannot detect.
-        # In this case, the get_dataset_class method will return None, but included_classes will have values.
-        # This will result in a rule not running when it is supposed to.
-        # We filter out non-detectable classes here, so that rule authors can specify them without it affecting if the rule
-        # runs or not.
         included_classes = [c for c in included_classes if c in DETECTABLE_CLASSES]
         excluded_classes = classes.get("Exclude", [])
         is_included = True
@@ -245,7 +255,8 @@ class RuleProcessor:
                 result, operation_params, dataset_copy
             )
             logger.info(
-                f"Processed rule operation. operation={operation_params.operation_name}, rule={rule}"
+                f"Processed rule operation. "
+                f"operation={operation_params.operation_name}, rule={rule}"
             )
 
         return dataset_copy
@@ -278,7 +289,10 @@ class RuleProcessor:
                 operation_params.datasets,
                 lambda item: item.get("domain") == operation_params.domain,
             )
-            file_path: str = f"{get_directory_path(operation_params.dataset_path)}/{domain_details['filename']}"
+            file_path: str = (
+                f"{get_directory_path(operation_params.dataset_path)}/"
+                f"{domain_details['filename']}"
+            )
             operation_params.dataframe = self.data_service.get_dataset(
                 dataset_name=file_path
             )
@@ -339,7 +353,9 @@ class RuleProcessor:
     ):
         """
         Adds "operator" key to rule condition.
-        target_to_operator_map parameter is a dict where keys are targets and values are operators.
+        target_to_operator_map parameter is a dict
+        where keys are targets and values are operators.
+
         The rule is passed and changed by reference.
         """
         conditions: ConditionInterface = rule["conditions"]
@@ -366,7 +382,10 @@ class RuleProcessor:
     ):
         """
         Adds "comparator" key to rule conditions.value key.
-        comparator parameter is a dict where keys are targets and values are comparators.
+
+        comparator parameter is a dict where
+        keys are targets and values are comparators.
+
         The rule is passed and changed by reference.
         """
         conditions: ConditionInterface = rule["conditions"]
@@ -383,7 +402,8 @@ class RuleProcessor:
             if comparator_to_add:
                 value["comparator"] = comparator_to_add
         logger.info(
-            f"Added comparator to rule conditions. comparator={comparator}, conditions={rule['conditions']}"
+            f"Added comparator to rule conditions. "
+            f"comparator={comparator}, conditions={rule['conditions']}"
         )
 
     @staticmethod
@@ -477,7 +497,8 @@ class RuleProcessor:
             and self.rule_applies_to_class(rule, file_path, datasets)
         )
         logger.info(
-            f"is_suitable_for_validation. rule id={rule.get('core_id')}, domain={dataset_domain}, result={is_suitable}"
+            f"is_suitable_for_validation. rule id={rule.get('core_id')}, "
+            f"domain={dataset_domain}, result={is_suitable}"
         )
         return is_suitable
 
@@ -485,7 +506,7 @@ class RuleProcessor:
     def extract_target_names_from_rule(
         rule: dict, domain: str, column_names: List[str]
     ) -> Set[str]:
-        """
+        r"""
         Extracts target from each item of condition list.
 
         Some operators require reporting additional column names when

@@ -8,13 +8,13 @@ import pandas as pd
 
 from cdisc_rules_engine.config import config
 from cdisc_rules_engine.exceptions.custom_exceptions import InvalidMatchKeyError
-from cdisc_rules_engine.models import OperationParams
 from cdisc_rules_engine.models.dictionaries.meddra.meddra_variables import (
     MedDRAVariables,
 )
 from cdisc_rules_engine.models.dictionaries.meddra.terms.meddra_term import MedDRATerm
 from cdisc_rules_engine.models.dictionaries.meddra.terms.term_types import TermTypes
 from cdisc_rules_engine.models.dictionaries.whodrug import WhodrugRecordTypes
+from cdisc_rules_engine.models.operation_params import OperationParams
 from cdisc_rules_engine.services.cache.cache_service_factory import CacheServiceFactory
 from cdisc_rules_engine.services.cache.cache_service_interface import (
     CacheServiceInterface,
@@ -133,7 +133,6 @@ class DataProcessor:
             params.directory_path,
             operation_name=f"study_value_count_{params.target}",
         )
-        # Only cache when not using dummy dataservice, so that subsequent calls with different data are not cached.
         variable_value_count = (
             self.cache.get(cache_key)
             if not DataProcessor.is_dummy_data(self.data_service)
@@ -149,6 +148,8 @@ class DataProcessor:
                 )
             )
             if not DataProcessor.is_dummy_data(self.data_service):
+                # Only cache when not using dummy dataservice,
+                # so that subsequent calls with different data are not cached.
                 self.cache.add(cache_key, variable_value_count)
         return variable_value_count
 
@@ -235,7 +236,8 @@ class DataProcessor:
 
     def valid_whodrug_references(self, params: OperationParams) -> pd.Series:
         """
-        Checks if a reference to whodrug term points to the existing code in Atc Text (INA) file.
+        Checks if a reference to whodrug term points
+        to the existing code in Atc Text (INA) file.
         """
         if not params.whodrug_path:
             raise ValueError("Can't execute the operation, no whodrug path provided")
@@ -369,7 +371,8 @@ class DataProcessor:
         target, study_path, data_service, datasets
     ) -> dict:
         """
-        Returns a mapping of variable values to the number of times that value appears in the study.
+        Returns a mapping of variable values to the number
+        of times that value appears in the study.
         """
         datasets_with_unique_domains = list(
             {dataset["domain"]: dataset for dataset in datasets}.values()
@@ -464,8 +467,8 @@ class DataProcessor:
         other_dataset_match_keys: List[str],
     ) -> pd.DataFrame:
         """
-        Returns a DataFrame where
-        values of match keys of dataset are equal to values of match keys of other dataset.
+        Returns a DataFrame where values of match keys of
+        dataset are equal to values of match keys of other dataset.
         Example:
             dataset = USUBJID  DOMAIN
                       CDISC001 AE
@@ -495,7 +498,8 @@ class DataProcessor:
         A wrapper function for convenient filtering of parent dataset by supp dataset.
         Does two things:
         1. Filters parent dataset by RDOMAIN column of supp dataset.
-        2. Filters parent dataset by columns of supp dataset that describe their relation.
+        2. Filters parent dataset by columns of supp dataset
+           that describe their relation.
         """
         parent_dataset = DataProcessor.filter_parent_dataset_by_supp_dataset_rdomain(
             parent_dataset, supp_dataset
@@ -573,7 +577,8 @@ class DataProcessor:
         Uses full join to merge given datasets on the
         columns that describe their relation.
         """
-        # right dataset holds column names of left dataset. all values in the column are the same
+        # right dataset holds column names of left dataset.
+        # all values in the column are the same
         left_ds_col_name: str = right_dataset[column_with_names][0]
 
         # convert numeric columns to one data type to avoid merging errors
