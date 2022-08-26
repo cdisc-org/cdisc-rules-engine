@@ -1,0 +1,10 @@
+[flake8]
+max-line-length = 88
+max_complexity = 10
+
+exclude = .github,
+    .pytest_cache,
+    cdisc_rules_engine/resources,
+    venv,
+    build,
+    dist
