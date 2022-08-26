@@ -40,7 +40,8 @@ class RedisCacheService(CacheServiceInterface):
         prefix: str = "",
     ):
         logger.info(
-            f"Saving batch to Redis cache. items={items}, cache_key_name={cache_key_name}"
+            f"Saving batch to Redis cache. items={items},"
+            f" cache_key_name={cache_key_name}"
         )
         with self.client.pipeline() as pipe:
             for item in items:
@@ -88,4 +89,4 @@ class RedisCacheService(CacheServiceInterface):
         return {key: pickle.loads(value) for key, value in key_value_pairs}
 
     def add_all(self, data: dict):
-        pass
+        raise NotImplementedError("Method add_all not implemented in RedisCacheService")
