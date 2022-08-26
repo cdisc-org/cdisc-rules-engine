@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 import pandas as pd
 import pytest
 
-from cdisc_rules_engine.models import OperationParams
+from cdisc_rules_engine.models.operation_params import OperationParams
 from cdisc_rules_engine.services.cache.in_memory_cache_service import (
     InMemoryCacheService,
 )
@@ -475,9 +475,11 @@ def test_get_variable_names_for_given_standard(
     mock_data_service,
     operation_params: OperationParams,
 ):
-    with open(
-        f"{os.path.dirname(__file__)}/../../resources/mock_library_responses/get_sdtmig_response.json"
-    ) as file:
+    file_path: str = (
+        f"{os.path.dirname(__file__)}/../../resources/"
+        f"mock_library_responses/get_sdtmig_response.json"
+    )
+    with open(file_path) as file:
         mock_sdtmig_details: dict = json.loads(file.read())
     mock_get_sdtmig.return_value = mock_sdtmig_details
     dataset_path = "study/bundle/blah"

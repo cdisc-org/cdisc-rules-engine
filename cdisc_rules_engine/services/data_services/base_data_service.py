@@ -78,6 +78,15 @@ class BaseDataService:
         downloads all of them and merges into a single DataFrame.
         """
 
+    @abstractmethod
+    def get_dataset_by_type(
+        self, dataset_name: str, dataset_type: str, **params
+    ) -> pd.DataFrame:
+        """
+        Generic function to return dataset based on the type.
+        dataset_type param can be: contents, metadata, variables_metadata.
+        """
+
     def get_dataset_class(self, dataset, file_path, datasets):
         if self._contains_topic_variable(dataset, "TERM"):
             return "Events"
