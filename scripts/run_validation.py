@@ -1,4 +1,3 @@
-from asyncore import write
 import itertools
 import logging
 import os
@@ -7,10 +6,6 @@ import time
 from functools import partial
 from multiprocessing import Pool
 from multiprocessing.managers import SyncManager
-
-logging.getLogger("asyncio").disabled = True
-logging.getLogger("xmlschema").disabled = True
-
 from cdisc_rules_engine.config import config
 from cdisc_rules_engine.constants.define_xml_constants import DEFINE_XML_FILE_NAME
 from cdisc_rules_engine.models.dictionaries import (

@@ -27,7 +27,8 @@ class BaseReport(ABC):
     def get_summary_data(self) -> List[List]:
         """
         Generates the Issue Summary data that goes into the export.
-        Each row is represented by a list or a dict containing the following information:
+        Each row is represented by a list or a dict containing the following
+        information:
         return [
             "Dataset",
             "RuleID",
@@ -82,7 +83,8 @@ class BaseReport(ABC):
     def _generate_error_details(self, validation_result) -> List[List]:
         """
         Generates the Issue details data that goes into the excel export.
-        Each row is represented by a list or a dict containing the following information:
+        Each row is represented by a list or a dict containing the following
+        information:
         return [
             "RuleID",
             "Message",
@@ -131,7 +133,8 @@ class BaseReport(ABC):
     def get_rules_report_data(self) -> List[List]:
         """
         Generates the rules report data that goes into the excel export.
-        Each row is represented by a list or a dict containing the following information:
+        Each row is represented by a list or a dict containing the following
+        information:
         [
             "RuleID",
             "Version",

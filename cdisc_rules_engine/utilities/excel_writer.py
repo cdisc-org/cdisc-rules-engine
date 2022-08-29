@@ -11,7 +11,9 @@ def excel_workbook_to_stream(wb):
     tmp = NamedTemporaryFile(
         delete=False
     )  # create tmp file, we'll controll when to delete it
-    tmp.close()  # close, NamedTemporaryFile() already opended it, we need it closed for wb.save() or we'll get permission denied errors
+    # close, NamedTemporaryFile() already opended it, we need it closed for wb.save()
+    # or we'll get permission denied errors
+    tmp.close()
     wb.save(tmp.name)  # save workbook to tmp file
     with open(tmp.name, "rb") as f:
         stream = f.read()  # open for reading
@@ -22,7 +24,7 @@ def excel_workbook_to_stream(wb):
 def excel_update_worksheet(ws, rows, align_params=None, fill_empty_rows=False):
     for row_num, row_data in enumerate(rows, 2):
         for col_num, col_data in enumerate(row_data, 1):
-            if fill_empty_rows and (row_data[1] == "" or row_data[1] == None):
+            if fill_empty_rows and (row_data[1] == "" or row_data[1] is None):
                 # Codelist is empty for Code Rows. Change background color
                 ws.cell(row=row_num, column=col_num).value = col_data
                 ws.cell(row=row_num, column=col_num).fill = openpyxl.styles.PatternFill(

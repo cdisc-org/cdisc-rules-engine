@@ -11,7 +11,8 @@ from cdisc_rules_engine.services.data_services.local_data_service import (
 
 class ReportFactory:
     """
-    This class is a factory that creates reporting service depending on the output format.
+    This class is a factory that creates reporting service depending on
+    the output format.
 
     Constructor arguments:
     data_path -- path to the output file

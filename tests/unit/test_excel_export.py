@@ -3,7 +3,10 @@ from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
 from cdisc_rules_engine.utilities.excel_report import ExcelReport
 
-test_report_template: str = f"{os.path.dirname(__file__)}/../../cdisc_rules_engine/resources/templates/report-template.xlsx"
+test_report_template: str = (
+    f"{os.path.dirname(__file__)}"
+    "/../../cdisc_rules_engine/resources/templates/report-template.xlsx"
+)
 
 mock_validation_results = [
     RuleValidationResult(
@@ -143,6 +146,6 @@ def test_get_export():
         assert wb["Conformance Details"]["B2"].value == "test"
         assert wb["Conformance Details"]["B4"].value == "10.1 seconds"
         assert wb["Conformance Details"]["B8"].value == "SDTMIG"
-        assert wb["Conformance Details"]["B9"].value == f"V3.4"
+        assert wb["Conformance Details"]["B9"].value == "V3.4"
         assert wb["Conformance Details"]["B10"].value == ", ".join(cdiscCt)
         assert wb["Conformance Details"]["B11"].value == "2.1"
