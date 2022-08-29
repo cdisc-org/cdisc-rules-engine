@@ -41,4 +41,8 @@ class DataServiceFactory(FactoryInterface):
             return self._service_map.get(service_name).get_instance(
                 config=self.config, cache_service=self.cache_service, **kwargs
             )
-        raise ValueError(f"Service name must be in  {list(self._service_map.keys())}")
+        raise ValueError(
+            f"Service name must be in  {list(self._service_map.keys())}, "
+            f"given service name is {service_name}, "
+            f"config value is {self.config.getValue('DATA_SERVICE_TYPE')}"
+        )
