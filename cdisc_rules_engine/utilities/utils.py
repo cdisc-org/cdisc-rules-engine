@@ -247,7 +247,7 @@ def generate_report_filename(generation_time: str) -> str:
         .isoformat()
         .replace(":", "-")
     )
-    return f"CORE-Report-{timestamp}.xlsx"
+    return f"CORE-Report-{timestamp}"
 
 
 def get_rules_cache_key(standard: str, version: str, rule_id: str = None) -> str:
