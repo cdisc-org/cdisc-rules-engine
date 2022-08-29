@@ -6,15 +6,10 @@ from multiprocessing import freeze_support
 import click
 
 from scripts.run_validation import run_validation
-from scripts.update_cache import (
-    load_cache_data,
-    save_ct_packages_locally,
-    save_rules_locally,
-    save_standards_metadata_locally,
-    save_variable_codelist_maps_locally,
-    save_variables_metadata_locally,
-)
 from cdisc_rules_engine.utilities.utils import generate_report_filename
+from cdisc_rules_engine.services.cache.cache_populator_service import CachePopulator
+from cdisc_rules_engine.config import config
+from cdisc_rules_engine.services.cache.cache_service_factory import CacheServiceFactory
 
 Validation_args = namedtuple(
     "Validation_args",
@@ -154,12 +149,14 @@ def validate(
 )
 @click.pass_context
 def update_cache(ctx: click.Context, cache_path: str, apikey: str):
-    updated_cache = asyncio.run(load_cache_data(api_key=apikey))
-    save_rules_locally(updated_cache, cache_path)
-    save_ct_packages_locally(updated_cache, cache_path)
-    save_standards_metadata_locally(updated_cache, cache_path)
-    save_variable_codelist_maps_locally(updated_cache, cache_path)
-    save_variables_metadata_locally(updated_cache, cache_path)
+    cache = CacheServiceFactory(config).get_cache_service()
+    cache_populator = CachePopulator(cache, apikey)
+    cache = asyncio.run(cache_populator.load_cache_data())
+    cache_populator.save_rules_locally(cache_path)
+    cache_populator.save_ct_packages_locally(cache_path)
+    cache_populator.save_standards_metadata_locally(cache_path)
+    cache_populator.save_variable_codelist_maps_locally(cache_path)
+    cache_populator.save_variables_metadata_locally(cache_path)
 
 
 cli.add_command(validate)
