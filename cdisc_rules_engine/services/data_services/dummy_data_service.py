@@ -2,8 +2,10 @@ from typing import List, Optional
 
 import pandas as pd
 
+from cdisc_rules_engine.config import ConfigService
 from cdisc_rules_engine.dummy_models.dummy_dataset import DummyDataset
 from cdisc_rules_engine.exceptions.custom_exceptions import DatasetNotFoundError
+from cdisc_rules_engine.services.cache import CacheServiceInterface
 from cdisc_rules_engine.services.data_services import BaseDataService
 
 
@@ -12,8 +14,16 @@ class DummyDataService(BaseDataService):
     The class returns datasets from provided mock data.
     """
 
-    def __init__(self, data):
-        self.data: List[DummyDataset] = data
+    def __init__(self, data: List[DummyDataset]):
+        self.data = data
+        super().__init__()
+
+    @classmethod
+    def get_instance(
+        cls, cache_service: CacheServiceInterface, config: ConfigService, **kwargs
+    ):
+        data = kwargs.get("data")
+        return cls(data)
 
     def check_dataset_exists(self, dataset_name):
         dataset_name = dataset_name.replace("/", "")

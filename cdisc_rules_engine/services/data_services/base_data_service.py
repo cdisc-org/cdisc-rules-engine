@@ -5,9 +5,11 @@ from typing import Callable, List, TextIO
 import numpy as np
 import pandas as pd
 
+from cdisc_rules_engine.config import ConfigService
 from cdisc_rules_engine.constants.domains import AP_DOMAIN_LENGTH
 from cdisc_rules_engine.models.dataset_types import DatasetTypes
 from cdisc_rules_engine.services import logger
+from cdisc_rules_engine.services.cache import CacheServiceInterface
 from cdisc_rules_engine.utilities.utils import (
     get_dataset_cache_key_from_path,
     get_directory_path,
@@ -33,13 +35,15 @@ def cached_dataset(dataset_type: str):
             instance: BaseDataService = args[0]
             dataset_name: str = kwargs["dataset_name"]
             logger.info(
-                f"Downloading dataset from storage. dataset_name={dataset_name}, wrapped function={func.__name__}"
+                f"Downloading dataset from storage. dataset_name={dataset_name},"
+                f" wrapped function={func.__name__}"
             )
             cache_key: str = get_dataset_cache_key_from_path(dataset_name, dataset_type)
             cache_data = instance.cache_service.get(cache_key)
             if cache_data is not None:
                 logger.info(
-                    f'Dataset "{dataset_name}" was found in cache. cache_key={cache_key}'
+                    f'Dataset "{dataset_name}" was found in cache.'
+                    f" cache_key={cache_key}"
                 )
                 dataset = cache_data
             else:
@@ -130,9 +134,9 @@ class BaseDataService:
                 new_file_path = f"{directory_path}/{file_name}"
                 new_domain_dataset = self.get_dataset(dataset_name=new_file_path)
             else:
-                raise ValueError(f"Filename for domain doesn't exist")
+                raise ValueError("Filename for domain doesn't exist")
             if self._is_associated_persons(new_domain_dataset):
-                raise ValueError(f"Nested Associated Persons domain reference")
+                raise ValueError("Nested Associated Persons domain reference")
             return self.get_dataset_class(new_domain_dataset, new_file_path, datasets)
         else:
             return None
@@ -146,7 +150,8 @@ class BaseDataService:
 
     def _domain_starts_with(self, domain, variable):
         """
-        Checks if the given dataset-class string starts with a particular variable string.
+        Checks if the given dataset-class string starts with
+         a particular variable string.
         Returns True/False
         """
         return domain.startswith(variable)
@@ -166,3 +171,11 @@ class BaseDataService:
         """
         Reads data from the given path and returns TextIO instance.
         """
+
+    @classmethod
+    @abstractmethod
+    def get_instance(
+        cls, cache_service: CacheServiceInterface, config: ConfigService, **kwargs
+    ):
+        """Provides singleton of data service"""
+        pass
