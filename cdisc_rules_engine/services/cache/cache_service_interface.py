@@ -1,9 +1,11 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 from typing import List
 
 
 class CacheServiceInterface(ABC):
-    def __init__(self):
+    @classmethod
+    @abstractmethod
+    def get_instance(cls, **kwargs) -> "CacheServiceInterface":
         pass
 
     def add(self, cache_key, data):

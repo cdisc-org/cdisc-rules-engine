@@ -1,2 +1,2 @@
-recursive-include resources *.xlsx
-recursive-include resources *.pkl
+recursive-include */resources/* *.xlsx
+recursive-include */resources/* *.pkl
