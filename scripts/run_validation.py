@@ -7,6 +7,10 @@ import time
 from functools import partial
 from multiprocessing import Pool
 from multiprocessing.managers import SyncManager
+
+logging.getLogger("asyncio").disabled = True
+logging.getLogger("xmlschema").disabled = True
+
 from cdisc_rules_engine.config import config
 from cdisc_rules_engine.constants.define_xml_constants import DEFINE_XML_FILE_NAME
 from cdisc_rules_engine.models.dictionaries import (
@@ -31,9 +35,6 @@ from cdisc_rules_engine.services.data_services import (
 from cdisc_rules_engine.utilities.utils import get_rules_cache_key
 from cdisc_rules_engine.models.validation_args import Validation_args
 from cdisc_rules_engine.utilities.report_factory import ReportFactory
-
-logging.getLogger("asyncio").disabled = True
-logging.getLogger("xmlschema").disabled = True
 
 """
 Sync manager used to manage instances of the cache between processes.
