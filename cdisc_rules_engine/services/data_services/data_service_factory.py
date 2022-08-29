@@ -1,3 +1,4 @@
+import os
 from typing import List, Type
 
 from cdisc_rules_engine.config import ConfigService
@@ -42,7 +43,9 @@ class DataServiceFactory(FactoryInterface):
                 config=self.config, cache_service=self.cache_service, **kwargs
             )
         raise ValueError(
-            f"Service name must be in  {list(self._service_map.keys())}, "
-            f"given service name is {service_name}, "
-            f"config value is {self.config.getValue('DATA_SERVICE_TYPE')}"
+            f"Service name must be in {list(self._service_map.keys())}, \n"
+            f"given service name is {service_name}, \n"
+            f"config value is {self.config.getValue('DATA_SERVICE_TYPE')}, \n"
+            f"env value is {os.getenv('DATA_SERVICE_TYPE')} \n"
+            f"config keys: {self.config._config_keys}"
         )
