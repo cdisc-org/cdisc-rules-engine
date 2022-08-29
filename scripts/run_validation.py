@@ -4,15 +4,9 @@ import os
 import pickle
 import time
 import click
-import tqdm
-from collections import namedtuple
 from functools import partial
 from multiprocessing import Pool
 from multiprocessing.managers import SyncManager
-
-logging.getLogger("asyncio").disabled = True
-logging.getLogger("xmlschema").disabled = True
-
 from cdisc_rules_engine.config import config
 from cdisc_rules_engine.constants.define_xml_constants import DEFINE_XML_FILE_NAME
 from cdisc_rules_engine.models.dictionaries import (
@@ -34,9 +28,9 @@ from cdisc_rules_engine.services.data_services import (
     BaseDataService,
     DataServiceFactory,
 )
-from cdisc_rules_engine.utilities.excel_report import ExcelReport
-from cdisc_rules_engine.utilities.excel_writer import excel_workbook_to_stream
 from cdisc_rules_engine.utilities.utils import get_rules_cache_key
+from cdisc_rules_engine.models.validation_args import Validation_args
+from cdisc_rules_engine.utilities.report_factory import ReportFactory
 
 """
 Sync manager used to manage instances of the cache between processes.
@@ -151,8 +145,7 @@ def get_cache_service(manager):
         return manager.InMemoryCacheService()
 
 
-def run_validation(args: namedtuple):
-    logger = logging.getLogger("validator")
+def run_validation(args: Validation_args):
     set_log_level(args.log_level.lower())
     cache_path: str = f"{os.path.dirname(__file__)}/../{args.cache}"
     data_path: str = f"{os.path.dirname(__file__)}/../{args.data}"
@@ -203,19 +196,8 @@ def run_validation(args: namedtuple):
 
     end = time.time()
     elapsed_time = end - start
-    report_template = data_service.read_data(args.report_template, "rb")
-    try:
-        report = ExcelReport(data_path, results, elapsed_time, report_template.read())
-        report_data = report.get_excel_export(
-            args.define_version,
-            args.controlled_terminology_package,
-            args.standard,
-            args.version.replace("-", "."),
-        )
-        with open(args.output, "wb") as f:
-            f.write(excel_workbook_to_stream(report_data))
-    except Exception as e:
-        logger.error(e)
-        raise e
-    finally:
-        report_template.close()
+
+    reporting_service = ReportFactory(
+        data_path, results, elapsed_time, args, data_service
+    ).get_report_service()
+    reporting_service.write_report()
