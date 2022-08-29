@@ -26,7 +26,7 @@ Run `core.py validate --help` to see the list of validation options.
 
 ```
 * -ca, --cache TEXT                          Relative path to cache files containing pre loaded metadata and rules
-* -p, --pool_size INTEGER                    Number of parallel processes for validation
+* -p, --pool-size INTEGER                    Number of parallel processes for validation
 * -d, --data TEXT                            Relative path to directory containing data files
 * -l, --log-level TEXT                       Sets log level for engine logs, logs are disabled by default
 * -rt, --report-template TEXT                File path of report template to use for excel output

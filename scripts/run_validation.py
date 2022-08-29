@@ -170,7 +170,7 @@ def run_validation(args: Validation_args):
     start = time.time()
     results = []
 
-    # run each rule in a separate thread
+    # run each rule in a separate process
     with Pool(args.pool_size) as pool:
         if args.disable_progressbar is True:
             for rule_result in pool.imap_unordered(
