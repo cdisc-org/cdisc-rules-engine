@@ -261,6 +261,10 @@ def get_metadata_cache_key(metadata_key: str):
     return f"library/metadata{metadata_key}"
 
 
+def get_meddra_code_term_pairs_cache_key(meddra_path: str) -> str:
+    return f"meddra_valid_code_term_pairs_{meddra_path}"
+
+
 def get_item_index_by_condition(
     lit_of_dicts: List[dict], condition: Callable
 ) -> Optional[int]:
