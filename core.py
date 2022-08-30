@@ -10,6 +10,7 @@ from cdisc_rules_engine.utilities.utils import generate_report_filename
 from cdisc_rules_engine.services.cache.cache_populator_service import CachePopulator
 from cdisc_rules_engine.config import config
 from cdisc_rules_engine.services.cache.cache_service_factory import CacheServiceFactory
+from cdisc_rules_engine.services.cdisc_library_service import CDISCLibraryService
 
 Validation_args = namedtuple(
     "Validation_args",
@@ -150,7 +151,8 @@ def validate(
 @click.pass_context
 def update_cache(ctx: click.Context, cache_path: str, apikey: str):
     cache = CacheServiceFactory(config).get_cache_service()
-    cache_populator = CachePopulator(cache, apikey)
+    library_service = CDISCLibraryService(apikey, cache)
+    cache_populator = CachePopulator(cache, library_service)
     cache = asyncio.run(cache_populator.load_cache_data())
     cache_populator.save_rules_locally(cache_path)
     cache_populator.save_ct_packages_locally(cache_path)

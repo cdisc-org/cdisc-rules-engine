@@ -20,14 +20,15 @@ from cdisc_rules_engine.utilities.utils import (
 
 
 class CachePopulator:
-    def __init__(self, cache: CacheServiceInterface, api_key: str):
-        self.api_key = api_key
+    def __init__(
+        self, cache: CacheServiceInterface, library_service: CDISCLibraryService
+    ):
         self.cache = cache
-        self.library_service = CDISCLibraryService(self.api_key, self.cache)
+        self.library_service = library_service
 
     async def load_cache_data(self):
         """
-        This function populates an in memory cache with all data necessary for running
+        This function populates a cache implementation with all data necessary for running
         rules against local data. Including
         * rules
         * library metadata
@@ -67,6 +68,46 @@ class CachePopulator:
         )
         self.cache.add_batch(variables_metadata, "cache_key", pop_cache_key=True)
         return self.cache
+
+    def save_rules_locally(self, cache_path: str):
+        """
+        Store cached rules in rules.pkl in cache path directory
+        """
+        rules_data = self.cache.filter_cache("rules")
+        with open(f"{cache_path}/rules.pkl", "wb") as f:
+            pickle.dump(rules_data, f)
+
+    def save_ct_packages_locally(self, cache_path: str):
+        """
+        Store cached ct pacakage metadata in codelist_term_maps.pkl in cache path directory
+        """
+        cts = self.cache.get_by_regex(".*ct.*")
+        with open(f"{cache_path}/codelist_term_maps.pkl", "wb") as f:
+            pickle.dump(cts, f)
+
+    def save_variable_codelist_maps_locally(self, cache_path: str):
+        """
+        Store cached variable codelist metadata in variable_codelist_maps.pkl in cache path directory
+        """
+        variable_codelist_maps = self.cache.get_by_regex(".*codelists.*")
+        with open(f"{cache_path}/variable_codelist_maps.pkl", "wb") as f:
+            pickle.dump(variable_codelist_maps, f)
+
+    def save_standards_metadata_locally(self, cache_path: str):
+        """
+        Store cached standards metadata in standards_details.pkl in cache path directory
+        """
+        standards = self.cache.filter_cache("standards")
+        with open(f"{cache_path}/standards_details.pkl", "wb") as f:
+            pickle.dump(standards, f)
+
+    def save_variables_metadata_locally(self, cache_path: str):
+        """
+        Store cached variables metadata in variables_metadata.pkl in cache path directory
+        """
+        variables_metadata = self.cache.filter_cache("library_variables_metadata")
+        with open(f"{cache_path}/variables_metadata.pkl", "wb") as f:
+            pickle.dump(variables_metadata, f)
 
     async def _get_rules_from_cdisc_library(self) -> List[List[dict]]:
         """
@@ -209,43 +250,3 @@ class CachePopulator:
             ),
             **variables_metadata,
         }
-
-    def save_rules_locally(self, cache_path: str):
-        """
-        Store cached rules in rules.pkl in cache path directory
-        """
-        rules_data = self.cache.filter_cache("rules")
-        with open(f"{cache_path}/rules.pkl", "wb") as f:
-            pickle.dump(rules_data, f)
-
-    def save_ct_packages_locally(self, cache_path: str):
-        """
-        Store cached ct pacakage metadata in codelist_term_maps.pkl in cache path directory
-        """
-        cts = self.cache.get_by_regex(".*ct.*")
-        with open(f"{cache_path}/codelist_term_maps.pkl", "wb") as f:
-            pickle.dump(cts, f)
-
-    def save_variable_codelist_maps_locally(self, cache_path: str):
-        """
-        Store cached variable codelist metadata in variable_codelist_maps.pkl in cache path directory
-        """
-        variable_codelist_maps = self.cache.get_by_regex(".*codelists.*")
-        with open(f"{cache_path}/variable_codelist_maps.pkl", "wb") as f:
-            pickle.dump(variable_codelist_maps, f)
-
-    def save_standards_metadata_locally(self, cache_path: str):
-        """
-        Store cached standards metadata in standards_details.pkl in cache path directory
-        """
-        standards = self.cache.filter_cache("standards")
-        with open(f"{cache_path}/standards_details.pkl", "wb") as f:
-            pickle.dump(standards, f)
-
-    def save_variables_metadata_locally(self, cache_path: str):
-        """
-        Store cached variables metadata in variables_metadata.pkl in cache path directory
-        """
-        variables_metadata = self.cache.filter_cache("library_variables_metadata")
-        with open(f"{cache_path}/variables_metadata.pkl", "wb") as f:
-            pickle.dump(variables_metadata, f)
