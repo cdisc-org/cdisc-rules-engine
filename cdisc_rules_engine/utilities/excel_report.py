@@ -1,16 +1,18 @@
+import logging
 from datetime import datetime
 from typing import List, TextIO
-
+from cdisc_rules_engine.models.validation_args import Validation_args
+from cdisc_rules_engine.utilities.excel_writer import excel_workbook_to_stream
 from openpyxl import Workbook
-
 from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
 from cdisc_rules_engine.utilities.excel_writer import (
     excel_open_workbook,
     excel_update_worksheet,
 )
+from cdisc_rules_engine.utilities.base_report import BaseReport
 
 
-class ExcelReport:
+class ExcelReport(BaseReport):
     """
     Generates an excel report for a given set of validation results.
     """
@@ -20,128 +22,15 @@ class ExcelReport:
         data_path: str,
         validation_results: List[RuleValidationResult],
         elapsed_time: float,
-        report_template: TextIO,
+        args: Validation_args,
+        template: TextIO,
     ):
-        self._data_path: str = data_path
-        self._elapsed_time: int = elapsed_time
-        self._results: List[RuleValidationResult] = validation_results
-        self._template: TextIO = report_template
+        super().__init__(data_path, validation_results, elapsed_time, args)
+        self._template = template
+        self._item_type = "list"
 
-    def get_summary_data(self) -> List[List]:
-        """
-        Generates the Issue Summary data that goes into the excel export.
-        Each row is represented by a list containing the following information:
-        return [
-            "Dataset",
-            "RuleID",
-            "Message",
-            "Severity",
-            "Issues",
-            "Explanation"
-        ]
-        """
-        summary_data = []
-        for validation_result in self._results:
-            if validation_result.execution_status == "success":
-                for result in validation_result.results or []:
-                    dataset = result.get("domain")
-                    if (
-                        result.get("errors")
-                        and result.get("executionStatus") == "success"
-                    ):
-                        summary_data.extend(
-                            [
-                                [
-                                    dataset,
-                                    validation_result.id,  # rule id
-                                    result.get("message"),
-                                    validation_result.severity,
-                                    len(result.get("errors")),
-                                ]
-                            ]
-                        )
-        return sorted(summary_data, key=lambda x: (x[0], x[1]))
-
-    def get_detailed_data(self) -> List[List]:
-        detailed_data = []
-        for validation_result in self._results:
-            detailed_data = detailed_data + self._generate_error_details(
-                validation_result
-            )
-        return sorted(detailed_data, key=lambda x: (x[0], x[3]))
-
-    def _generate_error_details(self, validation_result) -> List[List]:
-        """
-        Generates the Issue details data that goes into the excel export.
-        Each row is represented by a list containing the following information:
-        return [
-            "RuleID",
-            "Message",
-            "Severity",
-            "Dataset",
-            "USUBJID",
-            "Record",
-            "Sequence",
-            "Variable(s)",
-            "Value(s)"
-        ]
-        """
-        errors = []
-        for result in validation_result.results or []:
-            if result.get("errors", []) and result.get("executionStatus") == "success":
-                variables = result.get("variables", [])
-                errors = errors + [
-                    [
-                        validation_result.id,
-                        result.get("message"),
-                        validation_result.severity,
-                        result.get("domain"),
-                        error.get("uSubjId", ""),
-                        error.get("row", ""),
-                        error.get("seq", ""),
-                        ", ".join(variables),
-                        ", ".join(
-                            [
-                                str(error.get("value", {}).get(variable))
-                                for variable in variables
-                            ]
-                        ),
-                    ]
-                    for error in result.get("errors")
-                ]
-        return errors
-
-    def get_rules_report_data(self) -> List[List]:
-        """
-        Generates the rules report data that goes into the excel export.
-        Each row is represented by a list containing the following information:
-        [
-            "RuleID",
-            "Version",
-            "Message",
-            "Status"
-        ]
-        """
-        rules_report = []
-        for validation_result in self._results:
-            rules_report.append(
-                [
-                    validation_result.id,
-                    "1",
-                    validation_result.message,
-                    "SUCCESS"
-                    if validation_result.execution_status == "success"
-                    else "SKIPPED",
-                ]
-            )
-        return sorted(rules_report, key=lambda x: x[0])
-
-    def get_excel_export(self, define_version, cdiscCt, standard, version) -> Workbook:
-        """
-        Populates the excel workbook template found in the file "CORE-Report-Template.xlsx" with
-        data from validation results
-        """
-        wb = excel_open_workbook(self._template)
+    def get_export(self, define_version, cdiscCt, standard, version) -> Workbook:
+        wb = excel_open_workbook(self._template.read())
         summary_data = self.get_summary_data()
         detailed_data = self.get_detailed_data()
         rules_report_data = self.get_rules_report_data()
@@ -162,3 +51,21 @@ class ExcelReport:
         wb["Conformance Details"]["B10"] = ", ".join(cdiscCt)
         wb["Conformance Details"]["B11"] = define_version
         return wb
+
+    def write_report(self):
+        output_name = self._args.output + "." + self._args.output_format.lower()
+        logger = logging.getLogger("validator")
+        try:
+            report_data = self.get_export(
+                self._args.define_version,
+                self._args.controlled_terminology_package,
+                self._args.standard,
+                self._args.version.replace("-", "."),
+            )
+            with open(output_name, "wb") as f:
+                f.write(excel_workbook_to_stream(report_data))
+        except Exception as e:
+            logger.error(e)
+            raise e
+        finally:
+            self._template.close()
