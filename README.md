@@ -2,8 +2,8 @@
 Open source offering of the cdisc rules engine
 
 ### Code formatter
-This project uses the `black` code formatter for python.
-It also uses `pre-commit` to run `black` when you commit.
+This project uses the `black` code formatter and `flake8` linter for python.
+It also uses `pre-commit` to run `black` and `flake8` when you commit.
 Both dependencies are added to *requirements.txt*.
 
 **Required**

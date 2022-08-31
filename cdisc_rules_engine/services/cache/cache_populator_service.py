@@ -1,6 +1,5 @@
 import asyncio
 import pickle
-from datetime import datetime, timedelta
 from functools import partial
 from typing import Iterable, List, Optional
 
@@ -16,6 +15,7 @@ from cdisc_rules_engine.services.cdisc_library_service import CDISCLibraryServic
 from cdisc_rules_engine.utilities.utils import (
     get_library_variables_metadata_cache_key,
     get_standard_details_cache_key,
+    get_model_details_cache_key,
 )
 
 
@@ -28,8 +28,8 @@ class CachePopulator:
 
     async def load_cache_data(self):
         """
-        This function populates a cache implementation with all data necessary for running
-        rules against local data. Including
+        This function populates a cache implementation with all data
+        necessary for running rules against local data. Including
         * rules
         * library metadata
         * codelist metadata
@@ -62,11 +62,18 @@ class CachePopulator:
         )
         self.cache.add_batch(standards_details, "cache_key", pop_cache_key=True)
 
+        # save details of all standard's models to cache
+        standards_models: Iterable[
+            dict
+        ] = await self._async_get_details_of_all_standards_models(standards_details)
+        self.cache.add_batch(standards_models, "cache_key", pop_cache_key=True)
+
         # save variables metadata to cache
         variables_metadata: Iterable[dict] = await self._get_variables_metadata(
             standards
         )
         self.cache.add_batch(variables_metadata, "cache_key", pop_cache_key=True)
+
         return self.cache
 
     def save_rules_locally(self, cache_path: str):
@@ -79,7 +86,8 @@ class CachePopulator:
 
     def save_ct_packages_locally(self, cache_path: str):
         """
-        Store cached ct pacakage metadata in codelist_term_maps.pkl in cache path directory
+        Store cached ct pacakage metadata in
+        codelist_term_maps.pkl in cache path directory
         """
         cts = self.cache.get_by_regex(".*ct.*")
         with open(f"{cache_path}/codelist_term_maps.pkl", "wb") as f:
@@ -87,7 +95,8 @@ class CachePopulator:
 
     def save_variable_codelist_maps_locally(self, cache_path: str):
         """
-        Store cached variable codelist metadata in variable_codelist_maps.pkl in cache path directory
+        Store cached variable codelist metadata in
+        variable_codelist_maps.pkl in cache path directory
         """
         variable_codelist_maps = self.cache.get_by_regex(".*codelists.*")
         with open(f"{cache_path}/variable_codelist_maps.pkl", "wb") as f:
@@ -103,7 +112,8 @@ class CachePopulator:
 
     def save_variables_metadata_locally(self, cache_path: str):
         """
-        Store cached variables metadata in variables_metadata.pkl in cache path directory
+        Store cached variables metadata in
+        variables_metadata.pkl in cache path directory
         """
         variables_metadata = self.cache.filter_cache("library_variables_metadata")
         with open(f"{cache_path}/variables_metadata.pkl", "wb") as f:
@@ -122,9 +132,9 @@ class CachePopulator:
         return rules
 
     async def _async_get_rules_by_catalog(self, catalog_link: str) -> List[dict]:
-        loop = asyncio.get_event_loop()
         standard = catalog_link.split("/")[-2]
         standard_version = catalog_link.split("/")[-1]
+        loop = asyncio.get_event_loop()
         rules: dict = await loop.run_in_executor(
             None, self.library_service.get_rules_by_catalog, standard, standard_version
         )
@@ -132,7 +142,8 @@ class CachePopulator:
 
     async def _get_codelist_term_maps(self) -> List[dict]:
         """
-        For each CT package in CDISC library, generate a map of codelist to codelist term. Ex:
+        For each CT package in CDISC library,
+        generate a map of codelist to codelist term. Ex:
         {
             "package": "sdtmct-2021-12-17"
             "C123": {
@@ -212,6 +223,36 @@ class CachePopulator:
         )
         return standard_details
 
+    async def _async_get_details_of_all_standards_models(
+        self, standards_details: List[dict]
+    ) -> Iterable[dict]:
+        """
+        Returns a list of dicts containing model metadata for each standard.
+        """
+        coroutines = [
+            self._async_get_details_of_standard_model(standard)
+            for standard in standards_details
+        ]
+        standards_models: Iterable[dict] = asyncio.gather(*coroutines)
+        return filter(lambda item: item is not None, standards_models)
+
+    async def _async_get_details_of_standard_model(
+        self, standard_details: dict
+    ) -> Optional[dict]:
+        """
+        Returns details of a standard model as a dictionary.
+        """
+        loop = asyncio.get_event_loop()
+        model: Optional[dict] = await loop.run_in_executor(
+            None, self.library_service.get_model_details, standard_details
+        )
+        if not model:
+            return
+        model["cache_key"] = get_model_details_cache_key(
+            model["standard_type"], model["version"]
+        )
+        return model
+
     async def _get_variables_metadata(self, standards: List[dict]) -> Iterable[dict]:
         """
         Returns a list of dicts of variables metadata for each standard.
@@ -232,8 +273,8 @@ class CachePopulator:
         """
         Returns variables metadata for a given standard.
         """
-        loop = asyncio.get_event_loop()
         try:
+            loop = asyncio.get_event_loop()
             variables_metadata: dict = await loop.run_in_executor(
                 None,
                 partial(
