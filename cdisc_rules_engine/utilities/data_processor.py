@@ -32,7 +32,7 @@ from cdisc_rules_engine.utilities.utils import (
     is_split_dataset,
     search_in_list_of_dicts,
     get_meddra_code_term_pairs_cache_key,
-    get_standard_details_cache_key,
+    get_model_details_cache_key,
 )
 
 
@@ -385,13 +385,13 @@ class DataProcessor:
         Gets metadata for the given class and domain from cache.
         The cache stores CDISC Library metadata.
         """
-        standard_details: dict = (
-            self.cache.get(get_standard_details_cache_key(standard, standard_version))
+        model_details: dict = (
+            self.cache.get(get_model_details_cache_key(standard, standard_version))
             or {}
         )
         class_metadata: dict = (
             search_in_list_of_dicts(
-                standard_details.get("classes"),
+                model_details.get("classes"),
                 lambda item: item["name"] == dataset_class,
             )
             or {}
