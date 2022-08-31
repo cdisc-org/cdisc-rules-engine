@@ -254,7 +254,9 @@ class CDISCLibraryService:
         standard_href: List[str] = model["href"].split("/")
         standard_type: str = standard_href[-2]
         model_version: str = standard_href[-1]
-        return self.get_standard_details(standard_type, model_version)
+        model_data: dict = self._get_model(standard_type, model_version)
+        model_data["standard_type"] = standard_type
+        return model_data
 
     def _get_standard(self, standard_type: str, version: str) -> dict:
         """
@@ -269,6 +271,21 @@ class CDISCLibraryService:
         }
         function_to_call: Callable = standard_get_function_map.get(
             standard_type, self._client.get_sdtmig
+        )
+        return function_to_call()
+
+    def _get_model(self, standard_type: str, model_version: str) -> dict:
+        """
+        Requests a model definition from the library.
+        Internal method, not for usage in the client code.
+        """
+        standard_get_function_map = {
+            "sdtm": partial(self._client.get_sdtm, model_version),
+            "adam": partial(self._client.get_adam, model_version),
+            "cdash": partial(self._client.get_cdash, model_version),
+        }
+        function_to_call: Callable = standard_get_function_map.get(
+            standard_type, self._client.get_sdtm
         )
         return function_to_call()
 

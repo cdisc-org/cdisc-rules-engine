@@ -233,7 +233,7 @@ class CachePopulator:
             self._async_get_details_of_standard_model(standard)
             for standard in standards_details
         ]
-        standards_models: Iterable[dict] = asyncio.gather(*coroutines)
+        standards_models: Iterable[dict] = await asyncio.gather(*coroutines)
         return filter(lambda item: item is not None, standards_models)
 
     async def _async_get_details_of_standard_model(
