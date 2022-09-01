@@ -132,9 +132,9 @@ class CachePopulator:
         return rules
 
     async def _async_get_rules_by_catalog(self, catalog_link: str) -> List[dict]:
+        loop = asyncio.get_event_loop()
         standard = catalog_link.split("/")[-2]
         standard_version = catalog_link.split("/")[-1]
-        loop = asyncio.get_event_loop()
         rules: dict = await loop.run_in_executor(
             None, self.library_service.get_rules_by_catalog, standard, standard_version
         )
@@ -273,8 +273,8 @@ class CachePopulator:
         """
         Returns variables metadata for a given standard.
         """
+        loop = asyncio.get_event_loop()
         try:
-            loop = asyncio.get_event_loop()
             variables_metadata: dict = await loop.run_in_executor(
                 None,
                 partial(

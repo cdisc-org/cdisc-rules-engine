@@ -285,7 +285,7 @@ class CDISCLibraryService:
             "cdash": partial(self._client.get_cdash, model_version),
         }
         function_to_call: Callable = standard_get_function_map.get(
-            standard_type, self._client.get_sdtm
+            standard_type, partial(self._client.get_sdtm, model_version)
         )
         return function_to_call()
 
