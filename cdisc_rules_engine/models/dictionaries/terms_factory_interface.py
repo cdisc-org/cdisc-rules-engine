@@ -22,3 +22,7 @@ class TermsFactoryInterface(ABC):
         """
         Accepts file contents and saves it to the DB.
         """
+
+    @abstractmethod
+    def parse_terms_dictionary(self, file_name: str, file_contents: bytes) -> dict:
+        """Accept file content and return collection of terms"""

@@ -1,11 +1,11 @@
 import os
 from collections import defaultdict
+from io import BytesIO
 
 from cdisc_rules_engine.models.dictionaries import TermsFactoryInterface
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.services.data_services import BaseDataService
-from cdisc_rules_engine.utilities.utils import get_dictionary_path
-
+from cdisc_rules_engine.utilities.utils import get_dictionary_path, decode_line
 from .atc_classification import AtcClassification
 from .atc_text import AtcText
 from .base_whodrug_term import BaseWhoDrugTerm
@@ -47,34 +47,35 @@ class WhoDrugTermsFactory(TermsFactoryInterface):
         code_to_term_map = defaultdict(list)
 
         # for each whodrug file in the directory:
-        for dictionary_filename in self.__file_name_model_map:
+        for file_name in self.__file_name_model_map:
             # check if the file exists
-            file_path: str = get_dictionary_path(directory_path, dictionary_filename)
+            file_path: str = get_dictionary_path(directory_path, file_name)
             if not os.path.exists(file_path):
                 logger.warning(
-                    f"File {dictionary_filename} does not exist in directory {directory_path}"
+                    f"File {file_name} does not exist in directory {directory_path}"
                 )
                 continue
 
             # create term objects
-            self.__create_term_objects_from_file(
-                code_to_term_map, dictionary_filename, file_path
-            )
+            file_data = self.__data_service.read_data(file_path, read_mode="rb").read()
+            res = self.parse_terms_dictionary(file_name, file_data)
+            code_to_term_map.update(res)
 
         return code_to_term_map
 
-    def __create_term_objects_from_file(
-        self, code_to_term_map: defaultdict, dictionary_filename: str, file_path: str
-    ):
-        """
-        Creates a list of term objects for each line of the file.
-        code_to_term_map is changed by reference.
-        """
-        model_class: BaseWhoDrugTerm = self.__file_name_model_map[dictionary_filename]
+    def parse_terms_dictionary(
+        self, file_name: str, file_contents: bytes, **kwargs
+    ) -> dict:
+        """Create terms from single file data"""
+        model_class: BaseWhoDrugTerm = self.__file_name_model_map[file_name]
+        io_data = BytesIO(file_contents)
+        terms = self.__create_term_objects(model_class, io_data)
+        return terms
 
-        # open a file
-        with self.__data_service.read_data(file_path) as file:
-            # create a term object for each line and append it to the mapping
-            for line in file:
-                term_obj: BaseWhoDrugTerm = model_class.from_txt_line(line)
-                code_to_term_map[term_obj.type].append(term_obj)
+    @staticmethod
+    def __create_term_objects(model_class: BaseWhoDrugTerm, file_data: BytesIO):
+        code_to_term_map = defaultdict(list)
+        for line in file_data:
+            term_obj: BaseWhoDrugTerm = model_class.from_txt_line(decode_line(line))
+            code_to_term_map[term_obj.type].append(term_obj)
+        return code_to_term_map

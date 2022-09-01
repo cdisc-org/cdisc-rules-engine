@@ -1,10 +1,6 @@
-import asyncio
 from io import BytesIO
-from typing import List
-from uuid import uuid4
 
 from cdisc_rules_engine.exceptions.custom_exceptions import MissingDataError
-from cdisc_rules_engine.models.dictionaries.dictionary_types import DictionaryTypes
 from cdisc_rules_engine.models.dictionaries.meddra.meddra_file_names import (
     MeddraFileNames,
 )
@@ -201,3 +197,6 @@ class MedDRATermsFactory(TermsFactoryInterface):
                 "termHierarchy": values[1],
             }
         )
+
+    def parse_terms_dictionary(self, file_name: str, file_contents: bytes) -> dict:
+        pass
