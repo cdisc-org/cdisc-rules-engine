@@ -12,6 +12,7 @@ from cdisc_rules_engine.services.cache.in_memory_cache_service import (
 )
 from cdisc_rules_engine.services.data_services import LocalDataService
 from cdisc_rules_engine.utilities.data_processor import DataProcessor
+from cdisc_rules_engine.utilities.utils import get_model_details_cache_key
 
 
 @pytest.mark.parametrize(
@@ -605,9 +606,12 @@ def test_get_column_order_from_library(operation_params: OperationParams):
         }
     )
     operation_params.domain = "AE"
+    operation_params.standard = "sdtm"
+    operation_params.standard_version = "3-4"
 
-    cache_mock = MagicMock()
-    cache_mock.get = lambda cache_key: {
+    # save model metadata to cache
+    cache = InMemoryCacheService.get_instance()
+    cache_data: dict = {
         "classes": [
             {
                 "name": "Events",
@@ -637,9 +641,14 @@ def test_get_column_order_from_library(operation_params: OperationParams):
             }
         ]
     }
-
-    data_service = LocalDataService.get_instance(cache_service=cache_mock)
-    data_processor = DataProcessor(data_service=data_service, cache=cache_mock)
+    cache.add(
+        get_model_details_cache_key(
+            operation_params.standard, operation_params.standard_version
+        ),
+        cache_data,
+    )
+    data_service = LocalDataService.get_instance(cache_service=cache)
+    data_processor = DataProcessor(data_service=data_service, cache=cache)
     result: pd.Series = data_processor.get_column_order_from_library(operation_params)
     expected: pd.Series = pd.Series(
         [
