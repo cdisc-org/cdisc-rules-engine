@@ -246,7 +246,21 @@ class CDISCLibraryService:
 
     def get_model_details(self, standard_details: dict) -> Optional[dict]:
         """
-        Gets details of a standard model, the model itself is also a standard.
+        Gets details of a standard model:
+
+        {
+           "_links":{...},
+           "classes":[...],
+           "datasets":[...],
+           "description":"This is Version 2.0 of the Study ...",
+           "effectiveDate":"2021-11-29",
+           "label":"Study Data Tabulation Model Version 2.0",
+           "name":"SDTM v2.0",
+           "registrationStatus":"Final",
+           "source":"Prepared by the CDISC Submission Data Standards Team",
+           "version":"2-0",
+           "standard_type":"sdtm"
+        }
         """
         model: Optional[dict] = standard_details.get("_links", {}).get("model")
         if not model:
