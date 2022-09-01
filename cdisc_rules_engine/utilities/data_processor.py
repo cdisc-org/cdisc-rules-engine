@@ -201,22 +201,16 @@ class DataProcessor:
             params.dataframe, params.dataset_path, params.datasets
         )
 
-        # get metadata for this class and domain from the cache
-        domain_metadata: Optional[dict] = self._get_metadata_for_class_and_domain(
+        # get variables metadata from the standard model
+        variables_metadata: List[
+            dict
+        ] = self._get_variables_metadata_from_standard_model(
             dataset_class, params.domain, params.standard, params.standard_version
         )
-        if not domain_metadata:
-            raise ValueError(
-                f"Metadata for the following details is not found in CDISC Library: "
-                f"standard={params.standard}, version={params.standard_version}, "
-                f"class={dataset_class}, domain={params.domain}"
-            )
 
         # create a list of variable names in accordance to the "ordinal" key
-        domain_metadata["datasetVariables"].sort(key=lambda item: item["ordinal"])
-        variable_names_list = [
-            var["name"] for var in domain_metadata["datasetVariables"]
-        ]
+        variables_metadata.sort(key=lambda item: item["ordinal"])
+        variable_names_list = [var["name"] for var in variables_metadata]
         return pd.Series([variable_names_list] * len(params.dataframe))
 
     def valid_meddra_code_references(self, params: OperationParams) -> pd.Series:
@@ -378,28 +372,57 @@ class DataProcessor:
         }
         return variable_pair_map.get(params.target)
 
-    def _get_metadata_for_class_and_domain(
+    def _get_variables_metadata_from_standard_model(
         self, dataset_class: str, domain: str, standard: str, standard_version: str
-    ) -> Optional[dict]:
+    ) -> List[dict]:
         """
-        Gets metadata for the given class and domain from cache.
+        Gets variables metadata for the given class and domain from cache.
         The cache stores CDISC Library metadata.
+
+        Return example:
+        [
+            {
+               "label":"Study Identifier",
+               "name":"STUDYID",
+               "ordinal":"1",
+               "role":"Identifier",
+               ...
+            },
+            {
+               "label":"Domain Abbreviation",
+               "name":"DOMAIN",
+               "ordinal":"2",
+               "role":"Identifier"
+            },
+            ...
+        ]
         """
-        model_details: dict = (
-            self.cache.get(get_model_details_cache_key(standard, standard_version))
-            or {}
+        # get model details from cache
+        cache_key: str = get_model_details_cache_key(standard, standard_version)
+        model_details: dict = self.cache.get(cache_key) or {}
+
+        domain_details: Optional[dict] = search_in_list_of_dicts(
+            model_details.get("datasets", []),
+            lambda item: item["name"] == domain,
         )
-        class_metadata: dict = (
-            search_in_list_of_dicts(
-                model_details.get("classes"),
+        if domain_details:
+            # if model describes the domain -> get metadata from the model domain
+            variables_metadata: List[dict] = domain_details["datasetVariables"]
+        else:
+            # else -> get variables metadata from the model class
+            class_metadata: Optional[dict] = search_in_list_of_dicts(
+                model_details.get("classes", []),
                 lambda item: item["name"] == dataset_class,
             )
-            or {}
-        )
-        current_domain_metadata: dict = search_in_list_of_dicts(
-            class_metadata.get("datasets", []), lambda item: item["name"] == domain
-        )
-        return current_domain_metadata
+            if not class_metadata:
+                raise ValueError(
+                    f"Variables metadata is not found in CDISC Library. "
+                    f"standard={standard}, version={standard_version}, "
+                    f"class={dataset_class}, domain={domain}"
+                )
+            variables_metadata: List[dict] = class_metadata["classVariables"]
+
+        return variables_metadata
 
     @staticmethod
     async def get_dataset_variables(study_path, dataset, data_service) -> Set:

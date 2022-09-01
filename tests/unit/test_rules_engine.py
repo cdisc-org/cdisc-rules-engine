@@ -2410,30 +2410,25 @@ def test_validate_variables_order_against_library_metadata(
         "classes": [
             {
                 "name": "Events",
-                "datasets": [
+                "classVariables": [
                     {
-                        "name": "AE",
-                        "datasetVariables": [
-                            {
-                                "name": "STUDYID",
-                                "ordinal": 1,
-                            },
-                            {
-                                "name": "DOMAIN",
-                                "ordinal": 2,
-                            },
-                            {
-                                "name": "AESEQ",
-                                "ordinal": 3,
-                            },
-                            {
-                                "name": "AETERM",
-                                "ordinal": 4,
-                            },
-                        ],
-                    }
+                        "name": "DOMAIN",
+                        "ordinal": 2,
+                    },
+                    {
+                        "name": "STUDYID",
+                        "ordinal": 1,
+                    },
+                    {
+                        "name": "AETERM",
+                        "ordinal": 4,
+                    },
+                    {
+                        "name": "AESEQ",
+                        "ordinal": 3,
+                    },
                 ],
-            }
+            },
         ]
     }
     cache.add(get_model_details_cache_key(standard, standard_version), cache_data)

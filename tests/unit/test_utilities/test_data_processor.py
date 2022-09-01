@@ -586,7 +586,64 @@ def test_get_column_order_from_dataset(operation_params: OperationParams):
     assert result.equals(expected)
 
 
-def test_get_column_order_from_library(operation_params: OperationParams):
+@pytest.mark.parametrize(
+    "model_metadata",
+    [
+        {
+            "datasets": [
+                {
+                    "name": "AE",
+                    "datasetVariables": [
+                        {
+                            "name": "DOMAIN",
+                            "ordinal": 2,
+                        },
+                        {
+                            "name": "STUDYID",
+                            "ordinal": 1,
+                        },
+                        {
+                            "name": "AETERM",
+                            "ordinal": 4,
+                        },
+                        {
+                            "name": "AESEQ",
+                            "ordinal": 3,
+                        },
+                    ],
+                }
+            ],
+        },
+        {
+            "classes": [
+                {
+                    "name": "Events",
+                    "classVariables": [
+                        {
+                            "name": "DOMAIN",
+                            "ordinal": 2,
+                        },
+                        {
+                            "name": "STUDYID",
+                            "ordinal": 1,
+                        },
+                        {
+                            "name": "AETERM",
+                            "ordinal": 4,
+                        },
+                        {
+                            "name": "AESEQ",
+                            "ordinal": 3,
+                        },
+                    ],
+                },
+            ],
+        },
+    ],
+)
+def test_get_column_order_from_library(
+    operation_params: OperationParams, model_metadata: dict
+):
     """
     Unit test for DataProcessor.get_column_order_from_library.
     Mocks cache call to return metadata.
@@ -611,65 +668,28 @@ def test_get_column_order_from_library(operation_params: OperationParams):
 
     # save model metadata to cache
     cache = InMemoryCacheService.get_instance()
-    cache_data: dict = {
-        "classes": [
-            {
-                "name": "Events",
-                "datasets": [
-                    {
-                        "name": operation_params.domain,
-                        "datasetVariables": [
-                            {
-                                "name": "DOMAIN",
-                                "ordinal": 2,
-                            },
-                            {
-                                "name": "STUDYID",
-                                "ordinal": 1,
-                            },
-                            {
-                                "name": "AETERM",
-                                "ordinal": 4,
-                            },
-                            {
-                                "name": "AESEQ",
-                                "ordinal": 3,
-                            },
-                        ],
-                    }
-                ],
-            }
-        ]
-    }
     cache.add(
         get_model_details_cache_key(
             operation_params.standard, operation_params.standard_version
         ),
-        cache_data,
+        model_metadata,
     )
+
+    # execute operation
     data_service = LocalDataService.get_instance(cache_service=cache)
     data_processor = DataProcessor(data_service=data_service, cache=cache)
     result: pd.Series = data_processor.get_column_order_from_library(operation_params)
+    variables: List[str] = [
+        "STUDYID",
+        "DOMAIN",
+        "AESEQ",
+        "AETERM",
+    ]
     expected: pd.Series = pd.Series(
         [
-            [
-                "STUDYID",
-                "DOMAIN",
-                "AESEQ",
-                "AETERM",
-            ],
-            [
-                "STUDYID",
-                "DOMAIN",
-                "AESEQ",
-                "AETERM",
-            ],
-            [
-                "STUDYID",
-                "DOMAIN",
-                "AESEQ",
-                "AETERM",
-            ],
+            variables,
+            variables,
+            variables,
         ]
     )
     assert result.equals(expected)
