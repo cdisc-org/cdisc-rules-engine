@@ -27,7 +27,7 @@ class AbstractTermsFactory(FactoryInterface):
             raise TypeError("Implementation of TermsFactoryInterface required!")
         cls._service_map[name] = service
 
-    def get_service(self, name: str, **kwargs):
+    def get_service(self, name: str, **kwargs) -> TermsFactoryInterface:
         if name not in self._service_map:
             raise ValueError(
                 f"Service name must be in  {list(self._service_map.keys())}, "
