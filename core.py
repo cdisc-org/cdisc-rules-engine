@@ -174,6 +174,7 @@ def update_cache(ctx: click.Context, cache_path: str, apikey: str):
     cache_populator.save_rules_locally(cache_path)
     cache_populator.save_ct_packages_locally(cache_path)
     cache_populator.save_standards_metadata_locally(cache_path)
+    cache_populator.save_standards_models_locally(cache_path)
     cache_populator.save_variable_codelist_maps_locally(cache_path)
     cache_populator.save_variables_metadata_locally(cache_path)
 

@@ -110,6 +110,15 @@ class CachePopulator:
         with open(f"{cache_path}/standards_details.pkl", "wb") as f:
             pickle.dump(standards, f)
 
+    def save_standards_models_locally(self, cache_path: str):
+        """
+        Store cached standards models metadata in
+        standards_models.pkl in cache path directory
+        """
+        standards_models = self.cache.filter_cache("models")
+        with open(f"{cache_path}/standards_models.pkl", "wb") as f:
+            pickle.dump(standards_models, f)
+
     def save_variables_metadata_locally(self, cache_path: str):
         """
         Store cached variables metadata in
