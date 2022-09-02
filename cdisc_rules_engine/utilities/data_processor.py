@@ -210,7 +210,9 @@ class DataProcessor:
 
         # create a list of variable names in accordance to the "ordinal" key
         variables_metadata.sort(key=lambda item: item["ordinal"])
-        variable_names_list = [var["name"] for var in variables_metadata]
+        variable_names_list = [
+            var["name"].replace("--", params.domain) for var in variables_metadata
+        ]
         return pd.Series([variable_names_list] * len(params.dataframe))
 
     def valid_meddra_code_references(self, params: OperationParams) -> pd.Series:
