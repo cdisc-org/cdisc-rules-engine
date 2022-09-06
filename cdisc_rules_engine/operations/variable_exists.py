@@ -1,10 +1,7 @@
-import pandas as pd
-from cdisc_rules_engine.operations.operation_interface import OperationInterface
+from cdisc_rules_engine.operations.base_operation import BaseOperation
 
 
-class VariableExists(OperationInterface):
-    def execute(self) -> pd.DataFrame:
+class VariableExists(BaseOperation):
+    def _execute_operation(self):
         # get metadata
-        return self._handle_operation_result(
-            self.params.target in self.params.dataframe
-        )
+        return self.params.target in self.params.dataframe

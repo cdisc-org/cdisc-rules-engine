@@ -1,5 +1,5 @@
 from cdisc_rules_engine.config.config import ConfigService
-from cdisc_rules_engine.operations.valide_whodrug_references import (
+from cdisc_rules_engine.operations.valid_whodrug_references import (
     ValidWhodrugReferences,
 )
 from cdisc_rules_engine.models.operation_params import OperationParams

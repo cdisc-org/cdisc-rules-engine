@@ -1,6 +1,6 @@
 import pandas as pd
 from cdisc_rules_engine.models.operation_params import OperationParams
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
 from cdisc_rules_engine.services.cache.cache_service_interface import (
     CacheServiceInterface,
@@ -8,23 +8,27 @@ from cdisc_rules_engine.services.cache.cache_service_interface import (
 from cdisc_rules_engine.services.data_services.base_data_service import BaseDataService
 
 
-class OperationInterface(ABC):
+class BaseOperation:
     def __init__(
         self,
         params: OperationParams,
-        dataset: pd.DataFrame,
+        original_dataset: pd.DataFrame,
         cache_service: CacheServiceInterface,
         data_service: BaseDataService,
     ):
         self.params = params
         self.cache = cache_service
         self.data_service = data_service
-        self.evaluation_dataset = dataset
+        self.evaluation_dataset = original_dataset
 
     @abstractmethod
-    def execute(self) -> pd.DataFrame:
+    def _execute_operation(self):
         """Perform operation calculations."""
         pass
+
+    def execute(self) -> pd.DataFrame:
+        result = self._execute_operation()
+        return self._handle_operation_result(result)
 
     def _handle_operation_result(self, result) -> pd.DataFrame:
         if self.params.grouping:

@@ -1,5 +1,4 @@
-import pandas as pd
-from cdisc_rules_engine.operations.operation_interface import OperationInterface
+from cdisc_rules_engine.operations.base_operation import BaseOperation
 from uuid import uuid4
 from cdisc_rules_engine.models.dictionaries.meddra.meddra_variables import (
     MedDRAVariables,
@@ -10,8 +9,8 @@ from cdisc_rules_engine.utilities.utils import get_meddra_code_term_pairs_cache_
 from typing import Optional, Tuple
 
 
-class ValidMeddraCodeTermPairs(OperationInterface):
-    def execute(self) -> pd.DataFrame:
+class ValidMeddraCodeTermPairs(BaseOperation):
+    def _execute_operation(self):
         # get metadata
         if not self.params.meddra_path:
             raise ValueError("Can't execute the operation, no meddra path provided")
@@ -30,7 +29,7 @@ class ValidMeddraCodeTermPairs(OperationInterface):
             )
         )
         result = self.params.dataframe[column].isin(valid_code_term_pairs[term_type])
-        return self._handle_operation_result(result)
+        return result
 
     def _get_columns_by_meddra_variable_name(
         self,

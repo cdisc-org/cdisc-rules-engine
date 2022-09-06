@@ -1,12 +1,11 @@
-import pandas as pd
-from cdisc_rules_engine.operations.operation_interface import OperationInterface
+from cdisc_rules_engine.operations.base_operation import BaseOperation
 from cdisc_rules_engine.utilities.utils import get_library_variables_metadata_cache_key
 from cdisc_rules_engine.services.cdisc_library_service import CDISCLibraryService
 from cdisc_rules_engine import config
 
 
-class VariableNames(OperationInterface):
-    def execute(self) -> pd.DataFrame:
+class VariableNames(BaseOperation):
+    def _execute_operation(self):
         """
         Return the set of variable names for the given standard
         """
@@ -23,6 +22,4 @@ class VariableNames(OperationInterface):
                     self.params.standard, self.params.standard_version
                 ).keys()
             )
-        return self._handle_operation_result(
-            [variable_names] * len(self.evaluation_dataset)
-        )
+        return [variable_names] * len(self.evaluation_dataset)

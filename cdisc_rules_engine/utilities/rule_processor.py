@@ -289,8 +289,12 @@ class RuleProcessor:
             )
 
         # call the operation
-        operation = operations_factory.get_operation(
-            operation_params, dataset, self.cache, self.data_service
+        operation = operations_factory.get_service(
+            operation_params.operation_name,
+            operation_params=operation_params,
+            original_dataset=dataset,
+            cache=self.cache,
+            data_service=self.data_service,
         )
         result = operation.execute()
         if not DataProcessor.is_dummy_data(self.data_service):

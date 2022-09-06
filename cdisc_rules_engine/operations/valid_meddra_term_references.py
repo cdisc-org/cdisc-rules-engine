@@ -1,5 +1,4 @@
-import pandas as pd
-from cdisc_rules_engine.operations.operation_interface import OperationInterface
+from cdisc_rules_engine.operations.base_operation import BaseOperation
 from uuid import uuid4
 from cdisc_rules_engine.models.dictionaries.meddra.meddra_variables import (
     MedDRAVariables,
@@ -7,8 +6,8 @@ from cdisc_rules_engine.models.dictionaries.meddra.meddra_variables import (
 from cdisc_rules_engine.models.dictionaries.meddra.terms.meddra_term import MedDRATerm
 
 
-class ValidMeddraTermReferences(OperationInterface):
-    def execute(self) -> pd.DataFrame:
+class ValidMeddraTermReferences(BaseOperation):
+    def _execute_operation(self):
         # get metadata
         if not self.params.meddra_path:
             raise ValueError("Can't execute the operation, no meddra path provided")
@@ -33,4 +32,4 @@ class ValidMeddraTermReferences(OperationInterface):
             "/".join, axis=1
         )
         result = self.params.dataframe[column].isin(valid_term_hierarchies)
-        return self._handle_operation_result(result)
+        return result

@@ -1,13 +1,12 @@
-import pandas as pd
-from cdisc_rules_engine.operations.operation_interface import OperationInterface
+from cdisc_rules_engine.operations.base_operation import BaseOperation
 from typing import Generator
 from cdisc_rules_engine.models.dictionaries.whodrug.whodrug_record_types import (
     WhodrugRecordTypes,
 )
 
 
-class ValidWhodrugReferences(OperationInterface):
-    def execute(self) -> pd.DataFrame:
+class ValidWhodrugReferences(BaseOperation):
+    def _execute_operation(self):
         # get metadata
         """
         Checks if a reference to whodrug term points
@@ -21,4 +20,4 @@ class ValidWhodrugReferences(OperationInterface):
             term.code for term in terms[WhodrugRecordTypes.ATC_TEXT.value]
         )
         result = self.params.dataframe[self.params.target].isin(valid_codes)
-        return self._handle_operation_result(result)
+        return result

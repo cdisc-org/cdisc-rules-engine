@@ -1,5 +1,5 @@
 import pandas as pd
-from cdisc_rules_engine.operations.operation_interface import OperationInterface
+from cdisc_rules_engine.operations.base_operation import BaseOperation
 import asyncio
 from collections import Counter
 from typing import List
@@ -9,11 +9,11 @@ from cdisc_rules_engine.utilities.utils import (
 )
 
 
-class VariableValueCount(OperationInterface):
-    def execute(self) -> pd.DataFrame:
+class VariableValueCount(BaseOperation):
+    def _execute_operation(self):
         # get metadata
         variable_value_count = asyncio.run(self._get_all_study_variable_value_counts())
-        return self._handle_operation_result(variable_value_count)
+        return variable_value_count
 
     async def _get_all_study_variable_value_counts(self) -> dict:
         """

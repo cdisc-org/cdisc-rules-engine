@@ -1,10 +1,9 @@
-import pandas as pd
-from cdisc_rules_engine.operations.operation_interface import OperationInterface
+from cdisc_rules_engine.operations.base_operation import BaseOperation
 from datetime import datetime
 
 
-class DY(OperationInterface):
-    def execute(self) -> pd.DataFrame:
+class DY(BaseOperation):
+    def _execute_operation(self):
         dtc_value = self.params.dataframe[self.params.target].map(
             datetime.fromisoformat
         )
@@ -14,4 +13,4 @@ class DY(OperationInterface):
         delta = (dtc_value - rfstdtc_value).map(
             lambda x: x.days if x.days < 0 else x.days + 1
         )
-        return self._handle_operation_result(delta)
+        return delta

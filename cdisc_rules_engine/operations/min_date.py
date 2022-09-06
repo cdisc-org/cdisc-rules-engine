@@ -1,9 +1,9 @@
 import pandas as pd
-from cdisc_rules_engine.operations.operation_interface import OperationInterface
+from cdisc_rules_engine.operations.base_operation import BaseOperation
 
 
-class MinDate(OperationInterface):
-    def execute(self) -> pd.DataFrame:
+class MinDate(BaseOperation):
+    def _execute_operation(self):
         if not self.params.grouping:
             data = pd.to_datetime(self.params.dataframe[self.params.target])
             min_date = data.min()
@@ -15,4 +15,4 @@ class MinDate(OperationInterface):
             result = self.params.dataframe.groupby(
                 self.params.grouping, as_index=False
             ).min()
-        return self._handle_operation_result(result)
+        return result
