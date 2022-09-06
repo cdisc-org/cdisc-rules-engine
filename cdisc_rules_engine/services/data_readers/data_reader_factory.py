@@ -8,7 +8,7 @@ from cdisc_rules_engine.services.factory_interface import FactoryInterface
 
 
 class DataReaderFactory(FactoryInterface):
-    _service_map = {
+    _reader_map = {
         "xpt": XPTReader,
     }
 
@@ -24,16 +24,16 @@ class DataReaderFactory(FactoryInterface):
             raise ValueError("Service name must not be empty!")
         if not issubclass(service, DataReaderInterface):
             raise TypeError("Implementation of DataReaderInterface required!")
-        cls._service_map[name] = service
+        cls._reader_map[name] = service
 
     def get_service(self, name: str = None, **kwargs) -> DataReaderInterface:
         """
         Get instance of service that matches searched implementation
         """
         service_name = name or self._default_service_name
-        if service_name in self._service_map:
-            return self._service_map[service_name]()
+        if service_name in self._reader_map:
+            return self._reader_map[service_name]()
         raise ValueError(
-            f"Service name must be in {list(self._service_map.keys())}, "
+            f"Service name must be in {list(self._reader_map.keys())}, "
             f"given service name is {service_name}"
         )
