@@ -2,8 +2,8 @@ from typing import List, Type
 
 from cdisc_rules_engine.config import ConfigService
 from cdisc_rules_engine.dummy_models.dummy_dataset import DummyDataset
-from cdisc_rules_engine.services.cache import CacheServiceInterface
-from cdisc_rules_engine.services.factory_interface import FactoryInterface
+from cdisc_rules_engine.interfaces import CacheServiceInterface
+from cdisc_rules_engine.interfaces import FactoryInterface
 
 from . import BaseDataService, DummyDataService, LocalDataService
 

@@ -3,7 +3,7 @@ from typing import List
 import pandas as pd
 
 from cdisc_rules_engine.services import logger
-from cdisc_rules_engine.services.cache.cache_service_interface import (
+from cdisc_rules_engine.interfaces import (
     CacheServiceInterface,
 )
 from cdisc_rules_engine.services.data_services import BaseDataService

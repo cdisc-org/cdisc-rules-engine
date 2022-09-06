@@ -16,7 +16,7 @@ from cdisc_rules_engine.models.dictionaries.meddra.terms.term_types import TermT
 from cdisc_rules_engine.models.dictionaries.whodrug import WhodrugRecordTypes
 from cdisc_rules_engine.models.operation_params import OperationParams
 from cdisc_rules_engine.services.cache.cache_service_factory import CacheServiceFactory
-from cdisc_rules_engine.services.cache.cache_service_interface import (
+from cdisc_rules_engine.interfaces import (
     CacheServiceInterface,
 )
 from cdisc_rules_engine.services.cdisc_library_service import CDISCLibraryService
