@@ -1,4 +1,4 @@
-from cdisc_rules_engine.models.representation_interface import RepresentationInterface
+from cdisc_rules_engine.interfaces import RepresentationInterface
 
 
 class BaseValidationEntity(RepresentationInterface):
