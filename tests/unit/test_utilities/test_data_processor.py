@@ -6,6 +6,8 @@ from unittest.mock import MagicMock, patch
 import pandas as pd
 import pytest
 
+from cdisc_rules_engine.constants.classes import GENERAL_OBSERVATIONS_CLASS
+from cdisc_rules_engine.enums.variable_roles import VariableRoles
 from cdisc_rules_engine.models.operation_params import OperationParams
 from cdisc_rules_engine.services.cache.in_memory_cache_service import (
     InMemoryCacheService,
@@ -595,14 +597,6 @@ def test_get_column_order_from_dataset(operation_params: OperationParams):
                     "name": "AE",
                     "datasetVariables": [
                         {
-                            "name": "DOMAIN",
-                            "ordinal": 2,
-                        },
-                        {
-                            "name": "STUDYID",
-                            "ordinal": 1,
-                        },
-                        {
                             "name": "AETERM",
                             "ordinal": 4,
                         },
@@ -613,6 +607,28 @@ def test_get_column_order_from_dataset(operation_params: OperationParams):
                     ],
                 }
             ],
+            "classes": [
+                {
+                    "name": GENERAL_OBSERVATIONS_CLASS,
+                    "classVariables": [
+                        {
+                            "name": "DOMAIN",
+                            "role": VariableRoles.IDENTIFIER.value,
+                            "ordinal": 2,
+                        },
+                        {
+                            "name": "STUDYID",
+                            "role": VariableRoles.IDENTIFIER.value,
+                            "ordinal": 1,
+                        },
+                        {
+                            "name": "TIMING_VAR",
+                            "role": VariableRoles.TIMING.value,
+                            "ordinal": 33,
+                        },
+                    ],
+                },
+            ],
         },
         {
             "classes": [
@@ -620,20 +636,32 @@ def test_get_column_order_from_dataset(operation_params: OperationParams):
                     "name": "Events",
                     "classVariables": [
                         {
-                            "name": "DOMAIN",
-                            "ordinal": 2,
-                        },
-                        {
-                            "name": "STUDYID",
-                            "ordinal": 1,
-                        },
-                        {
                             "name": "AETERM",
                             "ordinal": 4,
                         },
                         {
                             "name": "AESEQ",
                             "ordinal": 3,
+                        },
+                    ],
+                },
+                {
+                    "name": GENERAL_OBSERVATIONS_CLASS,
+                    "classVariables": [
+                        {
+                            "name": "DOMAIN",
+                            "role": VariableRoles.IDENTIFIER.value,
+                            "ordinal": 2,
+                        },
+                        {
+                            "name": "STUDYID",
+                            "role": VariableRoles.IDENTIFIER.value,
+                            "ordinal": 1,
+                        },
+                        {
+                            "name": "TIMING_VAR",
+                            "role": VariableRoles.TIMING.value,
+                            "ordinal": 33,
                         },
                     ],
                 },
@@ -684,6 +712,7 @@ def test_get_column_order_from_library(
         "DOMAIN",
         "AESEQ",
         "AETERM",
+        "TIMING_VAR",
     ]
     expected: pd.Series = pd.Series(
         [

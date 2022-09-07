@@ -7,6 +7,11 @@ from uuid import uuid4
 import pandas as pd
 
 from cdisc_rules_engine.config import config
+from cdisc_rules_engine.constants.classes import (
+    DETECTABLE_CLASSES,
+    GENERAL_OBSERVATIONS_CLASS,
+)
+from cdisc_rules_engine.enums.variable_roles import VariableRoles
 from cdisc_rules_engine.exceptions.custom_exceptions import InvalidMatchKeyError
 from cdisc_rules_engine.models.dictionaries.meddra.meddra_variables import (
     MedDRAVariables,
@@ -403,6 +408,7 @@ class DataProcessor:
         cache_key: str = get_model_details_cache_key(standard, standard_version)
         model_details: dict = self.cache.get(cache_key) or {}
 
+        # get variables metadata
         domain_details: Optional[dict] = search_in_list_of_dicts(
             model_details.get("datasets", []),
             lambda item: item["name"] == domain,
@@ -412,19 +418,66 @@ class DataProcessor:
             variables_metadata: List[dict] = domain_details["datasetVariables"]
         else:
             # else -> get variables metadata from the model class
-            class_metadata: Optional[dict] = search_in_list_of_dicts(
-                model_details.get("classes", []),
-                lambda item: item["name"] == dataset_class,
+            class_metadata: dict = self._get_class_metadata(
+                model_details, dataset_class, standard, standard_version
             )
-            if not class_metadata:
-                raise ValueError(
-                    f"Variables metadata is not found in CDISC Library. "
-                    f"standard={standard}, version={standard_version}, "
-                    f"class={dataset_class}, domain={domain}"
-                )
             variables_metadata: List[dict] = class_metadata["classVariables"]
 
+        if dataset_class in DETECTABLE_CLASSES:
+            # if the class is one of Interventions, Findings, or Events
+            # -> add General Observation class variables to variables metadata
+            gen_obs_class_metadata: dict = self._get_class_metadata(
+                model_details, GENERAL_OBSERVATIONS_CLASS, standard, standard_version
+            )
+            identifiers_metadata, timing_metadata = self._sort_class_variables_by_role(
+                gen_obs_class_metadata["classVariables"]
+            )
+            # Identifiers are added to the beginning and Timing to the end
+            variables_metadata = (
+                identifiers_metadata + variables_metadata + timing_metadata
+            )
+
         return variables_metadata
+
+    def _get_class_metadata(
+        self,
+        model_details: dict,
+        dataset_class: str,
+        standard: str,
+        standard_version: str,
+    ) -> dict:
+        """
+        Extracts metadata of a certain class
+        from given standard model details.
+        """
+        class_metadata: Optional[dict] = search_in_list_of_dicts(
+            model_details.get("classes", []),
+            lambda item: item["name"] == dataset_class,
+        )
+        if not class_metadata:
+            raise ValueError(
+                f"Variables metadata is not found in CDISC Library. "
+                f"standard={standard}, version={standard_version}, "
+                f"class={dataset_class}"
+            )
+        return class_metadata
+
+    def _sort_class_variables_by_role(
+        self, class_variables: List[dict]
+    ) -> Tuple[List[dict], List[dict]]:
+        """
+        Sorts given class variables by role into 2 lists:
+        Identifiers and Timing
+        """
+        identifier_vars: List[dict] = []
+        timing_vars: List[dict] = []
+        for variable in class_variables:
+            role: str = variable.get("role")
+            if role == VariableRoles.IDENTIFIER.value:
+                identifier_vars.append(variable)
+            elif role == VariableRoles.TIMING.value:
+                timing_vars.append(variable)
+        return identifier_vars, timing_vars
 
     @staticmethod
     async def get_dataset_variables(study_path, dataset, data_service) -> Set:

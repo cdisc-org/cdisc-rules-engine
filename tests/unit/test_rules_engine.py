@@ -6,7 +6,9 @@ import pandas as pd
 import pytest
 from conftest import get_matches_regex_pattern_rule
 
+from cdisc_rules_engine.constants.classes import GENERAL_OBSERVATIONS_CLASS
 from cdisc_rules_engine.enums.execution_status import ExecutionStatus
+from cdisc_rules_engine.enums.variable_roles import VariableRoles
 from cdisc_rules_engine.exceptions.custom_exceptions import (
     VariableMetadataNotFoundError,
 )
@@ -2412,20 +2414,32 @@ def test_validate_variables_order_against_library_metadata(
                 "name": "Events",
                 "classVariables": [
                     {
-                        "name": "DOMAIN",
-                        "ordinal": 2,
-                    },
-                    {
-                        "name": "STUDYID",
-                        "ordinal": 1,
-                    },
-                    {
                         "name": "AETERM",
                         "ordinal": 4,
                     },
                     {
                         "name": "AESEQ",
                         "ordinal": 3,
+                    },
+                ],
+            },
+            {
+                "name": GENERAL_OBSERVATIONS_CLASS,
+                "classVariables": [
+                    {
+                        "name": "DOMAIN",
+                        "role": VariableRoles.IDENTIFIER.value,
+                        "ordinal": 2,
+                    },
+                    {
+                        "name": "STUDYID",
+                        "role": VariableRoles.IDENTIFIER.value,
+                        "ordinal": 1,
+                    },
+                    {
+                        "name": "TIMING_VAR",
+                        "role": VariableRoles.TIMING.value,
+                        "ordinal": 33,
                     },
                 ],
             },
@@ -2463,6 +2477,7 @@ def test_validate_variables_order_against_library_metadata(
                             "DOMAIN",
                             "AESEQ",
                             "AETERM",
+                            "TIMING_VAR",
                         ],
                         "$column_order_from_dataset": [
                             "DOMAIN",
