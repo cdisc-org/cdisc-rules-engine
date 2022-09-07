@@ -6,10 +6,10 @@ from cdisc_rules_engine.models.dictionaries.meddra.meddra_file_names import (
 )
 from cdisc_rules_engine.models.dictionaries.meddra.terms.meddra_term import MedDRATerm
 from cdisc_rules_engine.models.dictionaries.meddra.terms.term_types import TermTypes
-from cdisc_rules_engine.interfaces.terms_factory_interface import (
+from cdisc_rules_engine.interfaces import (
     TermsFactoryInterface,
+    DataServiceInterface,
 )
-from cdisc_rules_engine.services.data_services import BaseDataService
 from cdisc_rules_engine.utilities.utils import get_dictionary_path
 
 
@@ -19,7 +19,7 @@ class MedDRATermsFactory(TermsFactoryInterface):
     and contents and creates a term record for each line.
     """
 
-    def __init__(self, data_service: BaseDataService):
+    def __init__(self, data_service: DataServiceInterface):
         self.data_service = data_service
 
     def chunks(self, lst, n):

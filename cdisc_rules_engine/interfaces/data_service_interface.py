@@ -51,6 +51,12 @@ class DataServiceInterface(ABC):
         """
 
     @abstractmethod
+    def has_all_files(self, prefix: str, file_names: List[str]) -> bool:
+        """
+        Checks if all files exist
+        """
+
+    @abstractmethod
     def read_data(self, file_path: str, read_mode: str = "r") -> TextIO:
         """
         Reads data from the given path and returns TextIO instance.
