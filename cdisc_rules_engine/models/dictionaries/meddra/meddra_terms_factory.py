@@ -1,10 +1,8 @@
-import asyncio
+from collections import defaultdict
 from io import BytesIO
-from typing import List
-from uuid import uuid4
+from typing import Dict, List
 
 from cdisc_rules_engine.exceptions.custom_exceptions import MissingDataError
-from cdisc_rules_engine.models.dictionaries.dictionary_types import DictionaryTypes
 from cdisc_rules_engine.models.dictionaries.meddra.meddra_file_names import (
     MeddraFileNames,
 )
@@ -36,7 +34,7 @@ class MedDRATermsFactory(TermsFactoryInterface):
         directory_path: str,
     ):
         """
-        Insert MedDRA dictionary terms into appropriate storage.
+        Create MedDRA dictionary terms from files in directory.
         """
         files = {
             MeddraFileNames.PT.value: TermTypes.PT.value,
@@ -83,7 +81,17 @@ class MedDRATermsFactory(TermsFactoryInterface):
                     term.code_hierarchy = f"{parent.code_hierarchy}/{term.code}"
                     term.term_hierarchy = f"{parent.term_hierarchy}/{term.term}"
 
-        return data
+        return self._flatten_data(data)
+
+    @staticmethod
+    def _flatten_data(
+        terms: Dict[str, Dict[str, MedDRATerm]]
+    ) -> Dict[str, List[MedDRATerm]]:
+        return_dict = defaultdict(list)
+        for group, terms_values in terms.items():
+            for k, v in terms_values.items():
+                return_dict[group].append(v)
+        return return_dict
 
     def read_data(self, file_path, data_type: str) -> dict:
         """
