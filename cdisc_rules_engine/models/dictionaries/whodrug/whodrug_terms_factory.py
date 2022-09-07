@@ -2,7 +2,7 @@ import os
 from collections import defaultdict
 from typing import List, Dict
 
-from cdisc_rules_engine.models.dictionaries import TermsFactoryInterface
+from ..terms_factory_interface import TermsFactoryInterface
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.services.data_services import BaseDataService
 from cdisc_rules_engine.utilities.utils import get_dictionary_path

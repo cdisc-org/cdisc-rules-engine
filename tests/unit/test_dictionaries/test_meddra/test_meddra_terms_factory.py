@@ -1,9 +1,7 @@
 import os
 from unittest.mock import MagicMock
 
-from cdisc_rules_engine.models.dictionaries.meddra.meddra_terms_factory import (
-    MedDRATermsFactory,
-)
+from cdisc_rules_engine.models.dictionaries import DictionaryTypes, AbstractTermsFactory
 from cdisc_rules_engine.models.dictionaries.meddra.terms.term_types import TermTypes
 from cdisc_rules_engine.services.data_services.local_data_service import (
     LocalDataService,
@@ -14,8 +12,10 @@ dictionary_path = f"{os.path.dirname(__file__)}/../../../resources/dictionaries/
 
 def test_install():
     storage_service = LocalDataService.get_instance(cache_service=MagicMock())
-    meddra = MedDRATermsFactory(storage_service)
-    dictionary = meddra.install_terms(dictionary_path)
+    factory = AbstractTermsFactory(storage_service).get_service(
+        DictionaryTypes.MEDDRA.value
+    )
+    dictionary = factory.install_terms(dictionary_path)
     for term_type in TermTypes.values():
         assert len(dictionary[term_type]) == 5
 
