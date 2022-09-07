@@ -9,7 +9,6 @@ class DataReaderInterface(ABC):
     def __init__(self):
         pass
 
-    @staticmethod
     def read(self, data):
         """
         Function for reading data from a specific file type and returning a
