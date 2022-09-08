@@ -1,9 +1,11 @@
 import os
 from collections import defaultdict
 
-from cdisc_rules_engine.models.dictionaries import TermsFactoryInterface
+from cdisc_rules_engine.interfaces import (
+    TermsFactoryInterface,
+    DataServiceInterface,
+)
 from cdisc_rules_engine.services import logger
-from cdisc_rules_engine.services.data_services import BaseDataService
 from cdisc_rules_engine.utilities.utils import get_dictionary_path
 
 from .atc_classification import AtcClassification
@@ -19,7 +21,7 @@ class WhoDrugTermsFactory(TermsFactoryInterface):
     and contents and creates a term record for each line.
     """
 
-    def __init__(self, data_service: BaseDataService):
+    def __init__(self, data_service: DataServiceInterface):
         self.__data_service = data_service
         self.__file_name_model_map: dict = {
             WhodrugFileNames.DD_FILE_NAME.value: DrugDictionary,
@@ -52,7 +54,8 @@ class WhoDrugTermsFactory(TermsFactoryInterface):
             file_path: str = get_dictionary_path(directory_path, dictionary_filename)
             if not os.path.exists(file_path):
                 logger.warning(
-                    f"File {dictionary_filename} does not exist in directory {directory_path}"
+                    f"File {dictionary_filename} "
+                    f"does not exist in directory {directory_path}"
                 )
                 continue
 

@@ -3,10 +3,10 @@ from typing import List
 import pandas as pd
 
 from cdisc_rules_engine.services import logger
-from cdisc_rules_engine.services.cache.cache_service_interface import (
+from cdisc_rules_engine.interfaces import (
     CacheServiceInterface,
+    DataServiceInterface,
 )
-from cdisc_rules_engine.services.data_services import BaseDataService
 from cdisc_rules_engine.utilities.data_processor import DataProcessor
 from cdisc_rules_engine.utilities.rule_processor import RuleProcessor
 from cdisc_rules_engine.utilities.utils import (
@@ -34,7 +34,7 @@ class DatasetPreprocessor:
         dataset: pd.DataFrame,
         dataset_domain: str,
         dataset_path: str,
-        data_service: BaseDataService,
+        data_service: DataServiceInterface,
         cache_service: CacheServiceInterface,
     ):
         self._dataset: pd.DataFrame = dataset

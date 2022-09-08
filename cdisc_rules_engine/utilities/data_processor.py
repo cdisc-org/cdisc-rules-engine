@@ -16,12 +16,12 @@ from cdisc_rules_engine.models.dictionaries.meddra.terms.term_types import TermT
 from cdisc_rules_engine.models.dictionaries.whodrug import WhodrugRecordTypes
 from cdisc_rules_engine.models.operation_params import OperationParams
 from cdisc_rules_engine.services.cache.cache_service_factory import CacheServiceFactory
-from cdisc_rules_engine.services.cache.cache_service_interface import (
+from cdisc_rules_engine.interfaces import (
     CacheServiceInterface,
+    DataServiceInterface,
 )
 from cdisc_rules_engine.services.cdisc_library_service import CDISCLibraryService
 from cdisc_rules_engine.services.data_services import (
-    BaseDataService,
     DataServiceFactory,
     DummyDataService,
 )
@@ -730,5 +730,5 @@ class DataProcessor:
         return equal_core_status and equal_origin_type
 
     @staticmethod
-    def is_dummy_data(data_service: BaseDataService) -> bool:
+    def is_dummy_data(data_service: DataServiceInterface) -> bool:
         return isinstance(data_service, DummyDataService)

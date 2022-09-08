@@ -1,4 +1,3 @@
-import uuid
 from typing import List
 
 from cdisc_rules_engine.enums.optional_condition_parameters import (
@@ -6,7 +5,7 @@ from cdisc_rules_engine.enums.optional_condition_parameters import (
 )
 from cdisc_rules_engine.enums.rule_types import RuleTypes
 from cdisc_rules_engine.enums.sensitivity import Sensitivity
-from cdisc_rules_engine.models.representation_interface import RepresentationInterface
+from cdisc_rules_engine.interfaces import RepresentationInterface
 
 
 class Rule(RepresentationInterface):
@@ -134,8 +133,8 @@ class Rule(RepresentationInterface):
 
     @classmethod
     def parse_datasets(cls, match_key_data: List[dict]) -> List[dict]:
-        # Defaulting to IDVAR and IDVARVAL as relationship columns. May change in the future
-        # As more standard rules are written.
+        # Defaulting to IDVAR and IDVARVAL as relationship columns.
+        # May change in the future as more standard rules are written.
         relationship_columns = {
             "column_with_names": "IDVAR",
             "column_with_values": "IDVARVAL",
