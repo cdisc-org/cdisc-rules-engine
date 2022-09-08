@@ -1,10 +1,10 @@
 from typing import Type
 
-from cdisc_rules_engine.services.data_readers.data_reader_interface import (
+from cdisc_rules_engine.interfaces import (
     DataReaderInterface,
+    FactoryInterface,
 )
 from cdisc_rules_engine.services.data_readers.xpt_reader import XPTReader
-from cdisc_rules_engine.services.factory_interface import FactoryInterface
 
 
 class DataReaderFactory(FactoryInterface):
