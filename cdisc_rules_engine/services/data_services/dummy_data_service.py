@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Callable, TextIO
 
 import pandas as pd
 
@@ -6,6 +6,7 @@ from cdisc_rules_engine.config import ConfigService
 from cdisc_rules_engine.dummy_models.dummy_dataset import DummyDataset
 from cdisc_rules_engine.exceptions.custom_exceptions import DatasetNotFoundError
 from cdisc_rules_engine.interfaces import CacheServiceInterface
+from cdisc_rules_engine.models.dataset_types import DatasetTypes
 from cdisc_rules_engine.services.data_services import BaseDataService
 
 
@@ -81,3 +82,24 @@ class DummyDataService(BaseDataService):
             ] + [variable.type]
 
         return pd.DataFrame.from_dict(metadata_to_return)
+
+    def get_dataset_by_type(
+        self, dataset_name: str, dataset_type: str, **params
+    ) -> pd.DataFrame:
+        dataset_type_to_function_map: dict = {
+            DatasetTypes.CONTENTS.value: self.get_dataset,
+            DatasetTypes.METADATA.value: self.get_dataset_metadata,
+            DatasetTypes.VARIABLES_METADATA.value: self.get_variables_metadata,
+        }
+        return dataset_type_to_function_map[dataset_type](
+            dataset_name=dataset_name, **params
+        )
+
+    def has_all_files(self, prefix: str, file_names: List[str]) -> bool:
+        return True
+
+    def join_split_datasets(self, func_to_call: Callable, dataset_names, **kwargs):
+        pass
+
+    def read_data(self, file_path: str, read_mode: str = "r") -> TextIO:
+        pass
