@@ -1,4 +1,3 @@
-import copy
 from copy import deepcopy
 from typing import Callable, List, Set, Union
 
@@ -49,7 +48,7 @@ class RulesEngine:
     def __init__(self, cache=None, data_service=None, **kwargs):
         self.cache = cache or CacheServiceFactory(config).get_cache_service()
         self.data_service = (
-            data_service or DataServiceFactory(config, self.cache).get_data_service()
+            data_service or DataServiceFactory(config, self.cache).get_service()
         )
         self.rule_processor = RuleProcessor(self.data_service, self.cache)
         self.data_processor = DataProcessor(self.data_service, self.cache)
@@ -94,7 +93,8 @@ class RulesEngine:
         to validate a list of rules.
         """
         logger.info(
-            f"Validating domain {dataset_domain}. dataset_path={dataset_path}. datasets={datasets}."
+            f"Validating domain {dataset_domain}. "
+            f"dataset_path={dataset_path}. datasets={datasets}."
         )
         output = {}
         for rule in rules:
@@ -114,7 +114,8 @@ class RulesEngine:
         It validates a given rule against datasets.
         """
         logger.info(
-            f"Validating domain {dataset_domain}. rule={rule}. dataset_path={dataset_path}. datasets={datasets}."
+            f"Validating domain {dataset_domain}. "
+            f"rule={rule}. dataset_path={dataset_path}. datasets={datasets}."
         )
         try:
             if self.rule_processor.is_suitable_for_validation(
@@ -174,13 +175,23 @@ class RulesEngine:
         """
         rule_type_validator_map: dict = {
             RuleTypes.DATASET_METADATA_CHECK.value: self.validate_dataset_metadata,
-            RuleTypes.DATASET_METADATA_CHECK_AGAINST_DEFINE.value: self.validate_dataset_metadata_against_define_xml,
+            RuleTypes.DATASET_METADATA_CHECK_AGAINST_DEFINE.value: (
+                self.validate_dataset_metadata_against_define_xml
+            ),
             RuleTypes.VARIABLE_METADATA_CHECK.value: self.validate_variables_metadata,
             RuleTypes.DOMAIN_PRESENCE_CHECK.value: self.validate_domain_presence,
-            RuleTypes.VARIABLE_METADATA_CHECK_AGAINST_DEFINE.value: self.validate_variable_metadata_against_define_xml,
-            RuleTypes.VALUE_LEVEL_METADATA_CHECK_AGAINST_DEFINE.value: self.validate_value_level_metadata_against_define_xml,
-            RuleTypes.DATASET_CONTENTS_CHECK_AGAINST_DEFINE_AND_LIBRARY_METADATA.value: self.validate_dataset_contents_against_define_and_library_variable_metadata,
-            RuleTypes.DATASET_CONTENTS_CHECK_AGAINST_LIBRARY_METADATA.value: self.validate_dataset_contents_against_library_metadata,
+            RuleTypes.VARIABLE_METADATA_CHECK_AGAINST_DEFINE.value: (
+                self.validate_variable_metadata_against_define_xml
+            ),
+            RuleTypes.VALUE_LEVEL_METADATA_CHECK_AGAINST_DEFINE.value: (
+                self.validate_value_level_metadata_against_define_xml
+            ),
+            RuleTypes.DATASET_CONTENTS_CHECK_AGAINST_DEFINE_AND_LIBRARY.value: (
+                self.validate_dataset_contents_against_define_and_library
+            ),
+            RuleTypes.DATASET_CONTENTS_CHECK_AGAINST_LIBRARY_METADATA.value: (
+                self.validate_dataset_contents_against_library_metadata
+            ),
             RuleTypes.DEFINE.value: self.validate_define_xml,
         }
         return rule_type_validator_map.get(
@@ -315,7 +326,7 @@ class RulesEngine:
             rule, dataset, dataset_path, datasets, domain, value_level_metadata
         )
 
-    def validate_dataset_contents_against_define_and_library_variable_metadata(
+    def validate_dataset_contents_against_define_and_library(
         self, rule: dict, dataset_path: str, datasets: List[dict], domain: str, **kwargs
     ) -> List[Union[dict, str]]:
         """
@@ -361,7 +372,8 @@ class RulesEngine:
         """
         Validates dataset contents against Library variable metadata.
         The rule only provides variable names and the engine automatically
-        validates their values based on the variable core status taken from library metadata.
+        validates their values based on the variable core status
+        taken from library metadata.
         """
         # get metadata from library
         library_metadata: dict = (
@@ -449,13 +461,16 @@ class RulesEngine:
         what we need to validate: contents, metadata or variables metadata
         AND handle the case when the dataset is split into multiple files.
 
-        dataset_type param can be: dataset_contents, dataset_metadata or variables_metadata.
+        dataset_type param can be:
+        dataset_contents, dataset_metadata or variables_metadata.
         For passing additional params to storage calls, kwargs can be used.
         """
         dataset_type_function_map: dict = {
             DatasetTypes.CONTENTS.value: self.data_service.get_dataset,
             DatasetTypes.METADATA.value: self.data_service.get_dataset_metadata,
-            DatasetTypes.VARIABLES_METADATA.value: self.data_service.get_variables_metadata,
+            DatasetTypes.VARIABLES_METADATA.value: (
+                self.data_service.get_variables_metadata
+            ),
         }
         func_to_call: Callable = dataset_type_function_map[dataset_type]
         if not is_split_dataset(datasets, domain):

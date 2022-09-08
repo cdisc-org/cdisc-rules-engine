@@ -15,7 +15,7 @@ class DataServiceFactory(FactoryInterface):
     _registered_services_map = {"local": LocalDataService, "dummy": DummyDataService}
 
     def __init__(self, config: ConfigService, cache_service: CacheServiceInterface):
-        self.data_service_name = config.getValue("DATA_SERVICE_TYPE")
+        self.data_service_name = config.getValue("DATA_SERVICE_TYPE") or "local"
         self.config = config
         self.cache_service = cache_service
 
