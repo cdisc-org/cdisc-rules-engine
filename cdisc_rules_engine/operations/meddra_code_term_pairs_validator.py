@@ -38,75 +38,86 @@ class MedDRACodeTermPairsValidator(BaseOperation):
         Extracts target name from params and
         returns associated term type and dataset columns.
         """
+        soccd_column = f"{self.params.domain}{MedDRAVariables.SOCCD.value}"
+        soc_column = f"{self.params.domain}{MedDRAVariables.SOC.value}"
+        hlgtcd_column = f"{self.params.domain}{MedDRAVariables.HLGTCD.value}"
+        hlgt_column = f"{self.params.domain}{MedDRAVariables.HLGT.value}"
+        hltcd_column = f"{self.params.domain}{MedDRAVariables.HLTCD.value}"
+        hlt_column = f"{self.params.domain}{MedDRAVariables.HLT.value}"
+        ptcd_column = f"{self.params.domain}{MedDRAVariables.PTCD.value}"
+        decod_column = f"{self.params.domain}{MedDRAVariables.DECOD.value}"
+        llt_column = f"{self.params.domain}{MedDRAVariables.LLT.value}"
+        lltcd_column = f"{self.params.domain}{MedDRAVariables.LLTCD.value}"
+
         variable_pair_map = {
-            f"{self.params.domain}{MedDRAVariables.SOC.value}": (
+            soc_column: (
                 TermTypes.SOC.value,
                 (
-                    f"{self.params.domain}{MedDRAVariables.SOCCD.value}",
-                    f"{self.params.domain}{MedDRAVariables.SOC.value}",
+                    soccd_column,
+                    soc_column,
                 ),
             ),
-            f"{self.params.domain}{MedDRAVariables.SOCCD.value}": (
+            soccd_column: (
                 TermTypes.SOC.value,
                 (
-                    f"{self.params.domain}{MedDRAVariables.SOCCD.value}",
-                    f"{self.params.domain}{MedDRAVariables.SOC.value}",
+                    soccd_column,
+                    soc_column,
                 ),
             ),
-            f"{self.params.domain}{MedDRAVariables.HLGT.value}": (
+            hlgt_column: (
                 TermTypes.HLGT.value,
                 (
-                    f"{self.params.domain}{MedDRAVariables.HLGTCD.value}",
-                    f"{self.params.domain}{MedDRAVariables.HLGT.value}",
+                    hlgtcd_column,
+                    hlgt_column,
                 ),
             ),
-            f"{self.params.domain}{MedDRAVariables.HLGTCD.value}": (
+            hlgtcd_column: (
                 TermTypes.HLGT.value,
                 (
-                    f"{self.params.domain}{MedDRAVariables.HLGTCD.value}",
-                    f"{self.params.domain}{MedDRAVariables.HLGT.value}",
+                    hlgtcd_column,
+                    hlgt_column,
                 ),
             ),
-            f"{self.params.domain}{MedDRAVariables.HLT.value}": (
+            hlt_column: (
                 TermTypes.HLT.value,
                 (
-                    f"{self.params.domain}{MedDRAVariables.HLTCD.value}",
-                    f"{self.params.domain}{MedDRAVariables.HLT.value}",
+                    hltcd_column,
+                    hlt_column,
                 ),
             ),
-            f"{self.params.domain}{MedDRAVariables.HLTCD.value}": (
+            hltcd_column: (
                 TermTypes.HLT.value,
                 (
-                    f"{self.params.domain}{MedDRAVariables.HLTCD.value}",
-                    f"{self.params.domain}{MedDRAVariables.HLT.value}",
+                    hltcd_column,
+                    hlt_column,
                 ),
             ),
-            f"{self.params.domain}{MedDRAVariables.DECOD.value}": (
+            decod_column: (
                 TermTypes.PT.value,
                 (
-                    f"{self.params.domain}{MedDRAVariables.PTCD.value}",
-                    f"{self.params.domain}{MedDRAVariables.DECOD.value}",
+                    ptcd_column,
+                    decod_column,
                 ),
             ),
-            f"{self.params.domain}{MedDRAVariables.PTCD.value}": (
+            ptcd_column: (
                 TermTypes.PT.value,
                 (
-                    f"{self.params.domain}{MedDRAVariables.PTCD.value}",
-                    f"{self.params.domain}{MedDRAVariables.DECOD.value}",
+                    ptcd_column,
+                    decod_column,
                 ),
             ),
-            f"{self.params.domain}{MedDRAVariables.LLT.value}": (
+            llt_column: (
                 TermTypes.LLT.value,
                 (
-                    f"{self.params.domain}{MedDRAVariables.LLTCD.value}",
-                    f"{self.params.domain}{MedDRAVariables.LLT.value}",
+                    lltcd_column,
+                    llt_column,
                 ),
             ),
-            f"{self.params.domain}{MedDRAVariables.LLTCD.value}": (
+            lltcd_column: (
                 TermTypes.LLT.value,
                 (
-                    f"{self.params.domain}{MedDRAVariables.LLTCD.value}",
-                    f"{self.params.domain}{MedDRAVariables.LLT.value}",
+                    lltcd_column,
+                    llt_column,
                 ),
             ),
         }

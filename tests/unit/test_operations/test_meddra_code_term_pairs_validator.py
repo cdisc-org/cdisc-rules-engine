@@ -10,7 +10,7 @@ from cdisc_rules_engine.services.data_services.data_service_factory import (
 )
 
 
-def test_valid_whodrug_references(
+def test_meddra_code_term_pairs_validator(
     installed_meddra_dictionaries: dict, operation_params: OperationParams
 ):
     """
