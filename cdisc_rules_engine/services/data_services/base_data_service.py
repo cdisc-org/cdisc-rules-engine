@@ -56,7 +56,7 @@ def cached_dataset(dataset_type: str):
     return decorator
 
 
-class BaseDataService(ABC, DataServiceInterface):
+class BaseDataService(DataServiceInterface, ABC):
     def __init__(self, **params):
         self.blob_service = None
         self.cache_service = None

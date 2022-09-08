@@ -1,9 +1,7 @@
 from unittest.mock import MagicMock
 
+from cdisc_rules_engine.interfaces import DataReaderInterface
 from cdisc_rules_engine.services.data_readers import DataReaderFactory
-from cdisc_rules_engine.services.data_readers import (
-    DataReaderInterface,
-)
 
 
 def test_get_registered_service():

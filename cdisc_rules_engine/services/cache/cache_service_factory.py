@@ -1,10 +1,9 @@
 from typing import Type
 
 from cdisc_rules_engine.interfaces import CacheServiceInterface, FactoryInterface
-from cdisc_rules_engine.services.cache import (
-    InMemoryCacheService,
-    RedisCacheService,
-)
+
+from .in_memory_cache_service import InMemoryCacheService
+from .redis_cache_service import RedisCacheService
 
 
 class CacheServiceFactory(FactoryInterface):
