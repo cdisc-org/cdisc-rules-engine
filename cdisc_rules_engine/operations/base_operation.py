@@ -32,20 +32,24 @@ class BaseOperation:
 
     def _handle_operation_result(self, result) -> pd.DataFrame:
         if self.params.grouping:
-            # Handle grouped results
-            result = result.rename(
-                columns={self.params.target: self.params.operation_id}
-            )
-            target_columns = self.params.grouping + [self.params.operation_id]
-            return self.evaluation_dataset.merge(
-                result[target_columns], on=self.params.grouping, how="left"
-            )
+            return self._handle_grouped_result(result)
         elif isinstance(result, dict):
-            self.evaluation_dataset[self.params.operation_id] = [result] * len(
-                self.params.dataframe
-            )
-            return self.evaluation_dataset
+            return self._handle_dictionary_result(result)
         else:
             # Handle single results
             self.evaluation_dataset[self.params.operation_id] = result
             return self.evaluation_dataset
+
+    def _handle_grouped_result(self, result):
+        # Handle grouped results
+        result = result.rename(columns={self.params.target: self.params.operation_id})
+        target_columns = self.params.grouping + [self.params.operation_id]
+        return self.evaluation_dataset.merge(
+            result[target_columns], on=self.params.grouping, how="left"
+        )
+
+    def _handle_dictionary_result(self, result):
+        self.evaluation_dataset[self.params.operation_id] = [result] * len(
+            self.params.dataframe
+        )
+        return self.evaluation_dataset

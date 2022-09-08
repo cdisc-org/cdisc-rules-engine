@@ -2,7 +2,7 @@ from cdisc_rules_engine.operations.base_operation import BaseOperation
 from datetime import datetime
 
 
-class DY(BaseOperation):
+class DayDataValidator(BaseOperation):
     def _execute_operation(self):
         dtc_value = self.params.dataframe[self.params.target].map(
             datetime.fromisoformat

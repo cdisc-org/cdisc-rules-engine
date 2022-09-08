@@ -1,5 +1,5 @@
 from cdisc_rules_engine.operations.distinct import Distinct
-from cdisc_rules_engine.operations.dy import DY
+from cdisc_rules_engine.operations.day_data_validator import DayDataValidator
 from cdisc_rules_engine.operations.extract_metadata import ExtractMetadata
 from cdisc_rules_engine.operations.max_date import MaxDate
 from cdisc_rules_engine.operations.min_date import MinDate
@@ -32,7 +32,7 @@ class OperationsFactory(FactoryInterface):
         "max": Maximum,
         "mean": Mean,
         "distinct": Distinct,
-        "dy": DY,
+        "dy": DayDataValidator,
         "max_date": MaxDate,
         "min_date": MinDate,
         "extract_metadata": ExtractMetadata,
