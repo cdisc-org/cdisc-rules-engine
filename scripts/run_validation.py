@@ -9,9 +9,10 @@ from multiprocessing.managers import SyncManager
 
 from cdisc_rules_engine.config import config
 from cdisc_rules_engine.constants.define_xml_constants import DEFINE_XML_FILE_NAME
+from cdisc_rules_engine.interfaces import CacheServiceInterface
 from cdisc_rules_engine.models.dictionaries import DictionaryTypes
 from cdisc_rules_engine.models.dictionaries.get_dictionary_terms import (
-    get_dictionary_terms_from_folder,
+    extract_dictionary_terms,
 )
 from cdisc_rules_engine.models.rule_conditions import ConditionCompositeFactory
 from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
@@ -19,7 +20,6 @@ from cdisc_rules_engine.models.validation_args import Validation_args
 from cdisc_rules_engine.rules_engine import RulesEngine
 from cdisc_rules_engine.services import logger as engine_logger
 from cdisc_rules_engine.services.cache import (
-    CacheServiceInterface,
     InMemoryCacheService,
     RedisCacheService,
 )
@@ -89,9 +89,7 @@ def fill_cache_with_dictionaries(cache: CacheServiceInterface, args):
     for dictionary_type, dictionary_path in dictionary_type_to_path_map.items():
         if not dictionary_path:
             continue
-        terms = get_dictionary_terms_from_folder(
-            data_service, dictionary_type, dictionary_path
-        )
+        terms = extract_dictionary_terms(data_service, dictionary_type, dictionary_path)
         cache.add(dictionary_path, terms)
 
 
