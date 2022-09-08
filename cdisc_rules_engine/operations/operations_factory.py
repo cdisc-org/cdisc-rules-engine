@@ -7,17 +7,17 @@ from cdisc_rules_engine.operations.minimum import Minimum
 from cdisc_rules_engine.operations.maximum import Maximum
 from cdisc_rules_engine.operations.mean import Mean
 from cdisc_rules_engine.operations.base_operation import BaseOperation
-from cdisc_rules_engine.operations.valid_meddra_code_references import (
-    ValidMeddraCodeReferences,
+from cdisc_rules_engine.operations.meddra_code_references_validator import (
+    MedDRACodeReferencesValidator,
 )
-from cdisc_rules_engine.operations.valid_meddra_term_references import (
-    ValidMeddraTermReferences,
+from cdisc_rules_engine.operations.meddra_term_references_validator import (
+    MedDRATermReferencesValidator,
 )
-from cdisc_rules_engine.operations.valid_meddra_code_term_pairs import (
-    ValidMeddraCodeTermPairs,
+from cdisc_rules_engine.operations.meddra_code_term_pairs_validator import (
+    MedDRACodeTermPairsValidator,
 )
-from cdisc_rules_engine.operations.valid_whodrug_references import (
-    ValidWhodrugReferences,
+from cdisc_rules_engine.operations.whodrug_references_validator import (
+    WhodrugReferencesValidator,
 )
 from cdisc_rules_engine.operations.variable_exists import VariableExists
 from cdisc_rules_engine.operations.variable_names import VariableNames
@@ -39,10 +39,10 @@ class OperationsFactory(FactoryInterface):
         "variable_exists": VariableExists,
         "variable_value_count": VariableValueCount,
         "variable_names": VariableNames,
-        "valide_meddra_code_references": ValidMeddraCodeReferences,
-        "valid_whodrug_references": ValidWhodrugReferences,
-        "valid_meddra_term_references": ValidMeddraTermReferences,
-        "valid_meddra_code_term_pairs": ValidMeddraCodeTermPairs,
+        "valide_meddra_code_references": MedDRACodeReferencesValidator,
+        "valid_whodrug_references": WhodrugReferencesValidator,
+        "valid_meddra_term_references": MedDRATermReferencesValidator,
+        "valid_meddra_code_term_pairs": MedDRACodeTermPairsValidator,
     }
 
     @classmethod
