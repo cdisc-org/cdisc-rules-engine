@@ -1,8 +1,7 @@
 import copy
 import re
-from typing import Callable, List, Optional, Set, Union, Tuple
+from typing import List, Optional, Set, Union, Tuple
 
-import numpy as np
 import pandas as pd
 
 from cdisc_rules_engine.constants.classes import DETECTABLE_CLASSES
@@ -11,11 +10,13 @@ from cdisc_rules_engine.constants.domains import (
     APFA_DOMAIN,
     SUPPLEMENTARY_DOMAINS,
 )
+from cdisc_rules_engine.models.operation_params import OperationParams
 from cdisc_rules_engine.models.rule_conditions import (
     AllowedConditionsKeys,
     ConditionCompositeFactory,
     ConditionInterface,
 )
+from cdisc_rules_engine.operations import operations_factory
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.utilities.data_processor import DataProcessor
 from cdisc_rules_engine.utilities.utils import (
@@ -119,7 +120,10 @@ class RuleProcessor:
         """
         HANDLING SPLIT DOMAINS
 
-        If include_split_datasets is True - add split domains to the list of included domains. If no included domains specified, only validate split domains
+        If include_split_datasets is True -
+        add split domains to the list of included domains.
+        If no included domains specified, only validate split domains
+
         If include_split_datasets is False - Exclude split domains
         If include_split_datasets is None - Do nothing
         """
@@ -134,7 +138,8 @@ class RuleProcessor:
         cls, dataset_domain: str, domains_to_check: List[str]
     ) -> bool:
         """
-        Check that domain name match with ony AP / APFA / APRELSUB / SUPP / SQ naming pattern
+        Check that domain name match with only
+        AP / APFA / APRELSUB / SUPP / SQ naming pattern
         """
         supp_ap_domains = {f"{domain}--" for domain in SUPPLEMENTARY_DOMAINS}
         supp_ap_domains.update({f"{AP_DOMAIN}--", f"{APFA_DOMAIN}--"})
@@ -145,17 +150,23 @@ class RuleProcessor:
 
     def rule_applies_to_class(self, rule, file_path, datasets: List[dict]):
         """
-        If included classes are specified, and the class is not in the list of included classes return false.
-        If excluded classes are specified, and the class is in the list of excluded classes return false
+        If included classes are specified and the class
+        is not in the list of included classes return false.
+
+        If excluded classes are specified and the class
+        is in the list of excluded classes return false
+
         Else return true.
+
+        Rule authors can specify classes to include that we cannot detect.
+        In this case, the get_dataset_class method will return None,
+        but included_classes will have values.
+        This will result in a rule not running when it is supposed to.
+        We filter out non-detectable classes here, so that rule authors
+        can specify them without it affecting if the rule runs or not.
         """
         classes = rule.get("classes") or {}
         included_classes = classes.get("Include", [])
-        # Rule authors can specify classes to include that we cannot detect.
-        # In this case, the get_dataset_class method will return None, but included_classes will have values.
-        # This will result in a rule not running when it is supposed to.
-        # We filter out non-detectable classes here, so that rule authors can specify them without it affecting if the rule
-        # runs or not.
         included_classes = [c for c in included_classes if c in DETECTABLE_CLASSES]
         excluded_classes = classes.get("Exclude", [])
         is_included = True
@@ -195,136 +206,99 @@ class RuleProcessor:
         standard_version: str,
         **kwargs,
     ) -> pd.DataFrame:
-        domain_operator_map = {
-            "min": DataProcessor.calc_min,
-            "max": DataProcessor.calc_max,
-            "mean": DataProcessor.calc_mean,
-            "distinct": DataProcessor.get_unique_values,
-            "min_date": DataProcessor.calc_min_date,
-            "max_date": DataProcessor.calc_max_date,
-            "dy": DataProcessor.calc_dy,
-            "extract_metadata": DataProcessor.extract_metadata,
-            "variable_exists": DataProcessor.variable_exists,
-        }
-        study_operator_map = {
-            "variable_value_count": DataProcessor.study_variable_value_occurrence_count,
-            "variable_names": DataProcessor.get_variable_names_for_given_standard,
-        }
-        data_processor = DataProcessor(self.data_service, self.cache)
-        dictionary_operator_map = {
-            "valid_whodrug_references": data_processor.valid_whodrug_references,
-            "valid_meddra_code_references": data_processor.valid_meddra_code_references,
-            "valid_meddra_term_references": data_processor.valid_meddra_term_references,
-            "valid_meddra_code_term_pairs": data_processor.valid_meddra_code_term_pairs,
-        }
+        """
+        Applies rule operations to the dataset.
+        Returns the processed dataset. Operation result is appended as a new column.
+        """
+        operations: List[dict] = rule.get("operations") or []
+        if not operations:
+            # stop function execution if no operations have been provided
+            return dataset
+
         dataset_copy = dataset.copy()
-        directory_path = get_directory_path(dataset_path)
-        for operation in rule.get("operations") or []:
-            operator = operation.get("operator")
-            target_domain = operation.get("domain", domain)
-            target_variable = operation.get("name")
-            value_id = operation.get("id")
-            group_by = operation.get("group", [])
-            if target_variable.startswith("--") and target_domain:
+        for operation in operations:
+            # change -- pattern to domain name
+            target: str = operation.get("name")
+            domain: str = operation.get("domain", domain)
+            if target.startswith("--") and domain:
                 # Not a study wide operation
-                target_variable = target_variable.replace("--", domain)
-                target_domain = target_domain.replace("--", domain)
-            if operator in dictionary_operator_map:
-                result = dictionary_operator_map.get(operator)(
-                    dataset, target_variable, target_domain, **kwargs
-                )
-            elif operator in study_operator_map:
-                # Perform study wide operation
-                result = study_operator_map.get(operator)(
-                    target_variable,
-                    datasets,
-                    directory_path,
-                    self.data_service,
-                    self.cache,
-                    standard=standard,
-                    standard_version=standard_version,
-                )
-            else:
-                # Domain specific operation
-                cache_key = get_operations_cache_key(
-                    directory_path=directory_path,
-                    operation_name=operator,
-                    domain=target_domain,
-                    grouping=";".join(group_by),
-                    target_variable=target_variable,
-                )
-                operation = domain_operator_map.get(operator)
-                result = self.cache.get(cache_key)
-                if result is None:
-                    result = self.execute_operation(
-                        operation,
-                        datasets,
-                        dataset_path,
-                        dataset,
-                        target_domain,
-                        domain,
-                        target_variable,
-                        group_by,
-                    )
+                target = target.replace("--", domain)
+                domain = domain.replace("--", domain)
 
-                if not DataProcessor.is_dummy_data(self.data_service):
-                    self.cache.add(cache_key, result)
+            # get necessary operation
+            operation_params = OperationParams(
+                operation_id=operation.get("id"),
+                operation_name=operation.get("operator"),
+                dataframe=dataset_copy,
+                target=target,
+                domain=domain,
+                dataset_path=dataset_path,
+                directory_path=get_directory_path(dataset_path),
+                datasets=datasets,
+                grouping=operation.get("group", []),
+                standard=standard,
+                standard_version=standard_version,
+                meddra_path=kwargs.get("meddra_path"),
+                whodrug_path=kwargs.get("whodrug_path"),
+            )
 
-            if group_by:
-                # Handle grouped results
-                result = result.rename(columns={target_variable: value_id})
-                target_columns = group_by + [value_id]
-                dataset_copy = dataset_copy.merge(
-                    result[target_columns], on=group_by, how="left"
-                )
-            elif isinstance(result, np.ndarray):
-                # Case where distinct operator was used.
-                # add column with results, each value will be a set
-                list_of_result_sets: List[set] = [set(result)] * len(dataset_copy)
-                dataset_copy[value_id] = pd.Series(list_of_result_sets)
-            elif isinstance(result, dict):
-                list_of_results: List[dict] = [result] * len(dataset_copy)
-                dataset_copy[value_id] = list_of_results
-            else:
-                # Handle single results
-                dataset_copy[value_id] = result
-            logger.info(f"Processed rule operation. operation={operation}, rule={rule}")
+            # execute operation
+            dataset_copy = self._execute_operation(operation_params, dataset_copy)
+
+            logger.info(
+                f"Processed rule operation. "
+                f"operation={operation_params.operation_name}, rule={rule}"
+            )
 
         return dataset_copy
 
-    def execute_operation(
-        self,
-        operation: Callable,
-        datasets: List[dict],
-        dataset_path: str,
-        dataset: pd.DataFrame,
-        target_domain: str,
-        domain: str,
-        target_variable: str,
-        group_by: List = None,
+    def _execute_operation(
+        self, operation_params: OperationParams, dataset: pd.DataFrame
     ):
-        if self.is_current_domain(dataset, target_domain):
-            result = operation(
-                dataset,
-                target_variable,
-                group_by,
-                dataset_path=dataset_path,
-                data_service=self.data_service,
-            )
-        else:
+        """
+        Internal method that executes the given operation.
+        Checks the cache first, if the operation result is not found
+        in cache -> executes it and adds to the cache.
+        """
+        # check cache
+        cache_key = get_operations_cache_key(
+            directory_path=operation_params.directory_path,
+            operation_name=operation_params.operation_name,
+            domain=operation_params.domain,
+            grouping=";".join(operation_params.grouping),
+            target_variable=operation_params.target,
+        )
+        result = self.cache.get(cache_key)
+        if result:
+            return result
+
+        if not self.is_current_domain(
+            operation_params.dataframe, operation_params.domain
+        ):
+            # download other domain
             domain_details: dict = search_in_list_of_dicts(
-                datasets, lambda item: item.get("domain") == target_domain
+                operation_params.datasets,
+                lambda item: item.get("domain") == operation_params.domain,
             )
-            file_name = domain_details["filename"]
-            file_path = get_directory_path(dataset_path) + f"/{file_name}"
-            dataframe = self.data_service.get_dataset(dataset_name=file_path)
-            result = operation(
-                dataframe,
-                target_variable,
-                group_by,
-                dataset_path=dataset_path,
-                data_service=self.data_service,
+            file_path: str = (
+                f"{get_directory_path(operation_params.dataset_path)}/"
+                f"{domain_details['filename']}"
             )
+            operation_params.dataframe = self.data_service.get_dataset(
+                dataset_name=file_path
+            )
+
+        # call the operation
+        operation = operations_factory.get_service(
+            operation_params.operation_name,
+            operation_params=operation_params,
+            original_dataset=dataset,
+            cache=self.cache,
+            data_service=self.data_service,
+        )
+        result = operation.execute()
+        if not DataProcessor.is_dummy_data(self.data_service):
+            self.cache.add(cache_key, result)
         return result
 
     def is_current_domain(self, dataset, target_domain):
@@ -359,7 +333,9 @@ class RuleProcessor:
     ):
         """
         Adds "operator" key to rule condition.
-        target_to_operator_map parameter is a dict where keys are targets and values are operators.
+        target_to_operator_map parameter is a dict
+        where keys are targets and values are operators.
+
         The rule is passed and changed by reference.
         """
         conditions: ConditionInterface = rule["conditions"]
@@ -386,7 +362,10 @@ class RuleProcessor:
     ):
         """
         Adds "comparator" key to rule conditions.value key.
-        comparator parameter is a dict where keys are targets and values are comparators.
+
+        comparator parameter is a dict where
+        keys are targets and values are comparators.
+
         The rule is passed and changed by reference.
         """
         conditions: ConditionInterface = rule["conditions"]
@@ -403,7 +382,8 @@ class RuleProcessor:
             if comparator_to_add:
                 value["comparator"] = comparator_to_add
         logger.info(
-            f"Added comparator to rule conditions. comparator={comparator}, conditions={rule['conditions']}"
+            f"Added comparator to rule conditions. "
+            f"comparator={comparator}, conditions={rule['conditions']}"
         )
 
     @staticmethod
@@ -497,7 +477,8 @@ class RuleProcessor:
             and self.rule_applies_to_class(rule, file_path, datasets)
         )
         logger.info(
-            f"is_suitable_for_validation. rule id={rule.get('core_id')}, domain={dataset_domain}, result={is_suitable}"
+            f"is_suitable_for_validation. rule id={rule.get('core_id')}, "
+            f"domain={dataset_domain}, result={is_suitable}"
         )
         return is_suitable
 
@@ -505,7 +486,7 @@ class RuleProcessor:
     def extract_target_names_from_rule(
         rule: dict, domain: str, column_names: List[str]
     ) -> Set[str]:
-        """
+        r"""
         Extracts target from each item of condition list.
 
         Some operators require reporting additional column names when

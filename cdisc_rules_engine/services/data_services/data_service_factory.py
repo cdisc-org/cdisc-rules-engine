@@ -9,7 +9,7 @@ from . import BaseDataService, DummyDataService, LocalDataService
 
 
 class DataServiceFactory(FactoryInterface):
-    _service_map = {"local": LocalDataService, "dummy": DummyDataService}
+    _registered_services_map = {"local": LocalDataService, "dummy": DummyDataService}
 
     def __init__(self, config: ConfigService, cache_service: CacheServiceInterface):
         self.data_service_name = config.getValue("DATA_SERVICE_TYPE")
@@ -32,13 +32,16 @@ class DataServiceFactory(FactoryInterface):
             raise ValueError("Service name must not be empty!")
         if not issubclass(service, BaseDataService):
             raise TypeError("Implementation of BaseDataService required!")
-        cls._service_map[name] = service
+        cls._registered_services_map[name] = service
 
     def get_service(self, name: str = None, **kwargs) -> BaseDataService:
         """Get instance of service that matches searched implementation"""
         service_name = name or self.data_service_name
-        if service_name in self._service_map:
-            return self._service_map.get(service_name).get_instance(
+        if service_name in self._registered_services_map:
+            return self._registered_services_map.get(service_name).get_instance(
                 config=self.config, cache_service=self.cache_service, **kwargs
             )
-        raise ValueError(f"Service name must be in  {list(self._service_map.keys())}")
+        raise ValueError(
+            f"Service name must be in  {list(self._registered_services_map.keys())}, "
+            f"given service name is {service_name}"
+        )

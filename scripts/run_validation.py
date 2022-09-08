@@ -7,16 +7,16 @@ import click
 from functools import partial
 from multiprocessing import Pool
 from multiprocessing.managers import SyncManager
+
 from cdisc_rules_engine.config import config
 from cdisc_rules_engine.constants.define_xml_constants import DEFINE_XML_FILE_NAME
-from cdisc_rules_engine.models.dictionaries import (
-    DictionaryTypes,
-    TermsFactoryInterface,
+from cdisc_rules_engine.models.dictionaries import DictionaryTypes
+from cdisc_rules_engine.models.dictionaries.get_dictionary_terms import (
+    get_dictionary_terms_from_folder,
 )
-from cdisc_rules_engine.models.dictionaries.meddra import MedDRATermsFactory
-from cdisc_rules_engine.models.dictionaries.whodrug import WhoDrugTermsFactory
 from cdisc_rules_engine.models.rule_conditions import ConditionCompositeFactory
 from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
+from cdisc_rules_engine.models.validation_args import Validation_args
 from cdisc_rules_engine.rules_engine import RulesEngine
 from cdisc_rules_engine.services import logger as engine_logger
 from cdisc_rules_engine.services.cache import (
@@ -28,9 +28,8 @@ from cdisc_rules_engine.services.data_services import (
     BaseDataService,
     DataServiceFactory,
 )
-from cdisc_rules_engine.utilities.utils import get_rules_cache_key
-from cdisc_rules_engine.models.validation_args import Validation_args
 from cdisc_rules_engine.utilities.report_factory import ReportFactory
+from cdisc_rules_engine.utilities.utils import get_rules_cache_key
 
 """
 Sync manager used to manage instances of the cache between processes.
@@ -82,10 +81,6 @@ def fill_cache_with_dictionaries(cache: CacheServiceInterface, args):
     and saves to cache (inmemory or redis).
     """
     data_service = DataServiceFactory(config, cache).get_data_service()
-    dictionary_type_to_factory_map: dict = {
-        DictionaryTypes.MEDDRA.value: MedDRATermsFactory,
-        DictionaryTypes.WHODRUG.value: WhoDrugTermsFactory,
-    }
 
     dictionary_type_to_path_map: dict = {
         DictionaryTypes.MEDDRA.value: args.meddra,
@@ -93,12 +88,12 @@ def fill_cache_with_dictionaries(cache: CacheServiceInterface, args):
     }
 
     for dictionary_type, dictionary_path in dictionary_type_to_path_map.items():
-        if dictionary_path:
-            factory: TermsFactoryInterface = dictionary_type_to_factory_map[
-                dictionary_type
-            ](data_service)
-            terms: dict = factory.install_terms(dictionary_path)
-            cache.add(dictionary_path, terms)
+        if not dictionary_path:
+            continue
+        terms = get_dictionary_terms_from_folder(
+            data_service, dictionary_type, dictionary_path
+        )
+        cache.add(dictionary_path, terms)
 
 
 def get_datasets(data_service: BaseDataService, data_path: str):
