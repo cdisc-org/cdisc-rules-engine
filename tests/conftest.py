@@ -6,6 +6,7 @@ import pytest
 
 from cdisc_rules_engine.enums.rule_types import RuleTypes
 from cdisc_rules_engine.models.dictionaries.whodrug import WhoDrugTermsFactory
+from cdisc_rules_engine.models.dictionaries.meddra import MedDRATermsFactory
 from cdisc_rules_engine.models.operation_params import OperationParams
 from cdisc_rules_engine.models.rule_conditions import ConditionCompositeFactory
 from cdisc_rules_engine.services.cache.in_memory_cache_service import (
@@ -1103,6 +1104,31 @@ def installed_whodrug_dictionaries(request) -> dict:
 
     return {
         "whodrug_path": whodrug_path,
+        "cache_service": cache_service,
+    }
+
+
+@pytest.fixture(scope="function")
+def installed_meddra_dictionaries(request) -> dict:
+    """
+    Installs meddra dictionaries and saves to cache.
+    Deletes them afterwards.
+    """
+    cache_service = InMemoryCacheService.get_instance()
+    # install dictionaries and save to cache
+    local_data_service = LocalDataService.get_instance(cache_service=cache_service)
+    factory = MedDRATermsFactory(local_data_service)
+
+    meddra_path: str = f"{os.path.dirname(__file__)}/resources/dictionaries/meddra"
+    terms: dict = factory.install_terms(meddra_path)
+    cache_service.add(meddra_path, terms)
+
+    def delete_terms_from_cache():
+        cache_service.clear(meddra_path)
+
+    request.addfinalizer(delete_terms_from_cache)
+    return {
+        "meddra_path": meddra_path,
         "cache_service": cache_service,
     }
 
