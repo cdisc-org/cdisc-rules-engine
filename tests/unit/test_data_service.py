@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 
 from cdisc_rules_engine.models.dataset_types import DatasetTypes
-from cdisc_rules_engine.services.data_services import BaseDataService, cached_dataset
+from cdisc_rules_engine.services.data_services import cached_dataset, LocalDataService
 from cdisc_rules_engine.utilities.utils import get_dataset_cache_key_from_path
 
 
@@ -35,7 +35,7 @@ from cdisc_rules_engine.utilities.utils import get_dataset_cache_key_from_path
 )
 def test_get_dataset_class(dataset, data, expected_class, filename):
     dataset = pd.DataFrame.from_dict(data)
-    data_service = BaseDataService()
+    data_service = LocalDataService()
     class_name = data_service.get_dataset_class(dataset, filename, dataset)
     assert class_name == expected_class
 
@@ -53,11 +53,11 @@ def test_get_dataset_class_associated_domains():
         f"{data_bundle_path}/ce.xpt": ce_dataset,
     }
     with patch(
-        "cdisc_rules_engine.services.data_services.BaseDataService.get_dataset",
+        "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
         return_value=ap_dataset,
         side_effect=lambda dataset_name: path_to_dataset_map[dataset_name],
     ):
-        data_service = BaseDataService()
+        data_service = LocalDataService()
         filepath = f"{data_bundle_path}/ce.xpt"
         class_name = data_service.get_dataset_class(ap_dataset, filepath, datasets)
         assert class_name == "Events"
