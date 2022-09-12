@@ -36,8 +36,8 @@ jobs:
         uses: programmingwithalex/pytester-cov@main
         with:
           pytest-root-dir: 'cdisc_rules_engine'
-          cov-threshold-single: 80
-          cov-threshold-total: 80
+          cov-threshold-single: 10
+          cov-threshold-total: 10
 
       - name: Coverage single fail - exit
         if: ${{ steps.pytester-cov.outputs.cov-threshold-single-fail == 'true' }}
