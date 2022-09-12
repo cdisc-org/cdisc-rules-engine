@@ -1,11 +1,9 @@
 from typing import Type
 
-from cdisc_rules_engine.models.dictionaries import (
-    DictionaryTypes,
-    TermsFactoryInterface,
-)
-from cdisc_rules_engine.models.dictionaries.meddra import MedDRATermsFactory
-from cdisc_rules_engine.models.dictionaries.whodrug import WhoDrugTermsFactory
+from .terms_factory_interface import TermsFactoryInterface
+from .dictionary_types import DictionaryTypes
+from .meddra import MedDRATermsFactory
+from .whodrug import WhoDrugTermsFactory
 from cdisc_rules_engine.services.data_services import BaseDataService
 from cdisc_rules_engine.services.factory_interface import FactoryInterface
 
