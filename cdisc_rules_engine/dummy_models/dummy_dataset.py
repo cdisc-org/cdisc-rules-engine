@@ -21,7 +21,7 @@ class DummyDataset:
     def get_metadata(self):
         return {
             "dataset_size": [self.filesize or 1000],
-            "dataset_name": [self.name or "test"],
+            "dataset_name": [self.domain or "test"],
             "dataset_label": [self.label or "test"],
         }
 

@@ -3,6 +3,7 @@ import logging
 import os
 import pickle
 import time
+import click
 from functools import partial
 from multiprocessing import Pool
 from multiprocessing.managers import SyncManager
@@ -159,13 +160,32 @@ def run_validation(args: Validation_args):
     datasets = get_datasets(data_service, data_path)
 
     start = time.time()
-    pool = Pool(args.pool_size)
-    results = pool.map(
-        partial(validate_single_rule, shared_cache, data_path, datasets, args),
-        rules,
-    )
-    pool.close()
-    pool.join()
+    results = []
+
+    # run each rule in a separate process
+    with Pool(args.pool_size) as pool:
+        if args.disable_progressbar is True:
+            for rule_result in pool.imap_unordered(
+                partial(validate_single_rule, shared_cache, data_path, datasets, args),
+                rules,
+            ):
+                results.append(rule_result)
+        else:
+            with click.progressbar(
+                length=len(rules),
+                fill_char=click.style("\u2588", fg="green"),
+                empty_char=click.style("-", fg="white", dim=True),
+                show_eta=False,
+            ) as bar:
+                for rule_result in pool.imap_unordered(
+                    partial(
+                        validate_single_rule, shared_cache, data_path, datasets, args
+                    ),
+                    rules,
+                ):
+                    results.append(rule_result)
+                    bar.update(1)
+
     end = time.time()
     elapsed_time = end - start
 

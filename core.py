@@ -27,7 +27,7 @@ def cli():
 )
 @click.option(
     "-p",
-    "--pool_size",
+    "--pool-size",
     default=10,
     type=int,
     help="Number of parallel processes for validation",
@@ -47,7 +47,7 @@ def cli():
 )
 @click.option(
     "-rt",
-    "--report_template",
+    "--report-template",
     default="cdisc_rules_engine/resources/templates/report-template.xlsx",
     help="File path of report template to use for excel output",
 )
@@ -59,7 +59,7 @@ def cli():
 )
 @click.option(
     "-ct",
-    "--controlled_terminology_package",
+    "--controlled-terminology-package",
     multiple=True,
     help="Controlled terminology package to validate against,"
     " can provide more than one",
@@ -88,12 +88,19 @@ def cli():
 )
 @click.option(
     "-dv",
-    "--define_version",
+    "--define-version",
     default="2.1",
     help="Define-XML version used for validation",
 )
 @click.option("--whodrug", help="Path to directory with WHODrug dictionary files")
 @click.option("--meddra", help="Path to directory with MedDRA dictionary files")
+@click.option(
+    "--disable-progressbar",
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help="Disable progress bar",
+)
 @click.pass_context
 def validate(
     ctx,
@@ -111,6 +118,7 @@ def validate(
     define_version,
     whodrug,
     meddra,
+    disable_progressbar,
 ):
     """
     Validate data using CDISC Rules Engine
@@ -142,6 +150,7 @@ def validate(
             define_version,
             whodrug,
             meddra,
+            disable_progressbar,
         )
     )
 

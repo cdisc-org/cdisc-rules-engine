@@ -1,5 +1,6 @@
 import os
 from collections import defaultdict
+from typing import List, Dict
 
 from cdisc_rules_engine.interfaces import (
     TermsFactoryInterface,
@@ -32,7 +33,7 @@ class WhoDrugTermsFactory(TermsFactoryInterface):
     def install_terms(
         self,
         directory_path: str,
-    ) -> dict:
+    ) -> Dict[str, List[BaseWhoDrugTerm]]:
         """
         Accepts directory path and creates
         term records for each line.
@@ -55,7 +56,8 @@ class WhoDrugTermsFactory(TermsFactoryInterface):
             if not os.path.exists(file_path):
                 logger.warning(
                     f"File {dictionary_filename} "
-                    f"does not exist in directory {directory_path}"
+                    f"does not exist "
+                    f"in directory {directory_path}"
                 )
                 continue
 

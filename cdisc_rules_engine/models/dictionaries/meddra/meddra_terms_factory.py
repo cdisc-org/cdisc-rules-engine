@@ -1,4 +1,5 @@
-from io import BytesIO
+from typing import Dict, List
+from collections import defaultdict
 
 from cdisc_rules_engine.exceptions.custom_exceptions import MissingDataError
 from cdisc_rules_engine.models.dictionaries.meddra.meddra_file_names import (
@@ -22,17 +23,12 @@ class MedDRATermsFactory(TermsFactoryInterface):
     def __init__(self, data_service: DataServiceInterface):
         self.data_service = data_service
 
-    def chunks(self, lst, n):
-        """Yield successive n-sized chunks from lst."""
-        for i in range(0, len(lst), n):
-            yield lst[i : i + n]
-
     def install_terms(
         self,
         directory_path: str,
     ):
         """
-        Insert MedDRA dictionary terms into appropriate storage.
+        Create MedDRA dictionary terms from files in directory.
         """
         files = {
             MeddraFileNames.PT.value: TermTypes.PT.value,
@@ -79,7 +75,20 @@ class MedDRATermsFactory(TermsFactoryInterface):
                     term.code_hierarchy = f"{parent.code_hierarchy}/{term.code}"
                     term.term_hierarchy = f"{parent.term_hierarchy}/{term.term}"
 
-        return data
+        return self._flatten_data(data)
+
+    @staticmethod
+    def _flatten_data(
+        terms: Dict[str, Dict[str, MedDRATerm]]
+    ) -> Dict[str, List[MedDRATerm]]:
+        """
+        Used to convert hierarchical MedDRA terms to uniform
+        interface format.
+        """
+        return_dict = defaultdict(list)
+        for group, terms_values in terms.items():
+            return_dict[group].extend(terms_values.values())
+        return return_dict
 
     def read_data(self, file_path, data_type: str) -> dict:
         """
@@ -94,10 +103,8 @@ class MedDRATermsFactory(TermsFactoryInterface):
         }
         parser = parser_map[data_type]
         data = {}
-        with self.data_service.read_data(file_path, "rb") as f:
-            file_data = BytesIO(f.read())
+        with self.data_service.read_data(file_path) as file_data:
             for line in file_data:
-                line = line.decode("utf-8")
                 value = parser(line)
                 data[value.code] = value
         return data
@@ -112,10 +119,8 @@ class MedDRATermsFactory(TermsFactoryInterface):
         origin_type, target_type = file_name.split("_")
         target_type = target_type.split(".")[0]
         file_path = get_dictionary_path(directory_path, file_name)
-        with self.data_service.read_data(file_path, "rb") as f:
-            file_data = BytesIO(f.read())
+        with self.data_service.read_data(file_path) as file_data:
             for line in file_data:
-                line = line.decode("utf-8")
                 origin_code, target_code = line.split("$")[:2]
                 origin_item: MedDRATerm = data[origin_type][origin_code]
                 target_item: MedDRATerm = data[target_type][target_code]

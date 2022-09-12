@@ -1,6 +1,6 @@
 import copy
 import re
-from typing import Callable, List, Optional, Set, Union, Tuple
+from typing import List, Optional, Set, Union, Tuple
 
 import pandas as pd
 
@@ -16,6 +16,7 @@ from cdisc_rules_engine.models.rule_conditions import (
     AllowedConditionsKeys,
     ConditionCompositeFactory,
 )
+from cdisc_rules_engine.operations import operations_factory
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.utilities.data_processor import DataProcessor
 from cdisc_rules_engine.utilities.utils import (
@@ -215,7 +216,6 @@ class RuleProcessor:
             return dataset
 
         dataset_copy = dataset.copy()
-        data_processor = DataProcessor(self.data_service, self.cache)
         for operation in operations:
             # change -- pattern to domain name
             target: str = operation.get("name")
@@ -241,19 +241,10 @@ class RuleProcessor:
                 meddra_path=kwargs.get("meddra_path"),
                 whodrug_path=kwargs.get("whodrug_path"),
             )
-            operation_to_call: Optional[Callable] = getattr(
-                data_processor, operation_params.operation_name, None
-            )
-            if not operation_to_call:
-                raise ValueError(
-                    f"Operation {operation_params.operation_name} doesn't exist"
-                )
 
             # execute operation
-            result = self._execute_operation(operation_to_call, operation_params)
-            dataset_copy = self._handle_operation_result(
-                result, operation_params, dataset_copy
-            )
+            dataset_copy = self._execute_operation(operation_params, dataset_copy)
+
             logger.info(
                 f"Processed rule operation. "
                 f"operation={operation_params.operation_name}, rule={rule}"
@@ -262,7 +253,7 @@ class RuleProcessor:
         return dataset_copy
 
     def _execute_operation(
-        self, operation_to_call: Callable, operation_params: OperationParams
+        self, operation_params: OperationParams, dataset: pd.DataFrame
     ):
         """
         Internal method that executes the given operation.
@@ -298,28 +289,17 @@ class RuleProcessor:
             )
 
         # call the operation
-        result = operation_to_call(operation_params)
+        operation = operations_factory.get_service(
+            operation_params.operation_name,
+            operation_params=operation_params,
+            original_dataset=dataset,
+            cache=self.cache,
+            data_service=self.data_service,
+        )
+        result = operation.execute()
         if not DataProcessor.is_dummy_data(self.data_service):
             self.cache.add(cache_key, result)
         return result
-
-    def _handle_operation_result(
-        self, result, operation_params: OperationParams, dataset_copy: pd.DataFrame
-    ) -> pd.DataFrame:
-        if operation_params.grouping:
-            # Handle grouped results
-            result = result.rename(
-                columns={operation_params.target: operation_params.operation_id}
-            )
-            target_columns = operation_params.grouping + [operation_params.operation_id]
-            dataset = dataset_copy.merge(
-                result[target_columns], on=operation_params.grouping, how="left"
-            )
-        else:
-            # Handle single results
-            dataset_copy[operation_params.operation_id] = result
-            dataset = dataset_copy
-        return dataset
 
     def is_current_domain(self, dataset, target_domain):
         if not self.is_relationship_dataset(target_domain):

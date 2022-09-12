@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-import pytest
 
 from cdisc_rules_engine.dummy_models.dummy_dataset import DummyDataset
 from cdisc_rules_engine.services.data_services import DummyDataService
@@ -86,7 +85,6 @@ def test_get_dataset():
 def test_get_dataset_metadata():
     dataset_data = [
         {
-            "name": "AE",
             "filesize": 2000,
             "filename": "ae.xpt",
             "label": "ADVERSE EVENTS",
