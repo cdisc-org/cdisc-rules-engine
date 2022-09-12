@@ -7,7 +7,7 @@ from cdisc_rules_engine.services.data_readers import (
 from cdisc_rules_engine.services.data_services import (
     DataServiceFactory,
 )
-from cdisc_rules_engine.services.factory_interface import FactoryInterface
+from cdisc_rules_engine.interfaces import FactoryInterface
 
 
 def _register_group_plugins(
