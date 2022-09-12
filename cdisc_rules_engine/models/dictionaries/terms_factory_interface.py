@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Dict
 
 from cdisc_rules_engine.services.data_services import BaseDataService
 
@@ -18,7 +19,7 @@ class TermsFactoryInterface(ABC):
     def install_terms(
         self,
         directory_path: str,
-    ) -> dict:
+    ) -> Dict[str, list]:
         """
         Accepts file contents and saves it to the DB.
         """

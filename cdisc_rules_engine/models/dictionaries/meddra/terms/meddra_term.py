@@ -1,4 +1,3 @@
-from cdisc_rules_engine.config import config
 from cdisc_rules_engine.models.dictionaries.meddra.terms.term_types import TermTypes
 
 
@@ -59,12 +58,12 @@ class MedDRATerm:
 
     @staticmethod
     def get_code_hierarchies(terms: dict) -> set:
-        lowest_level_terms = terms[TermTypes.LLT.value].values()
+        lowest_level_terms = terms[TermTypes.LLT.value]
         return set([term.code_hierarchy for term in lowest_level_terms])
 
     @staticmethod
     def get_term_hierarchies(terms: dict) -> set:
-        lowest_level_terms = terms[TermTypes.LLT.value].values()
+        lowest_level_terms = terms[TermTypes.LLT.value]
         return set([term.term_hierarchy for term in lowest_level_terms])
 
     @staticmethod
@@ -72,6 +71,6 @@ class MedDRATerm:
         code_term_pairs = {}
         for term_type in terms:
             code_term_pairs[term_type] = set(
-                [(item.code, item.term) for item in terms[term_type].values()]
+                [(item.code, item.term) for item in terms[term_type]]
             )
         return code_term_pairs

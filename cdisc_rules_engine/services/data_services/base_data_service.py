@@ -179,3 +179,7 @@ class BaseDataService:
     ):
         """Provides singleton of data service"""
         pass
+
+    @abstractmethod
+    def has_all_files(self, prefix: str, file_names: List[str]) -> bool:
+        pass
