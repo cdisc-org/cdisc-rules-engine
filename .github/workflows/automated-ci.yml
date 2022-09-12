@@ -35,6 +35,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: actions/checkout@v3
+
       - name: pytester-cov
         id: pytester-cov
         uses: programmingwithalex/pytester-cov@main
