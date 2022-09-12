@@ -31,26 +31,6 @@ jobs:
         run: |
           python -m pytest tests/unit/
 
-      - name: pytester-cov
-        id: pytester-cov
-        uses: programmingwithalex/pytester-cov@main
-        with:
-          pytest-root-dir: 'cdisc_rules_engine'
-          cov-threshold-single: 80
-          cov-threshold-total: 80
-
-      - name: Coverage single fail - exit
-        if: ${{ steps.pytester-cov.outputs.cov-threshold-single-fail == 'true' }}
-        run: |
-          echo "cov single fail ${{ steps.pytester-cov.outputs.output-table }}"
-          exit 1
-
-      - name: Coverage total fail - exit
-        if: ${{ steps.pytester-cov.outputs.cov-threshold-total-fail == 'true' }}
-        run: |
-          echo "cov single fail ${{ steps.pytester-cov.outputs.output-table }}"
-          exit 1
-
   ensure_sufficient_test_coverage:
     runs-on: ubuntu-latest
     needs: test
