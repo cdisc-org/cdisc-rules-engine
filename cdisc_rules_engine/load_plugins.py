@@ -7,6 +7,7 @@ from cdisc_rules_engine.services.data_readers import (
 from cdisc_rules_engine.services.data_services import (
     DataServiceFactory,
 )
+from cdisc_rules_engine.operations import OperationsFactory
 from cdisc_rules_engine.interfaces import FactoryInterface
 
 
@@ -31,6 +32,7 @@ def load_plugins():
     group_factory_map: Dict[str, Type[FactoryInterface]] = {
         "core.plugins.data_readers": DataReaderFactory,
         "core.plugins.data_services": DataServiceFactory,
+        "core.plugins.rule_operations": OperationsFactory,
     }
     # for each group
     for group_name, factory_class in group_factory_map.items():
