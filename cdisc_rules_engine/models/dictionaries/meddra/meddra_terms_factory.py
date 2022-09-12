@@ -1,5 +1,5 @@
-from typing import Dict, List
 from collections import defaultdict
+from typing import Dict, List
 
 from cdisc_rules_engine.exceptions.custom_exceptions import MissingDataError
 from cdisc_rules_engine.models.dictionaries.meddra.meddra_file_names import (
