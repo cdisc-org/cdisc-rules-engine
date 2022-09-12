@@ -8,7 +8,7 @@ from cdisc_library_client.custom_exceptions import (
 )
 
 from cdisc_rules_engine.enums.library_endpoints import LibraryEndpoints
-from cdisc_rules_engine.services.cache.cache_service_interface import (
+from cdisc_rules_engine.interfaces import (
     CacheServiceInterface,
 )
 from cdisc_rules_engine.services.cdisc_library_service import CDISCLibraryService
@@ -28,8 +28,9 @@ class CachePopulator:
 
     async def load_cache_data(self):
         """
-        This function populates a cache implementation with all data
-        necessary for running rules against local data. Including
+        This function populates a cache implementation with
+        all data necessary for running rules against local data.
+        Including
         * rules
         * library metadata
         * codelist metadata

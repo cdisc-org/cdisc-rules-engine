@@ -2,7 +2,7 @@ import re
 from copy import deepcopy
 from typing import List
 
-from cdisc_rules_engine.services.cache.cache_service_interface import (
+from cdisc_rules_engine.interfaces import (
     CacheServiceInterface,
 )
 

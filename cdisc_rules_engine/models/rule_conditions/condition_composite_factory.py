@@ -1,8 +1,8 @@
 from cdisc_rules_engine.exceptions.custom_exceptions import RuleFormatError
+from cdisc_rules_engine.interfaces import ConditionInterface
 
 from .allowed_conditions_keys import AllowedConditionsKeys
 from .condition_composite import ConditionComposite
-from .condition_interface import ConditionInterface
 from .not_condition_composite import NotConditionComposite
 from .single_condition import SingleCondition
 

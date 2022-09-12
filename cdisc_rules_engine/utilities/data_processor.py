@@ -6,11 +6,11 @@ import pandas as pd
 from cdisc_rules_engine.config import config
 from cdisc_rules_engine.exceptions.custom_exceptions import InvalidMatchKeyError
 from cdisc_rules_engine.services.cache.cache_service_factory import CacheServiceFactory
-from cdisc_rules_engine.services.cache.cache_service_interface import (
+from cdisc_rules_engine.interfaces import (
     CacheServiceInterface,
+    DataServiceInterface,
 )
 from cdisc_rules_engine.services.data_services import (
-    BaseDataService,
     DataServiceFactory,
     DummyDataService,
 )
@@ -382,5 +382,5 @@ class DataProcessor:
         return equal_core_status and equal_origin_type
 
     @staticmethod
-    def is_dummy_data(data_service: BaseDataService) -> bool:
+    def is_dummy_data(data_service: DataServiceInterface) -> bool:
         return isinstance(data_service, DummyDataService)

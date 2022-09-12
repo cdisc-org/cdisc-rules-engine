@@ -10,11 +10,11 @@ from cdisc_rules_engine.constants.domains import (
     APFA_DOMAIN,
     SUPPLEMENTARY_DOMAINS,
 )
+from cdisc_rules_engine.interfaces import ConditionInterface
 from cdisc_rules_engine.models.operation_params import OperationParams
 from cdisc_rules_engine.models.rule_conditions import (
     AllowedConditionsKeys,
     ConditionCompositeFactory,
-    ConditionInterface,
 )
 from cdisc_rules_engine.operations import operations_factory
 from cdisc_rules_engine.services import logger

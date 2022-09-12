@@ -1,16 +1,16 @@
 from abc import ABC, abstractmethod
 from typing import Dict
 
-from cdisc_rules_engine.services.data_services import BaseDataService
+from cdisc_rules_engine.interfaces import DataServiceInterface
 
 
 class TermsFactoryInterface(ABC):
     """
-    An interface for all factories that install terms.
+    An interface for all factories that install dictionaries terms.
     """
 
     @abstractmethod
-    def __init__(self, data_service: BaseDataService):
+    def __init__(self, data_service: DataServiceInterface):
         """
         Initializes a factory object.
         """

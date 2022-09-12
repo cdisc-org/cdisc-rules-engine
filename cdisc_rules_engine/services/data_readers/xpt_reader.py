@@ -2,7 +2,7 @@ from io import BytesIO
 
 import pandas as pd
 
-from cdisc_rules_engine.services.data_readers.data_reader_interface import (
+from cdisc_rules_engine.interfaces import (
     DataReaderInterface,
 )
 

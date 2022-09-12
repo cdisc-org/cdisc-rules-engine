@@ -1,6 +1,6 @@
 from typing import List
 
-from .condition_interface import ConditionInterface
+from cdisc_rules_engine.interfaces import ConditionInterface
 
 
 class SingleCondition(ConditionInterface):

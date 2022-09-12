@@ -16,8 +16,8 @@ from cdisc_rules_engine.constants.domains import (
     SUPPLEMENTARY_DOMAINS,
 )
 from cdisc_rules_engine.enums.execution_status import ExecutionStatus
+from cdisc_rules_engine.interfaces import ConditionInterface
 from cdisc_rules_engine.models.base_validation_entity import BaseValidationEntity
-from cdisc_rules_engine.models.rule_conditions import ConditionInterface
 
 
 def convert_file_size(size_in_bytes: int, desired_unit: str) -> float:

@@ -1,6 +1,6 @@
 from typing import List
 
-from .condition_interface import ConditionInterface
+from cdisc_rules_engine.interfaces import ConditionInterface
 
 
 class ConditionComposite(ConditionInterface):
@@ -62,8 +62,15 @@ class ConditionComposite(ConditionInterface):
             (
                 "any",
                 [
-                    {"operator": "empty", "name": "get_dataset"},
-                    {"equal_to": "empty", "name": "get_dataset", "value": {"comparator": 100}}
+                    {
+                        "operator": "empty",
+                        "name": "get_dataset"
+                    },
+                    {
+                        "equal_to": "empty",
+                        "name": "get_dataset",
+                        "value": {"comparator": 100}
+                    }
                 ]
             ),
             ...

@@ -2,10 +2,10 @@ import pandas as pd
 from cdisc_rules_engine.models.operation_params import OperationParams
 from abc import abstractmethod
 
-from cdisc_rules_engine.services.cache.cache_service_interface import (
+from cdisc_rules_engine.interfaces import (
     CacheServiceInterface,
+    DataServiceInterface,
 )
-from cdisc_rules_engine.services.data_services.base_data_service import BaseDataService
 
 
 class BaseOperation:
@@ -14,7 +14,7 @@ class BaseOperation:
         params: OperationParams,
         original_dataset: pd.DataFrame,
         cache_service: CacheServiceInterface,
-        data_service: BaseDataService,
+        data_service: DataServiceInterface,
     ):
         self.params = params
         self.cache = cache_service
