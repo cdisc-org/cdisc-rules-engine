@@ -46,10 +46,10 @@ jobs:
           exit 1
 
       - name: Coverage total fail - exit
-      if: ${{ steps.pytester-cov.outputs.cov-threshold-total-fail == 'true' }}
-      run: |
-        echo "cov single fail ${{ steps.pytester-cov.outputs.cov-threshold-total-fail }}"
-        exit 1
+        if: ${{ steps.pytester-cov.outputs.cov-threshold-total-fail == 'true' }}
+        run: |
+          echo "cov single fail ${{ steps.pytester-cov.outputs.cov-threshold-total-fail }}"
+          exit 1
 
   get_changed_files:
     runs-on: ubuntu-latest
