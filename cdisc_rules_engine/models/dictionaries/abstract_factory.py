@@ -5,11 +5,11 @@ from cdisc_rules_engine.interfaces import (
     FactoryInterface,
     TermsFactoryInterface,
 )
-from cdisc_rules_engine.models.dictionaries import (
+from .dictionary_types import (
     DictionaryTypes,
 )
-from cdisc_rules_engine.models.dictionaries.meddra import MedDRATermsFactory
-from cdisc_rules_engine.models.dictionaries.whodrug import WhoDrugTermsFactory
+from .meddra import MedDRATermsFactory
+from .whodrug import WhoDrugTermsFactory
 
 
 class AbstractTermsFactory(FactoryInterface):
