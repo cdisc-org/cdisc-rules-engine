@@ -1,29 +1,32 @@
-from cdisc_rules_engine.operations.distinct import Distinct
+from typing import Type
+
+from cdisc_rules_engine.operations.base_operation import BaseOperation
+from cdisc_rules_engine.operations.dataset_column_order import DatasetColumnOrder
 from cdisc_rules_engine.operations.day_data_validator import DayDataValidator
+from cdisc_rules_engine.operations.distinct import Distinct
 from cdisc_rules_engine.operations.extract_metadata import ExtractMetadata
+from cdisc_rules_engine.operations.library_column_order import LibraryColumnOrder
 from cdisc_rules_engine.operations.max_date import MaxDate
-from cdisc_rules_engine.operations.min_date import MinDate
-from cdisc_rules_engine.operations.minimum import Minimum
 from cdisc_rules_engine.operations.maximum import Maximum
 from cdisc_rules_engine.operations.mean import Mean
-from cdisc_rules_engine.operations.base_operation import BaseOperation
 from cdisc_rules_engine.operations.meddra_code_references_validator import (
     MedDRACodeReferencesValidator,
-)
-from cdisc_rules_engine.operations.meddra_term_references_validator import (
-    MedDRATermReferencesValidator,
 )
 from cdisc_rules_engine.operations.meddra_code_term_pairs_validator import (
     MedDRACodeTermPairsValidator,
 )
-from cdisc_rules_engine.operations.whodrug_references_validator import (
-    WhodrugReferencesValidator,
+from cdisc_rules_engine.operations.meddra_term_references_validator import (
+    MedDRATermReferencesValidator,
 )
+from cdisc_rules_engine.operations.min_date import MinDate
+from cdisc_rules_engine.operations.minimum import Minimum
 from cdisc_rules_engine.operations.variable_exists import VariableExists
 from cdisc_rules_engine.operations.variable_names import VariableNames
 from cdisc_rules_engine.operations.variable_value_count import VariableValueCount
+from cdisc_rules_engine.operations.whodrug_references_validator import (
+    WhodrugReferencesValidator,
+)
 from cdisc_rules_engine.services.factory_interface import FactoryInterface
-from typing import Type
 
 
 class OperationsFactory(FactoryInterface):
@@ -36,6 +39,8 @@ class OperationsFactory(FactoryInterface):
         "max_date": MaxDate,
         "min_date": MinDate,
         "extract_metadata": ExtractMetadata,
+        "get_column_order_from_dataset": DatasetColumnOrder,
+        "get_column_order_from_library": LibraryColumnOrder,
         "variable_exists": VariableExists,
         "variable_value_count": VariableValueCount,
         "variable_names": VariableNames,
