@@ -1,11 +1,15 @@
 from typing import Type
 
-from .terms_factory_interface import TermsFactoryInterface
-from .dictionary_types import DictionaryTypes
+from cdisc_rules_engine.interfaces import (
+    DataServiceInterface,
+    FactoryInterface,
+    TermsFactoryInterface,
+)
+from .dictionary_types import (
+    DictionaryTypes,
+)
 from .meddra import MedDRATermsFactory
 from .whodrug import WhoDrugTermsFactory
-from cdisc_rules_engine.services.data_services import BaseDataService
-from cdisc_rules_engine.services.factory_interface import FactoryInterface
 
 
 class AbstractTermsFactory(FactoryInterface):
@@ -14,7 +18,7 @@ class AbstractTermsFactory(FactoryInterface):
         DictionaryTypes.WHODRUG.value: WhoDrugTermsFactory,
     }
 
-    def __init__(self, data_service: BaseDataService):
+    def __init__(self, data_service: DataServiceInterface):
         self.data_service = data_service
 
     @classmethod

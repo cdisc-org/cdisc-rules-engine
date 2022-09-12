@@ -10,6 +10,7 @@ from multiprocessing.managers import SyncManager
 
 from cdisc_rules_engine.config import config
 from cdisc_rules_engine.constants.define_xml_constants import DEFINE_XML_FILE_NAME
+from cdisc_rules_engine.interfaces import CacheServiceInterface, DataServiceInterface
 from cdisc_rules_engine.models.dictionaries import DictionaryTypes
 from cdisc_rules_engine.models.dictionaries.get_dictionary_terms import (
     extract_dictionary_terms,
@@ -20,12 +21,10 @@ from cdisc_rules_engine.models.validation_args import Validation_args
 from cdisc_rules_engine.rules_engine import RulesEngine
 from cdisc_rules_engine.services import logger as engine_logger
 from cdisc_rules_engine.services.cache import (
-    CacheServiceInterface,
     InMemoryCacheService,
     RedisCacheService,
 )
 from cdisc_rules_engine.services.data_services import (
-    BaseDataService,
     DataServiceFactory,
 )
 from cdisc_rules_engine.utilities.report_factory import ReportFactory
@@ -94,7 +93,7 @@ def fill_cache_with_dictionaries(cache: CacheServiceInterface, args):
         cache.add(dictionary_path, terms)
 
 
-def get_datasets(data_service: BaseDataService, data_path: str):
+def get_datasets(data_service: DataServiceInterface, data_path: str):
     data_files = [
         f
         for f in next(os.walk(data_path), (None, None, []))[2]

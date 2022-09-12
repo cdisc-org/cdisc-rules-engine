@@ -8,6 +8,7 @@ from cdisc_rules_engine.models.dataset_types import DatasetTypes
 from cdisc_rules_engine.models.variable_metadata_container import (
     VariableMetadataContainer,
 )
+from cdisc_rules_engine.interfaces import CacheServiceInterface
 from cdisc_rules_engine.services.data_readers.data_reader_factory import (
     DataReaderFactory,
 )
@@ -18,7 +19,6 @@ from cdisc_rules_engine.utilities.utils import (
 )
 
 from .base_data_service import BaseDataService, cached_dataset
-from cdisc_rules_engine.services.cache import CacheServiceInterface
 from cdisc_rules_engine.config import ConfigService
 
 

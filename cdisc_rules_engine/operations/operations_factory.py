@@ -22,7 +22,7 @@ from cdisc_rules_engine.operations.whodrug_references_validator import (
 from cdisc_rules_engine.operations.variable_exists import VariableExists
 from cdisc_rules_engine.operations.variable_names import VariableNames
 from cdisc_rules_engine.operations.variable_value_count import VariableValueCount
-from cdisc_rules_engine.services.factory_interface import FactoryInterface
+from cdisc_rules_engine.interfaces import FactoryInterface
 from typing import Type
 
 

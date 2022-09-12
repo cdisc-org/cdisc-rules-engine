@@ -5,7 +5,7 @@ import redis
 
 from cdisc_rules_engine.config import ConfigService
 from cdisc_rules_engine.services import logger
-from cdisc_rules_engine.services.cache.cache_service_interface import (
+from cdisc_rules_engine.interfaces import (
     CacheServiceInterface,
 )
 

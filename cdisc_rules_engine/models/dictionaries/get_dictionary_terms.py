@@ -1,10 +1,11 @@
-from . import DictionaryTypes, TermsFactoryInterface
+from cdisc_rules_engine.interfaces import DataServiceInterface, TermsFactoryInterface
+
+from . import DictionaryTypes
 from .abstract_factory import AbstractTermsFactory
-from cdisc_rules_engine.services.data_services import BaseDataService
 
 
 def extract_dictionary_terms(
-    data_service: BaseDataService,
+    data_service: DataServiceInterface,
     dictionary_type: DictionaryTypes,
     dictionaries_directory: str,
 ) -> dict:

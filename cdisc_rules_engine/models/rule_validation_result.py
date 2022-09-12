@@ -1,6 +1,6 @@
 from typing import List, Union
 
-from cdisc_rules_engine.models.representation_interface import RepresentationInterface
+from cdisc_rules_engine.interfaces import RepresentationInterface
 from cdisc_rules_engine.utilities.utils import get_execution_status
 
 

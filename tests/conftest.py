@@ -9,7 +9,7 @@ from cdisc_rules_engine.models.dictionaries.whodrug import WhoDrugTermsFactory
 from cdisc_rules_engine.models.dictionaries.meddra import MedDRATermsFactory
 from cdisc_rules_engine.models.operation_params import OperationParams
 from cdisc_rules_engine.models.rule_conditions import ConditionCompositeFactory
-from cdisc_rules_engine.services.cache.in_memory_cache_service import (
+from cdisc_rules_engine.services.cache import (
     InMemoryCacheService,
 )
 from cdisc_rules_engine.services.data_services import LocalDataService

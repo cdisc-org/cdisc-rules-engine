@@ -1,6 +1,5 @@
 import asyncio
 import pickle
-from datetime import datetime, timedelta
 from functools import partial
 from typing import Iterable, List, Optional
 
@@ -9,7 +8,7 @@ from cdisc_library_client.custom_exceptions import (
 )
 
 from cdisc_rules_engine.enums.library_endpoints import LibraryEndpoints
-from cdisc_rules_engine.services.cache.cache_service_interface import (
+from cdisc_rules_engine.interfaces import (
     CacheServiceInterface,
 )
 from cdisc_rules_engine.services.cdisc_library_service import CDISCLibraryService
@@ -28,8 +27,8 @@ class CachePopulator:
 
     async def load_cache_data(self):
         """
-        This function populates a cache implementation with all data necessary for running
-        rules against local data. Including
+        This function populates a cache implementation with
+        all data necessary for running rules against local data. Including
         * rules
         * library metadata
         * codelist metadata
@@ -79,7 +78,8 @@ class CachePopulator:
 
     def save_ct_packages_locally(self, cache_path: str):
         """
-        Store cached ct pacakage metadata in codelist_term_maps.pkl in cache path directory
+        Store cached ct pacakage metadata in
+        codelist_term_maps.pkl in cache path directory
         """
         cts = self.cache.get_by_regex(".*ct.*")
         with open(f"{cache_path}/codelist_term_maps.pkl", "wb") as f:
@@ -87,7 +87,8 @@ class CachePopulator:
 
     def save_variable_codelist_maps_locally(self, cache_path: str):
         """
-        Store cached variable codelist metadata in variable_codelist_maps.pkl in cache path directory
+        Store cached variable codelist metadata in
+        variable_codelist_maps.pkl in cache path directory
         """
         variable_codelist_maps = self.cache.get_by_regex(".*codelists.*")
         with open(f"{cache_path}/variable_codelist_maps.pkl", "wb") as f:
@@ -103,7 +104,8 @@ class CachePopulator:
 
     def save_variables_metadata_locally(self, cache_path: str):
         """
-        Store cached variables metadata in variables_metadata.pkl in cache path directory
+        Store cached variables metadata in
+        variables_metadata.pkl in cache path directory
         """
         variables_metadata = self.cache.filter_cache("library_variables_metadata")
         with open(f"{cache_path}/variables_metadata.pkl", "wb") as f:
@@ -132,7 +134,8 @@ class CachePopulator:
 
     async def _get_codelist_term_maps(self) -> List[dict]:
         """
-        For each CT package in CDISC library, generate a map of codelist to codelist term. Ex:
+        For each CT package in CDISC library,
+        generate a map of codelist to codelist term. Ex:
         {
             "package": "sdtmct-2021-12-17"
             "C123": {
