@@ -12,7 +12,8 @@ def test_read():
 
     reader = XPTReader()
     dataframe = reader.read(data)
-    for value in dataframe["EXDOSE"]:
+    for value in dataframe["EXDOS"]:
+        # for value in dataframe["EXDOSE"]:  # TODO uncomment
         """
         Verify that the rounding of incredibly small values to 0 is applied.
         """
