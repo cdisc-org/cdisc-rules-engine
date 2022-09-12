@@ -30,12 +30,6 @@ jobs:
       - name: Running Tests
         run: |
           python -m pytest tests/unit/
-  
-  ensure_sufficient_test_coverage:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v3
 
       - name: pytester-cov
         id: pytester-cov
