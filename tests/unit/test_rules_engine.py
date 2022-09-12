@@ -6,7 +6,9 @@ import pandas as pd
 import pytest
 from conftest import get_matches_regex_pattern_rule
 
+from cdisc_rules_engine.constants.classes import GENERAL_OBSERVATIONS_CLASS
 from cdisc_rules_engine.enums.execution_status import ExecutionStatus
+from cdisc_rules_engine.enums.variable_roles import VariableRoles
 from cdisc_rules_engine.exceptions.custom_exceptions import (
     VariableMetadataNotFoundError,
 )
@@ -19,6 +21,7 @@ from cdisc_rules_engine.utilities.rule_processor import RuleProcessor
 from cdisc_rules_engine.utilities.utils import (
     get_library_variables_metadata_cache_key,
     get_standard_details_cache_key,
+    get_model_details_cache_key,
 )
 
 
@@ -453,7 +456,9 @@ def test_validate_rule_multiple_conditions(dataset_rule_multiple_conditions: dic
                 "executionStatus": "success",
                 "domain": "EC",
                 "variables": ["ECCOOLVAR"],
-                "message": "Length of ECCOOLVAR is not equal to 5 or ECCOOLVAR == cool.",
+                "message": (
+                    "Length of ECCOOLVAR is not equal to 5 or ECCOOLVAR == cool."
+                ),
                 "errors": [
                     {"value": {"ECCOOLVAR": "valid"}, "row": 2},
                     {"value": {"ECCOOLVAR": "cool"}, "row": 3},
@@ -548,7 +553,12 @@ def test_validate_record_rule_no_letters_numbers_underscores():
         ]
 
 
-def test_validate_dataset_metadata(dataset_metadata_not_equal_to_rule: dict):
+@patch(
+    "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset_metadata",
+)
+def test_validate_dataset_metadata(
+    mock_get_dataset_metadata: MagicMock, dataset_metadata_not_equal_to_rule: dict
+):
     """
     Unit test that checks dataset metadata validation.
     """
@@ -565,25 +575,27 @@ def test_validate_dataset_metadata(dataset_metadata_not_equal_to_rule: dict):
             ],
         }
     )
-    with patch(
-        "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset_metadata",
-        return_value=dataset_mock,
-    ):
-        validation_result: List[str] = RulesEngine().validate_single_rule(
-            dataset_metadata_not_equal_to_rule, "study/bundle", [{}], "EC"
-        )
-        assert validation_result == [
-            {
-                "domain": "EC",
-                "errors": [],
-                "executionStatus": "success",
-                "message": None,
-                "variables": [],
-            }
-        ]
+    mock_get_dataset_metadata.return_value = dataset_mock
+
+    validation_result: List[str] = RulesEngine().validate_single_rule(
+        dataset_metadata_not_equal_to_rule, "study/bundle", [{}], "EC"
+    )
+    assert validation_result == [
+        {
+            "domain": "EC",
+            "errors": [],
+            "executionStatus": "success",
+            "message": None,
+            "variables": [],
+        }
+    ]
 
 
+@patch(
+    "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset_metadata"
+)
 def test_validate_dataset_metadata_wrong_metadata(
+    mock_get_dataset_metadata: MagicMock,
     dataset_metadata_not_equal_to_rule: dict,
 ):
     """
@@ -603,34 +615,37 @@ def test_validate_dataset_metadata_wrong_metadata(
             ],
         }
     )
-    with patch(
-        "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset_metadata",
-        return_value=dataset_mock,
-    ):
-        validation_result: List[dict] = RulesEngine().validate_single_rule(
-            dataset_metadata_not_equal_to_rule, "study/bundle", [{}], "EC"
-        )
-        assert validation_result == [
-            {
-                "domain": "EC",
-                "executionStatus": ExecutionStatus.SUCCESS.value,
-                "variables": ["dataset_label", "dataset_name", "dataset_size"],
-                "errors": [
-                    {
-                        "row": 1,
-                        "value": {
-                            "dataset_name": "AD",
-                            "dataset_label": "Events",
-                            "dataset_size": 7,
-                        },
-                    }
-                ],
-                "message": "Dataset metadata is wrong.",
-            }
-        ]
+    mock_get_dataset_metadata.return_value = dataset_mock
+
+    validation_result: List[dict] = RulesEngine().validate_single_rule(
+        dataset_metadata_not_equal_to_rule, "study/bundle", [{}], "EC"
+    )
+    assert validation_result == [
+        {
+            "domain": "EC",
+            "executionStatus": ExecutionStatus.SUCCESS.value,
+            "variables": ["dataset_label", "dataset_name", "dataset_size"],
+            "errors": [
+                {
+                    "row": 1,
+                    "value": {
+                        "dataset_name": "AD",
+                        "dataset_label": "Events",
+                        "dataset_size": 7,
+                    },
+                }
+            ],
+            "message": "Dataset metadata is wrong.",
+        }
+    ]
 
 
-def test_validate_variable_metadata(variables_metadata_rule: dict):
+@patch(
+    "cdisc_rules_engine.services.data_services.LocalDataService.get_variables_metadata",
+)
+def test_validate_variable_metadata(
+    mock_get_variables_metadata: MagicMock, variables_metadata_rule: dict
+):
     """
     Unit test that checks variable metadata validation.
     """
@@ -642,25 +657,28 @@ def test_validate_variable_metadata(variables_metadata_rule: dict):
             "variable_data_type": ["Char", "Char"],
         }
     )
-    with patch(
-        "cdisc_rules_engine.services.data_services.LocalDataService.get_variables_metadata",
-        return_value=dataset_mock,
-    ):
-        validation_result: List[dict] = RulesEngine().validate_single_rule(
-            variables_metadata_rule, "study/bundle", [{}], "EC"
-        )
-        assert validation_result == [
-            {
-                "domain": "EC",
-                "errors": [],
-                "executionStatus": "success",
-                "message": None,
-                "variables": [],
-            }
-        ]
+    mock_get_variables_metadata.return_value = dataset_mock
+
+    validation_result: List[dict] = RulesEngine().validate_single_rule(
+        variables_metadata_rule, "study/bundle", [{}], "EC"
+    )
+    assert validation_result == [
+        {
+            "domain": "EC",
+            "errors": [],
+            "executionStatus": "success",
+            "message": None,
+            "variables": [],
+        }
+    ]
 
 
-def test_validate_variable_metadata_wrong_metadata(variables_metadata_rule: dict):
+@patch(
+    "cdisc_rules_engine.services.data_services.LocalDataService.get_variables_metadata",
+)
+def test_validate_variable_metadata_wrong_metadata(
+    mock_get_variables_metadata: MagicMock, variables_metadata_rule: dict
+):
     """
     Unit test that checks variable metadata validation.
     Test the case when variable metadata is wrong.
@@ -676,42 +694,45 @@ def test_validate_variable_metadata_wrong_metadata(variables_metadata_rule: dict
             "variable_data_type": ["Char", "Char"],
         }
     )
-    with patch(
-        "cdisc_rules_engine.services.data_services.LocalDataService.get_variables_metadata",
-        return_value=dataset_mock,
-    ):
-        validation_result: List[str] = RulesEngine().validate_single_rule(
-            variables_metadata_rule, "study/bundle", [{}], "EC"
-        )
-        assert validation_result == [
-            {
-                "domain": "EC",
-                "variables": ["variable_data_type", "variable_label", "variable_name"],
-                "executionStatus": ExecutionStatus.SUCCESS.value,
-                "errors": [
-                    {
-                        "row": 1,
-                        "value": {
-                            "variable_name": "longer than eight",
-                            "variable_label": "Study Identifier Very Long Longer than 40",
-                            "variable_data_type": "Char",
-                        },
+    mock_get_variables_metadata.return_value = dataset_mock
+
+    validation_result: List[str] = RulesEngine().validate_single_rule(
+        variables_metadata_rule, "study/bundle", [{}], "EC"
+    )
+    assert validation_result == [
+        {
+            "domain": "EC",
+            "variables": ["variable_data_type", "variable_label", "variable_name"],
+            "executionStatus": ExecutionStatus.SUCCESS.value,
+            "errors": [
+                {
+                    "row": 1,
+                    "value": {
+                        "variable_name": "longer than eight",
+                        "variable_label": "Study Identifier Very Long Longer than 40",
+                        "variable_data_type": "Char",
                     },
-                    {
-                        "row": 2,
-                        "value": {
-                            "variable_name": "longer than eight as well",
-                            "variable_label": "Long Long Label Very Long Longer than 40 chars",
-                            "variable_data_type": "Char",
-                        },
+                },
+                {
+                    "row": 2,
+                    "value": {
+                        "variable_name": "longer than eight as well",
+                        "variable_label": (
+                            "Long Long Label Very Long Longer than 40 chars"
+                        ),
+                        "variable_data_type": "Char",
                     },
-                ],
-                "message": "Variable metadata is wrong.",
-            }
-        ]
+                },
+            ],
+            "message": "Variable metadata is wrong.",
+        }
+    ]
 
 
-def test_rule_with_domain_prefix_replacement():
+@patch(
+    "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
+)
+def test_rule_with_domain_prefix_replacement(mock_get_dataset: MagicMock):
     rule = {
         "core_id": "TEST1",
         "standards": [],
@@ -740,28 +761,26 @@ def test_rule_with_domain_prefix_replacement():
         ],
     }
     df = pd.DataFrame.from_dict({"AESTDY": [11, 12, 40, 59, 59]})
-    with patch(
-        "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
-        return_value=df,
-    ):
-        validation_result: List[str] = RulesEngine().validate_single_rule(
-            rule, "study/bundle", [{"domain": "AE", "filename": "ae.xpt"}], "AE"
-        )
-        assert validation_result == [
-            {
-                "executionStatus": "success",
-                "domain": "AE",
-                "variables": ["AESTDY"],
-                "message": "Invalid AESTDY value",
-                "errors": [
-                    {"row": 1, "value": {"AESTDY": 11}},
-                    {"row": 2, "value": {"AESTDY": 12}},
-                    {"row": 3, "value": {"AESTDY": 40}},
-                    {"row": 4, "value": {"AESTDY": 59}},
-                    {"row": 5, "value": {"AESTDY": 59}},
-                ],
-            }
-        ]
+    mock_get_dataset.return_value = df
+
+    validation_result: List[str] = RulesEngine().validate_single_rule(
+        rule, "study/bundle", [{"domain": "AE", "filename": "ae.xpt"}], "AE"
+    )
+    assert validation_result == [
+        {
+            "executionStatus": "success",
+            "domain": "AE",
+            "variables": ["AESTDY"],
+            "message": "Invalid AESTDY value",
+            "errors": [
+                {"row": 1, "value": {"AESTDY": 11}},
+                {"row": 2, "value": {"AESTDY": 12}},
+                {"row": 3, "value": {"AESTDY": 40}},
+                {"row": 4, "value": {"AESTDY": 59}},
+                {"row": 5, "value": {"AESTDY": 59}},
+            ],
+        }
+    ]
 
 
 @pytest.mark.parametrize(
@@ -1024,8 +1043,12 @@ def test_validate_single_rule_not_equal_to(
     ],
 )
 @patch("cdisc_rules_engine.rules_engine.RulesEngine.get_define_xml_metadata_for_domain")
+@patch(
+    "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset_metadata",
+)
 def test_validate_dataset_metadata_against_define_xml(
-    mock_get_define_xml_metadata_for_domain,
+    mock_get_dataset_metadata: MagicMock,
+    mock_get_define_xml_metadata_for_domain: MagicMock,
     define_xml_validation_rule: dict,
     define_xml_metadata: dict,
     dataset_mock: pd.DataFrame,
@@ -1036,15 +1059,13 @@ def test_validate_dataset_metadata_against_define_xml(
     Creates an invalid dataset and validates it against Define XML.
     """
     mock_get_define_xml_metadata_for_domain.return_value = define_xml_metadata
-    with patch(
-        "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset_metadata",
-        return_value=dataset_mock,
-    ):
-        datasets: List[dict] = [{"domain": "AE", "filename": "ae.xpt"}]
-        validation_result: List[dict] = RulesEngine().validate_single_rule(
-            define_xml_validation_rule, "CDISC01/test/ae.xpt", datasets, "AE"
-        )
-        assert validation_result == expected_validation_result
+    mock_get_dataset_metadata.return_value = dataset_mock
+
+    datasets: List[dict] = [{"domain": "AE", "filename": "ae.xpt"}]
+    validation_result: List[dict] = RulesEngine().validate_single_rule(
+        define_xml_validation_rule, "CDISC01/test/ae.xpt", datasets, "AE"
+    )
+    assert validation_result == expected_validation_result
 
 
 @pytest.mark.parametrize(
@@ -1081,7 +1102,10 @@ def test_validate_dataset_metadata_against_define_xml(
                     "executionStatus": ExecutionStatus.SUCCESS.value,
                     "variables": ["variable_size"],
                     "errors": [{"row": 1, "value": {"variable_size": 30}}],
-                    "message": "Variable metadata variable_size does not match define variable size",
+                    "message": (
+                        "Variable metadata variable_size "
+                        "does not match define variable size"
+                    ),
                 }
             ],
         ),
@@ -1116,14 +1140,21 @@ def test_validate_dataset_metadata_against_define_xml(
                     "executionStatus": ExecutionStatus.SUCCESS.value,
                     "variables": ["variable_size"],
                     "errors": [{"row": 1, "value": {"variable_size": 30}}],
-                    "message": "Variable metadata variable_size does not match define variable size",
+                    "message": (
+                        "Variable metadata variable_size "
+                        "does not match define variable size"
+                    ),
                 }
             ],
         ),
     ],
 )
 @patch("cdisc_rules_engine.rules_engine.RulesEngine.get_define_xml_variables_metadata")
+@patch(
+    "cdisc_rules_engine.services.data_services.LocalDataService.get_variables_metadata"
+)
 def test_validate_variable_metadata_against_define_xml(
+    mock_get_variables_metadata: MagicMock,
     mock_get_define_xml_variables_metadata: MagicMock,
     define_xml_variable_validation_rule: dict,
     variable_metadata: dict,
@@ -1135,17 +1166,15 @@ def test_validate_variable_metadata_against_define_xml(
     Creates an invalid dataset and validates it against Define XML.
     """
     mock_get_define_xml_variables_metadata.return_value = variable_metadata
-    with patch(
-        "cdisc_rules_engine.services.data_services.LocalDataService.get_variables_metadata",
-        return_value=dataset_mock,
-    ):
-        validation_result: List[dict] = RulesEngine().validate_single_rule(
-            dataset_domain="AE",
-            dataset_path="CDISC01/test",
-            rule=define_xml_variable_validation_rule,
-            datasets=[{"domain": "AE", "filename": "ae.xpt"}],
-        )
-        assert validation_result == expected_validation_result
+    mock_get_variables_metadata.return_value = dataset_mock
+
+    validation_result: List[dict] = RulesEngine().validate_single_rule(
+        dataset_domain="AE",
+        dataset_path="CDISC01/test",
+        rule=define_xml_variable_validation_rule,
+        datasets=[{"domain": "AE", "filename": "ae.xpt"}],
+    )
+    assert validation_result == expected_validation_result
 
 
 @patch(
@@ -1217,7 +1246,10 @@ def test_validate_value_level_metadata_against_define_xml(
                         "seq": 4,
                     },
                 ],
-                "message": "Variable data does not match length specified by value level metadata in define.xml",
+                "message": (
+                    "Variable data does not match length specified "
+                    "by value level metadata in define.xml"
+                ),
             }
         ]
 
@@ -1257,7 +1289,11 @@ def test_validate_value_level_metadata_against_define_xml(
         ),
     ],
 )
+@patch(
+    "cdisc_rules_engine.services.data_services.LocalDataService._async_get_datasets",
+)
 def test_validate_split_dataset_contents(
+    mock_async_get_datasets: MagicMock,
     dataset_rule_equal_to_error_objects: dict,
     include_split_datasets: bool,
     exclude: List[str],
@@ -1317,25 +1353,28 @@ def test_validate_split_dataset_contents(
             ],
         }
     )
+
     # mock blob storage call and execute the validation
-    with patch(
-        "cdisc_rules_engine.services.data_services.LocalDataService._async_get_datasets",
-        return_value=[first_dataset_part, second_dataset_part],
-    ):
-        validation_result: List[dict] = RulesEngine().validate_single_rule(
-            dataset_domain="AE",
-            dataset_path="CDISC01/test/ae.xpt",
-            rule=dataset_rule_equal_to_error_objects,
-            datasets=[
-                {"domain": "AE", "filename": "ae.xpt"},
-                {"domain": "AE", "filename": "ae_1.xpt"},
-            ],
-        )
-        # check validation result
-        assert validation_result == result
+    mock_async_get_datasets.return_value = [first_dataset_part, second_dataset_part]
+    validation_result: List[dict] = RulesEngine().validate_single_rule(
+        dataset_domain="AE",
+        dataset_path="CDISC01/test/ae.xpt",
+        rule=dataset_rule_equal_to_error_objects,
+        datasets=[
+            {"domain": "AE", "filename": "ae.xpt"},
+            {"domain": "AE", "filename": "ae_1.xpt"},
+        ],
+    )
+    # check validation result
+    assert validation_result == result
 
 
-def test_validate_split_dataset_metadata(dataset_metadata_not_equal_to_rule: dict):
+@patch(
+    "cdisc_rules_engine.services.data_services.LocalDataService._async_get_datasets",
+)
+def test_validate_split_dataset_metadata(
+    mock_async_get_datasets: MagicMock, dataset_metadata_not_equal_to_rule: dict
+):
     """
     Unit test for validating metadata of a split dataset.
     """
@@ -1372,42 +1411,44 @@ def test_validate_split_dataset_metadata(dataset_metadata_not_equal_to_rule: dic
             ],
         }
     )
+
     # mock blob storage call and execute the validation
-    with patch(
-        "cdisc_rules_engine.services.data_services.LocalDataService._async_get_datasets",
-        return_value=[first_dataset_part, second_dataset_part],
-    ):
-        validation_result: List[dict] = RulesEngine().validate_single_rule(
-            dataset_domain="EC",
-            dataset_path="CDISC01/test/ec.xpt",
-            rule=dataset_metadata_not_equal_to_rule,
-            datasets=[
-                {"domain": "EC", "filename": "ec.xpt"},
-                {"domain": "EC", "filename": "ec_1.xpt"},
+    mock_async_get_datasets.return_value = [first_dataset_part, second_dataset_part]
+    validation_result: List[dict] = RulesEngine().validate_single_rule(
+        dataset_domain="EC",
+        dataset_path="CDISC01/test/ec.xpt",
+        rule=dataset_metadata_not_equal_to_rule,
+        datasets=[
+            {"domain": "EC", "filename": "ec.xpt"},
+            {"domain": "EC", "filename": "ec_1.xpt"},
+        ],
+    )
+    # check validation result.
+    # error is contained only in the second part of the dataset.
+    assert validation_result == [
+        {
+            "domain": "EC",
+            "executionStatus": ExecutionStatus.SUCCESS.value,
+            "errors": [
+                {
+                    "row": 2,
+                    "value": {
+                        "dataset_label": "EC Label",
+                        "dataset_name": "EC",
+                        "dataset_size": 10,
+                    },
+                }
             ],
-        )
-        # check validation result. error is contained only in the second part of the dataset.
-        assert validation_result == [
-            {
-                "domain": "EC",
-                "executionStatus": ExecutionStatus.SUCCESS.value,
-                "errors": [
-                    {
-                        "row": 2,
-                        "value": {
-                            "dataset_label": "EC Label",
-                            "dataset_name": "EC",
-                            "dataset_size": 10,
-                        },
-                    }
-                ],
-                "message": "Dataset metadata is wrong.",
-                "variables": ["dataset_label", "dataset_name", "dataset_size"],
-            }
-        ]
+            "message": "Dataset metadata is wrong.",
+            "variables": ["dataset_label", "dataset_name", "dataset_size"],
+        }
+    ]
 
 
-def test_validate_split_dataset_variables_metadata(variables_metadata_rule: dict):
+@patch("cdisc_rules_engine.services.data_services.LocalDataService._async_get_datasets")
+def test_validate_split_dataset_variables_metadata(
+    mock_async_get_datasets: MagicMock, variables_metadata_rule: dict
+):
     """
     Unit test for validating variables metadata of a split dataset.
     """
@@ -1430,40 +1471,40 @@ def test_validate_split_dataset_variables_metadata(variables_metadata_rule: dict
             "variable_data_type": ["Char", "Char"],
         }
     )
-    with patch(
-        "cdisc_rules_engine.services.data_services.LocalDataService._async_get_datasets",
-        return_value=[
-            first_dataset_part,
-            second_dataset_part,
+
+    mock_async_get_datasets.return_value = [
+        first_dataset_part,
+        second_dataset_part,
+    ]
+    validation_result: List[str] = RulesEngine().validate_single_rule(
+        rule=variables_metadata_rule,
+        dataset_path="CDISC/test/ec.xpt",
+        datasets=[
+            {"domain": "EC", "filename": "ec.xpt"},
+            {"domain": "EC", "filename": "ec_1.xpt"},
         ],
-    ):
-        validation_result: List[str] = RulesEngine().validate_single_rule(
-            rule=variables_metadata_rule,
-            dataset_path="CDISC/test/ec.xpt",
-            datasets=[
-                {"domain": "EC", "filename": "ec.xpt"},
-                {"domain": "EC", "filename": "ec_1.xpt"},
+        dataset_domain="EC",
+    )
+    assert validation_result == [
+        {
+            "domain": "EC",
+            "executionStatus": ExecutionStatus.SUCCESS.value,
+            "variables": ["variable_data_type", "variable_label", "variable_name"],
+            "errors": [
+                {
+                    "row": 1,
+                    "value": {
+                        "variable_label": (
+                            "Study Identifier Study Identifier Very Long"
+                        ),
+                        "variable_name": "STUDYIDLONG",
+                        "variable_data_type": "Char",
+                    },
+                }
             ],
-            dataset_domain="EC",
-        )
-        assert validation_result == [
-            {
-                "domain": "EC",
-                "executionStatus": ExecutionStatus.SUCCESS.value,
-                "variables": ["variable_data_type", "variable_label", "variable_name"],
-                "errors": [
-                    {
-                        "row": 1,
-                        "value": {
-                            "variable_label": "Study Identifier Study Identifier Very Long",
-                            "variable_name": "STUDYIDLONG",
-                            "variable_data_type": "Char",
-                        },
-                    }
-                ],
-                "message": "Variable metadata is wrong.",
-            }
-        ]
+            "message": "Variable metadata is wrong.",
+        }
+    ]
 
 
 @pytest.mark.parametrize(
@@ -2067,7 +2108,9 @@ def test_validate_dataset_contents_against_library_metadata_variable_metadata_no
             "errors": [
                 {
                     "error": VariableMetadataNotFoundError.description,
-                    "message": "Metadata for variable DOMAIN is not found in CDISC Library",
+                    "message": (
+                        "Metadata for variable DOMAIN is not found in CDISC Library"
+                    ),
                 }
             ],
         }
@@ -2328,3 +2371,122 @@ def test_is_custom_domain():
     )
     assert engine.is_custom_domain("AP")
     assert not engine.is_custom_domain("AE")
+
+
+@patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset")
+def test_validate_variables_order_against_library_metadata(
+    mock_get_dataset: MagicMock,
+    rule_validate_columns_order_against_library_metadata: dict,
+):
+    """
+    The test validates order of dataset columns against the library metadata.
+    """
+    # mock dataset download
+    mock_get_dataset.return_value = pd.DataFrame.from_dict(
+        {
+            "DOMAIN": [
+                "AE",
+                "AE",
+            ],
+            "AESEQ": [
+                1,
+                2,
+            ],
+            "STUDYID": [
+                "TEST_STUDY",
+                "TEST_STUDY",
+            ],
+            "AETERM": [
+                "test",
+                "test",
+            ],
+        }
+    )
+
+    standard: str = "sdtm"
+    standard_version: str = "3-1-2"
+
+    # fill cache
+    cache = InMemoryCacheService.get_instance()
+    cache_data: dict = {
+        "classes": [
+            {
+                "name": "Events",
+                "classVariables": [
+                    {
+                        "name": "AETERM",
+                        "ordinal": 4,
+                    },
+                    {
+                        "name": "AESEQ",
+                        "ordinal": 3,
+                    },
+                ],
+            },
+            {
+                "name": GENERAL_OBSERVATIONS_CLASS,
+                "classVariables": [
+                    {
+                        "name": "DOMAIN",
+                        "role": VariableRoles.IDENTIFIER.value,
+                        "ordinal": 2,
+                    },
+                    {
+                        "name": "STUDYID",
+                        "role": VariableRoles.IDENTIFIER.value,
+                        "ordinal": 1,
+                    },
+                    {
+                        "name": "TIMING_VAR",
+                        "role": VariableRoles.TIMING.value,
+                        "ordinal": 33,
+                    },
+                ],
+            },
+        ]
+    }
+    cache.add(get_model_details_cache_key(standard, standard_version), cache_data)
+
+    # run validation
+    engine = RulesEngine(
+        cache=cache,
+        standard=standard,
+        standard_version=standard_version,
+    )
+    result: List[dict] = engine.validate_single_rule(
+        rule_validate_columns_order_against_library_metadata,
+        "dataset_path",
+        [
+            {"domain": "AE", "filename": "ae.xpt"},
+        ],
+        "AE",
+    )
+    assert result == [
+        {
+            "executionStatus": "success",
+            "domain": "AE",
+            "variables": ["$column_order_from_dataset", "$column_order_from_library"],
+            "message": RuleProcessor.extract_message_from_rule(
+                rule_validate_columns_order_against_library_metadata
+            ),
+            "errors": [
+                {
+                    "value": {
+                        "$column_order_from_library": [
+                            "STUDYID",
+                            "DOMAIN",
+                            "AESEQ",
+                            "AETERM",
+                            "TIMING_VAR",
+                        ],
+                        "$column_order_from_dataset": [
+                            "DOMAIN",
+                            "AESEQ",
+                            "STUDYID",
+                            "AETERM",
+                        ],
+                    }
+                }
+            ],
+        }
+    ]

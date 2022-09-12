@@ -160,6 +160,10 @@ def get_standard_details_cache_key(standard_type: str, standard_version: str) ->
     return f"standards/{standard_type}/{standard_version}"
 
 
+def get_model_details_cache_key(standard_type: str, model_version: str) -> str:
+    return f"models/{standard_type}/{model_version}"
+
+
 def replace_pattern_in_list_of_strings(
     list_of_strings: List[str], pattern: str, value: str
 ) -> List[str]:

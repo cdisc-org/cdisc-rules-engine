@@ -15,6 +15,7 @@ from cdisc_rules_engine.services.cdisc_library_service import CDISCLibraryServic
 from cdisc_rules_engine.utilities.utils import (
     get_library_variables_metadata_cache_key,
     get_standard_details_cache_key,
+    get_model_details_cache_key,
 )
 
 
@@ -28,7 +29,8 @@ class CachePopulator:
     async def load_cache_data(self):
         """
         This function populates a cache implementation with
-        all data necessary for running rules against local data. Including
+        all data necessary for running rules against local data.
+        Including
         * rules
         * library metadata
         * codelist metadata
@@ -61,11 +63,18 @@ class CachePopulator:
         )
         self.cache.add_batch(standards_details, "cache_key", pop_cache_key=True)
 
+        # save details of all standard's models to cache
+        standards_models: Iterable[
+            dict
+        ] = await self._async_get_details_of_all_standards_models(standards_details)
+        self.cache.add_batch(standards_models, "cache_key", pop_cache_key=True)
+
         # save variables metadata to cache
         variables_metadata: Iterable[dict] = await self._get_variables_metadata(
             standards
         )
         self.cache.add_batch(variables_metadata, "cache_key", pop_cache_key=True)
+
         return self.cache
 
     def save_rules_locally(self, cache_path: str):
@@ -101,6 +110,15 @@ class CachePopulator:
         standards = self.cache.filter_cache("standards")
         with open(f"{cache_path}/standards_details.pkl", "wb") as f:
             pickle.dump(standards, f)
+
+    def save_standards_models_locally(self, cache_path: str):
+        """
+        Store cached standards models metadata in
+        standards_models.pkl in cache path directory
+        """
+        standards_models = self.cache.filter_cache("models")
+        with open(f"{cache_path}/standards_models.pkl", "wb") as f:
+            pickle.dump(standards_models, f)
 
     def save_variables_metadata_locally(self, cache_path: str):
         """
@@ -214,6 +232,36 @@ class CachePopulator:
             standard_type, standard_version
         )
         return standard_details
+
+    async def _async_get_details_of_all_standards_models(
+        self, standards_details: List[dict]
+    ) -> Iterable[dict]:
+        """
+        Returns a list of dicts containing model metadata for each standard.
+        """
+        coroutines = [
+            self._async_get_details_of_standard_model(standard)
+            for standard in standards_details
+        ]
+        standards_models: Iterable[dict] = await asyncio.gather(*coroutines)
+        return filter(lambda item: item is not None, standards_models)
+
+    async def _async_get_details_of_standard_model(
+        self, standard_details: dict
+    ) -> Optional[dict]:
+        """
+        Returns details of a standard model as a dictionary.
+        """
+        loop = asyncio.get_event_loop()
+        model: Optional[dict] = await loop.run_in_executor(
+            None, self.library_service.get_model_details, standard_details
+        )
+        if not model:
+            return
+        model["cache_key"] = get_model_details_cache_key(
+            model["standard_type"], model["version"]
+        )
+        return model
 
     async def _get_variables_metadata(self, standards: List[dict]) -> Iterable[dict]:
         """

@@ -61,8 +61,10 @@ def cli():
     "-ct",
     "--controlled-terminology-package",
     multiple=True,
-    help="Controlled terminology package to validate against,"
-    " can provide more than one",
+    help=(
+        "Controlled terminology package to validate against, "
+        "can provide more than one"
+    ),
 )
 @click.option(
     "-o",
@@ -159,14 +161,17 @@ def validate(
 @click.option(
     "-c",
     "--cache_path",
-    default="resources/cache",
+    default="cdisc_rules_engine/resources/cache",
     help="Relative path to cache files containing pre loaded metadata and rules",
 )
 @click.option(
     "--apikey",
     envvar="CDISC_LIBRARY_API_KEY",
-    help="CDISC Library api key. Can be provided in the environment "
-    "variable CDISC_LIBRARY_API_KEY",
+    help=(
+        "CDISC Library api key. "
+        "Can be provided in the environment "
+        "variable CDISC_LIBRARY_API_KEY"
+    ),
     required=True,
 )
 @click.pass_context
@@ -178,6 +183,7 @@ def update_cache(ctx: click.Context, cache_path: str, apikey: str):
     cache_populator.save_rules_locally(cache_path)
     cache_populator.save_ct_packages_locally(cache_path)
     cache_populator.save_standards_metadata_locally(cache_path)
+    cache_populator.save_standards_models_locally(cache_path)
     cache_populator.save_variable_codelist_maps_locally(cache_path)
     cache_populator.save_variables_metadata_locally(cache_path)
 

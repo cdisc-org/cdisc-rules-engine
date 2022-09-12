@@ -220,7 +220,7 @@ class RuleProcessor:
             # change -- pattern to domain name
             target: str = operation.get("name")
             domain: str = operation.get("domain", domain)
-            if target.startswith("--") and domain:
+            if target and target.startswith("--") and domain:
                 # Not a study wide operation
                 target = target.replace("--", domain)
                 domain = domain.replace("--", domain)
