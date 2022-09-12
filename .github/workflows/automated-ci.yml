@@ -33,7 +33,7 @@ jobs:
 
   ensure_sufficient_test_coverage:
     runs-on: ubuntu-latest
-    needs: test
+#    needs: test
 
     steps:
       - uses: actions/checkout@v3
