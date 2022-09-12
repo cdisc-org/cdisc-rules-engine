@@ -17,7 +17,7 @@ class RuleTypes(BaseEnum):
     DATASET_CONTENTS_CHECK_AGAINST_LIBRARY_METADATA = (
         "Dataset Contents Check against Library Metadata"
     )
-    DATASET_CONTENTS_CHECK_AGAINST_DEFINE_AND_LIBRARY_METADATA = (
+    DATASET_CONTENTS_CHECK_AGAINST_DEFINE_AND_LIBRARY = (
         "Dataset Contents Check against Define XML and Library Metadata"
     )
     VARIABLE_METADATA_CHECK = "Variable Metadata Check"

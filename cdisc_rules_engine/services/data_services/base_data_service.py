@@ -1,15 +1,14 @@
-from abc import abstractmethod
+from abc import ABC
 from functools import wraps
-from typing import Callable, List, TextIO
+from typing import Callable, List, Optional
 
 import numpy as np
 import pandas as pd
 
-from cdisc_rules_engine.config import ConfigService
 from cdisc_rules_engine.constants.domains import AP_DOMAIN_LENGTH
+from cdisc_rules_engine.interfaces import DataServiceInterface
 from cdisc_rules_engine.models.dataset_types import DatasetTypes
 from cdisc_rules_engine.services import logger
-from cdisc_rules_engine.services.cache import CacheServiceInterface
 from cdisc_rules_engine.utilities.utils import (
     get_dataset_cache_key_from_path,
     get_directory_path,
@@ -57,41 +56,15 @@ def cached_dataset(dataset_type: str):
     return decorator
 
 
-class BaseDataService:
+class BaseDataService(DataServiceInterface, ABC):
     def __init__(self, **params):
         self.blob_service = None
         self.cache_service = None
         self.reader_factory = None
 
-    @abstractmethod
-    def get_dataset(self, dataset_name: str, **params) -> pd.DataFrame:
-        """
-        Gets dataset from blob storage.
-        """
-
-    @abstractmethod
-    def get_dataset_metadata(self, dataset_name: str, **kwargs):
-        """
-        Gets dataset metadata from blob storage.
-        """
-
-    @abstractmethod
-    def join_split_datasets(self, func_to_call: Callable, dataset_names, **kwargs):
-        """
-        Accepts a list of split dataset filenames,
-        downloads all of them and merges into a single DataFrame.
-        """
-
-    @abstractmethod
-    def get_dataset_by_type(
-        self, dataset_name: str, dataset_type: str, **params
-    ) -> pd.DataFrame:
-        """
-        Generic function to return dataset based on the type.
-        dataset_type param can be: contents, metadata, variables_metadata.
-        """
-
-    def get_dataset_class(self, dataset, file_path, datasets):
+    def get_dataset_class(
+        self, dataset: pd.DataFrame, file_path: str, datasets: List[dict]
+    ) -> Optional[str]:
         if self._contains_topic_variable(dataset, "TERM"):
             return "Events"
         elif self._contains_topic_variable(dataset, "TRT"):
@@ -165,17 +138,3 @@ class BaseDataService:
         dataset[numeric_columns] = dataset[numeric_columns].apply(
             lambda x: x.replace({np.nan: None})
         )
-
-    @abstractmethod
-    def read_data(self, file_path: str, read_mode: str = "r") -> TextIO:
-        """
-        Reads data from the given path and returns TextIO instance.
-        """
-
-    @classmethod
-    @abstractmethod
-    def get_instance(
-        cls, cache_service: CacheServiceInterface, config: ConfigService, **kwargs
-    ):
-        """Provides singleton of data service"""
-        pass
