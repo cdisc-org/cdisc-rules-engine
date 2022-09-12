@@ -1,5 +1,6 @@
 from typing import Type
 
+from cdisc_rules_engine.interfaces import FactoryInterface
 from cdisc_rules_engine.operations.base_operation import BaseOperation
 from cdisc_rules_engine.operations.dataset_column_order import DatasetColumnOrder
 from cdisc_rules_engine.operations.day_data_validator import DayDataValidator
@@ -26,7 +27,6 @@ from cdisc_rules_engine.operations.variable_value_count import VariableValueCoun
 from cdisc_rules_engine.operations.whodrug_references_validator import (
     WhodrugReferencesValidator,
 )
-from cdisc_rules_engine.interfaces import FactoryInterface
 
 
 class OperationsFactory(FactoryInterface):
