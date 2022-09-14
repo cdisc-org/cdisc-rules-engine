@@ -1,5 +1,5 @@
 from typing import List
-
+from copy import deepcopy
 from cdisc_rules_engine.interfaces import ConditionInterface
 
 
@@ -30,4 +30,19 @@ class SingleCondition(ConditionInterface):
         return [self.to_dict()]
 
     def items(self) -> List[tuple]:
-        return self.items()
+        return self._condition.items()
+
+    def duplicate(self, targets: List[str]) -> List[ConditionInterface]:
+        conditions: List[SingleCondition] = []
+        if self.should_duplicate():
+            for target in targets:
+                new_condition = deepcopy(self._condition)
+                new_condition["value"]["target"] = target
+                new_condition.pop("variables")
+                conditions.append(SingleCondition(new_condition))
+        else:
+            conditions.append(self)
+        return conditions
+
+    def should_duplicate(self) -> bool:
+        return self._condition.get("variables", "").lower() == "all"
