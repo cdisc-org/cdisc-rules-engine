@@ -24,7 +24,7 @@ class DummyDataService(BaseDataService):
         **kwargs,
     ):
         super(DummyDataService, self).__init__(cache_service, reader_factory, config)
-        self.data = kwargs.get("data")
+        self.data: List[DummyDataset] = kwargs.get("data")
 
     @classmethod
     def get_instance(
