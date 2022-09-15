@@ -507,6 +507,11 @@ class RulesEngine:
         if codelist_term_maps is None:
             codelist_term_maps = []
 
+        # Add conditions to rule for all variables if variables: all appears
+        # in condition
+        rule["conditions"] = rule["conditions"].add_variable_conditions(
+            dataset.columns.tolist()
+        )
         # Adding copy for now to avoid updating cached dataset
         dataset = deepcopy(dataset)
         # preprocess dataset

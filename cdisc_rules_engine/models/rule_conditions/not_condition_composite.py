@@ -43,4 +43,7 @@ class NotConditionComposite(ConditionInterface):
         return self._condition_composite.items()
 
     def add_variable_conditions(self, targets: List[str]):
-        self._condition_composite.add_variable_conditions(targets)
+        self._condition_composite = self._condition_composite.add_variable_conditions(
+            targets
+        )
+        return self
