@@ -6,6 +6,7 @@ from typing import Callable, List, Optional, Iterable
 import numpy as np
 import pandas as pd
 
+from cdisc_rules_engine.config import ConfigService
 from cdisc_rules_engine.constants.domains import AP_DOMAIN_LENGTH
 from cdisc_rules_engine.interfaces import DataServiceInterface, CacheServiceInterface
 from cdisc_rules_engine.models.dataset_types import DatasetTypes
@@ -67,10 +68,15 @@ class BaseDataService(DataServiceInterface, ABC):
     """
 
     def __init__(
-        self, cache_service: CacheServiceInterface, reader_factory: DataReaderFactory
+        self,
+        cache_service: CacheServiceInterface,
+        reader_factory: DataReaderFactory,
+        config: ConfigService,
+        **kwargs,
     ):
         self.cache_service = cache_service
-        self.reader_factory = reader_factory
+        self._reader_factory = reader_factory
+        self._config = config
 
     def get_dataset_by_type(
         self, dataset_name: str, dataset_type: str, **params
@@ -197,7 +203,7 @@ class BaseDataService(DataServiceInterface, ABC):
             lambda x: x.replace({np.nan: None})
         )
 
-    def _async_get_dataset(
+    async def _async_get_dataset(
         self, function_to_call: Callable, dataset_name: str, **kwargs
     ) -> pd.DataFrame:
         """
