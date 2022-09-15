@@ -25,6 +25,12 @@ class ConditionComposite(ConditionInterface):
     def __init__(self):
         self._conditions = {}
 
+    def copy(self):
+        new_condition = ConditionComposite()
+        for key, condition in self._conditions.items():
+            new_condition.add_conditions(key, condition)
+        return new_condition
+
     def add_conditions(self, key: str, conditions: List[ConditionInterface]):
         """
         Adds a list of objects with ConditionInterface
@@ -43,7 +49,11 @@ class ConditionComposite(ConditionInterface):
                 if isinstance(cond, SingleCondition):
                     conditions_to_add.extend(cond.duplicate(targets))
                 else:
-                    conditions_to_add.append(cond.add_conditions_for_targets(targets))
+                    duplicates = [
+                        cond.copy().add_conditions_for_targets([target])
+                        for target in targets
+                    ]
+                    conditions_to_add.extend(duplicates)
             self.add_conditions(key, conditions_to_add)
         return self
 

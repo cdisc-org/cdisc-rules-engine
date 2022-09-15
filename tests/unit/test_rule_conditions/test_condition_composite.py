@@ -155,7 +155,7 @@ def test_add_variable_conditions():
         )
 
 
-def test_add_variable_conditions_nested():
+def test_add_variable_conditions_nested_list():
     """
     Unit test for ConditionComposite.add_variable_condtions method.
     Tests that conditions that need to be duplicated are.
@@ -173,36 +173,40 @@ def test_add_variable_conditions_nested():
         }
     )
     nested_composite = ConditionComposite()
-    single_condition_1 = SingleCondition(
+    variable_metadata_equal_to = SingleCondition(
         {
             "name": "get_dataset",
-            "operator": "equal_to",
+            "operator": "variable_metadata_equal_to",
+            "metadata": "$VARIABLE_CORE_VALUES",
             "value": {
-                "comparator": "TEST",
+                "comparator": "Req",
             },
         }
     )
-    nested_composite.add_conditions("any", [single_condition_1])
-    composite.add_conditions("all", [single_condition, nested_composite])
+    variable_not_exists = SingleCondition(
+        {"name": "get_dataset", "operator": "not_exists"}
+    )
+    nested_composite.add_conditions(
+        "all", [variable_metadata_equal_to, variable_not_exists]
+    )
+    composite.add_conditions("any", [single_condition, nested_composite])
     targets = ["AESTDY", "AESCAT", "AEWWWR"]
     composite = composite.add_conditions_for_targets(targets)
     items = composite.items()
     check = items[0]
-    assert check[0] == "all"
-    assert len(check[1]) == 2
+    assert check[0] == "any"
+    assert len(check[1]) == 4
     assert check[1][0] == single_condition.to_dict()
-    nested_condition_dict = check[1][1]
-    assert "any" in nested_condition_dict
-    assert len(nested_condition_dict["any"]) == len(targets)
-    for target in targets:
-        # Assert there is one condition for each target in the targets list
+    targets_seen = set()
+    for condition in check[1][1:]:
+        assert "all" in condition
+        additional_checks = condition["all"]
+        assert len(additional_checks) == 2
         assert (
-            len(
-                [
-                    cond
-                    for cond in nested_condition_dict["any"]
-                    if cond["value"]["target"] == target
-                ]
-            )
-            == 1
+            additional_checks[0]["value"]["target"]
+            == additional_checks[1]["value"]["target"]
         )
+        target = additional_checks[0]["value"]["target"]
+        assert target in targets
+        assert target not in targets_seen  # verify that all targets are used
+        targets_seen.add(target)
