@@ -31,8 +31,7 @@ def test_duplicate():
     condition_dict = {
         "name": "get_dataset",
         "operator": "invalid_date",
-        "value": {"target": "AESCAT", "comparator": True},
-        "variables": "all",
+        "value": {"comparator": True},
     }
     condition = SingleCondition(condition_dict)
     targets = ["AECDAT", "AEBDAT", "AELDAT"]

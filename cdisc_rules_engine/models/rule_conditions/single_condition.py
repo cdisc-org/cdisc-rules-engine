@@ -37,12 +37,15 @@ class SingleCondition(ConditionInterface):
         if self.should_duplicate():
             for target in targets:
                 new_condition = deepcopy(self._condition)
+                new_condition["value"] = new_condition.get("value", {})
                 new_condition["value"]["target"] = target
-                new_condition.pop("variables")
                 conditions.append(SingleCondition(new_condition))
         else:
             conditions.append(self)
         return conditions
 
     def should_duplicate(self) -> bool:
-        return self._condition.get("variables", "").lower() == "all"
+        return "target" not in self._condition.get("value", {})
+
+    def add_operator(self, operator):
+        self._condition["operator"] = operator

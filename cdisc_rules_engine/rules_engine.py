@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import Callable, List, Set, Union
+from typing import Callable, List, Union
 
 import pandas as pd
 from business_rules import export_rule_data
@@ -189,9 +189,6 @@ class RulesEngine:
             RuleTypes.DATASET_CONTENTS_CHECK_AGAINST_DEFINE_AND_LIBRARY.value: (
                 self.validate_dataset_contents_against_define_and_library
             ),
-            RuleTypes.DATASET_CONTENTS_CHECK_AGAINST_LIBRARY_METADATA.value: (
-                self.validate_dataset_contents_against_library_metadata
-            ),
             RuleTypes.DEFINE.value: self.validate_define_xml,
         }
         return rule_type_validator_map.get(
@@ -361,57 +358,7 @@ class RulesEngine:
         ] = self.data_processor.filter_dataset_columns_by_metadata_and_rule(
             dataset.columns.tolist(), define_metadata, library_metadata, rule
         )
-        self.rule_processor.create_list_of_conditions_for_each_target(rule, targets)
-
-        # execute the rule
-        return self.execute_rule(rule, dataset, dataset_path, datasets, domain)
-
-    def validate_dataset_contents_against_library_metadata(
-        self, rule: dict, dataset_path: str, datasets: List[dict], domain: str, **kwargs
-    ) -> List[Union[dict, str]]:
-        """
-        Validates dataset contents against Library variable metadata.
-        The rule only provides variable names and the engine automatically
-        validates their values based on the variable core status
-        taken from library metadata.
-        """
-        # get metadata from library
-        library_metadata: dict = (
-            self.cache.get(
-                get_library_variables_metadata_cache_key(
-                    self.standard, self.standard_version
-                )
-            )
-            or {}
-        )
-
-        # download dataset
-        dataset: pd.DataFrame = self.get_dataset_to_validate(
-            DatasetTypes.CONTENTS.value, dataset_path, datasets, domain
-        )
-
-        # add operator to rule targets based on library metadata
-        core_status_to_operator_map: dict = {
-            "Req": ["not_exists", "empty"],  # must exist and can't be empty
-            "Exp": "not_exists",  # needs to exist but can be empty
-        }
-        rule_targets: Set[str] = self.rule_processor.extract_target_names_from_rule(
-            rule, domain, dataset.columns.tolist()
-        )
-        target_to_operator_map: dict = {}
-        for target in rule_targets:
-            # get library status for each target
-            target_metadata: dict = library_metadata.get(target)
-            if not target_metadata:
-                raise VariableMetadataNotFoundError(
-                    f"Metadata for variable {target} is not found in CDISC Library"
-                )
-            core_status: str = target_metadata["core"]
-            target_to_operator_map[target] = core_status_to_operator_map[core_status]
-        self.rule_processor.add_operator_to_rule_conditions(
-            rule, target_to_operator_map, domain
-        )
-
+        rule["conditions"] = rule["conditions"].add_conditions_for_targets(targets)
         # execute the rule
         return self.execute_rule(rule, dataset, dataset_path, datasets, domain)
 
@@ -509,7 +456,7 @@ class RulesEngine:
 
         # Add conditions to rule for all variables if variables: all appears
         # in condition
-        rule["conditions"] = rule["conditions"].add_variable_conditions(
+        rule["conditions"] = rule["conditions"].add_conditions_for_targets(
             dataset.columns.tolist()
         )
         # Adding copy for now to avoid updating cached dataset

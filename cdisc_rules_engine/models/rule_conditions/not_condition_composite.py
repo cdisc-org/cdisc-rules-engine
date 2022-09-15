@@ -42,8 +42,11 @@ class NotConditionComposite(ConditionInterface):
     def items(self) -> List[tuple]:
         return self._condition_composite.items()
 
-    def add_variable_conditions(self, targets: List[str]):
-        self._condition_composite = self._condition_composite.add_variable_conditions(
-            targets
+    def add_conditions_for_targets(self, targets: List[str]):
+        self._condition_composite = (
+            self._condition_composite.add_conditions_for_targets(targets)
         )
         return self
+
+    def add_operator(self, target_to_operator_map, domain):
+        self._condition_composite.add_operator(target_to_operator_map, domain)

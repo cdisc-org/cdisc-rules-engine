@@ -135,15 +135,13 @@ def test_add_variable_conditions():
             "name": "get_dataset",
             "operator": "equal_to",
             "value": {
-                "target": "AESTDY",
                 "comparator": "TEST",
             },
-            "variables": "all",
         }
     )
     composite.add_conditions("all", [single_condition, single_condition_1])
     targets = ["AESTDY", "AESCAT", "AEWWWR"]
-    composite = composite.add_variable_conditions(targets)
+    composite = composite.add_conditions_for_targets(targets)
     items = composite.items()
     check = items[0]
     assert len(check[1]) == 4
@@ -180,16 +178,14 @@ def test_add_variable_conditions_nested():
             "name": "get_dataset",
             "operator": "equal_to",
             "value": {
-                "target": "AESTDY",
                 "comparator": "TEST",
             },
-            "variables": "all",
         }
     )
     nested_composite.add_conditions("any", [single_condition_1])
     composite.add_conditions("all", [single_condition, nested_composite])
     targets = ["AESTDY", "AESCAT", "AEWWWR"]
-    composite = composite.add_variable_conditions(targets)
+    composite = composite.add_conditions_for_targets(targets)
     items = composite.items()
     check = items[0]
     assert check[0] == "all"

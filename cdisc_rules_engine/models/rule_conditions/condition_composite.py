@@ -32,7 +32,7 @@ class ConditionComposite(ConditionInterface):
         """
         self._conditions[key] = conditions
 
-    def add_variable_conditions(self, targets: List[str]):
+    def add_conditions_for_targets(self, targets: List[str]):
         """
         If a condition specifies the parameter variable: "all",
         the condition will be duplicated for all targets.
@@ -43,7 +43,7 @@ class ConditionComposite(ConditionInterface):
                 if isinstance(cond, SingleCondition):
                     conditions_to_add.extend(cond.duplicate(targets))
                 else:
-                    conditions_to_add.append(cond.add_variable_conditions(targets))
+                    conditions_to_add.append(cond.add_conditions_for_targets(targets))
             self.add_conditions(key, conditions_to_add)
         return self
 
