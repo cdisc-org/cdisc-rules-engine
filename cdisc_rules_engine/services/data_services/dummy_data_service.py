@@ -7,6 +7,7 @@ from cdisc_rules_engine.dummy_models.dummy_dataset import DummyDataset
 from cdisc_rules_engine.exceptions.custom_exceptions import DatasetNotFoundError
 from cdisc_rules_engine.interfaces import CacheServiceInterface
 from cdisc_rules_engine.models.dataset_types import DatasetTypes
+from cdisc_rules_engine.services.data_readers import DataReaderFactory
 from cdisc_rules_engine.services.data_services import BaseDataService
 
 
@@ -15,16 +16,26 @@ class DummyDataService(BaseDataService):
     The class returns datasets from provided mock data.
     """
 
-    def __init__(self, data: List[DummyDataset]):
-        self.data = data
-        super().__init__()
+    def __init__(
+        self,
+        cache_service: CacheServiceInterface,
+        reader_factory: DataReaderFactory,
+        config: ConfigService,
+        **kwargs,
+    ):
+        super(DummyDataService, self).__init__(cache_service, reader_factory, config)
+        self.data = kwargs.get("data")
 
     @classmethod
     def get_instance(
         cls, cache_service: CacheServiceInterface, config: ConfigService, **kwargs
     ):
-        data = kwargs.get("data")
-        return cls(data)
+        return cls(
+            cache_service=cache_service,
+            reader_factory=DataReaderFactory(),
+            config=config,
+            **kwargs,
+        )
 
     def check_dataset_exists(self, dataset_name):
         dataset_name = dataset_name.replace("/", "")
@@ -94,6 +105,9 @@ class DummyDataService(BaseDataService):
         return dataset_type_to_function_map[dataset_type](
             dataset_name=dataset_name, **params
         )
+
+    def get_define_xml_contents(self, dataset_name: str) -> bytes:
+        pass
 
     def has_all_files(self, prefix: str, file_names: List[str]) -> bool:
         return True
