@@ -6,9 +6,12 @@ from typing import Callable, List, Optional, Iterable
 import numpy as np
 import pandas as pd
 
-from cdisc_rules_engine.config import ConfigService
 from cdisc_rules_engine.constants.domains import AP_DOMAIN_LENGTH
-from cdisc_rules_engine.interfaces import DataServiceInterface, CacheServiceInterface
+from cdisc_rules_engine.interfaces import (
+    CacheServiceInterface,
+    ConfigInterface,
+    DataServiceInterface,
+)
 from cdisc_rules_engine.models.dataset_types import DatasetTypes
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.services.data_readers import DataReaderFactory
@@ -71,7 +74,7 @@ class BaseDataService(DataServiceInterface, ABC):
         self,
         cache_service: CacheServiceInterface,
         reader_factory: DataReaderFactory,
-        config: ConfigService,
+        config: ConfigInterface,
         **kwargs,
     ):
         self.cache_service = cache_service

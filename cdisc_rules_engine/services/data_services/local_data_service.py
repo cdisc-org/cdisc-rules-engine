@@ -8,7 +8,7 @@ from cdisc_rules_engine.models.dataset_types import DatasetTypes
 from cdisc_rules_engine.models.variable_metadata_container import (
     VariableMetadataContainer,
 )
-from cdisc_rules_engine.interfaces import CacheServiceInterface
+from cdisc_rules_engine.interfaces import CacheServiceInterface, ConfigInterface
 from cdisc_rules_engine.services.data_readers.data_reader_factory import (
     DataReaderFactory,
 )
@@ -19,7 +19,6 @@ from cdisc_rules_engine.utilities.utils import (
 )
 
 from .base_data_service import BaseDataService, cached_dataset
-from cdisc_rules_engine.config import ConfigService
 
 
 class LocalDataService(BaseDataService):
@@ -29,7 +28,7 @@ class LocalDataService(BaseDataService):
     def get_instance(
         cls,
         cache_service: CacheServiceInterface,
-        config: ConfigService = None,
+        config: ConfigInterface = None,
         **kwargs
     ):
         if cls._instance is None:

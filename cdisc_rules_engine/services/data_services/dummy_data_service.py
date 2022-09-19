@@ -2,10 +2,9 @@ from typing import List, Optional, Callable, TextIO
 
 import pandas as pd
 
-from cdisc_rules_engine.config import ConfigService
 from cdisc_rules_engine.dummy_models.dummy_dataset import DummyDataset
 from cdisc_rules_engine.exceptions.custom_exceptions import DatasetNotFoundError
-from cdisc_rules_engine.interfaces import CacheServiceInterface
+from cdisc_rules_engine.interfaces import CacheServiceInterface, ConfigInterface
 from cdisc_rules_engine.models.dataset_types import DatasetTypes
 from cdisc_rules_engine.services.data_readers import DataReaderFactory
 from cdisc_rules_engine.services.data_services import BaseDataService
@@ -20,7 +19,7 @@ class DummyDataService(BaseDataService):
         self,
         cache_service: CacheServiceInterface,
         reader_factory: DataReaderFactory,
-        config: ConfigService,
+        config: ConfigInterface,
         **kwargs,
     ):
         super(DummyDataService, self).__init__(cache_service, reader_factory, config)
@@ -28,7 +27,7 @@ class DummyDataService(BaseDataService):
 
     @classmethod
     def get_instance(
-        cls, cache_service: CacheServiceInterface, config: ConfigService, **kwargs
+        cls, cache_service: CacheServiceInterface, config: ConfigInterface, **kwargs
     ):
         return cls(
             cache_service=cache_service,
