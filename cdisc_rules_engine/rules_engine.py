@@ -29,10 +29,7 @@ from cdisc_rules_engine.models.validation_error_container import (
     ValidationErrorContainer,
 )
 from cdisc_rules_engine.services import logger
-from cdisc_rules_engine.services.cache.cache_service_factory import CacheServiceFactory
-from cdisc_rules_engine.services.cache.in_memory_cache_service import (
-    InMemoryCacheService,
-)
+from cdisc_rules_engine.services.cache import CacheServiceFactory, InMemoryCacheService
 from cdisc_rules_engine.services.data_services import DataServiceFactory
 from cdisc_rules_engine.services.define_xml_reader import DefineXMLReader
 from cdisc_rules_engine.utilities.data_processor import DataProcessor
