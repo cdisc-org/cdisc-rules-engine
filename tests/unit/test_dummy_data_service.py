@@ -1,3 +1,5 @@
+from unittest.mock import MagicMock
+
 import numpy as np
 import pandas as pd
 
@@ -46,7 +48,9 @@ def test_get_dataset():
         }
     ]
     datasets = [DummyDataset(dataset) for dataset in dataset_data]
-    data_service = DummyDataService(datasets)
+    data_service = DummyDataService(
+        MagicMock(), MagicMock(), MagicMock(), data=datasets
+    )
     dataset = data_service.get_dataset("ae.xpt")
     assert isinstance(dataset, pd.DataFrame)
     assert dataset["AESEQ"].to_list() == [
@@ -93,7 +97,9 @@ def test_get_dataset_metadata():
         }
     ]
     datasets = [DummyDataset(dataset) for dataset in dataset_data]
-    data_service = DummyDataService(datasets)
+    data_service = DummyDataService(
+        MagicMock(), MagicMock(), MagicMock(), data=datasets
+    )
     metadata = data_service.get_dataset_metadata("ae.xpt")
     assert isinstance(metadata, pd.DataFrame)
     assert metadata["dataset_label"].iloc[0] == "ADVERSE EVENTS"
@@ -121,7 +127,9 @@ def test_get_variables_metadata():
         }
     ]
     datasets = [DummyDataset(dataset) for dataset in dataset_data]
-    data_service = DummyDataService(datasets)
+    data_service = DummyDataService(
+        MagicMock(), MagicMock(), MagicMock(), data=datasets
+    )
     metadata = data_service.get_variables_metadata("/ae.xpt")
     assert isinstance(metadata, pd.DataFrame)
     assert metadata["variable_name"].iloc[0] == "AESEQ"

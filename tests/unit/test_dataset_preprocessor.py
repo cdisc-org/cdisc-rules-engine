@@ -27,8 +27,9 @@ def test_preprocess_no_datasets_in_rule(dataset_rule_equal_to_error_objects: dic
         }
     )
     datasets: List[dict] = [{"domain": "AE", "filename": "ae.xpt"}]
+    data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
     preprocessor = DatasetPreprocessor(
-        dataset, "AE", "path", LocalDataService(), InMemoryCacheService()
+        dataset, "AE", "path", data_service, InMemoryCacheService()
     )
     preprocessed_dataset: pd.DataFrame = preprocessor.preprocess(
         dataset_rule_equal_to_error_objects, datasets
@@ -142,8 +143,10 @@ def test_preprocess(mock_get_dataset: MagicMock, dataset_rule_equal_to: dict):
         {"domain": "AE", "filename": "ae.xpt"},
         {"domain": "TS", "filename": "ts.xpt"},
     ]
+
+    data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
     preprocessor = DatasetPreprocessor(
-        ec_dataset, "EC", "path/ec.xpt", LocalDataService(), InMemoryCacheService()
+        ec_dataset, "EC", "path/ec.xpt", data_service, InMemoryCacheService()
     )
     preprocessed_dataset: pd.DataFrame = preprocessor.preprocess(
         dataset_rule_equal_to, datasets
@@ -274,8 +277,10 @@ def test_preprocess_relationship_dataset(
             "filename": "suppec.xpt",
         },
     ]
+
+    data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
     preprocessor = DatasetPreprocessor(
-        ec_dataset, "EC", "path/ec.xpt", LocalDataService(), InMemoryCacheService()
+        ec_dataset, "EC", "path/ec.xpt", data_service, InMemoryCacheService()
     )
     preprocessed_dataset: pd.DataFrame = preprocessor.preprocess(
         dataset_rule_record_in_parent_domain_equal_to, datasets
@@ -367,11 +372,13 @@ def test_preprocess_with_merge_comparison(
     mock_get_dataset.side_effect = lambda dataset_name: path_to_dataset_map[
         dataset_name
     ]
+
+    data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
     preprocessor = DatasetPreprocessor(
         target_dataset,
         "EC",
         "study_id/data_bundle_id/ec.xpt",
-        LocalDataService(),
+        data_service,
         InMemoryCacheService(),
     )
     result: pd.DataFrame = preprocessor.preprocess(
