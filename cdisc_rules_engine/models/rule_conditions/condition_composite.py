@@ -43,12 +43,12 @@ class ConditionComposite(ConditionInterface):
         If a condition specifies the parameter variable: "all",
         the condition will be duplicated for all targets.
         """
-        if self.should_duplicate():
+        if self.should_copy():
             for key, conditions in self._conditions.items():
                 conditions_to_add = []
                 for cond in conditions:
                     if isinstance(cond, SingleCondition):
-                        conditions_to_add.extend(cond.duplicate(targets))
+                        conditions_to_add.extend(cond.copy(targets))
                     else:
                         duplicates = [
                             cond.copy().add_conditions_for_targets([target])
@@ -108,9 +108,9 @@ class ConditionComposite(ConditionInterface):
             items.append((key, [condition.to_dict() for condition in condition_list]))
         return items
 
-    def should_duplicate(self) -> bool:
+    def should_copy(self) -> bool:
         duplicate = False
         for key, conditions in self._conditions.items():
             for condition in conditions:
-                duplicate = duplicate or condition.should_duplicate()
+                duplicate = duplicate or condition.should_copy()
         return duplicate

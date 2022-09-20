@@ -32,9 +32,9 @@ class SingleCondition(ConditionInterface):
     def items(self) -> List[tuple]:
         return self._condition.items()
 
-    def duplicate(self, targets: List[str]) -> List[ConditionInterface]:
+    def copy(self, targets: List[str]) -> List[ConditionInterface]:
         conditions: List[SingleCondition] = []
-        if self.should_duplicate():
+        if self.should_copy():
             for target in targets:
                 new_condition = deepcopy(self._condition)
                 new_condition["value"] = new_condition.get("value", {})
@@ -44,8 +44,5 @@ class SingleCondition(ConditionInterface):
             conditions.append(self)
         return conditions
 
-    def should_duplicate(self) -> bool:
+    def should_copy(self) -> bool:
         return "target" not in self._condition.get("value", {})
-
-    def add_operator(self, operator):
-        self._condition["operator"] = operator

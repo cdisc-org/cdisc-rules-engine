@@ -27,7 +27,7 @@ def test_values():
     assert condition.values() == [condition_dict]
 
 
-def test_duplicate():
+def test_copy():
     condition_dict = {
         "name": "get_dataset",
         "operator": "invalid_date",
@@ -35,7 +35,7 @@ def test_duplicate():
     }
     condition = SingleCondition(condition_dict)
     targets = ["AECDAT", "AEBDAT", "AELDAT"]
-    duplicates = condition.duplicate(targets)
+    duplicates = condition.copy(targets)
     assert len(duplicates) == len(targets)
     for duplicate in duplicates:
         new_condition = duplicate.values()[0]

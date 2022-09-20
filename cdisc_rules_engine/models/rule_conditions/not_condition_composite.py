@@ -48,5 +48,9 @@ class NotConditionComposite(ConditionInterface):
         )
         return self
 
-    def add_operator(self, target_to_operator_map, domain):
-        self._condition_composite.add_operator(target_to_operator_map, domain)
+    def copy(self) -> "NotConditionComposite":
+        composite_copy = self._condition_composite.copy()
+        return NotConditionComposite(self._key, composite_copy)
+
+    def should_copy(self) -> bool:
+        return self._condition_composite.should_copy()
