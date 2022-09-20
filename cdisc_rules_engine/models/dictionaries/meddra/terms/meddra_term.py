@@ -1,8 +1,11 @@
+from uuid import uuid4
+
 from cdisc_rules_engine.models.dictionaries.meddra.terms.term_types import TermTypes
 
 
 class MedDRATerm:
     def __init__(self, record_params):
+        self.id: str = record_params.get("id", str(uuid4()))
         self.code = record_params.get("code")
         self.term = record_params.get("term")
         self.term_type = record_params.get("type")
