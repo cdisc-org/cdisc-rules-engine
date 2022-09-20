@@ -16,8 +16,8 @@ from cdisc_rules_engine.constants.domains import (
     SUPPLEMENTARY_DOMAINS,
 )
 from cdisc_rules_engine.enums.execution_status import ExecutionStatus
+from cdisc_rules_engine.interfaces import ConditionInterface
 from cdisc_rules_engine.models.base_validation_entity import BaseValidationEntity
-from cdisc_rules_engine.models.rule_conditions import ConditionInterface
 
 
 def convert_file_size(size_in_bytes: int, desired_unit: str) -> float:
@@ -160,6 +160,10 @@ def get_standard_details_cache_key(standard_type: str, standard_version: str) ->
     return f"standards/{standard_type}/{standard_version}"
 
 
+def get_model_details_cache_key(standard_type: str, model_version: str) -> str:
+    return f"models/{standard_type}/{model_version}"
+
+
 def replace_pattern_in_list_of_strings(
     list_of_strings: List[str], pattern: str, value: str
 ) -> List[str]:
@@ -247,7 +251,7 @@ def generate_report_filename(generation_time: str) -> str:
         .isoformat()
         .replace(":", "-")
     )
-    return f"CORE-Report-{timestamp}.xlsx"
+    return f"CORE-Report-{timestamp}"
 
 
 def get_rules_cache_key(standard: str, version: str, rule_id: str = None) -> str:
@@ -259,6 +263,10 @@ def get_rules_cache_key(standard: str, version: str, rule_id: str = None) -> str
 
 def get_metadata_cache_key(metadata_key: str):
     return f"library/metadata{metadata_key}"
+
+
+def get_meddra_code_term_pairs_cache_key(meddra_path: str) -> str:
+    return f"meddra_valid_code_term_pairs_{meddra_path}"
 
 
 def get_item_index_by_condition(

@@ -3,37 +3,31 @@ import logging
 import os
 import pickle
 import time
-from collections import namedtuple
+import click
 from functools import partial
 from multiprocessing import Pool
 from multiprocessing.managers import SyncManager
 
-logging.getLogger("asyncio").disabled = True
-logging.getLogger("xmlschema").disabled = True
-
 from cdisc_rules_engine.config import config
 from cdisc_rules_engine.constants.define_xml_constants import DEFINE_XML_FILE_NAME
-from cdisc_rules_engine.models.dictionaries import (
-    DictionaryTypes,
-    TermsFactoryInterface,
+from cdisc_rules_engine.interfaces import CacheServiceInterface, DataServiceInterface
+from cdisc_rules_engine.models.dictionaries import DictionaryTypes
+from cdisc_rules_engine.models.dictionaries.get_dictionary_terms import (
+    extract_dictionary_terms,
 )
-from cdisc_rules_engine.models.dictionaries.meddra import MedDRATermsFactory
-from cdisc_rules_engine.models.dictionaries.whodrug import WhoDrugTermsFactory
 from cdisc_rules_engine.models.rule_conditions import ConditionCompositeFactory
 from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
+from cdisc_rules_engine.models.validation_args import Validation_args
 from cdisc_rules_engine.rules_engine import RulesEngine
 from cdisc_rules_engine.services import logger as engine_logger
 from cdisc_rules_engine.services.cache import (
-    CacheServiceInterface,
     InMemoryCacheService,
     RedisCacheService,
 )
 from cdisc_rules_engine.services.data_services import (
-    BaseDataService,
     DataServiceFactory,
 )
-from cdisc_rules_engine.utilities.excel_report import ExcelReport
-from cdisc_rules_engine.utilities.excel_writer import excel_workbook_to_stream
+from cdisc_rules_engine.utilities.report_factory import ReportFactory
 from cdisc_rules_engine.utilities.utils import get_rules_cache_key
 
 """
@@ -86,10 +80,6 @@ def fill_cache_with_dictionaries(cache: CacheServiceInterface, args):
     and saves to cache (inmemory or redis).
     """
     data_service = DataServiceFactory(config, cache).get_data_service()
-    dictionary_type_to_factory_map: dict = {
-        DictionaryTypes.MEDDRA.value: MedDRATermsFactory,
-        DictionaryTypes.WHODRUG.value: WhoDrugTermsFactory,
-    }
 
     dictionary_type_to_path_map: dict = {
         DictionaryTypes.MEDDRA.value: args.meddra,
@@ -97,15 +87,13 @@ def fill_cache_with_dictionaries(cache: CacheServiceInterface, args):
     }
 
     for dictionary_type, dictionary_path in dictionary_type_to_path_map.items():
-        if dictionary_path:
-            factory: TermsFactoryInterface = dictionary_type_to_factory_map[
-                dictionary_type
-            ](data_service)
-            terms: dict = factory.install_terms(dictionary_path)
-            cache.add(dictionary_path, terms)
+        if not dictionary_path:
+            continue
+        terms = extract_dictionary_terms(data_service, dictionary_type, dictionary_path)
+        cache.add(dictionary_path, terms)
 
 
-def get_datasets(data_service: BaseDataService, data_path: str):
+def get_datasets(data_service: DataServiceInterface, data_path: str):
     data_files = [
         f
         for f in next(os.walk(data_path), (None, None, []))[2]
@@ -149,8 +137,7 @@ def get_cache_service(manager):
         return manager.InMemoryCacheService()
 
 
-def run_validation(args: namedtuple):
-    logger = logging.getLogger("validator")
+def run_validation(args: Validation_args):
     set_log_level(args.log_level.lower())
     cache_path: str = f"{os.path.dirname(__file__)}/../{args.cache}"
     data_path: str = f"{os.path.dirname(__file__)}/../{args.data}"
@@ -173,28 +160,36 @@ def run_validation(args: namedtuple):
     datasets = get_datasets(data_service, data_path)
 
     start = time.time()
-    pool = Pool(args.pool_size)
-    results = pool.map(
-        partial(validate_single_rule, shared_cache, data_path, datasets, args),
-        rules,
-    )
-    pool.close()
-    pool.join()
+    results = []
+
+    # run each rule in a separate process
+    with Pool(args.pool_size) as pool:
+        if args.disable_progressbar is True:
+            for rule_result in pool.imap_unordered(
+                partial(validate_single_rule, shared_cache, data_path, datasets, args),
+                rules,
+            ):
+                results.append(rule_result)
+        else:
+            with click.progressbar(
+                length=len(rules),
+                fill_char=click.style("\u2588", fg="green"),
+                empty_char=click.style("-", fg="white", dim=True),
+                show_eta=False,
+            ) as bar:
+                for rule_result in pool.imap_unordered(
+                    partial(
+                        validate_single_rule, shared_cache, data_path, datasets, args
+                    ),
+                    rules,
+                ):
+                    results.append(rule_result)
+                    bar.update(1)
+
     end = time.time()
     elapsed_time = end - start
-    report_template = data_service.read_data(args.report_template, "rb")
-    try:
-        report = ExcelReport(data_path, results, elapsed_time, report_template.read())
-        report_data = report.get_excel_export(
-            args.define_version,
-            args.controlled_terminology_package,
-            args.standard,
-            args.version.replace("-", "."),
-        )
-        with open(args.output, "wb") as f:
-            f.write(excel_workbook_to_stream(report_data))
-    except Exception as e:
-        logger.error(e)
-        raise e
-    finally:
-        report_template.close()
+
+    reporting_service = ReportFactory(
+        data_path, results, elapsed_time, args, data_service
+    ).get_report_service()
+    reporting_service.write_report()

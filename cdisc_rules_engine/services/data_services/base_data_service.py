@@ -1,11 +1,12 @@
-from abc import abstractmethod
+from abc import ABC
 from functools import wraps
-from typing import Callable, List, TextIO
+from typing import Callable, List, Optional
 
 import numpy as np
 import pandas as pd
 
 from cdisc_rules_engine.constants.domains import AP_DOMAIN_LENGTH
+from cdisc_rules_engine.interfaces import DataServiceInterface
 from cdisc_rules_engine.models.dataset_types import DatasetTypes
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.utilities.utils import (
@@ -33,13 +34,15 @@ def cached_dataset(dataset_type: str):
             instance: BaseDataService = args[0]
             dataset_name: str = kwargs["dataset_name"]
             logger.info(
-                f"Downloading dataset from storage. dataset_name={dataset_name}, wrapped function={func.__name__}"
+                f"Downloading dataset from storage. dataset_name={dataset_name},"
+                f" wrapped function={func.__name__}"
             )
             cache_key: str = get_dataset_cache_key_from_path(dataset_name, dataset_type)
             cache_data = instance.cache_service.get(cache_key)
             if cache_data is not None:
                 logger.info(
-                    f'Dataset "{dataset_name}" was found in cache. cache_key={cache_key}'
+                    f'Dataset "{dataset_name}" was found in cache.'
+                    f" cache_key={cache_key}"
                 )
                 dataset = cache_data
             else:
@@ -53,32 +56,15 @@ def cached_dataset(dataset_type: str):
     return decorator
 
 
-class BaseDataService:
+class BaseDataService(DataServiceInterface, ABC):
     def __init__(self, **params):
         self.blob_service = None
         self.cache_service = None
         self.reader_factory = None
 
-    @abstractmethod
-    def get_dataset(self, dataset_name: str, **params) -> pd.DataFrame:
-        """
-        Gets dataset from blob storage.
-        """
-
-    @abstractmethod
-    def get_dataset_metadata(self, dataset_name: str, **kwargs):
-        """
-        Gets dataset metadata from blob storage.
-        """
-
-    @abstractmethod
-    def join_split_datasets(self, func_to_call: Callable, dataset_names, **kwargs):
-        """
-        Accepts a list of split dataset filenames,
-        downloads all of them and merges into a single DataFrame.
-        """
-
-    def get_dataset_class(self, dataset, file_path, datasets):
+    def get_dataset_class(
+        self, dataset: pd.DataFrame, file_path: str, datasets: List[dict]
+    ) -> Optional[str]:
         if self._contains_topic_variable(dataset, "TERM"):
             return "Events"
         elif self._contains_topic_variable(dataset, "TRT"):
@@ -121,9 +107,9 @@ class BaseDataService:
                 new_file_path = f"{directory_path}/{file_name}"
                 new_domain_dataset = self.get_dataset(dataset_name=new_file_path)
             else:
-                raise ValueError(f"Filename for domain doesn't exist")
+                raise ValueError("Filename for domain doesn't exist")
             if self._is_associated_persons(new_domain_dataset):
-                raise ValueError(f"Nested Associated Persons domain reference")
+                raise ValueError("Nested Associated Persons domain reference")
             return self.get_dataset_class(new_domain_dataset, new_file_path, datasets)
         else:
             return None
@@ -137,7 +123,8 @@ class BaseDataService:
 
     def _domain_starts_with(self, domain, variable):
         """
-        Checks if the given dataset-class string starts with a particular variable string.
+        Checks if the given dataset-class string starts with
+         a particular variable string.
         Returns True/False
         """
         return domain.startswith(variable)
@@ -151,9 +138,3 @@ class BaseDataService:
         dataset[numeric_columns] = dataset[numeric_columns].apply(
             lambda x: x.replace({np.nan: None})
         )
-
-    @abstractmethod
-    def read_data(self, file_path: str, read_mode: str = "r") -> TextIO:
-        """
-        Reads data from the given path and returns TextIO instance.
-        """

@@ -5,17 +5,16 @@ import redis
 
 from cdisc_rules_engine.config import ConfigService
 from cdisc_rules_engine.services import logger
-from cdisc_rules_engine.services.cache.cache_service_interface import (
+from cdisc_rules_engine.interfaces import (
     CacheServiceInterface,
 )
 
 
 class RedisCacheService(CacheServiceInterface):
-
     _instance = None
 
     @classmethod
-    def get_instance(cls, config: ConfigService):
+    def get_instance(cls, config: ConfigService, **kwargs):
         if cls._instance is None:
             instance = cls(
                 config.getValue("REDIS_HOST_NAME"), config.getValue("REDIS_ACCESS_KEY")
@@ -40,7 +39,8 @@ class RedisCacheService(CacheServiceInterface):
         prefix: str = "",
     ):
         logger.info(
-            f"Saving batch to Redis cache. items={items}, cache_key_name={cache_key_name}"
+            f"Saving batch to Redis cache. items={items},"
+            f" cache_key_name={cache_key_name}"
         )
         with self.client.pipeline() as pipe:
             for item in items:
@@ -86,3 +86,6 @@ class RedisCacheService(CacheServiceInterface):
         keys = [key for key in self.client.scan_iter(match=f"{regex}")]
         key_value_pairs = zip(keys, self.client.mget(keys))
         return {key: pickle.loads(value) for key, value in key_value_pairs}
+
+    def add_all(self, data: dict):
+        raise NotImplementedError("Method add_all not implemented in RedisCacheService")

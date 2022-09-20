@@ -8,6 +8,7 @@ from cdisc_rules_engine.models.dataset_types import DatasetTypes
 from cdisc_rules_engine.models.variable_metadata_container import (
     VariableMetadataContainer,
 )
+from cdisc_rules_engine.interfaces import CacheServiceInterface
 from cdisc_rules_engine.services.data_readers.data_reader_factory import (
     DataReaderFactory,
 )
@@ -18,6 +19,7 @@ from cdisc_rules_engine.utilities.utils import (
 )
 
 from .base_data_service import BaseDataService, cached_dataset
+from cdisc_rules_engine.config import ConfigService
 
 
 class LocalDataService(BaseDataService):
@@ -29,10 +31,15 @@ class LocalDataService(BaseDataService):
         self.reader_factory = DataReaderFactory()
 
     @classmethod
-    def get_instance(cls, **params):
+    def get_instance(
+        cls,
+        cache_service: CacheServiceInterface,
+        config: ConfigService = None,
+        **kwargs
+    ):
         if cls._instance is None:
             service = cls()
-            service.cache_service = params["cache_service"]
+            service.cache_service = cache_service
             cls._instance = service
         return cls._instance
 
@@ -44,7 +51,7 @@ class LocalDataService(BaseDataService):
 
     @cached_dataset(DatasetTypes.CONTENTS.value)
     def get_dataset(self, dataset_name: str, **params) -> pandas.DataFrame:
-        reader = self.reader_factory.get_reader()
+        reader = self.reader_factory.get_service()
         df = reader.from_file(dataset_name)
         self._replace_nans_in_numeric_cols_with_none(df)
         return df
@@ -113,7 +120,8 @@ class LocalDataService(BaseDataService):
         Accepts a list of split dataset filenames,
         downloads all of them and merges into a single DataFrame.
         """
-        # popping drop_duplicates param at the beginning to avoid passing it to func_to_call
+        # popping drop_duplicates param at the beginning to avoid
+        # passing it to func_to_call
         drop_duplicates: bool = kwargs.pop("drop_duplicates", False)
         datasets: Iterator[pandas.DataFrame] = self._async_get_datasets(
             func_to_call, dataset_names, **kwargs
