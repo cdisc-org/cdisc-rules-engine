@@ -25,3 +25,11 @@ class AtcText(BaseWhoDrugTerm):
                 "type": WhodrugRecordTypes.ATC_TEXT.value,
             }
         )
+
+    def to_representation(self) -> dict:
+        return {
+            **super(AtcText, self).to_representation(),
+            "parentCode": self.parentCode,
+            "level": self.level,
+            "text": self.text,
+        }
