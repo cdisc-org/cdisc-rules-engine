@@ -1,5 +1,5 @@
 from functools import partial
-from typing import Callable, List, Set
+from typing import Callable, List, Set, Optional
 
 from cdisc_library_client import CDISCLibraryClient
 
@@ -21,7 +21,8 @@ class CDISCLibraryService:
 
     def cache_library_json(self, uri: str) -> dict:
         """
-        Makes a library request to the provided URI, caches the response and returns the response
+        Makes a library request to the provided URI,
+        caches the response and returns the response
         """
         data = self._client.get_api_json(uri)
         cache_key = get_metadata_cache_key(uri)
@@ -79,7 +80,7 @@ class CDISCLibraryService:
         [
             {
                 "href": "/mdr/sdtmig/3-1-2",
-                "title": "Study Data Tabulation Model Implementation Guide: Human Clinical Trials Version 3.1.2 (Final)",
+                "title": "Study Data Tabulation Model ...",
                 "type": "Implementation Guide"
             }...
         ]
@@ -149,8 +150,9 @@ class CDISCLibraryService:
     def get_variable_codelists_map(self, standard_type: str, version: str) -> dict:
         """
         Generates a map of variables -> codelists based on standard type and version
-        The variables in a standard document have a "codelist" attribute which contains links to
-        1 or more CDISC CT codelists. This method parses those uri's for the C-CODE.
+        The variables in a standard document have a "codelist"
+        attribute which contains links to 1 or more CDISC CT codelists.
+        This method parses those uri's for the C-CODE.
         Output:
         {
             "name": sdtmig-3-4-codelists
@@ -210,13 +212,13 @@ class CDISCLibraryService:
                 },
                 "self": {
                     "href": "/mdr/sdtmig/3-1-2",
-                    "title": "Study Data Tabulation Model Implementation Guide: Human Clinical Trials Version 3.1.2 (Final)",
+                    "title": "Study Data Tabulation Model ...",
                     "type": "Implementation Guide",
                 },
             },
-            "description": "CDISC Version 3.1.2 (V3.1.2) Study Data Tabulation Model Implementation Guide for Human Clinical Trials (SDTMIG) is intended to guide the organization, structure, and format of standard clinical trial tabulation datasets submitted to a regulatory authority such as the US Food and Drug Administration (FDA).",
+            "description": "CDISC Version 3.1.2 (V3.1.2) Study Data ...",
             "effectiveDate": "2008-11-12",
-            "label": "Study Data Tabulation Model Implementation Guide: Human Clinical Trials Version 3.1.2 (Final)",
+            "label": "Study Data Tabulation Model Implementation Guide: ...",
             "name": "SDTMIG v3.1.2",
             "registrationStatus": "Final",
             "source": "Prepared by the CDISC Submission Data Standards Team",
@@ -242,6 +244,34 @@ class CDISCLibraryService:
             standard_data["domains"] = domains
         return standard_data
 
+    def get_model_details(self, standard_details: dict) -> Optional[dict]:
+        """
+        Gets details of a standard model:
+
+        {
+           "_links":{...},
+           "classes":[...],
+           "datasets":[...],
+           "description":"This is Version 2.0 of the Study ...",
+           "effectiveDate":"2021-11-29",
+           "label":"Study Data Tabulation Model Version 2.0",
+           "name":"SDTM v2.0",
+           "registrationStatus":"Final",
+           "source":"Prepared by the CDISC Submission Data Standards Team",
+           "version":"2-0",
+           "standard_type":"sdtm"
+        }
+        """
+        model: Optional[dict] = standard_details.get("_links", {}).get("model")
+        if not model:
+            return
+        standard_href: List[str] = model["href"].split("/")
+        standard_type: str = standard_href[-2]
+        model_version: str = standard_href[-1]
+        model_data: dict = self._get_model(standard_type, model_version)
+        model_data["standard_type"] = standard_type
+        return model_data
+
     def _get_standard(self, standard_type: str, version: str) -> dict:
         """
         Requests a standard definition from the library.
@@ -255,6 +285,21 @@ class CDISCLibraryService:
         }
         function_to_call: Callable = standard_get_function_map.get(
             standard_type, self._client.get_sdtmig
+        )
+        return function_to_call()
+
+    def _get_model(self, standard_type: str, model_version: str) -> dict:
+        """
+        Requests a model definition from the library.
+        Internal method, not for usage in the client code.
+        """
+        standard_get_function_map = {
+            "sdtm": partial(self._client.get_sdtm, model_version),
+            "adam": partial(self._client.get_adam, model_version),
+            "cdash": partial(self._client.get_cdash, model_version),
+        }
+        function_to_call: Callable = standard_get_function_map.get(
+            standard_type, partial(self._client.get_sdtm, model_version)
         )
         return function_to_call()
 
@@ -353,7 +398,8 @@ class CDISCLibraryService:
 
     def _get_analysis_ig_codelists(self, data: dict) -> dict:
         """
-        Extract the codelists for each variable in an adamig. Returns a dictionary in the form:
+        Extract the codelists for each variable in an adamig.
+        Returns a dictionary in the form:
         {
             "variable_name": ["C123", "C234"...],
             ...
@@ -373,7 +419,8 @@ class CDISCLibraryService:
 
     def _get_tabulation_model_codelists(self, data: dict) -> dict:
         """
-        Extract the codelists for each variable in a model. Returns a dictionary in the form:
+        Extract the codelists for each variable in a model.
+        Returns a dictionary in the form:
         {
             "variable_name": ["C123", "C234"...],
             ...
@@ -401,7 +448,8 @@ class CDISCLibraryService:
 
     def _get_collection_model_codelists(self, data: dict) -> dict:
         """
-        Extract the codelists for each variable in a model. Returns a dictionary in the form:
+        Extract the codelists for each variable in a model.
+        Returns a dictionary in the form:
         {
             "variable_name": ["C123", "C234"...],
             ...

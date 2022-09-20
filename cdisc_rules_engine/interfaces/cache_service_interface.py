@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List
+from typing import Iterable
 
 
 class CacheServiceInterface(ABC):
@@ -13,7 +13,7 @@ class CacheServiceInterface(ABC):
 
     def add_batch(
         self,
-        items: List[dict],
+        items: Iterable[dict],
         cache_key_name: str,
         pop_cache_key: bool = False,
         prefix: str = "",

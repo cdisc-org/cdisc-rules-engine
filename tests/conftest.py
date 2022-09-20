@@ -5,6 +5,7 @@ import pandas as pd
 import pytest
 
 from cdisc_rules_engine.enums.rule_types import RuleTypes
+from cdisc_rules_engine.enums.sensitivity import Sensitivity
 from cdisc_rules_engine.models.dictionaries.whodrug import WhoDrugTermsFactory
 from cdisc_rules_engine.models.dictionaries.meddra import MedDRATermsFactory
 from cdisc_rules_engine.models.operation_params import OperationParams
@@ -1078,6 +1079,56 @@ def rule_dataset_references_invalid_whodrug_terms() -> dict:
         ],
         "output_variables": [
             "AEINA",
+        ],
+    }
+
+
+@pytest.fixture(scope="function")
+def rule_validate_columns_order_against_library_metadata() -> dict:
+    """
+    Rule that can be used to validate columns order against library metadata.
+    """
+    return {
+        "core_id": "MockRule",
+        "standards": [{"Name": "SDTMIG", "Version": "3.3"}],
+        "classes": {"Include": ["Events"]},
+        "domains": {"Include": ["AE"]},
+        "sensitivity": Sensitivity.DATASET.value,
+        "operations": [
+            {
+                "operator": "get_column_order_from_dataset",
+                "domain": "AE",
+                "id": "$column_order_from_dataset",
+            },
+            {
+                "operator": "get_column_order_from_library",
+                "domain": "AE",
+                "id": "$column_order_from_library",
+            },
+        ],
+        "conditions": ConditionCompositeFactory.get_condition_composite(
+            {
+                "any": [
+                    {
+                        "name": "get_dataset",
+                        "operator": "not_equal_to",
+                        "value": {
+                            "target": "$column_order_from_dataset",
+                            "comparator": "$column_order_from_library",
+                        },
+                    },
+                ]
+            }
+        ),
+        "actions": [
+            {
+                "name": "generate_dataset_error_objects",
+                "params": {"message": "Order of variables is invalid"},
+            }
+        ],
+        "output_variables": [
+            "$column_order_from_dataset",
+            "$column_order_from_library",
         ],
     }
 

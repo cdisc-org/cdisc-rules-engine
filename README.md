@@ -2,8 +2,8 @@
 Open source offering of the cdisc rules engine
 
 ### Code formatter
-This project uses the `black` code formatter for python.
-It also uses `pre-commit` to run `black` when you commit.
+This project uses the `black` code formatter and `flake8` linter for python.
+It also uses `pre-commit` to run `black` and `flake8` when you commit.
 Both dependencies are added to *requirements.txt*.
 
 **Required**
@@ -73,7 +73,7 @@ Files must be in python package.
 `python3 -m build`
 
 To install from dist folder
-`pip3 install {path_to_file}/cdisc_rules_engine-0.1.0-py3-none-any.whl`
+`pip3 install {path_to_file}/cdisc_rules_engine-{version}-py3-none-any.whl`
 
 To upload built distributive to pypi
 
@@ -86,7 +86,7 @@ To upload built distributive to pypi
 `py -m build`
 
 To install from dist folder
-`pip install {path_to_file}/cdisc_rules_engine-0.1.0-py3-none-any.whl`
+`pip install {path_to_file}/cdisc_rules_engine-{version}-py3-none-any.whl`
 
 To upload built distributive to pypi
 
