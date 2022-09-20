@@ -5,7 +5,7 @@ import pandas as pd
 from business_rules import export_rule_data
 from business_rules.engine import run
 
-from cdisc_rules_engine.config import config
+from cdisc_rules_engine.config import config as default_config
 from cdisc_rules_engine.constants.define_xml_constants import DEFINE_XML_FILE_NAME
 from cdisc_rules_engine.dummy_models.dummy_dataset import DummyDataset
 from cdisc_rules_engine.enums.execution_status import ExecutionStatus
@@ -15,6 +15,11 @@ from cdisc_rules_engine.exceptions.custom_exceptions import (
     DomainNotFoundInDefineXMLError,
     RuleFormatError,
     VariableMetadataNotFoundError,
+)
+from cdisc_rules_engine.interfaces import (
+    CacheServiceInterface,
+    ConfigInterface,
+    DataServiceInterface,
 )
 from cdisc_rules_engine.models.actions import COREActions
 from cdisc_rules_engine.models.dataset_types import DatasetTypes
@@ -45,10 +50,17 @@ from cdisc_rules_engine.utilities.utils import (
 
 
 class RulesEngine:
-    def __init__(self, cache=None, data_service=None, **kwargs):
-        self.cache = cache or CacheServiceFactory(config).get_cache_service()
+    def __init__(
+        self,
+        cache: CacheServiceInterface = None,
+        data_service: DataServiceInterface = None,
+        config_obj: ConfigInterface = None,
+        **kwargs,
+    ):
+        self.config = config_obj or default_config
+        self.cache = cache or CacheServiceFactory(self.config).get_cache_service()
         self.data_service = (
-            data_service or DataServiceFactory(config, self.cache).get_service()
+            data_service or DataServiceFactory(self.config, self.cache).get_service()
         )
         self.rule_processor = RuleProcessor(self.data_service, self.cache)
         self.data_processor = DataProcessor(self.data_service, self.cache)
@@ -69,7 +81,7 @@ class RulesEngine:
         dataset_domain: str,
     ):
         self.data_service = DataServiceFactory(
-            config, InMemoryCacheService.get_instance()
+            self.config, InMemoryCacheService.get_instance()
         ).get_dummy_data_service(datasets)
         dataset_dicts = []
         for domain in datasets:
