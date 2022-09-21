@@ -14,7 +14,7 @@ setuptools.setup(
     python_requires=">=3.8",
     install_requires=[
         "pandas==1.3.5",
-        "business-rules-enhanced==1.2.1",
+        "business-rules-enhanced==1.2.4",
         "python-dotenv==0.20.0",
         "cdisc-library-client==0.1.4",
         "pytest-asyncio==0.18.3",
