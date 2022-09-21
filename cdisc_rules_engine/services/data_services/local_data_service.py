@@ -8,7 +8,7 @@ from cdisc_rules_engine.models.dataset_types import DatasetTypes
 from cdisc_rules_engine.models.variable_metadata_container import (
     VariableMetadataContainer,
 )
-from cdisc_rules_engine.interfaces import CacheServiceInterface
+from cdisc_rules_engine.interfaces import CacheServiceInterface, ConfigInterface
 from cdisc_rules_engine.services.data_readers.data_reader_factory import (
     DataReaderFactory,
 )
@@ -19,27 +19,25 @@ from cdisc_rules_engine.utilities.utils import (
 )
 
 from .base_data_service import BaseDataService, cached_dataset
-from cdisc_rules_engine.config import ConfigService
 
 
 class LocalDataService(BaseDataService):
     _instance = None
 
-    def __init__(self, **params):
-        super(LocalDataService, self).__init__(**params)
-        self.cache_service = None
-        self.reader_factory = DataReaderFactory()
-
     @classmethod
     def get_instance(
         cls,
         cache_service: CacheServiceInterface,
-        config: ConfigService = None,
+        config: ConfigInterface = None,
         **kwargs
     ):
         if cls._instance is None:
-            service = cls()
-            service.cache_service = cache_service
+            service = cls(
+                cache_service=cache_service,
+                reader_factory=DataReaderFactory(),
+                config=config,
+                **kwargs
+            )
             cls._instance = service
         return cls._instance
 
@@ -51,7 +49,7 @@ class LocalDataService(BaseDataService):
 
     @cached_dataset(DatasetTypes.CONTENTS.value)
     def get_dataset(self, dataset_name: str, **params) -> pandas.DataFrame:
-        reader = self.reader_factory.get_service()
+        reader = self._reader_factory.get_service()
         df = reader.from_file(dataset_name)
         self._replace_nans_in_numeric_cols_with_none(df)
         return df

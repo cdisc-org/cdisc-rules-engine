@@ -1,5 +1,5 @@
 from typing import List
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, patch, MagicMock
 
 import pandas as pd
 import pytest
@@ -35,7 +35,7 @@ from cdisc_rules_engine.utilities.utils import get_dataset_cache_key_from_path
 )
 def test_get_dataset_class(dataset, data, expected_class, filename):
     dataset = pd.DataFrame.from_dict(data)
-    data_service = LocalDataService()
+    data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
     class_name = data_service.get_dataset_class(dataset, filename, dataset)
     assert class_name == expected_class
 
@@ -57,7 +57,7 @@ def test_get_dataset_class_associated_domains():
         return_value=ap_dataset,
         side_effect=lambda dataset_name: path_to_dataset_map[dataset_name],
     ):
-        data_service = LocalDataService()
+        data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
         filepath = f"{data_bundle_path}/ce.xpt"
         class_name = data_service.get_dataset_class(ap_dataset, filepath, datasets)
         assert class_name == "Events"

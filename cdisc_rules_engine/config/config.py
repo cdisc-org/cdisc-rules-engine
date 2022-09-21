@@ -2,10 +2,12 @@ import os
 
 from dotenv import load_dotenv
 
+from cdisc_rules_engine.interfaces import ConfigInterface
+
 load_dotenv()
 
 
-class ConfigService:
+class ConfigService(ConfigInterface):
 
     _config_keys = []
     _instance = None

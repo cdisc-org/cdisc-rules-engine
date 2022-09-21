@@ -35,6 +35,12 @@ class DataServiceInterface(ABC):
         """
 
     @abstractmethod
+    def get_variables_metadata(self, dataset_name: str, **params) -> pd.DataFrame:
+        """
+        Gets variables metadata of a dataset.
+        """
+
+    @abstractmethod
     def get_dataset_by_type(
         self, dataset_name: str, dataset_type: str, **params
     ) -> pd.DataFrame:
@@ -48,6 +54,12 @@ class DataServiceInterface(ABC):
         """
         Accepts a list of split dataset filenames,
         downloads all of them and merges into a single DataFrame.
+        """
+
+    @abstractmethod
+    def get_define_xml_contents(self, dataset_name: str) -> bytes:
+        """
+        Returns contents of define.xml file.
         """
 
     @abstractmethod
