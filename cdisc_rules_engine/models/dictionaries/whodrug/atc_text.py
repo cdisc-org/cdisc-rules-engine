@@ -8,6 +8,7 @@ class AtcText(BaseWhoDrugTerm):
     """
 
     def __init__(self, record_params: dict):
+        record_params["code"] = record_params["parentCode"]
         super(AtcText, self).__init__(record_params)
         self.parentCode: str = record_params["parentCode"]  # ATC Code
         self.level: int = record_params["level"]
@@ -19,7 +20,6 @@ class AtcText(BaseWhoDrugTerm):
         return cls(
             {
                 "parentCode": parent_code,  # ATC Code
-                "code": parent_code,  # ATC Code
                 "level": int(line[7]),
                 "text": line[8:].strip(),
                 "type": WhodrugRecordTypes.ATC_TEXT.value,

@@ -9,19 +9,16 @@ class MedDRATerm(RepresentationInterface):
             "type": self.term_type,
             "term": self.term,
         }
-        representation.update(
-            {
-                k: v
-                for k, v in {
-                    "abbreviation": self.abbreviation,
-                    "codeHierarchy": self.code_hierarchy,
-                    "termHierarchy": self.term_hierarchy,
-                    "parentCode": self.parent_code,
-                    "parentTerm": self.parent_term,
-                }.items()
-                if v is not None
-            }
-        )
+        if self.abbreviation:
+            representation["abbreviation"] = self.abbreviation
+        if self.code_hierarchy:
+            representation["codeHierarchy"] = self.code_hierarchy
+        if self.term_hierarchy:
+            representation["termHierarchy"] = self.term_hierarchy
+        if self.parent_code:
+            representation["parentCode"] = self.parent_code
+        if self.parent_term:
+            representation["parentTerm"] = self.parent_term
 
         return representation
 

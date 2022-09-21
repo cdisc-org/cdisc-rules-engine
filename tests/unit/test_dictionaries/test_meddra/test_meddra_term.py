@@ -19,7 +19,7 @@ def test_get_code_hierarchies():
     terms = factory.install_terms(dictionary_path)
     expected_code_hierarchies = set(
         [
-            f"SOC{i+1}/HLGT{i+1}/HLT{i+1}/PT{i+1}/LLT{i+1}"
+            f"SOC{i + 1}/HLGT{i + 1}/HLT{i + 1}/PT{i + 1}/LLT{i + 1}"
             for i in range(len(terms[TermTypes.LLT.value]))
         ]
     )
@@ -47,3 +47,28 @@ def test_get_code_term_pairs():
     for t in TermTypes.values():
         assert t in code_term_pairs
         assert len(code_term_pairs[t]) == len(terms[t])
+
+
+def test_get_representation():
+    data_service = LocalDataService.get_instance(cache_service=MagicMock())
+    factory = MedDRATermsFactory(data_service)
+    terms = factory.install_terms(dictionary_path)
+    soc = terms["soc"][0].to_representation()
+    assert soc == {
+        "code": "SOC1",
+        "type": "soc",
+        "term": "TESTSOC1",
+        "abbreviation": "TS1",
+        "codeHierarchy": "SOC1",
+        "termHierarchy": "TESTSOC1",
+    }
+    hlgt = terms["hlgt"][0].to_representation()
+    assert hlgt == {
+        "code": "HLGT1",
+        "type": "hlgt",
+        "term": "TESTHLGT1",
+        "codeHierarchy": "SOC1/HLGT1",
+        "termHierarchy": "TESTSOC1/TESTHLGT1",
+        "parentCode": "SOC1",
+        "parentTerm": "TESTSOC1",
+    }
