@@ -20,3 +20,9 @@ class DrugDictionary(BaseWhoDrugTerm):
                 "type": WhodrugRecordTypes.DRUG_DICT.value,
             }
         )
+
+    def to_representation(self) -> dict:
+        return {
+            **super(DrugDictionary, self).to_representation(),
+            "drugName": self.drugName,
+        }
