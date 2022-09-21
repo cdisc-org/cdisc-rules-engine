@@ -3,6 +3,16 @@ from cdisc_rules_engine.models.dictionaries.meddra.terms.term_types import TermT
 
 
 class MedDRATerm(RepresentationInterface):
+    def __init__(self, record_params):
+        self.code = record_params.get("code")
+        self.term = record_params.get("term")
+        self.term_type = record_params.get("type")
+        self.abbreviation = record_params.get("abbreviation")
+        self.parent_code = record_params.get("parentCode")
+        self.parent_term = record_params.get("parentTerm")
+        self.code_hierarchy = record_params.get("codeHierarchy")
+        self.term_hierarchy = record_params.get("termHierarchy")
+
     def to_representation(self) -> dict:
         representation: dict = {
             "code": self.code,
@@ -21,16 +31,6 @@ class MedDRATerm(RepresentationInterface):
             representation["parentTerm"] = self.parent_term
 
         return representation
-
-    def __init__(self, record_params):
-        self.code = record_params.get("code")
-        self.term = record_params.get("term")
-        self.term_type = record_params.get("type")
-        self.abbreviation = record_params.get("abbreviation")
-        self.parent_code = record_params.get("parentCode")
-        self.parent_term = record_params.get("parentTerm")
-        self.code_hierarchy = record_params.get("codeHierarchy")
-        self.term_hierarchy = record_params.get("termHierarchy")
 
     def set_parent(self, parent: "MedDRATerm"):
         """
