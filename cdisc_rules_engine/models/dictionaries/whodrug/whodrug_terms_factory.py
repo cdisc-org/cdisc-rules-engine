@@ -1,4 +1,3 @@
-import os
 from collections import defaultdict
 from typing import List, Dict
 
@@ -8,7 +7,6 @@ from cdisc_rules_engine.interfaces import (
 )
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.utilities.utils import get_dictionary_path
-
 from .atc_classification import AtcClassification
 from .atc_text import AtcText
 from .base_whodrug_term import BaseWhoDrugTerm
@@ -30,10 +28,7 @@ class WhoDrugTermsFactory(TermsFactoryInterface):
             WhodrugFileNames.INA_FILE_NAME.value: AtcText,
         }
 
-    def install_terms(
-        self,
-        directory_path: str,
-    ) -> Dict[str, List[BaseWhoDrugTerm]]:
+    def install_terms(self, directory_path: str) -> Dict[str, List[BaseWhoDrugTerm]]:
         """
         Accepts directory path and creates
         term records for each line.
@@ -53,7 +48,9 @@ class WhoDrugTermsFactory(TermsFactoryInterface):
         for dictionary_filename in self.__file_name_model_map:
             # check if the file exists
             file_path: str = get_dictionary_path(directory_path, dictionary_filename)
-            if not os.path.exists(file_path):
+            if not self.__data_service.has_all_files(
+                directory_path, [dictionary_filename]
+            ):
                 logger.warning(
                     f"File {dictionary_filename} "
                     f"does not exist "
