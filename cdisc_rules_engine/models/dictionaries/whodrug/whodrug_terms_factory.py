@@ -43,21 +43,17 @@ class WhoDrugTermsFactory(TermsFactoryInterface):
         logger.info(f"Installing WHODD terms from directory {directory_path}")
 
         code_to_term_map = defaultdict(list)
+        files_required = list(self.__file_name_model_map.keys())
+        if not self.__data_service.has_all_files(directory_path, files_required):
+            raise ValueError(
+                f"Insufficient files in directory {directory_path}."
+                f"Check that all of ({files_required}) exist"
+            )
 
         # for each whodrug file in the directory:
         for dictionary_filename in self.__file_name_model_map:
             # check if the file exists
             file_path: str = get_dictionary_path(directory_path, dictionary_filename)
-            if not self.__data_service.has_all_files(
-                directory_path, [dictionary_filename]
-            ):
-                logger.warning(
-                    f"File {dictionary_filename} "
-                    f"does not exist "
-                    f"in directory {directory_path}"
-                )
-                continue
-
             # create term objects
             self.__create_term_objects_from_file(
                 code_to_term_map, dictionary_filename, file_path
