@@ -43,9 +43,11 @@ class LocalDataService(BaseDataService):
 
     def has_all_files(self, prefix: str, file_names: List[str]) -> bool:
         files = [
-            f for f in os.listdir(prefix) if os.path.isfile(os.path.join(prefix, f))
+            f.lower()
+            for f in os.listdir(prefix)
+            if os.path.isfile(os.path.join(prefix, f))
         ]
-        return all(item in files for item in file_names)
+        return all(item.lower() in files for item in file_names)
 
     @cached_dataset(DatasetTypes.CONTENTS.value)
     def get_dataset(self, dataset_name: str, **params) -> pandas.DataFrame:
