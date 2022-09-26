@@ -358,7 +358,9 @@ class RulesEngine:
         ] = self.data_processor.filter_dataset_columns_by_metadata_and_rule(
             dataset.columns.tolist(), define_metadata, library_metadata, rule
         )
-        rule["conditions"] = rule["conditions"].add_conditions_for_targets(targets)
+        rule["conditions"] = RuleProcessor.duplicate_conditions_for_all_targets(
+            rule["conditions"], targets
+        )
         # execute the rule
         return self.execute_rule(rule, dataset, dataset_path, datasets, domain)
 
@@ -456,8 +458,8 @@ class RulesEngine:
 
         # Add conditions to rule for all variables if variables: all appears
         # in condition
-        rule["conditions"] = rule["conditions"].add_conditions_for_targets(
-            dataset.columns.tolist()
+        rule["conditions"] = RuleProcessor.duplicate_conditions_for_all_targets(
+            rule["conditions"], dataset.columns.to_list()
         )
         # Adding copy for now to avoid updating cached dataset
         dataset = deepcopy(dataset)

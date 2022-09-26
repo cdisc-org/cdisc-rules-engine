@@ -54,3 +54,13 @@ class NotConditionComposite(ConditionInterface):
 
     def should_copy(self) -> bool:
         return self._condition_composite.should_copy()
+
+    def get_conditions(self) -> dict:
+        return self._condition_composite.get_conditions()
+
+    def set_target(self, target) -> ConditionInterface:
+        self._condition_composite.set_target(target)
+        return self
+
+    def set_conditions(self, conditions: dict):
+        self._condition_composite.set_conditions(conditions)

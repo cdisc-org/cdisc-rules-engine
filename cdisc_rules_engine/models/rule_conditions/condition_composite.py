@@ -25,6 +25,20 @@ class ConditionComposite(ConditionInterface):
     def __init__(self):
         self._conditions = {}
 
+    def get_conditions(self) -> dict:
+        return self._conditions
+
+    def set_target(self, target) -> "ConditionInterface":
+        for key, conditions_list in self._conditions.items():
+            new_conditions_list = []
+            for condition in conditions_list:
+                new_conditions_list.append(condition.copy().set_target(target))
+            self._conditions[key] = new_conditions_list
+        return self
+
+    def set_conditions(self, conditions: dict):
+        self._conditions = conditions
+
     def copy(self):
         new_condition = ConditionComposite()
         for key, condition in self._conditions.items():

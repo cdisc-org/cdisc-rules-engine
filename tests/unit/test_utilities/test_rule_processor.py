@@ -1,5 +1,4 @@
 from typing import List, Set
-from unittest import mock
 from unittest.mock import MagicMock, patch
 
 import pandas as pd
@@ -7,6 +6,10 @@ import pytest
 from conftest import mock_data_service
 
 from cdisc_rules_engine.models.rule_conditions import ConditionCompositeFactory
+from cdisc_rules_engine.models.rule_conditions.condition_composite import (
+    ConditionComposite,
+)
+from cdisc_rules_engine.models.rule_conditions.single_condition import SingleCondition
 from cdisc_rules_engine.services.cache.in_memory_cache_service import (
     InMemoryCacheService,
 )
@@ -414,7 +417,8 @@ def test_perform_rule_operation_with_grouping(mock_data_service):
             {
                 "name": "generate_record_message",
                 "params": {
-                    "message": "Value for AESTDY less than the maximum EC.ECDOSE value: $max_aestdy",
+                    "message": "Value for AESTDY less than the "
+                    "maximum EC.ECDOSE value: $max_aestdy",
                     "target": "AESTDY",
                 },
             }
@@ -527,7 +531,8 @@ def test_perform_rule_operation_with_multi_key_grouping(mock_data_service):
             {
                 "name": "generate_record_message",
                 "params": {
-                    "message": "Value for AESTDY less than the maximum EC.ECDOSE value: $max_aestdy",
+                    "message": "Value for AESTDY less than the maximum"
+                    "EC.ECDOSE value: $max_aestdy",
                     "target": "AESTDY",
                 },
             }
@@ -603,7 +608,8 @@ def test_perform_rule_operation_with_null_operations(mock_data_service):
             {
                 "name": "generate_record_message",
                 "params": {
-                    "message": "Value for AESTDY less than the maximum EC.ECDOSE value: $max_aestdy",
+                    "message": "Value for AESTDY less than the "
+                    "maximum EC.ECDOSE value: $max_aestdy",
                     "target": "AESTDY",
                 },
             }
@@ -922,84 +928,6 @@ def test_extract_target_names_from_rule_output_variables():
     }
 
 
-def test_create_list_of_conditions_for_each_target():
-    """
-    Unit test for create_list_of_conditions_for_each_target function.
-    """
-    # create a rule with conditions
-    conditions = {
-        "all": [
-            {
-                "operator": "empty",
-                "name": "get_dataset",
-            }
-        ],
-        "any": [
-            {
-                "operator": "non_empty",
-                "name": "get_dataset",
-            },
-            {
-                "operator": "equal_to",
-                "name": "get_dataset",
-                "value": {"comparator": 100},
-            },
-        ],
-    }
-    rule: dict = {
-        "conditions": ConditionCompositeFactory.get_condition_composite(conditions)
-    }
-    targets: List[str] = [
-        "AESTDY",
-        "AESEQ",
-    ]
-
-    # call the function
-    RuleProcessor.create_list_of_conditions_for_each_target(rule, targets)
-
-    # check that conditions have been created for each target
-    assert rule["conditions"].to_dict() == {
-        "all": [
-            {
-                "operator": "empty",
-                "name": "get_dataset",
-                "value": {
-                    "target": "AESTDY",
-                },
-            },
-            {
-                "operator": "empty",
-                "name": "get_dataset",
-                "value": {
-                    "target": "AESEQ",
-                },
-            },
-        ],
-        "any": [
-            {
-                "operator": "non_empty",
-                "name": "get_dataset",
-                "value": {"target": "AESTDY"},
-            },
-            {
-                "operator": "non_empty",
-                "name": "get_dataset",
-                "value": {"target": "AESEQ"},
-            },
-            {
-                "operator": "equal_to",
-                "name": "get_dataset",
-                "value": {"comparator": 100, "target": "AESTDY"},
-            },
-            {
-                "operator": "equal_to",
-                "name": "get_dataset",
-                "value": {"comparator": 100, "target": "AESEQ"},
-            },
-        ],
-    }
-
-
 @pytest.mark.parametrize(
     "conditions",
     [
@@ -1074,3 +1002,132 @@ def test_get_size_unit_from_rule(conditions: dict):
     }
     processor = RuleProcessor(mock_data_service, InMemoryCacheService())
     assert processor.get_size_unit_from_rule(rule) == "MB"
+
+
+def test_duplicate_for_targets():
+    """
+    Unit test for ConditionComposite.add_variable_condtions method.
+    Tests that conditions that need to be duplicated are.
+    """
+    composite = ConditionComposite()
+    single_condition_1 = SingleCondition(
+        {
+            "name": "get_dataset",
+            "operator": "equal_to",
+            "value": {
+                "comparator": "TEST",
+            },
+        }
+    )
+    composite.add_conditions("all", [single_condition_1])
+    targets = ["AESTDY", "AESCAT", "AEWWWR"]
+    composite = RuleProcessor.duplicate_conditions_for_all_targets(composite, targets)
+    items = composite.items()
+    check = items[0]
+    assert len(check[1]) == 3
+    assert check[0] == "all"
+    for target in targets:
+        # Assert there is one condition for each target in the targets list
+        assert (
+            len([cond for cond in check[1] if cond["value"]["target"] == target]) == 1
+        )
+
+
+def test_add_variable_conditions_nested_list():
+    """
+    Unit test for ConditionComposite.add_variable_condtions method.
+    Tests that conditions that need to be duplicated are.
+    """
+    composite = ConditionComposite()
+    single_condition = SingleCondition(
+        {
+            "name": "get_dataset",
+            "operator": "suffix_not_equal_to",
+            "value": {
+                "target": "$dataset_name",
+                "comparator": "RDOMAIN",
+                "suffix": 2,
+            },
+        }
+    )
+    nested_composite = ConditionComposite()
+    variable_metadata_equal_to = SingleCondition(
+        {
+            "name": "get_dataset",
+            "operator": "variable_metadata_equal_to",
+            "metadata": "$VARIABLE_CORE_VALUES",
+            "value": {
+                "comparator": "Req",
+            },
+        }
+    )
+    variable_not_exists = SingleCondition(
+        {"name": "get_dataset", "operator": "not_exists"}
+    )
+    nested_composite.add_conditions(
+        "all", [variable_metadata_equal_to, variable_not_exists]
+    )
+    composite.add_conditions("any", [single_condition, nested_composite])
+    targets = ["AESTDY", "AESCAT", "AEWWWR"]
+    composite = RuleProcessor.duplicate_conditions_for_all_targets(composite, targets)
+    items = composite.items()
+    check = items[0]
+    assert check[0] == "any"
+    assert len(check[1]) == 4
+    assert check[1][0] == single_condition.to_dict()
+    targets_seen = set()
+    for condition in check[1][1:]:
+        assert "all" in condition
+        additional_checks = condition["all"]
+        assert len(additional_checks) == 2
+        assert (
+            additional_checks[0]["value"]["target"]
+            == additional_checks[1]["value"]["target"]
+        )
+        target = additional_checks[0]["value"]["target"]
+        assert target in targets
+        assert target not in targets_seen  # verify that all targets are used
+        targets_seen.add(target)
+
+
+def test_add_conditions_nested_no_duplicates():
+    """
+    Unit test for ConditionComposite.add_variable_condtions method.
+    Tests that conditions that need to be duplicated are.
+    """
+    composite = ConditionComposite()
+    single_condition = SingleCondition(
+        {
+            "name": "get_dataset",
+            "operator": "suffix_not_equal_to",
+            "value": {
+                "target": "$dataset_name",
+                "comparator": "RDOMAIN",
+                "suffix": 2,
+            },
+        }
+    )
+    nested_composite = ConditionComposite()
+    variable_metadata_equal_to = SingleCondition(
+        {
+            "name": "get_dataset",
+            "operator": "variable_metadata_equal_to",
+            "metadata": "$VARIABLE_CORE_VALUES",
+            "value": {"comparator": "Req", "target": "Test"},
+        }
+    )
+    variable_not_exists = SingleCondition(
+        {"name": "get_dataset", "operator": "not_exists", "value": {"target": "T"}}
+    )
+    nested_composite.add_conditions(
+        "all", [variable_metadata_equal_to, variable_not_exists]
+    )
+    composite.add_conditions("any", [single_condition, nested_composite])
+    targets = ["AESTDY", "AESCAT", "AEWWWR"]
+    composite = RuleProcessor.duplicate_conditions_for_all_targets(composite, targets)
+    items = composite.items()
+    check = items[0]
+    assert check[0] == "any"
+    assert len(check[1]) == 2
+    assert check[1][0] == single_condition.to_dict()
+    assert check[1][1] == nested_composite.to_dict()

@@ -23,6 +23,14 @@ class SingleCondition(ConditionInterface):
     def to_dict(self) -> dict:
         return self._condition
 
+    def set_target(self, target) -> "ConditionInterface":
+        self._condition["value"] = self._condition.get("value", {})
+        self._condition["value"]["target"] = target
+        return self
+
+    def set_conditions(self, conditions: dict):
+        self._condition = conditions
+
     def values(self) -> List[dict]:
         """
         Returns the condition as a list of dictionaries.
@@ -32,17 +40,11 @@ class SingleCondition(ConditionInterface):
     def items(self) -> List[tuple]:
         return self._condition.items()
 
-    def copy(self, targets: List[str]) -> List[ConditionInterface]:
-        conditions: List[SingleCondition] = []
-        if self.should_copy():
-            for target in targets:
-                new_condition = deepcopy(self._condition)
-                new_condition["value"] = new_condition.get("value", {})
-                new_condition["value"]["target"] = target
-                conditions.append(SingleCondition(new_condition))
-        else:
-            conditions.append(self)
-        return conditions
+    def copy(self) -> ConditionInterface:
+        return SingleCondition(deepcopy(self._condition))
 
     def should_copy(self) -> bool:
         return "target" not in self._condition.get("value", {})
+
+    def get_conditions(self) -> dict:
+        return self._condition
