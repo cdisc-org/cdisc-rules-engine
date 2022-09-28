@@ -1,4 +1,4 @@
-from typing import List, Optional, Set
+from typing import List, Optional, Set, Hashable
 
 import pandas as pd
 from business_rules.actions import BaseActions, rule_action
@@ -131,6 +131,7 @@ class COREActions(BaseActions):
     ) -> ValidationErrorEntity:
         usubjid: Optional[pd.Series] = data.get("USUBJID")
         sequence: Optional[pd.Series] = data.get(f"{self.domain}SEQ")
+
         error_object = ValidationErrorEntity(
             row=int(df_row.name) + 1,  # record number should start at 1, not 0
             value=dict(df_row.to_dict()),
@@ -138,10 +139,18 @@ class COREActions(BaseActions):
             if isinstance(usubjid, pd.Series)
             else None,
             sequence=int(sequence[df_row.name])
-            if isinstance(sequence, pd.Series)
+            if self._sequence_exists(sequence, df_row.name)
             else None,
         )
         return error_object
 
     def extract_target_names_from_value_level_metadata(self):
         return set([item["define_variable_name"] for item in self.value_level_metadata])
+
+    @staticmethod
+    def _sequence_exists(sequence: pd.Series, row_name: Hashable) -> bool:
+        return (
+            isinstance(sequence, pd.Series)
+            and not pd.isnull(sequence[row_name])
+            and not sequence[row_name] == ""
+        )
