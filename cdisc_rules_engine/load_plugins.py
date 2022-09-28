@@ -1,6 +1,7 @@
 from importlib.metadata import entry_points, EntryPoint
 from typing import Type, Any, Tuple, Dict
 
+from cdisc_rules_engine.services.cache import CacheServiceFactory
 from cdisc_rules_engine.services.data_readers import (
     DataReaderFactory,
 )
@@ -30,6 +31,7 @@ def load_plugins():
     from cdisc_rules_engine package.
     """
     group_factory_map: Dict[str, Type[FactoryInterface]] = {
+        "core.plugins.cache_services": CacheServiceFactory,
         "core.plugins.data_readers": DataReaderFactory,
         "core.plugins.data_services": DataServiceFactory,
         "core.plugins.rule_operations": OperationsFactory,

@@ -1,8 +1,8 @@
 from typing import List
+from cdisc_rules_engine.interfaces import DataServiceInterface
 from cdisc_rules_engine.enums.report_types import ReportTypes
 from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
 from cdisc_rules_engine.models.validation_args import Validation_args
-from cdisc_rules_engine.services.data_services import BaseDataService
 from cdisc_rules_engine.utilities.excel_report import ExcelReport
 from cdisc_rules_engine.utilities.json_report import JsonReport
 
@@ -26,7 +26,7 @@ class ReportFactory:
         results: List[RuleValidationResult],
         elapsed_time: float,
         args: Validation_args,
-        data_service: BaseDataService,
+        data_service: DataServiceInterface,
     ):
         self._data_path = data_path
         self._results = results
