@@ -1,7 +1,6 @@
 from typing import List
 
 from cdisc_rules_engine.interfaces import ConditionInterface
-from cdisc_rules_engine.models.rule_conditions.single_condition import SingleCondition
 
 
 class ConditionComposite(ConditionInterface):
@@ -51,26 +50,6 @@ class ConditionComposite(ConditionInterface):
         interface to the given key.
         """
         self._conditions[key] = conditions
-
-    def add_conditions_for_targets(self, targets: List[str]):
-        """
-        If a condition specifies the parameter variable: "all",
-        the condition will be duplicated for all targets.
-        """
-        if self.should_copy():
-            for key, conditions in self._conditions.items():
-                conditions_to_add = []
-                for cond in conditions:
-                    if isinstance(cond, SingleCondition):
-                        conditions_to_add.extend(cond.copy(targets))
-                    else:
-                        duplicates = [
-                            cond.copy().add_conditions_for_targets([target])
-                            for target in targets
-                        ]
-                        conditions_to_add.extend(duplicates)
-                self.add_conditions(key, conditions_to_add)
-        return self
 
     def to_dict(self) -> dict:
         """
