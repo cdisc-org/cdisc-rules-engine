@@ -28,7 +28,7 @@ A clear and concise description of how this problem could be solved.
 
 **Proposed rule logic**
 ```yaml
-Give an example of how the new solution could be written as a rule
+Replace this with an example of how the new solution could be written as a rule
 ```
 
 **Screenshots**
