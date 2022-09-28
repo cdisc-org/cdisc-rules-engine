@@ -45,7 +45,7 @@ Run `core.py validate --help` to see the list of validation options.
 #### Validate folder
 To validate a folder using rules for SDTM-IG version 3.4 use the following command:
 
-`python core.py -s SDTM -v 3.4 -d path/to/datasets`
+`python core.py validate -s sdtmig -v 3-4 -d path/to/datasets`
 
 ### Creating an executable version
 
