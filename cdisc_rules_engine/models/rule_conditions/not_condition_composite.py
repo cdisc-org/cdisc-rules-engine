@@ -41,3 +41,26 @@ class NotConditionComposite(ConditionInterface):
 
     def items(self) -> List[tuple]:
         return self._condition_composite.items()
+
+    def add_conditions_for_targets(self, targets: List[str]):
+        self._condition_composite = (
+            self._condition_composite.add_conditions_for_targets(targets)
+        )
+        return self
+
+    def copy(self) -> "NotConditionComposite":
+        composite_copy = self._condition_composite.copy()
+        return NotConditionComposite(self._key, composite_copy)
+
+    def should_copy(self) -> bool:
+        return self._condition_composite.should_copy()
+
+    def get_conditions(self) -> dict:
+        return self._condition_composite.get_conditions()
+
+    def set_target(self, target) -> ConditionInterface:
+        self._condition_composite.set_target(target)
+        return self
+
+    def set_conditions(self, conditions: dict):
+        self._condition_composite.set_conditions(conditions)

@@ -1,4 +1,3 @@
-import copy
 import re
 from typing import List, Optional, Set, Union, Tuple
 
@@ -12,10 +11,7 @@ from cdisc_rules_engine.constants.domains import (
 )
 from cdisc_rules_engine.interfaces import ConditionInterface
 from cdisc_rules_engine.models.operation_params import OperationParams
-from cdisc_rules_engine.models.rule_conditions import (
-    AllowedConditionsKeys,
-    ConditionCompositeFactory,
-)
+from cdisc_rules_engine.models.rule_conditions import AllowedConditionsKeys
 from cdisc_rules_engine.operations import operations_factory
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.utilities.data_processor import DataProcessor
@@ -387,81 +383,26 @@ class RuleProcessor:
         )
 
     @staticmethod
-    def create_list_of_conditions_for_each_target(rule: dict, targets: List[str]):
+    def duplicate_conditions_for_all_targets(
+        conditions: ConditionInterface, targets: List[str]
+    ) -> ConditionInterface:
         """
-        Multiplies the rule conditions by the number of targets
-        and adds a target to each condition.
-
-        Input:
-        rule = {
-            "conditions": {
-                "all": [
-                    {
-                        "name": "get_dataset",
-                        "operator": "equal_to"
-                    }
-                ]
-            },
-            ...
-        }
-        targets = ["AESTDY", "AESEQ", "DOMAIN"]
-
-        Output:
-        {
-            "conditions": {
-                "all": [
-                    {
-                        "name": "get_dataset",
-                        "operator": "equal_to",
-                        "value": {"target": "AESTDY"},
-                    },
-                    {
-                        "name": "get_dataset",
-                        "operator": "equal_to",
-                        "value": {"target": "AESEQ"},
-                    },
-                    {
-                        "name": "get_dataset",
-                        "operator": "equal_to",
-                        "value": {"target": "DOMAIN"},
-                    }
-                ]
-            },
-            ...
-        }
-        The given rule is changed by reference.
+        Given a list of conditions duplicates the condition for all targets as necessary
         """
-        conditions: ConditionInterface = rule["conditions"]
-        new_conditions = {}
-        for key, condition_list in conditions.items():
-            key_conditions = RuleProcessor.create_list_of_target_conditions(
-                condition_list, targets
-            )
-            new_conditions[key] = key_conditions
-        rule["conditions"] = ConditionCompositeFactory.get_condition_composite(
-            new_conditions
-        )
-
-    @staticmethod
-    def create_list_of_target_conditions(
-        condition_list: List[dict], targets: List[str]
-    ) -> List[dict]:
-        """
-        Accepts a list of conditions and targets.
-        Returns a list of conditions X targets.
-        See the example in create_list_of_conditions_for_each_target function.
-        """
-        result = []
-        for condition in condition_list:
-            target_conditions: List[dict] = []
-            for target in targets:
-                condition_copy: dict = copy.deepcopy(condition)
-                value: dict = condition_copy.get("value", {})
-                value["target"] = target
-                condition_copy["value"] = value
-                target_conditions.append(condition_copy)
-            result.extend(target_conditions)
-        return result
+        conditions_dict = conditions.get_conditions()
+        new_conditions_dict = {}
+        for key, conditions_list in conditions_dict.items():
+            new_conditions_list = []
+            for condition in conditions_list:
+                if condition.should_copy():
+                    new_conditions_list.extend(
+                        [condition.copy().set_target(target) for target in targets]
+                    )
+                else:
+                    new_conditions_list.append(condition)
+            new_conditions_dict[key] = new_conditions_list
+        conditions.set_conditions(new_conditions_dict)
+        return conditions
 
     def is_suitable_for_validation(
         self,

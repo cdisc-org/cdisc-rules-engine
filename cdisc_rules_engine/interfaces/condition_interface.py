@@ -26,3 +26,34 @@ class ConditionInterface(ABC):
         """
         Returns an iterable of tuples.
         """
+
+    @abstractmethod
+    def copy(self) -> "ConditionInterface":
+        """
+        Returns a copy of the current condition interface
+        """
+
+    @abstractmethod
+    def should_copy(self) -> bool:
+        """
+        Returns true if the condition inteface should be copied.
+        This is true if a condition is supposed to be run on all variables.
+        """
+
+    @abstractmethod
+    def get_conditions(self) -> dict:
+        """
+        Returns the raw conditons dictionary mapping key to condition interface
+        """
+
+    @abstractmethod
+    def set_target(self, target) -> "ConditionInterface":
+        """
+        Updates the target of a condition
+        """
+
+    @abstractmethod
+    def set_conditions(self, conditions: dict):
+        """
+        Updates the conditions of a condition interface
+        """
