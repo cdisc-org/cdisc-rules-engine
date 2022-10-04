@@ -119,6 +119,8 @@ class Rule(RepresentationInterface):
                 "comparator": condition.get("value"),
             },
         }
+        if "variables" in condition:
+            data["variables"] = condition["variables"]
         for optional_parameter in OptionalConditionParameters.values():
             if optional_parameter in condition:
                 data["value"][optional_parameter] = condition.get(optional_parameter)
