@@ -37,24 +37,21 @@ class Rule(RepresentationInterface):
     @classmethod
     def from_cdisc_metadata(cls, rule_metadata: dict) -> dict:
         if cls.is_cdisc_rule_metadata(rule_metadata):
-            executable_rule = {}
-            executable_rule["core_id"] = rule_metadata.get("Core", {}).get("Id")
-            executable_rule["author"] = "CDISC"
-            executable_rule["reference"] = rule_metadata.get("References")
-            executable_rule["sensitivity"] = rule_metadata.get("Sensitivity")
-            executable_rule["severity"] = rule_metadata.get("Severity").lower()
-            executable_rule["description"] = rule_metadata.get("Description")
-            executable_rule["authority"] = rule_metadata.get("Authority")
-            executable_rule["standards"] = rule_metadata.get("Scopes", {}).get(
-                "Standards"
-            )
-            executable_rule["classes"] = rule_metadata.get("Scopes", {}).get("Classes")
-            executable_rule["domains"] = rule_metadata.get("Scopes", {}).get("Domains")
-            executable_rule["rule_type"] = rule_metadata.get("Rule_Type")
-            executable_rule["conditions"] = cls.parse_conditions(
-                rule_metadata.get("Check")
-            )
-            executable_rule["actions"] = cls.parse_actions(rule_metadata.get("Outcome"))
+            executable_rule = {
+                "core_id": rule_metadata.get("Core", {}).get("Id"),
+                "author": "CDISC",
+                "reference": rule_metadata.get("References"),
+                "sensitivity": rule_metadata.get("Sensitivity"),
+                "severity": rule_metadata.get("Severity").lower(),
+                "description": rule_metadata.get("Description"),
+                "authority": rule_metadata.get("Authority"),
+                "standards": rule_metadata.get("Scopes", {}).get("Standards"),
+                "classes": rule_metadata.get("Scopes", {}).get("Classes"),
+                "domains": rule_metadata.get("Scopes", {}).get("Domains"),
+                "rule_type": rule_metadata.get("Rule_Type"),
+                "conditions": cls.parse_conditions(rule_metadata.get("Check")),
+                "actions": cls.parse_actions(rule_metadata.get("Outcome")),
+            }
 
             if "Operations" in rule_metadata:
                 executable_rule["operations"] = rule_metadata.get("Operations")
