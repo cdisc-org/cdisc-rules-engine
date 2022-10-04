@@ -76,7 +76,7 @@ def test_targeted_error_object_with_dataset_sensitivity():
     assert error["value"] == {"TEST": 1, "MISSING": "Not in dataset"}
 
 
-def test_empty_sequential_not_raise_errors():
+def test_empty_sequential():
     dummy_rule = {
         "core_id": "MockRule",
         "actions": [
@@ -96,6 +96,11 @@ def test_empty_sequential_not_raise_errors():
     action = COREActions([], variable, "TV", dummy_rule)
     targets = set(dummy_rule["output_variables"])
     result = action.generate_targeted_error_object(targets, df, "TVSEQ greater than 2")
-    assert result.errors[3]._sequence is None
-    assert result.errors[4]._sequence is None
-    assert len(result.errors) == 6
+    assert [err.to_representation() for err in result.errors] == [
+        {"value": {"TV": 1}, "row": 1, "seq": 2},
+        {"value": {"TV": 3}, "row": 2, "seq": 4},
+        {"value": {"TV": 5}, "row": 3, "seq": 6},
+        {"value": {"TV": 7}, "row": 4},
+        {"value": {"TV": 9}, "row": 5},
+        {"value": {"TV": "8"}, "row": 6, "seq": 8},
+    ]
