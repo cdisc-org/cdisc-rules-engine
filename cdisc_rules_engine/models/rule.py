@@ -154,9 +154,8 @@ class Rule(RepresentationInterface):
             datasets.append(join_data)
         return datasets
 
-    def _to_db_dict(self) -> dict:
-        db_dict: dict = {
-            "id": self.id,
+    def to_representation(self) -> dict:
+        representation: dict = {
             "category": self.category,
             "author": self.author,
             "core_id": self.core_id,
@@ -172,26 +171,13 @@ class Rule(RepresentationInterface):
         }
 
         if self.classes:
-            db_dict["classes"] = self.classes
+            representation["classes"] = self.classes
         if self.domains:
-            db_dict["domains"] = self.domains
+            representation["domains"] = self.domains
         if self.datasets:
-            db_dict["datasets"] = self.datasets
+            representation["datasets"] = self.datasets
         if self.output_variables:
-            db_dict["output_variables"] = self.output_variables
+            representation["output_variables"] = self.output_variables
         if self.operations:
-            db_dict["operations"] = self.operations
-        return db_dict
-
-    def _ensure_valid_record_structure(self):
-        assert isinstance(self.core_id, str)
-        assert isinstance(self.category, str)
-        assert isinstance(self.author, str)
-        assert isinstance(self.severity, str)
-        assert isinstance(self.sensitivity, str)
-        assert Sensitivity.contains(self.sensitivity)
-        assert isinstance(self.description, str)
-        assert isinstance(self.rule_type, str)
-        assert RuleTypes.contains(self.rule_type)
-        # ensure some rule scope is specified
-        assert self.classes or self.domains
+            representation["operations"] = self.operations
+        return representation
