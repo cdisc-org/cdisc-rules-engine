@@ -5,10 +5,9 @@ from cdisc_rules_engine.enums.optional_condition_parameters import (
 )
 from cdisc_rules_engine.enums.rule_types import RuleTypes
 from cdisc_rules_engine.enums.sensitivity import Sensitivity
-from cdisc_rules_engine.interfaces import RepresentationInterface
 
 
-class Rule(RepresentationInterface):
+class Rule:
     """
     This class represents a rule DB record.
     A rule DB record represents a proprietary rule, but
@@ -150,31 +149,3 @@ class Rule(RepresentationInterface):
                 join_data["relationship_columns"] = relationship_columns
             datasets.append(join_data)
         return datasets
-
-    def to_representation(self) -> dict:
-        representation: dict = {
-            "category": self.category,
-            "author": self.author,
-            "core_id": self.core_id,
-            "reference": self.reference,
-            "sensitivity": self.sensitivity,
-            "severity": self.severity,
-            "description": self.description,
-            "authority": self.authority,
-            "standards": self.standards,
-            "rule_type": self.rule_type,
-            "conditions": self.conditions,
-            "actions": self.actions,
-        }
-
-        if self.classes:
-            representation["classes"] = self.classes
-        if self.domains:
-            representation["domains"] = self.domains
-        if self.datasets:
-            representation["datasets"] = self.datasets
-        if self.output_variables:
-            representation["output_variables"] = self.output_variables
-        if self.operations:
-            representation["operations"] = self.operations
-        return representation
