@@ -14,6 +14,7 @@ class BaseSerializer(ABC):
         """
 
     @abstractmethod
+    @property
     def is_valid(self) -> bool:
         """
         Returns if the wrapped object is valid or not.

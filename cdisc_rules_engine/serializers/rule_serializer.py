@@ -41,6 +41,7 @@ class RuleSerializer(BaseSerializer):
             data["operations"] = self.__rule.operations
         return data
 
+    @property
     def is_valid(self) -> bool:
         return (
             isinstance(self.__rule.core_id, str)
