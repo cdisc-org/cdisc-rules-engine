@@ -669,6 +669,19 @@ def test_validate_variable_metadata(
         }
     ]
 
+    validation_result: List[dict] = RulesEngine().validate_single_rule(
+        variables_metadata_rule, "study/bundle", [{}], "EC"
+    )
+    assert validation_result == [
+        {
+            "domain": "EC",
+            "errors": [],
+            "executionStatus": "success",
+            "message": None,
+            "variables": [],
+        }
+    ]
+
 
 @patch(
     "cdisc_rules_engine.services.data_services.LocalDataService.get_variables_metadata",

@@ -6,6 +6,9 @@ from cdisc_rules_engine.interfaces import ConfigInterface
 logging.getLogger("asyncio").disabled = True
 logging.getLogger("xmlschema").disabled = True
 
+logging.getLogger("asyncio").disabled = True
+logging.getLogger("xmlschema").disabled = True
+
 
 class LoggingServiceFactory:
     _instance = None
