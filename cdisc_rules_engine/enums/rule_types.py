@@ -14,9 +14,6 @@ class RuleTypes(BaseEnum):
     VALUE_LEVEL_METADATA_CHECK_AGAINST_DEFINE = (
         "Value Level Metadata Check against Define XML"
     )
-    DATASET_CONTENTS_CHECK_AGAINST_LIBRARY_METADATA = (
-        "Dataset Contents Check against Library Metadata"
-    )
     DATASET_CONTENTS_CHECK_AGAINST_DEFINE_AND_LIBRARY = (
         "Dataset Contents Check against Define XML and Library Metadata"
     )

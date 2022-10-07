@@ -1,9 +1,9 @@
 from typing import List, Type
 
-from cdisc_rules_engine.config import ConfigService
 from cdisc_rules_engine.dummy_models.dummy_dataset import DummyDataset
 from cdisc_rules_engine.interfaces import (
     CacheServiceInterface,
+    ConfigInterface,
     DataServiceInterface,
     FactoryInterface,
 )
@@ -14,7 +14,7 @@ from . import DummyDataService, LocalDataService
 class DataServiceFactory(FactoryInterface):
     _registered_services_map = {"local": LocalDataService, "dummy": DummyDataService}
 
-    def __init__(self, config: ConfigService, cache_service: CacheServiceInterface):
+    def __init__(self, config: ConfigInterface, cache_service: CacheServiceInterface):
         self.data_service_name = config.getValue("DATA_SERVICE_TYPE") or "local"
         self.config = config
         self.cache_service = cache_service

@@ -5,10 +5,9 @@ from cdisc_rules_engine.enums.optional_condition_parameters import (
 )
 from cdisc_rules_engine.enums.rule_types import RuleTypes
 from cdisc_rules_engine.enums.sensitivity import Sensitivity
-from cdisc_rules_engine.interfaces import RepresentationInterface
 
 
-class Rule(RepresentationInterface):
+class Rule:
     """
     This class represents a rule DB record.
     A rule DB record represents a proprietary rule, but
@@ -37,24 +36,21 @@ class Rule(RepresentationInterface):
     @classmethod
     def from_cdisc_metadata(cls, rule_metadata: dict) -> dict:
         if cls.is_cdisc_rule_metadata(rule_metadata):
-            executable_rule = {}
-            executable_rule["core_id"] = rule_metadata.get("Core", {}).get("Id")
-            executable_rule["author"] = "CDISC"
-            executable_rule["reference"] = rule_metadata.get("References")
-            executable_rule["sensitivity"] = rule_metadata.get("Sensitivity")
-            executable_rule["severity"] = rule_metadata.get("Severity").lower()
-            executable_rule["description"] = rule_metadata.get("Description")
-            executable_rule["authority"] = rule_metadata.get("Authority")
-            executable_rule["standards"] = rule_metadata.get("Scopes", {}).get(
-                "Standards"
-            )
-            executable_rule["classes"] = rule_metadata.get("Scopes", {}).get("Classes")
-            executable_rule["domains"] = rule_metadata.get("Scopes", {}).get("Domains")
-            executable_rule["rule_type"] = rule_metadata.get("Rule_Type")
-            executable_rule["conditions"] = cls.parse_conditions(
-                rule_metadata.get("Check")
-            )
-            executable_rule["actions"] = cls.parse_actions(rule_metadata.get("Outcome"))
+            executable_rule = {
+                "core_id": rule_metadata.get("Core", {}).get("Id"),
+                "author": "CDISC",
+                "reference": rule_metadata.get("References"),
+                "sensitivity": rule_metadata.get("Sensitivity"),
+                "severity": rule_metadata.get("Severity").lower(),
+                "description": rule_metadata.get("Description"),
+                "authority": rule_metadata.get("Authority"),
+                "standards": rule_metadata.get("Scopes", {}).get("Standards"),
+                "classes": rule_metadata.get("Scopes", {}).get("Classes"),
+                "domains": rule_metadata.get("Scopes", {}).get("Domains"),
+                "rule_type": rule_metadata.get("Rule_Type"),
+                "conditions": cls.parse_conditions(rule_metadata.get("Check")),
+                "actions": cls.parse_actions(rule_metadata.get("Outcome")),
+            }
 
             if "Operations" in rule_metadata:
                 executable_rule["operations"] = rule_metadata.get("Operations")
@@ -119,6 +115,8 @@ class Rule(RepresentationInterface):
                 "comparator": condition.get("value"),
             },
         }
+        if "variables" in condition:
+            data["variables"] = condition["variables"]
         for optional_parameter in OptionalConditionParameters.values():
             if optional_parameter in condition:
                 data["value"][optional_parameter] = condition.get(optional_parameter)
@@ -151,45 +149,3 @@ class Rule(RepresentationInterface):
                 join_data["relationship_columns"] = relationship_columns
             datasets.append(join_data)
         return datasets
-
-    def _to_db_dict(self) -> dict:
-        db_dict: dict = {
-            "id": self.id,
-            "category": self.category,
-            "author": self.author,
-            "core_id": self.core_id,
-            "reference": self.reference,
-            "sensitivity": self.sensitivity,
-            "severity": self.severity,
-            "description": self.description,
-            "authority": self.authority,
-            "standards": self.standards,
-            "rule_type": self.rule_type,
-            "conditions": self.conditions,
-            "actions": self.actions,
-        }
-
-        if self.classes:
-            db_dict["classes"] = self.classes
-        if self.domains:
-            db_dict["domains"] = self.domains
-        if self.datasets:
-            db_dict["datasets"] = self.datasets
-        if self.output_variables:
-            db_dict["output_variables"] = self.output_variables
-        if self.operations:
-            db_dict["operations"] = self.operations
-        return db_dict
-
-    def _ensure_valid_record_structure(self):
-        assert isinstance(self.core_id, str)
-        assert isinstance(self.category, str)
-        assert isinstance(self.author, str)
-        assert isinstance(self.severity, str)
-        assert isinstance(self.sensitivity, str)
-        assert Sensitivity.contains(self.sensitivity)
-        assert isinstance(self.description, str)
-        assert isinstance(self.rule_type, str)
-        assert RuleTypes.contains(self.rule_type)
-        # ensure some rule scope is specified
-        assert self.classes or self.domains

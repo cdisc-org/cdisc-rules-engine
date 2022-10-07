@@ -50,6 +50,6 @@ class BaseOperation:
 
     def _handle_dictionary_result(self, result):
         self.evaluation_dataset[self.params.operation_id] = [result] * len(
-            self.params.dataframe
+            self.evaluation_dataset
         )
         return self.evaluation_dataset

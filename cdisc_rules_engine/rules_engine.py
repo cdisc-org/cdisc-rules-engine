@@ -1,11 +1,11 @@
 from copy import deepcopy
-from typing import Callable, List, Set, Union
+from typing import Callable, List, Union
 
 import pandas as pd
 from business_rules import export_rule_data
 from business_rules.engine import run
 
-from cdisc_rules_engine.config import config
+from cdisc_rules_engine.config import config as default_config
 from cdisc_rules_engine.constants.define_xml_constants import DEFINE_XML_FILE_NAME
 from cdisc_rules_engine.dummy_models.dummy_dataset import DummyDataset
 from cdisc_rules_engine.enums.execution_status import ExecutionStatus
@@ -16,6 +16,11 @@ from cdisc_rules_engine.exceptions.custom_exceptions import (
     RuleFormatError,
     VariableMetadataNotFoundError,
 )
+from cdisc_rules_engine.interfaces import (
+    CacheServiceInterface,
+    ConfigInterface,
+    DataServiceInterface,
+)
 from cdisc_rules_engine.models.actions import COREActions
 from cdisc_rules_engine.models.dataset_types import DatasetTypes
 from cdisc_rules_engine.models.dataset_variable import DatasetVariable
@@ -24,10 +29,7 @@ from cdisc_rules_engine.models.validation_error_container import (
     ValidationErrorContainer,
 )
 from cdisc_rules_engine.services import logger
-from cdisc_rules_engine.services.cache.cache_service_factory import CacheServiceFactory
-from cdisc_rules_engine.services.cache.in_memory_cache_service import (
-    InMemoryCacheService,
-)
+from cdisc_rules_engine.services.cache import CacheServiceFactory, InMemoryCacheService
 from cdisc_rules_engine.services.data_services import DataServiceFactory
 from cdisc_rules_engine.services.define_xml_reader import DefineXMLReader
 from cdisc_rules_engine.utilities.data_processor import DataProcessor
@@ -45,10 +47,17 @@ from cdisc_rules_engine.utilities.utils import (
 
 
 class RulesEngine:
-    def __init__(self, cache=None, data_service=None, **kwargs):
-        self.cache = cache or CacheServiceFactory(config).get_cache_service()
+    def __init__(
+        self,
+        cache: CacheServiceInterface = None,
+        data_service: DataServiceInterface = None,
+        config_obj: ConfigInterface = None,
+        **kwargs,
+    ):
+        self.config = config_obj or default_config
+        self.cache = cache or CacheServiceFactory(self.config).get_cache_service()
         self.data_service = (
-            data_service or DataServiceFactory(config, self.cache).get_service()
+            data_service or DataServiceFactory(self.config, self.cache).get_service()
         )
         self.rule_processor = RuleProcessor(self.data_service, self.cache)
         self.data_processor = DataProcessor(self.data_service, self.cache)
@@ -69,7 +78,7 @@ class RulesEngine:
         dataset_domain: str,
     ):
         self.data_service = DataServiceFactory(
-            config, InMemoryCacheService.get_instance()
+            self.config, InMemoryCacheService.get_instance()
         ).get_dummy_data_service(datasets)
         dataset_dicts = []
         for domain in datasets:
@@ -188,9 +197,6 @@ class RulesEngine:
             ),
             RuleTypes.DATASET_CONTENTS_CHECK_AGAINST_DEFINE_AND_LIBRARY.value: (
                 self.validate_dataset_contents_against_define_and_library
-            ),
-            RuleTypes.DATASET_CONTENTS_CHECK_AGAINST_LIBRARY_METADATA.value: (
-                self.validate_dataset_contents_against_library_metadata
             ),
             RuleTypes.DEFINE.value: self.validate_define_xml,
         }
@@ -361,57 +367,9 @@ class RulesEngine:
         ] = self.data_processor.filter_dataset_columns_by_metadata_and_rule(
             dataset.columns.tolist(), define_metadata, library_metadata, rule
         )
-        self.rule_processor.create_list_of_conditions_for_each_target(rule, targets)
-
-        # execute the rule
-        return self.execute_rule(rule, dataset, dataset_path, datasets, domain)
-
-    def validate_dataset_contents_against_library_metadata(
-        self, rule: dict, dataset_path: str, datasets: List[dict], domain: str, **kwargs
-    ) -> List[Union[dict, str]]:
-        """
-        Validates dataset contents against Library variable metadata.
-        The rule only provides variable names and the engine automatically
-        validates their values based on the variable core status
-        taken from library metadata.
-        """
-        # get metadata from library
-        library_metadata: dict = (
-            self.cache.get(
-                get_library_variables_metadata_cache_key(
-                    self.standard, self.standard_version
-                )
-            )
-            or {}
+        rule["conditions"] = RuleProcessor.duplicate_conditions_for_all_targets(
+            rule["conditions"], targets
         )
-
-        # download dataset
-        dataset: pd.DataFrame = self.get_dataset_to_validate(
-            DatasetTypes.CONTENTS.value, dataset_path, datasets, domain
-        )
-
-        # add operator to rule targets based on library metadata
-        core_status_to_operator_map: dict = {
-            "Req": ["not_exists", "empty"],  # must exist and can't be empty
-            "Exp": "not_exists",  # needs to exist but can be empty
-        }
-        rule_targets: Set[str] = self.rule_processor.extract_target_names_from_rule(
-            rule, domain, dataset.columns.tolist()
-        )
-        target_to_operator_map: dict = {}
-        for target in rule_targets:
-            # get library status for each target
-            target_metadata: dict = library_metadata.get(target)
-            if not target_metadata:
-                raise VariableMetadataNotFoundError(
-                    f"Metadata for variable {target} is not found in CDISC Library"
-                )
-            core_status: str = target_metadata["core"]
-            target_to_operator_map[target] = core_status_to_operator_map[core_status]
-        self.rule_processor.add_operator_to_rule_conditions(
-            rule, target_to_operator_map, domain
-        )
-
         # execute the rule
         return self.execute_rule(rule, dataset, dataset_path, datasets, domain)
 
@@ -507,6 +465,11 @@ class RulesEngine:
         if codelist_term_maps is None:
             codelist_term_maps = []
 
+        # Add conditions to rule for all variables if variables: all appears
+        # in condition
+        rule["conditions"] = RuleProcessor.duplicate_conditions_for_all_targets(
+            rule["conditions"], dataset.columns.to_list()
+        )
         # Adding copy for now to avoid updating cached dataset
         dataset = deepcopy(dataset)
         # preprocess dataset

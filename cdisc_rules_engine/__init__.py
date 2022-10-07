@@ -1,4 +1,5 @@
-from .load_plugins import main as load_plugins
+from .plugin_loader import PluginLoader
 
 
-load_plugins()
+loader = PluginLoader()
+loader.load()
