@@ -22,12 +22,14 @@ class BaseWhoDrugTermSerializer(BaseSerializer, ABC):
 
 
 class AtcTextSerializer(BaseWhoDrugTermSerializer):
-    __term: AtcText
+    def __init__(self, term: AtcText):
+        self.__term = term
+        super(AtcTextSerializer, self).__init__(term)
 
     @property
     def data(self) -> dict:
         return {
-            **super(AtcText).data,
+            **super(AtcTextSerializer, self).data,
             "parentCode": self.__term.parentCode,
             "level": self.__term.level,
             "text": self.__term.text,
@@ -48,12 +50,14 @@ class AtcTextSerializer(BaseWhoDrugTermSerializer):
 
 
 class AtcClassificationSerializer(BaseWhoDrugTermSerializer):
-    __term: AtcClassification
+    def __init__(self, term: AtcClassification):
+        self.__term = term
+        super().__init__(term)
 
     @property
     def data(self) -> dict:
         return {
-            **super(AtcClassification).data,
+            **super(AtcClassificationSerializer, self).data,
             "parentCode": self.__term.parentCode,
         }
 
@@ -69,12 +73,14 @@ class AtcClassificationSerializer(BaseWhoDrugTermSerializer):
 
 
 class DrugDictionarySerializer(BaseWhoDrugTermSerializer):
-    __term: DrugDictionary
+    def __init__(self, term: DrugDictionary):
+        self.__term = term
+        super().__init__(term)
 
     @property
     def data(self) -> dict:
         return {
-            **super(DrugDictionary).data,
+            **super(DrugDictionarySerializer, self).data,
             "drugName": self.__term.drugName,
         }
 
