@@ -1,9 +1,10 @@
 from .base_serializer import BaseSerializer
-from .meddra_term_serializer import MedDRATermSerializer
 from .rule_serializer import RuleSerializer
-from .whodrug_term_serializer import (
+
+from .term_serializers import (
     AtcTextSerializer,
     DrugDictionarySerializer,
+    MedDRATermSerializer,
     AtcClassificationSerializer,
 )
 
