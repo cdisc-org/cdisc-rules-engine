@@ -1,9 +1,7 @@
 from abc import abstractmethod
 
-from cdisc_rules_engine.interfaces import RepresentationInterface
 
-
-class BaseWhoDrugTerm(RepresentationInterface):
+class BaseWhoDrugTerm:
     """
     This class contains some common implementation
     between all WhoDrug terms.
@@ -20,6 +18,3 @@ class BaseWhoDrugTerm(RepresentationInterface):
         Creates an instance from the given line.
         Does not save it to the DB.
         """
-
-    def to_representation(self):
-        return {"code": self.code, "type": self.type}

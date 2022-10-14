@@ -20,9 +20,3 @@ class AtcClassification(BaseWhoDrugTerm):
                 "type": WhodrugRecordTypes.ATC_CLASSIFICATION.value,
             }
         )
-
-    def to_representation(self) -> dict:
-        return {
-            **super(AtcClassification, self).to_representation(),
-            "parentCode": self.parentCode,
-        }
