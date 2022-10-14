@@ -1,8 +1,7 @@
-from cdisc_rules_engine.interfaces import RepresentationInterface
 from cdisc_rules_engine.models.dictionaries.meddra.terms.term_types import TermTypes
 
 
-class MedDRATerm(RepresentationInterface):
+class MedDRATerm:
     def __init__(self, record_params):
         self.code = record_params.get("code")
         self.term = record_params.get("term")
@@ -12,25 +11,6 @@ class MedDRATerm(RepresentationInterface):
         self.parent_term = record_params.get("parentTerm")
         self.code_hierarchy = record_params.get("codeHierarchy")
         self.term_hierarchy = record_params.get("termHierarchy")
-
-    def to_representation(self) -> dict:
-        representation: dict = {
-            "code": self.code,
-            "type": self.term_type,
-            "term": self.term,
-        }
-        if self.abbreviation:
-            representation["abbreviation"] = self.abbreviation
-        if self.code_hierarchy:
-            representation["codeHierarchy"] = self.code_hierarchy
-        if self.term_hierarchy:
-            representation["termHierarchy"] = self.term_hierarchy
-        if self.parent_code:
-            representation["parentCode"] = self.parent_code
-        if self.parent_term:
-            representation["parentTerm"] = self.parent_term
-
-        return representation
 
     def set_parent(self, parent: "MedDRATerm"):
         """
