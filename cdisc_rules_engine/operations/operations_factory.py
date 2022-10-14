@@ -29,6 +29,7 @@ from cdisc_rules_engine.operations.whodrug_references_validator import (
     WhodrugReferencesValidator,
 )
 from cdisc_rules_engine.operations.variable_permissibility import VariablePermissibility
+from cdisc_rules_engine.operations.variable_count import VariableCount
 
 
 class OperationsFactory(FactoryInterface):
@@ -52,6 +53,7 @@ class OperationsFactory(FactoryInterface):
         "variable_names": VariableNames,
         "variable_permissibilities": VariablePermissibility,
         "variable_value_count": VariableValueCount,
+        "variable_count": VariableCount,
     }
 
     @classmethod
