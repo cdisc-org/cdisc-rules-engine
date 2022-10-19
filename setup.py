@@ -21,6 +21,6 @@ setuptools.setup(
         "xport==3.6.1",
         "redis==4.0.2",
         "openpyxl==3.0.10",
-        "importlib_metadata",
+        "importlib-metadata==5.0.0",
     ],
 )
