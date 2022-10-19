@@ -141,21 +141,31 @@ def run_validation(args: Validation_args):
     set_log_level(args.log_level.lower())
     cache_path: str = f"{os.path.dirname(__file__)}/../{args.cache}"
     data_path: str = f"{os.path.dirname(__file__)}/../{args.data}"
-
     # fill cache
     CacheManager.register("RedisCacheService", RedisCacheService)
     CacheManager.register("InMemoryCacheService", InMemoryCacheService)
     manager = CacheManager()
     manager.start()
     shared_cache = get_cache_service(manager)
+    engine_logger.info("Populating cache")
     shared_cache = fill_cache_with_provided_data(shared_cache, cache_path)
 
     # install dictionaries if needed
     fill_cache_with_dictionaries(shared_cache, args)
-
-    rules = shared_cache.get_all_by_prefix(
-        get_rules_cache_key(args.standard, args.version.replace(".", "-"))
-    )
+    rules = [
+        shared_cache.get(
+            get_rules_cache_key(args.standard, args.version.replace(".", "-"), rule)
+        )
+        for rule in args.rules
+    ]
+    if not args.rules:
+        engine_logger.info(
+            f"No rules specified. Running all rules for {args.standard} \
+                version {args.version}"
+        )
+        rules = shared_cache.get_all_by_prefix(
+            get_rules_cache_key(args.standard, args.version.replace(".", "-"))
+        )
     data_service = DataServiceFactory(config, shared_cache).get_data_service()
     datasets = get_datasets(data_service, data_path)
 
