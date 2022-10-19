@@ -1,5 +1,5 @@
-from importlib.metadata import EntryPoint, entry_points
-from typing import Dict, Type, Tuple, Any
+from importlib_metadata import entry_points, EntryPoints
+from typing import Dict, Type, Any
 
 from cdisc_rules_engine.interfaces import FactoryInterface
 from cdisc_rules_engine.operations import OperationsFactory
@@ -30,7 +30,7 @@ class PluginLoader:
         # for each group
         for group_name, factory_class in self.__group_factory_map.items():
             # discover all group plugins and register them
-            group_plugins: Tuple[EntryPoint] = entry_points().get(group_name, [])
+            group_plugins: EntryPoints = entry_points(group=group_name)
             self.__register_group_plugins(factory_class, group_plugins)
 
     @classmethod
@@ -47,7 +47,7 @@ class PluginLoader:
         cls.__group_factory_map[group_name] = factory_class
 
     def __register_group_plugins(
-        self, factory_class: Type[FactoryInterface], group_plugins: Tuple[EntryPoint]
+        self, factory_class: Type[FactoryInterface], group_plugins: EntryPoints
     ):
         """
         Registers all given plugins in the factory.
