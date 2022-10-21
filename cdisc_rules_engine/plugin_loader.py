@@ -1,4 +1,9 @@
-from importlib_metadata import entry_points, EntryPoints
+import sys
+
+if sys.version_info < (3, 10):
+    from importlib_metadata import entry_points, EntryPoints
+else:
+    from importlib.metadata import entry_points, EntryPoints
 from typing import Dict, Type, Any
 
 from cdisc_rules_engine.interfaces import FactoryInterface
@@ -30,7 +35,7 @@ class PluginLoader:
         # for each group
         for group_name, factory_class in self.__group_factory_map.items():
             # discover all group plugins and register them
-            group_plugins: EntryPoints = entry_points(group=group_name)
+            group_plugins: EntryPoints = entry_points().select(group=group_name)
             self.__register_group_plugins(factory_class, group_plugins)
 
     @classmethod
