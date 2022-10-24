@@ -42,7 +42,7 @@ def cli():
     "-l",
     "--log-level",
     default="disabled",
-    type=click.Choice(["info", "debug", "error", "critical", "disabled"]),
+    type=click.Choice(["info", "debug", "error", "critical", "disabled", "warn"]),
     help="Sets log level for engine logs, logs are disabled by default",
 )
 @click.option(
