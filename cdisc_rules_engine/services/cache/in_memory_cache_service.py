@@ -38,6 +38,9 @@ class InMemoryCacheService(CacheServiceInterface):
     def get(self, cache_key):
         return self.cache.get(cache_key, None)
 
+    def get_all(self, cache_keys: List[str]):
+        return [self.cache.get(key) for key in cache_keys]
+
     def get_all_by_prefix(self, prefix):
         items = []
         for key in self.cache:

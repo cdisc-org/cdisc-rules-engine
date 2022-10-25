@@ -42,7 +42,7 @@ def cli():
     "-l",
     "--log-level",
     default="disabled",
-    type=click.Choice(["info", "debug", "error", "critical", "disabled"]),
+    type=click.Choice(["info", "debug", "error", "critical", "disabled", "warn"]),
     help="Sets log level for engine logs, logs are disabled by default",
 )
 @click.option(
@@ -103,6 +103,7 @@ def cli():
     show_default=True,
     help="Disable progress bar",
 )
+@click.option("--rules", "-r", multiple=True)
 @click.pass_context
 def validate(
     ctx,
@@ -121,6 +122,7 @@ def validate(
     whodrug,
     meddra,
     disable_progressbar,
+    rules,
 ):
     """
     Validate data using CDISC Rules Engine
@@ -153,6 +155,7 @@ def validate(
             whodrug,
             meddra,
             disable_progressbar,
+            rules,
         )
     )
 
