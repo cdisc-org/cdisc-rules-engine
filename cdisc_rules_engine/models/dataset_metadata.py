@@ -1,10 +1,8 @@
 from dataclasses import dataclass
 
-from cdisc_rules_engine.interfaces import RepresentationInterface
-
 
 @dataclass
-class DatasetMetadata(RepresentationInterface):
+class DatasetMetadata:
     """
     This class is a container for dataset metadata
     """
@@ -16,14 +14,3 @@ class DatasetMetadata(RepresentationInterface):
     filename: str
     size: str
     records: str
-
-    def to_representation(self) -> dict:
-        return {
-            "name": self.name,
-            "domainName": self.domain_name,
-            "label": self.label,
-            "modificationDate": self.modification_date,
-            "fileName": self.filename,
-            "size": self.size,
-            "records": self.records,
-        }
