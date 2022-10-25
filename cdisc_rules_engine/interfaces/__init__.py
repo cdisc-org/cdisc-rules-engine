@@ -4,6 +4,7 @@ from .config_interface import ConfigInterface
 from .data_reader_interface import DataReaderInterface
 from .data_service_interface import DataServiceInterface
 from .factory_interface import FactoryInterface
+from .logger_interface import LoggerInterface
 from .representation_interface import RepresentationInterface
 from .terms_factory_interface import TermsFactoryInterface
 
@@ -15,6 +16,7 @@ __all__ = [
     "DataReaderInterface",
     "DataServiceInterface",
     "FactoryInterface",
+    "LoggerInterface",
     "RepresentationInterface",
     "TermsFactoryInterface",
 ]

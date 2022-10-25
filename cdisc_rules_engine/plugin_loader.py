@@ -3,6 +3,7 @@ from typing import Dict, Type, Tuple, Any
 
 from cdisc_rules_engine.interfaces import FactoryInterface
 from cdisc_rules_engine.operations import OperationsFactory
+from cdisc_rules_engine.services import LoggingServiceFactory
 from cdisc_rules_engine.services.cache import CacheServiceFactory
 from cdisc_rules_engine.services.data_readers import DataReaderFactory
 from cdisc_rules_engine.services.data_services import DataServiceFactory
@@ -21,6 +22,7 @@ class PluginLoader:
         "core.plugins.data_readers": DataReaderFactory,
         "core.plugins.data_services": DataServiceFactory,
         "core.plugins.rule_operations": OperationsFactory,
+        "core.plugins.logging": LoggingServiceFactory,
     }
 
     def load(self):
