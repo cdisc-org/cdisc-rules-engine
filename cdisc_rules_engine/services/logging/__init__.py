@@ -3,6 +3,6 @@ from .logging_service_factory import LoggingServiceFactory
 
 
 __all__ = [
-    "LoggingServiceFactory",
     "ConsoleLogger",
+    "LoggingServiceFactory",
 ]

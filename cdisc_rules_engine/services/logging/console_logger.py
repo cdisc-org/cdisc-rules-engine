@@ -6,10 +6,11 @@ from cdisc_rules_engine.interfaces import ConfigInterface, LoggerInterface
 class ConsoleLogger(LoggerInterface):
     @classmethod
     def get_instance(cls, config: ConfigInterface):
-        return cls(config)
+        logger = logging.getLogger()
+        return cls(logger, config)
 
-    def __init__(self, config: ConfigInterface):
-        self._logger = logging.getLogger()
+    def __init__(self, logger, config: ConfigInterface):
+        self._logger = logger
         self._config = config
 
     def debug(self, msg: str, *args, **kwargs):
