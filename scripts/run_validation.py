@@ -137,7 +137,7 @@ def get_rules(cache: CacheServiceInterface, args) -> List[dict]:
         ]
         rules = cache.get_all(keys)
     else:
-        engine_logger.warn(
+        engine_logger.warning(
             f"No rules specified. Running all rules for {args.standard}"
             + f" version {args.version}"
         )
