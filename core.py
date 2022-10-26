@@ -22,7 +22,7 @@ def cli():
 @click.option(
     "-ca",
     "--cache",
-    default="cdisc_rules_engine/resources/cache",
+    default="resources/cache",
     help="Relative path to cache files containing pre loaded metadata and rules",
 )
 @click.option(
@@ -48,7 +48,7 @@ def cli():
 @click.option(
     "-rt",
     "--report-template",
-    default="cdisc_rules_engine/resources/templates/report-template.xlsx",
+    default="resources/templates/report-template.xlsx",
     help="File path of report template to use for excel output",
 )
 @click.option(
@@ -164,7 +164,7 @@ def validate(
 @click.option(
     "-c",
     "--cache_path",
-    default="cdisc_rules_engine/resources/cache",
+    default="resources/cache",
     help="Relative path to cache files containing pre loaded metadata and rules",
 )
 @click.option(
