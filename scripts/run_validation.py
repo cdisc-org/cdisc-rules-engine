@@ -7,7 +7,7 @@ import click
 from functools import partial
 from multiprocessing import Pool
 from multiprocessing.managers import SyncManager
-
+from typing import List
 from cdisc_rules_engine.config import config
 from cdisc_rules_engine.constants.define_xml_constants import DEFINE_XML_FILE_NAME
 from cdisc_rules_engine.interfaces import CacheServiceInterface, DataServiceInterface
@@ -119,6 +119,7 @@ def set_log_level(level: str):
         "debug": logging.DEBUG,
         "error": logging.ERROR,
         "critical": logging.CRITICAL,
+        "warn": logging.WARNING,
     }
 
     if level == "disabled":
@@ -137,31 +138,45 @@ def get_cache_service(manager):
         return manager.InMemoryCacheService()
 
 
+def get_rules(cache: CacheServiceInterface, args) -> List[dict]:
+    if args.rules:
+        keys = [
+            get_rules_cache_key(args.standard, args.version.replace(".", "-"), rule)
+            for rule in args.rules
+        ]
+        rules = cache.get_all(keys)
+    else:
+        engine_logger.warn(
+            f"No rules specified. Running all rules for {args.standard}"
+            + f" version {args.version}"
+        )
+        rules = cache.get_all_by_prefix(
+            get_rules_cache_key(args.standard, args.version.replace(".", "-"))
+        )
+    return rules
+
+
 def run_validation(args: Validation_args):
     set_log_level(args.log_level.lower())
     cache_path: str = f"{os.path.dirname(__file__)}/../{args.cache}"
     data_path: str = f"{os.path.dirname(__file__)}/../{args.data}"
-
     # fill cache
     CacheManager.register("RedisCacheService", RedisCacheService)
     CacheManager.register("InMemoryCacheService", InMemoryCacheService)
     manager = CacheManager()
     manager.start()
     shared_cache = get_cache_service(manager)
+    engine_logger.info("Populating cache")
     shared_cache = fill_cache_with_provided_data(shared_cache, cache_path)
 
     # install dictionaries if needed
     fill_cache_with_dictionaries(shared_cache, args)
-
-    rules = shared_cache.get_all_by_prefix(
-        get_rules_cache_key(args.standard, args.version.replace(".", "-"))
-    )
+    rules = get_rules(shared_cache, args)
     data_service = DataServiceFactory(config, shared_cache).get_data_service()
     datasets = get_datasets(data_service, data_path)
 
     start = time.time()
     results = []
-
     # run each rule in a separate process
     with Pool(args.pool_size) as pool:
         if args.disable_progressbar is True:
