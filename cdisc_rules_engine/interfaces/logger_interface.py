@@ -34,7 +34,7 @@ class LoggerInterface(ABC):
     def setLevel(self, level: str):
         """
         Sets log level.
-        The method is called using setLevel to keep
+        The method is called using camelCase to keep
         the interface similar to logging library.
         """
 
