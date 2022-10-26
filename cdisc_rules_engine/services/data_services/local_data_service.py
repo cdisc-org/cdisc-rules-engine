@@ -1,10 +1,11 @@
 import os
 from concurrent.futures import ThreadPoolExecutor
-from typing import Callable, Iterator, List, TextIO
+from typing import Callable, Iterator, List, TextIO, Optional, Tuple
 
 import pandas
 
 from cdisc_rules_engine.models.dataset_types import DatasetTypes
+from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
 from cdisc_rules_engine.models.variable_metadata_container import (
     VariableMetadataContainer,
 )
@@ -63,19 +64,34 @@ class LocalDataService(BaseDataService):
         """
         Gets metadata of a dataset and returns it as a DataFrame.
         """
-        metadata: dict = self.read_metadata(dataset_name)
-        file_metadata: dict = metadata["file_metadata"]
-        file_size = file_metadata["size"]
-        if size_unit:  # convert file size from bytes to desired unit if needed
-            file_size = convert_file_size(file_size, size_unit)
-        contents_metadata: dict = metadata["contents_metadata"]
+        file_metadata, contents_metadata = self.__get_dataset_metadata(
+            dataset_name, size_unit=size_unit, **params
+        )
         metadata_to_return: dict = {
-            "dataset_size": [file_size],
+            "dataset_size": [file_metadata["size"]],
             "dataset_location": [file_metadata["name"]],
             "dataset_name": [contents_metadata["dataset_name"]],
             "dataset_label": [contents_metadata["dataset_label"]],
         }
         return pandas.DataFrame.from_dict(metadata_to_return)
+
+    @cached_dataset(DatasetTypes.RAW_METADATA.value)
+    def get_raw_dataset_metadata(self, dataset_name: str, **kwargs) -> DatasetMetadata:
+        """
+        Returns dataset metadata as DatasetMetadata instance.
+        """
+        file_metadata, contents_metadata = self.__get_dataset_metadata(
+            dataset_name, **kwargs
+        )
+        return DatasetMetadata(
+            name=contents_metadata["dataset_name"],
+            domain_name=contents_metadata["domain_name"],
+            label=contents_metadata["dataset_label"],
+            modification_date=contents_metadata["dataset_modification_date"],
+            filename=file_metadata["name"],
+            size=file_metadata["size"],
+            records="",
+        )
 
     @cached_dataset(DatasetTypes.VARIABLES_METADATA.value)
     def get_variables_metadata(self, dataset_name: str, **params) -> pandas.DataFrame:
@@ -168,3 +184,15 @@ class LocalDataService(BaseDataService):
 
     def read_data(self, file_path: str, read_mode: str = "r") -> TextIO:
         return open(file_path, read_mode)
+
+    def __get_dataset_metadata(self, dataset_name: str, **kwargs) -> Tuple[dict, dict]:
+        """
+        Internal method that gets dataset metadata
+        and converts file size if needed.
+        """
+        metadata: dict = self.read_metadata(dataset_name)
+        file_metadata: dict = metadata["file_metadata"]
+        size_unit: Optional[str] = kwargs.get("size_unit")
+        if size_unit:  # convert file size from bytes to desired unit if needed
+            file_metadata["size"] = convert_file_size(file_metadata["size"], size_unit)
+        return file_metadata, metadata["contents_metadata"]
