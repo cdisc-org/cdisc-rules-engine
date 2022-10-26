@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Union
 
 
 @dataclass
@@ -12,5 +13,5 @@ class DatasetMetadata:
     label: str
     modification_date: str
     filename: str
-    size: str
+    size: Union[int, float]
     records: str
