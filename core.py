@@ -22,7 +22,7 @@ def cli():
 @click.option(
     "-ca",
     "--cache",
-    default="cdisc_rules_engine/resources/cache",
+    default="resources/cache",
     help="Relative path to cache files containing pre loaded metadata and rules",
 )
 @click.option(
@@ -42,13 +42,13 @@ def cli():
     "-l",
     "--log-level",
     default="disabled",
-    type=click.Choice(["info", "debug", "error", "critical", "disabled"]),
+    type=click.Choice(["info", "debug", "error", "critical", "disabled", "warn"]),
     help="Sets log level for engine logs, logs are disabled by default",
 )
 @click.option(
     "-rt",
     "--report-template",
-    default="cdisc_rules_engine/resources/templates/report-template.xlsx",
+    default="resources/templates/report-template.xlsx",
     help="File path of report template to use for excel output",
 )
 @click.option(
@@ -103,6 +103,7 @@ def cli():
     show_default=True,
     help="Disable progress bar",
 )
+@click.option("--rules", "-r", multiple=True)
 @click.pass_context
 def validate(
     ctx,
@@ -121,6 +122,7 @@ def validate(
     whodrug,
     meddra,
     disable_progressbar,
+    rules,
 ):
     """
     Validate data using CDISC Rules Engine
@@ -153,6 +155,7 @@ def validate(
             whodrug,
             meddra,
             disable_progressbar,
+            rules,
         )
     )
 
@@ -161,7 +164,7 @@ def validate(
 @click.option(
     "-c",
     "--cache_path",
-    default="cdisc_rules_engine/resources/cache",
+    default="resources/cache",
     help="Relative path to cache files containing pre loaded metadata and rules",
 )
 @click.option(

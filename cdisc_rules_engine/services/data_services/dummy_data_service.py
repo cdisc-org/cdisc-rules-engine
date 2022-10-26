@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List, Optional, Callable, TextIO
 
 import pandas as pd
@@ -5,6 +6,7 @@ import pandas as pd
 from cdisc_rules_engine.dummy_models.dummy_dataset import DummyDataset
 from cdisc_rules_engine.exceptions.custom_exceptions import DatasetNotFoundError
 from cdisc_rules_engine.interfaces import CacheServiceInterface, ConfigInterface
+from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
 from cdisc_rules_engine.models.dataset_types import DatasetTypes
 from cdisc_rules_engine.services.data_readers import DataReaderFactory
 from cdisc_rules_engine.services.data_services import BaseDataService
@@ -59,11 +61,20 @@ class DummyDataService(BaseDataService):
             return pd.DataFrame.from_dict({})
 
     def get_dataset_metadata(self, dataset_name: str, **kwargs):
-        dataset: Optional[DummyDataset] = self.get_dataset_data(dataset_name)
-        metadata_to_return = {}
-        if dataset:
-            metadata_to_return: dict = dataset.get_metadata()
-        return pd.DataFrame.from_dict(metadata_to_return)
+        dataset_metadata: dict = self.__get_dataset_metadata(dataset_name, **kwargs)
+        return pd.DataFrame.from_dict(dataset_metadata)
+
+    def get_raw_dataset_metadata(self, dataset_name: str, **kwargs) -> DatasetMetadata:
+        dataset_metadata: dict = self.__get_dataset_metadata(dataset_name, **kwargs)
+        return DatasetMetadata(
+            name=dataset_metadata["dataset_name"][0],
+            domain_name=dataset_metadata["dataset_name"][0],
+            label=dataset_metadata["dataset_label"][0],
+            modification_date=datetime.now().isoformat(),
+            filename=dataset_metadata["filename"][0],
+            size=dataset_metadata["dataset_size"][0],
+            records="",
+        )
 
     def get_variables_metadata(self, dataset_name: str, **params) -> pd.DataFrame:
         metadata_to_return = {
@@ -116,3 +127,10 @@ class DummyDataService(BaseDataService):
 
     def read_data(self, file_path: str, read_mode: str = "r") -> TextIO:
         pass
+
+    def __get_dataset_metadata(self, dataset_name: str, **kwargs) -> dict:
+        dataset: Optional[DummyDataset] = self.get_dataset_data(dataset_name)
+        metadata_to_return = {}
+        if dataset:
+            metadata_to_return: dict = dataset.get_metadata()
+        return metadata_to_return

@@ -21,6 +21,7 @@ from cdisc_rules_engine.operations.meddra_term_references_validator import (
 )
 from cdisc_rules_engine.operations.min_date import MinDate
 from cdisc_rules_engine.operations.minimum import Minimum
+from cdisc_rules_engine.operations.record_count import RecordCount
 from cdisc_rules_engine.operations.variable_exists import VariableExists
 from cdisc_rules_engine.operations.variable_names import VariableNames
 from cdisc_rules_engine.operations.variable_value_count import VariableValueCount
@@ -28,28 +29,31 @@ from cdisc_rules_engine.operations.whodrug_references_validator import (
     WhodrugReferencesValidator,
 )
 from cdisc_rules_engine.operations.variable_permissibility import VariablePermissibility
+from cdisc_rules_engine.operations.variable_count import VariableCount
 
 
 class OperationsFactory(FactoryInterface):
     _operations_map = {
-        "min": Minimum,
-        "max": Maximum,
-        "mean": Mean,
         "distinct": Distinct,
         "dy": DayDataValidator,
-        "max_date": MaxDate,
-        "min_date": MinDate,
         "extract_metadata": ExtractMetadata,
         "get_column_order_from_dataset": DatasetColumnOrder,
         "get_column_order_from_library": LibraryColumnOrder,
-        "variable_exists": VariableExists,
-        "variable_value_count": VariableValueCount,
-        "variable_names": VariableNames,
+        "max": Maximum,
+        "max_date": MaxDate,
+        "mean": Mean,
+        "min": Minimum,
+        "min_date": MinDate,
+        "record_count": RecordCount,
         "valid_meddra_code_references": MedDRACodeReferencesValidator,
         "valid_whodrug_references": WhodrugReferencesValidator,
         "valid_meddra_term_references": MedDRATermReferencesValidator,
         "valid_meddra_code_term_pairs": MedDRACodeTermPairsValidator,
+        "variable_exists": VariableExists,
+        "variable_names": VariableNames,
         "variable_permissibilities": VariablePermissibility,
+        "variable_value_count": VariableValueCount,
+        "variable_count": VariableCount,
     }
 
     @classmethod

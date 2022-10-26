@@ -3,6 +3,7 @@ from typing import Callable, TextIO, List, Optional
 
 import pandas as pd
 
+from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
 from .cache_service_interface import CacheServiceInterface
 
 
@@ -29,9 +30,15 @@ class DataServiceInterface(ABC):
         """
 
     @abstractmethod
-    def get_dataset_metadata(self, dataset_name: str, **kwargs):
+    def get_dataset_metadata(self, dataset_name: str, **kwargs) -> pd.DataFrame:
         """
-        Gets dataset metadata from blob storage.
+        Gets dataset metadata and returns it as pd.DataFrame.
+        """
+
+    @abstractmethod
+    def get_raw_dataset_metadata(self, dataset_name: str, **kwargs) -> DatasetMetadata:
+        """
+        Gets dataset metadata and returns it as DatasetMetadata instance.
         """
 
     @abstractmethod

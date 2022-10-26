@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 from unittest.mock import MagicMock
 
 import pandas as pd
@@ -1201,3 +1202,20 @@ def operation_params() -> OperationParams:
         whodrug_path="whodrug_path",
         grouping=[],
     )
+
+
+@pytest.fixture(scope="function")
+def dataset_metadata() -> dict:
+    return {
+        "file_metadata": {
+            "path": "CDISC01/test/ae.xpt",
+            "name": "ae.xpt",
+            "size": 38000,
+        },
+        "contents_metadata": {
+            "dataset_label": "Adverse Events",
+            "dataset_name": "AE",
+            "domain_name": "AE",
+            "dataset_modification_date": datetime.now().isoformat(),
+        },
+    }
