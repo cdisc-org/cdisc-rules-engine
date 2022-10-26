@@ -4,9 +4,66 @@ from unittest.mock import Mock, patch, MagicMock
 import pandas as pd
 import pytest
 
+from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
 from cdisc_rules_engine.models.dataset_types import DatasetTypes
 from cdisc_rules_engine.services.data_services import cached_dataset, LocalDataService
 from cdisc_rules_engine.utilities.utils import get_dataset_cache_key_from_path
+
+
+@patch("cdisc_rules_engine.services.data_services.LocalDataService.read_metadata")
+def test_get_dataset_metadata(mock_read_metadata: MagicMock, dataset_metadata: dict):
+    # mock file read
+    mock_read_metadata.return_value = dataset_metadata
+
+    # mock cache service
+    cache_mock = MagicMock()
+    cache_mock.get = lambda cache_key: None
+
+    data_service = LocalDataService(cache_mock, MagicMock(), MagicMock())
+    actual_metadata: pd.DataFrame = data_service.get_dataset_metadata(
+        dataset_name="dataset_name"
+    )
+    assert actual_metadata.equals(
+        pd.DataFrame.from_dict(
+            {
+                "dataset_size": [dataset_metadata["file_metadata"]["size"]],
+                "dataset_location": [dataset_metadata["file_metadata"]["name"]],
+                "dataset_name": [dataset_metadata["contents_metadata"]["dataset_name"]],
+                "dataset_label": [
+                    dataset_metadata["contents_metadata"]["dataset_label"]
+                ],
+            }
+        )
+    )
+
+
+@patch("cdisc_rules_engine.services.data_services.LocalDataService.read_metadata")
+def test_get_raw_dataset_metadata(
+    mock_read_metadata: MagicMock, dataset_metadata: dict
+):
+    # mock file read
+    mock_read_metadata.return_value = dataset_metadata
+
+    # mock cache service
+    cache_mock = MagicMock()
+    cache_mock.get = lambda cache_key: None
+
+    data_service = LocalDataService(cache_mock, MagicMock(), MagicMock())
+    actual_metadata: DatasetMetadata = data_service.get_raw_dataset_metadata(
+        dataset_name="dataset_name"
+    )
+    expected_metadata = DatasetMetadata(
+        name=dataset_metadata["contents_metadata"]["dataset_name"],
+        domain_name=dataset_metadata["contents_metadata"]["domain_name"],
+        label=dataset_metadata["contents_metadata"]["dataset_label"],
+        modification_date=dataset_metadata["contents_metadata"][
+            "dataset_modification_date"
+        ],
+        filename=dataset_metadata["file_metadata"]["name"],
+        size=dataset_metadata["file_metadata"]["size"],
+        records="",
+    )
+    assert actual_metadata == expected_metadata
 
 
 @pytest.mark.parametrize(
