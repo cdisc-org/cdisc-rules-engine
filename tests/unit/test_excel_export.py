@@ -4,8 +4,7 @@ from cdisc_rules_engine.models.rule_validation_result import RuleValidationResul
 from cdisc_rules_engine.utilities.excel_report import ExcelReport
 
 test_report_template: str = (
-    f"{os.path.dirname(__file__)}"
-    "/../../cdisc_rules_engine/resources/templates/report-template.xlsx"
+    f"{os.path.dirname(__file__)}" "/../../resources/templates/report-template.xlsx"
 )
 
 mock_validation_results = [

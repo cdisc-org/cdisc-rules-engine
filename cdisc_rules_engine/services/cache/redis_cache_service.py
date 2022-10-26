@@ -60,9 +60,14 @@ class RedisCacheService(CacheServiceInterface):
         else:
             return None
 
+    def get_all(self, cache_keys: List[str]):
+        return [
+            pickle.loads(cached_data) for cached_data in self.client.mget(cache_keys)
+        ]
+
     def get_all_by_prefix(self, prefix):
         keys = [key for key in self.client.scan_iter(match=f"{prefix}*")]
-        return [pickle.loads(cached_data) for cached_data in self.client.mget(keys)]
+        return self.get_all(keys)
 
     def exists(self, cache_key):
         return self.client.exists(cache_key)

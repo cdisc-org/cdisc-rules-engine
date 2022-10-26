@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Iterable
+from typing import Iterable, List
 
 
 class CacheServiceInterface(ABC):
@@ -29,6 +29,9 @@ class CacheServiceInterface(ABC):
         raise NotImplementedError
 
     def get(self, cache_key):
+        raise NotImplementedError
+
+    def get_all(self, cache_keys: List[str]):
         raise NotImplementedError
 
     def get_all_by_prefix(self, prefix):

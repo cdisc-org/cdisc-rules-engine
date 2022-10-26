@@ -17,3 +17,4 @@ flake8==5.0.4
 requests~=2.28.1
 numpy~=1.23.2
 setuptools~=63.2.0
+importlib-metadata==5.0.0
