@@ -13,6 +13,24 @@ class ConsoleLogger(LoggerInterface):
         self._logger = logger
         self._config = config
 
+    @property
+    def disabled(self) -> bool:
+        return self._logger.disabled
+
+    @disabled.setter
+    def disabled(self, value: bool):
+        self._logger.disabled = value
+
+    def setLevel(self, level: str):
+        levels = {
+            "info": logging.INFO,
+            "debug": logging.DEBUG,
+            "error": logging.ERROR,
+            "critical": logging.CRITICAL,
+            "warn": logging.WARNING,
+        }
+        self._logger.setLevel(levels.get(level, logging.ERROR))
+
     def debug(self, msg: str, *args, **kwargs):
         self._logger.debug(msg, *args, **kwargs)
 

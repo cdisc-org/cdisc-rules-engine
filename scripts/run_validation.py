@@ -1,5 +1,4 @@
 import itertools
-import logging
 import os
 import pickle
 import time
@@ -114,18 +113,10 @@ def get_datasets(data_service: DataServiceInterface, data_path: str):
 
 
 def set_log_level(level: str):
-    levels = {
-        "info": logging.INFO,
-        "debug": logging.DEBUG,
-        "error": logging.ERROR,
-        "critical": logging.CRITICAL,
-        "warn": logging.WARNING,
-    }
-
     if level == "disabled":
         engine_logger.disabled = True
     else:
-        engine_logger.setLevel(levels.get(level, logging.ERROR))
+        engine_logger.setLevel(level)
 
 
 def get_cache_service(manager):

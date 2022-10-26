@@ -16,6 +16,26 @@ class LoggerInterface(ABC):
         Creates a new instance.
         """
 
+    @property
+    @abstractmethod
+    def disabled(self) -> bool:
+        """
+        Returns if the logger is disabled or no.
+        """
+
+    @disabled.setter
+    @abstractmethod
+    def disabled(self, value: bool):
+        """
+        Used to disable the logger.
+        """
+
+    @abstractmethod
+    def setLevel(self, level: str):
+        """
+        Sets log level.
+        """
+
     @abstractmethod
     def debug(self, msg: str, *args, **kwargs):
         """
