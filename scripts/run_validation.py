@@ -149,22 +149,21 @@ def get_rules(cache: CacheServiceInterface, args) -> List[dict]:
 
 def run_validation(args: Validation_args):
     set_log_level(args.log_level.lower())
-    cache_path: str = f"{os.path.dirname(__file__)}/../{args.cache}"
-    data_path: str = f"{os.path.dirname(__file__)}/../{args.data}"
     # fill cache
     CacheManager.register("RedisCacheService", RedisCacheService)
     CacheManager.register("InMemoryCacheService", InMemoryCacheService)
     manager = CacheManager()
     manager.start()
     shared_cache = get_cache_service(manager)
-    engine_logger.info("Populating cache")
-    shared_cache = fill_cache_with_provided_data(shared_cache, cache_path)
+    engine_logger.info(f"Populating cache, cache path: {args.cache}")
+    shared_cache = fill_cache_with_provided_data(shared_cache, args.cache)
 
     # install dictionaries if needed
     fill_cache_with_dictionaries(shared_cache, args)
     rules = get_rules(shared_cache, args)
     data_service = DataServiceFactory(config, shared_cache).get_data_service()
-    datasets = get_datasets(data_service, data_path)
+    datasets = get_datasets(data_service, args.data)
+    engine_logger.info(f"Running {len(rules)} rules against {len(datasets)} datasets")
 
     start = time.time()
     results = []
@@ -172,7 +171,7 @@ def run_validation(args: Validation_args):
     with Pool(args.pool_size) as pool:
         if args.disable_progressbar is True:
             for rule_result in pool.imap_unordered(
-                partial(validate_single_rule, shared_cache, data_path, datasets, args),
+                partial(validate_single_rule, shared_cache, args.data, datasets, args),
                 rules,
             ):
                 results.append(rule_result)
@@ -185,7 +184,7 @@ def run_validation(args: Validation_args):
             ) as bar:
                 for rule_result in pool.imap_unordered(
                     partial(
-                        validate_single_rule, shared_cache, data_path, datasets, args
+                        validate_single_rule, shared_cache, args.data, datasets, args
                     ),
                     rules,
                 ):
@@ -196,6 +195,6 @@ def run_validation(args: Validation_args):
     elapsed_time = end - start
 
     reporting_service = ReportFactory(
-        data_path, results, elapsed_time, args, data_service
+        args.data, results, elapsed_time, args, data_service
     ).get_report_service()
     reporting_service.write_report()
