@@ -104,8 +104,8 @@ class MedDRATermsFactory(TermsFactoryInterface):
         parser = parser_map[data_type]
         data = {}
         with self.data_service.read_data(file_path) as file_data:
-            for line in file_data:
-                value = parser(line)
+            for bytes_line in file_data:
+                value = parser(bytes_line.decode())
                 data[value.code] = value
         return data
 
@@ -121,7 +121,7 @@ class MedDRATermsFactory(TermsFactoryInterface):
         file_path = get_dictionary_path(directory_path, file_name)
         with self.data_service.read_data(file_path) as file_data:
             for line in file_data:
-                origin_code, target_code = line.split("$")[:2]
+                origin_code, target_code = line.decode().split("$")[:2]
                 origin_item: MedDRATerm = data[origin_type][origin_code]
                 target_item: MedDRATerm = data[target_type][target_code]
                 target_item.set_parent(origin_item)
@@ -186,7 +186,7 @@ class MedDRATermsFactory(TermsFactoryInterface):
             }
         )
 
-    def _parse_soc_item(self, item: str) -> MedDRATerm:
+    def _parse_soc_item(self, item: bytes) -> MedDRATerm:
         """
         Parses a row from soc.asc and creates a MedDRATerm
         """

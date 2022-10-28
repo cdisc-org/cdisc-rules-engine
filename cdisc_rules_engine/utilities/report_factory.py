@@ -37,7 +37,7 @@ class ReportFactory:
     def get_report_service(self):
         output_type = self._args.output_format.upper()
         if output_type == ReportTypes.XLSX.value:
-            template = self._data_service.read_data(self._args.report_template, "rb")
+            template = self._data_service.read_data(self._args.report_template)
             return ExcelReport(
                 self._data_path,
                 self._results,

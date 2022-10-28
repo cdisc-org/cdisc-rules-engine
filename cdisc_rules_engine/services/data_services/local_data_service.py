@@ -1,15 +1,15 @@
 import os
 from concurrent.futures import ThreadPoolExecutor
-from typing import Callable, Iterator, List, TextIO, Optional, Tuple
+from typing import Callable, Iterator, List, Optional, Tuple, BinaryIO
 
 import pandas
 
-from cdisc_rules_engine.models.dataset_types import DatasetTypes
+from cdisc_rules_engine.interfaces import CacheServiceInterface, ConfigInterface
 from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
+from cdisc_rules_engine.models.dataset_types import DatasetTypes
 from cdisc_rules_engine.models.variable_metadata_container import (
     VariableMetadataContainer,
 )
-from cdisc_rules_engine.interfaces import CacheServiceInterface, ConfigInterface
 from cdisc_rules_engine.services.data_readers.data_reader_factory import (
     DataReaderFactory,
 )
@@ -18,7 +18,6 @@ from cdisc_rules_engine.utilities.utils import (
     convert_file_size,
     extract_file_name_from_path_string,
 )
-
 from .base_data_service import BaseDataService, cached_dataset
 
 
@@ -182,8 +181,8 @@ class LocalDataService(BaseDataService):
             "contents_metadata": contents_metadata,
         }
 
-    def read_data(self, file_path: str, read_mode: str = "r") -> TextIO:
-        return open(file_path, read_mode)
+    def read_data(self, file_path: str) -> BinaryIO:
+        return open(file_path, "rb")
 
     def __get_dataset_metadata(self, dataset_name: str, **kwargs) -> Tuple[dict, dict]:
         """

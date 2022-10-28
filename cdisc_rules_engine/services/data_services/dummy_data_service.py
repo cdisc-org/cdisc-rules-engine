@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Optional, Callable, TextIO
+from typing import List, Optional, Callable, BinaryIO
 
 import pandas as pd
 
@@ -125,7 +125,7 @@ class DummyDataService(BaseDataService):
     def join_split_datasets(self, func_to_call: Callable, dataset_names, **kwargs):
         pass
 
-    def read_data(self, file_path: str, read_mode: str = "r") -> TextIO:
+    def read_data(self, file_path: str) -> BinaryIO:
         pass
 
     def __get_dataset_metadata(self, dataset_name: str, **kwargs) -> dict:

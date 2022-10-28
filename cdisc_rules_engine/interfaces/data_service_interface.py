@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Callable, TextIO, List, Optional
+from typing import Callable, List, Optional, BinaryIO
 
 import pandas as pd
 
@@ -76,9 +76,9 @@ class DataServiceInterface(ABC):
         """
 
     @abstractmethod
-    def read_data(self, file_path: str, read_mode: str = "r") -> TextIO:
+    def read_data(self, file_path: str) -> BinaryIO:
         """
-        Reads data from the given path and returns TextIO instance.
+        Reads byte data from the given path and returns BinaryIO instance.
         """
 
     @abstractmethod
