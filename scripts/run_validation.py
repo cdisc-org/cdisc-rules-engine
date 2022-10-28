@@ -81,8 +81,8 @@ def fill_cache_with_dictionaries(cache: CacheServiceInterface, args):
     data_service = DataServiceFactory(config, cache).get_data_service()
 
     dictionary_type_to_path_map: dict = {
-        DictionaryTypes.MEDDRA.value: args.meddra,
-        DictionaryTypes.WHODRUG.value: args.whodrug,
+        DictionaryTypes.MEDDRA: args.meddra,
+        DictionaryTypes.WHODRUG: args.whodrug,
     }
 
     for dictionary_type, dictionary_path in dictionary_type_to_path_map.items():

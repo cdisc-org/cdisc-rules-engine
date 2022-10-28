@@ -6,6 +6,6 @@ class WhodrugFileNames(BaseEnum):
     This enum holds available whodrug file names.
     """
 
-    DD_FILE_NAME = "dd.txt"
-    INA_FILE_NAME = "ina.txt"
-    DDA_FILE_NAME = "dda.txt"
+    DD_FILE_NAME = "DD.txt"
+    INA_FILE_NAME = "INA.txt"
+    DDA_FILE_NAME = "DDA.txt"

@@ -18,3 +18,15 @@ class BaseWhoDrugTerm:
         Creates an instance from the given line.
         Does not save it to the DB.
         """
+
+    @abstractmethod
+    def get_identifier(self) -> str:
+        """
+        Return a unique code to identify the term
+        """
+
+    @abstractmethod
+    def get_parent_identifier(self) -> str:
+        """
+        Return a unique code to identify the parent term
+        """
