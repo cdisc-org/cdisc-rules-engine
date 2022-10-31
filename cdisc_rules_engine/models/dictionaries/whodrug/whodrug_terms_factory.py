@@ -6,7 +6,7 @@ from cdisc_rules_engine.interfaces import (
     DataServiceInterface,
 )
 from cdisc_rules_engine.services import logger
-from cdisc_rules_engine.utilities.utils import get_dictionary_path
+from cdisc_rules_engine.utilities.utils import get_dictionary_path, decode_line
 from .atc_classification import AtcClassification
 from .atc_text import AtcText
 from .base_whodrug_term import BaseWhoDrugTerm
@@ -71,6 +71,6 @@ class WhoDrugTermsFactory(TermsFactoryInterface):
             # create a term object for each line and append it to the mapping
             for bytes_line in file:
                 term_obj: BaseWhoDrugTerm = model_class.from_txt_line(
-                    bytes_line.decode()
+                    decode_line(bytes_line)
                 )
                 code_to_term_map[term_obj.type].append(term_obj)

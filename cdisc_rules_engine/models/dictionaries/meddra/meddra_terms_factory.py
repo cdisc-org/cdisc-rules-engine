@@ -11,7 +11,7 @@ from cdisc_rules_engine.interfaces import (
     TermsFactoryInterface,
     DataServiceInterface,
 )
-from cdisc_rules_engine.utilities.utils import get_dictionary_path
+from cdisc_rules_engine.utilities.utils import get_dictionary_path, decode_line
 
 
 class MedDRATermsFactory(TermsFactoryInterface):
@@ -105,7 +105,7 @@ class MedDRATermsFactory(TermsFactoryInterface):
         data = {}
         with self.data_service.read_data(file_path) as file_data:
             for bytes_line in file_data:
-                value = parser(bytes_line.decode())
+                value = parser(decode_line(bytes_line))
                 data[value.code] = value
         return data
 
@@ -121,7 +121,7 @@ class MedDRATermsFactory(TermsFactoryInterface):
         file_path = get_dictionary_path(directory_path, file_name)
         with self.data_service.read_data(file_path) as file_data:
             for line in file_data:
-                origin_code, target_code = line.decode().split("$")[:2]
+                origin_code, target_code = decode_line(line).split("$")[:2]
                 origin_item: MedDRATerm = data[origin_type][origin_code]
                 target_item: MedDRATerm = data[target_type][target_code]
                 target_item.set_parent(origin_item)
