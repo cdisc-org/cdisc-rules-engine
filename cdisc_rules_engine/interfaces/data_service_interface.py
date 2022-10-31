@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
-from typing import Callable, List, Optional, BinaryIO
+from io import IOBase
+from typing import Callable, List, Optional
 
 import pandas as pd
 
@@ -76,7 +77,7 @@ class DataServiceInterface(ABC):
         """
 
     @abstractmethod
-    def read_data(self, file_path: str) -> BinaryIO:
+    def read_data(self, file_path: str) -> IOBase:
         """
         Reads byte data from the given path and returns BinaryIO instance.
         """

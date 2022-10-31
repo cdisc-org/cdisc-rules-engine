@@ -1,6 +1,7 @@
 import os
 from concurrent.futures import ThreadPoolExecutor
-from typing import Callable, Iterator, List, Optional, Tuple, BinaryIO
+from io import IOBase
+from typing import Callable, Iterator, List, Optional, Tuple
 
 import pandas
 
@@ -181,7 +182,7 @@ class LocalDataService(BaseDataService):
             "contents_metadata": contents_metadata,
         }
 
-    def read_data(self, file_path: str) -> BinaryIO:
+    def read_data(self, file_path: str) -> IOBase:
         return open(file_path, "rb")
 
     def __get_dataset_metadata(self, dataset_name: str, **kwargs) -> Tuple[dict, dict]:
