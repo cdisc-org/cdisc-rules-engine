@@ -1,15 +1,17 @@
 import logging
 from datetime import datetime
-from typing import List, TextIO
-from cdisc_rules_engine.models.validation_args import Validation_args
-from cdisc_rules_engine.utilities.excel_writer import excel_workbook_to_stream
+from typing import List, BinaryIO
+
 from openpyxl import Workbook
+
 from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
+from cdisc_rules_engine.models.validation_args import Validation_args
+from cdisc_rules_engine.utilities.base_report import BaseReport
 from cdisc_rules_engine.utilities.excel_writer import (
     excel_open_workbook,
     excel_update_worksheet,
 )
-from cdisc_rules_engine.utilities.base_report import BaseReport
+from cdisc_rules_engine.utilities.excel_writer import excel_workbook_to_stream
 
 
 class ExcelReport(BaseReport):
@@ -23,7 +25,7 @@ class ExcelReport(BaseReport):
         validation_results: List[RuleValidationResult],
         elapsed_time: float,
         args: Validation_args,
-        template: TextIO,
+        template: BinaryIO,
     ):
         super().__init__(data_path, validation_results, elapsed_time, args)
         self._template = template
