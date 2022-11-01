@@ -1,7 +1,8 @@
 from cdisc_rules_engine.models.dictionaries.meddra.terms.term_types import TermTypes
+from cdisc_rules_engine.interfaces import DictionaryTermInterface
 
 
-class MedDRATerm:
+class MedDRATerm(DictionaryTermInterface):
     def __init__(self, record_params):
         self.code = record_params.get("code")
         self.term = record_params.get("term")
@@ -18,6 +19,9 @@ class MedDRATerm:
         """
         self.parent_code = parent.code
         self.parent_term = parent.term
+
+    def get_identifier(self):
+        return self.code
 
     @staticmethod
     def get_code_hierarchies(terms: dict) -> set:
