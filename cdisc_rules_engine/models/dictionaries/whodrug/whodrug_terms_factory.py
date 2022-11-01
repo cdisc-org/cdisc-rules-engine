@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Dict, Set
+from typing import Dict
 
 from cdisc_rules_engine.interfaces import (
     TermsFactoryInterface,
@@ -12,7 +12,6 @@ from .atc_text import AtcText
 from .base_whodrug_term import BaseWhoDrugTerm
 from .drug_dict import DrugDictionary
 from .whodrug_file_names import WhodrugFileNames
-from .whodrug_record_types import WhodrugRecordTypes
 
 
 class WhoDrugTermsFactory(TermsFactoryInterface):
@@ -76,23 +75,3 @@ class WhoDrugTermsFactory(TermsFactoryInterface):
                     decode_line(bytes_line)
                 )
                 code_to_term_map[term_obj.type][term_obj.get_identifier()] = term_obj
-
-    @staticmethod
-    def get_code_hierarchies(term_map: dict) -> Set[str]:
-        valid_codes = set()
-        for atc_class in term_map.get(
-            WhodrugRecordTypes.ATC_CLASSIFICATION.value, {}
-        ).values():
-            atc_text = term_map.get(WhodrugRecordTypes.ATC_TEXT.value, {}).get(
-                atc_class.code
-            )
-            if atc_text:
-                drug_dict = term_map.get(WhodrugRecordTypes.DRUG_DICT.value, {}).get(
-                    atc_class.get_parent_identifier()
-                )
-                if drug_dict:
-                    valid_codes.add(
-                        f"{drug_dict.drugName}/{atc_text.text}/{atc_class.code}"
-                    )
-
-        return valid_codes

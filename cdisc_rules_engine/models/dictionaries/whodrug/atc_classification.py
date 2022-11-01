@@ -18,7 +18,7 @@ class AtcClassification(BaseWhoDrugTerm):
         return cls(
             {
                 "parentCode": line[:6].strip(),
-                "parentSequenceNumber": line[6:7],
+                "parentSequenceNumber": line[6:8],
                 "code": line[12:19].strip(),  # ATC Code
                 "checkDigit": line[11].strip(),  # check digit
                 "type": WhodrugRecordTypes.ATC_CLASSIFICATION.value,

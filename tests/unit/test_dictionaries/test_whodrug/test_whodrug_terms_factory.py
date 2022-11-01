@@ -57,37 +57,3 @@ def test_install_terms(tmp_path):
         isinstance(term, DrugDictionary)
         for term in terms[WhodrugRecordTypes.DRUG_DICT.value].values()
     )
-
-
-def test_get_code_hierarchies(tmp_path):
-    """
-    Unit test for WhoDrugTermsFactory.install_terms method.
-    """
-    # create temporary files
-    ina_file = tmp_path / WhodrugFileNames.INA_FILE_NAME.value
-    ina_file.write_text(
-        "A      1ALIMENTARY TRACT AND METABOLISM\n"
-        "C02AB  2STOMATOLOGICAL PREPARATIONS\n"
-        "A01A   3STOMATOLOGICAL PREPARATIONS"
-    )
-
-    dda_file = tmp_path / WhodrugFileNames.DDA_FILE_NAME.value
-    dda_file.write_text("000001010016C02AB  111*\n" "000001030014C02AB  074\n")
-
-    dd_file = tmp_path / WhodrugFileNames.DD_FILE_NAME.value
-    dd_file.write_text(
-        "000001010016N  001      01 854METHYLDOPA\n"
-        "000001010024T21MEX      01 041ALDOMET [METHYLDOPA]\n"
-        "000001010032T21336      01 044PRESINOL    \n"
-        "000001010040T19UGA      01 044DOPAMET             "
-    )
-
-    # run the factory
-    local_data_service = LocalDataService.get_instance(cache_service=MagicMock())
-    factory = WhoDrugTermsFactory(local_data_service)
-    terms: dict = factory.install_terms(str(tmp_path))
-    valid_hierarchies = WhoDrugTermsFactory.get_code_hierarchies(terms)
-    assert valid_hierarchies == {
-        "ALDOMET [METHYLDOPA]/STOMATOLOGICAL PREPARATIONS/C02AB",
-        "METHYLDOPA/STOMATOLOGICAL PREPARATIONS/C02AB",
-    }

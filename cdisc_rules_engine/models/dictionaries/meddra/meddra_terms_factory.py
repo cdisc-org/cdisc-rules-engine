@@ -1,6 +1,3 @@
-from collections import defaultdict
-from typing import Dict, List
-
 from cdisc_rules_engine.exceptions.custom_exceptions import MissingDataError
 from cdisc_rules_engine.models.dictionaries.meddra.meddra_file_names import (
     MeddraFileNames,
@@ -75,20 +72,7 @@ class MedDRATermsFactory(TermsFactoryInterface):
                     term.code_hierarchy = f"{parent.code_hierarchy}/{term.code}"
                     term.term_hierarchy = f"{parent.term_hierarchy}/{term.term}"
 
-        return self._flatten_data(data)
-
-    @staticmethod
-    def _flatten_data(
-        terms: Dict[str, Dict[str, MedDRATerm]]
-    ) -> Dict[str, List[MedDRATerm]]:
-        """
-        Used to convert hierarchical MedDRA terms to uniform
-        interface format.
-        """
-        return_dict = defaultdict(list)
-        for group, terms_values in terms.items():
-            return_dict[group].extend(terms_values.values())
-        return return_dict
+        return data
 
     def read_data(self, file_path, data_type: str) -> dict:
         """

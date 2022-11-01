@@ -18,7 +18,7 @@ class DrugDictionary(BaseWhoDrugTerm):
         return cls(
             {
                 "code": line[:6],  # Drug Record Number
-                "drugSequenceNumber": line[6:7],
+                "drugSequenceNumber": line[6:8],
                 "checkDigit": line[11],
                 "drugName": line[30:].strip(),
                 "type": WhodrugRecordTypes.DRUG_DICT.value,
