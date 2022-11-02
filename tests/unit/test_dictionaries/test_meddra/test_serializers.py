@@ -16,7 +16,7 @@ def test_serializer_data():
     data_service = LocalDataService.get_instance(cache_service=MagicMock())
     factory = MedDRATermsFactory(data_service)
     terms = factory.install_terms(dictionary_path)
-    soc = MedDRATermSerializer(terms["soc"][0]).data
+    soc = MedDRATermSerializer(list(terms["soc"].values())[0]).data
     assert soc == {
         "code": "SOC1",
         "type": "soc",
@@ -25,7 +25,7 @@ def test_serializer_data():
         "codeHierarchy": "SOC1",
         "termHierarchy": "TESTSOC1",
     }
-    hlgt = MedDRATermSerializer(terms["hlgt"][0]).data
+    hlgt = MedDRATermSerializer(list(terms["hlgt"].values())[0]).data
     assert hlgt == {
         "code": "HLGT1",
         "type": "hlgt",

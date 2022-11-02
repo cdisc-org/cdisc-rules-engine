@@ -28,6 +28,9 @@ from cdisc_rules_engine.operations.variable_value_count import VariableValueCoun
 from cdisc_rules_engine.operations.whodrug_references_validator import (
     WhodrugReferencesValidator,
 )
+from cdisc_rules_engine.operations.whodrug_hierarchy_validator import (
+    WhodrugHierarchyValidator,
+)
 from cdisc_rules_engine.operations.variable_permissibility import VariablePermissibility
 from cdisc_rules_engine.operations.variable_count import VariableCount
 
@@ -47,6 +50,7 @@ class OperationsFactory(FactoryInterface):
         "record_count": RecordCount,
         "valid_meddra_code_references": MedDRACodeReferencesValidator,
         "valid_whodrug_references": WhodrugReferencesValidator,
+        "whodrug_code_hierarchy": WhodrugHierarchyValidator,
         "valid_meddra_term_references": MedDRATermReferencesValidator,
         "valid_meddra_code_term_pairs": MedDRACodeTermPairsValidator,
         "variable_exists": VariableExists,

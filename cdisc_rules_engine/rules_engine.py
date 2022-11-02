@@ -83,8 +83,8 @@ class RulesEngine:
         dataset_dicts = []
         for domain in datasets:
             dataset_dicts.append({"domain": domain.domain, "filename": domain.filename})
-        self.rule_processor = RuleProcessor(self.data_service)
-        self.data_processor = DataProcessor(self.data_service)
+        self.rule_processor = RuleProcessor(self.data_service, self.cache)
+        self.data_processor = DataProcessor(self.data_service, self.cache)
         return self.validate_single_rule(
             rule, f"/{dataset_path}", dataset_dicts, dataset_domain
         )
