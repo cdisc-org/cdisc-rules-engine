@@ -42,17 +42,18 @@ def test_install_terms(tmp_path):
     # check returned data
     assert len(terms[WhodrugRecordTypes.ATC_TEXT.value]) == 3
     assert all(
-        isinstance(term, AtcText) for term in terms[WhodrugRecordTypes.ATC_TEXT.value]
+        isinstance(term, AtcText)
+        for term in terms[WhodrugRecordTypes.ATC_TEXT.value].values()
     )
 
     assert len(terms[WhodrugRecordTypes.ATC_CLASSIFICATION.value]) == 2
     assert all(
         isinstance(term, AtcClassification)
-        for term in terms[WhodrugRecordTypes.ATC_CLASSIFICATION.value]
+        for term in terms[WhodrugRecordTypes.ATC_CLASSIFICATION.value].values()
     )
 
     assert len(terms[WhodrugRecordTypes.DRUG_DICT.value]) == 4
     assert all(
         isinstance(term, DrugDictionary)
-        for term in terms[WhodrugRecordTypes.DRUG_DICT.value]
+        for term in terms[WhodrugRecordTypes.DRUG_DICT.value].values()
     )

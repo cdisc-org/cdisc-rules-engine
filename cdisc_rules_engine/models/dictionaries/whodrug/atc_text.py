@@ -25,3 +25,9 @@ class AtcText(BaseWhoDrugTerm):
                 "type": WhodrugRecordTypes.ATC_TEXT.value,
             }
         )
+
+    def get_identifier(self) -> str:
+        return self.parentCode
+
+    def get_parent_identifier(self) -> str:
+        return ""

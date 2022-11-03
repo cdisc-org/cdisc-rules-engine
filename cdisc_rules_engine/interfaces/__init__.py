@@ -6,6 +6,7 @@ from .data_service_interface import DataServiceInterface
 from .factory_interface import FactoryInterface
 from .logger_interface import LoggerInterface
 from .representation_interface import RepresentationInterface
+from .dictionary_term_interface import DictionaryTermInterface
 from .terms_factory_interface import TermsFactoryInterface
 
 
@@ -18,5 +19,6 @@ __all__ = [
     "FactoryInterface",
     "LoggerInterface",
     "RepresentationInterface",
+    "DictionaryTermInterface",
     "TermsFactoryInterface",
 ]

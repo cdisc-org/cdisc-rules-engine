@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Dict
 
 from cdisc_rules_engine.interfaces import DataServiceInterface
+from cdisc_rules_engine.interfaces import DictionaryTermInterface
 
 
 class TermsFactoryInterface(ABC):
@@ -19,7 +20,9 @@ class TermsFactoryInterface(ABC):
     def install_terms(
         self,
         directory_path: str,
-    ) -> Dict[str, list]:
+    ) -> Dict[
+        str, Dict[str, DictionaryTermInterface]
+    ]:  # maps term type to a dictionary of term identifiers to term
         """
         Accepts file contents and saves it to the DB.
         """

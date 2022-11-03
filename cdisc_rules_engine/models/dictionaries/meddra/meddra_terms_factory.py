@@ -1,6 +1,3 @@
-from collections import defaultdict
-from typing import Dict, List
-
 from cdisc_rules_engine.exceptions.custom_exceptions import MissingDataError
 from cdisc_rules_engine.models.dictionaries.meddra.meddra_file_names import (
     MeddraFileNames,
@@ -11,7 +8,7 @@ from cdisc_rules_engine.interfaces import (
     TermsFactoryInterface,
     DataServiceInterface,
 )
-from cdisc_rules_engine.utilities.utils import get_dictionary_path
+from cdisc_rules_engine.utilities.utils import get_dictionary_path, decode_line
 
 
 class MedDRATermsFactory(TermsFactoryInterface):
@@ -75,20 +72,7 @@ class MedDRATermsFactory(TermsFactoryInterface):
                     term.code_hierarchy = f"{parent.code_hierarchy}/{term.code}"
                     term.term_hierarchy = f"{parent.term_hierarchy}/{term.term}"
 
-        return self._flatten_data(data)
-
-    @staticmethod
-    def _flatten_data(
-        terms: Dict[str, Dict[str, MedDRATerm]]
-    ) -> Dict[str, List[MedDRATerm]]:
-        """
-        Used to convert hierarchical MedDRA terms to uniform
-        interface format.
-        """
-        return_dict = defaultdict(list)
-        for group, terms_values in terms.items():
-            return_dict[group].extend(terms_values.values())
-        return return_dict
+        return data
 
     def read_data(self, file_path, data_type: str) -> dict:
         """
@@ -104,8 +88,8 @@ class MedDRATermsFactory(TermsFactoryInterface):
         parser = parser_map[data_type]
         data = {}
         with self.data_service.read_data(file_path) as file_data:
-            for line in file_data:
-                value = parser(line)
+            for bytes_line in file_data:
+                value = parser(decode_line(bytes_line))
                 data[value.code] = value
         return data
 
@@ -121,7 +105,7 @@ class MedDRATermsFactory(TermsFactoryInterface):
         file_path = get_dictionary_path(directory_path, file_name)
         with self.data_service.read_data(file_path) as file_data:
             for line in file_data:
-                origin_code, target_code = line.split("$")[:2]
+                origin_code, target_code = decode_line(line).split("$")[:2]
                 origin_item: MedDRATerm = data[origin_type][origin_code]
                 target_item: MedDRATerm = data[target_type][target_code]
                 target_item.set_parent(origin_item)
@@ -186,7 +170,7 @@ class MedDRATermsFactory(TermsFactoryInterface):
             }
         )
 
-    def _parse_soc_item(self, item: str) -> MedDRATerm:
+    def _parse_soc_item(self, item: bytes) -> MedDRATerm:
         """
         Parses a row from soc.asc and creates a MedDRATerm
         """
