@@ -1,5 +1,7 @@
 import asyncio
 import logging
+import os
+
 import click
 from datetime import datetime
 from multiprocessing import freeze_support
@@ -138,11 +140,14 @@ def validate(
         logger.error("Flag --raw-report can be used only when --output-format is JSON")
         ctx.exit()
 
+    cache_path: str = f"{os.path.dirname(__file__)}/{cache}"
+    data_path: str = f"{os.path.dirname(__file__)}/{data}"
+
     run_validation(
         Validation_args(
-            cache,
+            cache_path,
             pool_size,
-            data,
+            data_path,
             log_level,
             report_template,
             standard,
