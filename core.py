@@ -1,6 +1,8 @@
 import asyncio
 import logging
 import click
+import pickle
+import json
 from datetime import datetime
 from multiprocessing import freeze_support
 from cdisc_rules_engine.enums.report_types import ReportTypes
@@ -11,6 +13,7 @@ from cdisc_rules_engine.services.cache.cache_populator_service import CachePopul
 from cdisc_rules_engine.config import config
 from cdisc_rules_engine.services.cache.cache_service_factory import CacheServiceFactory
 from cdisc_rules_engine.services.cdisc_library_service import CDISCLibraryService
+from cdisc_rules_engine.utilities.utils import get_rules_cache_key
 
 
 @click.group()
@@ -191,8 +194,31 @@ def update_cache(ctx: click.Context, cache_path: str, apikey: str):
     cache_populator.save_variables_metadata_locally(cache_path)
 
 
+@click.command()
+@click.option(
+    "-c",
+    "--cache_path",
+    default="resources/cache",
+    help="Relative path to cache files containing pre loaded metadata and rules",
+)
+@click.option("-s", "--standard", required=True, help="CDISC standard to get rules for")
+@click.option(
+    "-v", "--version", required=True, help="Standard version to get rules for"
+)
+@click.pass_context
+def list_rules(ctx: click.Context, cache_path: str, standard: str, version: str):
+    # Load all rules
+    rules_file = "rules.pkl"
+    with open(f"{cache_path}/{rules_file}", "rb") as f:
+        rules_data = pickle.load(f)
+    key_prefix = get_rules_cache_key(standard, version.replace(".", "-"))
+    rules = [rule for key, rule in rules_data.items() if key.startswith(key_prefix)]
+    print(json.dumps(rules, indent=4))
+
+
 cli.add_command(validate)
 cli.add_command(update_cache)
+cli.add_command(list_rules)
 
 if __name__ == "__main__":
     freeze_support()
