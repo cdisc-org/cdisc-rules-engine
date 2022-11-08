@@ -40,12 +40,28 @@ Run `core.py validate --help` to see the list of validation options.
 * --whodrug TEXT                             Path to directory with WHODrug dictionary files
 * --meddra TEXT                              Path to directory with MedDRA dictionary files
 * --disable-progressbar                      Disable progress bar
+* -r 					     Specify rule id to run. Can specify multiple.
 ```
 
 #### Validate folder
 To validate a folder using rules for SDTM-IG version 3.4 use the following command:
 
 `python core.py validate -s sdtmig -v 3-4 -d path/to/datasets`
+
+#### Additional Core Commands
+
+* update-cache - update locally stored cache data (Requires an environment variable - `CDISC_LIBRARY_API_KEY`)
+`python core.py update-cache`
+
+* list-rules - list rules available in the cache
+
+    * list all rules:
+
+    `python core.py list-rules`
+
+    * list rules for standard:
+
+    `python core.py list-rules -s sdtmig -v 3-4`
 
 ### Creating an executable version
 
