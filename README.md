@@ -47,6 +47,18 @@ To validate a folder using rules for SDTM-IG version 3.4 use the following comma
 
 `python core.py validate -s sdtmig -v 3-4 -d path/to/datasets`
 
+#### Additional Core Commands
+
+* update-cache - update locally stored cache data (Requires an environment variable - `CDISC_LIBRARY_API_KEY`)
+`python core.py update-cache`
+
+* list-rules - list rules available in the cache
+** list all rules:
+`python core.py list-rules`
+
+** list rules for standard:
+`python core.py list-rules -s sdtmig -v 3-4`
+
 ### Creating an executable version
 
 **Linux**

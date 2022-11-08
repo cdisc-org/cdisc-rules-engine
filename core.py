@@ -14,6 +14,7 @@ from cdisc_rules_engine.config import config
 from cdisc_rules_engine.services.cache.cache_service_factory import CacheServiceFactory
 from cdisc_rules_engine.services.cdisc_library_service import CDISCLibraryService
 from cdisc_rules_engine.utilities.utils import get_rules_cache_key
+from cdisc_rules_engine.enums.default_file_paths import DefaultFilePaths
 
 
 @click.group()
@@ -25,7 +26,7 @@ def cli():
 @click.option(
     "-ca",
     "--cache",
-    default="resources/cache",
+    default=DefaultFilePaths.CACHE.value,
     help="Relative path to cache files containing pre loaded metadata and rules",
 )
 @click.option(
@@ -51,7 +52,7 @@ def cli():
 @click.option(
     "-rt",
     "--report-template",
-    default="resources/templates/report-template.xlsx",
+    default=DefaultFilePaths.EXCEL_TEMPLATE_FILE.value,
     help="File path of report template to use for excel output",
 )
 @click.option(
@@ -167,7 +168,7 @@ def validate(
 @click.option(
     "-c",
     "--cache_path",
-    default="resources/cache",
+    default=DefaultFilePaths.CACHE.value,
     help="Relative path to cache files containing pre loaded metadata and rules",
 )
 @click.option(
@@ -186,33 +187,51 @@ def update_cache(ctx: click.Context, cache_path: str, apikey: str):
     library_service = CDISCLibraryService(apikey, cache)
     cache_populator = CachePopulator(cache, library_service)
     cache = asyncio.run(cache_populator.load_cache_data())
-    cache_populator.save_rules_locally(cache_path)
-    cache_populator.save_ct_packages_locally(cache_path)
-    cache_populator.save_standards_metadata_locally(cache_path)
-    cache_populator.save_standards_models_locally(cache_path)
-    cache_populator.save_variable_codelist_maps_locally(cache_path)
-    cache_populator.save_variables_metadata_locally(cache_path)
+    cache_populator.save_rules_locally(
+        f"{cache_path}/{DefaultFilePaths.RULES_CACHE_FILE.value}"
+    )
+    cache_populator.save_ct_packages_locally(
+        f"{cache_path}/{DefaultFilePaths.CODELIST_TERM_MAPS_CACHE_FILE.value}"
+    )
+    cache_populator.save_standards_metadata_locally(
+        f"{cache_path}/{DefaultFilePaths.STANDARD_DETAILS_CACHE_FILE.value}"
+    )
+    cache_populator.save_standards_models_locally(
+        f"{cache_path}/{DefaultFilePaths.STANDARD_MODELS_CACHE_FILE.value}"
+    )
+    cache_populator.save_variable_codelist_maps_locally(
+        f"{cache_path}/{DefaultFilePaths.VARIABLE_CODELIST_CACHE_FILE.value}"
+    )
+    cache_populator.save_variables_metadata_locally(
+        f"{cache_path}/{DefaultFilePaths.VARIABLE_METADATA_CACHE_FILE.value}"
+    )
 
 
 @click.command()
 @click.option(
     "-c",
     "--cache_path",
-    default="resources/cache",
+    default=DefaultFilePaths.CACHE.value,
     help="Relative path to cache files containing pre loaded metadata and rules",
 )
-@click.option("-s", "--standard", required=True, help="CDISC standard to get rules for")
 @click.option(
-    "-v", "--version", required=True, help="Standard version to get rules for"
+    "-s", "--standard", required=False, help="CDISC standard to get rules for"
+)
+@click.option(
+    "-v", "--version", required=False, help="Standard version to get rules for"
 )
 @click.pass_context
 def list_rules(ctx: click.Context, cache_path: str, standard: str, version: str):
     # Load all rules
-    rules_file = "rules.pkl"
+    rules_file = DefaultFilePaths.RULES_CACHE_FILE.value
     with open(f"{cache_path}/{rules_file}", "rb") as f:
         rules_data = pickle.load(f)
-    key_prefix = get_rules_cache_key(standard, version.replace(".", "-"))
-    rules = [rule for key, rule in rules_data.items() if key.startswith(key_prefix)]
+    if standard and version:
+        key_prefix = get_rules_cache_key(standard, version.replace(".", "-"))
+        rules = [rule for key, rule in rules_data.items() if key.startswith(key_prefix)]
+    else:
+        # Print all rules
+        rules = list(rules_data.values())
     print(json.dumps(rules, indent=4))
 
 
