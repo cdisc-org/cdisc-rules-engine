@@ -17,14 +17,17 @@ class RedisCacheService(CacheServiceInterface):
     def get_instance(cls, config: ConfigInterface, **kwargs):
         if cls._instance is None:
             instance = cls(
-                config.getValue("REDIS_HOST_NAME"), config.getValue("REDIS_ACCESS_KEY")
+                host_name=config.getValue("REDIS_HOST_NAME"),
+                access_key=config.getValue("REDIS_ACCESS_KEY"),
+                port=config.getValue("REDIS_PORT", 6379),
+                ssl=kwargs.get("ssl", True),
             )
             cls._instance = instance
         return cls._instance
 
-    def __init__(self, host_name, access_key):
+    def __init__(self, host_name: str, access_key: str, port: int, ssl: bool):
         self.client = redis.Redis(
-            host=host_name, port=6380, db=0, password=access_key, ssl=True
+            host=host_name, port=port, db=0, password=access_key, ssl=ssl
         )
 
     def add(self, cache_key, data):
