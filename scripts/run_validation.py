@@ -26,8 +26,7 @@ from cdisc_rules_engine.services.cache import (
 from cdisc_rules_engine.services.data_services import (
     DataServiceFactory,
 )
-from cdisc_rules_engine.utilities.base_report import BaseReport
-from cdisc_rules_engine.utilities.report_factory import ReportFactory
+from cdisc_rules_engine.services.reporting import BaseReport, ReportFactory
 from cdisc_rules_engine.utilities.utils import get_rules_cache_key
 
 """

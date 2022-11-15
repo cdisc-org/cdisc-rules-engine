@@ -1,9 +1,11 @@
 import json
 from datetime import datetime
-from typing import List, Optional, BinaryIO
-from cdisc_rules_engine.models.validation_args import Validation_args
-from cdisc_rules_engine.utilities.base_report import BaseReport
+from typing import BinaryIO, List, Optional
+
 from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
+from cdisc_rules_engine.models.validation_args import Validation_args
+
+from .base_report import BaseReport
 
 
 class JsonReport(BaseReport):
