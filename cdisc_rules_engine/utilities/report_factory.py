@@ -1,8 +1,9 @@
-from typing import List
+from typing import List, Dict, Type
 from cdisc_rules_engine.interfaces import DataServiceInterface
 from cdisc_rules_engine.enums.report_types import ReportTypes
 from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
 from cdisc_rules_engine.models.validation_args import Validation_args
+from cdisc_rules_engine.utilities.base_report import BaseReport
 from cdisc_rules_engine.utilities.excel_report import ExcelReport
 from cdisc_rules_engine.utilities.json_report import JsonReport
 
@@ -33,22 +34,22 @@ class ReportFactory:
         self._elapsed_time = elapsed_time
         self._args = args
         self._data_service = data_service
+        self._output_type_service_map: Dict[str, Type[BaseReport]] = {
+            ReportTypes.XLSX.value: ExcelReport,
+            ReportTypes.JSON.value: JsonReport,
+        }
 
-    def get_report_service(self):
-        output_type = self._args.output_format.upper()
-        if output_type == ReportTypes.XLSX.value:
-            template = self._data_service.read_data(self._args.report_template)
-            return ExcelReport(
+    def get_report_services(self) -> List[BaseReport]:
+        services: List[BaseReport] = []
+        for output_type in self._args.output_format:
+            output_type: str = output_type.upper()
+            service_class: Type[BaseReport] = self._output_type_service_map[output_type]
+            instance: BaseReport = service_class(
                 self._data_path,
                 self._results,
                 self._elapsed_time,
                 self._args,
-                template,
+                self._data_service.read_data(self._args.report_template),
             )
-        elif output_type == ReportTypes.JSON.value:
-            return JsonReport(
-                self._data_path,
-                self._results,
-                self._elapsed_time,
-                self._args,
-            )
+            services.append(instance)
+        return services

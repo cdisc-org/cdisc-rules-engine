@@ -1,5 +1,6 @@
 from abc import abstractmethod, ABC
-from typing import List, Union
+from io import IOBase
+from typing import List, Union, Optional
 from openpyxl import Workbook
 from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
@@ -17,12 +18,14 @@ class BaseReport(ABC):
         validation_results: List[RuleValidationResult],
         elapsed_time: float,
         args: Validation_args,
+        template: Optional[IOBase] = None,
     ):
         self._data_path: str = data_path
-        self._elapsed_time: int = elapsed_time
+        self._elapsed_time: int = int(elapsed_time)
         self._results: List[RuleValidationResult] = validation_results
         self._item_type = ""
         self._args = args
+        self._template = template
 
     def get_summary_data(self) -> List[List]:
         """

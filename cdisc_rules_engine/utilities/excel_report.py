@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import List, BinaryIO
+from typing import List, BinaryIO, Optional
 
 from openpyxl import Workbook
 
@@ -25,10 +25,9 @@ class ExcelReport(BaseReport):
         validation_results: List[RuleValidationResult],
         elapsed_time: float,
         args: Validation_args,
-        template: BinaryIO,
+        template: Optional[BinaryIO] = None,
     ):
         super().__init__(data_path, validation_results, elapsed_time, args)
-        self._template = template
         self._item_type = "list"
 
     def get_export(self, define_version, cdiscCt, standard, version) -> Workbook:

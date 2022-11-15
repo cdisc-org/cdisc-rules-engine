@@ -1,6 +1,6 @@
 import json
 from datetime import datetime
-from typing import List
+from typing import List, Optional, BinaryIO
 from cdisc_rules_engine.models.validation_args import Validation_args
 from cdisc_rules_engine.utilities.base_report import BaseReport
 from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
@@ -17,6 +17,7 @@ class JsonReport(BaseReport):
         validation_results: List[RuleValidationResult],
         elapsed_time: float,
         args: Validation_args,
+        template: Optional[BinaryIO] = None,
     ):
         super().__init__(data_path, validation_results, elapsed_time, args)
         self._item_type = "dict"

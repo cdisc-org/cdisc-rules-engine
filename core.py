@@ -81,7 +81,8 @@ def cli():
 @click.option(
     "-of",
     "--output-format",
-    default=ReportTypes.XLSX.value,
+    multiple=True,
+    default=[ReportTypes.XLSX.value],
     type=click.Choice(ReportTypes.values(), case_sensitive=False),
     help="Output file format",
 )

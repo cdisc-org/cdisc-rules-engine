@@ -26,6 +26,7 @@ from cdisc_rules_engine.services.cache import (
 from cdisc_rules_engine.services.data_services import (
     DataServiceFactory,
 )
+from cdisc_rules_engine.utilities.base_report import BaseReport
 from cdisc_rules_engine.utilities.report_factory import ReportFactory
 from cdisc_rules_engine.utilities.utils import get_rules_cache_key
 
@@ -191,10 +192,12 @@ def run_validation(args: Validation_args):
                     results.append(rule_result)
                     bar.update(1)
 
+    # build all desired reports
     end = time.time()
     elapsed_time = end - start
-
-    reporting_service = ReportFactory(
+    reporting_factory = ReportFactory(
         args.data, results, elapsed_time, args, data_service
-    ).get_report_service()
-    reporting_service.write_report()
+    )
+    reporting_services: List[BaseReport] = reporting_factory.get_report_services()
+    for reporting_service in reporting_services:
+        reporting_service.write_report()
