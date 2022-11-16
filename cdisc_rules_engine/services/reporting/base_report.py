@@ -23,7 +23,7 @@ class BaseReport(ABC):
         template: Optional[IOBase] = None,
     ):
         self._data_path: str = data_path
-        self._elapsed_time: int = int(elapsed_time)
+        self._elapsed_time: float = elapsed_time
         self._results: List[RuleValidationResult] = validation_results
         self._item_type = ""
         self._args = args
