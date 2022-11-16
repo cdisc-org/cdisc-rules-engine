@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import os
+from typing import Tuple
 
 import click
 import pickle
@@ -114,22 +115,22 @@ def cli():
 @click.pass_context
 def validate(
     ctx,
-    cache,
-    pool_size,
-    data,
-    log_level,
-    report_template,
-    standard,
-    version,
-    controlled_terminology_package,
-    output,
-    output_format,
-    raw_report,
-    define_version,
-    whodrug,
-    meddra,
-    disable_progressbar,
-    rules,
+    cache: str,
+    pool_size: int,
+    data: str,
+    log_level: str,
+    report_template: str,
+    standard: str,
+    version: str,
+    controlled_terminology_package: Tuple[str],
+    output: str,
+    output_format: Tuple[str],
+    raw_report: bool,
+    define_version: str,
+    whodrug: str,
+    meddra: str,
+    disable_progressbar: bool,
+    rules: Tuple[str],
 ):
     """
     Validate data using CDISC Rules Engine
