@@ -28,9 +28,7 @@ class BaseReport(ABC):
         self._item_type = ""
         self._args = args
         self._template = template
-        self._output_name: str = (
-            self._args.output + "." + self._args.output_format.lower()
-        )
+        self._output_name: str = f"{self._args.output}.{self._file_format}"
 
     def get_summary_data(self) -> List[List]:
         """
@@ -169,6 +167,11 @@ class BaseReport(ABC):
             rules_report,
             key=lambda x: x[0] if (self._item_type == "list") else x["rule_id"],
         )
+
+    @property
+    @abstractmethod
+    def _file_format(self) -> str:
+        pass
 
     @abstractmethod
     def get_export(

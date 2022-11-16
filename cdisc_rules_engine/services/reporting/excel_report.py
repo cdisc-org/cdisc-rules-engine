@@ -4,6 +4,7 @@ from typing import BinaryIO, List, Optional
 
 from openpyxl import Workbook
 
+from cdisc_rules_engine.enums.report_types import ReportTypes
 from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
 from cdisc_rules_engine.models.validation_args import Validation_args
 
@@ -28,8 +29,12 @@ class ExcelReport(BaseReport):
         args: Validation_args,
         template: Optional[BinaryIO] = None,
     ):
-        super().__init__(data_path, validation_results, elapsed_time, args)
+        super().__init__(data_path, validation_results, elapsed_time, args, template)
         self._item_type = "list"
+
+    @property
+    def _file_format(self):
+        return ReportTypes.XLSX.value.lower()
 
     def get_export(
         self, define_version, cdiscCt, standard, version, **kwargs

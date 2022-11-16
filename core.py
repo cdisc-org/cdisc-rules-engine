@@ -141,9 +141,12 @@ def validate(
 
     # Validate conditional options
     logger = logging.getLogger("validator")
-    if raw_report is True and output_format.upper() != ReportTypes.JSON.value:
-        logger.error("Flag --raw-report can be used only when --output-format is JSON")
-        ctx.exit()
+    if raw_report is True:
+        if not (len(output_format) == 1 and output_format[0] == ReportTypes.JSON.value):
+            logger.error(
+                "Flag --raw-report can be used only when --output-format is JSON"
+            )
+            ctx.exit()
 
     cache_path: str = f"{os.path.dirname(__file__)}/{cache}"
     data_path: str = f"{os.path.dirname(__file__)}/{data}"
@@ -159,7 +162,7 @@ def validate(
             version,
             controlled_terminology_package,
             output,
-            output_format,
+            set(output_format),
             raw_report,
             define_version,
             whodrug,

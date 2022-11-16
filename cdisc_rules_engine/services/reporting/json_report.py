@@ -2,6 +2,7 @@ import json
 from datetime import datetime
 from typing import BinaryIO, List, Optional
 
+from cdisc_rules_engine.enums.report_types import ReportTypes
 from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
 from cdisc_rules_engine.models.validation_args import Validation_args
 
@@ -21,8 +22,12 @@ class JsonReport(BaseReport):
         args: Validation_args,
         template: Optional[BinaryIO] = None,
     ):
-        super().__init__(data_path, validation_results, elapsed_time, args)
+        super().__init__(data_path, validation_results, elapsed_time, args, template)
         self._item_type = "dict"
+
+    @property
+    def _file_format(self) -> str:
+        return ReportTypes.JSON.value.lower()
 
     def get_export(self, define_version, cdiscCt, standard, version, **kwargs) -> dict:
         json_export = {
