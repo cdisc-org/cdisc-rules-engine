@@ -63,6 +63,9 @@ To validate a folder using rules for SDTM-IG version 3.4 use the following comma
 
     `python core.py list-rules -s sdtmig -v 3-4`
 
+* list-rule-sets - lists all standards and versions for which rules are available:
+    `python core.py list-rule-sets`
+
 ### Creating an executable version
 
 **Linux**

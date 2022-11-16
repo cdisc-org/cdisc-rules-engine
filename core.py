@@ -240,9 +240,32 @@ def list_rules(ctx: click.Context, cache_path: str, standard: str, version: str)
     print(json.dumps(rules, indent=4))
 
 
+@click.command()
+@click.option(
+    "-c",
+    "--cache_path",
+    default=DefaultFilePaths.CACHE.value,
+    help="Relative path to cache files containing pre loaded metadata and rules",
+)
+@click.pass_context
+def list_rule_sets(ctx: click.Context, cache_path: str):
+    # Load all rules
+    rules_file = DefaultFilePaths.RULES_CACHE_FILE.value
+    with open(f"{cache_path}/{rules_file}", "rb") as f:
+        rules_data = pickle.load(f)
+    rule_sets = set()
+    for rule in rules_data.keys():
+        standard, version = rule.split("/")[1:3]
+        rule_set = f"{standard.upper()}, {version}"
+        if rule_set not in rule_sets:
+            print(rule_set)
+            rule_sets.add(rule_set)
+
+
 cli.add_command(validate)
 cli.add_command(update_cache)
 cli.add_command(list_rules)
+cli.add_command(list_rule_sets)
 
 if __name__ == "__main__":
     freeze_support()
