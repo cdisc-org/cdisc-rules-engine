@@ -28,6 +28,9 @@ class BaseReport(ABC):
         self._item_type = ""
         self._args = args
         self._template = template
+        self._output_name: str = (
+            self._args.output + "." + self._args.output_format.lower()
+        )
 
     def get_summary_data(self) -> List[List]:
         """

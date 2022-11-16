@@ -31,7 +31,9 @@ class ExcelReport(BaseReport):
         super().__init__(data_path, validation_results, elapsed_time, args)
         self._item_type = "list"
 
-    def get_export(self, define_version, cdiscCt, standard, version) -> Workbook:
+    def get_export(
+        self, define_version, cdiscCt, standard, version, **kwargs
+    ) -> Workbook:
         wb = excel_open_workbook(self._template.read())
         summary_data = self.get_summary_data()
         detailed_data = self.get_detailed_data()
@@ -55,7 +57,6 @@ class ExcelReport(BaseReport):
         return wb
 
     def write_report(self):
-        output_name = self._args.output + "." + self._args.output_format.lower()
         logger = logging.getLogger("validator")
         try:
             report_data = self.get_export(
@@ -64,7 +65,7 @@ class ExcelReport(BaseReport):
                 self._args.standard,
                 self._args.version.replace("-", "."),
             )
-            with open(output_name, "wb") as f:
+            with open(self._output_name, "wb") as f:
                 f.write(excel_workbook_to_stream(report_data))
         except Exception as e:
             logger.error(e)
