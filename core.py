@@ -161,9 +161,9 @@ def validate(
             report_template,
             standard,
             version,
-            controlled_terminology_package,
+            set(controlled_terminology_package),  # avoiding duplicates
             output,
-            set(output_format),
+            set(output_format),  # avoiding duplicates
             raw_report,
             define_version,
             whodrug,
