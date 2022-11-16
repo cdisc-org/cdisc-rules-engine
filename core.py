@@ -42,7 +42,7 @@ def cli():
     "-d",
     "--data",
     required=True,
-    help="Relative path to directory containing data files",
+    help="Path to directory containing data files",
 )
 @click.option(
     "-l",
@@ -145,13 +145,12 @@ def validate(
         ctx.exit()
 
     cache_path: str = f"{os.path.dirname(__file__)}/{cache}"
-    data_path: str = f"{os.path.dirname(__file__)}/{data}"
 
     run_validation(
         Validation_args(
             cache_path,
             pool_size,
-            data_path,
+            data,
             log_level,
             report_template,
             standard,
