@@ -1,13 +1,15 @@
 import asyncio
 import logging
 import os
-from typing import Tuple
+from typing import Tuple, Iterable
 
 import click
 import pickle
 import json
 from datetime import datetime
 from multiprocessing import freeze_support
+
+from cdisc_rules_engine.constants.define_xml_constants import DEFINE_XML_FILE_NAME
 from cdisc_rules_engine.enums.report_types import ReportTypes
 from cdisc_rules_engine.models.validation_args import Validation_args
 from scripts.run_validation import run_validation
@@ -42,12 +44,13 @@ def cli():
 @click.option(
     "-d",
     "--data",
-    required=True,
+    required=False,
     help="Relative path to directory containing data files",
 )
 @click.option(
     "-dp",
     "--dataset-path",
+    required=False,
     multiple=True,
     help="Absolute path to dataset file",
 )
@@ -155,12 +158,35 @@ def validate(
     cache_path: str = f"{os.path.dirname(__file__)}/{cache}"
     data_path: str = f"{os.path.dirname(__file__)}/{data}"
 
+    if data:
+        if dataset_path:
+            logger.error(
+                "Argument --dataset-path cannot be used together with argument --data"
+            )
+            ctx.exit()
+        dataset_paths: Iterable[str] = [
+            f
+            for f in next(os.walk(data_path), (None, None, []))[2]
+            if f != DEFINE_XML_FILE_NAME
+        ]
+    elif dataset_path:
+        if data:
+            logger.error(
+                "Argument --dataset-path cannot be used together with argument --data"
+            )
+            ctx.exit()
+        dataset_paths: Iterable[str] = dataset_path
+    else:
+        logger.error(
+            "You must pass one of the following arguments: --dataset-path, --data"
+        )
+        ctx.exit()
+
     run_validation(
         Validation_args(
             cache_path,
             pool_size,
-            data_path,
-            dataset_path,
+            dataset_paths,
             log_level,
             report_template,
             standard,
