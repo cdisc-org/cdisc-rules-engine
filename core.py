@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import os
+from typing import Tuple
 
 import click
 import pickle
@@ -43,6 +44,12 @@ def cli():
     "--data",
     required=True,
     help="Relative path to directory containing data files",
+)
+@click.option(
+    "-dp",
+    "--dataset-path",
+    multiple=True,
+    help="Absolute path to dataset file",
 )
 @click.option(
     "-l",
@@ -116,6 +123,7 @@ def validate(
     cache,
     pool_size,
     data,
+    dataset_path: Tuple[str],
     log_level,
     report_template,
     standard,
@@ -152,6 +160,7 @@ def validate(
             cache_path,
             pool_size,
             data_path,
+            dataset_path,
             log_level,
             report_template,
             standard,
