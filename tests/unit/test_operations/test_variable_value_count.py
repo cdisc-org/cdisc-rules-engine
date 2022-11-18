@@ -49,7 +49,7 @@ def test_variable_value_count(
     operation_params.target = target
     operation_params.dataset_path = dataset_path
     result = VariableValueCount(
-        operation_params, pd.DataFrame(), cache, mock_data_service
+        operation_params, datasets_map["AE"], cache, mock_data_service
     ).execute()
     assert operation_params.operation_id in result
     for val in result[operation_params.operation_id]:
