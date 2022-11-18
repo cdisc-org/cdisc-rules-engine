@@ -45,7 +45,7 @@ def cli():
     "-d",
     "--data",
     required=False,
-    help="Relative path to directory containing data files",
+    help="Path to directory containing data files",
 )
 @click.option(
     "-dp",
@@ -91,7 +91,8 @@ def cli():
 @click.option(
     "-of",
     "--output-format",
-    default=ReportTypes.XLSX.value,
+    multiple=True,
+    default=[ReportTypes.XLSX.value],
     type=click.Choice(ReportTypes.values(), case_sensitive=False),
     help="Output file format",
 )
@@ -123,23 +124,23 @@ def cli():
 @click.pass_context
 def validate(
     ctx,
-    cache,
-    pool_size,
-    data,
+    cache: str,
+    pool_size: int,
+    data: str,
     dataset_path: Tuple[str],
-    log_level,
-    report_template,
-    standard,
-    version,
-    controlled_terminology_package,
-    output,
-    output_format,
-    raw_report,
-    define_version,
-    whodrug,
-    meddra,
-    disable_progressbar,
-    rules,
+    log_level: str,
+    report_template: str,
+    standard: str,
+    version: str,
+    controlled_terminology_package: Tuple[str],
+    output: str,
+    output_format: Tuple[str],
+    raw_report: bool,
+    define_version: str,
+    whodrug: str,
+    meddra: str,
+    disable_progressbar: bool,
+    rules: Tuple[str],
 ):
     """
     Validate data using CDISC Rules Engine
@@ -151,12 +152,14 @@ def validate(
 
     # Validate conditional options
     logger = logging.getLogger("validator")
-    if raw_report is True and output_format.upper() != ReportTypes.JSON.value:
-        logger.error("Flag --raw-report can be used only when --output-format is JSON")
-        ctx.exit()
+    if raw_report is True:
+        if not (len(output_format) == 1 and output_format[0] == ReportTypes.JSON.value):
+            logger.error(
+                "Flag --raw-report can be used only when --output-format is JSON"
+            )
+            ctx.exit()
 
     cache_path: str = f"{os.path.dirname(__file__)}/{cache}"
-    data_path: str = f"{os.path.dirname(__file__)}/{data}"
 
     if data:
         if dataset_path:
@@ -166,7 +169,7 @@ def validate(
             ctx.exit()
         dataset_paths: Iterable[str] = [
             f
-            for f in next(os.walk(data_path), (None, None, []))[2]
+            for f in next(os.walk(data), (None, None, []))[2]
             if f != DEFINE_XML_FILE_NAME
         ]
     elif dataset_path:
@@ -191,9 +194,9 @@ def validate(
             report_template,
             standard,
             version,
-            controlled_terminology_package,
+            set(controlled_terminology_package),  # avoiding duplicates
             output,
-            output_format,
+            set(output_format),  # avoiding duplicates
             raw_report,
             define_version,
             whodrug,

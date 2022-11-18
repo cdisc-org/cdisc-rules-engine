@@ -1,6 +1,8 @@
+from unittest.mock import MagicMock
+
 from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
-from cdisc_rules_engine.utilities.json_report import JsonReport
+from cdisc_rules_engine.services.reporting.json_report import JsonReport
 
 mock_validation_results = [
     RuleValidationResult(
@@ -51,7 +53,7 @@ mock_validation_results = [
 
 
 def test_get_rules_report_data():
-    report: JsonReport = JsonReport("test", mock_validation_results, 10.1, {})
+    report: JsonReport = JsonReport("test", mock_validation_results, 10.1, MagicMock())
     report_data = report.get_rules_report_data()
     expected_reports = []
     for result in mock_validation_results:
@@ -70,7 +72,7 @@ def test_get_rules_report_data():
 
 
 def test_get_detailed_data():
-    report: JsonReport = JsonReport("test", mock_validation_results, 10.1, {})
+    report: JsonReport = JsonReport("test", mock_validation_results, 10.1, MagicMock())
     detailed_data = report.get_detailed_data()
     errors = [
         {
@@ -114,7 +116,7 @@ def test_get_detailed_data():
 
 
 def test_get_summary_data():
-    report: JsonReport = JsonReport("test", mock_validation_results, 10.1, {})
+    report: JsonReport = JsonReport("test", mock_validation_results, 10.1, MagicMock())
     summary_data = report.get_summary_data()
     errors = [
         {
@@ -139,7 +141,7 @@ def test_get_summary_data():
 
 
 def test_get_export():
-    report: JsonReport = JsonReport("test", mock_validation_results, 10.1, {})
+    report: JsonReport = JsonReport("test", mock_validation_results, 10.1, MagicMock())
     cdiscCt = ["sdtmct-03-2021"]
     export = report.get_export(
         define_version="2.1",

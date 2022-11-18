@@ -25,7 +25,7 @@ from cdisc_rules_engine.services.cache import (
 from cdisc_rules_engine.services.data_services import (
     DataServiceFactory,
 )
-from cdisc_rules_engine.utilities.report_factory import ReportFactory
+from cdisc_rules_engine.services.reporting import BaseReport, ReportFactory
 from cdisc_rules_engine.utilities.utils import get_rules_cache_key
 
 """
@@ -63,9 +63,15 @@ def validate_single_rule(cache, path, datasets, args, rule: dict = None):
     return RuleValidationResult(rule, results)
 
 
-def fill_cache_with_provided_data(cache, cache_path: str):
+def fill_cache_with_provided_data(cache, cache_path: str, args):
     cache_files = next(os.walk(cache_path), (None, None, []))[2]
     for file_name in cache_files:
+        if not args.controlled_terminology_package and "codelist" in file_name:
+            """
+            TODO: improve how we decide which codelists to load into memory
+                  by separating them into their own files
+            """
+            continue
         with open(f"{cache_path}/{file_name}", "rb") as f:
             data = pickle.load(f)
             cache.add_all(data)
@@ -77,13 +83,15 @@ def fill_cache_with_dictionaries(cache: CacheServiceInterface, args):
     Extracts file contents from provided dictionaries files
     and saves to cache (inmemory or redis).
     """
+    if not args.meddra and not args.whodrug:
+        return
+
     data_service = DataServiceFactory(config, cache).get_data_service()
 
     dictionary_type_to_path_map: dict = {
         DictionaryTypes.MEDDRA: args.meddra,
         DictionaryTypes.WHODRUG: args.whodrug,
     }
-
     for dictionary_type, dictionary_path in dictionary_type_to_path_map.items():
         if not dictionary_path:
             continue
@@ -151,7 +159,7 @@ def run_validation(args: Validation_args):
     manager.start()
     shared_cache = get_cache_service(manager)
     engine_logger.info(f"Populating cache, cache path: {args.cache}")
-    shared_cache = fill_cache_with_provided_data(shared_cache, args.cache)
+    shared_cache = fill_cache_with_provided_data(shared_cache, args.cache, args)
 
     # install dictionaries if needed
     fill_cache_with_dictionaries(shared_cache, args)
@@ -186,10 +194,12 @@ def run_validation(args: Validation_args):
                     results.append(rule_result)
                     bar.update(1)
 
+    # build all desired reports
     end = time.time()
     elapsed_time = end - start
-
-    reporting_service = ReportFactory(
+    reporting_factory = ReportFactory(
         args.data, results, elapsed_time, args, data_service
-    ).get_report_service()
-    reporting_service.write_report()
+    )
+    reporting_services: List[BaseReport] = reporting_factory.get_report_services()
+    for reporting_service in reporting_services:
+        reporting_service.write_report()
