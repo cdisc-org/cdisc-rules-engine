@@ -61,6 +61,8 @@ def validate_single_rule(cache, path, datasets, args, rule: dict = None):
         for dataset in datasets
     ]
     results = list(itertools.chain(*results))
+    if args.verbose_output:
+        print(f"{rule['core_id']} validation complete")
     return RuleValidationResult(rule, results)
 
 
