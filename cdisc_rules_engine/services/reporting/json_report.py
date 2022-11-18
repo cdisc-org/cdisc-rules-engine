@@ -57,7 +57,7 @@ class JsonReport(BaseReport):
     def write_report(self):
         report_data = self.get_export(
             self._args.define_version,
-            self._args.controlled_terminology_package,
+            list(self._args.controlled_terminology_package),
             self._args.standard,
             self._args.version.replace("-", "."),
             raw_report=self._args.raw_report,
