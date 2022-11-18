@@ -1,6 +1,9 @@
-from abc import abstractmethod, ABC
-from typing import List, Union
+from abc import ABC, abstractmethod
+from io import IOBase
+from typing import List, Optional, Union
+
 from openpyxl import Workbook
+
 from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
 from cdisc_rules_engine.models.validation_args import Validation_args
@@ -17,12 +20,15 @@ class BaseReport(ABC):
         validation_results: List[RuleValidationResult],
         elapsed_time: float,
         args: Validation_args,
+        template: Optional[IOBase] = None,
     ):
         self._data_path: str = data_path
-        self._elapsed_time: int = elapsed_time
+        self._elapsed_time: float = elapsed_time
         self._results: List[RuleValidationResult] = validation_results
         self._item_type = ""
         self._args = args
+        self._template = template
+        self._output_name: str = f"{self._args.output}.{self._file_format}"
 
     def get_summary_data(self) -> List[List]:
         """
@@ -161,6 +167,11 @@ class BaseReport(ABC):
             rules_report,
             key=lambda x: x[0] if (self._item_type == "list") else x["rule_id"],
         )
+
+    @property
+    @abstractmethod
+    def _file_format(self) -> str:
+        pass
 
     @abstractmethod
     def get_export(
