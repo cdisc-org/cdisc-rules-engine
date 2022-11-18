@@ -39,8 +39,7 @@ class CacheManager(SyncManager):
     pass
 
 
-def validate_single_rule(cache, path, datasets, args, rule: dict = None):
-    set_log_level(args.log_level)
+def validate_single_rule(cache, datasets, args, rule: dict = None):
     rule["conditions"] = ConditionCompositeFactory.get_condition_composite(
         rule["conditions"]
     )
@@ -55,7 +54,7 @@ def validate_single_rule(cache, path, datasets, args, rule: dict = None):
     )
     results = [
         engine.validate_single_rule(
-            rule, f"{path}/{dataset['filename']}", datasets, dataset["domain"]
+            rule, dataset["full_path"], datasets, dataset["domain"]
         )
         for dataset in datasets
     ]
@@ -109,6 +108,7 @@ def get_datasets(
             {
                 "domain": metadata["dataset_name"].iloc[0],
                 "filename": metadata["dataset_location"].iloc[0],
+                "full_path": dataset_path,
             }
         )
 
@@ -174,7 +174,7 @@ def run_validation(args: Validation_args):
     with Pool(args.pool_size) as pool:
         if args.disable_progressbar is True:
             for rule_result in pool.imap_unordered(
-                partial(validate_single_rule, shared_cache, args.data, datasets, args),
+                partial(validate_single_rule, shared_cache, datasets, args),
                 rules,
             ):
                 results.append(rule_result)
@@ -186,9 +186,7 @@ def run_validation(args: Validation_args):
                 show_eta=False,
             ) as bar:
                 for rule_result in pool.imap_unordered(
-                    partial(
-                        validate_single_rule, shared_cache, args.data, datasets, args
-                    ),
+                    partial(validate_single_rule, shared_cache, datasets, args),
                     rules,
                 ):
                     results.append(rule_result)
@@ -198,7 +196,7 @@ def run_validation(args: Validation_args):
     end = time.time()
     elapsed_time = end - start
     reporting_factory = ReportFactory(
-        args.data, results, elapsed_time, args, data_service
+        args.dataset_paths, results, elapsed_time, args, data_service
     )
     reporting_services: List[BaseReport] = reporting_factory.get_report_services()
     for reporting_service in reporting_services:

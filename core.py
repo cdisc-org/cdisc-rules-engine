@@ -168,9 +168,9 @@ def validate(
             )
             ctx.exit()
         dataset_paths: Iterable[str] = [
-            f
-            for f in next(os.walk(data), (None, None, []))[2]
-            if f != DEFINE_XML_FILE_NAME
+            f"{data}/{fn}"
+            for fn in os.listdir(data)
+            if fn.lower() != DEFINE_XML_FILE_NAME
         ]
     elif dataset_path:
         if data:
@@ -183,6 +183,7 @@ def validate(
         logger.error(
             "You must pass one of the following arguments: --dataset-path, --data"
         )
+        # no need to define dataset_paths here, the program execution will stop
         ctx.exit()
 
     run_validation(

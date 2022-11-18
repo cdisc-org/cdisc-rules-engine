@@ -1,8 +1,9 @@
 import logging
 from datetime import datetime
-from typing import BinaryIO, List, Optional
+from typing import BinaryIO, List, Optional, Iterable
 
 from openpyxl import Workbook
+from openpyxl.styles import Alignment
 
 from cdisc_rules_engine.enums.report_types import ReportTypes
 from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
@@ -23,13 +24,15 @@ class ExcelReport(BaseReport):
 
     def __init__(
         self,
-        data_path: str,
+        dataset_paths: Iterable[str],
         validation_results: List[RuleValidationResult],
         elapsed_time: float,
         args: Validation_args,
         template: Optional[BinaryIO] = None,
     ):
-        super().__init__(data_path, validation_results, elapsed_time, args, template)
+        super().__init__(
+            dataset_paths, validation_results, elapsed_time, args, template
+        )
         self._item_type = "list"
 
     @property
@@ -48,7 +51,8 @@ class ExcelReport(BaseReport):
         excel_update_worksheet(
             wb["Rules Report"], rules_report_data, dict(wrap_text=True)
         )
-        wb["Conformance Details"]["B2"] = self._data_path
+        wb["Conformance Details"]["B2"] = ",\n".join(self._dataset_paths)
+        wb["Conformance Details"]["B2"].alignment = Alignment(wrapText=True)
         # write conformance data
         wb["Conformance Details"]["B3"] = (
             datetime.now().replace(microsecond=0).isoformat()

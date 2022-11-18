@@ -1,4 +1,4 @@
-from typing import Dict, List, Type
+from typing import Dict, List, Type, Iterable
 
 from cdisc_rules_engine.enums.report_types import ReportTypes
 from cdisc_rules_engine.interfaces import DataServiceInterface
@@ -25,13 +25,13 @@ class ReportFactory:
 
     def __init__(
         self,
-        data_path: str,
+        dataset_paths: Iterable[str],
         results: List[RuleValidationResult],
         elapsed_time: float,
         args: Validation_args,
         data_service: DataServiceInterface,
     ):
-        self._data_path = data_path
+        self._dataset_paths = dataset_paths
         self._results = results
         self._elapsed_time = elapsed_time
         self._args = args
@@ -47,7 +47,7 @@ class ReportFactory:
             output_type: str = output_type.upper()
             service_class: Type[BaseReport] = self._output_type_service_map[output_type]
             instance: BaseReport = service_class(
-                self._data_path,
+                self._dataset_paths,
                 self._results,
                 self._elapsed_time,
                 self._args,
