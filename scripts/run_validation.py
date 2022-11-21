@@ -41,7 +41,7 @@ class CacheManager(SyncManager):
 
 
 def validate_single_rule(cache, path, datasets, args, rule: dict = None):
-    set_log_level(args.log_level)
+    set_log_level(args)
     rule["conditions"] = ConditionCompositeFactory.get_condition_composite(
         rule["conditions"]
     )
@@ -61,6 +61,8 @@ def validate_single_rule(cache, path, datasets, args, rule: dict = None):
         for dataset in datasets
     ]
     results = list(itertools.chain(*results))
+    if args.verbose_output:
+        engine_logger.log(f"{rule['core_id']} validation complete")
     return RuleValidationResult(rule, results)
 
 
@@ -120,11 +122,13 @@ def get_datasets(data_service: DataServiceInterface, data_path: str):
     return datasets
 
 
-def set_log_level(level: str):
-    if level == "disabled":
+def set_log_level(args):
+    if args.verbose_output:
+        engine_logger.setLevel("verbose")
+    elif args.log_level.lower() == "disabled":
         engine_logger.disabled = True
     else:
-        engine_logger.setLevel(level)
+        engine_logger.setLevel(args.log_level.lower())
 
 
 def get_cache_service(manager):
@@ -156,7 +160,7 @@ def get_rules(cache: CacheServiceInterface, args) -> List[dict]:
 
 
 def run_validation(args: Validation_args):
-    set_log_level(args.log_level.lower())
+    set_log_level(args)
     # fill cache
     CacheManager.register("RedisCacheService", RedisCacheService)
     CacheManager.register("InMemoryCacheService", InMemoryCacheService)

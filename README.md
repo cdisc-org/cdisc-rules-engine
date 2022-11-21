@@ -41,6 +41,7 @@ Run `core.py validate --help` to see the list of validation options.
 * --meddra TEXT                              Path to directory with MedDRA dictionary files
 * --disable-progressbar                      Disable progress bar
 * -r 					     Specify rule id to run. Can specify multiple.
+* -vo, --verbose-output                      Print rule ids as they are completed. Should be used in conjuction with --disable-progressbar
 ```
 
 #### Validate folder

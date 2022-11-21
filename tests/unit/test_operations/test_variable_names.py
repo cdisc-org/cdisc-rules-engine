@@ -59,7 +59,7 @@ def test_get_variable_names_for_given_standard(
     operation_params.standard = standard
     operation_params.standard_version = standard_version
     result = VariableNames(
-        operation_params, pd.DataFrame(), cache, data_service=mock_data_service
+        operation_params, datasets_map["AE"], cache, data_service=mock_data_service
     ).execute()
     assert operation_params.operation_id in result
     for val in result[operation_params.operation_id]:

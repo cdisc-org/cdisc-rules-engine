@@ -73,3 +73,9 @@ class LoggerInterface(ABC):
         """
         Logs msg with severity 'CRITICAL'.
         """
+
+    @abstractmethod
+    def log(self, msg: str, *args, **kwargs):
+        """
+        Logs msg with severity log level 100
+        """

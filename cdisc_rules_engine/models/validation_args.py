@@ -19,5 +19,6 @@ Validation_args = namedtuple(
         "meddra",
         "disable_progressbar",
         "rules",
+        "verbose_output",
     ],
 )
