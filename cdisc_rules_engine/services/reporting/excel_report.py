@@ -1,17 +1,19 @@
 import logging
 from datetime import datetime
-from typing import List, BinaryIO
+from typing import BinaryIO, List, Optional
 
 from openpyxl import Workbook
 
+from cdisc_rules_engine.enums.report_types import ReportTypes
 from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
 from cdisc_rules_engine.models.validation_args import Validation_args
-from cdisc_rules_engine.utilities.base_report import BaseReport
-from cdisc_rules_engine.utilities.excel_writer import (
+
+from .base_report import BaseReport
+from .excel_writer import (
     excel_open_workbook,
     excel_update_worksheet,
+    excel_workbook_to_stream,
 )
-from cdisc_rules_engine.utilities.excel_writer import excel_workbook_to_stream
 
 
 class ExcelReport(BaseReport):
@@ -25,13 +27,18 @@ class ExcelReport(BaseReport):
         validation_results: List[RuleValidationResult],
         elapsed_time: float,
         args: Validation_args,
-        template: BinaryIO,
+        template: Optional[BinaryIO] = None,
     ):
-        super().__init__(data_path, validation_results, elapsed_time, args)
-        self._template = template
+        super().__init__(data_path, validation_results, elapsed_time, args, template)
         self._item_type = "list"
 
-    def get_export(self, define_version, cdiscCt, standard, version) -> Workbook:
+    @property
+    def _file_format(self):
+        return ReportTypes.XLSX.value.lower()
+
+    def get_export(
+        self, define_version, cdiscCt, standard, version, **kwargs
+    ) -> Workbook:
         wb = excel_open_workbook(self._template.read())
         summary_data = self.get_summary_data()
         detailed_data = self.get_detailed_data()
@@ -55,7 +62,6 @@ class ExcelReport(BaseReport):
         return wb
 
     def write_report(self):
-        output_name = self._args.output + "." + self._args.output_format.lower()
         logger = logging.getLogger("validator")
         try:
             report_data = self.get_export(
@@ -64,7 +70,7 @@ class ExcelReport(BaseReport):
                 self._args.standard,
                 self._args.version.replace("-", "."),
             )
-            with open(output_name, "wb") as f:
+            with open(self._output_name, "wb") as f:
                 f.write(excel_workbook_to_stream(report_data))
         except Exception as e:
             logger.error(e)
