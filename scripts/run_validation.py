@@ -6,9 +6,8 @@ import click
 from functools import partial
 from multiprocessing import Pool
 from multiprocessing.managers import SyncManager
-from typing import List
+from typing import List, Iterable
 from cdisc_rules_engine.config import config
-from cdisc_rules_engine.constants.define_xml_constants import DEFINE_XML_FILE_NAME
 from cdisc_rules_engine.interfaces import CacheServiceInterface, DataServiceInterface
 from cdisc_rules_engine.models.dictionaries import DictionaryTypes
 from cdisc_rules_engine.models.dictionaries.get_dictionary_terms import (
@@ -40,8 +39,7 @@ class CacheManager(SyncManager):
     pass
 
 
-def validate_single_rule(cache, path, datasets, args, rule: dict = None):
-    set_log_level(args)
+def validate_single_rule(cache, datasets, args, rule: dict = None):
     rule["conditions"] = ConditionCompositeFactory.get_condition_composite(
         rule["conditions"]
     )
@@ -56,7 +54,7 @@ def validate_single_rule(cache, path, datasets, args, rule: dict = None):
     )
     results = [
         engine.validate_single_rule(
-            rule, f"{path}/{dataset['filename']}", datasets, dataset["domain"]
+            rule, dataset["full_path"], datasets, dataset["domain"]
         )
         for dataset in datasets
     ]
@@ -102,20 +100,17 @@ def fill_cache_with_dictionaries(cache: CacheServiceInterface, args):
         cache.add(dictionary_path, terms)
 
 
-def get_datasets(data_service: DataServiceInterface, data_path: str):
-    data_files = [
-        f
-        for f in next(os.walk(data_path), (None, None, []))[2]
-        if f != DEFINE_XML_FILE_NAME
-    ]
+def get_datasets(
+    data_service: DataServiceInterface, dataset_paths: Iterable[str]
+) -> List[dict]:
     datasets = []
-    for data_file in data_files:
-        dataset_name = f"{data_path}/{data_file}"
-        metadata = data_service.get_dataset_metadata(dataset_name=dataset_name)
+    for dataset_path in dataset_paths:
+        metadata = data_service.get_dataset_metadata(dataset_name=dataset_path)
         datasets.append(
             {
                 "domain": metadata["dataset_name"].iloc[0],
                 "filename": metadata["dataset_location"].iloc[0],
+                "full_path": dataset_path,
             }
         )
 
@@ -174,7 +169,7 @@ def run_validation(args: Validation_args):
     fill_cache_with_dictionaries(shared_cache, args)
     rules = get_rules(shared_cache, args)
     data_service = DataServiceFactory(config, shared_cache).get_data_service()
-    datasets = get_datasets(data_service, args.data)
+    datasets = get_datasets(data_service, args.dataset_paths)
     engine_logger.info(f"Running {len(rules)} rules against {len(datasets)} datasets")
 
     start = time.time()
@@ -183,7 +178,7 @@ def run_validation(args: Validation_args):
     with Pool(args.pool_size) as pool:
         if args.disable_progressbar is True:
             for rule_result in pool.imap_unordered(
-                partial(validate_single_rule, shared_cache, args.data, datasets, args),
+                partial(validate_single_rule, shared_cache, datasets, args),
                 rules,
             ):
                 results.append(rule_result)
@@ -195,9 +190,7 @@ def run_validation(args: Validation_args):
                 show_eta=False,
             ) as bar:
                 for rule_result in pool.imap_unordered(
-                    partial(
-                        validate_single_rule, shared_cache, args.data, datasets, args
-                    ),
+                    partial(validate_single_rule, shared_cache, datasets, args),
                     rules,
                 ):
                     results.append(rule_result)
@@ -207,7 +200,7 @@ def run_validation(args: Validation_args):
     end = time.time()
     elapsed_time = end - start
     reporting_factory = ReportFactory(
-        args.data, results, elapsed_time, args, data_service
+        args.dataset_paths, results, elapsed_time, args, data_service
     )
     reporting_services: List[BaseReport] = reporting_factory.get_report_services()
     for reporting_service in reporting_services:

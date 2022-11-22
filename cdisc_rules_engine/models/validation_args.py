@@ -5,7 +5,7 @@ Validation_args = namedtuple(
     [
         "cache",
         "pool_size",
-        "data",
+        "dataset_paths",
         "log_level",
         "report_template",
         "standard",

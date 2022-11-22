@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from io import IOBase
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Iterable
 
 from openpyxl import Workbook
 
@@ -16,13 +16,13 @@ class BaseReport(ABC):
 
     def __init__(
         self,
-        data_path: str,
+        dataset_paths: Iterable[str],
         validation_results: List[RuleValidationResult],
         elapsed_time: float,
         args: Validation_args,
         template: Optional[IOBase] = None,
     ):
-        self._data_path: str = data_path
+        self._dataset_paths: Iterable[str] = dataset_paths
         self._elapsed_time: float = elapsed_time
         self._results: List[RuleValidationResult] = validation_results
         self._item_type = ""

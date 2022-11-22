@@ -1,6 +1,6 @@
 import json
 from datetime import datetime
-from typing import BinaryIO, List, Optional
+from typing import BinaryIO, List, Optional, Iterable
 
 from cdisc_rules_engine.enums.report_types import ReportTypes
 from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
@@ -16,13 +16,15 @@ class JsonReport(BaseReport):
 
     def __init__(
         self,
-        data_path: str,
+        dataset_paths: Iterable[str],
         validation_results: List[RuleValidationResult],
         elapsed_time: float,
         args: Validation_args,
         template: Optional[BinaryIO] = None,
     ):
-        super().__init__(data_path, validation_results, elapsed_time, args, template)
+        super().__init__(
+            dataset_paths, validation_results, elapsed_time, args, template
+        )
         self._item_type = "dict"
 
     @property
@@ -32,7 +34,7 @@ class JsonReport(BaseReport):
     def get_export(self, define_version, cdiscCt, standard, version, **kwargs) -> dict:
         json_export = {
             "conformance_details": {
-                "data_path": self._data_path,
+                "data_path": self._dataset_paths,
                 "report_date": datetime.now().replace(microsecond=0).isoformat(),
                 "runtime": round(self._elapsed_time, 2),
             },
