@@ -121,6 +121,13 @@ def cli():
     help="Disable progress bar",
 )
 @click.option("--rules", "-r", multiple=True)
+@click.option(
+    "-vo",
+    "--verbose-output",
+    is_flag=True,
+    default=False,
+    help="Specify this option to print rules as they are completed",
+)
 @click.pass_context
 def validate(
     ctx,
@@ -141,6 +148,7 @@ def validate(
     meddra: str,
     disable_progressbar: bool,
     rules: Tuple[str],
+    verbose_output: bool,
 ):
     """
     Validate data using CDISC Rules Engine
@@ -204,6 +212,7 @@ def validate(
             meddra,
             disable_progressbar,
             rules,
+            verbose_output,
         )
     )
 

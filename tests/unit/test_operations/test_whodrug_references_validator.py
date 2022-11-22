@@ -38,7 +38,7 @@ def test_valid_whodrug_references(
     operation_params.domain = "AE"
     operation_params.whodrug_path = installed_whodrug_dictionaries["whodrug_path"]
     result = WhodrugReferencesValidator(
-        operation_params, pd.DataFrame(), cache, data_service
+        operation_params, invalid_df, cache, data_service
     ).execute()
     assert operation_params.operation_id in result
     assert result[operation_params.operation_id].equals(
