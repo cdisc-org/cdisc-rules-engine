@@ -1,10 +1,12 @@
 import os
+from unittest.mock import MagicMock
+
 from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
-from cdisc_rules_engine.utilities.excel_report import ExcelReport
+from cdisc_rules_engine.services.reporting.excel_report import ExcelReport
 
 test_report_template: str = (
-    f"{os.path.dirname(__file__)}" "/../../resources/templates/report-template.xlsx"
+    f"{os.path.dirname(__file__)}/../../../../resources/templates/report-template.xlsx"
 )
 
 mock_validation_results = [
@@ -57,7 +59,9 @@ mock_validation_results = [
 
 def test_get_rules_report_data():
     with open(test_report_template, "rb") as f:
-        report: ExcelReport = ExcelReport("test", mock_validation_results, 10.1, {}, f)
+        report: ExcelReport = ExcelReport(
+            "test", mock_validation_results, 10.1, MagicMock(), f
+        )
         report_data = report.get_rules_report_data()
         expected_reports = []
         for result in mock_validation_results:
@@ -72,7 +76,9 @@ def test_get_rules_report_data():
 
 def test_get_detailed_data():
     with open(test_report_template, "rb") as f:
-        report: ExcelReport = ExcelReport("test", mock_validation_results, 10.1, {}, f)
+        report: ExcelReport = ExcelReport(
+            "test", mock_validation_results, 10.1, MagicMock(), f
+        )
         detailed_data = report.get_detailed_data()
         errors = [
             [
@@ -117,7 +123,9 @@ def test_get_detailed_data():
 
 def test_get_summary_data():
     with open(test_report_template, "rb") as f:
-        report: ExcelReport = ExcelReport("test", mock_validation_results, 10.1, {}, f)
+        report: ExcelReport = ExcelReport(
+            "test", mock_validation_results, 10.1, MagicMock(), f
+        )
         summary_data = report.get_summary_data()
         errors = [
             [
@@ -137,7 +145,9 @@ def test_get_summary_data():
 
 def test_get_export():
     with open(test_report_template, "rb") as f:
-        report: ExcelReport = ExcelReport("test", mock_validation_results, 10.1, {}, f)
+        report: ExcelReport = ExcelReport(
+            ["test"], mock_validation_results, 10.1, MagicMock(), f
+        )
         cdiscCt = ["sdtmct-03-2021"]
         wb = report.get_export(
             define_version="2.1", cdiscCt=cdiscCt, standard="sdtmig", version="3.4"

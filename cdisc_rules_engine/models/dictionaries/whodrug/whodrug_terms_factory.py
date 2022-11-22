@@ -1,12 +1,12 @@
 from collections import defaultdict
-from typing import List, Dict
+from typing import Dict
 
 from cdisc_rules_engine.interfaces import (
     TermsFactoryInterface,
     DataServiceInterface,
 )
 from cdisc_rules_engine.services import logger
-from cdisc_rules_engine.utilities.utils import get_dictionary_path
+from cdisc_rules_engine.utilities.utils import get_dictionary_path, decode_line
 from .atc_classification import AtcClassification
 from .atc_text import AtcText
 from .base_whodrug_term import BaseWhoDrugTerm
@@ -28,7 +28,9 @@ class WhoDrugTermsFactory(TermsFactoryInterface):
             WhodrugFileNames.INA_FILE_NAME.value: AtcText,
         }
 
-    def install_terms(self, directory_path: str) -> Dict[str, List[BaseWhoDrugTerm]]:
+    def install_terms(
+        self, directory_path: str
+    ) -> Dict[str, Dict[str, BaseWhoDrugTerm]]:
         """
         Accepts directory path and creates
         term records for each line.
@@ -49,13 +51,12 @@ class WhoDrugTermsFactory(TermsFactoryInterface):
                 f"Check that all of ({files_required}) exist"
             )
 
-        code_to_term_map = defaultdict(list)
+        code_to_term_map = defaultdict(dict)
         for dictionary_filename in self.__file_name_model_map:
             file_path: str = get_dictionary_path(directory_path, dictionary_filename)
             self.__create_term_objects_from_file(
                 code_to_term_map, dictionary_filename, file_path
             )
-
         return code_to_term_map
 
     def __create_term_objects_from_file(
@@ -67,9 +68,10 @@ class WhoDrugTermsFactory(TermsFactoryInterface):
         """
         model_class: BaseWhoDrugTerm = self.__file_name_model_map[dictionary_filename]
 
-        # open a file
         with self.__data_service.read_data(file_path) as file:
             # create a term object for each line and append it to the mapping
-            for line in file:
-                term_obj: BaseWhoDrugTerm = model_class.from_txt_line(line)
-                code_to_term_map[term_obj.type].append(term_obj)
+            for bytes_line in file:
+                term_obj: BaseWhoDrugTerm = model_class.from_txt_line(
+                    decode_line(bytes_line)
+                )
+                code_to_term_map[term_obj.type][term_obj.get_identifier()] = term_obj

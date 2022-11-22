@@ -1,15 +1,20 @@
 import logging
 from datetime import datetime
-from typing import List, TextIO
-from cdisc_rules_engine.models.validation_args import Validation_args
-from cdisc_rules_engine.utilities.excel_writer import excel_workbook_to_stream
+from typing import BinaryIO, List, Optional, Iterable
+
 from openpyxl import Workbook
+from openpyxl.styles import Alignment
+
+from cdisc_rules_engine.enums.report_types import ReportTypes
 from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
-from cdisc_rules_engine.utilities.excel_writer import (
+from cdisc_rules_engine.models.validation_args import Validation_args
+
+from .base_report import BaseReport
+from .excel_writer import (
     excel_open_workbook,
     excel_update_worksheet,
+    excel_workbook_to_stream,
 )
-from cdisc_rules_engine.utilities.base_report import BaseReport
 
 
 class ExcelReport(BaseReport):
@@ -19,17 +24,24 @@ class ExcelReport(BaseReport):
 
     def __init__(
         self,
-        data_path: str,
+        dataset_paths: Iterable[str],
         validation_results: List[RuleValidationResult],
         elapsed_time: float,
         args: Validation_args,
-        template: TextIO,
+        template: Optional[BinaryIO] = None,
     ):
-        super().__init__(data_path, validation_results, elapsed_time, args)
-        self._template = template
+        super().__init__(
+            dataset_paths, validation_results, elapsed_time, args, template
+        )
         self._item_type = "list"
 
-    def get_export(self, define_version, cdiscCt, standard, version) -> Workbook:
+    @property
+    def _file_format(self):
+        return ReportTypes.XLSX.value.lower()
+
+    def get_export(
+        self, define_version, cdiscCt, standard, version, **kwargs
+    ) -> Workbook:
         wb = excel_open_workbook(self._template.read())
         summary_data = self.get_summary_data()
         detailed_data = self.get_detailed_data()
@@ -39,7 +51,8 @@ class ExcelReport(BaseReport):
         excel_update_worksheet(
             wb["Rules Report"], rules_report_data, dict(wrap_text=True)
         )
-        wb["Conformance Details"]["B2"] = self._data_path
+        wb["Conformance Details"]["B2"] = ",\n".join(self._dataset_paths[:5])
+        wb["Conformance Details"]["B2"].alignment = Alignment(wrapText=True)
         # write conformance data
         wb["Conformance Details"]["B3"] = (
             datetime.now().replace(microsecond=0).isoformat()
@@ -53,7 +66,6 @@ class ExcelReport(BaseReport):
         return wb
 
     def write_report(self):
-        output_name = self._args.output + "." + self._args.output_format.lower()
         logger = logging.getLogger("validator")
         try:
             report_data = self.get_export(
@@ -62,7 +74,7 @@ class ExcelReport(BaseReport):
                 self._args.standard,
                 self._args.version.replace("-", "."),
             )
-            with open(output_name, "wb") as f:
+            with open(self._output_name, "wb") as f:
                 f.write(excel_workbook_to_stream(report_data))
         except Exception as e:
             logger.error(e)

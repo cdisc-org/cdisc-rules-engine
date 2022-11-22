@@ -1,10 +1,13 @@
-from typing import List
-from cdisc_rules_engine.interfaces import DataServiceInterface
+from typing import Dict, List, Type, Iterable
+
 from cdisc_rules_engine.enums.report_types import ReportTypes
+from cdisc_rules_engine.interfaces import DataServiceInterface
 from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
 from cdisc_rules_engine.models.validation_args import Validation_args
-from cdisc_rules_engine.utilities.excel_report import ExcelReport
-from cdisc_rules_engine.utilities.json_report import JsonReport
+
+from .base_report import BaseReport
+from .excel_report import ExcelReport
+from .json_report import JsonReport
 
 
 class ReportFactory:
@@ -22,33 +25,33 @@ class ReportFactory:
 
     def __init__(
         self,
-        data_path: str,
+        dataset_paths: Iterable[str],
         results: List[RuleValidationResult],
         elapsed_time: float,
         args: Validation_args,
         data_service: DataServiceInterface,
     ):
-        self._data_path = data_path
+        self._dataset_paths = dataset_paths
         self._results = results
         self._elapsed_time = elapsed_time
         self._args = args
         self._data_service = data_service
+        self._output_type_service_map: Dict[str, Type[BaseReport]] = {
+            ReportTypes.XLSX.value: ExcelReport,
+            ReportTypes.JSON.value: JsonReport,
+        }
 
-    def get_report_service(self):
-        output_type = self._args.output_format.upper()
-        if output_type == ReportTypes.XLSX.value:
-            template = self._data_service.read_data(self._args.report_template, "rb")
-            return ExcelReport(
-                self._data_path,
+    def get_report_services(self) -> List[BaseReport]:
+        services: List[BaseReport] = []
+        for output_type in self._args.output_format:
+            output_type: str = output_type.upper()
+            service_class: Type[BaseReport] = self._output_type_service_map[output_type]
+            instance: BaseReport = service_class(
+                self._dataset_paths,
                 self._results,
                 self._elapsed_time,
                 self._args,
-                template,
+                self._data_service.read_data(self._args.report_template),
             )
-        elif output_type == ReportTypes.JSON.value:
-            return JsonReport(
-                self._data_path,
-                self._results,
-                self._elapsed_time,
-                self._args,
-            )
+            services.append(instance)
+        return services

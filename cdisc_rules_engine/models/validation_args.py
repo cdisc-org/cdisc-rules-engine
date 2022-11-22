@@ -5,7 +5,7 @@ Validation_args = namedtuple(
     [
         "cache",
         "pool_size",
-        "data",
+        "dataset_paths",
         "log_level",
         "report_template",
         "standard",
@@ -19,5 +19,6 @@ Validation_args = namedtuple(
         "meddra",
         "disable_progressbar",
         "rules",
+        "verbose_output",
     ],
 )

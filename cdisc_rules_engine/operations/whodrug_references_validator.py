@@ -17,7 +17,7 @@ class WhodrugReferencesValidator(BaseOperation):
 
         terms: dict = self.cache.get(self.params.whodrug_path)
         valid_codes: Generator = (
-            term.code for term in terms[WhodrugRecordTypes.ATC_TEXT.value]
+            term.code for term in terms[WhodrugRecordTypes.ATC_TEXT.value].values()
         )
         result = self.params.dataframe[self.params.target].isin(valid_codes)
         return result

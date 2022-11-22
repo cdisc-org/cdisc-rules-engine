@@ -1,7 +1,8 @@
 from cdisc_rules_engine.models.dictionaries.meddra.terms.term_types import TermTypes
+from cdisc_rules_engine.interfaces import DictionaryTermInterface
 
 
-class MedDRATerm:
+class MedDRATerm(DictionaryTermInterface):
     def __init__(self, record_params):
         self.code = record_params.get("code")
         self.term = record_params.get("term")
@@ -19,14 +20,17 @@ class MedDRATerm:
         self.parent_code = parent.code
         self.parent_term = parent.term
 
+    def get_identifier(self):
+        return self.code
+
     @staticmethod
     def get_code_hierarchies(terms: dict) -> set:
-        lowest_level_terms = terms[TermTypes.LLT.value]
+        lowest_level_terms = terms[TermTypes.LLT.value].values()
         return set([term.code_hierarchy for term in lowest_level_terms])
 
     @staticmethod
     def get_term_hierarchies(terms: dict) -> set:
-        lowest_level_terms = terms[TermTypes.LLT.value]
+        lowest_level_terms = terms[TermTypes.LLT.value].values()
         return set([term.term_hierarchy for term in lowest_level_terms])
 
     @staticmethod
@@ -34,6 +38,6 @@ class MedDRATerm:
         code_term_pairs = {}
         for term_type in terms:
             code_term_pairs[term_type] = set(
-                [(item.code, item.term) for item in terms[term_type]]
+                [(item.code, item.term) for item in terms[term_type].values()]
             )
         return code_term_pairs
