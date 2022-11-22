@@ -51,7 +51,7 @@ class ExcelReport(BaseReport):
         excel_update_worksheet(
             wb["Rules Report"], rules_report_data, dict(wrap_text=True)
         )
-        wb["Conformance Details"]["B2"] = ",\n".join(self._dataset_paths)
+        wb["Conformance Details"]["B2"] = ",\n".join(self._dataset_paths[:5])
         wb["Conformance Details"]["B2"].alignment = Alignment(wrapText=True)
         # write conformance data
         wb["Conformance Details"]["B3"] = (
