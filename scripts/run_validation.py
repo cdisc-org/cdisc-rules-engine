@@ -41,7 +41,9 @@ class CacheManager(SyncManager):
 
 
 def validate_single_rule(cache, path, datasets, args, rule: dict = None):
+    # print("validate_single_rule = ", rule)
     set_log_level(args.log_level)
+    # 2022-11-15: args also contains "input_format"
     rule["conditions"] = ConditionCompositeFactory.get_condition_composite(
         rule["conditions"]
     )
@@ -49,7 +51,9 @@ def validate_single_rule(cache, path, datasets, args, rule: dict = None):
     engine = RulesEngine(
         cache=cache,
         standard=args.standard,
+        # standard=args.standard.strip(),
         standard_version=args.version.replace(".", "-"),
+        # standard_version=args.version.replace(".", "-").strip(),
         ct_package=args.controlled_terminology_package,
         meddra_path=args.meddra,
         whodrug_path=args.whodrug,
@@ -61,6 +65,7 @@ def validate_single_rule(cache, path, datasets, args, rule: dict = None):
         for dataset in datasets
     ]
     results = list(itertools.chain(*results))
+    # print("# of results for rule validation = ", len(results))
     return RuleValidationResult(rule, results)
 
 
@@ -101,7 +106,10 @@ def get_datasets(data_service: DataServiceInterface, data_path: str):
     datasets = []
     for data_file in data_files:
         dataset_name = f"{data_path}/{data_file}"
+        # Remark Jozef: it IS necessary that the metadata is read to obtain the domain and the filename
         metadata = data_service.get_dataset_metadata(dataset_name=dataset_name)
+        # print("run_validation.py: get_datasets: metadata domain = ", metadata["dataset_name"].iloc[0])
+        # print("run_validation.py: get_datasets: metadata filename = ", metadata["dataset_location"].iloc[0])
         datasets.append(
             {
                 "domain": metadata["dataset_name"].iloc[0],
@@ -137,13 +145,20 @@ def get_rules(cache: CacheServiceInterface, args) -> List[dict]:
         ]
         rules = cache.get_all(keys)
     else:
+        print(
+            f"No rules specified. Running all rules for {args.standard}"
+            + f" version {args.version}"
+        )
         engine_logger.warning(
             f"No rules specified. Running all rules for {args.standard}"
             + f" version {args.version}"
         )
+        print("Getting rules for standard = ", args.standard, "and version = ", args.version)
         rules = cache.get_all_by_prefix(
             get_rules_cache_key(args.standard, args.version.replace(".", "-"))
+            # get_rules_cache_key(args.standard.strip(), args.version.replace(".", "-").strip())
         )
+        # print("rules after get_all_by_prefix = ", len(rules))
     return rules
 
 
@@ -158,18 +173,30 @@ def run_validation(args: Validation_args):
     manager.start()
     shared_cache = get_cache_service(manager)
     engine_logger.info("Populating cache")
+    print("Populating cache")
+    # print("cache_path = ", cache_path)
     shared_cache = fill_cache_with_provided_data(shared_cache, cache_path)
-
+    # Testing only
+    # print("shared_cache = ", shared_cache)
+    # print("args = ", args)
+    #
+    # print("starting run_validation")
     # install dictionaries if needed
     fill_cache_with_dictionaries(shared_cache, args)
     rules = get_rules(shared_cache, args)
+    # print("# of rules from get_rules = ", len(rules))
     data_service = DataServiceFactory(config, shared_cache).get_data_service()
+    # print("data_service = ", data_service)
     datasets = get_datasets(data_service, data_path)
-
+    print("# of datasets found = ", len(datasets))
     start = time.time()
     results = []
     # run each rule in a separate process
     with Pool(args.pool_size) as pool:
+        # print("pool = ", pool)
+        # print("args.disable_progressbar = ", args.disable_progressbar)
+        # print("rules = ", rules)
+        print("# of rules found = ", len(rules))
         if args.disable_progressbar is True:
             for rule_result in pool.imap_unordered(
                 partial(validate_single_rule, shared_cache, data_path, datasets, args),

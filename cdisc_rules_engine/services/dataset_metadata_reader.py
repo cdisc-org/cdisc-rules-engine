@@ -29,6 +29,7 @@ class DatasetMetadataReader:
         dataset_container = xport.v56.loads(self._file_contents)
         dataset_id = next(iter(dataset_container))
         dataset = dataset_container.get(dataset_id)
+        print("DatasetMetadataReader - dataset = ", dataset)
         self._domain_name = self._extract_domain_name(dataset)
         self._metadata_container = {
             "variable_labels": list(dataset.contents.Label.values),

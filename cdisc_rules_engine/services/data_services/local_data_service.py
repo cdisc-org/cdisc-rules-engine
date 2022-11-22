@@ -20,10 +20,13 @@ from cdisc_rules_engine.utilities.utils import (
 )
 
 from .base_data_service import BaseDataService, cached_dataset
+from ..dataset_json_metadata_reader import DatasetJSONMetadataReader
 
 
 class LocalDataService(BaseDataService):
     _instance = None
+
+    use_json = True
 
     @classmethod
     def get_instance(
@@ -53,7 +56,9 @@ class LocalDataService(BaseDataService):
     @cached_dataset(DatasetTypes.CONTENTS.value)
     def get_dataset(self, dataset_name: str, **params) -> pandas.DataFrame:
         reader = self._reader_factory.get_service()
+        # print("local_data_service.py: get_dataset: reader = ", reader)
         df = reader.from_file(dataset_name)
+        # print("local_data_service.py: result df = ", df)
         self._replace_nans_in_numeric_cols_with_none(df)
         return df
 
@@ -61,12 +66,16 @@ class LocalDataService(BaseDataService):
     def get_dataset_metadata(
         self, dataset_name: str, size_unit: str = None, **params
     ) -> pandas.DataFrame:
+        # TESTING ONLY
+        # print("local_data_service.py: get_dataset_metadata: reader = ", self._reader_factory.get_service())
         """
         Gets metadata of a dataset and returns it as a DataFrame.
         """
         file_metadata, contents_metadata = self.__get_dataset_metadata(
             dataset_name, size_unit=size_unit, **params
         )
+
+        print("local_data_service.py - contents_metadata = ", contents_metadata)
         metadata_to_return: dict = {
             "dataset_size": [file_metadata["size"]],
             "dataset_location": [file_metadata["name"]],
@@ -168,6 +177,7 @@ class LocalDataService(BaseDataService):
             )
 
     def read_metadata(self, file_path: str) -> dict:
+        # print("local_data_service.py: reading metadata from file = ", file_path)
         file_size = os.path.getsize(file_path)
         file_metadata = {
             "path": file_path,
@@ -175,7 +185,11 @@ class LocalDataService(BaseDataService):
             "size": file_size,
         }
         with open(file_path, "rb") as f:
-            contents_metadata = DatasetMetadataReader(f.read()).read()
+            if not self.use_json:
+                contents_metadata = DatasetMetadataReader(f.read()).read()
+            # 2022-11-18: FOR USE WITH Dataset-JSON only
+            else:
+                contents_metadata = DatasetJSONMetadataReader(file_path).read()
 
         return {
             "file_metadata": file_metadata,
@@ -183,14 +197,17 @@ class LocalDataService(BaseDataService):
         }
 
     def read_data(self, file_path: str, read_mode: str = "r") -> TextIO:
+        print("reading data from file = ", file_path)
         return open(file_path, read_mode)
 
     def __get_dataset_metadata(self, dataset_name: str, **kwargs) -> Tuple[dict, dict]:
+        # print("reading metadata from dataset = ", dataset_name)
         """
         Internal method that gets dataset metadata
         and converts file size if needed.
         """
         metadata: dict = self.read_metadata(dataset_name)
+        # print("localdataservice.py: __get_dataset_metadata: metadata = ", metadata)
         file_metadata: dict = metadata["file_metadata"]
         size_unit: Optional[str] = kwargs.get("size_unit")
         if size_unit:  # convert file size from bytes to desired unit if needed

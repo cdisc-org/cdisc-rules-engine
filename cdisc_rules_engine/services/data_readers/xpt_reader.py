@@ -9,13 +9,16 @@ from cdisc_rules_engine.interfaces import (
 
 class XPTReader(DataReaderInterface):
     def read(self, data):
+        print("XPTReader reading")
         df = pd.read_sas(BytesIO(data), format="xport", encoding="utf-8")
         df = self._format_floats(df)
         return df
 
     def from_file(self, file_path):
+        print("XPTReader reading from file = ", file_path)
         df = pd.read_sas(file_path, format="xport", encoding="utf-8")
         df = self._format_floats(df)
+        print("# of records = ", len(df.index))
         return df
 
     def _format_floats(self, dataframe: pd.DataFrame) -> pd.DataFrame:

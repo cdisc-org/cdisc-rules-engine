@@ -104,6 +104,17 @@ def cli():
     help="Disable progress bar",
 )
 @click.option("--rules", "-r", multiple=True)
+# Addition Jozef
+@click.option(
+    "-if",
+    "--input-format",
+    default="xpt",
+    #type=click.Choice(ReportTypes.values(), case_sensitive=False),
+    help="Input file format",
+)
+
+
+###
 @click.pass_context
 def validate(
     ctx,
@@ -123,6 +134,7 @@ def validate(
     meddra,
     disable_progressbar,
     rules,
+    input_format,
 ):
     """
     Validate data using CDISC Rules Engine
@@ -134,6 +146,7 @@ def validate(
 
     # Validate conditional options
     logger = logging.getLogger("validator")
+    print("Starting CORE Validator")
     if raw_report is True and output_format.upper() != ReportTypes.JSON.value:
         logger.error("Flag --raw-report can be used only when --output-format is JSON")
         ctx.exit()
@@ -156,6 +169,7 @@ def validate(
             meddra,
             disable_progressbar,
             rules,
+            input_format,
         )
     )
 
