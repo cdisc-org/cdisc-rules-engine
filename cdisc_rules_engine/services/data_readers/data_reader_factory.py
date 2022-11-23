@@ -14,8 +14,6 @@ class DataReaderFactory(FactoryInterface):
         "json": DatasetJSONReader,
     }
 
-    use_json = True
-
     def __init__(self):
         self._default_service_name: str = "xpt"
 
@@ -35,11 +33,6 @@ class DataReaderFactory(FactoryInterface):
         """
         Get instance of service that matches searched implementation
         """
-        # print("get_service, name = ", name)
-        # print("Using JSON, use_json = ", self.use_json)
-        if name is None and self.use_json:
-            # name = "json"
-            print("service name changed into = ", name)
         service_name = name or self._default_service_name
         # print("service_name = ", service_name)
         if service_name in self._reader_map:

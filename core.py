@@ -105,13 +105,13 @@ def cli():
 )
 @click.option("--rules", "-r", multiple=True)
 # Addition Jozef
-@click.option(
-    "-if",
-    "--input-format",
-    default="xpt",
-    #type=click.Choice(ReportTypes.values(), case_sensitive=False),
-    help="Input file format",
-)
+# @click.option(
+#    "-if",
+#    "--input-format",
+#    default="xpt",
+#    #type=click.Choice(ReportTypes.values(), case_sensitive=False),
+#    help="Input file format",
+# )
 
 
 ###
@@ -134,7 +134,6 @@ def validate(
     meddra,
     disable_progressbar,
     rules,
-    input_format,
 ):
     """
     Validate data using CDISC Rules Engine
@@ -169,7 +168,6 @@ def validate(
             meddra,
             disable_progressbar,
             rules,
-            input_format,
         )
     )
 

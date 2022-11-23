@@ -2,6 +2,7 @@ import pandas as pd
 from pandas import DataFrame
 import json
 
+
 class DatasetJSONMetadataReader:
     """
     Responsibility of the class is to read metadata

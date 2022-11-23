@@ -43,7 +43,6 @@ class CacheManager(SyncManager):
 def validate_single_rule(cache, path, datasets, args, rule: dict = None):
     # print("validate_single_rule = ", rule)
     set_log_level(args.log_level)
-    # 2022-11-15: args also contains "input_format"
     rule["conditions"] = ConditionCompositeFactory.get_condition_composite(
         rule["conditions"]
     )
