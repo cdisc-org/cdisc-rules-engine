@@ -28,7 +28,7 @@ class ConsoleLogger(LoggerInterface):
             "error": logging.ERROR,
             "critical": logging.CRITICAL,
             "warn": logging.WARNING,
-            "verbose": 100,
+            "verbose": logging.CRITICAL + 1,
         }
         self._logger.setLevel(levels.get(level, logging.ERROR))
 
@@ -51,4 +51,4 @@ class ConsoleLogger(LoggerInterface):
         self._logger.critical(msg, *args, **kwargs)
 
     def log(self, msg: str, *args, **kwargs):
-        self._logger.log(100, msg, *args, **kwargs)
+        self._logger.log(logging.CRITICAL + 1, msg, *args, **kwargs)
