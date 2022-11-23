@@ -43,6 +43,7 @@ def validate_single_rule(cache, datasets, args, rule: dict = None):
     rule["conditions"] = ConditionCompositeFactory.get_condition_composite(
         rule["conditions"]
     )
+    set_log_level(args)
     # call rule engine
     engine = RulesEngine(
         cache=cache,
@@ -118,12 +119,13 @@ def get_datasets(
 
 
 def set_log_level(args):
-    if args.verbose_output:
-        engine_logger.setLevel("verbose")
-    elif args.log_level.lower() == "disabled":
+    if args.log_level.lower() == "disabled":
         engine_logger.disabled = True
     else:
         engine_logger.setLevel(args.log_level.lower())
+    if args.verbose_output:
+        engine_logger.disabled = False
+        engine_logger.setLevel("verbose")
 
 
 def get_cache_service(manager):
