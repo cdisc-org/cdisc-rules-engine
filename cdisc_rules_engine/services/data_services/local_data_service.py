@@ -78,7 +78,7 @@ class LocalDataService(BaseDataService):
             dataset_name, size_unit=size_unit, **params
         )
 
-        print("local_data_service.py - contents_metadata = ", contents_metadata)
+        # print("local_data_service.py - contents_metadata = ", contents_metadata)
         metadata_to_return: dict = {
             "dataset_size": [file_metadata["size"]],
             "dataset_location": [file_metadata["name"]],
@@ -182,14 +182,18 @@ class LocalDataService(BaseDataService):
     def read_metadata(self, file_path: str) -> dict:
         # print("local_data_service.py: reading metadata from file = ", file_path)
         file_size = os.path.getsize(file_path)
+        file_name = extract_file_name_from_path_string(file_path)
         file_metadata = {
             "path": file_path,
             "name": extract_file_name_from_path_string(file_path),
             "size": file_size,
         }
+        # Addition/Correction 2022-11-24
         with open(file_path, "rb") as f:
-            contents_metadata = DatasetJSONMetadataReader(file_path).read()
-
+            if file_name.endswith(".json"):
+                contents_metadata = DatasetJSONMetadataReader(file_path).read()
+            else:
+                contents_metadata = DatasetMetadataReader(f.read()).read()
         return {
             "file_metadata": file_metadata,
             "contents_metadata": contents_metadata,
