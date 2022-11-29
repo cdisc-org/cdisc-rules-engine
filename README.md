@@ -69,6 +69,7 @@ To validate a folder using rules for SDTM-IG version 3.4 use the following comma
 #### Additional Core Commands
 
 * update-cache - update locally stored cache data (Requires an environment variable - `CDISC_LIBRARY_API_KEY`)
+
     `python core.py update-cache`
 
 * list-rules - list rules available in the cache
