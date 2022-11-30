@@ -17,9 +17,10 @@ class DatasetMetadataSerializer(BaseSerializer):
     def data(self) -> dict:
         data = {}
         for metadata_obj in self.__metadata:
-            data[metadata_obj.filename] = {
+            data[metadata_obj.full_path] = {
                 "domain": metadata_obj.domain_name,
                 "filename": metadata_obj.filename,
+                "full_path": metadata_obj.full_path,
                 "size": metadata_obj.size,
                 "label": metadata_obj.label,
                 "modification_date": metadata_obj.modification_date,
@@ -35,6 +36,7 @@ class DatasetMetadataSerializer(BaseSerializer):
                 and isinstance(metadata_obj.label, str)
                 and isinstance(metadata_obj.modification_date, str)
                 and isinstance(metadata_obj.filename, str)
+                and isinstance(metadata_obj.full_path, str)
                 and (
                     isinstance(metadata_obj.size, int)
                     or isinstance(metadata_obj.size, float)
