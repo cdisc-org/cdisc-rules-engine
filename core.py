@@ -328,7 +328,25 @@ def list_ds_metadata(ctx: click.Context, dataset_path: Tuple[str]):
     Input:
         core.py list-ds-metadata -dp=path_1 -dp=path_2 -dp=path_3 ...
     Output:
-        TODO to be defined
+        [
+           {
+              "domain":"AE",
+              "filename":"ae.xpt",
+              "full_path":"/Users/Aleksei_Furmenkov/PycharmProjects/cdisc-rules-engine/resources/data/ae.xpt",
+              "size":"38000",
+              "label":"Adverse Events",
+              "modification_date":"2020-08-21T09:14:26"
+           },
+           {
+              "domain":"EX",
+              "filename":"ex.xpt",
+              "full_path":"/Users/Aleksei_Furmenkov/PycharmProjects/cdisc-rules-engine/resources/data/ex.xpt",
+              "size":"78050",
+              "label":"Exposure",
+              "modification_date":"2021-09-17T09:23:22"
+           },
+           ...
+        ]
     """
     print(json.dumps(list_dataset_metadata(dataset_path), indent=4))
 

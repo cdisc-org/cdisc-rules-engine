@@ -14,17 +14,19 @@ class DatasetMetadataSerializer(BaseSerializer):
             )
 
     @property
-    def data(self) -> dict:
-        data = {}
+    def data(self) -> List[dict]:
+        data = []
         for metadata_obj in self.__metadata:
-            data[metadata_obj.full_path] = {
-                "domain": metadata_obj.domain_name,
-                "filename": metadata_obj.filename,
-                "full_path": metadata_obj.full_path,
-                "size": metadata_obj.size,
-                "label": metadata_obj.label,
-                "modification_date": metadata_obj.modification_date,
-            }
+            data.append(
+                {
+                    "domain": metadata_obj.domain_name,
+                    "filename": metadata_obj.filename,
+                    "full_path": metadata_obj.full_path,
+                    "size": metadata_obj.size,
+                    "label": metadata_obj.label,
+                    "modification_date": metadata_obj.modification_date,
+                }
+            )
         return data
 
     @property
