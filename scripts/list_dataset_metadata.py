@@ -7,7 +7,7 @@ from cdisc_rules_engine.services.cache import CacheServiceFactory
 from cdisc_rules_engine.services.data_services import DataServiceFactory
 
 
-def list_dataset_metadata(dataset_paths: Tuple[str]) -> List[dict]:
+def list_dataset_metadata_handler(dataset_paths: Tuple[str]) -> List[dict]:
     """
     Lists metadata of given datasets like:
     [

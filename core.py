@@ -21,7 +21,7 @@ from cdisc_rules_engine.utilities.utils import (
     generate_report_filename,
     get_rules_cache_key,
 )
-from scripts.list_dataset_metadata import list_dataset_metadata
+from scripts.list_dataset_metadata import list_dataset_metadata_handler
 from scripts.run_validation import run_validation
 
 
@@ -321,7 +321,7 @@ def list_rule_sets(ctx: click.Context, cache_path: str):
     multiple=True,
 )
 @click.pass_context
-def list_ds_metadata(ctx: click.Context, dataset_path: Tuple[str]):
+def list_dataset_metadata(ctx: click.Context, dataset_path: Tuple[str]):
     """
     Command that lists metadata of given datasets.
 
@@ -348,14 +348,14 @@ def list_ds_metadata(ctx: click.Context, dataset_path: Tuple[str]):
            ...
         ]
     """
-    print(json.dumps(list_dataset_metadata(dataset_path), indent=4))
+    print(json.dumps(list_dataset_metadata_handler(dataset_path), indent=4))
 
 
 cli.add_command(validate)
 cli.add_command(update_cache)
 cli.add_command(list_rules)
 cli.add_command(list_rule_sets)
-cli.add_command(list_ds_metadata)
+cli.add_command(list_dataset_metadata)
 
 if __name__ == "__main__":
     freeze_support()
