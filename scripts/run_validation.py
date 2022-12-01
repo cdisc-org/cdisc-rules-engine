@@ -1,6 +1,7 @@
 import itertools
 import os
 import pickle
+import sys
 import time
 import click
 from functools import partial
@@ -37,6 +38,17 @@ cache is created at startup and provided to each process.
 
 class CacheManager(SyncManager):
     pass
+
+
+class PseudoTTY(object):
+    def __init__(self, underlying):
+        self.__underlying = underlying
+
+    def __getattr__(self, name):
+        return getattr(self.__underlying, name)
+
+    def isatty(self):
+        return True
 
 
 def validate_single_rule(cache, datasets, args, rule: dict = None):
@@ -187,9 +199,9 @@ def run_validation(args: Validation_args):
         else:
             with click.progressbar(
                 length=len(rules),
-                fill_char=click.style("\u2588", fg="green"),
-                empty_char=click.style("-", fg="white", dim=True),
                 show_eta=False,
+                file=PseudoTTY(sys.stdout),
+                bar_template="%(info)s",
             ) as bar:
                 for rule_result in pool.imap_unordered(
                     partial(validate_single_rule, shared_cache, datasets, args),
