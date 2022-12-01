@@ -21,7 +21,7 @@ from cdisc_rules_engine.utilities.utils import (
     generate_report_filename,
     get_rules_cache_key,
 )
-from scripts.list_dataset_metadata import list_dataset_metadata_handler
+from scripts.list_dataset_metadata_handler import list_dataset_metadata_handler
 from scripts.run_validation import run_validation
 
 
