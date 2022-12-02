@@ -3,7 +3,6 @@ import os
 import pickle
 import sys
 import time
-import click
 from functools import partial
 from multiprocessing import Pool
 from multiprocessing.managers import SyncManager
@@ -197,18 +196,16 @@ def run_validation(args: Validation_args):
             ):
                 results.append(rule_result)
         else:
-            with click.progressbar(
-                length=len(rules),
-                show_eta=False,
-                file=PseudoTTY(sys.stdout),
-                bar_template="%(info)s",
-            ) as bar:
-                for rule_result in pool.imap_unordered(
-                    partial(validate_single_rule, shared_cache, datasets, args),
-                    rules,
-                ):
-                    results.append(rule_result)
-                    bar.update(1)
+            counter = 0
+            rules_len = len(rules)
+            for rule_result in pool.imap_unordered(
+                partial(validate_single_rule, shared_cache, datasets, args),
+                rules,
+            ):
+                counter += 1
+                current_progress: int = int(counter / rules_len * 100)
+                sys.stdout.write(f"{current_progress}\n")
+                results.append(rule_result)
 
     # build all desired reports
     end = time.time()
