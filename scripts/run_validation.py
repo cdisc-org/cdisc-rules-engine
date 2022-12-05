@@ -205,6 +205,7 @@ def run_validation(args: Validation_args):
                 counter += 1
                 current_progress: int = int(counter / rules_len * 100)
                 sys.stdout.write(f"{current_progress}\n")
+                sys.stdout.flush()
                 results.append(rule_result)
 
     # build all desired reports
