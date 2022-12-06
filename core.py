@@ -128,6 +128,23 @@ def cli():
     default=False,
     help="Specify this option to print rules as they are completed",
 )
+@click.option(
+    "-p",
+    "--progress",
+    default="bar",
+    type=click.Choice(
+        [
+            "bar",
+            "percents",
+            "disabled",
+        ]
+    ),
+    help=(
+        "Defines how to display the validation progress. "
+        'By default a progress bar like "[████████████████████████████--------]   78%"'
+        "is printed."
+    ),
+)
 @click.pass_context
 def validate(
     ctx,
@@ -149,6 +166,7 @@ def validate(
     disable_progressbar: bool,
     rules: Tuple[str],
     verbose_output: bool,
+    progress: str,
 ):
     """
     Validate data using CDISC Rules Engine
