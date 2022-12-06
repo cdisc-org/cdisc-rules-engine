@@ -7,7 +7,11 @@ from functools import partial
 from multiprocessing import Pool
 from multiprocessing.managers import SyncManager
 from typing import List, Iterable
+
+import click
+
 from cdisc_rules_engine.config import config
+from cdisc_rules_engine.enums.progress_parameter_options import ProgressParameterOptions
 from cdisc_rules_engine.interfaces import CacheServiceInterface, DataServiceInterface
 from cdisc_rules_engine.models.dictionaries import DictionaryTypes
 from cdisc_rules_engine.models.dictionaries.get_dictionary_terms import (
@@ -37,17 +41,6 @@ cache is created at startup and provided to each process.
 
 class CacheManager(SyncManager):
     pass
-
-
-class PseudoTTY(object):
-    def __init__(self, underlying):
-        self.__underlying = underlying
-
-    def __getattr__(self, name):
-        return getattr(self.__underlying, name)
-
-    def isatty(self):
-        return True
 
 
 def validate_single_rule(cache, datasets, args, rule: dict = None):
@@ -189,13 +182,13 @@ def run_validation(args: Validation_args):
     results = []
     # run each rule in a separate process
     with Pool(args.pool_size) as pool:
-        if args.disable_progressbar is True:
+        if args.progress == ProgressParameterOptions.DISABLED.value:
             for rule_result in pool.imap_unordered(
                 partial(validate_single_rule, shared_cache, datasets, args),
                 rules,
             ):
                 results.append(rule_result)
-        else:
+        elif args.progress == ProgressParameterOptions.PERCENTS.value:
             counter = 0
             rules_len = len(rules)
             for rule_result in pool.imap_unordered(
@@ -207,6 +200,19 @@ def run_validation(args: Validation_args):
                 sys.stdout.write(f"{current_progress}\n")
                 sys.stdout.flush()
                 results.append(rule_result)
+        else:
+            with click.progressbar(
+                length=len(rules),
+                fill_char=click.style("\u2588", fg="green"),
+                empty_char=click.style("-", fg="white", dim=True),
+                show_eta=False,
+            ) as bar:
+                for rule_result in pool.imap_unordered(
+                    partial(validate_single_rule, shared_cache, datasets, args),
+                    rules,
+                ):
+                    results.append(rule_result)
+                    bar.update(1)
 
     # build all desired reports
     end = time.time()

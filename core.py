@@ -10,6 +10,7 @@ from datetime import datetime
 from multiprocessing import freeze_support
 
 from cdisc_rules_engine.constants.define_xml_constants import DEFINE_XML_FILE_NAME
+from cdisc_rules_engine.enums.progress_parameter_options import ProgressParameterOptions
 from cdisc_rules_engine.enums.report_types import ReportTypes
 from cdisc_rules_engine.models.validation_args import Validation_args
 from scripts.run_validation import run_validation
@@ -131,14 +132,8 @@ def cli():
 @click.option(
     "-p",
     "--progress",
-    default="bar",
-    type=click.Choice(
-        [
-            "bar",
-            "percents",
-            "disabled",
-        ]
-    ),
+    default=ProgressParameterOptions.BAR.value,
+    type=click.Choice(ProgressParameterOptions.values()),
     help=(
         "Defines how to display the validation progress. "
         'By default a progress bar like "[████████████████████████████--------]   78%"'
@@ -231,6 +226,7 @@ def validate(
             disable_progressbar,
             rules,
             verbose_output,
+            progress,
         )
     )
 

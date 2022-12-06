@@ -20,5 +20,6 @@ Validation_args = namedtuple(
         "disable_progressbar",
         "rules",
         "verbose_output",
+        "progress",
     ],
 )
