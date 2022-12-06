@@ -1,17 +1,13 @@
 import itertools
 import os
 import pickle
-import sys
 import time
 from functools import partial
 from multiprocessing import Pool
 from multiprocessing.managers import SyncManager
-from typing import List, Iterable
-
-import click
+from typing import List, Iterable, Callable
 
 from cdisc_rules_engine.config import config
-from cdisc_rules_engine.enums.progress_parameter_options import ProgressParameterOptions
 from cdisc_rules_engine.interfaces import CacheServiceInterface, DataServiceInterface
 from cdisc_rules_engine.models.dictionaries import DictionaryTypes
 from cdisc_rules_engine.models.dictionaries.get_dictionary_terms import (
@@ -30,6 +26,7 @@ from cdisc_rules_engine.services.data_services import (
     DataServiceFactory,
 )
 from cdisc_rules_engine.services.reporting import BaseReport, ReportFactory
+from cdisc_rules_engine.utilities.progress_displayers import get_progress_displayer
 from cdisc_rules_engine.utilities.utils import get_rules_cache_key
 
 """
@@ -182,37 +179,12 @@ def run_validation(args: Validation_args):
     results = []
     # run each rule in a separate process
     with Pool(args.pool_size) as pool:
-        if args.progress == ProgressParameterOptions.DISABLED.value:
-            for rule_result in pool.imap_unordered(
-                partial(validate_single_rule, shared_cache, datasets, args),
-                rules,
-            ):
-                results.append(rule_result)
-        elif args.progress == ProgressParameterOptions.PERCENTS.value:
-            counter = 0
-            rules_len = len(rules)
-            for rule_result in pool.imap_unordered(
-                partial(validate_single_rule, shared_cache, datasets, args),
-                rules,
-            ):
-                counter += 1
-                current_progress: int = int(counter / rules_len * 100)
-                sys.stdout.write(f"{current_progress}\n")
-                sys.stdout.flush()
-                results.append(rule_result)
-        else:
-            with click.progressbar(
-                length=len(rules),
-                fill_char=click.style("\u2588", fg="green"),
-                empty_char=click.style("-", fg="white", dim=True),
-                show_eta=False,
-            ) as bar:
-                for rule_result in pool.imap_unordered(
-                    partial(validate_single_rule, shared_cache, datasets, args),
-                    rules,
-                ):
-                    results.append(rule_result)
-                    bar.update(1)
+        validation_results: Iterable[RuleValidationResult] = pool.imap_unordered(
+            partial(validate_single_rule, shared_cache, datasets, args),
+            rules,
+        )
+        progress_handler: Callable = get_progress_displayer(args)
+        results = progress_handler(rules, validation_results, results)
 
     # build all desired reports
     end = time.time()
