@@ -1,26 +1,29 @@
 import asyncio
+import json
 import logging
 import os
-from typing import Tuple, Iterable
-
-import click
 import pickle
-import json
 from datetime import datetime
 from multiprocessing import freeze_support
+from typing import Iterable, Tuple
 
+import click
+
+from cdisc_rules_engine.config import config
 from cdisc_rules_engine.constants.define_xml_constants import DEFINE_XML_FILE_NAME
+from cdisc_rules_engine.enums.default_file_paths import DefaultFilePaths
 from cdisc_rules_engine.enums.progress_parameter_options import ProgressParameterOptions
 from cdisc_rules_engine.enums.report_types import ReportTypes
 from cdisc_rules_engine.models.validation_args import Validation_args
-from scripts.run_validation import run_validation
-from cdisc_rules_engine.utilities.utils import generate_report_filename
 from cdisc_rules_engine.services.cache.cache_populator_service import CachePopulator
-from cdisc_rules_engine.config import config
 from cdisc_rules_engine.services.cache.cache_service_factory import CacheServiceFactory
 from cdisc_rules_engine.services.cdisc_library_service import CDISCLibraryService
-from cdisc_rules_engine.utilities.utils import get_rules_cache_key
-from cdisc_rules_engine.enums.default_file_paths import DefaultFilePaths
+from cdisc_rules_engine.utilities.utils import (
+    generate_report_filename,
+    get_rules_cache_key,
+)
+from scripts.list_dataset_metadata_handler import list_dataset_metadata_handler
+from scripts.run_validation import run_validation
 
 
 @click.group()
@@ -315,10 +318,49 @@ def list_rule_sets(ctx: click.Context, cache_path: str):
             rule_sets.add(rule_set)
 
 
+@click.command()
+@click.option(
+    "-dp",
+    "--dataset-path",
+    required=True,
+    multiple=True,
+)
+@click.pass_context
+def list_dataset_metadata(ctx: click.Context, dataset_path: Tuple[str]):
+    """
+    Command that lists metadata of given datasets.
+
+    Input:
+        core.py list-ds-metadata -dp=path_1 -dp=path_2 -dp=path_3 ...
+    Output:
+        [
+           {
+              "domain":"AE",
+              "filename":"ae.xpt",
+              "full_path":"/Users/Aleksei_Furmenkov/PycharmProjects/cdisc-rules-engine/resources/data/ae.xpt",
+              "size":"38000",
+              "label":"Adverse Events",
+              "modification_date":"2020-08-21T09:14:26"
+           },
+           {
+              "domain":"EX",
+              "filename":"ex.xpt",
+              "full_path":"/Users/Aleksei_Furmenkov/PycharmProjects/cdisc-rules-engine/resources/data/ex.xpt",
+              "size":"78050",
+              "label":"Exposure",
+              "modification_date":"2021-09-17T09:23:22"
+           },
+           ...
+        ]
+    """
+    print(json.dumps(list_dataset_metadata_handler(dataset_path), indent=4))
+
+
 cli.add_command(validate)
 cli.add_command(update_cache)
 cli.add_command(list_rules)
 cli.add_command(list_rule_sets)
+cli.add_command(list_dataset_metadata)
 
 if __name__ == "__main__":
     freeze_support()
