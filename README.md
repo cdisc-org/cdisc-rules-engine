@@ -52,7 +52,6 @@ Run `core.py validate --help` to see the list of validation options.
                                   files
   --meddra TEXT                   Path to directory with MedDRA dictionary
                                   files
-  --disable-progressbar           Disable progress bar
   -r, --rules TEXT
   -vo, --verbose-output           Specify this option to print rules as they
                                   are completed
