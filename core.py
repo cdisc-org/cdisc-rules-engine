@@ -114,13 +114,6 @@ def cli():
 )
 @click.option("--whodrug", help="Path to directory with WHODrug dictionary files")
 @click.option("--meddra", help="Path to directory with MedDRA dictionary files")
-@click.option(
-    "--disable-progressbar",
-    is_flag=True,
-    default=False,
-    show_default=True,
-    help="Disable progress bar",
-)
 @click.option("--rules", "-r", multiple=True)
 @click.option(
     "-vo",
@@ -158,7 +151,6 @@ def validate(
     define_version: str,
     whodrug: str,
     meddra: str,
-    disable_progressbar: bool,
     rules: Tuple[str],
     verbose_output: bool,
     progress: str,
@@ -223,7 +215,6 @@ def validate(
             define_version,
             whodrug,
             meddra,
-            disable_progressbar,
             rules,
             verbose_output,
             progress,

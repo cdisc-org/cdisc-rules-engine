@@ -17,7 +17,6 @@ Validation_args = namedtuple(
         "define_version",
         "whodrug",
         "meddra",
-        "disable_progressbar",
         "rules",
         "verbose_output",
         "progress",
