@@ -12,8 +12,8 @@ assignees: ''
 - Fill in the following information
 
 **Links to related JIRA Tickets**
-- https://jira.cdisc.org/projects/CORERULES/issues/CORERULES-
-- https://jira.cdisc.org/projects/CORERULES/issues/CORERULES-
+- https://jira.cdisc.org/browse/CORERULES-
+- https://jira.cdisc.org/browse/CORERULES-
 
 **Rule Information**
 - **Standard**:
