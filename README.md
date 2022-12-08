@@ -23,7 +23,6 @@ From the root of the project run the following command:
 Clone the repository and run `core.py --help` to see the full list of commands.
 
 Run `core.py validate --help` to see the list of validation options.
-
 ```
   -ca, --cache TEXT               Relative path to cache files containing pre
                                   loaded metadata and rules
@@ -53,12 +52,15 @@ Run `core.py validate --help` to see the list of validation options.
                                   files
   --meddra TEXT                   Path to directory with MedDRA dictionary
                                   files
-  --disable-progressbar           Disable progress bar
   -r, --rules TEXT
   -vo, --verbose-output           Specify this option to print rules as they
                                   are completed
+  -p, --progress [verbose_output|disabled|percents|bar]
+                                  Defines how to display the validation
+                                  progress. By default a progress bar like
+                                  "[████████████████████████████--------]
+                                  78%"is printed.
   --help                          Show this message and exit.
-
 ```
 
 #### Validate folder

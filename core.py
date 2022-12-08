@@ -12,6 +12,7 @@ import click
 from cdisc_rules_engine.config import config
 from cdisc_rules_engine.constants.define_xml_constants import DEFINE_XML_FILE_NAME
 from cdisc_rules_engine.enums.default_file_paths import DefaultFilePaths
+from cdisc_rules_engine.enums.progress_parameter_options import ProgressParameterOptions
 from cdisc_rules_engine.enums.report_types import ReportTypes
 from cdisc_rules_engine.models.validation_args import Validation_args
 from cdisc_rules_engine.services.cache.cache_populator_service import CachePopulator
@@ -116,20 +117,17 @@ def cli():
 )
 @click.option("--whodrug", help="Path to directory with WHODrug dictionary files")
 @click.option("--meddra", help="Path to directory with MedDRA dictionary files")
-@click.option(
-    "--disable-progressbar",
-    is_flag=True,
-    default=False,
-    show_default=True,
-    help="Disable progress bar",
-)
 @click.option("--rules", "-r", multiple=True)
 @click.option(
-    "-vo",
-    "--verbose-output",
-    is_flag=True,
-    default=False,
-    help="Specify this option to print rules as they are completed",
+    "-p",
+    "--progress",
+    default=ProgressParameterOptions.BAR.value,
+    type=click.Choice(ProgressParameterOptions.values()),
+    help=(
+        "Defines how to display the validation progress. "
+        'By default a progress bar like "[████████████████████████████--------]   78%"'
+        "is printed."
+    ),
 )
 @click.pass_context
 def validate(
@@ -149,9 +147,8 @@ def validate(
     define_version: str,
     whodrug: str,
     meddra: str,
-    disable_progressbar: bool,
     rules: Tuple[str],
-    verbose_output: bool,
+    progress: str,
 ):
     """
     Validate data using CDISC Rules Engine
@@ -213,9 +210,8 @@ def validate(
             define_version,
             whodrug,
             meddra,
-            disable_progressbar,
             rules,
-            verbose_output,
+            progress,
         )
     )
 
