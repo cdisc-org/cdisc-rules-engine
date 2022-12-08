@@ -8,6 +8,7 @@ from multiprocessing.managers import SyncManager
 from typing import List, Iterable, Callable
 
 from cdisc_rules_engine.config import config
+from cdisc_rules_engine.enums.progress_parameter_options import ProgressParameterOptions
 from cdisc_rules_engine.interfaces import CacheServiceInterface, DataServiceInterface
 from cdisc_rules_engine.models.dictionaries import DictionaryTypes
 from cdisc_rules_engine.models.dictionaries.get_dictionary_terms import (
@@ -40,7 +41,7 @@ class CacheManager(SyncManager):
     pass
 
 
-def validate_single_rule(cache, datasets, args, rule: dict = None):
+def validate_single_rule(cache, datasets, args: Validation_args, rule: dict = None):
     rule["conditions"] = ConditionCompositeFactory.get_condition_composite(
         rule["conditions"]
     )
@@ -61,7 +62,7 @@ def validate_single_rule(cache, datasets, args, rule: dict = None):
         for dataset in datasets
     ]
     results = list(itertools.chain(*results))
-    if args.verbose_output:
+    if args.progress == ProgressParameterOptions.VERBOSE_OUTPUT.value:
         engine_logger.log(f"{rule['core_id']} validation complete")
     return RuleValidationResult(rule, results)
 
@@ -124,7 +125,7 @@ def set_log_level(args):
         engine_logger.disabled = True
     else:
         engine_logger.setLevel(args.log_level.lower())
-    if args.verbose_output:
+    if args.progress == ProgressParameterOptions.VERBOSE_OUTPUT.value:
         engine_logger.disabled = False
         engine_logger.setLevel("verbose")
 

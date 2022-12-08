@@ -119,13 +119,6 @@ def cli():
 @click.option("--meddra", help="Path to directory with MedDRA dictionary files")
 @click.option("--rules", "-r", multiple=True)
 @click.option(
-    "-vo",
-    "--verbose-output",
-    is_flag=True,
-    default=False,
-    help="Specify this option to print rules as they are completed",
-)
-@click.option(
     "-p",
     "--progress",
     default=ProgressParameterOptions.BAR.value,
@@ -155,7 +148,6 @@ def validate(
     whodrug: str,
     meddra: str,
     rules: Tuple[str],
-    verbose_output: bool,
     progress: str,
 ):
     """
@@ -219,7 +211,6 @@ def validate(
             whodrug,
             meddra,
             rules,
-            verbose_output,
             progress,
         )
     )

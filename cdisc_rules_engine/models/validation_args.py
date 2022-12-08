@@ -18,7 +18,6 @@ Validation_args = namedtuple(
         "whodrug",
         "meddra",
         "rules",
-        "verbose_output",
         "progress",
     ],
 )
