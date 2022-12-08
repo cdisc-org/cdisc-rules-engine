@@ -55,7 +55,7 @@ Run `core.py validate --help` to see the list of validation options.
   -r, --rules TEXT
   -vo, --verbose-output           Specify this option to print rules as they
                                   are completed
-  -p, --progress [bar|disabled|percents]
+  -p, --progress [verbose_output|disabled|percents|bar]
                                   Defines how to display the validation
                                   progress. By default a progress bar like
                                   "[████████████████████████████--------]
