@@ -90,16 +90,17 @@ class CachePopulator:
         Store cached ct pacakage metadata in
         codelist_term_maps.pkl in cache path directory
         """
-        cts = self.cache.get_by_regex(".*ct.*")
-        with open(file_path, "wb") as f:
-            pickle.dump(cts, f)
+        cts = self.cache.get_by_regex("*ct-*")
+        for ct in cts:
+            with open(f"{file_path}/{ct}.pkl", "wb") as f:
+                pickle.dump(cts.get(ct), f)
 
     def save_variable_codelist_maps_locally(self, file_path: str):
         """
         Store cached variable codelist metadata in
         variable_codelist_maps.pkl in cache path directory
         """
-        variable_codelist_maps = self.cache.get_by_regex(".*codelists.*")
+        variable_codelist_maps = self.cache.get_by_regex("*-codelists*")
         with open(file_path, "wb") as f:
             pickle.dump(variable_codelist_maps, f)
 

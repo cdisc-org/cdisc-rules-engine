@@ -74,5 +74,7 @@ def get_progress_displayer(args: Validation_args) -> Callable:
     handlers_map: Dict[str, Callable] = {
         ProgressParameterOptions.DISABLED.value: _disabled_progress_displayer,
         ProgressParameterOptions.PERCENTS.value: _percents_progress_displayer,
+        # Disable progress on verbose output
+        ProgressParameterOptions.VERBOSE_OUTPUT.value: _disabled_progress_displayer,
     }
     return handlers_map.get(args.progress, _bar_progress_displayer)
