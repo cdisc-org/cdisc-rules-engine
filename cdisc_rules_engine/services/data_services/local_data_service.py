@@ -59,9 +59,7 @@ class LocalDataService(BaseDataService):
             reader = self._reader_factory.get_service("json")
         else:
             reader = self._reader_factory.get_service()
-        # print("local_data_service.py: get_dataset: reader = ", reader)
         df = reader.from_file(dataset_name)
-        # print("local_data_service.py: result df = ", df)
         self._replace_nans_in_numeric_cols_with_none(df)
         return df
 
@@ -69,8 +67,6 @@ class LocalDataService(BaseDataService):
     def get_dataset_metadata(
         self, dataset_name: str, size_unit: str = None, **params
     ) -> pandas.DataFrame:
-        # TESTING ONLY
-        # print("local_data_service.py: get_dataset_metadata: reader = ", self._reader_factory.get_service())
         """
         Gets metadata of a dataset and returns it as a DataFrame.
         """
@@ -78,7 +74,6 @@ class LocalDataService(BaseDataService):
             dataset_name, size_unit=size_unit, **params
         )
 
-        # print("local_data_service.py - contents_metadata = ", contents_metadata)
         metadata_to_return: dict = {
             "dataset_size": [file_metadata["size"]],
             "dataset_location": [file_metadata["name"]],
@@ -180,7 +175,6 @@ class LocalDataService(BaseDataService):
             )
 
     def read_metadata(self, file_path: str) -> dict:
-        # print("local_data_service.py: reading metadata from file = ", file_path)
         file_size = os.path.getsize(file_path)
         file_name = extract_file_name_from_path_string(file_path)
         file_metadata = {
@@ -200,11 +194,9 @@ class LocalDataService(BaseDataService):
         }
 
     def read_data(self, file_path: str, read_mode: str = "r") -> TextIO:
-        print("reading data from file = ", file_path)
         return open(file_path, read_mode)
 
     def __get_dataset_metadata(self, dataset_name: str, **kwargs) -> Tuple[dict, dict]:
-        print("reading metadata from dataset = ", dataset_name)
         """
         Internal method that gets dataset metadata
         and converts file size if needed.

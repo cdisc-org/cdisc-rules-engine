@@ -20,7 +20,6 @@ class DatasetJSONMetadataReader:
         # 2022-11-18: For the moment, we need "variable_labels", "variable_names"
         # later, we may need "variable_name_to_label_map" and "variable_name_to_data_type_map"
         # and maybe (???) a few others
-        # print("dataset_json_metadata_reader: starting reading_from_file = ", self._file_path)
         f = open(self._file_path)
         # returns JSON object as
         # a dictionary
@@ -30,20 +29,17 @@ class DatasetJSONMetadataReader:
         if 'clinicalData' in data:
             start_data_string = "clinicalData"
         else:
-            # print("could not find clinicalData key in file - trying referenceData")
             start_data_string = "referenceData"
         # we need to know the OID of the "ItemGroupData"
-        # TODO: very probably, this can be much simpler ...
+        # Probably, this can be done in a simpler way
         item_group_data = data[start_data_string]["itemGroupData"]
         item_group_oids = item_group_data.keys()
         item_group_oid = list(item_group_oids)[0]
         dataset_name = data[start_data_string]["itemGroupData"][item_group_oid]["name"]
         dataset_label = data[start_data_string]["itemGroupData"][item_group_oid]["label"]
-        # TODO: fill variable_names and variable_labels
+        # fill variable_names and variable_labels
         variable_names = list()
         variable_labels = list()
-        print("DatasetJSONMetadataReader: dataset name = ", dataset_name)
-        print("DatasetJSONMetadataReader: dataset label = ", dataset_label)
         self._metadata_container = {
             # "variable_labels": list(dataset.contents.Label.values),
             "variable_labels": list,
@@ -67,7 +63,7 @@ class DatasetJSONMetadataReader:
         }
         return self._metadata_container
 
-    # TODO: copied from dataset_metadata_reader.py - Is this needed?
+    # Copied from dataset_metadata_reader.py - Is this needed?
     def _to_dict(self) -> dict:
         """
         This method is used to transform metadata_container

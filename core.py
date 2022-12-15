@@ -104,17 +104,6 @@ def cli():
     help="Disable progress bar",
 )
 @click.option("--rules", "-r", multiple=True)
-# Addition Jozef
-# @click.option(
-#    "-if",
-#    "--input-format",
-#    default="xpt",
-#    #type=click.Choice(ReportTypes.values(), case_sensitive=False),
-#    help="Input file format",
-# )
-
-
-###
 @click.pass_context
 def validate(
     ctx,

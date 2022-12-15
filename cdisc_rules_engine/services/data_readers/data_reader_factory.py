@@ -22,7 +22,6 @@ class DataReaderFactory(FactoryInterface):
         """
         Registers a new service in internal _service_map
         """
-        print("registering data reader service with name = ", name)
         if not name:
             raise ValueError("Service name must not be empty!")
         if not issubclass(service, DataReaderInterface):
@@ -34,7 +33,6 @@ class DataReaderFactory(FactoryInterface):
         Get instance of service that matches searched implementation
         """
         service_name = name or self._default_service_name
-        # print("service_name = ", service_name)
         if service_name in self._reader_map:
             return self._reader_map[service_name]()
         raise ValueError(
