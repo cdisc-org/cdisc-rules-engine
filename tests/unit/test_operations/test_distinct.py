@@ -25,8 +25,9 @@ def test_distinct(data, expected, operation_params: OperationParams):
     data_service = DataServiceFactory(config, cache).get_data_service()
     operation_params.dataframe = data
     operation_params.target = "values"
-    result = Distinct(operation_params, pd.DataFrame(), cache, data_service).execute()
+    result = Distinct(operation_params, data, cache, data_service).execute()
     assert operation_params.operation_id in result
+    assert len(result[operation_params.operation_id]) > 0
     for val in result[operation_params.operation_id]:
         assert val == expected
 

@@ -1,7 +1,5 @@
 from typing import List, Optional, Tuple
 
-import pandas as pd
-
 from cdisc_rules_engine.constants.classes import (
     DETECTABLE_CLASSES,
     GENERAL_OBSERVATIONS_CLASS,
@@ -43,7 +41,7 @@ class LibraryColumnOrder(BaseOperation):
         variable_names_list = [
             var["name"].replace("--", self.params.domain) for var in variables_metadata
         ]
-        return pd.Series([variable_names_list] * len(self.params.dataframe))
+        return variable_names_list
 
     def _get_variables_metadata_from_standard_model(
         self, dataset_class: str

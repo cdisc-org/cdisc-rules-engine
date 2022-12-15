@@ -35,9 +35,14 @@ class BaseOperation:
             return self._handle_grouped_result(result)
         elif isinstance(result, dict):
             return self._handle_dictionary_result(result)
+        elif isinstance(result, pd.Series):
+            self.evaluation_dataset[self.params.operation_id] = result
+            return self.evaluation_dataset
         else:
             # Handle single results
-            self.evaluation_dataset[self.params.operation_id] = result
+            self.evaluation_dataset[self.params.operation_id] = pd.Series(
+                [result] * len(self.evaluation_dataset)
+            )
             return self.evaluation_dataset
 
     def _handle_grouped_result(self, result):
