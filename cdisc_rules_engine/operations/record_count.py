@@ -15,4 +15,4 @@ class RecordCount(BaseOperation):
         dtype: int64
         """
         record_count: int = len(self.params.dataframe)
-        return pd.Series([record_count] * record_count)
+        return record_count

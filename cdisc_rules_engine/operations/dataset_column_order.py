@@ -1,5 +1,3 @@
-import pandas as pd
-
 from cdisc_rules_engine.operations.base_operation import BaseOperation
 
 
@@ -14,6 +12,4 @@ class DatasetColumnOrder(BaseOperation):
 
         Length of Series is equal to the length of given dataframe.
         """
-        return pd.Series(
-            [self.params.dataframe.columns.to_list()] * len(self.params.dataframe)
-        )
+        return self.params.dataframe.columns.to_list()

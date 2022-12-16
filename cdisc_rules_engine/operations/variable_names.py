@@ -22,4 +22,4 @@ class VariableNames(BaseOperation):
                     self.params.standard, self.params.standard_version
                 ).keys()
             )
-        return [variable_names] * len(self.evaluation_dataset)
+        return variable_names
