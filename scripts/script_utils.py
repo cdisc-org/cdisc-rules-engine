@@ -14,16 +14,22 @@ from cdisc_rules_engine.models.dictionaries.get_dictionary_terms import (
 from cdisc_rules_engine.utilities.utils import get_rules_cache_key
 
 
-def fill_cache_with_provided_data(cache, args):
-    cache_files = next(os.walk(args.cache_path), (None, None, []))[2]
+def fill_cache_with_provided_data(cache, cache_path: str, args):
+    cache_files = next(os.walk(cache_path), (None, None, []))[2]
     for file_name in cache_files:
-        if not args.controlled_terminology_package and "codelist" in file_name:
-            """
-            TODO: improve how we decide which codelists to load into memory
-                  by separating them into their own files
-            """
-            continue
-        with open(f"{args.cache_path}/{file_name}", "rb") as f:
+        if "ct-" in file_name:
+            ct_version = file_name.split(".")[0]
+            if (
+                args.controlled_terminology_package
+                and ct_version in args.controlled_terminology_package
+            ):
+                # Only load ct package corresponding to the provided ct
+                with open(f"{cache_path}/{file_name}", "rb") as f:
+                    data = pickle.load(f)
+                    cache.add(ct_version, data)
+            else:
+                continue
+        with open(f"{cache_path}/{file_name}", "rb") as f:
             data = pickle.load(f)
             cache.add_all(data)
     return cache
