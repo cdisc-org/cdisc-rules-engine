@@ -107,6 +107,35 @@ To validate a folder using rules for SDTM-IG version 3.4 use the following comma
   --help                          Show this message and exit.
 ```
 
+ EX: `python core.py test -s sdtmig -v 3-4 -dp <path to dataset json file> -r <path to rule json file> --meddra ./meddra/ --whodrug ./whodrug/`
+ Note: JSON dataset should match the format provided by the rule editor:
+ ```
+{
+    "datasets": [{
+      "filename": "cm.xpt",
+      "label": "Concomitant/Concurrent medications",
+      "domain": "CM",
+      "variables": [
+        {
+          "name": "STUDYID",
+          "label": "Study Identifier",
+          "type": "Char",
+          "length": 10
+        }
+      ],
+      "records": {
+        "STUDYID": [
+          "CDISC-TEST",
+          "CDISC-TEST",
+          "CDISC-TEST",
+          "CDISC-TEST"
+        ],
+      }
+    }
+  ]
+}
+ ```
+
 ### Creating an executable version
 
 **Linux**
