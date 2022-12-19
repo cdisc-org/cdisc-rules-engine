@@ -52,6 +52,7 @@ class InMemoryCacheService(CacheServiceInterface):
         return {k: self.cache[k] for k in self.cache.keys() if k.startswith(prefix)}
 
     def get_by_regex(self, regex: str) -> dict:
+        regex = regex.replace("*", ".*")
         return {k: self.cache[k] for k in self.cache.keys() if re.search(regex, k)}
 
     def exists(self, cache_key):

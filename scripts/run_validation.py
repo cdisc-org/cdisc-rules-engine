@@ -65,6 +65,63 @@ def validate_single_rule(cache, datasets, args: Validation_args, rule: dict = No
         engine_logger.log(f"{rule['core_id']} validation complete")
     return RuleValidationResult(rule, results)
 
+def fill_cache_with_provided_data(cache, cache_path: str, args):
+    cache_files = next(os.walk(cache_path), (None, None, []))[2]
+    for file_name in cache_files:
+        if "ct-" in file_name:
+            ct_version = file_name.split(".")[0]
+            if (
+                args.controlled_terminology_package
+                and ct_version in args.controlled_terminology_package
+            ):
+                # Only load ct package corresponding to the provided ct
+                with open(f"{cache_path}/{file_name}", "rb") as f:
+                    data = pickle.load(f)
+                    cache.add(ct_version, data)
+            else:
+                continue
+        with open(f"{cache_path}/{file_name}", "rb") as f:
+            data = pickle.load(f)
+            cache.add_all(data)
+    return cache
+
+
+def fill_cache_with_dictionaries(cache: CacheServiceInterface, args):
+    """
+    Extracts file contents from provided dictionaries files
+    and saves to cache (inmemory or redis).
+    """
+    if not args.meddra and not args.whodrug:
+        return
+
+    data_service = DataServiceFactory(config, cache).get_data_service()
+
+    dictionary_type_to_path_map: dict = {
+        DictionaryTypes.MEDDRA: args.meddra,
+        DictionaryTypes.WHODRUG: args.whodrug,
+    }
+    for dictionary_type, dictionary_path in dictionary_type_to_path_map.items():
+        if not dictionary_path:
+            continue
+        terms = extract_dictionary_terms(data_service, dictionary_type, dictionary_path)
+        cache.add(dictionary_path, terms)
+
+
+def get_datasets(
+    data_service: DataServiceInterface, dataset_paths: Iterable[str]
+) -> List[dict]:
+    datasets = []
+    for dataset_path in dataset_paths:
+        metadata = data_service.get_dataset_metadata(dataset_name=dataset_path)
+        datasets.append(
+            {
+                "domain": metadata["dataset_name"].iloc[0],
+                "filename": metadata["dataset_location"].iloc[0],
+                "full_path": dataset_path,
+            }
+        )
+
+    return datasets
 
 def set_log_level(args):
     if args.log_level.lower() == "disabled":

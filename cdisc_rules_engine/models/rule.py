@@ -41,7 +41,7 @@ class Rule:
                 "author": "CDISC",
                 "reference": rule_metadata.get("References"),
                 "sensitivity": rule_metadata.get("Sensitivity"),
-                "severity": rule_metadata.get("Severity").lower(),
+                "severity": rule_metadata.get("Severity", "").lower(),
                 "description": rule_metadata.get("Description"),
                 "authority": rule_metadata.get("Authority"),
                 "standards": rule_metadata.get("Scopes", {}).get("Standards"),
