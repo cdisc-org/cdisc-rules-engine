@@ -242,9 +242,7 @@ def update_cache(ctx: click.Context, cache_path: str, apikey: str):
     cache_populator.save_rules_locally(
         f"{cache_path}/{DefaultFilePaths.RULES_CACHE_FILE.value}"
     )
-    cache_populator.save_ct_packages_locally(
-        f"{cache_path}/{DefaultFilePaths.CODELIST_TERM_MAPS_CACHE_FILE.value}"
-    )
+    cache_populator.save_ct_packages_locally(f"{cache_path}")
     cache_populator.save_standards_metadata_locally(
         f"{cache_path}/{DefaultFilePaths.STANDARD_DETAILS_CACHE_FILE.value}"
     )
