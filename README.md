@@ -86,6 +86,27 @@ To validate a folder using rules for SDTM-IG version 3.4 use the following comma
 * list-rule-sets - lists all standards and versions for which rules are available:
     `python core.py list-rule-sets`
 
+* test - Test authored rule given dataset in json format
+  ```
+  -ca, --cache TEXT               Relative path to cache files containing pre
+                                  loaded metadata and rules
+  -dp, --dataset-path TEXT        Absolute path to dataset file
+  -s, --standard TEXT             CDISC standard to validate against
+                                  [required]
+  -v, --version TEXT              Standard version to validate against
+                                  [required]
+  -ct, --controlled-terminology-package TEXT
+                                  Controlled terminology package to validate
+                                  against, can provide more than one
+  -dv, --define-version TEXT      Define-XML version used for validation
+  --whodrug TEXT                  Path to directory with WHODrug dictionary
+                                  files
+  --meddra TEXT                   Path to directory with MedDRA dictionary
+                                  files
+  -r, --rule TEXT                 Path to rule json file.
+  --help                          Show this message and exit.
+```
+
 ### Creating an executable version
 
 **Linux**
