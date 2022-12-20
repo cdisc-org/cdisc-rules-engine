@@ -20,14 +20,17 @@ from cdisc_rules_engine.services.cache.cache_service_factory import CacheService
                         "2022-05-20T13:44",
                         "2022-05-20T13:44",
                         None,
+                        "2022-05-19T13:44",
                     ]
                 }
             ),
-            [4, 32, 1, 13, 0, 0],
+            [4, 32, 1, 13, "NaN", "NaN", -1],
         ),
     ],
 )
-def test_minimum(data, expected, mock_data_service, operation_params: OperationParams):
+def test_day_data_calculation(
+    data, expected, mock_data_service, operation_params: OperationParams
+):
     config = ConfigService()
     cache = CacheServiceFactory(config).get_cache_service()
     datasets_map = {
@@ -39,6 +42,7 @@ def test_minimum(data, expected, mock_data_service, operation_params: OperationP
                     "1997-07-16T19:20",
                     "2022-05-08T13:44",
                     "TEST",
+                    "2022-05-20T13:44",
                     "2022-05-20T13:44",
                 ]
             }
@@ -56,7 +60,6 @@ def test_minimum(data, expected, mock_data_service, operation_params: OperationP
     result = DayDataValidator(
         operation_params, pd.DataFrame(), cache, mock_data_service
     ).execute()
-    print(result)
     assert operation_params.operation_id in result
     for i, val in enumerate(result[operation_params.operation_id]):
         assert val == expected[i]

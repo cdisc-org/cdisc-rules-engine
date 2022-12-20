@@ -145,8 +145,11 @@ def test_get_summary_data():
 
 def test_get_export():
     with open(test_report_template, "rb") as f:
+        mock_args = MagicMock()
+        mock_args.meddra = "test"
+        mock_args.whodrug = "test"
         report: ExcelReport = ExcelReport(
-            ["test"], mock_validation_results, 10.1, MagicMock(), f
+            ["test"], mock_validation_results, 10.1, mock_args, f
         )
         cdiscCt = ["sdtmct-03-2021"]
         wb = report.get_export(

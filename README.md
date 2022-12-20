@@ -86,6 +86,56 @@ To validate a folder using rules for SDTM-IG version 3.4 use the following comma
 * list-rule-sets - lists all standards and versions for which rules are available:
     `python core.py list-rule-sets`
 
+* test - Test authored rule given dataset in json format
+  ```
+  -ca, --cache TEXT               Relative path to cache files containing pre
+                                  loaded metadata and rules
+  -dp, --dataset-path TEXT        Absolute path to dataset file
+  -s, --standard TEXT             CDISC standard to validate against
+                                  [required]
+  -v, --version TEXT              Standard version to validate against
+                                  [required]
+  -ct, --controlled-terminology-package TEXT
+                                  Controlled terminology package to validate
+                                  against, can provide more than one
+  -dv, --define-version TEXT      Define-XML version used for validation
+  --whodrug TEXT                  Path to directory with WHODrug dictionary
+                                  files
+  --meddra TEXT                   Path to directory with MedDRA dictionary
+                                  files
+  -r, --rule TEXT                 Path to rule json file.
+  --help                          Show this message and exit.
+```
+
+ EX: `python core.py test -s sdtmig -v 3-4 -dp <path to dataset json file> -r <path to rule json file> --meddra ./meddra/ --whodrug ./whodrug/`
+ Note: JSON dataset should match the format provided by the rule editor:
+ ```
+{
+    "datasets": [{
+      "filename": "cm.xpt",
+      "label": "Concomitant/Concurrent medications",
+      "domain": "CM",
+      "variables": [
+        {
+          "name": "STUDYID",
+          "label": "Study Identifier",
+          "type": "Char",
+          "length": 10
+        }
+      ],
+      "records": {
+        "STUDYID": [
+          "CDISC-TEST",
+          "CDISC-TEST",
+          "CDISC-TEST",
+          "CDISC-TEST"
+        ],
+      }
+    }
+  ]
+}
+ ```
+
 ### Creating an executable version
 
 **Linux**

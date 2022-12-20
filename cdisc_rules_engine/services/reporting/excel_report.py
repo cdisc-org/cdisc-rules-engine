@@ -63,6 +63,8 @@ class ExcelReport(BaseReport):
         wb["Conformance Details"]["B9"] = f"V{version}"
         wb["Conformance Details"]["B10"] = ", ".join(cdiscCt)
         wb["Conformance Details"]["B11"] = define_version
+        wb["Conformance Details"]["B14"] = self._args.meddra
+        wb["Conformance Details"]["B15"] = self._args.whodrug
         return wb
 
     def write_report(self):

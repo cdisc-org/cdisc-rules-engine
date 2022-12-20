@@ -15,6 +15,9 @@ from cdisc_rules_engine.enums.default_file_paths import DefaultFilePaths
 from cdisc_rules_engine.enums.progress_parameter_options import ProgressParameterOptions
 from cdisc_rules_engine.enums.report_types import ReportTypes
 from cdisc_rules_engine.models.validation_args import Validation_args
+from cdisc_rules_engine.models.test_args import TestArgs
+from scripts.run_validation import run_validation
+from scripts.test_rule import test as test_rule
 from cdisc_rules_engine.services.cache.cache_populator_service import CachePopulator
 from cdisc_rules_engine.services.cache.cache_service_factory import CacheServiceFactory
 from cdisc_rules_engine.services.cdisc_library_service import CDISCLibraryService
@@ -23,7 +26,6 @@ from cdisc_rules_engine.utilities.utils import (
     get_rules_cache_key,
 )
 from scripts.list_dataset_metadata_handler import list_dataset_metadata_handler
-from scripts.run_validation import run_validation
 
 
 @click.group()
@@ -292,6 +294,75 @@ def list_rules(ctx: click.Context, cache_path: str, standard: str, version: str)
     default=DefaultFilePaths.CACHE.value,
     help="Relative path to cache files containing pre loaded metadata and rules",
 )
+@click.option(
+    "-dp",
+    "--dataset-path",
+    required=True,
+    help="Absolute path to dataset file",
+)
+@click.option(
+    "-r",
+    "--rule",
+    required=True,
+    help="Absolute path to rule file",
+)
+@click.option("--whodrug", help="Path to directory with WHODrug dictionary files")
+@click.option("--meddra", help="Path to directory with MedDRA dictionary files")
+@click.option(
+    "-s", "--standard", required=False, help="CDISC standard to get rules for"
+)
+@click.option(
+    "-v", "--version", required=False, help="Standard version to get rules for"
+)
+@click.option(
+    "-ct",
+    "--controlled-terminology-package",
+    multiple=True,
+    help=(
+        "Controlled terminology package to validate against, "
+        "can provide more than one"
+    ),
+)
+@click.option(
+    "-dv",
+    "--define-version",
+    default="2.1",
+    help="Define-XML version used for validation",
+)
+@click.pass_context
+def test(
+    ctx,
+    cache_path: str,
+    dataset_path: Tuple[str],
+    standard: str,
+    version: str,
+    controlled_terminology_package: Tuple[str],
+    define_version: str,
+    whodrug: str,
+    meddra: str,
+    rule: str,
+):
+    args = TestArgs(
+        cache_path,
+        dataset_path,
+        rule,
+        standard,
+        version,
+        whodrug,
+        meddra,
+        controlled_terminology_package,
+        define_version,
+    )
+    test_rule(args)
+
+
+@click.command()
+@click.option(
+    "-c",
+    "--cache_path",
+    default=DefaultFilePaths.CACHE.value,
+    help="Relative path to cache files containing pre loaded metadata and rules",
+)
 @click.pass_context
 def list_rule_sets(ctx: click.Context, cache_path: str):
     # Load all rules
@@ -350,6 +421,7 @@ cli.add_command(update_cache)
 cli.add_command(list_rules)
 cli.add_command(list_rule_sets)
 cli.add_command(list_dataset_metadata)
+cli.add_command(test)
 
 if __name__ == "__main__":
     freeze_support()

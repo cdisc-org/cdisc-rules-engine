@@ -23,7 +23,7 @@ class DayDataValidator(BaseOperation):
         rfstdtc_value = dm_data["RFSTDTC"].map(self.parse_timestamp)
 
         delta = (dtc_value - rfstdtc_value).map(self.get_day_difference)
-        return delta.replace(np.nan, 0)
+        return delta.replace(np.nan, "NaN")
 
     def parse_timestamp(self, timestamp: str) -> datetime:
         try:
