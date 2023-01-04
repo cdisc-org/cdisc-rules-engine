@@ -21,10 +21,11 @@ from cdisc_rules_engine.services.cache.cache_service_factory import CacheService
                         "2022-05-20T13:44",
                         None,
                         "2022-05-19T13:44",
-                    ]
+                    ],
+                    "USUBJID": [1, 2, 3, 4, 5, 6, 7],
                 }
             ),
-            [4, 32, 1, 13, "NaN", "NaN", -1],
+            [4, 32, 1, 13, "", "", -1],
         ),
     ],
 )
@@ -44,7 +45,8 @@ def test_day_data_calculation(
                     "TEST",
                     "2022-05-20T13:44",
                     "2022-05-20T13:44",
-                ]
+                ],
+                "USUBJID": [1, 2, 3, 4, 5, 6, 7],
             }
         )
     }
@@ -58,7 +60,7 @@ def test_day_data_calculation(
     operation_params.dataframe = data
     operation_params.target = "values"
     result = DayDataValidator(
-        operation_params, pd.DataFrame(), cache, mock_data_service
+        operation_params, data, cache, mock_data_service
     ).execute()
     assert operation_params.operation_id in result
     for i, val in enumerate(result[operation_params.operation_id]):
