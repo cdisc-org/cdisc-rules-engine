@@ -3,7 +3,7 @@ from collections import namedtuple
 TestArgs = namedtuple(
     "TestArgs",
     [
-        "cache_path",
+        "cache",
         "dataset_path",
         "rule",
         "standard",
