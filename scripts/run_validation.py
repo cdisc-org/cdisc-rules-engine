@@ -28,7 +28,11 @@ from scripts.script_utils import (
 )
 from cdisc_rules_engine.services.reporting import BaseReport, ReportFactory
 from cdisc_rules_engine.utilities.progress_displayers import get_progress_displayer
+from warnings import simplefilter
 
+simplefilter(
+    action="ignore", category=FutureWarning
+)  # Suppress warnings coming from numpy
 """
 Sync manager used to manage instances of the cache between processes.
 Cache types are registered to this manager, and only one instance of the
