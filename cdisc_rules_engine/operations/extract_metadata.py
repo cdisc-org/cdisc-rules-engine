@@ -11,5 +11,4 @@ class ExtractMetadata(BaseOperation):
 
         # extract target value. Metadata df always has one row
         target_value = metadata.get(self.params.target, pd.Series())[0]
-        result = pd.Series([target_value] * len(self.params.dataframe))
-        return result
+        return target_value

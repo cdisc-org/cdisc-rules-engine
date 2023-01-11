@@ -89,6 +89,7 @@ class LocalDataService(BaseDataService):
             label=contents_metadata["dataset_label"],
             modification_date=contents_metadata["dataset_modification_date"],
             filename=file_metadata["name"],
+            full_path=file_metadata["path"],
             size=file_metadata["size"],
             records="",
         )

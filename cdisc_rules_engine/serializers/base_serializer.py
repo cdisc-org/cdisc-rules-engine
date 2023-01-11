@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Union, List
 
 
 class BaseSerializer(ABC):
@@ -8,9 +9,9 @@ class BaseSerializer(ABC):
 
     @property
     @abstractmethod
-    def data(self) -> dict:
+    def data(self) -> Union[dict, List[dict]]:
         """
-        Returns wrapped object as a dict.
+        Returns wrapped object(s) as a dict or list of dicts.
         """
 
     @property

@@ -15,3 +15,4 @@ class DatasetMetadata:
     filename: str
     size: Union[int, float]
     records: str
+    full_path: str = None
