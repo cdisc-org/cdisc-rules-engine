@@ -5,7 +5,10 @@ import numpy as np
 
 class DayDataValidator(BaseOperation):
     def _execute_operation(self):
-        dtc_value = self.params.dataframe[self.params.target].map(self.parse_timestamp)
+
+        dtc_value = self.evaluation_dataset[self.params.target].map(
+            self.parse_timestamp
+        )
 
         # Always get RFSTDTC column from DM dataset.
         dm_datasets = [
@@ -13,17 +16,23 @@ class DayDataValidator(BaseOperation):
         ]
         if not dm_datasets:
             # Return none for all values if dm is not provided.
-            return [0] * len(self.params.dataframe[self.params.target])
+            return [0] * len(self.evaluation_dataset[self.params.target])
         if len(dm_datasets) > 1:
             files = [dataset["filename"] for dataset in dm_datasets]
             dm_data = self.data_service.join_split_datasets(files)
         else:
             dm_data = self.data_service.get_dataset(dm_datasets[0]["filename"])
 
-        rfstdtc_value = dm_data["RFSTDTC"].map(self.parse_timestamp)
-
-        delta = (dtc_value - rfstdtc_value).map(self.get_day_difference)
-        return delta.replace(np.nan, "NaN")
+        new_dataset = self.evaluation_dataset.merge(
+            dm_data[["USUBJID", "RFSTDTC"]], on="USUBJID", suffixes=("", "_dm")
+        )
+        rfstdtc_value = "RFSTDTC"
+        if "RFSTDTC_dm" in new_dataset:
+            rfstdtc_value = "RFSTDTC_dm"
+        delta = (dtc_value - new_dataset[rfstdtc_value].map(self.parse_timestamp)).map(
+            self.get_day_difference
+        )
+        return delta.replace(np.nan, "")
 
     def parse_timestamp(self, timestamp: str) -> datetime:
         try:
