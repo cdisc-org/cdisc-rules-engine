@@ -7,6 +7,9 @@ from cdisc_rules_engine.models.rule_validation_result import RuleValidationResul
 from cdisc_rules_engine.models.validation_args import Validation_args
 
 from .base_report import BaseReport
+from cdisc_rules_engine.utilities.reporting_utilities import (
+    get_define_version_from_data,
+)
 
 
 class JsonReport(BaseReport):
@@ -58,7 +61,8 @@ class JsonReport(BaseReport):
 
     def write_report(self):
         report_data = self.get_export(
-            self._args.define_version,
+            get_define_version_from_data(self._args.dataset_paths)
+            or self._args.define_version,
             list(self._args.controlled_terminology_package),
             self._args.standard,
             self._args.version.replace("-", "."),
