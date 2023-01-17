@@ -7,6 +7,7 @@ import pytest
 from conftest import get_matches_regex_pattern_rule
 
 from cdisc_rules_engine.constants.classes import GENERAL_OBSERVATIONS_CLASS
+from cdisc_rules_engine.constants.rule_constants import ALL_KEYWORD
 from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 from cdisc_rules_engine.enums.variable_roles import VariableRoles
 from cdisc_rules_engine.models.rule_conditions import ConditionCompositeFactory
@@ -746,7 +747,7 @@ def test_rule_with_domain_prefix_replacement(mock_get_dataset: MagicMock):
     rule = {
         "core_id": "TEST1",
         "standards": [],
-        "domains": {"Include": ["All"]},
+        "domains": {"Include": [ALL_KEYWORD]},
         "conditions": ConditionCompositeFactory.get_condition_composite(
             {
                 "all": [

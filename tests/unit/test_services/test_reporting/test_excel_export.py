@@ -11,7 +11,11 @@ test_report_template: str = (
 
 mock_validation_results = [
     RuleValidationResult(
-        rule={"core_id": "CORE1", "severity": "Error", "message": "TEST RULE 1"},
+        rule={
+            "core_id": "CORE1",
+            "executability": "Partially Executable",
+            "message": "TEST RULE 1",
+        },
         results=[
             {
                 "domain": "AE",
@@ -36,7 +40,11 @@ mock_validation_results = [
         ],
     ),
     RuleValidationResult(
-        rule={"core_id": "CORE2", "severity": "Warning", "message": "TEST RULE 2"},
+        rule={
+            "core_id": "CORE2",
+            "executability": "Fully Executable",
+            "message": "TEST RULE 2",
+        },
         results=[
             {
                 "domain": "TT",
@@ -84,7 +92,7 @@ def test_get_detailed_data():
             [
                 mock_validation_results[0].id,
                 "AESTDY and DOMAIN are equal to test",
-                "Error",
+                "Partially Executable",
                 "AE",
                 "CDISC002",
                 1,
@@ -95,7 +103,7 @@ def test_get_detailed_data():
             [
                 mock_validation_results[0].id,
                 "AESTDY and DOMAIN are equal to test",
-                "Error",
+                "Partially Executable",
                 "AE",
                 "CDISC003",
                 9,
@@ -106,7 +114,7 @@ def test_get_detailed_data():
             [
                 mock_validation_results[1].id,
                 "TTVARs are wrong",
-                "Warning",
+                "Fully Executable",
                 "TT",
                 "CDISC002",
                 1,
@@ -132,10 +140,16 @@ def test_get_summary_data():
                 "AE",
                 mock_validation_results[0].id,
                 "AESTDY and DOMAIN are equal to test",
-                "Error",
+                "Partially Executable",
                 2,
             ],
-            ["TT", mock_validation_results[1].id, "TTVARs are wrong", "Warning", 1],
+            [
+                "TT",
+                mock_validation_results[1].id,
+                "TTVARs are wrong",
+                "Fully Executable",
+                1,
+            ],
         ]
         errors = sorted(errors, key=lambda x: (x[0], x[1]))
         assert len(errors) == len(summary_data)

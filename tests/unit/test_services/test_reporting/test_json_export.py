@@ -6,7 +6,11 @@ from cdisc_rules_engine.services.reporting.json_report import JsonReport
 
 mock_validation_results = [
     RuleValidationResult(
-        rule={"core_id": "CORE1", "severity": "Error", "message": "TEST RULE 1"},
+        rule={
+            "core_id": "CORE1",
+            "executability": "Fully Executable",
+            "message": "TEST RULE 1",
+        },
         results=[
             {
                 "domain": "AE",
@@ -31,7 +35,11 @@ mock_validation_results = [
         ],
     ),
     RuleValidationResult(
-        rule={"core_id": "CORE2", "severity": "Warning", "message": "TEST RULE 2"},
+        rule={
+            "core_id": "CORE2",
+            "executability": "Partially Executable",
+            "message": "TEST RULE 2",
+        },
         results=[
             {
                 "domain": "TT",
@@ -78,7 +86,7 @@ def test_get_detailed_data():
         {
             "rule_id": mock_validation_results[0].id,
             "message": "AESTDY and DOMAIN are equal to test",
-            "severity": "Error",
+            "executability": "Fully Executable",
             "dataset": "AE",
             "uSubjId": "CDISC002",
             "row": 1,
@@ -89,7 +97,7 @@ def test_get_detailed_data():
         {
             "rule_id": mock_validation_results[0].id,
             "message": "AESTDY and DOMAIN are equal to test",
-            "severity": "Error",
+            "executability": "Fully Executable",
             "dataset": "AE",
             "uSubjId": "CDISC003",
             "row": 9,
@@ -100,7 +108,7 @@ def test_get_detailed_data():
         {
             "rule_id": mock_validation_results[1].id,
             "message": "TTVARs are wrong",
-            "severity": "Warning",
+            "executability": "Partially Executable",
             "dataset": "TT",
             "uSubjId": "CDISC002",
             "row": 1,
@@ -123,14 +131,14 @@ def test_get_summary_data():
             "dataset": "AE",
             "rule_id": mock_validation_results[0].id,
             "message": "AESTDY and DOMAIN are equal to test",
-            "severity": "Error",
+            "executability": "Fully Executable",
             "issues": 2,
         },
         {
             "dataset": "TT",
             "rule_id": mock_validation_results[1].id,
             "message": "TTVARs are wrong",
-            "severity": "Warning",
+            "executability": "Partially Executable",
             "issues": 1,
         },
     ]
