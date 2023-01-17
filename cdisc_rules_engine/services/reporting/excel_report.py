@@ -15,7 +15,7 @@ from .excel_writer import (
     excel_workbook_to_stream,
 )
 from cdisc_rules_engine.utilities.reporting_utilities import (
-    get_define_version_from_data,
+    get_define_version,
 )
 
 
@@ -73,9 +73,12 @@ class ExcelReport(BaseReport):
         logger = logging.getLogger("validator")
 
         try:
+            define_version = (
+                get_define_version(self._args.dataset_paths)
+                or self._args.define_version
+            )
             report_data = self.get_export(
-                get_define_version_from_data(self._args.dataset_paths)
-                or self._args.define_version,
+                define_version,
                 self._args.controlled_terminology_package,
                 self._args.standard,
                 self._args.version.replace("-", "."),

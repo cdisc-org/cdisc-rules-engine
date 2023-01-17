@@ -57,7 +57,7 @@ class DefineXMLReader:
         """
         Inits a DefineXMLReader object from file contents.
         """
-        logger.info(f"Reading Define-XML from file contents")
+        logger.info("Reading Define-XML from file contents")
         reader = cls(cache_service_obj, study_id, data_bundle_id)
         reader._odm_loader.load_odm_string(file_contents)
         return reader
@@ -120,18 +120,23 @@ class DefineXMLReader:
     def extract_value_level_metadata(self, domain_name: str = None) -> List[dict]:
         """
         Extracts all value level metadata for each variable in a given domain.
-        Returns: A list of dictionaries containing value level metadata corresponding to the given domain.
+        Returns: A list of dictionaries containing value level metadata corresponding
+         to the given domain.
         ex:
         [
             {
-                filter: <function to filter dataframe to rows that the value level metadata applies to>
-                type_check: <function to check the type of the target variable matches the type of the value level metadata
-                length_check: <function to check whether the length of the target variables value matches the length specified in the vlm
+                filter: <function to filter dataframe to rows that the value
+                 level metadata applies to>
+                type_check: <function to check the type of the target variable
+                 matches the type of the value level metadata
+                length_check: <function to check whether the length of the target
+                 variables value matches the length specified in the vlm
             }...
         ]
         """
         logger.info(
-            f"Extracting value level metadata from Define-XML. domain_name={domain_name}"
+            f"Extracting value level metadata from Define-XML. "
+            f"domain_name={domain_name}"
         )
         metadata = self._odm_loader.MetaDataVersion()
         item_def_map = {item_def.OID: item_def for item_def in metadata.ItemDef}
@@ -184,7 +189,8 @@ class DefineXMLReader:
 
     def _get_codelist_def_map(self, codelist_defs):
         """
-        Method for extracting codelists into a map for faster access when generating variable codelist metadata
+        Method for extracting codelists into a map for faster access
+         when generating variable codelist metadata
         """
         codelists = {}
         for codelist in codelist_defs:
@@ -278,9 +284,18 @@ class DefineXMLReader:
         """
         Validates Define XML Schema.
         """
-        logger.info(f"Validating Define-XML schema.")
+        logger.info("Validating Define-XML schema.")
         schema_validator = MetadataSchema()
         study = self._odm_loader.Study()
         is_valid: bool = schema_validator.check_conformance(study.to_dict(), "Study")
         logger.info(f"Validated Define-XML schema. is_valid={is_valid}")
         return is_valid
+
+    def get_define_version(self):
+        """Use to extract DefineVersion from file"""
+        self.read()
+        mdv_attrib = self._odm_loader.loader.parser.mdv[0].attrib
+        for key, val in mdv_attrib.items():
+            if key.endswith("DefineVersion"):
+                return val
+        return None
