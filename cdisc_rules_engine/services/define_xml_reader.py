@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List, Union, Optional
 
 from odmlib.define_2_1.rules.metadata_schema import MetadataSchema
 from odmlib.define_loader import XMLDefineLoader
@@ -291,10 +291,10 @@ class DefineXMLReader:
         logger.info(f"Validated Define-XML schema. is_valid={is_valid}")
         return is_valid
 
-    def get_define_version(self):
+    def get_define_version(self) -> Optional[str]:
         """Use to extract DefineVersion from file"""
         self.read()
-        mdv_attrib = self._odm_loader.loader.parser.mdv[0].attrib
+        mdv_attrib: dict = self._odm_loader.loader.parser.mdv[0].attrib
         for key, val in mdv_attrib.items():
             if key.endswith("DefineVersion"):
                 return val

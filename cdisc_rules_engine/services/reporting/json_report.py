@@ -60,7 +60,7 @@ class JsonReport(BaseReport):
         return json_export
 
     def write_report(self):
-        define_version = (
+        define_version: str = (
             get_define_version(self._args.dataset_paths) or self._args.define_version
         )
         report_data = self.get_export(
