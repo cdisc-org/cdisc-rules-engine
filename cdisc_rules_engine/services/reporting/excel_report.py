@@ -73,9 +73,8 @@ class ExcelReport(BaseReport):
         logger = logging.getLogger("validator")
 
         try:
-            define_version: str = (
-                get_define_version(self._args.dataset_paths)
-                or self._args.define_version
+            define_version: str = self._args.define_version or get_define_version(
+                self._args.dataset_paths
             )
             report_data = self.get_export(
                 define_version,

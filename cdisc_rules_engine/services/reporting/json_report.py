@@ -5,11 +5,10 @@ from typing import BinaryIO, List, Optional, Iterable
 from cdisc_rules_engine.enums.report_types import ReportTypes
 from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
 from cdisc_rules_engine.models.validation_args import Validation_args
-
-from .base_report import BaseReport
 from cdisc_rules_engine.utilities.reporting_utilities import (
     get_define_version,
 )
+from .base_report import BaseReport
 
 
 class JsonReport(BaseReport):
@@ -60,8 +59,8 @@ class JsonReport(BaseReport):
         return json_export
 
     def write_report(self):
-        define_version: str = (
-            get_define_version(self._args.dataset_paths) or self._args.define_version
+        define_version: str = self._args.define_version or get_define_version(
+            self._args.dataset_paths
         )
         report_data = self.get_export(
             define_version,
