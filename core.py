@@ -114,7 +114,6 @@ def cli():
 @click.option(
     "-dv",
     "--define-version",
-    default="2.1",
     help="Define-XML version used for validation",
 )
 @click.option("--whodrug", help="Path to directory with WHODrug dictionary files")
@@ -326,7 +325,6 @@ def list_rules(ctx: click.Context, cache_path: str, standard: str, version: str)
 @click.option(
     "-dv",
     "--define-version",
-    default="2.1",
     help="Define-XML version used for validation",
 )
 @click.pass_context
