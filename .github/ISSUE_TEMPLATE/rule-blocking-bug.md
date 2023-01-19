@@ -13,7 +13,7 @@ assignees: ''
 
 **Links to related JIRA Tickets**
 - https://jira.cdisc.org/projects/CORERULES/issues/CORERULES-
-- https://jira.cdisc.org/projects/CORERULES/issues/CORERULES
+- https://jira.cdisc.org/projects/CORERULES/issues/CORERULES-
 
 **Rule Information**
 - **Standard**:
