@@ -4,6 +4,7 @@ from cdisc_rules_engine.services.define_xml_reader import DefineXMLReader
 import pandas as pd
 from cdisc_rules_engine.utilities.utils import (
     get_directory_path,
+    is_split_dataset,
     get_corresponding_datasets,
 )
 from typing import List
@@ -22,7 +23,7 @@ class BaseDatasetBuilder:
         domain,
     ):
         self.data_service = data_service
-        self.cache = (cache_service,)
+        self.cache = cache_service
         self.data_processor = data_processor
         self.rule_processor = rule_processor
         self.dataset_path = dataset_path
@@ -38,12 +39,19 @@ class BaseDatasetBuilder:
         pass
 
     def get_dataset(self, **kwargs):
-        # By default do not handle split datasets
-        # This method is overridden in the ContentDatasetBuilder for handling
-        # split datasets when validating the actual content of a dataset.
-        # In cases when validating metadata, split datasets don't matter.
-        # single dataset. the most common case
-        return self.build()
+        # If validating dataset content, ensure split datasets are handled.
+        if is_split_dataset(self.datasets, self.domain):
+            # Handle split datasets for content checks.
+            # A content check is any check that is not in the list of rule types
+            dataset: pd.DataFrame = self.data_service.join_split_datasets(
+                func_to_call=self.build,
+                dataset_names=self.get_corresponding_datasets_names(),
+                **kwargs,
+            )
+        else:
+            # single dataset. the most common case
+            dataset: pd.DataFrame = self.build()
+        return dataset
 
     def get_corresponding_datasets_names(self) -> List[str]:
         directory_path = get_directory_path(self.dataset_path)

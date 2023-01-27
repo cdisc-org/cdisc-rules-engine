@@ -20,6 +20,7 @@ from cdisc_rules_engine.dataset_builders.define_variables_dataset_builder import
 from cdisc_rules_engine.dataset_builders.variables_metadata_with_define_dataset_builder import (
     VariablesMetadataWithDefineDatasetBuilder,
 )
+from cdisc_rules_engine.dataset_builders.base_dataset_builder import BaseDatasetBuilder
 from cdisc_rules_engine.enums.rule_types import RuleTypes
 
 
@@ -54,13 +55,14 @@ class DatasetBuilderFactory(FactoryInterface):
         """
         Get instance of dataset builder by name.
         """
-        return self._builders_map.get(name, ContentsDatasetBuilder)(
+        builder = self._builders_map.get(name, ContentsDatasetBuilder)(
             kwargs.get("rule"),
             kwargs.get("data_service"),
             kwargs.get("cache_service"),
-            kwargs.get("data_processor"),
             kwargs.get("rule_processor"),
+            kwargs.get("data_processor"),
             kwargs.get("dataset_path"),
             kwargs.get("datasets"),
             kwargs.get("domain"),
         )
+        return builder

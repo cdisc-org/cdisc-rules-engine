@@ -1,4 +1,4 @@
-from cdisc_rules_engine.dataset_builder.dataset_builder_factory import (
+from .dataset_builder_factory import (
     DatasetBuilderFactory,
 )
 

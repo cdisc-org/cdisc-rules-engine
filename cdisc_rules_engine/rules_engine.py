@@ -241,7 +241,6 @@ class RulesEngine:
                 )
             )
             define_metadata: List[dict] = builder.get_define_xml_variables_metadata()
-
             targets: List[
                 str
             ] = self.data_processor.filter_dataset_columns_by_metadata_and_rule(
@@ -276,7 +275,6 @@ class RulesEngine:
             variable_codelist_map = {}
         if codelist_term_maps is None:
             codelist_term_maps = []
-
         # Add conditions to rule for all variables if variables: all appears
         # in condition
         rule["conditions"] = RuleProcessor.duplicate_conditions_for_all_targets(
