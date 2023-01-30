@@ -26,6 +26,7 @@ from cdisc_rules_engine.utilities.utils import (
     get_rules_cache_key,
 )
 from scripts.list_dataset_metadata_handler import list_dataset_metadata_handler
+from version import __version__
 
 
 @click.group()
@@ -414,12 +415,18 @@ def list_dataset_metadata(ctx: click.Context, dataset_path: Tuple[str]):
     print(json.dumps(list_dataset_metadata_handler(dataset_path), indent=4))
 
 
+@click.command()
+def version():
+    print(__version__)
+
+
 cli.add_command(validate)
 cli.add_command(update_cache)
 cli.add_command(list_rules)
 cli.add_command(list_rule_sets)
 cli.add_command(list_dataset_metadata)
 cli.add_command(test)
+cli.add_command(version)
 
 if __name__ == "__main__":
     freeze_support()
