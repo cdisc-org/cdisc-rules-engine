@@ -34,7 +34,6 @@ class LibraryColumnOrder(BaseOperation):
         ] = self._get_variables_metadata_from_standard_model()
 
         # create a list of variable names in accordance to the "ordinal" key
-        variables_metadata.sort(key=lambda item: item["ordinal"])
         variable_names_list = [
             var["name"].replace("--", self.params.domain) for var in variables_metadata
         ]
@@ -83,6 +82,7 @@ class LibraryColumnOrder(BaseOperation):
         # if model describes the domain -> get metadata from the model domain
         variables_metadata: List[dict] = domain_details.get("datasetVariables", [])
 
+        variables_metadata.sort(key=lambda item: item["ordinal"])
         if (
             class_details.get("name") in DETECTABLE_CLASSES
             and self.params.standard == "sdtmig"
@@ -99,9 +99,12 @@ class LibraryColumnOrder(BaseOperation):
                 gen_obs_class_metadata["classVariables"]
             )
             # Identifiers are added to the beginning and Timing to the end
-            variables_metadata: List[dict] = (
-                identifiers_metadata + variables_metadata + timing_metadata
-            )
+            if identifiers_metadata:
+                identifiers_metadata.sort(key=lambda item: item["ordinal"])
+                variables_metadata = identifiers_metadata + variables_metadata
+            if timing_metadata:
+                timing_metadata.sort(key=lambda item: item["ordinal"])
+                variables_metadata = variables_metadata + timing_metadata
 
         return variables_metadata
 

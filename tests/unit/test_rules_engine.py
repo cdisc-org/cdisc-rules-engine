@@ -2143,26 +2143,13 @@ def test_validate_variables_order_against_library_metadata(
         }
     )
 
-    standard: str = "sdtm"
+    standard: str = "sdtmig"
     standard_version: str = "3-1-2"
 
     # fill cache
     cache = InMemoryCacheService.get_instance()
     cache_data: dict = {
         "classes": [
-            {
-                "name": "Events",
-                "classVariables": [
-                    {
-                        "name": "AETERM",
-                        "ordinal": 4,
-                    },
-                    {
-                        "name": "AESEQ",
-                        "ordinal": 3,
-                    },
-                ],
-            },
             {
                 "name": GENERAL_OBSERVATIONS_CLASS,
                 "classVariables": [
@@ -2185,8 +2172,25 @@ def test_validate_variables_order_against_library_metadata(
             },
         ]
     }
-    cache.add(get_model_details_cache_key(standard, standard_version), cache_data)
-
+    standard_data = {
+        "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
+        "classes": [
+            {
+                "name": "Events",
+                "datasets": [
+                    {
+                        "name": "AE",
+                        "datasetVariables": [
+                            {"name": "AETERM", "ordinal": 1},
+                            {"name": "AESEQ", "ordinal": 2},
+                        ],
+                    }
+                ],
+            }
+        ],
+    }
+    cache.add(get_model_details_cache_key("sdtm", "1-5"), cache_data)
+    cache.add(get_standard_details_cache_key(standard, standard_version), standard_data)
     # run validation
     engine = RulesEngine(
         cache=cache,
@@ -2215,8 +2219,8 @@ def test_validate_variables_order_against_library_metadata(
                         "$column_order_from_library": [
                             "STUDYID",
                             "DOMAIN",
-                            "AESEQ",
                             "AETERM",
+                            "AESEQ",
                             "TIMING_VAR",
                         ],
                         "$column_order_from_dataset": [
