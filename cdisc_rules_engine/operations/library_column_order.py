@@ -8,6 +8,7 @@ from cdisc_rules_engine.enums.variable_roles import VariableRoles
 from cdisc_rules_engine.operations.base_operation import BaseOperation
 from cdisc_rules_engine.utilities.utils import (
     get_model_details_cache_key,
+    get_standard_details_cache_key,
     search_in_list_of_dicts,
 )
 
@@ -26,15 +27,11 @@ class LibraryColumnOrder(BaseOperation):
         The lists with column names are sorted
         in accordance to "ordinal" key of library metadata.
         """
-        # get dataset class
-        dataset_class: str = self.data_service.get_dataset_class(
-            self.params.dataframe, self.params.dataset_path, self.params.datasets
-        )
 
         # get variables metadata from the standard model
         variables_metadata: List[
             dict
-        ] = self._get_variables_metadata_from_standard_model(dataset_class)
+        ] = self._get_variables_metadata_from_standard_model()
 
         # create a list of variable names in accordance to the "ordinal" key
         variables_metadata.sort(key=lambda item: item["ordinal"])
@@ -43,9 +40,7 @@ class LibraryColumnOrder(BaseOperation):
         ]
         return variable_names_list
 
-    def _get_variables_metadata_from_standard_model(
-        self, dataset_class: str
-    ) -> List[dict]:
+    def _get_variables_metadata_from_standard_model(self) -> List[dict]:
         """
         Gets variables metadata for the given class and domain from cache.
         The cache stores CDISC Library metadata.
@@ -69,28 +64,33 @@ class LibraryColumnOrder(BaseOperation):
         ]
         """
         # get model details from cache
-        cache_key: str = get_model_details_cache_key(
+        cache_key: str = get_standard_details_cache_key(
             self.params.standard, self.params.standard_version
         )
-        model_details: dict = self.cache.get(cache_key) or {}
 
-        # get variables metadata
-        domain_details: Optional[dict] = search_in_list_of_dicts(
-            model_details.get("datasets", []),
-            lambda item: item["name"] == self.params.domain,
+        standard_details: dict = self.cache.get(cache_key) or {}
+        model = standard_details.get("_links", {}).get("model")
+        class_details, domain_details = self._get_class_and_domain_metadata(
+            standard_details
         )
-        if domain_details:
-            # if model describes the domain -> get metadata from the model domain
-            variables_metadata: List[dict] = domain_details["datasetVariables"]
-        else:
-            # else -> get variables metadata from the model class
-            class_metadata: dict = self._get_class_metadata(
-                model_details, dataset_class
+        model_type, model_version = self._get_model_type_and_version(model)
+        if not domain_details:
+            raise ValueError(
+                f"No domain {self.params.domain} found in "
+                f"{self.params.standard} v{self.params.standard_version}"
             )
-            variables_metadata: List[dict] = class_metadata["classVariables"]
 
-        if dataset_class in DETECTABLE_CLASSES:
+        # if model describes the domain -> get metadata from the model domain
+        variables_metadata: List[dict] = domain_details.get("datasetVariables", [])
+
+        if (
+            class_details.get("name") in DETECTABLE_CLASSES
+            and self.params.standard == "sdtmig"
+        ):
+            model_cache_key = get_model_details_cache_key(model_type, model_version)
+            model_details = self.cache.get(model_cache_key) or {}
             # if the class is one of Interventions, Findings, or Events
+            # and the standard is SDTMIG
             # -> add General Observation class variables to variables metadata
             gen_obs_class_metadata: dict = self._get_class_metadata(
                 model_details, GENERAL_OBSERVATIONS_CLASS
@@ -104,6 +104,17 @@ class LibraryColumnOrder(BaseOperation):
             )
 
         return variables_metadata
+
+    def _get_model_type_and_version(self, model_link) -> Tuple:
+        link = model_link.get("href")
+        if "sdtm" in link:
+            model_type = "sdtm"
+            model_version = link.split("/")[-1]
+        else:
+            # TODO expand to support CDASH and ADAM
+            model_type = ""
+            model_version = ""
+        return model_type, model_version
 
     def _get_class_metadata(
         self,
@@ -126,6 +137,17 @@ class LibraryColumnOrder(BaseOperation):
                 f"class={dataset_class}"
             )
         return class_metadata
+
+    def _get_class_and_domain_metadata(self, standard_details) -> Tuple:
+        # Get domain and class details for domain. This logic is specific
+        # to SDTM based standards. Needs to be expanded for other models
+        for c in standard_details.get("classes"):
+            domain_details = search_in_list_of_dicts(
+                c.get("datasets", []), lambda item: item["name"] == self.params.domain
+            )
+            if domain_details:
+                return c, domain_details
+        return {}, {}
 
     def _sort_class_variables_by_role(
         self, class_variables: List[dict]
