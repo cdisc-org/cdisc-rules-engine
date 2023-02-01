@@ -123,7 +123,6 @@ def get_dataset_cache_key_from_study(
 
 
 def get_dataset_cache_key_from_path(dataset_path: str, dataset_type: str) -> str:
-
     return DATASET_CACHE_KEY_TEMPLATE.format(
         dataset_path=dataset_path, dataset_type=dataset_type
     )
