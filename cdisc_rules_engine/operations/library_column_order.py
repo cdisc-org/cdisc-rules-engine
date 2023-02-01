@@ -73,22 +73,19 @@ class LibraryColumnOrder(BaseOperation):
             standard_details
         )
         model_type, model_version = self._get_model_type_and_version(model)
-        if not domain_details:
-            raise ValueError(
-                f"No domain {self.params.domain} found in "
-                f"{self.params.standard} v{self.params.standard_version}"
-            )
+        model_cache_key = get_model_details_cache_key(model_type, model_version)
+        model_details = self.cache.get(model_cache_key) or {}
 
-        # if model describes the domain -> get metadata from the model domain
-        variables_metadata: List[dict] = domain_details.get("datasetVariables", [])
-
+        # model class details includes all variables allowed in the domain
+        model_class_details: dict = self._get_class_metadata(
+            model_details, class_details.get("name")
+        )
+        variables_metadata: List[dict] = model_class_details.get("classVariables", [])
         variables_metadata.sort(key=lambda item: item["ordinal"])
         if (
             class_details.get("name") in DETECTABLE_CLASSES
-            and self.params.standard == "sdtmig"
+            and self.params.standard.lower() == "sdtmig"
         ):
-            model_cache_key = get_model_details_cache_key(model_type, model_version)
-            model_details = self.cache.get(model_cache_key) or {}
             # if the class is one of Interventions, Findings, or Events
             # and the standard is SDTMIG
             # -> add General Observation class variables to variables metadata
