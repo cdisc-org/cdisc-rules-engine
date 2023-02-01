@@ -82,10 +82,8 @@ class LibraryColumnOrder(BaseOperation):
         )
         variables_metadata: List[dict] = model_class_details.get("classVariables", [])
         variables_metadata.sort(key=lambda item: item["ordinal"])
-        if (
-            class_details.get("name") in DETECTABLE_CLASSES
-            and self.params.standard.lower() == "sdtmig"
-        ):
+
+        if class_details.get("name") in DETECTABLE_CLASSES:
             # if the class is one of Interventions, Findings, or Events
             # and the standard is SDTMIG
             # -> add General Observation class variables to variables metadata

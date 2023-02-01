@@ -2151,6 +2151,13 @@ def test_validate_variables_order_against_library_metadata(
     cache_data: dict = {
         "classes": [
             {
+                "name": "Events",
+                "classVariables": [
+                    {"name": "--TERM", "ordinal": 1},
+                    {"name": "--SEQ", "ordinal": 2},
+                ],
+            },
+            {
                 "name": GENERAL_OBSERVATIONS_CLASS,
                 "classVariables": [
                     {

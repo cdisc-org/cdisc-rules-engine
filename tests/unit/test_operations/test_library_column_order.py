@@ -37,6 +37,13 @@ from cdisc_rules_engine.utilities.utils import (
                 ],
                 "classes": [
                     {
+                        "name": "Events",
+                        "classVariables": [
+                            {"name": "--TERM", "ordinal": 1},
+                            {"name": "--SEQ", "ordinal": 2},
+                        ],
+                    },
+                    {
                         "name": GENERAL_OBSERVATIONS_CLASS,
                         "classVariables": [
                             {
@@ -123,8 +130,8 @@ def test_get_column_order_from_library(
     variables: List[str] = [
         "STUDYID",
         "DOMAIN",
-        "AETEST",
-        "AENEW",
+        "AETERM",
+        "AESEQ",
         "TIMING_VAR",
     ]
     expected: pd.Series = pd.Series(
