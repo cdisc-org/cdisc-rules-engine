@@ -234,7 +234,6 @@ class RulesEngine:
             rule.get("rule_type")
             == RuleTypes.DATASET_CONTENTS_CHECK_AGAINST_DEFINE_AND_LIBRARY.value
         ):
-
             library_metadata: dict = self.cache.get(
                 get_library_variables_metadata_cache_key(
                     self.standard, self.standard_version
