@@ -48,8 +48,8 @@ def validate_single_rule(cache, path, args, datasets, rule: dict = None):
     # call rule engine
     engine = RulesEngine(
         cache=cache,
-        standard="sdtmig",
-        standard_version="3-4",
+        standard=args.standard,
+        standard_version=args.version,
         ct_package=args.controlled_terminology_package,
         meddra_path=args.meddra,
         whodrug_path=args.whodrug,
