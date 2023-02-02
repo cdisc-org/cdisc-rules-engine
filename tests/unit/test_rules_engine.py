@@ -1160,8 +1160,8 @@ def test_validate_dataset_metadata_against_define_xml(
     ],
 )
 @patch(
-    "cdisc_rules_engine.dataset_builders.base_dataset_builder. \
-            BaseDatasetBuilder.get_define_xml_variables_metadata"
+    "cdisc_rules_engine.dataset_builders.base_dataset_builder."
+    + "BaseDatasetBuilder.get_define_xml_variables_metadata"
 )
 @patch(
     "cdisc_rules_engine.services.data_services.LocalDataService.get_variables_metadata"
