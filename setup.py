@@ -1,10 +1,11 @@
 #! /usr/bin/env python
 
 import setuptools
+from version import __version__
 
 setuptools.setup(
     name="cdisc-rules-engine",
-    version="0.5.4",
+    version=__version__,
     description="Open source offering of the cdisc rules engine",
     author="cdisc-org",
     url="https://github.com/cdisc-org/cdisc-rules-engine",

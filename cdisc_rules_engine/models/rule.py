@@ -18,7 +18,7 @@ class Rule:
         self.core_id: str = record_params["core_id"]
         self.reference: List[dict] = record_params["reference"]
         self.sensitivity: Sensitivity = record_params["sensitivity"]
-        self.severity: str = record_params["severity"]
+        self.executability: str = record_params["executability"]
         self.category: str = record_params["category"]
         self.author: str = record_params["author"]
         self.description: str = record_params["description"]
@@ -36,17 +36,18 @@ class Rule:
     @classmethod
     def from_cdisc_metadata(cls, rule_metadata: dict) -> dict:
         if cls.is_cdisc_rule_metadata(rule_metadata):
+            authorities = rule_metadata.get("Authorities", [])
             executable_rule = {
                 "core_id": rule_metadata.get("Core", {}).get("Id"),
                 "author": "CDISC",
-                "reference": rule_metadata.get("References"),
+                "reference": cls.parse_references(authorities),
                 "sensitivity": rule_metadata.get("Sensitivity"),
-                "severity": rule_metadata.get("Severity", "").lower(),
+                "executability": rule_metadata.get("Executability", "").lower(),
                 "description": rule_metadata.get("Description"),
-                "authority": rule_metadata.get("Authority"),
-                "standards": rule_metadata.get("Scopes", {}).get("Standards"),
-                "classes": rule_metadata.get("Scopes", {}).get("Classes"),
-                "domains": rule_metadata.get("Scopes", {}).get("Domains"),
+                "authorities": authorities,
+                "standards": cls.parse_standards(authorities),
+                "classes": rule_metadata.get("Scope", {}).get("Classes"),
+                "domains": rule_metadata.get("Scope", {}).get("Domains"),
                 "rule_type": rule_metadata.get("Rule_Type"),
                 "conditions": cls.parse_conditions(rule_metadata.get("Check")),
                 "actions": cls.parse_actions(rule_metadata.get("Outcome")),
@@ -67,6 +68,24 @@ class Rule:
             return executable_rule
         else:
             return rule_metadata
+
+    @classmethod
+    def parse_standards(cls, authorities: List[dict]) -> List[dict]:
+        standards = []
+        for authority in authorities:
+            for standard in authority.get("Standards", []):
+                standards.append(
+                    {"Name": standard.get("Name"), "Version": standard.get("Version")}
+                )
+        return standards
+
+    @classmethod
+    def parse_references(cls, authorities: List[dict]) -> list:
+        references = []
+        for authority in authorities:
+            for standard in authority.get("Standards", []):
+                references.append(standard.get("References"))
+        return references
 
     @classmethod
     def is_cdisc_rule_metadata(cls, rule_metadata: dict) -> bool:

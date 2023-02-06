@@ -123,7 +123,6 @@ def get_dataset_cache_key_from_study(
 
 
 def get_dataset_cache_key_from_path(dataset_path: str, dataset_type: str) -> str:
-
     return DATASET_CACHE_KEY_TEMPLATE.format(
         dataset_path=dataset_path, dataset_type=dataset_type
     )
@@ -160,8 +159,8 @@ def get_standard_details_cache_key(standard_type: str, standard_version: str) ->
     return f"standards/{standard_type}/{standard_version}"
 
 
-def get_model_details_cache_key(standard_type: str, model_version: str) -> str:
-    return f"models/{standard_type}/{model_version}"
+def get_model_details_cache_key(standard: str, model_version: str) -> str:
+    return f"models/{standard}/{model_version.replace('.', '-')}"
 
 
 def replace_pattern_in_list_of_strings(

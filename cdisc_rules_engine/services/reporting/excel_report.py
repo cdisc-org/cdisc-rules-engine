@@ -8,12 +8,14 @@ from openpyxl.styles import Alignment
 from cdisc_rules_engine.enums.report_types import ReportTypes
 from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
 from cdisc_rules_engine.models.validation_args import Validation_args
-
 from .base_report import BaseReport
 from .excel_writer import (
     excel_open_workbook,
     excel_update_worksheet,
     excel_workbook_to_stream,
+)
+from cdisc_rules_engine.utilities.reporting_utilities import (
+    get_define_version,
 )
 
 
@@ -69,9 +71,13 @@ class ExcelReport(BaseReport):
 
     def write_report(self):
         logger = logging.getLogger("validator")
+
         try:
+            define_version: str = self._args.define_version or get_define_version(
+                self._args.dataset_paths
+            )
             report_data = self.get_export(
-                self._args.define_version,
+                define_version,
                 self._args.controlled_terminology_package,
                 self._args.standard,
                 self._args.version.replace("-", "."),

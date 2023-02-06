@@ -9,6 +9,7 @@ from cdisc_rules_engine.constants.domains import (
     APFA_DOMAIN,
     SUPPLEMENTARY_DOMAINS,
 )
+from cdisc_rules_engine.constants.rule_constants import ALL_KEYWORD
 from cdisc_rules_engine.interfaces import ConditionInterface
 from cdisc_rules_engine.models.operation_params import OperationParams
 from cdisc_rules_engine.models.rule_conditions import AllowedConditionsKeys
@@ -78,7 +79,7 @@ class RuleProcessor:
                 return False
             return True
 
-        if dataset_domain in included_domains or "All" in included_domains:
+        if dataset_domain in included_domains or ALL_KEYWORD in included_domains:
             return True
         if cls._domain_matched_ap_or_supp(dataset_domain, included_domains):
             return True
@@ -99,7 +100,7 @@ class RuleProcessor:
         if not excluded_domains:
             return False
 
-        if dataset_domain in excluded_domains or "All" in excluded_domains:
+        if dataset_domain in excluded_domains or ALL_KEYWORD in excluded_domains:
             return True
         if cls._domain_matched_ap_or_supp(dataset_domain, excluded_domains):
             return True
@@ -172,7 +173,10 @@ class RuleProcessor:
             class_name = self.data_service.get_dataset_class(
                 dataset, file_path, datasets
             )
-            if class_name not in included_classes and "All" not in included_classes:
+            if (
+                class_name not in included_classes
+                and ALL_KEYWORD not in included_classes
+            ):
                 is_included = False
 
         if excluded_classes:

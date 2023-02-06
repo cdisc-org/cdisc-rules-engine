@@ -14,6 +14,7 @@ from cdisc_rules_engine.services.cache.in_memory_cache_service import (
     InMemoryCacheService,
 )
 from cdisc_rules_engine.utilities.rule_processor import RuleProcessor
+from cdisc_rules_engine.constants.rule_constants import ALL_KEYWORD
 
 
 @pytest.mark.parametrize(
@@ -22,30 +23,30 @@ from cdisc_rules_engine.utilities.rule_processor import RuleProcessor
         ("SQAE", {"domains": {"Exclude": ["SUPP--"]}}, False),
         ("SQAE", {"domains": {"Exclude": ["SUPP--", "SQ--"]}}, False),
         ("SQAE", {"domains": {"Include": ["SQ--"]}}, True),
-        ("SQAE", {"domains": {"Exclude": ["All"]}}, False),
+        ("SQAE", {"domains": {"Exclude": [ALL_KEYWORD]}}, False),
         ("SQAE", {"domains": {"Include": ["SUPP--"]}}, True),
-        ("SQAE", {"domains": {"Include": ["All"]}}, True),
+        ("SQAE", {"domains": {"Include": [ALL_KEYWORD]}}, True),
         ("AE", {"domains": {"Include": ["AE"]}}, True),
-        ("AE", {"domains": {"Include": ["All"]}}, True),
+        ("AE", {"domains": {"Include": [ALL_KEYWORD]}}, True),
         ("AE", {"domains": {"Exclude": ["AE"]}}, False),
-        ("AE", {"domains": {"Exclude": ["All"]}}, False),
+        ("AE", {"domains": {"Exclude": [ALL_KEYWORD]}}, False),
         ("AE", {"domains": {"Include": ["TV"]}}, False),
         ("SUPPAE", {"domains": {"Exclude": ["SUPP--"]}}, False),
-        ("SUPPAE", {"domains": {"Exclude": ["All"]}}, False),
+        ("SUPPAE", {"domains": {"Exclude": [ALL_KEYWORD]}}, False),
         ("SUPPAE", {"domains": {"Include": ["SUPP--"]}}, True),
-        ("SUPPAE", {"domains": {"Include": ["All"]}}, True),
+        ("SUPPAE", {"domains": {"Include": [ALL_KEYWORD]}}, True),
         ("APTE", {"domains": {"Exclude": ["AP--"]}}, False),
-        ("APTE", {"domains": {"Exclude": ["All"]}}, False),
+        ("APTE", {"domains": {"Exclude": [ALL_KEYWORD]}}, False),
         ("APTE", {"domains": {"Include": ["AP--"]}}, True),
-        ("APTE", {"domains": {"Include": ["All"]}}, True),
+        ("APTE", {"domains": {"Include": [ALL_KEYWORD]}}, True),
         ("APRELSUB", {"domains": {"Exclude": ["APRELSUB"]}}, False),
-        ("APRELSUB", {"domains": {"Exclude": ["All"]}}, False),
+        ("APRELSUB", {"domains": {"Exclude": [ALL_KEYWORD]}}, False),
         ("APRELSUB", {"domains": {"Include": ["APRELSUB"]}}, True),
-        ("APRELSUB", {"domains": {"Include": ["All"]}}, True),
+        ("APRELSUB", {"domains": {"Include": [ALL_KEYWORD]}}, True),
         ("APFASU", {"domains": {"Exclude": ["APFA--"]}}, False),
-        ("APFASU", {"domains": {"Exclude": ["All"]}}, False),
+        ("APFASU", {"domains": {"Exclude": [ALL_KEYWORD]}}, False),
         ("APFASU", {"domains": {"Include": ["APFA--"]}}, True),
-        ("APFASU", {"domains": {"Include": ["All"]}}, True),
+        ("APFASU", {"domains": {"Include": [ALL_KEYWORD]}}, True),
     ],
 )
 def test_rule_applies_to_domain(mock_data_service, domain, rule_metadata, outcome):
@@ -58,7 +59,7 @@ def test_rule_applies_to_domain(mock_data_service, domain, rule_metadata, outcom
     [
         (
             {
-                "Include": ["All"],
+                "Include": [ALL_KEYWORD],
                 "include_split_datasets": True,  # Includes all
             },
             [True, True, True, True, True, True],
