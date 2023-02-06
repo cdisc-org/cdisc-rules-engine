@@ -39,7 +39,7 @@ class BaseReport(ABC):
             "Dataset",
             "RuleID",
             "Message",
-            "Severity",
+            "Executability",
             "Issues",
             "Explanation"
         ]
@@ -57,7 +57,7 @@ class BaseReport(ABC):
                             "dataset": dataset,
                             "rule_id": validation_result.id,
                             "message": result.get("message"),
-                            "severity": validation_result.severity,
+                            "executability": validation_result.executability,
                             "issues": len(result.get("errors")),
                         }
 
@@ -94,7 +94,7 @@ class BaseReport(ABC):
         return [
             "RuleID",
             "Message",
-            "Severity",
+            "Executability",
             "Dataset",
             "USUBJID",
             "Record",
@@ -111,7 +111,7 @@ class BaseReport(ABC):
                     error_item = {
                         "rule_id": validation_result.id,
                         "message": result.get("message"),
-                        "severity": validation_result.severity,
+                        "executability": validation_result.executability,
                         "dataset": result.get("domain"),
                         "uSubjId": error.get("uSubjId", ""),
                         "row": error.get("row", ""),

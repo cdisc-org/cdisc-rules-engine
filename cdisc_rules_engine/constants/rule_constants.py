@@ -1,0 +1,1 @@
+ALL_KEYWORD: str = "ALL"

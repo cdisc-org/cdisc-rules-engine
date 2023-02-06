@@ -128,3 +128,31 @@ def test_parse_datasets(match_datasets, expected_result):
 )
 def test_parse_conditions_not_condition(yaml, output):
     assert Rule.parse_conditions(yaml) == output
+
+
+@pytest.mark.parametrize(
+    "authorities, expected",
+    [
+        (
+            [
+                {
+                    "Organization": "CDISC",
+                    "Standards": [
+                        {
+                            "Name": "SDTMIG",
+                            "Version": "3-4",
+                            "References": [{"Origin": "Test"}],
+                        },
+                        {"Name": "SENDIG", "Version": "3-1"},
+                    ],
+                }
+            ],
+            [
+                {"Name": "SDTMIG", "Version": "3-4"},
+                {"Name": "SENDIG", "Version": "3-1"},
+            ],
+        )
+    ],
+)
+def test_parse_standards(authorities, expected):
+    assert Rule.parse_standards(authorities) == expected

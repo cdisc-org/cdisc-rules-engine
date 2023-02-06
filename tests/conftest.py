@@ -15,6 +15,7 @@ from cdisc_rules_engine.services.cache import (
     InMemoryCacheService,
 )
 from cdisc_rules_engine.services.data_services import LocalDataService
+from cdisc_rules_engine.constants.rule_constants import ALL_KEYWORD
 
 
 def mock_get_dataset(dataset_name):
@@ -335,7 +336,7 @@ def rule_distinct_operation_is_not_contained_by() -> dict:
         "core_id": "CDISC.SDTMIG.CG0178",
         "severity": "warning",
         "standards": [{"Name": "SDTMIG", "Version": "3.4"}],
-        "classes": {"Include": ["All"]},
+        "classes": {"Include": [ALL_KEYWORD]},
         "domains": {"Include": ["IE"]},
         "conditions": ConditionCompositeFactory.get_condition_composite(
             {
@@ -373,7 +374,7 @@ def dataset_rule_equal_to() -> dict:
     return {
         "core_id": "MockRule",
         "standards": [{"Name": "SDTMIG", "Version": "3.3"}],
-        "classes": {"Include": ["All"]},
+        "classes": {"Include": [ALL_KEYWORD]},
         "domains": {"Include": ["EC"]},
         "datasets": [
             {"domain_name": "AE", "match_key": ["STUDYID", "USUBJID"]},
@@ -414,7 +415,7 @@ def dataset_rule_equal_to_compare_same_value() -> dict:
     return {
         "core_id": "MockRule",
         "standards": [{"Name": "SDTMIG", "Version": "3.3"}],
-        "classes": {"Include": ["All"]},
+        "classes": {"Include": [ALL_KEYWORD]},
         "domains": {"Include": ["EC"]},
         "datasets": [
             {"domain_name": "AE", "match_key": ["STUDYID", "USUBJID"]},
@@ -682,7 +683,7 @@ def domain_presence_rule() -> dict:
     return {
         "core_id": "TEST1",
         "standards": [],
-        "domains": {"Include": ["All"]},
+        "domains": {"Include": [ALL_KEYWORD]},
         "rule_type": RuleTypes.DOMAIN_PRESENCE_CHECK.value,
         "conditions": ConditionCompositeFactory.get_condition_composite(
             {
@@ -717,7 +718,7 @@ def define_xml_validation_rule() -> dict:
         "core_id": "TEST1",
         "severity": "Error",
         "standards": [],
-        "domains": {"Include": ["All"]},
+        "domains": {"Include": [ALL_KEYWORD]},
         "output_variables": ["dataset_label", "dataset_name", "dataset_location"],
         "rule_type": RuleTypes.DATASET_METADATA_CHECK_AGAINST_DEFINE.value,
         "conditions": ConditionCompositeFactory.get_condition_composite(
@@ -763,7 +764,7 @@ def define_xml_variable_validation_rule() -> dict:
         "core_id": "TEST1",
         "severity": "Error",
         "standards": [],
-        "domains": {"Include": ["All"]},
+        "domains": {"Include": [ALL_KEYWORD]},
         "output_variables": ["variable_size"],
         "rule_type": RuleTypes.VARIABLE_METADATA_CHECK_AGAINST_DEFINE.value,
         "conditions": ConditionCompositeFactory.get_condition_composite(
@@ -802,7 +803,7 @@ def define_xml_value_level_metadata_validation_rule() -> dict:
         "core_id": "TEST1",
         "severity": "Error",
         "standards": [],
-        "domains": {"Include": ["All"]},
+        "domains": {"Include": [ALL_KEYWORD]},
         "rule_type": RuleTypes.VALUE_LEVEL_METADATA_CHECK_AGAINST_DEFINE.value,
         "conditions": ConditionCompositeFactory.get_condition_composite(
             {
@@ -837,7 +838,7 @@ def dataset_rule_record_in_parent_domain_equal_to() -> dict:
     return {
         "core_id": "MockRule",
         "standards": [{"Name": "SDTMIG", "Version": "3.3"}],
-        "classes": {"Include": ["All"]},
+        "classes": {"Include": [ALL_KEYWORD]},
         "domains": {"Include": ["EC"]},
         "datasets": [
             {
@@ -884,8 +885,8 @@ def define_xml_allowed_terms_check_rule() -> dict:
         "core_id": "MockRule",
         "rule_type": "Define-XML",
         "standards": [{"Name": "SDTMIG", "Version": "3.3"}],
-        "classes": {"Include": ["All"]},
-        "domains": {"Include": ["All"]},
+        "classes": {"Include": [ALL_KEYWORD]},
+        "domains": {"Include": [ALL_KEYWORD]},
         "conditions": ConditionCompositeFactory.get_condition_composite(
             {
                 "all": [
@@ -922,7 +923,7 @@ def dataset_rule_additional_columns_not_null() -> dict:
     return {
         "core_id": "MockRule",
         "standards": [{"Name": "SDTMIG", "Version": "3.3"}],
-        "classes": {"Include": ["All"]},
+        "classes": {"Include": [ALL_KEYWORD]},
         "domains": {"Include": ["TS"]},
         "conditions": ConditionCompositeFactory.get_condition_composite(
             {
@@ -951,7 +952,7 @@ def rule_check_dataset_against_library_and_define() -> dict:
     return {
         "core_id": "MockRule",
         "standards": [{"Name": "SDTMIG", "Version": "3.3"}],
-        "classes": {"Include": ["All"]},
+        "classes": {"Include": [ALL_KEYWORD]},
         "domains": {"Include": ["AE"]},
         "rule_type": "Dataset Contents Check against Define XML and Library Metadata",
         "variable_origin_type": "Collected",
@@ -973,8 +974,8 @@ def rule_check_dataset_contents_against_library_metadata() -> dict:
     return {
         "core_id": "MockRule",
         "standards": [{"Name": "SDTMIG", "Version": "3.3"}],
-        "classes": {"Include": ["All"]},
-        "domains": {"Include": ["All"]},
+        "classes": {"Include": [ALL_KEYWORD]},
+        "domains": {"Include": [ALL_KEYWORD]},
         "rule_type": "Dataset Contents Check against Library Metadata",
         "conditions": ConditionCompositeFactory.get_condition_composite(
             {
@@ -1007,8 +1008,8 @@ def dataset_rule_get_variable_names_in_given_standard() -> dict:
     return {
         "core_id": "MockRule",
         "standards": [{"Name": "SDTMIG", "Version": "3.3"}],
-        "classes": {"Include": ["All"]},
-        "domains": {"Include": ["All"]},
+        "classes": {"Include": [ALL_KEYWORD]},
+        "domains": {"Include": [ALL_KEYWORD]},
         "operations": [
             {
                 "operator": "get_variable_names_in_given_standard",
@@ -1048,8 +1049,8 @@ def rule_dataset_references_invalid_whodrug_terms() -> dict:
     return {
         "core_id": "MockRule",
         "standards": [{"Name": "SDTMIG", "Version": "3.3"}],
-        "classes": {"Include": ["All"]},
-        "domains": {"Include": ["All"]},
+        "classes": {"Include": [ALL_KEYWORD]},
+        "domains": {"Include": [ALL_KEYWORD]},
         "operations": [
             {
                 "operator": "valid_whodrug_references",
