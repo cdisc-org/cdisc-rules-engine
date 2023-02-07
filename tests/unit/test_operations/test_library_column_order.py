@@ -131,7 +131,9 @@ def test_get_column_order_from_library(
         "STUDYID",
         "DOMAIN",
         "AETERM",
+        "AETEST",
         "AESEQ",
+        "AENEW",
         "TIMING_VAR",
     ]
     expected: pd.Series = pd.Series(
@@ -141,4 +143,5 @@ def test_get_column_order_from_library(
             variables,
         ]
     )
+    print(result[operation_params.operation_id])
     assert result[operation_params.operation_id].equals(expected)
