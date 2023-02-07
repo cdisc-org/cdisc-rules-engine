@@ -7,3 +7,6 @@ class OptionalConditionParameters(BaseEnum):
     SUFFIX = "suffix"
     CONTEXT = "context"
     VALUE_IS_LITERAL = "value_is_literal"
+    WITHIN = "within"
+    ORDERING = "ordering"
+    ORDER = "order"
