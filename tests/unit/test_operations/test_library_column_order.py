@@ -130,9 +130,7 @@ def test_get_column_order_from_library(
     variables: List[str] = [
         "STUDYID",
         "DOMAIN",
-        "AETERM",
         "AETEST",
-        "AESEQ",
         "AENEW",
         "TIMING_VAR",
     ]
