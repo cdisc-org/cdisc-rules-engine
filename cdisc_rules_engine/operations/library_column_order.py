@@ -76,10 +76,7 @@ class LibraryColumnOrder(BaseOperation):
         model_cache_key = get_model_details_cache_key(model_type, model_version)
         model_details = self.cache.get(model_cache_key) or {}
 
-        dataset_variables: dict = {
-            v["name"]: v for v in domain_details.get("datasetVariables", [])
-        }
-        variables_metadata = list(dataset_variables.values())
+        variables_metadata = domain_details.get("datasetVariables", [])
         variables_metadata.sort(key=lambda item: item["ordinal"])
         if class_details.get("name") in DETECTABLE_CLASSES:
             # if the class is one of Interventions, Findings, or Events
