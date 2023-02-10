@@ -141,5 +141,4 @@ def test_get_column_order_from_library(
             variables,
         ]
     )
-    print(result[operation_params.operation_id])
     assert result[operation_params.operation_id].equals(expected)
