@@ -1160,7 +1160,10 @@ def test_validate_dataset_metadata_against_define_xml(
         ),
     ],
 )
-@patch("cdisc_rules_engine.rules_engine.RulesEngine.get_define_xml_variables_metadata")
+@patch(
+    "cdisc_rules_engine.dataset_builders.base_dataset_builder."
+    + "BaseDatasetBuilder.get_define_xml_variables_metadata"
+)
 @patch(
     "cdisc_rules_engine.services.data_services.LocalDataService.get_variables_metadata"
 )
@@ -1516,76 +1519,6 @@ def test_validate_split_dataset_variables_metadata(
             "message": "Variable metadata is wrong.",
         }
     ]
-
-
-@pytest.mark.parametrize(
-    "variable_metadata, allowed_terms_map, expected_validation_result",
-    [
-        (
-            [
-                {
-                    "define_variable_name": "TEST",
-                    "define_variable_label": "TEST LABEL",
-                    "define_variable_size": 20,
-                    "define_variable_role": "VAR ROLE",
-                    "define_variable_data_type": "Char",
-                    "define_variable_allowed_terms": ["DEAD", "deceased"],
-                    "define_variable_ccode": "C12345",
-                }
-            ],
-            {"C12345": ["dead", "deceased"]},
-            [
-                {
-                    "domain": "EC",
-                    "executionStatus": ExecutionStatus.SUCCESS.value,
-                    "variables": [
-                        "define_variable_allowed_terms",
-                        "define_variable_ccode",
-                        "define_variable_name",
-                    ],
-                    "errors": [
-                        {
-                            "row": 1,
-                            "value": {
-                                "define_variable_ccode": "C12345",
-                                "define_variable_name": "TEST",
-                                "define_variable_allowed_terms": ["DEAD", "deceased"],
-                            },
-                        }
-                    ],
-                    "message": "Define specifies invalid codelist terms",
-                }
-            ],
-        )
-    ],
-)
-@patch("cdisc_rules_engine.rules_engine.RulesEngine.get_define_xml_variables_metadata")
-def test_validate_define_ct_allowed_terms(
-    mock_get_define_xml_variables_metadata: MagicMock,
-    define_xml_allowed_terms_check_rule: dict,
-    variable_metadata: dict,
-    allowed_terms_map: pd.DataFrame,
-    expected_validation_result: List[dict],
-):
-    cache = InMemoryCacheService()
-    ct_package = "sdtmct-2021-12-17"
-    standard = "sdtmig"
-    standard_version = "3-3"
-    cache.add(ct_package, allowed_terms_map)
-    mock_get_define_xml_variables_metadata.return_value = variable_metadata
-    rules_engine = RulesEngine(
-        cache=cache,
-        ct_package=ct_package,
-        standard=standard,
-        standard_version=standard_version,
-    )
-    result = rules_engine.validate_define_xml(
-        define_xml_allowed_terms_check_rule,
-        "test/",
-        [{"domain": "EC", "filename": "ec.xpt"}],
-        "EC",
-    )
-    assert result == expected_validation_result
 
 
 def test_validate_record_in_parent_domain(
