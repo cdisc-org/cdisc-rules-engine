@@ -170,13 +170,14 @@ class LocalDataService(BaseDataService):
 
     def read_metadata(self, file_path: str) -> dict:
         file_size = os.path.getsize(file_path)
+        file_name = extract_file_name_from_path_string(file_path)
         file_metadata = {
             "path": file_path,
-            "name": extract_file_name_from_path_string(file_path),
+            "name": file_name,
             "size": file_size,
         }
         with open(file_path, "rb") as f:
-            contents_metadata = DatasetMetadataReader(f.read()).read()
+            contents_metadata = DatasetMetadataReader(f.read(), file_name).read()
 
         return {
             "file_metadata": file_metadata,

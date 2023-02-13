@@ -16,7 +16,7 @@ def test_read_metadata():
     )
     with open(test_dataset_path, "rb") as file:
         file_contents: bytes = file.read()
-        reader = DatasetMetadataReader(file_contents)
+        reader = DatasetMetadataReader(file_contents, file_name="test_adam_dataset.xpt")
         metadata: dict = reader.read()
         assert metadata["adam_info"] == {
             "categorization_scheme": {"CRIT1": 1},

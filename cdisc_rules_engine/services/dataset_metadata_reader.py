@@ -17,10 +17,11 @@ class DatasetMetadataReader:
 
     # TODO. Maybe in future it is worth having multiple constructors
     #  like from_bytes, from_file etc. But now there is no immediate need for that.
-    def __init__(self, contents_in_bytes: bytes):
+    def __init__(self, contents_in_bytes: bytes, file_name: str):
         self._file_contents = contents_in_bytes
         self._metadata_container = None
         self._domain_name = None
+        self._dataset_name = file_name.split(".")[0].upper()
 
     def read(self) -> dict:
         """
@@ -45,7 +46,7 @@ class DatasetMetadataReader:
             "number_of_variables": len(dataset.columns),
             "dataset_label": dataset.dataset_label,
             "domain_name": self._domain_name,
-            "dataset_name": dataset.name,
+            "dataset_name": self._dataset_name,
             "dataset_modification_date": dataset.modified.isoformat(),
         }
         self._domain_name = self._extract_domain_name(dataset)
@@ -92,14 +93,14 @@ class DatasetMetadataReader:
         return {
             "variable_labels": self._metadata_container.column_labels,
             "variable_names": self._metadata_container.column_names,
-            "variable_name_to_label_map": self._metadata_container.column_names_to_labels,
-            "variable_name_to_data_type_map": self._metadata_container.readstat_variable_types,
-            "variable_name_to_size_map": self._metadata_container.variable_storage_width,
+            "variable_name_to_label_map": self._metadata_container.column_names_to_labels,  # noqa
+            "variable_name_to_data_type_map": self._metadata_container.readstat_variable_types,  # noqa
+            "variable_name_to_size_map": self._metadata_container.variable_storage_width,  # noqa
             "number_of_variables": self._metadata_container.number_columns,
             "dataset_label": self._metadata_container.file_label,
             "domain_name": self._domain_name,
-            "dataset_name": self._metadata_container.table_name,
-            "dataset_modification_date": self._metadata_container.dataset_modification_date,
+            "dataset_name": self._dataset_name,
+            "dataset_modification_date": self._metadata_container.dataset_modification_date,  # noqa
         }
 
     def _extract_adam_info(self, variable_names):
