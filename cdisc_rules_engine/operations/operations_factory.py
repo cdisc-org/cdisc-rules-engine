@@ -7,6 +7,9 @@ from cdisc_rules_engine.operations.day_data_validator import DayDataValidator
 from cdisc_rules_engine.operations.distinct import Distinct
 from cdisc_rules_engine.operations.extract_metadata import ExtractMetadata
 from cdisc_rules_engine.operations.library_column_order import LibraryColumnOrder
+from cdisc_rules_engine.operations.library_model_column_order import (
+    LibraryModelColumnOrder,
+)
 from cdisc_rules_engine.operations.max_date import MaxDate
 from cdisc_rules_engine.operations.maximum import Maximum
 from cdisc_rules_engine.operations.mean import Mean
@@ -42,6 +45,7 @@ class OperationsFactory(FactoryInterface):
         "extract_metadata": ExtractMetadata,
         "get_column_order_from_dataset": DatasetColumnOrder,
         "get_column_order_from_library": LibraryColumnOrder,
+        "get_model_column_order": LibraryModelColumnOrder,
         "max": Maximum,
         "max_date": MaxDate,
         "mean": Mean,

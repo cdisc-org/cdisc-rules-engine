@@ -3,6 +3,8 @@ from typing import List, Optional, Tuple
 from cdisc_rules_engine.constants.classes import (
     DETECTABLE_CLASSES,
     GENERAL_OBSERVATIONS_CLASS,
+    FINDINGS_ABOUT,
+    FINDINGS,
 )
 from cdisc_rules_engine.enums.variable_roles import VariableRoles
 from cdisc_rules_engine.operations.base_operation import BaseOperation
@@ -13,7 +15,7 @@ from cdisc_rules_engine.utilities.utils import (
 )
 
 
-class LibraryColumnOrder(BaseOperation):
+class LibraryModelColumnOrder(BaseOperation):
     def _execute_operation(self):
         """
         Fetches column order for a given domain from the CDISC library.
@@ -69,19 +71,43 @@ class LibraryColumnOrder(BaseOperation):
 
         standard_details: dict = self.cache.get(cache_key) or {}
         model = standard_details.get("_links", {}).get("model")
-        class_details, domain_details = self._get_class_and_domain_metadata(
-            standard_details
-        )
         model_type, model_version = self._get_model_type_and_version(model)
         model_cache_key = get_model_details_cache_key(model_type, model_version)
         model_details = self.cache.get(model_cache_key) or {}
-
+        domain_details = self._get_model_domain_metadata(
+            model_details, self.params.domain
+        )
+        class_title = domain_details["_links"]["parentClass"]["title"]
+        class_details = self._get_model_class_metadata(model_details, class_title)
         variables_metadata = domain_details.get("datasetVariables", [])
         variables_metadata.sort(key=lambda item: item["ordinal"])
-        if class_details.get("name") in DETECTABLE_CLASSES:
-            # if the class is one of Interventions, Findings, Events
-            # -> add General Observation class variables to variables metadata
-            gen_obs_class_metadata: dict = self._get_class_metadata(
+        class_name = class_details.get("name")
+        if class_name in DETECTABLE_CLASSES or class_name == FINDINGS_ABOUT:
+            # if the class is one of Interventions, Findings, Events, or Findings About
+            # -> get class variables instead of datasetVariables add
+            # General Observation class variables to variables metadata
+            variables_metadata = class_details.get("classVariables", [])
+            variables_metadata.sort(key=lambda item: item["ordinal"])
+
+            if class_name == FINDINGS_ABOUT:
+                # Add FINDINGS class variables. Findings About class variables should
+                # Appear in the list after the --TEST variable
+                findings_class_metadata: dict = self._get_model_class_metadata(
+                    model_details, FINDINGS
+                )
+                findings_class_variables = findings_class_metadata["classVariables"]
+                findings_class_variables.sort(key=lambda item: item["ordinal"])
+                test_index = len(findings_class_variables) - 1
+                for i, v in enumerate(findings_class_variables):
+                    if v["name"].lower().endswith("test"):
+                        test_index = i
+                variables_metadata = (
+                    findings_class_variables[: test_index + 1]
+                    + variables_metadata
+                    + findings_class_variables[test_index + 1 :]
+                )
+
+            gen_obs_class_metadata: dict = self._get_model_class_metadata(
                 model_details, GENERAL_OBSERVATIONS_CLASS
             )
             identifiers_metadata, timing_metadata = self._sort_class_variables_by_role(
@@ -108,10 +134,10 @@ class LibraryColumnOrder(BaseOperation):
             model_version = ""
         return model_type, model_version
 
-    def _get_class_metadata(
+    def _get_model_class_metadata(
         self,
         model_details: dict,
-        dataset_class: str,
+        class_title: str,
     ) -> dict:
         """
         Extracts metadata of a certain class
@@ -119,27 +145,32 @@ class LibraryColumnOrder(BaseOperation):
         """
         class_metadata: Optional[dict] = search_in_list_of_dicts(
             model_details.get("classes", []),
-            lambda item: item["name"] == dataset_class,
+            lambda item: item["label"] == class_title,
         )
         if not class_metadata:
             raise ValueError(
-                f"Variables metadata is not found in CDISC Library. "
+                f"Model class metadata is not found in CDISC Library. "
                 f"standard={self.params.standard}, "
                 f"version={self.params.standard_version}, "
-                f"class={dataset_class}"
+                f"class={class_title}"
             )
         return class_metadata
 
-    def _get_class_and_domain_metadata(self, standard_details) -> Tuple:
-        # Get domain and class details for domain. This logic is specific
-        # to SDTM based standards. Needs to be expanded for other models
-        for c in standard_details.get("classes"):
-            domain_details = search_in_list_of_dicts(
-                c.get("datasets", []), lambda item: item["name"] == self.params.domain
+    def _get_model_domain_metadata(self, model_details, domain_name) -> Tuple:
+        # Get domain metadata from model
+        domain_details: Optional[dict] = search_in_list_of_dicts(
+            model_details.get("datasets", []), lambda item: item["name"] == domain_name
+        )
+
+        if not domain_details:
+            raise ValueError(
+                f"Model domain metadata is not found in CDISC Library. "
+                f"standard={self.params.standard}, "
+                f"version={self.params.standard_version}, "
+                f"domain={domain_name}"
             )
-            if domain_details:
-                return c, domain_details
-        return {}, {}
+
+        return domain_details
 
     def _sort_class_variables_by_role(
         self, class_variables: List[dict]
