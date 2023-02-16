@@ -218,7 +218,7 @@ def test_get_column_order_from_library(
                 "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
                 "classes": [
                     {
-                        "name": "Findings About",
+                        "name": FINDINGS_ABOUT,
                         "datasets": [
                             {
                                 "name": "AE",

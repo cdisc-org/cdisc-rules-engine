@@ -77,11 +77,10 @@ class LibraryModelColumnOrder(BaseOperation):
         domain_details = self._get_model_domain_metadata(
             model_details, self.params.domain
         )
-        class_title = domain_details["_links"]["parentClass"]["title"]
-        class_details = self._get_model_class_metadata(model_details, class_title)
+        class_name = self._get_class_name_from_ig(standard_details)
+        class_details = self._get_model_class_metadata(model_details, class_name)
         variables_metadata = domain_details.get("datasetVariables", [])
         variables_metadata.sort(key=lambda item: item["ordinal"])
-        class_name = class_details.get("name")
         if class_name in DETECTABLE_CLASSES or class_name == FINDINGS_ABOUT:
             # if the class is one of Interventions, Findings, Events, or Findings About
             # -> get class variables instead of datasetVariables add
@@ -110,7 +109,7 @@ class LibraryModelColumnOrder(BaseOperation):
             gen_obs_class_metadata: dict = self._get_model_class_metadata(
                 model_details, GENERAL_OBSERVATIONS_CLASS
             )
-            identifiers_metadata, timing_metadata = self._sort_class_variables_by_role(
+            identifiers_metadata, timing_metadata = self._group_class_variables_by_role(
                 gen_obs_class_metadata["classVariables"]
             )
             # Identifiers are added to the beginning and Timing to the end
@@ -134,10 +133,21 @@ class LibraryModelColumnOrder(BaseOperation):
             model_version = ""
         return model_type, model_version
 
+    def _get_class_name_from_ig(self, standard_details) -> Tuple:
+        # Get domain and class details for domain. This logic is specific
+        # to SDTM based standards. Needs to be expanded for other models
+        for c in standard_details.get("classes"):
+            domain_details = search_in_list_of_dicts(
+                c.get("datasets", []), lambda item: item["name"] == self.params.domain
+            )
+            if domain_details:
+                return c.get("name")
+        return None
+
     def _get_model_class_metadata(
         self,
         model_details: dict,
-        class_title: str,
+        class_name: str,
     ) -> dict:
         """
         Extracts metadata of a certain class
@@ -145,14 +155,14 @@ class LibraryModelColumnOrder(BaseOperation):
         """
         class_metadata: Optional[dict] = search_in_list_of_dicts(
             model_details.get("classes", []),
-            lambda item: item["label"] == class_title,
+            lambda item: item["name"] == class_name,
         )
         if not class_metadata:
             raise ValueError(
                 f"Model class metadata is not found in CDISC Library. "
                 f"standard={self.params.standard}, "
                 f"version={self.params.standard_version}, "
-                f"class={class_title}"
+                f"class={class_name}"
             )
         return class_metadata
 
@@ -172,7 +182,7 @@ class LibraryModelColumnOrder(BaseOperation):
 
         return domain_details
 
-    def _sort_class_variables_by_role(
+    def _group_class_variables_by_role(
         self, class_variables: List[dict]
     ) -> Tuple[List[dict], List[dict]]:
         """
