@@ -10,7 +10,7 @@ from cdisc_rules_engine import config
 class DomainLabel(BaseOperation):
     def _execute_operation(self):
         """
-        Return the set of variable names for the given standard
+        Return the domain label for the currently executing domain
         """
         cache_key = get_standard_details_cache_key(
             self.params.standard, self.params.standard_version
