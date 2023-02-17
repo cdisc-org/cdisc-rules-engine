@@ -134,6 +134,7 @@ def test_cached_data_cache_exists():
     dataset, so the function should not be called
     and the cache data should be returned.
     """
+
     # create a test wrapped function
     @cached_dataset(DatasetTypes.CONTENTS.value)
     def to_be_decorated(instance, dataset_name: str):
