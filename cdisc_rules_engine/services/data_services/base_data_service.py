@@ -12,6 +12,12 @@ from cdisc_rules_engine.interfaces import (
     ConfigInterface,
     DataServiceInterface,
 )
+from cdisc_rules_engine.constants.classes import (
+    FINDINGS,
+    FINDINGS_ABOUT,
+    EVENTS,
+    INTERVENTIONS,
+)
 from cdisc_rules_engine.models.dataset_types import DatasetTypes
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.services.data_readers import DataReaderFactory
@@ -133,11 +139,14 @@ class BaseDataService(DataServiceInterface, ABC):
         self, dataset: pd.DataFrame, file_path: str, datasets: List[dict]
     ) -> Optional[str]:
         if self._contains_topic_variable(dataset, "TERM"):
-            return "Events"
+            return EVENTS
         elif self._contains_topic_variable(dataset, "TRT"):
-            return "Interventions"
+            return INTERVENTIONS
         elif self._contains_topic_variable(dataset, "TESTCD"):
-            return "Findings"
+            if self._contains_topic_variable(dataset, "OBJ"):
+                return FINDINGS_ABOUT
+            else:
+                return FINDINGS
         elif self._is_associated_persons(dataset):
             return self._get_associated_persons_inherit_class(
                 dataset, file_path, datasets
@@ -186,7 +195,10 @@ class BaseDataService(DataServiceInterface, ABC):
         Checks if the given dataset-class string ends with a particular variable string.
         Returns True/False
         """
-        return dataset.columns.str.endswith(variable).any()
+        if "DOMAIN" not in dataset:
+            return False
+        domain = dataset["DOMAIN"].values[0]
+        return domain.upper() + variable in dataset
 
     def _domain_starts_with(self, domain, variable):
         """

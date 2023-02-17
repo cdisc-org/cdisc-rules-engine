@@ -3,7 +3,11 @@ from typing import List, Optional, Set, Union, Tuple
 
 import pandas as pd
 
-from cdisc_rules_engine.constants.classes import DETECTABLE_CLASSES
+from cdisc_rules_engine.constants.classes import (
+    DETECTABLE_CLASSES,
+    FINDINGS_ABOUT,
+    FINDINGS,
+)
 from cdisc_rules_engine.constants.domains import (
     AP_DOMAIN,
     APFA_DOMAIN,
@@ -174,9 +178,9 @@ class RuleProcessor:
                 dataset, file_path, datasets
             )
             if (
-                class_name not in included_classes
-                and ALL_KEYWORD not in included_classes
-            ):
+                (class_name not in included_classes)
+                and not (class_name == FINDINGS_ABOUT and FINDINGS in included_classes)
+            ) and ALL_KEYWORD not in included_classes:
                 is_included = False
 
         if excluded_classes:
@@ -184,7 +188,10 @@ class RuleProcessor:
             class_name = self.data_service.get_dataset_class(
                 dataset, file_path, datasets
             )
-            if class_name and class_name in excluded_classes:
+            if class_name and (
+                (class_name in excluded_classes)
+                or (class_name == FINDINGS_ABOUT and FINDINGS in excluded_classes)
+            ):
                 is_excluded = True
         return is_included and not is_excluded
 
