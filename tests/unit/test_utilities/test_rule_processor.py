@@ -319,6 +319,22 @@ def test_rule_applies_to_domain_split_datasets(
             "Findings About",
             False,
         ),
+        (
+            [{"domain": "AE", "filename": "ae.xpt"}],
+            "AE",
+            {"classes": {"Exclude": ["Findings About"]}},
+            {"AETESTCD": [10, 20]},
+            "Findings About",
+            False,
+        ),
+        (
+            [{"domain": "AE", "filename": "ae.xpt"}],
+            "AE",
+            {"classes": {"Include": ["Findings About"]}},
+            {"AETESTCD": [10, 20]},
+            "Findings About",
+            True,
+        ),
     ],
 )
 def test_rule_applies_to_class(
