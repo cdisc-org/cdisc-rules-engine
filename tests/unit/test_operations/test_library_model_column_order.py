@@ -161,7 +161,7 @@ def test_get_column_order_from_library(
                 "datasets": [
                     {
                         "_links": {"parentClass": {"title": FINDINGS_ABOUT}},
-                        "name": "AE",
+                        "name": "NOTTHESAME",
                         "datasetVariables": [
                             {
                                 "name": "AETERM",
@@ -249,7 +249,8 @@ def test_get_findings_class_column_order_from_library(
                 "TEST_STUDY",
                 "TEST_STUDY",
             ],
-            "AETERM": [
+            "DOMAIN": ["AE", "AE", "AE"],
+            "AEOBJ": [
                 "test",
                 "test",
                 "test",

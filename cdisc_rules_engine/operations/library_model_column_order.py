@@ -90,6 +90,7 @@ class LibraryModelColumnOrder(BaseOperation):
             class_name = self.data_service.get_dataset_class(
                 self.params.dataframe, self.params.dataset_path, self.params.datasets
             )
+            class_details = self._get_model_class_metadata(model_details, class_name)
 
         if class_name in DETECTABLE_CLASSES:
             # if the class is one of Interventions, Findings, Events, or Findings About
