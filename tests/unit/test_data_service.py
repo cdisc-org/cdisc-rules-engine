@@ -90,8 +90,14 @@ def test_get_raw_dataset_metadata(
         ),
         (
             [{"domain": "AE", "filename": "ae.xpt"}],
-            {"DOMAIN": ["AE"], "AEOBJ": ["test"]},
+            {"DOMAIN": ["AE"], "AETESTCD": ["test"], "AEOBJ": ["test"]},
             "Findings About",
+            "ae.xpt",
+        ),
+        (
+            [{"domain": "AE", "filename": "ae.xpt"}],
+            {"DOMAIN": ["AE"], "AEOBJ": ["test"]},
+            None,
             "ae.xpt",
         ),
         ([{"domain": "AE", "filename": "ae.xpt"}], {"UNKNOWN": ["test"]}, None, "None"),

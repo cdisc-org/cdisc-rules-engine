@@ -143,9 +143,10 @@ class BaseDataService(DataServiceInterface, ABC):
         elif self._contains_topic_variable(dataset, "TRT"):
             return INTERVENTIONS
         elif self._contains_topic_variable(dataset, "TESTCD"):
-            return FINDINGS
-        elif self._contains_topic_variable(dataset, "OBJ"):
-            return FINDINGS_ABOUT
+            if self._contains_topic_variable(dataset, "OBJ"):
+                return FINDINGS_ABOUT
+            else:
+                return FINDINGS
         elif self._is_associated_persons(dataset):
             return self._get_associated_persons_inherit_class(
                 dataset, file_path, datasets

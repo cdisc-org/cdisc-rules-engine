@@ -255,6 +255,7 @@ def test_get_findings_class_column_order_from_library(
                 "test",
                 "test",
             ],
+            "AETESTCD": ["test", "test", "test"],
         }
     )
     operation_params.domain = "AE"
