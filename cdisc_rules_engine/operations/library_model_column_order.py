@@ -77,11 +77,21 @@ class LibraryModelColumnOrder(BaseOperation):
         domain_details = self._get_model_domain_metadata(
             model_details, self.params.domain
         )
-        class_name = self._get_class_name_from_ig(standard_details)
-        class_details = self._get_model_class_metadata(model_details, class_name)
-        variables_metadata = domain_details.get("datasetVariables", [])
-        variables_metadata.sort(key=lambda item: item["ordinal"])
-        if class_name in DETECTABLE_CLASSES or class_name == FINDINGS_ABOUT:
+        variables_metadata = []
+
+        if domain_details:
+            # Domain found in the model
+            class_name = domain_details["_links"]["parentClass"]["title"]
+            class_details = self._get_model_class_metadata(model_details, class_name)
+            variables_metadata = domain_details.get("datasetVariables", [])
+            variables_metadata.sort(key=lambda item: item["ordinal"])
+        else:
+            # Domain not found in the model. Detect class name from data
+            class_name = self.data_service.get_dataset_class(
+                self.params.dataframe, self.params.dataset_path, self.params.datasets
+            )
+
+        if class_name in DETECTABLE_CLASSES:
             # if the class is one of Interventions, Findings, Events, or Findings About
             # -> get class variables instead of datasetVariables add
             # General Observation class variables to variables metadata
@@ -133,17 +143,6 @@ class LibraryModelColumnOrder(BaseOperation):
             model_version = ""
         return model_type, model_version
 
-    def _get_class_name_from_ig(self, standard_details) -> Tuple:
-        # Get domain and class details for domain. This logic is specific
-        # to SDTM based standards. Needs to be expanded for other models
-        for c in standard_details.get("classes"):
-            domain_details = search_in_list_of_dicts(
-                c.get("datasets", []), lambda item: item["name"] == self.params.domain
-            )
-            if domain_details:
-                return c.get("name")
-        return None
-
     def _get_model_class_metadata(
         self,
         model_details: dict,
@@ -171,14 +170,6 @@ class LibraryModelColumnOrder(BaseOperation):
         domain_details: Optional[dict] = search_in_list_of_dicts(
             model_details.get("datasets", []), lambda item: item["name"] == domain_name
         )
-
-        if not domain_details:
-            raise ValueError(
-                f"Model domain metadata is not found in CDISC Library. "
-                f"standard={self.params.standard}, "
-                f"version={self.params.standard_version}, "
-                f"domain={domain_name}"
-            )
 
         return domain_details
 

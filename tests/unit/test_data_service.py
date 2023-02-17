@@ -72,20 +72,26 @@ def test_get_raw_dataset_metadata(
     [
         (
             [{"domain": "AE", "filename": "ae.xpt"}],
-            {"AETERM": ["test"]},
+            {"DOMAIN": ["AE"], "AETERM": ["test"]},
             "Events",
             "ae.xpt",
         ),
         (
             [{"domain": "AE", "filename": "ae.xpt"}],
-            {"AETRT": ["test"]},
+            {"DOMAIN": ["AE"], "AETRT": ["test"]},
             "Interventions",
             "ae.xpt",
         ),
         (
             [{"domain": "AE", "filename": "ae.xpt"}],
-            {"AETESTCD": ["test"]},
+            {"DOMAIN": ["AE"], "AETESTCD": ["test"]},
             "Findings",
+            "ae.xpt",
+        ),
+        (
+            [{"domain": "AE", "filename": "ae.xpt"}],
+            {"DOMAIN": ["AE"], "AEOBJ": ["test"]},
+            "Findings About",
             "ae.xpt",
         ),
         ([{"domain": "AE", "filename": "ae.xpt"}], {"UNKNOWN": ["test"]}, None, "None"),
@@ -104,7 +110,7 @@ def test_get_dataset_class_associated_domains():
         {"domain": "CE", "filename": "ce.xpt"},
     ]
     ap_dataset = pd.DataFrame.from_dict({"DOMAIN": ["APCE"]})
-    ce_dataset = pd.DataFrame.from_dict({"CETERM": ["test"]})
+    ce_dataset = pd.DataFrame.from_dict({"DOMAIN": ["CE"], "CETERM": ["test"]})
     data_bundle_path = "cdisc/databundle"
     path_to_dataset_map: dict = {
         f"{data_bundle_path}/ap.xpt": ap_dataset,
