@@ -13,6 +13,7 @@ from cdisc_rules_engine.operations.library_model_column_order import (
 from cdisc_rules_engine.operations.max_date import MaxDate
 from cdisc_rules_engine.operations.maximum import Maximum
 from cdisc_rules_engine.operations.mean import Mean
+from cdisc_rules_engine.operations.domain_label import DomainLabel
 from cdisc_rules_engine.operations.meddra_code_references_validator import (
     MedDRACodeReferencesValidator,
 )
@@ -62,6 +63,7 @@ class OperationsFactory(FactoryInterface):
         "variable_permissibilities": VariablePermissibility,
         "variable_value_count": VariableValueCount,
         "variable_count": VariableCount,
+        "domain_label": DomainLabel,
     }
 
     @classmethod
