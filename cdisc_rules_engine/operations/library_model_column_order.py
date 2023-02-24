@@ -6,7 +6,6 @@ from cdisc_rules_engine.constants.classes import (
     FINDINGS_ABOUT,
     FINDINGS,
 )
-from cdisc_rules_engine.enums.variable_roles import VariableRoles
 from cdisc_rules_engine.operations.base_operation import BaseOperation
 from cdisc_rules_engine.utilities.utils import (
     get_model_details_cache_key,
@@ -133,17 +132,6 @@ class LibraryModelColumnOrder(BaseOperation):
 
         return variables_metadata
 
-    def _get_model_type_and_version(self, model_link) -> Tuple:
-        link = model_link.get("href")
-        if "sdtm" in link:
-            model_type = "sdtm"
-            model_version = link.split("/")[-1]
-        else:
-            # TODO expand to support CDASH and ADAM
-            model_type = ""
-            model_version = ""
-        return model_type, model_version
-
     def _get_model_class_metadata(
         self,
         model_details: dict,
@@ -173,20 +161,3 @@ class LibraryModelColumnOrder(BaseOperation):
         )
 
         return domain_details
-
-    def _group_class_variables_by_role(
-        self, class_variables: List[dict]
-    ) -> Tuple[List[dict], List[dict]]:
-        """
-        Sorts given class variables by role into 2 lists:
-        Identifiers and Timing
-        """
-        identifier_vars: List[dict] = []
-        timing_vars: List[dict] = []
-        for variable in class_variables:
-            role: str = variable.get("role")
-            if role == VariableRoles.IDENTIFIER.value:
-                identifier_vars.append(variable)
-            elif role == VariableRoles.TIMING.value:
-                timing_vars.append(variable)
-        return identifier_vars, timing_vars
