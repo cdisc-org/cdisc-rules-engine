@@ -1,5 +1,6 @@
 from cdisc_rules_engine.operations.base_operation import BaseOperation
 from typing import List
+from collections import OrderedDict
 
 
 class LibraryColumnOrder(BaseOperation):
@@ -24,4 +25,4 @@ class LibraryColumnOrder(BaseOperation):
         variable_names_list = [
             var["name"].replace("--", self.params.domain) for var in variables_metadata
         ]
-        return variable_names_list
+        return list(OrderedDict.fromkeys(variable_names_list))

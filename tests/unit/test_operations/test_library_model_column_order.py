@@ -294,4 +294,5 @@ def test_get_findings_class_column_order_from_library(
             variables,
         ]
     )
+    print(result)
     assert result[operation_params.operation_id].equals(expected)

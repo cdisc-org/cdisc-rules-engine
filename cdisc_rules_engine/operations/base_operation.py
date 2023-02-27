@@ -19,6 +19,8 @@ from cdisc_rules_engine.interfaces import (
 from cdisc_rules_engine.constants.classes import (
     DETECTABLE_CLASSES,
     GENERAL_OBSERVATIONS_CLASS,
+    FINDINGS_ABOUT,
+    FINDINGS,
 )
 
 from cdisc_rules_engine.utilities.utils import (
@@ -119,23 +121,52 @@ class BaseOperation:
         variables_metadata = domain_details.get("datasetVariables", [])
         variables_metadata.sort(key=lambda item: item["ordinal"])
         if class_details.get("name") in DETECTABLE_CLASSES:
-            # if the class is one of Interventions, Findings, Events
-            # -> add General Observation class variables to variables metadata
-            gen_obs_class_metadata: dict = self._get_class_metadata(
-                model_details, GENERAL_OBSERVATIONS_CLASS
-            )
-            identifiers_metadata, timing_metadata = self._group_class_variables_by_role(
-                gen_obs_class_metadata["classVariables"]
-            )
-            # Identifiers are added to the beginning and Timing to the end
+            (
+                identifiers_metadata,
+                class_variables_metadata,
+                timing_metadata,
+            ) = self.get_allowed_class_variables(model_details, class_details)
             if identifiers_metadata:
-                identifiers_metadata.sort(key=lambda item: item["ordinal"])
                 variables_metadata = identifiers_metadata + variables_metadata
             if timing_metadata:
-                timing_metadata.sort(key=lambda item: item["ordinal"])
                 variables_metadata = variables_metadata + timing_metadata
 
         return variables_metadata
+
+    def get_allowed_class_variables(self, model_details: dict, class_details: dict):
+        # General Observation class variables to variables metadata
+        class_name = class_details.get("name")
+        variables_metadata = class_details.get("classVariables", [])
+        variables_metadata.sort(key=lambda item: item["ordinal"])
+
+        if class_name == FINDINGS_ABOUT:
+            # Add FINDINGS class variables. Findings About class variables should
+            # Appear in the list after the --TEST variable
+            findings_class_metadata: dict = self._get_class_metadata(
+                model_details, FINDINGS
+            )
+            findings_class_variables = findings_class_metadata["classVariables"]
+            findings_class_variables.sort(key=lambda item: item["ordinal"])
+            test_index = len(findings_class_variables) - 1
+            for i, v in enumerate(findings_class_variables):
+                if v["name"].lower().endswith("test"):
+                    test_index = i
+                variables_metadata = (
+                    findings_class_variables[:test_index]
+                    + variables_metadata
+                    + findings_class_variables[test_index:]
+                )
+
+        gen_obs_class_metadata: dict = self._get_class_metadata(
+            model_details, GENERAL_OBSERVATIONS_CLASS
+        )
+        identifiers_metadata, timing_metadata = self._group_class_variables_by_role(
+            gen_obs_class_metadata["classVariables"]
+        )
+        # Identifiers are added to the beginning and Timing to the end
+        identifiers_metadata.sort(key=lambda item: item["ordinal"])
+        timing_metadata.sort(key=lambda item: item["ordinal"])
+        return identifiers_metadata, variables_metadata, timing_metadata
 
     def get_allowed_variable_permissibility(self, variable_metadata: dict):
         """

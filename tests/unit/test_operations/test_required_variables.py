@@ -91,7 +91,7 @@ from cdisc_rules_engine.utilities.utils import (
         )
     ],
 )
-def test_get_column_order_from_library(
+def test_get_required_variables(
     operation_params: OperationParams, model_metadata: dict, standard_metadata: dict
 ):
     """
@@ -132,12 +132,6 @@ def test_get_column_order_from_library(
         operation_params, operation_params.dataframe, cache, data_service
     )
     result: pd.DataFrame = operation.execute()
-    variables: List[str] = ["STUDYID", "DOMAIN", "AESEQ", "AETEST"]
-    expected: pd.Series = pd.Series(
-        [
-            variables,
-            variables,
-            variables,
-        ]
-    )
-    assert result[operation_params.operation_id].equals(expected)
+    variables: List[str] = sorted(["STUDYID", "DOMAIN", "AESEQ", "AETEST"])
+    for result_array in result[operation_params.operation_id]:
+        assert sorted(result_array) == variables

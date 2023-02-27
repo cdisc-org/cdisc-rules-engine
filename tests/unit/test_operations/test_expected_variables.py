@@ -86,7 +86,7 @@ from cdisc_rules_engine.utilities.utils import (
         )
     ],
 )
-def test_get_column_order_from_library(
+def test_get_expected_variables(
     operation_params: OperationParams, model_metadata: dict, standard_metadata: dict
 ):
     """

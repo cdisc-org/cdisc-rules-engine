@@ -21,8 +21,12 @@ class PermissibleVariables(BaseOperation):
         # get variables metadata from the standard model
         variables_metadata: List[dict] = self._get_variables_metadata_from_standard()
 
-        return [
-            var["name"].replace("--", self.params.domain)
-            for var in variables_metadata
-            if self.get_allowed_variable_permissibility(var) == PERMISSIBLE
-        ]
+        return list(
+            set(
+                [
+                    var["name"].replace("--", self.params.domain)
+                    for var in variables_metadata
+                    if self.get_allowed_variable_permissibility(var) == PERMISSIBLE
+                ]
+            )
+        )

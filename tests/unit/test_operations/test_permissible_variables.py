@@ -87,7 +87,7 @@ from cdisc_rules_engine.utilities.utils import (
         )
     ],
 )
-def test_get_column_order_from_library(
+def test_get_permissible_variables(
     operation_params: OperationParams, model_metadata: dict, standard_metadata: dict
 ):
     """
@@ -129,11 +129,5 @@ def test_get_column_order_from_library(
     )
     result: pd.DataFrame = operation.execute()
     variables: List[str] = ["AEPERM", "TIMING_VAR"]
-    expected: pd.Series = pd.Series(
-        [
-            variables,
-            variables,
-            variables,
-        ]
-    )
-    assert result[operation_params.operation_id].equals(expected)
+    for result_array in result[operation_params.operation_id]:
+        assert sorted(result_array) == variables
