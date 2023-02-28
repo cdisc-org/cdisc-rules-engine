@@ -21,6 +21,7 @@ from cdisc_rules_engine.constants.classes import (
     GENERAL_OBSERVATIONS_CLASS,
     FINDINGS_ABOUT,
     FINDINGS,
+    FINDINGS_TEST_VARIABLE,
 )
 
 from cdisc_rules_engine.utilities.utils import (
@@ -149,13 +150,14 @@ class BaseOperation:
             findings_class_variables.sort(key=lambda item: item["ordinal"])
             test_index = len(findings_class_variables) - 1
             for i, v in enumerate(findings_class_variables):
-                if v["name"].lower().endswith("test"):
+                if v["name"] == FINDINGS_TEST_VARIABLE:
                     test_index = i
-                variables_metadata = (
-                    findings_class_variables[:test_index]
-                    + variables_metadata
-                    + findings_class_variables[test_index:]
-                )
+                    variables_metadata = (
+                        findings_class_variables[: test_index + 1]
+                        + variables_metadata
+                        + findings_class_variables[test_index + 1 :]
+                    )
+                    break
 
         gen_obs_class_metadata: dict = self._get_class_metadata(
             model_details, GENERAL_OBSERVATIONS_CLASS

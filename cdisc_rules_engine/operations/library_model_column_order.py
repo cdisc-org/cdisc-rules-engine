@@ -36,7 +36,6 @@ class LibraryModelColumnOrder(BaseOperation):
         variable_names_list = [
             var["name"].replace("--", self.params.domain) for var in variables_metadata
         ]
-        print(list(OrderedDict.fromkeys(variable_names_list)))
         return list(OrderedDict.fromkeys(variable_names_list))
 
     def _get_variables_metadata_from_standard_model(self) -> List[dict]:
