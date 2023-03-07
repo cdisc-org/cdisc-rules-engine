@@ -40,6 +40,7 @@ from cdisc_rules_engine.operations.variable_count import VariableCount
 from cdisc_rules_engine.operations.required_variables import RequiredVariables
 from cdisc_rules_engine.operations.expected_variables import ExpectedVariables
 from cdisc_rules_engine.operations.permissible_variables import PermissibleVariables
+from cdisc_rules_engine.operations.study_domains import StudyDomains
 
 
 class OperationsFactory(FactoryInterface):
@@ -70,6 +71,7 @@ class OperationsFactory(FactoryInterface):
         "required_variables": RequiredVariables,
         "expected_variables": ExpectedVariables,
         "permissible_variables": PermissibleVariables,
+        "study_domains": StudyDomains,
     }
 
     @classmethod
