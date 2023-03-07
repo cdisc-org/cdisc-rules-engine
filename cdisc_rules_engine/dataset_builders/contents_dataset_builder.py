@@ -4,7 +4,7 @@ import pandas as pd
 
 
 class ContentsDatasetBuilder(BaseDatasetBuilder):
-    def build(self):
+    def build(self, **kwargs):
         """
         Returns the contents of a file as a dataframe for evaluation.
         """

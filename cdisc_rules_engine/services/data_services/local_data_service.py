@@ -1,5 +1,4 @@
 import os
-from concurrent.futures import ThreadPoolExecutor
 from io import IOBase
 from typing import Callable, Iterator, List, Optional, Tuple
 
@@ -150,23 +149,6 @@ class LocalDataService(BaseDataService):
         if drop_duplicates:
             joined_dataset.drop_duplicates()
         return joined_dataset
-
-    def _async_get_datasets(
-        self, function_to_call: Callable, dataset_names: List[str], **kwargs
-    ) -> Iterator[pandas.DataFrame]:
-        """
-        The method uses multithreading to download each
-        dataset in dataset_names param in parallel.
-
-        function_to_call param is a function that downloads
-        one dataset. So, this function is asynchronously called
-        for each item of dataset_names param.
-        """
-        with ThreadPoolExecutor() as executor:
-            return executor.map(
-                lambda name: function_to_call(dataset_name=name, **kwargs),
-                dataset_names,
-            )
 
     def read_metadata(self, file_path: str) -> dict:
         file_size = os.path.getsize(file_path)

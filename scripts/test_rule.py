@@ -54,12 +54,16 @@ def validate_single_rule(cache, path, args, datasets, rule: dict = None):
         meddra_path=args.meddra,
         whodrug_path=args.whodrug,
     )
-    results = [
-        engine.test_validation(
-            rule, f"{path}/{dataset.filename}", datasets, dataset.domain
-        )
-        for dataset in datasets
-    ]
+    validated_domains = set()
+    results = []
+    for dataset in datasets:
+        if dataset.domain not in validated_domains:
+            validated_domains.add(dataset.domain)
+            results.append(
+                engine.test_validation(
+                    rule, f"{path}/{dataset.filename}", datasets, dataset.domain
+                )
+            )
     results = list(itertools.chain(*results))
     return RuleValidationResult(rule, results)
 

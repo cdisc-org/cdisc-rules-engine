@@ -1,7 +1,8 @@
 import asyncio
 from abc import ABC
 from functools import wraps, partial
-from typing import Callable, List, Optional, Iterable
+from typing import Callable, List, Optional, Iterable, Iterator
+from concurrent.futures import ThreadPoolExecutor
 
 import numpy as np
 import pandas as pd
@@ -228,3 +229,20 @@ class BaseDataService(DataServiceInterface, ABC):
         return await loop.run_in_executor(
             None, partial(function_to_call, dataset_name=dataset_name, **kwargs)
         )
+
+    def _async_get_datasets(
+        self, function_to_call: Callable, dataset_names: List[str], **kwargs
+    ) -> Iterator[pd.DataFrame]:
+        """
+        The method uses multithreading to download each
+        dataset in dataset_names param in parallel.
+
+        function_to_call param is a function that downloads
+        one dataset. So, this function is asynchronously called
+        for each item of dataset_names param.
+        """
+        with ThreadPoolExecutor() as executor:
+            return executor.map(
+                lambda name: function_to_call(dataset_name=name, **kwargs),
+                dataset_names,
+            )
