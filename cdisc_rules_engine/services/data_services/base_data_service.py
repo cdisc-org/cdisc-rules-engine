@@ -104,7 +104,7 @@ class BaseDataService(DataServiceInterface, ABC):
             dataset_name=dataset_name, **params
         )
 
-    def join_split_datasets(
+    def concat_split_datasets(
         self, func_to_call: Callable, dataset_names: List[str], **kwargs
     ) -> pd.DataFrame:
         """
@@ -118,23 +118,18 @@ class BaseDataService(DataServiceInterface, ABC):
         drop_duplicates: bool = kwargs.pop("drop_duplicates", False)
 
         # download datasets asynchronously
-        coroutines = [
-            self._async_get_dataset(func_to_call, name, **kwargs)
-            for name in dataset_names
-        ]
-        loop = asyncio.get_event_loop()
-        datasets: Iterable[pd.DataFrame] = loop.run_until_complete(
-            asyncio.gather(*coroutines)
+        datasets: Iterable[pd.DataFrame] = self._async_get_datasets(
+            func_to_call, dataset_names, **kwargs
         )
 
-        # join datasets
-        joined_dataset: pd.DataFrame = pd.concat(
+        # concat datasets
+        full_dataset: pd.DataFrame = pd.concat(
             [dataset for dataset in datasets],
             ignore_index=True,
         )
         if drop_duplicates:
-            joined_dataset.drop_duplicates()
-        return joined_dataset
+            full_dataset.drop_duplicates()
+        return full_dataset
 
     def get_dataset_class(
         self, dataset: pd.DataFrame, file_path: str, datasets: List[dict]

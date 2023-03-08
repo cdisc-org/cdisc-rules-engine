@@ -1,6 +1,6 @@
 from datetime import datetime
 from io import IOBase
-from typing import List, Optional, Callable, Iterator
+from typing import List, Optional
 
 import pandas as pd
 
@@ -122,19 +122,6 @@ class DummyDataService(BaseDataService):
 
     def has_all_files(self, prefix: str, file_names: List[str]) -> bool:
         return True
-
-    def join_split_datasets(self, func_to_call: Callable, dataset_names, **kwargs):
-        drop_duplicates: bool = kwargs.pop("drop_duplicates", False)
-        datasets: Iterator[pd.DataFrame] = self._async_get_datasets(
-            func_to_call, dataset_names, **kwargs
-        )
-        joined_dataset: pd.DataFrame = pd.concat(
-            [dataset for dataset in datasets],
-            ignore_index=True,
-        )
-        if drop_duplicates:
-            joined_dataset.drop_duplicates()
-        return joined_dataset
 
     def read_data(self, file_path: str) -> IOBase:
         pass
