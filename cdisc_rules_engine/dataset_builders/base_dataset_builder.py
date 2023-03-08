@@ -43,7 +43,7 @@ class BaseDatasetBuilder:
         if is_split_dataset(self.datasets, self.domain):
             # Handle split datasets for content checks.
             # A content check is any check that is not in the list of rule types
-            dataset: pd.DataFrame = self.data_service.join_split_datasets(
+            dataset: pd.DataFrame = self.data_service.concat_split_datasets(
                 func_to_call=self.build,
                 dataset_names=self.get_corresponding_datasets_names(),
                 **kwargs,

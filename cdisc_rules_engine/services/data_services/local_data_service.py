@@ -1,7 +1,6 @@
 import os
-from concurrent.futures import ThreadPoolExecutor
 from io import IOBase
-from typing import Callable, Iterator, List, Optional, Tuple
+from typing import List, Optional, Tuple
 
 import pandas
 
@@ -129,44 +128,6 @@ class LocalDataService(BaseDataService):
         return dataset_type_to_function_map[dataset_type](
             dataset_name=dataset_name, **params
         )
-
-    def join_split_datasets(
-        self, func_to_call: Callable, dataset_names: List[str], **kwargs
-    ) -> pandas.DataFrame:
-        """
-        Accepts a list of split dataset filenames,
-        downloads all of them and merges into a single DataFrame.
-        """
-        # popping drop_duplicates param at the beginning to avoid
-        # passing it to func_to_call
-        drop_duplicates: bool = kwargs.pop("drop_duplicates", False)
-        datasets: Iterator[pandas.DataFrame] = self._async_get_datasets(
-            func_to_call, dataset_names, **kwargs
-        )
-        joined_dataset: pandas.DataFrame = pandas.concat(
-            [dataset for dataset in datasets],
-            ignore_index=True,
-        )
-        if drop_duplicates:
-            joined_dataset.drop_duplicates()
-        return joined_dataset
-
-    def _async_get_datasets(
-        self, function_to_call: Callable, dataset_names: List[str], **kwargs
-    ) -> Iterator[pandas.DataFrame]:
-        """
-        The method uses multithreading to download each
-        dataset in dataset_names param in parallel.
-
-        function_to_call param is a function that downloads
-        one dataset. So, this function is asynchronously called
-        for each item of dataset_names param.
-        """
-        with ThreadPoolExecutor() as executor:
-            return executor.map(
-                lambda name: function_to_call(dataset_name=name, **kwargs),
-                dataset_names,
-            )
 
     def read_metadata(self, file_path: str) -> dict:
         file_size = os.path.getsize(file_path)
