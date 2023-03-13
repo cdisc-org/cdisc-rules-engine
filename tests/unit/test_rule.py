@@ -156,3 +156,14 @@ def test_parse_conditions_not_condition(yaml, output):
 )
 def test_parse_standards(authorities, expected):
     assert Rule.parse_standards(authorities) == expected
+
+
+def test_from_cdisc_rule_null_executability():
+    rule_dict = {
+        "Core": {},
+        "Executability": None,
+        "Check": {"asdlkjfa": []},
+        "Outcome": {"message": "test"},
+    }
+    rule = Rule.from_cdisc_metadata(rule_dict)
+    assert rule.get("executability") == ""

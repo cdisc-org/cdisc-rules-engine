@@ -42,7 +42,7 @@ class Rule:
                 "author": "CDISC",
                 "reference": cls.parse_references(authorities),
                 "sensitivity": rule_metadata.get("Sensitivity"),
-                "executability": rule_metadata.get("Executability", "").lower(),
+                "executability": (rule_metadata.get("Executability") or "").lower(),
                 "description": rule_metadata.get("Description"),
                 "authorities": authorities,
                 "standards": cls.parse_standards(authorities),
