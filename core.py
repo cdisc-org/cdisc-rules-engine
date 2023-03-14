@@ -42,7 +42,7 @@ def cli():
     help="Relative path to cache files containing pre loaded metadata and rules",
 )
 @click.option(
-    "-p",
+    "-ps",
     "--pool-size",
     default=10,
     type=int,
