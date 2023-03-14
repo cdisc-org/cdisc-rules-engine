@@ -15,6 +15,7 @@ Validation_args = namedtuple(
         "output_format",
         "raw_report",
         "define_version",
+        "data_format",
         "whodrug",
         "meddra",
         "rules",
