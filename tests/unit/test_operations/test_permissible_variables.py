@@ -6,7 +6,7 @@ import pytest
 from cdisc_rules_engine.constants.classes import GENERAL_OBSERVATIONS_CLASS
 from cdisc_rules_engine.enums.variable_roles import VariableRoles
 from cdisc_rules_engine.models.operation_params import OperationParams
-from cdisc_rules_engine.operations.library_column_order import LibraryColumnOrder
+from cdisc_rules_engine.operations.permissible_variables import PermissibleVariables
 from cdisc_rules_engine.services.cache import InMemoryCacheService
 from cdisc_rules_engine.services.data_services import LocalDataService
 from cdisc_rules_engine.utilities.utils import (
@@ -75,8 +75,9 @@ from cdisc_rules_engine.utilities.utils import (
                                 "name": "AE",
                                 "label": "Adverse Events",
                                 "datasetVariables": [
-                                    {"name": "AETEST", "ordinal": 1},
-                                    {"name": "AENEW", "ordinal": 2},
+                                    {"name": "AETEST", "ordinal": 1, "core": "Req"},
+                                    {"name": "AENEW", "ordinal": 2, "core": "Exp"},
+                                    {"name": "AEPERM", "ordinal": 2, "core": "Perm"},
                                 ],
                             }
                         ],
@@ -86,7 +87,7 @@ from cdisc_rules_engine.utilities.utils import (
         )
     ],
 )
-def test_get_column_order_from_library(
+def test_get_permissible_variables(
     operation_params: OperationParams, model_metadata: dict, standard_metadata: dict
 ):
     """
@@ -123,22 +124,10 @@ def test_get_column_order_from_library(
 
     # execute operation
     data_service = LocalDataService.get_instance(cache_service=cache)
-    operation = LibraryColumnOrder(
+    operation = PermissibleVariables(
         operation_params, operation_params.dataframe, cache, data_service
     )
     result: pd.DataFrame = operation.execute()
-    variables: List[str] = [
-        "STUDYID",
-        "DOMAIN",
-        "AETEST",
-        "AENEW",
-        "TIMING_VAR",
-    ]
-    expected: pd.Series = pd.Series(
-        [
-            variables,
-            variables,
-            variables,
-        ]
-    )
-    assert result[operation_params.operation_id].equals(expected)
+    variables: List[str] = ["AEPERM", "TIMING_VAR"]
+    for result_array in result[operation_params.operation_id]:
+        assert sorted(result_array) == variables

@@ -58,12 +58,20 @@ def validate_single_rule(cache, datasets, args: Validation_args, rule: dict = No
         meddra_path=args.meddra,
         whodrug_path=args.whodrug,
     )
-    results = [
-        engine.validate_single_rule(
-            rule, dataset["full_path"], datasets, dataset["domain"]
-        )
-        for dataset in datasets
-    ]
+    results = []
+    validated_domains = set()
+    for dataset in datasets:
+        # Check if the domain has been validated before
+        # This addresses the case where a domain is split
+        # and appears multiple times within the list of datasets
+        if dataset["domain"] not in validated_domains:
+            validated_domains.add(dataset["domain"])
+            results.append(
+                engine.validate_single_rule(
+                    rule, dataset["full_path"], datasets, dataset["domain"]
+                )
+            )
+
     results = list(itertools.chain(*results))
     if args.progress == ProgressParameterOptions.VERBOSE_OUTPUT.value:
         engine_logger.log(f"{rule['core_id']} validation complete")

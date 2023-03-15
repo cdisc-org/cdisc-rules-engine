@@ -16,9 +16,9 @@ def test_read_metadata():
     )
     with open(test_dataset_path, "rb") as file:
         file_contents: bytes = file.read()
-        reader = DatasetMetadataReader(file_contents)
+        reader = DatasetMetadataReader(file_contents, file_name="test_dataset.xpt")
         metadata: dict = reader.read()
-        assert metadata["dataset_name"] == "EX", "Test file has been changed"
+        assert metadata["dataset_name"] == "TEST_DATASET", "Test file has been changed"
         assert metadata["domain_name"] == "EX", "Test file has been changed"
         assert metadata["dataset_label"] == "Exposure", "Test file has been changed"
         assert metadata["number_of_variables"] == 17, "Test file has been changed"

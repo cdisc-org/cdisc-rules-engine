@@ -1,6 +1,6 @@
 from datetime import datetime
 from io import IOBase
-from typing import List, Optional, Callable
+from typing import List, Optional
 
 import pandas as pd
 
@@ -122,9 +122,6 @@ class DummyDataService(BaseDataService):
 
     def has_all_files(self, prefix: str, file_names: List[str]) -> bool:
         return True
-
-    def join_split_datasets(self, func_to_call: Callable, dataset_names, **kwargs):
-        pass
 
     def read_data(self, file_path: str) -> IOBase:
         pass

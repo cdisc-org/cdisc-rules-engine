@@ -7,9 +7,13 @@ from cdisc_rules_engine.operations.day_data_validator import DayDataValidator
 from cdisc_rules_engine.operations.distinct import Distinct
 from cdisc_rules_engine.operations.extract_metadata import ExtractMetadata
 from cdisc_rules_engine.operations.library_column_order import LibraryColumnOrder
+from cdisc_rules_engine.operations.library_model_column_order import (
+    LibraryModelColumnOrder,
+)
 from cdisc_rules_engine.operations.max_date import MaxDate
 from cdisc_rules_engine.operations.maximum import Maximum
 from cdisc_rules_engine.operations.mean import Mean
+from cdisc_rules_engine.operations.domain_label import DomainLabel
 from cdisc_rules_engine.operations.meddra_code_references_validator import (
     MedDRACodeReferencesValidator,
 )
@@ -33,6 +37,10 @@ from cdisc_rules_engine.operations.whodrug_hierarchy_validator import (
 )
 from cdisc_rules_engine.operations.variable_permissibility import VariablePermissibility
 from cdisc_rules_engine.operations.variable_count import VariableCount
+from cdisc_rules_engine.operations.required_variables import RequiredVariables
+from cdisc_rules_engine.operations.expected_variables import ExpectedVariables
+from cdisc_rules_engine.operations.permissible_variables import PermissibleVariables
+from cdisc_rules_engine.operations.study_domains import StudyDomains
 
 
 class OperationsFactory(FactoryInterface):
@@ -42,6 +50,7 @@ class OperationsFactory(FactoryInterface):
         "extract_metadata": ExtractMetadata,
         "get_column_order_from_dataset": DatasetColumnOrder,
         "get_column_order_from_library": LibraryColumnOrder,
+        "get_model_column_order": LibraryModelColumnOrder,
         "max": Maximum,
         "max_date": MaxDate,
         "mean": Mean,
@@ -58,6 +67,11 @@ class OperationsFactory(FactoryInterface):
         "variable_permissibilities": VariablePermissibility,
         "variable_value_count": VariableValueCount,
         "variable_count": VariableCount,
+        "domain_label": DomainLabel,
+        "required_variables": RequiredVariables,
+        "expected_variables": ExpectedVariables,
+        "permissible_variables": PermissibleVariables,
+        "study_domains": StudyDomains,
     }
 
     @classmethod

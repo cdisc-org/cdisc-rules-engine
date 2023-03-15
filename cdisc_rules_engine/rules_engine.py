@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import Callable, List, Union
+from typing import List, Union
 
 import pandas as pd
 from business_rules import export_rule_data
@@ -22,7 +22,6 @@ from cdisc_rules_engine.interfaces import (
     DataServiceInterface,
 )
 from cdisc_rules_engine.models.actions import COREActions
-from cdisc_rules_engine.models.dataset_types import DatasetTypes
 from cdisc_rules_engine.models.dataset_variable import DatasetVariable
 from cdisc_rules_engine.models.failed_validation_entity import FailedValidationEntity
 from cdisc_rules_engine.models.validation_error_container import (
@@ -36,7 +35,6 @@ from cdisc_rules_engine.utilities.data_processor import DataProcessor
 from cdisc_rules_engine.utilities.dataset_preprocessor import DatasetPreprocessor
 from cdisc_rules_engine.utilities.rule_processor import RuleProcessor
 from cdisc_rules_engine.utilities.utils import (
-    get_corresponding_datasets,
     get_directory_path,
     get_library_variables_metadata_cache_key,
     get_standard_codelist_cache_key,
@@ -44,6 +42,7 @@ from cdisc_rules_engine.utilities.utils import (
     is_split_dataset,
     serialize_rule,
 )
+from cdisc_rules_engine.dataset_builders import builder_factory
 
 
 class RulesEngine:
@@ -165,284 +164,95 @@ class RulesEngine:
             # this wrapping into a list is necessary to keep return type consistent
             return [error_obj.to_representation()]
 
+    def get_dataset_builder(
+        self, rule: dict, dataset_path: str, datasets: List[dict], domain: str
+    ):
+        return builder_factory.get_service(
+            rule.get("rule_type"),
+            rule=rule,
+            data_service=self.data_service,
+            cache_service=self.cache,
+            data_processor=self.data_processor,
+            rule_processor=self.rule_processor,
+            domain=domain,
+            datasets=datasets,
+            dataset_path=dataset_path,
+        )
+
     def validate_rule(
         self, rule: dict, dataset_path: str, datasets: List[dict], domain: str
     ) -> List[Union[dict, str]]:
         """
-        This function is an entrypoint for rule validation.
+         This function is an entrypoint for rule validation.
         It defines a rule validator based on its type and calls it.
         """
-        validator: Callable = self.get_dataset_validator(rule.get("rule_type"))
-        logger.info(f"Validator function name: {validator.__name__}")
-        return validator(rule, dataset_path, datasets, domain)
+        builder = self.get_dataset_builder(rule, dataset_path, datasets, domain)
+        dataset = builder.get_dataset()
+        kwargs = {}
+        # Update rule for certain rule types
+        # SPECIAL CASES FOR RULE TYPES ###############################
+        # TODO: Handle these special cases better.
+        if (
+            rule.get("rule_type")
+            == RuleTypes.DATASET_METADATA_CHECK_AGAINST_DEFINE.value
+        ):
+            # get Define XML metadata for domain and use it as a rule comparator
+            define_metadata: dict = self.get_define_xml_metadata_for_domain(
+                dataset_path, domain
+            )
+            self.rule_processor.add_comparator_to_rule_conditions(rule, define_metadata)
 
-    def get_dataset_validator(self, rule_type: str) -> Callable:
-        """
-        Returns a validator function based on rule type.
-        When extending the function bear in mind that validator
-        functions should have the same interface or kwargs specified.
-        """
-        rule_type_validator_map: dict = {
-            RuleTypes.DATASET_METADATA_CHECK.value: self.validate_dataset_metadata,
-            RuleTypes.DATASET_METADATA_CHECK_AGAINST_DEFINE.value: (
-                self.validate_dataset_metadata_against_define_xml
-            ),
-            RuleTypes.VARIABLE_METADATA_CHECK.value: self.validate_variables_metadata,
-            RuleTypes.DOMAIN_PRESENCE_CHECK.value: self.validate_domain_presence,
-            RuleTypes.VARIABLE_METADATA_CHECK_AGAINST_DEFINE.value: (
-                self.validate_variable_metadata_against_define_xml
-            ),
-            RuleTypes.VALUE_LEVEL_METADATA_CHECK_AGAINST_DEFINE.value: (
-                self.validate_value_level_metadata_against_define_xml
-            ),
-            RuleTypes.DATASET_CONTENTS_CHECK_AGAINST_DEFINE_AND_LIBRARY.value: (
-                self.validate_dataset_contents_against_define_and_library
-            ),
-            RuleTypes.DEFINE.value: self.validate_define_xml,
-        }
-        return rule_type_validator_map.get(
-            rule_type,
-            self.validate_dataset_contents,  # by default validate dataset contents
-        )
-
-    def validate_dataset_contents(
-        self, rule: dict, dataset_path: str, datasets: List[dict], domain: str
-    ) -> List[Union[dict, str]]:
-        """
-        Validates dataset contents.
-        """
-        dataset: pd.DataFrame = self.get_dataset_to_validate(
-            DatasetTypes.CONTENTS.value, dataset_path, datasets, domain
-        )
-        return self.execute_rule(rule, dataset, dataset_path, datasets, domain)
-
-    def validate_dataset_metadata(
-        self, rule: dict, dataset_path: str, datasets: List[dict], domain: str
-    ) -> List[Union[dict, str]]:
-        """
-        Validates metadata of a given dataset.
-        Checks file name, size, label etc.
-        """
-        size_unit: str = self.rule_processor.get_size_unit_from_rule(rule)
-        dataset: pd.DataFrame = self.get_dataset_to_validate(
-            DatasetTypes.METADATA.value,
-            dataset_path,
-            datasets,
-            domain,
-            size_unit=size_unit,
-        )
-        return self.execute_rule(rule, dataset, dataset_path, datasets, domain)
-
-    def validate_dataset_metadata_against_define_xml(
-        self, rule: dict, dataset_path: str, datasets: List[dict], domain: str
-    ) -> List[Union[dict, str]]:
-        """
-        Validates dataset metadata against define xml.
-        The idea here is to get define XML metadata for a domain
-        and use it as comparator in rule.
-        """
-        # get Define XML metadata for domain and use it as a rule comparator
-        define_metadata: dict = self.get_define_xml_metadata_for_domain(
-            dataset_path, domain
-        )
-        self.rule_processor.add_comparator_to_rule_conditions(rule, define_metadata)
-
-        # get dataset metadata and execute the rule
-        dataset: pd.DataFrame = self.get_dataset_to_validate(
-            DatasetTypes.METADATA.value, dataset_path, datasets, domain
-        )
-        return self.execute_rule(rule, dataset, dataset_path, datasets, domain)
-
-    def validate_variable_metadata_against_define_xml(
-        self, rule: dict, dataset_path: str, datasets: List[dict], domain: str
-    ) -> List[Union[dict, str]]:
-        """
-        Validates variable metadata against define xml.
-        The idea here is to get define XML metadata for all variables, and create
-        a dataframe by joining variable metadata from xpt with define metadata.
-        the comparator
-        """
-        # get Define XML metadata for domain and use it as a rule comparator
-        variable_metadata: List[dict] = self.get_define_xml_variables_metadata(
-            dataset_path, domain
-        )
-        self.rule_processor.add_comparator_to_rule_conditions(
-            rule, comparator=None, target_prefix="define_"
-        )
-        # get dataset metadata and execute the rule
-        xpt_metadata: pd.DataFrame = self.get_dataset_to_validate(
-            DatasetTypes.VARIABLES_METADATA.value,
-            dataset_path,
-            datasets,
-            domain,
-            drop_duplicates=True,
-        )
-        define_metadata: pd.DataFrame = pd.DataFrame(variable_metadata)
-        dataset = xpt_metadata.merge(
-            define_metadata,
-            left_on="variable_name",
-            right_on="define_variable_name",
-            how="left",
-        )
-        return self.execute_rule(rule, dataset, dataset_path, datasets, domain)
-
-    def validate_define_xml(
-        self, rule: dict, dataset_path: str, datasets: List[dict], domain: str
-    ) -> List[Union[dict, str]]:
-
-        # get Define XML metadata for domain and use it as a rule comparator
-        variable_metadata: List[dict] = self.get_define_xml_variables_metadata(
-            dataset_path, domain
-        )
-        define_metadata: pd.DataFrame = pd.DataFrame(variable_metadata)
-        variable_codelist_map_key = get_standard_codelist_cache_key(
-            self.standard, self.standard_version
-        )
-        variable_codelist_map = self.cache.get(variable_codelist_map_key) or {}
-        codelist_term_maps = [
-            self.cache.get(package) or {} for package in self.ct_package
-        ]
-        return self.execute_rule(
-            rule,
-            define_metadata,
-            dataset_path,
-            datasets,
-            domain,
-            variable_codelist_map=variable_codelist_map,
-            codelist_term_maps=codelist_term_maps,
-        )
-
-    def validate_value_level_metadata_against_define_xml(
-        self, rule: dict, dataset_path: str, datasets: List[dict], domain: str, **kwargs
-    ) -> List[Union[dict, str]]:
-        """
-        Validates variable metadata against define xml.
-        The idea here is to get define XML metadata for all variables, and create
-        a dataframe by joining variable metadata from xpt with define metadata.
-        the comparator
-        """
-        # get Define XML metadata for domain and use it as a rule comparator
-        value_level_metadata: List[dict] = self.get_define_xml_value_level_metadata(
-            dataset_path, domain
-        )
-        dataset: pd.DataFrame = self.get_dataset_to_validate(
-            DatasetTypes.CONTENTS.value, dataset_path, datasets, domain
-        )
-        return self.execute_rule(
-            rule, dataset, dataset_path, datasets, domain, value_level_metadata
-        )
-
-    def validate_dataset_contents_against_define_and_library(
-        self, rule: dict, dataset_path: str, datasets: List[dict], domain: str, **kwargs
-    ) -> List[Union[dict, str]]:
-        """
-        Validates dataset contents against Define.XML variable metadata
-        and Library variable metadata.
-
-        Example rule:
-            Library Variable Core Status = Permissible AND
-            Define.xml Variable Origin Type = Collected AND
-            Variable value is null
-        To validate the example, we need:
-            1. Extract variable metadata from CDISC Library;
-            2. Extract variable metadata from Define.XML;
-            3. Extract variable value from dataset.
-        """
-        # get metadata from library and define
-        library_metadata: dict = self.cache.get(
-            get_library_variables_metadata_cache_key(
+        elif rule.get("rule_type") == RuleTypes.DEFINE.value:
+            variable_codelist_map_key = get_standard_codelist_cache_key(
                 self.standard, self.standard_version
             )
-        )
-        define_metadata: List[dict] = self.get_define_xml_variables_metadata(
-            dataset_path, domain
-        )
+            variable_codelist_map = self.cache.get(variable_codelist_map_key) or {}
+            codelist_term_maps = [
+                self.cache.get(package) or {} for package in self.ct_package
+            ]
+            kwargs["variable_codelist_map"] = variable_codelist_map
+            kwargs["codelist_term_maps"] = codelist_term_maps
 
-        # create a list of targets based on dataset columns and use them in rule
-        dataset: pd.DataFrame = self.get_dataset_to_validate(
-            DatasetTypes.CONTENTS.value, dataset_path, datasets, domain
-        )
-        targets: List[
-            str
-        ] = self.data_processor.filter_dataset_columns_by_metadata_and_rule(
-            dataset.columns.tolist(), define_metadata, library_metadata, rule
-        )
-        rule["conditions"] = RuleProcessor.duplicate_conditions_for_all_targets(
-            rule["conditions"], targets
-        )
-        # execute the rule
-        return self.execute_rule(rule, dataset, dataset_path, datasets, domain)
-
-    def validate_variables_metadata(
-        self, rule: dict, dataset_path: str, datasets: List[dict], domain: str, **kwargs
-    ) -> List[Union[dict, str]]:
-        """
-        Validates metadata of a single variable.
-        """
-        dataset: pd.DataFrame = self.get_dataset_to_validate(
-            DatasetTypes.VARIABLES_METADATA.value,
-            dataset_path,
-            datasets,
-            domain,
-            drop_duplicates=True,
-        )
-        return self.execute_rule(rule, dataset, dataset_path, datasets, domain)
-
-    def validate_domain_presence(
-        self, rule: dict, dataset_path: str, datasets: List[dict], domain: str, **kwargs
-    ) -> List[Union[dict, str]]:
-        """
-        Validates dataset presence against the
-        datasets provided in the request.
-
-        dataset example:
-           AE      EC
-        0  ae.xpt  ec.xpt
-        """
-        dataset: pd.DataFrame = pd.DataFrame(
-            {ds["domain"]: ds["filename"] for ds in datasets}, index=[0]
-        )
-        logger.info(f"Validating domain presence. domain={domain}")
-        return self.execute_rule(rule, dataset, dataset_path, datasets, domain)
-
-    def get_dataset_to_validate(
-        self,
-        dataset_type: str,
-        dataset_path: str,
-        datasets: List[dict],
-        domain: str,
-        **kwargs,
-    ) -> pd.DataFrame:
-        """
-        Gets the necessary dataset from the storage.
-        The idea is to return the needed dataset based on
-        what we need to validate: contents, metadata or variables metadata
-        AND handle the case when the dataset is split into multiple files.
-
-        dataset_type param can be:
-        dataset_contents, dataset_metadata or variables_metadata.
-        For passing additional params to storage calls, kwargs can be used.
-        """
-        dataset_type_function_map: dict = {
-            DatasetTypes.CONTENTS.value: self.data_service.get_dataset,
-            DatasetTypes.METADATA.value: self.data_service.get_dataset_metadata,
-            DatasetTypes.VARIABLES_METADATA.value: (
-                self.data_service.get_variables_metadata
-            ),
-        }
-        func_to_call: Callable = dataset_type_function_map[dataset_type]
-        if not is_split_dataset(datasets, domain):
-            # single dataset. the most common case
-            dataset: pd.DataFrame = func_to_call(dataset_name=dataset_path, **kwargs)
-        else:
-            dataset: pd.DataFrame = self.data_service.join_split_datasets(
-                func_to_call=func_to_call,
-                dataset_names=self.get_corresponding_datasets_names(
-                    dataset_path, datasets, domain
-                ),
-                **kwargs,
+        elif (
+            rule.get("rule_type")
+            == RuleTypes.VARIABLE_METADATA_CHECK_AGAINST_DEFINE.value
+        ):
+            self.rule_processor.add_comparator_to_rule_conditions(
+                rule, comparator=None, target_prefix="define_"
             )
-        return dataset
+
+        elif (
+            rule.get("rule_type")
+            == RuleTypes.VALUE_LEVEL_METADATA_CHECK_AGAINST_DEFINE.value
+        ):
+            value_level_metadata: List[dict] = self.get_define_xml_value_level_metadata(
+                dataset_path, domain
+            )
+            kwargs["value_level_metadata"] = value_level_metadata
+
+        elif (
+            rule.get("rule_type")
+            == RuleTypes.DATASET_CONTENTS_CHECK_AGAINST_DEFINE_AND_LIBRARY.value
+        ):
+            library_metadata: dict = self.cache.get(
+                get_library_variables_metadata_cache_key(
+                    self.standard, self.standard_version
+                )
+            )
+            define_metadata: List[dict] = builder.get_define_xml_variables_metadata()
+            targets: List[
+                str
+            ] = self.data_processor.filter_dataset_columns_by_metadata_and_rule(
+                dataset.columns.tolist(), define_metadata, library_metadata, rule
+            )
+            rule["conditions"] = RuleProcessor.duplicate_conditions_for_all_targets(
+                rule["conditions"], targets
+            )
+
+        logger.info(f"Using dataset build by: {builder.__class__}")
+        return self.execute_rule(
+            rule, dataset, dataset_path, datasets, domain, **kwargs
+        )
 
     def execute_rule(
         self,
@@ -464,7 +274,6 @@ class RulesEngine:
             variable_codelist_map = {}
         if codelist_term_maps is None:
             codelist_term_maps = []
-
         # Add conditions to rule for all variables if variables: all appears
         # in condition
         rule["conditions"] = RuleProcessor.duplicate_conditions_for_all_targets(
@@ -530,31 +339,6 @@ class RulesEngine:
             define_xml_contents, cache_service_obj=self.cache
         )
         return define_xml_reader.extract_domain_metadata(domain_name=domain_name)
-
-    def get_define_xml_variables_metadata(
-        self, dataset_path: str, domain_name: str
-    ) -> List[dict]:
-        """
-        Gets Define XML variables metadata.
-        """
-        directory_path = get_directory_path(dataset_path)
-        define_xml_path: str = f"{directory_path}/{DEFINE_XML_FILE_NAME}"
-        define_xml_contents: bytes = self.data_service.get_define_xml_contents(
-            dataset_name=define_xml_path
-        )
-        define_xml_reader = DefineXMLReader.from_file_contents(
-            define_xml_contents, cache_service_obj=self.cache
-        )
-        return define_xml_reader.extract_variables_metadata(domain_name=domain_name)
-
-    def get_corresponding_datasets_names(
-        self, dataset_path: str, datasets: List[dict], domain: str
-    ) -> List[str]:
-        directory_path = get_directory_path(dataset_path)
-        return [
-            f"{directory_path}/{dataset['filename']}"
-            for dataset in get_corresponding_datasets(datasets, domain)
-        ]
 
     def is_custom_domain(self, domain: str) -> bool:
         """
