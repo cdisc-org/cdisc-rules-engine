@@ -29,6 +29,13 @@ from scripts.list_dataset_metadata_handler import list_dataset_metadata_handler
 from version import __version__
 
 
+def valid_data_file(file_name: str, data_format: str):
+    fn = os.path.basename(file_name)
+    return fn.lower() != DEFINE_XML_FILE_NAME and fn.lower().endswith(
+        f".{data_format.lower()}"
+    )
+
+
 @click.group()
 def cli():
     pass
@@ -117,6 +124,14 @@ def cli():
     "--define-version",
     help="Define-XML version used for validation",
 )
+@click.option(
+    "-df",
+    "--data-format",
+    help="Format in which data files are presented. Defaults to XPT.",
+    type=click.Choice(["xpt"], case_sensitive=False),
+    default="xpt",
+    required=True,
+)
 @click.option("--whodrug", help="Path to directory with WHODrug dictionary files")
 @click.option("--meddra", help="Path to directory with MedDRA dictionary files")
 @click.option("--rules", "-r", multiple=True)
@@ -147,6 +162,7 @@ def validate(
     output_format: Tuple[str],
     raw_report: bool,
     define_version: str,
+    data_format: str,
     whodrug: str,
     meddra: str,
     rules: Tuple[str],
@@ -180,7 +196,7 @@ def validate(
         dataset_paths: Iterable[str] = [
             f"{data}/{fn}"
             for fn in os.listdir(data)
-            if fn.lower() != DEFINE_XML_FILE_NAME
+            if valid_data_file(fn, data_format)
         ]
     elif dataset_path:
         if data:
@@ -188,7 +204,9 @@ def validate(
                 "Argument --dataset-path cannot be used together with argument --data"
             )
             ctx.exit()
-        dataset_paths: Iterable[str] = dataset_path
+        dataset_paths: Iterable[str] = [
+            dp for dp in dataset_path if valid_data_file(dp, data_format)
+        ]
     else:
         logger.error(
             "You must pass one of the following arguments: --dataset-path, --data"
@@ -210,6 +228,7 @@ def validate(
             set(output_format),  # avoiding duplicates
             raw_report,
             define_version,
+            data_format.lower(),
             whodrug,
             meddra,
             rules,
