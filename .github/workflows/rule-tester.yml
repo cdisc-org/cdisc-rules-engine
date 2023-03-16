@@ -1,0 +1,146 @@
+#Note: Azure DevOps strategy>runOnce does not have an equivalent in GitHub Actions yet, and only the deploy steps are transferred to steps
+#Note: the 'AZURE_SP' secret is required to be added into GitHub Secrets. See this blog post for details: https://samlearnsazure.blog/2019/12/13/github-actions/
+
+on:
+  # push:
+  #   branches:
+  #   - master
+  workflow_dispatch:
+env:
+  ResourceGroup: cdisc-library-shared
+  functionAppName: cdisc-library-conformance-rules-generator
+  vmImageName: ubuntu-latest
+  workingDirectory: ${{ github.workspace }}
+jobs:
+  Build_Stage_Build:
+    name: Build
+    runs-on: ${{ env.vmImageName }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build extensions
+        run: |
+          if [ -f extensions.csproj ]
+          then
+              dotnet build extensions.csproj --runtime ubuntu.16.04-x64 --output ./bin
+          fi
+        shell: bash
+      - name: Use Python 3.9
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.9
+      - name: Install application dependencies
+        run: |
+          python -m venv worker_venv
+          source worker_venv/bin/activate
+          pip install -r requirements.txt
+        shell: bash
+      - # 'Note: This is a third party action and currently only supports Linux: https://github.com/marketplace/actions/create-zip-file'
+        name: Archive files
+        uses: montudor/action-zip@v0.1.0
+        with:
+          args: zip -qq -r ${{ github.workspace }}/${{ github.run_id }}.zip ${{ env.workingDirectory }}
+      - uses: actions/upload-artifact@v2
+        with:
+          path: ${{ github.workspace }}/${{ github.run_id }}.zip
+          name: drop
+  deploy_to_dev_Stage_DeploymentJob:
+    runs-on: ${{ env.vmImageName }}
+    needs:
+      - Build_Stage_Build
+    environment:
+      name: cdisc-library-conformance-rules-generator-dev
+    if: success()
+    steps:
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_SP }}
+      - name: Azure functions app deploy
+        uses: Azure/webapps-deploy@v2
+        with:
+          app-name: ${{ env.functionAppName }}-dev
+          package: ${{ env.Pipeline.Workspace }}/drop/${{ github.run_id }}.zip
+  # deploy_to_qa_Stage_DeploymentJob:
+  #   runs-on: ${{ env.vmImageName }}
+  #   needs:
+  #     - deploy_to_dev_Stage_DeploymentJob
+  #   environment:
+  #     name: cdisc-library-conformance-rules-generator-qa
+  #   if: success()
+  #   steps:
+  #     - name: Azure Login
+  #       uses: azure/login@v1
+  #       with:
+  #         creds: ${{ secrets.AZURE_SP }}
+  #     - name: Azure functions app deploy
+  #       uses: Azure/webapps-deploy@v2
+  #       with:
+  #         app-name: ${{ env.functionAppName }}-qa
+  #         package: ${{ env.Pipeline.Workspace }}/drop/${{ github.run_id }}.zip
+  # deploy_to_stage_Stage_DeploymentJob:
+  #   runs-on: ${{ env.vmImageName }}
+  #   needs:
+  #     - deploy_to_qa_Stage_DeploymentJob
+  #   environment:
+  #     name: cdisc-library-conformance-rules-generator-stage
+  #   if: success()
+  #   steps:
+  #     - name: Azure Login
+  #       uses: azure/login@v1
+  #       with:
+  #         creds: ${{ secrets.AZURE_SP }}
+  #     - name: Azure functions app deploy
+  #       uses: Azure/webapps-deploy@v2
+  #       with:
+  #         app-name: ${{ env.functionAppName }}
+  #         package: ${{ env.Pipeline.Workspace }}/drop/${{ github.run_id }}.zip
+  #         slot-name: stage
+  # swap_stage_with_prod_Stage_DeploymentJob:
+  #   runs-on: ${{ env.vmImageName }}
+  #   needs:
+  #     - deploy_to_stage_Stage_DeploymentJob
+  #   environment:
+  #     name: cdisc-library-conformance-rules-generator-prod
+  #   if: success()
+  #   steps:
+  #     - name: Azure Login
+  #       uses: azure/login@v1
+  #       with:
+  #         creds: ${{ secrets.AZURE_SP }}
+  #     - uses: Azure/cli@v1.0.0
+  #       with:
+  #         inlineScript: az webapp deployment slot swap --resource-group ${{ env.ResourceGroup }} --name ${{ env.functionAppName }} --slot stage --target-slot prod
+  # deploy_to_stage_post_swap_Stage_delay_post_swap_deploy_to_stage:
+  #   name: Delay
+  #   runs-on: Server
+  #   timeout-minutes: 2880
+  #   needs:
+  #     - swap_stage_with_prod_Stage_DeploymentJob
+  #   if: success()
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - # "Error: the step 'Delay@1' does not have a conversion path yet"
+  #       run: |
+  #         echo "Error: the step 'Delay@1' does not have a conversion path yet"
+  #         #task: Delay@1
+  #         #inputs:
+  #         #  delayforminutes: ${{ env.PostSwapStageDelayMins }}
+  # deploy_to_stage_post_swap_Stage_DeploymentJob:
+  #   runs-on: ${{ env.vmImageName }}
+  #   needs:
+  #     - swap_stage_with_prod_Stage_DeploymentJob
+  #     - deploy_to_stage_post_swap_Stage_delay_post_swap_deploy_to_stage
+  #   environment:
+  #     name: cdisc-library-conformance-rules-generator-stage
+  #   if: success()
+  #   steps:
+  #     - name: Azure Login
+  #       uses: azure/login@v1
+  #       with:
+  #         creds: ${{ secrets.AZURE_SP }}
+  #     - name: Azure functions app deploy
+  #       uses: Azure/webapps-deploy@v2
+  #       with:
+  #         app-name: ${{ env.functionAppName }}
+  #         package: ${{ env.Pipeline.Workspace }}/drop/${{ github.run_id }}.zip
+  #         slot-name: stage
