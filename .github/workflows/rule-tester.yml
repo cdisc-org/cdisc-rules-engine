@@ -1,6 +1,6 @@
 #Note: Azure DevOps strategy>runOnce does not have an equivalent in GitHub Actions yet, and only the deploy steps are transferred to steps
 #Note: the 'AZURE_SP' secret is required to be added into GitHub Secrets. See this blog post for details: https://samlearnsazure.blog/2019/12/13/github-actions/
-
+name: Deploy Azure Rule Tester Endpoint
 on:
   # push:
   #   branches:
