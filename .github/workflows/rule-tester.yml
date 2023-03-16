@@ -6,6 +6,7 @@ on:
   #   branches:
   #   - master
   workflow_dispatch:
+  pull_request:
 env:
   ResourceGroup: cdisc-library-shared
   functionAppName: cdisc-library-conformance-rules-generator
