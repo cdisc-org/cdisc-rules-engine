@@ -39,6 +39,7 @@ def test_read_metadata():
         assert isinstance(metadata["variable_name_to_label_map"], dict)
         assert isinstance(metadata["variable_name_to_size_map"], dict)
 
+
 def test_read_metadata_with_variable_formats():
     """
     Unit test for function read.
@@ -51,4 +52,39 @@ def test_read_metadata_with_variable_formats():
         file_contents: bytes = file.read()
         reader = DatasetMetadataReader(file_contents, file_name="test_adam_dataset.xpt")
         metadata: dict = reader.read()
-        assert metadata["variable_formats"] == ['', '', '', '', '', 'DATE9.', 'DATE9.', 'DATE9.', 'DATE9.', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 'DATE9.', '', '', '', '', '', '', '', '']
+        assert metadata["variable_formats"] == [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "DATE9.",
+            "DATE9.",
+            "DATE9.",
+            "DATE9.",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "DATE9.",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+        ]
