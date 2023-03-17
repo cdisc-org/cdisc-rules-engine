@@ -1,9 +1,8 @@
-#Note: the 'AZURE_SP' secret is required to be added into GitHub Secrets. See this blog post for details: https://samlearnsazure.blog/2019/12/13/github-actions/
+# To run manually from a non-main branch, install gh cli locally and run:
+# gh workflow run "Deploy Azure Rule Tester Endpoint" --ref <branch-name>
+# Note: the 'AZURE_SP' secret is required to be added into GitHub Secrets. See this blog post for details: https://samlearnsazure.blog/2019/12/13/github-actions/
 name: Deploy Azure Rule Tester Endpoint
 on:
-  # push:
-  #   branches:
-  #   - master
   workflow_dispatch:
 env:
   ResourceGroup: cdisc-library-shared
@@ -14,13 +13,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Build extensions
-        run: |
-          if [ -f extensions.csproj ]
-          then
-              dotnet build extensions.csproj --runtime ubuntu.16.04-x64 --output ./bin
-          fi
-        shell: bash
       - name: Use Python 3.9
         uses: actions/setup-python@v1
         with:
@@ -59,87 +51,3 @@ jobs:
         uses: Azure/webapps-deploy@v2
         with:
           app-name: ${{ env.functionAppName }}-dev
-  # deploy_to_qa_Stage_DeploymentJob:
-  #   runs-on: ubuntu-latest
-  #   needs:
-  #     - deploy_to_dev_Stage_DeploymentJob
-  #   environment:
-  #     name: cdisc-library-conformance-rules-generator-qa
-  #   if: success()
-  #   steps:
-  #     - name: Azure Login
-  #       uses: azure/login@v1
-  #       with:
-  #         creds: ${{ secrets.AZURE_SP }}
-  #     - name: Azure functions app deploy
-  #       uses: Azure/webapps-deploy@v2
-  #       with:
-  #         app-name: ${{ env.functionAppName }}-qa
-  #         package: ${{ env.Pipeline.Workspace }}/drop/${{ github.run_id }}.zip
-  # deploy_to_stage_Stage_DeploymentJob:
-  #   runs-on: ubuntu-latest
-  #   needs:
-  #     - deploy_to_qa_Stage_DeploymentJob
-  #   environment:
-  #     name: cdisc-library-conformance-rules-generator-stage
-  #   if: success()
-  #   steps:
-  #     - name: Azure Login
-  #       uses: azure/login@v1
-  #       with:
-  #         creds: ${{ secrets.AZURE_SP }}
-  #     - name: Azure functions app deploy
-  #       uses: Azure/webapps-deploy@v2
-  #       with:
-  #         app-name: ${{ env.functionAppName }}
-  #         package: ${{ env.Pipeline.Workspace }}/drop/${{ github.run_id }}.zip
-  #         slot-name: stage
-  # swap_stage_with_prod_Stage_DeploymentJob:
-  #   runs-on: ubuntu-latest
-  #   needs:
-  #     - deploy_to_stage_Stage_DeploymentJob
-  #   environment:
-  #     name: cdisc-library-conformance-rules-generator-prod
-  #   if: success()
-  #   steps:
-  #     - name: Azure Login
-  #       uses: azure/login@v1
-  #       with:
-  #         creds: ${{ secrets.AZURE_SP }}
-  #     - uses: Azure/cli@v1.0.0
-  #       with:
-  #         inlineScript: az webapp deployment slot swap --resource-group ${{ env.ResourceGroup }} --name ${{ env.functionAppName }} --slot stage --target-slot prod
-  # deploy_to_stage_post_swap_Stage_delay_post_swap_deploy_to_stage:
-  #   name: Delay
-  #   runs-on: Server
-  #   timeout-minutes: 2880
-  #   needs:
-  #     - swap_stage_with_prod_Stage_DeploymentJob
-  #   if: success()
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - # "Error: the step 'Delay@1' does not have a conversion path yet"
-  #       run: |
-  #         echo "Error: the step 'Delay@1' does not have a conversion path yet"
-  #         #task: Delay@1
-  #         #inputs:
-  #         #  delayforminutes: ${{ env.PostSwapStageDelayMins }}
-  # deploy_to_stage_post_swap_Stage_DeploymentJob:
-  #   runs-on: ubuntu-latest
-  #   needs:
-  #     - swap_stage_with_prod_Stage_DeploymentJob
-  #     - deploy_to_stage_post_swap_Stage_delay_post_swap_deploy_to_stage
-  #   environment:
-  #     name: cdisc-library-conformance-rules-generator-stage
-  #   if: success()
-  #   steps:
-  #     - name: Azure Login
-  #       uses: azure/login@v1
-  #       with:
-  #         creds: ${{ secrets.AZURE_SP }}
-  #     - name: Azure functions app deploy
-  #       uses: Azure/webapps-deploy@v2
-  #       with:
-  #         app-name: ${{ env.functionAppName }}
-  #         package: ${{ env.Pipeline.Workspace }}/drop/${{ github.run_id }}.zip
-  #         slot-name: stage
