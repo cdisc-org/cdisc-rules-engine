@@ -1,7 +1,7 @@
 import yaml
 import json
-from cdisc_rule_tester.models.enums.rule_types import RuleTypes
-from cdisc_rule_tester.models.enums.optional_condition_parameters import (
+from cdisc_rules_engine.enums.rule_types import RuleTypes
+from cdisc_rules_engine.enums.optional_condition_parameters import (
     OptionalConditionParameters,
 )
 

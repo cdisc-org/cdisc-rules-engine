@@ -1,6 +1,6 @@
 import pytest
 from cdisc_rule_tester.models.rule import Rule
-from cdisc_rule_tester.models.enums.rule_types import RuleTypes
+from cdisc_rules_engine.enums.rule_types import RuleTypes
 
 
 @pytest.mark.parametrize(
