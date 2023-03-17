@@ -1,4 +1,3 @@
-#Note: Azure DevOps strategy>runOnce does not have an equivalent in GitHub Actions yet, and only the deploy steps are transferred to steps
 #Note: the 'AZURE_SP' secret is required to be added into GitHub Secrets. See this blog post for details: https://samlearnsazure.blog/2019/12/13/github-actions/
 name: Deploy Azure Rule Tester Endpoint
 on:
@@ -33,12 +32,8 @@ jobs:
           source worker_venv/bin/activate
           pip install -r requirements.txt
         shell: bash
-      - # 'Note: This is a third party action and currently only supports Linux: https://github.com/marketplace/actions/create-zip-file'
-        name: Archive files
-        uses: montudor/action-zip@v0.1.0
-        with:
-          args: zip -qq -r ${{ github.workspace }}/${{ github.run_id }}.zip ${{ env.workingDirectory }}
-      - uses: actions/upload-artifact@v2
+      - name: Upload artifact for deployment jobs
+        uses: actions/upload-artifact@v2
         with:
           path: ${{ github.workspace }}/${{ github.run_id }}.zip
           name: drop
