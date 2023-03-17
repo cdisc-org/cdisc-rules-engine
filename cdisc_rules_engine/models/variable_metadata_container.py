@@ -4,6 +4,7 @@ from cdisc_rules_engine.interfaces import RepresentationInterface
 class VariableMetadataContainer(RepresentationInterface):
     def __init__(self, contents_metadata: dict):
         variable_names = contents_metadata["variable_names"]
+        self.formats = contents_metadata["variable_formats"]
         self.names = variable_names
         self.order = [(variable_names.index(name) + 1) for name in variable_names]
         self.labels = contents_metadata["variable_name_to_label_map"].values()
@@ -17,4 +18,5 @@ class VariableMetadataContainer(RepresentationInterface):
             "variable_label": self.labels,
             "variable_size": self.sizes,
             "variable_data_type": self.data_types,
+            "variable_format": self.formats,
         }

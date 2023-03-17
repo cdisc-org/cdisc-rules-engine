@@ -38,3 +38,17 @@ def test_read_metadata():
         ), "pyreadstat values has not been converted"
         assert isinstance(metadata["variable_name_to_label_map"], dict)
         assert isinstance(metadata["variable_name_to_size_map"], dict)
+
+def test_read_metadata_with_variable_formats():
+    """
+    Unit test for function read.
+    Loads test .xpt file and extracts metadata.
+    """
+    test_dataset_path: str = (
+        f"{os.path.dirname(__file__)}/../resources/test_adam_dataset.xpt"
+    )
+    with open(test_dataset_path, "rb") as file:
+        file_contents: bytes = file.read()
+        reader = DatasetMetadataReader(file_contents, file_name="test_adam_dataset.xpt")
+        metadata: dict = reader.read()
+        assert metadata["variable_formats"] == ['', '', '', '', '', 'DATE9.', 'DATE9.', 'DATE9.', 'DATE9.', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 'DATE9.', '', '', '', '', '', '', '', '']

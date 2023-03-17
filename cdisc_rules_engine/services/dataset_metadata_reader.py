@@ -34,6 +34,7 @@ class DatasetMetadataReader:
         self._metadata_container = {
             "variable_labels": list(dataset.contents.Label.values),
             "variable_names": list(dataset.contents.Variable.values),
+            "variable_formats": list(dataset.contents.Format.values),
             "variable_name_to_label_map": pd.Series(
                 dataset.contents.Label.values, index=dataset.contents.Variable
             ).to_dict(),
@@ -92,6 +93,7 @@ class DatasetMetadataReader:
         """
         return {
             "variable_labels": self._metadata_container.column_labels,
+            "variable_formats": self._metadata_container.column_formats,
             "variable_names": self._metadata_container.column_names,
             "variable_name_to_label_map": self._metadata_container.column_names_to_labels,  # noqa
             "variable_name_to_data_type_map": self._metadata_container.readstat_variable_types,  # noqa

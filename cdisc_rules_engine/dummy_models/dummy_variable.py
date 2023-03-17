@@ -4,3 +4,4 @@ class DummyVariable:
         self.label = variable_data.get("label")
         self.type = variable_data.get("type")
         self.length = variable_data.get("length")
+        self.format = variable_data.get("format")
