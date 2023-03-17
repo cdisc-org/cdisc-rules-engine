@@ -49,6 +49,7 @@ def test_get_dataset():
     data = data_service.get_dataset(dataset_name=dataset_path)
     assert isinstance(data, pd.DataFrame)
 
+
 def test_get_variables_metdata():
     dataset_path = f"{os.path.dirname(__file__)}/../resources/test_adam_dataset.xpt"
     mock_cache = MagicMock()
@@ -56,6 +57,12 @@ def test_get_variables_metdata():
     data_service = LocalDataService.get_instance(cache_service=mock_cache)
     data = data_service.get_variables_metadata(dataset_name=dataset_path)
     assert isinstance(data, pd.DataFrame)
-    expected_keys = ["variable_name", "variable_format", "variable_order", "variable_data_type", "variable_label"]
+    expected_keys = [
+        "variable_name",
+        "variable_format",
+        "variable_order",
+        "variable_data_type",
+        "variable_label",
+    ]
     for key in expected_keys:
         assert key in data

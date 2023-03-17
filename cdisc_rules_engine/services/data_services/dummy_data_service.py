@@ -84,7 +84,7 @@ class DummyDataService(BaseDataService):
             "variable_label": [],
             "variable_size": [],
             "variable_data_type": [],
-            "variable_format": []
+            "variable_format": [],
         }
         dataset: DummyDataset = self.get_dataset_data(dataset_name)
         for i, variable in enumerate(dataset.variables):
@@ -103,7 +103,9 @@ class DummyDataService(BaseDataService):
             metadata_to_return["variable_data_type"] = metadata_to_return[
                 "variable_data_type"
             ] + [variable.type]
-            metadata_to_return["variable_format"] = metadata_to_return["variable_format"] + [variable.format]
+            metadata_to_return["variable_format"] = metadata_to_return[
+                "variable_format"
+            ] + [variable.format]
         return pd.DataFrame.from_dict(metadata_to_return)
 
     def get_dataset_by_type(
