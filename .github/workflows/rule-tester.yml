@@ -6,16 +6,14 @@ on:
   #   branches:
   #   - master
   workflow_dispatch:
-  pull_request:
 env:
   ResourceGroup: cdisc-library-shared
   functionAppName: cdisc-library-conformance-rules-generator
-  vmImageName: ubuntu-latest
   workingDirectory: ${{ github.workspace }}
 jobs:
   Build_Stage_Build:
     name: Build
-    runs-on: ${{ env.vmImageName }}
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - name: Build extensions
@@ -45,7 +43,7 @@ jobs:
           path: ${{ github.workspace }}/${{ github.run_id }}.zip
           name: drop
   deploy_to_dev_Stage_DeploymentJob:
-    runs-on: ${{ env.vmImageName }}
+    runs-on: ubuntu-latest
     needs:
       - Build_Stage_Build
     environment:
@@ -62,7 +60,7 @@ jobs:
           app-name: ${{ env.functionAppName }}-dev
           package: ${{ env.Pipeline.Workspace }}/drop/${{ github.run_id }}.zip
   # deploy_to_qa_Stage_DeploymentJob:
-  #   runs-on: ${{ env.vmImageName }}
+  #   runs-on: ubuntu-latest
   #   needs:
   #     - deploy_to_dev_Stage_DeploymentJob
   #   environment:
@@ -79,7 +77,7 @@ jobs:
   #         app-name: ${{ env.functionAppName }}-qa
   #         package: ${{ env.Pipeline.Workspace }}/drop/${{ github.run_id }}.zip
   # deploy_to_stage_Stage_DeploymentJob:
-  #   runs-on: ${{ env.vmImageName }}
+  #   runs-on: ubuntu-latest
   #   needs:
   #     - deploy_to_qa_Stage_DeploymentJob
   #   environment:
@@ -97,7 +95,7 @@ jobs:
   #         package: ${{ env.Pipeline.Workspace }}/drop/${{ github.run_id }}.zip
   #         slot-name: stage
   # swap_stage_with_prod_Stage_DeploymentJob:
-  #   runs-on: ${{ env.vmImageName }}
+  #   runs-on: ubuntu-latest
   #   needs:
   #     - deploy_to_stage_Stage_DeploymentJob
   #   environment:
@@ -127,7 +125,7 @@ jobs:
   #         #inputs:
   #         #  delayforminutes: ${{ env.PostSwapStageDelayMins }}
   # deploy_to_stage_post_swap_Stage_DeploymentJob:
-  #   runs-on: ${{ env.vmImageName }}
+  #   runs-on: ubuntu-latest
   #   needs:
   #     - swap_stage_with_prod_Stage_DeploymentJob
   #     - deploy_to_stage_post_swap_Stage_delay_post_swap_deploy_to_stage

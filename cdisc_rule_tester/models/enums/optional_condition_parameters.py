@@ -1,5 +1,6 @@
 from cdisc_rule_tester.models.enums.base_enum import BaseEnum
 
+
 class OptionalConditionParameters(BaseEnum):
     DATE_COMPONENT = "date_component"
     PREFIX = "prefix"

@@ -1,5 +1,6 @@
 import pytest
 
+
 @pytest.fixture
 def input_yml():
     return """Core:
@@ -38,8 +39,8 @@ Citations:
   - Document: SDTM Model v2.0
     Section: Timing
     Cited Guidance: >-
-      "The description of a time point that acts as a fixed reference for a 
-      series of planned     
-      time points, used for study data tabulation. Description of the fixed 
-      reference point referred to by --ELTM, --TPTNUM, --TPT, --STINT, and 
+      "The description of a time point that acts as a fixed reference for a
+      series of planned
+      time points, used for study data tabulation. Description of the fixed
+      reference point referred to by --ELTM, --TPTNUM, --TPT, --STINT, and
       --ENINT."""

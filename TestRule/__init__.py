@@ -1,7 +1,7 @@
 import azure.functions as func
-from cdisc_rule_tester.services.config_service import ConfigService
 from cdisc_rule_tester.models.rule_tester import RuleTester
 import json
+
 
 def validate_datasets_payload(datasets):
     required_keys = {"filename", "label", "domain", "records", "variables"}
@@ -12,7 +12,9 @@ def validate_datasets_payload(datasets):
                 missing_keys.add(key)
 
     if missing_keys:
-        raise KeyError(f"one or more datasets missing the following keys {missing_keys}")
+        raise KeyError(
+            f"one or more datasets missing the following keys {missing_keys}"
+        )
 
 
 def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
@@ -28,7 +30,16 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
         tester = RuleTester(datasets)
         return func.HttpResponse(json.dumps(tester.validate(rule)))
     except KeyError as e:
-        return func.HttpResponse(json.dumps({"error": "KeyError", "message": str(e)}), status_code=400)
+        return func.HttpResponse(
+            json.dumps({"error": "KeyError", "message": str(e)}), status_code=400
+        )
     except Exception as e:
-        return func.HttpResponse(json.dumps({"errror": "Unknown Exception", "message": f"An unhandled exception occurred. {str(e)}"}), status_code=500)
- 
+        return func.HttpResponse(
+            json.dumps(
+                {
+                    "errror": "Unknown Exception",
+                    "message": f"An unhandled exception occurred. {str(e)}",
+                }
+            ),
+            status_code=500,
+        )

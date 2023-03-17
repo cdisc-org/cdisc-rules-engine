@@ -1,5 +1,6 @@
 from cdisc_rule_tester.models.enums.base_enum import BaseEnum
 
+
 class RuleTypes(BaseEnum):
     RELATIONSHIP_INTEGRITY = "Relationship Integrity Check"
     VARIABLE_PRESENCE = "Variable Presence"
@@ -7,10 +8,12 @@ class RuleTypes(BaseEnum):
     RANGE_CHECK = "Range & Limit"
     DATASET_METADATA_CHECK = "Dataset Metadata Check"
     DATASET_METADATA_CHECK_AGAINST_DEFINE = "Dataset Metadata Check against Define XML"
-    VARIABLE_METADATA_CHECK_AGAINST_DEFINE = "Variable Metadata Check against Define XML"
+    VARIABLE_METADATA_CHECK_AGAINST_DEFINE = (
+        "Variable Metadata Check against Define XML"
+    )
     VARIABLE_METADATA_CHECK = "Variable Metadata Check"
     DOMAIN_PRESENCE_CHECK = "Domain Presence Check"
-    DATA_PATTERN_AND_FORMAT =  "Data Pattern and Format"
+    DATA_PATTERN_AND_FORMAT = "Data Pattern and Format"
     EXTERNAL_DICTIONARIES = "External Dictionaries"
     FUNCTIONAL_DEPENDENCY = "Functional Dependency"
     DATE_ARITHMETIC = "Date Arithmetic"

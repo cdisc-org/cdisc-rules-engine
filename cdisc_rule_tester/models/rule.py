@@ -1,10 +1,12 @@
 import yaml
 import json
 from cdisc_rule_tester.models.enums.rule_types import RuleTypes
-from cdisc_rule_tester.models.enums.optional_condition_parameters import OptionalConditionParameters
+from cdisc_rule_tester.models.enums.optional_condition_parameters import (
+    OptionalConditionParameters,
+)
+
 
 class Rule:
-
     def __init__(self):
         self.reference = None
         self.core_id = None
@@ -26,7 +28,6 @@ class Rule:
         self.id = None
         self.links = {}
 
-
     @staticmethod
     def from_json(json_rule):
         rule = Rule()
@@ -42,7 +43,7 @@ class Rule:
         for key in required_keys:
             if key not in rule_data:
                 missing_keys.append(key)
-        
+
         if rule_data.get("Core", {}).get("Id") is None:
             missing_keys.append("Core.Id")
 
@@ -50,7 +51,7 @@ class Rule:
             raise ValueError(f"Provided rule is missing keys: {missing_keys}")
 
     @staticmethod
-    def from_yaml(yaml_data, rule = None):
+    def from_yaml(yaml_data, rule=None):
         rule = rule or Rule()
         data = yaml.safe_load(yaml_data)
         Rule.validate(data)
@@ -88,13 +89,13 @@ class Rule:
         if not_condition:
             conditions_json["not"] = self.parse_conditions(not_condition)
         return conditions_json
-    
+
     def parse_datasets(self, match_key_data):
-        # Defaulting to IDVAR and IDVARVAL as relationship columns. May change in the future
-        # As more standard rules are written.
+        # Defaulting to IDVAR and IDVARVAL as relationship columns. May change in the
+        # future as more standard rules are written.
         relationship_columns = {
             "column_with_names": "IDVAR",
-            "column_with_values": "IDVARVAL"
+            "column_with_values": "IDVARVAL",
         }
         if not match_key_data:
             return None
@@ -108,28 +109,26 @@ class Rule:
                 join_data["relationship_columns"] = relationship_columns
             datasets.append(join_data)
         return datasets
-    
+
     def build_self_link(self, parent_package):
         return {
-            "href": f"/mdr/rules/{parent_package.name.lower()}/{parent_package.version.replace('.', '-')}/rule/{self.id}",
+            "href": (
+                f"/mdr/rules/{parent_package.name.lower()}/",
+                f"{parent_package.version.replace('.', '-')}/rule/{self.id}",
+            ),
             "title": self.core_id,
-            "type": "Conformance Rule"
+            "type": "Conformance Rule",
         }
 
     def add_link(self, key, value):
         self.links[key] = value
-    
+
     def parse_actions(self, actions_data):
         if not actions_data:
             raise ValueError("No actions data provided")
         action = "generate_dataset_error_objects"
-        return [{
-            "name": action,
-            "params": {
-                "message": actions_data.get("Message")
-            }
-        }]
-    
+        return [{"name": action, "params": {"message": actions_data.get("Message")}}]
+
     def get_output_variables(self, outcome):
         return outcome.get("Output Variables", [])
 
@@ -151,13 +150,17 @@ class Rule:
             "conditions": self.conditions,
             "operations": self.operations,
             "output_variables": self.output_variables,
-            "actions": self.actions
+            "actions": self.actions,
         }
         return self.remove_none(json_data)
-    
+
     def remove_none(self, data):
         if isinstance(data, dict):
-            return {k:self.remove_none(v) for k, v in data.items() if k is not None and v is not None}
+            return {
+                k: self.remove_none(v)
+                for k, v in data.items()
+                if k is not None and v is not None
+            }
         elif isinstance(data, list):
             return [self.remove_none(item) for item in data if item is not None]
         elif isinstance(data, tuple):
@@ -168,9 +171,7 @@ class Rule:
             return data
 
     def get_package_type(self):
-        package_map = {
-            "SDTM": "sdtm-cr"
-        }
+        package_map = {"SDTM": "sdtm-cr"}
         package_type = self.reference.get("Origin").split()[0]
         return package_map.get(package_type)
 
@@ -178,10 +179,10 @@ class Rule:
         return self.reference.get("Version").replace(".", "-")
 
     def get_standards(self):
-        return {standard["Name"].lower() : standard["Version"].replace(".", "-") for standard in self.standards}
-
-    def add_link(self, key, value):
-        self.links[key] = value
+        return {
+            standard["Name"].lower(): standard["Version"].replace(".", "-")
+            for standard in self.standards
+        }
 
     def write_to_file(self):
         file_name = f"{self.core_id}.json"
@@ -194,17 +195,11 @@ class Rule:
 
         for condition in conditions_data:
             if "all" in condition:
-                conditions.append({
-                    "all": self.build_conditions(condition.get("all")) 
-                }) 
+                conditions.append({"all": self.build_conditions(condition.get("all"))})
             elif "any" in condition:
-                conditions.append({
-                    "any": self.build_conditions(condition.get("any"))
-                })
+                conditions.append({"any": self.build_conditions(condition.get("any"))})
             elif "not" in condition:
-                conditions.append({
-                    "not": self.parse_conditions(condition.get("not"))
-                })
+                conditions.append({"not": self.parse_conditions(condition.get("not"))})
             else:
                 conditions.append(self.build_condition(condition, function))
 
@@ -216,8 +211,8 @@ class Rule:
             "operator": condition.get("operator"),
             "value": {
                 "target": condition.get("name"),
-                "comparator": condition.get("value")
-            }
+                "comparator": condition.get("value"),
+            },
         }
         for optional_parameter in OptionalConditionParameters.values():
             if optional_parameter in condition:
@@ -226,4 +221,3 @@ class Rule:
 
     def isValidRuleType(self):
         return self.rule_type in RuleTypes.values()
-
