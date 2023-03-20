@@ -1,9 +1,6 @@
-from cdisc_rule_tester.services.config_service import ConfigService
 import logging.config
 
 log = logging.getLogger(__name__)
-
-config_service = ConfigService()
 
 
 class TraceProperties:

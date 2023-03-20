@@ -21,7 +21,7 @@ jobs:
         run: |
           python -m venv venv
           source venv/bin/activate
-          pip install -r requirements.txt
+          pip install -r requirements-rule-tester.txt
         shell: bash
       - name: Upload artifact for deployment jobs
         uses: actions/upload-artifact@v2
