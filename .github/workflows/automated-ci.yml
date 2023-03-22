@@ -4,8 +4,7 @@
 name: CI
 
 # Controls when the workflow will run
-on: [ pull_request ]
-
+on: [pull_request]
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -19,7 +18,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.9'
+          python-version: "3.9"
 
       # Installing all dependencies
       - name: Install requirements
@@ -40,7 +39,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          fetch-depth: '0'
+          fetch-depth: "0"
       - name: Get changed files
         id: changes
         run: |
@@ -55,11 +54,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          fetch-depth: '0'
+          fetch-depth: "0"
       - name: Install linters
         run: |
-          pip install flake8
-          pip install black
+          pip install flake8==5.0.4
+          pip install black==22.6.0
 
       - name: Run flake8
         run: |
@@ -68,4 +67,4 @@ jobs:
 
       - name: Run black
         run: |
-         black --check ${{needs.get_changed_files.outputs.py}}
+          black --check ${{needs.get_changed_files.outputs.py}}

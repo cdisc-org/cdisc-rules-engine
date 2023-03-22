@@ -34,6 +34,8 @@ parts/
 sdist/
 var/
 wheels/
+pip-wheel-metadata/
+share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
@@ -127,3 +129,14 @@ dmypy.json
 # CORE reports
 CORE-Report*.xlsx
 CORE-Report*.json
+# Pyre type checker
+.pyre/
+
+# Azure Functions artifacts
+bin
+obj
+appsettings.json
+local.settings.json
+.python_packages
+
+logs
