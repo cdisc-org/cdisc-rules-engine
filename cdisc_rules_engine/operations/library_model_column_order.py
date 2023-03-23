@@ -30,15 +30,19 @@ class LibraryModelColumnOrder(BaseOperation):
         # get variables metadata from the standard model
         variables_metadata: List[
             dict
-        ] = self._get_variables_metadata_from_standard_model()
+        ] = self._get_variables_metadata_from_standard_model(
+            self.params.domain, self.params.dataframe
+        )
 
         # create a list of variable names in accordance to the "ordinal" key
-        variable_names_list = [
-            var["name"].replace("--", self.params.domain) for var in variables_metadata
-        ]
+        variable_names_list = self._replace_variable_wildcards(
+            variables_metadata, self.params.domain
+        )
         return list(OrderedDict.fromkeys(variable_names_list))
 
-    def _get_variables_metadata_from_standard_model(self) -> List[dict]:
+    def _get_variables_metadata_from_standard_model(
+        self, domain, dataframe
+    ) -> List[dict]:
         """
         Gets variables metadata for the given class and domain from cache.
         The cache stores CDISC Library metadata.
@@ -71,9 +75,7 @@ class LibraryModelColumnOrder(BaseOperation):
         model_type, model_version = self._get_model_type_and_version(model)
         model_cache_key = get_model_details_cache_key(model_type, model_version)
         model_details = self.cache.get(model_cache_key) or {}
-        domain_details = self._get_model_domain_metadata(
-            model_details, self.params.domain
-        )
+        domain_details = self._get_model_domain_metadata(model_details, domain)
         variables_metadata = []
 
         if domain_details:
@@ -85,7 +87,7 @@ class LibraryModelColumnOrder(BaseOperation):
         else:
             # Domain not found in the model. Detect class name from data
             class_name = self.data_service.get_dataset_class(
-                self.params.dataframe, self.params.dataset_path, self.params.datasets
+                dataframe, self.params.dataset_path, self.params.datasets
             )
             class_details = self._get_class_metadata(model_details, class_name)
 
@@ -110,3 +112,7 @@ class LibraryModelColumnOrder(BaseOperation):
         )
 
         return domain_details
+
+    @staticmethod
+    def _replace_variable_wildcards(variables_metadata, domain):
+        return [var["name"].replace("--", domain) for var in variables_metadata]
