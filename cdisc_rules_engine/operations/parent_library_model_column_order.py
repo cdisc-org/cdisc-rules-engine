@@ -1,5 +1,3 @@
-from typing import List
-from collections import OrderedDict
 from cdisc_rules_engine.operations.library_model_column_order import (
     LibraryModelColumnOrder,
 )
@@ -20,33 +18,21 @@ class ParentLibraryModelColumnOrder(LibraryModelColumnOrder):
         The lists with column names are sorted
         in accordance to "ordinal" key of library metadata.
         """
-        if "RDOMAIN" not in self.params.dataframe:
-            return []
-        rdomains = self.params.dataframe["RDOMAIN"].unique()
         rdomain_names_list = {}
-        for rdomain in rdomains:
-            parent_datasets = [
-                dataset["filename"]
-                for dataset in self.params.datasets
-                if dataset["domain"] == rdomain
-            ]
-            if len(parent_datasets) < 1:
-                rdomain_names_list[rdomain] = []
-            else:
-                parent_dataframe = self.data_service.get_dataset(parent_datasets[0])
-                # get variables metadata from the standard model
-                variables_metadata: List[
-                    dict
-                ] = self._get_variables_metadata_from_standard_model(
-                    rdomain, parent_dataframe
-                )
-                # create a list of variable names in accordance to the "ordinal" key
-                variable_names_list = self._replace_variable_wildcards(
-                    variables_metadata, rdomain
-                )
-                rdomain_names_list[rdomain] = list(
-                    OrderedDict.fromkeys(variable_names_list)
-                )
         return Series(
-            rdomain_names_list[rdomain] for rdomain in self.params.dataframe["RDOMAIN"]
+            rdomain_names_list.setdefault(
+                rdomain, self._get_parent_variable_names_list(rdomain)
+            )
+            for rdomain in self.params.dataframe.get("RDOMAIN", [])
         )
+
+    def _get_parent_variable_names_list(self, rdomain: str):
+        parent_datasets = [
+            dataset["filename"]
+            for dataset in self.params.datasets
+            if dataset["domain"] == rdomain
+        ]
+        if len(parent_datasets) < 1:
+            return []
+        parent_dataframe = self.data_service.get_dataset(parent_datasets[0])
+        return self._get_variable_names_list(rdomain, parent_dataframe)

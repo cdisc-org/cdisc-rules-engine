@@ -26,17 +26,16 @@ class LibraryModelColumnOrder(BaseOperation):
         The lists with column names are sorted
         in accordance to "ordinal" key of library metadata.
         """
+        return self._get_variable_names_list(self.params.domain, self.params.dataframe)
 
+    def _get_variable_names_list(self, domain, dataframe):
         # get variables metadata from the standard model
         variables_metadata: List[
             dict
-        ] = self._get_variables_metadata_from_standard_model(
-            self.params.domain, self.params.dataframe
-        )
-
+        ] = self._get_variables_metadata_from_standard_model(domain, dataframe)
         # create a list of variable names in accordance to the "ordinal" key
         variable_names_list = self._replace_variable_wildcards(
-            variables_metadata, self.params.domain
+            variables_metadata, domain
         )
         return list(OrderedDict.fromkeys(variable_names_list))
 

@@ -8,6 +8,7 @@ from cdisc_rules_engine.constants.classes import (
     GENERAL_OBSERVATIONS_CLASS,
     FINDINGS,
     FINDINGS_ABOUT,
+    INTERVENTIONS,
 )
 from cdisc_rules_engine.enums.variable_roles import VariableRoles
 from cdisc_rules_engine.models.operation_params import OperationParams
@@ -113,19 +114,7 @@ def test_get_parent_column_order_from_library(
         {
             "domain": "AE",
             "filename": "ae.xpt",
-        },
-        {
-            "domain": "EC",
-            "filename": "ec.xpt",
-        },
-        {
-            "domain": "SUPP",
-            "filename": "supp.xpt",
-        },
-        {
-            "domain": "DM",
-            "filename": "dm.xpt",
-        },
+        }
     ]
     ae = pd.DataFrame.from_dict(
         {
@@ -134,20 +123,7 @@ def test_get_parent_column_order_from_library(
             "AESEQ": [1, 2, 3],
         }
     )
-    ec = pd.DataFrame.from_dict(
-        {
-            "ECSTDY": [500, 4],
-            "STUDYID": [201, 101],
-            "ECSEQ": [2, 1],
-        }
-    )
-    dm = pd.DataFrame.from_dict({"USUBJID": [1, 2, 3, 4, 5, 6000]})
-    path_to_dataset_map: dict = {
-        "ae.xpt": ae,
-        "ec.xpt": ec,
-        "dm.xpt": dm,
-        "data.xpt": data,
-    }
+    path_to_dataset_map: dict = {"ae.xpt": ae}
     with patch(
         "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
         side_effect=lambda dataset_name: path_to_dataset_map[dataset_name],
@@ -238,6 +214,15 @@ def test_get_parent_column_order_from_library(
                         ],
                     },
                     {
+                        "name": INTERVENTIONS,
+                        "label": INTERVENTIONS,
+                        "classVariables": [
+                            {"name": "--VAR1", "ordinal": 1},
+                            {"name": "--TRT", "ordinal": 2},
+                            {"name": "--VAR2", "ordinal": 3},
+                        ],
+                    },
+                    {
                         "name": GENERAL_OBSERVATIONS_CLASS,
                         "label": GENERAL_OBSERVATIONS_CLASS,
                         "classVariables": [
@@ -296,14 +281,6 @@ def test_get_parent_findings_class_column_order_from_library(
             "domain": "EC",
             "filename": "ec.xpt",
         },
-        {
-            "domain": "SUPP",
-            "filename": "supp.xpt",
-        },
-        {
-            "domain": "DM",
-            "filename": "dm.xpt",
-        },
     ]
     ae = pd.DataFrame.from_dict(
         {
@@ -325,15 +302,14 @@ def test_get_parent_findings_class_column_order_from_library(
         {
             "ECSTDY": [500, 4],
             "STUDYID": [201, 101],
+            "DOMAIN": ["EC", "EC"],
             "ECSEQ": [2, 1],
+            "ECTRT": [2, 1],
         }
     )
-    dm = pd.DataFrame.from_dict({"USUBJID": [1, 2, 3, 4, 5, 6000]})
     path_to_dataset_map: dict = {
         "ae.xpt": ae,
         "ec.xpt": ec,
-        "dm.xpt": dm,
-        "data.xpt": data,
     }
     with patch(
         "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
