@@ -3,6 +3,7 @@ from collections import OrderedDict
 from cdisc_rules_engine.operations.library_model_column_order import (
     LibraryModelColumnOrder,
 )
+from pandas import Series
 
 
 class ParentLibraryModelColumnOrder(LibraryModelColumnOrder):
@@ -22,24 +23,30 @@ class ParentLibraryModelColumnOrder(LibraryModelColumnOrder):
         if "RDOMAIN" not in self.params.dataframe:
             return []
         rdomains = self.params.dataframe["RDOMAIN"].unique()
-        if len(rdomains) != 1:
-            return []
-        rdomain = rdomains[0]
-        parent_datasets = [
-            dataset["filename"]
-            for dataset in self.params.datasets
-            if dataset["domain"] == rdomain
-        ]
-        if len(parent_datasets) < 1:
-            return []
-        parent_dataframe = self.data_service.get_dataset(parent_datasets[0])
-        # get variables metadata from the standard model
-        variables_metadata: List[
-            dict
-        ] = self._get_variables_metadata_from_standard_model(rdomain, parent_dataframe)
-
-        # create a list of variable names in accordance to the "ordinal" key
-        variable_names_list = self._replace_variable_wildcards(
-            variables_metadata, rdomain
+        rdomain_names_list = {}
+        for rdomain in rdomains:
+            parent_datasets = [
+                dataset["filename"]
+                for dataset in self.params.datasets
+                if dataset["domain"] == rdomain
+            ]
+            if len(parent_datasets) < 1:
+                rdomain_names_list[rdomain] = []
+            else:
+                parent_dataframe = self.data_service.get_dataset(parent_datasets[0])
+                # get variables metadata from the standard model
+                variables_metadata: List[
+                    dict
+                ] = self._get_variables_metadata_from_standard_model(
+                    rdomain, parent_dataframe
+                )
+                # create a list of variable names in accordance to the "ordinal" key
+                variable_names_list = self._replace_variable_wildcards(
+                    variables_metadata, rdomain
+                )
+                rdomain_names_list[rdomain] = list(
+                    OrderedDict.fromkeys(variable_names_list)
+                )
+        return Series(
+            rdomain_names_list[rdomain] for rdomain in self.params.dataframe["RDOMAIN"]
         )
-        return list(OrderedDict.fromkeys(variable_names_list))
