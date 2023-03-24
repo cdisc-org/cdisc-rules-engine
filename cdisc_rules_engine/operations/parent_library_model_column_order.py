@@ -30,7 +30,7 @@ class ParentLibraryModelColumnOrder(LibraryModelColumnOrder):
             for dataset in self.params.datasets
             if dataset["domain"] == rdomain
         ]
-        if len(parent_datasets) != 1:
+        if len(parent_datasets) < 1:
             return []
         parent_dataframe = self.data_service.get_dataset(parent_datasets[0])
         # get variables metadata from the standard model
