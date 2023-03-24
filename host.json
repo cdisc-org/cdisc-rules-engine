@@ -1,0 +1,28 @@
+{
+  "version": "2.0",
+  "extensionBundle": {
+    "id": "Microsoft.Azure.Functions.ExtensionBundle",
+    "version": "[2.*, 3.0.0)"
+  },
+  "functionTimeout": "18:00:00",
+  "logger": {
+    "categoryFilter": {
+      "defaultLevel": "Information",
+      "categoryLevels": {
+        "Host.Results": "Information",
+        "Function": "Information",
+        "Host.Aggregator": "Information"
+      }
+    },
+    "aggregator": {
+      "batchSize": 1000,
+      "flushTimeout": "00:00:30"
+    }
+  },
+  "applicationInsights": {
+    "sampling": {
+      "isEnabled": false,
+      "maxTelemetryItemsPerSecond" : 5
+    }
+  }
+}

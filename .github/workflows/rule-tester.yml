@@ -1,0 +1,53 @@
+# To run manually from a non-main branch, install gh cli locally and run:
+# gh workflow run "Deploy Azure Rule Tester Endpoint" --ref <branch-name>
+# Note: the 'AZURE_SP' secret is required to be added into GitHub Secrets. See this blog post for details: https://samlearnsazure.blog/2019/12/13/github-actions/
+name: Deploy Azure Rule Tester Endpoint
+on:
+  workflow_dispatch:
+env:
+  ResourceGroup: cdisc-library-shared
+  functionAppName: cdisc-library-conformance-rules-generator
+jobs:
+  Build_Stage_Build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Python 3.9
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.9
+      - name: Install application dependencies
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install -r requirements-rule-tester.txt
+        shell: bash
+      - name: Upload artifact for deployment jobs
+        uses: actions/upload-artifact@v2
+        with:
+          path: |
+            . 
+            !venv/
+          name: python-app
+  deploy_to_dev_Stage_DeploymentJob:
+    runs-on: ubuntu-latest
+    needs:
+      - Build_Stage_Build
+    environment:
+      name: cdisc-library-conformance-rules-generator-dev
+    if: success()
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v2
+        with:
+          name: python-app
+          path: .
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_SP }}
+      - name: Azure functions app deploy
+        uses: Azure/webapps-deploy@v2
+        with:
+          app-name: ${{ env.functionAppName }}-dev
