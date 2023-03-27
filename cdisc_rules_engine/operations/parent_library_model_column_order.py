@@ -26,7 +26,9 @@ class ParentLibraryModelColumnOrder(LibraryModelColumnOrder):
                 rdomain,
                 self._get_parent_variable_names_list(domain_to_datasets, rdomain),
             )
-            for rdomain in self.params.dataframe.get("RDOMAIN", [])
+            for rdomain in self.params.dataframe.get(
+                "RDOMAIN", [None] * self.params.dataframe.shape[0]
+            )
         )
 
     def _get_domain_to_datasets(self):
