@@ -97,10 +97,10 @@ def test_empty_sequential():
     targets = set(dummy_rule["output_variables"])
     result = action.generate_targeted_error_object(targets, df, "TVSEQ greater than 2")
     assert [err.to_representation() for err in result.errors] == [
-        {"value": {"TV": 1}, "row": 1, "seq": 2},
-        {"value": {"TV": 3}, "row": 2, "seq": 4},
-        {"value": {"TV": 5}, "row": 3, "seq": 6},
+        {"value": {"TV": 1}, "row": 1, "SEQ": 2},
+        {"value": {"TV": 3}, "row": 2, "SEQ": 4},
+        {"value": {"TV": 5}, "row": 3, "SEQ": 6},
         {"value": {"TV": 7}, "row": 4},
         {"value": {"TV": 9}, "row": 5},
-        {"value": {"TV": "8"}, "row": 6, "seq": 8},
+        {"value": {"TV": "8"}, "row": 6, "SEQ": 8},
     ]

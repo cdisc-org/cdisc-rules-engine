@@ -51,7 +51,7 @@ def test_rule_with_errors():
     assert len(data["LB"][0]["errors"]) == 1
     error = data["LB"][0]["errors"][0]
     assert error["row"] == 1
-    assert error["seq"] == 1
+    assert error["SEQ"] == 1
     assert error["value"] == {"LBSEQ": 1}
 
 

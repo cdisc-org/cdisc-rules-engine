@@ -25,7 +25,7 @@ class ValidationErrorEntity(BaseValidationEntity):
         if self._row is not None:
             representation["row"] = self._row
         if self._usubjid:
-            representation["uSubjId"] = self._usubjid
+            representation["USUBJID"] = self._usubjid
         if self._sequence:
-            representation["seq"] = self._sequence
+            representation["SEQ"] = self._sequence
         return representation

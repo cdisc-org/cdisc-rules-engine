@@ -113,9 +113,9 @@ class BaseReport(ABC):
                         "message": result.get("message"),
                         "executability": validation_result.executability,
                         "dataset": result.get("domain"),
-                        "uSubjId": error.get("uSubjId", ""),
+                        "USUBJID": error.get("USUBJID", ""),
                         "row": error.get("row", ""),
-                        "seq": error.get("seq", ""),
+                        "SEQ": error.get("SEQ", ""),
                     }
 
                     if self._item_type == "list":
