@@ -14,7 +14,48 @@ mock_validation_results = [
         rule={
             "core_id": "CORE1",
             "executability": "Partially Executable",
-            "message": "TEST RULE 1",
+            "actions": [{"params": {"message": "TEST RULE 1"}}],
+            "authorities": [
+                {
+                    "Organization": "CDISC",
+                    "Standards": [
+                        {
+                            "References": [
+                                {"Rule_Identifier": {"Id": "CDISCRuleID4"}},
+                                {"Rule_Identifier": {"Id": "CDISCRuleID3"}},
+                            ]
+                        },
+                        {
+                            "References": [
+                                {"Rule_Identifier": {"Id": "CDISCRuleID2"}},
+                                {"Rule_Identifier": {"Id": "CDISCRuleID1"}},
+                            ]
+                        },
+                    ],
+                },
+                {
+                    "Organization": "FDA",
+                    "Standards": [
+                        {
+                            "References": [
+                                {"Rule_Identifier": {"Id": "FDARuleID1"}},
+                                {"Rule_Identifier": {"Id": "FDARuleID2"}},
+                            ]
+                        }
+                    ],
+                },
+                {
+                    "Organization": "PMDA",
+                    "Standards": [
+                        {
+                            "References": [
+                                {"Rule_Identifier": {"Id": "PMDARuleID1"}},
+                                {"Rule_Identifier": {"Id": "PMDARuleID2"}},
+                            ]
+                        }
+                    ],
+                },
+            ],
         },
         results=[
             {
@@ -43,7 +84,48 @@ mock_validation_results = [
         rule={
             "core_id": "CORE2",
             "executability": "Fully Executable",
-            "message": "TEST RULE 2",
+            "actions": [{"params": {"message": "TEST RULE 2"}}],
+            "authorities": [
+                {
+                    "Organization": "CDISC",
+                    "Standards": [
+                        {
+                            "References": [
+                                {"Rule_Identifier": {"Id": "CDISCRuleID4"}},
+                                {"Rule_Identifier": {"Id": "CDISCRuleID3"}},
+                            ]
+                        },
+                        {
+                            "References": [
+                                {"Rule_Identifier": {"Id": "CDISCRuleID2"}},
+                                {"Rule_Identifier": {"Id": "CDISCRuleID1"}},
+                            ]
+                        },
+                    ],
+                },
+                {
+                    "Organization": "FDA",
+                    "Standards": [
+                        {
+                            "References": [
+                                {"Rule_Identifier": {"Id": "FDARuleID1"}},
+                                {"Rule_Identifier": {"Id": "FDARuleID2"}},
+                            ]
+                        }
+                    ],
+                },
+                {
+                    "Organization": "PMDA",
+                    "Standards": [
+                        {
+                            "References": [
+                                {"Rule_Identifier": {"Id": "PMDARuleID1"}},
+                                {"Rule_Identifier": {"Id": "PMDARuleID2"}},
+                            ]
+                        }
+                    ],
+                },
+            ],
         },
         results=[
             {
@@ -74,7 +156,15 @@ def test_get_rules_report_data():
         expected_reports = []
         for result in mock_validation_results:
             expected_reports.append(
-                [result.id, "1", result.message, ExecutionStatus.SUCCESS.value.upper()]
+                [
+                    result.id,
+                    "1",
+                    result.cdisc_rule_id,
+                    result.fda_rule_id,
+                    result.pmda_rule_id,
+                    result.message,
+                    ExecutionStatus.SUCCESS.value.upper(),
+                ]
             )
         expected_reports = sorted(expected_reports, key=lambda x: x[0])
         assert len(report_data) == len(expected_reports)
@@ -140,14 +230,12 @@ def test_get_summary_data():
                 "AE",
                 mock_validation_results[0].id,
                 "AESTDY and DOMAIN are equal to test",
-                "Partially Executable",
                 2,
             ],
             [
                 "TT",
                 mock_validation_results[1].id,
                 "TTVARs are wrong",
-                "Fully Executable",
                 1,
             ],
         ]

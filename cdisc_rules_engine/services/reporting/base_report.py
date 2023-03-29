@@ -37,9 +37,8 @@ class BaseReport(ABC):
         information:
         return [
             "Dataset",
-            "RuleID",
+            "CORE-ID",
             "Message",
-            "Executability",
             "Issues",
             "Explanation"
         ]
@@ -55,9 +54,8 @@ class BaseReport(ABC):
                     ):
                         summary_item = {
                             "dataset": dataset,
-                            "rule_id": validation_result.id,
+                            "core_id": validation_result.id,
                             "message": result.get("message"),
-                            "executability": validation_result.executability,
                             "issues": len(result.get("errors")),
                         }
 
@@ -70,7 +68,7 @@ class BaseReport(ABC):
             summary_data,
             key=lambda x: (x[0], x[1])
             if (self._item_type == "list")
-            else (x["dataset"], x["rule_id"]),
+            else (x["dataset"], x["core_id"]),
         )
 
     def get_detailed_data(self) -> List[List]:
@@ -83,16 +81,18 @@ class BaseReport(ABC):
             detailed_data,
             key=lambda x: (x[0], x[3])
             if (self._item_type == "list")
-            else (x["rule_id"], x["dataset"]),
+            else (x["core_id"], x["dataset"]),
         )
 
-    def _generate_error_details(self, validation_result) -> List[List]:
+    def _generate_error_details(
+        self, validation_result: RuleValidationResult
+    ) -> List[List]:
         """
         Generates the Issue details data that goes into the excel export.
         Each row is represented by a list or a dict containing the following
         information:
         return [
-            "RuleID",
+            "CORE-ID",
             "Message",
             "Executability",
             "Dataset",
@@ -109,7 +109,7 @@ class BaseReport(ABC):
                 variables = result.get("variables", [])
                 for error in result.get("errors"):
                     error_item = {
-                        "rule_id": validation_result.id,
+                        "core_id": validation_result.id,
                         "message": result.get("message"),
                         "executability": validation_result.executability,
                         "dataset": result.get("domain"),
@@ -142,8 +142,11 @@ class BaseReport(ABC):
         Each row is represented by a list or a dict containing the following
         information:
         [
-            "RuleID",
+            "CORE-ID",
             "Version",
+            "CDISC RuleID",
+            "FDA RuleID",
+            "PMDA RuleID",
             "Message",
             "Status"
         ]
@@ -151,8 +154,11 @@ class BaseReport(ABC):
         rules_report = []
         for validation_result in self._results:
             rules_item = {
-                "rule_id": validation_result.id,
+                "core_id": validation_result.id,
                 "version": "1",
+                "cdisc_rule_id": validation_result.cdisc_rule_id,
+                "fda_rule_id": validation_result.fda_rule_id,
+                "pmda_rule_id": validation_result.pmda_rule_id,
                 "message": validation_result.message,
                 "status": ExecutionStatus.SUCCESS.value.upper()
                 if validation_result.execution_status == ExecutionStatus.SUCCESS.value
@@ -165,7 +171,7 @@ class BaseReport(ABC):
 
         return sorted(
             rules_report,
-            key=lambda x: x[0] if (self._item_type == "list") else x["rule_id"],
+            key=lambda x: x[0] if (self._item_type == "list") else x["core_id"],
         )
 
     @property

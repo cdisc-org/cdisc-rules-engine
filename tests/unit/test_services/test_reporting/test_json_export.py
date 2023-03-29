@@ -9,7 +9,48 @@ mock_validation_results = [
         rule={
             "core_id": "CORE1",
             "executability": "Fully Executable",
-            "message": "TEST RULE 1",
+            "actions": [{"params": {"message": "TEST RULE 1"}}],
+            "authorities": [
+                {
+                    "Organization": "CDISC",
+                    "Standards": [
+                        {
+                            "References": [
+                                {"Rule_Identifier": {"Id": "CDISCRuleID4"}},
+                                {"Rule_Identifier": {"Id": "CDISCRuleID3"}},
+                            ]
+                        },
+                        {
+                            "References": [
+                                {"Rule_Identifier": {"Id": "CDISCRuleID2"}},
+                                {"Rule_Identifier": {"Id": "CDISCRuleID1"}},
+                            ]
+                        },
+                    ],
+                },
+                {
+                    "Organization": "FDA",
+                    "Standards": [
+                        {
+                            "References": [
+                                {"Rule_Identifier": {"Id": "FDARuleID1"}},
+                                {"Rule_Identifier": {"Id": "FDARuleID2"}},
+                            ]
+                        }
+                    ],
+                },
+                {
+                    "Organization": "PMDA",
+                    "Standards": [
+                        {
+                            "References": [
+                                {"Rule_Identifier": {"Id": "PMDARuleID1"}},
+                                {"Rule_Identifier": {"Id": "PMDARuleID2"}},
+                            ]
+                        }
+                    ],
+                },
+            ],
         },
         results=[
             {
@@ -38,7 +79,48 @@ mock_validation_results = [
         rule={
             "core_id": "CORE2",
             "executability": "Partially Executable",
-            "message": "TEST RULE 2",
+            "actions": [{"params": {"message": "TEST RULE 2"}}],
+            "authorities": [
+                {
+                    "Organization": "CDISC",
+                    "Standards": [
+                        {
+                            "References": [
+                                {"Rule_Identifier": {"Id": "CDISCRuleID4"}},
+                                {"Rule_Identifier": {"Id": "CDISCRuleID3"}},
+                            ]
+                        },
+                        {
+                            "References": [
+                                {"Rule_Identifier": {"Id": "CDISCRuleID2"}},
+                                {"Rule_Identifier": {"Id": "CDISCRuleID1"}},
+                            ]
+                        },
+                    ],
+                },
+                {
+                    "Organization": "FDA",
+                    "Standards": [
+                        {
+                            "References": [
+                                {"Rule_Identifier": {"Id": "FDARuleID1"}},
+                                {"Rule_Identifier": {"Id": "FDARuleID2"}},
+                            ]
+                        }
+                    ],
+                },
+                {
+                    "Organization": "PMDA",
+                    "Standards": [
+                        {
+                            "References": [
+                                {"Rule_Identifier": {"Id": "PMDARuleID1"}},
+                                {"Rule_Identifier": {"Id": "PMDARuleID2"}},
+                            ]
+                        }
+                    ],
+                },
+            ],
         },
         results=[
             {
@@ -67,13 +149,16 @@ def test_get_rules_report_data():
     for result in mock_validation_results:
         expected_reports.append(
             {
-                "rule_id": result.id,
+                "core_id": result.id,
                 "version": "1",
+                "cdisc_rule_id": result.cdisc_rule_id,
+                "fda_rule_id": result.fda_rule_id,
+                "pmda_rule_id": result.pmda_rule_id,
                 "message": result.message,
                 "status": ExecutionStatus.SUCCESS.value.upper(),
             }
         )
-    expected_reports = sorted(expected_reports, key=lambda x: x["rule_id"])
+    expected_reports = sorted(expected_reports, key=lambda x: x["core_id"])
     assert len(report_data) == len(expected_reports)
     for i, _ in enumerate(report_data):
         assert report_data[i] == expected_reports[i]
@@ -84,7 +169,7 @@ def test_get_detailed_data():
     detailed_data = report.get_detailed_data()
     errors = [
         {
-            "rule_id": mock_validation_results[0].id,
+            "core_id": mock_validation_results[0].id,
             "message": "AESTDY and DOMAIN are equal to test",
             "executability": "Fully Executable",
             "dataset": "AE",
@@ -95,7 +180,7 @@ def test_get_detailed_data():
             "values": ["test", "test"],
         },
         {
-            "rule_id": mock_validation_results[0].id,
+            "core_id": mock_validation_results[0].id,
             "message": "AESTDY and DOMAIN are equal to test",
             "executability": "Fully Executable",
             "dataset": "AE",
@@ -106,7 +191,7 @@ def test_get_detailed_data():
             "values": ["test", "test"],
         },
         {
-            "rule_id": mock_validation_results[1].id,
+            "core_id": mock_validation_results[1].id,
             "message": "TTVARs are wrong",
             "executability": "Partially Executable",
             "dataset": "TT",
@@ -117,7 +202,7 @@ def test_get_detailed_data():
             "values": ["test", "test"],
         },
     ]
-    errors = sorted(errors, key=lambda x: (x["rule_id"], x["dataset"]))
+    errors = sorted(errors, key=lambda x: (x["core_id"], x["dataset"]))
     assert len(errors) == len(detailed_data)
     for i, error in enumerate(errors):
         assert error == detailed_data[i]
@@ -129,20 +214,18 @@ def test_get_summary_data():
     errors = [
         {
             "dataset": "AE",
-            "rule_id": mock_validation_results[0].id,
+            "core_id": mock_validation_results[0].id,
             "message": "AESTDY and DOMAIN are equal to test",
-            "executability": "Fully Executable",
             "issues": 2,
         },
         {
             "dataset": "TT",
-            "rule_id": mock_validation_results[1].id,
+            "core_id": mock_validation_results[1].id,
             "message": "TTVARs are wrong",
-            "executability": "Partially Executable",
             "issues": 1,
         },
     ]
-    errors = sorted(errors, key=lambda x: (x["dataset"], x["rule_id"]))
+    errors = sorted(errors, key=lambda x: (x["dataset"], x["core_id"]))
     assert len(errors) == len(summary_data)
     for i, error in enumerate(errors):
         assert error == summary_data[i]
