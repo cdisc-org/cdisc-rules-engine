@@ -60,7 +60,7 @@ class ExcelReport(BaseReport):
             datetime.now().replace(microsecond=0).isoformat()
         )
         wb["Conformance Details"]["B4"] = f"{round(self._elapsed_time, 2)} seconds"
-        # write bundle details
+        # write standards details
         wb["Conformance Details"]["B8"] = standard.upper()
         wb["Conformance Details"]["B9"] = f"V{version}"
         wb["Conformance Details"]["B10"] = ", ".join(cdiscCt)
