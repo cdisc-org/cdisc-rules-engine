@@ -25,14 +25,14 @@ mock_validation_results = [
                     {
                         "row": 1,
                         "value": {"AESTDY": "test", "DOMAIN": "test"},
-                        "uSubjId": "CDISC002",
-                        "seq": 2,
+                        "USUBJID": "CDISC002",
+                        "SEQ": 2,
                     },
                     {
                         "row": 9,
                         "value": {"AESTDY": "test", "DOMAIN": "test"},
-                        "uSubjId": "CDISC003",
-                        "seq": 10,
+                        "USUBJID": "CDISC003",
+                        "SEQ": 10,
                     },
                 ],
                 "message": "AESTDY and DOMAIN are equal to test",
@@ -54,8 +54,8 @@ mock_validation_results = [
                     {
                         "row": 1,
                         "value": {"TTVAR1": "test", "TTVAR2": "test"},
-                        "uSubjId": "CDISC002",
-                        "seq": 2,
+                        "USUBJID": "CDISC002",
+                        "SEQ": 2,
                     }
                 ],
                 "message": "TTVARs are wrong",

@@ -220,14 +220,14 @@ def test_validate_rule_cross_dataset_check(dataset_rule_equal_to: dict):
                     {
                         "row": 1,
                         "value": {"ECSTDY": 4.0},
-                        "uSubjId": "CDISC001",
-                        "seq": 1,
+                        "USUBJID": "CDISC001",
+                        "SEQ": 1,
                     },
                     {
                         "row": 2,
                         "value": {"ECSTDY": 5.0},
-                        "uSubjId": "CDISC001",
-                        "seq": 2,
+                        "USUBJID": "CDISC001",
+                        "SEQ": 2,
                     },
                 ],
             }
@@ -887,24 +887,24 @@ def test_validate_single_rule(dataset_rule_equal_to_error_objects: dict):
                         "value": {
                             "AESTDY": "test",
                         },
-                        "uSubjId": "1",
-                        "seq": 1,
+                        "USUBJID": "1",
+                        "SEQ": 1,
                     },
                     {
                         "row": 4,
                         "value": {
                             "AESTDY": "test",
                         },
-                        "uSubjId": "1",
-                        "seq": 4,
+                        "USUBJID": "1",
+                        "SEQ": 4,
                     },
                     {
                         "row": 5,
                         "value": {
                             "AESTDY": "test",
                         },
-                        "uSubjId": "3",
-                        "seq": 5,
+                        "USUBJID": "3",
+                        "SEQ": 5,
                     },
                 ],
                 "message": "Value of AESTDY is equal to test.",
@@ -962,16 +962,16 @@ def test_validate_single_rule_not_equal_to(
                         "value": {
                             "AESTDY": "alex",
                         },
-                        "uSubjId": "2",
-                        "seq": 2,
+                        "USUBJID": "2",
+                        "SEQ": 2,
                     },
                     {
                         "row": 3,
                         "value": {
                             "AESTDY": "alex",
                         },
-                        "uSubjId": "2",
-                        "seq": 3,
+                        "USUBJID": "2",
+                        "SEQ": 3,
                     },
                 ],
                 "message": RuleProcessor.extract_message_from_rule(
@@ -1250,14 +1250,14 @@ def test_validate_value_level_metadata_against_define_xml(
                     {
                         "row": 2,
                         "value": {"AETERM": "A" * 200},
-                        "uSubjId": "5",
-                        "seq": 2,
+                        "USUBJID": "5",
+                        "SEQ": 2,
                     },
                     {
                         "row": 4,
                         "value": {"AETERM": "A" * 15},
-                        "uSubjId": "5",
-                        "seq": 4,
+                        "USUBJID": "5",
+                        "SEQ": 4,
                     },
                 ],
                 "message": (
@@ -1293,9 +1293,9 @@ def test_validate_value_level_metadata_against_define_xml(
                     "executionStatus": ExecutionStatus.SUCCESS.value,
                     "variables": ["AESTDY"],
                     "errors": [
-                        {"row": 1, "value": {"AESTDY": "test"}, "uSubjId": "1"},
-                        {"row": 4, "value": {"AESTDY": "test"}, "uSubjId": "1"},
-                        {"row": 8, "value": {"AESTDY": "test"}, "uSubjId": "2"},
+                        {"row": 1, "value": {"AESTDY": "test"}, "USUBJID": "1"},
+                        {"row": 4, "value": {"AESTDY": "test"}, "USUBJID": "1"},
+                        {"row": 8, "value": {"AESTDY": "test"}, "USUBJID": "2"},
                     ],
                     "message": "Value of AESTDY is equal to test.",
                 }
@@ -1615,8 +1615,8 @@ def test_validate_record_in_parent_domain(
                     {
                         "row": 1,
                         "value": {"ECPRESP": "Y", "QNAM": "ECREASOC"},
-                        "uSubjId": "CDISC005",
-                        "seq": 4,
+                        "USUBJID": "CDISC005",
+                        "SEQ": 4,
                     }
                 ],
             }
@@ -1675,7 +1675,7 @@ def test_validate_additional_columns(dataset_rule_additional_columns_not_null: d
                             "TSVAL2": "value 2",
                             "TSVAL3": "value 3",
                         },
-                        "uSubjId": "1",
+                        "USUBJID": "1",
                     },
                     {
                         "row": 4,
@@ -1684,7 +1684,7 @@ def test_validate_additional_columns(dataset_rule_additional_columns_not_null: d
                             "TSVAL2": None,
                             "TSVAL3": "value 3",
                         },
-                        "uSubjId": "1",
+                        "USUBJID": "1",
                     },
                 ],
             }
