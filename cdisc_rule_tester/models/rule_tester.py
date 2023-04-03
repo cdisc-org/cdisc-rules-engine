@@ -14,15 +14,27 @@ from cdisc_rules_engine.config.config import ConfigService
 
 
 class RuleTester:
-    def __init__(self, datasets, define_xml=None):
+    def __init__(
+        self,
+        datasets,
+        define_xml: str = None,
+        cache: InMemoryCacheService = None,
+        standard: str = None,
+        standard_version: str = None,
+    ):
         self.datasets = [DummyDataset(dataset_data) for dataset_data in datasets]
-        cache = InMemoryCacheService()
+        self.cache = cache or InMemoryCacheService()
         self.data_service = DummyDataService.get_instance(
-            cache, ConfigService(), data=self.datasets, define_xml=define_xml
+            self.cache, ConfigService(), data=self.datasets, define_xml=define_xml
         )
-        self.engine = RulesEngine(cache, self.data_service)
-        self.engine.rule_processor = RuleProcessor(self.data_service, cache)
-        self.engine.data_processor = DataProcessor(self.data_service, cache)
+        self.engine = RulesEngine(
+            self.cache,
+            self.data_service,
+            standard=standard,
+            standard_version=standard_version,
+        )
+        self.engine.rule_processor = RuleProcessor(self.data_service, self.cache)
+        self.engine.data_processor = DataProcessor(self.data_service, self.cache)
 
     def validate(self, rule) -> dict:
         results = {}

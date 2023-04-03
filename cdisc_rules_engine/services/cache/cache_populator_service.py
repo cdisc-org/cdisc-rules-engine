@@ -77,6 +77,34 @@ class CachePopulator:
 
         return self.cache
 
+    async def load_codelists(self, packages: List[str]):
+        coroutines = [
+            self._async_get_codelist_terms_map(package) for package in packages
+        ]
+        codelist_term_maps = await asyncio.gather(*coroutines)
+        self.cache.add_batch(codelist_term_maps, "package")
+
+    async def load_standard(self, standard: str, version: str):
+        standards = [{"href": f"/mdr/{standard}/{version}"}]
+        variable_codelist_maps = await self._get_variable_codelist_maps(standards)
+        self.cache.add_batch(variable_codelist_maps, "name")
+        # save details of all standards to cache
+        standards_details: List[dict] = await self._async_get_details_of_all_standards(
+            standards
+        )
+        self.cache.add_batch(standards_details, "cache_key", pop_cache_key=True)
+
+        # save details of all standard's models to cache
+        standards_models: Iterable[
+            dict
+        ] = await self._async_get_details_of_all_standards_models(standards_details)
+        self.cache.add_batch(standards_models, "cache_key", pop_cache_key=True)
+        # save variables metadata to cache
+        variables_metadata: Iterable[dict] = await self._get_variables_metadata(
+            standards
+        )
+        self.cache.add_batch(variables_metadata, "cache_key", pop_cache_key=True)
+
     def save_rules_locally(self, file_path: str):
         """
         Store cached rules in rules.pkl in cache path directory
