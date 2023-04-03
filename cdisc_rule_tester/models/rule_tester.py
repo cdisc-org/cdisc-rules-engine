@@ -14,11 +14,11 @@ from cdisc_rules_engine.config.config import ConfigService
 
 
 class RuleTester:
-    def __init__(self, datasets):
+    def __init__(self, datasets, define_xml=None):
         self.datasets = [DummyDataset(dataset_data) for dataset_data in datasets]
         cache = InMemoryCacheService()
         self.data_service = DummyDataService.get_instance(
-            cache, ConfigService(), data=self.datasets
+            cache, ConfigService(), data=self.datasets, define_xml=define_xml
         )
         self.engine = RulesEngine(cache, self.data_service)
         self.engine.rule_processor = RuleProcessor(self.data_service, cache)

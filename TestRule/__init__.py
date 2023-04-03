@@ -27,7 +27,8 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
         if not datasets:
             raise KeyError("'datasets' required in request")
         validate_datasets_payload(datasets)
-        tester = RuleTester(datasets)
+        define_xml = json_data.get("define_xml")
+        tester = RuleTester(datasets, define_xml)
         return func.HttpResponse(json.dumps(tester.validate(rule)))
     except KeyError as e:
         return func.HttpResponse(
