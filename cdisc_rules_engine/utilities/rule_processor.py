@@ -171,7 +171,7 @@ class RuleProcessor:
         included_classes = [
             c.title() for c in included_classes if c.title() in DETECTABLE_CLASSES
         ]
-        excluded_classes = classes.get("Exclude", [])
+        excluded_classes = [c.title() for c in classes.get("Exclude", [])]
         is_included = True
         is_excluded = False
         if included_classes:
