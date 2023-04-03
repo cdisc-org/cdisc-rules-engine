@@ -121,7 +121,7 @@ class DummyDataService(BaseDataService):
             dataset_name=dataset_name, **params
         )
 
-    def get_define_xml_contents(self, dataset_name: str) -> bytes:
+    def get_define_xml_contents(self, dataset_name: str) -> str:
         return self.define_xml
 
     def has_all_files(self, prefix: str, file_names: List[str]) -> bool:
