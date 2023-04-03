@@ -106,10 +106,11 @@ class BaseOperation:
         ]
         """
         # get model details from cache
+        if not self.params.standard or not self.params.standard_version:
+            raise Exception("Please provide standard and version")
         cache_key: str = get_standard_details_cache_key(
             self.params.standard, self.params.standard_version
         )
-
         standard_details: dict = self.cache.get(cache_key) or {}
         model = standard_details.get("_links", {}).get("model")
         class_details, domain_details = self._get_class_and_domain_metadata(

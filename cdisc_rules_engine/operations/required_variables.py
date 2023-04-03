@@ -20,7 +20,6 @@ class RequiredVariables(BaseOperation):
 
         # get variables metadata from the standard model
         variables_metadata: List[dict] = self._get_variables_metadata_from_standard()
-
         return list(
             set(
                 [
