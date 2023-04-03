@@ -168,10 +168,8 @@ class RuleProcessor:
         """
         classes = rule.get("classes") or {}
         included_classes = classes.get("Include", [])
-        included_classes = [
-            c.title() for c in included_classes if c.title() in DETECTABLE_CLASSES
-        ]
-        excluded_classes = [c.title() for c in classes.get("Exclude", [])]
+        included_classes = [c for c in included_classes if c in DETECTABLE_CLASSES]
+        excluded_classes = classes.get("Exclude", [])
         is_included = True
         is_excluded = False
         if included_classes:

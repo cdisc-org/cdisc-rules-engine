@@ -1093,7 +1093,7 @@ def rule_validate_columns_order_against_library_metadata() -> dict:
     return {
         "core_id": "MockRule",
         "standards": [{"Name": "SDTMIG", "Version": "3.3"}],
-        "classes": {"Include": ["Events"]},
+        "classes": {"Include": ["EVENTS"]},
         "domains": {"Include": ["AE"]},
         "sensitivity": Sensitivity.DATASET.value,
         "operations": [

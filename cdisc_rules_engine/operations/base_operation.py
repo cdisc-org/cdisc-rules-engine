@@ -121,7 +121,7 @@ class BaseOperation:
 
         variables_metadata = domain_details.get("datasetVariables", [])
         variables_metadata.sort(key=lambda item: item["ordinal"])
-        if class_details.get("name") in DETECTABLE_CLASSES:
+        if class_details.get("name").upper() in DETECTABLE_CLASSES:
             (
                 identifiers_metadata,
                 class_variables_metadata,
@@ -136,7 +136,7 @@ class BaseOperation:
 
     def get_allowed_class_variables(self, model_details: dict, class_details: dict):
         # General Observation class variables to variables metadata
-        class_name = class_details.get("name")
+        class_name = class_details.get("name").upper()
         variables_metadata = class_details.get("classVariables", [])
         variables_metadata.sort(key=lambda item: item["ordinal"])
 
@@ -208,11 +208,11 @@ class BaseOperation:
         """
         class_metadata: Optional[dict] = search_in_list_of_dicts(
             model_details.get("classes", []),
-            lambda item: item["name"] == dataset_class,
+            lambda item: item["name"].upper() == dataset_class,
         )
         if not class_metadata:
             raise ValueError(
-                f"Variables metadata is not found in CDISC Library. "
+                f"Class metadata is not found in CDISC Library. "
                 f"standard={self.params.standard}, "
                 f"version={self.params.standard_version}, "
                 f"class={dataset_class}"
