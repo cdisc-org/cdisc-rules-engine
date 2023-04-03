@@ -27,6 +27,7 @@ class DummyDataService(BaseDataService):
     ):
         super(DummyDataService, self).__init__(cache_service, reader_factory, config)
         self.data: List[DummyDataset] = kwargs.get("data")
+        self.define_xml: str = kwargs.get("define_xml")
 
     @classmethod
     def get_instance(
@@ -121,7 +122,7 @@ class DummyDataService(BaseDataService):
         )
 
     def get_define_xml_contents(self, dataset_name: str) -> bytes:
-        pass
+        return bytes(self.define_xml)
 
     def has_all_files(self, prefix: str, file_names: List[str]) -> bool:
         return True
