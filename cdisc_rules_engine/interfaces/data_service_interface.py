@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from io import IOBase
-from typing import Callable, List, Optional, Union
+from typing import Callable, List, Optional
 
 import pandas as pd
 
@@ -65,7 +65,7 @@ class DataServiceInterface(ABC):
         """
 
     @abstractmethod
-    def get_define_xml_contents(self, dataset_name: str) -> Union[bytes, str]:
+    def get_define_xml_contents(self, dataset_name: str) -> bytes:
         """
         Returns contents of define.xml file.
         """
