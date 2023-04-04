@@ -7,6 +7,7 @@ from cdisc_rules_engine.services.cdisc_library_service import CDISCLibraryServic
 from cdisc_rules_engine.services.cache.cache_populator_service import CachePopulator
 import json
 import os
+import asyncio
 
 
 def validate_datasets_payload(datasets):
@@ -23,7 +24,7 @@ def validate_datasets_payload(datasets):
         )
 
 
-async def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
+def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
     try:
         json_data = req.get_json()
         api_key = os.environ.get("LIBRARY_API_KEY")
@@ -37,8 +38,8 @@ async def main(req: func.HttpRequest, context: func.Context) -> func.HttpRespons
             library_service = CDISCLibraryService(api_key, cache)
             cache_populator: CachePopulator = CachePopulator(cache, library_service)
             if standards_data:
-                await cache_populator.load_standard(standard, standard_version)
-            await cache_populator.load_codelists(codelists)
+                asyncio.run(cache_populator.load_standard(standard, standard_version))
+            asyncio.run(cache_populator.load_codelists(codelists))
         if not rule:
             raise KeyError("'rule' required in request")
         datasets = json_data.get("datasets")
