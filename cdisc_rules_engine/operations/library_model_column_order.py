@@ -79,7 +79,9 @@ class LibraryModelColumnOrder(BaseOperation):
 
         if domain_details:
             # Domain found in the model
-            class_name = domain_details["_links"]["parentClass"]["title"].upper()
+            class_name = self._convert_class_name_to_ct_class(
+                domain_details["_links"]["parentClass"]["title"]
+            )
             class_details = self._get_class_metadata(model_details, class_name)
             variables_metadata = domain_details.get("datasetVariables", [])
             variables_metadata.sort(key=lambda item: item["ordinal"])
@@ -87,7 +89,8 @@ class LibraryModelColumnOrder(BaseOperation):
             # Domain not found in the model. Detect class name from data
             class_name = self.data_service.get_dataset_class(
                 dataframe, self.params.dataset_path, self.params.datasets
-            ).upper()
+            )
+            class_name = self._convert_class_name_to_ct_class(class_name)
             class_details = self._get_class_metadata(model_details, class_name)
 
         if class_name in DETECTABLE_CLASSES:
