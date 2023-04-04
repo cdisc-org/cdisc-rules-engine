@@ -3,8 +3,8 @@ from datetime import datetime
 from typing import BinaryIO, List, Optional, Iterable
 
 from openpyxl import Workbook
-from openpyxl.styles import Alignment
 
+from version import __version__
 from cdisc_rules_engine.enums.report_types import ReportTypes
 from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
 from cdisc_rules_engine.models.validation_args import Validation_args
@@ -53,20 +53,21 @@ class ExcelReport(BaseReport):
         excel_update_worksheet(
             wb["Rules Report"], rules_report_data, dict(wrap_text=True)
         )
-        wb["Conformance Details"]["B2"] = ",\n".join(self._dataset_paths[:5])
-        wb["Conformance Details"]["B2"].alignment = Alignment(wrapText=True)
         # write conformance data
-        wb["Conformance Details"]["B3"] = (
+        wb["Conformance Details"]["B2"] = (
             datetime.now().replace(microsecond=0).isoformat()
         )
-        wb["Conformance Details"]["B4"] = f"{round(self._elapsed_time, 2)} seconds"
+        wb["Conformance Details"]["B3"] = f"{round(self._elapsed_time, 2)} seconds"
+        wb["Conformance Details"]["B4"] = __version__
         # write standards details
-        wb["Conformance Details"]["B8"] = standard.upper()
-        wb["Conformance Details"]["B9"] = f"V{version}"
-        wb["Conformance Details"]["B10"] = ", ".join(cdiscCt)
-        wb["Conformance Details"]["B11"] = define_version
-        wb["Conformance Details"]["B14"] = self._args.meddra
-        wb["Conformance Details"]["B15"] = self._args.whodrug
+        wb["Conformance Details"]["B7"] = standard.upper()
+        wb["Conformance Details"]["B8"] = f"V{version}"
+        wb["Conformance Details"]["B9"] = ", ".join(cdiscCt)
+        wb["Conformance Details"]["B10"] = define_version
+        if self._args.meddra:
+            wb["Conformance Details"]["B13"] = self._args.meddra
+        if self._args.whodrug:
+            wb["Conformance Details"]["B14"] = self._args.whodrug
         return wb
 
     def write_report(self):

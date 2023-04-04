@@ -8,6 +8,12 @@ from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
 from cdisc_rules_engine.models.dataset_types import DatasetTypes
 from cdisc_rules_engine.services.data_services import cached_dataset, LocalDataService
 from cdisc_rules_engine.utilities.utils import get_dataset_cache_key_from_path
+from cdisc_rules_engine.constants.classes import (
+    FINDINGS,
+    FINDINGS_ABOUT,
+    INTERVENTIONS,
+    EVENTS,
+)
 
 
 @patch("cdisc_rules_engine.services.data_services.LocalDataService.read_metadata")
@@ -73,25 +79,25 @@ def test_get_raw_dataset_metadata(
         (
             [{"domain": "AE", "filename": "ae.xpt"}],
             {"DOMAIN": ["AE"], "AETERM": ["test"]},
-            "Events",
+            EVENTS,
             "ae.xpt",
         ),
         (
             [{"domain": "AE", "filename": "ae.xpt"}],
             {"DOMAIN": ["AE"], "AETRT": ["test"]},
-            "Interventions",
+            INTERVENTIONS,
             "ae.xpt",
         ),
         (
             [{"domain": "AE", "filename": "ae.xpt"}],
             {"DOMAIN": ["AE"], "AETESTCD": ["test"]},
-            "Findings",
+            FINDINGS,
             "ae.xpt",
         ),
         (
             [{"domain": "AE", "filename": "ae.xpt"}],
             {"DOMAIN": ["AE"], "AETESTCD": ["test"], "AEOBJ": ["test"]},
-            "Findings About",
+            FINDINGS_ABOUT,
             "ae.xpt",
         ),
         (
@@ -130,7 +136,7 @@ def test_get_dataset_class_associated_domains():
         data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
         filepath = f"{data_bundle_path}/ce.xpt"
         class_name = data_service.get_dataset_class(ap_dataset, filepath, datasets)
-        assert class_name == "Events"
+        assert class_name == EVENTS
 
 
 def test_cached_data_cache_exists():

@@ -28,6 +28,7 @@ from scripts.script_utils import (
     fill_cache_with_provided_data,
     get_cache_service,
 )
+from cdisc_rules_engine.enums.progress_parameter_options import ProgressParameterOptions
 
 """
 Sync manager used to manage instances of the cache between processes.
@@ -133,10 +134,11 @@ def test(args: TestArgs):
         ["XLSX"],
         None,
         args.define_version,
+        "xpt",
         args.meddra,
         args.whodrug,
         rules,
-        False,
+        ProgressParameterOptions.BAR.value,
     )
     reporting_factory = ReportFactory(
         [args.dataset_path], results, elapsed_time, validation_args, data_service

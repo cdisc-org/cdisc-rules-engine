@@ -8,6 +8,7 @@ from cdisc_rules_engine.utilities.utils import (
     get_model_details_cache_key,
     get_standard_details_cache_key,
     search_in_list_of_dicts,
+    convert_library_class_name_to_ct_class,
 )
 from collections import OrderedDict
 
@@ -79,7 +80,9 @@ class LibraryModelColumnOrder(BaseOperation):
 
         if domain_details:
             # Domain found in the model
-            class_name = domain_details["_links"]["parentClass"]["title"]
+            class_name = convert_library_class_name_to_ct_class(
+                domain_details["_links"]["parentClass"]["title"]
+            )
             class_details = self._get_class_metadata(model_details, class_name)
             variables_metadata = domain_details.get("datasetVariables", [])
             variables_metadata.sort(key=lambda item: item["ordinal"])
@@ -88,6 +91,7 @@ class LibraryModelColumnOrder(BaseOperation):
             class_name = self.data_service.get_dataset_class(
                 dataframe, self.params.dataset_path, self.params.datasets
             )
+            class_name = convert_library_class_name_to_ct_class(class_name)
             class_details = self._get_class_metadata(model_details, class_name)
 
         if class_name in DETECTABLE_CLASSES:

@@ -4,6 +4,7 @@ from unittest.mock import MagicMock
 from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
 from cdisc_rules_engine.services.reporting.excel_report import ExcelReport
+from version import __version__
 
 test_report_template: str = (
     f"{os.path.dirname(__file__)}/../../../../resources/templates/report-template.xlsx"
@@ -257,9 +258,9 @@ def test_get_export():
         wb = report.get_export(
             define_version="2.1", cdiscCt=cdiscCt, standard="sdtmig", version="3.4"
         )
-        assert wb["Conformance Details"]["B2"].value == "test"
-        assert wb["Conformance Details"]["B4"].value == "10.1 seconds"
-        assert wb["Conformance Details"]["B8"].value == "SDTMIG"
-        assert wb["Conformance Details"]["B9"].value == "V3.4"
-        assert wb["Conformance Details"]["B10"].value == ", ".join(cdiscCt)
-        assert wb["Conformance Details"]["B11"].value == "2.1"
+        assert wb["Conformance Details"]["B3"].value == "10.1 seconds"
+        assert wb["Conformance Details"]["B4"].value == __version__
+        assert wb["Conformance Details"]["B7"].value == "SDTMIG"
+        assert wb["Conformance Details"]["B8"].value == "V3.4"
+        assert wb["Conformance Details"]["B9"].value == ", ".join(cdiscCt)
+        assert wb["Conformance Details"]["B10"].value == "2.1"
