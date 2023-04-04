@@ -15,6 +15,7 @@ from cdisc_rules_engine.constants.domains import (
     APRELSUB_DOMAIN,
     SUPPLEMENTARY_DOMAINS,
 )
+from cdisc_rules_engine.constants.classes import SPECIAL_PURPOSE
 from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 from cdisc_rules_engine.interfaces import ConditionInterface
 from cdisc_rules_engine.models.base_validation_entity import BaseValidationEntity
@@ -307,6 +308,11 @@ def get_dictionary_path(directory_path: str, file_name: str) -> str:
     Creates a path to dictionary directory or file.
     """
     return os.path.join(directory_path, file_name)
+
+
+def convert_library_class_name_to_ct_class(class_name: str):
+    conversions = {"special-purpose": SPECIAL_PURPOSE}
+    return conversions.get(class_name.lower(), class_name.upper())
 
 
 def decode_line(line: bytes) -> str:

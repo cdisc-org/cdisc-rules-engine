@@ -22,13 +22,13 @@ from cdisc_rules_engine.constants.classes import (
     FINDINGS_ABOUT,
     FINDINGS,
     FINDINGS_TEST_VARIABLE,
-    SPECIAL_PURPOSE,
 )
 
 from cdisc_rules_engine.utilities.utils import (
     get_model_details_cache_key,
     get_standard_details_cache_key,
     search_in_list_of_dicts,
+    convert_library_class_name_to_ct_class,
 )
 
 
@@ -122,7 +122,7 @@ class BaseOperation:
 
         variables_metadata = domain_details.get("datasetVariables", [])
         variables_metadata.sort(key=lambda item: item["ordinal"])
-        class_name = self._convert_class_name_to_ct_class(class_details.get("name"))
+        class_name = convert_library_class_name_to_ct_class(class_details.get("name"))
         if class_name in DETECTABLE_CLASSES:
             (
                 identifiers_metadata,
@@ -138,7 +138,7 @@ class BaseOperation:
 
     def get_allowed_class_variables(self, model_details: dict, class_details: dict):
         # General Observation class variables to variables metadata
-        class_name = self._convert_class_name_to_ct_class(class_details.get("name"))
+        class_name = convert_library_class_name_to_ct_class(class_details.get("name"))
         variables_metadata = class_details.get("classVariables", [])
         variables_metadata.sort(key=lambda item: item["ordinal"])
 
@@ -210,7 +210,8 @@ class BaseOperation:
         """
         class_metadata: Optional[dict] = search_in_list_of_dicts(
             model_details.get("classes", []),
-            lambda item: item["name"].upper() == dataset_class,
+            lambda item: convert_library_class_name_to_ct_class(item["name"])
+            == dataset_class,
         )
         if not class_metadata:
             raise ValueError(
@@ -248,7 +249,3 @@ class BaseOperation:
             elif role == VariableRoles.TIMING.value:
                 timing_vars.append(variable)
         return identifier_vars, timing_vars
-
-    def _convert_class_name_to_ct_class(self, class_name: str):
-        conversions = {"special-purpose": SPECIAL_PURPOSE}
-        return conversions.get(class_name.lower(), class_name.upper())
