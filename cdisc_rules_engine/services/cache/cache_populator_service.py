@@ -17,6 +17,7 @@ from cdisc_rules_engine.utilities.utils import (
     get_standard_details_cache_key,
     get_model_details_cache_key,
 )
+from cdisc_rules_engine.constants.cache_constants import PUBLISHED_CT_PACKAGES
 
 
 class CachePopulator:
@@ -48,6 +49,14 @@ class CachePopulator:
         # save codelists to cache as a map of codelist to terms
         codelist_term_maps = await self._get_codelist_term_maps()
         self.cache.add_batch(codelist_term_maps, "package")
+
+        # Add a list of all published ct packages to the cache
+        available_packages = [
+            package.get("package")
+            for package in codelist_term_maps
+            if "package" in package
+        ]
+        self.cache.add(PUBLISHED_CT_PACKAGES, available_packages)
 
         # save standard codelists to cache as a map of variable to allowed_values
         standards = self.library_service.get_all_tabulation_ig_standards()
