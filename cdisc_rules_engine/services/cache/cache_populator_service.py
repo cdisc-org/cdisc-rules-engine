@@ -93,6 +93,13 @@ class CachePopulator:
         codelist_term_maps = await asyncio.gather(*coroutines)
         self.cache.add_batch(codelist_term_maps, "package")
 
+    async def load_available_ct_packages(self):
+        packages = self.library_service.get_all_ct_packages()
+        available_packages = [
+            package.get("href", "").split("/")[-1] for package in packages
+        ]
+        self.cache.add(PUBLISHED_CT_PACKAGES, available_packages)
+
     async def load_standard(self, standard: str, version: str):
         standards = [{"href": f"/mdr/{standard}/{version}"}]
         variable_codelist_maps = await self._get_variable_codelist_maps(standards)

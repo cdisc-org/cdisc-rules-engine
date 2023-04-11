@@ -39,6 +39,7 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
             cache_populator: CachePopulator = CachePopulator(cache, library_service)
             if standards_data:
                 asyncio.run(cache_populator.load_standard(standard, standard_version))
+                asyncio.run(cache_populator.load_available_ct_packages())
             asyncio.run(cache_populator.load_codelists(codelists))
         if not rule:
             raise KeyError("'rule' required in request")
