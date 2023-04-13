@@ -44,6 +44,7 @@ from cdisc_rules_engine.operations.required_variables import RequiredVariables
 from cdisc_rules_engine.operations.expected_variables import ExpectedVariables
 from cdisc_rules_engine.operations.permissible_variables import PermissibleVariables
 from cdisc_rules_engine.operations.study_domains import StudyDomains
+from cdisc_rules_engine.operations.valid_codelist_dates import ValidCodelistDates
 
 
 class OperationsFactory(FactoryInterface):
@@ -76,6 +77,7 @@ class OperationsFactory(FactoryInterface):
         "expected_variables": ExpectedVariables,
         "permissible_variables": PermissibleVariables,
         "study_domains": StudyDomains,
+        "valid_codelist_dates": ValidCodelistDates,
     }
 
     @classmethod

@@ -12,13 +12,16 @@ from cdisc_rules_engine.models.dictionaries.get_dictionary_terms import (
     extract_dictionary_terms,
 )
 from cdisc_rules_engine.utilities.utils import get_rules_cache_key
+from cdisc_rules_engine.constants.cache_constants import PUBLISHED_CT_PACKAGES
 
 
 def fill_cache_with_provided_data(cache, args):
     cache_files = next(os.walk(args.cache), (None, None, []))[2]
+    published_ct_packages = set()
     for file_name in cache_files:
         if "ct-" in file_name:
             ct_version = file_name.split(".")[0]
+            published_ct_packages.add(ct_version)
             if (
                 args.controlled_terminology_package
                 and ct_version in args.controlled_terminology_package
@@ -32,6 +35,7 @@ def fill_cache_with_provided_data(cache, args):
         with open(f"{args.cache}/{file_name}", "rb") as f:
             data = pickle.load(f)
             cache.add_all(data)
+    cache.add(PUBLISHED_CT_PACKAGES, published_ct_packages)
     return cache
 
 
