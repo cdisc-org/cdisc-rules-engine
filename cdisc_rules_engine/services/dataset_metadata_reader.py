@@ -59,13 +59,16 @@ class DatasetMetadataReader:
         return self._metadata_container
 
     def _extract_domain_name(self, df):
-        first_row = df.iloc[0]
-        if "DOMAIN" in first_row:
-            domain_name = first_row["DOMAIN"]
-            if isinstance(domain_name, bytes):
-                return domain_name.decode("utf-8")
-            else:
-                return str(domain_name)
+        try:
+            first_row = df.iloc[0]
+            if "DOMAIN" in first_row:
+                domain_name = first_row["DOMAIN"]
+                if isinstance(domain_name, bytes):
+                    return domain_name.decode("utf-8")
+                else:
+                    return str(domain_name)
+        except IndexError:
+            pass
         return None
 
     def _convert_variable_types(self):
