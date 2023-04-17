@@ -60,6 +60,28 @@ class BaseDatasetBuilder:
             for dataset in get_corresponding_datasets(self.datasets, self.domain)
         ]
 
+    def get_define_xml_item_group_metadata(self, domain: str) -> List[dict]:
+        """
+        Gets Define XML item group metadata
+        returns a list of dictionaries containing the following keys:
+            "define_dataset_name"
+            "define_dataset_label"
+            "define_dataset_location"
+            "define_dataset_class"
+            "define_dataset_structure"
+            "define_dataset_is_non_standard"
+            "define_dataset_variables"
+        """
+        directory_path = get_directory_path(self.dataset_path)
+        define_xml_path: str = f"{directory_path}/{DEFINE_XML_FILE_NAME}"
+        define_xml_contents: bytes = self.data_service.get_define_xml_contents(
+            dataset_name=define_xml_path
+        )
+        define_xml_reader = DefineXMLReader.from_file_contents(
+            define_xml_contents, cache_service_obj=self.cache
+        )
+        return define_xml_reader.extract_domain_metadata(domain)
+
     def get_define_xml_variables_metadata(self) -> List[dict]:
         """
         Gets Define XML variables metadata.

@@ -65,7 +65,7 @@ def validate_single_rule(cache, path, args, datasets, rule: dict = None):
             validated_domains.add(dataset.domain)
             results.append(
                 engine.test_validation(
-                    rule, f"{path}/{dataset.filename}", datasets, dataset.domain
+                    rule, f"{dataset.filename}", datasets, dataset.domain
                 )
             )
     results = list(itertools.chain(*results))
@@ -109,9 +109,7 @@ def test(args: TestArgs):
             show_eta=False,
         ) as bar:
             for rule_result in pool.imap_unordered(
-                partial(
-                    validate_single_rule, shared_cache, "./scripts", args, datasets
-                ),
+                partial(validate_single_rule, shared_cache, "", args, datasets),
                 rules,
             ):
                 results.append(rule_result)

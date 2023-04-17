@@ -110,7 +110,7 @@ class LocalDataService(BaseDataService):
         """
         Reads local define xml file as bytes
         """
-        with os.open(dataset_name, "rb") as f:
+        with open(dataset_name, "rb") as f:
             return f.read()
 
     def get_dataset_by_type(

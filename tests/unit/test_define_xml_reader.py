@@ -47,12 +47,12 @@ def test_read_define_xml():
         for item in metadata:
             assert isinstance(item, dict)
             assert list(item.keys()) == [
-                "dataset_name",
-                "dataset_label",
-                "dataset_location",
-                "dataset_class",
-                "dataset_structure",
-                "dataset_is_non_standard",
+                "define_dataset_name",
+                "define_dataset_label",
+                "define_dataset_location",
+                "define_dataset_class",
+                "define_dataset_structure",
+                "define_dataset_is_non_standard",
             ]
 
 
@@ -65,12 +65,25 @@ def test_extract_domain_metadata():
         reader = DefineXMLReader.from_file_contents(contents)
         domain_metadata: dict = reader.extract_domain_metadata(domain_name="TS")
         assert domain_metadata == {
-            "dataset_name": "TS",
-            "dataset_label": "Trial Summary",
-            "dataset_location": "ts.xml",
-            "dataset_class": "TRIAL DESIGN",
-            "dataset_structure": "One record per trial summary parameter value",
-            "dataset_is_non_standard": "None",
+            "define_dataset_name": "TS",
+            "define_dataset_label": "Trial Summary",
+            "define_dataset_location": "ts.xml",
+            "define_dataset_class": "TRIAL DESIGN",
+            "define_dataset_structure": "One record per trial summary parameter value",
+            "define_dataset_is_non_standard": "None",
+            "define_dataset_variables": [
+                "STUDYID",
+                "DOMAIN",
+                "TSSEQ",
+                "TSGRPID",
+                "TSPARMCD",
+                "TSPARM",
+                "TSVAL",
+                "TSVALNF",
+                "TSVALCD",
+                "TSVCDREF",
+                "TSVCDVER",
+            ],
         }
 
 
@@ -142,16 +155,16 @@ def test_extract_value_level_metadata():
         mock_filter_pass_row_data = {"AETERM": "INJECTION SITE REACTION"}
         mock_filter_fail_row_data = {"AETERM": "ALL_GOOD"}
         assert (
-            value_level_metadata[0]["type_check"](mock_invalid_type_row_data) == False
+            value_level_metadata[0]["type_check"](mock_invalid_type_row_data) is False
         )
         assert (
             value_level_metadata[0]["length_check"](mock_invalid_length_row_data)
-            == False
+            is False
         )
-        assert value_level_metadata[0]["type_check"](mock_valid_row_data) == True
-        assert value_level_metadata[0]["length_check"](mock_valid_row_data) == True
-        assert value_level_metadata[0]["filter"](mock_filter_pass_row_data) == True
-        assert value_level_metadata[0]["filter"](mock_filter_fail_row_data) == False
+        assert value_level_metadata[0]["type_check"](mock_valid_row_data) is True
+        assert value_level_metadata[0]["length_check"](mock_valid_row_data) is True
+        assert value_level_metadata[0]["filter"](mock_filter_pass_row_data) is True
+        assert value_level_metadata[0]["filter"](mock_filter_fail_row_data) is False
 
 
 def test_extract_domain_metadata_not_found():

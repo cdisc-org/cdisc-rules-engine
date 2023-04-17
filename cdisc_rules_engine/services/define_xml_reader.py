@@ -93,8 +93,14 @@ class DefineXMLReader:
             f"Extracting domain metadata from Define-XML. domain_name={domain_name}"
         )
         metadata = self._odm_loader.MetaDataVersion()
+        item_mapping = {item.OID: item for item in metadata.ItemDef}
         domain_metadata = self._get_domain_metadata(metadata, domain_name)
         domain_metadata_dict: dict = self._get_metadata_representation(domain_metadata)
+        domain_metadata_dict["define_dataset_variables"] = [
+            item_mapping.get(item.ItemOID).Name
+            for item in domain_metadata.ItemRef
+            if item.ItemOID in item_mapping
+        ]
         logger.info(f"Extracted domain metadata = {domain_metadata_dict}")
         return domain_metadata_dict
 
@@ -272,12 +278,12 @@ class DefineXMLReader:
         Returns metadata as dictionary.
         """
         return {
-            "dataset_name": metadata.Domain,
-            "dataset_label": str(metadata.Description.TranslatedText[0]),
-            "dataset_location": getattr(metadata.leaf, "href", None),
-            "dataset_class": str(metadata.Class.Name),
-            "dataset_structure": str(metadata.Structure),
-            "dataset_is_non_standard": str(metadata.IsNonStandard),
+            "define_dataset_name": metadata.Domain,
+            "define_dataset_label": str(metadata.Description.TranslatedText[0]),
+            "define_dataset_location": getattr(metadata.leaf, "href", None),
+            "define_dataset_class": str(metadata.Class.Name),
+            "define_dataset_structure": str(metadata.Structure),
+            "define_dataset_is_non_standard": str(metadata.IsNonStandard),
         }
 
     def validate_schema(self) -> bool:

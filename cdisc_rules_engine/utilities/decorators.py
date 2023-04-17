@@ -24,7 +24,8 @@ def retry_request(retries: int, status_code_ranges: List[int] = None):
                     response.status_code >= code_range
                     for code_range in status_code_ranges
                 )
-                # no need for else. If should be retied -> loop will go to the next iteration
+                # no need for else.
+                # If should be retied -> loop will go to the next iteration
                 if not request_should_be_retried:
                     return response
             raise NumberOfAttemptsExceeded(
@@ -37,19 +38,21 @@ def retry_request(retries: int, status_code_ranges: List[int] = None):
     return decorator
 
 
-def cached(cache_key: str):
+def cached(cache_key: str):  # noqa: C901
     """
-    Generic decorator for cached data. All cached data should have a cache key of the format:
-    {study_id}/{data_bundle_id}/{domain_name}/key.
+    Generic decorator for cached data.
+    #All cached data should have a cache key of the format:
+    {study_id}/{data_bundle_id}/{domain_name}/{arg}.../key.
 
     Note: It is expected that the instance has a cache_service property.
     """
 
     def format_cache_key(
-        key: str, study_id=None, data_bundle_id=None, domain_name=None
+        key: str, args=[], study_id=None, data_bundle_id=None, domain_name=None
     ):
         """
-        If a study_id and data_bundle_id are available, cache_key = {study_id}/{data_bundle_id}/key
+        If a study_id and data_bundle_id are available,
+        cache_key = {study_id}/{data_bundle_id}/key
         else the function just returns the provided cache key.
         """
         if domain_name:
@@ -58,6 +61,9 @@ def cached(cache_key: str):
             key = f"{data_bundle_id}/" + key
         if study_id:
             key = f"{study_id}/" + key
+        for arg in args:
+            if isinstance(arg, str):
+                key = f"{arg}/" + key
         return key
 
     def decorator(func: Callable):
@@ -85,6 +91,7 @@ def cached(cache_key: str):
             ):
                 key = format_cache_key(
                     cache_key,
+                    args,
                     study_id=study_id,
                     data_bundle_id=data_bundle_id,
                     domain_name=domain_name,
