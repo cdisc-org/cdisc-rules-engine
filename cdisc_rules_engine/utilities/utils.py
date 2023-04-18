@@ -176,12 +176,13 @@ def get_operations_cache_key(
     operation_name: str = None,
     grouping: str = None,
     target_variable: str = None,
+    dataset_path: str = None,
 ) -> str:
     """
     Creates the cache key for operations.
     """
     key = f"operations/{directory_path}"
-    optional_items = [domain, operation_name, grouping, target_variable]
+    optional_items = [domain, operation_name, grouping, target_variable, dataset_path]
     for item in optional_items:
         if item:
             key = f"{key}/{item}"

@@ -274,9 +274,10 @@ class RuleProcessor:
             domain=operation_params.domain,
             grouping=";".join(operation_params.grouping),
             target_variable=operation_params.target,
+            dataset_path=operation_params.dataset_path,
         )
-        result = self.cache.get(cache_key)
-        if result:
+        result: pd.DataFrame = self.cache.get(cache_key)
+        if result is not None:
             return result
 
         if not self.is_current_domain(
