@@ -1,7 +1,6 @@
 from datetime import datetime
 from io import IOBase
 from typing import List, Optional
-from cdisc_rules_engine.constants.define_xml_constants import DEFINE_XML_FILE_NAME
 
 import pandas as pd
 
@@ -125,7 +124,7 @@ class DummyDataService(BaseDataService):
     def get_define_xml_contents(self, dataset_name: str) -> bytes:
         if not self.define_xml:
             # Search for define xml locally
-            with open(DEFINE_XML_FILE_NAME, "rb") as f:
+            with open(dataset_name, "rb") as f:
                 return f.read()
 
         return bytes(self.define_xml)
