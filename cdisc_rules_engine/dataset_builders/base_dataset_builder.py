@@ -8,6 +8,7 @@ from cdisc_rules_engine.utilities.utils import (
     get_corresponding_datasets,
 )
 from typing import List
+import os
 
 
 class BaseDatasetBuilder:
@@ -56,7 +57,7 @@ class BaseDatasetBuilder:
     def get_corresponding_datasets_names(self) -> List[str]:
         directory_path = get_directory_path(self.dataset_path)
         return [
-            f"{directory_path}/{dataset['filename']}"
+            os.path.join(directory_path, dataset["filename"])
             for dataset in get_corresponding_datasets(self.datasets, self.domain)
         ]
 
@@ -73,7 +74,7 @@ class BaseDatasetBuilder:
             "define_dataset_variables"
         """
         directory_path = get_directory_path(self.dataset_path)
-        define_xml_path: str = f"{directory_path}/{DEFINE_XML_FILE_NAME}"
+        define_xml_path: str = os.path.join(directory_path, DEFINE_XML_FILE_NAME)
         define_xml_contents: bytes = self.data_service.get_define_xml_contents(
             dataset_name=define_xml_path
         )
@@ -87,7 +88,7 @@ class BaseDatasetBuilder:
         Gets Define XML variables metadata.
         """
         directory_path = get_directory_path(self.dataset_path)
-        define_xml_path: str = f"{directory_path}/{DEFINE_XML_FILE_NAME}"
+        define_xml_path: str = os.path.join(directory_path, DEFINE_XML_FILE_NAME)
         define_xml_contents: bytes = self.data_service.get_define_xml_contents(
             dataset_name=define_xml_path
         )
