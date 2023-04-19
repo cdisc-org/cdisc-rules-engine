@@ -20,6 +20,9 @@ from cdisc_rules_engine.dataset_builders.define_variables_dataset_builder import
 from cdisc_rules_engine.dataset_builders.variables_metadata_with_define_dataset_builder import (
     VariablesMetadataWithDefineDatasetBuilder,
 )
+from cdisc_rules_engine.dataset_builders.define_item_group_dataset_builder import (
+    DefineItemGroupDatasetBuilder,
+)
 from cdisc_rules_engine.dataset_builders.base_dataset_builder import BaseDatasetBuilder
 from cdisc_rules_engine.enums.rule_types import RuleTypes
 
@@ -34,6 +37,7 @@ class DatasetBuilderFactory(FactoryInterface):
         RuleTypes.VARIABLE_METADATA_CHECK_AGAINST_DEFINE.value: VariablesMetadataWithDefineDatasetBuilder,
         RuleTypes.DATASET_CONTENTS_CHECK_AGAINST_DEFINE_AND_LIBRARY.value: ContentsDatasetBuilder,
         RuleTypes.VALUE_LEVEL_METADATA_CHECK_AGAINST_DEFINE.value: ContentsDatasetBuilder,
+        RuleTypes.DEFINE_ITEM_GROUP_METADATA_CHECK.value: DefineItemGroupDatasetBuilder,
     }
 
     @classmethod

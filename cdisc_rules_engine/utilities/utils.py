@@ -3,7 +3,7 @@ This module contains utility functions
 that can be reused.
 """
 import copy
-import os.path
+import os
 import re
 from datetime import datetime
 from typing import Callable, List, Optional, Set
@@ -90,9 +90,9 @@ def get_dataset_path(
     """
     path: str = study_id
     if data_bundle_id:
-        path += f"/{data_bundle_id}"
+        path = os.path.join(path, data_bundle_id)
     if filename:
-        path += f"/{filename}"
+        path = os.path.join(path, filename)
     return path
 
 
@@ -190,7 +190,7 @@ def get_operations_cache_key(
 
 
 def get_directory_path(dataset_path):
-    return "/".join(dataset_path.split("/")[:-1])
+    return os.path.dirname(dataset_path)
 
 
 def get_corresponding_datasets(datasets: List[dict], domain: str) -> List[dict]:
@@ -242,7 +242,7 @@ def extract_file_name_from_path_string(path: str) -> str:
         input: "CDISC01/test/ae.xpt"
         output: ae.xpt
     """
-    return path.split("/")[-1]
+    return os.path.split(path)[-1]
 
 
 def generate_report_filename(generation_time: str) -> str:

@@ -122,6 +122,11 @@ class DummyDataService(BaseDataService):
         )
 
     def get_define_xml_contents(self, dataset_name: str) -> bytes:
+        if not self.define_xml:
+            # Search for define xml locally
+            with open(dataset_name, "rb") as f:
+                return f.read()
+
         return bytes(self.define_xml)
 
     def has_all_files(self, prefix: str, file_names: List[str]) -> bool:

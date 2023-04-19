@@ -3,6 +3,7 @@ import time
 import click
 from datetime import datetime
 import json
+import os
 from functools import partial
 from multiprocessing import Pool
 from multiprocessing.managers import SyncManager
@@ -28,6 +29,7 @@ from scripts.script_utils import (
     fill_cache_with_provided_data,
     get_cache_service,
 )
+from cdisc_rules_engine.utilities.utils import get_directory_path
 from cdisc_rules_engine.enums.progress_parameter_options import ProgressParameterOptions
 
 """
@@ -57,6 +59,7 @@ def validate_single_rule(cache, path, args, datasets, rule: dict = None):
     )
     validated_domains = set()
     results = []
+    directory = get_directory_path(args.dataset_path)
     for dataset in datasets:
         # Check if the domain has been validated before
         # This addresses the case where a domain is split
@@ -65,7 +68,7 @@ def validate_single_rule(cache, path, args, datasets, rule: dict = None):
             validated_domains.add(dataset.domain)
             results.append(
                 engine.test_validation(
-                    rule, f"{path}/{dataset.filename}", datasets, dataset.domain
+                    rule, f"{directory}/{dataset.filename}", datasets, dataset.domain
                 )
             )
     results = list(itertools.chain(*results))
@@ -109,9 +112,7 @@ def test(args: TestArgs):
             show_eta=False,
         ) as bar:
             for rule_result in pool.imap_unordered(
-                partial(
-                    validate_single_rule, shared_cache, "./scripts", args, datasets
-                ),
+                partial(validate_single_rule, shared_cache, "", args, datasets),
                 rules,
             ):
                 results.append(rule_result)
@@ -126,7 +127,7 @@ def test(args: TestArgs):
         None,
         [args.dataset_path],
         None,
-        "resources/templates/report-template.xlsx",
+        os.path.join("resources", "templates", "report-template.xlsx"),
         args.standard,
         args.version,
         args.controlled_terminology_package,
