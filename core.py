@@ -185,7 +185,7 @@ def validate(
             )
             ctx.exit()
 
-    cache_path: str = f"{os.path.dirname(__file__)}/{cache}"
+    cache_path: str = os.path.join(os.path.dirname(__file__), cache)
 
     if data:
         if dataset_path:
@@ -194,7 +194,7 @@ def validate(
             )
             ctx.exit()
         dataset_paths: Iterable[str] = [
-            f"{data}/{fn}"
+            os.path.join(data, fn)
             for fn in os.listdir(data)
             if valid_data_file(fn, data_format)
         ]
@@ -261,20 +261,20 @@ def update_cache(ctx: click.Context, cache_path: str, apikey: str):
     cache_populator = CachePopulator(cache, library_service)
     cache = asyncio.run(cache_populator.load_cache_data())
     cache_populator.save_rules_locally(
-        f"{cache_path}/{DefaultFilePaths.RULES_CACHE_FILE.value}"
+        os.path.join(cache_path, DefaultFilePaths.RULES_CACHE_FILE.value)
     )
     cache_populator.save_ct_packages_locally(f"{cache_path}")
     cache_populator.save_standards_metadata_locally(
-        f"{cache_path}/{DefaultFilePaths.STANDARD_DETAILS_CACHE_FILE.value}"
+        os.path.join(cache_path, DefaultFilePaths.STANDARD_DETAILS_CACHE_FILE.value)
     )
     cache_populator.save_standards_models_locally(
-        f"{cache_path}/{DefaultFilePaths.STANDARD_MODELS_CACHE_FILE.value}"
+        os.path.join(cache_path, DefaultFilePaths.STANDARD_MODELS_CACHE_FILE.value)
     )
     cache_populator.save_variable_codelist_maps_locally(
-        f"{cache_path}/{DefaultFilePaths.VARIABLE_CODELIST_CACHE_FILE.value}"
+        os.path.join(cache_path, DefaultFilePaths.VARIABLE_CODELIST_CACHE_FILE.value)
     )
     cache_populator.save_variables_metadata_locally(
-        f"{cache_path}/{DefaultFilePaths.VARIABLE_METADATA_CACHE_FILE.value}"
+        os.path.join(cache_path, DefaultFilePaths.VARIABLE_METADATA_CACHE_FILE.value)
     )
 
 
@@ -295,7 +295,7 @@ def update_cache(ctx: click.Context, cache_path: str, apikey: str):
 def list_rules(ctx: click.Context, cache_path: str, standard: str, version: str):
     # Load all rules
     rules_file = DefaultFilePaths.RULES_CACHE_FILE.value
-    with open(f"{cache_path}/{rules_file}", "rb") as f:
+    with open(os.path.join(cache_path, rules_file), "rb") as f:
         rules_data = pickle.load(f)
     if standard and version:
         key_prefix = get_rules_cache_key(standard, version.replace(".", "-"))
@@ -385,7 +385,7 @@ def test(
 def list_rule_sets(ctx: click.Context, cache_path: str):
     # Load all rules
     rules_file = DefaultFilePaths.RULES_CACHE_FILE.value
-    with open(f"{cache_path}/{rules_file}", "rb") as f:
+    with open(os.path.join(cache_path, rules_file), "rb") as f:
         rules_data = pickle.load(f)
     rule_sets = set()
     for rule in rules_data.keys():

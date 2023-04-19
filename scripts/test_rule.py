@@ -3,6 +3,7 @@ import time
 import click
 from datetime import datetime
 import json
+import os
 from functools import partial
 from multiprocessing import Pool
 from multiprocessing.managers import SyncManager
@@ -126,7 +127,7 @@ def test(args: TestArgs):
         None,
         [args.dataset_path],
         None,
-        "resources/templates/report-template.xlsx",
+        os.path.join("resources", "templates", "report-template.xlsx"),
         args.standard,
         args.version,
         args.controlled_terminology_package,

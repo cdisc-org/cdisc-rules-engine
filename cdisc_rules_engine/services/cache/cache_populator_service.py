@@ -2,7 +2,7 @@ import asyncio
 import pickle
 from functools import partial
 from typing import Iterable, List, Optional
-
+import os
 from cdisc_library_client.custom_exceptions import (
     ResourceNotFoundException as LibraryResourceNotFoundException,
 )
@@ -136,7 +136,7 @@ class CachePopulator:
         """
         cts = self.cache.get_by_regex("*ct-*")
         for ct in cts:
-            with open(f"{file_path}/{ct}.pkl", "wb") as f:
+            with open(os.path.join(file_path, f"{ct}.pkl"), "wb") as f:
                 pickle.dump(cts.get(ct), f)
 
     def save_variable_codelist_maps_locally(self, file_path: str):

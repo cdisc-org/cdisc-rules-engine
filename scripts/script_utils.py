@@ -27,12 +27,12 @@ def fill_cache_with_provided_data(cache, args):
                 and ct_version in args.controlled_terminology_package
             ):
                 # Only load ct package corresponding to the provided ct
-                with open(f"{args.cache}/{file_name}", "rb") as f:
+                with open(os.path.join(args.cache, file_name), "rb") as f:
                     data = pickle.load(f)
                     cache.add(ct_version, data)
             else:
                 continue
-        with open(f"{args.cache}/{file_name}", "rb") as f:
+        with open(os.path.join(args.cache, file_name), "rb") as f:
             data = pickle.load(f)
             cache.add_all(data)
     cache.add(PUBLISHED_CT_PACKAGES, published_ct_packages)
