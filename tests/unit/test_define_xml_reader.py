@@ -11,6 +11,10 @@ from cdisc_rules_engine.exceptions.custom_exceptions import (
 )
 from cdisc_rules_engine.services.define_xml_reader import DefineXMLReader
 
+test_define_2_0_file_path: str = (
+    f"{os.path.dirname(__file__)}/../resources/test_defineV20-SDTM.xml"
+)
+
 test_define_file_path: str = (
     f"{os.path.dirname(__file__)}/../resources/test_defineV22-SDTM.xml"
 )
@@ -125,6 +129,7 @@ def test_extract_variable_metadata():
             "define_variable_ccode": "C66729",
             "define_variable_allowed_terms": ["Subcutaneous Route of Administration"],
             "define_variable_origin_type": "Predecessor",
+            "define_variable_is_collected": False,
         }
         for variable in variable_metadata:
             assert variable["define_variable_name"] in expected_variables
@@ -134,6 +139,70 @@ def test_extract_variable_metadata():
             ):
                 for key in expected_exroute_metadata.keys():
                     assert variable[key] == expected_exroute_metadata[key]
+
+
+@pytest.mark.parametrize(
+    "define_file_path, domain_name, define_variable_name, expected",
+    [
+        # TODO: support define 2.0
+        # https://github.com/cdisc-org/cdisc-rules-engine/issues/390
+        # (
+        #     test_define_2_0_file_path,
+        #     "AE",
+        #     "AEACN",
+        #     True,
+        # ),
+        # (
+        #     test_define_2_0_file_path,
+        #     "AE",
+        #     "AEBODSYS",
+        #     False,
+        # ),
+        # (
+        #     test_define_2_0_file_path,
+        #     "LB",
+        #     "LBCAT",
+        #     False,
+        # ),
+        (
+            test_define_file_path,
+            "AE",
+            "AEACN",
+            True,
+        ),
+        (
+            test_define_file_path,
+            "AE",
+            "AEBODSYS",
+            False,
+        ),
+        (
+            test_define_file_path,
+            "LB",
+            "LBSEQ",
+            False,
+        ),
+    ],
+)
+def test_define_variable_is_collected(
+    define_file_path, domain_name, define_variable_name, expected
+):
+    """
+    Unit test for DefineXMLReader.extract_domain_metadata function.
+    """
+    with open(define_file_path, "rb") as file:
+        contents: bytes = file.read()
+        reader = DefineXMLReader.from_file_contents(contents)
+        variable_metadata: List[dict] = reader.extract_variables_metadata(
+            domain_name=domain_name
+        )
+        variable = [
+            variable
+            for variable in variable_metadata
+            if variable["define_variable_name"] == define_variable_name
+        ]
+        assert len(variable) == 1
+        assert variable[0]["define_variable_is_collected"] == expected
 
 
 def test_extract_value_level_metadata():

@@ -14,6 +14,7 @@ from cdisc_rules_engine.exceptions.custom_exceptions import (
 from cdisc_rules_engine.models.define import ValueLevelMetadata
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.utilities.decorators import cached
+from cdisc_rules_engine.enums.define_xml_versions import DefineXMLVersions
 
 
 class DefineXMLReader:
@@ -225,6 +226,9 @@ class DefineXMLReader:
             data["define_variable_data_type"] = self._get_variable_datatype(
                 itemdef.DataType
             )
+            data["define_variable_is_collected"] = self._get_variable_is_collected(
+                itemdef
+            )
             if itemdef.Description:
                 data["define_variable_label"] = str(
                     itemdef.Description.TranslatedText[0]
@@ -238,7 +242,7 @@ class DefineXMLReader:
                     self._get_codelist_allowed_terms(codelists.get(oid))
                 )
             if itemdef.Origin:
-                data["define_variable_origin_type"] = itemdef.Origin[0].Type
+                data["define_variable_origin_type"] = self._get_origin_type(itemdef)
 
         return data
 
@@ -272,6 +276,34 @@ class DefineXMLReader:
             "intervalDatetime": "Char",
         }
         return variable_type_map.get(data_type, data_type)
+
+    # TODO: subclass define.xml versions
+    # https://github.com/cdisc-org/cdisc-rules-engine/issues/390
+    def _get_origin_type(self, itemdef):
+        if not itemdef.Origin:
+            return
+        version_origin_map = {
+            DefineXMLVersions.DEFINE_XML_2_0_0: lambda origin: origin.Type,
+            DefineXMLVersions.DEFINE_XML_2_1_0: lambda origin: origin[0].Type,
+        }
+        return version_origin_map.get(DefineXMLVersions(self.get_define_version()))(
+            itemdef.Origin
+        )
+
+    # TODO: subclass define.xml versions
+    # https://github.com/cdisc-org/cdisc-rules-engine/issues/390
+    def _get_variable_is_collected(self, itemdef):
+        if not itemdef.Origin:
+            return
+        version_collected_map = {
+            DefineXMLVersions.DEFINE_XML_2_0_0: lambda origin_type: origin_type
+            == "CRF",
+            DefineXMLVersions.DEFINE_XML_2_1_0: lambda origin_type: origin_type
+            == "Collected",
+        }
+        return version_collected_map.get(DefineXMLVersions(self.get_define_version()))(
+            self._get_origin_type(itemdef)
+        )
 
     def _get_metadata_representation(self, metadata) -> dict:
         """

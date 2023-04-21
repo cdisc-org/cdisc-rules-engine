@@ -202,7 +202,7 @@ class RulesEngine:
             )
             self.rule_processor.add_comparator_to_rule_conditions(rule, define_metadata)
 
-        elif rule.get("rule_type") == RuleTypes.DEFINE.value:
+        elif rule.get("rule_type") == RuleTypes.DEFINE_ITEM_METADATA_CHECK.value:
             variable_codelist_map_key = get_standard_codelist_cache_key(
                 self.standard, self.standard_version
             )
