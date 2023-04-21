@@ -40,6 +40,7 @@ from cdisc_rules_engine.operations.whodrug_hierarchy_validator import (
 )
 from cdisc_rules_engine.operations.variable_permissibility import VariablePermissibility
 from cdisc_rules_engine.operations.variable_count import VariableCount
+from cdisc_rules_engine.operations.variable_is_null import VariableIsNull
 from cdisc_rules_engine.operations.required_variables import RequiredVariables
 from cdisc_rules_engine.operations.expected_variables import ExpectedVariables
 from cdisc_rules_engine.operations.permissible_variables import PermissibleVariables
@@ -72,6 +73,7 @@ class OperationsFactory(FactoryInterface):
         "variable_permissibilities": VariablePermissibility,
         "variable_value_count": VariableValueCount,
         "variable_count": VariableCount,
+        "variable_is_null": VariableIsNull,
         "domain_label": DomainLabel,
         "required_variables": RequiredVariables,
         "expected_variables": ExpectedVariables,

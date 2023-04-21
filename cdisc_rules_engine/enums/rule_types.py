@@ -24,7 +24,7 @@ class RuleTypes(BaseEnum):
     FUNCTIONAL_DEPENDENCY = "Functional Dependency"
     DATE_ARITHMETIC = "Date Arithmetic"
     DATA_DOMAIN_AGGREGATION = "Data Domain Aggregation"
-    DEFINE = "Define-XML"
+    DEFINE_ITEM_METADATA_CHECK = "Define Item Metadata Check"
     DEFINE_ITEM_GROUP_METADATA_CHECK = "Define Item Group Metadata Check"
     POPULATED_VALUES = "Populated Values"
     UNIQUENESS = "Uniqueness"
