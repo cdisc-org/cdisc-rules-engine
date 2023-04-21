@@ -34,7 +34,7 @@ from cdisc_rules_engine.services.data_services.data_service_factory import (
         ),
         (
             pd.DataFrame.from_dict({"BCVAR": ["A", "B", "C"]}),
-            None,
+            True,
         ),
     ],
 )

@@ -11,10 +11,6 @@ from cdisc_rules_engine.exceptions.custom_exceptions import (
 )
 from cdisc_rules_engine.services.define_xml_reader import DefineXMLReader
 
-test_define_2_0_file_path: str = (
-    f"{os.path.dirname(__file__)}/../resources/test_defineV20-SDTM.xml"
-)
-
 test_define_file_path: str = (
     f"{os.path.dirname(__file__)}/../resources/test_defineV22-SDTM.xml"
 )
@@ -144,26 +140,6 @@ def test_extract_variable_metadata():
 @pytest.mark.parametrize(
     "define_file_path, domain_name, define_variable_name, expected",
     [
-        # TODO: support define 2.0
-        # https://github.com/cdisc-org/cdisc-rules-engine/issues/390
-        # (
-        #     test_define_2_0_file_path,
-        #     "AE",
-        #     "AEACN",
-        #     True,
-        # ),
-        # (
-        #     test_define_2_0_file_path,
-        #     "AE",
-        #     "AEBODSYS",
-        #     False,
-        # ),
-        # (
-        #     test_define_2_0_file_path,
-        #     "LB",
-        #     "LBCAT",
-        #     False,
-        # ),
         (
             test_define_file_path,
             "AE",
