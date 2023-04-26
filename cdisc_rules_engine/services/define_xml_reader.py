@@ -5,6 +5,11 @@ from odmlib.define_2_1.rules.metadata_schema import MetadataSchema
 from odmlib.define_loader import XMLDefineLoader
 from odmlib.loader import ODMLoader
 
+# Import these models to accommodate the inline import found here:
+# https://github.com/swhume/odmlib/blob/master/odmlib/define_loader.py#L12
+import odmlib.define_2_1.model  # noqa F401
+import odmlib.define_2_0.model  # noqa F401
+
 from cdisc_rules_engine.constants.define_xml_constants import (
     DEFINE_XML_MODEL_PACKAGE,
     DEFINE_XML_VERSION,
