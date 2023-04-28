@@ -239,17 +239,15 @@ dataset = DatasetVariable(data)
 
 ##### Step 3: Run the (relevant) rules
 
-Next, we need to actually run the rules. We can select which rules we want to run based on the domain we're checking and the domains in the "Include" and "Exclude" lists of the rule dictionary.
+Next, we need to actually run the rules. We can select which rules we want to run based on the domain of the data we're checking and the `"Include"` and `"Exclude"` domains of the rule.
 
 ```python
-
 # Get the rules for the domain AE
 # (Note: we're ignoring ALL domain rules here)
 ae_rules = [
   rule for rule in rules 
   if "AE" in rule["domains"].get("Include", [])
 ]
-
 ```
 
 There's one last thing we need before we can actually run the rule, and that's a `COREActions` object. This object will handle generating error messages should the rule fail.
@@ -351,5 +349,3 @@ To upload built distributive to pypi
 
 `py -m pip install --upgrade twine`
 `py -m twine upload --repository {repository_name} dist/*`
-
-### 
