@@ -4,6 +4,7 @@ import setuptools
 from version import __version__
 
 from pathlib import Path
+
 this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text()
 
@@ -12,7 +13,7 @@ setuptools.setup(
     version=__version__,
     description="Open source offering of the cdisc rules engine",
     long_description=long_description,
-    long_description_content_type='text/markdown',
+    long_description_content_type="text/markdown",
     author="cdisc-org",
     url="https://github.com/cdisc-org/cdisc-rules-engine",
     packages=setuptools.find_packages(exclude=["scripts", "tests"]),
