@@ -140,13 +140,21 @@ Note: JSON dataset should match the format provided by the rule editor:
 }
 ```
 
-#### Importing the package
+#### PyPI Quickstart: Validate data within python
 
-An alternative to running the validation from the command line is to instead import the rules engine library and run rules against data directly. this approach is best if you don't have data in `.xpt` format.
+An alternative to running the validation from the command line is to instead import the rules engine library in python and run rules against data directly (without needing your data to be in `.xpt` format).
+
+##### Step 0: Install the library
+
+```
+pip install cdisc-rules-engine
+```
+
+In addition to installing the library, you'll also want to download the rules cache (found in the `resources/cache` folder of this repository) and store them somewhere in your project.
 
 ##### Step 1: Load the Rules
 
-Rules can be found in the `resources/cache` folder of this repository. These rules can be loaded into an in-memory cache by doing the following:
+The rules can be loaded into an in-memory cache by doing the following:
 
 ```python
 import os
@@ -193,8 +201,6 @@ rules = cache.get_all_by_prefix(cache_key_prefix)
 
  - `core_id`
    - e.g. "CORE-000252"
-
-   - Includes where in CDISC Standards this rule is referenced
  - `domains`
    - e.g. `{'Include': ['DM'], 'Exclude': []}` or `{'Include': ['ALL']}`
  - `author`
@@ -233,7 +239,72 @@ dataset = DatasetVariable(data)
 
 ##### Step 3: Run the (relevant) rules
 
-Next, we need to actually run the rules
+Next, we need to actually run the rules. We can select which rules we want to run based on the domain we're checking and the domains in the "Include" and "Exclude" lists of the rule dictionary.
+
+```python
+
+# Get the rules for the domain AE
+# (Note: we're ignoring ALL domain rules here)
+ae_rules = [
+  rule for rule in rules 
+  if "AE" in rule["domains"].get("Include", [])
+]
+
+```
+
+There's one last thing we need before we can actually run the rule, and that's a `COREActions` object. This object will handle generating error messages should the rule fail.
+
+To instantiate a `COREActions` object, we need to pass in the following:
+
+- `results`: An array to which errors will be appended
+- `variable`: Our DatasetVariable
+- `domain`: e.g. "AE"
+- `rule`: Our rule
+
+```python
+from cdisc_rules_engine.models.actions import COREActions
+
+rule = ae_rules[0]
+results = []
+core_actions = COREActions(
+  results,
+  variable=dataset,
+  domain="AE",
+  rule=rule
+)
+```
+
+All that's left is to run the rule!
+
+```python
+from business_rules.engine import run
+
+was_triggered = run(
+  rule=rule,
+  defined_variables=dataset_variable,
+  defined_actions=core_actions,
+)
+```
+
+##### Step 5: Interpret the results
+
+The return value of run will tell us if the rule was triggered.
+- A `False` value means that there were no errors
+- A `True` value means that there were errors
+
+If there were errors, they will have been appended to the results array passed into your `COREActions` instance. Here's an example error:
+
+```python
+{
+  'executionStatus': 'success',
+  'domain': 'AE',
+  'variables': ['AESLIFE'],
+  'message': 'AESLIFE is completed, but not equal to "N" or "Y"',
+  'errors': [
+    {'value': {'AESLIFE': 'Maybe'}, 'row': 1}
+  ]
+}
+```
 
 ### Creating an executable version
 
