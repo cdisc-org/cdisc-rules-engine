@@ -6,6 +6,27 @@
 # cdisc-rules-engine
 Open source offering of the cdisc rules engine
 
+### Quick start
+
+To quickly get up an running the CORE. Users can download the latest executable version of the engine for their operating system from here: https://github.com/cdisc-org/cdisc-rules-engine/releases
+
+Once the downloaded, simply unzip the file and run the following command based on your Operating System:
+
+Windows:
+
+```
+.\core.exe validate -s <standard> -v <standard_version> -d path/to/datasets
+
+# ex: .\core.exe validate -s sdtmig -v 3-4 -d .\xpt\
+```
+
+Linux/Mac:
+
+```
+./core validate -s <standard> -v <standard_version> -d path/to/datasets
+
+# ex: ./core validate -s sdtmig -v 3-4 -d .\xpt\
+```
 ### Code formatter
 This project uses the `black` code formatter and `flake8` linter for python.
 It also uses `pre-commit` to run `black` and `flake8` when you commit.
@@ -110,6 +131,8 @@ The possible rule run statuses are:
 * update-cache - update locally stored cache data (Requires an environment variable - `CDISC_LIBRARY_API_KEY`)
 
     `python core.py update-cache`
+    
+    To obtain an api key, please follow the instructions found here: https://wiki.cdisc.org/display/LIBSUPRT/Getting+Started%3A+Access+to+CDISC+Library+API+using+API+Key+Authentication. Please note it can take up to an hour after sign up to have an api key issued
 
 * list-rules - list rules available in the cache
 
