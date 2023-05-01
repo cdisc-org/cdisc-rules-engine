@@ -8,9 +8,9 @@ Open source offering of the cdisc rules engine
 
 ### Quick start
 
-To quickly get up an running the CORE. Users can download the latest executable version of the engine for their operating system from here: https://github.com/cdisc-org/cdisc-rules-engine/releases
+To quickly get up and running with CORE, users can download the latest executable version of the engine for their operating system from here: https://github.com/cdisc-org/cdisc-rules-engine/releases
 
-Once the downloaded, simply unzip the file and run the following command based on your Operating System:
+Once downloaded, simply unzip the file and run the following command based on your Operating System:
 
 Windows:
 
