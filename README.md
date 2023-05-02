@@ -1,6 +1,32 @@
+### Supported python versions
+[![Python 3.7](https://img.shields.io/badge/python-3.7-blue.svg)](https://www.python.org/downloads/release/python-370)
+[![Python 3.8](https://img.shields.io/badge/python-3.8-orange.svg)](https://www.python.org/downloads/release/python-380)
+[![Python 3.9](https://img.shields.io/badge/python-3.9-green.svg)](https://www.python.org/downloads/release/python-390)
+[![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/downloads/release/python-310)
 # cdisc-rules-engine
 Open source offering of the cdisc rules engine
 
+### Quick start
+
+To quickly get up and running with CORE, users can download the latest executable version of the engine for their operating system from here: https://github.com/cdisc-org/cdisc-rules-engine/releases
+
+Once downloaded, simply unzip the file and run the following command based on your Operating System:
+
+Windows:
+
+```
+.\core.exe validate -s <standard> -v <standard_version> -d path/to/datasets
+
+# ex: .\core.exe validate -s sdtmig -v 3-4 -d .\xpt\
+```
+
+Linux/Mac:
+
+```
+./core validate -s <standard> -v <standard_version> -d path/to/datasets
+
+# ex: ./core validate -s sdtmig -v 3-4 -d .\xpt\
+```
 ### Code formatter
 This project uses the `black` code formatter and `flake8` linter for python.
 It also uses `pre-commit` to run `black` and `flake8` when you commit.
@@ -14,6 +40,20 @@ Setting up `pre-commit` requires one extra step. After installing it you have to
 
 This installs `pre-commit` in your `.git/hooks` directory.
 
+### Installing dependencies.
+These steps should be run before running any tests or core commands using the non compiled version.
+
+* Create a virtual environment:
+`python -m venv <virtual_environment_name>`
+* Activate the virtual environment:
+
+`./<virtual_environment_name>/bin/activate` -- on linux/mac </br>
+`.\<virtual_environment_name>\Scripts\Activate` -- on windows
+
+* Install the requirements.
+
+`python -m pip install -r requirements.txt` # From the root directory
+
 ### Running The Tests
 From the root of the project run the following command:
 
@@ -22,15 +62,15 @@ From the root of the project run the following command:
 
 #### From the command line
 
-Clone the repository and run `core.py --help` to see the full list of commands.
+Clone the repository and run `python core.py --help` to see the full list of commands.
 
-Run `core.py validate --help` to see the list of validation options.
+Run `python core.py validate --help` to see the list of validation options.
 ```
   -ca, --cache TEXT               Relative path to cache files containing pre
                                   loaded metadata and rules
   -ps, --pool-size INTEGER         Number of parallel processes for validation
   -d, --data TEXT                 Path to directory containing data files
-  -dp, --dataset-path TEXT        Absolute path to dataset file
+  -dp, --dataset-path TEXT        Absolute path to dataset file. Can be specified multiple times.
   -l, --log-level [info|debug|error|critical|disabled|warn]
                                   Sets log level for engine logs, logs are
                                   disabled by default
@@ -54,7 +94,7 @@ Run `core.py validate --help` to see the list of validation options.
                                   files
   --meddra TEXT                   Path to directory with MedDRA dictionary
                                   files
-  -r, --rules TEXT
+  -r, --rules TEXT                Rule core id. ex: CORE-000001. Can be specified multiple times.
   -vo, --verbose-output           Specify this option to print rules as they
                                   are completed
   -p, --progress [verbose_output|disabled|percents|bar]
@@ -65,16 +105,34 @@ Run `core.py validate --help` to see the list of validation options.
   --help                          Show this message and exit.
 ```
 
+##### Available log levels
+
+* `debug` - Display all logs
+* `info` - Display info, warnings, and error logs
+* `warn` - Display warnings and errors
+* `error` - Display only error logs
+* `critical` - Display critical logs
+
 ##### Validate folder
 To validate a folder using rules for SDTM-IG version 3.4 use the following command:
 
 `python core.py validate -s sdtmig -v 3-4 -d path/to/datasets`
+
+##### Understanding the Rules Report
+The rules report tab displays the run status of each rule selected for validation
+
+The possible rule run statuses are:
+
+* `SUCCESS` - The rule ran and data was validated against the rule. May or may not produce results
+* `SKIPPED` - The rule was unable to be run. Usually due to missing required data, but could also be cause by rule execution errors.
 
 ##### Additional Core Commands
 
 * update-cache - update locally stored cache data (Requires an environment variable - `CDISC_LIBRARY_API_KEY`)
 
     `python core.py update-cache`
+    
+    To obtain an api key, please follow the instructions found here: https://wiki.cdisc.org/display/LIBSUPRT/Getting+Started%3A+Access+to+CDISC+Library+API+using+API+Key+Authentication. Please note it can take up to an hour after sign up to have an api key issued
 
 * list-rules - list rules available in the cache
 
