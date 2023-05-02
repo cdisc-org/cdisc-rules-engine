@@ -50,3 +50,23 @@ def test_variable_is_null(
     assert operation_params.operation_id in result
     for val in result[operation_params.operation_id]:
         assert val == expected
+
+
+def test_define_crosscheck_variable_is_null(mock_data_service, operation_params):
+    define_metadata = pd.DataFrame.from_dict(
+        {
+            "define_variable_name": ["AEHLT", "AETERM"],
+            "define_variable_has_no_data": ["Yes", "No"],
+        }
+    )
+    dataset = pd.DataFrame.from_dict({"AEHLT": [None, None], "AETERM": [1, 2]})
+    config = ConfigService()
+    cache = CacheServiceFactory(config).get_cache_service()
+    operation_params.dataframe = define_metadata
+    operation_params.target = "define_variable_name"
+    mock_data_service.get_dataset.return_value = dataset
+    result = VariableIsNull(
+        operation_params, pd.DataFrame.copy(define_metadata), cache, mock_data_service
+    ).execute()
+    assert operation_params.operation_id in result
+    assert result[operation_params.operation_id].to_list() == [True, False]
