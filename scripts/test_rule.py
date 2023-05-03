@@ -68,7 +68,10 @@ def validate_single_rule(cache, path, args, datasets, rule: dict = None):
             validated_domains.add(dataset.domain)
             results.append(
                 engine.test_validation(
-                    rule, f"{directory}/{dataset.filename}", datasets, dataset.domain
+                    rule,
+                    os.path.join(directory, dataset.filename),
+                    datasets,
+                    dataset.domain,
                 )
             )
     results = list(itertools.chain(*results))

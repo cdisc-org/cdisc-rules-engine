@@ -4,6 +4,7 @@ from cdisc_rules_engine.models.operation_params import OperationParams
 import pandas as pd
 from cdisc_rules_engine.services.cache.cache_service_factory import CacheServiceFactory
 import pytest
+import os
 
 
 @pytest.mark.parametrize(
@@ -15,7 +16,7 @@ def test_variable_count(
 ):
     config = ConfigService()
     cache = CacheServiceFactory(config).get_cache_service()
-    dataset_path = "study/bundle/blah"
+    dataset_path = os.path.join("study", "bundle", "blah")
     datasets_map = {
         "AE": pd.DataFrame.from_dict(
             {"STUDYID": [4, 7, 9], "AESEQ": [1, 2, 3], "DOMAIN": [12, 6, 1]}
@@ -40,7 +41,7 @@ def test_variable_count(
         {"domain": "AE", "filename": "AE2"},
     ]
     mock_data_service.get_dataset.side_effect = lambda name: datasets_map.get(
-        name.split("/")[-1]
+        os.path.split(name)[-1]
     )
     mock_data_service.join_split_datasets.side_effect = lambda func, files: pd.concat(
         [func(f) for f in files]

@@ -331,7 +331,7 @@ class RulesEngine:
         Gets Define XML metadata and returns it as dict.
         """
         directory_path = get_directory_path(dataset_path)
-        define_xml_path: str = f"{directory_path}/{DEFINE_XML_FILE_NAME}"
+        define_xml_path: str = os.path.join(directory_path, DEFINE_XML_FILE_NAME)
         define_xml_contents: bytes = self.data_service.get_define_xml_contents(
             dataset_name=define_xml_path
         )
@@ -364,7 +364,7 @@ class RulesEngine:
         Gets Define XML variable metadata and returns it as dataframe.
         """
         directory_path = get_directory_path(dataset_path)
-        define_xml_path: str = f"{directory_path}/{DEFINE_XML_FILE_NAME}"
+        define_xml_path: str = os.path.join(directory_path, DEFINE_XML_FILE_NAME)
         define_xml_contents: bytes = self.data_service.get_define_xml_contents(
             dataset_name=define_xml_path
         )

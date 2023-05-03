@@ -1,6 +1,7 @@
 import pandas as pd
 from cdisc_rules_engine.operations.base_operation import BaseOperation
 import asyncio
+import os
 from collections import Counter
 from typing import List
 from cdisc_rules_engine.utilities.utils import (
@@ -34,7 +35,7 @@ class VariableValueCount(BaseOperation):
         domain = dataset.get("domain")
         if is_split_dataset(self.params.datasets, domain):
             files = [
-                f"{self.params.directory_path}/{dataset.get('filename')}"
+                os.path.join(self.params.directory_path, dataset.get("filename"))
                 for dataset in get_corresponding_datasets(self.params.datasets, domain)
             ]
             data: pd.DataFrame = self.data_service.join_split_datasets(
@@ -42,7 +43,7 @@ class VariableValueCount(BaseOperation):
             )
         else:
             data: pd.DataFrame = self.data_service.get_dataset(
-                f"{self.params.directory_path}/{dataset.get('filename')}"
+                os.path.join(self.params.directory_path, dataset.get("filename"))
             )
         target_variable = self.params.target.replace("--", domain, 1)
         if target_variable in data:

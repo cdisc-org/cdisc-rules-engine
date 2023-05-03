@@ -3,7 +3,7 @@ from unittest.mock import Mock, patch, MagicMock
 
 import pandas as pd
 import pytest
-
+import os
 from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
 from cdisc_rules_engine.models.dataset_types import DatasetTypes
 from cdisc_rules_engine.services.data_services import cached_dataset, LocalDataService
@@ -125,8 +125,8 @@ def test_get_dataset_class_associated_domains():
     ce_dataset = pd.DataFrame.from_dict({"DOMAIN": ["CE"], "CETERM": ["test"]})
     data_bundle_path = "cdisc/databundle"
     path_to_dataset_map: dict = {
-        f"{data_bundle_path}/ap.xpt": ap_dataset,
-        f"{data_bundle_path}/ce.xpt": ce_dataset,
+        os.path.join(data_bundle_path, "ap.xpt"): ap_dataset,
+        os.path.join(data_bundle_path, "ce.xpt"): ce_dataset,
     }
     with patch(
         "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
