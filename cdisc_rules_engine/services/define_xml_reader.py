@@ -224,7 +224,7 @@ class DefineXMLReader:
             "define_variable_format": "",
             "define_variable_allowed_terms": [],
             "define_variable_origin_type": "",
-            "define_variable_has_no_data": "No",
+            "define_variable_has_no_data": "",
         }
         if itemdef:
             data["define_variable_name"] = itemdef.Name
@@ -250,7 +250,7 @@ class DefineXMLReader:
                 )
             if itemdef.Origin:
                 data["define_variable_origin_type"] = self._get_origin_type(itemdef)
-            data["define_variable_has_no_data"] = itemref.HasNoData or "No"
+            data["define_variable_has_no_data"] = itemref.HasNoData
 
         return data
 
