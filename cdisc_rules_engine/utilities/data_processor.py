@@ -15,6 +15,7 @@ from cdisc_rules_engine.services.data_services import (
     DummyDataService,
 )
 from cdisc_rules_engine.utilities.utils import search_in_list_of_dicts
+import os
 
 
 class DataProcessor:
@@ -85,7 +86,7 @@ class DataProcessor:
             datasets, lambda item: item.get("domain") == domain
         )
         if domain_details:
-            data_filename = f"{dataset_path}/{domain_details['filename']}"
+            data_filename = os.path.join(dataset_path, domain_details["filename"])
             new_data = self.data_service.get_dataset(dataset_name=data_filename)
             reference_data[domain] = self.get_columns(new_data, columns)
         return reference_data

@@ -4,7 +4,7 @@ from typing import List, Union
 import pandas as pd
 from business_rules import export_rule_data
 from business_rules.engine import run
-
+import os
 from cdisc_rules_engine.config import config as default_config
 from cdisc_rules_engine.constants.define_xml_constants import DEFINE_XML_FILE_NAME
 from cdisc_rules_engine.dummy_models.dummy_dataset import DummyDataset
@@ -300,7 +300,7 @@ class RulesEngine:
         relationship_data = {}
         if self.rule_processor.is_relationship_dataset(domain):
             relationship_data = self.data_processor.preprocess_relationship_dataset(
-                dataset_path.rsplit("/", 1)[0], dataset, datasets
+                os.path.dirname(dataset_path), dataset, datasets
             )
         dataset_variable = DatasetVariable(
             dataset,
