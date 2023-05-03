@@ -3,7 +3,7 @@ from abc import ABC
 from functools import wraps, partial
 from typing import Callable, List, Optional, Iterable, Iterator
 from concurrent.futures import ThreadPoolExecutor
-
+import os
 import numpy as np
 import pandas as pd
 
@@ -176,7 +176,7 @@ class BaseDataService(DataServiceInterface, ABC):
             )
             if domain_details:
                 file_name = domain_details["filename"]
-                new_file_path = f"{directory_path}/{file_name}"
+                new_file_path = os.path.join(directory_path, file_name)
                 new_domain_dataset = self.get_dataset(dataset_name=new_file_path)
             else:
                 raise ValueError("Filename for domain doesn't exist")

@@ -196,8 +196,8 @@ def test_validate_rule_cross_dataset_check(dataset_rule_equal_to: dict):
     )
     # mock blob storage call
     path_to_dataset_map: dict = {
-        "path/ae.xpt": ae_dataset,
-        "path/ec.xpt": ec_dataset,
+        os.path.join("path", "ae.xpt"): ae_dataset,
+        os.path.join("path", "ec.xpt"): ec_dataset,
     }
     with patch(
         "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
@@ -208,7 +208,7 @@ def test_validate_rule_cross_dataset_check(dataset_rule_equal_to: dict):
             {"domain": "AE", "filename": "ae.xpt"},
         ]
         validation_result: List[str] = RulesEngine().validate_single_rule(
-            dataset_rule_equal_to, "path/ec.xpt", datasets, "EC"
+            dataset_rule_equal_to, os.path.join("path", "ec.xpt"), datasets, "EC"
         )
         assert validation_result == [
             {
@@ -284,15 +284,18 @@ def test_validate_one_to_one_rel_across_datasets(dataset_rule_one_to_one_related
         }
     )
     path_to_dataset_map: dict = {
-        "path/ae.xpt": ae_dataset,
-        "path/ec.xpt": ec_dataset,
+        os.path.join("path", "ae.xpt"): ae_dataset,
+        os.path.join("path", "ec.xpt"): ec_dataset,
     }
     with patch(
         "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
         side_effect=lambda dataset_name: path_to_dataset_map[dataset_name],
     ):
         validation_result: List[dict] = RulesEngine().validate_single_rule(
-            dataset_rule_one_to_one_related, "path/ec.xpt", datasets, "EC"
+            dataset_rule_one_to_one_related,
+            os.path.join("path", "ec.xpt"),
+            datasets,
+            "EC",
         )
         assert validation_result == [
             {
@@ -1585,8 +1588,8 @@ def test_validate_record_in_parent_domain(
         }
     )
     path_to_dataset_map: dict = {
-        "path/ec.xpt": ec_dataset,
-        "path/suppec.xpt": suppec_dataset,
+        os.path.join("path", "ec.xpt"): ec_dataset,
+        os.path.join("path", "suppec.xpt"): suppec_dataset,
     }
     with patch(
         "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
@@ -1603,7 +1606,10 @@ def test_validate_record_in_parent_domain(
             },
         ]
         validation_result: List[str] = RulesEngine().validate_single_rule(
-            dataset_rule_record_in_parent_domain_equal_to, "path/ec.xpt", datasets, "EC"
+            dataset_rule_record_in_parent_domain_equal_to,
+            os.path.join("path", "ec.xpt"),
+            datasets,
+            "EC",
         )
         assert validation_result == [
             {

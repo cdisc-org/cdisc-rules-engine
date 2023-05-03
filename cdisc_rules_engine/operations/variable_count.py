@@ -1,4 +1,5 @@
 import pandas as pd
+import os
 from cdisc_rules_engine.operations.base_operation import BaseOperation
 import asyncio
 from collections import Counter
@@ -34,7 +35,7 @@ class VariableCount(BaseOperation):
     async def _get_dataset_variable_count(self, dataset: dict) -> Counter:
         domain = dataset.get("domain", "")
         data: pd.DataFrame = self.data_service.get_dataset(
-            f"{self.params.directory_path}/{dataset.get('filename')}"
+            os.path.join(self.params.directory_path, dataset.get("filename"))
         )
         target_variable = self.params.target.replace("--", domain, 1)
         return 1 if target_variable in data else 0

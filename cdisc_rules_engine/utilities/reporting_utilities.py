@@ -15,6 +15,6 @@ def get_define_version(dataset_paths: List[str]) -> Optional[str]:
     path_to_data = os.path.dirname(dataset_paths[0])
     if not path_to_data or DEFINE_XML_FILE_NAME not in os.listdir(path_to_data):
         return None
-    path_to_define = "/".join([path_to_data, DEFINE_XML_FILE_NAME])
+    path_to_define = os.path.join(path_to_data, DEFINE_XML_FILE_NAME)
     define_xml_reader = DefineXMLReader.from_filename(path_to_define)
     return define_xml_reader.get_define_version()

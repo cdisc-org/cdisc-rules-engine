@@ -1,6 +1,6 @@
 from typing import List
 from unittest.mock import patch
-
+import os
 import pandas as pd
 import pytest
 from cdisc_rules_engine.services.cache.in_memory_cache_service import (
@@ -59,10 +59,10 @@ def test_preprocess_relationship_dataset(data):
     )
     dm = pd.DataFrame.from_dict({"USUBJID": [1, 2, 3, 4, 5, 6000]})
     path_to_dataset_map: dict = {
-        "path/ae.xpt": ae,
-        "path/ec.xpt": ec,
-        "path/dm.xpt": dm,
-        "path/data.xpt": data,
+        os.path.join("path", "ae.xpt"): ae,
+        os.path.join("path", "ec.xpt"): ec,
+        os.path.join("path", "dm.xpt"): dm,
+        os.path.join("path", "data.xpt"): data,
     }
     with patch(
         "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",

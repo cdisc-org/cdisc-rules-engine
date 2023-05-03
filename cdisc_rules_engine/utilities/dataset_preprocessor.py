@@ -13,6 +13,7 @@ from cdisc_rules_engine.utilities.utils import (
     replace_pattern_in_list_of_strings,
     search_in_list_of_dicts,
 )
+import os
 
 
 class DatasetPreprocessor:
@@ -92,7 +93,7 @@ class DatasetPreprocessor:
 
     def _download_dataset(self, filename: str) -> pd.DataFrame:
         return self._data_service.get_dataset(
-            dataset_name=f'{self._dataset_path.rsplit("/", 1)[0]}/{filename}'
+            dataset_name=os.path.join(os.path.dirname(self._dataset_path), filename)
         )
 
     def _merge_datasets(

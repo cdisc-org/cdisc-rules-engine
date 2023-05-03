@@ -1,6 +1,6 @@
 from typing import List
 from unittest.mock import MagicMock, patch
-
+import os
 import pandas as pd
 
 from cdisc_rules_engine.services.cache.in_memory_cache_service import (
@@ -128,8 +128,8 @@ def test_preprocess(mock_get_dataset: MagicMock, dataset_rule_equal_to: dict):
 
     # mock blob storage call
     path_to_dataset_map: dict = {
-        "path/ae.xpt": ae_dataset,
-        "path/ts.xpt": ts_dataset,
+        os.path.join("path", "ae.xpt"): ae_dataset,
+        os.path.join("path", "ts.xpt"): ts_dataset,
     }
     mock_get_dataset.side_effect = lambda dataset_name: path_to_dataset_map[
         dataset_name
@@ -146,7 +146,11 @@ def test_preprocess(mock_get_dataset: MagicMock, dataset_rule_equal_to: dict):
 
     data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
     preprocessor = DatasetPreprocessor(
-        ec_dataset, "EC", "path/ec.xpt", data_service, InMemoryCacheService()
+        ec_dataset,
+        "EC",
+        os.path.join("path", "ec.xpt"),
+        data_service,
+        InMemoryCacheService(),
     )
     preprocessed_dataset: pd.DataFrame = preprocessor.preprocess(
         dataset_rule_equal_to, datasets
@@ -259,8 +263,8 @@ def test_preprocess_relationship_dataset(
 
     # mock blob storage call
     path_to_dataset_map: dict = {
-        "path/ec.xpt": ec_dataset,
-        "path/suppec.xpt": suppec_dataset,
+        os.path.join("path", "ec.xpt"): ec_dataset,
+        os.path.join("path", "suppec.xpt"): suppec_dataset,
     }
     mock_get_dataset.side_effect = lambda dataset_name: path_to_dataset_map[
         dataset_name
@@ -280,7 +284,11 @@ def test_preprocess_relationship_dataset(
 
     data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
     preprocessor = DatasetPreprocessor(
-        ec_dataset, "EC", "path/ec.xpt", data_service, InMemoryCacheService()
+        ec_dataset,
+        "EC",
+        os.path.join("path", "ec.xpt"),
+        data_service,
+        InMemoryCacheService(),
     )
     preprocessed_dataset: pd.DataFrame = preprocessor.preprocess(
         dataset_rule_record_in_parent_domain_equal_to, datasets
@@ -366,8 +374,8 @@ def test_preprocess_with_merge_comparison(
     )
 
     path_to_dataset_map: dict = {
-        "study_id/data_bundle_id/ae.xpt": match_dataset,
-        "study_id/data_bundle_id/ec.xpt": target_dataset,
+        os.path.join("study_id", "data_bundle_id", "ae.xpt"): match_dataset,
+        os.path.join("study_id", "data_bundle_id", "ec.xpt"): target_dataset,
     }
     mock_get_dataset.side_effect = lambda dataset_name: path_to_dataset_map[
         dataset_name
@@ -377,7 +385,7 @@ def test_preprocess_with_merge_comparison(
     preprocessor = DatasetPreprocessor(
         target_dataset,
         "EC",
-        "study_id/data_bundle_id/ec.xpt",
+        os.path.join("study_id", "data_bundle_id", "ec.xpt"),
         data_service,
         InMemoryCacheService(),
     )
