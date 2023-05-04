@@ -137,6 +137,28 @@ def test_extract_variable_metadata():
                     assert variable[key] == expected_exroute_metadata[key]
 
 
+def test_extract_variable_metadata_with_has_no_data():
+    """
+    Unit test for DefineXMLReader.extract_domain_metadata function.
+    """
+    with open(test_define_file_path, "rb") as file:
+        contents: bytes = file.read()
+        reader = DefineXMLReader.from_file_contents(contents)
+        variable_metadata: List[dict] = reader.extract_variables_metadata(
+            domain_name="AE"
+        )
+        target_variable = next(
+            iter(
+                [
+                    variable
+                    for variable in variable_metadata
+                    if variable["define_variable_name"] == "AEHLT"
+                ]
+            )
+        )
+        assert target_variable["define_variable_has_no_data"] == "Yes"
+
+
 @pytest.mark.parametrize(
     "define_file_path, domain_name, define_variable_name, expected",
     [
