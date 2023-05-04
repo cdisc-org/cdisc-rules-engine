@@ -127,7 +127,7 @@ class DummyDataService(BaseDataService):
             with open(dataset_name, "rb") as f:
                 return f.read()
 
-        return bytes(self.define_xml)
+        return self.define_xml.encode()
 
     def has_all_files(self, prefix: str, file_names: List[str]) -> bool:
         return True

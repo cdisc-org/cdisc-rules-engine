@@ -38,7 +38,6 @@ from cdisc_rules_engine.utilities.utils import (
     get_directory_path,
     get_library_variables_metadata_cache_key,
     get_standard_codelist_cache_key,
-    get_standard_details_cache_key,
     is_split_dataset,
     serialize_rule,
 )
@@ -339,23 +338,6 @@ class RulesEngine:
             define_xml_contents, cache_service_obj=self.cache
         )
         return define_xml_reader.extract_domain_metadata(domain_name=domain_name)
-
-    def is_custom_domain(self, domain: str) -> bool:
-        """
-        Gets standard details from cache and checks if
-        given domain is in standard domains.
-        If no -> the domain is custom.
-        """
-        # request standard details from cache
-        standard_details: dict = (
-            self.cache.get(
-                get_standard_details_cache_key(self.standard, self.standard_version)
-            )
-            or {}
-        )
-
-        # check if domain is in standard details
-        return domain not in standard_details.get("domains", {})
 
     def get_define_xml_value_level_metadata(
         self, dataset_path: str, domain_name: str
