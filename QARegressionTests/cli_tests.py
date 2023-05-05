@@ -1,4 +1,4 @@
-import json 
+import json
 import os
 from core import validate
 from core import list_rule_sets
@@ -15,8 +15,8 @@ class TestCLI(unittest.TestCase):
         self.runner = CliRunner()
 
     def test_validate_required_s_option_missing(self):
-        result = self.runner.invoke(validate, ['-v', '3.4', 
-            '-dp', r"tests/resources/test_dataset.xpt"])
+        result = self.runner.invoke(validate, ['-v', '3.4',
+                                   '-dp', r"tests/resources/test_dataset.xpt"])
         self.assertEqual(result.exit_code, 2)
         self.assertIn("Error: Missing option '-s'", result.output)
 
