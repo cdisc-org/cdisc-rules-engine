@@ -37,27 +37,34 @@ import unittest
 import click
 from click.testing import CliRunner
 
+
 class TestCLI(unittest.TestCase):
     def setUp(self):
         self.runner = CliRunner()
 
     def test_validate_required_s_option_missing(self):
-        result = self.runner.invoke(validate, ['-v', '3.4', '-dp', r"tests/resources/test_dataset.xpt"])
+        result = self.runner.invoke(validate, ['-v', '3.4', 
+            '-dp', r"tests/resources/test_dataset.xpt"])
         self.assertEqual(result.exit_code, 2)
         self.assertIn("Error: Missing option '-s'", result.output)
 
     def test_validate_required_s_option_present(self):
-        result = self.runner.invoke(validate, ['-s', 'sdtmig', '-v', '3.4', '-dp', r"tests/resources/test_dataset.xpt"])
+        result = self.runner.invoke(validate, ['-s', 'sdtmig',
+            '-v', '3.4', 
+            '-dp', r"tests/resources/test_dataset.xpt"])
         print(result.output)
         self.assertEqual(result.exit_code, 0)
 
     def test_validate_required_v_option_missing(self):
-        result = self.runner.invoke(validate, ['-s', 'sdtmig', '-dp', r"tests/resources/test_dataset.xpt"])
+        result = self.runner.invoke(validate, ['-s', 'sdtmig', 
+        '-dp', r"tests/resources/test_dataset.xpt"])
         self.assertEqual(result.exit_code, 2)
         self.assertIn("Error: Missing option '-v'", result.output)
 
     def test_validate_required_v_option_present(self):
-        result = self.runner.invoke(validate, ['-s', 'sdtmig', '-v', '3.4', '-dp', r"tests/resources/test_dataset.xpt"])
+        result = self.runner.invoke(validate, ['-s', 'sdtmig',
+        '-v', '3.4',
+        '-dp', r"tests/resources/test_dataset.xpt"])
         self.assertEqual(result.exit_code, 0)
         
     def test_validate_both_d_and_data_options(self):
@@ -152,7 +159,9 @@ class TestCLI(unittest.TestCase):
 
     def test_validate_minimum_options(self):
         result = self.runner.invoke(
-            validate, ["-s", "sdtmig", "-v", "3.4","-dp",r"tests/resources/test_dataset.xpt"])
+            validate, ["-s", "sdtmig",
+            "-v", "3.4",
+            "-dp",r"tests/resources/test_dataset.xpt"])
         
         self.assertEqual(result.exit_code, 0)
 
@@ -163,68 +172,107 @@ class TestCLI(unittest.TestCase):
 
     def test_validate_invalid_value_to_option_version(self):
         result = self.runner.invoke(
-            validate, ["-s", "sdtmig", "-v", "version","-dp",r"tests/resources/test_dataset.xpt", "-dv", "2.0"]
+            validate, ["-s", "sdtmig",
+            "-v", "version",
+            "-dp",r"tests/resources/test_dataset.xpt", 
+            "-dv", "2.0"]
         )
         self.assertEqual(result.exit_code, 1)
-        #self.assertIn("Error: Invalid value for '--define-version':", result.output)
+        
 
     def test_validate_valid_options(self):
         result = self.runner.invoke(
-            validate, ["-s", "sdtmig", "-v", "3.4","-dp",r"tests/resources/test_dataset.xpt", "-dv", "/tests/resources/report_test_data/define.xml"]
+            validate, ["-s", "sdtmig", 
+            "-v", "3.4",
+            "-dp",r"tests/resources/test_dataset.xpt",
+            "-dv", "/tests/resources/report_test_data/define.xml"]
         )
         self.assertEqual(result.exit_code, 0)
 
     def test_validate_output_format_json(self):
         result = self.runner.invoke(
-            validate, ["-s", "sdtmig", "-v", "3.4", "-dp",r"tests/resources/test_dataset.xpt","-of", "json"]
+            validate, ["-s", "sdtmig", 
+            "-v", "3.4",
+            "-dp",r"tests/resources/test_dataset.xpt","-of", "json"]
         )
         self.assertEqual(result.exit_code, 0)
 
     def test_validate_output_format_excel(self):
         result = self.runner.invoke(
-            validate, ["-s", "sdtmig","-v", "3.4","-dp",r"tests/resources/test_dataset.xpt", "-of", "xlsx"]
+            validate, ["-s", "sdtmig",
+            "-v", "3.4",
+            "-dp",r"tests/resources/test_dataset.xpt", 
+            "-of", "xlsx"]
         )
         self.assertEqual(result.exit_code, 0)
         
     
     def test_validate_with_invalid_output_format(self):
-        result = self.runner.invoke(validate, ["-s", "sdtmig","-v", "3.4","-dp",r"tests/resources/test_dataset.xpt","-o", "output.json", "-of", "csv"])
+        result = self.runner.invoke(validate, ["-s", "sdtmig",
+        "-v", "3.4","-dp",r"tests/resources/test_dataset.xpt",
+        "-o", "output.json", 
+        "-of", "csv"])
         self.assertNotEqual(result.exit_code, 0)
 
     def test_validate_with_log_level_debug(self):
-        result = self.runner.invoke(validate, ["-s", "sdtmig","-v", "3.4","-dp",r"tests/resources/test_dataset.xpt","-l", "debug"])
+        result = self.runner.invoke(validate, ["-s", "sdtmig",
+        "-v", "3.4",
+        "-dp",r"tests/resources/test_dataset.xpt",
+        "-l", "debug"])
         self.assertEqual(result.exit_code, 0)
 
     def test_validate_with_log_level_info(self):
-        result = self.runner.invoke(validate, ["-s", "sdtmig","-v", "3.4","-dp",r"tests/resources/test_dataset.xpt","-l", "info"])
+        result = self.runner.invoke(validate, ["-s", "sdtmig",
+        "-v", "3.4",
+        "-dp",r"tests/resources/test_dataset.xpt",
+        "-l", "info"])
         self.assertEqual(result.exit_code, 0)
 
     def test_validate_with_log_level_error(self):
-        result = self.runner.invoke(validate, ["-s", "sdtmig","-v", "3.4","-dp",r"tests/resources/test_dataset.xpt","-l", "error"])
+        result = self.runner.invoke(validate, ["-s", "sdtmig",
+        "-v", "3.4",
+        "-dp",r"tests/resources/test_dataset.xpt",
+        "-l", "error"])
         self.assertEqual(result.exit_code, 0)
 
     def test_validate_with_log_level_critical(self):
-        result = self.runner.invoke(validate, ["-s", "sdtmig","-v", "3.4","-dp",r"tests/resources/test_dataset.xpt","-l", "critical"])
+        result = self.runner.invoke(validate, ["-s", "sdtmig",
+        "-v", "3.4",
+        "-dp",r"tests/resources/test_dataset.xpt",
+        "-l", "critical"])
         self.assertEqual(result.exit_code, 0)
 
     def test_validate_with_log_level_disabled(self):
-        result = self.runner.invoke(validate, ["-s", "sdtmig","-v", "3.4","-dp",r"tests/resources/test_dataset.xpt","-l", "disabled"])
+        result = self.runner.invoke(validate, ["-s", "sdtmig",
+        "-v", "3.4",
+        "-dp",r"tests/resources/test_dataset.xpt",
+        "-l", "disabled"])
         self.assertEqual(result.exit_code, 0)
 
     def test_validate_with_log_level_warn(self):
-        result = self.runner.invoke(validate, ["-s", "sdtmig","-v", "3.4","-dp",r"tests/resources/test_dataset.xpt","-l", "warn"])
+        result = self.runner.invoke(validate, ["-s", "sdtmig",
+        "-v", "3.4",
+        "-dp",r"tests/resources/test_dataset.xpt",
+        "-l", "warn"])
         self.assertEqual(result.exit_code, 0)
 
     def test_validate_with_invalid_log_level(self):
-        result = self.runner.invoke(validate, ["-s", "sdtmig","-v", "3.4","-dp",r"tests/resources/test_dataset.xpt","-l", "invalid"])
+        result = self.runner.invoke(validate, ["-s", "sdtmig",
+        "-v", "3.4",
+        "-dp",r"tests/resources/test_dataset.xpt",
+        "-l", "invalid"])
         self.assertNotEqual(result.exit_code, 0)
 
     def test_validate_with_no_log_level(self):
-        result = self.runner.invoke(validate, ["-s", "sdtmig", "-v", "3.4","-dp",r"tests/resources/test_dataset.xpt"])
+        result = self.runner.invoke(validate, ["-s", "sdtmig", 
+        "-v", "3.4",
+        "-dp",r"tests/resources/test_dataset.xpt"])
         self.assertEqual(result.exit_code, 0)
         
     def test_validate_high_value_p(self):
-        result=self.runner.invoke(validate,["-s","sdtmig","-v","3.4","-dp",r"tests/resources/test_dataset.xpt","-ps","10"])
+        result=self.runner.invoke(validate,["-s","sdtmig",
+        "-v","3.4","-dp",r"tests/resources/test_dataset.xpt",
+        "-ps","10"])
         self.assertEqual(result.exit_code,0)
     
     def test_list_rule_sets_valid_cache_path(self):
@@ -236,7 +284,8 @@ class TestCLI(unittest.TestCase):
         
 
     def test_list_rule_sets_invalid_cache_path(self):
-        result = self.runner.invoke(list_rule_sets,["--cache_path", r"resources"])
+        result = self.runner.invoke(list_rule_sets,["--cache_path",
+        r"resources"])
         self.assertNotEqual(result.exit_code,0)
 
     def test_list_rule_sets_no_cache_path(self):
@@ -248,7 +297,8 @@ class TestCLI(unittest.TestCase):
         
     
     def test_list_dataset_metadata_with_valid_paths(self):
-        result = self.runner.invoke(list_dataset_metadata, ["-dp",  r"tests/resources/test_dataset.xpt"])
+        result = self.runner.invoke(list_dataset_metadata, ["-dp",  
+        r"tests/resources/test_dataset.xpt"])
         expected_output="""[
     {
         "domain": "EX",
@@ -257,7 +307,8 @@ class TestCLI(unittest.TestCase):
         self.assertIn(expected_output,result.output)
         
     def test_list_dataset_metadata_with_invalid_paths(self):
-        result = self.runner.invoke(list_dataset_metadata, ["-dp", "invalid_path"])
+        result = self.runner.invoke(list_dataset_metadata, ["-dp", 
+        "invalid_path"])
         expected_output="""[
     {
         "domain": "EX",
@@ -333,7 +384,9 @@ class TestCLI(unittest.TestCase):
         self.assertNotEqual(result.exit_code, 0)
         
     def test_list_rules_all_options_provided(self):
-        result = self.runner.invoke(list_rules, ["-c", r"resources/cache", "-s", "sdtmig", "-v", "3.4"])
+        result = self.runner.invoke(list_rules, ["-c", 
+        r"resources/cache", "-s", "sdtmig", 
+        "-v", "3.4"])
         self.assertEqual(result.exit_code, 0)
 
     def test_list_rules_standard_option_provided(self):
@@ -349,7 +402,8 @@ class TestCLI(unittest.TestCase):
         self.assertEqual(result.exit_code, 0)
 
     def test_list_rules_required_options_provided(self):
-        result = self.runner.invoke(list_rules, ["-s", "sdtmig", "-v", "3.4"])
+        result = self.runner.invoke(list_rules, ["-s", "sdtmig", 
+        "-v", "3.4"])
         self.assertEqual(result.exit_code, 0)
 
     def test_list_rules_output_format(self):
