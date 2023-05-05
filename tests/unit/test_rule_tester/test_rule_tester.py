@@ -207,7 +207,7 @@ def test_rule_with_define_xml(define_xml_variable_validation_rule: dict):
     ]
 
     with open(test_define_file_path, "r") as file:
-        contents: bytes = file.read()
+        contents: str = file.read()
         tester = RuleTester(datasets, contents)
         data = tester.validate(define_xml_variable_validation_rule)
         assert "AE" in data

@@ -19,10 +19,8 @@ class DomainIsCustom(BaseOperation):
         standard_data: dict = self.cache.get(cache_key)
         if standard_data is None:
             cdisc_library_service = CDISCLibraryService(config, self.cache)
-            standard_data = set(
-                cdisc_library_service.get_standard(
-                    self.params.standard.lower(), self.params.standard_version
-                )
+            standard_data = cdisc_library_service.get_standard_details(
+                self.params.standard.lower(), self.params.standard_version
             )
-            self.cache.set(cache_key, standard_data)
+            self.cache.add(cache_key, standard_data)
         return self.params.domain not in standard_data.get("domains", {})
