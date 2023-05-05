@@ -16,27 +16,27 @@ class TestCLI(unittest.TestCase):
 
     def test_validate_required_s_option_missing(self):
         result = self.runner.invoke(validate, ['-v', '3.4',
-                                   '-dp', r"tests/resources/test_dataset.xpt"])
+                                                '-dp', r"tests/resources/test_dataset.xpt"])
         self.assertEqual(result.exit_code, 2)
         self.assertIn("Error: Missing option '-s'", result.output)
 
     def test_validate_required_s_option_present(self):
         result = self.runner.invoke(validate, ['-s', 'sdtmig',
-            '-v', '3.4', 
-            '-dp', r"tests/resources/test_dataset.xpt"])
+                                                '-v', '3.4', 
+                                                '-dp', r"tests/resources/test_dataset.xpt"])
         print(result.output)
         self.assertEqual(result.exit_code, 0)
 
     def test_validate_required_v_option_missing(self):
         result = self.runner.invoke(validate, ['-s', 'sdtmig', 
-        '-dp', r"tests/resources/test_dataset.xpt"])
+                                                '-dp', r"tests/resources/test_dataset.xpt"])
         self.assertEqual(result.exit_code, 2)
         self.assertIn("Error: Missing option '-v'", result.output)
 
     def test_validate_required_v_option_present(self):
         result = self.runner.invoke(validate, ['-s', 'sdtmig',
-        '-v', '3.4',
-        '-dp', r"tests/resources/test_dataset.xpt"])
+                                                '-v', '3.4',
+                                                '-dp', r"tests/resources/test_dataset.xpt"])
         self.assertEqual(result.exit_code, 0)
         
     def test_validate_both_d_and_data_options(self):
@@ -84,9 +84,7 @@ class TestCLI(unittest.TestCase):
         )
         self.assertNotEqual(result.exit_code, 0)
         self.assertIn("Error: Missing option", result.output)
-        #self.assertIn("Missing option '-s' / '--standard'", result.output)
         
-  
 
     def test_validate_all_options(self):
         result = self.runner.invoke(
@@ -132,8 +130,8 @@ class TestCLI(unittest.TestCase):
     def test_validate_minimum_options(self):
         result = self.runner.invoke(
             validate, ["-s", "sdtmig",
-            "-v", "3.4",
-            "-dp",r"tests/resources/test_dataset.xpt"])
+                        "-v", "3.4",
+                        "-dp",r"tests/resources/test_dataset.xpt"])
         
         self.assertEqual(result.exit_code, 0)
 
@@ -145,9 +143,9 @@ class TestCLI(unittest.TestCase):
     def test_validate_invalid_value_to_option_version(self):
         result = self.runner.invoke(
             validate, ["-s", "sdtmig",
-            "-v", "version",
-            "-dp",r"tests/resources/test_dataset.xpt", 
-            "-dv", "2.0"]
+                        "-v", "version",
+                        "-dp",r"tests/resources/test_dataset.xpt", 
+                        "-dv", "2.0"]
         )
         self.assertEqual(result.exit_code, 1)
         
@@ -155,27 +153,24 @@ class TestCLI(unittest.TestCase):
     def test_validate_valid_options(self):
         result = self.runner.invoke(
             validate, ["-s", "sdtmig", 
-            "-v", "3.4",
-            "-dp",r"tests/resources/test_dataset.xpt",
-            "-dv", "/tests/resources/report_test_data/define.xml"]
-        )
+                        "-v", "3.4",
+                        "-dp",r"tests/resources/test_dataset.xpt",
+                        "-dv", "/tests/resources/report_test_data/define.xml"])
         self.assertEqual(result.exit_code, 0)
 
     def test_validate_output_format_json(self):
         result = self.runner.invoke(
             validate, ["-s", "sdtmig", 
-            "-v", "3.4",
-            "-dp",r"tests/resources/test_dataset.xpt","-of", "json"]
-        )
+                        "-v", "3.4",
+                        "-dp",r"tests/resources/test_dataset.xpt","-of", "json"])
         self.assertEqual(result.exit_code, 0)
 
     def test_validate_output_format_excel(self):
         result = self.runner.invoke(
             validate, ["-s", "sdtmig",
-            "-v", "3.4",
-            "-dp",r"tests/resources/test_dataset.xpt", 
-            "-of", "xlsx"]
-        )
+                        "-v", "3.4",
+                        "-dp",r"tests/resources/test_dataset.xpt", 
+                        "-of", "xlsx"])
         self.assertEqual(result.exit_code, 0)
         
     
