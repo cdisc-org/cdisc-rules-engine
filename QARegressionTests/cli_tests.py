@@ -1,32 +1,3 @@
-import asyncio
-import json
-import logging
-import os
-import pickle
-from datetime import datetime
-from multiprocessing import freeze_support
-from typing import Iterable, Tuple
-
-# import click
-
-# from cdisc_rules_engine.config import config
-# from cdisc_rules_engine.constants.define_xml_constants import DEFINE_XML_FILE_NAME
-# from cdisc_rules_engine.enums.default_file_paths import DefaultFilePaths
-# from cdisc_rules_engine.enums.progress_parameter_options import ProgressParameterOptions
-# from cdisc_rules_engine.enums.report_types import ReportTypes
-# from cdisc_rules_engine.models.validation_args import Validation_args
-# from cdisc_rules_engine.models.test_args import TestArgs
-# from scripts.run_validation import run_validation
-# from scripts.test_rule import test as test_rule
-# from cdisc_rules_engine.services.cache.cache_populator_service import CachePopulator
-# from cdisc_rules_engine.services.cache.cache_service_factory import CacheServiceFactory
-# from cdisc_rules_engine.services.cdisc_library_service import CDISCLibraryService
-# from cdisc_rules_engine.utilities.utils import (
-#     generate_report_filename,
-#     get_rules_cache_key,
-# )
-# from scripts.list_dataset_metadata_handler import list_dataset_metadata_handler
-# from version import __version__
 from core import validate
 from core import list_rule_sets
 from core import list_dataset_metadata
@@ -34,7 +5,6 @@ from core import test
 from core import list_rules
 
 import unittest
-import click
 from click.testing import CliRunner
 
 
@@ -403,7 +373,7 @@ class TestCLI(unittest.TestCase):
 
     def test_list_rules_required_options_provided(self):
         result = self.runner.invoke(list_rules, ["-s", "sdtmig", 
-        "-v", "3.4"])
+            "-v", "3.4"])
         self.assertEqual(result.exit_code, 0)
 
     def test_list_rules_output_format(self):
