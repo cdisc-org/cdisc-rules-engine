@@ -218,6 +218,7 @@ class DefineXMLReader:
             "define_variable_name": "",
             "define_variable_label": "",
             "define_variable_data_type": "",
+            "define_variable_is_collected": "",
             "define_variable_role": "",
             "define_variable_size": "",
             "define_variable_ccode": "",
@@ -323,7 +324,7 @@ class DefineXMLReader:
             "define_dataset_location": getattr(metadata.leaf, "href", None),
             "define_dataset_class": str(metadata.Class.Name),
             "define_dataset_structure": str(metadata.Structure),
-            "define_dataset_is_non_standard": str(metadata.IsNonStandard),
+            "define_dataset_is_non_standard": str(metadata.IsNonStandard or ""),
         }
 
     def validate_schema(self) -> bool:

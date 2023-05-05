@@ -2028,31 +2028,6 @@ def test_dataset_references_invalid_whodrug_terms(
     ]
 
 
-def test_is_custom_domain():
-    """
-    Unit test for RulesEngine.is_custom_domain() function.
-    """
-    cache = InMemoryCacheService()
-    standard = "sdtmig"
-    standard_version = "3-1-2"
-    cache_key = get_standard_details_cache_key(standard, standard_version)
-    cache.add(
-        cache_key,
-        {
-            "domains": {
-                "AE",
-                "EC",
-                "DM",
-            }
-        },
-    )
-    engine = RulesEngine(
-        cache=cache, standard=standard, standard_version=standard_version
-    )
-    assert engine.is_custom_domain("AP")
-    assert not engine.is_custom_domain("AE")
-
-
 @patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset")
 def test_validate_variables_order_against_library_metadata(
     mock_get_dataset: MagicMock,

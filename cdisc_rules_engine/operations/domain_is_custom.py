@@ -1,16 +1,17 @@
 from cdisc_rules_engine.operations.base_operation import BaseOperation
 from cdisc_rules_engine.utilities.utils import (
     get_standard_details_cache_key,
-    search_in_list_of_dicts,
 )
 from cdisc_rules_engine.services.cdisc_library_service import CDISCLibraryService
 from cdisc_rules_engine import config
 
 
-class DomainLabel(BaseOperation):
+class DomainIsCustom(BaseOperation):
     def _execute_operation(self):
         """
-        Return the domain label for the currently executing domain
+        Gets standard details from cache and checks if
+        given domain is in standard domains.
+        If no -> the domain is custom.
         """
         cache_key = get_standard_details_cache_key(
             self.params.standard, self.params.standard_version
@@ -22,11 +23,4 @@ class DomainLabel(BaseOperation):
                 self.params.standard.lower(), self.params.standard_version
             )
             self.cache.add(cache_key, standard_data)
-        domain_details = None
-        for c in standard_data.get("classes", []):
-            domain_details = search_in_list_of_dicts(
-                c.get("datasets", []), lambda item: item["name"] == self.params.domain
-            )
-            if domain_details:
-                return domain_details.get("label", "")
-        return ""
+        return self.params.domain not in standard_data.get("domains", {})
