@@ -1,6 +1,8 @@
 from abc import abstractmethod
 from cdisc_rules_engine.constants.define_xml_constants import DEFINE_XML_FILE_NAME
-from cdisc_rules_engine.services.define_xml_reader import DefineXMLReader
+from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import (
+    DefineXMLReaderFactory,
+)
 import pandas as pd
 from cdisc_rules_engine.utilities.utils import (
     get_directory_path,
@@ -78,7 +80,7 @@ class BaseDatasetBuilder:
         define_xml_contents: bytes = self.data_service.get_define_xml_contents(
             dataset_name=define_xml_path
         )
-        define_xml_reader = DefineXMLReader.from_file_contents(
+        define_xml_reader = DefineXMLReaderFactory.from_file_contents(
             define_xml_contents, cache_service_obj=self.cache
         )
         return define_xml_reader.extract_domain_metadata(domain)
@@ -92,7 +94,7 @@ class BaseDatasetBuilder:
         define_xml_contents: bytes = self.data_service.get_define_xml_contents(
             dataset_name=define_xml_path
         )
-        define_xml_reader = DefineXMLReader.from_file_contents(
+        define_xml_reader = DefineXMLReaderFactory.from_file_contents(
             define_xml_contents, cache_service_obj=self.cache
         )
         return define_xml_reader.extract_variables_metadata(domain_name=self.domain)

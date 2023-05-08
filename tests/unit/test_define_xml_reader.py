@@ -9,8 +9,16 @@ import pytest
 from cdisc_rules_engine.exceptions.custom_exceptions import (
     DomainNotFoundInDefineXMLError,
 )
-from cdisc_rules_engine.services.define_xml_reader import DefineXMLReader
+from cdisc_rules_engine.services.define_xml.base_define_xml_reader import (
+    BaseDefineXMLReader,
+)
+from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import (
+    DefineXMLReaderFactory,
+)
 
+test_define_2_0_file_path: str = (
+    f"{os.path.dirname(__file__)}/../resources/test_defineV20-SDTM.xml"
+)
 test_define_file_path: str = (
     f"{os.path.dirname(__file__)}/../resources/test_defineV22-SDTM.xml"
 )
@@ -20,8 +28,8 @@ def test_init_from_filename():
     """
     Unit test for DefineXMLReader.from_filename constructor.
     """
-    reader = DefineXMLReader.from_filename(test_define_file_path)
-    assert isinstance(reader, DefineXMLReader)
+    reader = DefineXMLReaderFactory.from_filename(test_define_file_path)
+    assert isinstance(reader, BaseDefineXMLReader)
 
 
 def test_init_from_file_contents():
@@ -30,8 +38,8 @@ def test_init_from_file_contents():
     """
     with open(test_define_file_path, "rb") as file:
         contents: bytes = file.read()
-        reader = DefineXMLReader.from_file_contents(contents)
-        assert isinstance(reader, DefineXMLReader)
+        reader = DefineXMLReaderFactory.from_file_contents(contents)
+        assert isinstance(reader, BaseDefineXMLReader)
 
 
 def test_read_define_xml():
@@ -42,7 +50,7 @@ def test_read_define_xml():
     """
     with open(test_define_file_path, "rb") as file:
         contents: bytes = file.read()
-        reader = DefineXMLReader.from_file_contents(contents)
+        reader = DefineXMLReaderFactory.from_file_contents(contents)
         metadata: List[dict] = reader.read()
         for item in metadata:
             assert isinstance(item, dict)
@@ -62,7 +70,7 @@ def test_extract_domain_metadata():
     """
     with open(test_define_file_path, "rb") as file:
         contents: bytes = file.read()
-        reader = DefineXMLReader.from_file_contents(contents)
+        reader = DefineXMLReaderFactory.from_file_contents(contents)
         domain_metadata: dict = reader.extract_domain_metadata(domain_name="TS")
         assert domain_metadata == {
             "define_dataset_name": "TS",
@@ -93,7 +101,7 @@ def test_extract_variable_metadata():
     """
     with open(test_define_file_path, "rb") as file:
         contents: bytes = file.read()
-        reader = DefineXMLReader.from_file_contents(contents)
+        reader = DefineXMLReaderFactory.from_file_contents(contents)
         variable_metadata: List[dict] = reader.extract_variables_metadata(
             domain_name="EX"
         )
@@ -143,7 +151,7 @@ def test_extract_variable_metadata_with_has_no_data():
     """
     with open(test_define_file_path, "rb") as file:
         contents: bytes = file.read()
-        reader = DefineXMLReader.from_file_contents(contents)
+        reader = DefineXMLReaderFactory.from_file_contents(contents)
         variable_metadata: List[dict] = reader.extract_variables_metadata(
             domain_name="AE"
         )
@@ -162,6 +170,24 @@ def test_extract_variable_metadata_with_has_no_data():
 @pytest.mark.parametrize(
     "define_file_path, domain_name, define_variable_name, expected",
     [
+        (
+            test_define_2_0_file_path,
+            "AE",
+            "AEACN",
+            True,
+        ),
+        (
+            test_define_2_0_file_path,
+            "AE",
+            "AEBODSYS",
+            False,
+        ),
+        (
+            test_define_2_0_file_path,
+            "LB",
+            "LBCAT",
+            False,
+        ),
         (
             test_define_file_path,
             "AE",
@@ -190,7 +216,7 @@ def test_define_variable_is_collected(
     """
     with open(define_file_path, "rb") as file:
         contents: bytes = file.read()
-        reader = DefineXMLReader.from_file_contents(contents)
+        reader = DefineXMLReaderFactory.from_file_contents(contents)
         variable_metadata: List[dict] = reader.extract_variables_metadata(
             domain_name=domain_name
         )
@@ -209,7 +235,7 @@ def test_extract_value_level_metadata():
     """
     with open(test_define_file_path, "rb") as file:
         contents: bytes = file.read()
-        reader = DefineXMLReader.from_file_contents(contents)
+        reader = DefineXMLReaderFactory.from_file_contents(contents)
         value_level_metadata: dict = reader.extract_value_level_metadata(
             domain_name="AE"
         )
@@ -241,7 +267,7 @@ def test_extract_domain_metadata_not_found():
     """
     with open(test_define_file_path, "rb") as file:
         contents: bytes = file.read()
-        reader = DefineXMLReader.from_file_contents(contents)
+        reader = DefineXMLReaderFactory.from_file_contents(contents)
         with pytest.raises(DomainNotFoundInDefineXMLError):
             reader.extract_domain_metadata(domain_name="not found domain")
 
@@ -252,7 +278,7 @@ def test_validate_schema():
     """
     with open(test_define_file_path, "rb") as file:
         contents: bytes = file.read()
-        reader = DefineXMLReader.from_file_contents(contents)
+        reader = DefineXMLReaderFactory.from_file_contents(contents)
         assert reader.validate_schema() is True
 
 
@@ -263,6 +289,6 @@ def test_extract_variable_metadata_not_found():
     """
     with open(test_define_file_path, "rb") as file:
         contents: bytes = file.read()
-        reader = DefineXMLReader.from_file_contents(contents)
+        reader = DefineXMLReaderFactory.from_file_contents(contents)
         with pytest.raises(DomainNotFoundInDefineXMLError):
             reader.extract_variables_metadata(domain_name="not found domain")
