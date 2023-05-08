@@ -13,32 +13,44 @@ from click.testing import CliRunner
 class TestCLI(unittest.TestCase):
     def setUp(self):
         self.runner = CliRunner()
-
     def test_validate_required_s_option_missing(self):
-        result = self.runner.invoke(validate, ['-v', '3.4',
-                                                '-dp', r"tests/resources/test_dataset.xpt"])
+        result = self.runner.invoke(
+            validate,
+            ['-v', '3.4',
+             '-dp', r"tests/resources/test_dataset.xpt"]
+        )
         self.assertEqual(result.exit_code, 2)
         self.assertIn("Error: Missing option '-s'", result.output)
 
     def test_validate_required_s_option_present(self):
-        result = self.runner.invoke(validate, ['-s', 'sdtmig',
-                                                '-v', '3.4', 
-                                                '-dp', r"tests/resources/test_dataset.xpt"])
+        result = self.runner.invoke(
+            validate,
+            ['-s', 'sdtmig',
+             '-v', '3.4',
+             '-dp', r"tests/resources/test_dataset.xpt"]
+        )
         print(result.output)
         self.assertEqual(result.exit_code, 0)
 
     def test_validate_required_v_option_missing(self):
-        result = self.runner.invoke(validate, ['-s', 'sdtmig', 
-                                                '-dp', r"tests/resources/test_dataset.xpt"])
+        result = self.runner.invoke(
+            validate,
+            ['-s', 'sdtmig',
+             '-dp', r"tests/resources/test_dataset.xpt"]
+        )
         self.assertEqual(result.exit_code, 2)
         self.assertIn("Error: Missing option '-v'", result.output)
 
+
     def test_validate_required_v_option_present(self):
-        result = self.runner.invoke(validate, ['-s', 'sdtmig',
-                                                '-v', '3.4',
-                                                '-dp', r"tests/resources/test_dataset.xpt"])
+        result = self.runner.invoke(
+            validate,
+            ['-s', 'sdtmig',
+             '-v', '3.4',
+             '-dp', r"tests/resources/test_dataset.xpt"]
+        )
         self.assertEqual(result.exit_code, 0)
-        
+
     def test_validate_both_d_and_data_options(self):
         result = self.runner.invoke(
             validate,
@@ -50,9 +62,9 @@ class TestCLI(unittest.TestCase):
             ]
         )
         self.assertNotEqual(result.exit_code, 0)
-#         self.assertIn("Error: Invalid value", result.output)
-#         self.assertIn("-d/--data", result.output)
-#         self.assertIn("only one of the options can be provided", result.output)
+        # self.assertIn("Error: Invalid value", result.output)
+        # self.assertIn("-d/--data", result.output)
+        # self.assertIn("only one of the options can be provided", result.output)
 
     def test_validate_neither_d_nor_data_options(self):
         result = self.runner.invoke(
