@@ -439,6 +439,29 @@ def version():
     print(__version__)
 
 
+@click.command()
+@click.option(
+    "-c",
+    "--cache_path",
+    default=DefaultFilePaths.CACHE.value,
+    help="Relative path to cache files containing pre loaded metadata and rules",
+)
+@click.option(
+    "-s",
+    "--subsets",
+    required=False,
+    multiple=True,
+)
+def list_ct(cache_path: str, subsets: Tuple[str]):
+    if subsets:
+        subsets = set([subset.lower() for subset in subsets])
+
+    for file in os.listdir(cache_path):
+        file_prefix = file.split("-")[0]
+        if file_prefix.endswith("ct") and (not subsets or file_prefix in subsets):
+            print(os.path.splitext(file)[0])
+
+
 cli.add_command(validate)
 cli.add_command(update_cache)
 cli.add_command(list_rules)
@@ -446,6 +469,7 @@ cli.add_command(list_rule_sets)
 cli.add_command(list_dataset_metadata)
 cli.add_command(test)
 cli.add_command(version)
+cli.add_command(list_ct)
 
 if __name__ == "__main__":
     freeze_support()
