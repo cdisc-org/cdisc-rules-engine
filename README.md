@@ -198,6 +198,20 @@ Note: JSON dataset should match the format provided by the rule editor:
 }
 ```
 
+* list-ct - list ct packages available in the cache
+```
+Usage: python core.py list-ct [OPTIONS]
+
+  Command to list the ct packages available in the cache.
+
+Options:
+  -c, --cache_path TEXT  Relative path to cache files containing pre loaded
+                         metadata and rules
+  -s, --subsets TEXT     CT package subset type. Ex: sdtmct. Multiple values
+                         allowed
+  --help                 Show this message and exit.
+```
+
 #### PyPI Quickstart: Validate data within python
 
 An alternative to running the validation from the command line is to instead import the rules engine library in python and run rules against data directly (without needing your data to be in `.xpt` format).
