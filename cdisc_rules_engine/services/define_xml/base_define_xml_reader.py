@@ -1,7 +1,9 @@
-from typing import List, Union, Optional
+from abc import abstractmethod, ABC
+from dataclasses import dataclass
+from typing import List, Optional
 from functools import cache
 
-from odmlib.define_2_1.rules.metadata_schema import MetadataSchema
+
 from odmlib.define_loader import XMLDefineLoader
 from odmlib.loader import ODMLoader
 
@@ -10,70 +12,49 @@ from odmlib.loader import ODMLoader
 import odmlib.define_2_1.model  # noqa F401
 import odmlib.define_2_0.model  # noqa F401
 
-from cdisc_rules_engine.constants.define_xml_constants import (
-    DEFINE_XML_MODEL_PACKAGE,
-    DEFINE_XML_VERSION,
-)
 from cdisc_rules_engine.exceptions.custom_exceptions import (
     DomainNotFoundInDefineXMLError,
 )
 from cdisc_rules_engine.models.define import ValueLevelMetadata
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.utilities.decorators import cached
-from cdisc_rules_engine.enums.define_xml_versions import DefineXMLVersions
 
 
-class DefineXMLReader:
+@dataclass
+class DefineXMLVersion:
+    version: str
+    namespace: str
+    model_package: str
+
+
+class BaseDefineXMLReader(ABC):
     """
     This class is responsible for extracting
     metadata from a define XML file.
     Uses odmlib library under the hood and
     represents a facade over the library.
-
-    The class has 2 constructors: from filename and
-    from file contents.
-    Ex. 1:
-        filename = "define.xml"
-        reader = DefineXMLReader.from_filename(filename)
-        reader.read()
-
-    Ex. 2:
-        file_contents: bytes = b"...."
-        reader = DefineXMLReader.from_file_contents(file_contents)
-        reader.read()
     """
 
-    @classmethod
-    def from_filename(cls, filename: str):
-        """
-        Inits a DefineXMLReader object from file.
-        """
-        logger.info(f"Reading Define-XML from file name. filename={filename}")
-        reader = cls()
-        reader._odm_loader.open_odm_document(filename)
-        return reader
+    @staticmethod
+    @abstractmethod
+    def class_define_xml_version() -> DefineXMLVersion:
+        pass
 
-    @classmethod
-    def from_file_contents(
-        cls,
-        file_contents: Union[str, bytes],
+    @staticmethod
+    @abstractmethod
+    def _meta_data_schema() -> type:
+        pass
+
+    def __init__(
+        self,
         cache_service_obj=None,
         study_id=None,
         data_bundle_id=None,
     ):
-        """
-        Inits a DefineXMLReader object from file contents.
-        """
-        logger.info("Reading Define-XML from file contents")
-        reader = cls(cache_service_obj, study_id, data_bundle_id)
-        reader._odm_loader.load_odm_string(file_contents)
-        return reader
-
-    def __init__(self, cache_service_obj=None, study_id=None, data_bundle_id=None):
         self._odm_loader = ODMLoader(
             XMLDefineLoader(
-                model_package=DEFINE_XML_MODEL_PACKAGE,
-                ns_uri=f"http://www.cdisc.org/ns/def/v{DEFINE_XML_VERSION}",
+                model_package=self.class_define_xml_version().model_package,
+                ns_uri=self.class_define_xml_version().namespace,
             )
         )
         self.cache_service = cache_service_obj
@@ -251,7 +232,7 @@ class DefineXMLReader:
                 )
             if itemdef.Origin:
                 data["define_variable_origin_type"] = self._get_origin_type(itemdef)
-            data["define_variable_has_no_data"] = itemref.HasNoData
+            data["define_variable_has_no_data"] = getattr(itemref, "HasNoData", "")
 
         return data
 
@@ -286,33 +267,13 @@ class DefineXMLReader:
         }
         return variable_type_map.get(data_type, data_type)
 
-    # TODO: subclass define.xml versions
-    # https://github.com/cdisc-org/cdisc-rules-engine/issues/390
+    @abstractmethod
     def _get_origin_type(self, itemdef):
-        if not itemdef.Origin:
-            return
-        version_origin_map = {
-            DefineXMLVersions.DEFINE_XML_2_0_0: lambda origin: origin.Type,
-            DefineXMLVersions.DEFINE_XML_2_1_0: lambda origin: origin[0].Type,
-        }
-        return version_origin_map.get(DefineXMLVersions(self.get_define_version()))(
-            itemdef.Origin
-        )
+        pass
 
-    # TODO: subclass define.xml versions
-    # https://github.com/cdisc-org/cdisc-rules-engine/issues/390
+    @abstractmethod
     def _get_variable_is_collected(self, itemdef):
-        if not itemdef.Origin:
-            return
-        version_collected_map = {
-            DefineXMLVersions.DEFINE_XML_2_0_0: lambda origin_type: origin_type
-            == "CRF",
-            DefineXMLVersions.DEFINE_XML_2_1_0: lambda origin_type: origin_type
-            == "Collected",
-        }
-        return version_collected_map.get(DefineXMLVersions(self.get_define_version()))(
-            self._get_origin_type(itemdef)
-        )
+        pass
 
     def _get_metadata_representation(self, metadata) -> dict:
         """
@@ -332,7 +293,7 @@ class DefineXMLReader:
         Validates Define XML Schema.
         """
         logger.info("Validating Define-XML schema.")
-        schema_validator = MetadataSchema()
+        schema_validator = self._meta_data_schema()()
         study = self._odm_loader.Study()
         is_valid: bool = schema_validator.check_conformance(study.to_dict(), "Study")
         logger.info(f"Validated Define-XML schema. is_valid={is_valid}")

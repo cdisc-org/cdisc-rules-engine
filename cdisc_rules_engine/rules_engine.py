@@ -30,7 +30,9 @@ from cdisc_rules_engine.models.validation_error_container import (
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.services.cache import CacheServiceFactory, InMemoryCacheService
 from cdisc_rules_engine.services.data_services import DataServiceFactory
-from cdisc_rules_engine.services.define_xml_reader import DefineXMLReader
+from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import (
+    DefineXMLReaderFactory,
+)
 from cdisc_rules_engine.utilities.data_processor import DataProcessor
 from cdisc_rules_engine.utilities.dataset_preprocessor import DatasetPreprocessor
 from cdisc_rules_engine.utilities.rule_processor import RuleProcessor
@@ -334,7 +336,7 @@ class RulesEngine:
         define_xml_contents: bytes = self.data_service.get_define_xml_contents(
             dataset_name=define_xml_path
         )
-        define_xml_reader = DefineXMLReader.from_file_contents(
+        define_xml_reader = DefineXMLReaderFactory.from_file_contents(
             define_xml_contents, cache_service_obj=self.cache
         )
         return define_xml_reader.extract_domain_metadata(domain_name=domain_name)
@@ -350,7 +352,7 @@ class RulesEngine:
         define_xml_contents: bytes = self.data_service.get_define_xml_contents(
             dataset_name=define_xml_path
         )
-        define_xml_reader = DefineXMLReader.from_file_contents(
+        define_xml_reader = DefineXMLReaderFactory.from_file_contents(
             define_xml_contents, cache_service_obj=self.cache
         )
         return define_xml_reader.extract_value_level_metadata(domain_name=domain_name)
