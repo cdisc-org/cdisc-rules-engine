@@ -449,10 +449,14 @@ def version():
 @click.option(
     "-s",
     "--subsets",
+    help="CT package subset type. Ex: sdtmct. Multiple values allowed",
     required=False,
     multiple=True,
 )
 def list_ct(cache_path: str, subsets: Tuple[str]):
+    """
+    Command to list the ct packages available in the cache.
+    """
     if subsets:
         subsets = set([subset.lower() for subset in subsets])
 
