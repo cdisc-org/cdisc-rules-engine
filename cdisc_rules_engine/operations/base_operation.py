@@ -1,4 +1,5 @@
 import pandas as pd
+from cdisc_rules_engine.services.cdisc_library_service import CDISCLibraryService
 from cdisc_rules_engine.models.operation_params import OperationParams
 from cdisc_rules_engine.constants.permissibility import (
     REQUIRED,
@@ -30,6 +31,7 @@ from cdisc_rules_engine.utilities.utils import (
     search_in_list_of_dicts,
     convert_library_class_name_to_ct_class,
 )
+from cdisc_rules_engine import config
 
 
 class BaseOperation:
@@ -62,6 +64,10 @@ class BaseOperation:
         elif isinstance(result, pd.Series):
             self.evaluation_dataset[self.params.operation_id] = result
             return self.evaluation_dataset
+        elif isinstance(result, pd.DataFrame):
+            # Assume that the operation id has been applied and
+            # result matches the length of the evaluation dataset.
+            return pd.concat([self.evaluation_dataset, result], axis=1)
         else:
             # Handle single results
             self.evaluation_dataset[self.params.operation_id] = pd.Series(
@@ -109,10 +115,7 @@ class BaseOperation:
         # get model details from cache
         if not self.params.standard or not self.params.standard_version:
             raise Exception("Please provide standard and version")
-        cache_key: str = get_standard_details_cache_key(
-            self.params.standard, self.params.standard_version
-        )
-        standard_details: dict = self.cache.get(cache_key) or {}
+        standard_details: dict = self._retrieve_standards_metadata()
         model = standard_details.get("_links", {}).get("model")
         class_details, domain_details = self._get_class_and_domain_metadata(
             standard_details
@@ -199,6 +202,19 @@ class BaseOperation:
             model_type = ""
             model_version = ""
         return model_type, model_version
+
+    def _retrieve_standards_metadata(self):
+        cache_key = get_standard_details_cache_key(
+            self.params.standard, self.params.standard_version
+        )
+        standard_data: dict = self.cache.get(cache_key)
+        if standard_data is None:
+            cdisc_library_service = CDISCLibraryService(config, self.cache)
+            standard_data = cdisc_library_service.get_standard_details(
+                self.params.standard.lower(), self.params.standard_version
+            )
+            self.cache.add(cache_key, standard_data)
+        return standard_data
 
     def _get_class_metadata(
         self,

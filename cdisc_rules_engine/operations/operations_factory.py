@@ -47,6 +47,12 @@ from cdisc_rules_engine.operations.expected_variables import ExpectedVariables
 from cdisc_rules_engine.operations.permissible_variables import PermissibleVariables
 from cdisc_rules_engine.operations.study_domains import StudyDomains
 from cdisc_rules_engine.operations.valid_codelist_dates import ValidCodelistDates
+from cdisc_rules_engine.operations.label_referenced_variable_metadata import (
+    LabelReferencedVariableMetadata,
+)
+from cdisc_rules_engine.operations.name_referenced_variable_metadata import (
+    NameReferencedVariableMetadata,
+)
 
 
 class OperationsFactory(FactoryInterface):
@@ -82,6 +88,8 @@ class OperationsFactory(FactoryInterface):
         "permissible_variables": PermissibleVariables,
         "study_domains": StudyDomains,
         "valid_codelist_dates": ValidCodelistDates,
+        "label_referenced_variable_metadata": LabelReferencedVariableMetadata,
+        "name_referenced_variable_metadata": NameReferencedVariableMetadata,
     }
 
     @classmethod
