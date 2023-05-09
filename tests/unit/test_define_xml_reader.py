@@ -1,7 +1,7 @@
 """
 This module contains unit tests for DefineXMLReader class.
 """
-import os
+from pathlib import Path
 from typing import List
 
 import pytest
@@ -16,12 +16,9 @@ from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import (
     DefineXMLReaderFactory,
 )
 
-test_define_2_0_file_path: str = (
-    f"{os.path.dirname(__file__)}/../resources/test_defineV20-SDTM.xml"
-)
-test_define_file_path: str = (
-    f"{os.path.dirname(__file__)}/../resources/test_defineV22-SDTM.xml"
-)
+resources_path: Path = Path(__file__).parent.parent.joinpath("resources")
+test_define_2_0_file_path: Path = resources_path.joinpath("test_defineV20-SDTM.xml")
+test_define_file_path: Path = resources_path.joinpath("test_defineV22-SDTM.xml")
 
 
 def test_init_from_filename():

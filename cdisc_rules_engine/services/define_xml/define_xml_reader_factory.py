@@ -94,9 +94,13 @@ class DefineXMLReaderFactory:
     def _from_namespace_version(
         cls, namespace: str, version: str
     ) -> BaseDefineXMLReader:
-        for define_xml_reader in cls._define_xml_readers:
-            if (
-                namespace == define_xml_reader.class_define_xml_version().namespace
+        define_xml_reader = next(
+            iter(
+                define_xml_reader
+                for define_xml_reader in cls._define_xml_readers
+                if namespace == define_xml_reader.class_define_xml_version().namespace
                 and version == define_xml_reader.class_define_xml_version().version
-            ):
-                return define_xml_reader
+            ),
+            None,
+        )
+        return define_xml_reader

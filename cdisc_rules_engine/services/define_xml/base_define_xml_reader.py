@@ -267,11 +267,13 @@ class BaseDefineXMLReader(ABC):
         }
         return variable_type_map.get(data_type, data_type)
 
+    @abstractmethod
     def _get_origin_type(self, itemdef):
-        return itemdef.Origin[0].Type if itemdef.Origin else None
+        pass
 
+    @abstractmethod
     def _get_variable_is_collected(self, itemdef):
-        return self._get_origin_type(itemdef) == "Collected" if itemdef.Origin else None
+        pass
 
     def _get_metadata_representation(self, metadata) -> dict:
         """

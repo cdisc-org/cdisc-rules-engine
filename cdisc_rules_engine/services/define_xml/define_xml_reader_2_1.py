@@ -17,3 +17,9 @@ class DefineXMLReader21(BaseDefineXMLReader):
     @staticmethod
     def _meta_data_schema() -> type:
         return MetadataSchema
+
+    def _get_origin_type(self, itemdef):
+        return itemdef.Origin[0].Type if itemdef.Origin else None
+
+    def _get_variable_is_collected(self, itemdef):
+        return self._get_origin_type(itemdef) == "Collected" if itemdef.Origin else None
