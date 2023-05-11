@@ -14,7 +14,7 @@ class VariableMetadataContainer(RepresentationInterface):
     def to_representation(self) -> dict:
         return {
             "variable_name": self.names,
-            "variable_order": self.order,
+            "variable_order_number": self.order,
             "variable_label": self.labels,
             "variable_size": self.sizes,
             "variable_data_type": self.data_types,

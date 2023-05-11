@@ -7,7 +7,7 @@ class VariablesMetadataDatasetBuilder(BaseDatasetBuilder):
          Returns the variable metadata from a given file as a dataframe.
          The resulting dataframe has the following columns:
         variable_name
-        variable_order
+        variable_order_number
         variable_label
         variable_size
         variable_data_type

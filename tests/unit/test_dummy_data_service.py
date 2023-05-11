@@ -136,4 +136,4 @@ def test_get_variables_metadata():
     assert metadata["variable_label"].iloc[0] == "AE Sequence"
     assert metadata["variable_data_type"].iloc[0] == "integer"
     assert metadata["variable_size"].iloc[0] == 5
-    assert metadata["variable_order"].iloc[0] == 1
+    assert metadata["variable_order_number"].iloc[0] == 1

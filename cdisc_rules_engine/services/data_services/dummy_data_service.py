@@ -81,7 +81,7 @@ class DummyDataService(BaseDataService):
     def get_variables_metadata(self, dataset_name: str, **params) -> pd.DataFrame:
         metadata_to_return = {
             "variable_name": [],
-            "variable_order": [],
+            "variable_order_number": [],
             "variable_label": [],
             "variable_size": [],
             "variable_data_type": [],
@@ -92,8 +92,8 @@ class DummyDataService(BaseDataService):
             metadata_to_return["variable_name"] = metadata_to_return[
                 "variable_name"
             ] + [variable.name]
-            metadata_to_return["variable_order"] = metadata_to_return[
-                "variable_order"
+            metadata_to_return["variable_order_number"] = metadata_to_return[
+                "variable_order_number"
             ] + [i + 1]
             metadata_to_return["variable_label"] = metadata_to_return[
                 "variable_label"
