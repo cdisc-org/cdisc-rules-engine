@@ -5,7 +5,7 @@ from click.testing import CliRunner
 from core import list_dataset_metadata
 
 
-class TestCLI(unittest.TestCase):
+class TestListDatasetMetadata(unittest.TestCase):
     def setUp(self):
         self.runner = CliRunner()
 
