@@ -9,7 +9,7 @@ class VariablesMetadataWithDefineDatasetBuilder(BaseDatasetBuilder):
         Returns the variable metadata from a given file.
         Returns a dataframe with the following columns:
         variable_name
-        variable_order
+        variable_order_number
         variable_label
         variable_size
         variable_data_type
@@ -22,6 +22,9 @@ class VariablesMetadataWithDefineDatasetBuilder(BaseDatasetBuilder):
         define_variable_format,
         define_variable_allowed_terms,
         define_variable_origin_type,
+        define_variable_is_collected,
+        define_variable_has_no_data,
+        define_variable_order_number,
 
         """
         # get Define XML metadata for domain and use it as a rule comparator

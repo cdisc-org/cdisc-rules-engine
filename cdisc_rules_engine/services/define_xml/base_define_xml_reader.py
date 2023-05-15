@@ -207,6 +207,7 @@ class BaseDefineXMLReader(ABC):
             "define_variable_allowed_terms": [],
             "define_variable_origin_type": "",
             "define_variable_has_no_data": "",
+            "define_variable_order_number": None,
         }
         if itemdef:
             data["define_variable_name"] = itemdef.Name
@@ -233,6 +234,7 @@ class BaseDefineXMLReader(ABC):
             if itemdef.Origin:
                 data["define_variable_origin_type"] = self._get_origin_type(itemdef)
             data["define_variable_has_no_data"] = getattr(itemref, "HasNoData", "")
+            data["define_variable_order_number"] = itemref.OrderNumber
 
         return data
 

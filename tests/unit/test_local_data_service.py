@@ -60,7 +60,7 @@ def test_get_variables_metdata():
     expected_keys = [
         "variable_name",
         "variable_format",
-        "variable_order",
+        "variable_order_number",
         "variable_data_type",
         "variable_label",
     ]

@@ -131,6 +131,7 @@ def test_extract_variable_metadata():
             "define_variable_allowed_terms": ["Subcutaneous Route of Administration"],
             "define_variable_origin_type": "Predecessor",
             "define_variable_is_collected": False,
+            "define_variable_order_number": 11,
         }
         for variable in variable_metadata:
             assert variable["define_variable_name"] in expected_variables
