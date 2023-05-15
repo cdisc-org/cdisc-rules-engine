@@ -6,7 +6,7 @@ import unittest
 from click.testing import CliRunner
 
 
-class TestCLI(unittest.TestCase):
+class TestListRules(unittest.TestCase):
     def setUp(self):
         self.runner = CliRunner()
 
