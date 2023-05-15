@@ -4,7 +4,7 @@ import unittest
 from click.testing import CliRunner
 
 
-class TestCLI(unittest.TestCase):
+class TestValidate(unittest.TestCase):
     def setUp(self):
         self.runner = CliRunner()
 
