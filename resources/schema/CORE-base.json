@@ -1018,6 +1018,7 @@
           },
           "operator": {
             "enum": [
+              "define_variable_codelist",
               "distinct",
               "domain_is_custom",
               "domain_label",
