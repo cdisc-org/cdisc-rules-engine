@@ -13,6 +13,9 @@ from cdisc_rules_engine.operations.library_model_column_order import (
 from cdisc_rules_engine.operations.parent_library_model_column_order import (
     ParentLibraryModelColumnOrder,
 )
+from cdisc_rules_engine.operations.library_model_variables_filter import (
+    LibraryModelVariablesFilter,
+)
 from cdisc_rules_engine.operations.max_date import MaxDate
 from cdisc_rules_engine.operations.maximum import Maximum
 from cdisc_rules_engine.operations.mean import Mean
@@ -63,6 +66,7 @@ class OperationsFactory(FactoryInterface):
         "get_column_order_from_dataset": DatasetColumnOrder,
         "get_column_order_from_library": LibraryColumnOrder,
         "get_model_column_order": LibraryModelColumnOrder,
+        "get_model_variables_filter": LibraryModelVariablesFilter,
         "get_parent_model_column_order": ParentLibraryModelColumnOrder,
         "max": Maximum,
         "max_date": MaxDate,
