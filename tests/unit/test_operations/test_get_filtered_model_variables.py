@@ -12,7 +12,7 @@ from cdisc_rules_engine.constants.classes import (
 )
 from cdisc_rules_engine.enums.variable_roles import VariableRoles
 from cdisc_rules_engine.models.operation_params import OperationParams
-from cdisc_rules_engine.operations.library_model_variables_filter import (
+from cdisc_rules_engine.operations.get_filtered_model_variables import (
     LibraryModelVariablesFilter,
 )
 from cdisc_rules_engine.services.cache import InMemoryCacheService
@@ -131,7 +131,7 @@ from cdisc_rules_engine.utilities.utils import (
         )
     ],
 )
-def test_get_model_variables_filter1(
+def test_get_filtered_model_variables1(
     operation_params: OperationParams, model_metadata: dict, standard_metadata: dict
 ):
     """
@@ -181,14 +181,9 @@ def test_get_model_variables_filter1(
     result: pd.DataFrame = operation.execute()
 
     variables: List[str] = [
-        # "STUDYID",
-        # "DOMAIN",
-        # "USUBJID",
-        # "AETERM",
-        # "AESEQ",
         "VISITNUM",
         "VISIT",
-        # "TIMING_VAR",
+        "TIMING_VAR",
     ]
     expected: pd.Series = pd.Series(
         [
@@ -354,14 +349,10 @@ def test_get_model_variables_filter2(
     result: pd.DataFrame = operation.execute()
 
     variables: List[str] = [
-        # "STUDYID",
-        # "DOMAIN",
+        "STUDYID",
+        "DOMAIN",
         "USUBJID",
         "AETERM",
-        # "AESEQ",
-        # "VISITNUM",
-        # "VISIT",
-        # "TIMING_VAR",
     ]
     expected: pd.Series = pd.Series(
         [
@@ -446,7 +437,12 @@ def test_get_model_variables_filter2(
                                 "ordinal": 1,
                             },
                             {
-                                "name": "TIMING_VAR",
+                                "name": "TIMING_VAR1",
+                                "role": VariableRoles.TIMING.value,
+                                "ordinal": 32,
+                            },
+                            {
+                                "name": "TIMING_VAR2",
                                 "role": VariableRoles.TIMING.value,
                                 "ordinal": 33,
                             },
@@ -475,7 +471,7 @@ def test_get_model_variables_filter2(
         )
     ],
 )
-def test_get_findings_class_column_order_from_library1(
+def test_get_filtered_model_variables3(
     operation_params: OperationParams, model_metadata: dict, standard_metadata: dict
 ):
     """
@@ -524,12 +520,6 @@ def test_get_findings_class_column_order_from_library1(
     result: pd.DataFrame = operation.execute()
 
     variables: List[str] = [
-        # "STUDYID",
-        # "DOMAIN",
-        # "AEVAR1",
-        # "AETEST",
-        # "AEOBJ",
-        # "AEVAR2",
         "TIMING_VAR1",
         "TIMING_VAR2",
     ]
@@ -616,6 +606,11 @@ def test_get_findings_class_column_order_from_library1(
                                 "ordinal": 1,
                             },
                             {
+                                "name": "IDVAR1",
+                                "role": VariableRoles.IDENTIFIER.value,
+                                "ordinal": 3,
+                            },
+                            {
                                 "name": "TIMING_VAR",
                                 "role": VariableRoles.TIMING.value,
                                 "ordinal": 33,
@@ -645,7 +640,7 @@ def test_get_findings_class_column_order_from_library1(
         )
     ],
 )
-def test_get_findings_class_column_order_from_library2(
+def test_get_filtered_model_variables4(
     operation_params: OperationParams, model_metadata: dict, standard_metadata: dict
 ):
     """
@@ -692,16 +687,7 @@ def test_get_findings_class_column_order_from_library2(
 
     result: pd.DataFrame = operation.execute()
 
-    variables: List[str] = [
-        # "STUDYID",
-        # "DOMAIN",
-        # "AEVAR1",
-        # "AETEST",
-        # "AEOBJ",
-        # "AEVAR2",
-        "USUBJID",
-        "IDVAR1",
-    ]
+    variables: List[str] = ["STUDYID", "DOMAIN", "IDVAR1"]
     expected: pd.Series = pd.Series(
         [
             variables,

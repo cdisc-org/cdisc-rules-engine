@@ -13,7 +13,7 @@ from cdisc_rules_engine.operations.library_model_column_order import (
 from cdisc_rules_engine.operations.parent_library_model_column_order import (
     ParentLibraryModelColumnOrder,
 )
-from cdisc_rules_engine.operations.library_model_variables_filter import (
+from cdisc_rules_engine.operations.get_filtered_model_variables import (
     LibraryModelVariablesFilter,
 )
 from cdisc_rules_engine.operations.max_date import MaxDate

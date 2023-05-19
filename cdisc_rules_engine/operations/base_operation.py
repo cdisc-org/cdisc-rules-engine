@@ -266,3 +266,7 @@ class BaseOperation:
             elif role == VariableRoles.TIMING.value:
                 timing_vars.append(variable)
         return identifier_vars, timing_vars
+
+    @staticmethod
+    def _replace_variable_wildcards(variables_metadata, domain):
+        return [var["name"].replace("--", domain) for var in variables_metadata]
