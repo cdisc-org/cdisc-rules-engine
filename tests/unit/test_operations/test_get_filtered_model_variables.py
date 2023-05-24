@@ -1,4 +1,4 @@
-# python -m pytest tests/unit/test_operations/test_library_model_variables_filter.py
+# python -m pytest -s tests/unit/test_operations/test_get_filtered_model_variables.py
 
 import pandas as pd
 import pytest
