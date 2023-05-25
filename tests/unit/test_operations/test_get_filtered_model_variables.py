@@ -303,7 +303,7 @@ def test_get_filtered_model_variables1(
         )
     ],
 )
-def test_get_model_variables_filter2(
+def test_get_filtered_model_variables2(
     operation_params: OperationParams, model_metadata: dict, standard_metadata: dict
 ):
     """
