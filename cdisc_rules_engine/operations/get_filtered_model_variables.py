@@ -36,7 +36,9 @@ class LibraryModelVariablesFilter(BaseOperation):
         # sort the list
         r1_var_standard = list(OrderedDict.fromkeys(variable_names_list))
         # get variables metadata from the model
-        r2_var_model: List[dict] = self._get_variable_names_list()
+        r2_var_model: List[dict] = self._get_variable_names_list(
+            self.params.domain, self.params.dataframe
+        )
         # get the common variables from standard model
         common_var_list = [
             element for element in r2_var_model if element in r1_var_standard
