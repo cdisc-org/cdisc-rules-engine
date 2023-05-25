@@ -268,9 +268,7 @@ class BaseOperation:
                 timing_vars.append(variable)
         return identifier_vars, timing_vars
 
-    def _get_variable_names_list(self):
-        domain = self.params.domain
-        dataframe = self.params.dataframe
+    def _get_variable_names_list(self, domain, dataframe):
         # get variables metadata from the standard model
         variables_metadata: List[
             dict
