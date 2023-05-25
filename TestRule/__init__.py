@@ -49,7 +49,9 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
         validate_datasets_payload(datasets)
         define_xml = json_data.get("define_xml")
         tester = RuleTester(datasets, define_xml, cache, standard, standard_version)
-        return func.HttpResponse(json.dumps(tester.validate(rule)))
+        result = tester.validate(rule)
+        result_json = json.dumps(result)
+        return func.HttpResponse(result_json)
     except KeyError as e:
         return func.HttpResponse(
             json.dumps({"error": "KeyError", "message": str(e)}), status_code=400

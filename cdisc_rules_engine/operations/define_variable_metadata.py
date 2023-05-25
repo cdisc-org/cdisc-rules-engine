@@ -6,10 +6,11 @@ from .base_operation import BaseOperation
 import os
 
 
-class DefineVariableCodelist(BaseOperation):
+class DefineVariableMetadata(BaseOperation):
     def _execute_operation(self):
         """
-        Returns the codelist specified in the define for the specified target variable
+        Returns the specified metadata in the define for the specified target variable.
+        Returns the metadata for all variables if no target variable specified.
         """
         define_contents = self.data_service.get_define_xml_contents(
             dataset_name=os.path.join(self.params.directory_path, DEFINE_XML_FILE_NAME)
@@ -18,14 +19,12 @@ class DefineVariableCodelist(BaseOperation):
         variables_metadata = define_reader.extract_variables_metadata(
             self.params.domain
         )
-        variable_metadata = next(
-            iter(
-                [
-                    metadata
-                    for metadata in variables_metadata
-                    if metadata["define_variable_name"] == self.params.target
-                ]
-            ),
-            {},
+        variable_metadata = {
+            metadata["define_variable_name"]: metadata.get(self.params.value, "")
+            for metadata in variables_metadata
+        }
+        return (
+            variable_metadata.get(self.params.target, "")
+            if self.params.target
+            else variable_metadata
         )
-        return variable_metadata.get("define_variable_ccode", "")
