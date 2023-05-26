@@ -1022,7 +1022,6 @@
           },
           "operator": {
             "enum": [
-              "define_variable_codelist",
               "define_variable_metadata",
               "distinct",
               "domain_is_custom",
