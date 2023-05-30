@@ -24,4 +24,4 @@ class OperationParams:
     meddra_path: str = None
     whodrug_path: str = None
     grouping: List[str] = None
-    value: str = None
+    attribute_name: str = None

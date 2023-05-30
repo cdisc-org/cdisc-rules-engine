@@ -22,7 +22,7 @@ def test_get_define_variable_metadata_variable_in_domain(
     operation_params.directory_path = str(resources_path)
     operation_params.domain = "AE"
     operation_params.target = "AESER"
-    operation_params.value = "define_variable_ccode"
+    operation_params.attribute_name = "define_variable_ccode"
     result = DefineVariableMetadata(
         operation_params, pd.DataFrame.from_dict({"A": [1, 2, 3]}), cache, data_service
     ).execute()
@@ -41,7 +41,7 @@ def test_get_define_variable_metadata_variable_not_in_domain(
     operation_params.directory_path = str(resources_path)
     operation_params.domain = "AE"
     operation_params.target = "VERYFAKEVARIABLE"
-    operation_params.value = "define_variable_ccode"
+    operation_params.attribute_name = "define_variable_ccode"
     result = DefineVariableMetadata(
         operation_params, pd.DataFrame.from_dict({"A": [1, 2, 3]}), cache, data_service
     ).execute()

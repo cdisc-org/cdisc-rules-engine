@@ -998,6 +998,9 @@
       "items": {
         "additionalProperties": false,
         "properties": {
+          "attribute_name": {
+            "$ref": "#/$defs/MetaVariables"
+          },
           "domain": {
             "anyOf": [
               {
@@ -1058,9 +1061,6 @@
               "whodrug_code_hierarchy"
             ],
             "type": "string"
-          },
-          "value": {
-            "$ref": "#/$defs/MetaVariables"
           }
         },
         "required": ["id", "operator"],

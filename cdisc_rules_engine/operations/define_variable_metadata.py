@@ -9,8 +9,28 @@ import os
 class DefineVariableMetadata(BaseOperation):
     def _execute_operation(self):
         """
-        Returns the specified metadata in the define for the specified target variable.
-        Returns the metadata for all variables if no target variable specified.
+        If a target variable is specified, returns the specified metadata in the define
+          for the specified target variable.
+        For example:
+            Input:
+                - operation: define_variable_metadata
+                  attribute_name: define_variable_label
+                  name: LBTESTCD
+            Output:
+                "Laboratory Test Code"
+        If no target variable specified, returns a dictionary containing the specified
+          metadata in the define for all variables.
+        For example:
+            Input:
+                - operation: define_variable_metadata
+                  attribute_name: define_variable_label
+            Output:
+                {
+                    "STUDYID": "Study Identifier",
+                    "USUBJID": "Unique Subject Identifier",
+                    "LBTESTCD": "Laboratory Test Code"
+                    ...
+                }
         """
         define_contents = self.data_service.get_define_xml_contents(
             dataset_name=os.path.join(self.params.directory_path, DEFINE_XML_FILE_NAME)
@@ -20,7 +40,9 @@ class DefineVariableMetadata(BaseOperation):
             self.params.domain
         )
         variable_metadata = {
-            metadata["define_variable_name"]: metadata.get(self.params.value, "")
+            metadata["define_variable_name"]: metadata.get(
+                self.params.attribute_name, ""
+            )
             for metadata in variables_metadata
         }
         return (
