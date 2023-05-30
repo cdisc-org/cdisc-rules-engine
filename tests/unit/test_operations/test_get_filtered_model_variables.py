@@ -152,12 +152,10 @@ def test_get_filtered_model_variables1(
             ],
         }
     )
-    # operation_params.dataframe = dat2
     operation_params.domain = "AE"
     operation_params.standard = "sdtmig"
     operation_params.standard_version = "3-4"
     operation_params.key_name = "role"
-    # operation_params.key_value = "Identifier"
     operation_params.key_value = "Timing"
 
     # save model metadata to cache
@@ -339,6 +337,8 @@ def test_get_filtered_model_variables2(
         standard_metadata,
     )
 
+    cache.add(get_model_details_cache_key("sdtm", "1-5"), model_metadata)
+
     # execute operation
     data_service = LocalDataService.get_instance(cache_service=cache)
 
@@ -498,7 +498,6 @@ def test_get_filtered_model_variables3(
     operation_params.standard = "sdtmig"
     operation_params.standard_version = "3-4"
     operation_params.key_name = "role"
-    # operation_params.key_value = "Identifier"
     operation_params.key_value = "Timing"
 
     # save model metadata to cache
