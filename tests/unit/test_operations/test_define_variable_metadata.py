@@ -21,7 +21,7 @@ def test_get_define_variable_metadata_variable_in_domain(
     resources_path: Path = Path(__file__).parent.parent.parent.joinpath("resources")
     operation_params.directory_path = str(resources_path)
     operation_params.domain = "AE"
-    operation_params.target = "AESER"
+    operation_params.target = "--SER"
     operation_params.attribute_name = "define_variable_ccode"
     result = DefineVariableMetadata(
         operation_params, pd.DataFrame.from_dict({"A": [1, 2, 3]}), cache, data_service
