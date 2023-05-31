@@ -247,6 +247,7 @@ class RuleProcessor:
                 standard_version=standard_version,
                 meddra_path=kwargs.get("meddra_path"),
                 whodrug_path=kwargs.get("whodrug_path"),
+                attribute_name=operation.get("attribute_name", ""),
             )
 
             # execute operation
