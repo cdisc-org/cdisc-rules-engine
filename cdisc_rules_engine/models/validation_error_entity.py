@@ -1,5 +1,5 @@
 from cdisc_rules_engine.enums.execution_status import ExecutionStatus
-
+from cdisc_rules_engine.enums.base_enum import BaseEnum
 from .base_validation_entity import BaseValidationEntity
 
 
@@ -18,9 +18,23 @@ class ValidationErrorEntity(BaseValidationEntity):
         self._sequence: int = sequence
         self.status: ExecutionStatus = ExecutionStatus.SUCCESS
 
+    def _format_values(self) -> dict:
+        """
+        Converts values to json serializable dict
+        """
+        data = {}
+        for key, val in self.value.items():
+            if isinstance(val, set):
+                data[key] = list(val)
+            elif isinstance(val, BaseEnum):
+                data[key] = val.value
+            else:
+                data[key] = val
+        return data
+
     def to_representation(self) -> dict:
         representation: dict = {
-            "value": self.value,
+            "value": self._format_values(),
         }
         if self._row is not None:
             representation["row"] = self._row
