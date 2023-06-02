@@ -22,134 +22,492 @@ from cdisc_rules_engine.utilities.utils import (
     get_model_details_cache_key,
 )
 
-
-@pytest.mark.parametrize(
-    "model_metadata, standard_metadata, study_data",
-    [
-        (
+test_set1 = (
+    {
+        "datasets": [
             {
+                "_links": {"parentClass": {"title": "Events"}},
+                "name": "AE",
+                "datasetVariables": [
+                    {
+                        "name": "USUBJID",
+                        "ordinal": 2,
+                    },
+                    {
+                        "name": "AESEQ",
+                        "ordinal": 3,
+                    },
+                    {
+                        "name": "AETERM",
+                        "ordinal": 4,
+                    },
+                    {
+                        "name": "VISITNUM",
+                        "ordinal": 17,
+                    },
+                    {
+                        "name": "VISIT",
+                        "ordinal": 18,
+                    },
+                ],
+            }
+        ],
+        "classes": [
+            {
+                "name": "Events",
+                "label": "Events",
+                "classVariables": [
+                    {"name": "--TERM", "ordinal": 1},
+                    {"name": "--SEQ", "ordinal": 2},
+                ],
+            },
+            {
+                "name": GENERAL_OBSERVATIONS_CLASS,
+                "label": GENERAL_OBSERVATIONS_CLASS,
+                "classVariables": [
+                    {
+                        "name": "STUDYID",
+                        "role": VariableRoles.IDENTIFIER.value,
+                        "ordinal": 1,
+                    },
+                    {
+                        "name": "DOMAIN",
+                        "role": VariableRoles.IDENTIFIER.value,
+                        "ordinal": 2,
+                    },
+                    {
+                        "name": "USUBJID",
+                        "role": VariableRoles.IDENTIFIER.value,
+                        "ordinal": 3,
+                    },
+                    {
+                        "name": "AETERM",
+                        "role": VariableRoles.IDENTIFIER.value,
+                        "ordinal": 4,
+                    },
+                    {
+                        "name": "VISITNUM",
+                        "role": VariableRoles.TIMING.value,
+                        "ordinal": 17,
+                    },
+                    {
+                        "name": "VISIT",
+                        "role": VariableRoles.TIMING.value,
+                        "ordinal": 18,
+                    },
+                    {
+                        "name": "TIMING_VAR",
+                        "role": VariableRoles.TIMING.value,
+                        "ordinal": 33,
+                    },
+                ],
+            },
+        ],
+    },
+    {
+        "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
+        "classes": [
+            {
+                "name": "Events",
                 "datasets": [
                     {
-                        "_links": {"parentClass": {"title": "Events"}},
                         "name": "AE",
+                        "label": "Adverse Events",
                         "datasetVariables": [
-                            {
-                                "name": "USUBJID",
-                                "ordinal": 2,
-                            },
-                            {
-                                "name": "AESEQ",
-                                "ordinal": 3,
-                            },
-                            {
-                                "name": "AETERM",
-                                "ordinal": 4,
-                            },
-                            {
-                                "name": "VISITNUM",
-                                "ordinal": 17,
-                            },
-                            {
-                                "name": "VISIT",
-                                "ordinal": 18,
-                            },
+                            {"name": "AETEST", "ordinal": 1},
+                            {"name": "AENEW", "ordinal": 2},
+                            {"name": "VISITNUM", "ordinal": 3},
+                            {"name": "VISIT", "ordinal": 4},
                         ],
                     }
                 ],
-                "classes": [
+            }
+        ],
+    },
+    {
+        "STUDYID": [
+            "TEST_STUDY",
+            "TEST_STUDY",
+            "TEST_STUDY",
+        ],
+        "AETERM": [
+            "test",
+            "test",
+            "test",
+        ],
+    },
+    "Timing",
+    ["VISITNUM", "VISIT", "TIMING_VAR"],
+)
+
+test_set2 = (
+    {
+        "datasets": [
+            {
+                "_links": {"parentClass": {"title": "Events"}},
+                "name": "AE",
+                "datasetVariables": [
                     {
-                        "name": "Events",
-                        "label": "Events",
-                        "classVariables": [
-                            {"name": "--TERM", "ordinal": 1},
-                            {"name": "--SEQ", "ordinal": 2},
-                        ],
+                        "name": "USUBJID",
+                        "ordinal": 2,
                     },
                     {
-                        "name": GENERAL_OBSERVATIONS_CLASS,
-                        "label": GENERAL_OBSERVATIONS_CLASS,
-                        "classVariables": [
-                            {
-                                "name": "STUDYID",
-                                "role": VariableRoles.IDENTIFIER.value,
-                                "ordinal": 1,
-                            },
-                            {
-                                "name": "DOMAIN",
-                                "role": VariableRoles.IDENTIFIER.value,
-                                "ordinal": 2,
-                            },
-                            {
-                                "name": "USUBJID",
-                                "role": VariableRoles.IDENTIFIER.value,
-                                "ordinal": 3,
-                            },
-                            {
-                                "name": "AETERM",
-                                "role": VariableRoles.IDENTIFIER.value,
-                                "ordinal": 4,
-                            },
-                            {
-                                "name": "VISITNUM",
-                                "role": VariableRoles.TIMING.value,
-                                "ordinal": 17,
-                            },
-                            {
-                                "name": "VISIT",
-                                "role": VariableRoles.TIMING.value,
-                                "ordinal": 18,
-                            },
-                            {
-                                "name": "TIMING_VAR",
-                                "role": VariableRoles.TIMING.value,
-                                "ordinal": 33,
-                            },
+                        "name": "AESEQ",
+                        "ordinal": 3,
+                    },
+                    {
+                        "name": "AETERM",
+                        "ordinal": 4,
+                    },
+                    {
+                        "name": "VISITNUM",
+                        "ordinal": 17,
+                    },
+                    {
+                        "name": "VISIT",
+                        "ordinal": 18,
+                    },
+                ],
+            }
+        ],
+        "classes": [
+            {
+                "name": "Events",
+                "label": "Events",
+                "classVariables": [
+                    {"name": "--TERM", "ordinal": 1},
+                    {"name": "--SEQ", "ordinal": 2},
+                ],
+            },
+            {
+                "name": GENERAL_OBSERVATIONS_CLASS,
+                "label": GENERAL_OBSERVATIONS_CLASS,
+                "classVariables": [
+                    {
+                        "name": "STUDYID",
+                        "role": VariableRoles.IDENTIFIER.value,
+                        "ordinal": 1,
+                    },
+                    {
+                        "name": "DOMAIN",
+                        "role": VariableRoles.IDENTIFIER.value,
+                        "ordinal": 2,
+                    },
+                    {
+                        "name": "USUBJID",
+                        "role": VariableRoles.IDENTIFIER.value,
+                        "ordinal": 3,
+                    },
+                    {
+                        "name": "AETERM",
+                        "role": VariableRoles.IDENTIFIER.value,
+                        "ordinal": 4,
+                    },
+                    {
+                        "name": "VISITNUM",
+                        "role": VariableRoles.TIMING.value,
+                        "ordinal": 17,
+                    },
+                    {
+                        "name": "VISIT",
+                        "role": VariableRoles.TIMING.value,
+                        "ordinal": 18,
+                    },
+                    {
+                        "name": "TIMING_VAR",
+                        "role": VariableRoles.TIMING.value,
+                        "ordinal": 33,
+                    },
+                ],
+            },
+        ],
+    },
+    {
+        "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
+        "classes": [
+            {
+                "name": "Events",
+                "datasets": [
+                    {
+                        "name": "AE",
+                        "label": "Adverse Events",
+                        "datasetVariables": [
+                            {"name": "AETEST", "ordinal": 1},
+                            {"name": "AENEW", "ordinal": 2},
+                            {"name": "VISITNUM", "ordinal": 3},
+                            {"name": "VISIT", "ordinal": 4},
                         ],
+                    }
+                ],
+            }
+        ],
+    },
+    {
+        "STUDYID": [
+            "TEST_STUDY",
+            "TEST_STUDY",
+            "TEST_STUDY",
+        ],
+        "AETERM": [
+            "test",
+            "test",
+            "test",
+        ],
+    },
+    "Identifier",
+    ["STUDYID", "DOMAIN", "USUBJID", "AETERM"],
+)
+
+test_set3 = (
+    {
+        "datasets": [
+            {
+                "_links": {"parentClass": {"title": FINDINGS_ABOUT}},
+                "name": "NOTTHESAME",
+                "datasetVariables": [
+                    {
+                        "name": "AETERM",
+                        "ordinal": 4,
+                    },
+                    {
+                        "name": "AESEQ",
+                        "ordinal": 3,
+                    },
+                ],
+            }
+        ],
+        "classes": [
+            {
+                "name": FINDINGS_ABOUT,
+                "label": FINDINGS_ABOUT,
+                "classVariables": [
+                    {"name": "--OBJ", "ordinal": 1},
+                    {
+                        "name": "USUBJID",
+                        "role": VariableRoles.IDENTIFIER.value,
+                        "ordinal": 2,
+                    },
+                    {
+                        "name": "IDVAR1",
+                        "role": VariableRoles.IDENTIFIER.value,
+                        "ordinal": 3,
+                    },
+                    {
+                        "name": "TIMING_VAR1",
+                        "role": VariableRoles.TIMING.value,
+                        "ordinal": 31,
+                    },
+                    {
+                        "name": "TIMING_VAR2",
+                        "role": VariableRoles.TIMING.value,
+                        "ordinal": 32,
                     },
                 ],
             },
             {
-                "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
-                "classes": [
-                    {
-                        "name": "Events",
-                        "datasets": [
-                            {
-                                "name": "AE",
-                                "label": "Adverse Events",
-                                "datasetVariables": [
-                                    {"name": "AETEST", "ordinal": 1},
-                                    {"name": "AENEW", "ordinal": 2},
-                                    {"name": "VISITNUM", "ordinal": 3},
-                                    {"name": "VISIT", "ordinal": 4},
-                                ],
-                            }
-                        ],
-                    }
+                "name": FINDINGS,
+                "label": FINDINGS,
+                "classVariables": [
+                    {"name": "--VAR1", "ordinal": 1},
+                    {"name": "--TEST", "ordinal": 2},
+                    {"name": "--VAR2", "ordinal": 3},
                 ],
             },
             {
-                "STUDYID": [
-                    "TEST_STUDY",
-                    "TEST_STUDY",
-                    "TEST_STUDY",
-                ],
-                "AETERM": [
-                    "test",
-                    "test",
-                    "test",
+                "name": GENERAL_OBSERVATIONS_CLASS,
+                "label": GENERAL_OBSERVATIONS_CLASS,
+                "classVariables": [
+                    {
+                        "name": "DOMAIN",
+                        "role": VariableRoles.IDENTIFIER.value,
+                        "ordinal": 2,
+                    },
+                    {
+                        "name": "STUDYID",
+                        "role": VariableRoles.IDENTIFIER.value,
+                        "ordinal": 1,
+                    },
+                    {
+                        "name": "TIMING_VAR1",
+                        "role": VariableRoles.TIMING.value,
+                        "ordinal": 32,
+                    },
+                    {
+                        "name": "TIMING_VAR2",
+                        "role": VariableRoles.TIMING.value,
+                        "ordinal": 33,
+                    },
                 ],
             },
-        )
-    ],
+        ],
+    },
+    {
+        "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
+        "classes": [
+            {
+                "name": FINDINGS_ABOUT,
+                "datasets": [
+                    {
+                        "name": "AE",
+                        "label": "Adverse Events",
+                        "datasetVariables": [
+                            {"name": "AETEST", "ordinal": 1},
+                            {"name": "AENEW", "ordinal": 2},
+                        ],
+                    }
+                ],
+            }
+        ],
+    },
+    {
+        "STUDYID": [
+            "TEST_STUDY",
+            "TEST_STUDY",
+            "TEST_STUDY",
+        ],
+        "DOMAIN": ["AE", "AE", "AE"],
+        "AEOBJ": [
+            "test",
+            "test",
+            "test",
+        ],
+        "AETESTCD": ["test", "test", "test"],
+    },
+    "Timing",
+    ["TIMING_VAR1", "TIMING_VAR2"],
+)
+
+test_set4 = (
+    {
+        "datasets": [
+            {
+                "_links": {"parentClass": {"title": FINDINGS_ABOUT}},
+                "name": "NOTTHESAME",
+                "datasetVariables": [
+                    {
+                        "name": "AETERM",
+                        "ordinal": 4,
+                    },
+                    {
+                        "name": "AESEQ",
+                        "ordinal": 3,
+                    },
+                ],
+            }
+        ],
+        "classes": [
+            {
+                "name": FINDINGS_ABOUT,
+                "label": FINDINGS_ABOUT,
+                "classVariables": [
+                    {"name": "--OBJ", "ordinal": 1},
+                    {
+                        "name": "USUBJID",
+                        "role": VariableRoles.IDENTIFIER.value,
+                        "ordinal": 2,
+                    },
+                    {
+                        "name": "IDVAR1",
+                        "role": VariableRoles.IDENTIFIER.value,
+                        "ordinal": 3,
+                    },
+                    {
+                        "name": "TIMING_VAR1",
+                        "role": VariableRoles.TIMING.value,
+                        "ordinal": 31,
+                    },
+                    {
+                        "name": "TIMING_VAR2",
+                        "role": VariableRoles.TIMING.value,
+                        "ordinal": 32,
+                    },
+                ],
+            },
+            {
+                "name": FINDINGS,
+                "label": FINDINGS,
+                "classVariables": [
+                    {"name": "--VAR1", "ordinal": 1},
+                    {"name": "--TEST", "ordinal": 2},
+                    {"name": "--VAR2", "ordinal": 3},
+                ],
+            },
+            {
+                "name": GENERAL_OBSERVATIONS_CLASS,
+                "label": GENERAL_OBSERVATIONS_CLASS,
+                "classVariables": [
+                    {
+                        "name": "DOMAIN",
+                        "role": VariableRoles.IDENTIFIER.value,
+                        "ordinal": 2,
+                    },
+                    {
+                        "name": "STUDYID",
+                        "role": VariableRoles.IDENTIFIER.value,
+                        "ordinal": 1,
+                    },
+                    {
+                        "name": "IDVAR1",
+                        "role": VariableRoles.IDENTIFIER.value,
+                        "ordinal": 3,
+                    },
+                    {
+                        "name": "TIMING_VAR",
+                        "role": VariableRoles.TIMING.value,
+                        "ordinal": 33,
+                    },
+                ],
+            },
+        ],
+    },
+    {
+        "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
+        "classes": [
+            {
+                "name": FINDINGS_ABOUT,
+                "datasets": [
+                    {
+                        "name": "AE",
+                        "label": "Adverse Events",
+                        "datasetVariables": [
+                            {"name": "AETEST", "ordinal": 1},
+                            {"name": "AENEW", "ordinal": 2},
+                        ],
+                    }
+                ],
+            }
+        ],
+    },
+    {
+        "STUDYID": [
+            "TEST_STUDY",
+            "TEST_STUDY",
+            "TEST_STUDY",
+        ],
+        "DOMAIN": ["AE", "AE", "AE"],
+        "AEOBJ": [
+            "test",
+            "test",
+            "test",
+        ],
+        "AETESTCD": ["test", "test", "test"],
+    },
+    "Identifier",
+    ["STUDYID", "DOMAIN", "IDVAR1"],
+)
+
+
+@pytest.mark.parametrize(
+    "model_metadata, standard_metadata, study_data, key_val, var_list",
+    [test_set1, test_set2, test_set3, test_set4],
 )
 def test_get_model_filtered_variables(
     operation_params: OperationParams,
     model_metadata: dict,
     standard_metadata: dict,
     study_data: dict,
-    key_val: str = None,
-    var_list: List[str] = ["VISITNUM", "VISIT", "TIMING_VAR"],
+    key_val: str,
+    var_list: List[str],
 ):
     """
     Unit test for DataProcessor.get_column_order_from_library.
@@ -193,425 +551,3 @@ def test_get_model_filtered_variables(
         ]
     )
     assert result[operation_params.operation_id].equals(expected)
-
-
-@pytest.mark.parametrize(
-    "model_metadata, standard_metadata, study_data",
-    [
-        (
-            {
-                "datasets": [
-                    {
-                        "_links": {"parentClass": {"title": "Events"}},
-                        "name": "AE",
-                        "datasetVariables": [
-                            {
-                                "name": "USUBJID",
-                                "ordinal": 2,
-                            },
-                            {
-                                "name": "AESEQ",
-                                "ordinal": 3,
-                            },
-                            {
-                                "name": "AETERM",
-                                "ordinal": 4,
-                            },
-                            {
-                                "name": "VISITNUM",
-                                "ordinal": 17,
-                            },
-                            {
-                                "name": "VISIT",
-                                "ordinal": 18,
-                            },
-                        ],
-                    }
-                ],
-                "classes": [
-                    {
-                        "name": "Events",
-                        "label": "Events",
-                        "classVariables": [
-                            {"name": "--TERM", "ordinal": 1},
-                            {"name": "--SEQ", "ordinal": 2},
-                        ],
-                    },
-                    {
-                        "name": GENERAL_OBSERVATIONS_CLASS,
-                        "label": GENERAL_OBSERVATIONS_CLASS,
-                        "classVariables": [
-                            {
-                                "name": "STUDYID",
-                                "role": VariableRoles.IDENTIFIER.value,
-                                "ordinal": 1,
-                            },
-                            {
-                                "name": "DOMAIN",
-                                "role": VariableRoles.IDENTIFIER.value,
-                                "ordinal": 2,
-                            },
-                            {
-                                "name": "USUBJID",
-                                "role": VariableRoles.IDENTIFIER.value,
-                                "ordinal": 3,
-                            },
-                            {
-                                "name": "AETERM",
-                                "role": VariableRoles.IDENTIFIER.value,
-                                "ordinal": 4,
-                            },
-                            {
-                                "name": "VISITNUM",
-                                "role": VariableRoles.TIMING.value,
-                                "ordinal": 17,
-                            },
-                            {
-                                "name": "VISIT",
-                                "role": VariableRoles.TIMING.value,
-                                "ordinal": 18,
-                            },
-                            {
-                                "name": "TIMING_VAR",
-                                "role": VariableRoles.TIMING.value,
-                                "ordinal": 33,
-                            },
-                        ],
-                    },
-                ],
-            },
-            {
-                "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
-                "classes": [
-                    {
-                        "name": "Events",
-                        "datasets": [
-                            {
-                                "name": "AE",
-                                "label": "Adverse Events",
-                                "datasetVariables": [
-                                    {"name": "AETEST", "ordinal": 1},
-                                    {"name": "AENEW", "ordinal": 2},
-                                    {"name": "VISITNUM", "ordinal": 3},
-                                    {"name": "VISIT", "ordinal": 4},
-                                ],
-                            }
-                        ],
-                    }
-                ],
-            },
-            {
-                "STUDYID": [
-                    "TEST_STUDY",
-                    "TEST_STUDY",
-                    "TEST_STUDY",
-                ],
-                "AETERM": [
-                    "test",
-                    "test",
-                    "test",
-                ],
-            },
-        )
-    ],
-)
-def test_get_model_filtered_variables2(
-    operation_params: OperationParams,
-    model_metadata: dict,
-    standard_metadata: dict,
-    study_data,
-):
-    """
-    Unit test for DataProcessor.get_column_order_from_library.
-    Mocks cache call to return metadata.
-    """
-    test_get_model_filtered_variables(
-        operation_params,
-        model_metadata,
-        standard_metadata,
-        study_data,
-        key_val="Identifier",
-        var_list=["STUDYID", "DOMAIN", "USUBJID", "AETERM"],
-    )
-
-
-@pytest.mark.parametrize(
-    "model_metadata, standard_metadata, study_data",
-    [
-        (
-            {
-                "datasets": [
-                    {
-                        "_links": {"parentClass": {"title": FINDINGS_ABOUT}},
-                        "name": "NOTTHESAME",
-                        "datasetVariables": [
-                            {
-                                "name": "AETERM",
-                                "ordinal": 4,
-                            },
-                            {
-                                "name": "AESEQ",
-                                "ordinal": 3,
-                            },
-                        ],
-                    }
-                ],
-                "classes": [
-                    {
-                        "name": FINDINGS_ABOUT,
-                        "label": FINDINGS_ABOUT,
-                        "classVariables": [
-                            {"name": "--OBJ", "ordinal": 1},
-                            {
-                                "name": "USUBJID",
-                                "role": VariableRoles.IDENTIFIER.value,
-                                "ordinal": 2,
-                            },
-                            {
-                                "name": "IDVAR1",
-                                "role": VariableRoles.IDENTIFIER.value,
-                                "ordinal": 3,
-                            },
-                            {
-                                "name": "TIMING_VAR1",
-                                "role": VariableRoles.TIMING.value,
-                                "ordinal": 31,
-                            },
-                            {
-                                "name": "TIMING_VAR2",
-                                "role": VariableRoles.TIMING.value,
-                                "ordinal": 32,
-                            },
-                        ],
-                    },
-                    {
-                        "name": FINDINGS,
-                        "label": FINDINGS,
-                        "classVariables": [
-                            {"name": "--VAR1", "ordinal": 1},
-                            {"name": "--TEST", "ordinal": 2},
-                            {"name": "--VAR2", "ordinal": 3},
-                        ],
-                    },
-                    {
-                        "name": GENERAL_OBSERVATIONS_CLASS,
-                        "label": GENERAL_OBSERVATIONS_CLASS,
-                        "classVariables": [
-                            {
-                                "name": "DOMAIN",
-                                "role": VariableRoles.IDENTIFIER.value,
-                                "ordinal": 2,
-                            },
-                            {
-                                "name": "STUDYID",
-                                "role": VariableRoles.IDENTIFIER.value,
-                                "ordinal": 1,
-                            },
-                            {
-                                "name": "TIMING_VAR1",
-                                "role": VariableRoles.TIMING.value,
-                                "ordinal": 32,
-                            },
-                            {
-                                "name": "TIMING_VAR2",
-                                "role": VariableRoles.TIMING.value,
-                                "ordinal": 33,
-                            },
-                        ],
-                    },
-                ],
-            },
-            {
-                "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
-                "classes": [
-                    {
-                        "name": FINDINGS_ABOUT,
-                        "datasets": [
-                            {
-                                "name": "AE",
-                                "label": "Adverse Events",
-                                "datasetVariables": [
-                                    {"name": "AETEST", "ordinal": 1},
-                                    {"name": "AENEW", "ordinal": 2},
-                                ],
-                            }
-                        ],
-                    }
-                ],
-            },
-            {
-                "STUDYID": [
-                    "TEST_STUDY",
-                    "TEST_STUDY",
-                    "TEST_STUDY",
-                ],
-                "DOMAIN": ["AE", "AE", "AE"],
-                "AEOBJ": [
-                    "test",
-                    "test",
-                    "test",
-                ],
-                "AETESTCD": ["test", "test", "test"],
-            },
-        )
-    ],
-)
-def test_get_model_filtered_variables3(
-    operation_params: OperationParams,
-    model_metadata: dict,
-    standard_metadata: dict,
-    study_data,
-):
-    """
-    Unit test for DataProcessor.get_column_order_from_library.
-    Mocks cache call to return metadata.
-    """
-    test_get_model_filtered_variables(
-        operation_params,
-        model_metadata,
-        standard_metadata,
-        study_data,
-        key_val="Timing",
-        var_list=["TIMING_VAR1", "TIMING_VAR2"],
-    )
-
-
-@pytest.mark.parametrize(
-    "model_metadata, standard_metadata, study_data",
-    [
-        (
-            {
-                "datasets": [
-                    {
-                        "_links": {"parentClass": {"title": FINDINGS_ABOUT}},
-                        "name": "NOTTHESAME",
-                        "datasetVariables": [
-                            {
-                                "name": "AETERM",
-                                "ordinal": 4,
-                            },
-                            {
-                                "name": "AESEQ",
-                                "ordinal": 3,
-                            },
-                        ],
-                    }
-                ],
-                "classes": [
-                    {
-                        "name": FINDINGS_ABOUT,
-                        "label": FINDINGS_ABOUT,
-                        "classVariables": [
-                            {"name": "--OBJ", "ordinal": 1},
-                            {
-                                "name": "USUBJID",
-                                "role": VariableRoles.IDENTIFIER.value,
-                                "ordinal": 2,
-                            },
-                            {
-                                "name": "IDVAR1",
-                                "role": VariableRoles.IDENTIFIER.value,
-                                "ordinal": 3,
-                            },
-                            {
-                                "name": "TIMING_VAR1",
-                                "role": VariableRoles.TIMING.value,
-                                "ordinal": 31,
-                            },
-                            {
-                                "name": "TIMING_VAR2",
-                                "role": VariableRoles.TIMING.value,
-                                "ordinal": 32,
-                            },
-                        ],
-                    },
-                    {
-                        "name": FINDINGS,
-                        "label": FINDINGS,
-                        "classVariables": [
-                            {"name": "--VAR1", "ordinal": 1},
-                            {"name": "--TEST", "ordinal": 2},
-                            {"name": "--VAR2", "ordinal": 3},
-                        ],
-                    },
-                    {
-                        "name": GENERAL_OBSERVATIONS_CLASS,
-                        "label": GENERAL_OBSERVATIONS_CLASS,
-                        "classVariables": [
-                            {
-                                "name": "DOMAIN",
-                                "role": VariableRoles.IDENTIFIER.value,
-                                "ordinal": 2,
-                            },
-                            {
-                                "name": "STUDYID",
-                                "role": VariableRoles.IDENTIFIER.value,
-                                "ordinal": 1,
-                            },
-                            {
-                                "name": "IDVAR1",
-                                "role": VariableRoles.IDENTIFIER.value,
-                                "ordinal": 3,
-                            },
-                            {
-                                "name": "TIMING_VAR",
-                                "role": VariableRoles.TIMING.value,
-                                "ordinal": 33,
-                            },
-                        ],
-                    },
-                ],
-            },
-            {
-                "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
-                "classes": [
-                    {
-                        "name": FINDINGS_ABOUT,
-                        "datasets": [
-                            {
-                                "name": "AE",
-                                "label": "Adverse Events",
-                                "datasetVariables": [
-                                    {"name": "AETEST", "ordinal": 1},
-                                    {"name": "AENEW", "ordinal": 2},
-                                ],
-                            }
-                        ],
-                    }
-                ],
-            },
-            {
-                "STUDYID": [
-                    "TEST_STUDY",
-                    "TEST_STUDY",
-                    "TEST_STUDY",
-                ],
-                "DOMAIN": ["AE", "AE", "AE"],
-                "AEOBJ": [
-                    "test",
-                    "test",
-                    "test",
-                ],
-                "AETESTCD": ["test", "test", "test"],
-            },
-        )
-    ],
-)
-def test_get_model_filtered_variables4(
-    operation_params: OperationParams,
-    model_metadata: dict,
-    standard_metadata: dict,
-    study_data,
-):
-    """
-    Unit test for DataProcessor.get_column_order_from_library.
-    Mocks cache call to return metadata.
-    """
-    test_get_model_filtered_variables(
-        operation_params,
-        model_metadata,
-        standard_metadata,
-        study_data,
-        key_val="Identifier",
-        var_list=["STUDYID", "DOMAIN", "IDVAR1"],
-    )
