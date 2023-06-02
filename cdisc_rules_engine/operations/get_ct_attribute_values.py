@@ -1,7 +1,13 @@
-from typing import List
+# python core.py test -s sdtmig -v 3-4 -dp ./dist/ts-test-dataset.json
+# -r ./dist/rule-329.json -ct "sdtmct-2022-12-16"
+
+# from typing import List
 
 from cdisc_rules_engine.operations.base_operation import BaseOperation
-from collections import OrderedDict
+
+# from collections import OrderedDict
+
+# import pandas as pd
 
 
 class CTAttributeValues(BaseOperation):
@@ -22,18 +28,21 @@ class CTAttributeValues(BaseOperation):
         return self._get_ct_attribute_values()
 
     def _get_ct_attribute_values(self):
-        key = self.params.key_name
-        val = self.params.key_value
 
-        # get variables metadata from the standard model
-        var_metadata: List[dict] = self._get_variables_metadata_from_standard()
+        ct_ver = "2020-03-27"
+        sel_cols = ["TSVCDREF", "TSVCDVER", "TSVALCD"]
+        # fn_ts = "./TS.xlsx"
+        # df = pd.read_excel(fn_ts, sheet_name="TS")
+        df = self.params.dataframe
+        df_sel = df[(df["TSVCDVER"] == ct_ver)].loc[:, sel_cols]
 
-        variables_metadata = [var for var in var_metadata if var.get(key) == val]
+        print(f"Data Selected: {df_sel}\n")
 
-        # create a list of variable names in accordance to the "ordinal" key
-        variable_names_list = self._replace_variable_wildcards(
-            variables_metadata, self.params.domain
-        )
+        print(f"Params: {self.params}\n")
+        print(f"Original Dataset: {self.evaluation_dataset}\n")
+        print(f"Cache Service: {self.cache}\n")
+        print(f"Data Service: {self.data_service}\n")
 
-        r_list = list(OrderedDict.fromkeys(variable_names_list))
-        return r_list
+        # print(f"Describe: {df.describe}")
+
+        return df
