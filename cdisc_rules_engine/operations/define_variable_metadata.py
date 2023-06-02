@@ -46,7 +46,9 @@ class DefineVariableMetadata(BaseOperation):
             for metadata in variables_metadata
         }
         return (
-            variable_metadata.get(self.params.target, "")
+            variable_metadata.get(
+                self.params.target.replace("--", self.params.domain, 1), ""
+            )
             if self.params.target
             else variable_metadata
         )

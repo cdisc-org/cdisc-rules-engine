@@ -14,6 +14,7 @@ from cdisc_rules_engine.services.cache.cache_service_factory import CacheService
         ("STUDYID", {4: 2, 7: 1, 9: 1, 8: 1, 12: 1}),
         ("AESEQ", {1: 1, 2: 1, 3: 1}),
         ("EXSEQ", {1: 1, 2: 1, 3: 1}),
+        ("--SEQ", {1: 2, 2: 2, 3: 2}),
         ("COOLVAR", {}),
     ],
 )
@@ -47,7 +48,7 @@ def test_variable_value_count(
         [func(f) for f in files]
     )
     operation_params.datasets = datasets
-    operation_params.target = target
+    operation_params.original_target = target
     operation_params.dataset_path = dataset_path
     result = VariableValueCount(
         operation_params, datasets_map["AE"], cache, mock_data_service
