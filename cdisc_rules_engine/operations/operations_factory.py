@@ -66,7 +66,7 @@ class OperationsFactory(FactoryInterface):
         "get_column_order_from_dataset": DatasetColumnOrder,
         "get_column_order_from_library": LibraryColumnOrder,
         "get_model_column_order": LibraryModelColumnOrder,
-        "get_model_variables_filter": LibraryModelVariablesFilter,
+        "get_model_filtered_variables": LibraryModelVariablesFilter,
         "get_parent_model_column_order": ParentLibraryModelColumnOrder,
         "max": Maximum,
         "max_date": MaxDate,
