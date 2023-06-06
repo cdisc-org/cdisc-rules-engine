@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Tuple
+from typing import List
 
 import pandas as pd
 
@@ -20,8 +20,13 @@ class OperationParams:
     datasets: List[dict]
     standard: str
     standard_version: str
-    ct_package: Tuple[str]
+    ct_package: list = None
+    ct_attribute: str = None
+    ct_version: str = None
     target: str = None
     meddra_path: str = None
     whodrug_path: str = None
     grouping: List[str] = None
+    key_name: str = None
+    key_value: str = None
+    attribute_name: str = None

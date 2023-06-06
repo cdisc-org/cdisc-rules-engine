@@ -250,6 +250,12 @@ class RulesEngine:
                 rule["conditions"], targets
             )
 
+        kwargs["ct_package"] = (
+            []
+            if self.ct_package is None
+            else [self.cache.get(package) or {} for package in self.ct_package]
+        )
+
         logger.info(f"Using dataset build by: {builder.__class__}")
         return self.execute_rule(
             rule, dataset, dataset_path, datasets, domain, **kwargs
@@ -265,6 +271,7 @@ class RulesEngine:
         value_level_metadata: List[dict] = None,
         variable_codelist_map: dict = None,
         codelist_term_maps: list = None,
+        ct_package: list = None,
     ) -> List[str]:
         """
         Executes the given rule on a given dataset.
@@ -297,6 +304,7 @@ class RulesEngine:
             standard_version=self.standard_version,
             meddra_path=self.meddra_path,
             whodrug_path=self.whodrug_path,
+            ct_package=ct_package,
         )
         relationship_data = {}
         if self.rule_processor.is_relationship_dataset(domain):

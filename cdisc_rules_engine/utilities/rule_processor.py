@@ -247,6 +247,10 @@ class RuleProcessor:
                 standard_version=standard_version,
                 meddra_path=kwargs.get("meddra_path"),
                 whodrug_path=kwargs.get("whodrug_path"),
+                ct_version=operation.get("version"),
+                ct_attribute=operation.get("attribute"),
+                ct_package=kwargs.get("ct_package"),
+                # ct_package=kwargs.get("codelist_term_maps"),
             )
 
             # execute operation
