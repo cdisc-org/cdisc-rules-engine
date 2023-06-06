@@ -21,6 +21,7 @@ class OperationParams:
     standard: str
     standard_version: str
     target: str = None
+    original_target: str = None
     meddra_path: str = None
     whodrug_path: str = None
     grouping: List[str] = None

@@ -56,6 +56,9 @@ from cdisc_rules_engine.operations.label_referenced_variable_metadata import (
 from cdisc_rules_engine.operations.name_referenced_variable_metadata import (
     NameReferencedVariableMetadata,
 )
+from cdisc_rules_engine.operations.define_variable_metadata import (
+    DefineVariableMetadata,
+)
 
 
 class OperationsFactory(FactoryInterface):
@@ -94,6 +97,7 @@ class OperationsFactory(FactoryInterface):
         "valid_codelist_dates": ValidCodelistDates,
         "label_referenced_variable_metadata": LabelReferencedVariableMetadata,
         "name_referenced_variable_metadata": NameReferencedVariableMetadata,
+        "define_variable_metadata": DefineVariableMetadata,
     }
 
     @classmethod

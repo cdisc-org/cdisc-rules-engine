@@ -1,0 +1,212 @@
+{
+  "datasets": [
+    {
+      "filename": "ae.xpt",
+      "label": "Adverse Events",
+      "domain": "AE",
+      "variables": [
+        {
+          "name": "STUDYID",
+          "label": "Study Identifier",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "DOMAIN",
+          "label": "Domain Abbreviation",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "USUBJID",
+          "label": "Unique Subject Identifier",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "AESEQ",
+          "label": "Sequence Number",
+          "type": "Num",
+          "length": 8
+        },
+        {
+          "name": "AETERM",
+          "label": "Reported Term for the Adverse Event",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "AEMODIFY",
+          "label": "Modified Reported Term",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "AEDECOD",
+          "label": "Dictionary-Derived Term",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "AECAT",
+          "label": "Category for Adverse Event",
+          "type": "Char",
+          "length": 200
+        },
+        {
+          "name": "AESCAT",
+          "label": "Subcategory for Adverse Event",
+          "type": "Char",
+          "length": 200
+        },
+        {
+          "name": "AEBODSYS",
+          "label": "Body System or Organ Class",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "AESEV",
+          "label": "Severity/Intensity",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "AESER",
+          "label": "Serious Event",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "AEACN",
+          "label": "Action Taken with Study Treatment",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "AEREL",
+          "label": "Causality",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "AEOUT",
+          "label": "Outcome of Adverse Event",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "AESCONG",
+          "label": "Congenital Anomaly or Birth Defect",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "AESDISAB",
+          "label": "Persist or Signif Disability/Incapacity",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "AESDTH",
+          "label": "Results in Death",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "AESHOSP",
+          "label": "Requires or Prolongs Hospitalization",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "AESLIFE",
+          "label": "Is Life Threatening",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "EPOCH",
+          "label": "Epoch",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "AESTDTC",
+          "label": "Start Date/Time of Adverse Event",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "AEENDTC",
+          "label": "End Date/Time of Adverse Event",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "AESTDY",
+          "label": "Study Day of Start of Adverse Event",
+          "type": "Num",
+          "length": 8
+        },
+        {
+          "name": "AEENDY",
+          "label": "Study Day of End of Adverse Event",
+          "type": "Num",
+          "length": 8
+        },
+        {
+          "name": "AETPTREF",
+          "label": "Time Point Reference",
+          "type": "Char",
+          "length": 200
+        },
+        {
+          "name": "AERFDTC",
+          "label": "Date/Time of Reference Time Point",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "AEENRF",
+          "label": "End Relative to Reference Period",
+          "type": "Char",
+          "length": 50
+        }
+      ],
+      "records": {
+        "STUDYID": ["ABC123", "ABC123"],
+        "DOMAIN": ["AE", "AE"],
+        "USUBJID": ["123101", "123101"],
+        "AESEQ": [1, 2],
+        "AETERM": ["POUNDING HEADACHE", "BACK PAIN FOR 6 HOURS"],
+        "AEMODIFY": ["HEADACHE", "BACK PAIN"],
+        "AEDECOD": ["Headache", "Back pain"],
+        "AECAT": ["TEST CATEGORY", "TEST CATEGORY"],
+        "AESCAT": ["TEST SUBCATEGORY", "TEST SUBCATEGORY"],
+        "AEBODSYS": [
+          "Nervous system disorders",
+          "Musculoskeletal and connective tissue disorders"
+        ],
+        "AESEV": ["SEVERE", "MODERATE"],
+        "AESER": ["N", "N"],
+        "AEACN": ["NOT APPLICABLE", "DOSE REDUCED"],
+        "AEREL": ["DEFINITELY NOT RELATED", "PROBABLY RELATED"],
+        "AEOUT": ["RECOVERED/RESOLVED", "RECOVERED/RESOLVED"],
+        "AESCONG": ["", ""],
+        "AESDISAB": ["", ""],
+        "AESDTH": ["", ""],
+        "AESHOSP": ["", ""],
+        "AESLIFE": ["", ""],
+        "EPOCH": ["SCREENING", "TREATMENT"],
+        "AESTDTC": ["2005-10-12", "2005-10-13T13:05"],
+        "AEENDTC": ["2005-10-12", "2005-10-13T19:00"],
+        "AESTDY": [-1, 1],
+        "AEENDY": [-1, 1],
+        "AETPTREF": ["Previous Dose", ""],
+        "AERFDTC": ["2005-10-10", ""],
+        "AEENRF": ["", ""]
+      }
+    }
+  ]
+}

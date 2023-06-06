@@ -208,6 +208,8 @@ class BaseDefineXMLReader(ABC):
             "define_variable_origin_type": "",
             "define_variable_has_no_data": "",
             "define_variable_order_number": None,
+            "define_variable_has_codelist": False,
+            "define_variable_codelist_coded_values": [],
         }
         if itemdef:
             data["define_variable_name"] = itemdef.Name
@@ -224,12 +226,15 @@ class BaseDefineXMLReader(ABC):
                     itemdef.Description.TranslatedText[0]
                 )
             if itemdef.CodeListRef:
+                data["define_variable_has_codelist"] = True
                 oid = itemdef.CodeListRef.CodeListOID
-                data["define_variable_ccode"] = self._get_codelist_ccode(
-                    codelists.get(oid)
-                )
+                codelist = codelists.get(oid)
+                data["define_variable_ccode"] = self._get_codelist_ccode(codelist)
                 data["define_variable_allowed_terms"].extend(
-                    self._get_codelist_allowed_terms(codelists.get(oid))
+                    self._get_codelist_allowed_terms(codelist)
+                )
+                data["define_variable_codelist_coded_values"].extend(
+                    self._get_codelist_coded_values(codelist)
                 )
             if itemdef.Origin:
                 data["define_variable_origin_type"] = self._get_origin_type(itemdef)
@@ -251,6 +256,11 @@ class BaseDefineXMLReader(ABC):
         if codelist:
             for codelist_item in codelist.CodeListItem:
                 yield codelist_item.Decode.TranslatedText[0]._content
+
+    def _get_codelist_coded_values(self, codelist):
+        if codelist:
+            for codelist_item in codelist.CodeListItem + codelist.EnumeratedItem:
+                yield codelist_item.CodedValue
 
     def _get_variable_datatype(self, data_type):
         variable_type_map = {

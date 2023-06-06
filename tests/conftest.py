@@ -1202,6 +1202,7 @@ def operation_params() -> OperationParams:
         meddra_path="meddra_path",
         whodrug_path="whodrug_path",
         grouping=[],
+        attribute_name="attribute_name",
     )
 
 

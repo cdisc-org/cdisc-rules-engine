@@ -225,7 +225,8 @@ class RuleProcessor:
         dataset_copy = dataset.copy()
         for operation in operations:
             # change -- pattern to domain name
-            target: str = operation.get("name")
+            original_target: str = operation.get("name")
+            target: str = original_target
             domain: str = operation.get("domain", domain)
             if target and target.startswith("--") and domain:
                 # Not a study wide operation
@@ -238,6 +239,7 @@ class RuleProcessor:
                 operation_name=operation.get("operator"),
                 dataframe=dataset_copy,
                 target=target,
+                original_target=original_target,
                 domain=domain,
                 dataset_path=dataset_path,
                 directory_path=get_directory_path(dataset_path),
@@ -247,6 +249,7 @@ class RuleProcessor:
                 standard_version=standard_version,
                 meddra_path=kwargs.get("meddra_path"),
                 whodrug_path=kwargs.get("whodrug_path"),
+                attribute_name=operation.get("attribute_name", ""),
             )
 
             # execute operation

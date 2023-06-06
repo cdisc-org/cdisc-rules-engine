@@ -17,3 +17,4 @@ class RuleTypes(BaseEnum):
     VARIABLE_METADATA_CHECK_AGAINST_DEFINE = (
         "Variable Metadata Check against Define XML"
     )
+    VALUE_CHECK_AGAINST_DEFINE_XML_VARIABLE = "Value Check against Define XML Variable"
