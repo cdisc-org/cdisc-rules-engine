@@ -5,7 +5,9 @@
         {
           "additionalProperties": false,
           "properties": {
-            "all": { "$ref": "#/$defs/CheckItems" }
+            "all": {
+              "$ref": "#/$defs/CheckItems"
+            }
           },
           "required": ["all"],
           "type": "object"
@@ -13,7 +15,9 @@
         {
           "additionalProperties": false,
           "properties": {
-            "any": { "$ref": "#/$defs/CheckItems" }
+            "any": {
+              "$ref": "#/$defs/CheckItems"
+            }
           },
           "required": ["any"],
           "type": "object"
@@ -1035,6 +1039,7 @@
               "get_column_order_from_dataset",
               "get_column_order_from_library",
               "get_model_column_order",
+              "get_model_filtered_variables",
               "get_parent_model_column_order",
               "label_referenced_variable_metadata",
               "max",
