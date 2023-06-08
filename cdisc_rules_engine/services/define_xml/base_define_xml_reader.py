@@ -145,7 +145,7 @@ class BaseDefineXMLReader(ABC):
             item_def_map[item_ref.ItemOID] for item_ref in domain_metadata.ItemRef
         ]
         referenced_value_list_ids = [
-            item.ValueListRef.ValueListOID
+            (item.Name, item.ValueListRef.ValueListOID)
             for item in domain_variables
             if item.ValueListRef
         ]
@@ -153,7 +153,7 @@ class BaseDefineXMLReader(ABC):
             value_list_def.OID: value_list_def
             for value_list_def in metadata.ValueListDef
         }
-        for value_list_id in referenced_value_list_ids:
+        for define_variable_name, value_list_id in referenced_value_list_ids:
             value_list = value_lists.get(value_list_id)
             for item_ref in value_list.ItemRef:
                 vlm = value_level_metadata_map.get(
@@ -162,7 +162,13 @@ class BaseDefineXMLReader(ABC):
                 item_data = self._get_item_def_representation(
                     item_def_map.get(item_ref.ItemOID), item_ref, codelist_map
                 )
+                # Replace all `define_variable_...` names with `define_vlm_...` names
+                item_data = {
+                    k.replace("define_variable_", "define_vlm_"): v
+                    for k, v in item_data.items()
+                }
                 if vlm:
+                    item_data["define_variable_name"] = define_variable_name
                     item_data["filter"] = vlm.get_filter_function()
                     item_data["type_check"] = vlm.get_type_check_function()
                     item_data["length_check"] = vlm.get_length_check_function()
