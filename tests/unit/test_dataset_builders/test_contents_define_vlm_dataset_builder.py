@@ -77,5 +77,4 @@ def test_contents_define_vlm_dataset_builder(
     expected_df = pd.DataFrame.from_dict(expected)
     expected_df.sort_index(axis=1, inplace=True)
     result.sort_index(axis=1, inplace=True)
-    print(result.to_string())
     assert result.equals(expected_df)
