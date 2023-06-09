@@ -1,26 +1,5 @@
-#
-# python core.py test -s sdtmig -v 3-4 -dp ./dist/ts-test-dataset.json
-# -r ./dist/rule-329.json -ct "sdtmct-2022-12-16" -ct "sdtmct-2022-09-30"
-# core -> test --> test_rule (from scripts.test_rule import test as test_rule) ->
-# validate_single_rule (scripts.test_rule) -> engine.test_validation (RuleEngine) ->
-# validate_single_rule -> validate_rule (rule_engine) ->
-# execute_rule (rule_engine) -> rule_processor.perform_rule_operations
-#
-# added code in
-#   1. rules_engine.validate_rule
-#   2. rule_processor.perform_rule_operations
-#   3. added ct_package: list = None in rules_engine.execute_rule
-#   4. added ct_package=ct_package for perform_rule_operations
-#
-
-# from typing import List
-# import json
 from cdisc_rules_engine.operations.base_operation import BaseOperation
-
-
-# from collections import OrderedDict
-
-# import pandas as pd
+import pandas as pd
 
 
 class CTAttributeValues(BaseOperation):
@@ -37,54 +16,75 @@ class CTAttributeValues(BaseOperation):
         The lists with column names are sorted
         in accordance to "ordinal" key of library metadata.
         """
-
         return self._get_ct_attribute_values()
 
     def _get_ct_attribute_values(self):
+        # 1.0 get input variables
+        # -------------------------------------------------------------------
+        cc = "CT_PACKAGE"
+        cv = self.params.ct_attribute
 
-        ct_attr = self.params.ct_attribute
+        # 2.0 build codelist from cache
+        # -------------------------------------------------------------------
+        ct_cache = self._get_ct_from_cache(ct_key=cc, ct_val=cv)
+
+        # 3.0 get dataset records
+        # -------------------------------------------------------------------
+        ct_data = self._get_ct_from_dataset(ct_key=cc, ct_val=cv)
+
+        # 4.0 merge the two datasets by CC
+        # -------------------------------------------------------------------
+        cc_key = ct_data[cc].to_list()
+        ct_list = ct_cache[(ct_cache[cc].isin(cc_key))]
+        n = self.params.dataframe.shape[0]
+        result = pd.Series([ct_list[cv].values[0] for _ in range(n)])
+        return result
+
+    def _get_ct_from_cache(self, ct_key: str, ct_val: str):
         ct_packages = self.params.ct_package
-        ct_versions = [item["package"] for item in ct_packages]
-        print(f"CT versions: {ct_versions}\n")
-        ct_keys = ct_packages[0].keys()
-        print(f"CT Keys: {ct_keys}")
+        ct_term_maps = (
+            []
+            if ct_packages is None
+            else [self.cache.get(package) or {} for package in ct_packages]
+        )
 
-        # r_ct = json.dumps(ct_packages, indent=4)
-        # print(f"CT Packages: {r_ct}\n")
+        # convert codelist to dataframe
+        ct_result = {ct_key: [], ct_val: []}
 
-        ct_cd = None
-        if ct_attr == "Term CCODE":
-            ct_cd = "TSVALCD"
+        for item in ct_term_maps:
+            ct_result[ct_key].append(item["package"])
+            codes = sorted(set(code for code in item.keys() if code != "package"))
+            ct_result[ct_val].append(codes)
 
+        return pd.DataFrame(ct_result)
+
+    def _get_ct_from_dataset(self, ct_key: str, ct_val: str):
+        ct_packages = self.params.ct_package
+        ct_attr = self.params.ct_attribute
         c1 = self.params.target
         c2 = self.params.ct_version
-        cc = "CT_PACKAGE"
-
+        cc = ct_key
+        ct_cd = ct_attr
+        if ct_attr == "Term CCODE":
+            ct_cd = "TSVALCD"
         sel_cols = [c1, c2, ct_cd, cc]
+
+        # get dataframe from dataset records
         df = self.params.dataframe
+
         # add CT_PACKAGE column
-        c1 = sel_cols[0]
-        c2 = sel_cols[1]
         df[cc] = df.apply(
             lambda row: "sdtmct-" + row[c2]
-            if row[c1] is not None and row[c1] == "CDISC"
+            if row[c1] is not None and row[c1] in ("CDISC", "CDISC CT")
             else row[c1] + "-" + row[c2],
             axis=1,
         )
-        # print(f"Describe: {df.describe}")
 
-        df_sel = df[(df[cc].isin(ct_versions))].loc[:, sel_cols]
-        print(f"Data Selected: {df_sel}\n")
+        # select records
+        df_sel = df[(df[cc].isin(ct_packages))].loc[:, sel_cols]
 
-        df_grp = df_sel.groupby(cc)[ct_cd].unique().reset_index()
+        # group the records
+        result = df_sel.groupby(cc)[ct_cd].unique().reset_index()
+        result.rename(columns={ct_cd: ct_val})
 
-        print(f"Data Grouped: {df_grp}\n")
-
-        # print(f"Params: {self.params}\n")
-        # print(f"Original Dataset: {self.evaluation_dataset}\n")
-        print(f"Cache Service: {self.cache}\n")
-        print(f"Data Service: {self.data_service}\n")
-
-        # print(f"Describe: {df.describe}")
-
-        return df_grp
+        return result

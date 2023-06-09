@@ -250,11 +250,7 @@ class RulesEngine:
                 rule["conditions"], targets
             )
 
-        kwargs["ct_package"] = (
-            []
-            if self.ct_package is None
-            else [self.cache.get(package) or {} for package in self.ct_package]
-        )
+        kwargs["ct_package"] = list(self.ct_package)
 
         logger.info(f"Using dataset build by: {builder.__class__}")
         return self.execute_rule(
