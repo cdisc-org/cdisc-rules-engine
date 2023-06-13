@@ -15,6 +15,8 @@ from cdisc_rules_engine.operations.parent_library_model_column_order import (
 )
 from cdisc_rules_engine.operations.get_ct_attribute_values import (
     CTAttributeValues,
+from cdisc_rules_engine.operations.get_model_filtered_variables import (
+    LibraryModelVariablesFilter,
 )
 from cdisc_rules_engine.operations.max_date import MaxDate
 from cdisc_rules_engine.operations.maximum import Maximum
@@ -56,8 +58,8 @@ from cdisc_rules_engine.operations.label_referenced_variable_metadata import (
 from cdisc_rules_engine.operations.name_referenced_variable_metadata import (
     NameReferencedVariableMetadata,
 )
-from cdisc_rules_engine.operations.define_variable_codelist import (
-    DefineVariableCodelist,
+from cdisc_rules_engine.operations.define_variable_metadata import (
+    DefineVariableMetadata,
 )
 
 
@@ -70,6 +72,7 @@ class OperationsFactory(FactoryInterface):
         "get_column_order_from_library": LibraryColumnOrder,
         "get_ct_attribute_values": CTAttributeValues,
         "get_model_column_order": LibraryModelColumnOrder,
+        "get_model_filtered_variables": LibraryModelVariablesFilter,
         "get_parent_model_column_order": ParentLibraryModelColumnOrder,
         "max": Maximum,
         "max_date": MaxDate,
@@ -97,7 +100,7 @@ class OperationsFactory(FactoryInterface):
         "valid_codelist_dates": ValidCodelistDates,
         "label_referenced_variable_metadata": LabelReferencedVariableMetadata,
         "name_referenced_variable_metadata": NameReferencedVariableMetadata,
-        "define_variable_codelist": DefineVariableCodelist,
+        "define_variable_metadata": DefineVariableMetadata,
     }
 
     @classmethod

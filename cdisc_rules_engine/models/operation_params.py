@@ -24,6 +24,7 @@ class OperationParams:
     ct_attribute: str = None
     ct_version: str = None
     target: str = None
+    original_target: str = None
     meddra_path: str = None
     whodrug_path: str = None
     grouping: List[str] = None

@@ -145,7 +145,7 @@ class BaseDefineXMLReader(ABC):
             item_def_map[item_ref.ItemOID] for item_ref in domain_metadata.ItemRef
         ]
         referenced_value_list_ids = [
-            item.ValueListRef.ValueListOID
+            (item.Name, item.ValueListRef.ValueListOID)
             for item in domain_variables
             if item.ValueListRef
         ]
@@ -153,7 +153,7 @@ class BaseDefineXMLReader(ABC):
             value_list_def.OID: value_list_def
             for value_list_def in metadata.ValueListDef
         }
-        for value_list_id in referenced_value_list_ids:
+        for define_variable_name, value_list_id in referenced_value_list_ids:
             value_list = value_lists.get(value_list_id)
             for item_ref in value_list.ItemRef:
                 vlm = value_level_metadata_map.get(
@@ -162,7 +162,13 @@ class BaseDefineXMLReader(ABC):
                 item_data = self._get_item_def_representation(
                     item_def_map.get(item_ref.ItemOID), item_ref, codelist_map
                 )
+                # Replace all `define_variable_...` names with `define_vlm_...` names
+                item_data = {
+                    k.replace("define_variable_", "define_vlm_"): v
+                    for k, v in item_data.items()
+                }
                 if vlm:
+                    item_data["define_variable_name"] = define_variable_name
                     item_data["filter"] = vlm.get_filter_function()
                     item_data["type_check"] = vlm.get_type_check_function()
                     item_data["length_check"] = vlm.get_length_check_function()
@@ -208,6 +214,8 @@ class BaseDefineXMLReader(ABC):
             "define_variable_origin_type": "",
             "define_variable_has_no_data": "",
             "define_variable_order_number": None,
+            "define_variable_has_codelist": False,
+            "define_variable_codelist_coded_values": [],
         }
         if itemdef:
             data["define_variable_name"] = itemdef.Name
@@ -224,12 +232,15 @@ class BaseDefineXMLReader(ABC):
                     itemdef.Description.TranslatedText[0]
                 )
             if itemdef.CodeListRef:
+                data["define_variable_has_codelist"] = True
                 oid = itemdef.CodeListRef.CodeListOID
-                data["define_variable_ccode"] = self._get_codelist_ccode(
-                    codelists.get(oid)
-                )
+                codelist = codelists.get(oid)
+                data["define_variable_ccode"] = self._get_codelist_ccode(codelist)
                 data["define_variable_allowed_terms"].extend(
-                    self._get_codelist_allowed_terms(codelists.get(oid))
+                    self._get_codelist_allowed_terms(codelist)
+                )
+                data["define_variable_codelist_coded_values"].extend(
+                    self._get_codelist_coded_values(codelist)
                 )
             if itemdef.Origin:
                 data["define_variable_origin_type"] = self._get_origin_type(itemdef)
@@ -251,6 +262,11 @@ class BaseDefineXMLReader(ABC):
         if codelist:
             for codelist_item in codelist.CodeListItem:
                 yield codelist_item.Decode.TranslatedText[0]._content
+
+    def _get_codelist_coded_values(self, codelist):
+        if codelist:
+            for codelist_item in codelist.CodeListItem + codelist.EnumeratedItem:
+                yield codelist_item.CodedValue
 
     def _get_variable_datatype(self, data_type):
         variable_type_map = {

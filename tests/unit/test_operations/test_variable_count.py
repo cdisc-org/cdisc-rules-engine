@@ -48,6 +48,7 @@ def test_variable_count(
     )
     operation_params.datasets = datasets
     operation_params.target = target
+    operation_params.original_target = target
     operation_params.dataset_path = dataset_path
     result = VariableCount(
         operation_params, datasets_map["AE"], cache, mock_data_service

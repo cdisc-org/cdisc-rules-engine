@@ -138,8 +138,10 @@
         "define_dataset_structure",
         "define_variable_allowed_terms",
         "define_variable_ccode",
+        "define_variable_codelist_coded_values",
         "define_variable_data_type",
         "define_variable_format",
+        "define_variable_has_codelist",
         "define_variable_is_collected",
         "define_variable_label",
         "define_variable_name",
@@ -147,13 +149,28 @@
         "define_variable_origin_type",
         "define_variable_role",
         "define_variable_size",
+        "define_vlm_allowed_terms",
+        "define_vlm_ccode",
+        "define_vlm_codelist_coded_values",
+        "define_vlm_data_type",
+        "define_vlm_format",
+        "define_vlm_has_codelist",
+        "define_vlm_is_collected",
+        "define_vlm_label",
+        "define_vlm_name",
+        "define_vlm_order_number",
+        "define_vlm_origin_type",
+        "define_vlm_role",
+        "define_vlm_size",
         "filename",
+        "row_number",
         "variable_data_type",
         "variable_format",
         "variable_label",
         "variable_name",
         "variable_order_number",
-        "variable_size"
+        "variable_size",
+        "variable_value"
       ],
       "type": "string"
     },
@@ -1133,6 +1150,9 @@
       "items": {
         "additionalProperties": false,
         "properties": {
+          "attribute_name": {
+            "$ref": "#/$defs/MetaVariables"
+          },
           "domain": {
             "anyOf": [
               {
@@ -1157,7 +1177,7 @@
           },
           "operator": {
             "enum": [
-              "define_variable_codelist",
+              "define_variable_metadata",
               "distinct",
               "domain_is_custom",
               "domain_label",
@@ -1168,6 +1188,7 @@
               "get_column_order_from_library",
               "get_ct_attribute_values",
               "get_model_column_order",
+              "get_model_filtered_variables",
               "get_parent_model_column_order",
               "label_referenced_variable_metadata",
               "max",
@@ -1232,6 +1253,8 @@
         "Define Item Metadata Check",
         "Domain Presence Check",
         "Record Data",
+        "Value Check against Define XML Variable",
+        "Value Check against Define XML VLM",
         "Value Level Metadata Check against Define XML",
         "Variable Metadata Check",
         "Variable Metadata Check against Define XML"
