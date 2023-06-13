@@ -146,6 +146,16 @@ def cli():
         "is printed."
     ),
 )
+@click.option(
+    "-vx",
+    "--validate-xml",
+    help=(
+        "Validate Define-XML or not when it misses def:Structure or in error"
+        ": Y (skip define validation and continue) or N (stop and report error)"
+    ),
+    default="Y",
+    show_default=True,
+)
 @click.pass_context
 def validate(
     ctx,
@@ -167,6 +177,7 @@ def validate(
     meddra: str,
     rules: Tuple[str],
     progress: str,
+    validate_xml: str,
 ):
     """
     Validate data using CDISC Rules Engine
@@ -233,6 +244,7 @@ def validate(
             meddra,
             rules,
             progress,
+            validate_xml,
         )
     )
 
