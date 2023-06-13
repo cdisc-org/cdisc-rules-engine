@@ -2,7 +2,7 @@ from abc import abstractmethod, ABC
 from dataclasses import dataclass
 from typing import List, Optional
 from functools import cache
-
+from heapq import heappush, heappop
 
 from odmlib.define_loader import XMLDefineLoader
 from odmlib.loader import ODMLoader
@@ -60,6 +60,16 @@ class BaseDefineXMLReader(ABC):
         self.cache_service = cache_service_obj
         self.study_id = study_id
         self.data_bundle_id = data_bundle_id
+
+    @cache
+    def get_item_def_map(self) -> dict:
+        metadata = self._odm_loader.MetaDataVersion()
+        return {item.OID: item for item in metadata.ItemDef}
+
+    @cache
+    def get_value_list_def_map(self) -> dict:
+        metadata = self._odm_loader.MetaDataVersion()
+        return {value_list.OID: value_list for value_list in metadata.ValueListDef}
 
     def read(self) -> List[dict]:
         """
@@ -186,6 +196,17 @@ class BaseDefineXMLReader(ABC):
             raise DomainNotFoundInDefineXMLError(
                 f"Domain {domain_name} is not found in Define XML"
             )
+
+    def _get_all_domain_metadata(self, metadata, domain_name):
+        # Returns all itemgroupdefs with domain = domain name.
+        # This will include and SUPP-- datasets and split datasets
+        # If the domain_name is SUPP-- the Domain value will not equal domain_name.
+        # The additional check `item.Name == domain_name` is meant to account for this.
+        return [
+            item
+            for item in metadata.ItemGroupDef
+            if item.Domain == domain_name or item.Name == domain_name
+        ]
 
     def _get_codelist_def_map(self, codelist_defs):
         """
@@ -326,3 +347,84 @@ class BaseDefineXMLReader(ABC):
             if key.endswith("DefineVersion"):
                 return val
         return None
+
+    def get_domain_key_sequence(self, domain_name: str) -> List[str]:
+        """Given a domain name, this function returns the key sequence variable names.
+
+        Key Sequence variable names are returned in order of KeySequence
+
+        In the case that Supplemental qualifiers apply to a domain:
+
+        1. If the dataset is not a supp dataset: add the VLM key variables to the list
+        2. Otherwise handle the supp dataset as a normal dataset.
+
+        Args:
+            domain_name: Name of the target domain/dataset
+
+        Returns:
+            list: List of key variables ordered by key sequence attribute
+        """
+
+        heap = []
+        existing_key_variables = set()
+        metadata = self._odm_loader.MetaDataVersion()
+        item_mapping = self.get_item_def_map()
+        value_list_mapping = self.get_value_list_def_map()
+        datasets = self._get_all_domain_metadata(metadata, domain_name)
+        for domain_metadata in datasets:
+            if (
+                domain_metadata.Name.startswith("SUPP")
+                and domain_name != domain_metadata.Name
+            ):
+                # handle supp vlm
+                key_variables = self._get_key_variables_for_supp_dataset(
+                    domain_metadata, item_mapping, value_list_mapping
+                )
+                [
+                    heappush(heap, key_variable)
+                    for key_variable in key_variables
+                    if key_variable[1] not in existing_key_variables
+                ]
+            else:
+                key_variables = self._get_key_variables_for_domain(
+                    domain_metadata, item_mapping
+                )
+                [
+                    heappush(heap, key_variable)
+                    for key_variable in key_variables
+                    if key_variable[1] not in existing_key_variables
+                ]
+
+        return [heappop(heap)[1] for _ in range(len(heap))]
+
+    def _get_key_variables_for_domain(self, domain_metadata, item_mapping):
+        key_variables = []
+        for item in domain_metadata.ItemRef:
+            if item.KeySequence:
+                item_def = item_mapping.get(item.ItemOID)
+                if item:
+                    key_variables.append((item.KeySequence, item_def.Name))
+        return key_variables
+
+    def _get_key_variables_for_supp_dataset(
+        self, domain_metadata, item_mapping, value_list_mapping
+    ):
+        key_variables = []
+        for item in domain_metadata.ItemRef:
+            item_def = item_mapping.get(item.ItemOID)
+            if item_def and item_def.ValueListRef:
+                value_list = value_list_mapping.get(item_def.ValueListRef.ValueListOID)
+                if value_list:
+                    key_variables.extend(
+                        self._get_key_variables_from_valuelist(value_list, item_mapping)
+                    )
+        return key_variables
+
+    def _get_key_variables_from_valuelist(self, value_list, item_mapping):
+        key_variables = []
+        for item_ref in value_list.ItemRef:
+            if item_ref.KeySequence:
+                key_item_def = item_mapping.get(item_ref.ItemOID)
+                if key_item_def:
+                    key_variables.append((item_ref.KeySequence, key_item_def.Name))
+        return key_variables
