@@ -297,5 +297,19 @@ def test_get_domain_key_sequence():
         contents: bytes = file.read()
         reader = DefineXMLReaderFactory.from_file_contents(contents)
         ec_key_sequence: dict = reader.get_domain_key_sequence(domain_name="EC")
-        print(ec_key_sequence)
         assert ec_key_sequence == ["STUDYID", "USUBJID", "ECTRT", "ECSTDTC", "ECREASOC"]
+
+
+def test_get_domain_key_sequence_for_supp():
+    with open(test_define_file_path, "rb") as file:
+        contents: bytes = file.read()
+        reader = DefineXMLReaderFactory.from_file_contents(contents)
+        suppec_key_sequence: dict = reader.get_domain_key_sequence(domain_name="SUPPEC")
+        assert suppec_key_sequence == [
+            "STUDYID",
+            "RDOMAIN",
+            "USUBJID",
+            "IDVAR",
+            "IDVARVAL",
+            "QNAM",
+        ]

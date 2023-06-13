@@ -194,7 +194,13 @@ class BaseDefineXMLReader(ABC):
     def _get_all_domain_metadata(self, metadata, domain_name):
         # Returns all itemgroupdefs with domain = domain name.
         # This will include and SUPP-- datasets and split datasets
-        return [item for item in metadata.ItemGroupDef if item.Domain == domain_name]
+        # If the domain_name is SUPP-- the Domain value will not equal domain_name.
+        # The additional check `item.Name == domain_name` is meant to account for this.
+        return [
+            item
+            for item in metadata.ItemGroupDef
+            if item.Domain == domain_name or item.Name == domain_name
+        ]
 
     def _get_codelist_def_map(self, codelist_defs):
         """
@@ -337,14 +343,22 @@ class BaseDefineXMLReader(ABC):
         return None
 
     def get_domain_key_sequence(self, domain_name: str) -> List[str]:
-        """
-        Given a domain name, this function returns the key sequence variable names
-        in order of KeySequence number.
+        """Given a domain name, this function returns the key sequence variable names.
+
+        Key Sequence variable names are returned in order of KeySequence
 
         In the case that Supplemental qualifiers apply to a domain:
 
-        # TODO! How should this be handled - add to end of list
+        1. If the dataset is not a supp dataset: add the VLM key variables to the list
+        2. Otherwise handle the supp dataset as a normal dataset.
+
+        Args:
+            domain_name: Name of the target domain/dataset
+
+        Returns:
+            list: List of key variables ordered by key sequence attribute
         """
+
         heap = []
         existing_key_variables = set()
         metadata = self._odm_loader.MetaDataVersion()
@@ -352,7 +366,10 @@ class BaseDefineXMLReader(ABC):
         value_list_mapping = self.get_value_list_def_map()
         datasets = self._get_all_domain_metadata(metadata, domain_name)
         for domain_metadata in datasets:
-            if domain_metadata.Name.startswith("SUPP"):
+            if (
+                domain_metadata.Name.startswith("SUPP")
+                and domain_name != domain_metadata.Name
+            ):
                 # handle supp vlm
                 key_variables = self._get_key_variables_for_supp_dataset(
                     domain_metadata, item_mapping, value_list_mapping
