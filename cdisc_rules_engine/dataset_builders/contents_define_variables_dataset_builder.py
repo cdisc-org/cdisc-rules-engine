@@ -32,7 +32,7 @@ class ContentsDefineVariablesDatasetBuilder(BaseDatasetBuilder):
             value_name="variable_value",
         )
         # get Define XML variable metadata for domain
-        variables_metadata: List[dict] = self.get_define_xml_variables_metadata()
+        variables_metadata: List[dict] = self.get_define_xml_variables_metadata(self.define_xml_path)
         variables_metadata_df = pd.DataFrame(variables_metadata)
         # merge dataset contents with define variable metadata
         merged = pd.merge(

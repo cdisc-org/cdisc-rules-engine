@@ -24,6 +24,7 @@ class BaseDatasetBuilder:
         dataset_path,
         datasets,
         domain,
+        define_xml_path,
     ):
         self.data_service = data_service
         self.cache = cache_service
@@ -33,6 +34,7 @@ class BaseDatasetBuilder:
         self.datasets = datasets
         self.domain = domain
         self.rule = rule
+        self.define_xml_path = define_xml_path
 
     @abstractmethod
     def build(self) -> pd.DataFrame:
@@ -63,7 +65,7 @@ class BaseDatasetBuilder:
             for dataset in get_corresponding_datasets(self.datasets, self.domain)
         ]
 
-    def get_define_xml_item_group_metadata(self, domain: str) -> List[dict]:
+    def get_define_xml_item_group_metadata(self, domain: str, define_xml_path:str) -> List[dict]:
         """
         Gets Define XML item group metadata
         returns a list of dictionaries containing the following keys:
@@ -76,7 +78,7 @@ class BaseDatasetBuilder:
             "define_dataset_variables"
         """
         directory_path = get_directory_path(self.dataset_path)
-        define_xml_path: str = os.path.join(directory_path, DEFINE_XML_FILE_NAME)
+        define_xml_path: str = os.path.join(directory_path if define_xml_path is None else define_xml_path, DEFINE_XML_FILE_NAME)
         define_xml_contents: bytes = self.data_service.get_define_xml_contents(
             dataset_name=define_xml_path
         )
@@ -85,12 +87,12 @@ class BaseDatasetBuilder:
         )
         return define_xml_reader.extract_domain_metadata(domain)
 
-    def get_define_xml_variables_metadata(self) -> List[dict]:
+    def get_define_xml_variables_metadata(self, define_xml_path: str) -> List[dict]:
         """
         Gets Define XML variables metadata.
         """
         directory_path = get_directory_path(self.dataset_path)
-        define_xml_path: str = os.path.join(directory_path, DEFINE_XML_FILE_NAME)
+        define_xml_path: str = os.path.join(directory_path if define_xml_path is None else define_xml_path, DEFINE_XML_FILE_NAME)
         define_xml_contents: bytes = self.data_service.get_define_xml_contents(
             dataset_name=define_xml_path
         )

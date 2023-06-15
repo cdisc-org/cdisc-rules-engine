@@ -18,6 +18,6 @@ class DefineItemGroupDatasetBuilder(BaseDatasetBuilder):
             "define_dataset_variables"
         """
         item_group_metadata: List[dict] = self.get_define_xml_item_group_metadata(
-            self.domain
+            self.domain, self.define_xml_path
         )
         return pd.DataFrame([item_group_metadata])

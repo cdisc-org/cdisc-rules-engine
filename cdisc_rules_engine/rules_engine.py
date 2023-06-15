@@ -116,7 +116,7 @@ class RulesEngine:
         return output
 
     def validate_single_rule(
-        self, rule: dict, dataset_path: str, datasets: List[dict], dataset_domain: str
+        self, rule: dict, dataset_path: str, datasets: List[dict], dataset_domain: str, define_xml_path: str = None,
     ) -> List[Union[dict, str]]:
         """
         This function is an entrypoint to validation process.
@@ -135,7 +135,7 @@ class RulesEngine:
                 datasets,
             ):
                 result: List[Union[dict, str]] = self.validate_rule(
-                    rule, dataset_path, datasets, dataset_domain
+                    rule, dataset_path, datasets, dataset_domain, define_xml_path
                 )
                 logger.info(f"Validated domain {dataset_domain}. Result = {result}")
                 if result:
@@ -181,7 +181,7 @@ class RulesEngine:
         )
 
     def validate_rule(
-        self, rule: dict, dataset_path: str, datasets: List[dict], domain: str
+        self, rule: dict, dataset_path: str,  datasets: List[dict], domain: str, define_xml_path: str = None,
     ) -> List[Union[dict, str]]:
         """
          This function is an entrypoint for rule validation.
@@ -199,7 +199,7 @@ class RulesEngine:
         ):
             # get Define XML metadata for domain and use it as a rule comparator
             define_metadata: dict = self.get_define_xml_metadata_for_domain(
-                dataset_path, domain
+                dataset_path, domain, define_xml_path
             )
             self.rule_processor.add_comparator_to_rule_conditions(rule, define_metadata)
 
@@ -240,7 +240,7 @@ class RulesEngine:
                     self.standard, self.standard_version
                 )
             )
-            define_metadata: List[dict] = builder.get_define_xml_variables_metadata()
+            define_metadata: List[dict] = builder.get_define_xml_variables_metadata(define_xml_path)
             targets: List[
                 str
             ] = self.data_processor.filter_dataset_columns_by_metadata_and_rule(
@@ -326,13 +326,13 @@ class RulesEngine:
         return results
 
     def get_define_xml_metadata_for_domain(
-        self, dataset_path: str, domain_name: str
+        self, dataset_path: str,domain_name: str,  define_xml_path, 
     ) -> dict:
         """
         Gets Define XML metadata and returns it as dict.
         """
         directory_path = get_directory_path(dataset_path)
-        define_xml_path: str = os.path.join(directory_path, DEFINE_XML_FILE_NAME)
+        define_xml_path: str = os.path.join(directory_path if define_xml_path is None else define_xml_path, DEFINE_XML_FILE_NAME) 
         define_xml_contents: bytes = self.data_service.get_define_xml_contents(
             dataset_name=define_xml_path
         )
@@ -348,7 +348,7 @@ class RulesEngine:
         Gets Define XML variable metadata and returns it as dataframe.
         """
         directory_path = get_directory_path(dataset_path)
-        define_xml_path: str = os.path.join(directory_path, DEFINE_XML_FILE_NAME)
+        define_xml_path: str = os.path.join(directory_path if define_xml_path is None else define_xml_path, DEFINE_XML_FILE_NAME)
         define_xml_contents: bytes = self.data_service.get_define_xml_contents(
             dataset_name=define_xml_path
         )

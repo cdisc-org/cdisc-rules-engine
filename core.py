@@ -146,6 +146,7 @@ def cli():
         "is printed."
     ),
 )
+@click.option("-dxp", "--define-xml-path", required=False, help="Path to Define-XML")
 @click.pass_context
 def validate(
     ctx,
@@ -167,6 +168,7 @@ def validate(
     meddra: str,
     rules: Tuple[str],
     progress: str,
+    define_xml_path: str,
 ):
     """
     Validate data using CDISC Rules Engine
@@ -233,6 +235,7 @@ def validate(
             meddra,
             rules,
             progress,
+            define_xml_path
         )
     )
 
@@ -285,6 +288,7 @@ def update_cache(ctx: click.Context, cache_path: str, apikey: str):
     default=DefaultFilePaths.CACHE.value,
     help="Relative path to cache files containing pre loaded metadata and rules",
 )
+
 @click.option(
     "-s", "--standard", required=False, help="CDISC standard to get rules for"
 )

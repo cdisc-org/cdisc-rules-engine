@@ -98,5 +98,6 @@ def test_contents_define_variables_dataset_builder(
         dataset_path=None,
         datasets=None,
         domain=None,
+        define_xml_path=None,
     ).build()
     assert result.equals(pd.DataFrame.from_dict(expected))

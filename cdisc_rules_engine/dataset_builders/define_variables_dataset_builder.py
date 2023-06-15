@@ -25,5 +25,5 @@ class DefineVariablesDatasetBuilder(BaseDatasetBuilder):
         "define_variable_codelist_coded_values",
         """
         # get Define XML metadata for domain and use it as a rule comparator
-        variable_metadata: List[dict] = self.get_define_xml_variables_metadata()
+        variable_metadata: List[dict] = self.get_define_xml_variables_metadata(self.define_xml_path)
         return pd.DataFrame(variable_metadata)

@@ -1,9 +1,12 @@
 ### Supported python versions
+
 [![Python 3.7](https://img.shields.io/badge/python-3.7-blue.svg)](https://www.python.org/downloads/release/python-370)
 [![Python 3.8](https://img.shields.io/badge/python-3.8-orange.svg)](https://www.python.org/downloads/release/python-380)
 [![Python 3.9](https://img.shields.io/badge/python-3.9-green.svg)](https://www.python.org/downloads/release/python-390)
 [![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/downloads/release/python-310)
+
 # cdisc-rules-engine
+
 Open source offering of the cdisc rules engine
 
 ### Quick start
@@ -27,10 +30,12 @@ Linux/Mac:
 
 # ex: ./core validate -s sdtmig -v 3-4 -d .\xpt\
 ```
+
 ### Code formatter
+
 This project uses the `black` code formatter and `flake8` linter for python.
 It also uses `pre-commit` to run `black` and `flake8` when you commit.
-Both dependencies are added to *requirements.txt*.
+Both dependencies are added to _requirements.txt_.
 
 **Required**
 
@@ -41,23 +46,26 @@ Setting up `pre-commit` requires one extra step. After installing it you have to
 This installs `pre-commit` in your `.git/hooks` directory.
 
 ### Installing dependencies.
+
 These steps should be run before running any tests or core commands using the non compiled version.
 
-* Create a virtual environment:
-`python -m venv <virtual_environment_name>`
-* Activate the virtual environment:
+- Create a virtual environment:
+  `python -m venv <virtual_environment_name>`
+- Activate the virtual environment:
 
 `./<virtual_environment_name>/bin/activate` -- on linux/mac </br>
 `.\<virtual_environment_name>\Scripts\Activate` -- on windows
 
-* Install the requirements.
+- Install the requirements.
 
 `python -m pip install -r requirements.txt` # From the root directory
 
 ### Running The Tests
+
 From the root of the project run the following command:
 
 `python -m pytest tests/unit/`
+
 ### Running a validation
 
 #### From the command line
@@ -65,6 +73,7 @@ From the root of the project run the following command:
 Clone the repository and run `python core.py --help` to see the full list of commands.
 
 Run `python core.py validate --help` to see the list of validation options.
+
 ```
   -ca, --cache TEXT               Relative path to cache files containing pre
                                   loaded metadata and rules
@@ -107,47 +116,50 @@ Run `python core.py validate --help` to see the list of validation options.
 
 ##### Available log levels
 
-* `debug` - Display all logs
-* `info` - Display info, warnings, and error logs
-* `warn` - Display warnings and errors
-* `error` - Display only error logs
-* `critical` - Display critical logs
+- `debug` - Display all logs
+- `info` - Display info, warnings, and error logs
+- `warn` - Display warnings and errors
+- `error` - Display only error logs
+- `critical` - Display critical logs
 
 ##### Validate folder
+
 To validate a folder using rules for SDTM-IG version 3.4 use the following command:
 
 `python core.py validate -s sdtmig -v 3-4 -d path/to/datasets`
 
 ##### Understanding the Rules Report
+
 The rules report tab displays the run status of each rule selected for validation
 
 The possible rule run statuses are:
 
-* `SUCCESS` - The rule ran and data was validated against the rule. May or may not produce results
-* `SKIPPED` - The rule was unable to be run. Usually due to missing required data, but could also be cause by rule execution errors.
+- `SUCCESS` - The rule ran and data was validated against the rule. May or may not produce results
+- `SKIPPED` - The rule was unable to be run. Usually due to missing required data, but could also be cause by rule execution errors.
 
 ##### Additional Core Commands
 
-* update-cache - update locally stored cache data (Requires an environment variable - `CDISC_LIBRARY_API_KEY`)
+- update-cache - update locally stored cache data (Requires an environment variable - `CDISC_LIBRARY_API_KEY`)
 
-    `python core.py update-cache`
-    
-    To obtain an api key, please follow the instructions found here: https://wiki.cdisc.org/display/LIBSUPRT/Getting+Started%3A+Access+to+CDISC+Library+API+using+API+Key+Authentication. Please note it can take up to an hour after sign up to have an api key issued
+  `python core.py update-cache`
 
-* list-rules - list rules available in the cache
+  To obtain an api key, please follow the instructions found here: https://wiki.cdisc.org/display/LIBSUPRT/Getting+Started%3A+Access+to+CDISC+Library+API+using+API+Key+Authentication. Please note it can take up to an hour after sign up to have an api key issued
 
-    * list all rules:
+- list-rules - list rules available in the cache
 
-    `python core.py list-rules`
+  - list all rules:
 
-    * list rules for standard:
+  `python core.py list-rules`
 
-    `python core.py list-rules -s sdtmig -v 3-4`
+  - list rules for standard:
 
-* list-rule-sets - lists all standards and versions for which rules are available:
-    `python core.py list-rule-sets`
+  `python core.py list-rules -s sdtmig -v 3-4`
 
-* test - Test authored rule given dataset in json format
+- list-rule-sets - lists all standards and versions for which rules are available:
+  `python core.py list-rule-sets`
+
+- test - Test authored rule given dataset in json format
+
 ```
   -ca, --cache TEXT               Relative path to cache files containing pre
                                   loaded metadata and rules
@@ -160,6 +172,7 @@ The possible rule run statuses are:
                                   Controlled terminology package to validate
                                   against, can provide more than one
   -dv, --define-version TEXT      Define-XML version used for validation
+  -dxp, --define-xml-path TEXT    Path to Define-XML
   --whodrug TEXT                  Path to directory with WHODrug dictionary
                                   files
   --meddra TEXT                   Path to directory with MedDRA dictionary
@@ -169,7 +182,7 @@ The possible rule run statuses are:
 ```
 
 EX: `python core.py test -s sdtmig -v 3-4 -dp <path to dataset json file> -r <path to rule json file> --meddra ./meddra/ --whodrug ./whodrug/`
-Note: JSON dataset should match the format provided by the rule editor: 
+Note: JSON dataset should match the format provided by the rule editor:
 
 ```
 {
@@ -198,7 +211,8 @@ Note: JSON dataset should match the format provided by the rule editor:
 }
 ```
 
-* list-ct - list ct packages available in the cache
+- list-ct - list ct packages available in the cache
+
 ```
 Usage: python core.py list-ct [OPTIONS]
 
@@ -238,7 +252,7 @@ from cdisc_rules_engine.services.cache import InMemoryCacheService
 class CacheManager(SyncManager):
     pass
 
-# If you're working from a terminal you may need to 
+# If you're working from a terminal you may need to
 # use SyncManager directly rather than define CacheManager
 CacheManager.register("InMemoryCacheService", InMemoryCacheService)
 
@@ -254,7 +268,7 @@ def load_rules_cache(path_to_rules_cache):
   for fname in files:
       with open(cache_path / fname, "rb") as f:
           cache.add_all(pickle.load(f))
-  
+
   return cache
 ```
 
@@ -271,23 +285,23 @@ rules = cache.get_all_by_prefix(cache_key_prefix)
 
 `rules` will now be a list of dictionaries the following keys
 
- - `core_id`
-   - e.g. "CORE-000252"
- - `domains`
-   - e.g. `{'Include': ['DM'], 'Exclude': []}` or `{'Include': ['ALL']}`
- - `author`
- - `reference`
- - `sensitivity`
- - `executability`
- - `description`
- - `authorities`
- - `standards`
- - `classes`
- - `rule_type`
- - `conditions`
- - `actions`
- - `datasets`
- - `output_variables`
+- `core_id`
+  - e.g. "CORE-000252"
+- `domains`
+  - e.g. `{'Include': ['DM'], 'Exclude': []}` or `{'Include': ['ALL']}`
+- `author`
+- `reference`
+- `sensitivity`
+- `executability`
+- `description`
+- `authorities`
+- `standards`
+- `classes`
+- `rule_type`
+- `conditions`
+- `actions`
+- `datasets`
+- `output_variables`
 
 ##### Step 2: Prepare your data
 
@@ -317,7 +331,7 @@ Next, we need to actually run the rules. We can select which rules we want to ru
 # Get the rules for the domain AE
 # (Note: we're ignoring ALL domain rules here)
 ae_rules = [
-  rule for rule in rules 
+  rule for rule in rules
   if "AE" in rule["domains"].get("Include", [])
 ]
 ```
@@ -359,6 +373,7 @@ was_triggered = run(
 ##### Step 5: Interpret the results
 
 The return value of run will tell us if the rule was triggered.
+
 - A `False` value means that there were no errors
 - A `True` value means that there were errors
 
