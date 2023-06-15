@@ -63,7 +63,7 @@ class RulesEngine:
         self.data_processor = DataProcessor(self.data_service, self.cache)
         self.standard = kwargs.get("standard")
         self.standard_version = kwargs.get("standard_version")
-        self.ct_packages = kwargs.get("ct_packages")
+        self.ct_packages = kwargs.get("ct_packages", [])
         self.meddra_path: str = kwargs.get("meddra_path")
         self.whodrug_path: str = kwargs.get("whodrug_path")
 
