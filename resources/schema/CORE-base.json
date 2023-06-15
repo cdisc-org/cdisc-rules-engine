@@ -9,9 +9,7 @@
               "$ref": "#/$defs/CheckItems"
             }
           },
-          "required": [
-            "all"
-          ],
+          "required": ["all"],
           "type": "object"
         },
         {
@@ -21,9 +19,7 @@
               "$ref": "#/$defs/CheckItems"
             }
           },
-          "required": [
-            "any"
-          ],
+          "required": ["any"],
           "type": "object"
         },
         {
@@ -33,9 +29,7 @@
               "$ref": "#/$defs/CheckItem"
             }
           },
-          "required": [
-            "not"
-          ],
+          "required": ["not"],
           "type": "object"
         }
       ]
@@ -182,10 +176,7 @@
       "additionalProperties": false,
       "properties": {
         "comparator": {
-          "type": [
-            "number",
-            "string"
-          ]
+          "type": ["number", "string"]
         },
         "context": {
           "type": "string"
@@ -318,10 +309,7 @@
           "type": "string"
         },
         "order": {
-          "enum": [
-            "asc",
-            "dsc"
-          ],
+          "enum": ["asc", "dsc"],
           "type": "string"
         },
         "ordering": {
@@ -339,25 +327,17 @@
         "value": {
           "oneOf": [
             {
-              "type": [
-                "boolean",
-                "number",
-                "string"
-              ]
+              "type": ["boolean", "number", "string"]
             },
             {
               "items": {
-                "type": [
-                  "number"
-                ]
+                "type": ["number"]
               },
               "type": "array"
             },
             {
               "items": {
-                "type": [
-                  "string"
-                ]
+                "type": ["string"]
               },
               "type": "array"
             }
@@ -370,9 +350,7 @@
           "$ref": "#/$defs/VariableName"
         }
       },
-      "required": [
-        "operator"
-      ],
+      "required": ["operator"],
       "type": "object"
     },
     "Subclasses": {
@@ -433,10 +411,7 @@
                               "type": "string"
                             }
                           },
-                          "required": [
-                            "Document",
-                            "Cited Guidance"
-                          ],
+                          "required": ["Document", "Cited Guidance"],
                           "type": "object"
                         },
                         "type": "array"
@@ -445,14 +420,10 @@
                         "additionalProperties": false,
                         "anyOf": [
                           {
-                            "required": [
-                              "Logical Expression"
-                            ]
+                            "required": ["Logical Expression"]
                           },
                           {
-                            "required": [
-                              "Plain Language Expression"
-                            ]
+                            "required": ["Plain Language Expression"]
                           }
                         ],
                         "properties": {
@@ -466,25 +437,18 @@
                                 "type": "string"
                               }
                             },
-                            "required": [
-                              "Rule"
-                            ],
+                            "required": ["Rule"],
                             "type": "object"
                           },
                           "Plain Language Expression": {
                             "type": "string"
                           },
                           "Type": {
-                            "enum": [
-                              "Failure",
-                              "Success"
-                            ],
+                            "enum": ["Failure", "Success"],
                             "type": "string"
                           }
                         },
-                        "required": [
-                          "Type"
-                        ],
+                        "required": ["Type"],
                         "type": "object"
                       },
                       "Origin": {
@@ -498,18 +462,11 @@
                               "type": "string"
                             },
                             "Relationship": {
-                              "enum": [
-                                "Predecessor",
-                                "Related",
-                                "Successor"
-                              ],
+                              "enum": ["Predecessor", "Related", "Successor"],
                               "type": "string"
                             }
                           },
-                          "required": [
-                            "Id",
-                            "Relationship"
-                          ],
+                          "required": ["Id", "Relationship"],
                           "type": "object"
                         },
                         "type": "array"
@@ -527,9 +484,7 @@
                             "type": "string"
                           }
                         },
-                        "required": [
-                          "Id"
-                        ],
+                        "required": ["Id"],
                         "type": "object"
                       },
                       "Validator Rule Message": {
@@ -539,11 +494,7 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "Origin",
-                      "Rule Identifier",
-                      "Version"
-                    ],
+                    "required": ["Origin", "Rule Identifier", "Version"],
                     "type": "object"
                   },
                   "minItems": 1,
@@ -553,11 +504,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "Name",
-                "References",
-                "Version"
-              ],
+              "required": ["Name", "References", "Version"],
               "type": "object"
             },
             "minItems": 1,
@@ -587,9 +534,7 @@
                                     "const": "Failure"
                                   }
                                 },
-                                "required": [
-                                  "Type"
-                                ],
+                                "required": ["Type"],
                                 "type": "object"
                               },
                               "Origin": {
@@ -605,9 +550,7 @@
                                 "type": "object"
                               },
                               "Version": {
-                                "enum": [
-                                  "4.0"
-                                ]
+                                "enum": ["4.0"]
                               }
                             },
                             "type": "object"
@@ -616,12 +559,7 @@
                           "type": "array"
                         },
                         "Version": {
-                          "enum": [
-                            "1.0",
-                            "1.1",
-                            "1.2",
-                            "1.3"
-                          ]
+                          "enum": ["1.0", "1.1", "1.2", "1.3"]
                         }
                       },
                       "type": "object"
@@ -640,9 +578,7 @@
                                     "const": "Success"
                                   }
                                 },
-                                "required": [
-                                  "Type"
-                                ],
+                                "required": ["Type"],
                                 "type": "object"
                               },
                               "Origin": {
@@ -655,19 +591,13 @@
                                     "type": "string"
                                   },
                                   "Version": {
-                                    "enum": [
-                                      "1",
-                                      "2",
-                                      "3"
-                                    ]
+                                    "enum": ["1", "2", "3"]
                                   }
                                 },
                                 "type": "object"
                               },
                               "Version": {
-                                "enum": [
-                                  "2.0"
-                                ]
+                                "enum": ["2.0"]
                               }
                             },
                             "type": "object"
@@ -676,11 +606,7 @@
                           "type": "array"
                         },
                         "Version": {
-                          "enum": [
-                            "3.2",
-                            "3.3",
-                            "3.4"
-                          ]
+                          "enum": ["3.2", "3.3", "3.4"]
                         }
                       },
                       "type": "object"
@@ -699,9 +625,7 @@
                                     "const": "Success"
                                   }
                                 },
-                                "required": [
-                                  "Type"
-                                ],
+                                "required": ["Type"],
                                 "type": "object"
                               },
                               "Origin": {
@@ -717,9 +641,7 @@
                                 "type": "object"
                               },
                               "Version": {
-                                "enum": [
-                                  "5.0"
-                                ]
+                                "enum": ["5.0"]
                               }
                             },
                             "type": "object"
@@ -728,11 +650,7 @@
                           "type": "array"
                         },
                         "Version": {
-                          "enum": [
-                            "3.0",
-                            "3.1",
-                            "3.1.1"
-                          ]
+                          "enum": ["3.0", "3.1", "3.1.1"]
                         }
                       },
                       "type": "object"
@@ -751,9 +669,7 @@
                                     "const": "Success"
                                   }
                                 },
-                                "required": [
-                                  "Type"
-                                ],
+                                "required": ["Type"],
                                 "type": "object"
                               },
                               "Origin": {
@@ -769,9 +685,7 @@
                                 "type": "object"
                               },
                               "Version": {
-                                "enum": [
-                                  "5.0"
-                                ]
+                                "enum": ["5.0"]
                               }
                             },
                             "type": "object"
@@ -780,9 +694,7 @@
                           "type": "array"
                         },
                         "Version": {
-                          "enum": [
-                            "1.1"
-                          ]
+                          "enum": ["1.1"]
                         }
                       },
                       "type": "object"
@@ -835,10 +747,7 @@
                                   }
                                 }
                               ],
-                              "required": [
-                                "Document",
-                                "Cited Guidance"
-                              ],
+                              "required": ["Document", "Cited Guidance"],
                               "type": "object"
                             },
                             "type": "array"
@@ -849,9 +758,7 @@
                                 "const": "Success"
                               }
                             },
-                            "required": [
-                              "Type"
-                            ],
+                            "required": ["Type"],
                             "type": "object"
                           },
                           "Origin": {
@@ -867,9 +774,7 @@
                             "type": "object"
                           },
                           "Version": {
-                            "enum": [
-                              "1.6"
-                            ]
+                            "enum": ["1.6"]
                           }
                         },
                         "type": "object"
@@ -885,12 +790,7 @@
                           "const": "SDTMIG"
                         },
                         "Version": {
-                          "enum": [
-                            "3.1.2",
-                            "3.1.3",
-                            "3.2",
-                            "3.3"
-                          ]
+                          "enum": ["3.1.2", "3.1.3", "3.2", "3.3"]
                         }
                       },
                       "type": "object"
@@ -901,11 +801,7 @@
                           "const": "SENDIG"
                         },
                         "Version": {
-                          "enum": [
-                            "3.0",
-                            "3.1",
-                            "3.1.1"
-                          ]
+                          "enum": ["3.0", "3.1", "3.1.1"]
                         }
                       },
                       "type": "object"
@@ -916,9 +812,7 @@
                           "const": "SENDIG-AR"
                         },
                         "Version": {
-                          "enum": [
-                            "1.0"
-                          ]
+                          "enum": ["1.0"]
                         }
                       },
                       "type": "object"
@@ -929,9 +823,7 @@
                           "const": "SENDIG-DART"
                         },
                         "Version": {
-                          "enum": [
-                            "1.1"
-                          ]
+                          "enum": ["1.1"]
                         }
                       },
                       "type": "object"
@@ -962,9 +854,7 @@
                                 "const": "Failure"
                               }
                             },
-                            "required": [
-                              "Type"
-                            ],
+                            "required": ["Type"],
                             "type": "object"
                           },
                           "Origin": {
@@ -980,11 +870,7 @@
                             "type": "object"
                           },
                           "Severity": {
-                            "enum": [
-                              "Error",
-                              "Reject",
-                              "Warning"
-                            ]
+                            "enum": ["Error", "Reject", "Warning"]
                           },
                           "Version": {
                             "enum": [
@@ -1007,10 +893,7 @@
                           "const": "ADaMIG"
                         },
                         "Version": {
-                          "enum": [
-                            "1.0",
-                            "1.1"
-                          ]
+                          "enum": ["1.0", "1.1"]
                         }
                       },
                       "type": "object"
@@ -1021,10 +904,7 @@
                           "const": "Define-XML"
                         },
                         "Version": {
-                          "enum": [
-                            "1.0",
-                            "2.0"
-                          ]
+                          "enum": ["1.0", "2.0"]
                         }
                       },
                       "type": "object"
@@ -1035,11 +915,7 @@
                           "const": "SDTMIG"
                         },
                         "Version": {
-                          "enum": [
-                            "3.1.2",
-                            "3.1.3",
-                            "3.2"
-                          ]
+                          "enum": ["3.1.2", "3.1.3", "3.2"]
                         }
                       },
                       "type": "object"
@@ -1054,10 +930,7 @@
             "type": "object"
           }
         ],
-        "required": [
-          "Organization",
-          "Standards"
-        ],
+        "required": ["Organization", "Standards"],
         "type": "object"
       },
       "minItems": 1,
@@ -1090,15 +963,10 @@
               "const": "Published"
             }
           },
-          "required": [
-            "Id"
-          ]
+          "required": ["Id"]
         }
       ],
-      "required": [
-        "Status",
-        "Version"
-      ],
+      "required": ["Status", "Version"],
       "type": "object"
     },
     "Description": {
@@ -1137,10 +1005,7 @@
             "type": "array"
           }
         },
-        "required": [
-          "Name",
-          "Keys"
-        ],
+        "required": ["Name", "Keys"],
         "type": "object"
       },
       "minItems": 1,
@@ -1186,7 +1051,7 @@
               "expected_variables",
               "get_column_order_from_dataset",
               "get_column_order_from_library",
-              "get_ct_attribute_values",
+              "get_codelist_attributes",
               "get_model_column_order",
               "get_model_filtered_variables",
               "get_parent_model_column_order",
@@ -1217,10 +1082,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "id",
-          "operator"
-        ],
+        "required": ["id", "operator"],
         "type": "object"
       },
       "minItems": 1,
@@ -1239,9 +1101,7 @@
           "type": "array"
         }
       },
-      "required": [
-        "Message"
-      ],
+      "required": ["Message"],
       "type": "object"
     },
     "Rule Type": {
@@ -1273,9 +1133,7 @@
                   "$ref": "#/$defs/Classes"
                 }
               },
-              "required": [
-                "Include"
-              ],
+              "required": ["Include"],
               "type": "object"
             },
             {
@@ -1285,9 +1143,7 @@
                   "$ref": "#/$defs/Classes"
                 }
               },
-              "required": [
-                "Exclude"
-              ],
+              "required": ["Exclude"],
               "type": "object"
             }
           ]
@@ -1301,9 +1157,7 @@
                   "$ref": "#/$defs/DataStructures"
                 }
               },
-              "required": [
-                "Include"
-              ],
+              "required": ["Include"],
               "type": "object"
             },
             {
@@ -1313,9 +1167,7 @@
                   "$ref": "#/$defs/DataStructures"
                 }
               },
-              "required": [
-                "Exclude"
-              ],
+              "required": ["Exclude"],
               "type": "object"
             }
           ]
@@ -1362,24 +1214,16 @@
       },
       "oneOf": [
         {
-          "required": [
-            "Classes",
-            "Domains"
-          ]
+          "required": ["Classes", "Domains"]
         },
         {
-          "required": [
-            "Data Structures"
-          ]
+          "required": ["Data Structures"]
         }
       ],
       "type": "object"
     },
     "Sensitivity": {
-      "enum": [
-        "Dataset",
-        "Record"
-      ],
+      "enum": ["Dataset", "Record"],
       "type": "string"
     }
   },

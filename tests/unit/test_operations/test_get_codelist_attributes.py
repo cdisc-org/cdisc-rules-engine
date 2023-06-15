@@ -5,8 +5,8 @@ from typing import List
 
 from cdisc_rules_engine.models.operation_params import OperationParams
 
-from cdisc_rules_engine.operations.get_ct_attribute_values import (
-    CTAttributeValues,
+from cdisc_rules_engine.operations.get_codelist_attributes import (
+    CodeListAttributes,
 )
 from cdisc_rules_engine.services.cache import InMemoryCacheService
 
@@ -76,7 +76,7 @@ test_set2 = (
 @pytest.mark.parametrize(
     "ct_package, ts_data, ct_data, ct_list", [test_set1, test_set2]
 )
-def test_get_ct_attribute_values(
+def test_get_codelist_attributes(
     operation_params: OperationParams, ct_package, ts_data: dict, ct_data: list, ct_list
 ):
     """
@@ -102,7 +102,7 @@ def test_get_ct_attribute_values(
     # 3.0 execute operation
     data_service = LocalDataService.get_instance(cache_service=cache)
 
-    operation = CTAttributeValues(
+    operation = CodeListAttributes(
         operation_params, operation_params.dataframe, cache, data_service
     )
 
