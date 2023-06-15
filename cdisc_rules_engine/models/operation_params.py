@@ -20,7 +20,7 @@ class OperationParams:
     datasets: List[dict]
     standard: str
     standard_version: str
-    ct_package: list = None
+    ct_packages: list = None
     ct_attribute: str = None
     ct_version: str = None
     target: str = None

@@ -73,7 +73,7 @@ class CodeListAttributes(BaseOperation):
             pd.DataFrame: A DataFrame containing the codelist information
             retrieved from the cache.
         """
-        ct_packages = self.params.ct_package
+        ct_packages = self.params.ct_packages
         ct_term_maps = (
             []
             if ct_packages is None
@@ -120,7 +120,7 @@ class CodeListAttributes(BaseOperation):
             pd.DataFrame: A DataFrame containing the codelist information
             retrieved from the dataset.
         """
-        ct_packages = self.params.ct_package
+        ct_packages = self.params.ct_packages
         ct_attr = self.params.ct_attribute
         c1 = self.params.target
         c2 = self.params.ct_version

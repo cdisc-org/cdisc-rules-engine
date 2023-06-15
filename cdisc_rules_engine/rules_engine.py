@@ -63,7 +63,7 @@ class RulesEngine:
         self.data_processor = DataProcessor(self.data_service, self.cache)
         self.standard = kwargs.get("standard")
         self.standard_version = kwargs.get("standard_version")
-        self.ct_package = kwargs.get("ct_package")
+        self.ct_packages = kwargs.get("ct_packages")
         self.meddra_path: str = kwargs.get("meddra_path")
         self.whodrug_path: str = kwargs.get("whodrug_path")
 
@@ -209,7 +209,7 @@ class RulesEngine:
             )
             variable_codelist_map = self.cache.get(variable_codelist_map_key) or {}
             codelist_term_maps = [
-                self.cache.get(package) or {} for package in self.ct_package
+                self.cache.get(package) or {} for package in self.ct_packages
             ]
             kwargs["variable_codelist_map"] = variable_codelist_map
             kwargs["codelist_term_maps"] = codelist_term_maps
@@ -250,7 +250,7 @@ class RulesEngine:
                 rule["conditions"], targets
             )
 
-        kwargs["ct_package"] = list(self.ct_package)
+        kwargs["ct_packages"] = list(self.ct_packages)
 
         logger.info(f"Using dataset build by: {builder.__class__}")
         return self.execute_rule(
@@ -267,7 +267,7 @@ class RulesEngine:
         value_level_metadata: List[dict] = None,
         variable_codelist_map: dict = None,
         codelist_term_maps: list = None,
-        ct_package: list = None,
+        ct_packages: list = None,
     ) -> List[str]:
         """
         Executes the given rule on a given dataset.
@@ -300,7 +300,7 @@ class RulesEngine:
             standard_version=self.standard_version,
             meddra_path=self.meddra_path,
             whodrug_path=self.whodrug_path,
-            ct_package=ct_package,
+            ct_packages=ct_packages,
         )
         relationship_data = {}
         if self.rule_processor.is_relationship_dataset(domain):

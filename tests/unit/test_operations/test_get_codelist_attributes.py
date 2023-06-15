@@ -74,10 +74,14 @@ test_set2 = (
 
 
 @pytest.mark.parametrize(
-    "ct_package, ts_data, ct_data, ct_list", [test_set1, test_set2]
+    "ct_packages, ts_data, ct_data, ct_list", [test_set1, test_set2]
 )
 def test_get_codelist_attributes(
-    operation_params: OperationParams, ct_package, ts_data: dict, ct_data: list, ct_list
+    operation_params: OperationParams,
+    ct_packages,
+    ts_data: dict,
+    ct_data: list,
+    ct_list,
 ):
     """
     Unit test for DataProcessor.get_column_order_from_library.
@@ -91,7 +95,7 @@ def test_get_codelist_attributes(
     operation_params.ct_attribute: str = "TSVALCD"
     operation_params.ct_version: str = "TSVCDVER"
     operation_params.target = "TSVCDREF"
-    operation_params.ct_package: list = ct_package
+    operation_params.ct_packages: list = ct_packages
 
     # 2.0 add CT data to cache
     cache = InMemoryCacheService.get_instance()
