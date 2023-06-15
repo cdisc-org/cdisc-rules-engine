@@ -44,7 +44,8 @@ class CacheManager(SyncManager):
 
 
 def validate_single_rule(cache, path, args, datasets, rule: dict = None):
-    set_log_level("ERROR")
+    # set_log_level("ERROR")
+    set_log_level(args.log_level)
     rule["conditions"] = ConditionCompositeFactory.get_condition_composite(
         rule["conditions"]
     )
@@ -56,6 +57,8 @@ def validate_single_rule(cache, path, args, datasets, rule: dict = None):
         ct_package=args.controlled_terminology_package,
         meddra_path=args.meddra,
         whodrug_path=args.whodrug,
+        validate_xml=args.validate_xml,
+        join_method=args.join_method,
     )
     validated_domains = set()
     results = []
@@ -66,14 +69,14 @@ def validate_single_rule(cache, path, args, datasets, rule: dict = None):
         # and appears multiple times within the list of datasets
         if dataset.domain not in validated_domains:
             validated_domains.add(dataset.domain)
-            results.append(
-                engine.test_validation(
-                    rule,
-                    os.path.join(directory, dataset.filename),
-                    datasets,
-                    dataset.domain,
-                )
+            validated_result = engine.test_validation(
+                rule,
+                os.path.join(directory, dataset.filename),
+                datasets,
+                dataset.domain,
             )
+            results.append(validated_result)
+            # logger.info(f"Done validating {dataset.domain}")
     results = list(itertools.chain(*results))
     return RuleValidationResult(rule, results)
 
@@ -86,7 +89,8 @@ def set_log_level(level: str):
 
 
 def test(args: TestArgs):
-    set_log_level("ERROR")
+    # set_log_level("ERROR")
+    set_log_level(args.log_level)
     # fill cache
     CacheManager.register("RedisCacheService", RedisCacheService)
     CacheManager.register("InMemoryCacheService", InMemoryCacheService)
@@ -143,6 +147,8 @@ def test(args: TestArgs):
         args.whodrug,
         rules,
         ProgressParameterOptions.BAR.value,
+        args.validate_xml,
+        args.join_method,
     )
     reporting_factory = ReportFactory(
         [args.dataset_path], results, elapsed_time, validation_args, data_service

@@ -93,13 +93,26 @@ class BaseDefineXMLReader(ABC):
         return domain_metadata_dict
 
     @cached("define-variables-metadata")
-    def extract_variables_metadata(self, domain_name: str = None) -> List[dict]:
+    def extract_variables_metadata(
+        self, domain_name: str = None, **kwargs
+    ) -> List[dict]:
+        vx = kwargs.get("validate_xml", "Y")
+        jm = kwargs.get("join_method", "outer")
         logger.info(
             f"Extracting variables metadata from Define-XML. domain_name={domain_name}"
         )
-        metadata = self._odm_loader.MetaDataVersion()
-        domain_metadata = self._get_domain_metadata(metadata, domain_name)
+        metadata = None
+        domain_metadata = None
         variables_metadata = []
+        try:
+            metadata = self._odm_loader.MetaDataVersion()
+        except Exception as e:
+            logger.trace(e, f"{__name__}(VX={vx}; JM={jm})")
+            if vx in ("Y", "YES"):
+                logger.info(f"Validate XML = {vx}: continue to next step.")
+                return variables_metadata
+
+        domain_metadata = self._get_domain_metadata(metadata, domain_name)
         codelist_map = self._get_codelist_def_map(metadata.CodeList)
         for itemref in domain_metadata.ItemRef:
             itemdef = [item for item in metadata.ItemDef if item.OID == itemref.ItemOID]
@@ -108,6 +121,7 @@ class BaseDefineXMLReader(ABC):
                     self._get_item_def_representation(itemdef[0], itemref, codelist_map)
                 )
         logger.info(f"Extracted variables metadata = {variables_metadata}")
+
         return variables_metadata
 
     @cached("define-value-level-metadata")

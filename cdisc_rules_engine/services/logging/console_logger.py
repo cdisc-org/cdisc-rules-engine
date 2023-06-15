@@ -1,6 +1,8 @@
 import logging
 
 from cdisc_rules_engine.interfaces import ConfigInterface, LoggerInterface
+import traceback
+import inspect
 
 
 class ConsoleLogger(LoggerInterface):
@@ -29,6 +31,7 @@ class ConsoleLogger(LoggerInterface):
             "critical": logging.CRITICAL,
             "warn": logging.WARNING,
             "verbose": logging.CRITICAL + 1,
+            "trace": logging.CRITICAL + 2,
         }
         self._logger.setLevel(levels.get(level, logging.ERROR))
 
@@ -52,3 +55,28 @@ class ConsoleLogger(LoggerInterface):
 
     def log(self, msg: str, *args, **kwargs):
         self._logger.log(logging.CRITICAL + 1, msg, *args, **kwargs)
+
+    def trace(self, exc: Exception, msg: str, *args, **kwargs):
+        current_level = self._logger.getEffectiveLevel()
+        if current_level > 50:
+            current_line = inspect.currentframe().f_lineno
+            print(f"\nCurrent: (file/line) {__name__}/{current_line}")
+
+            frame = inspect.currentframe().f_back
+            c_function = inspect.getframeinfo(frame).function
+            c_lineno = frame.f_lineno
+            c_filename = frame.f_code.co_filename
+            print(f"Caller: {c_function}/{c_lineno} in {c_filename}")
+
+            line_number = None
+            caller_function = None
+            traceback_info = traceback.extract_tb(exc.__traceback__)
+            if traceback_info:
+                line_number = traceback_info[-1].lineno
+                caller_function = traceback_info[-1].name
+            print(f"Error: {caller_function}/{line_number}: {str(exc)}")
+            i = 0
+            for call_func in traceback_info:
+                i += 1
+                print(f"Trace({i}): {call_func}")
+        # self._logger.log(logging.CRITICAL + 2, msg, *args, **kwargs)

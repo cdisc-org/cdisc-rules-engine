@@ -6,7 +6,7 @@ from typing import List
 
 
 class ContentsDefineVariablesDatasetBuilder(BaseDatasetBuilder):
-    def build(self):
+    def build(self, **kwargs):
         """
         Returns a long dataset where each value in each row of the original dataset is
         a row in the new dataset.
@@ -32,13 +32,17 @@ class ContentsDefineVariablesDatasetBuilder(BaseDatasetBuilder):
             value_name="variable_value",
         )
         # get Define XML variable metadata for domain
-        variables_metadata: List[dict] = self.get_define_xml_variables_metadata()
+        variables_metadata: List[dict] = self.get_define_xml_variables_metadata(
+            **kwargs
+        )
         variables_metadata_df = pd.DataFrame(variables_metadata)
         # merge dataset contents with define variable metadata
+        jm = kwargs.get("join_method", "outer")
         merged = pd.merge(
             data_contents_long_df,
             variables_metadata_df,
-            how="outer",
+            # how="outer",
+            how=jm,
             left_on="variable_name",
             right_on="define_variable_name",
         )

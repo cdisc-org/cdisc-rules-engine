@@ -156,6 +156,15 @@ def cli():
     default="Y",
     show_default=True,
 )
+@click.option(
+    "-jm",
+    "--join-method",
+    help="Method for joining datatset and define metadata by variable name",
+    type=click.Choice(["left", "right", "inner", "outer"]),
+    required=False,
+    default="left",
+    show_default=True,
+)
 @click.pass_context
 def validate(
     ctx,
@@ -177,7 +186,8 @@ def validate(
     meddra: str,
     rules: Tuple[str],
     progress: str,
-    validate_xml: str,
+    validate_xml,
+    join_method,
 ):
     """
     Validate data using CDISC Rules Engine
@@ -245,6 +255,7 @@ def validate(
             rules,
             progress,
             validate_xml,
+            join_method,
         )
     )
 
@@ -359,6 +370,36 @@ def list_rules(ctx: click.Context, cache_path: str, standard: str, version: str)
     "--define-version",
     help="Define-XML version used for validation",
 )
+@click.option(
+    "-vx",
+    "--validate-xml",
+    help=(
+        "Validate Define-XML or not when it misses def:Structure or in error"
+        ": Y (skip define validation and continue) or N (stop and report error)"
+    ),
+    type=click.Choice(["y", "yes", "n", "no"]),
+    required=False,
+    default="Y",
+    show_default=True,
+)
+@click.option(
+    "-l",
+    "--log-level",
+    default="error",
+    type=click.Choice(
+        ["info", "debug", "error", "critical", "disabled", "warn", "trace", "verbose"]
+    ),
+    help="Sets log level for engine logs, logs are disabled by default",
+)
+@click.option(
+    "-jm",
+    "--join-method",
+    help="Method for joining datatset and define metadata by variable name",
+    type=click.Choice(["left", "right", "inner", "outer"]),
+    required=False,
+    default="left",
+    show_default=True,
+)
 @click.pass_context
 def test(
     ctx,
@@ -371,7 +412,13 @@ def test(
     whodrug: str,
     meddra: str,
     rule: str,
+    validate_xml,
+    log_level,
+    join_method,
 ):
+    vx = validate_xml.upper()
+    ll = log_level.lower()
+    jm = join_method.lower()
     args = TestArgs(
         cache_path,
         dataset_path,
@@ -382,6 +429,9 @@ def test(
         meddra,
         controlled_terminology_package,
         define_version,
+        vx,
+        ll,
+        jm,
     )
     test_rule(args)
 

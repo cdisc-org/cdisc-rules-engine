@@ -4,7 +4,7 @@ from typing import List
 
 
 class DefineVariablesDatasetBuilder(BaseDatasetBuilder):
-    def build(self):
+    def build(self, **kwargs):
         """
         Returns a dataset containing metadata for the variables
         in the specified domain extracted from the define.xml.
@@ -25,5 +25,5 @@ class DefineVariablesDatasetBuilder(BaseDatasetBuilder):
         "define_variable_codelist_coded_values",
         """
         # get Define XML metadata for domain and use it as a rule comparator
-        variable_metadata: List[dict] = self.get_define_xml_variables_metadata()
+        variable_metadata: List[dict] = self.get_define_xml_variables_metadata(**kwargs)
         return pd.DataFrame(variable_metadata)

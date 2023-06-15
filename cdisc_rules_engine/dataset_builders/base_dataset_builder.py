@@ -42,6 +42,7 @@ class BaseDatasetBuilder:
         pass
 
     def get_dataset(self, **kwargs):
+        dataset = pd.DataFrame()
         # If validating dataset content, ensure split datasets are handled.
         if is_split_dataset(self.datasets, self.domain):
             # Handle split datasets for content checks.
@@ -53,7 +54,8 @@ class BaseDatasetBuilder:
             )
         else:
             # single dataset. the most common case
-            dataset: pd.DataFrame = self.build()
+            dataset: pd.DataFrame = self.build(**kwargs)
+
         return dataset
 
     def get_corresponding_datasets_names(self) -> List[str]:
@@ -85,7 +87,7 @@ class BaseDatasetBuilder:
         )
         return define_xml_reader.extract_domain_metadata(domain)
 
-    def get_define_xml_variables_metadata(self) -> List[dict]:
+    def get_define_xml_variables_metadata(self, **kwargs) -> List[dict]:
         """
         Gets Define XML variables metadata.
         """
@@ -97,4 +99,6 @@ class BaseDatasetBuilder:
         define_xml_reader = DefineXMLReaderFactory.from_file_contents(
             define_xml_contents, cache_service_obj=self.cache
         )
-        return define_xml_reader.extract_variables_metadata(domain_name=self.domain)
+        return define_xml_reader.extract_variables_metadata(
+            domain_name=self.domain, **kwargs
+        )

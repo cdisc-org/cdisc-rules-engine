@@ -66,6 +66,8 @@ class RulesEngine:
         self.ct_package = kwargs.get("ct_package")
         self.meddra_path: str = kwargs.get("meddra_path")
         self.whodrug_path: str = kwargs.get("whodrug_path")
+        self.validate_xml: str = kwargs.get("validate_xml")
+        self.join_method: str = kwargs.get("join_method")
 
     def get_schema(self):
         return export_rule_data(DatasetVariable, COREActions)
@@ -126,6 +128,7 @@ class RulesEngine:
             f"Validating domain {dataset_domain}. "
             f"rule={rule}. dataset_path={dataset_path}. datasets={datasets}."
         )
+        vx = self.validate_xml
         try:
             if self.rule_processor.is_suitable_for_validation(
                 rule,
@@ -134,9 +137,18 @@ class RulesEngine:
                 is_split_dataset(datasets, dataset_domain),
                 datasets,
             ):
-                result: List[Union[dict, str]] = self.validate_rule(
-                    rule, dataset_path, datasets, dataset_domain
-                )
+                result = None
+                if vx in ("Y", "YES"):
+                    try:
+                        result: List[Union[dict, str]] = self.validate_rule(
+                            rule, dataset_path, datasets, dataset_domain
+                        )
+                    except Exception as e:
+                        logger.trace(e, __name__)
+                else:
+                    result: List[Union[dict, str]] = self.validate_rule(
+                        rule, dataset_path, datasets, dataset_domain
+                    )
                 logger.info(f"Validated domain {dataset_domain}. Result = {result}")
                 if result:
                     return result
@@ -155,6 +167,7 @@ class RulesEngine:
                 error_obj.domain = dataset_domain
                 return [error_obj.to_representation()]
         except Exception as e:
+            logger.trace(e, __name__)
             logger.error(
                 f"Error occurred during validation. Error: {e}. Error message: {str(e)}"
             )
@@ -187,9 +200,15 @@ class RulesEngine:
          This function is an entrypoint for rule validation.
         It defines a rule validator based on its type and calls it.
         """
-        builder = self.get_dataset_builder(rule, dataset_path, datasets, domain)
-        dataset = builder.get_dataset()
+        vx = self.validate_xml
+        jm = self.join_method
         kwargs = {}
+        kwargs["validate_xml"] = vx
+        kwargs["join_method"] = jm
+
+        builder = self.get_dataset_builder(rule, dataset_path, datasets, domain)
+        dataset = builder.get_dataset(**kwargs)
+
         # Update rule for certain rule types
         # SPECIAL CASES FOR RULE TYPES ###############################
         # TODO: Handle these special cases better.
@@ -240,7 +259,18 @@ class RulesEngine:
                     self.standard, self.standard_version
                 )
             )
-            define_metadata: List[dict] = builder.get_define_xml_variables_metadata()
+            if vx in ("Y", "YES"):
+                try:
+                    define_metadata: List[
+                        dict
+                    ] = builder.get_define_xml_variables_metadata(**kwargs)
+                except Exception as e:
+                    logger.trace(e, __name__)
+            else:
+                define_metadata: List[dict] = builder.get_define_xml_variables_metadata(
+                    **kwargs
+                )
+
             targets: List[
                 str
             ] = self.data_processor.filter_dataset_columns_by_metadata_and_rule(
@@ -265,6 +295,8 @@ class RulesEngine:
         value_level_metadata: List[dict] = None,
         variable_codelist_map: dict = None,
         codelist_term_maps: list = None,
+        validate_xml: str = None,
+        join_method: str = None,
     ) -> List[str]:
         """
         Executes the given rule on a given dataset.

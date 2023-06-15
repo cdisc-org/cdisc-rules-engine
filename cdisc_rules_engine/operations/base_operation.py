@@ -49,12 +49,12 @@ class BaseOperation:
         self.evaluation_dataset = original_dataset
 
     @abstractmethod
-    def _execute_operation(self):
+    def _execute_operation(self, **kwargs):
         """Perform operation calculations."""
         pass
 
-    def execute(self) -> pd.DataFrame:
-        result = self._execute_operation()
+    def execute(self, **kwargs) -> pd.DataFrame:
+        result = self._execute_operation(**kwargs)
         return self._handle_operation_result(result)
 
     def _handle_operation_result(self, result) -> pd.DataFrame:

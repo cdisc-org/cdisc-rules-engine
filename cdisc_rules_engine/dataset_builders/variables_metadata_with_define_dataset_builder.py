@@ -1,10 +1,11 @@
 from cdisc_rules_engine.dataset_builders.base_dataset_builder import BaseDatasetBuilder
 from typing import List
 import pandas as pd
+import logging
 
 
 class VariablesMetadataWithDefineDatasetBuilder(BaseDatasetBuilder):
-    def build(self):
+    def build(self, **kwargs):
         """
         Returns the variable metadata from a given file.
         Returns a dataframe with the following columns:
@@ -28,16 +29,26 @@ class VariablesMetadataWithDefineDatasetBuilder(BaseDatasetBuilder):
         define_variable_has_codelist,
         define_variable_codelist_coded_values
         """
+        vx = kwargs.get("validate_xml", "Y")
+        jm = kwargs.get("join_method", "left")
+        logger = logging.getLogger()
         # get Define XML metadata for domain and use it as a rule comparator
-        variable_metadata: List[dict] = self.get_define_xml_variables_metadata()
+        variable_metadata: List[dict] = self.get_define_xml_variables_metadata(**kwargs)
         # get dataset metadata and execute the rule
         content_metadata: pd.DataFrame = self.data_service.get_variables_metadata(
             self.dataset_path, drop_duplicates=True
         )
         define_metadata: pd.DataFrame = pd.DataFrame(variable_metadata)
+        if define_metadata.empty:
+            logger.info(
+                f"Only content metadata will be returned since define metadata"
+                f" is empty with validate_xml={vx} and join_method={jm}."
+            )
+            return content_metadata
+
         return content_metadata.merge(
             define_metadata,
             left_on="variable_name",
             right_on="define_variable_name",
-            how="left",
+            how=jm,
         )

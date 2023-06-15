@@ -140,3 +140,4 @@ local.settings.json
 .python_packages
 
 logs
+~$CORE-*.xlsx
