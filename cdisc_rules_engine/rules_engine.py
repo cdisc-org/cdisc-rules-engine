@@ -67,7 +67,6 @@ class RulesEngine:
         self.meddra_path: str = kwargs.get("meddra_path")
         self.whodrug_path: str = kwargs.get("whodrug_path")
         self.validate_xml: str = kwargs.get("validate_xml")
-        self.join_method: str = kwargs.get("join_method")
 
     def get_schema(self):
         return export_rule_data(DatasetVariable, COREActions)
@@ -294,7 +293,6 @@ class RulesEngine:
         variable_codelist_map: dict = None,
         codelist_term_maps: list = None,
         validate_xml: str = None,
-        join_method: str = None,
     ) -> List[str]:
         """
         Executes the given rule on a given dataset.

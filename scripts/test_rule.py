@@ -58,7 +58,6 @@ def validate_single_rule(cache, path, args, datasets, rule: dict = None):
         meddra_path=args.meddra,
         whodrug_path=args.whodrug,
         validate_xml=args.validate_xml,
-        join_method=args.join_method,
     )
     validated_domains = set()
     results = []
@@ -148,7 +147,6 @@ def test(args: TestArgs):
         rules,
         ProgressParameterOptions.BAR.value,
         args.validate_xml,
-        args.join_method,
     )
     reporting_factory = ReportFactory(
         [args.dataset_path], results, elapsed_time, validation_args, data_service

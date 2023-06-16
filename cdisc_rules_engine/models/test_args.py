@@ -14,6 +14,5 @@ TestArgs = namedtuple(
         "define_version",
         "validate_xml",
         "log_level",
-        "join_method",
     ],
 )

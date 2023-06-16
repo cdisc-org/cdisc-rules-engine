@@ -21,6 +21,5 @@ Validation_args = namedtuple(
         "rules",
         "progress",
         "validate_xml",
-        "join_method",
     ],
 )
