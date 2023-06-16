@@ -97,7 +97,6 @@ class BaseDefineXMLReader(ABC):
         self, domain_name: str = None, **kwargs
     ) -> List[dict]:
         vx = kwargs.get("validate_xml", "Y")
-        jm = kwargs.get("join_method", "outer")
         logger.info(
             f"Extracting variables metadata from Define-XML. domain_name={domain_name}"
         )
@@ -107,7 +106,7 @@ class BaseDefineXMLReader(ABC):
         try:
             metadata = self._odm_loader.MetaDataVersion()
         except Exception as e:
-            logger.trace(e, f"{__name__}(VX={vx}; JM={jm})")
+            logger.trace(e, f"{__name__}(VX={vx})")
             if vx in ("Y", "YES"):
                 logger.info(f"Validate XML = {vx}: continue to next step.")
                 return variables_metadata

@@ -151,18 +151,10 @@ def cli():
     "--validate-xml",
     help=(
         "Validate Define-XML or not when it misses def:Structure or in error"
-        ": Y (skip define validation and continue) or N (stop and report error)"
+        ": Y (skip define rule validation and continue for other rules)"
+        "  N (stop on error and report the error)"
     ),
     default="Y",
-    show_default=True,
-)
-@click.option(
-    "-jm",
-    "--join-method",
-    help="Method for joining datatset and define metadata by variable name",
-    type=click.Choice(["left", "right", "inner", "outer"]),
-    required=False,
-    default="left",
     show_default=True,
 )
 @click.pass_context
@@ -187,7 +179,6 @@ def validate(
     rules: Tuple[str],
     progress: str,
     validate_xml,
-    join_method,
 ):
     """
     Validate data using CDISC Rules Engine
@@ -255,7 +246,6 @@ def validate(
             rules,
             progress,
             validate_xml,
-            join_method,
         )
     )
 
@@ -375,7 +365,8 @@ def list_rules(ctx: click.Context, cache_path: str, standard: str, version: str)
     "--validate-xml",
     help=(
         "Validate Define-XML or not when it misses def:Structure or in error"
-        ": Y (skip define validation and continue) or N (stop and report error)"
+        ": Y (skip define rule validation and continue for other rules)"
+        "  N (stop on error and report the error)"
     ),
     type=click.Choice(["y", "yes", "n", "no"]),
     required=False,
@@ -391,15 +382,6 @@ def list_rules(ctx: click.Context, cache_path: str, standard: str, version: str)
     ),
     help="Sets log level for engine logs, logs are disabled by default",
 )
-@click.option(
-    "-jm",
-    "--join-method",
-    help="Method for joining datatset and define metadata by variable name",
-    type=click.Choice(["left", "right", "inner", "outer"]),
-    required=False,
-    default="left",
-    show_default=True,
-)
 @click.pass_context
 def test(
     ctx,
@@ -414,11 +396,9 @@ def test(
     rule: str,
     validate_xml,
     log_level,
-    join_method,
 ):
     vx = validate_xml.upper()
     ll = log_level.lower()
-    jm = join_method.lower()
     args = TestArgs(
         cache_path,
         dataset_path,
@@ -431,7 +411,6 @@ def test(
         define_version,
         vx,
         ll,
-        jm,
     )
     test_rule(args)
 

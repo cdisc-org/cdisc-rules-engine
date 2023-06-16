@@ -37,12 +37,10 @@ class ContentsDefineVariablesDatasetBuilder(BaseDatasetBuilder):
         )
         variables_metadata_df = pd.DataFrame(variables_metadata)
         # merge dataset contents with define variable metadata
-        jm = kwargs.get("join_method", "outer")
         merged = pd.merge(
             data_contents_long_df,
             variables_metadata_df,
-            # how="outer",
-            how=jm,
+            how="outer",
             left_on="variable_name",
             right_on="define_variable_name",
         )

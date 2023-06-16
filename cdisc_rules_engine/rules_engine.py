@@ -201,10 +201,8 @@ class RulesEngine:
         It defines a rule validator based on its type and calls it.
         """
         vx = self.validate_xml
-        jm = self.join_method
         kwargs = {}
         kwargs["validate_xml"] = vx
-        kwargs["join_method"] = jm
 
         builder = self.get_dataset_builder(rule, dataset_path, datasets, domain)
         dataset = builder.get_dataset(**kwargs)
