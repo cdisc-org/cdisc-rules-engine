@@ -250,6 +250,8 @@ class RuleProcessor:
                 meddra_path=kwargs.get("meddra_path"),
                 whodrug_path=kwargs.get("whodrug_path"),
                 attribute_name=operation.get("attribute_name", ""),
+                key_name=operation.get("key_name", ""),
+                key_value=operation.get("key_value", ""),
             )
 
             # execute operation
@@ -259,7 +261,6 @@ class RuleProcessor:
                 f"Processed rule operation. "
                 f"operation={operation_params.operation_name}, rule={rule}"
             )
-
         return dataset_copy
 
     def _execute_operation(

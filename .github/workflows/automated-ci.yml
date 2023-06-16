@@ -29,6 +29,7 @@ jobs:
       - name: Running Tests
         run: |
           python -m pytest tests/unit/ --cov=cdisc_rules_engine --cov-fail-under=75
+          python -m pytest tests/QARegressionTests/
 
   get_changed_files:
     runs-on: ubuntu-latest
