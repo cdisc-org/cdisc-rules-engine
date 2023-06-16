@@ -65,7 +65,7 @@ class BaseDatasetBuilder:
     
 
 
-    def get_define_xml_item_group_metadata(self, domain: str, define_xml_path:str) -> List[dict]:
+    def get_define_xml_item_group_metadata(self, domain: str) -> List[dict]:
         """
         Gets Define XML item group metadata
         returns a list of dictionaries containing the following keys:
@@ -77,12 +77,12 @@ class BaseDatasetBuilder:
             "define_dataset_is_non_standard"
             "define_dataset_variables"
         """
-        define_xml_reader = DefineXMLReaderFactory.get_define_xml_reader(self.dataset_path, define_xml_path, self.data_service, self.cache)
+        define_xml_reader = DefineXMLReaderFactory.get_define_xml_reader(self.dataset_path, self.define_xml_path, self.data_service, self.cache)
         return define_xml_reader.extract_domain_metadata(domain)
 
-    def get_define_xml_variables_metadata(self, define_xml_path: str) -> List[dict]:
+    def get_define_xml_variables_metadata(self) -> List[dict]:
         """
         Gets Define XML variables metadata.
         """
-        define_xml_reader = DefineXMLReaderFactory.get_define_xml_reader(self.dataset_path, define_xml_path, self.data_service, self.cache)
+        define_xml_reader = DefineXMLReaderFactory.get_define_xml_reader(self.dataset_path, self.define_xml_path, self.data_service, self.cache)
         return define_xml_reader.extract_variables_metadata(domain_name=self.domain)
