@@ -98,7 +98,6 @@ def get_dataset_path(
 
 DATASET_CACHE_KEY_TEMPLATE: str = "{dataset_path}_{dataset_type}"
 
-
 def get_dataset_cache_key_from_study(
     study_id: str,
     data_bundle_id: str = None,

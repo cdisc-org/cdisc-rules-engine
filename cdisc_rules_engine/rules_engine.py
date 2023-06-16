@@ -66,6 +66,7 @@ class RulesEngine:
         self.ct_package = kwargs.get("ct_package")
         self.meddra_path: str = kwargs.get("meddra_path")
         self.whodrug_path: str = kwargs.get("whodrug_path")
+        self.define_xml_path: str = kwargs.get("define_xml_path")
 
     def get_schema(self):
         return export_rule_data(DatasetVariable, COREActions)
@@ -86,7 +87,7 @@ class RulesEngine:
         self.rule_processor = RuleProcessor(self.data_service, self.cache)
         self.data_processor = DataProcessor(self.data_service, self.cache)
         return self.validate_single_rule(
-            rule, f"{dataset_path}", dataset_dicts, dataset_domain
+            rule, f"{dataset_path}", dataset_dicts, dataset_domain, self.define_xml_path
         )
 
     def validate(
@@ -95,6 +96,7 @@ class RulesEngine:
         dataset_path: str,
         datasets: List[dict],
         dataset_domain: str,
+        define_xml_path: str,
     ) -> dict:
         """
         This function is an entrypoint to validation process.
@@ -108,7 +110,7 @@ class RulesEngine:
         output = {}
         for rule in rules:
             result = self.validate_single_rule(
-                rule, dataset_path, datasets, dataset_domain
+                rule, dataset_path, datasets, dataset_domain, define_xml_path
             )
             # result may be None if a rule is not suitable for validation
             if result is not None:
@@ -181,7 +183,7 @@ class RulesEngine:
         )
 
     def validate_rule(
-        self, rule: dict, dataset_path: str,  datasets: List[dict], domain: str, define_xml_path: str = None,
+        self, rule: dict, dataset_path: str,  datasets: List[dict], domain: str, define_xml_path: str
     ) -> List[Union[dict, str]]:
         """
          This function is an entrypoint for rule validation.
@@ -221,13 +223,12 @@ class RulesEngine:
             self.rule_processor.add_comparator_to_rule_conditions(
                 rule, comparator=None, target_prefix="define_"
             )
-
         elif (
             rule.get("rule_type")
             == RuleTypes.VALUE_LEVEL_METADATA_CHECK_AGAINST_DEFINE.value
         ):
             value_level_metadata: List[dict] = self.get_define_xml_value_level_metadata(
-                dataset_path, domain
+                dataset_path, domain, define_xml_path
             )
             kwargs["value_level_metadata"] = value_level_metadata
 
@@ -326,35 +327,21 @@ class RulesEngine:
         return results
 
     def get_define_xml_metadata_for_domain(
-        self, dataset_path: str,domain_name: str,  define_xml_path, 
+        self, dataset_path: str,domain_name: str,  define_xml_path: str = None, 
     ) -> dict:
         """
         Gets Define XML metadata and returns it as dict.
         """
-        directory_path = get_directory_path(dataset_path)
-        define_xml_path: str = os.path.join(directory_path if define_xml_path is None else define_xml_path, DEFINE_XML_FILE_NAME) 
-        define_xml_contents: bytes = self.data_service.get_define_xml_contents(
-            dataset_name=define_xml_path
-        )
-        define_xml_reader = DefineXMLReaderFactory.from_file_contents(
-            define_xml_contents, cache_service_obj=self.cache
-        )
+        define_xml_reader = DefineXMLReaderFactory.get_define_xml_reader(dataset_path, define_xml_path, self.data_service, self.cache)
         return define_xml_reader.extract_domain_metadata(domain_name=domain_name)
 
     def get_define_xml_value_level_metadata(
-        self, dataset_path: str, domain_name: str
+        self, dataset_path: str, domain_name: str, define_xml_path: str = None
     ) -> List[dict]:
         """
         Gets Define XML variable metadata and returns it as dataframe.
         """
-        directory_path = get_directory_path(dataset_path)
-        define_xml_path: str = os.path.join(directory_path if define_xml_path is None else define_xml_path, DEFINE_XML_FILE_NAME)
-        define_xml_contents: bytes = self.data_service.get_define_xml_contents(
-            dataset_name=define_xml_path
-        )
-        define_xml_reader = DefineXMLReaderFactory.from_file_contents(
-            define_xml_contents, cache_service_obj=self.cache
-        )
+        define_xml_reader = DefineXMLReaderFactory.get_define_xml_reader(dataset_path, define_xml_path, self.data_service, self.cache)
         return define_xml_reader.extract_value_level_metadata(domain_name=domain_name)
 
     def handle_validation_exceptions(

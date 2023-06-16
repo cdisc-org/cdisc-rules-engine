@@ -1,8 +1,10 @@
+import os
 from xml.etree import ElementTree
 from re import compile
 from typing import Union
 
 from cdisc_rules_engine.constants.define_xml_constants import (
+    DEFINE_XML_FILE_NAME,
     ODM_NAMESPACE,
 )
 from cdisc_rules_engine.services import logger
@@ -15,6 +17,7 @@ from cdisc_rules_engine.services.define_xml.define_xml_reader_2_1 import (
 from cdisc_rules_engine.services.define_xml.base_define_xml_reader import (
     BaseDefineXMLReader,
 )
+from cdisc_rules_engine.utilities.utils import get_directory_path
 
 
 class DefineXMLReaderFactory:
@@ -103,4 +106,17 @@ class DefineXMLReaderFactory:
             ),
             None,
         )
+        return define_xml_reader
+    
+    @classmethod
+    def get_define_xml_reader(cls, dataset_path: str, define_xml_path: str, data_service, cache):
+        directory_path = get_directory_path(dataset_path)
+        define_xml_path: str = os.path.join(directory_path if define_xml_path is None else define_xml_path, DEFINE_XML_FILE_NAME)
+        define_xml_contents: bytes = data_service.get_define_xml_contents(
+            dataset_name=define_xml_path
+        )
+        define_xml_reader = DefineXMLReaderFactory.from_file_contents(
+            define_xml_contents, cache_service_obj=cache
+        )
+        
         return define_xml_reader

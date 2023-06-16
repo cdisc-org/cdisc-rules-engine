@@ -1,9 +1,7 @@
 from abc import abstractmethod
 from cdisc_rules_engine.constants.define_xml_constants import DEFINE_XML_FILE_NAME
-from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import (
-    DefineXMLReaderFactory,
-)
 import pandas as pd
+from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import DefineXMLReaderFactory
 from cdisc_rules_engine.utilities.utils import (
     get_directory_path,
     is_split_dataset,
@@ -64,6 +62,8 @@ class BaseDatasetBuilder:
             os.path.join(directory_path, dataset["filename"])
             for dataset in get_corresponding_datasets(self.datasets, self.domain)
         ]
+    
+
 
     def get_define_xml_item_group_metadata(self, domain: str, define_xml_path:str) -> List[dict]:
         """
@@ -77,26 +77,12 @@ class BaseDatasetBuilder:
             "define_dataset_is_non_standard"
             "define_dataset_variables"
         """
-        directory_path = get_directory_path(self.dataset_path)
-        define_xml_path: str = os.path.join(directory_path if define_xml_path is None else define_xml_path, DEFINE_XML_FILE_NAME)
-        define_xml_contents: bytes = self.data_service.get_define_xml_contents(
-            dataset_name=define_xml_path
-        )
-        define_xml_reader = DefineXMLReaderFactory.from_file_contents(
-            define_xml_contents, cache_service_obj=self.cache
-        )
+        define_xml_reader = DefineXMLReaderFactory.get_define_xml_reader(self.dataset_path, define_xml_path, self.data_service, self.cache)
         return define_xml_reader.extract_domain_metadata(domain)
 
     def get_define_xml_variables_metadata(self, define_xml_path: str) -> List[dict]:
         """
         Gets Define XML variables metadata.
         """
-        directory_path = get_directory_path(self.dataset_path)
-        define_xml_path: str = os.path.join(directory_path if define_xml_path is None else define_xml_path, DEFINE_XML_FILE_NAME)
-        define_xml_contents: bytes = self.data_service.get_define_xml_contents(
-            dataset_name=define_xml_path
-        )
-        define_xml_reader = DefineXMLReaderFactory.from_file_contents(
-            define_xml_contents, cache_service_obj=self.cache
-        )
+        define_xml_reader = DefineXMLReaderFactory.get_define_xml_reader(self.dataset_path, define_xml_path, self.data_service, self.cache)
         return define_xml_reader.extract_variables_metadata(domain_name=self.domain)
