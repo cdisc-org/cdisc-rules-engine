@@ -397,8 +397,6 @@ def test(
     validate_xml,
     log_level,
 ):
-    vx = validate_xml.upper()
-    ll = log_level.lower()
     args = TestArgs(
         cache_path,
         dataset_path,
@@ -409,8 +407,8 @@ def test(
         meddra,
         controlled_terminology_package,
         define_version,
-        vx,
-        ll,
+        validate_xml.upper(),
+        log_level.lower(),
     )
     test_rule(args)
 

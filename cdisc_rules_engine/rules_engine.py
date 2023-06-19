@@ -127,7 +127,6 @@ class RulesEngine:
             f"Validating domain {dataset_domain}. "
             f"rule={rule}. dataset_path={dataset_path}. datasets={datasets}."
         )
-        vx = self.validate_xml
         try:
             if self.rule_processor.is_suitable_for_validation(
                 rule,
@@ -137,7 +136,7 @@ class RulesEngine:
                 datasets,
             ):
                 result = None
-                if vx in ("Y", "YES"):
+                if self.validate_xml in ("Y", "YES"):
                     try:
                         result: List[Union[dict, str]] = self.validate_rule(
                             rule, dataset_path, datasets, dataset_domain
@@ -199,9 +198,8 @@ class RulesEngine:
          This function is an entrypoint for rule validation.
         It defines a rule validator based on its type and calls it.
         """
-        vx = self.validate_xml
         kwargs = {}
-        kwargs["validate_xml"] = vx
+        kwargs["validate_xml"] = self.validate_xml
 
         builder = self.get_dataset_builder(rule, dataset_path, datasets, domain)
         dataset = builder.get_dataset(**kwargs)
@@ -256,7 +254,7 @@ class RulesEngine:
                     self.standard, self.standard_version
                 )
             )
-            if vx in ("Y", "YES"):
+            if self.validate_xml in ("Y", "YES"):
                 try:
                     define_metadata: List[
                         dict

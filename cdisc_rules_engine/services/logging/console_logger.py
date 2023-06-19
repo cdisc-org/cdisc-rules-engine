@@ -79,4 +79,3 @@ class ConsoleLogger(LoggerInterface):
             for call_func in traceback_info:
                 i += 1
                 print(f"Trace({i}): {call_func}")
-        # self._logger.log(logging.CRITICAL + 2, msg, *args, **kwargs)

@@ -29,8 +29,7 @@ class VariablesMetadataWithDefineDatasetBuilder(BaseDatasetBuilder):
         define_variable_has_codelist,
         define_variable_codelist_coded_values
         """
-        vx = kwargs.get("validate_xml", "Y")
-        jm = kwargs.get("join_method", "left")
+        validate_xml = kwargs.get("validate_xml", "Y")
         logger = logging.getLogger()
         # get Define XML metadata for domain and use it as a rule comparator
         variable_metadata: List[dict] = self.get_define_xml_variables_metadata(**kwargs)
@@ -42,7 +41,7 @@ class VariablesMetadataWithDefineDatasetBuilder(BaseDatasetBuilder):
         if define_metadata.empty:
             logger.info(
                 f"Only content metadata will be returned since define metadata"
-                f" is empty with validate_xml={vx} and join_method={jm}."
+                f" is empty with validate_xml={validate_xml}."
             )
             return content_metadata
 
@@ -50,5 +49,5 @@ class VariablesMetadataWithDefineDatasetBuilder(BaseDatasetBuilder):
             define_metadata,
             left_on="variable_name",
             right_on="define_variable_name",
-            how=jm,
+            how="left",
         )

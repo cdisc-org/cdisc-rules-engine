@@ -44,7 +44,6 @@ class CacheManager(SyncManager):
 
 
 def validate_single_rule(cache, path, args, datasets, rule: dict = None):
-    # set_log_level("ERROR")
     set_log_level(args.log_level)
     rule["conditions"] = ConditionCompositeFactory.get_condition_composite(
         rule["conditions"]
@@ -88,7 +87,6 @@ def set_log_level(level: str):
 
 
 def test(args: TestArgs):
-    # set_log_level("ERROR")
     set_log_level(args.log_level)
     # fill cache
     CacheManager.register("RedisCacheService", RedisCacheService)

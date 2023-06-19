@@ -42,7 +42,6 @@ class BaseDatasetBuilder:
         pass
 
     def get_dataset(self, **kwargs):
-        dataset = pd.DataFrame()
         # If validating dataset content, ensure split datasets are handled.
         if is_split_dataset(self.datasets, self.domain):
             # Handle split datasets for content checks.
