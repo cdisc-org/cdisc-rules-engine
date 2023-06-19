@@ -187,9 +187,13 @@ class RulesEngine:
          This function is an entrypoint for rule validation.
         It defines a rule validator based on its type and calls it.
         """
-        builder = self.get_dataset_builder(rule, dataset_path, datasets, domain)
-        dataset = builder.get_dataset()
         kwargs = {}
+        builder = self.get_dataset_builder(rule, dataset_path, datasets, domain)
+
+        dataset = builder.get_dataset()
+
+        print(f"\nDataset:{domain}: {dataset} in {__name__}\n")
+
         # Update rule for certain rule types
         # SPECIAL CASES FOR RULE TYPES ###############################
         # TODO: Handle these special cases better.
@@ -201,6 +205,8 @@ class RulesEngine:
             define_metadata: dict = self.get_define_xml_metadata_for_domain(
                 dataset_path, domain
             )
+            print(f"xxx: define_metadata: {define_metadata} in {__name__}\n")
+
             self.rule_processor.add_comparator_to_rule_conditions(rule, define_metadata)
 
         elif rule.get("rule_type") == RuleTypes.DEFINE_ITEM_METADATA_CHECK.value:
@@ -333,13 +339,25 @@ class RulesEngine:
         """
         directory_path = get_directory_path(dataset_path)
         define_xml_path: str = os.path.join(directory_path, DEFINE_XML_FILE_NAME)
+
+        print(f"\nxxx: Define Path: {define_xml_path} in {__name__}\n")
+
         define_xml_contents: bytes = self.data_service.get_define_xml_contents(
             dataset_name=define_xml_path
         )
+
+        # print(f"xxx: define_xml_contents: {define_xml_contents} in {__name__}\n")
+
         define_xml_reader = DefineXMLReaderFactory.from_file_contents(
             define_xml_contents, cache_service_obj=self.cache
         )
-        return define_xml_reader.extract_domain_metadata(domain_name=domain_name)
+        print(f"xxx: define_xml_reader: {define_xml_reader} in {__name__}\n")
+
+        dm_metadata = define_xml_reader.extract_domain_metadata(domain_name=domain_name)
+        print(f"xxx: dm_metadata: {dm_metadata} in {__name__}\n")
+
+        # return define_xml_reader.extract_domain_metadata(domain_name=domain_name)
+        return dm_metadata
 
     def get_define_xml_value_level_metadata(
         self, dataset_path: str, domain_name: str

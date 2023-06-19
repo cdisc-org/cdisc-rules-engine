@@ -104,6 +104,21 @@ def test(args: TestArgs):
         data_json = json.load(f)
     datasets = [DummyDataset(data) for data in data_json.get("datasets", [])]
 
+    print(f"xxx: datasets: {datasets} in {__name__}\n")
+    for dataset in datasets:
+        # Access and print the attributes
+        print("Name:", dataset.name)
+        print("Label:", dataset.label)
+        print("Filesize:", dataset.filesize)
+        print("Filename:", dataset.filename)
+        print("Domain:", dataset.domain)
+        print("Variables:")
+        for variable in dataset.variables:
+            print("  - Name:", variable.name)
+            print("    Value:", variable.type)
+        print("xxx: Data:")
+        print(dataset.data)
+
     start = time.time()
     results = []
     # run each rule in a separate process
