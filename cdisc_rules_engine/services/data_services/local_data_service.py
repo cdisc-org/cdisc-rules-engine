@@ -90,7 +90,7 @@ class LocalDataService(BaseDataService):
             filename=file_metadata["name"],
             full_path=file_metadata["path"],
             size=file_metadata["size"],
-            records="",
+            records=contents_metadata["dataset_length"],
         )
 
     @cached_dataset(DatasetTypes.VARIABLES_METADATA.value)

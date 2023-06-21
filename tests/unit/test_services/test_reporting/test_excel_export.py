@@ -151,7 +151,7 @@ mock_validation_results = [
 def test_get_rules_report_data():
     with open(test_report_template, "rb") as f:
         report: ExcelReport = ExcelReport(
-            "test", mock_validation_results, 10.1, MagicMock(), f
+            [], "test", mock_validation_results, 10.1, MagicMock(), f
         )
         report_data = report.get_rules_report_data()
         expected_reports = []
@@ -176,7 +176,7 @@ def test_get_rules_report_data():
 def test_get_detailed_data():
     with open(test_report_template, "rb") as f:
         report: ExcelReport = ExcelReport(
-            "test", mock_validation_results, 10.1, MagicMock(), f
+            [], "test", mock_validation_results, 10.1, MagicMock(), f
         )
         detailed_data = report.get_detailed_data()
         errors = [
@@ -223,7 +223,7 @@ def test_get_detailed_data():
 def test_get_summary_data():
     with open(test_report_template, "rb") as f:
         report: ExcelReport = ExcelReport(
-            "test", mock_validation_results, 10.1, MagicMock(), f
+            [], "test", mock_validation_results, 10.1, MagicMock(), f
         )
         summary_data = report.get_summary_data()
         errors = [
@@ -251,8 +251,18 @@ def test_get_export():
         mock_args = MagicMock()
         mock_args.meddra = "test"
         mock_args.whodrug = "test"
+        datasets = [
+            {
+                "filename": "test.xpt",
+                "label": "Test Data",
+                "full_path": "tests/unit/text.xpt",
+                "modification_date": "2022-04-19T16:17:45",
+                "size": 20000,
+                "length": 700,
+            }
+        ]
         report: ExcelReport = ExcelReport(
-            ["test"], mock_validation_results, 10.1, mock_args, f
+            datasets, ["test"], mock_validation_results, 10.1, mock_args, f
         )
         cdiscCt = ["sdtmct-03-2021"]
         wb = report.get_export(
@@ -264,3 +274,13 @@ def test_get_export():
         assert wb["Conformance Details"]["B8"].value == "V3.4"
         assert wb["Conformance Details"]["B9"].value == ", ".join(cdiscCt)
         assert wb["Conformance Details"]["B10"].value == "2.1"
+
+        # Check dataset details tab
+        assert wb["Dataset Details"]["A2"].value == "test.xpt"  # filename
+        assert wb["Dataset Details"]["B2"].value == "Test Data"  # label
+        assert wb["Dataset Details"]["C2"].value == "tests/unit/text.xpt"  # Location
+        assert (
+            wb["Dataset Details"]["D2"].value == "2022-04-19T16:17:45"
+        )  # Modified Time Stamp
+        assert wb["Dataset Details"]["E2"].value == 20  # Size in kb
+        assert wb["Dataset Details"]["F2"].value == 700  # Number of records

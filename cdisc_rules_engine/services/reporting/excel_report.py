@@ -26,6 +26,7 @@ class ExcelReport(BaseReport):
 
     def __init__(
         self,
+        datasets: Iterable[dict],
         dataset_paths: Iterable[str],
         validation_results: List[RuleValidationResult],
         elapsed_time: float,
@@ -33,7 +34,7 @@ class ExcelReport(BaseReport):
         template: Optional[BinaryIO] = None,
     ):
         super().__init__(
-            dataset_paths, validation_results, elapsed_time, args, template
+            datasets, dataset_paths, validation_results, elapsed_time, args, template
         )
         self._item_type = "list"
 
@@ -59,6 +60,23 @@ class ExcelReport(BaseReport):
         )
         wb["Conformance Details"]["B3"] = f"{round(self._elapsed_time, 2)} seconds"
         wb["Conformance Details"]["B4"] = __version__
+
+        # write dataset metadata
+        datasets_data = [
+            [
+                dataset.get("filename"),
+                dataset.get("label"),
+                dataset.get("full_path"),
+                dataset.get("modification_date"),
+                dataset.get("size", 0) / 1000,
+                dataset.get("length"),
+            ]
+            for dataset in self._datasets
+        ]
+        excel_update_worksheet(
+            wb["Dataset Details"], datasets_data, dict(wrap_text=True)
+        )
+
         # write standards details
         wb["Conformance Details"]["B7"] = standard.upper()
         wb["Conformance Details"]["B8"] = f"V{version}"

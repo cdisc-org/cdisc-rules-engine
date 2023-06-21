@@ -104,7 +104,6 @@ def run_validation(args: Validation_args):
     data_service = DataServiceFactory(config, shared_cache).get_data_service()
     datasets = get_datasets(data_service, args.dataset_paths)
     engine_logger.info(f"Running {len(rules)} rules against {len(datasets)} datasets")
-
     start = time.time()
     results = []
     # run each rule in a separate process
@@ -120,7 +119,7 @@ def run_validation(args: Validation_args):
     end = time.time()
     elapsed_time = end - start
     reporting_factory = ReportFactory(
-        args.dataset_paths, results, elapsed_time, args, data_service
+        datasets, results, elapsed_time, args, data_service
     )
     reporting_services: List[BaseReport] = reporting_factory.get_report_services()
     for reporting_service in reporting_services:

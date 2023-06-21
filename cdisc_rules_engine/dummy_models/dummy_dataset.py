@@ -21,9 +21,12 @@ class DummyDataset:
     def get_metadata(self):
         return {
             "dataset_size": [self.filesize or 1000],
-            "dataset_name": [self.filename.split(".")[0].upper() or "test"],
+            "dataset_name": [
+                self.filename.split(".")[0].upper() if self.filename else "test"
+            ],
             "dataset_label": [self.label or "test"],
             "filename": [self.filename],
+            "length": [len(self.data.index)],
         }
 
     def validate(self, dataset_data):

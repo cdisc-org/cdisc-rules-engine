@@ -18,6 +18,7 @@ class JsonReport(BaseReport):
 
     def __init__(
         self,
+        datasets: Iterable[dict],
         dataset_paths: Iterable[str],
         validation_results: List[RuleValidationResult],
         elapsed_time: float,
@@ -25,7 +26,7 @@ class JsonReport(BaseReport):
         template: Optional[BinaryIO] = None,
     ):
         super().__init__(
-            dataset_paths, validation_results, elapsed_time, args, template
+            datasets, dataset_paths, validation_results, elapsed_time, args, template
         )
         self._item_type = "dict"
 

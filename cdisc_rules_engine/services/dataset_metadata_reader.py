@@ -46,6 +46,7 @@ class DatasetMetadataReader:
             ).to_dict(),
             "number_of_variables": len(dataset.columns),
             "dataset_label": dataset.dataset_label,
+            "dataset_length": dataset.shape[0],
             "domain_name": self._domain_name,
             "dataset_name": self._dataset_name,
             "dataset_modification_date": dataset.modified.isoformat(),
