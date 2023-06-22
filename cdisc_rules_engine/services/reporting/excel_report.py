@@ -70,12 +70,12 @@ class ExcelReport(BaseReport):
             wb["Conformance Details"]["B14"] = self._args.whodrug
         return wb
 
-    def write_report(self):
+    def write_report(self, **kwargs):
         logger = logging.getLogger("validator")
 
         try:
             define_version: str = self._args.define_version or get_define_version(
-                self._args.dataset_paths
+                self._args.dataset_paths, **kwargs
             )
             report_data = self.get_export(
                 define_version,
@@ -86,6 +86,7 @@ class ExcelReport(BaseReport):
             with open(self._output_name, "wb") as f:
                 f.write(excel_workbook_to_stream(report_data))
         except Exception as e:
+            logger._exception = e
             logger.error(e)
             raise e
         finally:

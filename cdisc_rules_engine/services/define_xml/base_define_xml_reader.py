@@ -61,12 +61,12 @@ class BaseDefineXMLReader(ABC):
         self.study_id = study_id
         self.data_bundle_id = data_bundle_id
 
-    def read(self) -> List[dict]:
+    def read(self, **kwargs) -> List[dict]:
         """
         Reads Define XML metadata and returns it as a list of dicts.
         The output contains metadata for all datasets.
         """
-        metadata = self._odm_loader.MetaDataVersion()
+        metadata = self.get_metadata_version(**kwargs)
         output = []
         for domain_metadata in metadata.ItemGroupDef:
             output.append(self._get_metadata_representation(domain_metadata))
@@ -96,21 +96,12 @@ class BaseDefineXMLReader(ABC):
     def extract_variables_metadata(
         self, domain_name: str = None, **kwargs
     ) -> List[dict]:
-        validate_xml = kwargs.get("validate_xml", "Y")
         logger.info(
             f"Extracting variables metadata from Define-XML. domain_name={domain_name}"
         )
-        metadata = None
         domain_metadata = None
         variables_metadata = []
-        try:
-            metadata = self._odm_loader.MetaDataVersion()
-        except Exception as e:
-            logger.trace(e, f"{__name__}(VX={validate_xml})")
-            if validate_xml in ("Y", "YES"):
-                logger.info(f"Validate XML = {validate_xml}: continue to next step.")
-                return variables_metadata
-
+        metadata = self.get_metadata_version(**kwargs)
         domain_metadata = self._get_domain_metadata(metadata, domain_name)
         codelist_map = self._get_codelist_def_map(metadata.CodeList)
         for itemref in domain_metadata.ItemRef:
@@ -123,8 +114,24 @@ class BaseDefineXMLReader(ABC):
 
         return variables_metadata
 
+    @cached("define-metadata-version")
+    def get_metadata_version(self, **kwargs):
+        validate_xml = kwargs.get("validate_xml", "Y")
+        metadata = None
+        try:
+            metadata = self._odm_loader.MetaDataVersion()
+            logger.info(f"Define Metadata Version: {metadata}")
+        except Exception as e:
+            logger._exception = e
+            logger.error(f"{__name__}(VX={validate_xml})")
+            if validate_xml in ("Y", "YES"):
+                logger.info(f"Validate XML = {validate_xml}: continue to next step.")
+        return metadata
+
     @cached("define-value-level-metadata")
-    def extract_value_level_metadata(self, domain_name: str = None) -> List[dict]:
+    def extract_value_level_metadata(
+        self, domain_name: str = None, **kwargs
+    ) -> List[dict]:
         """
         Extracts all value level metadata for each variable in a given domain.
         Returns: A list of dictionaries containing value level metadata corresponding
@@ -145,7 +152,7 @@ class BaseDefineXMLReader(ABC):
             f"Extracting value level metadata from Define-XML. "
             f"domain_name={domain_name}"
         )
-        metadata = self._odm_loader.MetaDataVersion()
+        metadata = self.get_metadata_version(**kwargs)
         item_def_map = {item_def.OID: item_def for item_def in metadata.ItemDef}
         codelist_map = self._get_codelist_def_map(metadata.CodeList)
         domain_metadata = self._get_domain_metadata(metadata, domain_name)
@@ -325,9 +332,9 @@ class BaseDefineXMLReader(ABC):
         return is_valid
 
     @cache
-    def get_define_version(self) -> Optional[str]:
+    def get_define_version(self, **kwargs) -> Optional[str]:
         """Use to extract DefineVersion from file"""
-        self.read()
+        self.read(**kwargs)
         mdv_attrib: dict = self._odm_loader.loader.parser.mdv[0].attrib
         for key, val in mdv_attrib.items():
             if key.endswith("DefineVersion"):

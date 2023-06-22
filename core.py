@@ -149,6 +149,7 @@ def cli():
 @click.option(
     "-vx",
     "--validate-xml",
+    type=click.Choice(["Y", "Yes", "N", "No"]),
     help=(
         "Validate Define-XML or not when it misses def:Structure or in error"
         ": Y (skip define rule validation and continue for other rules)"

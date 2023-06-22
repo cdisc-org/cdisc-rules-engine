@@ -44,8 +44,18 @@ class ConsoleLogger(LoggerInterface):
     def warning(self, msg: str, *args, **kwargs):
         self._logger.warning(msg, *args, **kwargs)
 
-    def error(self, msg: str, *args, **kwargs):
+    def error(self, msg: str = None, *args, **kwargs):
+        try:
+            e = self._exception
+        except AttributeError:
+            # Handle the case when _exception attribute doesn't exist
+            e = None
+        if msg is None:
+            msg = f"Error occurred during validation. Error: {e}."
+            msg += f"Error message: {str(e)}"
         self._logger.error(msg, *args, **kwargs)
+        if e is not None:
+            self.display_trace(e, inspect.currentframe())
 
     def exception(self, msg: str, *args, **kwargs):
         self._logger.exception(msg, *args, **kwargs)
@@ -59,23 +69,31 @@ class ConsoleLogger(LoggerInterface):
     def trace(self, exc: Exception, msg: str, *args, **kwargs):
         current_level = self._logger.getEffectiveLevel()
         if current_level > 50:
-            current_line = inspect.currentframe().f_lineno
-            print(f"\nCurrent: (file/line) {__name__}/{current_line}")
+            self.display_trace(exc, inspect.currentframe())
 
-            frame = inspect.currentframe().f_back
-            c_function = inspect.getframeinfo(frame).function
-            c_lineno = frame.f_lineno
-            c_filename = frame.f_code.co_filename
-            print(f"Caller: {c_function}/{c_lineno} in {c_filename}")
+    def display_trace(self, e: Exception = None, f=None):
+        if e is None:
+            e = self._exception
+        if f is None:
+            f = inspect.currentframe()
+        # print out trace information
+        current_line = f.f_lineno
+        print(f"\n Current: {__name__}, line {current_line}")
 
-            line_number = None
-            caller_function = None
-            traceback_info = traceback.extract_tb(exc.__traceback__)
-            if traceback_info:
-                line_number = traceback_info[-1].lineno
-                caller_function = traceback_info[-1].name
-            print(f"Error: {caller_function}/{line_number}: {str(exc)}")
-            i = 0
-            for call_func in traceback_info:
-                i += 1
-                print(f"Trace({i}): {call_func}")
+        frame = f.f_back
+        c_function = inspect.getframeinfo(frame).function
+        c_lineno = frame.f_lineno
+        c_filename = frame.f_code.co_filename
+        print(f"  Caller: in {c_filename}: line {c_lineno} in {c_function}")
+
+        line_number = None
+        caller_function = None
+        traceback_info = traceback.extract_tb(e.__traceback__)
+        if traceback_info:
+            line_number = traceback_info[-1].lineno
+            caller_function = traceback_info[-1].name
+        print(f"   Error: {str(e)}, line {line_number} in {caller_function}")
+        i = 0
+        for call_func in traceback_info:
+            i += 1
+            print(f"Trace({i}): {call_func}")
