@@ -4,6 +4,7 @@ from unittest.mock import MagicMock
 from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
 from cdisc_rules_engine.services.reporting.excel_report import ExcelReport
+from pathlib import Path
 from version import __version__
 
 test_report_template: str = (
@@ -255,7 +256,7 @@ def test_get_export():
             {
                 "filename": "test.xpt",
                 "label": "Test Data",
-                "full_path": "tests/unit/text.xpt",
+                "full_path": str(Path("tests/unit/text.xpt")),
                 "modification_date": "2022-04-19T16:17:45",
                 "size": 20000,
                 "length": 700,
@@ -278,7 +279,9 @@ def test_get_export():
         # Check dataset details tab
         assert wb["Dataset Details"]["A2"].value == "test.xpt"  # filename
         assert wb["Dataset Details"]["B2"].value == "Test Data"  # label
-        assert wb["Dataset Details"]["C2"].value == "tests/unit"  # Location
+        assert wb["Dataset Details"]["C2"].value == str(
+            Path("tests/unit/text.xpt").parent
+        )  # Location
         assert (
             wb["Dataset Details"]["D2"].value == "2022-04-19T16:17:45"
         )  # Modified Time Stamp
