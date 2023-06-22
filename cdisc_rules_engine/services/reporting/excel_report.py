@@ -17,6 +17,7 @@ from .excel_writer import (
 from cdisc_rules_engine.utilities.reporting_utilities import (
     get_define_version,
 )
+from pathlib import Path
 
 
 class ExcelReport(BaseReport):
@@ -66,7 +67,7 @@ class ExcelReport(BaseReport):
             [
                 dataset.get("filename"),
                 dataset.get("label"),
-                dataset.get("full_path"),
+                str(Path(dataset.get("full_path", "")).parent),
                 dataset.get("modification_date"),
                 dataset.get("size", 0) / 1000,
                 dataset.get("length"),

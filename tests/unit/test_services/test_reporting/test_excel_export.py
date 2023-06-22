@@ -278,7 +278,7 @@ def test_get_export():
         # Check dataset details tab
         assert wb["Dataset Details"]["A2"].value == "test.xpt"  # filename
         assert wb["Dataset Details"]["B2"].value == "Test Data"  # label
-        assert wb["Dataset Details"]["C2"].value == "tests/unit/text.xpt"  # Location
+        assert wb["Dataset Details"]["C2"].value == "tests/unit"  # Location
         assert (
             wb["Dataset Details"]["D2"].value == "2022-04-19T16:17:45"
         )  # Modified Time Stamp
