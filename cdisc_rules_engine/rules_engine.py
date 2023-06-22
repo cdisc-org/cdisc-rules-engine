@@ -71,6 +71,9 @@ class RulesEngine:
     def get_schema(self):
         return export_rule_data(DatasetVariable, COREActions)
 
+    def is_validate_xml(self):
+        return True if self.validate_xml in ("Y", "YES") else False
+
     def test_validation(
         self,
         rule: dict,
