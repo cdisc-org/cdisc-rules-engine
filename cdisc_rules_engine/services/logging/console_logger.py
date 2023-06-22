@@ -1,6 +1,7 @@
 import logging
-
 from cdisc_rules_engine.interfaces import ConfigInterface, LoggerInterface
+import traceback
+import inspect
 
 
 class ConsoleLogger(LoggerInterface):
@@ -12,6 +13,7 @@ class ConsoleLogger(LoggerInterface):
     def __init__(self, logger, config: ConfigInterface):
         self._logger = logger
         self._config = config
+        self._exception = Exception()
 
     @property
     def disabled(self) -> bool:
@@ -41,8 +43,13 @@ class ConsoleLogger(LoggerInterface):
     def warning(self, msg: str, *args, **kwargs):
         self._logger.warning(msg, *args, **kwargs)
 
-    def error(self, msg: str, *args, **kwargs):
+    def error(self, msg: str = None, *args, **kwargs):
+        e = self._exception
+        if msg is None:
+            msg = f"Error occurred during validation. Error: {e}."
+            msg += f"Error message: {str(e)}"
         self._logger.error(msg, *args, **kwargs)
+        self.display_trace(e, inspect.currentframe())
 
     def exception(self, msg: str, *args, **kwargs):
         self._logger.exception(msg, *args, **kwargs)
@@ -52,3 +59,30 @@ class ConsoleLogger(LoggerInterface):
 
     def log(self, msg: str, *args, **kwargs):
         self._logger.log(logging.CRITICAL + 1, msg, *args, **kwargs)
+
+    def display_trace(self, e: Exception = None, f=None):
+        if e is None:
+            e = self._exception
+        if f is None:
+            f = inspect.currentframe()
+        # print out trace information
+        current_line = f.f_lineno
+        print(f"\n Current: {__name__}, line {current_line}")
+
+        frame = f.f_back
+        c_function = inspect.getframeinfo(frame).function
+        c_lineno = frame.f_lineno
+        c_filename = frame.f_code.co_filename
+        print(f"  Caller: in {c_filename}: line {c_lineno} in {c_function}")
+
+        line_number = None
+        caller_function = None
+        traceback_info = traceback.extract_tb(e.__traceback__)
+        if traceback_info:
+            line_number = traceback_info[-1].lineno
+            caller_function = traceback_info[-1].name
+        print(f"   Error: {str(e)}, line {line_number} in {caller_function}")
+        i = 0
+        for call_func in traceback_info:
+            i += 1
+            print(f"Trace({i}): {call_func}")

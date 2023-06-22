@@ -77,6 +77,7 @@ class RulesEngine:
         datasets: List[DummyDataset],
         dataset_domain: str,
     ):
+        print(f"\nxxx000:dataset_path:{dataset_path} ")
         self.data_service = DataServiceFactory(
             self.config, InMemoryCacheService.get_instance()
         ).get_dummy_data_service(datasets)
@@ -126,6 +127,8 @@ class RulesEngine:
             f"Validating domain {dataset_domain}. "
             f"rule={rule}. dataset_path={dataset_path}. datasets={datasets}."
         )
+        print(f"\nxxx101: dataset_path: {dataset_path} in {__name__}")
+
         try:
             if self.rule_processor.is_suitable_for_validation(
                 rule,
@@ -155,9 +158,10 @@ class RulesEngine:
                 error_obj.domain = dataset_domain
                 return [error_obj.to_representation()]
         except Exception as e:
-            logger.error(
-                f"Error occurred during validation. Error: {e}. Error message: {str(e)}"
-            )
+            # xxx
+            # kwargs = {"exception":e}
+            logger._exception = e
+            logger.error()
             error_obj: ValidationErrorContainer = self.handle_validation_exceptions(
                 e, dataset_path, dataset_path
             )
@@ -192,7 +196,10 @@ class RulesEngine:
 
         dataset = builder.get_dataset()
 
-        print(f"\nDataset:{domain}: {dataset} in {__name__}\n")
+        print(
+            f"\nxxx103: Dataset:{domain}: {dataset}: "
+            f"and {dataset_path}: in {__name__}\n"
+        )
 
         # Update rule for certain rule types
         # SPECIAL CASES FOR RULE TYPES ###############################
@@ -337,7 +344,10 @@ class RulesEngine:
         """
         Gets Define XML metadata and returns it as dict.
         """
-        directory_path = get_directory_path(dataset_path)
+        if os.path.exists(dataset_path):
+            directory_path = dataset_path
+        else:
+            directory_path = get_directory_path(dataset_path)
         define_xml_path: str = os.path.join(directory_path, DEFINE_XML_FILE_NAME)
 
         print(f"\nxxx: Define Path: {define_xml_path} in {__name__}\n")
