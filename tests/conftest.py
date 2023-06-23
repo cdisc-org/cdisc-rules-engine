@@ -1219,5 +1219,6 @@ def dataset_metadata() -> dict:
             "dataset_name": "AE",
             "domain_name": "AE",
             "dataset_modification_date": datetime.now().isoformat(),
+            "dataset_length": 20,
         },
     }
