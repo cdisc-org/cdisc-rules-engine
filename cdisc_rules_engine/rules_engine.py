@@ -239,7 +239,7 @@ class RulesEngine:
                 get_library_variables_metadata_cache_key(
                     self.standard, self.standard_version
                 )
-            )
+            ).get(domain, {})
             define_metadata: List[dict] = builder.get_define_xml_variables_metadata()
             targets: List[
                 str

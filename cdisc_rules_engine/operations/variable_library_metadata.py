@@ -4,7 +4,7 @@ from cdisc_rules_engine.utilities.utils import get_library_variables_metadata_ca
 from cdisc_rules_engine import config
 
 
-class VariablePermissibility(BaseOperation):
+class VariableLibraryMetadata(BaseOperation):
     def _execute_operation(self):
         """
         Get the variable permissibility values for all data in the current
@@ -19,7 +19,10 @@ class VariablePermissibility(BaseOperation):
             variable_details = cdisc_library_service.get_variables_details(
                 self.params.standard, self.params.standard_version
             )
-        variable_permissibilities = {
-            key: variable_details[key].get("core") for key in variable_details.keys()
+        dataset_variable_details = variable_details.get(self.params.domain, {})
+        print(dataset_variable_details)
+        variable_metadata = {
+            key: dataset_variable_details[key].get(self.params.target)
+            for key in dataset_variable_details.keys()
         }
-        return variable_permissibilities
+        return variable_metadata

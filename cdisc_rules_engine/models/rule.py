@@ -130,10 +130,11 @@ class Rule:
             "name": variable_function,
             "operator": condition.get("operator"),
             "value": {
-                "target": condition.get("name"),
                 "comparator": condition.get("value"),
             },
         }
+        if condition.get("name"):
+            data["value"]["target"] = condition.get("name")
         if "variables" in condition:
             data["variables"] = condition["variables"]
         for optional_parameter in OptionalConditionParameters.values():
