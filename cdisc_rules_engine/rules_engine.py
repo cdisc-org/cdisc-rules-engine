@@ -76,6 +76,7 @@ class RulesEngine:
         dataset_path: str,
         datasets: List[DummyDataset],
         dataset_domain: str,
+        define_xml=None,
     ):
         print(f"\nxxx000:dataset_path:{dataset_path} ")
         self.data_service = DataServiceFactory(
@@ -87,7 +88,7 @@ class RulesEngine:
         self.rule_processor = RuleProcessor(self.data_service, self.cache)
         self.data_processor = DataProcessor(self.data_service, self.cache)
         return self.validate_single_rule(
-            rule, f"{dataset_path}", dataset_dicts, dataset_domain
+            rule, f"{dataset_path}", dataset_dicts, dataset_domain, define_xml
         )
 
     def validate(
@@ -117,7 +118,12 @@ class RulesEngine:
         return output
 
     def validate_single_rule(
-        self, rule: dict, dataset_path: str, datasets: List[dict], dataset_domain: str
+        self,
+        rule: dict,
+        dataset_path: str,
+        datasets: List[dict],
+        dataset_domain: str,
+        define_xml=None,
     ) -> List[Union[dict, str]]:
         """
         This function is an entrypoint to validation process.
@@ -138,7 +144,7 @@ class RulesEngine:
                 datasets,
             ):
                 result: List[Union[dict, str]] = self.validate_rule(
-                    rule, dataset_path, datasets, dataset_domain
+                    rule, dataset_path, datasets, dataset_domain, define_xml
                 )
                 logger.info(f"Validated domain {dataset_domain}. Result = {result}")
                 if result:
@@ -185,7 +191,12 @@ class RulesEngine:
         )
 
     def validate_rule(
-        self, rule: dict, dataset_path: str, datasets: List[dict], domain: str
+        self,
+        rule: dict,
+        dataset_path: str,
+        datasets: List[dict],
+        domain: str,
+        define_xml=None,
     ) -> List[Union[dict, str]]:
         """
          This function is an entrypoint for rule validation.
@@ -208,10 +219,13 @@ class RulesEngine:
             rule.get("rule_type")
             == RuleTypes.DATASET_METADATA_CHECK_AGAINST_DEFINE.value
         ):
-            # get Define XML metadata for domain and use it as a rule comparator
-            define_metadata: dict = self.get_define_xml_metadata_for_domain(
-                dataset_path, domain
-            )
+            if define_xml is None:
+                # get Define XML metadata for domain and use it as a rule comparator
+                define_metadata: dict = self.get_define_xml_metadata_for_domain(
+                    dataset_path, domain
+                )
+            else:
+                define_metadata = define_xml
             print(f"xxx: define_metadata: {define_metadata} in {__name__}\n")
 
             self.rule_processor.add_comparator_to_rule_conditions(rule, define_metadata)

@@ -28,6 +28,7 @@ from scripts.script_utils import (
     fill_cache_with_dictionaries,
     fill_cache_with_provided_data,
     get_cache_service,
+    get_define_xml,
 )
 from cdisc_rules_engine.utilities.utils import get_directory_path
 from cdisc_rules_engine.enums.progress_parameter_options import ProgressParameterOptions
@@ -43,7 +44,7 @@ class CacheManager(SyncManager):
     pass
 
 
-def validate_single_rule(cache, path, args, datasets, rule: dict = None):
+def validate_single_rule(cache, path, args, datasets, define_xml, rule: dict = None):
     set_log_level("ERROR")
     rule["conditions"] = ConditionCompositeFactory.get_condition_composite(
         rule["conditions"]
@@ -67,6 +68,7 @@ def validate_single_rule(cache, path, args, datasets, rule: dict = None):
                 directory,
                 datasets,
                 None,
+                define_xml,
             )
         )
     else:
@@ -82,6 +84,7 @@ def validate_single_rule(cache, path, args, datasets, rule: dict = None):
                         os.path.join(directory, dataset.filename),
                         datasets,
                         dataset.domain,
+                        define_xml,
                     )
                 )
     results = list(itertools.chain(*results))
@@ -113,22 +116,8 @@ def test(args: TestArgs):
     with open(args.dataset_path, "r") as f:
         data_json = json.load(f)
     datasets = [DummyDataset(data) for data in data_json.get("datasets", [])]
-
-    print(f"xxx: datasets: {datasets} in {__name__}\n")
-    for dataset in datasets:
-        # Access and print the attributes
-        print("Name:", dataset.name)
-        print("Label:", dataset.label)
-        print("Filesize:", dataset.filesize)
-        print("Filename:", dataset.filename)
-        print("Domain:", dataset.domain)
-        print("Variables:")
-        for variable in dataset.variables:
-            print("  - Name:", variable.name)
-            print("    Value:", variable.type)
-        print("xxx: Data:")
-        print(dataset.data)
-    # xxx
+    define_xml = get_define_xml(define_file_path=args.dataset_path)
+    print(f"xxx: DefineXML: {define_xml}")
 
     start = time.time()
     results = []
@@ -141,7 +130,9 @@ def test(args: TestArgs):
             show_eta=False,
         ) as bar:
             for rule_result in pool.imap_unordered(
-                partial(validate_single_rule, shared_cache, "", args, datasets),
+                partial(
+                    validate_single_rule, shared_cache, "", args, datasets, define_xml
+                ),
                 rules,
             ):
                 results.append(rule_result)
