@@ -1060,7 +1060,10 @@ def test_duplicate_for_targets():
     )
     composite.add_conditions("all", [single_condition_1])
     targets = ["AESTDY", "AESCAT", "AEWWWR"]
-    composite = RuleProcessor.duplicate_conditions_for_all_targets(composite, targets)
+    duplicated_conditions = RuleProcessor.duplicate_conditions_for_all_targets(
+        composite, targets
+    )
+    composite.set_conditions(duplicated_conditions)
     items = composite.items()
     check = items[0]
     assert len(check[1]) == 3
@@ -1108,7 +1111,8 @@ def test_add_variable_conditions_nested_list():
     )
     composite.add_conditions("any", [single_condition, nested_composite])
     targets = ["AESTDY", "AESCAT", "AEWWWR"]
-    composite = RuleProcessor.duplicate_conditions_for_all_targets(composite, targets)
+    duplicated = RuleProcessor.duplicate_conditions_for_all_targets(composite, targets)
+    composite.set_conditions(duplicated)
     items = composite.items()
     check = items[0]
     assert check[0] == "any"
@@ -1163,7 +1167,8 @@ def test_add_conditions_nested_no_duplicates():
     )
     composite.add_conditions("any", [single_condition, nested_composite])
     targets = ["AESTDY", "AESCAT", "AEWWWR"]
-    composite = RuleProcessor.duplicate_conditions_for_all_targets(composite, targets)
+    duplicated = RuleProcessor.duplicate_conditions_for_all_targets(composite, targets)
+    composite.set_conditions(duplicated)
     items = composite.items()
     check = items[0]
     assert check[0] == "any"

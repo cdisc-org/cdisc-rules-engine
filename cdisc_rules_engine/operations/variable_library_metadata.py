@@ -20,7 +20,6 @@ class VariableLibraryMetadata(BaseOperation):
                 self.params.standard, self.params.standard_version
             )
         dataset_variable_details = variable_details.get(self.params.domain, {})
-        print(dataset_variable_details)
         variable_metadata = {
             key: dataset_variable_details[key].get(self.params.target)
             for key in dataset_variable_details.keys()
