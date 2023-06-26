@@ -1,0 +1,338 @@
+{
+  "$id": "Operations.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "anyOf": [
+    {
+      "properties": {
+        "operator": {
+          "const": "define_variable_metadata"
+        }
+      },
+      "required": ["id", "operator", "attribute_name"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "distinct"
+        }
+      },
+      "required": ["id", "operator", "name"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": { "const": "domain_is_custom" }
+      },
+      "required": ["id", "operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": { "const": "domain_label" }
+      },
+      "required": ["id", "operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": { "const": "dy" }
+      },
+      "required": ["id", "operator", "name"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": { "const": "extract_metadata" }
+      },
+      "required": ["id", "operator", "name"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": { "const": "expected_variables" }
+      },
+      "required": ["id", "operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "get_column_order_from_dataset"
+        }
+      },
+      "required": ["id", "operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "get_column_order_from_library"
+        }
+      },
+      "required": ["id", "operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "get_model_column_order"
+        }
+      },
+      "required": ["id", "operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "get_model_filtered_variables"
+        }
+      },
+      "required": ["id", "operator", "key_name", "key_value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "get_parent_model_column_order"
+        }
+      },
+      "required": ["id", "operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "label_referenced_variable_metadata"
+        }
+      },
+      "required": ["id", "operator", "name"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": { "const": "max" }
+      },
+      "required": ["id", "operator", "name"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": { "const": "max_date" }
+      },
+      "required": ["id", "operator", "name"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": { "const": "mean" }
+      },
+      "required": ["id", "operator", "name"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": { "const": "min" }
+      },
+      "required": ["id", "operator", "name"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": { "const": "min_date" }
+      },
+      "required": ["id", "operator", "name"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "name_referenced_variable_metadata"
+        }
+      },
+      "required": ["id", "operator", "name"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "permissible_variables"
+        }
+      },
+      "required": ["id", "operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": { "const": "record_count" }
+      },
+      "required": ["id", "operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": { "const": "required_variables" }
+      },
+      "required": ["id", "operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": { "const": "study_domains" }
+      },
+      "required": ["id", "operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "valid_codelist_dates"
+        }
+      },
+      "required": ["id", "operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "valid_meddra_code_references"
+        }
+      },
+      "required": ["id", "operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "valid_meddra_code_term_pairs"
+        }
+      },
+      "required": ["id", "operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "valid_meddra_term_references"
+        }
+      },
+      "required": ["id", "operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "valid_whodrug_references"
+        }
+      },
+      "required": ["id", "operator", "name"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": { "const": "variable_count" }
+      },
+      "required": ["id", "operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": { "const": "variable_exists" }
+      },
+      "required": ["id", "operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": { "const": "variable_is_null" }
+      },
+      "required": ["id", "operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": { "const": "variable_names" }
+      },
+      "required": ["id", "operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "variable_permissibilities"
+        }
+      },
+      "required": ["id", "operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "variable_value_count"
+        }
+      },
+      "required": ["id", "operator", "name"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "whodrug_code_hierarchy"
+        }
+      },
+      "required": ["id", "operator"],
+      "type": "object"
+    }
+  ],
+  "properties": {
+    "attribute_name": {
+      "$ref": "MetaVariables.json"
+    },
+    "domain": {
+      "anyOf": [
+        {
+          "$ref": "CORE-base.json#/$defs/Dataset"
+        },
+        {
+          "$ref": "CORE-base.json#/$defs/DataStructure"
+        }
+      ]
+    },
+    "group": {
+      "items": {
+        "$ref": "CORE-base.json#/$defs/VariableName"
+      },
+      "type": "array"
+    },
+    "id": {
+      "pattern": "^\\$.+$",
+      "type": "string"
+    },
+    "key_name": {
+      "enum": [
+        "definition",
+        "examples",
+        "label",
+        "name",
+        "notes",
+        "ordinal",
+        "role",
+        "simpleDatatype",
+        "variableCcode"
+      ],
+      "type": "string"
+    },
+    "key_value": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "operator": {
+      "type": "string"
+    }
+  },
+  "required": ["id", "operator"],
+  "type": "object"
+}

@@ -27,7 +27,7 @@ def validate_datasets_payload(datasets):
 def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
     try:
         json_data = req.get_json()
-        api_key = os.environ.get("LIBRARY_API_KEY")
+        api_key = os.environ.get("CDISC_LIBRARY_API_KEY")
         rule = json_data.get("rule")
         standards_data = json_data.get("standard", {})
         standard = standards_data.get("product")
