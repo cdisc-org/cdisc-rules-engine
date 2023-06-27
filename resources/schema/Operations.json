@@ -252,16 +252,16 @@
     },
     {
       "properties": {
-        "operator": { "const": "variable_names" }
+        "operator": {
+          "const": "variable_library_metadata"
+        }
       },
-      "required": ["id", "operator"],
+      "required": ["id", "operator", "name"],
       "type": "object"
     },
     {
       "properties": {
-        "operator": {
-          "const": "variable_permissibilities"
-        }
+        "operator": { "const": "variable_names" }
       },
       "required": ["id", "operator"],
       "type": "object"
@@ -306,7 +306,6 @@
       "type": "array"
     },
     "id": {
-      "pattern": "^\\$.+$",
       "type": "string"
     },
     "key_name": {

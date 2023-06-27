@@ -640,9 +640,11 @@ True if variable is missing or if all values within a variable are null or empty
 
 Return the set of variable names from the library for the given standard
 
-## variable_permissibilities
+## variable_library_metadata
 
-Get the permissibility values from the library for all variables in the current dataset.
+Get the metadata value from the library for all variables in the current dataset. Metadata attribute is specified by the `name`.
+
+Result
 
 ```json
 {
@@ -653,6 +655,24 @@ Get the permissibility values from the library for all variables in the current 
   "AELLT": "Exp",
   "...": "..."
 }
+```
+
+> Condition: Variable Core Status = Required
+
+> Rule: Variable ^= null
+
+```yaml
+Check:
+  any:
+    - all:
+        - operator: variable_metadata_equal_to
+          value: Req
+          metadata: $var_perm
+        - operator: empty
+Operations:
+  - id: $var_perm
+    operator: variable_library_metadata
+    name: core
 ```
 
 ## variable_value_count
