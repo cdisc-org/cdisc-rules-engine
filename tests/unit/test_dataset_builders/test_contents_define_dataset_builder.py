@@ -1,94 +1,318 @@
 import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 import pandas as pd
-import numpy as np
 from cdisc_rules_engine.dataset_builders.contents_define_dataset_builder import (  # noqa: E501
     ContentsDefineDatasetBuilder,
 )
 from cdisc_rules_engine.services.data_services import LocalDataService
 
 
-@pytest.mark.parametrize(
-    "content, variables_metadata, expected",
+test_set1 = (
     [
-        (
-            {"VAR1": ["1A", "1B", "1C"], "VAR2": ["2A", "2B", "2C"]},
-            {
-                "define_variable_name": ["VAR1", "VAR3"],
-                "define_variable_label": ["VAR1 Label", "VAR3 Label"],
-                "define_variable_data_type": ["VAR1 Type", "VAR3 Type"],
-                "define_variable_role": ["VAR1 ROLE", "VAR3 ROLE"],
-            },
-            {
-                "row_number": [1, 2, 3, 1, 2, 3, np.nan],
-                "variable_name": [
-                    "VAR1",
-                    "VAR1",
-                    "VAR1",
-                    "VAR2",
-                    "VAR2",
-                    "VAR2",
-                    None,
-                ],
-                "variable_value": ["1A", "1B", "1C", "2A", "2B", "2C", None],
-                "define_variable_name": [
-                    "VAR1",
-                    "VAR1",
-                    "VAR1",
-                    None,
-                    None,
-                    None,
-                    "VAR3",
-                ],
-                "define_variable_label": [
-                    "VAR1 Label",
-                    "VAR1 Label",
-                    "VAR1 Label",
-                    None,
-                    None,
-                    None,
-                    "VAR3 Label",
-                ],
-                "define_variable_data_type": [
-                    "VAR1 Type",
-                    "VAR1 Type",
-                    "VAR1 Type",
-                    None,
-                    None,
-                    None,
-                    "VAR3 Type",
-                ],
-                "define_variable_role": [
-                    "VAR1 ROLE",
-                    "VAR1 ROLE",
-                    "VAR1 ROLE",
-                    None,
-                    None,
-                    None,
-                    "VAR3 ROLE",
-                ],
-            },
-        ),
+        {
+            "define_dataset_name": "TS",
+            "define_dataset_label": "Trial Summary",
+            "define_dataset_location": "ts.xpt",
+            "define_dataset_class": "TRIAL DESIGN",
+            "define_dataset_structure": "One record per trial summary parameter value",
+            "define_dataset_is_non_standard": "",
+            "define_dataset_variables": [
+                "STUDYID",
+                "DOMAIN",
+                "TSSEQ",
+                "TSPARMCD",
+                "TSPARM",
+                "TSVAL",
+            ],
+        },
+        {
+            "define_dataset_name": "DI",
+            "define_dataset_label": "Device Identifiers",
+            "define_dataset_location": "di.xpt",
+            "define_dataset_class": "SPECIAL PURPOSE",
+            "define_dataset_structure": "One record per device identifier per device",
+            "define_dataset_is_non_standard": "",
+        },
+        {
+            "define_dataset_name": "DM",
+            "define_dataset_label": "Demographics",
+            "define_dataset_location": "dm.xpt",
+            "define_dataset_class": "SPECIAL PURPOSE",
+            "define_dataset_structure": "One record per subject",
+            "define_dataset_is_non_standard": "",
+        },
     ],
+    {
+        "datasets": [
+            {
+                "filename": "ts.xpt",
+                "label": "Trial Summary",
+                "domain": "TS",
+                "variables": [
+                    {
+                        "name": "STUDYID",
+                        "label": "Study Identifier",
+                        "type": "Char",
+                        "length": 12,
+                    },
+                    {
+                        "name": "DOMAIN",
+                        "label": "Domain Abbreviation",
+                        "type": "Char",
+                        "length": 2,
+                    },
+                    {
+                        "name": "TSSEQ",
+                        "label": "Sequence Number",
+                        "type": "Num",
+                        "length": 8,
+                    },
+                ],
+                "records": {
+                    "STUDYID": ["CDISC001", "CDISC001", "CDISC001"],
+                    "DOMAIN": ["TS", "TS", "TS"],
+                    "TSSEQ": [1, 1, 2],
+                },
+            },
+            {
+                "filename": "dm.xpt",
+                "label": "Demographics",
+                "domain": "DM",
+                "variables": [
+                    {
+                        "name": "STUDYID",
+                        "label": "Study Identifier",
+                        "type": "Char",
+                        "length": 12,
+                    },
+                    {
+                        "name": "DOMAIN",
+                        "label": "Domain Abbreviation",
+                        "type": "Char",
+                        "length": 2,
+                    },
+                    {
+                        "name": "USUBJID",
+                        "label": "Unique Subject Identifier",
+                        "type": "Char",
+                        "length": 20,
+                    },
+                    {
+                        "name": "SUBJID",
+                        "label": "Subject Identifier for the Study",
+                        "type": "Char",
+                        "length": 12,
+                    },
+                ],
+                "records": {
+                    "STUDYID": ["CES", "CES", "CES"],
+                    "DOMAIN": ["DM", "DM", "DM"],
+                    "USUBJID": [
+                        "015246-076-0003-00003",
+                        "015246-203-0003-00001",
+                        "015246-300-0004-00002",
+                    ],
+                    "SUBJID": ["076000300003", "203000300001", "300000400002"],
+                },
+            },
+        ],
+        "standard": {"product": "sdtmig", "version": "3-4"},
+        "codelists": ["sdtmct-2022-12-16"],
+    },
+    {
+        "dataset_name": ["TS", "DM", None],
+        "define_dataset_name": ["TS", "DM", "DI"],
+    },
 )
-@patch(
-    "cdisc_rules_engine.dataset_builders.base_dataset_builder."
-    + "BaseDatasetBuilder.get_define_xml_variables_metadata"
+
+test_set2 = (
+    [
+        {
+            "define_dataset_name": "TS",
+            "define_dataset_label": "Trial Summary",
+            "define_dataset_location": "ts.xpt",
+            "define_dataset_class": "TRIAL DESIGN",
+            "define_dataset_structure": "One record per trial summary parameter value",
+            "define_dataset_is_non_standard": "",
+            "define_dataset_variables": [
+                "STUDYID",
+                "DOMAIN",
+                "TSSEQ",
+                "TSPARMCD",
+                "TSPARM",
+                "TSVAL",
+            ],
+        },
+        {
+            "define_dataset_name": "DI",
+            "define_dataset_label": "Device Identifiers",
+            "define_dataset_location": "di.xpt",
+            "define_dataset_class": "SPECIAL PURPOSE",
+            "define_dataset_structure": "One record per device identifier per device",
+            "define_dataset_is_non_standard": "",
+        },
+        {
+            "define_dataset_name": "DM",
+            "define_dataset_label": "Demographics",
+            "define_dataset_location": "dm.xpt",
+            "define_dataset_class": "SPECIAL PURPOSE",
+            "define_dataset_structure": "One record per subject",
+            "define_dataset_is_non_standard": "",
+        },
+    ],
+    {
+        "datasets": [
+            {
+                "filename": "ts.xpt",
+                "label": "Trial Summary",
+                "domain": "TS",
+                "variables": [
+                    {
+                        "name": "STUDYID",
+                        "label": "Study Identifier",
+                        "type": "Char",
+                        "length": 12,
+                    },
+                    {
+                        "name": "DOMAIN",
+                        "label": "Domain Abbreviation",
+                        "type": "Char",
+                        "length": 2,
+                    },
+                    {
+                        "name": "TSSEQ",
+                        "label": "Sequence Number",
+                        "type": "Num",
+                        "length": 8,
+                    },
+                ],
+                "records": {
+                    "STUDYID": ["CDISC001", "CDISC001", "CDISC001"],
+                    "DOMAIN": ["TS", "TS", "TS"],
+                    "TSSEQ": [1, 1, 2],
+                },
+            },
+            {
+                "filename": "cm.xpt",
+                "label": "Common Medicine",
+                "domain": "CM",
+                "variables": [],
+                "records": {},
+            },
+        ],
+        "standard": {"product": "sdtmig", "version": "3-4"},
+        "codelists": ["sdtmct-2022-12-16"],
+    },
+    {
+        "dataset_name": ["TS", "CM", None, None],
+        "define_dataset_name": ["TS", None, "DI", "DM"],
+    },
 )
-@patch(
-    "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
+
+test_set3 = (
+    [],
+    {
+        "datasets": [
+            {
+                "filename": "ts.xpt",
+                "label": "Trial Summary",
+                "domain": "TS",
+                "variables": [],
+                "records": {},
+            },
+            {
+                "filename": "dm.xpt",
+                "label": "Demographics",
+                "domain": "DM",
+                "variables": [],
+                "records": {},
+            },
+        ],
+    },
+    {
+        "dataset_name": ["TS", "DM"],
+        "define_dataset_name": [None, None],
+    },
 )
-def test_contents_define_variables_dataset_builder(
-    mock_get_dataset: MagicMock,
-    mock_get_define_xml_variables_metadata: MagicMock,
-    content,
-    variables_metadata,
-    expected,
-):
-    mock_get_dataset.return_value = pd.DataFrame.from_dict(content)
-    mock_get_define_xml_variables_metadata.return_value = pd.DataFrame.from_dict(
-        variables_metadata
-    )
+
+test_set4 = (
+    [
+        {
+            "define_dataset_name": "TS",
+            "define_dataset_label": "Trial Summary",
+            "define_dataset_location": "ts.xpt",
+            "define_dataset_class": "TRIAL DESIGN",
+            "define_dataset_structure": "One record per trial summary parameter value",
+            "define_dataset_is_non_standard": "",
+            "define_dataset_variables": [
+                "STUDYID",
+                "DOMAIN",
+                "TSSEQ",
+                "TSPARMCD",
+                "TSPARM",
+                "TSVAL",
+            ],
+        },
+        {
+            "define_dataset_name": "DI",
+            "define_dataset_label": "Device Identifiers",
+            "define_dataset_location": "di.xpt",
+            "define_dataset_class": "TRIAL DESIGN",
+            "define_dataset_structure": "One record per trial summary parameter value",
+            "define_dataset_is_non_standard": "",
+            "define_dataset_variables": [
+                "STUDYID",
+                "DOMAIN",
+                "TSSEQ",
+                "TSPARMCD",
+                "TSPARM",
+                "TSVAL",
+            ],
+        },
+        {
+            "define_dataset_name": "DM",
+            "define_dataset_label": "Demographics",
+            "define_dataset_location": "dm.xpt",
+            "define_dataset_class": "TRIAL DESIGN",
+            "define_dataset_structure": "One record per trial summary parameter value",
+            "define_dataset_is_non_standard": "",
+            "define_dataset_variables": [
+                "STUDYID",
+                "DOMAIN",
+                "TSSEQ",
+                "TSPARMCD",
+                "TSPARM",
+                "TSVAL",
+            ],
+        },
+    ],
+    {},
+    {
+        "dataset_name": [None, None, None],
+        "define_dataset_name": ["TS", "DI", "DM"],
+    },
+)
+
+test_set5 = (
+    [],
+    {},
+    {
+        "dataset_name": [],
+        "define_dataset_name": [],
+    },
+)
+
+
+@pytest.mark.parametrize(
+    "define_metadata, data_metadata, expected",
+    [test_set1, test_set2, test_set3, test_set4, test_set5],
+)
+def test_contents_define_dataset_builder(define_metadata, data_metadata, expected):
+    kwargs = {}
+    kwargs["define_metadata"] = define_metadata
+    kwargs["datasets"] = data_metadata.get("datasets")
+    expected = pd.DataFrame.from_dict(expected)
+
     result = ContentsDefineDatasetBuilder(
         rule=None,
         data_service=LocalDataService(MagicMock(), MagicMock(), MagicMock()),
@@ -98,5 +322,46 @@ def test_contents_define_variables_dataset_builder(
         dataset_path=None,
         datasets=None,
         domain=None,
-    ).build()
-    assert result.equals(pd.DataFrame.from_dict(expected))
+    ).build(**kwargs)
+    col_names = ["dataset_name", "define_dataset_name"]
+    assert result[col_names].equals(expected[col_names]) or (
+        result.empty and expected.empty
+    )
+
+
+@pytest.mark.parametrize(
+    "define_metadata, data_metadata, expected",
+    [test_set1, test_set2, test_set3, test_set4, test_set5],
+)
+def test_contents_define_dataset_columns(define_metadata, data_metadata, expected):
+    kwargs = {}
+    kwargs["define_metadata"] = define_metadata
+    kwargs["datasets"] = data_metadata.get("datasets")
+    expected = pd.DataFrame.from_dict(expected)
+
+    result = ContentsDefineDatasetBuilder(
+        rule=None,
+        data_service=LocalDataService(MagicMock(), MagicMock(), MagicMock()),
+        cache_service=None,
+        rule_processor=None,
+        data_processor=None,
+        dataset_path=None,
+        datasets=None,
+        domain=None,
+    ).build(**kwargs)
+    exp_columns = result.columns.tolist()
+    req_columns = [
+        "dataset_size",
+        "dataset_location",
+        "dataset_name",
+        "dataset_label",
+        "variables",
+        "define_dataset_name",
+        "define_dataset_label",
+        "define_dataset_location",
+        "define_dataset_class",
+        "define_dataset_structure",
+        "define_dataset_is_non_standard",
+        "define_dataset_variables",
+    ]
+    assert exp_columns == req_columns

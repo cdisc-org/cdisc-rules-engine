@@ -28,7 +28,7 @@ from scripts.script_utils import (
     fill_cache_with_dictionaries,
     fill_cache_with_provided_data,
     get_cache_service,
-    get_define_xml,
+    get_define_metadata,
 )
 from cdisc_rules_engine.utilities.utils import get_directory_path
 from cdisc_rules_engine.enums.progress_parameter_options import ProgressParameterOptions
@@ -44,7 +44,9 @@ class CacheManager(SyncManager):
     pass
 
 
-def validate_single_rule(cache, path, args, datasets, define_xml, rule: dict = None):
+def validate_single_rule(
+    cache, path, args, datasets, define_metadata, rule: dict = None
+):
     set_log_level("ERROR")
     rule["conditions"] = ConditionCompositeFactory.get_condition_composite(
         rule["conditions"]
@@ -57,6 +59,7 @@ def validate_single_rule(cache, path, args, datasets, define_xml, rule: dict = N
         ct_package=args.controlled_terminology_package,
         meddra_path=args.meddra,
         whodrug_path=args.whodrug,
+        define_metadata=args.define_metadata,
     )
     validated_domains = set()
     results = []
@@ -68,9 +71,10 @@ def validate_single_rule(cache, path, args, datasets, define_xml, rule: dict = N
                 directory,
                 datasets,
                 None,
-                define_xml,
+                define_metadata,
             )
         )
+        engine_logger.info("Done validating the rule for the study.")
     else:
         for dataset in datasets:
             # Check if the domain has been validated before
@@ -78,15 +82,15 @@ def validate_single_rule(cache, path, args, datasets, define_xml, rule: dict = N
             # and appears multiple times within the list of datasets
             if dataset.domain not in validated_domains:
                 validated_domains.add(dataset.domain)
-                results.append(
-                    engine.test_validation(
-                        rule,
-                        os.path.join(directory, dataset.filename),
-                        datasets,
-                        dataset.domain,
-                        define_xml,
-                    )
+                validated_result = engine.test_validation(
+                    rule,
+                    os.path.join(directory, dataset.filename),
+                    datasets,
+                    dataset.domain,
+                    define_metadata,
                 )
+                results.append(validated_result)
+                engine_logger.info(f"Done validating {dataset.domain}")
     results = list(itertools.chain(*results))
     return RuleValidationResult(rule, results)
 
@@ -116,8 +120,9 @@ def test(args: TestArgs):
     with open(args.dataset_path, "r") as f:
         data_json = json.load(f)
     datasets = [DummyDataset(data) for data in data_json.get("datasets", [])]
-    define_xml = get_define_xml(define_file_path=args.dataset_path)
-    print(f"xxx: DefineXML: {define_xml}")
+    define_metadata = get_define_metadata(define_file_path=args.dataset_path)
+
+    print(f"\nxxx1000: DefineXML: {define_metadata}")
 
     start = time.time()
     results = []
@@ -131,7 +136,12 @@ def test(args: TestArgs):
         ) as bar:
             for rule_result in pool.imap_unordered(
                 partial(
-                    validate_single_rule, shared_cache, "", args, datasets, define_xml
+                    validate_single_rule,
+                    shared_cache,
+                    "",
+                    args,
+                    datasets,
+                    define_metadata,
                 ),
                 rules,
             ):

@@ -109,7 +109,9 @@ def get_datasets(
     return datasets
 
 
-def get_define_xml(define_file_name: str = "define.xml", define_file_path: str = None):
+def get_define_metadata(
+    define_file_name: str = "define.xml", define_file_path: str = None
+):
     define_path = "./" if define_file_path is None else define_file_path
     if os.path.isfile(define_file_path):
         define_path = os.path.dirname(define_file_path)

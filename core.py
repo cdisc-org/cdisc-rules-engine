@@ -370,6 +370,7 @@ def test(
         meddra,
         controlled_terminology_package,
         define_version,
+        [],
     )
     test_rule(args)
 

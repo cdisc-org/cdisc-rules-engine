@@ -50,6 +50,11 @@ class DomainNotFoundInDefineXMLError(Exception):
     description = "Domain is not found in Define XML file"
 
 
+class ItemNotFoundInDefineXMLError(Exception):
+    code = 400
+    description = "No metadata items found in Define XML"
+
+
 class InvalidDatasetFormat(Exception):
     code = 400
     description = "Dataset data is malformed."

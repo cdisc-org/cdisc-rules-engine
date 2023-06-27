@@ -45,6 +45,8 @@ from cdisc_rules_engine.utilities.utils import (
 )
 from cdisc_rules_engine.dataset_builders import builder_factory
 
+import xml.etree.ElementTree as ET
+
 
 class RulesEngine:
     def __init__(
@@ -66,6 +68,7 @@ class RulesEngine:
         self.ct_package = kwargs.get("ct_package")
         self.meddra_path: str = kwargs.get("meddra_path")
         self.whodrug_path: str = kwargs.get("whodrug_path")
+        self.define_metadata: List = kwargs.get("define_metadata")
 
     def get_schema(self):
         return export_rule_data(DatasetVariable, COREActions)
@@ -76,9 +79,8 @@ class RulesEngine:
         dataset_path: str,
         datasets: List[DummyDataset],
         dataset_domain: str,
-        define_xml=None,
+        define_metadata,
     ):
-        print(f"\nxxx000:dataset_path:{dataset_path} ")
         self.data_service = DataServiceFactory(
             self.config, InMemoryCacheService.get_instance()
         ).get_dummy_data_service(datasets)
@@ -88,7 +90,7 @@ class RulesEngine:
         self.rule_processor = RuleProcessor(self.data_service, self.cache)
         self.data_processor = DataProcessor(self.data_service, self.cache)
         return self.validate_single_rule(
-            rule, f"{dataset_path}", dataset_dicts, dataset_domain, define_xml
+            rule, f"{dataset_path}", dataset_dicts, dataset_domain, define_metadata
         )
 
     def validate(
@@ -123,7 +125,7 @@ class RulesEngine:
         dataset_path: str,
         datasets: List[dict],
         dataset_domain: str,
-        define_xml=None,
+        define_metadata: List[dict],
     ) -> List[Union[dict, str]]:
         """
         This function is an entrypoint to validation process.
@@ -133,7 +135,6 @@ class RulesEngine:
             f"Validating domain {dataset_domain}. "
             f"rule={rule}. dataset_path={dataset_path}. datasets={datasets}."
         )
-        print(f"\nxxx101: dataset_path: {dataset_path} in {__name__}")
 
         try:
             if self.rule_processor.is_suitable_for_validation(
@@ -144,7 +145,7 @@ class RulesEngine:
                 datasets,
             ):
                 result: List[Union[dict, str]] = self.validate_rule(
-                    rule, dataset_path, datasets, dataset_domain, define_xml
+                    rule, dataset_path, datasets, dataset_domain, define_metadata
                 )
                 logger.info(f"Validated domain {dataset_domain}. Result = {result}")
                 if result:
@@ -164,8 +165,6 @@ class RulesEngine:
                 error_obj.domain = dataset_domain
                 return [error_obj.to_representation()]
         except Exception as e:
-            # xxx
-            # kwargs = {"exception":e}
             logger._exception = e
             logger.error()
             error_obj: ValidationErrorContainer = self.handle_validation_exceptions(
@@ -188,6 +187,7 @@ class RulesEngine:
             domain=domain,
             datasets=datasets,
             dataset_path=dataset_path,
+            define_metadata=self.define_metadata,
         )
 
     def validate_rule(
@@ -196,7 +196,7 @@ class RulesEngine:
         dataset_path: str,
         datasets: List[dict],
         domain: str,
-        define_xml=None,
+        define_metadata,
     ) -> List[Union[dict, str]]:
         """
          This function is an entrypoint for rule validation.
@@ -204,13 +204,10 @@ class RulesEngine:
         """
         kwargs = {}
         builder = self.get_dataset_builder(rule, dataset_path, datasets, domain)
-
         dataset = builder.get_dataset()
+        # xxx define_metadata = self.define_metadata
 
-        print(
-            f"\nxxx103: Dataset:{domain}: {dataset}: "
-            f"and {dataset_path}: in {__name__}\n"
-        )
+        print(f"\nxxx102: DefineMetadata: {define_metadata} in {__name__}")
 
         # Update rule for certain rule types
         # SPECIAL CASES FOR RULE TYPES ###############################
@@ -219,16 +216,17 @@ class RulesEngine:
             rule.get("rule_type")
             == RuleTypes.DATASET_METADATA_CHECK_AGAINST_DEFINE.value
         ):
-            if define_xml is None:
-                # get Define XML metadata for domain and use it as a rule comparator
-                define_metadata: dict = self.get_define_xml_metadata_for_domain(
-                    dataset_path, domain
-                )
-            else:
-                define_metadata = define_xml
-            print(f"xxx: define_metadata: {define_metadata} in {__name__}\n")
+            if define_metadata is None:
+                if domain is not None:
+                    # get Define XML metadata for domain and use it as a rule comparator
+                    define_metadata: dict = self.get_define_xml_metadata_for_domain(
+                        dataset_path, domain
+                    )
+                else:
+                    define_metadata = self.get_define_xml_metadata(dataset_path)
+            print(f"\nxxx1001: define_metadata: {define_metadata} in {__name__}\n")
 
-            self.rule_processor.add_comparator_to_rule_conditions(rule, define_metadata)
+        # self.rule_processor.add_comparator_to_rule_conditions(rule, define_metadata)
 
         elif rule.get("rule_type") == RuleTypes.DEFINE_ITEM_METADATA_CHECK.value:
             variable_codelist_map_key = get_standard_codelist_cache_key(
@@ -326,7 +324,7 @@ class RulesEngine:
             whodrug_path=self.whodrug_path,
         )
         relationship_data = {}
-        if self.rule_processor.is_relationship_dataset(domain):
+        if domain is not None and self.rule_processor.is_relationship_dataset(domain):
             relationship_data = self.data_processor.preprocess_relationship_dataset(
                 os.path.dirname(dataset_path), dataset, datasets
             )
@@ -364,8 +362,6 @@ class RulesEngine:
             directory_path = get_directory_path(dataset_path)
         define_xml_path: str = os.path.join(directory_path, DEFINE_XML_FILE_NAME)
 
-        print(f"\nxxx: Define Path: {define_xml_path} in {__name__}\n")
-
         define_xml_contents: bytes = self.data_service.get_define_xml_contents(
             dataset_name=define_xml_path
         )
@@ -375,13 +371,55 @@ class RulesEngine:
         define_xml_reader = DefineXMLReaderFactory.from_file_contents(
             define_xml_contents, cache_service_obj=self.cache
         )
-        print(f"xxx: define_xml_reader: {define_xml_reader} in {__name__}\n")
+        print(f"\nxxx: define_xml_reader: {define_xml_reader} in {__name__}\n")
 
         dm_metadata = define_xml_reader.extract_domain_metadata(domain_name=domain_name)
-        print(f"xxx: dm_metadata: {dm_metadata} in {__name__}\n")
+        print(f"\nxxx: dm_metadata: {dm_metadata} in {__name__}\n")
 
         # return define_xml_reader.extract_domain_metadata(domain_name=domain_name)
         return dm_metadata
+
+    def get_define_xml_domains(self, define_content):
+        root = ET.fromstring(define_content)
+        # Namespace dictionary for XML elements
+        namespace = {"def": "http://www.cdisc.org/ns/def/v2.1"}
+
+        # Get the domain names from ItemGroupDef elements
+        domain_names = []
+        item_group_defs = root.findall(".//def:ItemGroupDef", namespace)
+        for item_group_def in item_group_defs:
+            domain_name = item_group_def.get("Domain")
+            domain_names.append(domain_name)
+        return domain_names
+
+    def get_define_xml_metadata(self, dataset_path: str, domains: List = []) -> dict:
+        """
+        Gets Define XML metadata and returns it as dict.
+        """
+        if os.path.exists(dataset_path):
+            directory_path = dataset_path
+        else:
+            directory_path = get_directory_path(dataset_path)
+        define_xml_path: str = os.path.join(directory_path, DEFINE_XML_FILE_NAME)
+
+        define_xml_contents: bytes = self.data_service.get_define_xml_contents(
+            dataset_name=define_xml_path
+        )
+
+        define_xml_reader = DefineXMLReaderFactory.from_file_contents(
+            define_xml_contents, cache_service_obj=self.cache
+        )
+
+        print(f"\nxxx: define_xml_reader: {define_xml_reader} in {__name__}\n")
+        if len(domains) == 0:
+            domains = self.get_define_xml_domains(define_xml_reader)
+
+        define_items = []
+        for domain in domains:
+            define_items.append(
+                define_xml_reader.extract_domain_metadata(domain_name=domain)
+            )
+        return define_items
 
     def get_define_xml_value_level_metadata(
         self, dataset_path: str, domain_name: str
