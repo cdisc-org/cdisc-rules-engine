@@ -1725,15 +1725,17 @@ def test_validate_dataset_contents_against_define_and_library_variable_metadata(
 
     # save library metadata to cache
     variables_metadata: dict = {
-        "AELNKID": {
-            "core": "Exp",
-        },
-        "AESEV": {
-            "core": "Perm",
-        },
-        "AESER": {
-            "core": "Perm",
-        },
+        "AE": {
+            "AELNKID": {
+                "core": "Exp",
+            },
+            "AESEV": {
+                "core": "Perm",
+            },
+            "AESER": {
+                "core": "Perm",
+            },
+        }
     }
     cache = InMemoryCacheService()
     standard: str = "sdtmig"
