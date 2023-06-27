@@ -1074,7 +1074,7 @@
               "variable_exists",
               "variable_is_null",
               "variable_names",
-              "variable_permissibilities",
+              "variable_library_metadata",
               "variable_value_count",
               "whodrug_code_hierarchy"
             ],

@@ -401,7 +401,7 @@ class RuleProcessor:
     @staticmethod
     def duplicate_conditions_for_all_targets(
         conditions: ConditionInterface, targets: List[str]
-    ) -> ConditionInterface:
+    ) -> dict:
         """
         Given a list of conditions duplicates the condition for all targets as necessary
         """
@@ -417,8 +417,7 @@ class RuleProcessor:
                 else:
                     new_conditions_list.append(condition)
             new_conditions_dict[key] = new_conditions_list
-        conditions.set_conditions(new_conditions_dict)
-        return conditions
+        return new_conditions_dict
 
     def is_suitable_for_validation(
         self,
