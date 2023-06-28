@@ -59,19 +59,19 @@ def validate_single_rule(
         ct_package=args.controlled_terminology_package,
         meddra_path=args.meddra,
         whodrug_path=args.whodrug,
-        define_metadata=args.define_metadata,
+        define_metadata=define_metadata,
     )
     validated_domains = set()
     results = []
     directory = get_directory_path(args.dataset_path)
+
     if rule.get("sensitivity").lower() == "study":
         results.append(
             engine.test_validation(
                 rule,
                 directory,
                 datasets,
-                None,
-                define_metadata,
+                "study",
             )
         )
         engine_logger.info("Done validating the rule for the study.")
@@ -87,7 +87,6 @@ def validate_single_rule(
                     os.path.join(directory, dataset.filename),
                     datasets,
                     dataset.domain,
-                    define_metadata,
                 )
                 results.append(validated_result)
                 engine_logger.info(f"Done validating {dataset.domain}")
@@ -121,8 +120,6 @@ def test(args: TestArgs):
         data_json = json.load(f)
     datasets = [DummyDataset(data) for data in data_json.get("datasets", [])]
     define_metadata = get_define_metadata(define_file_path=args.dataset_path)
-
-    print(f"\nxxx1000: DefineXML: {define_metadata}")
 
     start = time.time()
     results = []

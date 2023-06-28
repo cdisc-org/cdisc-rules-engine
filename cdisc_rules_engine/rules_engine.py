@@ -79,7 +79,6 @@ class RulesEngine:
         dataset_path: str,
         datasets: List[DummyDataset],
         dataset_domain: str,
-        define_metadata,
     ):
         self.data_service = DataServiceFactory(
             self.config, InMemoryCacheService.get_instance()
@@ -90,7 +89,7 @@ class RulesEngine:
         self.rule_processor = RuleProcessor(self.data_service, self.cache)
         self.data_processor = DataProcessor(self.data_service, self.cache)
         return self.validate_single_rule(
-            rule, f"{dataset_path}", dataset_dicts, dataset_domain, define_metadata
+            rule, f"{dataset_path}", dataset_dicts, dataset_domain
         )
 
     def validate(
@@ -125,7 +124,6 @@ class RulesEngine:
         dataset_path: str,
         datasets: List[dict],
         dataset_domain: str,
-        define_metadata: List[dict],
     ) -> List[Union[dict, str]]:
         """
         This function is an entrypoint to validation process.
@@ -145,7 +143,7 @@ class RulesEngine:
                 datasets,
             ):
                 result: List[Union[dict, str]] = self.validate_rule(
-                    rule, dataset_path, datasets, dataset_domain, define_metadata
+                    rule, dataset_path, datasets, dataset_domain
                 )
                 logger.info(f"Validated domain {dataset_domain}. Result = {result}")
                 if result:
@@ -196,7 +194,6 @@ class RulesEngine:
         dataset_path: str,
         datasets: List[dict],
         domain: str,
-        define_metadata,
     ) -> List[Union[dict, str]]:
         """
          This function is an entrypoint for rule validation.
@@ -205,9 +202,7 @@ class RulesEngine:
         kwargs = {}
         builder = self.get_dataset_builder(rule, dataset_path, datasets, domain)
         dataset = builder.get_dataset()
-        # xxx define_metadata = self.define_metadata
-
-        print(f"\nxxx102: DefineMetadata: {define_metadata} in {__name__}")
+        define_metadata = self.define_metadata
 
         # Update rule for certain rule types
         # SPECIAL CASES FOR RULE TYPES ###############################
@@ -224,9 +219,7 @@ class RulesEngine:
                     )
                 else:
                     define_metadata = self.get_define_xml_metadata(dataset_path)
-            print(f"\nxxx1001: define_metadata: {define_metadata} in {__name__}\n")
-
-        # self.rule_processor.add_comparator_to_rule_conditions(rule, define_metadata)
+            kwargs["define_metadata"] = define_metadata
 
         elif rule.get("rule_type") == RuleTypes.DEFINE_ITEM_METADATA_CHECK.value:
             variable_codelist_map_key = get_standard_codelist_cache_key(
@@ -290,6 +283,7 @@ class RulesEngine:
         value_level_metadata: List[dict] = None,
         variable_codelist_map: dict = None,
         codelist_term_maps: list = None,
+        define_metadata: list = None,
     ) -> List[str]:
         """
         Executes the given rule on a given dataset.
@@ -300,6 +294,8 @@ class RulesEngine:
             variable_codelist_map = {}
         if codelist_term_maps is None:
             codelist_term_maps = []
+        if define_metadata is None:
+            define_metadata = []
         # Add conditions to rule for all variables if variables: all appears
         # in condition
         rule["conditions"] = RuleProcessor.duplicate_conditions_for_all_targets(
@@ -337,10 +333,6 @@ class RulesEngine:
             codelist_term_maps=codelist_term_maps,
         )
         results = []
-        print(f"\nxxx: dataset_variable: {dataset_variable}")
-        print(f"xxx: domain: {domain}")
-        print(f"xxx: rule: {rule}")
-        print(f"xxx: value_level_metadata: {value_level_metadata}")
         try:
             run(
                 serialize_rule(rule),  # engine expects a JSON serialized dict
@@ -375,18 +367,11 @@ class RulesEngine:
             dataset_name=define_xml_path
         )
 
-        # print(f"xxx: define_xml_contents: {define_xml_contents} in {__name__}\n")
-
         define_xml_reader = DefineXMLReaderFactory.from_file_contents(
             define_xml_contents, cache_service_obj=self.cache
         )
-        print(f"\nxxx: define_xml_reader: {define_xml_reader} in {__name__}\n")
 
-        dm_metadata = define_xml_reader.extract_domain_metadata(domain_name=domain_name)
-        print(f"\nxxx: dm_metadata: {dm_metadata} in {__name__}\n")
-
-        # return define_xml_reader.extract_domain_metadata(domain_name=domain_name)
-        return dm_metadata
+        return define_xml_reader.extract_domain_metadata(domain_name=domain_name)
 
     def get_define_xml_domains(self, define_content):
         root = ET.fromstring(define_content)
@@ -419,7 +404,6 @@ class RulesEngine:
             define_xml_contents, cache_service_obj=self.cache
         )
 
-        print(f"\nxxx: define_xml_reader: {define_xml_reader} in {__name__}\n")
         if len(domains) == 0:
             domains = self.get_define_xml_domains(define_xml_reader)
 

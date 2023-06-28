@@ -198,15 +198,12 @@ class BaseDefineXMLReader(ABC):
                 f"Domain {domain_name} is not found in Define XML"
             )
 
-    # xxx
     def _get_all_metadata_items(self, metadata):
         try:
             all_metadata = list(metadata.ItemGroupDef)
             return all_metadata
         except StopIteration:
             raise ItemNotFoundInDefineXMLError("No metadata items found in Define XML")
-
-    # xxx
 
     def _get_all_domain_metadata(self, metadata, domain_name):
         # Returns all itemgroupdefs with domain = domain name.

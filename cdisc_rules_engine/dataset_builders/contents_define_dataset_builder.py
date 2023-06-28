@@ -30,6 +30,7 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
 
         ...,
         """
+        v_prg = "ContentsDefineDatasetBuilder"
         # 1. Build define xml dataframe
         define_col_order = [
             "define_dataset_name",
@@ -40,7 +41,8 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
             "define_dataset_is_non_standard",
             "define_dataset_variables",
         ]
-        define_df = pd.DataFrame(kwargs.get("define_metadata", {}))
+        # define_df = pd.DataFrame(kwargs.get("define_metadata", {}))
+        define_df = pd.DataFrame(self.define_metadata)
         if define_df.empty:
             define_df = pd.DataFrame(columns=define_col_order)
             logger.info(f"No define_metadata is provided for {__name__}.")
@@ -51,24 +53,38 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
             "dataset_location",
             "dataset_name",
             "dataset_label",
-            "variables",
         ]
-        datasets = pd.DataFrame(kwargs.get("datasets", {}))
 
-        if datasets.empty or len(datasets) == 0:
+        if len(self.datasets) == 0:
             dataset_df = pd.DataFrame(columns=dataset_col_order)
-            logger.info(f"No datasets metadata is provided for {__name__}.")
+            logger.info(f"No datasets metadata is provided in {v_prg}.")
         else:
-            data_col_mapping = {
-                "filename": "dataset_location",
-                "label": "dataset_label",
-                "domain": "dataset_name",
-            }
-            dataset_df = datasets.rename(columns=data_col_mapping).drop(
-                "records", axis=1
-            )
-            dataset_df["dataset_size"] = None
-            dataset_df = dataset_df[dataset_col_order]
+            datasets = pd.DataFrame()
+            for dataset in self.datasets:
+                try:
+                    ds_metadata = self.data_service.get_dataset_metadata(
+                        dataset["filename"]
+                    )
+                except Exception as e:
+                    logger._exception = e
+                    logger.error()
+                datasets = (
+                    ds_metadata if datasets.empty else datasets.append(ds_metadata)
+                )
+
+            if datasets.empty or len(datasets) == 0:
+                dataset_df = pd.DataFrame(columns=dataset_col_order)
+                logger.info(f"No datasets metadata is provided for {__name__}.")
+            else:
+                data_col_mapping = {
+                    "filename": "dataset_location",
+                    "label": "dataset_label",
+                    "domain": "dataset_name",
+                }
+                dataset_df = datasets.rename(columns=data_col_mapping)
+                if "dataset_size" not in dataset_df.columns:
+                    dataset_df["dataset_size"] = None
+                dataset_df = dataset_df[dataset_col_order]
 
         # 3. Merge the two data frames
         merged = pd.merge(
@@ -79,20 +95,7 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
             right_on="define_dataset_name",
         )
 
-        # # 4. Add message column
-        # merged.insert(2, "Message", None)
-        # merged.loc[merged["define_dataset_name"].isnull(), "Message"
-        #    ] = "In dataset but not in define: " + merged["domain"].astype(str)
-        # merged.loc[merged["domain"].isnull(), "Message"
-        #    ] = "In define but not in dataset: "
-        #    + merged["define_dataset_name"].astype(str)
-        # merged.loc[
-        #     (merged["define_dataset_name"].notnull()) & (merged["domain"].notnull()) &
-        #     (merged["define_dataset_name"] == merged["domain"]),
-        #     "Message"
-        # ] = "Matched: " + merged["domain"].astype(str)
-
-        # 5. Replace Nan with None
+        # 4. Replace Nan with None
         # outer join, so some data contents may be missing or some define metadata may
         # be missing. Replace nans with None
         merged_no_nans = merged.where(pd.notnull(merged), None)

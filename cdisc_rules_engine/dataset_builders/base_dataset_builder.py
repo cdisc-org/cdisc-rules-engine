@@ -24,6 +24,7 @@ class BaseDatasetBuilder:
         dataset_path,
         datasets,
         domain,
+        define_metadata: List[dict] = [],
     ):
         self.data_service = data_service
         self.cache = cache_service
@@ -33,6 +34,7 @@ class BaseDatasetBuilder:
         self.datasets = datasets
         self.domain = domain
         self.rule = rule
+        self.define_metadata = define_metadata
 
     @abstractmethod
     def build(self) -> pd.DataFrame:

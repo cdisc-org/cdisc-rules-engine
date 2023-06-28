@@ -4,7 +4,8 @@ import pandas as pd
 from cdisc_rules_engine.dataset_builders.contents_define_dataset_builder import (  # noqa: E501
     ContentsDefineDatasetBuilder,
 )
-from cdisc_rules_engine.services.data_services import LocalDataService
+from cdisc_rules_engine.services.data_services import DummyDataService
+from cdisc_rules_engine.dummy_models.dummy_dataset import DummyDataset
 
 
 test_set1 = (
@@ -312,16 +313,20 @@ def test_contents_define_dataset_builder(define_metadata, data_metadata, expecte
     kwargs["define_metadata"] = define_metadata
     kwargs["datasets"] = data_metadata.get("datasets")
     expected = pd.DataFrame.from_dict(expected)
+    datasets = [DummyDataset(data) for data in data_metadata.get("datasets", [])]
 
     result = ContentsDefineDatasetBuilder(
         rule=None,
-        data_service=LocalDataService(MagicMock(), MagicMock(), MagicMock()),
+        data_service=DummyDataService(
+            MagicMock(), MagicMock(), MagicMock(), data=datasets
+        ),
         cache_service=None,
         rule_processor=None,
         data_processor=None,
         dataset_path=None,
-        datasets=None,
+        datasets=data_metadata.get("datasets", {}),
         domain=None,
+        define_metadata=define_metadata,
     ).build(**kwargs)
     col_names = ["dataset_name", "define_dataset_name"]
     assert result[col_names].equals(expected[col_names]) or (
@@ -338,16 +343,20 @@ def test_contents_define_dataset_columns(define_metadata, data_metadata, expecte
     kwargs["define_metadata"] = define_metadata
     kwargs["datasets"] = data_metadata.get("datasets")
     expected = pd.DataFrame.from_dict(expected)
+    datasets = [DummyDataset(data) for data in data_metadata.get("datasets", [])]
 
     result = ContentsDefineDatasetBuilder(
         rule=None,
-        data_service=LocalDataService(MagicMock(), MagicMock(), MagicMock()),
+        data_service=DummyDataService(
+            MagicMock(), MagicMock(), MagicMock(), data=datasets
+        ),
         cache_service=None,
         rule_processor=None,
         data_processor=None,
         dataset_path=None,
-        datasets=None,
+        datasets=data_metadata.get("datasets", {}),
         domain=None,
+        define_metadata=define_metadata,
     ).build(**kwargs)
     exp_columns = result.columns.tolist()
     req_columns = [
@@ -355,7 +364,7 @@ def test_contents_define_dataset_columns(define_metadata, data_metadata, expecte
         "dataset_location",
         "dataset_name",
         "dataset_label",
-        "variables",
+        #    "variables",
         "define_dataset_name",
         "define_dataset_label",
         "define_dataset_location",

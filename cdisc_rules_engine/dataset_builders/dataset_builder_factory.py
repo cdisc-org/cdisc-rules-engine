@@ -79,6 +79,6 @@ class DatasetBuilderFactory(FactoryInterface):
             kwargs.get("dataset_path"),
             kwargs.get("datasets"),
             kwargs.get("domain", ""),
-            #            kwargs.get("define_metadata"),
+            kwargs.get("define_metadata"),
         )
         return builder
