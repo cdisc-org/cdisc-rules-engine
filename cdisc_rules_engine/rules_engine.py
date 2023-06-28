@@ -337,17 +337,26 @@ class RulesEngine:
             codelist_term_maps=codelist_term_maps,
         )
         results = []
-        run(
-            serialize_rule(rule),  # engine expects a JSON serialized dict
-            defined_variables=dataset_variable,
-            defined_actions=COREActions(
-                results,
-                variable=dataset_variable,
-                domain=domain,
-                rule=rule,
-                value_level_metadata=value_level_metadata,
-            ),
-        )
+        print(f"\nxxx: dataset_variable: {dataset_variable}")
+        print(f"xxx: domain: {domain}")
+        print(f"xxx: rule: {rule}")
+        print(f"xxx: value_level_metadata: {value_level_metadata}")
+        try:
+            run(
+                serialize_rule(rule),  # engine expects a JSON serialized dict
+                defined_variables=dataset_variable,
+                defined_actions=COREActions(
+                    results,
+                    variable=dataset_variable,
+                    domain=domain,
+                    rule=rule,
+                    value_level_metadata=value_level_metadata,
+                ),
+            )
+        except Exception as e:
+            logger._exception = e
+            logger.error()
+
         return results
 
     def get_define_xml_metadata_for_domain(
