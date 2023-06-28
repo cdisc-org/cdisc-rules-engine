@@ -11,7 +11,7 @@ Open source offering of the cdisc rules engine
 
 ### Quick start
 
-To quickly get up and running with CORE, users can download the latest executable version of the engine for their operating system from here: https://github.com/cdisc-org/cdisc-rules-engine/releases
+To quickly get up and running with CORE, users can download the latest executable version of the engine for their operating system from here: <https://github.com/cdisc-org/cdisc-rules-engine/releases>
 
 Once downloaded, simply unzip the file and run the following command based on your Operating System:
 
@@ -33,8 +33,8 @@ Linux/Mac:
 
 ### Code formatter
 
-This project uses the `black` code formatter and `flake8` linter for python.
-It also uses `pre-commit` to run `black` and `flake8` when you commit.
+This project uses the `black` code formatter, `flake8` linter for python and `prettier` for JSON, YAML and MD.
+It also uses `pre-commit` to run `black`, `flake8` and `prettier` when you commit.
 Both dependencies are added to _requirements.txt_.
 
 **Required**
@@ -45,7 +45,8 @@ Setting up `pre-commit` requires one extra step. After installing it you have to
 
 This installs `pre-commit` in your `.git/hooks` directory.
 
-### Installing dependencies.
+### Installing dependencies
+
 
 These steps should be run before running any tests or core commands using the non compiled version.
 

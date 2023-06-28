@@ -96,6 +96,8 @@ class COREActions(BaseActions):
         targets_in_dataset = targets.intersection(df_columns)
         targets_not_in_dataset = targets.difference(df_columns)
         errors_df = data[targets_in_dataset]
+        if not targets:
+            errors_df = data
         if errors_df.empty:
             raise InvalidOutputVariables(
                 f"Output variables: {list(targets)} not found in dataset"

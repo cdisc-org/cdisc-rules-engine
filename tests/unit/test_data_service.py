@@ -68,7 +68,7 @@ def test_get_raw_dataset_metadata(
         filename=dataset_metadata["file_metadata"]["name"],
         full_path=dataset_metadata["file_metadata"]["path"],
         size=dataset_metadata["file_metadata"]["size"],
-        records="",
+        records=20,
     )
     assert actual_metadata == expected_metadata
 

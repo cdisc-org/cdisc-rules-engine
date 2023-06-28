@@ -587,7 +587,7 @@
         </ItemRef>
       </def:ValueListDef>
       <def:ValueListDef OID="VL.SUPPEC">
-        <ItemRef ItemOID="IT.SUPPEC.QVAL.1" OrderNumber="1" Mandatory="Yes"
+        <ItemRef ItemOID="IT.SUPPEC.QVAL.1" KeySequence="10" OrderNumber="1" Mandatory="Yes"
          Role="Variable Qualifier">
           <def:WhereClauseRef WhereClauseOID="WC.ECREASOC"/>
         </ItemRef>

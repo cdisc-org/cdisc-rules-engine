@@ -1,11 +1,11 @@
-from cdisc_rules_engine.dataset_builders.base_dataset_builder import BaseDatasetBuilder
-
-# from cdisc_rules_engine.utilities.utils import is_split_dataset
+from cdisc_rules_engine.dataset_builders.values_dataset_builder import (
+    ValuesDatasetBuilder,
+)
 import pandas as pd
 from typing import List
 
 
-class ContentsDefineVariablesDatasetBuilder(BaseDatasetBuilder):
+class ContentsDefineVariablesDatasetBuilder(ValuesDatasetBuilder):
     def build(self):
         """
         Returns a long dataset where each value in each row of the original dataset is
@@ -23,14 +23,7 @@ class ContentsDefineVariablesDatasetBuilder(BaseDatasetBuilder):
         ...,
         """
         # get dataset contents and convert it from wide to long
-        data_contents_df = self.data_service.get_dataset(dataset_name=self.dataset_path)
-        data_contents_df["row_number"] = range(1, len(data_contents_df) + 1)
-        data_contents_long_df = pd.melt(
-            data_contents_df,
-            id_vars="row_number",
-            var_name="variable_name",
-            value_name="variable_value",
-        )
+        data_contents_long_df = ValuesDatasetBuilder.build(self)
         # get Define XML variable metadata for domain
         variables_metadata: List[dict] = self.get_define_xml_variables_metadata()
         variables_metadata_df = pd.DataFrame(variables_metadata)
