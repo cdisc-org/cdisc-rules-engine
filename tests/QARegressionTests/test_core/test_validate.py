@@ -71,10 +71,10 @@ class TestValidate(unittest.TestCase):
                 os.path.join("tests", "resources", "report_test_data"),
                 "--data",
                 "tests/resources/report_test_data",
-                "-s",
-                "sdtmig",
                 "-v",
                 "3.4",
+                "-s",
+                "sdtmig",
             ],
         )
         self.assertNotEqual(result.exit_code, 0)
@@ -394,6 +394,22 @@ class TestValidate(unittest.TestCase):
                 os.path.join("tests", "resources", "test_dataset.xpt"),
                 "-ps",
                 "10",
+            ],
+        )
+        self.assertEqual(result.exit_code, 0)
+
+    def test_validate_define_xml_path(self):
+        result = self.runner.invoke(
+            validate,
+            [
+                "-s",
+                "sdtmig",
+                "-v",
+                "3.4",
+                "-dp",
+                os.path.join("tests", "resources", "test_dataset.xpt"),
+                "-dxp",
+                "/test/resources",
             ],
         )
         self.assertEqual(result.exit_code, 0)

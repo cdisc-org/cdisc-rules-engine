@@ -80,6 +80,7 @@ Run `python core.py validate --help` to see the list of validation options.
   -ps, --pool-size INTEGER         Number of parallel processes for validation
   -d, --data TEXT                 Path to directory containing data files
   -dp, --dataset-path TEXT        Absolute path to dataset file. Can be specified multiple times.
+  -dxp, --define_xml_path TEXT    Path to Define-XML
   -l, --log-level [info|debug|error|critical|disabled|warn]
                                   Sets log level for engine logs, logs are
                                   disabled by default
@@ -172,7 +173,6 @@ The possible rule run statuses are:
                                   Controlled terminology package to validate
                                   against, can provide more than one
   -dv, --define-version TEXT      Define-XML version used for validation
-  -dxp, --define-xml-path TEXT    Path to Define-XML
   --whodrug TEXT                  Path to directory with WHODrug dictionary
                                   files
   --meddra TEXT                   Path to directory with MedDRA dictionary

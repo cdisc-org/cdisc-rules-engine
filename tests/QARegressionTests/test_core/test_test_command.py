@@ -28,6 +28,8 @@ class TestTestCommand(unittest.TestCase):
                 "3.4",
                 "-dv",
                 os.path.join("tests", "resources", "report_test_data", "define.xml"),
+                "-dxp",
+                os.path.join("tests", "resources", "report_test_data"),
             ],
         )
         self.assertEqual(result.exit_code, 0)
