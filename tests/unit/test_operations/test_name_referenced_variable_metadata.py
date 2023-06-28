@@ -13,7 +13,7 @@ from cdisc_rules_engine.utilities.utils import (
 )
 
 
-def test_get_label_referenced_variable_metadata(operation_params: OperationParams):
+def test_get_name_referenced_variable_metadata(operation_params: OperationParams):
     model_metadata = {
         "datasets": [
             {
