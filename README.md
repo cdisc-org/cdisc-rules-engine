@@ -47,7 +47,6 @@ This installs `pre-commit` in your `.git/hooks` directory.
 
 ### Installing dependencies
 
-
 These steps should be run before running any tests or core commands using the non compiled version.
 
 - Create a virtual environment:
@@ -145,17 +144,17 @@ The possible rule run statuses are:
 
   `python core.py update-cache`
 
-  To obtain an api key, please follow the instructions found here: https://wiki.cdisc.org/display/LIBSUPRT/Getting+Started%3A+Access+to+CDISC+Library+API+using+API+Key+Authentication. Please note it can take up to an hour after sign up to have an api key issued
+  To obtain an api key, please follow the instructions found here: <https://wiki.cdisc.org/display/LIBSUPRT/Getting+Started%3A+Access+to+CDISC+Library+API+using+API+Key+Authentication>. Please note it can take up to an hour after sign up to have an api key issued
 
 - list-rules - list rules available in the cache
 
   - list all rules:
 
-  `python core.py list-rules`
+    `python core.py list-rules`
 
   - list rules for standard:
 
-  `python core.py list-rules -s sdtmig -v 3-4`
+    `python core.py list-rules -s sdtmig -v 3-4`
 
 - list-rule-sets - lists all standards and versions for which rules are available:
   `python core.py list-rule-sets`
