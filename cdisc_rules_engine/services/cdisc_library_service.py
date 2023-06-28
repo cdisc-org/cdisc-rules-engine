@@ -333,7 +333,9 @@ class CDISCLibraryService:
         for cls in standard_data.get(standard_keys["classes_key"], []):
             for dataset in cls.get(standard_keys["datasets_key"], []):
                 for variable in dataset.get(standard_keys["variables_key"], []):
-                    output[variable["name"]] = variable
+                    if dataset.get("name") not in output:
+                        output[dataset.get("name")] = {}
+                    output[dataset.get("name")][variable["name"]] = variable
         return output
 
     def _get_tabulation_ig_codelists(self, data: dict) -> dict:
