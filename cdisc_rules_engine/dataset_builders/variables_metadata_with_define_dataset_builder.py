@@ -1,7 +1,7 @@
 from cdisc_rules_engine.dataset_builders.base_dataset_builder import BaseDatasetBuilder
 from typing import List
 import pandas as pd
-import logging
+from cdisc_rules_engine.services import logger
 
 
 class VariablesMetadataWithDefineDatasetBuilder(BaseDatasetBuilder):
@@ -30,7 +30,6 @@ class VariablesMetadataWithDefineDatasetBuilder(BaseDatasetBuilder):
         define_variable_codelist_coded_values
         """
         validate_xml = kwargs.get("validate_xml", "Y")
-        logger = logging.getLogger()
         # get Define XML metadata for domain and use it as a rule comparator
         variable_metadata: List[dict] = self.get_define_xml_variables_metadata(**kwargs)
         # get dataset metadata and execute the rule

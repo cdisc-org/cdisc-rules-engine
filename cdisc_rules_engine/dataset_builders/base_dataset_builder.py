@@ -24,6 +24,7 @@ class BaseDatasetBuilder:
         dataset_path,
         datasets,
         domain,
+        validate_xml: str = None,
     ):
         self.data_service = data_service
         self.cache = cache_service
@@ -33,6 +34,7 @@ class BaseDatasetBuilder:
         self.datasets = datasets
         self.domain = domain
         self.rule = rule
+        self.validate_xml = validate_xml
 
     @abstractmethod
     def build(self) -> pd.DataFrame:
@@ -76,13 +78,16 @@ class BaseDatasetBuilder:
             "define_dataset_is_non_standard"
             "define_dataset_variables"
         """
+
         directory_path = get_directory_path(self.dataset_path)
         define_xml_path: str = os.path.join(directory_path, DEFINE_XML_FILE_NAME)
         define_xml_contents: bytes = self.data_service.get_define_xml_contents(
             dataset_name=define_xml_path
         )
         define_xml_reader = DefineXMLReaderFactory.from_file_contents(
-            define_xml_contents, cache_service_obj=self.cache
+            define_xml_contents,
+            cache_service_obj=self.cache,
+            validate_xml=self.validate_xml,
         )
         return define_xml_reader.extract_domain_metadata(domain)
 
@@ -96,7 +101,9 @@ class BaseDatasetBuilder:
             dataset_name=define_xml_path
         )
         define_xml_reader = DefineXMLReaderFactory.from_file_contents(
-            define_xml_contents, cache_service_obj=self.cache
+            define_xml_contents,
+            cache_service_obj=self.cache,
+            validate_xml=kwargs.get("validate_xml", "Y"),
         )
         return define_xml_reader.extract_variables_metadata(
             domain_name=self.domain, **kwargs

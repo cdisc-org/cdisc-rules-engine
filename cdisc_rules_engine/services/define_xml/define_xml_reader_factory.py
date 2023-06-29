@@ -38,7 +38,7 @@ class DefineXMLReaderFactory:
     )
 
     @classmethod
-    def from_filename(cls, filename: str):
+    def from_filename(cls, filename: str, validate_xml: str = None):
         """
         Inits a DefineXMLReader object from file.
         """
@@ -57,6 +57,7 @@ class DefineXMLReaderFactory:
         cache_service_obj=None,
         study_id=None,
         data_bundle_id=None,
+        validate_xml: str = None,
     ):
         """
         Inits a DefineXMLReader object from file contents.
@@ -66,7 +67,7 @@ class DefineXMLReaderFactory:
             ElementTree.fromstring(file_contents)
         )
         reader: BaseDefineXMLReader = define_xml_reader_class(
-            cache_service_obj, study_id, data_bundle_id
+            cache_service_obj, study_id, data_bundle_id, validate_xml
         )
         reader._odm_loader.load_odm_string(file_contents)
         return reader
@@ -92,7 +93,9 @@ class DefineXMLReaderFactory:
 
     @classmethod
     def _from_namespace_version(
-        cls, namespace: str, version: str
+        cls,
+        namespace: str,
+        version: str,
     ) -> BaseDefineXMLReader:
         define_xml_reader = next(
             iter(

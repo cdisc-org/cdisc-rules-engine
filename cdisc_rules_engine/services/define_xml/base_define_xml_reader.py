@@ -50,6 +50,7 @@ class BaseDefineXMLReader(ABC):
         cache_service_obj=None,
         study_id=None,
         data_bundle_id=None,
+        validate_xml=None,
     ):
         self._odm_loader = ODMLoader(
             XMLDefineLoader(
@@ -60,6 +61,7 @@ class BaseDefineXMLReader(ABC):
         self.cache_service = cache_service_obj
         self.study_id = study_id
         self.data_bundle_id = data_bundle_id
+        self.validate_xml = validate_xml
 
     def read(self, **kwargs) -> List[dict]:
         """
@@ -71,6 +73,9 @@ class BaseDefineXMLReader(ABC):
         for domain_metadata in metadata.ItemGroupDef:
             output.append(self._get_metadata_representation(domain_metadata))
         return output
+
+    def is_validate_xml(self):
+        return True if self.validate_xml in ("Y", "YES") else False
 
     @cached("define-domain-metadata")
     def extract_domain_metadata(self, domain_name: str = None) -> dict:
@@ -114,18 +119,18 @@ class BaseDefineXMLReader(ABC):
 
         return variables_metadata
 
-    @cached("define-metadata-version")
     def get_metadata_version(self, **kwargs):
-        validate_xml = kwargs.get("validate_xml", "Y")
         metadata = None
         try:
             metadata = self._odm_loader.MetaDataVersion()
             logger.info(f"Define Metadata Version: {metadata}")
         except Exception as e:
             logger._exception = e
-            logger.error(f"{__name__}(VX={validate_xml})")
-            if validate_xml in ("Y", "YES"):
-                logger.info(f"Validate XML = {validate_xml}: continue to next step.")
+            logger.error(f"{__name__}(VX={self.validate_xml})")
+            if self.is_validate_xml:
+                logger.info(
+                    f"Validate XML = {self.validate_xml}: continue to next step."
+                )
         return metadata
 
     @cached("define-value-level-metadata")

@@ -194,6 +194,7 @@ class RulesEngine:
             domain=domain,
             datasets=datasets,
             dataset_path=dataset_path,
+            validate_xml=self.validate_xml,
         )
 
     def validate_rule(
@@ -206,7 +207,12 @@ class RulesEngine:
         kwargs = {}
         kwargs["validate_xml"] = self.validate_xml
 
-        builder = self.get_dataset_builder(rule, dataset_path, datasets, domain)
+        builder = self.get_dataset_builder(
+            rule,
+            dataset_path,
+            datasets,
+            domain,
+        )
         dataset = builder.get_dataset(**kwargs)
 
         # Update rule for certain rule types
