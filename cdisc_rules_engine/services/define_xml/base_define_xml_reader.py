@@ -120,7 +120,6 @@ class BaseDefineXMLReader(ABC):
         logger.info(f"Extracted variables metadata = {variables_metadata}")
         return variables_metadata
 
-    @cached("define-value-level-metadata")
     def extract_value_level_metadata(self, domain_name: str = None) -> List[dict]:
         """
         Extracts all value level metadata for each variable in a given domain.
@@ -235,6 +234,7 @@ class BaseDefineXMLReader(ABC):
             "define_variable_origin_type": "",
             "define_variable_has_no_data": "",
             "define_variable_order_number": None,
+            "define_variable_length": None,
             "define_variable_has_codelist": False,
             "define_variable_codelist_coded_values": [],
         }
@@ -242,6 +242,7 @@ class BaseDefineXMLReader(ABC):
             data["define_variable_name"] = itemdef.Name
             data["define_variable_size"] = itemdef.Length
             data["define_variable_role"] = itemref.Role
+            data["define_variable_length"] = itemdef.Length
             data["define_variable_data_type"] = self._get_variable_datatype(
                 itemdef.DataType
             )
@@ -267,7 +268,6 @@ class BaseDefineXMLReader(ABC):
                 data["define_variable_origin_type"] = self._get_origin_type(itemdef)
             data["define_variable_has_no_data"] = getattr(itemref, "HasNoData", "")
             data["define_variable_order_number"] = itemref.OrderNumber
-
         return data
 
     def _get_codelist_ccode(self, codelist):
