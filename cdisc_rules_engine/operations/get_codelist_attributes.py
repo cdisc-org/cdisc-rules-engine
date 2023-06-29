@@ -41,7 +41,8 @@ class CodeListAttributes(BaseOperation):
 
         # 1.0 get input variables
         # -------------------------------------------------------------------
-        cc = "CT_PACKAGE"
+        cc = "CT_PACKAGE"  # a column for controlled term package names
+        # Get controlled term attribute column name specified in rule
         cv = self.params.ct_attribute
 
         # 2.0 build codelist from cache
@@ -56,8 +57,8 @@ class CodeListAttributes(BaseOperation):
         # -------------------------------------------------------------------
         cc_key = ct_data[cc].to_list()
         ct_list = ct_cache[(ct_cache[cc].isin(cc_key))]
-        n = self.params.dataframe.shape[0]
-        result = pd.Series([ct_list[cv].values[0] for _ in range(n)])
+        ds_len = self.params.dataframe.shape[0]  # dataset length
+        result = pd.Series([ct_list[cv].values[0] for _ in range(ds_len)])
         return result
 
     def _get_ct_from_cache(self, ct_key: str, ct_val: str):
@@ -121,10 +122,10 @@ class CodeListAttributes(BaseOperation):
             retrieved from the dataset.
         """
         ct_packages = self.params.ct_packages
-        ct_attr = self.params.ct_attribute
-        c1 = self.params.target
-        c2 = self.params.ct_version
-        cc = ct_key
+        ct_attr = self.params.ct_attribute  # attribute variable specified in rule
+        c1 = self.params.target  # target variable specified in rule
+        c2 = self.params.ct_version  # controlled term version
+        cc = ct_key  # controlled term variable as key
         ct_cd = ct_attr
         if ct_attr == "Term CCODE":
             ct_cd = "TSVALCD"
