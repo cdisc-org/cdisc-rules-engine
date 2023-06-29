@@ -95,6 +95,7 @@ class BaseDatasetBuilder:
         """
         Gets Define XML variables metadata.
         """
+
         directory_path = get_directory_path(self.dataset_path)
         define_xml_path: str = os.path.join(directory_path, DEFINE_XML_FILE_NAME)
         define_xml_contents: bytes = self.data_service.get_define_xml_contents(
@@ -103,7 +104,7 @@ class BaseDatasetBuilder:
         define_xml_reader = DefineXMLReaderFactory.from_file_contents(
             define_xml_contents,
             cache_service_obj=self.cache,
-            validate_xml=kwargs.get("validate_xml", "Y"),
+            validate_xml=self.validate_xml,
         )
         return define_xml_reader.extract_variables_metadata(
             domain_name=self.domain, **kwargs
