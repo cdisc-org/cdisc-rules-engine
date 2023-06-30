@@ -252,7 +252,7 @@ class RuleProcessor:
                 ct_version=operation.get("version"),
                 ct_attribute=operation.get("attribute"),
                 ct_packages=kwargs.get("ct_packages"),
-                # ct_package=kwargs.get("codelist_term_maps"),
+                ct_package=kwargs.get("codelist_term_maps"),
                 attribute_name=operation.get("attribute_name", ""),
             )
 

@@ -41,24 +41,24 @@ class CodeListAttributes(BaseOperation):
 
         # 1.0 get input variables
         # -------------------------------------------------------------------
-        cc = "CT_PACKAGE"  # a column for controlled term package names
+        ct_name = "CT_PACKAGE"  # a column for controlled term package names
         # Get controlled term attribute column name specified in rule
-        cv = self.params.ct_attribute
+        ct_attribute = self.params.ct_attribute
 
         # 2.0 build codelist from cache
         # -------------------------------------------------------------------
-        ct_cache = self._get_ct_from_cache(ct_key=cc, ct_val=cv)
+        ct_cache = self._get_ct_from_cache(ct_key=ct_name, ct_val=ct_attribute)
 
         # 3.0 get dataset records
         # -------------------------------------------------------------------
-        ct_data = self._get_ct_from_dataset(ct_key=cc, ct_val=cv)
+        ct_data = self._get_ct_from_dataset(ct_key=ct_name, ct_val=ct_attribute)
 
         # 4.0 merge the two datasets by CC
         # -------------------------------------------------------------------
-        cc_key = ct_data[cc].to_list()
-        ct_list = ct_cache[(ct_cache[cc].isin(cc_key))]
+        cc_key = ct_data[ct_name].to_list()
+        ct_list = ct_cache[(ct_cache[ct_name].isin(cc_key))]
         ds_len = self.params.dataframe.shape[0]  # dataset length
-        result = pd.Series([ct_list[cv].values[0] for _ in range(ds_len)])
+        result = pd.Series([ct_list[ct_attribute].values[0] for _ in range(ds_len)])
         return result
 
     def _get_ct_from_cache(self, ct_key: str, ct_val: str):
@@ -122,32 +122,32 @@ class CodeListAttributes(BaseOperation):
             retrieved from the dataset.
         """
         ct_packages = self.params.ct_packages
-        ct_attr = self.params.ct_attribute  # attribute variable specified in rule
-        c1 = self.params.target  # target variable specified in rule
-        c2 = self.params.ct_version  # controlled term version
-        cc = ct_key  # controlled term variable as key
-        ct_cd = ct_attr
-        if ct_attr == "Term CCODE":
-            ct_cd = "TSVALCD"
-        sel_cols = [c1, c2, ct_cd, cc]
+        # get attribute variable specified in rule
+        ct_attribute = self.params.ct_attribute
+
+        ct_target = self.params.target  # target variable specified in rule
+        ct_version = self.params.ct_version  # controlled term version
+        if ct_attribute == "Term CCODE":
+            ct_attribute = "TSVALCD"
+        sel_cols = [ct_target, ct_version, ct_attribute, ct_key]
 
         # get dataframe from dataset records
         df = self.params.dataframe
 
         # add CT_PACKAGE column
-        df[cc] = df.apply(
-            lambda row: "sdtmct-" + row[c2]
-            if row[c1] is not None and row[c1] in ("CDISC", "CDISC CT")
-            else row[c1] + "-" + row[c2],
+        df[ct_key] = df.apply(
+            lambda row: "sdtmct-" + row[ct_version]
+            if row[ct_target] is not None and row[ct_target] in ("CDISC", "CDISC CT")
+            else row[ct_target] + "-" + row[ct_version],
             axis=1,
         )
 
         # select records
-        df_sel = df[(df[cc].isin(ct_packages))].loc[:, sel_cols]
+        df_sel = df[(df[ct_key].isin(ct_packages))].loc[:, sel_cols]
 
         # group the records
-        result = df_sel.groupby(cc)[ct_cd].unique().reset_index()
-        result.rename(columns={ct_cd: ct_val})
+        result = df_sel.groupby(ct_key)[ct_attribute].unique().reset_index()
+        result.rename(columns={ct_attribute: ct_val})
 
         return result
 
