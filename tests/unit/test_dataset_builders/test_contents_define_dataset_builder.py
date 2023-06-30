@@ -364,7 +364,6 @@ def test_contents_define_dataset_columns(define_metadata, data_metadata, expecte
         "dataset_location",
         "dataset_name",
         "dataset_label",
-        #    "variables",
         "define_dataset_name",
         "define_dataset_label",
         "define_dataset_location",

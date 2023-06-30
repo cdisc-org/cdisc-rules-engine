@@ -14,7 +14,6 @@ import odmlib.define_2_0.model  # noqa F401
 
 from cdisc_rules_engine.exceptions.custom_exceptions import (
     DomainNotFoundInDefineXMLError,
-    ItemNotFoundInDefineXMLError,
 )
 from cdisc_rules_engine.models.define import ValueLevelMetadata
 from cdisc_rules_engine.services import logger
@@ -198,13 +197,6 @@ class BaseDefineXMLReader(ABC):
                 f"Domain {domain_name} is not found in Define XML"
             )
 
-    def _get_all_metadata_items(self, metadata):
-        try:
-            all_metadata = list(metadata.ItemGroupDef)
-            return all_metadata
-        except StopIteration:
-            raise ItemNotFoundInDefineXMLError("No metadata items found in Define XML")
-
     def _get_all_domain_metadata(self, metadata, domain_name):
         # Returns all itemgroupdefs with domain = domain name.
         # This will include and SUPP-- datasets and split datasets
@@ -346,7 +338,7 @@ class BaseDefineXMLReader(ABC):
         logger.info(f"Validated Define-XML schema. is_valid={is_valid}")
         return is_valid
 
-    @cached
+    @cache
     def get_define_version(self) -> Optional[str]:
         """Use to extract DefineVersion from file"""
         self.read()
