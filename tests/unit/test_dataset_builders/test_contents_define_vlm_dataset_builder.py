@@ -16,7 +16,7 @@ from cdisc_rules_engine.services.data_services import LocalDataService
                 "define_variable_name": ["VAR1", "VAR3"],
                 "define_vlm_name": ["VAR1B VLM Name", "VAR3C VLM Name"],
                 "define_vlm_label": ["VAR1B Label", "VAR3C Label"],
-                "define_vlm_data_type": ["VAR1B Type", "VAR3C Type"],
+                "define_vlm_data_type": ["text", "text"],
                 "define_vlm_role": ["VAR1B ROLE", "VAR3C ROLE"],
                 "define_vlm_length": [1, 2],
                 "filter": [
@@ -39,7 +39,7 @@ from cdisc_rules_engine.services.data_services import LocalDataService
                     "VAR1B Label",
                 ],
                 "define_vlm_data_type": [
-                    "VAR1B Type",
+                    "text",
                 ],
                 "define_vlm_role": [
                     "VAR1B ROLE",
@@ -81,16 +81,3 @@ def test_contents_define_vlm_dataset_builder(
     expected_df.sort_index(axis=1, inplace=True)
     result.sort_index(axis=1, inplace=True)
     assert result.equals(expected_df)
-
-
-@pytest.mark.parametrize(
-    "row, expected_value",
-    [
-        ({"define_vlm_data_type": "Num", "variable_value": "0012"}, 2),
-        ({"define_vlm_data_type": "Num", "variable_value": 24.50}, 3),
-        ({"define_vlm_data_type": "Num", "variable_value": "023.55"}, 4),
-    ],
-)
-def test_calculate_variable_value_length(row: dict, expected_value: int):
-    result = ContentsDefineVLMDatasetBuilder.calculate_variable_value_length(row)
-    assert result == expected_value

@@ -58,7 +58,10 @@ class ContentsDefineVLMDatasetBuilder(ValuesDatasetBuilder):
             on="define_vlm_name",
         )
         data_contents_with_vlm["variable_value_length"] = data_contents_with_vlm.apply(
-            self.calculate_variable_value_length, axis=1
+            lambda row: self.calculate_variable_value_length(
+                row["variable_value"], row["define_vlm_data_type"]
+            ),
+            axis=1,
         )
         return data_contents_with_vlm
 
@@ -73,10 +76,3 @@ class ContentsDefineVLMDatasetBuilder(ValuesDatasetBuilder):
             how="cross",
         )
         return lut_subset
-
-    @staticmethod
-    def calculate_variable_value_length(df_row: dict) -> int:
-        if df_row["define_vlm_data_type"] == "Num":
-            return len(str(df_row["variable_value"]).lstrip("0").replace(".", ""))
-        else:
-            return len(df_row["variable_value"])
