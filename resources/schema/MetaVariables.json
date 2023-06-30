@@ -74,6 +74,10 @@
       "markdownDescription": "ItemGroupDef.ItemDef.Description.TranslatedText"
     },
     {
+      "const": "define_variable_length",
+      "markdownDescription": "ItemGroupDef.ItemDef.Length"
+    },
+    {
       "const": "define_variable_name",
       "markdownDescription": "ItemGroupDef.ItemDef.Name"
     },
@@ -130,6 +134,10 @@
       "markdownDescription": "ValueListDef.ItemDef.Description.TranslatedText"
     },
     {
+      "const": "define_vlm_length",
+      "markdownDescription": "ValueListDef.ItemDef.Length"
+    },
+    {
       "const": "define_vlm_name",
       "markdownDescription": "ValueListDef.ItemDef.Name"
     },
@@ -169,6 +177,10 @@
     {
       "const": "variable_value",
       "markdownDescription": "Value at `row_number` and `variable_name`"
+    },
+    {
+      "const": "variable_value_length",
+      "markdownDescription": "Calculated length of the length of the value at `row_number` and `variable_name`"
     }
   ]
 }
