@@ -86,8 +86,10 @@ class ExcelReport(BaseReport):
             with open(self._output_name, "wb") as f:
                 f.write(excel_workbook_to_stream(report_data))
         except Exception as e:
-            logger._exception = e
-            logger.error(e)
+            logger.error(
+                f"Error occurred during validation. Error: {e}. Error message: {str(e)}"
+            )
+            logger.error(e, __name__)
             raise e
         finally:
             self._template.close()

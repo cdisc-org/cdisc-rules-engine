@@ -45,17 +45,7 @@ class ConsoleLogger(LoggerInterface):
         self._logger.warning(msg, *args, **kwargs)
 
     def error(self, msg: str = None, *args, **kwargs):
-        try:
-            e = self._exception
-        except AttributeError:
-            # Handle the case when _exception attribute doesn't exist
-            e = None
-        if msg is None:
-            msg = f"Error occurred during validation. Error: {e}."
-            msg += f"Error message: {str(e)}"
         self._logger.error(msg, *args, **kwargs)
-        if e is not None:
-            self.display_trace(e, inspect.currentframe())
 
     def exception(self, msg: str, *args, **kwargs):
         self._logger.exception(msg, *args, **kwargs)

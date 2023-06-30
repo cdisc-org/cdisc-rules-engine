@@ -125,7 +125,7 @@ class BaseDefineXMLReader(ABC):
             metadata = self._odm_loader.MetaDataVersion()
             logger.info(f"Define Metadata Version: {metadata}")
         except Exception as e:
-            logger._exception = e
+            logger.trace(e, __name__)
             logger.error(f"{__name__}(VX={self.validate_xml})")
             if self.is_validate_xml:
                 logger.info(

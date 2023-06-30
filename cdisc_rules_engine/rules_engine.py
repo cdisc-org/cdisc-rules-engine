@@ -145,8 +145,10 @@ class RulesEngine:
                             rule, dataset_path, datasets, dataset_domain
                         )
                     except Exception as e:
-                        logger._exception = e
-                        logger.error()
+                        logger.error(
+                            f"Error occurred. Error: {e}. Error message: {str(e)}"
+                        )
+                        logger.trace(e, __name__)
                 else:
                     result: List[Union[dict, str]] = self.validate_rule(
                         rule, dataset_path, datasets, dataset_domain
@@ -169,8 +171,7 @@ class RulesEngine:
                 error_obj.domain = dataset_domain
                 return [error_obj.to_representation()]
         except Exception as e:
-            # logger.trace(e, __name__)
-            logger._exception = e
+            logger.trace(e, __name__)
             logger.error(
                 f"Error occurred during validation. Error: {e}. Error message: {str(e)}"
             )
@@ -271,9 +272,8 @@ class RulesEngine:
                         dict
                     ] = builder.get_define_xml_variables_metadata(**kwargs)
                 except Exception as e:
-                    logger._exception = e
-                    logger.error()
-                    # logger.trace(e, __name__)
+                    logger.error(f"Error occurred. Error: {e}. Error message: {str(e)}")
+                    logger.trace(e, __name__)
             else:
                 define_metadata: List[dict] = builder.get_define_xml_variables_metadata(
                     **kwargs
