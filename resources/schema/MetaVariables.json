@@ -180,7 +180,7 @@
     },
     {
       "const": "variable_value_length",
-      "markdownDescription": "Calculated length of the length of the value at `row_number` and `variable_name`"
+      "markdownDescription": "Calculated length of the value at `row_number` and `variable_name`"
     }
   ]
 }
