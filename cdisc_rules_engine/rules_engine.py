@@ -270,14 +270,14 @@ class RulesEngine:
                 try:
                     define_metadata: List[
                         dict
-                    ] = builder.get_define_xml_variables_metadata(**kwargs)
+                    ] = builder.get_define_xml_variables_metadata()
                 except Exception as e:
                     logger.error(f"Error occurred. Error: {e}. Error message: {str(e)}")
                     logger.trace(e, __name__)
             else:
-                define_metadata: List[dict] = builder.get_define_xml_variables_metadata(
-                    **kwargs
-                )
+                define_metadata: List[
+                    dict
+                ] = builder.get_define_xml_variables_metadata()
 
             targets: List[
                 str
