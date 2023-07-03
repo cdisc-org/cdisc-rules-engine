@@ -49,7 +49,7 @@ class BaseOperation:
         self.evaluation_dataset = original_dataset
 
     @abstractmethod
-    def _execute_operation(self, **kwargs):
+    def _execute_operation(self):
         """Perform operation calculations."""
         pass
 

@@ -7,7 +7,7 @@ import os
 
 
 class DefineVariableMetadata(BaseOperation):
-    def _execute_operation(self, **kwargs):
+    def _execute_operation(self):
         """
         If a target variable is specified, returns the specified metadata in the define
           for the specified target variable.
@@ -37,7 +37,7 @@ class DefineVariableMetadata(BaseOperation):
         )
         define_reader = DefineXMLReaderFactory.from_file_contents(define_contents)
         variables_metadata = define_reader.extract_variables_metadata(
-            self.params.domain, **kwargs
+            self.params.domain
         )
         variable_metadata = {
             metadata["define_variable_name"]: metadata.get(
