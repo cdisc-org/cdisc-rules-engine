@@ -51,11 +51,11 @@ class BaseDatasetBuilder:
             dataset: pd.DataFrame = self.data_service.concat_split_datasets(
                 func_to_call=self.build,
                 dataset_names=self.get_corresponding_datasets_names(),
-                **kwargs,
+                **kwargs
             )
         else:
             # single dataset. the most common case
-            dataset: pd.DataFrame = self.build(**kwargs)
+            dataset: pd.DataFrame = self.build()
 
         return dataset
 
@@ -91,7 +91,7 @@ class BaseDatasetBuilder:
         )
         return define_xml_reader.extract_domain_metadata(domain)
 
-    def get_define_xml_variables_metadata(self, **kwargs) -> List[dict]:
+    def get_define_xml_variables_metadata(self) -> List[dict]:
         """
         Gets Define XML variables metadata.
         """
@@ -106,6 +106,4 @@ class BaseDatasetBuilder:
             cache_service_obj=self.cache,
             validate_xml=self.validate_xml,
         )
-        return define_xml_reader.extract_variables_metadata(
-            domain_name=self.domain, **kwargs
-        )
+        return define_xml_reader.extract_variables_metadata(domain_name=self.domain)
