@@ -124,7 +124,7 @@ def test_extract_variable_metadata():
         expected_exroute_metadata = {
             "define_variable_name": "EXROUTE",
             "define_variable_label": "Route of Administration",
-            "define_variable_data_type": "Char",
+            "define_variable_data_type": "text",
             "define_variable_size": 12,
             "define_variable_role": "Variable Qualifier",
             "define_variable_ccode": "C66729",
