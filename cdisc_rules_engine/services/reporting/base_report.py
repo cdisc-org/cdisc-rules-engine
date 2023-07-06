@@ -16,12 +16,14 @@ class BaseReport(ABC):
 
     def __init__(
         self,
+        datasets: Iterable[dict],
         dataset_paths: Iterable[str],
         validation_results: List[RuleValidationResult],
         elapsed_time: float,
         args: Validation_args,
         template: Optional[IOBase] = None,
     ):
+        self._datasets = datasets
         self._dataset_paths: Iterable[str] = dataset_paths
         self._elapsed_time: float = elapsed_time
         self._results: List[RuleValidationResult] = validation_results

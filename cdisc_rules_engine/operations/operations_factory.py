@@ -42,7 +42,9 @@ from cdisc_rules_engine.operations.whodrug_references_validator import (
 from cdisc_rules_engine.operations.whodrug_hierarchy_validator import (
     WhodrugHierarchyValidator,
 )
-from cdisc_rules_engine.operations.variable_permissibility import VariablePermissibility
+from cdisc_rules_engine.operations.variable_library_metadata import (
+    VariableLibraryMetadata,
+)
 from cdisc_rules_engine.operations.variable_count import VariableCount
 from cdisc_rules_engine.operations.variable_is_null import VariableIsNull
 from cdisc_rules_engine.operations.required_variables import RequiredVariables
@@ -84,7 +86,7 @@ class OperationsFactory(FactoryInterface):
         "valid_meddra_code_term_pairs": MedDRACodeTermPairsValidator,
         "variable_exists": VariableExists,
         "variable_names": VariableNames,
-        "variable_permissibilities": VariablePermissibility,
+        "variable_library_metadata": VariableLibraryMetadata,
         "variable_value_count": VariableValueCount,
         "variable_count": VariableCount,
         "variable_is_null": VariableIsNull,

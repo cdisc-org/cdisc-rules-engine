@@ -1,0 +1,950 @@
+{
+  "$id": "Operator.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "anyOf": [
+    {
+      "properties": {
+        "operator": {
+          "const": "additional_columns_empty"
+        }
+      },
+      "required": ["operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "additional_columns_not_empty"
+        }
+      },
+      "required": ["operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "conformant_value_data_type"
+        }
+      },
+      "required": ["operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "conformant_value_length"
+        }
+      },
+      "required": ["operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "contains"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "contains_all"
+        }
+      },
+      "required": ["operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "contains_case_insensitive"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "date_equal_to"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "date_greater_than"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "date_greater_than_or_equal_to"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "date_less_than"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "date_less_than_or_equal_to"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "date_not_equal_to"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "does_not_contain"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "does_not_contain_case_insensitive"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "does_not_equal_string_part"
+        }
+      },
+      "required": ["operator", "value", "regex"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "does_not_have_next_corresponding_record"
+        }
+      },
+      "required": ["operator", "ordering", "value", "within"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "does_not_reference_correct_codelist"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "does_not_use_valid_codelist_terms"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "empty"
+        }
+      },
+      "required": ["operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "empty_within_except_last_row"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "ends_with"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "equal_to"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "equal_to_case_insensitive"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "equals_string_part"
+        }
+      },
+      "required": ["operator", "value", "regex"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "exists"
+        }
+      },
+      "required": ["operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "greater_than"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "greater_than_or_equal_to"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "has_different_values"
+        }
+      },
+      "required": ["operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "has_equal_length"
+        }
+      },
+      "required": ["operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "has_next_corresponding_record"
+        }
+      },
+      "required": ["operator", "ordering", "value", "within"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "has_not_equal_length"
+        }
+      },
+      "required": ["operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "has_same_values"
+        }
+      },
+      "required": ["operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "invalid_date"
+        }
+      },
+      "required": ["operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "is_complete_date"
+        }
+      },
+      "required": ["operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "is_contained_by"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "is_contained_by_case_insensitive"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "is_incomplete_date"
+        }
+      },
+      "required": ["operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "is_not_contained_by"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "is_not_contained_by_case_insensitive"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "is_not_ordered_by"
+        }
+      },
+      "required": ["operator", "order"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "is_not_ordered_set"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "is_not_unique_relationship"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "is_not_unique_set"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "is_not_valid_reference"
+        }
+      },
+      "required": ["operator", "context"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "is_not_valid_relationship"
+        }
+      },
+      "required": ["operator", "context", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "is_ordered_by"
+        }
+      },
+      "required": ["operator", "order"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "is_ordered_set"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "is_unique_relationship"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "is_unique_set"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "is_valid_reference"
+        }
+      },
+      "required": ["operator", "context"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "is_valid_relationship"
+        }
+      },
+      "required": ["operator", "context", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "less_than"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "less_than_or_equal_to"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "longer_than"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "longer_than_or_equal_to"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "matches_regex"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "non_conformant_value_data_type"
+        }
+      },
+      "required": ["operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "non_conformant_value_length"
+        }
+      },
+      "required": ["operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "non_empty"
+        }
+      },
+      "required": ["operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "non_empty_within_except_last_row"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "not_contains_all"
+        }
+      },
+      "required": ["operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "not_equal_to"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "not_equal_to_case_insensitive"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "not_exists"
+        }
+      },
+      "required": ["operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "not_matches_regex"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "not_prefix_matches_regex"
+        }
+      },
+      "required": ["operator", "prefix", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "not_present_on_multiple_rows_within"
+        }
+      },
+      "required": ["operator", "within"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "not_suffix_matches_regex"
+        }
+      },
+      "required": ["operator", "suffix", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "prefix_is_contained_by"
+        }
+      },
+      "required": ["operator", "prefix", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "prefix_equal_to"
+        }
+      },
+      "required": ["operator", "prefix", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "prefix_is_not_contained_by"
+        }
+      },
+      "required": ["operator", "prefix", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "prefix_matches_regex"
+        }
+      },
+      "required": ["operator", "prefix", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "prefix_not_equal_to"
+        }
+      },
+      "required": ["operator", "prefix", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "present_on_multiple_rows_within"
+        }
+      },
+      "required": ["operator", "within"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "references_correct_codelist"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "shares_at_least_one_element_with"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "shares_exactly_one_element_with"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "shares_no_elements_with"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "shorter_than"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "shorter_than_or_equal_to"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "starts_with"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "suffix_equal_to"
+        }
+      },
+      "required": ["operator", "suffix", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "suffix_is_contained_by"
+        }
+      },
+      "required": ["operator", "suffix", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "suffix_is_not_contained_by"
+        }
+      },
+      "required": ["operator", "suffix", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "suffix_matches_regex"
+        }
+      },
+      "required": ["operator", "suffix", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "suffix_not_equal_to"
+        }
+      },
+      "required": ["operator", "suffix", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "target_is_not_sorted_by"
+        }
+      },
+      "required": ["operator", "value", "within"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "target_is_sorted_by"
+        }
+      },
+      "required": ["operator", "value", "within"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "uses_valid_codelist_terms"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "value_does_not_have_multiple_references"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "value_has_multiple_references"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "variable_metadata_equal_to"
+        }
+      },
+      "required": ["operator", "metadata", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "variable_metadata_not_equal_to"
+        }
+      },
+      "required": ["operator", "metadata", "value"],
+      "type": "object"
+    }
+  ],
+  "properties": {
+    "comparator": {
+      "type": ["number", "string"]
+    },
+    "context": {
+      "type": "string"
+    },
+    "date_component": {
+      "enum": [
+        "year",
+        "month",
+        "day",
+        "hour",
+        "minute",
+        "second",
+        "microsecond"
+      ],
+      "type": "string"
+    },
+    "metadata": {
+      "$ref": "Operations.json#/properties/id"
+    },
+    "name": {
+      "anyOf": [
+        {
+          "$ref": "Operations.json#/properties/id"
+        },
+        {
+          "$ref": "MetaVariables.json"
+        },
+        {
+          "$ref": "CORE-base.json#/$defs/VariableName"
+        }
+      ]
+    },
+    "operator": {
+      "type": "string"
+    },
+    "order": {
+      "enum": ["asc", "dsc"],
+      "type": "string"
+    },
+    "ordering": {
+      "$ref": "CORE-base.json#/$defs/VariableName"
+    },
+    "prefix": {
+      "type": "integer"
+    },
+    "suffix": {
+      "type": "integer"
+    },
+    "value": {
+      "oneOf": [
+        {
+          "type": ["boolean", "number", "string"]
+        },
+        {
+          "items": {
+            "type": ["number"]
+          },
+          "type": "array"
+        },
+        {
+          "items": {
+            "type": ["string"]
+          },
+          "type": "array"
+        },
+        {
+          "items": {
+            "properties": {
+              "name": {
+                "$ref": "Operator.json#/properties/name"
+              },
+              "null_position": {
+                "enum": ["first", "last"],
+                "type": "string"
+              },
+              "order": {
+                "$ref": "Operator.json#/properties/order"
+              }
+            },
+            "type": "object"
+          },
+          "type": "array"
+        }
+      ]
+    },
+    "value_is_literal": {
+      "const": true
+    },
+    "within": {
+      "$ref": "CORE-base.json#/$defs/VariableName"
+    }
+  },
+  "required": ["operator"],
+  "type": "object"
+}

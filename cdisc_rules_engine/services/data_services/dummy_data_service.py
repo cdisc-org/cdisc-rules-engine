@@ -75,7 +75,8 @@ class DummyDataService(BaseDataService):
             modification_date=datetime.now().isoformat(),
             filename=dataset_metadata["filename"][0],
             size=dataset_metadata["dataset_size"][0],
-            records="",
+            full_path=dataset_metadata["filename"][0],
+            records=dataset_metadata["length"][0],
         )
 
     def get_variables_metadata(self, dataset_name: str, **params) -> pd.DataFrame:

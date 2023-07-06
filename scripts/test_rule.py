@@ -29,6 +29,7 @@ from scripts.script_utils import (
     fill_cache_with_provided_data,
     get_cache_service,
     get_define_metadata,
+    get_datasets,
 )
 from cdisc_rules_engine.utilities.utils import get_directory_path
 from cdisc_rules_engine.enums.progress_parameter_options import ProgressParameterOptions
@@ -115,11 +116,13 @@ def test(args: TestArgs):
     fill_cache_with_dictionaries(shared_cache, args)
     with open(args.rule, "r") as f:
         rules = [Rule.from_cdisc_metadata(json.load(f))]
-    data_service = DataServiceFactory(config, shared_cache).get_data_service()
     with open(args.dataset_path, "r") as f:
         data_json = json.load(f)
     datasets = [DummyDataset(data) for data in data_json.get("datasets", [])]
     define_metadata = get_define_metadata(define_file_path=args.dataset_path)
+    data_service_factory = DataServiceFactory(config, shared_cache)
+    dummy_data_service = data_service_factory.get_dummy_data_service(datasets)
+    data_service = data_service_factory.get_data_service()
 
     start = time.time()
     results = []
@@ -169,7 +172,11 @@ def test(args: TestArgs):
         ProgressParameterOptions.BAR.value,
     )
     reporting_factory = ReportFactory(
-        [args.dataset_path], results, elapsed_time, validation_args, data_service
+        get_datasets(dummy_data_service, [dataset.filename for dataset in datasets]),
+        results,
+        elapsed_time,
+        validation_args,
+        data_service,
     )
     reporting_services: List[BaseReport] = reporting_factory.get_report_services()
     for reporting_service in reporting_services:
