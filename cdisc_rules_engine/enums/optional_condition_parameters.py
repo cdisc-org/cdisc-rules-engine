@@ -10,3 +10,4 @@ class OptionalConditionParameters(BaseEnum):
     WITHIN = "within"
     ORDERING = "ordering"
     ORDER = "order"
+    METADATA = "metadata"

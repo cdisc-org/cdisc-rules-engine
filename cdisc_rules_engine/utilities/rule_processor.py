@@ -254,6 +254,8 @@ class RuleProcessor:
                 ct_packages=kwargs.get("ct_packages"),
                 ct_package=kwargs.get("codelist_term_maps"),
                 attribute_name=operation.get("attribute_name", ""),
+                key_name=operation.get("key_name", ""),
+                key_value=operation.get("key_value", ""),
             )
 
             # execute operation
@@ -263,7 +265,6 @@ class RuleProcessor:
                 f"Processed rule operation. "
                 f"operation={operation_params.operation_name}, rule={rule}"
             )
-
         return dataset_copy
 
     def _execute_operation(
@@ -404,7 +405,7 @@ class RuleProcessor:
     @staticmethod
     def duplicate_conditions_for_all_targets(
         conditions: ConditionInterface, targets: List[str]
-    ) -> ConditionInterface:
+    ) -> dict:
         """
         Given a list of conditions duplicates the condition for all targets as necessary
         """
@@ -420,8 +421,7 @@ class RuleProcessor:
                 else:
                     new_conditions_list.append(condition)
             new_conditions_dict[key] = new_conditions_list
-        conditions.set_conditions(new_conditions_dict)
-        return conditions
+        return new_conditions_dict
 
     def is_suitable_for_validation(
         self,

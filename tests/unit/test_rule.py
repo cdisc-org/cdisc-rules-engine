@@ -16,6 +16,20 @@ from cdisc_rules_engine.models.rule import Rule
             {"operator": "test", "name": "IDVAR", "value_is_literal": False},
             ["value_is_literal"],
         ),
+        (
+            {"operator": "test", "name": "IDVAR", "metadata": "metadata_column"},
+            ["metadata"],
+        ),
+        (
+            {
+                "operator": "test",
+                "name": "IDVAR",
+                "within": "metadata_column",
+                "order": "asc",
+                "ordering": "asc",
+            },
+            ["within", "order", "ordering"],
+        ),
     ],
 )
 def test_build_conditions(condition, expected_additional_keys):
@@ -44,6 +58,15 @@ def test_valid_parse_conditions():
     assert condition.get("operator") == conditions["all"][0]["operator"]
     assert condition["value"]["target"] == conditions["all"][0]["name"]
     assert condition["value"]["comparator"] == conditions["all"][0]["value"]
+
+
+def test_valid_parse_conditions_no_target():
+    conditions = {"all": [{"operator": "not_equal_to", "value": 10}]}
+    parsed_conditions = Rule.parse_conditions(conditions)
+    assert "all" in parsed_conditions
+    assert len(parsed_conditions["all"]) == 1
+    condition = parsed_conditions["all"][0]
+    assert "target" not in condition["value"]
 
 
 def test_valid_parse_actions():
