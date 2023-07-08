@@ -167,6 +167,6 @@ class CodeListAttributes(BaseOperation):
         """
         for item in ct_term_maps:
             ct_result[ct_key].append(item.get("package"))
-            codes = sorted(set(code for code in item.keys() if code != "package"))
+            codes = set(code for code in item.keys() if code != "package")
             ct_result[ct_val].append(codes)
         return ct_result
