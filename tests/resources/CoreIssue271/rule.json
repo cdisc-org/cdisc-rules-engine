@@ -1,0 +1,93 @@
+{
+  "Core": {
+    "Id": "FDA.SDTMIG.SD1231",
+    "Version": "1",
+    "Status": "Draft"
+  },
+  "Description": "Value level length must not exceed the length as specified define.xml.",
+  "Outcome": {
+    "Message": "Variable value is longer than defined max length %Variable.@Clause.Length% when value-level condition occurs"
+  },
+  "Rule Type": "Content check with value level metadata",
+  "Sensitivity": "Record",
+  "Scope": {
+    "Classes": {
+      "Include": []
+    },
+    "Domains": {
+      "Include": [
+        "ALL"
+      ]
+    }
+  },
+  "Executability": "Fully Executable",
+  "Check": {
+    "all": [
+      {
+        "name": "$VSSEQ",
+        "operator": "non_conformant_value_length",
+        "value": [
+          "True",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False",
+          "False"
+        ]
+      }
+    ]
+  }
+}

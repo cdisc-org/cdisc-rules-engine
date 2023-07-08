@@ -1,0 +1,225 @@
+{
+    "Authorities": [
+        {
+            "Organization": "FDA",
+            "Standards": [
+                {
+                    "Name": "SDTMIG",
+                    "Version": "3.1.2",
+                    "References": [
+                        {
+                            "Origin": "FDA Validator Rules",
+                            "Version": "1.6",
+                            "Citations": [
+                                {
+                                    "Document": "FDA",
+                                    "Cited_Guidance": "FDAB005, FDAB086"
+                                }
+                            ],
+                            "Rule_Identifier": {
+                                "Id": "SD2023",
+                                "Version": "1"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "SDTMIG",
+                    "Version": "3.1.3",
+                    "References": [
+                        {
+                            "Origin": "FDA Validator Rules",
+                            "Version": "1.6",
+                            "Citations": [
+                                {
+                                    "Document": "FDA",
+                                    "Cited_Guidance": "FDAB005, FDAB086"
+                                }
+                            ],
+                            "Rule_Identifier": {
+                                "Id": "SD2023",
+                                "Version": "1"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "SDTMIG",
+                    "Version": "3.2",
+                    "References": [
+                        {
+                            "Origin": "FDA Validator Rules",
+                            "Version": "1.6",
+                            "Citations": [
+                                {
+                                    "Document": "FDA",
+                                    "Cited_Guidance": "FDAB005, FDAB086"
+                                }
+                            ],
+                            "Rule_Identifier": {
+                                "Id": "SD2023",
+                                "Version": "1"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "SDTMIG",
+                    "Version": "3.3",
+                    "References": [
+                        {
+                            "Origin": "FDA Validator Rules",
+                            "Version": "1.6",
+                            "Citations": [
+                                {
+                                    "Document": "FDA",
+                                    "Cited_Guidance": "FDAB005, FDAB086"
+                                }
+                            ],
+                            "Rule_Identifier": {
+                                "Id": "SD2023",
+                                "Version": "1"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "SENDIG",
+                    "Version": "3.0",
+                    "References": [
+                        {
+                            "Origin": "FDA Validator Rules",
+                            "Version": "1.6",
+                            "Citations": [
+                                {
+                                    "Document": "FDA",
+                                    "Cited_Guidance": "FDAB005, FDAB086"
+                                }
+                            ],
+                            "Rule_Identifier": {
+                                "Id": "SD2023",
+                                "Version": "1"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "SENDIG",
+                    "Version": "3.1",
+                    "References": [
+                        {
+                            "Origin": "FDA Validator Rules",
+                            "Version": "1.6",
+                            "Citations": [
+                                {
+                                    "Document": "FDA",
+                                    "Cited_Guidance": "FDAB005, FDAB086"
+                                }
+                            ],
+                            "Rule_Identifier": {
+                                "Id": "SD2023",
+                                "Version": "1"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "SENDIG",
+                    "Version": "3.1.1",
+                    "References": [
+                        {
+                            "Origin": "FDA Validator Rules",
+                            "Version": "1.6",
+                            "Citations": [
+                                {
+                                    "Document": "FDA",
+                                    "Cited_Guidance": "FDAB005, FDAB086"
+                                }
+                            ],
+                            "Rule_Identifier": {
+                                "Id": "SD2023",
+                                "Version": "1"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "SENDIG-AR",
+                    "Version": "1.0",
+                    "References": [
+                        {
+                            "Origin": "FDA Validator Rules",
+                            "Version": "1.6",
+                            "Citations": [
+                                {
+                                    "Document": "FDA",
+                                    "Cited_Guidance": "FDAB005, FDAB086"
+                                }
+                            ],
+                            "Rule_Identifier": {
+                                "Id": "SD2023",
+                                "Version": "1"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "SENDIG-DART",
+                    "Version": "1.1",
+                    "References": [
+                        {
+                            "Origin": "FDA Validator Rules",
+                            "Version": "1.6",
+                            "Citations": [
+                                {
+                                    "Document": "FDA",
+                                    "Cited_Guidance": "FDAB005, FDAB086"
+                                }
+                            ],
+                            "Rule_Identifier": {
+                                "Id": "SD2023",
+                                "Version": "1"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "Core": {
+        "Id": "CORE-000286",
+        "Version": "1",
+        "Status": "Published"
+    },
+    "Description": "Age (AGE) variable values should be provided, when Date/Time of Birth (BRTHDTC) variable values are populated.",
+    "Outcome": {
+        "Message": "AGE is not provided"
+    },
+    "Sensitivity": "Record",
+    "Scope": {
+        "Classes": {
+            "Include": [
+                "SPECIAL PURPOSE"
+            ]
+        },
+        "Domains": {
+            "Include": [
+                "DM"
+            ]
+        }
+    },
+    "Executability": "Fully Executable",
+    "Check": {
+        "all": [
+            {
+                "name": "AGE",
+                "operator": "empty"
+            },
+            {
+                "name": "BRTHDTC",
+                "operator": "non_empty"
+            }
+        ]
+    },
+    "Rule_Type": "Record Data"
+}

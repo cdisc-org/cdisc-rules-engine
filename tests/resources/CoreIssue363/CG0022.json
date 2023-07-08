@@ -1,0 +1,1029 @@
+{
+    "rule": {
+        "Check": {
+            "all": [
+                {
+                    "name": "--LNKGRP",
+                    "operator": "value_does_not_have_multiple_references",
+                    "value": "$VALUE_COUNTS"
+                },
+                {
+                    "name": "--LNKGRP",
+                    "operator": "non_empty"
+                }
+            ]
+        },
+        "Core": {
+            "Id": "CDISC.SDTMIG.CG0022",
+            "Version": "1",
+            "Status": "Draft"
+        },
+        "Description": "Verify that when --LNKGRP is present in one domain it is also present in another domain.",
+        "Operations": [
+            {
+                "id": "$VALUE_COUNTS",
+                "name": "--LNKGRP",
+                "operator": "variable_value_count"
+            }
+        ],
+        "Outcome": {
+            "Message": "--LNKGRP variable is not found in any of the other domains.",
+            "Output_Variables": [
+                "--LNKGRP"
+            ]
+        },
+        "Sensitivity": "Dataset",
+        "Executability": "Fully Executable",
+        "Authorities": [
+            {
+                "Organization": "CDISC",
+                "Standards": [
+                    {
+                        "Name": "SDTMIG",
+                        "Version": "3.4",
+                        "References": [
+                            {
+                                "Origin": "SDTM and SDTMIG Conformance Rules",
+                                "Version": "2.0",
+                                "Citations": [
+                                    {
+                                        "Document": "SDTMIG v3.4",
+                                        "Item": "2.E.2",
+                                        "Section": "4.2.6",
+                                        "Cited_Guidance": "--LNKGRP is a grouping identifier used to identify a group of records in one domain that is related to a record in another domain, often forming a many-to-one relationship."
+                                    }
+                                ],
+                                "Rule_Identifier": {
+                                    "Id": "CG0022",
+                                    "Version": "1"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "Name": "SDTMIG",
+                        "Version": "3.3",
+                        "References": [
+                            {
+                                "Origin": "SDTM and SDTMIG Conformance Rules",
+                                "Version": "2.0",
+                                "Citations": [
+                                    {
+                                        "Document": "SDTMIG v3.3",
+                                        "Item": "2.E.2",
+                                        "Section": "4.2.6",
+                                        "Cited_Guidance": "--LNKGRP is a grouping identifier used to identify a group of records in one domain that is related to a record in another domain, often forming a many-to-one relationship."
+                                    }
+                                ],
+                                "Rule_Identifier": {
+                                    "Id": "CG0022",
+                                    "Version": "1"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "Name": "SDTMIG",
+                        "Version": "3.2",
+                        "References": [
+                            {
+                                "Origin": "SDTM and SDTMIG Conformance Rules",
+                                "Version": "2.0",
+                                "Citations": [
+                                    {
+                                        "Document": "SDTMIG v3.3",
+                                        "Item": "Specification",
+                                        "Section": "6.1.",
+                                        "Cited_Guidance": "Identifier used to link related, grouped records across domains."
+                                    }
+                                ],
+                                "Rule_Identifier": {
+                                    "Id": "CG0022",
+                                    "Version": "1"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "Scope": {
+            "Classes": {
+                "Include": [
+                    "ALL"
+                ]
+            },
+            "Domains": {
+                "Include": [
+                    "ALL"
+                ]
+            }
+        },
+        "Rule_Type": "Record Data"
+    },
+    "datasets": [
+        {
+            "filename": "ae.xpt",
+            "label": "Adverse Events",
+            "domain": "AE",
+            "variables": [
+                {
+                    "name": "STUDYID",
+                    "label": "Study Identifier",
+                    "type": "Char",
+                    "length": 12
+                },
+                {
+                    "name": "DOMAIN",
+                    "label": "Domain Abbreviation",
+                    "type": "Char",
+                    "length": 2
+                },
+                {
+                    "name": "USUBJID",
+                    "label": "Unique Subject Identifier",
+                    "type": "Char",
+                    "length": 8
+                },
+                {
+                    "name": "AESEQ",
+                    "label": "Sequence Number",
+                    "type": "Num",
+                    "length": 8
+                },
+                {
+                    "name": "AELNKID",
+                    "label": "Link ID",
+                    "type": "Char",
+                    "length": 50
+                },
+                {
+                    "name": "AETERM",
+                    "label": "Reported Term for the Adverse Event",
+                    "type": "Char",
+                    "length": 200
+                },
+                {
+                    "name": "AESEV",
+                    "label": "Severity/Intensity",
+                    "type": "Char",
+                    "length": 8
+                },
+                {
+                    "name": "AESER",
+                    "label": "Serious Event",
+                    "type": "Char",
+                    "length": 1
+                },
+                {
+                    "name": "AEACN",
+                    "label": "Action Taken with Study Treatment",
+                    "type": "Char",
+                    "length": 16
+                },
+                {
+                    "name": "AEREL",
+                    "label": "Causality",
+                    "type": "Char",
+                    "length": 16
+                },
+                {
+                    "name": "AEOUT",
+                    "label": "Outcome of Adverse Event",
+                    "type": "Char",
+                    "length": 32
+                },
+                {
+                    "name": "AESCAN",
+                    "label": "Involves Cancer",
+                    "type": "Char",
+                    "length": 1
+                },
+                {
+                    "name": "AESLIFE",
+                    "label": "Is Life Threatening",
+                    "type": "Char",
+                    "length": 1
+                },
+                {
+                    "name": "EPOCH",
+                    "label": "Epoch",
+                    "type": "Char",
+                    "length": 9
+                },
+                {
+                    "name": "AESTDTC",
+                    "label": "Start Date/Time of Adverse Event",
+                    "type": "Char",
+                    "length": 10
+                },
+                {
+                    "name": "AEENDTC",
+                    "label": "End Date/Time of Adverse Event",
+                    "type": "Char",
+                    "length": 10
+                },
+                {
+                    "name": "AESTDY",
+                    "label": "Study Day of Start of Adverse Event",
+                    "type": "Num",
+                    "length": 8
+                },
+                {
+                    "name": "AEENDY",
+                    "label": "Study Day of End of Adverse Event",
+                    "type": "Num",
+                    "length": 8
+                },
+                {
+                    "name": "AEENRTPT",
+                    "label": "End Relative to Reference Time Point",
+                    "type": "Char",
+                    "length": 7
+                },
+                {
+                    "name": "AEENTPT",
+                    "label": "End Reference Time Point",
+                    "type": "Char",
+                    "length": 10
+                }
+            ],
+            "records": {
+                "STUDYID": [
+                    "CDISCPILOT01",
+                    "CDISCPILOT01",
+                    "CDISCPILOT01"
+                ],
+                "DOMAIN": [
+                    "AE",
+                    "AE",
+                    "AE"
+                ],
+                "USUBJID": [
+                    "CDISC001",
+                    "CDISC001",
+                    "CDISC002"
+                ],
+                "AESEQ": [
+                    1,
+                    2,
+                    1
+                ],
+                "AELNKID": [
+                    "1",
+                    "2",
+                    "1"
+                ],
+                "AETERM": [
+                    "INJECTION SITE REACTION",
+                    "FATIGUE",
+                    "INJECTION SITE REACTION"
+                ],
+                "AESEV": [
+                    "MODERATE",
+                    "MODERATE",
+                    "MILD"
+                ],
+                "AESER": [
+                    "N",
+                    "N",
+                    "N"
+                ],
+                "AEACN": [
+                    "DRUG WITHDRAWN",
+                    "DOSE NOT CHANGED",
+                    "DOSE NOT CHANGED"
+                ],
+                "AEREL": [
+                    "RELATED",
+                    "UNLIKELY RELATED",
+                    "POSSIBLY RELATED"
+                ],
+                "AEOUT": [
+                    "NOT RECOVERED/NOT RESOLVED",
+                    "NOT RECOVERED/NOT RESOLVED",
+                    "NOT RECOVERED/NOT RESOLVED"
+                ],
+                "AESCAN": [
+                    "N",
+                    "N",
+                    "N"
+                ],
+                "AESLIFE": [
+                    "N",
+                    "N",
+                    "N"
+                ],
+                "EPOCH": [
+                    "TREATMENT",
+                    "TREATMENT",
+                    "TREATMENT"
+                ],
+                "AESTDTC": [
+                    "2012-12-02",
+                    "2013-01-14",
+                    "2012-11-16"
+                ],
+                "AEENDTC": [
+                    "",
+                    "",
+                    ""
+                ],
+                "AESTDY": [
+                    3,
+                    46,
+                    2
+                ],
+                "AEENDY": [
+                    null,
+                    null,
+                    null
+                ],
+                "AEENRTPT": [
+                    "ONGOING",
+                    "ONGOING",
+                    "ONGOING"
+                ],
+                "AEENTPT": [
+                    "2013-05-20",
+                    "2013-05-20",
+                    "2013-01-14"
+                ]
+            }
+        },
+        {
+            "filename": "fa.xpt",
+            "label": "Findings About Events or Interventions",
+            "domain": "FA",
+            "variables": [
+                {
+                    "name": "STUDYID",
+                    "label": "Study Identifier",
+                    "type": "Char",
+                    "length": 12
+                },
+                {
+                    "name": "DOMAIN",
+                    "label": "Domain Abbreviation",
+                    "type": "Char",
+                    "length": 2
+                },
+                {
+                    "name": "USUBJID",
+                    "label": "Unique Subject Identifier",
+                    "type": "Char",
+                    "length": 8
+                },
+                {
+                    "name": "FASEQ",
+                    "label": "Sequence Number",
+                    "type": "Num",
+                    "length": 8
+                },
+                {
+                    "name": "FALNKGRP",
+                    "label": "Link Group ID",
+                    "type": "Char",
+                    "length": 200
+                },
+                {
+                    "name": "FATESTCD",
+                    "label": "Findings About Test Short Name",
+                    "type": "Char",
+                    "length": 5
+                },
+                {
+                    "name": "FATEST",
+                    "label": "Findings About Test Name",
+                    "type": "Char",
+                    "length": 20
+                },
+                {
+                    "name": "FAOBJ",
+                    "label": "Object of the Observation",
+                    "type": "Char",
+                    "length": 10
+                },
+                {
+                    "name": "FACAT",
+                    "label": "Category for Findings About",
+                    "type": "Char",
+                    "length": 23
+                },
+                {
+                    "name": "FAORRES",
+                    "label": "Result or Finding in Original Units",
+                    "type": "Char",
+                    "length": 8
+                },
+                {
+                    "name": "FASTRESC",
+                    "label": "Character Result/Finding in Std Format",
+                    "type": "Char",
+                    "length": 8
+                },
+                {
+                    "name": "FALOC",
+                    "label": "Location of the Finding About",
+                    "type": "Char",
+                    "length": 3
+                },
+                {
+                    "name": "VISITNUM",
+                    "label": "Visit Number",
+                    "type": "Num",
+                    "length": 8
+                },
+                {
+                    "name": "EPOCH",
+                    "label": "Epoch",
+                    "type": "Char",
+                    "length": 9
+                },
+                {
+                    "name": "FADTC",
+                    "label": "Date/Time of Collection",
+                    "type": "Char",
+                    "length": 10
+                },
+                {
+                    "name": "FADY",
+                    "label": "Study Day of Collection",
+                    "type": "Num",
+                    "length": 8
+                }
+            ],
+            "records": {
+                "STUDYID": [
+                    "CDISCPILOT01",
+                    "CDISCPILOT01",
+                    "CDISCPILOT01",
+                    "CDISCPILOT01",
+                    "CDISCPILOT01",
+                    "CDISCPILOT01",
+                    "CDISCPILOT01",
+                    "CDISCPILOT01",
+                    "CDISCPILOT01",
+                    "CDISCPILOT01",
+                    "CDISCPILOT01",
+                    "CDISCPILOT01"
+                ],
+                "DOMAIN": [
+                    "FA",
+                    "FA",
+                    "FA",
+                    "FA",
+                    "FA",
+                    "FA",
+                    "FA",
+                    "FA",
+                    "FA",
+                    "FA",
+                    "FA",
+                    "FA"
+                ],
+                "USUBJID": [
+                    "CDISC001",
+                    "CDISC001",
+                    "CDISC001",
+                    "CDISC001",
+                    "CDISC001",
+                    "CDISC001",
+                    "CDISC002",
+                    "CDISC002",
+                    "CDISC002",
+                    "CDISC002",
+                    "CDISC002",
+                    "CDISC002"
+                ],
+                "FASEQ": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6,
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6
+                ],
+                "FALNKGRP": [
+                    "CDISC001 - 1",
+                    "CDISC001 - 1",
+                    "CDISC001 - 1",
+                    "CDISC001 - 1",
+                    "CDISC001 - 1",
+                    "CDISC001 - 1",
+                    "CDISC002 - 1",
+                    "CDISC002 - 1",
+                    "CDISC002 - 1",
+                    "CDISC002 - 1",
+                    "CDISC002 - 1",
+                    "CDISC002 - 1"
+                ],
+                "FATESTCD": [
+                    "OCCUR",
+                    "SEV",
+                    "OCCUR",
+                    "OCCUR",
+                    "OCCUR",
+                    "OCCUR",
+                    "OCCUR",
+                    "OCCUR",
+                    "OCCUR",
+                    "OCCUR",
+                    "SEV",
+                    "OCCUR"
+                ],
+                "FATEST": [
+                    "Occurrence Indicator",
+                    "Severity/Intensity",
+                    "Occurrence Indicator",
+                    "Occurrence Indicator",
+                    "Occurrence Indicator",
+                    "Occurrence Indicator",
+                    "Occurrence Indicator",
+                    "Occurrence Indicator",
+                    "Occurrence Indicator",
+                    "Occurrence Indicator",
+                    "Severity/Intensity",
+                    "Occurrence Indicator"
+                ],
+                "FAOBJ": [
+                    "ERYTHEMA",
+                    "ERYTHEMA",
+                    "PAIN",
+                    "INDURATION",
+                    "PRURITIS",
+                    "EDEMA",
+                    "ERYTHEMA",
+                    "PAIN",
+                    "INDURATION",
+                    "PRURITIS",
+                    "PRURITIS",
+                    "EDEMA"
+                ],
+                "FACAT": [
+                    "INJECTION SITE REACTION",
+                    "INJECTION SITE REACTION",
+                    "INJECTION SITE REACTION",
+                    "INJECTION SITE REACTION",
+                    "INJECTION SITE REACTION",
+                    "INJECTION SITE REACTION",
+                    "INJECTION SITE REACTION",
+                    "INJECTION SITE REACTION",
+                    "INJECTION SITE REACTION",
+                    "INJECTION SITE REACTION",
+                    "INJECTION SITE REACTION",
+                    "INJECTION SITE REACTION"
+                ],
+                "FAORRES": [
+                    "Y",
+                    "MODERATE",
+                    "N",
+                    "N",
+                    "N",
+                    "N",
+                    "N",
+                    "N",
+                    "N",
+                    "Y",
+                    "MILD",
+                    "N"
+                ],
+                "FASTRESC": [
+                    "Y",
+                    "MODERATE",
+                    "N",
+                    "N",
+                    "N",
+                    "N",
+                    "N",
+                    "N",
+                    "N",
+                    "Y",
+                    "MILD",
+                    "N"
+                ],
+                "FALOC": [
+                    "ARM",
+                    "ARM",
+                    "ARM",
+                    "ARM",
+                    "ARM",
+                    "ARM",
+                    "ARM",
+                    "ARM",
+                    "ARM",
+                    "ARM",
+                    "ARM",
+                    "ARM"
+                ],
+                "VISITNUM": [
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "EPOCH": [
+                    "TREATMENT",
+                    "TREATMENT",
+                    "TREATMENT",
+                    "TREATMENT",
+                    "TREATMENT",
+                    "TREATMENT",
+                    "TREATMENT",
+                    "TREATMENT",
+                    "TREATMENT",
+                    "TREATMENT",
+                    "TREATMENT",
+                    "TREATMENT"
+                ],
+                "FADTC": [
+                    "2012-12-02",
+                    "2012-12-02",
+                    "2012-12-02",
+                    "2012-12-02",
+                    "2012-12-02",
+                    "2012-12-02",
+                    "2012-11-16",
+                    "2012-11-16",
+                    "2012-11-16",
+                    "2012-11-16",
+                    "2012-11-16",
+                    "2012-11-16"
+                ],
+                "FADY": [
+                    3,
+                    3,
+                    3,
+                    3,
+                    3,
+                    3,
+                    2,
+                    2,
+                    2,
+                    2,
+                    2,
+                    2
+                ]
+            }
+        },
+        {
+            "filename": "vs.xpt",
+            "label": "Vital Signs",
+            "domain": "VS",
+            "variables": [
+                {
+                    "name": "STUDYID",
+                    "label": "Study Identifier",
+                    "type": "Char",
+                    "length": 12
+                },
+                {
+                    "name": "DOMAIN",
+                    "label": "Domain Abbreviation",
+                    "type": "Char",
+                    "length": 2
+                },
+                {
+                    "name": "USUBJID",
+                    "label": "Unique Subject Identifier",
+                    "type": "Char",
+                    "length": 8
+                },
+                {
+                    "name": "VSSEQ",
+                    "label": "Sequence Number",
+                    "type": "Num",
+                    "length": 8
+                },
+                {
+                    "name": "VSTESTCD",
+                    "label": "Vital Signs Test Short Name",
+                    "type": "Char",
+                    "length": 6
+                },
+                {
+                    "name": "VSTEST",
+                    "label": "Vital Signs Test Name",
+                    "type": "Char",
+                    "length": 24
+                },
+                {
+                    "name": "VSPOS",
+                    "label": "Vital Signs Position of Subject",
+                    "type": "Char",
+                    "length": 8
+                },
+                {
+                    "name": "VSORRES",
+                    "label": "Result or Finding in Original Units",
+                    "type": "Char",
+                    "length": 8
+                },
+                {
+                    "name": "VSORRESU",
+                    "label": "Original Units",
+                    "type": "Char",
+                    "length": 9
+                },
+                {
+                    "name": "VSSTRESC",
+                    "label": "Character Result/Finding in Std Format",
+                    "type": "Char",
+                    "length": 200
+                },
+                {
+                    "name": "VSSTRESN",
+                    "label": "Numeric Result/Finding in Standard Units",
+                    "type": "Num",
+                    "length": 8
+                },
+                {
+                    "name": "VSSTRESU",
+                    "label": "Standard Units",
+                    "type": "Char",
+                    "length": 9
+                },
+                {
+                    "name": "VSSTAT",
+                    "label": "Completion Status",
+                    "type": "Char",
+                    "length": 8
+                },
+                {
+                    "name": "VSLOC",
+                    "label": "Location of Vital Signs Measurement",
+                    "type": "Char",
+                    "length": 11
+                },
+                {
+                    "name": "VSLOBXFL",
+                    "label": "Last Observation Before Exposure Flag",
+                    "type": "Char",
+                    "length": 1
+                },
+                {
+                    "name": "VSREPNUM",
+                    "label": "Repetition Number",
+                    "type": "Num",
+                    "length": 8
+                },
+                {
+                    "name": "VISITNUM",
+                    "label": "Visit Number",
+                    "type": "Num",
+                    "length": 8
+                },
+                {
+                    "name": "VISIT",
+                    "label": "Visit Name",
+                    "type": "Char",
+                    "length": 200
+                },
+                {
+                    "name": "EPOCH",
+                    "label": "Epoch",
+                    "type": "Char",
+                    "length": 9
+                },
+                {
+                    "name": "VSDTC",
+                    "label": "Date/Time of Measurements",
+                    "type": "Char",
+                    "length": 10
+                },
+                {
+                    "name": "VSDY",
+                    "label": "Study Day of Vital Signs",
+                    "type": "Num",
+                    "length": 8
+                }
+            ],
+            "records": {
+                "STUDYID": [
+                    "CDISCPILOT01",
+                    "CDISCPILOT01",
+                    "CDISCPILOT01",
+                    "CDISCPILOT01",
+                    "CDISCPILOT01",
+                    "CDISCPILOT01",
+                    "CDISCPILOT01",
+                    "CDISCPILOT01"
+                ],
+                "DOMAIN": [
+                    "VS",
+                    "VS",
+                    "VS",
+                    "VS",
+                    "VS",
+                    "VS",
+                    "VS",
+                    "VS"
+                ],
+                "USUBJID": [
+                    "CDISC001",
+                    "CDISC001",
+                    "CDISC001",
+                    "CDISC001",
+                    "CDISC002",
+                    "CDISC002",
+                    "CDISC002",
+                    "CDISC002"
+                ],
+                "VSSEQ": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    1,
+                    2,
+                    3,
+                    4
+                ],
+                "VSTESTCD": [
+                    "DIABP",
+                    "DIABP",
+                    "DIABP",
+                    "DIABP",
+                    "DIABP",
+                    "DIABP",
+                    "DIABP",
+                    "DIABP"
+                ],
+                "VSTEST": [
+                    "Diastolic Blood Pressure",
+                    "Diastolic Blood Pressure",
+                    "Diastolic Blood Pressure",
+                    "Diastolic Blood Pressure",
+                    "Diastolic Blood Pressure",
+                    "Diastolic Blood Pressure",
+                    "Diastolic Blood Pressure",
+                    "Diastolic Blood Pressure"
+                ],
+                "VSPOS": [
+                    "STANDING",
+                    "STANDING",
+                    "STANDING",
+                    "STANDING",
+                    "STANDING",
+                    "STANDING",
+                    "STANDING",
+                    "STANDING"
+                ],
+                "VSORRES": [
+                    "71",
+                    "71",
+                    "83",
+                    "79",
+                    "60",
+                    "64",
+                    "64",
+                    "58"
+                ],
+                "VSORRESU": [
+                    "mmHg",
+                    "mmHg",
+                    "mmHg",
+                    "mmHg",
+                    "mmHg",
+                    "mmHg",
+                    "mmHg",
+                    "mmHg"
+                ],
+                "VSSTRESC": [
+                    "71",
+                    "71",
+                    "83",
+                    "79",
+                    "60",
+                    "64",
+                    "64",
+                    "58"
+                ],
+                "VSSTRESN": [
+                    71,
+                    71,
+                    83,
+                    79,
+                    60,
+                    64,
+                    64,
+                    58
+                ],
+                "VSSTRESU": [
+                    "mmHg",
+                    "mmHg",
+                    "mmHg",
+                    "mmHg",
+                    "mmHg",
+                    "mmHg",
+                    "mmHg",
+                    "mmHg"
+                ],
+                "VSSTAT": [
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "VSLOC": [
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "VSLOBXFL": [
+                    "",
+                    "",
+                    "Y",
+                    "",
+                    "",
+                    "",
+                    "Y",
+                    ""
+                ],
+                "VSREPNUM": [
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "VISITNUM": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    1,
+                    2,
+                    3,
+                    4
+                ],
+                "VISIT": [
+                    "SCREENING 1",
+                    "SCREENING 2",
+                    "BASELINE",
+                    "WEEK 2",
+                    "SCREENING 1",
+                    "SCREENING 2",
+                    "BASELINE",
+                    "WEEK 2"
+                ],
+                "EPOCH": [
+                    "SCREENING",
+                    "SCREENING",
+                    "SCREENING",
+                    "TREATMENT",
+                    "SCREENING",
+                    "SCREENING",
+                    "SCREENING",
+                    "TREATMENT"
+                ],
+                "VSDTC": [
+                    "2012-11-23",
+                    "2012-11-28",
+                    "2012-11-30",
+                    "2012-12-13",
+                    "2012-10-30",
+                    "2012-11-14",
+                    "2012-11-15",
+                    "2012-11-28"
+                ],
+                "VSDY": [
+                    -7,
+                    -2,
+                    1,
+                    14,
+                    -16,
+                    -1,
+                    1,
+                    14
+                ]
+            }
+        }
+    ]
+}

@@ -1,0 +1,67 @@
+{
+    "Authority": {
+      "Organization": "CDISC"
+    },
+    "Check": {
+      "all": [
+        {
+          "name": "variable_name",
+          "operator": "is_not_contained_by",
+          "value": "$model_variables"
+        }
+      ]
+    },
+    "Citations": [
+      {
+        "Document": "TODO",
+        "Section": "TODO",
+        "Cited_Guidance": "TODO"
+      }
+    ],
+    "Core": {
+      "Id": "CDISC.SDTMIG.CG0013",
+      "Version": "1"
+    },
+    "Description": "Trigger when variable cannot be found in the SDTM model (v.1.7 for SENDIG-3.1)",
+    "Operations": [
+      {
+        "id": "$model_variables",
+        "operator": "get_column_order_from_library",
+        "name": "MODELVARIABLES"
+      }
+    ],
+    "Outcome": {
+      "Message": "Variable is not allowed in SDTM/SEND"
+    },
+    "References": [
+      {
+        "Origin": "SDTM and SENDIG Conformance Rules",
+        "Version": "2.0",
+        "Rule_Identifier": {
+          "Id": "266",
+          "Version": "1"
+        }
+      }
+    ],
+    "Scopes": {
+      "Classes": {
+        "Include": [
+          "All"
+        ]
+      },
+      "Domains": {
+        "Include": [
+          "All"
+        ]
+      },
+      "Standards": [
+        {
+          "Name": "SDTMIG",
+          "Version": "3.4"
+        }
+      ]
+    },
+    "Sensitivity": "Record",
+    "Severity": "Error",
+    "Rule_Type": "Variable Metadata Check"
+  }
