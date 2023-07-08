@@ -70,12 +70,12 @@ class ExcelReport(BaseReport):
             wb["Conformance Details"]["B14"] = self._args.whodrug
         return wb
 
-    def write_report(self, **kwargs):
+    def write_report(self):
         logger = logging.getLogger("validator")
 
         try:
             define_version: str = self._args.define_version or get_define_version(
-                self._args.dataset_paths, **kwargs
+                self._args.dataset_paths
             )
             report_data = self.get_export(
                 define_version,
@@ -89,7 +89,7 @@ class ExcelReport(BaseReport):
             logger.error(
                 f"Error occurred during validation. Error: {e}. Error message: {str(e)}"
             )
-            logger.error(e, __name__)
+            logger.trace(e, __name__)
             raise e
         finally:
             self._template.close()

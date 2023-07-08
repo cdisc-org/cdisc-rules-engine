@@ -66,13 +66,13 @@ class RulesEngine:
         self.ct_package = kwargs.get("ct_package")
         self.meddra_path: str = kwargs.get("meddra_path")
         self.whodrug_path: str = kwargs.get("whodrug_path")
-        self.validate_xml: str = kwargs.get("validate_xml")
+        self.validate_xml: str = kwargs.get("validate_xml", "Y")
+        self.is_validate_xml: bool = (
+            True if self.validate_xml in ("Y", "YES") else False
+        )
 
     def get_schema(self):
         return export_rule_data(DatasetVariable, COREActions)
-
-    def is_validate_xml(self):
-        return True if self.validate_xml in ("Y", "YES") else False
 
     def test_validation(
         self,
@@ -138,21 +138,9 @@ class RulesEngine:
                 is_split_dataset(datasets, dataset_domain),
                 datasets,
             ):
-                result = None
-                if self.is_validate_xml:
-                    try:
-                        result: List[Union[dict, str]] = self.validate_rule(
-                            rule, dataset_path, datasets, dataset_domain
-                        )
-                    except Exception as e:
-                        logger.error(
-                            f"Error occurred. Error: {e}. Error message: {str(e)}"
-                        )
-                        logger.trace(e, __name__)
-                else:
-                    result: List[Union[dict, str]] = self.validate_rule(
-                        rule, dataset_path, datasets, dataset_domain
-                    )
+                result: List[Union[dict, str]] = self.validate_rule(
+                    rule, dataset_path, datasets, dataset_domain
+                )
                 logger.info(f"Validated domain {dataset_domain}. Result = {result}")
                 if result:
                     return result
@@ -178,6 +166,8 @@ class RulesEngine:
             error_obj: ValidationErrorContainer = self.handle_validation_exceptions(
                 e, dataset_path, dataset_path
             )
+            if self.is_validate_xml:
+                error_obj.status = ExecutionStatus.SUCCESS.value
             error_obj.domain = dataset_domain
             # this wrapping into a list is necessary to keep return type consistent
             return [error_obj.to_representation()]
@@ -214,7 +204,7 @@ class RulesEngine:
             datasets,
             domain,
         )
-        dataset = builder.get_dataset(**kwargs)
+        dataset = builder.get_dataset()
 
         # Update rule for certain rule types
         # SPECIAL CASES FOR RULE TYPES ###############################
@@ -266,18 +256,7 @@ class RulesEngine:
                     self.standard, self.standard_version
                 )
             )
-            if self.is_validate_xml:
-                try:
-                    define_metadata: List[
-                        dict
-                    ] = builder.get_define_xml_variables_metadata()
-                except Exception as e:
-                    logger.error(f"Error occurred. Error: {e}. Error message: {str(e)}")
-                    logger.trace(e, __name__)
-            else:
-                define_metadata: List[
-                    dict
-                ] = builder.get_define_xml_variables_metadata()
+            define_metadata: List[dict] = builder.get_define_xml_variables_metadata()
 
             targets: List[
                 str

@@ -62,20 +62,20 @@ class BaseDefineXMLReader(ABC):
         self.study_id = study_id
         self.data_bundle_id = data_bundle_id
         self.validate_xml = validate_xml
+        self.is_validate_xml: bool = (
+            True if self.validate_xml in ("Y", "YES") else False
+        )
 
-    def read(self, **kwargs) -> List[dict]:
+    def read(self) -> List[dict]:
         """
         Reads Define XML metadata and returns it as a list of dicts.
         The output contains metadata for all datasets.
         """
-        metadata = self.get_metadata_version(**kwargs)
+        metadata = self.get_metadata_version()
         output = []
         for domain_metadata in metadata.ItemGroupDef:
             output.append(self._get_metadata_representation(domain_metadata))
         return output
-
-    def is_validate_xml(self):
-        return True if self.validate_xml in ("Y", "YES") else False
 
     @cached("define-domain-metadata")
     def extract_domain_metadata(self, domain_name: str = None) -> dict:
@@ -119,21 +119,15 @@ class BaseDefineXMLReader(ABC):
 
     def get_metadata_version(self):
         metadata = None
-        try:
-            metadata = self._odm_loader.MetaDataVersion()
-            logger.info(f"Define Metadata Version: {metadata}")
-        except Exception as e:
-            logger.trace(e, __name__)
-            logger.error(f"{__name__}(VX={self.validate_xml})")
-            if self.is_validate_xml:
-                logger.info(
-                    f"Validate XML = {self.validate_xml}: continue to next step."
-                )
+        logger.info(f"Validate XML = {self.validate_xml}:{self.is_validate_xml}")
+        metadata = self._odm_loader.MetaDataVersion()
+        logger.info(f"Define Metadata Version: {metadata}")
         return metadata
 
     @cached("define-value-level-metadata")
     def extract_value_level_metadata(
-        self, domain_name: str = None, **kwargs
+        self,
+        domain_name: str = None,
     ) -> List[dict]:
         """
         Extracts all value level metadata for each variable in a given domain.
@@ -155,7 +149,7 @@ class BaseDefineXMLReader(ABC):
             f"Extracting value level metadata from Define-XML. "
             f"domain_name={domain_name}"
         )
-        metadata = self.get_metadata_version(**kwargs)
+        metadata = self.get_metadata_version()
         item_def_map = {item_def.OID: item_def for item_def in metadata.ItemDef}
         codelist_map = self._get_codelist_def_map(metadata.CodeList)
         domain_metadata = self._get_domain_metadata(metadata, domain_name)

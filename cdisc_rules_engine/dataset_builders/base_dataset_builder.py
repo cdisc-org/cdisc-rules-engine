@@ -43,7 +43,7 @@ class BaseDatasetBuilder:
         """
         pass
 
-    def get_dataset(self, **kwargs):
+    def get_dataset(self):
         # If validating dataset content, ensure split datasets are handled.
         if is_split_dataset(self.datasets, self.domain):
             # Handle split datasets for content checks.
@@ -51,7 +51,6 @@ class BaseDatasetBuilder:
             dataset: pd.DataFrame = self.data_service.concat_split_datasets(
                 func_to_call=self.build,
                 dataset_names=self.get_corresponding_datasets_names(),
-                **kwargs
             )
         else:
             # single dataset. the most common case
