@@ -255,7 +255,7 @@ class RulesEngine:
                 get_library_variables_metadata_cache_key(
                     self.standard, self.standard_version
                 )
-            )
+            ).get(domain, {})
             define_metadata: List[dict] = builder.get_define_xml_variables_metadata()
 
             targets: List[
@@ -263,8 +263,15 @@ class RulesEngine:
             ] = self.data_processor.filter_dataset_columns_by_metadata_and_rule(
                 dataset.columns.tolist(), define_metadata, library_metadata, rule
             )
-            rule["conditions"] = RuleProcessor.duplicate_conditions_for_all_targets(
-                rule["conditions"], targets
+            rule_copy = deepcopy(rule)
+            updated_conditions = RuleProcessor.duplicate_conditions_for_all_targets(
+                rule_copy["conditions"], targets
+            )
+            rule_copy["conditions"].set_conditions(updated_conditions)
+            # When duplicating conditions,
+            # rule should be copied to prevent updates to concurrent rule executions
+            return self.execute_rule(
+                rule_copy, dataset, dataset_path, datasets, domain, **kwargs
             )
 
         logger.info(f"Using dataset build by: {builder.__class__}")
@@ -295,18 +302,20 @@ class RulesEngine:
             codelist_term_maps = []
         # Add conditions to rule for all variables if variables: all appears
         # in condition
-        rule["conditions"] = RuleProcessor.duplicate_conditions_for_all_targets(
+        rule_copy = deepcopy(rule)
+        updated_conditions = RuleProcessor.duplicate_conditions_for_all_targets(
             rule["conditions"], dataset.columns.to_list()
         )
+        rule_copy["conditions"].set_conditions(updated_conditions)
         # Adding copy for now to avoid updating cached dataset
         dataset = deepcopy(dataset)
         # preprocess dataset
         dataset_preprocessor = DatasetPreprocessor(
             dataset, domain, dataset_path, self.data_service, self.cache
         )
-        dataset = dataset_preprocessor.preprocess(rule, datasets)
+        dataset = dataset_preprocessor.preprocess(rule_copy, datasets)
         dataset = self.rule_processor.perform_rule_operations(
-            rule,
+            rule_copy,
             dataset,
             domain,
             datasets,
@@ -331,7 +340,7 @@ class RulesEngine:
         )
         results = []
         run(
-            serialize_rule(rule),  # engine expects a JSON serialized dict
+            serialize_rule(rule_copy),  # engine expects a JSON serialized dict
             defined_variables=dataset_variable,
             defined_actions=COREActions(
                 results,

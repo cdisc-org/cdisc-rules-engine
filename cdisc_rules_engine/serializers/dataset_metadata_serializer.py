@@ -43,7 +43,7 @@ class DatasetMetadataSerializer(BaseSerializer):
                     isinstance(metadata_obj.size, int)
                     or isinstance(metadata_obj.size, float)
                 )
-                and isinstance(metadata_obj.records, str)
+                and isinstance(metadata_obj.records, int)
             ):
                 return False
         return True

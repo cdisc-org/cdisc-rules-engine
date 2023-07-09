@@ -13,13 +13,15 @@ class VariableNames(BaseOperation):
             self.params.standard, self.params.standard_version
         )
         variable_details: dict = self.cache.get(cache_key)
-        if variable_details is not None:
-            variable_names = set(variable_details.keys())
-        else:
+        if variable_details is None:
             cdisc_library_service = CDISCLibraryService(config, self.cache)
-            variable_names = set(
-                cdisc_library_service.get_variables_details(
-                    self.params.standard, self.params.standard_version
-                ).keys()
+            variable_details = cdisc_library_service.get_variables_details(
+                self.params.standard, self.params.standard_version
             )
-        return variable_names
+        all_variables = [
+            list(variable_details[dataset].values()) for dataset in variable_details
+        ]
+
+        return set(
+            [variable["name"] for variables in all_variables for variable in variables]
+        )

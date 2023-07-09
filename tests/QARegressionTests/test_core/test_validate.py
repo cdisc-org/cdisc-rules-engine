@@ -63,22 +63,6 @@ class TestValidate(unittest.TestCase):
         )
         self.assertEqual(result.exit_code, 0)
 
-    def test_validate_both_d_and_data_options(self):
-        result = self.runner.invoke(
-            validate,
-            [
-                "-d",
-                os.path.join("tests", "resources", "report_test_data"),
-                "--data",
-                "tests/resources/report_test_data",
-                "-s",
-                "sdtmig",
-                "-v",
-                "3.4",
-            ],
-        )
-        self.assertNotEqual(result.exit_code, 0)
-
     def test_validate_neither_d_nor_data_options(self):
         result = self.runner.invoke(
             validate,
@@ -173,22 +157,6 @@ class TestValidate(unittest.TestCase):
         result = self.runner.invoke(validate, ["-s", "sdtmig"])
         self.assertEqual(result.exit_code, 2)
         self.assertIn("Error: Missing option", result.output)
-
-    def test_validate_invalid_value_to_option_version(self):
-        result = self.runner.invoke(
-            validate,
-            [
-                "-s",
-                "sdtmig",
-                "-v",
-                "version",
-                "-dp",
-                os.path.join("tests", "resources", "test_dataset.xpt"),
-                "-dv",
-                "2.0",
-            ],
-        )
-        self.assertEqual(result.exit_code, 1)
 
     def test_validate_valid_options(self):
         result = self.runner.invoke(

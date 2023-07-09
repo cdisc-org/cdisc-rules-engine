@@ -8,7 +8,7 @@ from multiprocessing import freeze_support
 from typing import Iterable, Tuple
 
 import click
-
+from pathlib import Path
 from cdisc_rules_engine.config import config
 from cdisc_rules_engine.constants.define_xml_constants import DEFINE_XML_FILE_NAME
 from cdisc_rules_engine.enums.default_file_paths import DefaultFilePaths
@@ -207,7 +207,7 @@ def validate(
             )
             ctx.exit()
         dataset_paths: Iterable[str] = [
-            os.path.join(data, fn)
+            str(Path(data).joinpath(fn))
             for fn in os.listdir(data)
             if valid_data_file(fn, data_format)
         ]

@@ -25,13 +25,14 @@ class ReportFactory:
 
     def __init__(
         self,
-        dataset_paths: Iterable[str],
+        datasets: Iterable[dict],
         results: List[RuleValidationResult],
         elapsed_time: float,
         args: Validation_args,
         data_service: DataServiceInterface,
     ):
-        self._dataset_paths = dataset_paths
+        self._datasets = datasets
+        self._dataset_paths = [dataset.get("full_path") for dataset in datasets]
         self._results = results
         self._elapsed_time = elapsed_time
         self._args = args
@@ -47,6 +48,7 @@ class ReportFactory:
             output_type: str = output_type.upper()
             service_class: Type[BaseReport] = self._output_type_service_map[output_type]
             instance: BaseReport = service_class(
+                self._datasets,
                 self._dataset_paths,
                 self._results,
                 self._elapsed_time,
