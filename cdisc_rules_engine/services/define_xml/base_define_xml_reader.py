@@ -252,6 +252,7 @@ class BaseDefineXMLReader(ABC):
             "define_variable_origin_type": "",
             "define_variable_has_no_data": "",
             "define_variable_order_number": None,
+            "define_variable_length": None,
             "define_variable_has_codelist": False,
             "define_variable_codelist_coded_values": [],
         }
@@ -259,9 +260,8 @@ class BaseDefineXMLReader(ABC):
             data["define_variable_name"] = itemdef.Name
             data["define_variable_size"] = itemdef.Length
             data["define_variable_role"] = itemref.Role
-            data["define_variable_data_type"] = self._get_variable_datatype(
-                itemdef.DataType
-            )
+            data["define_variable_length"] = itemdef.Length
+            data["define_variable_data_type"] = itemdef.DataType
             data["define_variable_is_collected"] = self._get_variable_is_collected(
                 itemdef
             )
@@ -284,7 +284,6 @@ class BaseDefineXMLReader(ABC):
                 data["define_variable_origin_type"] = self._get_origin_type(itemdef)
             data["define_variable_has_no_data"] = getattr(itemref, "HasNoData", "")
             data["define_variable_order_number"] = itemref.OrderNumber
-
         return data
 
     def _get_codelist_ccode(self, codelist):
@@ -305,23 +304,6 @@ class BaseDefineXMLReader(ABC):
         if codelist:
             for codelist_item in codelist.CodeListItem + codelist.EnumeratedItem:
                 yield codelist_item.CodedValue
-
-    def _get_variable_datatype(self, data_type):
-        variable_type_map = {
-            "text": "Char",
-            "integer": "Num",
-            "float": "Num",
-            "datetime": "Char",
-            "date": "Char",
-            "time": "Char",
-            "partialDate": "Char",
-            "partialTime": "Char",
-            "partialDatetime": "Char",
-            "incompleteDatetime": "Char",
-            "durationDatetime": "Char",
-            "intervalDatetime": "Char",
-        }
-        return variable_type_map.get(data_type, data_type)
 
     @abstractmethod
     def _get_origin_type(self, itemdef):
