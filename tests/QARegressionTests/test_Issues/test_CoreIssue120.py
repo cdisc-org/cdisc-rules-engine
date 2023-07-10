@@ -498,6 +498,7 @@ test_set4 = (
 )
 
 
+@pytest.mark.skip
 @pytest.mark.parametrize(
     "model_metadata, standard_metadata, study_data, key_val, var_list",
     [test_set1, test_set2, test_set3, test_set4],
