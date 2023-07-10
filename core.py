@@ -149,7 +149,7 @@ def cli():
 @click.option(
     "-vx",
     "--validate-xml",
-    type=click.Choice(["Y", "Yes", "N", "No"]),
+    type=click.Choice(["Y", "YES", "N", "No", "y", "n", "yes", "no"]),
     help=(
         "Validate Define-XML or not when it misses def:Structure or in error"
         ": Y (skip define rule validation and continue for other rules)"
@@ -369,7 +369,7 @@ def list_rules(ctx: click.Context, cache_path: str, standard: str, version: str)
         ": Y (skip define rule validation and continue for other rules)"
         "  N (stop on error and report the error)"
     ),
-    type=click.Choice(["y", "yes", "n", "no"]),
+    type=click.Choice(["y", "yes", "n", "no", "Y", "YES", "NO", "N"]),
     required=False,
     default="Y",
     show_default=True,
