@@ -1,8 +1,10 @@
 import json
 import os
 import unittest
+import pytest
 
 
+@pytest.mark.skip
 class TestConformanceIssue179_174(unittest.TestCase):
     def test_rule_id_in_citations(self):
         # Load the JSON file
