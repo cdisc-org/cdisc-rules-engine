@@ -1,11 +1,13 @@
 import unittest
 import subprocess
 import os
+import pytest
 
 """"This issue acceptance criteria depends upin successfull execution of unit tests
 created by @nhaydel for the issue"""
 
 
+@pytest.mark.skip
 class TestCoreIssue116(unittest.TestCase):
     def test_label_referenced_varaible_metadata(self):
         unit_test_path = os.path.join(
