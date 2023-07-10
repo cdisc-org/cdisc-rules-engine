@@ -327,7 +327,7 @@ def test_contents_define_dataset_builder(define_metadata, data_metadata, expecte
         datasets=data_metadata.get("datasets", {}),
         domain=None,
         define_metadata=define_metadata,
-    ).build(**kwargs)
+    ).build()
     col_names = ["dataset_name", "define_dataset_name"]
     assert result[col_names].equals(expected[col_names]) or (
         result.empty and expected.empty
@@ -357,7 +357,7 @@ def test_contents_define_dataset_columns(define_metadata, data_metadata, expecte
         datasets=data_metadata.get("datasets", {}),
         domain=None,
         define_metadata=define_metadata,
-    ).build(**kwargs)
+    ).build()
     exp_columns = result.columns.tolist()
     req_columns = [
         "dataset_size",

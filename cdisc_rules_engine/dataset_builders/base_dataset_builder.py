@@ -120,7 +120,7 @@ class BaseDatasetBuilder:
     def add_row_number(dataframe: pd.DataFrame) -> None:
         dataframe["row_number"] = range(1, len(dataframe) + 1)
 
-    def get_dataset_define_metadata(self, **kwargs):
+    def get_dataset_define_metadata(self):
         """
         Returns a long dataset where each value in each row of the original dataset is
         a row in the new dataset.
@@ -180,8 +180,8 @@ class BaseDatasetBuilder:
                         dataset["filename"]
                     )
                 except Exception as e:
-                    logger._exception = e
-                    logger.error()
+                    logger.trace(e, __name__)
+                    logger.error(f"Error: {e}. Error message: {str(e)}")
                 datasets = (
                     ds_metadata if datasets.empty else datasets.append(ds_metadata)
                 )

@@ -44,12 +44,7 @@ class ConsoleLogger(LoggerInterface):
         self._logger.warning(msg, *args, **kwargs)
 
     def error(self, msg: str = None, *args, **kwargs):
-        e = self._exception
-        if msg is None:
-            msg = f"Error occurred during validation. Error: {e}."
-            msg += f"Error message: {str(e)}"
         self._logger.error(msg, *args, **kwargs)
-        self.display_trace(e, inspect.currentframe())
 
     def exception(self, msg: str, *args, **kwargs):
         self._logger.exception(msg, *args, **kwargs)
@@ -59,6 +54,11 @@ class ConsoleLogger(LoggerInterface):
 
     def log(self, msg: str, *args, **kwargs):
         self._logger.log(logging.CRITICAL + 1, msg, *args, **kwargs)
+
+    def trace(self, exc: Exception, msg: str, *args, **kwargs):
+        current_level = self._logger.getEffectiveLevel()
+        if current_level > 50:
+            self.display_trace(exc, inspect.currentframe())
 
     def display_trace(self, e: Exception = None, f=None):
         if e is None:

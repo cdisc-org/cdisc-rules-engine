@@ -29,10 +29,17 @@ Attach define xml metadata at variable level and library metadata at variable le
 
 #### Columns
 
-- `dataset_label`
+- `dataset_size`
 - `dataset_location`
 - `dataset_name`
-- `dataset_size`
+- `dataset_label`
+- `define_dataset_name`
+- `define_dataset_label`
+- `define_dataset_location`
+- `define_dataset_class`
+- `define_dataset_structure`
+- `define_dataset_is_non_standard`
+- `define_dataset_variables`
 
 #### Rule Macro
 
@@ -41,8 +48,20 @@ Allows comparing content metadata to define xml metadata of the same name.
 #### Example
 
 ```yaml
-- name: dataset_label
-  operator: not_equal_to
+all:
+  - name: dataset_name
+    operator: not_equal_to
+    value: define_dataset_name
+```
+
+Or
+
+```yaml
+any:
+  - name: dataset_name
+    operator: empty
+  - name: define_dataset_name
+    operator: empty
 ```
 
 ## Define Item Group Metadata Check

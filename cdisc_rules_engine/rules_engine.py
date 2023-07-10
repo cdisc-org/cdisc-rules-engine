@@ -163,8 +163,10 @@ class RulesEngine:
                 error_obj.domain = dataset_domain
                 return [error_obj.to_representation()]
         except Exception as e:
-            logger._exception = e
-            logger.error()
+            logger.trace(e, __name__)
+            logger.error(
+                f"Error occurred during validation. Error: {e}. Error message: {str(e)}"
+            )
             error_obj: ValidationErrorContainer = self.handle_validation_exceptions(
                 e, dataset_path, dataset_path
             )
@@ -207,21 +209,7 @@ class RulesEngine:
         # Update rule for certain rule types
         # SPECIAL CASES FOR RULE TYPES ###############################
         # TODO: Handle these special cases better.
-        if (
-            rule.get("rule_type")
-            == RuleTypes.DATASET_METADATA_CHECK_AGAINST_DEFINE.value
-        ):
-            if define_metadata is None:
-                if domain is not None:
-                    # get Define XML metadata for domain and use it as a rule comparator
-                    define_metadata: dict = self.get_define_xml_metadata_for_domain(
-                        dataset_path, domain
-                    )
-                else:
-                    define_metadata = self.get_define_xml_metadata(dataset_path)
-            kwargs["define_metadata"] = define_metadata
-
-        elif rule.get("rule_type") == RuleTypes.DEFINE_ITEM_METADATA_CHECK.value:
+        if rule.get("rule_type") == RuleTypes.DEFINE_ITEM_METADATA_CHECK.value:
             variable_codelist_map_key = get_standard_codelist_cache_key(
                 self.standard, self.standard_version
             )
@@ -342,21 +330,17 @@ class RulesEngine:
             codelist_term_maps=codelist_term_maps,
         )
         results = []
-        try:
-            run(
-                serialize_rule(rule),  # engine expects a JSON serialized dict
-                defined_variables=dataset_variable,
-                defined_actions=COREActions(
-                    results,
-                    variable=dataset_variable,
-                    domain=domain,
-                    rule=rule,
-                    value_level_metadata=value_level_metadata,
-                ),
-            )
-        except Exception as e:
-            logger._exception = e
-            logger.error()
+        run(
+            serialize_rule(rule),  # engine expects a JSON serialized dict
+            defined_variables=dataset_variable,
+            defined_actions=COREActions(
+                results,
+                variable=dataset_variable,
+                domain=domain,
+                rule=rule,
+                value_level_metadata=value_level_metadata,
+            ),
+        )
 
         return results
 

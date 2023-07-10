@@ -2,7 +2,7 @@ from cdisc_rules_engine.dataset_builders.base_dataset_builder import BaseDataset
 
 
 class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
-    def build(self, **kwargs):
+    def build(self):
         """
         Returns a long dataset where each value in each row of the original dataset is
         a row in the new dataset.
@@ -26,4 +26,4 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
 
         ...,
         """
-        return self.get_dataset_define_metadata(**kwargs)
+        return self.get_dataset_define_metadata()
