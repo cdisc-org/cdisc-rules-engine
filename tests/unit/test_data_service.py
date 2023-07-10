@@ -74,7 +74,7 @@ def test_get_raw_dataset_metadata(
 
 
 @pytest.mark.parametrize(
-    "dataset, data, expected_class, filename",
+    "datasets, data, expected_class, filename",
     [
         (
             [{"domain": "AE", "filename": "ae.xpt"}],
@@ -107,12 +107,19 @@ def test_get_raw_dataset_metadata(
             "ae.xpt",
         ),
         ([{"domain": "AE", "filename": "ae.xpt"}], {"UNKNOWN": ["test"]}, None, "None"),
+        ([{"domain": "DM", "filename": "ae.xpt"}], {"UNKNOWN": ["test"]}, None, "None"),
     ],
 )
-def test_get_dataset_class(dataset, data, expected_class, filename):
-    dataset = pd.DataFrame.from_dict(data)
-    data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
-    class_name = data_service.get_dataset_class(dataset, filename, dataset)
+def test_get_dataset_class(datasets, data, expected_class, filename):
+    df = pd.DataFrame.from_dict(data)
+    mock_cache_service = MagicMock()
+    mock_cache_service.get.return_value = {
+        "classes": {"name": "SPECIAL PURPOSE", "datasets": [{"name": "DM"}]}
+    }
+    data_service = LocalDataService(mock_cache_service, MagicMock(), MagicMock())
+    class_name = data_service.get_dataset_class(
+        df, filename, datasets, datasets[0].get("domain")
+    )
     assert class_name == expected_class
 
 
@@ -135,7 +142,9 @@ def test_get_dataset_class_associated_domains():
     ):
         data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
         filepath = f"{data_bundle_path}/ce.xpt"
-        class_name = data_service.get_dataset_class(ap_dataset, filepath, datasets)
+        class_name = data_service.get_dataset_class(
+            ap_dataset, filepath, datasets, "CE"
+        )
         assert class_name == EVENTS
 
 
