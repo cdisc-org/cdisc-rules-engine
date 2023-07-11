@@ -341,7 +341,6 @@ class RulesEngine:
                 value_level_metadata=value_level_metadata,
             ),
         )
-
         return results
 
     def get_define_xml_metadata_for_domain(

@@ -14,10 +14,6 @@ from cdisc_rules_engine.models.dictionaries.get_dictionary_terms import (
 from cdisc_rules_engine.utilities.utils import get_rules_cache_key
 from cdisc_rules_engine.constants.cache_constants import PUBLISHED_CT_PACKAGES
 
-from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import (
-    DefineXMLReaderFactory,
-)
-
 
 def fill_cache_with_provided_data(cache, args):
     cache_files = next(os.walk(args.cache), (None, None, []))[2]
@@ -111,18 +107,3 @@ def get_datasets(
         )
 
     return datasets
-
-
-def get_define_metadata(
-    define_file_name: str = "define.xml", define_file_path: str = None
-):
-    define_path = "./" if define_file_path is None else define_file_path
-    if os.path.isfile(define_file_path):
-        define_path = os.path.dirname(define_file_path)
-    define_full_path = f"{define_path}/{define_file_name}"
-    metadata: list[dict] = []
-    with open(define_full_path, "rb") as file:
-        contents: bytes = file.read()
-        reader = DefineXMLReaderFactory.from_file_contents(contents)
-        metadata = reader.read()
-    return metadata

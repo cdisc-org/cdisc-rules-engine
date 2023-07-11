@@ -729,17 +729,24 @@ def define_xml_validation_rule() -> dict:
                         "operator": "not_equal_to",
                         "value": {
                             "target": "dataset_name",
+                            "comparator": "define_dataset_name",
                         },
                     },
                     {
                         "name": "get_dataset",
                         "operator": "not_equal_to",
-                        "value": {"target": "dataset_label"},
+                        "value": {
+                            "target": "dataset_label",
+                            "comparator": "define_dataset_label",
+                        },
                     },
                     {
                         "name": "get_dataset",
                         "operator": "not_equal_to",
-                        "value": {"target": "dataset_location"},
+                        "value": {
+                            "target": "dataset_location",
+                            "comparator": "define_dataset_location",
+                        },
                     },
                 ]
             }

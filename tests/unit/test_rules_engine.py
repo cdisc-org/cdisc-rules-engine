@@ -988,11 +988,13 @@ def test_validate_single_rule_not_equal_to(
     "define_xml_metadata, dataset_mock, expected_validation_result",
     [
         (
-            {
-                "dataset_name": "AE",
-                "dataset_label": "Adverse Events",
-                "dataset_location": "ae.xpt",
-            },
+            [
+                {
+                    "define_dataset_name": "AE",
+                    "define_dataset_label": "Adverse Events",
+                    "define_dataset_location": "ae.xpt",
+                }
+            ],
             pd.DataFrame.from_dict(
                 {
                     "dataset_name": [
@@ -1026,11 +1028,13 @@ def test_validate_single_rule_not_equal_to(
             ],
         ),
         (
-            {
-                "dataset_name": "AE",
-                "dataset_label": "Adverse Events",
-                "dataset_location": "ae.xpt",
-            },
+            [
+                {
+                    "define_dataset_name": "AE",
+                    "define_dataset_label": "Adverse Events",
+                    "define_dataset_location": "ae.xpt",
+                }
+            ],
             pd.DataFrame.from_dict(
                 {
                     "dataset_name": [
@@ -1056,7 +1060,10 @@ def test_validate_single_rule_not_equal_to(
         ),
     ],
 )
-@patch("cdisc_rules_engine.rules_engine.RulesEngine.get_define_xml_metadata_for_domain")
+@patch(
+    "cdisc_rules_engine.dataset_builders.base_dataset_builder."
+    + "BaseDatasetBuilder.get_define_metadata"
+)
 @patch(
     "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset_metadata",
 )

@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 import pandas as pd
 from cdisc_rules_engine.dataset_builders.contents_define_dataset_builder import (  # noqa: E501
     ContentsDefineDatasetBuilder,
@@ -308,7 +308,14 @@ test_set5 = (
     "define_metadata, data_metadata, expected",
     [test_set1, test_set2, test_set3, test_set4, test_set5],
 )
-def test_contents_define_dataset_builder(define_metadata, data_metadata, expected):
+@patch(
+    "cdisc_rules_engine.dataset_builders.base_dataset_builder."
+    + "BaseDatasetBuilder.get_define_metadata"
+)
+def test_contents_define_dataset_builder(
+    mock_get_define_metadata, define_metadata, data_metadata, expected
+):
+    mock_get_define_metadata.return_value = define_metadata
     kwargs = {}
     kwargs["define_metadata"] = define_metadata
     kwargs["datasets"] = data_metadata.get("datasets")
@@ -338,7 +345,14 @@ def test_contents_define_dataset_builder(define_metadata, data_metadata, expecte
     "define_metadata, data_metadata, expected",
     [test_set1, test_set2, test_set3, test_set4, test_set5],
 )
-def test_contents_define_dataset_columns(define_metadata, data_metadata, expected):
+@patch(
+    "cdisc_rules_engine.dataset_builders.base_dataset_builder."
+    + "BaseDatasetBuilder.get_define_metadata"
+)
+def test_contents_define_dataset_columns(
+    mock_get_define_metadata, define_metadata, data_metadata, expected
+):
+    mock_get_define_metadata.return_value = define_metadata
     kwargs = {}
     kwargs["define_metadata"] = define_metadata
     kwargs["datasets"] = data_metadata.get("datasets")

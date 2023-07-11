@@ -28,7 +28,6 @@ from scripts.script_utils import (
     fill_cache_with_dictionaries,
     fill_cache_with_provided_data,
     get_cache_service,
-    get_define_metadata,
     get_datasets,
 )
 from cdisc_rules_engine.utilities.utils import get_directory_path
@@ -45,9 +44,7 @@ class CacheManager(SyncManager):
     pass
 
 
-def validate_single_rule(
-    cache, path, args, datasets, define_metadata, rule: dict = None
-):
+def validate_single_rule(cache, path, args, datasets, rule: dict = None):
     set_log_level("ERROR")
     rule["conditions"] = ConditionCompositeFactory.get_condition_composite(
         rule["conditions"]
@@ -60,7 +57,6 @@ def validate_single_rule(
         ct_package=args.controlled_terminology_package,
         meddra_path=args.meddra,
         whodrug_path=args.whodrug,
-        define_metadata=define_metadata,
     )
     validated_domains = set()
     results = []
@@ -119,7 +115,6 @@ def test(args: TestArgs):
     with open(args.dataset_path, "r") as f:
         data_json = json.load(f)
     datasets = [DummyDataset(data) for data in data_json.get("datasets", [])]
-    define_metadata = get_define_metadata(define_file_path=args.dataset_path)
     data_service_factory = DataServiceFactory(config, shared_cache)
     dummy_data_service = data_service_factory.get_dummy_data_service(datasets)
     data_service = data_service_factory.get_data_service()
@@ -141,7 +136,6 @@ def test(args: TestArgs):
                     "",
                     args,
                     datasets,
-                    define_metadata,
                 ),
                 rules,
             ):
