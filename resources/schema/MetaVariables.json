@@ -3,184 +3,141 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "anyOf": [
     {
-      "const": "dataset_label",
-      "markdownDescription": "Label for the dataset"
+      "const": "dataset_label"
     },
-    { "const": "dataset_location", "markdownDescription": "Path to file" },
-    { "const": "dataset_name", "markdownDescription": "Name of the dataset" },
-    { "const": "dataset_size", "markdownDescription": "File size" },
+    { "const": "dataset_location" },
+    { "const": "dataset_name" },
+    { "const": "dataset_size" },
     {
-      "const": "define_dataset_class",
-      "markdownDescription": "ItemGroupDef.Class.Name"
+      "const": "define_dataset_class"
     },
     {
-      "const": "define_dataset_is_non_standard",
-      "markdownDescription": "ItemGroupDef.IsNonStandard"
+      "const": "define_dataset_is_non_standard"
     },
     {
-      "const": "define_dataset_key_sequence",
-      "markdownDescription": "[ItemGroupDef/ValueListDef].ItemRef.KeySequence"
+      "const": "define_dataset_key_sequence"
     },
     {
-      "const": "define_dataset_label",
-      "markdownDescription": "ItemGroupDef.Description.TranslatedText"
+      "const": "define_dataset_label"
     },
     {
-      "const": "define_dataset_location",
-      "markdownDescription": "ItemGroupDef.leaf.href"
+      "const": "define_dataset_location"
     },
     {
-      "const": "define_dataset_name",
-      "markdownDescription": "ItemGroupDef.Domain"
+      "const": "define_dataset_name"
     },
     {
-      "const": "define_dataset_structure",
-      "markdownDescription": "ItemGroupDef.Structure"
+      "const": "define_dataset_structure"
     },
     {
-      "const": "define_variable_allowed_terms",
-      "markdownDescription": "ItemGroupDef.ItemDef.CodeList.CodeListItem.Decode.TranslatedText"
+      "const": "define_variable_allowed_terms"
     },
     {
-      "const": "define_variable_ccode",
-      "markdownDescription": "ItemGroupDef.ItemDef.CodeList.Alias.Name"
+      "const": "define_variable_ccode"
     },
     {
-      "const": "define_variable_codelist_coded_values",
-      "markdownDescription": "ItemGroupDef.ItemDef.CodeList.[CodeListItem/EnumeratedItem].CodedValue"
+      "const": "define_variable_codelist_coded_values"
     },
     {
-      "const": "define_variable_data_type",
-      "markdownDescription": "ItemGroupDef.ItemDef.DataType"
+      "const": "define_variable_data_type"
     },
     {
-      "const": "define_variable_format",
-      "markdownDescription": "[Not Implemented]"
+      "const": "define_variable_format"
     },
     {
-      "const": "define_variable_has_codelist",
-      "markdownDescription": "ItemGroupDef.ItemDef.CodeListRef exists"
+      "const": "define_variable_has_codelist"
     },
     {
-      "const": "define_variable_has_no_data",
-      "markdownDescription": "ItemGroupDef.ItemRef.HasNoData"
+      "const": "define_variable_has_no_data"
     },
     {
-      "const": "define_variable_is_collected",
-      "markdownDescription": "ItemGroupDef.ItemDef.Origin.Type = \"Collected\" (2.1) or \"CRF\" (2.0)"
+      "const": "define_variable_is_collected"
     },
     {
-      "const": "define_variable_label",
-      "markdownDescription": "ItemGroupDef.ItemDef.Description.TranslatedText"
+      "const": "define_variable_label"
     },
     {
-      "const": "define_variable_length",
-      "markdownDescription": "ItemGroupDef.ItemDef.Length"
+      "const": "define_variable_length"
     },
     {
-      "const": "define_variable_name",
-      "markdownDescription": "ItemGroupDef.ItemDef.Name"
+      "const": "define_variable_name"
     },
     {
-      "const": "define_variable_order_number",
-      "markdownDescription": "ItemGroupDef.ItemRef.OrderNumber"
+      "const": "define_variable_order_number"
     },
     {
-      "const": "define_variable_origin_type",
-      "markdownDescription": "ItemGroupDef.ItemDef.Origin.Type"
+      "const": "define_variable_origin_type"
     },
     {
-      "const": "define_variable_role",
-      "markdownDescription": "ItemGroupDef.ItemRef.Role"
+      "const": "define_variable_role"
     },
     {
-      "const": "define_variable_size",
-      "markdownDescription": "ItemGroupDef.ItemDef.Size"
+      "const": "define_variable_size"
     },
     {
-      "const": "define_vlm_allowed_terms",
-      "markdownDescription": "ValueListDef.ItemDef.CodeList.CodeListItem.Decode.TranslatedText"
+      "const": "define_vlm_allowed_terms"
     },
     {
-      "const": "define_vlm_ccode",
-      "markdownDescription": "ValueListDef.ItemDef.CodeList.Alias.Name"
+      "const": "define_vlm_ccode"
     },
     {
-      "const": "define_vlm_codelist_coded_values",
-      "markdownDescription": "ValueListDef.ItemDef.CodeList.[CodeListItem/EnumeratedItem].CodedValue"
+      "const": "define_vlm_codelist_coded_values"
     },
     {
-      "const": "define_vlm_data_type",
-      "markdownDescription": "ValueListDef.ItemDef.DataType"
+      "const": "define_vlm_data_type"
     },
     {
-      "const": "define_vlm_format",
-      "markdownDescription": "[Not Implemented]"
+      "const": "define_vlm_format"
     },
     {
-      "const": "define_vlm_has_codelist",
-      "markdownDescription": "ValueListDef.ItemDef.CodeListRef exists"
+      "const": "define_vlm_has_codelist"
     },
     {
-      "const": "define_vlm_has_no_data",
-      "markdownDescription": "ValueListDef.ItemRef.HasNoData"
+      "const": "define_vlm_has_no_data"
     },
     {
-      "const": "define_vlm_is_collected",
-      "markdownDescription": "ValueListDef.ItemDef.Origin.Type = \"Collected\" (2.1) or \"CRF\" (2.0)"
+      "const": "define_vlm_is_collected"
     },
     {
-      "const": "define_vlm_label",
-      "markdownDescription": "ValueListDef.ItemDef.Description.TranslatedText"
+      "const": "define_vlm_label"
     },
     {
-      "const": "define_vlm_length",
-      "markdownDescription": "ValueListDef.ItemDef.Length"
+      "const": "define_vlm_length"
     },
     {
-      "const": "define_vlm_name",
-      "markdownDescription": "ValueListDef.ItemDef.Name"
+      "const": "define_vlm_name"
     },
     {
-      "const": "define_vlm_order_number",
-      "markdownDescription": "ValueListDef.ItemRef.OrderNumber"
+      "const": "define_vlm_order_number"
     },
     {
-      "const": "define_vlm_origin_type",
-      "markdownDescription": "ValueListDef.ItemDef.Origin.Type"
+      "const": "define_vlm_origin_type"
     },
     {
-      "const": "define_vlm_role",
-      "markdownDescription": "ValueListDef.ItemRef.Role"
+      "const": "define_vlm_role"
     },
     {
-      "const": "define_vlm_size",
-      "markdownDescription": "ValueListDef.ItemDef.Size"
+      "const": "define_vlm_size"
     },
-    { "const": "filename", "markdownDescription": "Name of file" },
+    { "const": "filename" },
     {
-      "const": "row_number",
-      "markdownDescription": "1-based index of record number"
+      "const": "row_number"
     },
     {
-      "const": "variable_data_type",
-      "markdownDescription": "Variable data type (Char or Num)"
+      "const": "variable_data_type"
     },
-    { "const": "variable_format", "markdownDescription": "Variable format" },
-    { "const": "variable_label", "markdownDescription": "Variable long label" },
-    { "const": "variable_name", "markdownDescription": "Variable short name" },
+    { "const": "variable_format" },
+    { "const": "variable_label" },
+    { "const": "variable_name" },
     {
-      "const": "variable_order_number",
-      "markdownDescription": "Order of variable within dataset"
+      "const": "variable_order_number"
     },
-    { "const": "variable_size", "markdownDescription": "Variable size" },
+    { "const": "variable_size" },
     {
-      "const": "variable_value",
-      "markdownDescription": "Value at `row_number` and `variable_name`"
+      "const": "variable_value"
     },
     {
-      "const": "variable_value_length",
-      "markdownDescription": "Calculated length of the value at `row_number` and `variable_name`"
+      "const": "variable_value_length"
     }
   ]
 }
