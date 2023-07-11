@@ -28,8 +28,28 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
 
         ...,
         """
-        v_prg = "get_dataset_define_metadata"
         # 1. Build define xml dataframe
+        define_df = self._get_define_xml_dataframe()
+
+        # 2. Build dataset dataframe
+        dataset_df = self._get_dataset_dataframe()
+
+        # 3. Merge the two data frames
+        merged = pd.merge(
+            dataset_df,
+            define_df,
+            how="outer",
+            left_on="dataset_name",
+            right_on="define_dataset_name",
+        )
+
+        # 4. Replace Nan with None
+        # outer join, so some data contents may be missing or some define metadata may
+        # be missing. Replace nans with None
+        merged_no_nans = merged.where(pd.notnull(merged), None)
+        return merged_no_nans
+
+    def _get_define_xml_dataframe(self):
         define_col_order = [
             "define_dataset_name",
             "define_dataset_label",
@@ -39,16 +59,16 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
             "define_dataset_is_non_standard",
             "define_dataset_variables",
         ]
-
         define_metadata = self.get_define_metadata()
-
         define_df = pd.DataFrame(define_metadata)
 
         if define_df.empty:
             define_df = pd.DataFrame(columns=define_col_order)
             logger.info(f"No define_metadata is provided for {__name__}.")
+        return define_df
 
-        # 2. Build dataset dataframe
+    def _get_dataset_dataframe(self):
+        v_prg = f"{__name__}::_get_dataset_dataframe"
         dataset_col_order = [
             "dataset_size",
             "dataset_location",
@@ -86,18 +106,4 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
                 if "dataset_size" not in dataset_df.columns:
                     dataset_df["dataset_size"] = None
                 dataset_df = dataset_df[dataset_col_order]
-
-        # 3. Merge the two data frames
-        merged = pd.merge(
-            dataset_df,
-            define_df,
-            how="outer",
-            left_on="dataset_name",
-            right_on="define_dataset_name",
-        )
-
-        # 4. Replace Nan with None
-        # outer join, so some data contents may be missing or some define metadata may
-        # be missing. Replace nans with None
-        merged_no_nans = merged.where(pd.notnull(merged), None)
-        return merged_no_nans
+        return dataset_df
