@@ -68,7 +68,7 @@ def cli():
     multiple=True,
     help="Absolute path to dataset file",
 )
-@click.option("-dxp", "--define-xml-path", default="test", help="Path to Define-XML")
+@click.option("-dxp", "--define-xml-path", required=False, help="Path to Define-XML")
 @click.option(
     "-l",
     "--log-level",
