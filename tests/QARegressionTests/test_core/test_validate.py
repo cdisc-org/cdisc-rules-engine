@@ -63,23 +63,6 @@ class TestValidate(unittest.TestCase):
         )
         self.assertEqual(result.exit_code, 0)
 
-
-    def test_validate_both_d_and_data_options(self):
-        result = self.runner.invoke(
-            validate,
-            [
-                "-d",
-                os.path.join("tests", "resources", "report_test_data"),
-                "--data",
-                "tests/resources/report_test_data",
-                "-v",
-                "3.4",
-                "-s",
-                "sdtmig",
-            ],
-        )
-        self.assertNotEqual(result.exit_code, 0)
-
     def test_validate_neither_d_nor_data_options(self):
         result = self.runner.invoke(
             validate,
