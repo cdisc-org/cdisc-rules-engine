@@ -146,6 +146,7 @@ def test(args: TestArgs):
         args.whodrug,
         rules,
         ProgressParameterOptions.BAR.value,
+        args.define_xml_path,
     )
     reporting_factory = ReportFactory(
         get_datasets(dummy_data_service, [dataset.filename for dataset in datasets]),

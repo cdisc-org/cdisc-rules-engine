@@ -68,7 +68,6 @@ def cli():
     multiple=True,
     help="Absolute path to dataset file",
 )
-@click.option("-dxp", "--define-xml-path", required=False, help="Path to Define-XML")
 @click.option(
     "-l",
     "--log-level",
@@ -147,6 +146,7 @@ def cli():
         "is printed."
     ),
 )
+@click.option("-dxp", "--define-xml-path", required=False, help="Path to Define-XML")
 @click.pass_context
 def validate(
     ctx,
@@ -154,7 +154,6 @@ def validate(
     pool_size: int,
     data: str,
     dataset_path: Tuple[str],
-    define_xml_path: str,
     log_level: str,
     report_template: str,
     standard: str,
@@ -169,6 +168,7 @@ def validate(
     meddra: str,
     rules: Tuple[str],
     progress: str,
+    define_xml_path: str,
 ):
     """
     Validate data using CDISC Rules Engine
@@ -325,7 +325,6 @@ def list_rules(ctx: click.Context, cache_path: str, standard: str, version: str)
     required=True,
     help="Absolute path to dataset file",
 )
-@click.option("-dxp", "--define-xml-path", required=False, help="Path to Define-XML")
 @click.option(
     "-r",
     "--rule",
@@ -354,12 +353,12 @@ def list_rules(ctx: click.Context, cache_path: str, standard: str, version: str)
     "--define-version",
     help="Define-XML version used for validation",
 )
+@click.option("-dxp", "--define-xml-path", required=False, help="Path to Define-XML")
 @click.pass_context
 def test(
     ctx,
     cache_path: str,
     dataset_path: Tuple[str],
-    define_xml_path: str,
     standard: str,
     version: str,
     controlled_terminology_package: Tuple[str],
@@ -367,6 +366,7 @@ def test(
     whodrug: str,
     meddra: str,
     rule: str,
+    define_xml_path: str,
 ):
     args = TestArgs(
         cache_path,
