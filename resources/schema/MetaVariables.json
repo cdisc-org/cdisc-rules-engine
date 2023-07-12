@@ -1,0 +1,143 @@
+{
+  "$id": "MetaVariables.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "anyOf": [
+    {
+      "const": "dataset_label"
+    },
+    { "const": "dataset_location" },
+    { "const": "dataset_name" },
+    { "const": "dataset_size" },
+    {
+      "const": "define_dataset_class"
+    },
+    {
+      "const": "define_dataset_is_non_standard"
+    },
+    {
+      "const": "define_dataset_key_sequence"
+    },
+    {
+      "const": "define_dataset_label"
+    },
+    {
+      "const": "define_dataset_location"
+    },
+    {
+      "const": "define_dataset_name"
+    },
+    {
+      "const": "define_dataset_structure"
+    },
+    {
+      "const": "define_variable_allowed_terms"
+    },
+    {
+      "const": "define_variable_ccode"
+    },
+    {
+      "const": "define_variable_codelist_coded_values"
+    },
+    {
+      "const": "define_variable_data_type"
+    },
+    {
+      "const": "define_variable_format"
+    },
+    {
+      "const": "define_variable_has_codelist"
+    },
+    {
+      "const": "define_variable_has_no_data"
+    },
+    {
+      "const": "define_variable_is_collected"
+    },
+    {
+      "const": "define_variable_label"
+    },
+    {
+      "const": "define_variable_length"
+    },
+    {
+      "const": "define_variable_name"
+    },
+    {
+      "const": "define_variable_order_number"
+    },
+    {
+      "const": "define_variable_origin_type"
+    },
+    {
+      "const": "define_variable_role"
+    },
+    {
+      "const": "define_variable_size"
+    },
+    {
+      "const": "define_vlm_allowed_terms"
+    },
+    {
+      "const": "define_vlm_ccode"
+    },
+    {
+      "const": "define_vlm_codelist_coded_values"
+    },
+    {
+      "const": "define_vlm_data_type"
+    },
+    {
+      "const": "define_vlm_format"
+    },
+    {
+      "const": "define_vlm_has_codelist"
+    },
+    {
+      "const": "define_vlm_has_no_data"
+    },
+    {
+      "const": "define_vlm_is_collected"
+    },
+    {
+      "const": "define_vlm_label"
+    },
+    {
+      "const": "define_vlm_length"
+    },
+    {
+      "const": "define_vlm_name"
+    },
+    {
+      "const": "define_vlm_order_number"
+    },
+    {
+      "const": "define_vlm_origin_type"
+    },
+    {
+      "const": "define_vlm_role"
+    },
+    {
+      "const": "define_vlm_size"
+    },
+    { "const": "filename" },
+    {
+      "const": "row_number"
+    },
+    {
+      "const": "variable_data_type"
+    },
+    { "const": "variable_format" },
+    { "const": "variable_label" },
+    { "const": "variable_name" },
+    {
+      "const": "variable_order_number"
+    },
+    { "const": "variable_size" },
+    {
+      "const": "variable_value"
+    },
+    {
+      "const": "variable_value_length"
+    }
+  ]
+}

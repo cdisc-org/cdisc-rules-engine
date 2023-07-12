@@ -1,0 +1,13 @@
+{
+  "$id": "Sensitivity.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "anyOf": [
+    {
+      "const": "Dataset"
+    },
+    {
+      "const": "Record"
+    }
+  ],
+  "markdownDescription": "Determines what level of granularity issues should be generated within the report"
+}
