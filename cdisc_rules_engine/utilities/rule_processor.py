@@ -4,7 +4,6 @@ from typing import List, Optional, Set, Union, Tuple
 import pandas as pd
 
 from cdisc_rules_engine.constants.classes import (
-    DETECTABLE_CLASSES,
     FINDINGS_ABOUT,
     FINDINGS,
 )
@@ -149,7 +148,7 @@ class RuleProcessor:
             is_supp_domain(dataset_domain) or is_ap_domain(dataset_domain)
         )
 
-    def rule_applies_to_class(self, rule, file_path, datasets: List[dict]):
+    def rule_applies_to_class(self, rule, file_path, datasets: List[dict], domain: str):
         """
         If included classes are specified and the class
         is not in the list of included classes return false.
@@ -168,14 +167,13 @@ class RuleProcessor:
         """
         classes = rule.get("classes") or {}
         included_classes = classes.get("Include", [])
-        included_classes = [c for c in included_classes if c in DETECTABLE_CLASSES]
         excluded_classes = classes.get("Exclude", [])
         is_included = True
         is_excluded = False
         if included_classes:
             dataset = self.data_service.get_dataset(dataset_name=file_path)
             class_name = self.data_service.get_dataset_class(
-                dataset, file_path, datasets
+                dataset, file_path, datasets, domain
             )
             if (
                 (class_name not in included_classes)
@@ -186,7 +184,7 @@ class RuleProcessor:
         if excluded_classes:
             dataset = self.data_service.get_dataset(dataset_name=file_path)
             class_name = self.data_service.get_dataset_class(
-                dataset, file_path, datasets
+                dataset, file_path, datasets, domain
             )
             if class_name and (
                 (class_name in excluded_classes)
@@ -430,7 +428,7 @@ class RuleProcessor:
         is_suitable: bool = (
             self.valid_rule_structure(rule)
             and self.rule_applies_to_domain(dataset_domain, rule, is_split_domain)
-            and self.rule_applies_to_class(rule, file_path, datasets)
+            and self.rule_applies_to_class(rule, file_path, datasets, dataset_domain)
         )
         logger.info(
             f"is_suitable_for_validation. rule id={rule.get('core_id')}, "
