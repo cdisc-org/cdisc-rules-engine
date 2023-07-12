@@ -1,0 +1,56 @@
+{
+  "$id": "Rule_Type.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "anyOf": [
+    {
+      "const": "Dataset Contents Check against Define XML and Library Metadata",
+      "title": "Content data at record level, define xml metadata at variable level, and library metadata at variable level"
+    },
+    {
+      "const": "Dataset Metadata Check",
+      "title": "Content metadata at dataset level"
+    },
+    {
+      "const": "Dataset Metadata Check against Define XML",
+      "title": "Content metadata at dataset level and define xml metadata at dataset level"
+    },
+    {
+      "const": "Define Item Group Metadata Check",
+      "title": "Define xml metadata at dataset level"
+    },
+    {
+      "const": "Define Item Metadata Check",
+      "title": "Define xml metadata at variable level"
+    },
+    {
+      "const": "Domain Presence Check",
+      "title": "Content domain presence at study level"
+    },
+    {
+      "const": "Record Data",
+      "title": "Content data at record level. Most common Rule Type"
+    },
+    {
+      "const": "Value Check against Define XML Variable",
+      "title": "Content data at value level and define xml metadata at variable level"
+    },
+    {
+      "const": "Value Check against Define XML VLM",
+      "title": "Content data at value level and define xml metadata at value level"
+    },
+    {
+      "const": "Value Level Metadata Check against Define XML",
+      "title": "Content data at record level and define xml metadata at value level"
+    },
+
+    {
+      "const": "Variable Metadata Check",
+      "title": "Content metadata at variable level"
+    },
+    {
+      "const": "Variable Metadata Check against Define XML",
+      "title": "Content metadata at variable level and define xml metadata at variable level"
+    }
+  ],
+  "markdownDescription": "Determines how the primary dataset should be built before the rule is applied"
+}

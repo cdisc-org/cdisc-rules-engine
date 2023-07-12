@@ -24,3 +24,13 @@ class ValuesDatasetBuilder(BaseDatasetBuilder):
             value_name="variable_value",
         )
         return values_df
+
+    @staticmethod
+    def calculate_variable_value_length(variable_value, variable_data_type: str) -> int:
+        if variable_data_type == "integer":
+            return len(str(variable_value).lstrip("0"))
+        elif variable_data_type == "float":
+            return len(str(variable_value).lstrip("0").replace(".", ""))
+        elif variable_data_type == "text":
+            return len(variable_value)
+        return None

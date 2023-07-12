@@ -21,12 +21,16 @@ from cdisc_rules_engine.constants.classes import (
 )
 from cdisc_rules_engine.models.dataset_types import DatasetTypes
 from cdisc_rules_engine.services import logger
+from cdisc_rules_engine.services.cdisc_library_service import CDISCLibraryService
 from cdisc_rules_engine.services.data_readers import DataReaderFactory
 from cdisc_rules_engine.utilities.utils import (
+    convert_library_class_name_to_ct_class,
     get_dataset_cache_key_from_path,
     get_directory_path,
     search_in_list_of_dicts,
+    get_standard_details_cache_key,
 )
+from cdisc_rules_engine.utilities.sdtm_utilities import get_class_and_domain_metadata
 
 
 def cached_dataset(dataset_type: str):
@@ -87,6 +91,11 @@ class BaseDataService(DataServiceInterface, ABC):
         self.cache_service = cache_service
         self._reader_factory = reader_factory
         self._config = config
+        self.cdisc_library_service: CDISCLibraryService = CDISCLibraryService(
+            self._config.getValue("CDISC_LIBRARY_API_KEY"), self.cache_service
+        )
+        self.standard = kwargs.get("standard")
+        self.version = kwargs.get("standard_version")
 
     def get_dataset_by_type(
         self, dataset_name: str, dataset_type: str, **params
@@ -132,7 +141,7 @@ class BaseDataService(DataServiceInterface, ABC):
         return full_dataset
 
     def get_dataset_class(
-        self, dataset: pd.DataFrame, file_path: str, datasets: List[dict]
+        self, dataset: pd.DataFrame, file_path: str, datasets: List[dict], domain: str
     ) -> Optional[str]:
         if self._contains_topic_variable(dataset, "TERM"):
             return EVENTS
@@ -148,7 +157,19 @@ class BaseDataService(DataServiceInterface, ABC):
                 dataset, file_path, datasets
             )
         else:
-            # Default case, unknown class
+            if self.standard and self.standard_version:
+                cache_key = get_standard_details_cache_key(self.standard, self.version)
+                standard_data = self.cache_service.get(cache_key)
+                if not standard_data:
+                    standard_data = self.cdisc_library_service.get_standard_details(
+                        self.standard, self.version
+                    )
+                class_data, _ = get_class_and_domain_metadata(standard_data, domain)
+                name = class_data.get("name")
+                if name:
+                    return convert_library_class_name_to_ct_class(name)
+                else:
+                    return None
             return None
 
     def _is_associated_persons(self, dataset) -> bool:
@@ -182,7 +203,9 @@ class BaseDataService(DataServiceInterface, ABC):
                 raise ValueError("Filename for domain doesn't exist")
             if self._is_associated_persons(new_domain_dataset):
                 raise ValueError("Nested Associated Persons domain reference")
-            return self.get_dataset_class(new_domain_dataset, new_file_path, datasets)
+            return self.get_dataset_class(
+                new_domain_dataset, new_file_path, datasets, domain_details["domain"]
+            )
         else:
             return None
 

@@ -16,6 +16,7 @@ class ContentsDefineVLMDatasetBuilder(ValuesDatasetBuilder):
         "row_number",
         "variable_name",
         "variable_value",
+        "variable_value_length",
         "define_variable_name",
         "define_vlm_name",
         "define_vlm_label",
@@ -55,6 +56,12 @@ class ContentsDefineVLMDatasetBuilder(ValuesDatasetBuilder):
             vlm_df,
             how="inner",
             on="define_vlm_name",
+        )
+        data_contents_with_vlm["variable_value_length"] = data_contents_with_vlm.apply(
+            lambda row: self.calculate_variable_value_length(
+                row["variable_value"], row["define_vlm_data_type"]
+            ),
+            axis=1,
         )
         return data_contents_with_vlm
 
