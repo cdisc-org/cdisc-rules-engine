@@ -24,6 +24,7 @@ from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.services.cdisc_library_service import CDISCLibraryService
 from cdisc_rules_engine.services.data_readers import DataReaderFactory
 from cdisc_rules_engine.utilities.utils import (
+    convert_library_class_name_to_ct_class,
     get_dataset_cache_key_from_path,
     get_directory_path,
     search_in_list_of_dicts,
@@ -166,7 +167,7 @@ class BaseDataService(DataServiceInterface, ABC):
                 class_data, _ = get_class_and_domain_metadata(standard_data, domain)
                 name = class_data.get("name")
                 if name:
-                    return name.replace("-", " ")
+                    return convert_library_class_name_to_ct_class(name)
                 else:
                     return None
             return None
