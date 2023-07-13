@@ -103,7 +103,9 @@ def test(args: TestArgs):
     with open(args.dataset_path, "r") as f:
         data_json = json.load(f)
     datasets = [DummyDataset(data) for data in data_json.get("datasets", [])]
-    data_service_factory = DataServiceFactory(config, shared_cache)
+    data_service_factory = DataServiceFactory(
+        config, shared_cache, args.standard, args.version
+    )
     dummy_data_service = data_service_factory.get_dummy_data_service(datasets)
     data_service = data_service_factory.get_data_service()
 

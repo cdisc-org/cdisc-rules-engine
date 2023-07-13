@@ -157,7 +157,7 @@ class BaseDataService(DataServiceInterface, ABC):
                 dataset, file_path, datasets
             )
         else:
-            if self.standard and self.standard_version:
+            if self.standard and self.version:
                 cache_key = get_standard_details_cache_key(self.standard, self.version)
                 standard_data = self.cache_service.get(cache_key)
                 if not standard_data:
