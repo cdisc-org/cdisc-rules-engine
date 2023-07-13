@@ -147,6 +147,9 @@ class BaseDefineXMLReader(ABC):
         domain_metadata = self._get_domain_metadata(metadata, domain_name)
         value_level_metadata_map = {}
         value_level_metadata = []
+
+        print(f"\n xxx: {item_def_map.get('IT.VS.VSORRES',{})}")
+
         for where_clause in metadata.WhereClauseDef:
             vlm = ValueLevelMetadata.from_where_clause_def(where_clause, item_def_map)
             value_level_metadata_map[vlm.id] = vlm
