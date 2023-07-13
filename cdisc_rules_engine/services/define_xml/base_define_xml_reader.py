@@ -134,7 +134,6 @@ class BaseDefineXMLReader(ABC):
         logger.info(f"Define Metadata Version: {metadata}")
         return metadata
 
-    @cached("define-value-level-metadata")
     def extract_value_level_metadata(
         self,
         domain_name: str = None,
@@ -338,9 +337,9 @@ class BaseDefineXMLReader(ABC):
         return is_valid
 
     @cache
-    def get_define_version(self, **kwargs) -> Optional[str]:
+    def get_define_version(self) -> Optional[str]:
         """Use to extract DefineVersion from file"""
-        self.read(**kwargs)
+        self.read()
         mdv_attrib: dict = self._odm_loader.loader.parser.mdv[0].attrib
         for key, val in mdv_attrib.items():
             if key.endswith("DefineVersion"):

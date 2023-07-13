@@ -75,7 +75,6 @@ def validate_single_rule(cache, path, args, datasets, rule: dict = None):
                 dataset.domain,
             )
             results.append(validated_result)
-            engine_logger.info(f"Done validating {dataset.domain}")
     results = list(itertools.chain(*results))
     return RuleValidationResult(rule, results)
 

@@ -7,7 +7,7 @@ from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import (
 )
 
 
-def get_define_version(dataset_paths: List[str], **kwargs) -> Optional[str]:
+def get_define_version(dataset_paths: List[str]) -> Optional[str]:
     """
     Method used to extract define version from xml file located
      in the same directory with datasets
@@ -19,4 +19,4 @@ def get_define_version(dataset_paths: List[str], **kwargs) -> Optional[str]:
         return None
     path_to_define = os.path.join(path_to_data, DEFINE_XML_FILE_NAME)
     define_xml_reader = DefineXMLReaderFactory.from_filename(path_to_define)
-    return define_xml_reader.get_define_version(**kwargs)
+    return define_xml_reader.get_define_version()
