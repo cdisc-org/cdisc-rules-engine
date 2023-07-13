@@ -317,7 +317,6 @@ def test_contents_define_dataset_builder(
 ):
     mock_get_define_metadata.return_value = define_metadata
     kwargs = {}
-    kwargs["define_metadata"] = define_metadata
     kwargs["datasets"] = data_metadata.get("datasets")
     expected = pd.DataFrame.from_dict(expected)
     datasets = [DummyDataset(data) for data in data_metadata.get("datasets", [])]
@@ -333,7 +332,6 @@ def test_contents_define_dataset_builder(
         dataset_path=None,
         datasets=data_metadata.get("datasets", {}),
         domain=None,
-        define_metadata=define_metadata,
     ).build()
     col_names = ["dataset_name", "define_dataset_name"]
     assert result[col_names].equals(expected[col_names]) or (
@@ -354,7 +352,6 @@ def test_contents_define_dataset_columns(
 ):
     mock_get_define_metadata.return_value = define_metadata
     kwargs = {}
-    kwargs["define_metadata"] = define_metadata
     kwargs["datasets"] = data_metadata.get("datasets")
     expected = pd.DataFrame.from_dict(expected)
     datasets = [DummyDataset(data) for data in data_metadata.get("datasets", [])]
@@ -370,7 +367,6 @@ def test_contents_define_dataset_columns(
         dataset_path=None,
         datasets=data_metadata.get("datasets", {}),
         domain=None,
-        define_metadata=define_metadata,
     ).build()
     exp_columns = result.columns.tolist()
     req_columns = [

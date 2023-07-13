@@ -66,7 +66,6 @@ class RulesEngine:
         self.ct_package = kwargs.get("ct_package")
         self.meddra_path: str = kwargs.get("meddra_path")
         self.whodrug_path: str = kwargs.get("whodrug_path")
-        self.define_metadata: List = kwargs.get("define_metadata")
 
     def get_schema(self):
         return export_rule_data(DatasetVariable, COREActions)
@@ -185,7 +184,6 @@ class RulesEngine:
             domain=domain,
             datasets=datasets,
             dataset_path=dataset_path,
-            define_metadata=self.define_metadata,
         )
 
     def validate_rule(
@@ -202,7 +200,6 @@ class RulesEngine:
         kwargs = {}
         builder = self.get_dataset_builder(rule, dataset_path, datasets, domain)
         dataset = builder.get_dataset()
-        define_metadata = self.define_metadata
 
         # Update rule for certain rule types
         # SPECIAL CASES FOR RULE TYPES ###############################
@@ -276,7 +273,6 @@ class RulesEngine:
         value_level_metadata: List[dict] = None,
         variable_codelist_map: dict = None,
         codelist_term_maps: list = None,
-        define_metadata: list = None,
     ) -> List[str]:
         """
         Executes the given rule on a given dataset.
@@ -287,8 +283,6 @@ class RulesEngine:
             variable_codelist_map = {}
         if codelist_term_maps is None:
             codelist_term_maps = []
-        if define_metadata is None:
-            define_metadata = []
         # Add conditions to rule for all variables if variables: all appears
         # in condition
         rule_copy = deepcopy(rule)
