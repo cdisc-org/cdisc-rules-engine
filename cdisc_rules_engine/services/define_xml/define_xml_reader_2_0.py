@@ -9,7 +9,6 @@ class DefineXMLReader20(BaseDefineXMLReader):
     @staticmethod
     def class_define_xml_version() -> DefineXMLVersion:
         return DefineXMLVersion(
-            version="2.0.0",
             namespace="http://www.cdisc.org/ns/def/v2.0",
             model_package="define_2_0",
         )

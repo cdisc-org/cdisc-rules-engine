@@ -15,18 +15,32 @@ from cdisc_rules_engine.services.define_xml.base_define_xml_reader import (
 from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import (
     DefineXMLReaderFactory,
 )
+from cdisc_rules_engine.services.define_xml.define_xml_reader_2_1 import (
+    DefineXMLReader21,
+)
+from cdisc_rules_engine.services.define_xml.define_xml_reader_2_0 import (
+    DefineXMLReader20,
+)
 
 resources_path: Path = Path(__file__).parent.parent.joinpath("resources")
 test_define_2_0_file_path: Path = resources_path.joinpath("test_defineV20-SDTM.xml")
 test_define_file_path: Path = resources_path.joinpath("test_defineV22-SDTM.xml")
 
 
-def test_init_from_filename():
+def test_init_from_filename_v2_1():
     """
     Unit test for DefineXMLReader.from_filename constructor.
     """
     reader = DefineXMLReaderFactory.from_filename(test_define_file_path)
-    assert isinstance(reader, BaseDefineXMLReader)
+    assert isinstance(reader, DefineXMLReader21)
+
+
+def test_init_from_filename_v2_0():
+    """
+    Unit test for DefineXMLReader.from_filename constructor.
+    """
+    reader = DefineXMLReaderFactory.from_filename(test_define_2_0_file_path)
+    assert isinstance(reader, DefineXMLReader20)
 
 
 def test_init_from_file_contents():
