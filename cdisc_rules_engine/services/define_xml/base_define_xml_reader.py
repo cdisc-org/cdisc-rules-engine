@@ -22,7 +22,6 @@ from cdisc_rules_engine.utilities.decorators import cached
 
 @dataclass
 class DefineXMLVersion:
-    version: str
     namespace: str
     model_package: str
 
