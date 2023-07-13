@@ -45,8 +45,6 @@ from cdisc_rules_engine.utilities.utils import (
 )
 from cdisc_rules_engine.dataset_builders import builder_factory
 
-import xml.etree.ElementTree as ET
-
 
 class RulesEngine:
     def __init__(
@@ -364,47 +362,6 @@ class RulesEngine:
         )
 
         return define_xml_reader.extract_domain_metadata(domain_name=domain_name)
-
-    def get_define_xml_domains(self, define_content):
-        root = ET.fromstring(define_content)
-        # Namespace dictionary for XML elements
-        namespace = {"def": "http://www.cdisc.org/ns/def/v2.1"}
-
-        # Get the domain names from ItemGroupDef elements
-        domain_names = []
-        item_group_defs = root.findall(".//def:ItemGroupDef", namespace)
-        for item_group_def in item_group_defs:
-            domain_name = item_group_def.get("Domain")
-            domain_names.append(domain_name)
-        return domain_names
-
-    def get_define_xml_metadata(self, dataset_path: str, domains: List = []) -> dict:
-        """
-        Gets Define XML metadata and returns it as dict.
-        """
-        if os.path.exists(dataset_path):
-            directory_path = dataset_path
-        else:
-            directory_path = get_directory_path(dataset_path)
-        define_xml_path: str = os.path.join(directory_path, DEFINE_XML_FILE_NAME)
-
-        define_xml_contents: bytes = self.data_service.get_define_xml_contents(
-            dataset_name=define_xml_path
-        )
-
-        define_xml_reader = DefineXMLReaderFactory.from_file_contents(
-            define_xml_contents, cache_service_obj=self.cache
-        )
-
-        if len(domains) == 0:
-            domains = self.get_define_xml_domains(define_xml_reader)
-
-        define_items = []
-        for domain in domains:
-            define_items.append(
-                define_xml_reader.extract_domain_metadata(domain_name=domain)
-            )
-        return define_items
 
     def get_define_xml_value_level_metadata(
         self, dataset_path: str, domain_name: str
