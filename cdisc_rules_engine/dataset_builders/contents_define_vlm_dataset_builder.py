@@ -22,23 +22,18 @@ class ContentsDefineVLMDatasetBuilder(ValuesDatasetBuilder):
         "define_vlm_label",
         "define_vlm_data_type",
         "define_vlm_role",
+        "define_vlm_mandatory",
         ...,
         """
         # get dataset contents and convert it from wide to long
         data_contents_df: pd.DataFrame = self.data_service.get_dataset(
             dataset_name=self.dataset_path
         )
-        print(f"\n xxx (data_contents 1): {data_contents_df}")
-
         self.add_row_number(data_contents_df)
-        print(f" xxx (data_contents 2): {data_contents_df}")
-
         data_contents_long_df: pd.DataFrame = ValuesDatasetBuilder.build(self)
-        print(f" xxx (data_contents_long_df): {data_contents_long_df}")
 
         # get Define XML VLM for domain
         vlm_df: pd.DataFrame = pd.DataFrame(self.get_define_xml_value_level_metadata())
-        print(f" xxx (VLM): {vlm_df.describe()}\nColumns:{vlm_df.columns} \n{vlm_df}")
 
         # merge dataset contents with define variable metadata
         # LUT columns: row_number, define_variable_name, define_vlm_name
