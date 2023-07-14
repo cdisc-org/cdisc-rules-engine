@@ -15,7 +15,6 @@ from cdisc_rules_engine.rules_engine import RulesEngine
 from cdisc_rules_engine.services.cache.in_memory_cache_service import (
     InMemoryCacheService,
 )
-from cdisc_rules_engine.config.config import ConfigService
 from cdisc_rules_engine.utilities.rule_processor import RuleProcessor
 from cdisc_rules_engine.utilities.utils import (
     get_library_variables_metadata_cache_key,
@@ -132,7 +131,9 @@ def test_validate_rule_invalid_prefix(
 
 
 @patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset_class")
-def test_validate_rule_cross_dataset_check(mock_get_dataset_class, dataset_rule_equal_to: dict):
+def test_validate_rule_cross_dataset_check(
+    mock_get_dataset_class, dataset_rule_equal_to: dict
+):
     """
     The test checks that a rule can be executed for several datasets.
     We have 2 datasets that have common STUDYID and SUBJECTID columns and
@@ -210,7 +211,9 @@ def test_validate_rule_cross_dataset_check(mock_get_dataset_class, dataset_rule_
             {"domain": "EC", "filename": "ec.xpt"},
             {"domain": "AE", "filename": "ae.xpt"},
         ]
-        validation_result: List[str] = RulesEngine(standard="sdtmig", standard_version="3-4").validate_single_rule(
+        validation_result: List[str] = RulesEngine(
+            standard="sdtmig", standard_version="3-4"
+        ).validate_single_rule(
             dataset_rule_equal_to, os.path.join("path", "ec.xpt"), datasets, "EC"
         )
         assert validation_result == [
@@ -1529,7 +1532,8 @@ def test_validate_split_dataset_variables_metadata(
 
 @patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset_class")
 def test_validate_record_in_parent_domain(
-    mock_get_dataset_class, dataset_rule_record_in_parent_domain_equal_to: dict,
+    mock_get_dataset_class,
+    dataset_rule_record_in_parent_domain_equal_to: dict,
 ):
     """
     Unit test for validating value of a column in parent domain.
@@ -1610,7 +1614,9 @@ def test_validate_record_in_parent_domain(
                 "filename": "suppec.xpt",
             },
         ]
-        validation_result: List[str] = RulesEngine(standard="sdtmig", standard_version="3-4").validate_single_rule(
+        validation_result: List[str] = RulesEngine(
+            standard="sdtmig", standard_version="3-4"
+        ).validate_single_rule(
             dataset_rule_record_in_parent_domain_equal_to,
             os.path.join("path", "ec.xpt"),
             datasets,
@@ -1635,7 +1641,9 @@ def test_validate_record_in_parent_domain(
 
 
 @patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset_class")
-def test_validate_additional_columns(mock_get_dataset_class, dataset_rule_additional_columns_not_null: dict):
+def test_validate_additional_columns(
+    mock_get_dataset_class, dataset_rule_additional_columns_not_null: dict
+):
     """
     Unit test for validating additional columns like TSVAL1, TSVAL2.
     """
@@ -1663,7 +1671,9 @@ def test_validate_additional_columns(mock_get_dataset_class, dataset_rule_additi
         "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
         return_value=dataset,
     ):
-        validation_result: List[dict] = RulesEngine(standard="sdtmig", standard_version="3-4").validate_single_rule(
+        validation_result: List[dict] = RulesEngine(
+            standard="sdtmig", standard_version="3-4"
+        ).validate_single_rule(
             rule=dataset_rule_additional_columns_not_null,
             dataset_path="CDISC01/test/ts.xpt",
             datasets=[
@@ -1864,8 +1874,10 @@ def test_validate_single_rule_operation_dataset_larger_than_target_dataset(
     mock_get_dataset.side_effect = lambda dataset_name: path_to_dataset_map[
         dataset_name
     ]
-    mock_get_dataset_class.return_value=None
-    validation_result: List[dict] = RulesEngine(standard="sdtmig", standard_version="3-4").validate_single_rule(
+    mock_get_dataset_class.return_value = None
+    validation_result: List[dict] = RulesEngine(
+        standard="sdtmig", standard_version="3-4"
+    ).validate_single_rule(
         rule=rule_distinct_operation_is_not_contained_by,
         dataset_path="study_id/data_bundle_id/ie.xpt",
         datasets=[
@@ -2006,10 +2018,19 @@ def test_dataset_references_invalid_whodrug_terms(
         }
     )
     mock_get_dataset.return_value = invalid_df
-    cache_service=installed_whodrug_dictionaries["cache_service"]
-    cache_service.add("standards/sdtmig/3-4", {"classes": [{"name": "EVENTS", "datasets": [{"name": "AE"}]}]})
+    cache_service = installed_whodrug_dictionaries["cache_service"]
+    cache_service.add(
+        "standards/sdtmig/3-4",
+        {"classes": [{"name": "EVENTS", "datasets": [{"name": "AE"}]}]},
+    )
     # run validation
-    engine = RulesEngine(cache_service, installed_whodrug_dictionaries["data_service"], whodrug_path=installed_whodrug_dictionaries["whodrug_path"], standard="sdtmig", standard_version="3-4")
+    engine = RulesEngine(
+        cache_service,
+        installed_whodrug_dictionaries["data_service"],
+        whodrug_path=installed_whodrug_dictionaries["whodrug_path"],
+        standard="sdtmig",
+        standard_version="3-4",
+    )
     validation_result: List[dict] = engine.validate_single_rule(
         rule=rule_dataset_references_invalid_whodrug_terms,
         dataset_path="dataset_path",
