@@ -107,21 +107,33 @@ def test_get_raw_dataset_metadata(
             "ae.xpt",
         ),
         ([{"domain": "AE", "filename": "ae.xpt"}], {"UNKNOWN": ["test"]}, None, "None"),
-        ([{"domain": "DM", "filename": "ae.xpt"}], {"UNKNOWN": ["test"]}, None, "None"),
+        ([{"domain": "DM", "filename": "dm.xpt"}], {"UNKNOWN": ["test"]}, "SPECIAL PURPOSE", "dm.xpt"),
     ],
 )
 def test_get_dataset_class(datasets, data, expected_class, filename):
     df = pd.DataFrame.from_dict(data)
     mock_cache_service = MagicMock()
     mock_cache_service.get.return_value = {
-        "classes": {"name": "SPECIAL PURPOSE", "datasets": [{"name": "DM"}]}
+        "classes": [{"name": "SPECIAL PURPOSE", "datasets": [{"name": "DM"}]}]
     }
-    data_service = LocalDataService(mock_cache_service, MagicMock(), MagicMock())
+    data_service = LocalDataService(mock_cache_service, MagicMock(), MagicMock(), standard="sdtmig", standard_version="3-4")
     class_name = data_service.get_dataset_class(
         df, filename, datasets, datasets[0].get("domain")
     )
     assert class_name == expected_class
 
+
+def test_get_dataset_class_without_standard_and_version():
+    df = pd.DataFrame.from_dict({"UNKNOWN": ["test"]})
+    mock_cache_service = MagicMock()
+    mock_cache_service.get.return_value = {
+        "classes": [{"name": "SPECIAL PURPOSE", "datasets": [{"name": "DM"}]}]
+    }
+    data_service = LocalDataService(mock_cache_service, MagicMock(), MagicMock())
+    with pytest.raises(Exception):
+        class_name = data_service.get_dataset_class(
+            df, "dm.xpt", [{"domain": "DM", "filename": "dm.xpt"}], "DM"
+        )
 
 def test_get_dataset_class_associated_domains():
     datasets: List[dict] = [

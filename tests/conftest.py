@@ -4,6 +4,7 @@ from unittest.mock import MagicMock
 
 import pandas as pd
 import pytest
+from cdisc_rules_engine.config.config import ConfigService
 
 from cdisc_rules_engine.enums.rule_types import RuleTypes
 from cdisc_rules_engine.enums.sensitivity import Sensitivity
@@ -1143,7 +1144,7 @@ def installed_whodrug_dictionaries(request) -> dict:
     """
     # install dictionaries and save to cache
     cache_service = InMemoryCacheService.get_instance()
-    local_data_service = LocalDataService.get_instance(cache_service=cache_service)
+    local_data_service = LocalDataService.get_instance(config=ConfigService(), cache_service=cache_service, standard="sdtmig", standard_version="3-4")
     factory = WhoDrugTermsFactory(local_data_service)
 
     whodrug_path: str = f"{os.path.dirname(__file__)}/resources/dictionaries/whodrug"
@@ -1158,6 +1159,7 @@ def installed_whodrug_dictionaries(request) -> dict:
     return {
         "whodrug_path": whodrug_path,
         "cache_service": cache_service,
+        "data_service": local_data_service
     }
 
 
