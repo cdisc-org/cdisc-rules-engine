@@ -23,6 +23,7 @@ from cdisc_rules_engine.services.data_services import LocalDataService
                     lambda row: row["VAR2"] == "2B",
                     lambda row: row["VAR2"] == "2C",
                 ],
+                "define_vlm_mandatory": "Yes",
             },
             {
                 "row_number": [2],
@@ -45,6 +46,7 @@ from cdisc_rules_engine.services.data_services import LocalDataService
                     "VAR1B ROLE",
                 ],
                 "define_vlm_length": [1],
+                "define_vlm_mandatory": "Yes",
             },
         ),
     ],
