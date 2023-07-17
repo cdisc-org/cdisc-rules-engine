@@ -88,7 +88,14 @@
       <!-- Value List Definitions Section (Required for Supplemental Qualifiers, Optional for other Normalized (Vertical) Datasets) -->
       <!--       (Note that any definitions not provided at a Value Level will be inherited from the parent item definition)        -->
       <!-- ************************************************************************************************************************ -->
-
+      <def:ValueListDef OID="VL.AETERM">
+        <ItemRef ItemOID="IT.AE.AETERM.1" OrderNumber="1" Mandatory="Yes">
+          <def:WhereClauseRef WhereClauseOID="WC.AETERM1"/>
+        </ItemRef>
+        <ItemRef ItemOID="IT.AE.AETERM.2" OrderNumber="2" Mandatory="Yes">
+          <def:WhereClauseRef WhereClauseOID="WC.AETERM2"/>
+        </ItemRef>
+      </def:ValueListDef>
       <def:ValueListDef OID="VL.DA.DAORRES">
         <ItemRef ItemOID="IT.DA.DAORRES.DISPAMT" OrderNumber="1" Mandatory="Yes">
           <def:WhereClauseRef WhereClauseOID="WC.DA.DATESTCD.DISPAMT"/>
@@ -496,6 +503,16 @@
       <!-- WhereClause Definitions Section (Used/Referenced in Value List Definitions) -->
       <!-- ************************************************************************** -->
 
+      <def:WhereClauseDef OID="WC.AETERM1">
+        <RangeCheck Comparator="EQ" SoftHard="Soft" def:ItemOID="IT.AE.AETERM">
+          <CheckValue>INJECTION SITE REACTION</CheckValue>
+        </RangeCheck>
+      </def:WhereClauseDef>
+      <def:WhereClauseDef OID="WC.AETERM2">
+        <RangeCheck Comparator="NE" SoftHard="Soft" def:ItemOID="IT.AE.AETERM">
+          <CheckValue>INJECTION SITE REACTION</CheckValue>
+        </RangeCheck>
+      </def:WhereClauseDef>
       <def:WhereClauseDef OID="WC.DA.DATESTCD.DISPAMT">
         <RangeCheck SoftHard="Soft" def:ItemOID="IT.DA.DATESTCD" Comparator="EQ">
           <CheckValue>DISPAMT</CheckValue>
@@ -2361,7 +2378,7 @@
         </Description>
         <def:Origin Type="Derived"/>
       </ItemDef>
-      <ItemDef OID="IT.AE.AETERM" Name="AETERM" DataType="text" Length="25" SASFieldName="AETERM">
+      <ItemDef OID="IT.AE.AETERM" Name="AETERM" DataType="text" Length="200" SASFieldName="AETERM">
         <Description>
           <TranslatedText xml:lang="en">Reported Term for the Adverse Event</TranslatedText>
         </Description>
@@ -2370,6 +2387,7 @@
             <def:PDFPageRef PageRefs="21" Type="PhysicalRef"/>
           </def:DocumentRef>
         </def:Origin>
+        <def:ValueListRef ValueListOID="VL.AETERM"/>
       </ItemDef>
       <ItemDef OID="IT.AE.DOMAIN" Name="DOMAIN" DataType="text" Length="2" SASFieldName="DOMAIN">
         <Description>

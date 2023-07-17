@@ -106,11 +106,14 @@ def test_extract_domain_metadata():
         }
 
 
-def test_extract_variable_metadata():
+@pytest.mark.parametrize(
+    "filename", [(test_define_file_path), (test_define_2_0_file_path)]
+)
+def test_extract_variable_metadata(filename):
     """
     Unit test for DefineXMLReader.extract_domain_metadata function.
     """
-    with open(test_define_file_path, "rb") as file:
+    with open(filename, "rb") as file:
         contents: bytes = file.read()
         reader = DefineXMLReaderFactory.from_file_contents(contents)
         variable_metadata: List[dict] = reader.extract_variables_metadata(
@@ -241,11 +244,14 @@ def test_define_variable_is_collected(
         assert variable[0]["define_variable_is_collected"] == expected
 
 
-def test_extract_value_level_metadata():
+@pytest.mark.parametrize(
+    "filename", [(test_define_file_path), (test_define_2_0_file_path)]
+)
+def test_extract_value_level_metadata(filename):
     """
     Unit test for DefineXMLReader.extract_domain_metadata function.
     """
-    with open(test_define_file_path, "rb") as file:
+    with open(filename, "rb") as file:
         contents: bytes = file.read()
         reader = DefineXMLReaderFactory.from_file_contents(contents)
         value_level_metadata: dict = reader.extract_value_level_metadata(
