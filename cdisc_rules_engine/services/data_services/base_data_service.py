@@ -157,20 +157,20 @@ class BaseDataService(DataServiceInterface, ABC):
                 dataset, file_path, datasets
             )
         else:
-            if self.standard and self.standard_version:
-                cache_key = get_standard_details_cache_key(self.standard, self.version)
-                standard_data = self.cache_service.get(cache_key)
-                if not standard_data:
-                    standard_data = self.cdisc_library_service.get_standard_details(
-                        self.standard, self.version
-                    )
-                class_data, _ = get_class_and_domain_metadata(standard_data, domain)
-                name = class_data.get("name")
-                if name:
-                    return convert_library_class_name_to_ct_class(name)
-                else:
-                    return None
-            return None
+            if self.standard is None or self.version is None:
+                raise Exception("Missing standard and version data")
+            cache_key = get_standard_details_cache_key(self.standard, self.version)
+            standard_data = self.cache_service.get(cache_key)
+            if not standard_data:
+                standard_data = self.cdisc_library_service.get_standard_details(
+                    self.standard, self.version
+                )
+            class_data, _ = get_class_and_domain_metadata(standard_data, domain)
+            name = class_data.get("name")
+            if name:
+                return convert_library_class_name_to_ct_class(name)
+            else:
+                return None
 
     def _is_associated_persons(self, dataset) -> bool:
         """
