@@ -1305,14 +1305,19 @@
         <Description>
           <TranslatedText xml:lang="en">Trial Summary</TranslatedText>
         </Description>
-        <ItemRef ItemOID="IT.STUDYID" OrderNumber="1" Mandatory="Yes" KeySequence="1"/>
-        <ItemRef ItemOID="IT.TS.DOMAIN" OrderNumber="2" Mandatory="Yes"/>
-        <ItemRef ItemOID="IT.TS.TSSEQ" OrderNumber="3" Mandatory="Yes" KeySequence="3" MethodOID="MT.TSSEQ"/>
-        <ItemRef ItemOID="IT.TS.TSPARMCD" OrderNumber="4" Mandatory="Yes" KeySequence="2"/>
-        <ItemRef ItemOID="IT.TS.TSPARM" OrderNumber="5" Mandatory="Yes"/>
-        <ItemRef ItemOID="IT.TS.TSVAL" OrderNumber="6" Mandatory="Yes"/>
-        <def:leaf ID="LF.TS" xlink:href="ts.xpt">
-          <def:title>ts.xpt</def:title>
+        <ItemRef ItemOID="IT.TS.STUDYID" Mandatory="Yes" OrderNumber="1" KeySequence="1" Role="Identifier"/>
+        <ItemRef ItemOID="IT.TS.DOMAIN" Mandatory="Yes" OrderNumber="2" Role="Identifier"/>
+        <ItemRef ItemOID="IT.TS.TSSEQ" Mandatory="Yes" OrderNumber="3" KeySequence="4" MethodOID="MT.TSSEQ" Role="Identifier"/>
+        <ItemRef ItemOID="IT.TS.TSGRPID" Mandatory="No" OrderNumber="4" Role="Identifier"/>
+        <ItemRef ItemOID="IT.TS.TSPARMCD" Mandatory="Yes" OrderNumber="5" KeySequence="2" Role="Topic"/>
+        <ItemRef ItemOID="IT.TS.TSPARM" Mandatory="Yes" OrderNumber="6" Role="Synonym Qualifier"/>
+        <ItemRef ItemOID="IT.TS.TSVAL" Mandatory="No" OrderNumber="7" KeySequence="3" Role="Result Qualifier"/>
+        <ItemRef ItemOID="IT.TS.TSVALNF" Mandatory="No" OrderNumber="8" Role="Result Qualifier"/>
+        <ItemRef ItemOID="IT.TS.TSVALCD" Mandatory="No" OrderNumber="9" Role="Result Qualifier"/>
+        <ItemRef ItemOID="IT.TS.TSVCDREF" Mandatory="No" OrderNumber="10" Role="Result Qualifier"/>
+        <ItemRef ItemOID="IT.TS.TSVCDVER" Mandatory="No" OrderNumber="11" Role="Result Qualifier"/>
+        <def:leaf ID="LF.TS" xlink:href="ts.xml">
+          <def:title>ts.xml</def:title>
         </def:leaf>
       </ItemGroupDef>
       <!-- Dataset Definition (TV) -->
@@ -5101,18 +5106,29 @@
         <CodeListRef CodeListOID="CL.IETESTCD"/>
         <def:Origin Type="Assigned"/>
       </ItemDef>
+     <ItemDef OID="IT.TS.STUDYID" Name="STUDYID" DataType="text" Length="12" SASFieldName="STUDYID">
+        <Description>
+          <TranslatedText xml:lang="en">Study Identifier</TranslatedText>
+        </Description>
+        <def:Origin Type="Protocol"/>
+      </ItemDef>
       <ItemDef OID="IT.TS.DOMAIN" Name="DOMAIN" DataType="text" Length="2" SASFieldName="DOMAIN">
         <Description>
           <TranslatedText xml:lang="en">Domain Abbreviation</TranslatedText>
         </Description>
-        <CodeListRef CodeListOID="CL.TS.DOMAIN"/>
+        <CodeListRef CodeListOID="CL.DOMAIN_TS"/>
         <def:Origin Type="Assigned"/>
       </ItemDef>
-      <ItemDef OID="IT.TS.TSPARM" Name="TSPARM" DataType="text" Length="36" SASFieldName="TSPARM">
+      <ItemDef OID="IT.TS.TSSEQ" Name="TSSEQ" DataType="integer" Length="3" SASFieldName="TSSEQ">
         <Description>
-          <TranslatedText xml:lang="en">Trial Summary Parameter</TranslatedText>
+          <TranslatedText xml:lang="en">Sequence Number</TranslatedText>
         </Description>
-        <CodeListRef CodeListOID="CL.TSPARM"/>
+        <def:Origin Type="Derived"/>
+      </ItemDef>
+      <ItemDef OID="IT.TS.TSGRPID" Name="TSGRPID" DataType="text" Length="200" SASFieldName="TSGRPID">
+        <Description>
+          <TranslatedText xml:lang="en">Group ID</TranslatedText>
+        </Description>
         <def:Origin Type="Assigned"/>
       </ItemDef>
       <ItemDef OID="IT.TS.TSPARMCD" Name="TSPARMCD" DataType="text" Length="8" SASFieldName="TSPARMCD">
@@ -5122,18 +5138,43 @@
         <CodeListRef CodeListOID="CL.TSPARMCD"/>
         <def:Origin Type="Assigned"/>
       </ItemDef>
-      <ItemDef OID="IT.TS.TSSEQ" Name="TSSEQ" DataType="integer" Length="1" SASFieldName="TSSEQ">
+      <ItemDef OID="IT.TS.TSPARM" Name="TSPARM" DataType="text" Length="40" SASFieldName="TSPARM">
         <Description>
-          <TranslatedText xml:lang="en">Sequence Number</TranslatedText>
+          <TranslatedText xml:lang="en">Trial Summary Parameter</TranslatedText>
         </Description>
-        <def:Origin Type="Derived"/>
+        <CodeListRef CodeListOID="CL.TSPARM"/>
+        <def:Origin Type="Protocol"/>
       </ItemDef>
-      <ItemDef OID="IT.TS.TSVAL" Name="TSVAL" DataType="text" Length="57" SASFieldName="TSVAL">
+      <ItemDef OID="IT.TS.TSVAL" Name="TSVAL" DataType="text" Length="200" SASFieldName="TSVAL">
         <Description>
           <TranslatedText xml:lang="en">Parameter Value</TranslatedText>
         </Description>
-        <def:Origin Type="Protocol"/>
-        <def:ValueListRef ValueListOID="VL.TS.TSVAL"/>
+        <def:ValueListRef ValueListOID="VL.TSVAL"/>
+      </ItemDef>
+      <ItemDef OID="IT.TS.TSVALNF" Name="TSVALNF" DataType="text" Length="4" SASFieldName="TSVALNF">
+        <Description>
+          <TranslatedText xml:lang="en">Parameter Null Flavor</TranslatedText>
+        </Description>
+        <CodeListRef CodeListOID="CL.ISO21090"/>
+        <def:Origin Type="Assigned"/>
+      </ItemDef>
+      <ItemDef OID="IT.TS.TSVALCD" Name="TSVALCD" DataType="text" Length="200" SASFieldName="TSVALCD">
+        <Description>
+          <TranslatedText xml:lang="en">Parameter Value Code</TranslatedText>
+        </Description>
+        <def:Origin Type="Assigned"/>
+      </ItemDef>
+      <ItemDef OID="IT.TS.TSVCDREF" Name="TSVCDREF" DataType="text" Length="200" SASFieldName="TSVCDREF">
+        <Description>
+          <TranslatedText xml:lang="en">Name of the Reference Terminology</TranslatedText>
+        </Description>
+        <def:Origin Type="Assigned"/>
+      </ItemDef>
+      <ItemDef OID="IT.TS.TSVCDVER" Name="TSVCDVER" DataType="text" Length="200" SASFieldName="TSVCDVER">
+        <Description>
+          <TranslatedText xml:lang="en">Version of the Reference Terminology</TranslatedText>
+        </Description>
+        <def:Origin Type="Assigned"/>
       </ItemDef>
       <ItemDef OID="IT.TS.TSVAL.ADDON" Name="ADDON" DataType="text" Length="57" SASFieldName="ADDON">
         <Description>
