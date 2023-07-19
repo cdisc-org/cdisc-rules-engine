@@ -12,6 +12,7 @@ class VariablesMetadataDatasetBuilder(BaseDatasetBuilder):
         variable_size
         variable_data_type
         variable_format
+        define_variable_mandatory
         """
         return self.data_service.get_variables_metadata(
             self.dataset_path, drop_duplicates=True

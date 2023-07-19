@@ -239,10 +239,10 @@ class BaseDefineXMLReader(ABC):
             "define_variable_length": None,
             "define_variable_has_codelist": False,
             "define_variable_codelist_coded_values": [],
-            "define_vlm_mandatory": None,
+            "define_variable_mandatory": None,
         }
         if itemdef:
-            data["define_vlm_mandatory"] = itemref.Mandatory
+            data["define_variable_mandatory"] = itemref.Mandatory
             data["define_variable_name"] = itemdef.Name
             data["define_variable_size"] = itemdef.Length
             data["define_variable_role"] = itemref.Role
