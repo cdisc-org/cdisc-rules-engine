@@ -16,8 +16,9 @@ from cdisc_rules_engine.services.data_services import LocalDataService
                 "define_variable_name": ["VAR1", "VAR3"],
                 "define_vlm_name": ["VAR1B VLM Name", "VAR3C VLM Name"],
                 "define_vlm_label": ["VAR1B Label", "VAR3C Label"],
-                "define_vlm_data_type": ["VAR1B Type", "VAR3C Type"],
+                "define_vlm_data_type": ["text", "text"],
                 "define_vlm_role": ["VAR1B ROLE", "VAR3C ROLE"],
+                "define_vlm_length": [1, 2],
                 "filter": [
                     lambda row: row["VAR2"] == "2B",
                     lambda row: row["VAR2"] == "2C",
@@ -27,6 +28,7 @@ from cdisc_rules_engine.services.data_services import LocalDataService
                 "row_number": [2],
                 "variable_name": ["VAR1"],
                 "variable_value": ["1B"],
+                "variable_value_length": [2],
                 "define_variable_name": [
                     "VAR1",
                 ],
@@ -37,11 +39,12 @@ from cdisc_rules_engine.services.data_services import LocalDataService
                     "VAR1B Label",
                 ],
                 "define_vlm_data_type": [
-                    "VAR1B Type",
+                    "text",
                 ],
                 "define_vlm_role": [
                     "VAR1B ROLE",
                 ],
+                "define_vlm_length": [1],
             },
         ),
     ],

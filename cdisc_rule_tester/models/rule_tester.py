@@ -25,7 +25,12 @@ class RuleTester:
         self.datasets = [DummyDataset(dataset_data) for dataset_data in datasets]
         self.cache = cache or InMemoryCacheService()
         self.data_service = DummyDataService.get_instance(
-            self.cache, ConfigService(), data=self.datasets, define_xml=define_xml
+            self.cache,
+            ConfigService(),
+            standard=standard,
+            standard_version=standard_version,
+            data=self.datasets,
+            define_xml=define_xml,
         )
         self.engine = RulesEngine(
             self.cache,
