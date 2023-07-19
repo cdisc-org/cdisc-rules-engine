@@ -68,7 +68,6 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
         return define_df
 
     def _get_dataset_dataframe(self):
-        v_prg = f"{__name__}::_get_dataset_dataframe"
         dataset_col_order = [
             "dataset_size",
             "dataset_location",
@@ -78,7 +77,7 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
 
         if len(self.datasets) == 0:
             dataset_df = pd.DataFrame(columns=dataset_col_order)
-            logger.info(f"No datasets metadata is provided in {v_prg}.")
+            logger.info(f"No datasets metadata is provided in {__name__}.")
         else:
             datasets = pd.DataFrame()
             for dataset in self.datasets:

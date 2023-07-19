@@ -323,7 +323,7 @@ class RulesEngine:
         )
         results = []
         run(
-            serialize_rule(rule),  # engine expects a JSON serialized dict
+            serialize_rule(rule_copy),  # engine expects a JSON serialized dict
             defined_variables=dataset_variable,
             defined_actions=COREActions(
                 results,
