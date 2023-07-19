@@ -3,6 +3,7 @@ from unittest.mock import MagicMock
 
 import pandas as pd
 import pytest
+from cdisc_rules_engine.config.config import ConfigService
 
 from cdisc_rules_engine.services.data_services import LocalDataService
 
@@ -45,7 +46,9 @@ def test_get_dataset():
     dataset_path = f"{os.path.dirname(__file__)}/../resources/test_dataset.xpt"
     mock_cache = MagicMock()
     mock_cache.get.return_value = None
-    data_service = LocalDataService.get_instance(cache_service=mock_cache)
+    data_service = LocalDataService.get_instance(
+        config=ConfigService(), cache_service=mock_cache
+    )
     data = data_service.get_dataset(dataset_name=dataset_path)
     assert isinstance(data, pd.DataFrame)
 
@@ -54,7 +57,9 @@ def test_get_variables_metdata():
     dataset_path = f"{os.path.dirname(__file__)}/../resources/test_adam_dataset.xpt"
     mock_cache = MagicMock()
     mock_cache.get.return_value = None
-    data_service = LocalDataService.get_instance(cache_service=mock_cache)
+    data_service = LocalDataService.get_instance(
+        config=ConfigService(), cache_service=mock_cache
+    )
     data = data_service.get_variables_metadata(dataset_name=dataset_path)
     assert isinstance(data, pd.DataFrame)
     expected_keys = [

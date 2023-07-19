@@ -55,14 +55,14 @@ class RulesEngine:
         **kwargs,
     ):
         self.config = config_obj or default_config
-        self.cache = cache or CacheServiceFactory(self.config).get_cache_service()
-        self.data_service = (
-            data_service or DataServiceFactory(self.config, self.cache).get_service()
-        )
-        self.rule_processor = RuleProcessor(self.data_service, self.cache)
-        self.data_processor = DataProcessor(self.data_service, self.cache)
         self.standard = kwargs.get("standard")
         self.standard_version = kwargs.get("standard_version")
+        self.cache = cache or CacheServiceFactory(self.config).get_cache_service()
+        self.data_service = data_service or DataServiceFactory(
+            self.config, self.cache, self.standard_version, self.standard_version
+        ).get_service(**kwargs)
+        self.rule_processor = RuleProcessor(self.data_service, self.cache)
+        self.data_processor = DataProcessor(self.data_service, self.cache)
         self.ct_package = kwargs.get("ct_package")
         self.meddra_path: str = kwargs.get("meddra_path")
         self.whodrug_path: str = kwargs.get("whodrug_path")
@@ -82,7 +82,10 @@ class RulesEngine:
         dataset_domain: str,
     ):
         self.data_service = DataServiceFactory(
-            self.config, InMemoryCacheService.get_instance()
+            self.config,
+            InMemoryCacheService.get_instance(),
+            self.standard,
+            self.standard_version,
         ).get_dummy_data_service(datasets)
         dataset_dicts = []
         for domain in datasets:

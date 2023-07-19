@@ -360,7 +360,8 @@ def test_rule_applies_to_class(
         return_value=dataset_mock,
     ):
         assert (
-            processor.rule_applies_to_class(rule_metadata, domain, datasets) == outcome
+            processor.rule_applies_to_class(rule_metadata, domain, datasets, domain)
+            == outcome
         )
 
 

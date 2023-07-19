@@ -328,7 +328,7 @@ class BaseOperation:
         else:
             # Domain not found in the model. Detect class name from data
             class_name = self.data_service.get_dataset_class(
-                dataframe, self.params.dataset_path, self.params.datasets
+                dataframe, self.params.dataset_path, self.params.datasets, domain
             )
             class_name = convert_library_class_name_to_ct_class(class_name)
             class_details = self._get_class_metadata(model_details, class_name)

@@ -81,10 +81,8 @@ class DefineXMLReaderFactory:
         pattern = compile(r"(\{(.*)\})?DefineVersion")
         define_version = next(
             iter(
-                cls._from_namespace_version(match.group(2), value)
-                for match, value in [
-                    (pattern.fullmatch(name), value) for name, value in elt.items()
-                ]
+                cls._from_namespace(match.group(2))
+                for match in [pattern.fullmatch(name) for name, _ in elt.items()]
                 if match
             ),
             None,
@@ -102,8 +100,7 @@ class DefineXMLReaderFactory:
                 define_xml_reader
                 for define_xml_reader in cls._define_xml_readers
                 if namespace == define_xml_reader.class_define_xml_version().namespace
-                and version == define_xml_reader.class_define_xml_version().version
-            ),
+                and version == define_xml_reader.class_define_xml_version().version            ),
             None,
         )
         return define_xml_reader
