@@ -54,7 +54,7 @@ def validate_single_rule(cache, path, args, datasets, rule: dict = None):
         cache=cache,
         standard=args.standard,
         standard_version=args.version,
-        ct_package=args.controlled_terminology_package,
+        ct_packages=args.controlled_terminology_package,
         meddra_path=args.meddra,
         whodrug_path=args.whodrug,
     )

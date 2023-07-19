@@ -13,6 +13,9 @@ from cdisc_rules_engine.operations.library_model_column_order import (
 from cdisc_rules_engine.operations.parent_library_model_column_order import (
     ParentLibraryModelColumnOrder,
 )
+from cdisc_rules_engine.operations.get_codelist_attributes import (
+    CodeListAttributes,
+)
 from cdisc_rules_engine.operations.get_model_filtered_variables import (
     LibraryModelVariablesFilter,
 )
@@ -70,6 +73,7 @@ class OperationsFactory(FactoryInterface):
         "extract_metadata": ExtractMetadata,
         "get_column_order_from_dataset": DatasetColumnOrder,
         "get_column_order_from_library": LibraryColumnOrder,
+        "get_codelist_attributes": CodeListAttributes,
         "get_model_column_order": LibraryModelColumnOrder,
         "get_model_filtered_variables": LibraryModelVariablesFilter,
         "get_parent_model_column_order": ParentLibraryModelColumnOrder,
