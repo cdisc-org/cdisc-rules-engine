@@ -183,6 +183,20 @@ Example
 
   `Laboratory Test Results`
 
+## get_codelist_attributes
+
+Fetches attribute values for a codelist specified in a dataset (like TS)
+
+```yaml
+- id: $TERM_CCODES
+  name: TSVCDREF
+  operation: get_codelist_attributes
+  ct_attribute: Term CCODE
+  ct_version: TSVCDVER
+  ct_packages:
+    - sdtmct-2020-03-27
+```
+
 ## get_column_order_from_dataset
 
 Returns list of dataset columns in order
