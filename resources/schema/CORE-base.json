@@ -371,76 +371,7 @@
     },
     "Operations": {
       "items": {
-        "additionalProperties": false,
-        "properties": {
-          "attribute_name": {
-            "$ref": "#/$defs/MetaVariables"
-          },
-          "domain": {
-            "anyOf": [
-              {
-                "$ref": "#/$defs/Dataset"
-              },
-              {
-                "$ref": "#/$defs/DataStructure"
-              }
-            ]
-          },
-          "group": {
-            "items": {
-              "$ref": "#/$defs/VariableName"
-            },
-            "type": "array"
-          },
-          "id": {
-            "$ref": "#/$defs/OperationId"
-          },
-          "name": {
-            "type": "string"
-          },
-          "operator": {
-            "enum": [
-              "define_variable_metadata",
-              "distinct",
-              "domain_is_custom",
-              "domain_label",
-              "dy",
-              "extract_metadata",
-              "expected_variables",
-              "get_column_order_from_dataset",
-              "get_column_order_from_library",
-              "get_model_column_order",
-              "get_model_filtered_variables",
-              "get_parent_model_column_order",
-              "label_referenced_variable_metadata",
-              "max",
-              "max_date",
-              "mean",
-              "min",
-              "min_date",
-              "name_referenced_variable_metadata",
-              "permissible_variables",
-              "record_count",
-              "required_variables",
-              "study_domains",
-              "valid_codelist_dates",
-              "valid_meddra_code_references",
-              "valid_meddra_code_term_pairs",
-              "valid_meddra_term_references",
-              "valid_whodrug_references",
-              "variable_count",
-              "variable_exists",
-              "variable_is_null",
-              "variable_names",
-              "variable_permissibilities",
-              "variable_value_count",
-              "whodrug_code_hierarchy"
-            ],
-            "type": "string"
-          }
-        },
-        "required": ["id", "operator"],
-        "type": "object"
+        "$ref": "Operations.json"
       },
       "minItems": 1,
       "type": "array"
