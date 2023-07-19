@@ -1,4 +1,3 @@
-import logging
 from datetime import datetime
 from typing import BinaryIO, List, Optional, Iterable
 
@@ -18,6 +17,7 @@ from cdisc_rules_engine.utilities.reporting_utilities import (
     get_define_version,
 )
 from pathlib import Path
+from cdisc_rules_engine.services import logger
 
 
 class ExcelReport(BaseReport):
@@ -90,8 +90,6 @@ class ExcelReport(BaseReport):
         return wb
 
     def write_report(self):
-        logger = logging.getLogger("validator")
-
         try:
             define_version: str = self._args.define_version or get_define_version(
                 self._args.dataset_paths
