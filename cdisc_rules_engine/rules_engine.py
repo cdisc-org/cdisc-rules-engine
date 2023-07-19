@@ -64,6 +64,7 @@ class RulesEngine:
         self.standard = kwargs.get("standard")
         self.standard_version = kwargs.get("standard_version")
         self.ct_packages = kwargs.get("ct_packages", [])
+        self.ct_package = kwargs.get("ct_package")
         self.meddra_path: str = kwargs.get("meddra_path")
         self.whodrug_path: str = kwargs.get("whodrug_path")
 
