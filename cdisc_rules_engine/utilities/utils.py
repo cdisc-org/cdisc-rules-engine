@@ -98,6 +98,7 @@ def get_dataset_path(
 
 DATASET_CACHE_KEY_TEMPLATE: str = "{dataset_path}_{dataset_type}"
 
+
 def get_dataset_cache_key_from_study(
     study_id: str,
     data_bundle_id: str = None,
@@ -190,6 +191,7 @@ def get_operations_cache_key(
 
 def get_directory_path(dataset_path):
     return os.path.dirname(dataset_path)
+
 
 def get_corresponding_datasets(datasets: List[dict], domain: str) -> List[dict]:
     return [dataset for dataset in datasets if dataset.get("domain") == domain]

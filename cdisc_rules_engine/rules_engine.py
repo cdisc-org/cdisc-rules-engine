@@ -182,7 +182,7 @@ class RulesEngine:
         )
 
     def validate_rule(
-        self, rule: dict, dataset_path: str,  datasets: List[dict], domain: str
+        self, rule: dict, dataset_path: str, datasets: List[dict], domain: str
     ) -> List[Union[dict, str]]:
         """
          This function is an entrypoint for rule validation.
@@ -335,12 +335,14 @@ class RulesEngine:
         return results
 
     def get_define_xml_metadata_for_domain(
-        self, dataset_path: str,domain_name: str
+        self, dataset_path: str, domain_name: str
     ) -> dict:
         """
         Gets Define XML metadata and returns it as dict.
         """
-        define_xml_reader = DefineXMLReaderFactory.get_define_xml_reader(dataset_path, self.define_xml_path, self.data_service, self.cache)
+        define_xml_reader = DefineXMLReaderFactory.get_define_xml_reader(
+            dataset_path, self.define_xml_path, self.data_service, self.cache
+        )
         return define_xml_reader.extract_domain_metadata(domain_name=domain_name)
 
     def get_define_xml_value_level_metadata(
@@ -349,7 +351,9 @@ class RulesEngine:
         """
         Gets Define XML variable metadata and returns it as dataframe.
         """
-        define_xml_reader = DefineXMLReaderFactory.get_define_xml_reader(dataset_path, self.define_xml_path, self.data_service, self.cache)
+        define_xml_reader = DefineXMLReaderFactory.get_define_xml_reader(
+            dataset_path, self.define_xml_path, self.data_service, self.cache
+        )
         return define_xml_reader.extract_value_level_metadata(domain_name=domain_name)
 
     def handle_validation_exceptions(
