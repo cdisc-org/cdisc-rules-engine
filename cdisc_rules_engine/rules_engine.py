@@ -6,7 +6,6 @@ from business_rules import export_rule_data
 from business_rules.engine import run
 import os
 from cdisc_rules_engine.config import config as default_config
-from cdisc_rules_engine.constants.define_xml_constants import DEFINE_XML_FILE_NAME
 from cdisc_rules_engine.dummy_models.dummy_dataset import DummyDataset
 from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 from cdisc_rules_engine.enums.rule_types import RuleTypes
@@ -37,7 +36,6 @@ from cdisc_rules_engine.utilities.data_processor import DataProcessor
 from cdisc_rules_engine.utilities.dataset_preprocessor import DatasetPreprocessor
 from cdisc_rules_engine.utilities.rule_processor import RuleProcessor
 from cdisc_rules_engine.utilities.utils import (
-    get_directory_path,
     get_library_variables_metadata_cache_key,
     get_standard_codelist_cache_key,
     is_split_dataset,
