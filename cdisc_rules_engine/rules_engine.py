@@ -292,6 +292,7 @@ class RulesEngine:
         value_level_metadata: List[dict] = None,
         variable_codelist_map: dict = None,
         codelist_term_maps: list = None,
+        validate_xml: str = None,
     ) -> List[str]:
         """
         Executes the given rule on a given dataset.
