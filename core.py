@@ -181,7 +181,6 @@ def validate(
     # Validate conditional options
     logger = logging.getLogger("validator")
 
-
     if raw_report is True:
         if not (len(output_format) == 1 and output_format[0] == ReportTypes.JSON.value):
             logger.error(
@@ -237,7 +236,7 @@ def validate(
             meddra,
             rules,
             progress,
-            define_xml_path
+            define_xml_path,
         )
     )
 
@@ -290,7 +289,6 @@ def update_cache(ctx: click.Context, cache_path: str, apikey: str):
     default=DefaultFilePaths.CACHE.value,
     help="Relative path to cache files containing pre loaded metadata and rules",
 )
-
 @click.option(
     "-s", "--standard", required=False, help="CDISC standard to get rules for"
 )

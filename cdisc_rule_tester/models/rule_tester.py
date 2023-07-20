@@ -51,7 +51,10 @@ class RuleTester:
                 rule["conditions"]
             )
             results[dataset["domain"]] = self.engine.validate_single_rule(
-                rule, f"/{dataset['filename']}", dataset_dictionaries, dataset["domain"],
+                rule,
+                f"/{dataset['filename']}",
+                dataset_dictionaries,
+                dataset["domain"],
             )
             validated_domains.add(dataset["domain"])
         return results
