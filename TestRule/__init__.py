@@ -10,6 +10,10 @@ import os
 import asyncio
 
 
+class BadRequestError(Exception):
+    pass
+
+
 def validate_datasets_payload(datasets):
     required_keys = {"filename", "label", "domain", "records", "variables"}
     missing_keys = set()
@@ -18,9 +22,36 @@ def validate_datasets_payload(datasets):
             if key not in dataset:
                 missing_keys.add(key)
 
+        for var in dataset.get("variables", []):
+            if var is None:
+                raise BadRequestError(
+                    f"Dataset: {dataset.get('label')} is missing variable metadata"
+                )
+
     if missing_keys:
         raise KeyError(
             f"one or more datasets missing the following keys {missing_keys}"
+        )
+
+
+def handle_exception(e: Exception):
+    if isinstance(e, KeyError):
+        return func.HttpResponse(
+            json.dumps({"error": "KeyError", "message": str(e)}), status_code=400
+        )
+    elif isinstance(e, BadRequestError):
+        return func.HttpResponse(
+            json.dumps({"error": "BadRequestError", "message": str(e)}), status_code=400
+        )
+    else:
+        return func.HttpResponse(
+            json.dumps(
+                {
+                    "errror": "Unknown Exception",
+                    "message": f"An unhandled exception occurred. {str(e)}",
+                }
+            ),
+            status_code=500,
         )
 
 
@@ -52,17 +83,5 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
         result = tester.validate(rule)
         result_json = json.dumps(result)
         return func.HttpResponse(result_json)
-    except KeyError as e:
-        return func.HttpResponse(
-            json.dumps({"error": "KeyError", "message": str(e)}), status_code=400
-        )
     except Exception as e:
-        return func.HttpResponse(
-            json.dumps(
-                {
-                    "errror": "Unknown Exception",
-                    "message": f"An unhandled exception occurred. {str(e)}",
-                }
-            ),
-            status_code=500,
-        )
+        return handle_exception(e)
