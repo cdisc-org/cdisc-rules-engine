@@ -293,6 +293,7 @@ class RulesEngine:
         variable_codelist_map: dict = None,
         codelist_term_maps: list = None,
         validate_xml: str = None,
+        ct_packages: list = None,
     ) -> List[str]:
         """
         Executes the given rule on a given dataset.
