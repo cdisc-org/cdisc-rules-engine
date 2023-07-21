@@ -124,4 +124,4 @@ def run_validation(args: Validation_args):
     )
     reporting_services: List[BaseReport] = reporting_factory.get_report_services()
     for reporting_service in reporting_services:
-        reporting_service.write_report()
+        reporting_service.write_report(args.define_xml_path)

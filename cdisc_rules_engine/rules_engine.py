@@ -177,6 +177,7 @@ class RulesEngine:
             domain=domain,
             datasets=datasets,
             dataset_path=dataset_path,
+            define_xml_path=self.define_xml_path,
         )
 
     def validate_rule(

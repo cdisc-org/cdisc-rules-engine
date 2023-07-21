@@ -59,10 +59,13 @@ class JsonReport(BaseReport):
 
         return json_export
 
-    def write_report(self):
-        define_version: str = self._args.define_version or get_define_version(
-            self._args.dataset_paths
-        )
+    def write_report(self, define_xml_path: str = None):
+        if define_xml_path:
+            define_version = get_define_version([define_xml_path])
+        else:
+            define_version: str = self._args.define_version or get_define_version(
+                self._args.dataset_paths
+            )
         report_data = self.get_export(
             define_version,
             list(self._args.controlled_terminology_package),

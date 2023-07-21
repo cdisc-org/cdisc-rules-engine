@@ -157,5 +157,5 @@ def test(args: TestArgs):
     )
     reporting_services: List[BaseReport] = reporting_factory.get_report_services()
     for reporting_service in reporting_services:
-        reporting_service.write_report()
+        reporting_service.write_report(define_xml_path=args.define_xml_path)
     print(f"Output: {output_file}")

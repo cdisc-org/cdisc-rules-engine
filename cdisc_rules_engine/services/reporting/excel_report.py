@@ -89,13 +89,15 @@ class ExcelReport(BaseReport):
             wb["Conformance Details"]["B14"] = self._args.whodrug
         return wb
 
-    def write_report(self):
+    def write_report(self, define_xml_path: str = None):
         logger = logging.getLogger("validator")
-
         try:
-            define_version: str = self._args.define_version or get_define_version(
-                self._args.dataset_paths
-            )
+            if define_xml_path:
+                define_version = get_define_version([define_xml_path])
+            else:
+                define_version: str = self._args.define_version or get_define_version(
+                    self._args.dataset_paths
+                )
             report_data = self.get_export(
                 define_version,
                 self._args.controlled_terminology_package,
