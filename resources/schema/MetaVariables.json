@@ -138,6 +138,12 @@
     },
     {
       "const": "variable_value_length"
+    },
+    {
+      "const": "define_vlm_mandatory"
+    },
+    {
+      "const": "define_variable_mandatory"
     }
   ]
 }
