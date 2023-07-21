@@ -62,9 +62,9 @@ These steps should be run before running any tests or core commands using the no
 
 ### Running The Tests
 
-From the root of the project run the following command:
+From the root of the project run the following command (this will run both the unit and regression tests):
 
-`python -m pytest tests/unit/`
+`python -m pytest tests`
 
 ### Running a validation
 

@@ -377,7 +377,7 @@ class TestValidate(unittest.TestCase):
                 "-dp",
                 os.path.join("tests", "resources", "test_dataset.xpt"),
                 "-dxp",
-                "/test/resources",
+                "/resources",
             ],
         )
         self.assertEqual(result.exit_code, 0)
