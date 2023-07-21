@@ -60,6 +60,9 @@
       "const": "define_variable_length"
     },
     {
+      "const": "define_variable_mandatory"
+    },
+    {
       "const": "define_variable_name"
     },
     {
@@ -105,6 +108,9 @@
       "const": "define_vlm_length"
     },
     {
+      "const": "define_vlm_mandatory"
+    },
+    {
       "const": "define_vlm_name"
     },
     {
@@ -138,12 +144,6 @@
     },
     {
       "const": "variable_value_length"
-    },
-    {
-      "const": "define_vlm_mandatory"
-    },
-    {
-      "const": "define_variable_mandatory"
     }
   ]
 }
