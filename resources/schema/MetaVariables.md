@@ -84,7 +84,7 @@ ItemGroupDef.ItemDef.Length
 
 ## define_variable_mandatory
 
-ItemGroupDef.ItemRef.Mandatory
+[ItemGroupDef/ValueListDef].ItemRef.Mandatory
 
 ## define_variable_name
 
