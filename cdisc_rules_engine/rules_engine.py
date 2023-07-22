@@ -122,7 +122,11 @@ class RulesEngine:
         return output
 
     def validate_single_rule(
-        self, rule: dict, dataset_path: str, datasets: List[dict], dataset_domain: str
+        self,
+        rule: dict,
+        dataset_path: str,
+        datasets: List[dict],
+        dataset_domain: str,
     ) -> List[Union[dict, str]]:
         """
         This function is an entrypoint to validation process.
@@ -132,6 +136,7 @@ class RulesEngine:
             f"Validating domain {dataset_domain}. "
             f"rule={rule}. dataset_path={dataset_path}. datasets={datasets}."
         )
+
         try:
             if self.rule_processor.is_suitable_for_validation(
                 rule,
@@ -161,6 +166,7 @@ class RulesEngine:
                 error_obj.domain = dataset_domain
                 return [error_obj.to_representation()]
         except Exception as e:
+            logger.trace(e, __name__)
             logger.error(
                 f"Error occurred during validation. Error: {e}. Error message: {str(e)}"
             )
@@ -187,29 +193,24 @@ class RulesEngine:
         )
 
     def validate_rule(
-        self, rule: dict, dataset_path: str, datasets: List[dict], domain: str
+        self,
+        rule: dict,
+        dataset_path: str,
+        datasets: List[dict],
+        domain: str,
     ) -> List[Union[dict, str]]:
         """
          This function is an entrypoint for rule validation.
         It defines a rule validator based on its type and calls it.
         """
+        kwargs = {}
         builder = self.get_dataset_builder(rule, dataset_path, datasets, domain)
         dataset = builder.get_dataset()
-        kwargs = {}
+
         # Update rule for certain rule types
         # SPECIAL CASES FOR RULE TYPES ###############################
         # TODO: Handle these special cases better.
-        if (
-            rule.get("rule_type")
-            == RuleTypes.DATASET_METADATA_CHECK_AGAINST_DEFINE.value
-        ):
-            # get Define XML metadata for domain and use it as a rule comparator
-            define_metadata: dict = self.get_define_xml_metadata_for_domain(
-                dataset_path, domain
-            )
-            self.rule_processor.add_comparator_to_rule_conditions(rule, define_metadata)
-
-        elif rule.get("rule_type") == RuleTypes.DEFINE_ITEM_METADATA_CHECK.value:
+        if rule.get("rule_type") == RuleTypes.DEFINE_ITEM_METADATA_CHECK.value:
             variable_codelist_map_key = get_standard_codelist_cache_key(
                 self.standard, self.standard_version
             )
@@ -318,7 +319,7 @@ class RulesEngine:
             ct_packages=ct_packages,
         )
         relationship_data = {}
-        if self.rule_processor.is_relationship_dataset(domain):
+        if domain is not None and self.rule_processor.is_relationship_dataset(domain):
             relationship_data = self.data_processor.preprocess_relationship_dataset(
                 os.path.dirname(dataset_path), dataset, datasets
             )
@@ -352,12 +353,15 @@ class RulesEngine:
         """
         directory_path = get_directory_path(dataset_path)
         define_xml_path: str = os.path.join(directory_path, DEFINE_XML_FILE_NAME)
+
         define_xml_contents: bytes = self.data_service.get_define_xml_contents(
             dataset_name=define_xml_path
         )
+
         define_xml_reader = DefineXMLReaderFactory.from_file_contents(
             define_xml_contents, cache_service_obj=self.cache
         )
+
         return define_xml_reader.extract_domain_metadata(domain_name=domain_name)
 
     def get_define_xml_value_level_metadata(
