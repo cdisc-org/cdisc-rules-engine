@@ -23,7 +23,7 @@ from cdisc_rules_engine.services.data_services import LocalDataService
                     lambda row: row["VAR2"] == "2B",
                     lambda row: row["VAR2"] == "2C",
                 ],
-                "define_vlm_mandatory": "Yes",
+                "define_vlm_mandatory": ["Yes", "No"],
             },
             {
                 "row_number": [2],
@@ -46,7 +46,7 @@ from cdisc_rules_engine.services.data_services import LocalDataService
                     "VAR1B ROLE",
                 ],
                 "define_vlm_length": [1],
-                "define_vlm_mandatory": "Yes",
+                "define_vlm_mandatory": ["Yes"],
             },
         ),
     ],
@@ -82,6 +82,4 @@ def test_contents_define_vlm_dataset_builder(
     expected_df = pd.DataFrame.from_dict(expected)
     expected_df.sort_index(axis=1, inplace=True)
     result.sort_index(axis=1, inplace=True)
-    assert "define_vlm_mandatory" in result
-    assert result.define_vlm_mandatory[0] == 'Yes'
     assert result.equals(expected_df)
