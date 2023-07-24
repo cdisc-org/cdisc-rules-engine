@@ -83,4 +83,5 @@ def test_contents_define_vlm_dataset_builder(
     expected_df.sort_index(axis=1, inplace=True)
     result.sort_index(axis=1, inplace=True)
     assert "define_vlm_mandatory" in result
+    assert result.define_vlm_mandatory[0]=='Yes'
     assert result.equals(expected_df)
