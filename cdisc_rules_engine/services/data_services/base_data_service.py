@@ -95,7 +95,7 @@ class BaseDataService(DataServiceInterface, ABC):
             self._config.getValue("CDISC_LIBRARY_API_KEY", ""), self.cache_service
         )
         self.standard = kwargs.get("standard")
-        self.version = kwargs.get("standard_version", "").replace(".", "-")
+        self.version = (kwargs.get("standard_version") or "").replace(".", "-")
 
     def get_dataset_by_type(
         self, dataset_name: str, dataset_type: str, **params
