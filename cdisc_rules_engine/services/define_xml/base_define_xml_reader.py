@@ -146,6 +146,7 @@ class BaseDefineXMLReader(ABC):
         domain_metadata = self._get_domain_metadata(metadata, domain_name)
         value_level_metadata_map = {}
         value_level_metadata = []
+
         for where_clause in metadata.WhereClauseDef:
             vlm = ValueLevelMetadata.from_where_clause_def(where_clause, item_def_map)
             value_level_metadata_map[vlm.id] = vlm
@@ -157,6 +158,7 @@ class BaseDefineXMLReader(ABC):
             for item in domain_variables
             if item.ValueListRef
         ]
+
         value_lists = {
             value_list_def.OID: value_list_def
             for value_list_def in metadata.ValueListDef
@@ -236,8 +238,10 @@ class BaseDefineXMLReader(ABC):
             "define_variable_length": None,
             "define_variable_has_codelist": False,
             "define_variable_codelist_coded_values": [],
+            "define_variable_mandatory": None,
         }
         if itemdef:
+            data["define_variable_mandatory"] = itemref.Mandatory
             data["define_variable_name"] = itemdef.Name
             data["define_variable_size"] = itemdef.Length
             data["define_variable_role"] = itemref.Role
