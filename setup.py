@@ -22,7 +22,7 @@ setuptools.setup(
     python_requires=">=3.8",
     install_requires=[
         "pandas>=1.3.5",
-        "business-rules-enhanced==1.3.7",
+        "business-rules-enhanced==1.4.0",
         "python-dotenv==0.20.0",
         "cdisc-library-client==0.1.4",
         "odmlib==0.1.4",
