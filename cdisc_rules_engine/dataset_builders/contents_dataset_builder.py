@@ -21,5 +21,5 @@ class ContentsDatasetBuilder(BaseDatasetBuilder):
             )
         else:
             # single dataset. the most common case
-            dataset: pd.DataFrame = self.build()
+            dataset = self.build()
         return dataset
