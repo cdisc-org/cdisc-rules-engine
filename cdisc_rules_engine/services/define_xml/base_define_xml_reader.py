@@ -22,7 +22,6 @@ from cdisc_rules_engine.utilities.decorators import cached
 
 @dataclass
 class DefineXMLVersion:
-    version: str
     namespace: str
     model_package: str
 
@@ -147,6 +146,7 @@ class BaseDefineXMLReader(ABC):
         domain_metadata = self._get_domain_metadata(metadata, domain_name)
         value_level_metadata_map = {}
         value_level_metadata = []
+
         for where_clause in metadata.WhereClauseDef:
             vlm = ValueLevelMetadata.from_where_clause_def(where_clause, item_def_map)
             value_level_metadata_map[vlm.id] = vlm
@@ -158,6 +158,7 @@ class BaseDefineXMLReader(ABC):
             for item in domain_variables
             if item.ValueListRef
         ]
+
         value_lists = {
             value_list_def.OID: value_list_def
             for value_list_def in metadata.ValueListDef
@@ -237,8 +238,10 @@ class BaseDefineXMLReader(ABC):
             "define_variable_length": None,
             "define_variable_has_codelist": False,
             "define_variable_codelist_coded_values": [],
+            "define_variable_mandatory": None,
         }
         if itemdef:
+            data["define_variable_mandatory"] = itemref.Mandatory
             data["define_variable_name"] = itemdef.Name
             data["define_variable_size"] = itemdef.Length
             data["define_variable_role"] = itemref.Role
@@ -294,19 +297,6 @@ class BaseDefineXMLReader(ABC):
     @abstractmethod
     def _get_variable_is_collected(self, itemdef):
         pass
-
-    def _get_metadata_representation(self, metadata) -> dict:
-        """
-        Returns metadata as dictionary.
-        """
-        return {
-            "define_dataset_name": metadata.Domain,
-            "define_dataset_label": str(metadata.Description.TranslatedText[0]),
-            "define_dataset_location": getattr(metadata.leaf, "href", None),
-            "define_dataset_class": str(metadata.Class.Name),
-            "define_dataset_structure": str(metadata.Structure),
-            "define_dataset_is_non_standard": str(metadata.IsNonStandard or ""),
-        }
 
     def validate_schema(self) -> bool:
         """

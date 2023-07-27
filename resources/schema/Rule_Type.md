@@ -29,10 +29,17 @@ Attach define xml metadata at variable level and library metadata at variable le
 
 #### Columns
 
-- `dataset_label`
+- `dataset_size`
 - `dataset_location`
 - `dataset_name`
-- `dataset_size`
+- `dataset_label`
+- `define_dataset_name`
+- `define_dataset_label`
+- `define_dataset_location`
+- `define_dataset_class`
+- `define_dataset_structure`
+- `define_dataset_is_non_standard`
+- `define_dataset_variables`
 
 #### Rule Macro
 
@@ -41,8 +48,20 @@ Allows comparing content metadata to define xml metadata of the same name.
 #### Example
 
 ```yaml
-- name: dataset_label
-  operator: not_equal_to
+all:
+  - name: dataset_name
+    operator: not_equal_to
+    value: define_dataset_name
+```
+
+Or
+
+```yaml
+any:
+  - name: dataset_name
+    operator: empty
+  - name: define_dataset_name
+    operator: empty
 ```
 
 ## Define Item Group Metadata Check
@@ -152,11 +171,26 @@ all:
 - `row_number`
 - `variable_name`
 - `variable_value`
-- `define_variable_name`
 - `define_vlm_name`
 - `define_vlm_label`
 - `define_vlm_data_type`
-- `define_vlm_`...
+- `define_vlm_is_collected`
+- `define_vlm_role`
+- `define_vlm_size`
+- `define_vlm_ccode`
+- `define_vlm_format`
+- `define_vlm_allowed_terms`
+- `define_vlm_origin_type`
+- `define_vlm_has_no_data`
+- `define_vlm_order_number`
+- `define_vlm_length`
+- `define_vlm_has_codelist`
+- `define_vlm_codelist_coded_values`
+- `define_vlm_mandatory`
+- `define_variable_name`
+- `type_check`
+- `length_check`
+- `variable_value_length`
 
 #### Example
 
@@ -172,6 +206,15 @@ all:
   - name: variable_value
     operator: is_not_contained_by
     value: define_vlm_codelist_coded_values
+```
+
+```yaml
+all:
+  - name: variable_value
+    operator: empty
+  - name: define_vlm_mandatory
+    operator: equal_to
+    value: Yes
 ```
 
 ## Value Level Metadata Check against Define XML

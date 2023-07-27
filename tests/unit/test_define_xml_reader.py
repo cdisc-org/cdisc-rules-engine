@@ -15,18 +15,32 @@ from cdisc_rules_engine.services.define_xml.base_define_xml_reader import (
 from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import (
     DefineXMLReaderFactory,
 )
+from cdisc_rules_engine.services.define_xml.define_xml_reader_2_1 import (
+    DefineXMLReader21,
+)
+from cdisc_rules_engine.services.define_xml.define_xml_reader_2_0 import (
+    DefineXMLReader20,
+)
 
 resources_path: Path = Path(__file__).parent.parent.joinpath("resources")
 test_define_2_0_file_path: Path = resources_path.joinpath("test_defineV20-SDTM.xml")
 test_define_file_path: Path = resources_path.joinpath("test_defineV22-SDTM.xml")
 
 
-def test_init_from_filename():
+def test_init_from_filename_v2_1():
     """
     Unit test for DefineXMLReader.from_filename constructor.
     """
     reader = DefineXMLReaderFactory.from_filename(test_define_file_path)
-    assert isinstance(reader, BaseDefineXMLReader)
+    assert isinstance(reader, DefineXMLReader21)
+
+
+def test_init_from_filename_v2_0():
+    """
+    Unit test for DefineXMLReader.from_filename constructor.
+    """
+    reader = DefineXMLReaderFactory.from_filename(test_define_2_0_file_path)
+    assert isinstance(reader, DefineXMLReader20)
 
 
 def test_init_from_file_contents():
@@ -61,11 +75,14 @@ def test_read_define_xml():
             ]
 
 
-def test_extract_domain_metadata():
+@pytest.mark.parametrize(
+    "filename", [(test_define_file_path), (test_define_2_0_file_path)]
+)
+def test_extract_domain_metadata(filename):
     """
     Unit test for DefineXMLReader.extract_domain_metadata function.
     """
-    with open(test_define_file_path, "rb") as file:
+    with open(filename, "rb") as file:
         contents: bytes = file.read()
         reader = DefineXMLReaderFactory.from_file_contents(contents)
         domain_metadata: dict = reader.extract_domain_metadata(domain_name="TS")
@@ -92,11 +109,14 @@ def test_extract_domain_metadata():
         }
 
 
-def test_extract_variable_metadata():
+@pytest.mark.parametrize(
+    "filename", [(test_define_file_path), (test_define_2_0_file_path)]
+)
+def test_extract_variable_metadata(filename):
     """
     Unit test for DefineXMLReader.extract_domain_metadata function.
     """
-    with open(test_define_file_path, "rb") as file:
+    with open(filename, "rb") as file:
         contents: bytes = file.read()
         reader = DefineXMLReaderFactory.from_file_contents(contents)
         variable_metadata: List[dict] = reader.extract_variables_metadata(
@@ -227,11 +247,14 @@ def test_define_variable_is_collected(
         assert variable[0]["define_variable_is_collected"] == expected
 
 
-def test_extract_value_level_metadata():
+@pytest.mark.parametrize(
+    "filename", [(test_define_file_path), (test_define_2_0_file_path)]
+)
+def test_extract_value_level_metadata(filename):
     """
     Unit test for DefineXMLReader.extract_domain_metadata function.
     """
-    with open(test_define_file_path, "rb") as file:
+    with open(filename, "rb") as file:
         contents: bytes = file.read()
         reader = DefineXMLReaderFactory.from_file_contents(contents)
         value_level_metadata: dict = reader.extract_value_level_metadata(

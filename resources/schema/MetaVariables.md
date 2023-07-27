@@ -82,6 +82,10 @@ ItemGroupDef.ItemDef.Description.TranslatedText
 
 ItemGroupDef.ItemDef.Length
 
+## define_variable_mandatory
+
+ItemGroupDef.ItemRef.Mandatory
+
 ## define_variable_name
 
 ItemGroupDef.ItemDef.Name
@@ -141,6 +145,10 @@ ValueListDef.ItemDef.Description.TranslatedText
 ## define_vlm_length
 
 ValueListDef.ItemDef.Length
+
+## define_vlm_mandatory
+
+ValueListDef.ItemRef.Mandatory
 
 ## define_vlm_name
 

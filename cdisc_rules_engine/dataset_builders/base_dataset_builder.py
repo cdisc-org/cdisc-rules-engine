@@ -75,34 +75,35 @@ class BaseDatasetBuilder:
             "define_dataset_is_non_standard"
             "define_dataset_variables"
         """
-        directory_path = get_directory_path(self.dataset_path)
-        define_xml_path: str = os.path.join(directory_path, DEFINE_XML_FILE_NAME)
-        define_xml_contents: bytes = self.data_service.get_define_xml_contents(
-            dataset_name=define_xml_path
-        )
-        define_xml_reader = DefineXMLReaderFactory.from_file_contents(
-            define_xml_contents, cache_service_obj=self.cache
-        )
+        define_xml_reader = self.get_define_xml_reader()
         return define_xml_reader.extract_domain_metadata(domain)
 
     def get_define_xml_variables_metadata(self) -> List[dict]:
         """
         Gets Define XML variables metadata.
         """
-        directory_path = get_directory_path(self.dataset_path)
-        define_xml_path: str = os.path.join(directory_path, DEFINE_XML_FILE_NAME)
-        define_xml_contents: bytes = self.data_service.get_define_xml_contents(
-            dataset_name=define_xml_path
-        )
-        define_xml_reader = DefineXMLReaderFactory.from_file_contents(
-            define_xml_contents, cache_service_obj=self.cache
-        )
+        define_xml_reader = self.get_define_xml_reader()
         return define_xml_reader.extract_variables_metadata(domain_name=self.domain)
 
     def get_define_xml_value_level_metadata(self) -> List[dict]:
         """
         Gets Define XML value level metadata and returns it as dataframe.
         """
+        define_xml_reader = self.get_define_xml_reader()
+        return define_xml_reader.extract_value_level_metadata(domain_name=self.domain)
+
+    @staticmethod
+    def add_row_number(dataframe: pd.DataFrame) -> None:
+        dataframe["row_number"] = range(1, len(dataframe) + 1)
+
+    def get_define_metadata(self):
+        define_xml_reader = self.get_define_xml_reader()
+        return define_xml_reader.read()
+
+    def get_define_xml_reader(self):
+        """
+        Gets Define XML Reader and return it.
+        """
         directory_path = get_directory_path(self.dataset_path)
         define_xml_path: str = os.path.join(directory_path, DEFINE_XML_FILE_NAME)
         define_xml_contents: bytes = self.data_service.get_define_xml_contents(
@@ -111,8 +112,4 @@ class BaseDatasetBuilder:
         define_xml_reader = DefineXMLReaderFactory.from_file_contents(
             define_xml_contents, cache_service_obj=self.cache
         )
-        return define_xml_reader.extract_value_level_metadata(domain_name=self.domain)
-
-    @staticmethod
-    def add_row_number(dataframe: pd.DataFrame) -> None:
-        dataframe["row_number"] = range(1, len(dataframe) + 1)
+        return define_xml_reader

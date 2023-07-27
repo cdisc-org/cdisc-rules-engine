@@ -25,7 +25,9 @@ class DummyDataService(BaseDataService):
         config: ConfigInterface,
         **kwargs,
     ):
-        super(DummyDataService, self).__init__(cache_service, reader_factory, config)
+        super(DummyDataService, self).__init__(
+            cache_service, reader_factory, config, **kwargs
+        )
         self.data: List[DummyDataset] = kwargs.get("data")
         self.define_xml: str = kwargs.get("define_xml")
 
