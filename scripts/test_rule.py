@@ -62,19 +62,30 @@ def validate_single_rule(cache, path, args, datasets, rule: dict = None):
     validated_domains = set()
     results = []
     directory = get_directory_path(args.dataset_path)
-    for dataset in datasets:
-        # Check if the domain has been validated before
-        # This addresses the case where a domain is split
-        # and appears multiple times within the list of datasets
-        if dataset.domain not in validated_domains:
-            validated_domains.add(dataset.domain)
-            validated_result = engine.test_validation(
+    if rule.get("sensitivity").lower() == "study":
+        results.append(
+            engine.test_validation(
                 rule,
-                os.path.join(directory, dataset.filename),
+                directory,
                 datasets,
-                dataset.domain,
+                "study",
             )
-            results.append(validated_result)
+        )
+        engine_logger.info("Done validating the rule for the study.")
+    else:
+        for dataset in datasets:
+            # Check if the domain has been validated before
+            # This addresses the case where a domain is split
+            # and appears multiple times within the list of datasets
+            if dataset.domain not in validated_domains:
+                validated_domains.add(dataset.domain)
+                validated_result = engine.test_validation(
+                    rule,
+                    os.path.join(directory, dataset.filename),
+                    datasets,
+                    dataset.domain,
+                )
+                results.append(validated_result)
     results = list(itertools.chain(*results))
     return RuleValidationResult(rule, results)
 

@@ -76,6 +76,5 @@ class DatasetBuilderFactory(FactoryInterface):
             kwargs.get("dataset_path"),
             kwargs.get("datasets"),
             kwargs.get("domain"),
-            kwargs.get("validate_xml", "Y"),
         )
         return builder
