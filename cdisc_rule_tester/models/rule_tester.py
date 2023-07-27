@@ -20,7 +20,7 @@ class RuleTester:
         define_xml: str = None,
         cache: InMemoryCacheService = None,
         standard: str = None,
-        standard_version: str = None,
+        standard_version: str = "",
     ):
         self.datasets = [DummyDataset(dataset_data) for dataset_data in datasets]
         self.cache = cache or InMemoryCacheService()

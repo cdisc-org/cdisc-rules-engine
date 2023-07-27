@@ -53,7 +53,7 @@ def validate_single_rule(cache, path, args, datasets, rule: dict = None):
     engine = RulesEngine(
         cache=cache,
         standard=args.standard,
-        standard_version=args.version,
+        standard_version=args.version.replace(".", "-"),
         ct_packages=args.controlled_terminology_package,
         meddra_path=args.meddra,
         whodrug_path=args.whodrug,
@@ -133,7 +133,13 @@ def test(args: TestArgs):
             show_eta=False,
         ) as bar:
             for rule_result in pool.imap_unordered(
-                partial(validate_single_rule, shared_cache, "", args, datasets),
+                partial(
+                    validate_single_rule,
+                    shared_cache,
+                    "",
+                    args,
+                    datasets,
+                ),
                 rules,
             ):
                 results.append(rule_result)

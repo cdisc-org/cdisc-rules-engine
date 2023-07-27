@@ -1,5 +1,4 @@
 import logging
-
 from cdisc_rules_engine.interfaces import ConfigInterface, LoggerInterface
 import traceback
 import inspect
@@ -14,6 +13,7 @@ class ConsoleLogger(LoggerInterface):
     def __init__(self, logger, config: ConfigInterface):
         self._logger = logger
         self._config = config
+        self._exception = Exception()
 
     @property
     def disabled(self) -> bool:

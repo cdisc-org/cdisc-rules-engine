@@ -171,14 +171,15 @@ class RuleProcessor:
         is_included = True
         is_excluded = False
         if included_classes:
+            if ALL_KEYWORD in included_classes:
+                return True
             dataset = self.data_service.get_dataset(dataset_name=file_path)
             class_name = self.data_service.get_dataset_class(
                 dataset, file_path, datasets, domain
             )
-            if (
-                (class_name not in included_classes)
-                and not (class_name == FINDINGS_ABOUT and FINDINGS in included_classes)
-            ) and ALL_KEYWORD not in included_classes:
+            if (class_name not in included_classes) and not (
+                class_name == FINDINGS_ABOUT and FINDINGS in included_classes
+            ):
                 is_included = False
 
         if excluded_classes:
