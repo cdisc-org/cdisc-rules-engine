@@ -72,6 +72,7 @@ def validate_single_rule(cache, path, args, datasets, rule: dict = None):
                 "study",
             )
         )
+        engine_logger.info("Done validating the rule for the study.")
     else:
         for dataset in datasets:
             # Check if the domain has been validated before
@@ -86,6 +87,7 @@ def validate_single_rule(cache, path, args, datasets, rule: dict = None):
                     dataset.domain,
                 )
                 results.append(validated_result)
+                engine_logger.info(f"Done validating {dataset.domain}")
     results = list(itertools.chain(*results))
     return RuleValidationResult(rule, results)
 
