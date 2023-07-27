@@ -62,6 +62,7 @@ def validate_single_rule(cache, path, args, datasets, rule: dict = None):
     validated_domains = set()
     results = []
     directory = get_directory_path(args.dataset_path)
+
     if rule.get("sensitivity").lower() == "study":
         results.append(
             engine.test_validation(
@@ -71,7 +72,6 @@ def validate_single_rule(cache, path, args, datasets, rule: dict = None):
                 "study",
             )
         )
-        engine_logger.info("Done validating the rule for the study.")
     else:
         for dataset in datasets:
             # Check if the domain has been validated before
