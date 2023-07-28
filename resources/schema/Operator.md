@@ -753,7 +753,7 @@ Complement of `is_unique_set`
 
 ## present_on_multiple_rows_within
 
-True if the same value of `name` is present on multiple rows, grouped by `within`. A specific value can be indicated by `value`
+True if the same value of `name` is present on multiple rows, grouped by `within`. A maximum allowed number of occurrences can be specified in the value attribute. In this instance the value: 4 means that an error will be flagged if the same value appears more than 4 times within a USUBJID. By default the operator will flag any time a value appears more than once.
 
 ```yaml
 - operator: "present_on_multiple_rows_within"
