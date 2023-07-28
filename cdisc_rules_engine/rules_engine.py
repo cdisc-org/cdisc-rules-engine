@@ -59,7 +59,7 @@ class RulesEngine:
         self.standard_version = kwargs.get("standard_version")
         self.cache = cache or CacheServiceFactory(self.config).get_cache_service()
         self.data_service = data_service or DataServiceFactory(
-            self.config, self.cache, self.standard_version, self.standard_version
+            self.config, self.cache, self.standard, self.standard_version
         ).get_service(**kwargs)
         self.rule_processor = RuleProcessor(self.data_service, self.cache)
         self.data_processor = DataProcessor(self.data_service, self.cache)
