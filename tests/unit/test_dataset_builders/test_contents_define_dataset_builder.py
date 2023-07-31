@@ -332,6 +332,7 @@ def test_contents_define_dataset_builder(
         dataset_path=None,
         datasets=data_metadata.get("datasets", {}),
         domain=None,
+        define_xml_path=None,
     ).build()
     col_names = ["dataset_name", "define_dataset_name"]
     assert result[col_names].equals(expected[col_names]) or (
@@ -367,6 +368,7 @@ def test_contents_define_dataset_columns(
         dataset_path=None,
         datasets=data_metadata.get("datasets", {}),
         domain=None,
+        define_xml_path=None,
     ).build()
     exp_columns = result.columns.tolist()
     req_columns = [
