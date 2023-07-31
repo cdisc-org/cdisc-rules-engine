@@ -53,14 +53,17 @@ class RulesEngine:
         **kwargs,
     ):
         self.config = config_obj or default_config
+        self.standard = kwargs.get("standard")
+        self.standard_version = kwargs.get("standard_version")
         self.cache = cache or CacheServiceFactory(self.config).get_cache_service()
         self.data_service = data_service or DataServiceFactory(
-            self.config, self.cache
+            self.config, self.cache, self.standard_version, self.standard_version
         ).get_service(**kwargs)
         self.rule_processor = RuleProcessor(self.data_service, self.cache)
         self.data_processor = DataProcessor(self.data_service, self.cache)
         self.standard = kwargs.get("standard")
         self.standard_version = kwargs.get("standard_version")
+        self.ct_packages = kwargs.get("ct_packages", [])
         self.ct_package = kwargs.get("ct_package")
         self.meddra_path: str = kwargs.get("meddra_path")
         self.whodrug_path: str = kwargs.get("whodrug_path")
@@ -77,7 +80,10 @@ class RulesEngine:
         dataset_domain: str,
     ):
         self.data_service = DataServiceFactory(
-            self.config, InMemoryCacheService.get_instance()
+            self.config,
+            InMemoryCacheService.get_instance(),
+            self.standard,
+            self.standard_version,
         ).get_dummy_data_service(datasets)
         dataset_dicts = []
         for domain in datasets:
@@ -115,7 +121,11 @@ class RulesEngine:
         return output
 
     def validate_single_rule(
-        self, rule: dict, dataset_path: str, datasets: List[dict], dataset_domain: str
+        self,
+        rule: dict,
+        dataset_path: str,
+        datasets: List[dict],
+        dataset_domain: str,
     ) -> List[Union[dict, str]]:
         """
         This function is an entrypoint to validation process.
@@ -125,6 +135,7 @@ class RulesEngine:
             f"Validating domain {dataset_domain}. "
             f"rule={rule}. dataset_path={dataset_path}. datasets={datasets}."
         )
+
         try:
             if self.rule_processor.is_suitable_for_validation(
                 rule,
@@ -154,6 +165,7 @@ class RulesEngine:
                 error_obj.domain = dataset_domain
                 return [error_obj.to_representation()]
         except Exception as e:
+            logger.trace(e, __name__)
             logger.error(
                 f"Error occurred during validation. Error: {e}. Error message: {str(e)}"
             )
@@ -181,35 +193,30 @@ class RulesEngine:
         )
 
     def validate_rule(
-        self, rule: dict, dataset_path: str, datasets: List[dict], domain: str
+        self,
+        rule: dict,
+        dataset_path: str,
+        datasets: List[dict],
+        domain: str,
     ) -> List[Union[dict, str]]:
         """
          This function is an entrypoint for rule validation.
         It defines a rule validator based on its type and calls it.
         """
+        kwargs = {}
         builder = self.get_dataset_builder(rule, dataset_path, datasets, domain)
         dataset = builder.get_dataset()
-        kwargs = {}
+
         # Update rule for certain rule types
         # SPECIAL CASES FOR RULE TYPES ###############################
         # TODO: Handle these special cases better.
-        if (
-            rule.get("rule_type")
-            == RuleTypes.DATASET_METADATA_CHECK_AGAINST_DEFINE.value
-        ):
-            # get Define XML metadata for domain and use it as a rule comparator
-            define_metadata: dict = self.get_define_xml_metadata_for_domain(
-                dataset_path, domain
-            )
-            self.rule_processor.add_comparator_to_rule_conditions(rule, define_metadata)
-
-        elif rule.get("rule_type") == RuleTypes.DEFINE_ITEM_METADATA_CHECK.value:
+        if rule.get("rule_type") == RuleTypes.DEFINE_ITEM_METADATA_CHECK.value:
             variable_codelist_map_key = get_standard_codelist_cache_key(
                 self.standard, self.standard_version
             )
             variable_codelist_map = self.cache.get(variable_codelist_map_key) or {}
             codelist_term_maps = [
-                self.cache.get(package) or {} for package in self.ct_package
+                self.cache.get(package) or {} for package in self.ct_packages
             ]
             kwargs["variable_codelist_map"] = variable_codelist_map
             kwargs["codelist_term_maps"] = codelist_term_maps
@@ -256,6 +263,8 @@ class RulesEngine:
                 rule_copy, dataset, dataset_path, datasets, domain, **kwargs
             )
 
+        kwargs["ct_packages"] = list(self.ct_packages)
+
         logger.info(f"Using dataset build by: {builder.__class__}")
         return self.execute_rule(
             rule, dataset, dataset_path, datasets, domain, **kwargs
@@ -271,6 +280,7 @@ class RulesEngine:
         value_level_metadata: List[dict] = None,
         variable_codelist_map: dict = None,
         codelist_term_maps: list = None,
+        ct_packages: list = None,
     ) -> List[str]:
         """
         Executes the given rule on a given dataset.
@@ -305,9 +315,10 @@ class RulesEngine:
             standard_version=self.standard_version,
             meddra_path=self.meddra_path,
             whodrug_path=self.whodrug_path,
+            ct_packages=ct_packages,
         )
         relationship_data = {}
-        if self.rule_processor.is_relationship_dataset(domain):
+        if domain is not None and self.rule_processor.is_relationship_dataset(domain):
             relationship_data = self.data_processor.preprocess_relationship_dataset(
                 os.path.dirname(dataset_path), dataset, datasets
             )
@@ -342,6 +353,7 @@ class RulesEngine:
         define_xml_reader = DefineXMLReaderFactory.get_define_xml_reader(
             dataset_path, self.define_xml_path, self.data_service, self.cache
         )
+
         return define_xml_reader.extract_domain_metadata(domain_name=domain_name)
 
     def get_define_xml_value_level_metadata(

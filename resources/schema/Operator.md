@@ -574,7 +574,7 @@ This operator is technically compatible with COVALn. There is no similar rule fo
 
 ## variable_metadata_equal_to
 
-Could be useful, for example, in checking variable permissibility in conjunction with the variable_permissibilities operator:
+Could be useful, for example, in checking variable permissibility in conjunction with the `variable_library_metadata` operation:
 
 ```yaml
 Check:
@@ -585,7 +585,8 @@ Check:
     - operator: not_exists
 Operations:
   - id: $permissibility
-    operator: variable_permissibilities
+    operator: variable_library_metadata
+    name: core
 ```
 
 ## variable_metadata_not_equal_to

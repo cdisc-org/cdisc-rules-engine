@@ -58,6 +58,20 @@
     },
     {
       "properties": {
+        "operator": { "const": "get_codelist_attributes" }
+      },
+      "required": [
+        "id",
+        "operator",
+        "name",
+        "ct_attribute",
+        "ct_packages",
+        "ct_version"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
         "operator": {
           "const": "get_column_order_from_dataset"
         }
@@ -288,6 +302,18 @@
   "properties": {
     "attribute_name": {
       "$ref": "MetaVariables.json"
+    },
+    "ct_attribute": {
+      "type": "string"
+    },
+    "ct_packages": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "ct_version": {
+      "type": "string"
     },
     "domain": {
       "anyOf": [

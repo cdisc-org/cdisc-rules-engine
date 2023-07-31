@@ -14,17 +14,32 @@ from . import DummyDataService, LocalDataService
 class DataServiceFactory(FactoryInterface):
     _registered_services_map = {"local": LocalDataService, "dummy": DummyDataService}
 
-    def __init__(self, config: ConfigInterface, cache_service: CacheServiceInterface):
+    def __init__(
+        self,
+        config: ConfigInterface,
+        cache_service: CacheServiceInterface,
+        standard: str = None,
+        standard_version: str = None,
+    ):
         self.data_service_name = config.getValue("DATA_SERVICE_TYPE") or "local"
         self.config = config
         self.cache_service = cache_service
+        self.standard = standard
+        self.standard_version = standard_version
 
     def get_data_service(self) -> DataServiceInterface:
         """Get local data service"""
-        return self.get_service("local")
+        return self.get_service(
+            "local", standard=self.standard, standard_version=self.standard_version
+        )
 
     def get_dummy_data_service(self, data: List[DummyDataset]) -> DataServiceInterface:
-        return self.get_service("dummy", data=data)
+        return self.get_service(
+            "dummy",
+            data=data,
+            standard=self.standard,
+            standard_version=self.standard_version,
+        )
 
     @classmethod
     def register_service(cls, name: str, service: Type[DataServiceInterface]) -> None:

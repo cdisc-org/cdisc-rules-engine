@@ -171,14 +171,15 @@ class RuleProcessor:
         is_included = True
         is_excluded = False
         if included_classes:
+            if ALL_KEYWORD in included_classes:
+                return True
             dataset = self.data_service.get_dataset(dataset_name=file_path)
             class_name = self.data_service.get_dataset_class(
                 dataset, file_path, datasets, domain
             )
-            if (
-                (class_name not in included_classes)
-                and not (class_name == FINDINGS_ABOUT and FINDINGS in included_classes)
-            ) and ALL_KEYWORD not in included_classes:
+            if (class_name not in included_classes) and not (
+                class_name == FINDINGS_ABOUT and FINDINGS in included_classes
+            ):
                 is_included = False
 
         if excluded_classes:
@@ -247,6 +248,10 @@ class RuleProcessor:
                 standard_version=standard_version,
                 meddra_path=kwargs.get("meddra_path"),
                 whodrug_path=kwargs.get("whodrug_path"),
+                ct_version=operation.get("version"),
+                ct_attribute=operation.get("attribute"),
+                ct_packages=kwargs.get("ct_packages"),
+                ct_package=kwargs.get("codelist_term_maps"),
                 attribute_name=operation.get("attribute_name", ""),
                 key_name=operation.get("key_name", ""),
                 key_value=operation.get("key_value", ""),

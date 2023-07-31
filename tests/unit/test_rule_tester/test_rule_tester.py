@@ -1,12 +1,14 @@
 from cdisc_rule_tester.models.rule_tester import RuleTester
 from os import path
+from unittest.mock import patch
 
 test_define_file_path: str = (
     f"{path.dirname(__file__)}/../../resources/test_defineV22-SDTM.xml"
 )
 
 
-def test_rule_with_errors():
+@patch("cdisc_rules_engine.services.data_services.DummyDataService.get_dataset_class")
+def test_rule_with_errors(mock_get_dataset_class):
     datasets = [
         {
             "filename": "lb.xpt",
@@ -49,6 +51,7 @@ def test_rule_with_errors():
             }
         ],
     }
+    mock_get_dataset_class.return_value = None
     tester = RuleTester(datasets)
     data = tester.validate(rule)
     assert "LB" in data
@@ -60,7 +63,8 @@ def test_rule_with_errors():
     assert error["value"] == {"LBSEQ": 1}
 
 
-def test_rule_without_errors():
+@patch("cdisc_rules_engine.services.data_services.DummyDataService.get_dataset_class")
+def test_rule_without_errors(mock_get_dataset_class):
     datasets = [
         {
             "filename": "lb.xpt",
@@ -103,6 +107,7 @@ def test_rule_without_errors():
             }
         ],
     }
+    mock_get_dataset_class.return_value = None
     tester = RuleTester(datasets)
     data = tester.validate(rule)
     assert "LB" in data
@@ -208,7 +213,10 @@ def test_rule_with_define_xml(define_xml_variable_validation_rule: dict):
 
     with open(test_define_file_path, "r") as file:
         contents: str = file.read()
-        tester = RuleTester(datasets, contents)
+        tester = RuleTester(
+            datasets,
+            contents,
+        )
         data = tester.validate(define_xml_variable_validation_rule)
         assert "AE" in data
         assert len(data["AE"]) == 1
