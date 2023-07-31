@@ -12,5 +12,6 @@ TestArgs = namedtuple(
         "meddra",
         "controlled_terminology_package",
         "define_version",
+        "define_xml_path",
     ],
 )

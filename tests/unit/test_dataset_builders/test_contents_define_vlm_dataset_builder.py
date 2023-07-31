@@ -78,6 +78,7 @@ def test_contents_define_vlm_dataset_builder(
         dataset_path=None,
         datasets=None,
         domain=None,
+        define_xml_path=None,
     ).build()
     expected_df = pd.DataFrame.from_dict(expected)
     expected_df.sort_index(axis=1, inplace=True)

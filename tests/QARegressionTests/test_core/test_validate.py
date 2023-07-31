@@ -366,6 +366,22 @@ class TestValidate(unittest.TestCase):
         )
         self.assertEqual(result.exit_code, 0)
 
+    def test_validate_define_xml_path(self):
+        result = self.runner.invoke(
+            validate,
+            [
+                "-s",
+                "sdtmig",
+                "-v",
+                "3.4",
+                "-dp",
+                os.path.join("tests", "resources", "test_dataset.xpt"),
+                "-dxp",
+                "/resources",
+            ],
+        )
+        self.assertEqual(result.exit_code, 0)
+
     def tearDown(self):
         for file_name in os.listdir("."):
             if file_name != "host.json" and (

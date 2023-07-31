@@ -79,5 +79,6 @@ class DatasetBuilderFactory(FactoryInterface):
             kwargs.get("dataset_path"),
             kwargs.get("datasets"),
             kwargs.get("domain", ""),
+            kwargs.get("define_xml_path"),
         )
         return builder

@@ -6,7 +6,6 @@ from business_rules import export_rule_data
 from business_rules.engine import run
 import os
 from cdisc_rules_engine.config import config as default_config
-from cdisc_rules_engine.constants.define_xml_constants import DEFINE_XML_FILE_NAME
 from cdisc_rules_engine.dummy_models.dummy_dataset import DummyDataset
 from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 from cdisc_rules_engine.enums.rule_types import RuleTypes
@@ -37,7 +36,6 @@ from cdisc_rules_engine.utilities.data_processor import DataProcessor
 from cdisc_rules_engine.utilities.dataset_preprocessor import DatasetPreprocessor
 from cdisc_rules_engine.utilities.rule_processor import RuleProcessor
 from cdisc_rules_engine.utilities.utils import (
-    get_directory_path,
     get_library_variables_metadata_cache_key,
     get_standard_codelist_cache_key,
     is_split_dataset,
@@ -69,6 +67,7 @@ class RulesEngine:
         self.ct_package = kwargs.get("ct_package")
         self.meddra_path: str = kwargs.get("meddra_path")
         self.whodrug_path: str = kwargs.get("whodrug_path")
+        self.define_xml_path: str = kwargs.get("define_xml_path")
 
     def get_schema(self):
         return export_rule_data(DatasetVariable, COREActions)
@@ -190,6 +189,7 @@ class RulesEngine:
             domain=domain,
             datasets=datasets,
             dataset_path=dataset_path,
+            define_xml_path=self.define_xml_path,
         )
 
     def validate_rule(
@@ -228,7 +228,6 @@ class RulesEngine:
             self.rule_processor.add_comparator_to_rule_conditions(
                 rule, comparator=None, target_prefix="define_"
             )
-
         elif (
             rule.get("rule_type")
             == RuleTypes.VALUE_LEVEL_METADATA_CHECK_AGAINST_DEFINE.value
@@ -351,15 +350,8 @@ class RulesEngine:
         """
         Gets Define XML metadata and returns it as dict.
         """
-        directory_path = get_directory_path(dataset_path)
-        define_xml_path: str = os.path.join(directory_path, DEFINE_XML_FILE_NAME)
-
-        define_xml_contents: bytes = self.data_service.get_define_xml_contents(
-            dataset_name=define_xml_path
-        )
-
-        define_xml_reader = DefineXMLReaderFactory.from_file_contents(
-            define_xml_contents, cache_service_obj=self.cache
+        define_xml_reader = DefineXMLReaderFactory.get_define_xml_reader(
+            dataset_path, self.define_xml_path, self.data_service, self.cache
         )
 
         return define_xml_reader.extract_domain_metadata(domain_name=domain_name)
@@ -370,13 +362,8 @@ class RulesEngine:
         """
         Gets Define XML variable metadata and returns it as dataframe.
         """
-        directory_path = get_directory_path(dataset_path)
-        define_xml_path: str = os.path.join(directory_path, DEFINE_XML_FILE_NAME)
-        define_xml_contents: bytes = self.data_service.get_define_xml_contents(
-            dataset_name=define_xml_path
-        )
-        define_xml_reader = DefineXMLReaderFactory.from_file_contents(
-            define_xml_contents, cache_service_obj=self.cache
+        define_xml_reader = DefineXMLReaderFactory.get_define_xml_reader(
+            dataset_path, self.define_xml_path, self.data_service, self.cache
         )
         return define_xml_reader.extract_value_level_metadata(domain_name=domain_name)
 

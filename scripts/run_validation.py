@@ -57,6 +57,7 @@ def validate_single_rule(cache, datasets, args: Validation_args, rule: dict = No
         ct_packages=args.controlled_terminology_package,
         meddra_path=args.meddra,
         whodrug_path=args.whodrug,
+        define_xml_path=args.define_xml_path,
     )
     results = []
     validated_domains = set()
@@ -123,4 +124,4 @@ def run_validation(args: Validation_args):
     )
     reporting_services: List[BaseReport] = reporting_factory.get_report_services()
     for reporting_service in reporting_services:
-        reporting_service.write_report()
+        reporting_service.write_report(args.define_xml_path)

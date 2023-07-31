@@ -20,5 +20,6 @@ Validation_args = namedtuple(
         "meddra",
         "rules",
         "progress",
+        "define_xml_path",
     ],
 )

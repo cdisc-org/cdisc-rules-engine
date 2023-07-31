@@ -62,9 +62,9 @@ These steps should be run before running any tests or core commands using the no
 
 ### Running The Tests
 
-From the root of the project run the following command:
+From the root of the project run the following command (this will run both the unit and regression tests):
 
-`python -m pytest tests/unit/`
+`python -m pytest tests`
 
 ### Running a validation
 
@@ -80,6 +80,7 @@ Run `python core.py validate --help` to see the list of validation options.
   -ps, --pool-size INTEGER         Number of parallel processes for validation
   -d, --data TEXT                 Path to directory containing data files
   -dp, --dataset-path TEXT        Absolute path to dataset file. Can be specified multiple times.
+  -dxp, --define_xml_path TEXT    Path to Define-XML
   -l, --log-level [info|debug|error|critical|disabled|warn]
                                   Sets log level for engine logs, logs are
                                   disabled by default
@@ -99,6 +100,7 @@ Run `python core.py validate --help` to see the list of validation options.
                                   the engine. This flag must be used only with
                                   --output-format JSON.
   -dv, --define-version TEXT      Define-XML version used for validation
+  -dxp, --define-xml-path         Define-XML Path
   --whodrug TEXT                  Path to directory with WHODrug dictionary
                                   files
   --meddra TEXT                   Path to directory with MedDRA dictionary
