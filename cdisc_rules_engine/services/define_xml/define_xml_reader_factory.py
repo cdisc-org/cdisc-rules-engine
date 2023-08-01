@@ -108,10 +108,11 @@ class DefineXMLReaderFactory:
         cls, dataset_path: str, define_xml_path: str, data_service, cache
     ):
         directory_path = get_directory_path(dataset_path)
-        define_xml_path: str = os.path.join(
-            directory_path if define_xml_path is None else define_xml_path,
-            DEFINE_XML_FILE_NAME,
-        )
+        if define_xml_path is None:
+            define_xml_path: str = os.path.join(
+                directory_path,
+                DEFINE_XML_FILE_NAME,
+            )
         define_xml_contents: bytes = data_service.get_define_xml_contents(
             dataset_name=define_xml_path
         )

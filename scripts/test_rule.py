@@ -57,6 +57,7 @@ def validate_single_rule(cache, path, args, datasets, rule: dict = None):
         ct_packages=args.controlled_terminology_package,
         meddra_path=args.meddra,
         whodrug_path=args.whodrug,
+        define_xml_path=args.define_xml_path,
     )
     validated_domains = set()
     results = []
