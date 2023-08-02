@@ -1,0 +1,46 @@
+{
+    "datasets": [{
+      "filename": "pp.xpt",
+      "label": "PP",
+      "domain": "PP",
+      "variables": [
+        {
+          "name": "STUDYID",
+          "label": "Study Identifier",
+          "type": "Char",
+          "length": 12
+        },
+        {
+          "name": "DOMAIN",
+          "label": "Domain Abbreviation",
+          "type": "Char",
+          "length": 2
+        },
+        {
+          "name": "USUBJID",
+          "label": "Unique Subject Identifier",
+          "type": "Char",
+          "length": 8
+        },
+        {
+          "name": "PPTESTCD",
+          "label": "Test code",
+          "type": "Char",
+          "length": 8
+        },
+        {
+          "name": "PPORRESU",
+          "label": "Test code",
+          "type": "Char",
+          "length": 8
+        }
+      ],
+      "records": {
+        "STUDYID": [ "TEST", "TEST", "TEST", "TEST", "TEST" ],
+        "DOMAIN": ["PP", "PP", "PP", "PP", "PP" ],
+        "USUBJID": ["A", "B", "B", "BB", "BB"],
+        "PPTESTCD": [ "W", "DW", "W", "W", "W"],
+        "PPORRESU": ["m/l", "cm/l", "cm/kg", "ml/g", "cm/g"]
+      }
+    }]}
+    
