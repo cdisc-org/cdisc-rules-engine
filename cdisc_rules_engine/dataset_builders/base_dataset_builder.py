@@ -95,7 +95,9 @@ class BaseDatasetBuilder:
         """
         Gets Define XML value level metadata and returns it as dataframe.
         """
-        define_xml_reader = DefineXMLReaderFactory.get_define_xml_reader()
+        define_xml_reader = DefineXMLReaderFactory.get_define_xml_reader(
+            self.dataset_path, self.define_xml_path, self.data_service, self.cache
+        )
         return define_xml_reader.extract_value_level_metadata(domain_name=self.domain)
 
     @staticmethod
@@ -103,5 +105,7 @@ class BaseDatasetBuilder:
         dataframe["row_number"] = range(1, len(dataframe) + 1)
 
     def get_define_metadata(self):
-        define_xml_reader = DefineXMLReaderFactory.get_define_xml_reader()
+        define_xml_reader = DefineXMLReaderFactory.get_define_xml_reader(
+            self.dataset_path, self.define_xml_path, self.data_service, self.cache
+        )
         return define_xml_reader.read()

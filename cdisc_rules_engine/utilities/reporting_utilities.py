@@ -14,6 +14,9 @@ def get_define_version(dataset_paths: List[str]) -> Optional[str]:
     """
     if not dataset_paths:
         return None
+    if dataset_paths[0].endswith(".xml"):
+        define_xml_reader = DefineXMLReaderFactory.from_filename(dataset_paths[0])
+        return define_xml_reader.get_define_version()
     path_to_data = os.path.dirname(dataset_paths[0])
     if not path_to_data or DEFINE_XML_FILE_NAME not in os.listdir(path_to_data):
         return None

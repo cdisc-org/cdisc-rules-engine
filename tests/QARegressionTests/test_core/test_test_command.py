@@ -27,9 +27,9 @@ class TestTestCommand(unittest.TestCase):
                 "-v",
                 "3.4",
                 "-dv",
-                os.path.join("tests", "resources", "report_test_data", "define.xml"),
+                "2.1",
                 "-dxp",
-                os.path.join("tests", "resources", "report_test_data"),
+                os.path.join("tests", "resources", "report_test_data", "define.xml"),
             ],
         )
         self.assertEqual(result.exit_code, 0)

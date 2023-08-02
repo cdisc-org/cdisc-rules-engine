@@ -100,7 +100,7 @@ Run `python core.py validate --help` to see the list of validation options.
                                   the engine. This flag must be used only with
                                   --output-format JSON.
   -dv, --define-version TEXT      Define-XML version used for validation
-  -dxp, --define-xml-path         Define-XML Path
+  -dxp, --define-xml-path         Path to define-xml file.
   --whodrug TEXT                  Path to directory with WHODrug dictionary
                                   files
   --meddra TEXT                   Path to directory with MedDRA dictionary
@@ -179,6 +179,7 @@ The possible rule run statuses are:
   --meddra TEXT                   Path to directory with MedDRA dictionary
                                   files
   -r, --rule TEXT                 Path to rule json file.
+  -dxp                            Path to define-xml file.
   --help                          Show this message and exit.
 ```
 
