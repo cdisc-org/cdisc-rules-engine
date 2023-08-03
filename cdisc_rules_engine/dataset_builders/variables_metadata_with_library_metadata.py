@@ -30,25 +30,20 @@ class VariablesMetadataWithLibraryMetadataDatasetBuilder(BaseDatasetBuilder):
             )
         )
         dataset_contents = self.get_dataset_contents()
-        content_variables_metadata[
-            "has_empty_values"
-        ] = content_variables_metadata.apply(
+        library_variables_metadata = self.get_variables_metadata()
+
+        data = content_variables_metadata.merge(
+            library_variables_metadata,
+            how="outer",
+            left_on="variable_name",
+            right_on="library_variable_name",
+        ).fillna("")
+
+        data["has_empty_values"] = data.apply(
             lambda row: self.variable_has_null_values(
                 row["variable_name"], dataset_contents
             ),
             axis=1,
-        )
-        library_variables_metadata = self.get_variables_metadata()
-
-        data = (
-            content_variables_metadata.merge(
-                library_variables_metadata,
-                how="outer",
-                left_on="variable_name",
-                right_on="library_variable_name",
-            )
-            .fillna("")
-            .drop_duplicates(subset=["variable_name"], keep="last")
         )
         return data
 

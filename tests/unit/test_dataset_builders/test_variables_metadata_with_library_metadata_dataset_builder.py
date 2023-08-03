@@ -110,13 +110,13 @@ def test_variable_metadata_with_library_metadata_dataset_builder(
         "variable_size",
         "variable_order_number",
         "variable_data_type",
-        "has_empty_values",
         "library_variable_name",
         "library_variable_role",
         "library_variable_label",
         "library_variable_core",
         "library_variable_order_number",
         "library_variable_data_type",
+        "has_empty_values",
     ]
     assert result["library_variable_name"].tolist() == [
         "STUDYID",
@@ -125,3 +125,4 @@ def test_variable_metadata_with_library_metadata_dataset_builder(
         "AESEQ",
     ]
     assert result["variable_name"].tolist() == ["STUDYID", "USUBJID", "AETERM", ""]
+    assert result["has_empty_values"].tolist() == [False, True, True, True]

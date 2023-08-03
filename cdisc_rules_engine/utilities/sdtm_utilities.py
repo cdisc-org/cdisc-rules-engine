@@ -71,7 +71,8 @@ def get_variables_metadata_from_standard(
         domain: The domain being validated
         cache: Cache service for retrieving previously cached library data
         config: Config used to create a cdisc library client.
-
+        include_model_variables: Boolean flag signifying whether or not
+                                 model variables are included
     Returns:
     [
         {
