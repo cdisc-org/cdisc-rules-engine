@@ -32,6 +32,9 @@ from cdisc_rules_engine.dataset_builders.contents_define_dataset_builder import 
 from cdisc_rules_engine.dataset_builders.contents_define_vlm_dataset_builder import (
     ContentsDefineVLMDatasetBuilder,
 )
+from cdisc_rules_engine.dataset_builders.variables_metadata_with_library_metadata import (
+    VariablesMetadataWithLibraryMetadataDatasetBuilder,
+)
 from cdisc_rules_engine.dataset_builders.base_dataset_builder import BaseDatasetBuilder
 from cdisc_rules_engine.enums.rule_types import RuleTypes
 
@@ -49,6 +52,7 @@ class DatasetBuilderFactory(FactoryInterface):
         RuleTypes.DEFINE_ITEM_GROUP_METADATA_CHECK.value: DefineItemGroupDatasetBuilder,
         RuleTypes.VALUE_CHECK_AGAINST_DEFINE_XML_VARIABLE.value: ContentsDefineVariablesDatasetBuilder,
         RuleTypes.VALUE_CHECK_AGAINST_DEFINE_XML_VLM.value: ContentsDefineVLMDatasetBuilder,
+        RuleTypes.VARIABLE_METADATA_CHECK_AGAINST_LIBRARY.value: VariablesMetadataWithLibraryMetadataDatasetBuilder,
     }
 
     @classmethod
@@ -80,5 +84,7 @@ class DatasetBuilderFactory(FactoryInterface):
             kwargs.get("datasets"),
             kwargs.get("domain", ""),
             kwargs.get("define_xml_path"),
+            kwargs.get("standard"),
+            kwargs.get("standard_version"),
         )
         return builder

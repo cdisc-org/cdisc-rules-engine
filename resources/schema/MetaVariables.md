@@ -174,6 +174,34 @@ ValueListDef.ItemDef.Size
 
 Name of file
 
+## has_empty_values
+
+True/False value indicating whether a variable has any empty values
+
+## library_variable_core
+
+core attribute of a variable from the CDISC Library
+
+## library_variable_data_type
+
+simpleDatatype attribute of a variable from the CDISC Library
+
+## library_variable_label
+
+label attribute of a variable from the CDISC Library
+
+## library_variable_name
+
+name attribute of a variable from the CDISC Library
+
+## library_variable_order_number
+
+ordinal attribute of a variable from the CDISC Library
+
+## library_variable_role
+
+role attribute of a variable from the CDISC Library
+
 ## row_number
 
 1-based index of record number

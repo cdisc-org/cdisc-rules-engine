@@ -99,5 +99,7 @@ def test_contents_define_variables_dataset_builder(
         datasets=None,
         domain=None,
         define_xml_path=None,
+        standard="sdtmig",
+        standard_version="3-4",
     ).build()
     assert result.equals(pd.DataFrame.from_dict(expected))

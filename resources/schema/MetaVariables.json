@@ -126,6 +126,13 @@
       "const": "define_vlm_size"
     },
     { "const": "filename" },
+    { "const": "has_empty_values" },
+    { "const": "library_variable_core" },
+    { "const": "library_variable_data_type" },
+    { "const": "library_variable_label" },
+    { "const": "library_variable_name" },
+    { "const": "library_variable_order_number" },
+    { "const": "library_variable_role" },
     {
       "const": "row_number"
     },

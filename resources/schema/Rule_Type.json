@@ -50,6 +50,10 @@
     {
       "const": "Variable Metadata Check against Define XML",
       "title": "Content metadata at variable level and define xml metadata at variable level"
+    },
+    {
+      "const": "Variable Metadata Check against Library Metadata",
+      "title": "Content metadata at the variable level and the corresponding library metadata"
     }
   ],
   "markdownDescription": "Determines how the primary dataset should be built before the rule is applied"

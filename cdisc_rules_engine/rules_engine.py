@@ -54,7 +54,7 @@ class RulesEngine:
     ):
         self.config = config_obj or default_config
         self.standard = kwargs.get("standard")
-        self.standard_version = kwargs.get("standard_version")
+        self.standard_version = (kwargs.get("standard_version") or "").replace(".", "-")
         self.cache = cache or CacheServiceFactory(self.config).get_cache_service()
         self.data_service = data_service or DataServiceFactory(
             self.config, self.cache, self.standard, self.standard_version
@@ -190,6 +190,8 @@ class RulesEngine:
             datasets=datasets,
             dataset_path=dataset_path,
             define_xml_path=self.define_xml_path,
+            standard=self.standard,
+            standard_version=self.standard_version,
         )
 
     def validate_rule(
