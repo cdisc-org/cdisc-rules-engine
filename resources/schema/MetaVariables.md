@@ -174,10 +174,6 @@ ValueListDef.ItemDef.Size
 
 Name of file
 
-## has_empty_values
-
-True/False value indicating whether a variable has any empty values
-
 ## library_variable_core
 
 core attribute of a variable from the CDISC Library
@@ -213,6 +209,10 @@ Variable data type (Char or Num)
 ## variable_format
 
 Variable format
+
+## variable_has_empty_values
+
+True/False value indicating whether a variable has any empty values
 
 ## variable_label
 

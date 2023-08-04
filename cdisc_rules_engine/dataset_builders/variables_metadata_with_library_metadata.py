@@ -15,7 +15,7 @@ class VariablesMetadataWithLibraryMetadataDatasetBuilder(BaseDatasetBuilder):
         variable_label
         variable_size
         variable_data_type
-        has_empty_values
+        variable_has_empty_values
         library_variable_name,
         library_variable_label,
         library_variable_data_type,
@@ -39,7 +39,7 @@ class VariablesMetadataWithLibraryMetadataDatasetBuilder(BaseDatasetBuilder):
             right_on="library_variable_name",
         ).fillna("")
 
-        data["has_empty_values"] = data.apply(
+        data["variable_has_empty_values"] = data.apply(
             lambda row: self.variable_has_null_values(
                 row["variable_name"], dataset_contents
             ),
@@ -55,7 +55,6 @@ class VariablesMetadataWithLibraryMetadataDatasetBuilder(BaseDatasetBuilder):
             domain=self.domain,
             cache=self.cache,
             config=config,
-            include_model_variables=False,
         )
 
         # Rename columns:

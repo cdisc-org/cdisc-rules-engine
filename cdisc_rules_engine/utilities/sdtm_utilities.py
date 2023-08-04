@@ -110,15 +110,33 @@ def get_variables_metadata_from_standard(
     variables_metadata.sort(key=lambda item: item["ordinal"])
     class_name = convert_library_class_name_to_ct_class(class_details.get("name"))
     if class_name in DETECTABLE_CLASSES and model_details and include_model_variables:
+        existing_variables = set([var["name"] for var in variables_metadata])
         (
             identifiers_metadata,
             class_variables_metadata,
             timing_metadata,
         ) = get_allowed_class_variables(model_details, class_details)
+
+        """
+         In some cases an identifier variable appears in both
+         the model class and the ig domain. We want to make sure to only add variables
+         that don't already appear in the ig domain to the list of variables
+         in order to avoid having duplicate variables in the output.
+        """
         if identifiers_metadata:
-            variables_metadata = identifiers_metadata + variables_metadata
+            new_identifiers = [
+                idvar
+                for idvar in identifiers_metadata
+                if idvar["name"].replace("--", domain) not in existing_variables
+            ]
+            variables_metadata = new_identifiers + variables_metadata
         if timing_metadata:
-            variables_metadata = variables_metadata + timing_metadata
+            new_timing_vars = [
+                timing_var
+                for timing_var in timing_metadata
+                if timing_var["name"].replace("--", domain) not in existing_variables
+            ]
+            variables_metadata = variables_metadata + new_timing_vars
 
     return variables_metadata
 

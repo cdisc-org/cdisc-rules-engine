@@ -21,6 +21,7 @@ from cdisc_rules_engine.utilities.utils import (
     get_standard_details_cache_key,
     get_model_details_cache_key,
 )
+from cdisc_rules_engine.config import ConfigService
 
 test_set1 = (
     {
@@ -44,10 +45,12 @@ test_set1 = (
                     {
                         "name": "VISITNUM",
                         "ordinal": 17,
+                        "role": VariableRoles.TIMING.value,
                     },
                     {
                         "name": "VISIT",
                         "ordinal": 18,
+                        "role": VariableRoles.TIMING.value,
                     },
                 ],
             }
@@ -116,8 +119,16 @@ test_set1 = (
                         "datasetVariables": [
                             {"name": "AETEST", "ordinal": 1},
                             {"name": "AENEW", "ordinal": 2},
-                            {"name": "VISITNUM", "ordinal": 3},
-                            {"name": "VISIT", "ordinal": 4},
+                            {
+                                "name": "VISITNUM",
+                                "ordinal": 3,
+                                "role": VariableRoles.TIMING.value,
+                            },
+                            {
+                                "name": "VISIT",
+                                "ordinal": 4,
+                                "role": VariableRoles.TIMING.value,
+                            },
                         ],
                     }
                 ],
@@ -534,7 +545,9 @@ def test_get_model_filtered_variables(
     cache.add(get_model_details_cache_key("sdtm", "1-5"), model_metadata)
 
     # execute operation
-    data_service = LocalDataService.get_instance(cache_service=cache)
+    data_service = LocalDataService.get_instance(
+        cache_service=cache, config=ConfigService()
+    )
 
     operation = LibraryModelVariablesFilter(
         operation_params, operation_params.dataframe, cache, data_service

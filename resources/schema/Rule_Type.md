@@ -268,7 +268,7 @@ Attach define xml metadata at value level
 - `variable_size`
 - `variable_data_type`
 - `variable_format`
-- `has_empty_values`
+- `variable_has_empty_values`
 - `library_variable_name`
 - `library_variable_order_number`
 - `library_variable_label`
