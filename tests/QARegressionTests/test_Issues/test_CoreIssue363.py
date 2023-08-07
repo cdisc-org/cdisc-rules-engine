@@ -12,7 +12,7 @@ class TestCoreIssue363(unittest.TestCase):
         url = (
             "https://cdisc-library-conformance-rules-generator-dev.azurewebsites.net"
             "/api/TestRule?"
-            "code=kWy0PLATQhG0w8hqOFZPGKJ2to-znk9NW7NK-UxgXWb6AzFuClLrmQ=="
+            "code=your-api-key"
         )
 
         # Load data from JSON file
