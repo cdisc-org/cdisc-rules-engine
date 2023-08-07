@@ -63,7 +63,7 @@ class JSONSearchTestCase(unittest.TestCase):
             json_data = json.load(file)
 
         # Key to search for
-        search_key = ["usubjid", "seq"]
+        search_keys = ["usubjid", "seq"]
 
         # Find the values for the searched key
         result = []
