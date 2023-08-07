@@ -5,7 +5,9 @@ import unittest
 import pytest
 
 """This regression test is for automating the validation of acceptancce criteria
-of CORE issue 208. For Other checks please run the related unit tests"""
+which is "For any variables that come from datasets and appear in the results,
+the variables should have the same case as the variable names in the dataset".
+For Other checks please run the related unit tests"""
 
 
 def find_value(json_data, key):
@@ -40,7 +42,7 @@ class JSONSearchTestCase(unittest.TestCase):
             "-v",
             "3.4",
             "-dp",
-            "tests/resources/datasets/ae.xpt",
+            os.path.join("tests", "resources", "datasets", "ae.xpt"),
             "-of",
             "JSON",
         ]
@@ -61,13 +63,17 @@ class JSONSearchTestCase(unittest.TestCase):
             json_data = json.load(file)
 
         # Key to search for
-        search_key = "your_key"
+        search_key = ["usubjid", "seq"]
 
         # Find the values for the searched key
-        values = find_value(json_data, search_key)
+        result = []
+        for key in search_keys:
+            values = find_value(json_data, key)
+            for val in values:
+                result.append(val)
 
         # Check if all values are capitalized
-        for value in values:
+        for value in result:
             self.assertEqual(
                 value, value.upper(), f"Value '{value}' is not capitalized."
             )
