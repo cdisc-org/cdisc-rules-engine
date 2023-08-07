@@ -258,6 +258,24 @@ Attach define xml metadata at value level
 - `define_variable_label`
 - `define_variable_`...
 
+## Variable Metadata Check against Library Metadata
+
+#### Columns
+
+- `variable_name`
+- `variable_order_number`
+- `variable_label`
+- `variable_size`
+- `variable_data_type`
+- `variable_format`
+- `variable_has_empty_values`
+- `library_variable_name`
+- `library_variable_order_number`
+- `library_variable_label`
+- `library_variable_data_type`
+- `library_variable_role`
+- `library_variable_core`
+
 #### Rule Macro
 
 Attach define xml metadata at variable level

@@ -79,6 +79,8 @@ def test_contents_define_vlm_dataset_builder(
         datasets=None,
         domain=None,
         define_xml_path=None,
+        standard="sdtmig",
+        standard_version="3-4",
     ).build()
     expected_df = pd.DataFrame.from_dict(expected)
     expected_df.sort_index(axis=1, inplace=True)
