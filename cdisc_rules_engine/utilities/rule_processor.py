@@ -255,6 +255,8 @@ class RuleProcessor:
                 attribute_name=operation.get("attribute_name", ""),
                 key_name=operation.get("key_name", ""),
                 key_value=operation.get("key_value", ""),
+                case_sensitive=operation.get("case_sensitive", True),
+                external_dictionary_type=operation.get("external_dictionary_type"),
             )
 
             # execute operation
