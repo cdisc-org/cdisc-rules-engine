@@ -580,6 +580,7 @@ Input:
   name: --DECOD
   id: $is_valid_decod_value
   external_dictionary_type: meddra
+  dictionary_term_type: PT
   case_sensitive: false
 ```
 

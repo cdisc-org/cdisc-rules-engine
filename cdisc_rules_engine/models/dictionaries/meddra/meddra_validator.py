@@ -60,7 +60,7 @@ class MedDRAValidator(AbstractDictionaryValidator):
 
         return self.term_dictionary
 
-    def is_valid_term(self, term: str, variable: str, **kwargs) -> bool:
+    def is_valid_term(self, term: str, term_type: str, variable: str, **kwargs) -> bool:
         """
         Method to identify whether a term is valid based on its term type.
 
@@ -78,7 +78,8 @@ class MedDRAValidator(AbstractDictionaryValidator):
                     ...
                 }
             term: The dictionary term used
-            variable: The variable component of the dictionary to validate against
+            term_type: The term type to validate against
+            variable: The variable used to source the term data
             kwargs: Additional validator specific variables
 
         Returns:
@@ -86,27 +87,11 @@ class MedDRAValidator(AbstractDictionaryValidator):
             False: The term is not valid
         """
         term_dictionary = self.get_term_dictionary()
-        # Map variables to the appropriate term type for dictionary lookup
-        term_type_map = {
-            f"--{MedDRAVariables.DECOD.value}": TermTypes.PT.value,
-            f"--{MedDRAVariables.BODSYS.value}": TermTypes.SOC.value,
-            f"--{MedDRAVariables.PTCD.value}": TermTypes.PT.value,
-            f"--{MedDRAVariables.LLTCD.value}": TermTypes.LLT.value,
-            f"--{MedDRAVariables.LLT.value}": TermTypes.LLT.value,
-            f"--{MedDRAVariables.HLT.value}": TermTypes.HLT.value,
-            f"--{MedDRAVariables.HLTCD.value}": TermTypes.HLT.value,
-            f"--{MedDRAVariables.HLGTCD.value}": TermTypes.HLGT.value,
-            f"--{MedDRAVariables.HLGT.value}": TermTypes.HLGT.value,
-            f"--{MedDRAVariables.BDSYSCD.value}": TermTypes.SOC.value,
-            f"--{MedDRAVariables.SOC.value}": TermTypes.SOC.value,
-            f"--{MedDRAVariables.SOCCD.value}": TermTypes.SOC.value,
-        }
-
         case_sensitive_check = kwargs.get("case_sensitive")
-        term_type = term_type_map.get(variable)
-        if not term_type:
+        term_type = term_type.lower()
+        if term_type not in TermTypes.values():
             raise InvalidDictionaryVariable(
-                f"{variable} does not correspond to a MedDRA term type"
+                f"{term_type} does not correspond to a MedDRA term type"
             )
 
         if variable in self.code_variables:

@@ -213,7 +213,13 @@
           "const": "valid_external_dictionary_value"
         }
       },
-      "required": ["id", "operator", "name", "external_dictionary_type"],
+      "required": [
+        "id",
+        "operator",
+        "name",
+        "external_dictionary_type",
+        "dictionary_term_type"
+      ],
       "type": "object"
     },
     {
@@ -326,6 +332,9 @@
     },
     "ct_version": {
       "type": "string"
+    },
+    "dictionary_term_type": {
+      "enum": ["LLT", "PT", "HLT", "HLGT", "SOC"]
     },
     "domain": {
       "anyOf": [

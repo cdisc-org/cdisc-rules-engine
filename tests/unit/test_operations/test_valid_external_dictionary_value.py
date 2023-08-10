@@ -18,6 +18,7 @@ def test_valid_external_dictionary_value_with_meddra(
     cache = CacheServiceFactory(config).get_cache_service()
     meddra_path = "meddra"
     operation_params.external_dictionary_type = "meddra"
+    operation_params.dictionary_term_type = "PT"
     operation_params.original_target = "--DECOD"
     operation_params.target = "AEDECOD"
 

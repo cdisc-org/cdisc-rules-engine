@@ -33,4 +33,5 @@ class OperationParams:
     key_value: str = None
     attribute_name: str = None
     external_dictionary_type: str = None
+    dictionary_term_type: str = None
     case_sensitive: bool = True

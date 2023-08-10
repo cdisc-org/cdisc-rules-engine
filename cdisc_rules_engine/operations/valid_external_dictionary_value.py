@@ -30,7 +30,9 @@ class ValidExternalDictionaryValue(BaseOperation):
 
         return self.params.dataframe.apply(
             lambda row: validator.is_valid_term(
-                term=row[self.params.target], variable=self.params.original_target
+                term=row[self.params.target],
+                term_type=self.params.dictionary_term_type,
+                variable=self.params.original_target,
             ),
             axis=1,
         )
