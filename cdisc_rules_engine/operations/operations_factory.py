@@ -64,6 +64,9 @@ from cdisc_rules_engine.operations.name_referenced_variable_metadata import (
 from cdisc_rules_engine.operations.define_variable_metadata import (
     DefineVariableMetadata,
 )
+from cdisc_rules_engine.operations.valid_external_dictionary_value import (
+    ValidExternalDictionaryValue,
+)
 
 
 class OperationsFactory(FactoryInterface):
@@ -104,6 +107,7 @@ class OperationsFactory(FactoryInterface):
         "label_referenced_variable_metadata": LabelReferencedVariableMetadata,
         "name_referenced_variable_metadata": NameReferencedVariableMetadata,
         "define_variable_metadata": DefineVariableMetadata,
+        "valid_external_dictionary_value": ValidExternalDictionaryValue,
     }
 
     @classmethod

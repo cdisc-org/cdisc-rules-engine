@@ -210,6 +210,21 @@
     {
       "properties": {
         "operator": {
+          "const": "valid_external_dictionary_value"
+        }
+      },
+      "required": [
+        "id",
+        "operator",
+        "name",
+        "external_dictionary_type",
+        "dictionary_term_type"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
           "const": "valid_meddra_code_references"
         }
       },
@@ -303,6 +318,9 @@
     "attribute_name": {
       "$ref": "MetaVariables.json"
     },
+    "case_sensitive": {
+      "type": "boolean"
+    },
     "ct_attribute": {
       "type": "string"
     },
@@ -315,6 +333,9 @@
     "ct_version": {
       "type": "string"
     },
+    "dictionary_term_type": {
+      "enum": ["LLT", "PT", "HLT", "HLGT", "SOC"]
+    },
     "domain": {
       "anyOf": [
         {
@@ -324,6 +345,9 @@
           "$ref": "CORE-base.json#/$defs/DataStructure"
         }
       ]
+    },
+    "external_dictionary_type": {
+      "enum": ["meddra"]
     },
     "group": {
       "items": {

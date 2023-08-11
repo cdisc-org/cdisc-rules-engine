@@ -57,3 +57,13 @@ class InvalidDatasetFormat(Exception):
 
 class NumberOfAttemptsExceeded(Exception):
     pass
+
+
+class InvalidDictionaryVariable(Exception):
+    description = (
+        "Provided dictionary variable does not correspond to a dictionary term type"
+    )
+
+
+class UnsupportedDictionaryType(Exception):
+    description = "Specified dictionary type is not supported by the rules engine."

@@ -567,6 +567,29 @@ the operation will return
 ["2023-10-26", "2023-12-13"]
 ```
 
+## valid_external_dictionary_value
+
+Returns true if the target variable contains a valid external dictionary value, otherwise false
+
+Can be case insensitive by setting `case_sensitive` attribute to false. It is true by default.
+
+Input:
+
+```yaml
+- operation: valid_external_dictionary_value
+  name: --DECOD
+  id: $is_valid_decod_value
+  external_dictionary_type: meddra
+  dictionary_term_type: PT
+  case_sensitive: false
+```
+
+Output:
+
+```json
+[true, false, false, true]
+```
+
 ## valid_meddra_code_references
 
 Determines whether the values are valid in the following variables:

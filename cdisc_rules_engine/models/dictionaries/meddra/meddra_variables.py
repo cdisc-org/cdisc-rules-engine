@@ -12,3 +12,5 @@ class MedDRAVariables(BaseEnum):
     HLGT = "HLGT"
     HLT = "HLT"
     LLT = "LLT"
+    BODSYS = "BODSYS"
+    BDSYSCD = "BDSYSCD"
