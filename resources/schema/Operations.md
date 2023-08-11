@@ -576,7 +576,7 @@ Can be case insensitive by setting `case_sensitive` attribute to false. It is tr
 Input:
 
 ```yaml
-- operation: valid_external_dictionary_values
+- operation: valid_external_dictionary_value
   name: --DECOD
   id: $is_valid_decod_value
   external_dictionary_type: meddra
