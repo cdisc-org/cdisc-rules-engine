@@ -3900,7 +3900,7 @@
           </Description>
         </def:Origin>
       </ItemDef>
-      <ItemDef OID="IT.EX.EXROUTE" Name="EXROUTE" DataType="text" Length="12" SASFieldName="EXROUTE">
+      <ItemDef OID="IT.EX.EXROUTE" Name="EXROUTE" DataType="text" Length="12" SASFieldName="EXROUTE" def:CommentOID="COM.DTC1">
         <Description>
           <TranslatedText xml:lang="en">Route of Administration</TranslatedText>
         </Description>
