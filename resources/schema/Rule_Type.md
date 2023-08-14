@@ -94,6 +94,7 @@ any:
 - `define_variable_order_number`
 - `define_variable_has_codelist`
 - `define_variable_codelist_coded_values`
+- `define_variable_has_comment`
 
 #### Rule Macro
 

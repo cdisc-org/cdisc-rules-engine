@@ -66,6 +66,10 @@ ItemGroupDef.ItemDef.DataType
 
 ItemGroupDef.ItemDef.CodeListRef exists
 
+## define_variable_has_comment
+
+ItemGroupDef.ItemDef.CommentOID exists
+
 ## define_variable_has_no_data
 
 ItemGroupDef.ItemRef.HasNoData
