@@ -22,3 +22,6 @@ class RuleTypes(BaseEnum):
     )
     VALUE_CHECK_AGAINST_DEFINE_XML_VARIABLE = "Value Check against Define XML Variable"
     VALUE_CHECK_AGAINST_DEFINE_XML_VLM = "Value Check against Define XML VLM"
+    DEFINE_ITEM_METADATA_CHECK_AGAINST_LIBRARY = (
+        "Define Item Metadata Check against Library Metadata"
+    )

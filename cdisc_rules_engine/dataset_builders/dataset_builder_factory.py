@@ -35,6 +35,9 @@ from cdisc_rules_engine.dataset_builders.contents_define_vlm_dataset_builder imp
 from cdisc_rules_engine.dataset_builders.variables_metadata_with_library_metadata import (
     VariablesMetadataWithLibraryMetadataDatasetBuilder,
 )
+from cdisc_rules_engine.dataset_builders.define_variables_with_library_metadata import (
+    DefineVariablesWithLibraryMetadataDatasetBuilder,
+)
 from cdisc_rules_engine.dataset_builders.base_dataset_builder import BaseDatasetBuilder
 from cdisc_rules_engine.enums.rule_types import RuleTypes
 
@@ -53,6 +56,7 @@ class DatasetBuilderFactory(FactoryInterface):
         RuleTypes.VALUE_CHECK_AGAINST_DEFINE_XML_VARIABLE.value: ContentsDefineVariablesDatasetBuilder,
         RuleTypes.VALUE_CHECK_AGAINST_DEFINE_XML_VLM.value: ContentsDefineVLMDatasetBuilder,
         RuleTypes.VARIABLE_METADATA_CHECK_AGAINST_LIBRARY.value: VariablesMetadataWithLibraryMetadataDatasetBuilder,
+        RuleTypes.DEFINE_ITEM_METADATA_CHECK_AGAINST_LIBRARY.value: DefineVariablesWithLibraryMetadataDatasetBuilder,
     }
 
     @classmethod

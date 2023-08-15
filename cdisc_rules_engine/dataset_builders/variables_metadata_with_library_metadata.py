@@ -1,8 +1,5 @@
 from cdisc_rules_engine.dataset_builders.base_dataset_builder import BaseDatasetBuilder
 import pandas as pd
-from typing import List
-from cdisc_rules_engine import config
-import cdisc_rules_engine.utilities.sdtm_utilities as sdtm_utilities
 
 
 class VariablesMetadataWithLibraryMetadataDatasetBuilder(BaseDatasetBuilder):
@@ -30,7 +27,7 @@ class VariablesMetadataWithLibraryMetadataDatasetBuilder(BaseDatasetBuilder):
             )
         )
         dataset_contents = self.get_dataset_contents()
-        library_variables_metadata = self.get_variables_metadata()
+        library_variables_metadata = self.get_library_variables_metadata()
 
         data = content_variables_metadata.merge(
             library_variables_metadata,
@@ -46,29 +43,6 @@ class VariablesMetadataWithLibraryMetadataDatasetBuilder(BaseDatasetBuilder):
             axis=1,
         )
         return data
-
-    def get_variables_metadata(self) -> pd.DataFrame:
-        # TODO: Update to support other standard types
-        variables: List[dict] = sdtm_utilities.get_variables_metadata_from_standard(
-            standard=self.standard,
-            standard_version=self.standard_version,
-            domain=self.domain,
-            cache=self.cache,
-            config=config,
-        )
-
-        # Rename columns:
-        column_name_mapping = {
-            "ordinal": "order_number",
-            "simpleDatatype": "data_type",
-        }
-
-        for var in variables:
-            var["name"] = var["name"].replace("--", self.domain)
-            for key, new_key in column_name_mapping.items():
-                var[new_key] = var.pop(key)
-
-        return pd.DataFrame(variables).add_prefix("library_variable_")
 
     def variable_has_null_values(self, variable: str, content: pd.DataFrame) -> bool:
         if variable not in content:

@@ -9,6 +9,8 @@ from cdisc_rules_engine.utilities.utils import (
     get_corresponding_datasets,
 )
 from typing import List
+from cdisc_rules_engine import config
+from cdisc_rules_engine.utilities import sdtm_utilities
 import os
 
 
@@ -128,3 +130,26 @@ class BaseDatasetBuilder:
             self.dataset_path, self.define_xml_path, self.data_service, self.cache
         )
         return define_xml_reader.read()
+
+    def get_library_variables_metadata(self) -> pd.DataFrame:
+        # TODO: Update to support other standard types
+        variables: List[dict] = sdtm_utilities.get_variables_metadata_from_standard(
+            standard=self.standard,
+            standard_version=self.standard_version,
+            domain=self.domain,
+            cache=self.cache,
+            config=config,
+        )
+
+        # Rename columns:
+        column_name_mapping = {
+            "ordinal": "order_number",
+            "simpleDatatype": "data_type",
+        }
+
+        for var in variables:
+            var["name"] = var["name"].replace("--", self.domain)
+            for key, new_key in column_name_mapping.items():
+                var[new_key] = var.pop(key)
+
+        return pd.DataFrame(variables).add_prefix("library_variable_")
