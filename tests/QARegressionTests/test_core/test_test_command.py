@@ -23,14 +23,15 @@ class TestTestCommand(unittest.TestCase):
         command = (
             f"python core.py test "
             f"-c {os.path.join('resources', 'cache')} "
-            f"-dp {os.path.join('tests', 'resources', 'CoreIssue271', 'vlm-check-dataset.json')} "
-            f"-r {os.path.join('tests', 'resources', 'CoreIssue271', 'vlm-check-variable-length.json')} "
-            f"--whodrug {os.path.join('tests', 'resources', 'dictionaries', 'whodrug')} "
+            f"-dp {os.path.join('tests', 'resources', 'CG0027-positive.json')} "
+            f"-r {os.path.join('tests', 'resources', 'Rule-CG0027.json')} "
+            f"--whodrug "
+            f"{os.path.join('tests', 'resources', 'dictionaries', 'whodrug')} "
             f"--meddra {os.path.join('tests', 'resources', 'dictionaries', 'meddra')} "
             f"-s sdtmig "
             f"-v 3.4 "
             f"-dv 2.1 "
-            f"-dxp {os.path.join('tests', 'resources', 'report_test_data', 'define.xml')}"
+            f"-dxp {os.path.join('tests', 'resources','define.xml')}"
         )
         exit_code, stdout, stderr = self.run_command(command)
         self.assertEqual(exit_code, 0)
