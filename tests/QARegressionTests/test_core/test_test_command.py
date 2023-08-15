@@ -1,128 +1,105 @@
 import os
-import re
-from core import test
+import subprocess
 import unittest
-from click.testing import CliRunner
 
 
 class TestTestCommand(unittest.TestCase):
     def setUp(self):
-        self.runner = CliRunner()
-        self.error_message = re.compile(r".*\[ERROR\]|Error:.*")
+        self.error_keyword = "error"
+
+    def run_command(self, command):
+        process = subprocess.Popen(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            shell=True,
+            text=True,
+        )
+        stdout, stderr = process.communicate()
+        exit_code = process.returncode
+        return exit_code, stdout.lower(), stderr.lower()
 
     def test_test_command_with_all_options(self):
-        result = self.runner.invoke(
-            test,
-            [
-                "-c",
-                os.path.join("resources", "cache"),
-                "-dp",
-                os.path.join(
-                    "tests", "resources", "CoreIssue271", "vlm-check-dataset.json"
-                ),
-                "-r",
-                os.path.join(
-                    "tests",
-                    "resources",
-                    "CoreIssue271",
-                    "vlm-check-variable-length.json",
-                ),
-                "--whodrug",
-                os.path.join("tests", "resources", "dictionaries", "whodrug"),
-                "--meddra",
-                os.path.join("tests", "resources", "dictionaries", "meddra"),
-                "-s",
-                "sdtmig",
-                "-v",
-                "3.4",
-                "-dv",
-                "2.1",
-                "-dxp",
-                os.path.join("tests", "resources", "report_test_data", "define.xml"),
-            ],
+        command = (
+            f"python core.py test "
+            f"-c {os.path.join('resources', 'cache')} "
+            f"-dp {os.path.join('tests', 'resources', 'CoreIssue271', 'vlm-check-dataset.json')} "
+            f"-r {os.path.join('tests', 'resources', 'CoreIssue271', 'vlm-check-variable-length.json')} "
+            f"--whodrug {os.path.join('tests', 'resources', 'dictionaries', 'whodrug')} "
+            f"--meddra {os.path.join('tests', 'resources', 'dictionaries', 'meddra')} "
+            f"-s sdtmig "
+            f"-v 3.4 "
+            f"-dv 2.1 "
+            f"-dxp {os.path.join('tests', 'resources', 'report_test_data', 'define.xml')}"
         )
-        self.assertEqual(result.exit_code, 0)
-        self.assertTrue(not self.error_message.search(result.output))
+        exit_code, stdout, stderr = self.run_command(command)
+        self.assertEqual(exit_code, 0)
+        self.assertFalse(self.error_keyword in stdout)
+        self.assertEqual(stderr, "", f"Error while executing command:\n{stderr}")
 
     def test_test_command_without_dataset_path(self):
-        result = self.runner.invoke(
-            test,
-            [
-                "-c",
-                os.path.join("resources", "cache"),
-                "-r",
-                os.path.join("tests", "resources", "Rule-CG0027.json"),
-            ],
+        command = (
+            f"python core.py test "
+            f"-c {os.path.join('resources', 'cache')} "
+            f"-r {os.path.join('tests', 'resources', 'Rule-CG0027.json')}"
         )
-        self.assertNotEqual(result.exit_code, 0)
-        self.assertTrue(self.error_message.search(result.output))
+        exit_code, stdout, stderr = self.run_command(command)
+        self.assertNotEqual(exit_code, 0)
+        self.assertNotEqual(
+            stderr, "", f"Error not raised while executing invalid command:\n{stderr}"
+        )
 
     def test_test_command_without_rule(self):
-        result = self.runner.invoke(
-            test,
-            [
-                "-c",
-                os.path.join("resources", "cache"),
-                "-dp",
-                os.path.join("tests", "resources", "CG0027-positive.json"),
-            ],
+        command = (
+            f"python core.py test "
+            f"-c {os.path.join('resources', 'cache')} "
+            f"-dp {os.path.join('tests', 'resources', 'CG0027-positive.json')}"
         )
-        self.assertNotEqual(result.exit_code, 0)
-        self.assertTrue(self.error_message.search(result.output))
+        exit_code, stdout, stderr = self.run_command(command)
+        self.assertNotEqual(exit_code, 0)
+        self.assertNotEqual(
+            stderr, "", f"Error not raised while executing invalid command:\n{stderr}"
+        )
 
     def test_test_command_with_default_cache_path(self):
-        result = self.runner.invoke(
-            test,
-            [
-                "-s",
-                "sdtmig",
-                "-v",
-                "3.4",
-                "-dp",
-                os.path.join("tests", "resources", "CG0027-positive.json"),
-                "-r",
-                os.path.join("tests", "resources", "Rule-CG0027.json"),
-            ],
+        command = (
+            f"python core.py test "
+            f"-s sdtmig "
+            f"-v 3.4 "
+            f"-dp {os.path.join('tests', 'resources', 'CG0027-positive.json')} "
+            f"-r {os.path.join('tests', 'resources', 'Rule-CG0027.json')}"
         )
-        self.assertEqual(result.exit_code, 0)
-        self.assertTrue(not self.error_message.search(result.output))
+        exit_code, stdout, stderr = self.run_command(command)
+        self.assertEqual(exit_code, 0)
+        self.assertFalse(self.error_keyword in stdout)
+        self.assertEqual(stderr, "", f"Error while executing command:\n{stderr}")
 
     def test_test_command_without_whodrug_and_meddra(self):
-        result = self.runner.invoke(
-            test,
-            [
-                "-s",
-                "sdtmig",
-                "-v",
-                "3.4",
-                "-c",
-                os.path.join("resources", "cache"),
-                "-dp",
-                os.path.join("tests", "resources", "CG0027-positive.json"),
-                "-r",
-                os.path.join("tests", "resources", "Rule-CG0027.json"),
-            ],
+        command = (
+            f"python core.py test "
+            f"-s sdtmig "
+            f"-v 3.4 "
+            f"-c {os.path.join('resources', 'cache')} "
+            f"-dp {os.path.join('tests', 'resources', 'CG0027-positive.json')} "
+            f"-r {os.path.join('tests', 'resources', 'Rule-CG0027.json')}"
         )
-        self.assertEqual(result.exit_code, 0)
-        self.assertTrue(not self.error_message.search(result.output))
+        exit_code, stdout, stderr = self.run_command(command)
+        self.assertEqual(exit_code, 0)
+        self.assertFalse(self.error_keyword in stdout)
+        self.assertEqual(stderr, "", f"Error while executing command:\n{stderr}")
 
     def test_test_command_with_invalid_whodrug_and_meddra(self):
-        result = self.runner.invoke(
-            test,
-            [
-                "-c",
-                os.path.join("resources", "cache"),
-                "-dp",
-                os.path.join("tests", "resources", "CG0027-positive.json"),
-                "-r",
-                os.path.join("tests", "resources", "Rule-CG0027.json"),
-                "--whodrug",
-                "invalid_path",
-                "--meddra",
-                "invalid_path",
-            ],
+        command = (
+            f"python core.py test "
+            f"-c {os.path.join('resources', 'cache')} "
+            f"-dp {os.path.join('tests', 'resources', 'CG0027-positive.json')} "
+            f"-r {os.path.join('tests', 'resources', 'Rule-CG0027.json')} "
+            f"--whodrug invalid_path "
+            f"--meddra invalid_path"
         )
-        self.assertNotEqual(result.exit_code, 0)
+        exit_code, stdout, stderr = self.run_command(command)
+        self.assertNotEqual(exit_code, 0)
+        self.assertNotEqual(stderr, "", f"Error while executing command:\n{stderr}")
 
     def tearDown(self):
         for file_name in os.listdir("."):
