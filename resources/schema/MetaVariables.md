@@ -134,6 +134,10 @@ ValueListDef.ItemDef.DataType
 
 ValueListDef.ItemDef.CodeListRef exists
 
+## define_variable_has_comment
+
+ValueListDef.ItemDef.CommentOID exists
+
 ## define_vlm_has_no_data
 
 ValueListDef.ItemRef.HasNoData
