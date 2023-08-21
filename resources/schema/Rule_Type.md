@@ -94,6 +94,37 @@ any:
 - `define_variable_order_number`
 - `define_variable_has_codelist`
 - `define_variable_codelist_coded_values`
+- `define_variable_has_comment`
+
+#### Rule Macro
+
+Attach variable codelist and codelist terms
+
+## Define Item Metadata Check against Library Metadata
+
+#### Columns
+
+- `define_variable_name`
+- `define_variable_label`
+- `define_variable_data_type`
+- `define_variable_role`
+- `define_variable_size`
+- `define_variable_ccode`
+- `define_variable_format`
+- `define_variable_allowed_terms`
+- `define_variable_origin_type`
+- `define_variable_is_collected`
+- `define_variable_has_no_data`
+- `define_variable_order_number`
+- `define_variable_has_codelist`
+- `define_variable_codelist_coded_values`
+- `define_variable_has_comment`
+- `library_variable_name`
+- `library_variable_order_number`
+- `library_variable_label`
+- `library_variable_data_type`
+- `library_variable_role`
+- `library_variable_core`
 
 #### Rule Macro
 
@@ -258,6 +289,18 @@ Attach define xml metadata at value level
 - `define_variable_label`
 - `define_variable_`...
 
+#### Rule Macro
+
+Attach define xml metadata at variable level
+
+#### Example
+
+```yaml
+- name: variable_name
+  operator: not_equal_to
+  value: define_variable_name
+```
+
 ## Variable Metadata Check against Library Metadata
 
 #### Columns
@@ -275,15 +318,3 @@ Attach define xml metadata at value level
 - `library_variable_data_type`
 - `library_variable_role`
 - `library_variable_core`
-
-#### Rule Macro
-
-Attach define xml metadata at variable level
-
-#### Example
-
-```yaml
-- name: variable_name
-  operator: not_equal_to
-  value: define_variable_name
-```

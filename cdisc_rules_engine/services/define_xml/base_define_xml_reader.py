@@ -239,6 +239,7 @@ class BaseDefineXMLReader(ABC):
             "define_variable_has_codelist": False,
             "define_variable_codelist_coded_values": [],
             "define_variable_mandatory": None,
+            "define_variable_has_comment": False,
         }
         if itemdef:
             data["define_variable_mandatory"] = itemref.Mandatory
@@ -269,6 +270,7 @@ class BaseDefineXMLReader(ABC):
                 data["define_variable_origin_type"] = self._get_origin_type(itemdef)
             data["define_variable_has_no_data"] = getattr(itemref, "HasNoData", "")
             data["define_variable_order_number"] = itemref.OrderNumber
+            data["define_variable_has_comment"] = itemdef.CommentOID is not None
         return data
 
     def _get_codelist_ccode(self, codelist):

@@ -66,6 +66,10 @@ ItemGroupDef.ItemDef.DataType
 
 ItemGroupDef.ItemDef.CodeListRef exists
 
+## define_variable_has_comment
+
+ItemGroupDef.ItemDef.CommentOID exists
+
 ## define_variable_has_no_data
 
 ItemGroupDef.ItemRef.HasNoData
@@ -129,6 +133,10 @@ ValueListDef.ItemDef.DataType
 ## define_vlm_has_codelist
 
 ValueListDef.ItemDef.CodeListRef exists
+
+## define_vlm_has_comment
+
+ValueListDef.ItemDef.CommentOID exists
 
 ## define_vlm_has_no_data
 

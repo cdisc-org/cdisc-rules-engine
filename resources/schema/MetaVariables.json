@@ -48,6 +48,9 @@
       "const": "define_variable_has_codelist"
     },
     {
+      "const": "define_variable_has_comment"
+    },
+    {
       "const": "define_variable_has_no_data"
     },
     {
@@ -94,6 +97,9 @@
     },
     {
       "const": "define_vlm_has_codelist"
+    },
+    {
+      "const": "define_vlm_has_comment"
     },
     {
       "const": "define_vlm_has_no_data"

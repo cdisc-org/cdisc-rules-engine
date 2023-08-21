@@ -23,6 +23,10 @@
       "title": "Define xml metadata at variable level"
     },
     {
+      "const": "Define Item Metadata Check against Library Metadata",
+      "title": "Define xml metadata at variable level and corresponding library variable metadata"
+    },
+    {
       "const": "Domain Presence Check",
       "title": "Content domain presence at study level"
     },
