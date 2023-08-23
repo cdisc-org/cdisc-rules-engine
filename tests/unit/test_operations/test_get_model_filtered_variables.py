@@ -1,5 +1,8 @@
 # python -m pytest -s tests/unit/test_operations/test_get_model_filtered_variables.py
 
+from cdisc_rules_engine.models.library_metadata_container import (
+    LibraryMetadataContainer,
+)
 import pandas as pd
 import pytest
 
@@ -17,10 +20,6 @@ from cdisc_rules_engine.operations.get_model_filtered_variables import (
 )
 from cdisc_rules_engine.services.cache import InMemoryCacheService
 from cdisc_rules_engine.services.data_services import LocalDataService
-from cdisc_rules_engine.utilities.utils import (
-    get_standard_details_cache_key,
-    get_model_details_cache_key,
-)
 from cdisc_rules_engine.config import ConfigService
 
 test_set1 = (
@@ -535,22 +534,20 @@ def test_get_model_filtered_variables(
 
     # save model metadata to cache
     cache = InMemoryCacheService.get_instance()
-    cache.add(
-        get_standard_details_cache_key(
-            operation_params.standard, operation_params.standard_version
-        ),
-        standard_metadata,
+    library_metadata = LibraryMetadataContainer(
+        standard_metadata=standard_metadata, model_metadata=model_metadata
     )
-
-    cache.add(get_model_details_cache_key("sdtm", "1-5"), model_metadata)
-
     # execute operation
     data_service = LocalDataService.get_instance(
         cache_service=cache, config=ConfigService()
     )
 
     operation = LibraryModelVariablesFilter(
-        operation_params, operation_params.dataframe, cache, data_service
+        operation_params,
+        operation_params.dataframe,
+        cache,
+        data_service,
+        library_metadata,
     )
 
     result: pd.DataFrame = operation.execute()

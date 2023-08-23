@@ -1,4 +1,7 @@
 from cdisc_rules_engine.config.config import ConfigService
+from cdisc_rules_engine.models.library_metadata_container import (
+    LibraryMetadataContainer,
+)
 from cdisc_rules_engine.operations.variable_value_count import VariableValueCount
 from cdisc_rules_engine.models.operation_params import OperationParams
 import pandas as pd
@@ -51,7 +54,11 @@ def test_variable_value_count(
     operation_params.original_target = target
     operation_params.dataset_path = dataset_path
     result = VariableValueCount(
-        operation_params, datasets_map["AE"], cache, mock_data_service
+        operation_params,
+        datasets_map["AE"],
+        cache,
+        mock_data_service,
+        LibraryMetadataContainer(),
     ).execute()
     assert operation_params.operation_id in result
     for val in result[operation_params.operation_id]:

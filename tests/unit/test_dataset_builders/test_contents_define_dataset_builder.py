@@ -1,3 +1,6 @@
+from cdisc_rules_engine.models.library_metadata_container import (
+    LibraryMetadataContainer,
+)
 import pytest
 from unittest.mock import MagicMock, patch
 import pandas as pd
@@ -335,6 +338,7 @@ def test_contents_define_dataset_builder(
         define_xml_path=None,
         standard="sdtmig",
         standard_version="3-4",
+        library_metadata=LibraryMetadataContainer(),
     ).build()
     col_names = ["dataset_name", "define_dataset_name"]
     assert result[col_names].equals(expected[col_names]) or (
@@ -373,6 +377,7 @@ def test_contents_define_dataset_columns(
         define_xml_path=None,
         standard="sdtmig",
         standard_version="3-4",
+        library_metadata=LibraryMetadataContainer(),
     ).build()
     exp_columns = result.columns.tolist()
     req_columns = [

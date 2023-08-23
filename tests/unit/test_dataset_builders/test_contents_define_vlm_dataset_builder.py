@@ -1,3 +1,6 @@
+from cdisc_rules_engine.models.library_metadata_container import (
+    LibraryMetadataContainer,
+)
 import pytest
 from unittest.mock import MagicMock, patch
 import pandas as pd
@@ -81,6 +84,7 @@ def test_contents_define_vlm_dataset_builder(
         define_xml_path=None,
         standard="sdtmig",
         standard_version="3-4",
+        library_metadata=LibraryMetadataContainer(),
     ).build()
     expected_df = pd.DataFrame.from_dict(expected)
     expected_df.sort_index(axis=1, inplace=True)

@@ -1,3 +1,7 @@
+from cdisc_rules_engine.config.config import ConfigService
+from cdisc_rules_engine.models.library_metadata_container import (
+    LibraryMetadataContainer,
+)
 import pytest
 import pandas as pd
 
@@ -5,9 +9,6 @@ from cdisc_rules_engine.models.operation_params import OperationParams
 from cdisc_rules_engine.operations.domain_is_custom import DomainIsCustom
 from cdisc_rules_engine.services.cache import InMemoryCacheService
 from cdisc_rules_engine.services.data_services import LocalDataService
-from cdisc_rules_engine.utilities.utils import (
-    get_standard_details_cache_key,
-)
 
 
 @pytest.mark.parametrize(
@@ -72,16 +73,17 @@ def test_domain_is_custom(
     operation_params.standard_version = standard_version
     # save model metadata to cache
     cache = InMemoryCacheService.get_instance()
-    cache.add(
-        get_standard_details_cache_key(
-            operation_params.standard, operation_params.standard_version
-        ),
-        standard_metadata,
-    )
+    library_metadata = LibraryMetadataContainer(standard_metadata=standard_metadata)
     # execute operation
-    data_service = LocalDataService.get_instance(cache_service=cache)
+    data_service = LocalDataService.get_instance(
+        cache_service=cache, config=ConfigService()
+    )
     operation = DomainIsCustom(
-        operation_params, operation_params.dataframe, cache, data_service
+        operation_params,
+        operation_params.dataframe,
+        cache,
+        data_service,
+        library_metadata,
     )
     result: pd.DataFrame = operation.execute()
     assert result[operation_params.operation_id].equals(

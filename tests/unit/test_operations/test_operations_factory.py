@@ -1,3 +1,6 @@
+from cdisc_rules_engine.models.library_metadata_container import (
+    LibraryMetadataContainer,
+)
 from cdisc_rules_engine.models.operation_params import OperationParams
 from cdisc_rules_engine.operations.operations_factory import OperationsFactory
 from cdisc_rules_engine.operations.base_operation import BaseOperation
@@ -27,6 +30,7 @@ def test_register_service(operation_params: OperationParams):
         cache=cache,
         data_service=data_service,
         original_dataset=pd.DataFrame(),
+        library_metadata=LibraryMetadataContainer(),
     )
     assert isinstance(op, DummyOperation)
 

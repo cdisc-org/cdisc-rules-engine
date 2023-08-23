@@ -1,10 +1,9 @@
 from unittest.mock import MagicMock, patch
+from cdisc_rules_engine.models.library_metadata_container import (
+    LibraryMetadataContainer,
+)
 from cdisc_rules_engine.services.cache.in_memory_cache_service import (
     InMemoryCacheService,
-)
-from cdisc_rules_engine.utilities.utils import (
-    get_standard_details_cache_key,
-    get_model_details_cache_key,
 )
 import pandas as pd
 from cdisc_rules_engine.dataset_builders.variables_metadata_with_library_metadata import (  # noqa: E501
@@ -44,58 +43,55 @@ def test_variable_metadata_with_library_metadata_dataset_builder(
     cache = InMemoryCacheService()
     standard = "sdtmig"
     standard_version = "3-4"
-    cache_key = get_standard_details_cache_key(standard, standard_version)
-    cache.add(
-        cache_key,
-        {
-            "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
-            "classes": [
-                {
-                    "name": "Events",
-                    "datasets": [
-                        {
-                            "name": "AE",
-                            "label": "Adverse Events",
-                            "datasetVariables": [
-                                {
-                                    "name": "STUDYID",
-                                    "ordinal": "1",
-                                    "role": "Identifier",
-                                    "label": "Reported Term for the adverse event",
-                                    "simpleDatatype": "Char",
-                                    "core": "Req",
-                                },
-                                {
-                                    "name": "USUBJID",
-                                    "ordinal": "2",
-                                    "role": "Identifier",
-                                    "label": "Reported Term for the adverse event",
-                                    "simpleDatatype": "Char",
-                                    "core": "Req",
-                                },
-                                {
-                                    "name": "AETERM",
-                                    "ordinal": "9",
-                                    "role": "Topic",
-                                    "label": "Reported Term for the adverse event",
-                                    "simpleDatatype": "Char",
-                                    "core": "Req",
-                                },
-                                {
-                                    "name": "AESEQ",
-                                    "ordinal": "8",
-                                    "role": "Topic",
-                                    "label": "Sequence Number",
-                                    "simpleDatatype": "Num",
-                                    "core": "Req",
-                                },
-                            ],
-                        }
-                    ],
-                }
-            ],
-        },
-    )
+    standard_data = {
+        "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
+        "classes": [
+            {
+                "name": "Events",
+                "datasets": [
+                    {
+                        "name": "AE",
+                        "label": "Adverse Events",
+                        "datasetVariables": [
+                            {
+                                "name": "STUDYID",
+                                "ordinal": "1",
+                                "role": "Identifier",
+                                "label": "Reported Term for the adverse event",
+                                "simpleDatatype": "Char",
+                                "core": "Req",
+                            },
+                            {
+                                "name": "USUBJID",
+                                "ordinal": "2",
+                                "role": "Identifier",
+                                "label": "Reported Term for the adverse event",
+                                "simpleDatatype": "Char",
+                                "core": "Req",
+                            },
+                            {
+                                "name": "AETERM",
+                                "ordinal": "9",
+                                "role": "Topic",
+                                "label": "Reported Term for the adverse event",
+                                "simpleDatatype": "Char",
+                                "core": "Req",
+                            },
+                            {
+                                "name": "AESEQ",
+                                "ordinal": "8",
+                                "role": "Topic",
+                                "label": "Sequence Number",
+                                "simpleDatatype": "Num",
+                                "core": "Req",
+                            },
+                        ],
+                    }
+                ],
+            }
+        ],
+    }
+    library_metadata = LibraryMetadataContainer(standard_metadata=standard_data)
     result = VariablesMetadataWithLibraryMetadataDatasetBuilder(
         rule=None,
         data_service=LocalDataService(MagicMock(), MagicMock(), MagicMock()),
@@ -108,6 +104,7 @@ def test_variable_metadata_with_library_metadata_dataset_builder(
         define_xml_path=None,
         standard=standard,
         standard_version=standard_version,
+        library_metadata=library_metadata,
     ).build()
     assert result.columns.tolist() == [
         "variable_name",
@@ -163,120 +160,115 @@ def test_variable_metadata_with_library_metadata_dataset_builder_variable_only_i
     cache = InMemoryCacheService()
     standard = "sdtmig"
     standard_version = "3-4"
-    models_cache_key = get_model_details_cache_key("sdtm", "2-0")
-    cache_key = get_standard_details_cache_key(standard, standard_version)
-    cache.add(
-        cache_key,
-        {
-            "_links": {"model": {"href": "/mdr/sdtm/2-0"}},
-            "classes": [
-                {
-                    "name": "Events",
-                    "datasets": [
-                        {
-                            "name": "AE",
-                            "label": "Adverse Events",
-                            "datasetVariables": [
-                                {
-                                    "name": "STUDYID",
-                                    "ordinal": "1",
-                                    "role": "Identifier",
-                                    "label": "Reported Term for the adverse event",
-                                    "simpleDatatype": "Char",
-                                    "core": "Req",
-                                },
-                                {
-                                    "name": "USUBJID",
-                                    "ordinal": "2",
-                                    "role": "Identifier",
-                                    "label": "Reported Term for the adverse event",
-                                    "simpleDatatype": "Char",
-                                    "core": "Req",
-                                },
-                                {
-                                    "name": "AETERM",
-                                    "ordinal": "9",
-                                    "role": "Topic",
-                                    "label": "Reported Term for the adverse event",
-                                    "simpleDatatype": "Char",
-                                    "core": "Req",
-                                },
-                                {
-                                    "name": "AESEQ",
-                                    "ordinal": "8",
-                                    "role": "Topic",
-                                    "label": "Sequence Number",
-                                    "simpleDatatype": "Num",
-                                    "core": "Req",
-                                },
-                            ],
-                        }
-                    ],
-                }
-            ],
-        },
-    )
+    standard_data = {
+        "_links": {"model": {"href": "/mdr/sdtm/2-0"}},
+        "classes": [
+            {
+                "name": "Events",
+                "datasets": [
+                    {
+                        "name": "AE",
+                        "label": "Adverse Events",
+                        "datasetVariables": [
+                            {
+                                "name": "STUDYID",
+                                "ordinal": "1",
+                                "role": "Identifier",
+                                "label": "Reported Term for the adverse event",
+                                "simpleDatatype": "Char",
+                                "core": "Req",
+                            },
+                            {
+                                "name": "USUBJID",
+                                "ordinal": "2",
+                                "role": "Identifier",
+                                "label": "Reported Term for the adverse event",
+                                "simpleDatatype": "Char",
+                                "core": "Req",
+                            },
+                            {
+                                "name": "AETERM",
+                                "ordinal": "9",
+                                "role": "Topic",
+                                "label": "Reported Term for the adverse event",
+                                "simpleDatatype": "Char",
+                                "core": "Req",
+                            },
+                            {
+                                "name": "AESEQ",
+                                "ordinal": "8",
+                                "role": "Topic",
+                                "label": "Sequence Number",
+                                "simpleDatatype": "Num",
+                                "core": "Req",
+                            },
+                        ],
+                    }
+                ],
+            }
+        ],
+    }
 
-    cache.add(
-        models_cache_key,
-        {
-            "datasets": [
-                {
-                    "_links": {"parentClass": {"title": "Events"}},
-                    "name": "AE",
-                    "datasetVariables": [
-                        {
-                            "name": "AETERM",
-                            "ordinal": 4,
-                        },
-                        {
-                            "name": "AESEQ",
-                            "ordinal": 3,
-                        },
-                    ],
-                }
-            ],
-            "classes": [
-                {
-                    "name": "Events",
-                    "label": "Events",
-                    "classVariables": [
-                        {"name": "--TERM", "ordinal": 1},
-                        {"name": "--SEQ", "ordinal": 2},
-                    ],
-                },
-                {
-                    "name": GENERAL_OBSERVATIONS_CLASS,
-                    "label": GENERAL_OBSERVATIONS_CLASS,
-                    "classVariables": [
-                        {
-                            "name": "DOMAIN",
-                            "role": VariableRoles.IDENTIFIER.value,
-                            "ordinal": 2,
-                            "simpleDatatype": "Char",
-                        },
-                        {
-                            "name": "STUDYID",
-                            "role": VariableRoles.IDENTIFIER.value,
-                            "ordinal": 1,
-                            "simpleDatatype": "Char",
-                        },
-                        {
-                            "name": "TIMING_VAR",
-                            "role": VariableRoles.TIMING.value,
-                            "ordinal": 33,
-                            "simpleDatatype": "Char",
-                        },
-                        {
-                            "name": "--MODELVAR",
-                            "simpleDatatype": "Num",
-                            "role": VariableRoles.TIMING.value,
-                            "ordinal": 2000,
-                        },
-                    ],
-                },
-            ],
-        },
+    model_metadata = {
+        "datasets": [
+            {
+                "_links": {"parentClass": {"title": "Events"}},
+                "name": "AE",
+                "datasetVariables": [
+                    {
+                        "name": "AETERM",
+                        "ordinal": 4,
+                    },
+                    {
+                        "name": "AESEQ",
+                        "ordinal": 3,
+                    },
+                ],
+            }
+        ],
+        "classes": [
+            {
+                "name": "Events",
+                "label": "Events",
+                "classVariables": [
+                    {"name": "--TERM", "ordinal": 1},
+                    {"name": "--SEQ", "ordinal": 2},
+                ],
+            },
+            {
+                "name": GENERAL_OBSERVATIONS_CLASS,
+                "label": GENERAL_OBSERVATIONS_CLASS,
+                "classVariables": [
+                    {
+                        "name": "DOMAIN",
+                        "role": VariableRoles.IDENTIFIER.value,
+                        "ordinal": 2,
+                        "simpleDatatype": "Char",
+                    },
+                    {
+                        "name": "STUDYID",
+                        "role": VariableRoles.IDENTIFIER.value,
+                        "ordinal": 1,
+                        "simpleDatatype": "Char",
+                    },
+                    {
+                        "name": "TIMING_VAR",
+                        "role": VariableRoles.TIMING.value,
+                        "ordinal": 33,
+                        "simpleDatatype": "Char",
+                    },
+                    {
+                        "name": "--MODELVAR",
+                        "simpleDatatype": "Num",
+                        "role": VariableRoles.TIMING.value,
+                        "ordinal": 2000,
+                    },
+                ],
+            },
+        ],
+    }
+    library_metadata = LibraryMetadataContainer(
+        standard_metadata=standard_data, model_metadata=model_metadata
     )
     result = VariablesMetadataWithLibraryMetadataDatasetBuilder(
         rule=None,
@@ -290,6 +282,7 @@ def test_variable_metadata_with_library_metadata_dataset_builder_variable_only_i
         define_xml_path=None,
         standard=standard,
         standard_version=standard_version,
+        library_metadata=library_metadata,
     ).build()
     assert set(result.columns.tolist()) == set(
         [

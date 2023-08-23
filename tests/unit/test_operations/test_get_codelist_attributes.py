@@ -1,3 +1,7 @@
+from cdisc_rules_engine.config.config import ConfigService
+from cdisc_rules_engine.models.library_metadata_container import (
+    LibraryMetadataContainer,
+)
 import pandas as pd
 import pytest
 
@@ -99,15 +103,22 @@ def test_get_codelist_attributes(
 
     # 2.0 add CT data to cache
     cache = InMemoryCacheService.get_instance()
+    library_metadata = LibraryMetadataContainer()
     for pkg in ct_data:
         cp = pkg.get("package")
-        cache.add(cp, pkg)
+        library_metadata.set_ct_package_metadata(cp, pkg)
 
     # 3.0 execute operation
-    data_service = LocalDataService.get_instance(cache_service=cache)
+    data_service = LocalDataService.get_instance(
+        cache_service=cache, config=ConfigService()
+    )
 
     operation = CodeListAttributes(
-        operation_params, operation_params.dataframe, cache, data_service
+        operation_params,
+        operation_params.dataframe,
+        cache,
+        data_service,
+        library_metadata,
     )
 
     result: pd.DataFrame = operation.execute()
