@@ -11,6 +11,15 @@ from cdisc_rules_engine.dummy_models.dummy_dataset import DummyDataset
 from cdisc_rules_engine.models.rule import Rule
 from cdisc_rules_engine.models.rule_conditions import ConditionCompositeFactory
 from cdisc_rules_engine.config.config import ConfigService
+from cdisc_rules_engine.models.library_metadata_container import (
+    LibraryMetadataContainer,
+)
+from cdisc_rules_engine.utilities.utils import (
+    get_standard_details_cache_key,
+    get_model_details_cache_key,
+    get_library_variables_metadata_cache_key,
+    get_variable_codelist_map_cache_key,
+)
 
 
 class RuleTester:
@@ -21,6 +30,7 @@ class RuleTester:
         cache: InMemoryCacheService = None,
         standard: str = None,
         standard_version: str = "",
+        codelists=[],
     ):
         self.datasets = [DummyDataset(dataset_data) for dataset_data in datasets]
         self.cache = cache or InMemoryCacheService()
@@ -32,13 +42,50 @@ class RuleTester:
             data=self.datasets,
             define_xml=define_xml,
         )
+
+        standard_details_cache_key = get_standard_details_cache_key(
+            standard, standard_version
+        )
+        variable_details_cache_key = get_library_variables_metadata_cache_key(
+            standard, standard_version
+        )
+        standard_metadata = self.cache.get(standard_details_cache_key)
+        if standard_metadata:
+            model_link = (
+                standard_metadata.get("_links", {}).get("model", {}).get("href", "")
+            )
+            model_link_parts = model_link.split("/")
+            model_type = model_link_parts[1]
+            model_version = model_link_parts[-1]
+            model_cache_key = get_model_details_cache_key(model_type, model_version)
+            model_metadata = self.cache.get(model_cache_key)
+        else:
+            model_metadata = {}
+        variable_codelist_cache_key = get_variable_codelist_map_cache_key(
+            standard, standard_version
+        )
+
+        ct_package_metadata = {}
+        for codelist in codelists:
+            ct_package_metadata[codelist] = self.cache.get(codelist)
+
+        self.library_metadata = LibraryMetadataContainer(
+            standard_metadata=standard_metadata,
+            model_metadata=model_metadata,
+            variables_metadata=self.cache.get(variable_details_cache_key),
+            variable_codelist_map=self.cache.get(variable_codelist_cache_key),
+            ct_package_metadata=ct_package_metadata,
+        )
         self.engine = RulesEngine(
             self.cache,
             self.data_service,
             standard=standard,
             standard_version=standard_version,
+            library_metadata=self.library_metadata,
         )
-        self.engine.rule_processor = RuleProcessor(self.data_service, self.cache)
+        self.engine.rule_processor = RuleProcessor(
+            self.data_service, self.cache, self.library_metadata
+        )
         self.engine.data_processor = DataProcessor(self.data_service, self.cache)
 
     def validate(self, rule) -> dict:

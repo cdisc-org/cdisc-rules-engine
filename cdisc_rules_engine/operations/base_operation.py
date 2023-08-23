@@ -1,5 +1,4 @@
 import pandas as pd
-from cdisc_rules_engine.services.cdisc_library_service import CDISCLibraryService
 from cdisc_rules_engine.models.operation_params import OperationParams
 from cdisc_rules_engine.constants.permissibility import (
     REQUIRED,
@@ -17,9 +16,11 @@ from cdisc_rules_engine.interfaces import (
 )
 
 import cdisc_rules_engine.utilities.sdtm_utilities as sdtm_utilities
-from cdisc_rules_engine.utilities.utils import get_standard_details_cache_key
 from cdisc_rules_engine import config
 from collections import OrderedDict
+from cdisc_rules_engine.models.library_metadata_container import (
+    LibraryMetadataContainer,
+)
 
 
 class BaseOperation:
@@ -29,11 +30,13 @@ class BaseOperation:
         original_dataset: pd.DataFrame,
         cache_service: CacheServiceInterface,
         data_service: DataServiceInterface,
+        library_metadata: LibraryMetadataContainer = LibraryMetadataContainer(),
     ):
         self.params = params
         self.cache = cache_service
         self.data_service = data_service
         self.evaluation_dataset = original_dataset
+        self.library_metadata = library_metadata
 
     @abstractmethod
     def _execute_operation(self):
@@ -84,8 +87,9 @@ class BaseOperation:
             self.params.standard,
             self.params.standard_version,
             self.params.domain,
-            self.cache,
             config,
+            self.cache,
+            self.library_metadata,
         )
 
     def get_allowed_variable_permissibility(self, variable_metadata: dict):
@@ -105,17 +109,14 @@ class BaseOperation:
         return PERMISSIBLE
 
     def _retrieve_standards_metadata(self):
-        cache_key = get_standard_details_cache_key(
-            self.params.standard, self.params.standard_version
+
+        return sdtm_utilities.retrieve_standard_metadata(
+            standard=self.params.standard,
+            standard_version=self.params.standard_version,
+            cache=self.cache,
+            config=config,
+            library_metadata=self.library_metadata,
         )
-        standard_data: dict = self.cache.get(cache_key)
-        if standard_data is None:
-            cdisc_library_service = CDISCLibraryService(config, self.cache)
-            standard_data = cdisc_library_service.get_standard_details(
-                self.params.standard.lower(), self.params.standard_version
-            )
-            self.cache.add(cache_key, standard_data)
-        return standard_data
 
     def _get_variable_names_list(self, domain, dataframe):
         # get variables metadata from the standard model
@@ -165,6 +166,7 @@ class BaseOperation:
             dataset_path=self.params.dataset_path,
             cache=self.cache,
             data_service=self.data_service,
+            library_metadata=self.library_metadata,
         )
 
     @staticmethod

@@ -9,6 +9,9 @@ from cdisc_rules_engine.interfaces import (
 )
 
 from . import DummyDataService, LocalDataService
+from cdisc_rules_engine.models.library_metadata_container import (
+    LibraryMetadataContainer,
+)
 
 
 class DataServiceFactory(FactoryInterface):
@@ -20,17 +23,22 @@ class DataServiceFactory(FactoryInterface):
         cache_service: CacheServiceInterface,
         standard: str = None,
         standard_version: str = None,
+        library_metadata: LibraryMetadataContainer = None,
     ):
         self.data_service_name = config.getValue("DATA_SERVICE_TYPE") or "local"
         self.config = config
         self.cache_service = cache_service
         self.standard = standard
         self.standard_version = standard_version
+        self.library_metadata = library_metadata
 
     def get_data_service(self) -> DataServiceInterface:
         """Get local data service"""
         return self.get_service(
-            "local", standard=self.standard, standard_version=self.standard_version
+            "local",
+            standard=self.standard,
+            standard_version=self.standard_version,
+            library_metadata=self.library_metadata,
         )
 
     def get_dummy_data_service(self, data: List[DummyDataset]) -> DataServiceInterface:
@@ -39,6 +47,7 @@ class DataServiceFactory(FactoryInterface):
             data=data,
             standard=self.standard,
             standard_version=self.standard_version,
+            library_metadata=self.library_metadata,
         )
 
     @classmethod

@@ -36,8 +36,6 @@ from cdisc_rules_engine.utilities.data_processor import DataProcessor
 from cdisc_rules_engine.utilities.dataset_preprocessor import DatasetPreprocessor
 from cdisc_rules_engine.utilities.rule_processor import RuleProcessor
 from cdisc_rules_engine.utilities.utils import (
-    get_library_variables_metadata_cache_key,
-    get_standard_codelist_cache_key,
     is_split_dataset,
     serialize_rule,
 )
@@ -55,11 +53,18 @@ class RulesEngine:
         self.config = config_obj or default_config
         self.standard = kwargs.get("standard")
         self.standard_version = (kwargs.get("standard_version") or "").replace(".", "-")
+        self.library_metadata = kwargs.get("library_metadata")
         self.cache = cache or CacheServiceFactory(self.config).get_cache_service()
         self.data_service = data_service or DataServiceFactory(
-            self.config, self.cache, self.standard, self.standard_version
+            self.config,
+            self.cache,
+            self.standard,
+            self.standard_version,
+            self.library_metadata,
         ).get_service(**kwargs)
-        self.rule_processor = RuleProcessor(self.data_service, self.cache)
+        self.rule_processor = RuleProcessor(
+            self.data_service, self.cache, self.library_metadata
+        )
         self.data_processor = DataProcessor(self.data_service, self.cache)
         self.standard = kwargs.get("standard")
         self.standard_version = kwargs.get("standard_version")
@@ -84,11 +89,14 @@ class RulesEngine:
             InMemoryCacheService.get_instance(),
             self.standard,
             self.standard_version,
+            self.library_metadata,
         ).get_dummy_data_service(datasets)
         dataset_dicts = []
         for domain in datasets:
             dataset_dicts.append({"domain": domain.domain, "filename": domain.filename})
-        self.rule_processor = RuleProcessor(self.data_service, self.cache)
+        self.rule_processor = RuleProcessor(
+            self.data_service, self.cache, self.library_metadata
+        )
         self.data_processor = DataProcessor(self.data_service, self.cache)
         return self.validate_single_rule(
             rule, f"{dataset_path}", dataset_dicts, dataset_domain
@@ -192,6 +200,7 @@ class RulesEngine:
             define_xml_path=self.define_xml_path,
             standard=self.standard,
             standard_version=self.standard_version,
+            library_metadata=self.library_metadata,
         )
 
     def validate_rule(
@@ -213,15 +222,13 @@ class RulesEngine:
         # SPECIAL CASES FOR RULE TYPES ###############################
         # TODO: Handle these special cases better.
         if rule.get("rule_type") == RuleTypes.DEFINE_ITEM_METADATA_CHECK.value:
-            variable_codelist_map_key = get_standard_codelist_cache_key(
-                self.standard, self.standard_version
-            )
-            variable_codelist_map = self.cache.get(variable_codelist_map_key) or {}
-            codelist_term_maps = [
-                self.cache.get(package) or {} for package in self.ct_packages
-            ]
-            kwargs["variable_codelist_map"] = variable_codelist_map
-            kwargs["codelist_term_maps"] = codelist_term_maps
+            if self.library_metadata:
+                kwargs[
+                    "variable_codelist_map"
+                ] = self.library_metadata.variable_codelist_map
+                kwargs[
+                    "codelist_term_maps"
+                ] = self.library_metadata.get_all_ct_package_metadata()
 
         elif (
             rule.get("rule_type")
@@ -243,11 +250,9 @@ class RulesEngine:
             rule.get("rule_type")
             == RuleTypes.DATASET_CONTENTS_CHECK_AGAINST_DEFINE_AND_LIBRARY.value
         ):
-            library_metadata: dict = self.cache.get(
-                get_library_variables_metadata_cache_key(
-                    self.standard, self.standard_version
-                )
-            ).get(domain, {})
+            library_metadata: dict = self.library_metadata.variables_metadata.get(
+                domain, {}
+            )
             define_metadata: List[dict] = builder.get_define_xml_variables_metadata()
             targets: List[
                 str

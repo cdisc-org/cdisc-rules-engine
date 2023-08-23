@@ -28,7 +28,6 @@ from cdisc_rules_engine.utilities.utils import (
     get_dataset_cache_key_from_path,
     get_directory_path,
     search_in_list_of_dicts,
-    get_standard_details_cache_key,
 )
 from cdisc_rules_engine.utilities.sdtm_utilities import get_class_and_domain_metadata
 
@@ -96,6 +95,7 @@ class BaseDataService(DataServiceInterface, ABC):
         )
         self.standard = kwargs.get("standard")
         self.version = (kwargs.get("standard_version") or "").replace(".", "-")
+        self.library_metadata = kwargs.get("library_metadata")
 
     def get_dataset_by_type(
         self, dataset_name: str, dataset_type: str, **params
@@ -159,8 +159,9 @@ class BaseDataService(DataServiceInterface, ABC):
         else:
             if self.standard is None or self.version is None:
                 raise Exception("Missing standard and version data")
-            cache_key = get_standard_details_cache_key(self.standard, self.version)
-            standard_data = self.cache_service.get(cache_key)
+            standard_data = None
+            if self.library_metadata:
+                standard_data = self.library_metadata.standard_metadata
             if not standard_data:
                 standard_data = self.cdisc_library_service.get_standard_details(
                     self.standard, self.version

@@ -7,6 +7,9 @@ from typing import List, Iterable, Callable
 
 from cdisc_rules_engine.config import config
 from cdisc_rules_engine.enums.progress_parameter_options import ProgressParameterOptions
+from cdisc_rules_engine.models.library_metadata_container import (
+    LibraryMetadataContainer,
+)
 from cdisc_rules_engine.models.rule_conditions import ConditionCompositeFactory
 from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
 from cdisc_rules_engine.models.validation_args import Validation_args
@@ -21,8 +24,8 @@ from cdisc_rules_engine.services.data_services import (
 )
 from scripts.script_utils import (
     fill_cache_with_dictionaries,
-    fill_cache_with_provided_data,
     get_cache_service,
+    get_library_metadata_from_cache,
     get_rules,
     get_datasets,
 )
@@ -44,7 +47,13 @@ class CacheManager(SyncManager):
     pass
 
 
-def validate_single_rule(cache, datasets, args: Validation_args, rule: dict = None):
+def validate_single_rule(
+    cache,
+    datasets,
+    args: Validation_args,
+    library_metadata: LibraryMetadataContainer,
+    rule: dict = None,
+):
     rule["conditions"] = ConditionCompositeFactory.get_condition_composite(
         rule["conditions"]
     )
@@ -58,6 +67,7 @@ def validate_single_rule(cache, datasets, args: Validation_args, rule: dict = No
         meddra_path=args.meddra,
         whodrug_path=args.whodrug,
         define_xml_path=args.define_xml_path,
+        library_metadata=library_metadata,
     )
     results = []
     validated_domains = set()
@@ -98,10 +108,10 @@ def run_validation(args: Validation_args):
     manager.start()
     shared_cache = get_cache_service(manager)
     engine_logger.info(f"Populating cache, cache path: {args.cache}")
-    shared_cache = fill_cache_with_provided_data(shared_cache, args)
+    library_metadata: LibraryMetadataContainer = get_library_metadata_from_cache(args)
     # install dictionaries if needed
     fill_cache_with_dictionaries(shared_cache, args)
-    rules = get_rules(shared_cache, args)
+    rules = get_rules(args)
     data_service = DataServiceFactory(config, shared_cache).get_data_service()
     datasets = get_datasets(data_service, args.dataset_paths)
     engine_logger.info(f"Running {len(rules)} rules against {len(datasets)} datasets")
@@ -110,7 +120,9 @@ def run_validation(args: Validation_args):
     # run each rule in a separate process
     with Pool(args.pool_size) as pool:
         validation_results: Iterable[RuleValidationResult] = pool.imap_unordered(
-            partial(validate_single_rule, shared_cache, datasets, args),
+            partial(
+                validate_single_rule, shared_cache, datasets, args, library_metadata
+            ),
             rules,
         )
         progress_handler: Callable = get_progress_displayer(args)
