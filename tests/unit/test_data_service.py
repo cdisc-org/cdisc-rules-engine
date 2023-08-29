@@ -1,5 +1,8 @@
 from typing import List
 from unittest.mock import Mock, patch, MagicMock
+from cdisc_rules_engine.models.library_metadata_container import (
+    LibraryMetadataContainer,
+)
 
 import pandas as pd
 import pytest
@@ -118,15 +121,18 @@ def test_get_raw_dataset_metadata(
 def test_get_dataset_class(datasets, data, expected_class, filename):
     df = pd.DataFrame.from_dict(data)
     mock_cache_service = MagicMock()
-    mock_cache_service.get.return_value = {
-        "classes": [{"name": "SPECIAL PURPOSE", "datasets": [{"name": "DM"}]}]
-    }
+    library_metadata = LibraryMetadataContainer(
+        standard_metadata={
+            "classes": [{"name": "SPECIAL PURPOSE", "datasets": [{"name": "DM"}]}]
+        }
+    )
     data_service = LocalDataService(
         mock_cache_service,
         MagicMock(),
         MagicMock(),
         standard="sdtmig",
         standard_version="3-4",
+        library_metadata=library_metadata,
     )
     class_name = data_service.get_dataset_class(
         df, filename, datasets, datasets[0].get("domain")

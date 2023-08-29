@@ -9,6 +9,9 @@ from multiprocessing import Pool
 from multiprocessing.managers import SyncManager
 from typing import List
 from cdisc_rules_engine.config import config
+from cdisc_rules_engine.models.library_metadata_container import (
+    LibraryMetadataContainer,
+)
 from cdisc_rules_engine.models.rule_conditions import ConditionCompositeFactory
 from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
 from cdisc_rules_engine.models.validation_args import Validation_args
@@ -26,9 +29,9 @@ from cdisc_rules_engine.models.rule import Rule
 from cdisc_rules_engine.utilities.utils import generate_report_filename
 from scripts.script_utils import (
     fill_cache_with_dictionaries,
-    fill_cache_with_provided_data,
     get_cache_service,
     get_datasets,
+    get_library_metadata_from_cache,
 )
 from cdisc_rules_engine.utilities.utils import get_directory_path
 from cdisc_rules_engine.enums.progress_parameter_options import ProgressParameterOptions
@@ -44,7 +47,14 @@ class CacheManager(SyncManager):
     pass
 
 
-def validate_single_rule(cache, path, args, datasets, rule: dict = None):
+def validate_single_rule(
+    cache,
+    path,
+    args,
+    datasets,
+    library_metadata: LibraryMetadataContainer,
+    rule: dict = None,
+):
     set_log_level("ERROR")
     rule["conditions"] = ConditionCompositeFactory.get_condition_composite(
         rule["conditions"]
@@ -58,6 +68,7 @@ def validate_single_rule(cache, path, args, datasets, rule: dict = None):
         meddra_path=args.meddra,
         whodrug_path=args.whodrug,
         define_xml_path=args.define_xml_path,
+        library_metadata=library_metadata,
     )
     validated_domains = set()
     results = []
@@ -107,8 +118,7 @@ def test(args: TestArgs):
     manager = CacheManager()
     manager.start()
     shared_cache = get_cache_service(manager)
-    shared_cache = fill_cache_with_provided_data(shared_cache, args)
-
+    library_metadata: LibraryMetadataContainer = get_library_metadata_from_cache(args)
     # install dictionaries if needed
     fill_cache_with_dictionaries(shared_cache, args)
     with open(args.rule, "r") as f:
@@ -139,6 +149,7 @@ def test(args: TestArgs):
                     "",
                     args,
                     datasets,
+                    library_metadata,
                 ),
                 rules,
             ):

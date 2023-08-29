@@ -1,6 +1,9 @@
 import os
 from typing import List
 from unittest.mock import MagicMock, patch
+from cdisc_rules_engine.models.library_metadata_container import (
+    LibraryMetadataContainer,
+)
 
 import pandas as pd
 import pytest
@@ -16,11 +19,6 @@ from cdisc_rules_engine.services.cache.in_memory_cache_service import (
     InMemoryCacheService,
 )
 from cdisc_rules_engine.utilities.rule_processor import RuleProcessor
-from cdisc_rules_engine.utilities.utils import (
-    get_library_variables_metadata_cache_key,
-    get_standard_details_cache_key,
-    get_model_details_cache_key,
-)
 
 
 def test_get_schema():
@@ -1766,10 +1764,7 @@ def test_validate_dataset_contents_against_define_and_library_variable_metadata(
     cache = InMemoryCacheService()
     standard: str = "sdtmig"
     standard_version: str = "3-1-2"
-    cache.add(
-        get_library_variables_metadata_cache_key(standard, standard_version),
-        variables_metadata,
-    )
+    library_metadata = LibraryMetadataContainer(variables_metadata=variables_metadata)
 
     # mock define xml download to return test file contents
     test_define_path: str = (
@@ -1794,6 +1789,7 @@ def test_validate_dataset_contents_against_define_and_library_variable_metadata(
         cache=cache,
         standard=standard,
         standard_version=standard_version,
+        library_metadata=library_metadata,
     )
     validation_result: List[dict] = rules_engine.validate_single_rule(
         rule=rule_check_dataset_against_library_and_define,
@@ -2156,13 +2152,15 @@ def test_validate_variables_order_against_library_metadata(
             }
         ],
     }
-    cache.add(get_model_details_cache_key("sdtm", "1-5"), cache_data)
-    cache.add(get_standard_details_cache_key(standard, standard_version), standard_data)
+    library_metadata = LibraryMetadataContainer(
+        model_metadata=cache_data, standard_metadata=standard_data
+    )
     # run validation
     engine = RulesEngine(
         cache=cache,
         standard=standard,
         standard_version=standard_version,
+        library_metadata=library_metadata,
     )
     result: List[dict] = engine.validate_single_rule(
         rule_validate_columns_order_against_library_metadata,

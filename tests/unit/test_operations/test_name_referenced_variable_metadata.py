@@ -1,3 +1,7 @@
+from cdisc_rules_engine.config.config import ConfigService
+from cdisc_rules_engine.models.library_metadata_container import (
+    LibraryMetadataContainer,
+)
 import pandas as pd
 from cdisc_rules_engine.constants.classes import GENERAL_OBSERVATIONS_CLASS
 from cdisc_rules_engine.enums.variable_roles import VariableRoles
@@ -7,10 +11,6 @@ from cdisc_rules_engine.operations.name_referenced_variable_metadata import (
 )
 from cdisc_rules_engine.services.cache import InMemoryCacheService
 from cdisc_rules_engine.services.data_services import LocalDataService
-from cdisc_rules_engine.utilities.utils import (
-    get_standard_details_cache_key,
-    get_model_details_cache_key,
-)
 
 
 def test_get_name_referenced_variable_metadata(operation_params: OperationParams):
@@ -100,18 +100,20 @@ def test_get_name_referenced_variable_metadata(operation_params: OperationParams
     operation_params.target = "AEREF"
     operation_params.operation_id = "$name_referenced_variable"
     # save model metadata to cache
-    cache = InMemoryCacheService.get_instance()
-    cache.add(
-        get_standard_details_cache_key(
-            operation_params.standard, operation_params.standard_version
-        ),
-        standard_metadata,
+    cache = InMemoryCacheService()
+    library_metadata = LibraryMetadataContainer(
+        standard_metadata=standard_metadata, model_metadata=model_metadata
     )
-    cache.add(get_model_details_cache_key("sdtm", "1-5"), model_metadata)
     # execute operation
-    data_service = LocalDataService.get_instance(cache_service=cache)
+    data_service = LocalDataService.get_instance(
+        cache_service=cache, config=ConfigService()
+    )
     operation = NameReferencedVariableMetadata(
-        operation_params, operation_params.dataframe, cache, data_service
+        operation_params,
+        operation_params.dataframe,
+        cache,
+        data_service,
+        library_metadata,
     )
     result: pd.DataFrame = operation.execute()
     expected_columns = [

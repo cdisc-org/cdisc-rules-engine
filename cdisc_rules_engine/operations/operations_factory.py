@@ -132,6 +132,7 @@ class OperationsFactory(FactoryInterface):
             "original_dataset",
             "cache",
             "data_service",
+            "library_metadata",
         }
         if not required_args.issubset(kwargs.keys()):
             raise ValueError(
@@ -144,6 +145,7 @@ class OperationsFactory(FactoryInterface):
                 kwargs.get("original_dataset"),
                 kwargs.get("cache"),
                 kwargs.get("data_service"),
+                kwargs.get("library_metadata"),
             )
         raise ValueError(
             f"Operation name must be in  {list(self._operations_map.keys())}, "

@@ -47,7 +47,9 @@ class CodeListAttributes(BaseOperation):
 
         # 2.0 build codelist from cache
         # -------------------------------------------------------------------
-        ct_cache = self._get_ct_from_cache(ct_key=ct_name, ct_val=ct_attribute)
+        ct_cache = self._get_ct_from_library_metadata(
+            ct_key=ct_name, ct_val=ct_attribute
+        )
 
         # 3.0 get dataset records
         # -------------------------------------------------------------------
@@ -61,7 +63,7 @@ class CodeListAttributes(BaseOperation):
         result = pd.Series([ct_list[ct_attribute].values[0] for _ in range(ds_len)])
         return result
 
-    def _get_ct_from_cache(self, ct_key: str, ct_val: str):
+    def _get_ct_from_library_metadata(self, ct_key: str, ct_val: str):
         """
         Retrieves the codelist information from the cache based on the given
         ct_key and ct_val.
@@ -78,7 +80,10 @@ class CodeListAttributes(BaseOperation):
         ct_term_maps = (
             []
             if ct_packages is None
-            else [self.cache.get(package) or {} for package in ct_packages]
+            else [
+                self.library_metadata.get_ct_package_metadata(package) or {}
+                for package in ct_packages
+            ]
         )
 
         # convert codelist to dataframe

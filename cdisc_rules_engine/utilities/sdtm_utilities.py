@@ -3,8 +3,6 @@ from cdisc_rules_engine.interfaces.config_interface import ConfigInterface
 from cdisc_rules_engine.interfaces.data_service_interface import DataServiceInterface
 from cdisc_rules_engine.utilities.utils import (
     search_in_list_of_dicts,
-    get_model_details_cache_key,
-    get_standard_details_cache_key,
     convert_library_class_name_to_ct_class,
 )
 from cdisc_rules_engine.constants.classes import (
@@ -16,6 +14,9 @@ from cdisc_rules_engine.constants.classes import (
 )
 from cdisc_rules_engine.enums.variable_roles import VariableRoles
 from cdisc_rules_engine.services.cdisc_library_service import CDISCLibraryService
+from cdisc_rules_engine.models.library_metadata_container import (
+    LibraryMetadataContainer,
+)
 from typing import Tuple, List, Optional
 
 
@@ -57,8 +58,9 @@ def get_variables_metadata_from_standard(
     standard: str,
     standard_version: str,
     domain: str,
-    cache: CacheServiceInterface,
     config: ConfigInterface,
+    cache: CacheServiceInterface,
+    library_metadata: LibraryMetadataContainer,
     include_model_variables: bool = True,
 ) -> List[dict]:
     """
@@ -96,15 +98,14 @@ def get_variables_metadata_from_standard(
     if not standard or not standard_version:
         raise Exception("Please provide standard and version")
     standard_details: dict = retrieve_standard_metadata(
-        standard, standard_version, cache, config
+        standard, standard_version, cache, config, library_metadata
     )
     model = standard_details.get("_links", {}).get("model")
     class_details, domain_details = get_class_and_domain_metadata(
         standard_details, domain
     )
     model_type, model_version = get_tabulation_model_type_and_version(model)
-    model_cache_key = get_model_details_cache_key(model_type, model_version)
-    model_details = cache.get(model_cache_key) or {}
+    model_details = library_metadata.model_metadata
 
     variables_metadata = domain_details.get("datasetVariables", [])
     variables_metadata.sort(key=lambda item: item["ordinal"])
@@ -146,10 +147,12 @@ def retrieve_standard_metadata(
     standard_version: str,
     cache: CacheServiceInterface,
     config: ConfigInterface,
+    library_metadata: LibraryMetadataContainer,
 ) -> dict:
     """
-    Gets library metadata from cache.
-    If the metadata is not found in the cache, query the library for the required data.
+    Gets library metadata from LibraryMetadataContainer.
+    If the metadata is not found in the LibraryMetadataContainer,
+    query the library for the required data.
 
     Args:
         standard: Standard to validate against
@@ -160,14 +163,13 @@ def retrieve_standard_metadata(
     Returns:
         The CDISC library response for the provided standard and version.
     """
-    cache_key = get_standard_details_cache_key(standard, standard_version)
-    standard_data: dict = cache.get(cache_key)
-    if standard_data is None:
+    standard_data: dict = library_metadata.standard_metadata
+    if not standard_data:
         cdisc_library_service = CDISCLibraryService(config, cache)
         standard_data = cdisc_library_service.get_standard_details(
             standard.lower(), standard_version
         )
-        cache.add(cache_key, standard_data)
+        library_metadata.standard_metadata = standard_data
     return standard_data
 
 
@@ -289,6 +291,7 @@ def get_variables_metadata_from_standard_model(
     dataset_path: str,
     cache: CacheServiceInterface,
     data_service: DataServiceInterface,
+    library_metadata: LibraryMetadataContainer,
 ) -> List[dict]:
     """
     Gets variables metadata for the given class and domain from cache.
@@ -325,13 +328,7 @@ def get_variables_metadata_from_standard_model(
     ]
     """
     # get model details from cache
-    cache_key: str = get_standard_details_cache_key(standard, standard_version)
-
-    standard_details: dict = cache.get(cache_key) or {}
-    model = standard_details.get("_links", {}).get("model")
-    model_type, model_version = get_tabulation_model_type_and_version(model)
-    model_cache_key = get_model_details_cache_key(model_type, model_version)
-    model_details = cache.get(model_cache_key) or {}
+    model_details = library_metadata.model_metadata
     domain_details = get_model_domain_metadata(model_details, domain)
     variables_metadata = []
 

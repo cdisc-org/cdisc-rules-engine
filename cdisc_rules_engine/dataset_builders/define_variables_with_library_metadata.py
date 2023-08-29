@@ -43,5 +43,4 @@ class DefineVariablesWithLibraryMetadataDatasetBuilder(BaseDatasetBuilder):
             left_on="define_variable_name",
             right_on="library_variable_name",
         ).fillna("")
-        print(data.columns)
         return data

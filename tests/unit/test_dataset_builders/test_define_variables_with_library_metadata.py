@@ -1,9 +1,9 @@
 from unittest.mock import MagicMock, patch
+from cdisc_rules_engine.models.library_metadata_container import (
+    LibraryMetadataContainer,
+)
 from cdisc_rules_engine.services.cache.in_memory_cache_service import (
     InMemoryCacheService,
-)
-from cdisc_rules_engine.utilities.utils import (
-    get_standard_details_cache_key,
 )
 from pathlib import Path
 from cdisc_rules_engine.dataset_builders.define_variables_with_library_metadata import (
@@ -31,58 +31,55 @@ def test_define_variables_metadata_with_library_metadata_dataset_builder(
     cache = InMemoryCacheService()
     standard = "sdtmig"
     standard_version = "3-4"
-    cache_key = get_standard_details_cache_key(standard, standard_version)
-    cache.add(
-        cache_key,
-        {
-            "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
-            "classes": [
-                {
-                    "name": "Events",
-                    "datasets": [
-                        {
-                            "name": "AE",
-                            "label": "Adverse Events",
-                            "datasetVariables": [
-                                {
-                                    "name": "STUDYID",
-                                    "ordinal": "1",
-                                    "role": "Identifier",
-                                    "label": "Reported Term for the adverse event",
-                                    "simpleDatatype": "Char",
-                                    "core": "Req",
-                                },
-                                {
-                                    "name": "USUBJID",
-                                    "ordinal": "2",
-                                    "role": "Identifier",
-                                    "label": "Reported Term for the adverse event",
-                                    "simpleDatatype": "Char",
-                                    "core": "Req",
-                                },
-                                {
-                                    "name": "AETERM",
-                                    "ordinal": "9",
-                                    "role": "Topic",
-                                    "label": "Reported Term for the adverse event",
-                                    "simpleDatatype": "Char",
-                                    "core": "Req",
-                                },
-                                {
-                                    "name": "AESEQ",
-                                    "ordinal": "8",
-                                    "role": "Topic",
-                                    "label": "Sequence Number",
-                                    "simpleDatatype": "Num",
-                                    "core": "Req",
-                                },
-                            ],
-                        }
-                    ],
-                }
-            ],
-        },
-    )
+    standard_data = {
+        "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
+        "classes": [
+            {
+                "name": "Events",
+                "datasets": [
+                    {
+                        "name": "AE",
+                        "label": "Adverse Events",
+                        "datasetVariables": [
+                            {
+                                "name": "STUDYID",
+                                "ordinal": "1",
+                                "role": "Identifier",
+                                "label": "Reported Term for the adverse event",
+                                "simpleDatatype": "Char",
+                                "core": "Req",
+                            },
+                            {
+                                "name": "USUBJID",
+                                "ordinal": "2",
+                                "role": "Identifier",
+                                "label": "Reported Term for the adverse event",
+                                "simpleDatatype": "Char",
+                                "core": "Req",
+                            },
+                            {
+                                "name": "AETERM",
+                                "ordinal": "9",
+                                "role": "Topic",
+                                "label": "Reported Term for the adverse event",
+                                "simpleDatatype": "Char",
+                                "core": "Req",
+                            },
+                            {
+                                "name": "AESEQ",
+                                "ordinal": "8",
+                                "role": "Topic",
+                                "label": "Sequence Number",
+                                "simpleDatatype": "Num",
+                                "core": "Req",
+                            },
+                        ],
+                    }
+                ],
+            }
+        ],
+    }
+    library_metadata = LibraryMetadataContainer(standard_metadata=standard_data)
     result = DefineVariablesWithLibraryMetadataDatasetBuilder(
         rule=None,
         data_service=LocalDataService(MagicMock(), MagicMock(), MagicMock()),
@@ -95,6 +92,7 @@ def test_define_variables_metadata_with_library_metadata_dataset_builder(
         define_xml_path=test_define_file_path,
         standard=standard,
         standard_version=standard_version,
+        library_metadata=library_metadata,
     ).build()
 
     assert result.columns.tolist() == [

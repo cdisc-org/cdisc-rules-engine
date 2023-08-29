@@ -1,4 +1,7 @@
 from abc import abstractmethod
+from cdisc_rules_engine.models.library_metadata_container import (
+    LibraryMetadataContainer,
+)
 import pandas as pd
 from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import (
     DefineXMLReaderFactory,
@@ -28,6 +31,7 @@ class BaseDatasetBuilder:
         define_xml_path,
         standard,
         standard_version,
+        library_metadata=LibraryMetadataContainer(),
     ):
         self.data_service = data_service
         self.cache = cache_service
@@ -40,6 +44,7 @@ class BaseDatasetBuilder:
         self.define_xml_path = define_xml_path
         self.standard = standard
         self.standard_version = standard_version
+        self.library_metadata = library_metadata
 
     @abstractmethod
     def build(self) -> pd.DataFrame:
@@ -137,8 +142,9 @@ class BaseDatasetBuilder:
             standard=self.standard,
             standard_version=self.standard_version,
             domain=self.domain,
-            cache=self.cache,
             config=config,
+            cache=self.cache,
+            library_metadata=self.library_metadata,
         )
 
         # Rename columns:

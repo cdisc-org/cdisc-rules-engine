@@ -266,6 +266,10 @@ def get_metadata_cache_key(metadata_key: str):
     return f"library/metadata{metadata_key}"
 
 
+def get_variable_codelist_map_cache_key(standard: str, version: str) -> str:
+    return f"{standard}-{version}-codelists"
+
+
 def get_meddra_code_term_pairs_cache_key(meddra_path: str) -> str:
     return f"meddra_valid_code_term_pairs_{meddra_path}"
 

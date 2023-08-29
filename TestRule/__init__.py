@@ -79,7 +79,9 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
             raise KeyError("'datasets' required in request")
         validate_datasets_payload(datasets)
         define_xml = json_data.get("define_xml")
-        tester = RuleTester(datasets, define_xml, cache, standard, standard_version)
+        tester = RuleTester(
+            datasets, define_xml, cache, standard, standard_version, codelists
+        )
         result = tester.validate(rule)
         result_json = json.dumps(result)
         return func.HttpResponse(result_json)

@@ -1,4 +1,7 @@
 from cdisc_rules_engine.interfaces import CacheServiceInterface, DataServiceInterface
+from cdisc_rules_engine.models.library_metadata_container import (
+    LibraryMetadataContainer,
+)
 from cdisc_rules_engine.services.data_services import (
     DataServiceFactory,
 )
@@ -11,32 +14,73 @@ from cdisc_rules_engine.models.dictionaries import DictionaryTypes
 from cdisc_rules_engine.models.dictionaries.get_dictionary_terms import (
     extract_dictionary_terms,
 )
-from cdisc_rules_engine.utilities.utils import get_rules_cache_key
-from cdisc_rules_engine.constants.cache_constants import PUBLISHED_CT_PACKAGES
+from cdisc_rules_engine.utilities.utils import (
+    get_rules_cache_key,
+    get_standard_details_cache_key,
+    get_model_details_cache_key,
+    get_library_variables_metadata_cache_key,
+    get_standard_codelist_cache_key,
+)
 
 
-def fill_cache_with_provided_data(cache, args):
+def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:
+    standards_file = os.path.join(args.cache, "standards_details.pkl")
+    models_file = os.path.join(args.cache, "standards_models.pkl")
+    variables_codelist_file = os.path.join(args.cache, "variable_codelist_maps.pkl")
+    variables_metadata_file = os.path.join(args.cache, "variables_metadata.pkl")
+
+    standard_details_cache_key = get_standard_details_cache_key(
+        args.standard, args.version.replace(".", "-")
+    )
+    with open(standards_file, "rb") as f:
+        data = pickle.load(f)
+        standards_metadata = data.get(standard_details_cache_key, {})
+
+    model_link = standards_metadata.get("_links", {}).get("model", {}).get("href", "")
+    model_link_parts = model_link.split("/")
+    model_type = model_link_parts[1]
+    model_version = model_link_parts[-1]
+    model_cache_key = get_model_details_cache_key(model_type, model_version)
+    with open(models_file, "rb") as f:
+        data = pickle.load(f)
+        model_details = data.get(model_cache_key, {})
+
+    with open(variables_codelist_file, "rb") as f:
+        data = pickle.load(f)
+        cache_key = get_standard_codelist_cache_key(args.standard, args.version)
+        variable_codelist_maps = data.get(cache_key)
+
+    with open(variables_metadata_file, "rb") as f:
+        data = pickle.load(f)
+        cache_key = get_library_variables_metadata_cache_key(
+            args.standard, args.version
+        )
+        variables_metadata = data.get(cache_key)
+
+    ct_package_data = {}
     cache_files = next(os.walk(args.cache), (None, None, []))[2]
+    ct_files = [file_name for file_name in cache_files if "ct-" in file_name]
     published_ct_packages = set()
-    for file_name in cache_files:
-        if "ct-" in file_name:
-            ct_version = file_name.split(".")[0]
-            published_ct_packages.add(ct_version)
-            if (
-                args.controlled_terminology_package
-                and ct_version in args.controlled_terminology_package
-            ):
-                # Only load ct package corresponding to the provided ct
-                with open(os.path.join(args.cache, file_name), "rb") as f:
-                    data = pickle.load(f)
-                    cache.add(ct_version, data)
-            else:
-                continue
-        with open(os.path.join(args.cache, file_name), "rb") as f:
-            data = pickle.load(f)
-            cache.add_all(data)
-    cache.add(PUBLISHED_CT_PACKAGES, published_ct_packages)
-    return cache
+    for file_name in ct_files:
+        ct_version = file_name.split(".")[0]
+        published_ct_packages.add(ct_version)
+        if (
+            args.controlled_terminology_package
+            and ct_version in args.controlled_terminology_package
+        ):
+            # Only load ct package corresponding to the provided ct
+            with open(os.path.join(args.cache, file_name), "rb") as f:
+                data = pickle.load(f)
+                ct_package_data[ct_version] = data
+
+    return LibraryMetadataContainer(
+        standard_metadata=standards_metadata,
+        model_metadata=model_details,
+        variable_codelist_map=variable_codelist_maps,
+        variables_metadata=variables_metadata,
+        ct_package_metadata=ct_package_data,
+        published_ct_packages=published_ct_packages,
+    )
 
 
 def fill_cache_with_dictionaries(cache: CacheServiceInterface, args):
@@ -70,21 +114,33 @@ def get_cache_service(manager):
         return manager.InMemoryCacheService()
 
 
-def get_rules(cache: CacheServiceInterface, args) -> List[dict]:
+def get_rules(args) -> List[dict]:
+    core_ids = set()
+    rules_file = os.path.join(args.cache, "rules.pkl")
+    rules = []
     if args.rules:
         keys = [
             get_rules_cache_key(args.standard, args.version.replace(".", "-"), rule)
             for rule in args.rules
         ]
-        rules = [rule for rule in cache.get_all(keys) if rule]
+        with open(rules_file, "rb") as f:
+            rules_data = pickle.load(f)
+            rules = [rules_data.get(key) for key in keys]
     else:
         engine_logger.warning(
             f"No rules specified. Running all rules for {args.standard}"
             + f" version {args.version}"
         )
-        rules = cache.get_all_by_prefix(
-            get_rules_cache_key(args.standard, args.version.replace(".", "-"))
-        )
+        with open(rules_file, "rb") as f:
+            rules_data = pickle.load(f)
+            for key, rule in rules_data.items():
+                core_id = rule.get("core_id")
+                rule_identifier = get_rules_cache_key(
+                    args.standard, args.version.replace(".", "-"), core_id
+                )
+                if core_id not in core_ids and key == rule_identifier:
+                    rules.append(rule)
+                    core_ids.add(rule.get("core_id"))
     return rules
 
 

@@ -1,10 +1,11 @@
 import re
-from copy import deepcopy
 from typing import List
-
+from pympler import asizeof
 from cdisc_rules_engine.interfaces import (
     CacheServiceInterface,
 )
+from cachetools import LRUCache
+import psutil
 
 
 class InMemoryCacheService(CacheServiceInterface):
@@ -13,13 +14,16 @@ class InMemoryCacheService(CacheServiceInterface):
     @classmethod
     def get_instance(cls, **kwargs):
         if cls._instance is None:
-            cls._instance = cls()
+            cls._instance = cls(**kwargs)
         return cls._instance
 
-    def __init__(self):
-        self.cache = {}
+    def __init__(self, max_size=None, **kwargs):
+        self.max_size = max_size or psutil.virtual_memory().available * 0.75
+        self.cache = LRUCache(maxsize=self.max_size, getsizeof=asizeof.asizeof)
 
     def add(self, cache_key, data):
+        if asizeof.asizeof(data) > self.max_size:
+            return
         self.cache[cache_key] = data
 
     def add_batch(
@@ -62,13 +66,15 @@ class InMemoryCacheService(CacheServiceInterface):
         self.cache.pop(cache_key, "invalid")
 
     def clear_all(self, prefix: str = None):
-        cache_contents: dict = deepcopy(self.cache)
         if prefix:
-            for key, value in cache_contents.items():
-                if key.startswith(prefix):
-                    self.cache.pop(key)
+            keys_to_remove = [
+                key for key in self.cache.keys() if key.startswith(prefix)
+            ]
+            for key in keys_to_remove:
+                self.clear(key)
         else:
-            self.cache = {}
+            self.cache = LRUCache(maxsize=self.max_size, getsizeof=asizeof.asizeof)
 
     def add_all(self, data: dict):
-        self.cache = {**self.cache, **data}
+        for key, val in data.items():
+            self.add(key, val)

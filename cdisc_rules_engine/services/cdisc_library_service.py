@@ -8,6 +8,7 @@ from cdisc_rules_engine.models.rule import Rule
 from cdisc_rules_engine.utilities.utils import (
     get_metadata_cache_key,
     get_rules_cache_key,
+    get_variable_codelist_map_cache_key,
 )
 
 
@@ -170,7 +171,10 @@ class CDISCLibraryService:
         terms = standard_codelist_function_map.get(
             standard_type, self._get_tabulation_ig_codelists
         )(data)
-        return {"name": f"{standard_type}-{version}-codelists", **terms}
+        return {
+            "name": get_variable_codelist_map_cache_key(standard_type, version),
+            **terms,
+        }
 
     def get_variables_details(self, standard_type: str, version: str) -> dict:
         """

@@ -1,5 +1,8 @@
 import re
 from typing import List, Optional, Set, Union, Tuple
+from cdisc_rules_engine.models.library_metadata_container import (
+    LibraryMetadataContainer,
+)
 
 import pandas as pd
 
@@ -29,9 +32,12 @@ from cdisc_rules_engine.utilities.utils import (
 
 
 class RuleProcessor:
-    def __init__(self, data_service, cache):
+    def __init__(
+        self, data_service, cache, library_metadata: LibraryMetadataContainer = None
+    ):
         self.data_service = data_service
         self.cache = cache
+        self.library_metadata = library_metadata
 
     @classmethod
     def rule_applies_to_domain(
@@ -313,6 +319,7 @@ class RuleProcessor:
             original_dataset=dataset,
             cache=self.cache,
             data_service=self.data_service,
+            library_metadata=self.library_metadata,
         )
         result = operation.execute()
         if not DataProcessor.is_dummy_data(self.data_service):

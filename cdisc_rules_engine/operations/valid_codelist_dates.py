@@ -1,5 +1,4 @@
 from cdisc_rules_engine.operations.base_operation import BaseOperation
-from cdisc_rules_engine.constants.cache_constants import PUBLISHED_CT_PACKAGES
 
 
 class ValidCodelistDates(BaseOperation):
@@ -15,7 +14,7 @@ class ValidCodelistDates(BaseOperation):
 
     def _execute_operation(self):
         # get metadata
-        ct_packages = self.cache.get(PUBLISHED_CT_PACKAGES)
+        ct_packages = self.library_metadata.published_ct_packages
         if not ct_packages:
             return []
         return [
