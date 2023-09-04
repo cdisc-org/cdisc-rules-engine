@@ -4,7 +4,7 @@ from typing import List, Optional, Union, Iterable
 
 from openpyxl import Workbook
 
-from cdisc_rules_engine.enums.execution_status import ExecutionStatus
+from cdisc_rules_engine.enums.execution_status import ExecutionStatus, ExecutionError
 from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
 from cdisc_rules_engine.models.validation_args import Validation_args
 
@@ -47,24 +47,24 @@ class BaseReport(ABC):
         """
         summary_data = []
         for validation_result in self._results:
-            if validation_result.execution_status == "success":
-                for result in validation_result.results or []:
-                    dataset = result.get("domain")
-                    if (
-                        result.get("errors")
-                        and result.get("executionStatus") == "success"
-                    ):
-                        summary_item = {
-                            "dataset": dataset,
-                            "core_id": validation_result.id,
-                            "message": result.get("message"),
-                            "issues": len(result.get("errors")),
-                        }
+            for result in validation_result.results or []:
+                dataset = result.get("domain")
+                if (
+                    result.get("errors")
+                    and result.get("executionStatus")
+                    == ExecutionStatus.ISSUE_REPORTED.value
+                ):
+                    summary_item = {
+                        "dataset": dataset,
+                        "core_id": validation_result.id,
+                        "message": result.get("message"),
+                        "issues": len(result.get("errors")),
+                    }
 
-                        if self._item_type == "list":
-                            summary_data.extend([[*summary_item.values()]])
-                        elif self._item_type == "dict":
-                            summary_data.extend([summary_item])
+                    if self._item_type == "list":
+                        summary_data.extend([[*summary_item.values()]])
+                    elif self._item_type == "dict":
+                        summary_data.extend([summary_item])
 
         return sorted(
             summary_data,
@@ -85,6 +85,70 @@ class BaseReport(ABC):
             if (self._item_type == "list")
             else (x["core_id"], x["dataset"]),
         )
+
+    def _issue_details(self, validation_result: RuleValidationResult, result: dict):
+        errors = []
+        variables = result.get("variables", [])
+        for error in [
+            error
+            for error in result.get("errors")
+            if error.get("error")
+            not in [
+                ExecutionError.AN_UNKNOWN_EXCEPTION_HAS_OCCURRED.value,
+                ExecutionError.COLUMN_NOT_FOUND_IN_DATA.value,
+            ]
+        ]:
+            error_item = {
+                "core_id": validation_result.id,
+                "message": result.get("message"),
+                "executability": validation_result.executability,
+                "dataset": result.get("domain") or "",
+                "USUBJID": error.get("USUBJID", ""),
+                "row": error.get("row", ""),
+                "SEQ": error.get("SEQ", ""),
+            }
+
+            if self._item_type == "list":
+                error_item["variables"] = ", ".join(variables)
+                error_item["values"] = ", ".join(
+                    [
+                        str(error.get("value", {}).get(variable))
+                        for variable in variables
+                    ]
+                )
+                errors = errors + [[*error_item.values()]]
+            elif self._item_type == "dict":
+                error_item["variables"] = variables
+                error_item["values"] = [
+                    str(error.get("value", {}).get(variable)) for variable in variables
+                ]
+                errors = errors + [error_item]
+        return errors
+
+    def _error_details(self, validation_result: RuleValidationResult, result: dict):
+        errors = []
+        for error in [
+            error
+            for error in result.get("errors")
+            if error.get("error")
+            == ExecutionError.AN_UNKNOWN_EXCEPTION_HAS_OCCURRED.value
+        ]:
+            error_item = {
+                "core_id": validation_result.id,
+                "message": (f"{result.get('message')} - {error.get('error')}"),
+                "executability": validation_result.executability,
+                "dataset": result.get("domain") or "",
+                "USUBJID": "",
+                "row": "",
+                "SEQ": "",
+                "variables": "",
+                "values": error.get("message"),
+            }
+            if self._item_type == "list":
+                errors = errors + [[*error_item.values()]]
+            elif self._item_type == "dict":
+                errors = errors + [error_item]
+        return errors
 
     def _generate_error_details(
         self, validation_result: RuleValidationResult
@@ -107,35 +171,11 @@ class BaseReport(ABC):
         """
         errors = []
         for result in validation_result.results or []:
-            if result.get("errors", []) and result.get("executionStatus") == "success":
-                variables = result.get("variables", [])
-                for error in result.get("errors"):
-                    error_item = {
-                        "core_id": validation_result.id,
-                        "message": result.get("message"),
-                        "executability": validation_result.executability,
-                        "dataset": result.get("domain"),
-                        "USUBJID": error.get("USUBJID", ""),
-                        "row": error.get("row", ""),
-                        "SEQ": error.get("SEQ", ""),
-                    }
-
-                    if self._item_type == "list":
-                        error_item["variables"] = ", ".join(variables)
-                        error_item["values"] = ", ".join(
-                            [
-                                str(error.get("value", {}).get(variable))
-                                for variable in variables
-                            ]
-                        )
-                        errors = errors + [[*error_item.values()]]
-                    elif self._item_type == "dict":
-                        error_item["variables"] = variables
-                        error_item["values"] = [
-                            str(error.get("value", {}).get(variable))
-                            for variable in variables
-                        ]
-                        errors = errors + [error_item]
+            errors = (
+                errors
+                + self._issue_details(validation_result, result)
+                + self._error_details(validation_result, result)
+            )
         return errors
 
     def get_rules_report_data(self) -> List[List]:
@@ -162,9 +202,9 @@ class BaseReport(ABC):
                 "fda_rule_id": validation_result.fda_rule_id,
                 "pmda_rule_id": validation_result.pmda_rule_id,
                 "message": validation_result.message,
-                "status": ExecutionStatus.SUCCESS.value.upper()
-                if validation_result.execution_status == ExecutionStatus.SUCCESS.value
-                else ExecutionStatus.SKIPPED.value.upper(),
+                "status": ExecutionStatus(
+                    validation_result.execution_status
+                ).value.upper(),
             }
             if self._item_type == "list":
                 rules_report.append([*rules_item.values()])

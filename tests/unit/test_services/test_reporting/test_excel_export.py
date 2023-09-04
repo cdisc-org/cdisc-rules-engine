@@ -63,7 +63,7 @@ mock_validation_results = [
             {
                 "domain": "AE",
                 "variables": ["AESTDY", "DOMAIN"],
-                "executionStatus": ExecutionStatus.SUCCESS.value,
+                "executionStatus": ExecutionStatus.ISSUE_REPORTED.value,
                 "errors": [
                     {
                         "row": 1,
@@ -133,7 +133,7 @@ mock_validation_results = [
             {
                 "domain": "TT",
                 "variables": ["TTVAR1", "TTVAR2"],
-                "executionStatus": ExecutionStatus.SUCCESS.value,
+                "executionStatus": ExecutionStatus.ISSUE_REPORTED.value,
                 "errors": [
                     {
                         "row": 1,
@@ -165,7 +165,7 @@ def test_get_rules_report_data():
                     result.fda_rule_id,
                     result.pmda_rule_id,
                     result.message,
-                    ExecutionStatus.SUCCESS.value.upper(),
+                    ExecutionStatus.ISSUE_REPORTED.value.upper(),
                 ]
             )
         expected_reports = sorted(expected_reports, key=lambda x: x[0])
