@@ -19,7 +19,7 @@ setuptools.setup(
     packages=setuptools.find_packages(exclude=["scripts", "tests"]),
     license="MIT",
     include_package_data=True,
-    python_requires=">=3.8",
+    python_requires=">=3.9",
     install_requires=[
         "pandas>=1.3.5",
         "business-rules-enhanced==1.4.0",
