@@ -142,7 +142,7 @@ Regular Expression value matching
 - Determine if each string starts with a match of a regular expression. Refer to this pandas documentation: https://pandas.pydata.org/docs/reference/api/pandas.Series.str.match.html
 - To "search" for a regex within the entire text, prefix the regex with `.*` and do not use anchors `^` , `$`
 - To do a "fullmatch" of a regex with the entire text, suffix the regex with an anchor `$` and do not prefix the regex with `.*`
-- For syntax guide, refer to this Python documentation: [Regular Expression HOWTO](https://docs.python.org/3.7/howto/regex.html).
+- For syntax guide, refer to this Python documentation: [Regular Expression HOWTO](https://docs.python.org/3/howto/regex.html).
 - Suggestion for an on-line regular expression logic. tester: https://regex101.com, choose the Python dialect.
 - For regex token visualization, try https://www.debuggex.com.
 
