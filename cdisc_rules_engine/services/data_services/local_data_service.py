@@ -14,6 +14,7 @@ from cdisc_rules_engine.services.data_readers.data_reader_factory import (
     DataReaderFactory,
 )
 from cdisc_rules_engine.services.dataset_metadata_reader import DatasetMetadataReader
+from cdisc_rules_engine.services.datasetjson_metadata_reader import DatasetJSONMetadataReader
 from cdisc_rules_engine.utilities.utils import (
     convert_file_size,
     extract_file_name_from_path_string,
@@ -34,7 +35,7 @@ class LocalDataService(BaseDataService):
         if cls._instance is None:
             service = cls(
                 cache_service=cache_service,
-                reader_factory=DataReaderFactory(),
+                reader_factory=DataReaderFactory(kwargs.get("data_format")),
                 config=config,
                 **kwargs
             )
@@ -137,9 +138,14 @@ class LocalDataService(BaseDataService):
             "name": file_name,
             "size": file_size,
         }
-        with open(file_path, "rb") as f:
-            contents_metadata = DatasetMetadataReader(f.read(), file_name).read()
 
+        if file_name.split(".")[1].upper() == "XPT":
+            with open(file_path, "rb") as f:
+                contents_metadata = DatasetMetadataReader(f.read(), file_name).read()
+
+        elif file_name.split(".")[1].upper() == "JSON":
+            contents_metadata = DatasetJSONMetadataReader(file_path, file_name).read()
+        
         return {
             "file_metadata": file_metadata,
             "contents_metadata": contents_metadata,

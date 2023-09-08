@@ -14,6 +14,7 @@ from cdisc_rules_engine.constants.define_xml_constants import DEFINE_XML_FILE_NA
 from cdisc_rules_engine.enums.default_file_paths import DefaultFilePaths
 from cdisc_rules_engine.enums.progress_parameter_options import ProgressParameterOptions
 from cdisc_rules_engine.enums.report_types import ReportTypes
+from cdisc_rules_engine.enums.dataformat_types import DataFormatTypes
 from cdisc_rules_engine.models.validation_args import Validation_args
 from cdisc_rules_engine.models.test_args import TestArgs
 from scripts.run_validation import run_validation
@@ -128,8 +129,8 @@ def cli():
     "-df",
     "--data-format",
     help="Format in which data files are presented. Defaults to XPT.",
-    type=click.Choice(["xpt"], case_sensitive=False),
-    default="xpt",
+    default=DataFormatTypes.XPT.value,
+    type=click.Choice(DataFormatTypes.values(), case_sensitive=False),
     required=True,
 )
 @click.option("--whodrug", help="Path to directory with WHODrug dictionary files")

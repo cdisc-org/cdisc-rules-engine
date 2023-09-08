@@ -53,6 +53,7 @@ class RulesEngine:
         self.config = config_obj or default_config
         self.standard = kwargs.get("standard")
         self.standard_version = (kwargs.get("standard_version") or "").replace(".", "-")
+        self.data_format = kwargs.get("data_format")
         self.library_metadata = kwargs.get("library_metadata")
         self.cache = cache or CacheServiceFactory(self.config).get_cache_service()
         self.data_service = data_service or DataServiceFactory(
@@ -60,6 +61,7 @@ class RulesEngine:
             self.cache,
             self.standard,
             self.standard_version,
+            self.data_format,
             self.library_metadata,
         ).get_service(**kwargs)
         self.rule_processor = RuleProcessor(
@@ -68,6 +70,7 @@ class RulesEngine:
         self.data_processor = DataProcessor(self.data_service, self.cache)
         self.standard = kwargs.get("standard")
         self.standard_version = kwargs.get("standard_version")
+        self.data_format = kwargs.get("data_format")
         self.ct_packages = kwargs.get("ct_packages", [])
         self.ct_package = kwargs.get("ct_package")
         self.meddra_path: str = kwargs.get("meddra_path")
@@ -89,6 +92,7 @@ class RulesEngine:
             InMemoryCacheService.get_instance(),
             self.standard,
             self.standard_version,
+            self.data_format,
             self.library_metadata,
         ).get_dummy_data_service(datasets)
         dataset_dicts = []
@@ -320,6 +324,9 @@ class RulesEngine:
             dataset_path,
             standard=self.standard,
             standard_version=self.standard_version,
+
+            data_format = self.data_format,
+
             meddra_path=self.meddra_path,
             whodrug_path=self.whodrug_path,
             ct_packages=ct_packages,

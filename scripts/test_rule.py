@@ -3,6 +3,7 @@ import time
 import click
 from datetime import datetime
 import json
+import jsonschema
 import os
 from functools import partial
 from multiprocessing import Pool
@@ -109,6 +110,26 @@ def set_log_level(level: str):
     else:
         engine_logger.setLevel(level)
 
+def read_json_against_schemas(json_file):
+    _json_format = {
+        "editor": "editorDataset.schema.json",
+        "datasetjson": "dataset.schema.json"
+    }
+
+    with open(json_file, "r") as f:
+        data_json = json.load(f)
+
+    for format in _json_format:
+        try:
+            with open(os.path.join("resources", "schema", _json_format[format])) as schema_file:
+                schema = schema_file.read()
+            schema = json.loads(schema)
+            jsonschema.validate(data_json, schema)
+            return [DummyDataset(data_json, format)]
+        except jsonschema.exceptions.ValidationError as e:
+            pass
+    return[]
+
 
 def test(args: TestArgs):
     set_log_level("ERROR")
@@ -123,9 +144,7 @@ def test(args: TestArgs):
     fill_cache_with_dictionaries(shared_cache, args)
     with open(args.rule, "r") as f:
         rules = [Rule.from_cdisc_metadata(json.load(f))]
-    with open(args.dataset_path, "r") as f:
-        data_json = json.load(f)
-    datasets = [DummyDataset(data) for data in data_json.get("datasets", [])]
+    datasets = read_json_against_schemas(args.dataset_path)
     data_service_factory = DataServiceFactory(
         config, shared_cache, args.standard, args.version
     )

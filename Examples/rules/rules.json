@@ -1,0 +1,143 @@
+{
+  "Authorities": [
+    {
+      "Organization": "CDISC",
+      "Standards": [
+        {
+          "Name": "SDTMIG",
+          "References": [
+            {
+              "Citations": [
+                {
+                  "Document": "Model v2.0",
+                  "Item": "--SEQ",
+                  "Section": "Identifiers",
+                  "Cited_Guidance": "A number used to uniquely identify records for a subject within a domain. The Trial Summary domain does not contain subject data, and TSSEQ is a sequence number to ensure uniqueness within the dataset."
+                }
+              ],
+              "Origin": "SDTM and SDTMIG Conformance Rules",
+              "Version": "2.0",
+              "Rule_Identifier": {
+                "Id": "CG0028",
+                "Version": "1"
+              }
+            }
+          ],
+          "Version": "3.4"
+        },
+        {
+          "Name": "SDTMIG",
+          "References": [
+            {
+              "Citations": [
+                {
+                  "Document": "Model v1.4",
+                  "Item": "Table 2.2.4: --SEQ",
+                  "Section": "2.2.4",
+                  "Cited_Guidance": "Sequence number to ensure uniqueness of records within a dataset for a subject (or within a parameter, in the case of the Trial Summary domain). May be any valid number (including decimals) and does not have to start at 1."
+                }
+              ],
+              "Origin": "SDTM and SDTMIG Conformance Rules",
+              "Version": "2.0",
+              "Rule_Identifier": {
+                "Id": "CG0028",
+                "Version": "1"
+              }
+            }
+          ],
+          "Version": "3.2"
+        },
+        {
+          "Name": "SDTMIG",
+          "References": [
+            {
+              "Citations": [
+                {
+                  "Document": "Model v1.7",
+                  "Item": "--SEQ",
+                  "Section": "2.2.4",
+                  "Cited_Guidance": "Sequence number to ensure uniqueness of records within a dataset for a subject (or within a parameter, in the case of the Trial Summary domain). May be any valid number (including decimals) and does not have to start at 1."
+                }
+              ],
+              "Origin": "SDTM and SDTMIG Conformance Rules",
+              "Version": "2.0",
+              "Rule_Identifier": {
+                "Id": "CG0028",
+                "Version": "1"
+              }
+            }
+          ],
+          "Version": "3.3"
+        }
+      ]
+    }
+  ],
+  "Check": {
+    "any": [
+      {
+        "all": [
+          {
+            "name": "USUBJID",
+            "operator": "exists"
+          },
+          {
+            "name": "USUBJID",
+            "operator": "non_empty"
+          },
+          {
+            "name": "--SEQ",
+            "operator": "is_not_unique_set",
+            "value": [
+              "DOMAIN",
+              "USUBJID"
+            ]
+          }
+        ]
+      },
+      {
+        "all": [
+          {
+            "name": "POOLID",
+            "operator": "exists"
+          },
+          {
+            "name": "POOLID",
+            "operator": "non_empty"
+          },
+          {
+            "name": "--SEQ",
+            "operator": "is_not_unique_set",
+            "value": [
+              "DOMAIN",
+              "POOLID"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "Core": {
+    "Id": "CDISC.SDTMIG.CG0028",
+    "Status": "Draft",
+    "Version": "1"
+  },
+  "Description": "Excluding TS.TSSEQ, --SEQ must be a unique number per USUBJID per domain, or a unique number per POOLID per domain, including when the domain is split into multiple files.",
+  "Executability": "Fully Executable",
+  "Outcome": {
+    "Message": "--SEQ is not a unique number per USUBJID per domain, nor a unique number per POOLID per domain, including when the domain is split into multiple files"
+  },
+  "Scope": {
+    "Classes": {
+      "Include": [
+        "ALL"
+      ]
+    },
+    "Domains": {
+      "Exclude": [
+        "TS"
+      ]
+    }
+  },
+  "Sensitivity": "Record",
+  "Rule_Type": "Record Data"
+}

@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "datasets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "filename": { "type": "string" },
+          "label": { "type": "string" },
+          "domain": { "type": "string" },
+          "variables": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": { "type": "string" },
+                "label": { "type": "string" },
+                "type": { "type": "string" },
+                "length": { "type": "integer" }
+              },
+              "required": ["name", "label", "type", "length"]
+            }
+          },
+          "records": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array"
+            }
+          }
+        },
+        "required": ["filename", "label", "domain", "variables", "records"]
+      }
+    }
+  },
+  "required": ["datasets"]
+}

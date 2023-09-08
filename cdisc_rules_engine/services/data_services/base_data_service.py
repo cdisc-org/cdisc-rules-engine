@@ -95,6 +95,7 @@ class BaseDataService(DataServiceInterface, ABC):
         )
         self.standard = kwargs.get("standard")
         self.version = (kwargs.get("standard_version") or "").replace(".", "-")
+        self.data_format = kwargs.get("data_format")
         self.library_metadata = kwargs.get("library_metadata")
 
     def get_dataset_by_type(

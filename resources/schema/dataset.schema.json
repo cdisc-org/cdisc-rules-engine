@@ -1,0 +1,202 @@
+{
+  "$ref": "#/definitions/DatasetJson",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "Data": {
+      "additionalProperties": false,
+      "description": "Definition for Data contained in Dataset-JSON",
+      "properties": {
+        "itemGroupData": {
+          "additionalProperties": {
+            "$ref": "#/definitions/ItemGroupData"
+          },
+          "description": "Object of Datasets. Key value is a unique identifier for Dataset, corresponding to ItemGroupDef/@OID in Define-XML.",
+          "maxProperties": 1,
+          "minProperties": 1,
+          "type": "object"
+        },
+        "metaDataRef": {
+          "description": "URL for a metadata file the describing the data.",
+          "type": "string"
+        },
+        "metaDataVersionOID": {
+          "description": "Metadata Version Identifier. See ODM definition for metadata version OID (ODM/Study/MetaDataVersion/@OID).",
+          "type": "string"
+        },
+        "studyOID": {
+          "description": "Unique identifier for Study. See ODM definition for study OID (ODM/Study/@OID).",
+          "type": "string"
+        }
+      },
+      "required": [
+        "itemGroupData"
+      ],
+      "type": "object"
+    },
+    "DatasetJson": {
+      "additionalProperties": false,
+      "description": "Definition for Dataset-JSON",
+      "properties": {
+        "asOfDateTime": {
+          "description": "The date/time at which the source database was queried in order to create this document.",
+          "type": "string"
+        },
+        "clinicalData": {
+          "$ref": "#/definitions/Data",
+          "description": "Object containing study subject data."
+        },
+        "creationDateTime": {
+          "description": "Time of creation of the file containing the document.",
+          "type": "string"
+        },
+        "datasetJSONVersion": {
+          "description": "Version of Dataset-JSON standard.",
+          "type": "string"
+        },
+        "fileOID": {
+          "description": "A unique identifier for this file.",
+          "type": "string"
+        },
+        "originator": {
+          "description": "The organization that generated the Dataset-JSON file.",
+          "type": "string"
+        },
+        "referenceData": {
+          "$ref": "#/definitions/Data",
+          "description": "Object containing study non-subject data."
+        },
+        "sourceSystem": {
+          "description": "The computer system or database management system that is the source of the information in this file.",
+          "type": "string"
+        },
+        "sourceSystemVersion": {
+          "description": "The version of the \"SourceSystem\" above.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "datasetJSONVersion",
+        "creationDateTime"
+      ],
+      "type": "object"
+    },
+    "FirstItemType": {
+      "description": "The first item in the data array needs to be a number (itemGroupDataSeq)",
+      "type": "number"
+    },
+    "ItemDataArray": {
+      "additionalItems": {
+        "type": [
+          "string",
+          "number",
+          "null"
+        ]
+      },
+      "items": [
+        {
+          "$ref": "#/definitions/FirstItemType"
+        }
+      ],
+      "minItems": 1,
+      "type": "array"
+    },
+    "ItemDescription": {
+      "additionalProperties": false,
+      "description": "Definition for Variable in the Dataset",
+      "properties": {
+        "OID": {
+          "description": "Unique identifier for Variable. Must correspond to ItemDef/@OID in Define-XML.",
+          "type": "string"
+        },
+        "displayFormat": {
+          "description": "Display format supports data visualization of numeric float and date values.",
+          "type": "string"
+        },
+        "keySequence": {
+          "description": "Indicates that this item is a key variable in the dataset structure. It also provides an ordering for the keys.",
+          "type": "number"
+        },
+        "label": {
+          "description": "Label for Variable",
+          "type": "string"
+        },
+        "length": {
+          "description": "Length for Variable",
+          "minimum": 1,
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "name": {
+          "description": "Name for Variable",
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/definitions/ItemType",
+          "description": "Data type for Variable"
+        }
+      },
+      "required": [
+        "OID",
+        "name",
+        "label",
+        "type"
+      ],
+      "type": "object"
+    },
+    "ItemGroupData": {
+      "additionalProperties": false,
+      "description": "Definition for Dataset",
+      "properties": {
+        "itemData": {
+          "description": "Contents for Dataset. Array of records, where each record is represented as an array of values.",
+          "items": {
+            "$ref": "#/definitions/ItemDataArray"
+          },
+          "type": "array"
+        },
+        "items": {
+          "description": "Array with Variable Descriptions",
+          "items": {
+            "$ref": "#/definitions/ItemDescription"
+          },
+          "type": "array"
+        },
+        "label": {
+          "description": "Label for Dataset",
+          "type": "string"
+        },
+        "name": {
+          "description": "Name for Dataset",
+          "type": "string"
+        },
+        "records": {
+          "description": "Number of Records in Dataset",
+          "minimum": 0,
+          "type": "number"
+        }
+      },
+      "required": [
+        "records",
+        "name",
+        "label",
+        "items",
+        "itemData"
+      ],
+      "type": "object"
+    },
+    "ItemType": {
+      "description": "Enumerated set of Permissible Variable Types",
+      "enum": [
+        "string",
+        "integer",
+        "float",
+        "double",
+        "decimal",
+        "boolean"
+      ],
+      "type": "string"
+    }
+  }
+}
