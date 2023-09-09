@@ -110,6 +110,7 @@ def set_log_level(level: str):
     else:
         engine_logger.setLevel(level)
 
+
 def read_json_against_schemas(json_file):
     _json_format = {
         "editor": "editorDataset.schema.json",
@@ -121,14 +122,15 @@ def read_json_against_schemas(json_file):
 
     for format in _json_format:
         try:
-            with open(os.path.join("resources", "schema", _json_format[format])) as schema_file:
+            with open(os.path.join("resources", "schema", 
+                                   _json_format[format])) as schema_file:
                 schema = schema_file.read()
             schema = json.loads(schema)
             jsonschema.validate(data_json, schema)
             return [DummyDataset(data_json, format)]
-        except jsonschema.exceptions.ValidationError as e:
+        except jsonschema.exceptions.ValidationError:
             pass
-    return[]
+    return []
 
 
 def test(args: TestArgs):
