@@ -29,7 +29,7 @@ class DummyDataset:
                 _data_key = "referenceData"
 
             _items_data = next(
-                (d for d in dataset_data[_data_key]["itemGroupData"].values() 
+                (d for d in dataset_data[_data_key]["itemGroupData"].values()
                  if "items" in d), {})
 
             self.name = _items_data.get("name")
@@ -37,16 +37,16 @@ class DummyDataset:
             self.filesize = _items_data.get("records")
             self.filename = _items_data.get("name") + ".xpt"
             self.domain = _items_data["itemData"][0][next(
-                (index for index, item in enumerate(_items_data["items"]) 
+                (index for index, item in enumerate(_items_data["items"])
                  if item.get("name") == "DOMAIN"), None)]
             self.variables = [
                 DummyVariable(variable_data, format)
                 for variable_data in _items_data.get("items", [])[1:]
             ]
             self.data = pd.DataFrame(
-                [item[1:] for item in _items_data.get("itemData", [])], 
-                 columns=[item["name"] for item in _items_data.get("items", [])[1:]])
-            self.data = self.data.applymap(lambda x: round(x, 15) 
+                [item[1:] for item in _items_data.get("itemData", [])],
+                columns=[item["name"] for item in _items_data.get("items", [])[1:]])
+            self.data = self.data.applymap(lambda x: round(x, 15)
                                            if isinstance(x, float) else x)
 
     def get_metadata(self):

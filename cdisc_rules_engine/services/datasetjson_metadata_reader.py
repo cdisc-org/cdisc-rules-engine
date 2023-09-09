@@ -21,9 +21,9 @@ class DatasetJSONMetadataReader:
     def read(self) -> dict:
         """
         Extracts metadata from .json file.
-        """   
+        """
         # Load Dataset-JSON Schema
-        with open(os.path.join("resources", "schema", 
+        with open(os.path.join("resources", "schema",
                                "dataset.schema.json")) as schemajson:
             schema = schemajson.read()
         schema = json.loads(schema)
@@ -40,26 +40,26 @@ class DatasetJSONMetadataReader:
                 data_key = "referenceData"
 
             items_data = next(
-                (d for d in datasetjson[data_key]["itemGroupData"].values() 
+                (d for d in datasetjson[data_key]["itemGroupData"].values()
                  if "items" in d), {})
 
             self._domain_name = self._extract_domain_name(items_data)
 
             self._metadata_container = {
-                "variable_labels": [item["label"] 
+                "variable_labels": [item["label"]
                                     for item in items_data.get("items", [])[1:]],
-                "variable_names": [item["name"] 
+                "variable_names": [item["name"]
                                    for item in items_data.get("items", [])[1:]],
-                "variable_formats": [item.get("displayFormat", ' ') 
+                "variable_formats": [item.get("displayFormat", ' ')
                                      for item in items_data.get("items", [])[1:]],
-                "variable_name_to_label_map": {item["name"]: item["label"] 
+                "variable_name_to_label_map": {item["name"]: item["label"]
                                                for item in items_data.get("items", [])
                                                [1:]},
-                "variable_name_to_data_type_map": {item["name"]: item["type"] 
-                                                   for item in 
+                "variable_name_to_data_type_map": {item["name"]: item["type"]
+                                                   for item in
                                                    items_data.get("items", [])[1:]},
-                "variable_name_to_size_map": {item["name"]: item.get("length", None) 
-                                              for item in 
+                "variable_name_to_size_map": {item["name"]: item.get("length", None)
+                                              for item in
                                               items_data.get("items", [])[1:]},
                 "number_of_variables": len(items_data.get("items", [])[1:]),
                 "dataset_label": items_data.get("label"),
@@ -77,7 +77,6 @@ class DatasetJSONMetadataReader:
                 f"Extracted dataset metadata. metadata={self._metadata_container}")
 
             return self._metadata_container
-
 
         except jsonschema.exceptions.ValidationError:
             logger.warning(
@@ -97,10 +96,9 @@ class DatasetJSONMetadataReader:
                 "dataset_modification_date": "",
             }
 
-
     def _extract_domain_name(self, data):
         index_domain = next(
-            (index for index, item in enumerate(data["items"]) 
+            (index for index, item in enumerate(data["items"])
              if item.get("name") == "DOMAIN"), None)
         if index_domain is not None:
             return data["itemData"][0][index_domain]

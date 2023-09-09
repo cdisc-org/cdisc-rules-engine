@@ -324,7 +324,7 @@ class RulesEngine:
             dataset_path,
             standard=self.standard,
             standard_version=self.standard_version,
-            data_format = self.data_format,
+            data_format=self.data_format,
             meddra_path=self.meddra_path,
             whodrug_path=self.whodrug_path,
             ct_packages=ct_packages,

@@ -15,7 +15,7 @@ from cdisc_rules_engine.services.data_readers.data_reader_factory import (
 )
 from cdisc_rules_engine.services.dataset_metadata_reader import DatasetMetadataReader
 from cdisc_rules_engine.services.datasetjson_metadata_reader import (
-     DatasetJSONMetadataReader,
+    DatasetJSONMetadataReader,
 )
 from cdisc_rules_engine.utilities.utils import (
     convert_file_size,
@@ -145,7 +145,7 @@ class LocalDataService(BaseDataService):
             with open(file_path, "rb") as f:
                 contents_metadata = DatasetMetadataReader(f.read(), file_name).read()
         elif file_name.split(".")[1].upper() == "JSON":
-            contents_metadata = DatasetJSONMetadataReader(file_path, file_name).read()       
+            contents_metadata = DatasetJSONMetadataReader(file_path, file_name).read()
         return {
             "file_metadata": file_metadata,
             "contents_metadata": contents_metadata,

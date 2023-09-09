@@ -122,7 +122,7 @@ def read_json_against_schemas(json_file):
 
     for format in _json_format:
         try:
-            with open(os.path.join("resources", "schema", 
+            with open(os.path.join("resources", "schema",
                                    _json_format[format])) as schema_file:
                 schema = schema_file.read()
             schema = json.loads(schema)
