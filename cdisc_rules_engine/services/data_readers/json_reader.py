@@ -30,9 +30,9 @@ class DatasetJSONReader(DataReaderInterface):
             items_data = next((d for d in
                                datasetjson[data_key]["itemGroupData"].values()
                                if "items" in d), {})
-            df = pd.DataFrame([item[1:] for item in items_data.get("itemData", [])], 
-                            columns=[item["name"] for item in items_data.get("items", [])
-                                    [1:]])
+            df = pd.DataFrame([item[1:] for item in items_data.get("itemData", [])],
+                              columns=[item["name"] for item in 
+                                       items_data.get("items", [])[1:]])
 
             df = df.applymap(lambda x: round(x, 15) if isinstance(x, float) else x)
 
@@ -42,3 +42,4 @@ class DatasetJSONReader(DataReaderInterface):
 
     def read(self, data):
         pass
+    
