@@ -9,10 +9,7 @@ from cdisc_rules_engine.services.data_readers.json_reader import DatasetJSONRead
 
 
 class DataReaderFactory(FactoryInterface):
-    _reader_map = {
-        "xpt": XPTReader,
-        "json": DatasetJSONReader
-    }
+    _reader_map = {"xpt": XPTReader, "json": DatasetJSONReader}
 
     def __init__(self, service_name: str = "xpt"):
         self._default_service_name = service_name
