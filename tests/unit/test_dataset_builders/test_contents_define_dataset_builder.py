@@ -322,7 +322,7 @@ def test_contents_define_dataset_builder(
     kwargs = {}
     kwargs["datasets"] = data_metadata.get("datasets")
     expected = pd.DataFrame.from_dict(expected)
-    datasets = [DummyDataset(data) for data in data_metadata.get("datasets", [])]
+    datasets = [DummyDataset(data, "editor") for data in data_metadata.get("datasets", [])]
 
     result = ContentsDefineDatasetBuilder(
         rule=None,
@@ -361,7 +361,7 @@ def test_contents_define_dataset_columns(
     kwargs = {}
     kwargs["datasets"] = data_metadata.get("datasets")
     expected = pd.DataFrame.from_dict(expected)
-    datasets = [DummyDataset(data) for data in data_metadata.get("datasets", [])]
+    datasets = [DummyDataset(data, "editor") for data in data_metadata.get("datasets", [])]
 
     result = ContentsDefineDatasetBuilder(
         rule=None,

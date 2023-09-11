@@ -32,7 +32,7 @@ class RuleTester:
         standard_version: str = "",
         codelists=[],
     ):
-        self.datasets = [DummyDataset(dataset_data) for dataset_data in datasets]
+        self.datasets = [DummyDataset(dataset_data, "editor") for dataset_data in datasets]
         self.cache = cache or InMemoryCacheService()
         self.data_service = DummyDataService.get_instance(
             self.cache,
