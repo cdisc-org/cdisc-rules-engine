@@ -40,7 +40,7 @@ class DummyDataset:
             self.name = _items_data.get("name")
             self.label = _items_data.get("label")
             self.filesize = _items_data.get("records")
-            self.filename = _items_data.get("name") + ".xpt"
+            self.filename = _items_data.get("name") + ".json"
             self.domain = _items_data["itemData"][0][
                 next(
                     (

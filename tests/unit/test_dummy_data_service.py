@@ -47,7 +47,7 @@ def test_get_dataset():
             },
         }
     ]
-    datasets = [DummyDataset(dataset) for dataset in dataset_data]
+    datasets = [DummyDataset(dataset, "editor") for dataset in dataset_data]
     data_service = DummyDataService(
         MagicMock(), MagicMock(), MagicMock(), data=datasets
     )
@@ -96,7 +96,7 @@ def test_get_dataset_metadata():
             "records": {"AESEQ": [1, 2, 3, 4]},
         }
     ]
-    datasets = [DummyDataset(dataset) for dataset in dataset_data]
+    datasets = [DummyDataset(dataset, "editor") for dataset in dataset_data]
     data_service = DummyDataService(
         MagicMock(), MagicMock(), MagicMock(), data=datasets
     )
@@ -126,7 +126,7 @@ def test_get_variables_metadata():
             "records": {"AESEQ": [1, 2, 3, 4]},
         }
     ]
-    datasets = [DummyDataset(dataset) for dataset in dataset_data]
+    datasets = [DummyDataset(dataset, "editor") for dataset in dataset_data]
     data_service = DummyDataService(
         MagicMock(), MagicMock(), MagicMock(), data=datasets
     )
