@@ -87,7 +87,8 @@ def test_get_dataset():
 
 
 def test_get_dataset_metadata():
-    dataset_data = [
+    dataset_data = [{
+        "datasets": [{
         {
             "filesize": 2000,
             "filename": "ae.xpt",
@@ -95,7 +96,8 @@ def test_get_dataset_metadata():
             "domain": "AE",
             "records": {"AESEQ": [1, 2, 3, 4]},
         }
-    ]
+        }]
+    }]
     datasets = [DummyDataset(dataset, "editor") for dataset in dataset_data]
     data_service = DummyDataService(
         MagicMock(), MagicMock(), MagicMock(), data=datasets
@@ -108,7 +110,8 @@ def test_get_dataset_metadata():
 
 
 def test_get_variables_metadata():
-    dataset_data = [
+    dataset_data = [{
+        "datasets": [{
         {
             "name": "AE",
             "filename": "ae.xpt",
@@ -125,7 +128,8 @@ def test_get_variables_metadata():
             ],
             "records": {"AESEQ": [1, 2, 3, 4]},
         }
-    ]
+        }]
+    }]
     datasets = [DummyDataset(dataset, "editor") for dataset in dataset_data]
     data_service = DummyDataService(
         MagicMock(), MagicMock(), MagicMock(), data=datasets
