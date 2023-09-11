@@ -1,10 +1,7 @@
 class DummyVariable:
-    def __init__(self, variable_data, format):
+    def __init__(self, variable_data):
         self.name = variable_data.get("name")
         self.label = variable_data.get("label")
         self.type = variable_data.get("type")
         self.length = variable_data.get("length")
-        if format == "editor":
-            self.format = variable_data.get("format")
-        elif format == "datasetjson":
-            self.format = variable_data.get("displayFormat")
+        self.format = variable_data.get("format") or variable_data.get("displayFormat")

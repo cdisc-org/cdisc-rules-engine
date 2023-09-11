@@ -5,24 +5,9 @@ from cdisc_rules_engine.exceptions.custom_exceptions import InvalidDatasetFormat
 
 
 class DummyDataset:
-    def __init__(self, dataset_data, format):
+    def __init__(self, dataset_data):
 
-        if format == "editor":
-            _items_data = next((d for d in dataset_data["datasets"]), {})
-
-            self.validate(_items_data)
-            self.name = _items_data.get("name")
-            self.label = _items_data.get("label")
-            self.filesize = _items_data.get("filesize")
-            self.filename = _items_data.get("filename")
-            self.domain = _items_data.get("domain")
-            self.variables = [
-                DummyVariable(variable_data, format)
-                for variable_data in _items_data.get("variables", [])
-            ]
-            self.data = pd.DataFrame.from_dict(_items_data.get("records", {}))
-
-        elif format == "datasetjson":
+        if "clinicalData" in dataset_data or "referenceData" in dataset_data:
             if "clinicalData" in dataset_data:
                 _data_key = "clinicalData"
             elif "referenceData" in dataset_data:
@@ -40,7 +25,7 @@ class DummyDataset:
             self.name = _items_data.get("name")
             self.label = _items_data.get("label")
             self.filesize = _items_data.get("records")
-            self.filename = _items_data.get("name") + ".xpt"
+            self.filename = _items_data.get("name") + ".json"
             self.domain = _items_data["itemData"][0][
                 next(
                     (
@@ -52,7 +37,7 @@ class DummyDataset:
                 )
             ]
             self.variables = [
-                DummyVariable(variable_data, format)
+                DummyVariable(variable_data)
                 for variable_data in _items_data.get("items", [])[1:]
             ]
             self.data = pd.DataFrame(
@@ -62,6 +47,19 @@ class DummyDataset:
             self.data = self.data.applymap(
                 lambda x: round(x, 15) if isinstance(x, float) else x
             )
+
+        else:
+            self.validate(dataset_data)
+            self.name = dataset_data.get("name")
+            self.label = dataset_data.get("label")
+            self.filesize = dataset_data.get("filesize")
+            self.filename = dataset_data.get("filename")
+            self.domain = dataset_data.get("domain")
+            self.variables = [
+                DummyVariable(variable_data)
+                for variable_data in dataset_data.get("variables", [])
+            ]
+            self.data = pd.DataFrame.from_dict(dataset_data.get("records", {}))
 
     def get_metadata(self):
         return {

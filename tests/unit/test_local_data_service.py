@@ -47,7 +47,7 @@ def test_get_dataset():
     mock_cache = MagicMock()
     mock_cache.get.return_value = None
     data_service = LocalDataService.get_instance(
-        config=ConfigService(), cache_service=mock_cache
+        config=ConfigService(), cache_service=mock_cache, data_format="xpt"
     )
     data = data_service.get_dataset(dataset_name=dataset_path)
     assert isinstance(data, pd.DataFrame)
@@ -58,7 +58,7 @@ def test_get_variables_metdata():
     mock_cache = MagicMock()
     mock_cache.get.return_value = None
     data_service = LocalDataService.get_instance(
-        config=ConfigService(), cache_service=mock_cache
+        config=ConfigService(), cache_service=mock_cache, data_format="xpt"
     )
     data = data_service.get_variables_metadata(dataset_name=dataset_path)
     assert isinstance(data, pd.DataFrame)

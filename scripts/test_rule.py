@@ -128,7 +128,10 @@ def read_json_against_schemas(json_file):
                 schema = schema_file.read()
             schema = json.loads(schema)
             jsonschema.validate(data_json, schema)
-            return [DummyDataset(data_json, format)]
+            if format == "editor":
+                return [DummyDataset(data) for data in data_json.get("datasets", [])]
+            elif format == "datasetjson":
+                return [DummyDataset(data_json)]
         except jsonschema.exceptions.ValidationError:
             pass
     return []
