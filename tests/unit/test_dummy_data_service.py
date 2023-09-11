@@ -8,8 +8,8 @@ from cdisc_rules_engine.services.data_services import DummyDataService
 
 
 def test_get_dataset():
-    dataset_data = [
-        {
+    dataset_data = [{
+        "datasets": [{
             "domain": "AE",
             "filename": "ae.xpt",
             "name": "AE",
@@ -45,8 +45,8 @@ def test_get_dataset():
                     None,
                 ],
             },
-        }
-    ]
+        }]
+    }]
     datasets = [DummyDataset(dataset, "editor") for dataset in dataset_data]
     data_service = DummyDataService(
         MagicMock(), MagicMock(), MagicMock(), data=datasets
