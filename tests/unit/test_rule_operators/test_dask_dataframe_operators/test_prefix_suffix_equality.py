@@ -1,5 +1,5 @@
 from cdisc_rules_engine.rule_operators.dask_dataframe_operators import DaskDataframeType
-import dask as dd
+import dask.dataframe as dd
 import pandas as pd
 import pytest
 
@@ -22,7 +22,7 @@ import pytest
     ],
 )
 def test_suffix_equal_to(data, comparator, suffix, expected_result):
-    df = dd.dataframe.from_dict(data, npartitions=1)
+    df = dd.from_dict(data, npartitions=1)
     dataframe_type = DaskDataframeType({"value": df})
     result = dataframe_type.suffix_equal_to(
         {"target": "target", "comparator": comparator, "suffix": suffix}
@@ -48,7 +48,7 @@ def test_suffix_equal_to(data, comparator, suffix, expected_result):
     ],
 )
 def test_suffix_not_equal_to(data, comparator, suffix, expected_result):
-    df = dd.dataframe.from_dict(data, npartitions=1)
+    df = dd.from_dict(data, npartitions=1)
     dataframe_type = DaskDataframeType({"value": df})
     result = dataframe_type.suffix_not_equal_to(
         {"target": "target", "comparator": comparator, "suffix": suffix}
@@ -74,7 +74,7 @@ def test_suffix_not_equal_to(data, comparator, suffix, expected_result):
     ],
 )
 def test_prefix_equal_to(data, comparator, prefix, expected_result):
-    df = dd.dataframe.from_dict(data, npartitions=1)
+    df = dd.from_dict(data, npartitions=1)
     dataframe_type = DaskDataframeType({"value": df})
     result = dataframe_type.prefix_equal_to(
         {"target": "target", "comparator": comparator, "prefix": prefix}
@@ -100,7 +100,7 @@ def test_prefix_equal_to(data, comparator, prefix, expected_result):
     ],
 )
 def test_prefix_not_equal_to(data, comparator, prefix, expected_result):
-    df = dd.dataframe.from_dict(data, npartitions=1)
+    df = dd.from_dict(data, npartitions=1)
     dataframe_type = DaskDataframeType({"value": df})
     result = dataframe_type.prefix_not_equal_to(
         {"target": "target", "comparator": comparator, "prefix": prefix}

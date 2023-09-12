@@ -1,5 +1,5 @@
 from cdisc_rules_engine.rule_operators.dask_dataframe_operators import DaskDataframeType
-import dask as dd
+import dask.dataframe as dd
 import pandas as pd
 import pytest
 
@@ -17,7 +17,7 @@ import pytest
     ],
 )
 def test_less_than(data, comparator, expected_result):
-    df = dd.dataframe.from_dict(data, npartitions=1)
+    df = dd.from_dict(data, npartitions=1)
     dataframe_type = DaskDataframeType({"value": df})
     result = dataframe_type.less_than({"target": "target", "comparator": comparator})
     assert result.compute().equals(pd.Series(expected_result))
@@ -36,7 +36,7 @@ def test_less_than(data, comparator, expected_result):
     ],
 )
 def test_less_than_or_equal_to(data, comparator, expected_result):
-    df = dd.dataframe.from_dict(data, npartitions=1)
+    df = dd.from_dict(data, npartitions=1)
     dataframe_type = DaskDataframeType({"value": df})
     result = dataframe_type.less_than_or_equal_to(
         {"target": "target", "comparator": comparator}
@@ -57,7 +57,7 @@ def test_less_than_or_equal_to(data, comparator, expected_result):
     ],
 )
 def test_greater_than(data, comparator, expected_result):
-    df = dd.dataframe.from_dict(data, npartitions=1)
+    df = dd.from_dict(data, npartitions=1)
     dataframe_type = DaskDataframeType({"value": df})
     result = dataframe_type.greater_than({"target": "target", "comparator": comparator})
     assert result.compute().equals(pd.Series(expected_result))
@@ -76,7 +76,7 @@ def test_greater_than(data, comparator, expected_result):
     ],
 )
 def test_greater_than_or_equal_to(data, comparator, expected_result):
-    df = dd.dataframe.from_dict(data, npartitions=1)
+    df = dd.from_dict(data, npartitions=1)
     dataframe_type = DaskDataframeType({"value": df})
     result = dataframe_type.greater_than_or_equal_to(
         {"target": "target", "comparator": comparator}

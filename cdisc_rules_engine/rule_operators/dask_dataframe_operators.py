@@ -1,6 +1,7 @@
 from cdisc_rules_engine.rule_operators.dataframe_operators import DataframeType
 from typing import Union
-import dask as dd
+import dask.dataframe as dd
+import dask.array as da
 import numpy as np
 
 
@@ -9,7 +10,7 @@ class DaskDataframeType(DataframeType):
 
     def get_comparator_data(
         self, comparator, value_is_literal: bool = False
-    ) -> Union[str, int, dd.dataframe.Series]:
+    ) -> Union[str, int]:
         if value_is_literal:
             return comparator
         elif comparator in self.value.columns:
@@ -37,14 +38,14 @@ class DaskDataframeType(DataframeType):
         if self._is_series(result):
             return result
         elif isinstance(result, np.ndarray):
-            return dd.dataframe.from_array(result)
-        return dd.dataframe.from_array(dd.array.from_array(result))
+            return dd.from_array(result)
+        return dd.from_array(da.from_array(result))
 
     def _to_numeric(self, target, **kwargs):
-        return dd.dataframe.to_numeric(target, **kwargs)
+        return dd.to_numeric(target, **kwargs)
 
     def _is_series(self, data):
-        return isinstance(data, dd.dataframe.Series)
+        return isinstance(data, dd.Series)
 
     def _where_less_than(self, target, comparison):
         return target.lt(comparison, fill_value=0)

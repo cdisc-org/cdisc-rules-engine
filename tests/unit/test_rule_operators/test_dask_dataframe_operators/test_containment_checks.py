@@ -1,5 +1,5 @@
 from cdisc_rules_engine.rule_operators.dask_dataframe_operators import DaskDataframeType
-import dask as dd
+import dask.dataframe as dd
 import pandas as pd
 import pytest
 
@@ -20,7 +20,7 @@ import pytest
     ],
 )
 def test_contains(data, comparator, expected_result):
-    df = dd.dataframe.from_dict(data, npartitions=1)
+    df = dd.from_dict(data, npartitions=1)
     dataframe_type = DaskDataframeType({"value": df})
     result = dataframe_type.contains({"target": "target", "comparator": comparator})
     assert result.compute().equals(pd.Series(expected_result))
@@ -42,7 +42,7 @@ def test_contains(data, comparator, expected_result):
     ],
 )
 def test_contains_case_insensitive(data, comparator, expected_result):
-    df = dd.dataframe.from_dict(data, npartitions=1)
+    df = dd.from_dict(data, npartitions=1)
     dataframe_type = DaskDataframeType({"value": df})
     result = dataframe_type.contains_case_insensitive(
         {"target": "target", "comparator": comparator}
@@ -66,7 +66,7 @@ def test_contains_case_insensitive(data, comparator, expected_result):
     ],
 )
 def test_does_not_contain(data, comparator, expected_result):
-    df = dd.dataframe.from_dict(data, npartitions=1)
+    df = dd.from_dict(data, npartitions=1)
     dataframe_type = DaskDataframeType({"value": df})
     result = dataframe_type.does_not_contain(
         {"target": "target", "comparator": comparator}
@@ -90,7 +90,7 @@ def test_does_not_contain(data, comparator, expected_result):
     ],
 )
 def test_does_not_contain_case_insensitive(data, comparator, expected_result):
-    df = dd.dataframe.from_dict(data, npartitions=1)
+    df = dd.from_dict(data, npartitions=1)
     dataframe_type = DaskDataframeType({"value": df})
     result = dataframe_type.does_not_contain_case_insensitive(
         {"target": "target", "comparator": comparator}
@@ -106,7 +106,7 @@ def test_does_not_contain_case_insensitive(data, comparator, expected_result):
     ],
 )
 def test_contains_all(data, comparator, expected_result):
-    df = dd.dataframe.from_dict(data, npartitions=1)
+    df = dd.from_dict(data, npartitions=1)
     dataframe_type = DaskDataframeType({"value": df})
     result = dataframe_type.contains_all({"target": "target", "comparator": comparator})
     assert result is expected_result
@@ -120,7 +120,7 @@ def test_contains_all(data, comparator, expected_result):
     ],
 )
 def test_not_contains_all(data, comparator, expected_result):
-    df = dd.dataframe.from_dict(data, npartitions=1)
+    df = dd.from_dict(data, npartitions=1)
     dataframe_type = DaskDataframeType({"value": df})
     result = dataframe_type.not_contains_all(
         {"target": "target", "comparator": comparator}

@@ -1,5 +1,5 @@
 from cdisc_rules_engine.rule_operators.dask_dataframe_operators import DaskDataframeType
-import dask as dd
+import dask.dataframe as dd
 import pandas as pd
 import pytest
 
@@ -20,7 +20,7 @@ import pytest
     ],
 )
 def test_equal_to(data, comparator, expected_result):
-    df = dd.dataframe.from_dict(data, npartitions=1)
+    df = dd.from_dict(data, npartitions=1)
     dataframe_type = DaskDataframeType({"value": df})
     result = dataframe_type.equal_to({"target": "target", "comparator": comparator})
     assert result.compute().equals(pd.Series(expected_result))
@@ -42,7 +42,7 @@ def test_equal_to(data, comparator, expected_result):
     ],
 )
 def test_equal_to_null_strings(data, comparator, expected_result):
-    df = dd.dataframe.from_dict(data, npartitions=1)
+    df = dd.from_dict(data, npartitions=1)
     dataframe_type = DaskDataframeType({"value": df})
     result = dataframe_type.equal_to({"target": "target", "comparator": comparator})
     assert result.compute().equals(pd.Series(expected_result))
@@ -64,7 +64,7 @@ def test_equal_to_null_strings(data, comparator, expected_result):
     ],
 )
 def test_not_equal_to(data, comparator, expected_result):
-    df = dd.dataframe.from_dict(data, npartitions=1)
+    df = dd.from_dict(data, npartitions=1)
     dataframe_type = DaskDataframeType({"value": df})
     result = dataframe_type.not_equal_to({"target": "target", "comparator": comparator})
     assert result.compute().equals(pd.Series(expected_result))
@@ -86,7 +86,7 @@ def test_not_equal_to(data, comparator, expected_result):
     ],
 )
 def test_equal_to_case_insensitive(data, comparator, expected_result):
-    df = dd.dataframe.from_dict(data, npartitions=1)
+    df = dd.from_dict(data, npartitions=1)
     dataframe_type = DaskDataframeType({"value": df})
     result = dataframe_type.equal_to_case_insensitive(
         {"target": "target", "comparator": comparator}
@@ -110,7 +110,7 @@ def test_equal_to_case_insensitive(data, comparator, expected_result):
     ],
 )
 def test_not_equal_to_case_insensitive(data, comparator, expected_result):
-    df = dd.dataframe.from_dict(data, npartitions=1)
+    df = dd.from_dict(data, npartitions=1)
     dataframe_type = DaskDataframeType({"value": df})
     result = dataframe_type.not_equal_to_case_insensitive(
         {"target": "target", "comparator": comparator}

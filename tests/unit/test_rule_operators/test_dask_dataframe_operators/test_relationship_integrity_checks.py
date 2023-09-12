@@ -1,5 +1,6 @@
 from cdisc_rules_engine.rule_operators.dask_dataframe_operators import DaskDataframeType
-import dask as dd
+import dask.dataframe as dd
+import dask.array as da
 import pandas as pd
 import pytest
 
@@ -34,7 +35,7 @@ import pytest
     ],
 )
 def test_present_on_multiple_rows_within(data, comparator, within, expected_result):
-    df = dd.dataframe.from_dict(data, npartitions=1)
+    df = dd.from_dict(data, npartitions=1)
     dataframe_type = DaskDataframeType({"value": df})
     result = dataframe_type.present_on_multiple_rows_within(
         {"target": "target", "comparator": comparator, "within": within}
@@ -70,7 +71,7 @@ def test_present_on_multiple_rows_within(data, comparator, within, expected_resu
     ],
 )
 def test_has_different_values(data, expected_result):
-    df = dd.dataframe.from_dict(data, npartitions=1)
+    df = dd.from_dict(data, npartitions=1)
     dataframe_type = DaskDataframeType({"value": df})
     result = dataframe_type.has_different_values({"target": "target"})
     assert result.compute().equals(pd.Series(expected_result))
@@ -126,7 +127,7 @@ def test_has_different_values(data, expected_result):
     ],
 )
 def test_has_same_values(data, expected_result):
-    df = dd.dataframe.from_dict(data, npartitions=1)
+    df = dd.from_dict(data, npartitions=1)
     dataframe_type = DaskDataframeType({"value": df})
     result = dataframe_type.has_same_values({"target": "target"})
     assert result.compute().equals(pd.Series(expected_result))
@@ -176,7 +177,7 @@ def test_has_same_values(data, expected_result):
     ],
 )
 def test_is_not_unique_relationship(data, comparator, expected_result):
-    df = dd.dataframe.from_dict(data, npartitions=1)
+    df = dd.from_dict(data, npartitions=1)
     dataframe_type = DaskDataframeType({"value": df})
     result = dataframe_type.is_not_unique_relationship(
         {"target": "target", "comparator": comparator}
@@ -214,12 +215,12 @@ def test_is_not_unique_relationship(data, comparator, expected_result):
 def test_valid_relationship(data, comparator, context, expected_result):
     reference_data = {
         "LB": {
-            "TEST": dd.dataframe.from_array(dd.array.from_array([4, 5, 6])),
-            "DATA": dd.dataframe.from_array(dd.array.from_array([1, 2, 3])),
+            "TEST": dd.from_array(da.from_array([4, 5, 6])),
+            "DATA": dd.from_array(da.from_array([1, 2, 3])),
         },
-        "AE": {"AETERM": dd.dataframe.from_array(dd.array.from_array([31, 323, 33]))},
+        "AE": {"AETERM": dd.from_array(da.from_array([31, 323, 33]))},
     }
-    df = dd.dataframe.from_dict(data, npartitions=1)
+    df = dd.from_dict(data, npartitions=1)
     dataframe_type = DaskDataframeType(
         {"value": df, "relationship_data": reference_data}
     )
@@ -259,12 +260,12 @@ def test_valid_relationship(data, comparator, context, expected_result):
 def test_is_not_valid_relationship(data, comparator, context, expected_result):
     reference_data = {
         "LB": {
-            "TEST": dd.dataframe.from_array(dd.array.from_array([4, 5, 6])),
-            "DATA": dd.dataframe.from_array(dd.array.from_array([1, 2, 3])),
+            "TEST": dd.from_array(da.from_array([4, 5, 6])),
+            "DATA": dd.from_array(da.from_array([1, 2, 3])),
         },
-        "AE": {"AETERM": dd.dataframe.from_array(dd.array.from_array([31, 323, 33]))},
+        "AE": {"AETERM": dd.from_array(da.from_array([31, 323, 33]))},
     }
-    df = dd.dataframe.from_dict(data, npartitions=1)
+    df = dd.from_dict(data, npartitions=1)
     dataframe_type = DaskDataframeType(
         {"value": df, "relationship_data": reference_data}
     )
@@ -297,7 +298,7 @@ def test_is_valid_reference(data, context, expected_result):
         "LB": {"TEST": [], "DATA": [1, 2, 3]},
         "AE": {"AETERM": [1, 2, 3]},
     }
-    df = dd.dataframe.from_dict(data, npartitions=1)
+    df = dd.from_dict(data, npartitions=1)
     dataframe_type = DaskDataframeType(
         {"value": df, "relationship_data": reference_data}
     )
@@ -331,7 +332,7 @@ def test_is_not_valid_reference(data, context, expected_result):
         "LB": {"TEST": [], "DATA": [1, 2, 3]},
         "AE": {"AETERM": [1, 2, 3]},
     }
-    df = dd.dataframe.from_dict(data, npartitions=1)
+    df = dd.from_dict(data, npartitions=1)
     dataframe_type = DaskDataframeType(
         {"value": df, "relationship_data": reference_data}
     )
