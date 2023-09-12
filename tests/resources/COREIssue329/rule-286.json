@@ -1,0 +1,101 @@
+{
+    "Authorities": [
+        {
+            "Organization": "CDISC",
+            "Standards": [
+                {
+                    "Name": "SDTMIG",
+                    "Version": "3.2",
+                    "References": [
+                        {
+                            "Origin": "SDTM and SDTMIG Conformance Rules",
+                            "Version": "2.0",
+                            "Citations": [
+                                {
+                                    "Document": "IG v3.2",
+                                    "Item": "Assumption 3",
+                                    "Section": "7.4",
+                                    "Cited_Guidance": "Further information about the parameters is included below in Table 1. TSVAL may have controlled terminology depending on the value of TSPARMCD"
+                                }
+                            ],
+                            "Rule_Identifier": {
+                                "Id": "CG0286",
+                                "Version": "1"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "SDTMIG",
+                    "Version": "3.3",
+                    "References": [
+                        {
+                            "Origin": "SDTM and SDTMIG Conformance Rules",
+                            "Version": "2.0",
+                            "Citations": [
+                                {
+                                    "Document": "IG v3.3",
+                                    "Item": "Assumption 3",
+                                    "Section": "7.4",
+                                    "Cited_Guidance": "Further information about the parameters is included Appendix C1, Trial Summary Codes. TSVAL may have controlled terminology depending on the value of TSPARMCD. Conditions for including parameters are included in Appendix C1, Trial Summary Codes."
+                                }
+                            ],
+                            "Rule_Identifier": {
+                                "Id": "CG0286",
+                                "Version": "1"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "Core": {
+        "Id": "CDISC.SDTMIG.CG0286",
+        "Version": "1",
+        "Status": "Draft"
+    },
+    "Description": "",
+    "Outcome": {
+        "Message": ""
+    },
+    "Sensitivity": "Record",
+    "Scope": {
+        "Classes": {
+            "Include": [
+                "TRIAL DESIGN"
+            ]
+        },
+        "Domains": {
+            "Include": [
+                "TS"
+            ]
+        }
+    },
+    "Executability": "Fully Executable",
+    "Check": {
+        "all": [
+            {
+                "name": "TSVCDREF",
+                "operator": "equal_to",
+                "value": "CDISC",
+                "value_is_literal": true
+            },
+            {
+                "name": "TSVALCD",
+                "operator": "is_not_contained_by",
+                "value": "$all_ct_term_codes"
+            }
+        ]
+    },
+    "Rule_Type": "Record Data",
+    "Operations": [
+        {
+            "id": "$all_ct_term_codes",
+            "name": "TSVCDREF",
+            "operator": "get_codelist_attributes",
+            "version": "TSVCDVER",
+            "attribute": "TSVALCD"
+        }
+    ]
+}
