@@ -9,7 +9,7 @@ class DaskDataframeType(DataframeType):
 
     def get_comparator_data(
         self, comparator, value_is_literal: bool = False
-    ) -> Union[str, int, dd.Series]:
+    ) -> Union[str, int, dd.dataframe.Series]:
         if value_is_literal:
             return comparator
         elif comparator in self.value.columns:
