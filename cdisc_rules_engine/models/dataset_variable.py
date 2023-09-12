@@ -1,4 +1,5 @@
-from business_rules.variables import BaseVariables, dataframe_rule_variable
+from business_rules.variables import BaseVariables, rule_variable
+from cdisc_rules_engine.rule_operators.dataframe_operators import DataframeType
 from pandas import DataFrame
 
 
@@ -15,6 +16,6 @@ class DatasetVariable(BaseVariables):
         self.params = params
 
     # common variables
-    @dataframe_rule_variable(label="GET DATASET")
+    @rule_variable(DataframeType, label="GET DATASET")
     def get_dataset(self) -> dict:
         return {"value": self.dataset, **self.params}
