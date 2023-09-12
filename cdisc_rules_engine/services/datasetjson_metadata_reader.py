@@ -59,7 +59,7 @@ class DatasetJSONMetadataReader:
                     item["name"] for item in items_data.get("items", [])[1:]
                 ],
                 "variable_formats": [
-                    item.get("displayFormat", " ")
+                    item.get("displayFormat", "")
                     for item in items_data.get("items", [])[1:]
                 ],
                 "variable_name_to_label_map": {

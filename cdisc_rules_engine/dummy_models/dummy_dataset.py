@@ -1,7 +1,6 @@
 import pandas as pd
 
 from cdisc_rules_engine.dummy_models.dummy_variable import DummyVariable
-from cdisc_rules_engine.exceptions.custom_exceptions import InvalidDatasetFormat
 
 
 class DummyDataset:
@@ -26,6 +25,22 @@ class DummyDataset:
             self.label = _items_data.get("label")
             self.filesize = _items_data.get("records")
             self.filename = _items_data.get("name") + ".json"
+            _domain_index = next(
+                (
+                    index
+                    for index, item in enumerate(_items_data["items"])
+                    if item.get("name") == "DOMAIN"
+                ),
+                None,
+            )
+            if _domain_index:
+                self.domain = _items_data["itemData"][0][_domain_index]
+            else:
+                self.domain = ""
+
+
+
+            """
             self.domain = _items_data["itemData"][0][
                 next(
                     (
@@ -36,6 +51,7 @@ class DummyDataset:
                     None,
                 )
             ]
+            """
             self.variables = [
                 DummyVariable(variable_data)
                 for variable_data in _items_data.get("items", [])[1:]
@@ -49,7 +65,6 @@ class DummyDataset:
             )
 
         else:
-            self.validate(dataset_data)
             self.name = dataset_data.get("name")
             self.label = dataset_data.get("label")
             self.filesize = dataset_data.get("filesize")
@@ -71,9 +86,3 @@ class DummyDataset:
             "filename": [self.filename],
             "length": [len(self.data.index)],
         }
-
-    def validate(self, dataset_data):
-        required_values = ["domain"]
-        for value in required_values:
-            if value not in dataset_data or dataset_data.get(value) is None:
-                raise InvalidDatasetFormat(f"Dataset missing key: {value}")

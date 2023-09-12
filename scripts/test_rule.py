@@ -36,6 +36,8 @@ from scripts.script_utils import (
 )
 from cdisc_rules_engine.utilities.utils import get_directory_path
 from cdisc_rules_engine.enums.progress_parameter_options import ProgressParameterOptions
+from cdisc_rules_engine.exceptions.custom_exceptions import InvalidDatasetFormat
+
 
 """
 Sync manager used to manage instances of the cache between processes.
@@ -134,7 +136,7 @@ def read_json_against_schemas(json_file):
                 return [DummyDataset(data_json)]
         except jsonschema.exceptions.ValidationError:
             pass
-    return []
+    raise InvalidDatasetFormat(f"Invalid dataset format for file: {json_file}")
 
 
 def test(args: TestArgs):

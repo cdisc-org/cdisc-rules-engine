@@ -20,7 +20,8 @@
                 "type": { "type": "string" },
                 "length": { "type": "integer" }
               },
-              "required": ["name", "label", "type", "length"]
+              "required": ["name", "label", "type", "length"],
+              "additionalProperties": false
             }
           },
           "records": {
@@ -30,7 +31,8 @@
             }
           }
         },
-        "required": ["filename", "label", "domain", "variables", "records"]
+        "required": ["filename", "label", "domain", "variables", "records"],
+		"additionalProperties": false
       }
     }
   },
