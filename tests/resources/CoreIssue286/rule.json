@@ -1,0 +1,131 @@
+{
+    "Check": {
+      "all": [
+        {
+          "name": "define_dataset_is_non_standard",
+          "operator": "equal_to",
+          "value": "Yes"
+        },
+        {
+          "name": "define_dataset_class",
+          "operator": "equal_to",
+          "value": "FINDINGS"
+        },
+        {
+          "any": [
+            {
+              "name": "$testcd_exists",
+              "operator": "not_equal_to",
+              "value": true
+            },
+            {
+              "name": "define_dataset_variables",
+              "operator": "does_not_contain",
+              "value": "--TESTCD"
+            }
+          ]
+        }
+      ]
+    },
+    "Core": {
+      "Id": "DEFINE ",
+      "Version": "1",
+      "Status": "Draft"
+    },
+    "Description": "Non standard FINDINGS domain missing TESTCD variable",
+    "Operations": [
+      {
+        "id": "$testcd_exists",
+        "name": "--TESTCD",
+        "operator": "variable_exists"
+      }
+    ],
+    "Outcome": {
+      "Message": "Non standard FINDINGS domain missing TESTCD variable",
+      "Output_Variables": ["$testcd_exists", "define_dataset_is_non_standard", "define_dataset_class", "define_dataset_variables"]
+    },
+    "Sensitivity": "Dataset",
+    "Executability": "Fully Executable",
+    "Authorities": [
+      {
+        "Organization": "CDISC",
+        "Standards": [
+          {
+            "Name": "SDTMIG",
+            "Version": "3.4",
+            "References": [
+              {
+                "Origin": "SDTM and SDTMIG Conformance Rules",
+                "Version": "2.0",
+                "Citations": [
+                  {
+                    "Document": "SDTMIG v3.4",
+                    "Item": "2.E.2",
+                    "Section": "4.2.6",
+                    "Cited_Guidance": "--LNKGRP is a grouping identifier used to identify a group of records in one domain that is related to a record in another domain, often forming a many-to-one relationship."
+                  }
+                ],
+                "Rule_Identifier": {
+                  "Id": "CG0022",
+                  "Version": "1"
+                }
+              }
+            ]
+          },
+          {
+            "Name": "SDTMIG",
+            "Version": "3.3",
+            "References": [
+              {
+                "Origin": "SDTM and SDTMIG Conformance Rules",
+                "Version": "2.0",
+                "Citations": [
+                  {
+                    "Document": "SDTMIG v3.3",
+                    "Item": "2.E.2",
+                    "Section": "4.2.6",
+                    "Cited_Guidance": "--LNKGRP is a grouping identifier used to identify a group of records in one domain that is related to a record in another domain, often forming a many-to-one relationship."
+                  }
+                ],
+                "Rule_Identifier": {
+                  "Id": "CG0022",
+                  "Version": "1"
+                }
+              }
+            ]
+          },
+          {
+            "Name": "SDTMIG",
+            "Version": "3.2",
+            "References": [
+              {
+                "Origin": "SDTM and SDTMIG Conformance Rules",
+                "Version": "2.0",
+                "Citations": [
+                  {
+                    "Document": "SDTMIG v3.3",
+                    "Item": "Specification",
+                    "Section": "6.1.",
+                    "Cited_Guidance": "Identifier used to link related, grouped records across domains."
+                  }
+                ],
+                "Rule_Identifier": {
+                  "Id": "CG0022",
+                  "Version": "1"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "Scope": {
+      "Classes": {
+        "Include": ["ALL"]
+      },
+      "Domains": {
+        "Include": ["ALL"]
+      }
+    },
+    "Rule_Type": "Define Item Group Metadata Check"
+  }

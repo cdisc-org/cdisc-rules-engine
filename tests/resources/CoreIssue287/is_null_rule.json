@@ -1,0 +1,52 @@
+{
+  "Check": {
+    "all": [
+      {
+        "name": "define_variable_has_no_data",
+        "operator": "equal_to",
+        "value": "Yes"
+      },
+      {
+        "name": "$variable_is_null",
+        "operator": "equal_to",
+        "value": false
+      }
+    ]
+  },
+  "Operations": [
+    {
+      "id": "$variable_is_null",
+      "name": "define_variable_name",
+      "operator": "variable_is_null"
+    }
+  ],
+  "Core": {
+    "Id": "DEFINE ",
+    "Version": "1",
+    "Status": "Draft"
+  },
+  "Description": "Raise an error if define variable has no data is equal to Yes and the variable is not null",
+  "Outcome": {
+    "Message": "Raise an error if define variable has no data is equal to Yes and the variable is not null",
+    "Output_Variables": [
+      "define_variable_has_no_data",
+      "define_variable_name",
+      "$variable_is_null"
+    ]
+  },
+  "Sensitivity": "Record",
+  "Executability": "Fully Executable",
+  "Scope": {
+    "Classes": {
+      "Include": [
+        "ALL"
+      ]
+    },
+    "Domains": {
+      "Include": [
+        "ALL"
+      ]
+    }
+  },
+  "Rule_Type": "Define Item Metadata Check"
+}

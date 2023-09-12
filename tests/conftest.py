@@ -19,6 +19,19 @@ from cdisc_rules_engine.services.data_services import LocalDataService
 from cdisc_rules_engine.constants.rule_constants import ALL_KEYWORD
 
 
+def pytest_collection_modifyitems(config, items):
+    run_regression_tests = config.getoption("-m") == "regression"
+    if not run_regression_tests:
+        items[:] = [item for item in items if "regression" not in item.keywords]
+
+
+# Added the following fixture to access the
+# 'run_regression_tests' flag in test functions
+@pytest.fixture(scope="session")
+def run_regression_tests(request):
+    return request.config.getoption("-m") == "regression"
+
+
 def mock_get_dataset(dataset_name):
     dataframe_map = {
         "ae.xpt": pd.DataFrame.from_dict(

@@ -1,0 +1,231 @@
+{
+    "Check": {
+        "all": [
+            {
+                "name": "variable_value_length",
+                "operator": "greater_than",
+		"value": "define_vlm_length"
+            }
+        ]
+    },
+    "Outcome": {
+        "Message": "Variable longer than define_vlm length",
+        "Output_Variables": [
+            "row_number",
+            "variable_name",
+            "variable_value",
+            "define_variable_name",
+            "define_vlm_name",
+	    "define_vlm_length",
+	    "variable_value_length"
+        ]
+    },
+    "Authorities": [
+        {
+            "Organization": "FDA",
+            "Standards": [
+                {
+                    "Name": "SDTMIG",
+                    "Version": "3.1.2",
+                    "References": [
+                        {
+                            "Origin": "FDA Validator Rules",
+                            "Version": "1.6",
+                            "Citations": [
+                                {
+                                    "Document": "FDA",
+                                    "Cited_Guidance": "TCG 4.1.4.5"
+                                }
+                            ],
+                            "Rule_Identifier": {
+                                "Id": "SD1228",
+                                "Version": "1"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "SDTMIG",
+                    "Version": "3.1.3",
+                    "References": [
+                        {
+                            "Origin": "FDA Validator Rules",
+                            "Version": "1.6",
+                            "Citations": [
+                                {
+                                    "Document": "FDA",
+                                    "Cited_Guidance": "TCG 4.1.4.5"
+                                }
+                            ],
+                            "Rule_Identifier": {
+                                "Id": "SD1228",
+                                "Version": "1"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "SDTMIG",
+                    "Version": "3.2",
+                    "References": [
+                        {
+                            "Origin": "FDA Validator Rules",
+                            "Version": "1.6",
+                            "Citations": [
+                                {
+                                    "Document": "FDA",
+                                    "Cited_Guidance": "TCG 4.1.4.5"
+                                }
+                            ],
+                            "Rule_Identifier": {
+                                "Id": "SD1228",
+                                "Version": "1"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "SDTMIG",
+                    "Version": "3.3",
+                    "References": [
+                        {
+                            "Origin": "FDA Validator Rules",
+                            "Version": "1.6",
+                            "Citations": [
+                                {
+                                    "Document": "FDA",
+                                    "Cited_Guidance": "TCG 4.1.4.5"
+                                }
+                            ],
+                            "Rule_Identifier": {
+                                "Id": "SD1228",
+                                "Version": "1"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "SENDIG",
+                    "Version": "3.0",
+                    "References": [
+                        {
+                            "Origin": "FDA Validator Rules",
+                            "Version": "1.6",
+                            "Citations": [
+                                {
+                                    "Document": "FDA",
+                                    "Cited_Guidance": "TCG 4.1.4.5"
+                                }
+                            ],
+                            "Rule_Identifier": {
+                                "Id": "SD1228",
+                                "Version": "1"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "SENDIG",
+                    "Version": "3.1",
+                    "References": [
+                        {
+                            "Origin": "FDA Validator Rules",
+                            "Version": "1.6",
+                            "Citations": [
+                                {
+                                    "Document": "FDA",
+                                    "Cited_Guidance": "TCG 4.1.4.5"
+                                }
+                            ],
+                            "Rule_Identifier": {
+                                "Id": "SD1228",
+                                "Version": "1"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "SENDIG",
+                    "Version": "3.1.1",
+                    "References": [
+                        {
+                            "Origin": "FDA Validator Rules",
+                            "Version": "1.6",
+                            "Citations": [
+                                {
+                                    "Document": "FDA",
+                                    "Cited_Guidance": "TCG 4.1.4.5"
+                                }
+                            ],
+                            "Rule_Identifier": {
+                                "Id": "SD1228",
+                                "Version": "1"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "SENDIG-AR",
+                    "Version": "1.0",
+                    "References": [
+                        {
+                            "Origin": "FDA Validator Rules",
+                            "Version": "1.6",
+                            "Citations": [
+                                {
+                                    "Document": "FDA",
+                                    "Cited_Guidance": "TCG 4.1.4.5"
+                                }
+                            ],
+                            "Rule_Identifier": {
+                                "Id": "SD1228",
+                                "Version": "1"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "SENDIG-DART",
+                    "Version": "1.1",
+                    "References": [
+                        {
+                            "Origin": "FDA Validator Rules",
+                            "Version": "1.6",
+                            "Citations": [
+                                {
+                                    "Document": "FDA",
+                                    "Cited_Guidance": "TCG 4.1.4.5"
+                                }
+                            ],
+                            "Rule_Identifier": {
+                                "Id": "SD1228",
+                                "Version": "1"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "Core": {
+        "Id": "FDA.SDTMIG.SD1228",
+        "Version": "1",
+        "Status": "Draft"
+    },
+    "Description": "Variable values should be populated with terms found in the user-defined codelist associated with the variable in define.xml.",
+    "Sensitivity": "Record",
+    "Scope": {
+        "Classes": {
+            "Include": [
+                "ALL"
+            ]
+        },
+        "Domains": {
+            "Include": [
+                "ALL"
+            ]
+        }
+    },
+    "Executability": "Fully Executable",
+    "Rule_Type": "Value Check against Define XML VLM"
+}

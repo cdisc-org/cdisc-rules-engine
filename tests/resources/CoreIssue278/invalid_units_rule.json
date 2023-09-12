@@ -1,0 +1,97 @@
+{
+    "Check": {
+      "all": [
+        {
+          "name": "PPTESTCD",
+          "operator": "ends_with",
+          "value": "W"
+        },
+        {
+          "not": {
+            "all": [
+              {
+                "name": "PPTESTCD",
+                "operator": "ends_with",
+                "value": "DW"
+              }
+            ]
+          }
+        },
+        {
+          "any": [
+            {
+              "all": [
+                {
+                  "name": "$pporesu_variable_codelist",
+                  "operator": "equal_to",
+                  "value": "C128684"
+                },
+                {
+                  "not": {
+                    "all": [
+                      {
+                        "name": "PPORRESU",
+                        "operator": "ends_with",
+                        "value": "/g"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {  
+              "all": [
+                {
+                  "name": "$pporesu_variable_codelist",
+                  "operator": "equal_to",
+                  "value": "C128683"
+                },
+                {
+                  "not": {
+                    "all": [
+                      {
+                        "name": "PPORRESU",
+                        "operator": "ends_with",
+                        "value": "/kg"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "Operations": [
+      {
+        "id": "$pporesu_variable_codelist",
+        "name": "PPORRESU",
+        "domain": "PP",
+        "operator": "define_variable_codelist"
+      }
+    ],
+    "Core": {
+        "Id": "INVALID_UNITS_RULE",
+        "Version": "1",
+        "Status": "Draft"
+      },
+    "Description": "Raise an error if blah blah blah",
+      "Outcome": {
+        "Message": "Raise an error if blah blah blah",
+        "Output_Variables": ["PPTESTCD", "PPORRESU", "$pporesu_variable_codelist"]
+      },
+      "Sensitivity": "Record",
+      "Executability": "Fully Executable",
+      "Scope": {
+        "Classes": {
+          "Include": ["FINDINGS"]
+        },
+        "Domains": {
+          "Include": ["PP"]
+        }
+      },
+  
+    "Rule_Type": "Record check" 
+  }
+  
