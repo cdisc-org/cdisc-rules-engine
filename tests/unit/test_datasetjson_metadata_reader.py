@@ -3,8 +3,9 @@ This module contains unit tests for DatasetJSONMetadataReader class.
 """
 import os
 
-from cdisc_rules_engine.services.datasetjson_metadata_reader import DatasetJSONMetadataReader
-
+from cdisc_rules_engine.services.datasetjson_metadata_reader import (
+    DatasetJSONMetadataReader,
+)
 
 
 def test_read_metadata():

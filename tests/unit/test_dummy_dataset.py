@@ -7,24 +7,55 @@ from cdisc_rules_engine.dummy_models.dummy_dataset import DummyDataset
 from cdisc_rules_engine.exceptions.custom_exceptions import InvalidDatasetFormat
 
 
-def test_invalid_dataset_data():
+def test_invalid_dataset_data_rule_editor():
     dataset_data = [
         {
-            "datasets": [{
-                "domain": "AE",
-                "filename": "ae.xpt",
-                "name": "ae.xpt",
-                "label": "Adverse Events",
-                "variables": [{
-                                "name": "AESEQ",
-                                "label": "Sequence Number",
-                                "type": "Num",
-                                "length": 8
-                                }
-                ],
-                "records": {"AESEQ": [1, 2, 3, 4]}
-            }]
-        },
+            "datasets": [
+                {
+                    "domain": "AE",
+                    "filename": "ae.xpt",
+                    "name": "ae.xpt",
+                    "label": "Adverse Events",
+                    "variables": [
+                        {
+                            "name": "AESEQ",
+                            "label": "Sequence Number",
+                            "type": "Num",
+                            "length": 8,
+                        }
+                    ],
+                    "records": {"AESEQ": [1, 2, 3, 4]},
+                }
+            ]
+        }
+    ]
+    _json_format = {
+        "editor": "editorDataset.schema.json",
+        "datasetjson": "dataset.schema.json",
+    }
+
+    schema_path: str = f"{os.path.dirname(__file__)}/../../resources/schema"
+
+    with pytest.raises(InvalidDatasetFormat):
+        for format in _json_format:
+            try:
+                with open(
+                    os.path.join(schema_path, _json_format[format])
+                ) as schema_file:
+                    schema = schema_file.read()
+                schema = json.loads(schema)
+                jsonschema.validate(dataset_data, schema)
+                if format == "editor":
+                    return [DummyDataset(dataset_data)]
+                elif format == "datasetjson":
+                    return [DummyDataset(dataset_data)]
+            except jsonschema.exceptions.ValidationError:
+                pass
+        raise InvalidDatasetFormat("Invalid dataset format for file: xxxx")
+
+
+def test_invalid_dataset_data_datasetjson():
+    dataset_data = [
         {
             "creationDateTime": "2023-07-31T14:44:06",
             "datasetJSONVersion": "1.0.0",
@@ -39,25 +70,20 @@ def test_invalid_dataset_data():
                                 "OID": "ITEMGROUPDATASEQ",
                                 "name": "ITEMGROUPDATASEQ",
                                 "label": "Record identifier",
-                                "type": "integer"
+                                "type": "integer",
                             },
                             {
                                 "OID": "IT.AE.AESEQ",
                                 "name": "AESEQ",
                                 "label": "Sequence Number",
                                 "type": "integer",
-                                "length": 8
-                            }
+                                "length": 8,
+                            },
                         ],
-                        "itemData": [
-                            [1,1],
-                            [2,2],
-                            [3,3],
-                            [4,4]
-                            ]
+                        "itemData": [[1, 1], [2, 2], [3, 3], [4, 4]],
                     }
                 }
-            }
+            },
         }
     ]
 
@@ -65,11 +91,10 @@ def test_invalid_dataset_data():
         "editor": "editorDataset.schema.json",
         "datasetjson": "dataset.schema.json",
     }
-    
+
+    schema_path: str = f"{os.path.dirname(__file__)}/../../resources/schema"
+
     with pytest.raises(InvalidDatasetFormat):
-        schema_path: str = (
-                f"{os.path.dirname(__file__)}/../../resources/schema"
-            )
         for format in _json_format:
             try:
                 with open(
@@ -77,34 +102,14 @@ def test_invalid_dataset_data():
                 ) as schema_file:
                     schema = schema_file.read()
                 schema = json.loads(schema)
-                jsonschema.validate(dataset_data[0], schema)
+                jsonschema.validate(dataset_data, schema)
                 if format == "editor":
-                    return [DummyDataset(dataset_data[0])]
+                    return [DummyDataset(dataset_data)]
                 elif format == "datasetjson":
-                    return [DummyDataset(dataset_data[0])]
+                    return [DummyDataset(dataset_data)]
             except jsonschema.exceptions.ValidationError:
                 pass
-        raise InvalidDatasetFormat(f"Invalid dataset format for file: xxxx")
-   
-    with pytest.raises(InvalidDatasetFormat):
-        schema_path: str = (
-                f"{os.path.dirname(__file__)}/../../resources/schema"
-            )
-        for format in _json_format:
-            try:
-                with open(
-                    os.path.join(schema_path, _json_format[format])
-                ) as schema_file:
-                    schema = schema_file.read()
-                schema = json.loads(schema)
-                jsonschema.validate(dataset_data[1], schema)
-                if format == "editor":
-                    return [DummyDataset(dataset_data[1])]
-                elif format == "datasetjson":
-                    return [DummyDataset(dataset_data[1])]
-            except jsonschema.exceptions.ValidationError:
-                pass
-        raise InvalidDatasetFormat(f"Invalid dataset format for file: xxxx")
+        raise InvalidDatasetFormat("Invalid dataset format for file: xxxx")
 
 
 def test_valid_dataset_data():
@@ -129,33 +134,33 @@ def test_valid_dataset_data():
                                 "OID": "ITEMGROUPDATASEQ",
                                 "name": "ITEMGROUPDATASEQ",
                                 "label": "Record identifier",
-                                "type": "integer"
+                                "type": "integer",
                             },
                             {
                                 "OID": "IT.AE.DOMAIN",
                                 "name": "DOMAIN",
                                 "label": "Domain Abbreviation",
                                 "type": "string",
-                                "length": 2
+                                "length": 2,
                             },
                             {
                                 "OID": "IT.AE.AESEQ",
                                 "name": "AESEQ",
                                 "label": "Sequence Number",
                                 "type": "integer",
-                                "length": 8
-                            }
+                                "length": 8,
+                            },
                         ],
                         "itemData": [
-                            [1,"AE",1],
-                            [2,"AE",2],
-                            [3,"AE",3],
-                            [4,"AE",4]
-                            ]
+                            [1, "AE", 1],
+                            [2, "AE", 2],
+                            [3, "AE", 3],
+                            [4, "AE", 4],
+                        ],
                     }
                 }
-            }
-        }
+            },
+        },
     ]
 
     dataset1 = DummyDataset(dataset_data[0])
@@ -189,33 +194,33 @@ def test_get_dataset_metadata():
                                 "OID": "ITEMGROUPDATASEQ",
                                 "name": "ITEMGROUPDATASEQ",
                                 "label": "Record identifier",
-                                "type": "integer"
+                                "type": "integer",
                             },
                             {
                                 "OID": "IT.AE.DOMAIN",
                                 "name": "DOMAIN",
                                 "label": "Domain Abbreviation",
                                 "type": "string",
-                                "length": 2
+                                "length": 2,
                             },
                             {
                                 "OID": "IT.AE.AESEQ",
                                 "name": "AESEQ",
                                 "label": "Sequence Number",
                                 "type": "integer",
-                                "length": 8
-                            }
+                                "length": 8,
+                            },
                         ],
                         "itemData": [
-                            [1,"AE",1],
-                            [2,"AE",2],
-                            [3,"AE",3],
-                            [4,"AE",4]
-                            ]
+                            [1, "AE", 1],
+                            [2, "AE", 2],
+                            [3, "AE", 3],
+                            [4, "AE", 4],
+                        ],
                     }
                 }
-            }
-        }
+            },
+        },
     ]
     dataset1 = DummyDataset(dataset_data[0])
     metadata1 = dataset1.get_metadata()

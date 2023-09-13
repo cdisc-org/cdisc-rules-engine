@@ -37,21 +37,6 @@ class DummyDataset:
                 self.domain = _items_data["itemData"][0][_domain_index]
             else:
                 self.domain = ""
-
-
-
-            """
-            self.domain = _items_data["itemData"][0][
-                next(
-                    (
-                        index
-                        for index, item in enumerate(_items_data["items"])
-                        if item.get("name") == "DOMAIN"
-                    ),
-                    None,
-                )
-            ]
-            """
             self.variables = [
                 DummyVariable(variable_data)
                 for variable_data in _items_data.get("items", [])[1:]
