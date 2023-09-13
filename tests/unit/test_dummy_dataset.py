@@ -31,7 +31,7 @@ def test_invalid_dataset_data():
             "anyData": {
                 "itemGroupData": {
                     "AE": {
-                        "records": 961,
+                        "records": 4,
                         "name": "AE",
                         "label": "Adverse Events",
                         "items": [
@@ -121,7 +121,7 @@ def test_valid_dataset_data():
             "clinicalData": {
                 "itemGroupData": {
                     "AE": {
-                        "records": 961,
+                        "records": 4,
                         "name": "AE",
                         "label": "Adverse Events",
                         "items": [
@@ -174,10 +174,57 @@ def test_get_dataset_metadata():
             "filename": "ae.xpt",
             "label": "Adverse Events",
             "records": {"AESEQ": [1, 2, 3, 4]},
+        },
+        {
+            "creationDateTime": "2023-07-31T14:44:06",
+            "datasetJSONVersion": "1.0.0",
+            "clinicalData": {
+                "itemGroupData": {
+                    "AE": {
+                        "records": 4,
+                        "name": "AE",
+                        "label": "Adverse Events",
+                        "items": [
+                            {
+                                "OID": "ITEMGROUPDATASEQ",
+                                "name": "ITEMGROUPDATASEQ",
+                                "label": "Record identifier",
+                                "type": "integer"
+                            },
+                            {
+                                "OID": "IT.AE.DOMAIN",
+                                "name": "DOMAIN",
+                                "label": "Domain Abbreviation",
+                                "type": "string",
+                                "length": 2
+                            },
+                            {
+                                "OID": "IT.AE.AESEQ",
+                                "name": "AESEQ",
+                                "label": "Sequence Number",
+                                "type": "integer",
+                                "length": 8
+                            }
+                        ],
+                        "itemData": [
+                            [1,"AE",1],
+                            [2,"AE",2],
+                            [3,"AE",3],
+                            [4,"AE",4]
+                            ]
+                    }
+                }
+            }
         }
     ]
-    dataset = DummyDataset(dataset_data[0])
-    metadata = dataset.get_metadata()
-    assert "dataset_name" in metadata
-    assert metadata["dataset_name"] == ["AE"]
-    assert metadata["dataset_label"] == ["Adverse Events"]
+    dataset1 = DummyDataset(dataset_data[0])
+    metadata1 = dataset1.get_metadata()
+    assert "dataset_name" in metadata1
+    assert metadata1["dataset_name"] == ["AE"]
+    assert metadata1["dataset_label"] == ["Adverse Events"]
+
+    dataset2 = DummyDataset(dataset_data[1])
+    metadata2 = dataset2.get_metadata()
+    assert "dataset_name" in metadata2
+    assert metadata2["dataset_name"] == ["AE"]
+    assert metadata2["dataset_label"] == ["Adverse Events"]
