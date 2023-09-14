@@ -373,7 +373,7 @@ def test(
     validate_xml,
     define_xml_path: str,
 ):
-    validate_xml=True if validate_xml.lower() in ('y','yes') else False
+    validate_xml = True if validate_xml.lower() in ("y", "yes") else False
     args = TestArgs(
         cache_path,
         dataset_path,
@@ -385,9 +385,10 @@ def test(
         controlled_terminology_package,
         define_version,
         define_xml_path,
-        validate_xml
+        validate_xml,
     )
     test_rule(args)
+
 
 @click.command()
 @click.option(

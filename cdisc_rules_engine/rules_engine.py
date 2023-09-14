@@ -430,7 +430,7 @@ class RulesEngine:
                 error_obj: ValidationErrorContainer = ValidationErrorContainer(
                     status=ExecutionStatus.SKIPPED.value
                 )
-                message = "Skipped because schema validation is off and there is a schema error"
+                message = "Skipped because schema validation is off"
                 errors = [error_obj]
                 return ValidationErrorContainer(
                     errors=errors, message=message, status=ExecutionStatus.SKIPPED.value
