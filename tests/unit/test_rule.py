@@ -83,7 +83,7 @@ def test_valid_parse_actions():
     [
         (
             [{"Name": "AA", "Keys": ["USUBJID"]}],
-            [{"domain_name": "AA", "match_key": ["USUBJID"]}],
+            [{"domain_name": "AA", "match_key": ["USUBJID"], "wildcard": "**"}],
         ),
         (
             [{"Name": "SUPPEC", "Keys": ["USUBJID"], "Is_Relationship": True}],
@@ -95,6 +95,7 @@ def test_valid_parse_actions():
                         "column_with_names": "IDVAR",
                         "column_with_values": "IDVARVAL",
                     },
+                    "wildcard": "**",
                 }
             ],
         ),

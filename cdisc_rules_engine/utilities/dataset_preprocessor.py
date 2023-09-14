@@ -84,6 +84,7 @@ class DatasetPreprocessor:
                 left_dataset_domain_name=self._dataset_domain,
                 right_dataset=other_dataset,
                 right_dataset_domain_details=domain_details,
+                datasets=datasets,
             )
         logger.info(f"Dataset after preprocessing = {result}")
         return result
@@ -102,6 +103,7 @@ class DatasetPreprocessor:
         left_dataset_domain_name: str,
         right_dataset: pd.DataFrame,
         right_dataset_domain_details: dict,
+        datasets: List[dict],
     ) -> pd.DataFrame:
         """
         Merges datasets on their match keys.
@@ -118,7 +120,16 @@ class DatasetPreprocessor:
         )
 
         # merge datasets based on their type
-        if self._rule_processor.is_relationship_dataset(right_dataset_domain_name):
+        if right_dataset_domain_name == "RELREC":
+            result: pd.DataFrame = DataProcessor.merge_relrec_datasets(
+                left_dataset=left_dataset,
+                left_dataset_domain_name=left_dataset_domain_name,
+                relrec_dataset=right_dataset,
+                datasets=datasets,
+                dataset_preprocessor=self,
+                wildcard=right_dataset_domain_details.get("wildcard"),
+            )
+        elif self._rule_processor.is_relationship_dataset(right_dataset_domain_name):
             result: pd.DataFrame = DataProcessor.merge_relationship_datasets(
                 left_dataset=left_dataset,
                 left_dataset_match_keys=left_dataset_match_keys,

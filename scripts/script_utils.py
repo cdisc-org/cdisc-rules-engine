@@ -17,7 +17,7 @@ from cdisc_rules_engine.models.dictionaries.get_dictionary_terms import (
 from cdisc_rules_engine.utilities.utils import (
     get_rules_cache_key,
     get_standard_details_cache_key,
-    get_model_details_cache_key,
+    get_model_details_cache_key_from_ig,
     get_library_variables_metadata_cache_key,
     get_standard_codelist_cache_key,
 )
@@ -34,13 +34,9 @@ def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:
     )
     with open(standards_file, "rb") as f:
         data = pickle.load(f)
-        standards_metadata = data.get(standard_details_cache_key, {})
+        standard_metadata = data.get(standard_details_cache_key, {})
 
-    model_link = standards_metadata.get("_links", {}).get("model", {}).get("href", "")
-    model_link_parts = model_link.split("/")
-    model_type = model_link_parts[1]
-    model_version = model_link_parts[-1]
-    model_cache_key = get_model_details_cache_key(model_type, model_version)
+    model_cache_key = get_model_details_cache_key_from_ig(standard_metadata)
     with open(models_file, "rb") as f:
         data = pickle.load(f)
         model_details = data.get(model_cache_key, {})
@@ -74,7 +70,7 @@ def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:
                 ct_package_data[ct_version] = data
 
     return LibraryMetadataContainer(
-        standard_metadata=standards_metadata,
+        standard_metadata=standard_metadata,
         model_metadata=model_details,
         variable_codelist_map=variable_codelist_maps,
         variables_metadata=variables_metadata,
