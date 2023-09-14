@@ -487,14 +487,16 @@ def test_preprocess_relrec_dataset(mock_get_dataset: MagicMock):
 
     # save model metadata to cache
     cache = InMemoryCacheService.get_instance()
-    library_metadata = LibraryMetadataContainer(model_metadata={})
     sdtm_utilities.get_all_model_wildcard_variables = MagicMock(
         return_value=["--SEQ", "--STDY"]
     )
     # execute operation
     data_service = LocalDataService.get_instance(
-        cache_service=cache, config=ConfigService(), library_metadata=library_metadata
+        cache_service=cache,
+        config=ConfigService(),
     )
+    data_service.library_metadata = LibraryMetadataContainer()
+
     preprocessor = DatasetPreprocessor(
         ec_dataset,
         "EC",
