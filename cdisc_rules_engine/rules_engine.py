@@ -180,7 +180,8 @@ class RulesEngine:
                 isinstance(e, FailedSchemaValidation) and self.validate_xml is False
             ):
                 logger.error(
-                    f"Error occurred during validation. Error: {e}. Error message: {str(e)}"
+                    f"""Error occurred during validation.
+                    Error: {e}. Error message: {str(e)}"""
                 )
             error_obj: ValidationErrorContainer = self.handle_validation_exceptions(
                 e, dataset_path, dataset_path
