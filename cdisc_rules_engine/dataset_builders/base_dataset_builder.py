@@ -69,7 +69,7 @@ class BaseDatasetBuilder:
                 # single dataset. the most common case
                 dataset: pd.DataFrame = self.build()
             return dataset
-        except:
+        except Exception:
             raise FailedSchemaValidation("Schema Validation Failed")
 
     def get_dataset_contents(self, **kwargs):
