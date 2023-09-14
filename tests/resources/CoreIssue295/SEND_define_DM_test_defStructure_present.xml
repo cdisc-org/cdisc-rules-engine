@@ -1,0 +1,706 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ODM xmlns="http://www.cdisc.org/ns/odm/v1.3"
+     xmlns:def="http://www.cdisc.org/ns/def/v2.1"
+     xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
+     xmlns:xlink="http://www.w3.org/1999/xlink"
+     xmlns:xs="http://www.w3.org/2001/XMLSchema"
+     CreationDateTime="2023-06-12T17:45:37+02:00"
+     Description=""
+     FileOID="Study1234"
+     FileType="Snapshot"
+     Granularity="Metadata"
+     ODMVersion="1.3.2"
+     SourceSystem="XML4Pharma CDISC ODM Study Designer"
+     SourceSystemVersion="2010-R1"
+     def:Context="Submission">
+   <Study OID="CES">
+      <GlobalVariables>
+         <StudyName>1234</StudyName>
+         <StudyDescription>1234 Data Definition</StudyDescription>
+         <ProtocolName>1234</ProtocolName>
+      </GlobalVariables>
+      <MetaDataVersion Description="Study CES, Data Definitions"
+                       Name="Study 1234, Data Definitions"
+                       OID="CDISC.SEND.3.1"
+                       def:DefineVersion="2.1.0">
+         <def:Standards>
+            <def:Standard Name="CDISC/NCI"
+                          OID="STD.CT.SEND.2022-09-29"
+                          PublishingSet="SEND"
+                          Status="Final"
+                          Type="CT"
+                          Version="2022-09-29"/>
+            <def:Standard Name="SENDIG"
+                          OID="STD.SEND-3.1"
+                          Status="Final"
+                          Type="IG"
+                          Version="3.1"/>
+         </def:Standards>
+         <!-- SEND-DM dataset definition with def:Structure present -->
+         <ItemGroupDef Domain="DM"
+                       IsReferenceData="No"
+                       Name="DM"
+                       OID="CES:DM"
+                       Purpose="Tabulation"
+                       Repeating="No"
+                       SASDatasetName="DM"
+                       def:ArchiveLocationID="Location.DM"
+                       def:StandardOID="STD.SEND-3.1"
+                       def:Structure="One record per USUBJID">
+            <Description>
+               <TranslatedText xml:lang="en">Demographics</TranslatedText>
+            </Description>
+            <ItemRef ItemOID="STUDYID"
+                     Mandatory="Yes"
+                     OrderNumber="1"
+                     Role="Identifier"/>
+            <ItemRef ItemOID="DOMAIN"
+                     Mandatory="Yes"
+                     OrderNumber="2"
+                     Role="Identifier"/>
+            <ItemRef ItemOID="USUBJID"
+                     Mandatory="Yes"
+                     OrderNumber="3"
+                     Role="Identifier"/>
+            <ItemRef ItemOID="SUBJID" Mandatory="Yes" OrderNumber="4" Role="Topic"/>
+            <ItemRef ItemOID="DM.RFSTDTC"
+                     Mandatory="Yes"
+                     OrderNumber="5"
+                     Role="Record Qualifier"/>
+            <ItemRef ItemOID="DM.RFENDTC"
+                     Mandatory="No"
+                     OrderNumber="6"
+                     Role="Record Qualifier"/>
+            <ItemRef ItemOID="DM.RFXSTDTC"
+                     Mandatory="No"
+                     OrderNumber="7"
+                     Role="Record Qualifier"/>
+            <ItemRef ItemOID="DM.RFXENDTC"
+                     Mandatory="No"
+                     OrderNumber="8"
+                     Role="Record Qualifier"/>
+            <ItemRef ItemOID="DM.SITEID"
+                     Mandatory="No"
+                     OrderNumber="9"
+                     Role="Record Qualifier"/>
+            <ItemRef ItemOID="DM.BRTHDTC"
+                     Mandatory="No"
+                     OrderNumber="10"
+                     Role="Record Qualifier"/>
+            <ItemRef ItemOID="DM.AGE"
+                     Mandatory="No"
+                     OrderNumber="11"
+                     Role="Record Qualifier"/>
+            <ItemRef ItemOID="DM.AGETXT"
+                     Mandatory="No"
+                     OrderNumber="12"
+                     Role="Record Qualifier"/>
+            <ItemRef ItemOID="DM.AGEU"
+                     Mandatory="No"
+                     OrderNumber="13"
+                     Role="Variable Qualifier"/>
+            <ItemRef ItemOID="DM.SEX"
+                     Mandatory="Yes"
+                     OrderNumber="14"
+                     Role="Record Qualifier"/>
+            <ItemRef ItemOID="DM.SPECIES"
+                     Mandatory="No"
+                     OrderNumber="15"
+                     Role="Record Qualifier"/>
+            <ItemRef ItemOID="DM.STRAIN"
+                     Mandatory="No"
+                     OrderNumber="16"
+                     Role="Record Qualifier"/>
+            <ItemRef ItemOID="DM.SBSTRAIN"
+                     Mandatory="No"
+                     OrderNumber="17"
+                     Role="Record Qualifier"/>
+            <ItemRef ItemOID="DM.ARMCD"
+                     Mandatory="No"
+                     OrderNumber="18"
+                     Role="Record Qualifier"/>
+            <ItemRef ItemOID="DM.ARM"
+                     Mandatory="No"
+                     OrderNumber="19"
+                     Role="Synonym Qualifier"/>
+            <ItemRef ItemOID="DM.SETCD"
+                     Mandatory="Yes"
+                     OrderNumber="20"
+                     Role="Record Qualifier"/>
+            <def:Class Name="SPECIAL PURPOSE"/>
+         </ItemGroupDef>
+         <ItemDef DataType="text"
+                  Length="2"
+                  Name="DOMAIN"
+                  OID="DOMAIN"
+                  SASFieldName="DOMAIN">
+            <Description>
+               <TranslatedText xml:lang="en">Domain Abbreviation</TranslatedText>
+            </Description>
+         </ItemDef>
+         <ItemDef DataType="text"
+                  Length="40"
+                  Name="STUDYID"
+                  OID="STUDYID"
+                  SASFieldName="STUDYID">
+            <Description>
+               <TranslatedText xml:lang="en">Study Identifier</TranslatedText>
+            </Description>
+         </ItemDef>
+         <ItemDef DataType="text"
+                  Length="60"
+                  Name="SUBJID"
+                  OID="SUBJID"
+                  SASFieldName="SUBJID">
+            <Description>
+               <TranslatedText xml:lang="en">Subject Identifier for the Study</TranslatedText>
+            </Description>
+         </ItemDef>
+         <ItemDef DataType="text"
+                  Length="60"
+                  Name="USUBJID"
+                  OID="USUBJID"
+                  SASFieldName="USUBJID">
+            <Description>
+               <TranslatedText xml:lang="en">Unique Subject Identifier</TranslatedText>
+            </Description>
+         </ItemDef>
+         <ItemDef DataType="datetime"
+                  Name="RFSTDTC"
+                  OID="DM.RFSTDTC"
+                  SASFieldName="RFSTDTC">
+            <Description>
+               <TranslatedText xml:lang="en">Subject Reference Start Date/Time</TranslatedText>
+            </Description>
+         </ItemDef>
+         <ItemDef DataType="datetime"
+                  Name="RFENDTC"
+                  OID="DM.RFENDTC"
+                  SASFieldName="RFENDTC">
+            <Description>
+               <TranslatedText xml:lang="en">Subject Reference End Date/Time</TranslatedText>
+            </Description>
+         </ItemDef>
+         <ItemDef DataType="text"
+                  Length="80"
+                  Name="SITEID"
+                  OID="DM.SITEID"
+                  SASFieldName="SITEID">
+            <Description>
+               <TranslatedText xml:lang="en">Study Site Identifier</TranslatedText>
+            </Description>
+         </ItemDef>
+         <ItemDef DataType="datetime"
+                  Name="BRTHDTC"
+                  OID="DM.BRTHDTC"
+                  SASFieldName="BRTHDTC">
+            <Description>
+               <TranslatedText xml:lang="en">Date/Time of Birth</TranslatedText>
+            </Description>
+         </ItemDef>
+         <ItemDef DataType="integer"
+                  Length="8"
+                  Name="AGE"
+                  OID="DM.AGE"
+                  SASFieldName="AGE">
+            <Description>
+               <TranslatedText xml:lang="en">Age</TranslatedText>
+            </Description>
+         </ItemDef>
+         <ItemDef DataType="text"
+                  Length="80"
+                  Name="AGETXT"
+                  OID="DM.AGETXT"
+                  SASFieldName="AGETXT">
+            <Description>
+               <TranslatedText xml:lang="en">Age Range</TranslatedText>
+            </Description>
+         </ItemDef>
+         <ItemDef DataType="text"
+                  Length="6"
+                  Name="AGEU"
+                  OID="DM.AGEU"
+                  SASFieldName="AGEU">
+            <Description>
+               <TranslatedText xml:lang="en">Age Unit</TranslatedText>
+            </Description>
+            <CodeListRef CodeListOID="CL.C66781.AGEU"/>
+         </ItemDef>
+         <ItemDef DataType="text"
+                  Length="80"
+                  Name="SEX"
+                  OID="DM.SEX"
+                  SASFieldName="SEX">
+            <Description>
+               <TranslatedText xml:lang="en">Sex</TranslatedText>
+            </Description>
+            <CodeListRef CodeListOID="CL.C66731.SEX"/>
+         </ItemDef>
+         <ItemDef DataType="text"
+                  Length="80"
+                  Name="SPECIES"
+                  OID="DM.SPECIES"
+                  SASFieldName="SPECIES">
+            <Description>
+               <TranslatedText xml:lang="en">Species</TranslatedText>
+            </Description>
+            <CodeListRef CodeListOID="CL.C77808.SPECIES"/>
+         </ItemDef>
+         <ItemDef DataType="text"
+                  Length="80"
+                  Name="STRAIN"
+                  OID="DM.STRAIN"
+                  SASFieldName="STRAIN">
+            <Description>
+               <TranslatedText xml:lang="en">Strain/Substrain</TranslatedText>
+            </Description>
+            <CodeListRef CodeListOID="CL.C77530.STRAIN"/>
+         </ItemDef>
+         <ItemDef DataType="text"
+                  Length="80"
+                  Name="SBSTRAIN"
+                  OID="DM.SBSTRAIN"
+                  SASFieldName="SBSTRAIN">
+            <Description>
+               <TranslatedText xml:lang="en">Strain/Substrain Details</TranslatedText>
+            </Description>
+         </ItemDef>
+         <ItemDef DataType="text"
+                  Length="80"
+                  Name="ARMCD"
+                  OID="DM.ARMCD"
+                  SASFieldName="ARMCD">
+            <Description>
+               <TranslatedText xml:lang="en">Planned Arm Code</TranslatedText>
+            </Description>
+         </ItemDef>
+         <ItemDef DataType="text"
+                  Length="80"
+                  Name="ARM"
+                  OID="DM.ARM"
+                  SASFieldName="ARM">
+            <Description>
+               <TranslatedText xml:lang="en">Description of Planned Arm</TranslatedText>
+            </Description>
+         </ItemDef>
+         <ItemDef DataType="text"
+                  Length="8"
+                  Name="SETCD"
+                  OID="DM.SETCD"
+                  SASFieldName="SETCD">
+            <Description>
+               <TranslatedText xml:lang="en">Set Code</TranslatedText>
+            </Description>
+         </ItemDef>
+         <ItemDef DataType="datetime"
+                  Name="RFXSTDTC"
+                  OID="DM.RFXSTDTC"
+                  SASFieldName="RFXSTDTC">
+            <Description>
+               <TranslatedText xml:lang="en">Date/Time of First Study Treatment</TranslatedText>
+            </Description>
+         </ItemDef>
+         <ItemDef DataType="datetime"
+                  Name="RFXENDTC"
+                  OID="DM.RFXENDTC"
+                  SASFieldName="RFXENDTC">
+            <Description>
+               <TranslatedText xml:lang="en">Date/Time of Last Study Treatment</TranslatedText>
+            </Description>
+         </ItemDef>
+         <ItemDef DataType="text" Length="2" Name="RDOMAIN" OID="RDOMAIN">
+            <Description>
+               <TranslatedText xml:lang="en">Related Domain Abbreviation</TranslatedText>
+            </Description>
+         </ItemDef>
+         <CodeList DataType="text"
+                   Name="Age Unit"
+                   OID="CL.C66781.AGEU"
+                   def:StandardOID="STD.CT.SEND.2022-09-29">
+            <EnumeratedItem CodedValue="DAYS">
+               <Alias Context="nci:ExtCodeID" Name="C25301"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="HOURS">
+               <Alias Context="nci:ExtCodeID" Name="C25529"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="MONTHS">
+               <Alias Context="nci:ExtCodeID" Name="C29846"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="WEEKS">
+               <Alias Context="nci:ExtCodeID" Name="C29844"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="YEARS">
+               <Alias Context="nci:ExtCodeID" Name="C29848"/>
+            </EnumeratedItem>
+            <Alias Context="nci:ExtCodeID" Name="C66781"/>
+            <Alias Context="CDISCCTSourceFile" Name="SEND_Terminology_2022-09-29.xml"/>
+         </CodeList>
+         <CodeList DataType="text"
+                   Name="Sex"
+                   OID="CL.C66731.SEX"
+                   def:StandardOID="STD.CT.SEND.2022-09-29">
+            <EnumeratedItem CodedValue="F">
+               <Alias Context="nci:ExtCodeID" Name="C16576"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="M">
+               <Alias Context="nci:ExtCodeID" Name="C20197"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="U">
+               <Alias Context="nci:ExtCodeID" Name="C17998"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="UNDIFFERENTIATED">
+               <Alias Context="nci:ExtCodeID" Name="C45908"/>
+            </EnumeratedItem>
+            <Alias Context="nci:ExtCodeID" Name="C66731"/>
+            <Alias Context="CDISCCTSourceFile" Name="SEND_Terminology_2022-09-29.xml"/>
+         </CodeList>
+         <CodeList DataType="text"
+                   Name="Species"
+                   OID="CL.C77808.SPECIES"
+                   def:StandardOID="STD.CT.SEND.2022-09-29">
+            <EnumeratedItem CodedValue="BOVINE">
+               <Alias Context="nci:ExtCodeID" Name="C14192"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="CAT">
+               <Alias Context="nci:ExtCodeID" Name="C14191"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="CHICKEN">
+               <Alias Context="nci:ExtCodeID" Name="C14193"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="CHIMPANZEE">
+               <Alias Context="nci:ExtCodeID" Name="C14297"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="CHINCHILLA">
+               <Alias Context="nci:ExtCodeID" Name="C91815"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="DOG">
+               <Alias Context="nci:ExtCodeID" Name="C14201"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="FERRET">
+               <Alias Context="nci:ExtCodeID" Name="C77097"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="FISH">
+               <Alias Context="nci:ExtCodeID" Name="C14207"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="FROG">
+               <Alias Context="nci:ExtCodeID" Name="C14265"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="GERBIL">
+               <Alias Context="nci:ExtCodeID" Name="C77807"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="GOAT">
+               <Alias Context="nci:ExtCodeID" Name="C14210"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="GUINEA PIG">
+               <Alias Context="nci:ExtCodeID" Name="C14211"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="HAMSTER">
+               <Alias Context="nci:ExtCodeID" Name="C14212"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="HORSE">
+               <Alias Context="nci:ExtCodeID" Name="C14222"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="MASTOMYS">
+               <Alias Context="nci:ExtCodeID" Name="C91816"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="MONKEY">
+               <Alias Context="nci:ExtCodeID" Name="C14243"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="MOUSE">
+               <Alias Context="nci:ExtCodeID" Name="C14238"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="PIG">
+               <Alias Context="nci:ExtCodeID" Name="C160991"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="PIGEON">
+               <Alias Context="nci:ExtCodeID" Name="C91812"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="QUAIL">
+               <Alias Context="nci:ExtCodeID" Name="C91813"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="RABBIT">
+               <Alias Context="nci:ExtCodeID" Name="C14264"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="RAT">
+               <Alias Context="nci:ExtCodeID" Name="C160998"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="SHEEP">
+               <Alias Context="nci:ExtCodeID" Name="C14273"/>
+            </EnumeratedItem>
+            <Alias Context="nci:ExtCodeID" Name="C77808"/>
+            <Alias Context="CDISCCTSourceFile" Name="SEND_Terminology_2022-09-29.xml"/>
+         </CodeList>
+         <CodeList DataType="text"
+                   Name="Strain/Substrain"
+                   OID="CL.C77530.STRAIN"
+                   def:StandardOID="STD.CT.SEND.2022-09-29">
+            <EnumeratedItem CodedValue="129/SV">
+               <Alias Context="nci:ExtCodeID" Name="C37320"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="A/J">
+               <Alias Context="nci:ExtCodeID" Name="C14650"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="ACI">
+               <Alias Context="nci:ExtCodeID" Name="C14392"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="AFRICAN GREEN">
+               <Alias Context="nci:ExtCodeID" Name="C76360"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="AKR/J">
+               <Alias Context="nci:ExtCodeID" Name="C14505"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="B6.129-Trp53tm1Brd N5">
+               <Alias Context="nci:ExtCodeID" Name="C98707"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="B6C3F1">
+               <Alias Context="nci:ExtCodeID" Name="C76182"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="BABOON">
+               <Alias Context="nci:ExtCodeID" Name="C14252"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="BALB/C">
+               <Alias Context="nci:ExtCodeID" Name="C37357"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="BEAGLE">
+               <Alias Context="nci:ExtCodeID" Name="C53897"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="BROWN NORWAY">
+               <Alias Context="nci:ExtCodeID" Name="C14395"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="BS">
+               <Alias Context="nci:ExtCodeID" Name="C122234"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="BUFFALO">
+               <Alias Context="nci:ExtCodeID" Name="C14396"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="C3H/He">
+               <Alias Context="nci:ExtCodeID" Name="C37367"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="C3H/HeJ">
+               <Alias Context="nci:ExtCodeID" Name="C37369"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="C57BL/10">
+               <Alias Context="nci:ExtCodeID" Name="C37376"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="C57BL/6">
+               <Alias Context="nci:ExtCodeID" Name="C14424"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="CALIFORNIAN">
+               <Alias Context="nci:ExtCodeID" Name="C76364"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="CB17 SCID BEIGE">
+               <Alias Context="nci:ExtCodeID" Name="C123644"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="CB17 SCID">
+               <Alias Context="nci:ExtCodeID" Name="C15158"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="CB6F1-TgN (RasH2)">
+               <Alias Context="nci:ExtCodeID" Name="C98711"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="CBA/CA">
+               <Alias Context="nci:ExtCodeID" Name="C37396"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="CBA/J">
+               <Alias Context="nci:ExtCodeID" Name="C37399"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="CD1 NU">
+               <Alias Context="nci:ExtCodeID" Name="C15152"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="CD1(ICR)">
+               <Alias Context="nci:ExtCodeID" Name="C76183"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="CF1">
+               <Alias Context="nci:ExtCodeID" Name="C77116"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="CHB">
+               <Alias Context="nci:ExtCodeID" Name="C163741"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="CHBB:HM">
+               <Alias Context="nci:ExtCodeID" Name="C163742"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="CHINESE SYRIAN">
+               <Alias Context="nci:ExtCodeID" Name="C77092"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="CHINESE">
+               <Alias Context="nci:ExtCodeID" Name="C77091"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="CORNISH CROSS">
+               <Alias Context="nci:ExtCodeID" Name="C117981"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="COTTON">
+               <Alias Context="nci:ExtCodeID" Name="C77117"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="CYNOMOLGUS">
+               <Alias Context="nci:ExtCodeID" Name="C14232"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="DAHL-S">
+               <Alias Context="nci:ExtCodeID" Name="C76186"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="db/db">
+               <Alias Context="nci:ExtCodeID" Name="C122235"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="DBA/1">
+               <Alias Context="nci:ExtCodeID" Name="C14606"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="DBA/2">
+               <Alias Context="nci:ExtCodeID" Name="C14604"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="DOMESTIC SHORT HAIR">
+               <Alias Context="nci:ExtCodeID" Name="C77124"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="DOMESTIC">
+               <Alias Context="nci:ExtCodeID" Name="C117982"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="DUNKIN-HARTLEY">
+               <Alias Context="nci:ExtCodeID" Name="C77088"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="DUROC-CROSS">
+               <Alias Context="nci:ExtCodeID" Name="C77101"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="DUTCH BELTED">
+               <Alias Context="nci:ExtCodeID" Name="C76365"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="FISCHER 344">
+               <Alias Context="nci:ExtCodeID" Name="C14401"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="FVB/N">
+               <Alias Context="nci:ExtCodeID" Name="C14474"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="FVB/NTac-Tg(Hba-x-v-Ha-ras)TG.ACLed">
+               <Alias Context="nci:ExtCodeID" Name="C98733"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="GOTTINGEN">
+               <Alias Context="nci:ExtCodeID" Name="C77102"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="HAMPSHIRE">
+               <Alias Context="nci:ExtCodeID" Name="C77103"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="HANFORD">
+               <Alias Context="nci:ExtCodeID" Name="C77104"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="HARTLEY HAIRLESS">
+               <Alias Context="nci:ExtCodeID" Name="C77089"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="HARTLEY">
+               <Alias Context="nci:ExtCodeID" Name="C77090"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="JAPANESE WHITE">
+               <Alias Context="nci:ExtCodeID" Name="C76366"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="LANDRACE-CROSS">
+               <Alias Context="nci:ExtCodeID" Name="C77105"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="LEGHORNS">
+               <Alias Context="nci:ExtCodeID" Name="C77098"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="LEWIS">
+               <Alias Context="nci:ExtCodeID" Name="C106538"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="LISTER HOODED">
+               <Alias Context="nci:ExtCodeID" Name="C114342"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="LONG EVANS">
+               <Alias Context="nci:ExtCodeID" Name="C76188"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="MARMOSET">
+               <Alias Context="nci:ExtCodeID" Name="C77115"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="MICRO YUCATAN MINIATURE SWINE">
+               <Alias Context="nci:ExtCodeID" Name="C91817"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="MICROPIG">
+               <Alias Context="nci:ExtCodeID" Name="C77106"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="MINIPIG">
+               <Alias Context="nci:ExtCodeID" Name="C77107"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="MONGOLIAN">
+               <Alias Context="nci:ExtCodeID" Name="C77100"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="MONGREL">
+               <Alias Context="nci:ExtCodeID" Name="C53951"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="NEW ZEALAND">
+               <Alias Context="nci:ExtCodeID" Name="C114344"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="NIH SLA MINIATURE SWINE">
+               <Alias Context="nci:ExtCodeID" Name="C106549"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="NMRI">
+               <Alias Context="nci:ExtCodeID" Name="C37416"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="NOD SCID">
+               <Alias Context="nci:ExtCodeID" Name="C15167"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="NU">
+               <Alias Context="nci:ExtCodeID" Name="C14239"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="ob/ob">
+               <Alias Context="nci:ExtCodeID" Name="C122236"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="OFA(SD)">
+               <Alias Context="nci:ExtCodeID" Name="C76187"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="RHESUS">
+               <Alias Context="nci:ExtCodeID" Name="C14233"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="RNU">
+               <Alias Context="nci:ExtCodeID" Name="C122237"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="ROSS">
+               <Alias Context="nci:ExtCodeID" Name="C77099"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="SHR">
+               <Alias Context="nci:ExtCodeID" Name="C14412"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="SINCLAIR MINIATURE SWINE">
+               <Alias Context="nci:ExtCodeID" Name="C91819"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="SKH1-Hr hr">
+               <Alias Context="nci:ExtCodeID" Name="C98782"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="SPRAGUE-DAWLEY">
+               <Alias Context="nci:ExtCodeID" Name="C76189"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="SQUIRREL">
+               <Alias Context="nci:ExtCodeID" Name="C160934"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="SUFFOLK">
+               <Alias Context="nci:ExtCodeID" Name="C106572"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="SWISS WEBSTER">
+               <Alias Context="nci:ExtCodeID" Name="C106573"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="SYRIAN">
+               <Alias Context="nci:ExtCodeID" Name="C77095"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="WISTAR FURTH">
+               <Alias Context="nci:ExtCodeID" Name="C14390"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="WISTAR HAN">
+               <Alias Context="nci:ExtCodeID" Name="C76191"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="WISTAR KYOTO">
+               <Alias Context="nci:ExtCodeID" Name="C76192"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="WISTAR WU">
+               <Alias Context="nci:ExtCodeID" Name="C76193"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="WISTAR">
+               <Alias Context="nci:ExtCodeID" Name="C76190"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="YUCATAN MINIATURE SWINE">
+               <Alias Context="nci:ExtCodeID" Name="C91818"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="YUCATAN">
+               <Alias Context="nci:ExtCodeID" Name="C77108"/>
+            </EnumeratedItem>
+            <EnumeratedItem CodedValue="ZUCKER">
+               <Alias Context="nci:ExtCodeID" Name="C76194"/>
+            </EnumeratedItem>
+            <Alias Context="nci:ExtCodeID" Name="C77530"/>
+            <Alias Context="CDISCCTSourceFile" Name="SEND_Terminology_2022-09-29.xml"/>
+         </CodeList>
+      </MetaDataVersion>
+   </Study>
+</ODM>

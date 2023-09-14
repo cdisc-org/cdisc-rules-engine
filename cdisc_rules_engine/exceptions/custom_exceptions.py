@@ -67,3 +67,7 @@ class InvalidDictionaryVariable(Exception):
 
 class UnsupportedDictionaryType(Exception):
     description = "Specified dictionary type is not supported by the rules engine."
+
+
+class FailedSchemaValidation(Exception):
+    description = "Error Occured in Schema Validation"

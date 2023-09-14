@@ -1,0 +1,234 @@
+{
+  "datasets": [
+    {
+      "filename": "dm.xpt",
+      "label": "Demographics",
+      "domain": "DM",
+      "variables": [
+        {
+          "name": "STUDYID",
+          "label": "Study Identifier",
+          "type": "Char",
+          "length": 12
+        },
+        {
+          "name": "DOMAIN",
+          "label": "Domain Abbreviation",
+          "type": "Char",
+          "length": 2
+        },
+        {
+          "name": "USUBJID",
+          "label": "Unique Subject Identifier",
+          "type": "Char",
+          "length": 20
+        },
+        {
+          "name": "SUBJID",
+          "label": "Subject Identifier for the Study",
+          "type": "Char",
+          "length": 12
+        },
+        {
+          "name": "RFSTDTC",
+          "label": "Subject Reference Start Date/Time",
+          "type": "Char",
+          "length": 10
+        },
+        {
+          "name": "RFENDTC",
+          "label": "Subject Reference End Date/Time",
+          "type": "Char",
+          "length": 10
+        },
+        {
+          "name": "RFXSTDTC",
+          "label": "Date/Time of First Study Treatment",
+          "type": "Char",
+          "length": 10
+        },
+        {
+          "name": "RFXENDTC",
+          "label": "Date/Time of Last Study Treatment",
+          "type": "Char",
+          "length": 10
+        },
+        {
+          "name": "SITEID",
+          "label": "Study Site Identifier",
+          "type": "Char",
+          "length": 3
+        },
+        {
+          "name": "BRTHDTC",
+          "label": "Date/Time of Birth",
+          "type": "Char",
+          "length": 10
+        },
+        {
+          "name": "AGE",
+          "label": "Age",
+          "type": "Num",
+          "length": 8
+        },
+        {
+          "name": "AGETXT",
+          "label": "Age Range",
+          "type": "Char",
+          "length": 20
+        },
+        {
+          "name": "AGEU",
+          "label": "Age Units",
+          "type": "Char",
+          "length": 5
+        },
+        {
+          "name": "SEX",
+          "label": "Sex",
+          "type": "Char",
+          "length": 1
+        },
+        {
+          "name": "SPECIES",
+          "label": "Species",
+          "type": "Char",
+          "length": 41
+        },
+        {
+          "name": "STRAIN",
+          "label": "Strain",
+          "type": "Char",
+          "length": 22
+        },
+        {
+          "name": "SBSTRAIN",
+          "label": "Strain/Substrain Details",
+          "type": "Char",
+          "length": 8
+        },
+        {
+          "name": "ARMCD",
+          "label": "Planned Arm Code",
+          "type": "Char",
+          "length": 20
+        },
+        {
+          "name": "ARM",
+          "label": "Description of Planned Arm",
+          "type": "Char",
+          "length": 28
+        },
+        {
+          "name": "SETCD",
+          "label": "Set Code",
+          "type": "Char",
+          "length": 14
+        }
+      ],
+      "records": {
+        "STUDYID": [
+          "CES",
+          "CES",
+          "CES"
+        ],
+        "DOMAIN": [
+          "DM",
+          "DM",
+          "DM"
+        ],
+        "USUBJID": [
+          "015246-076-0003-00003",
+          "015246-203-0003-00001",
+          "015246-300-0004-00002"
+        ],
+        "SUBJID": [
+          "076000300003",
+          "203000300001",
+          "300000400002"
+        ],
+        "RFSTDTC": [
+          "2018-04-02T11:32",
+          "2017-12-27T16:15",
+          "2018-05-08T11:20"
+        ],
+        "RFENDTC": [
+          "2019-02-19T10:55",
+          "2021-08-20",
+          "2018-08-29T10:35"
+        ],
+        "RFXSTDTC": [
+          "2018-04-02T11:32",
+          "2017-12-27T16:15",
+          "2018-05-08T11:20"
+        ],
+        "RFXENDTC": [
+          "2019-02-19T10:55",
+          "2021-08-20",
+          "2018-08-29T10:35"
+        ],
+        "SITEID": [
+          "0760003",
+          "2030003",
+          "3000004"
+        ],
+        "BRTHDTC": [
+          "1940-01-14",
+          "1946-09-13",
+          "1947-12-23"
+        ],
+        "AGE": [
+          78,
+          71,
+          70
+        ],
+        "AGETXT": [
+          "70-80",
+          "70-80",
+          "70-80"
+        ],
+        "AGEU": [
+          "YEARS",
+          "YEARS",
+          "YEARS"
+        ],
+        "SEX": [
+          "F",
+          "F",
+          "F"
+        ],
+        "SPECIES": [
+          "Elephant",
+          "Elephant",
+          "Elephant"
+        ],
+        "STRAIN": [
+          "INDIAN",
+          "INDIAN",
+          "INDIAN"
+        ],
+        "SBSTRAIN": [
+          "N/A",
+          "N/A",
+          "N/A"
+        ],
+        "ARMCD": [
+          "ARM1",
+          "ARM1",
+          "ARM1"
+        ],
+        "ARM": [
+          "Arm 1 description",
+          "Arm 1 description",
+          "Arm 1 description"
+        ],
+        "SETCD": [
+          "SET1",
+          "SET1",
+          "SET1"
+        ]
+      }
+    }
+  ],
+  "codelists": []
+}
