@@ -84,7 +84,8 @@ class LocalDataService(BaseDataService):
         )
         return DatasetMetadata(
             name=contents_metadata["dataset_name"],
-            domain_name=contents_metadata["domain_name"],
+            domain_name=contents_metadata["domain_name"]
+            or contents_metadata["dataset_name"],
             label=contents_metadata["dataset_label"],
             modification_date=contents_metadata["dataset_modification_date"],
             filename=file_metadata["name"],
