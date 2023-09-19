@@ -6,6 +6,7 @@ from concurrent.futures import ThreadPoolExecutor
 import os
 import numpy as np
 import pandas as pd
+import dask.dataframe as dd
 
 from cdisc_rules_engine.constants.domains import AP_DOMAIN_LENGTH
 from cdisc_rules_engine.interfaces import (
@@ -229,14 +230,22 @@ class BaseDataService(DataServiceInterface, ABC):
         return domain.startswith(variable)
 
     @staticmethod
-    def _replace_nans_in_numeric_cols_with_none(dataset: pd.DataFrame):
+    def _replace_nans_in_numeric_cols_with_none(dataset):
         """
         Replaces NaN in numeric columns with None.
         """
         numeric_columns = dataset.select_dtypes(include=np.number).columns
-        dataset[numeric_columns] = dataset[numeric_columns].apply(
-            lambda x: x.replace({np.nan: None})
-        )
+        if isinstance(dataset, pd.DataFrame):
+            # For pandas DataFrame
+            dataset[numeric_columns] = dataset[numeric_columns].apply(
+                lambda x: x.replace({np.nan: None})
+            )
+        elif isinstance(dataset, dd.DataFrame):
+            # For Dask DataFrame
+            def replace_nans_with_none(df):
+                return df[numeric_columns].apply(lambda x: x.replace({np.nan: None}))
+
+            dataset.map_partitions(replace_nans_with_none, meta=dataset)
 
     async def _async_get_dataset(
         self, function_to_call: Callable, dataset_name: str, **kwargs

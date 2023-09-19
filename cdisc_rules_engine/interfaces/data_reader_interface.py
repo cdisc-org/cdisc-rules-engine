@@ -9,12 +9,12 @@ class DataReaderInterface(ABC):
     def __init__(self):
         pass
 
-    def read(self, data):
+    def read(self, data, size):
         """
         Function for reading data from a specific file type and returning a
         pandas dataframe of the data.
         """
         raise NotImplementedError
 
-    def from_file(self, file_path):
+    def from_file(self, file_path, size):
         raise NotImplementedError

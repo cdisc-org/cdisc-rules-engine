@@ -50,9 +50,11 @@ class LocalDataService(BaseDataService):
         return all(item.lower() in files for item in file_names)
 
     @cached_dataset(DatasetTypes.CONTENTS.value)
-    def get_dataset(self, dataset_name: str, **params) -> pandas.DataFrame:
+    def get_dataset(self, dataset_name: str, **params):
         reader = self._reader_factory.get_service()
-        df = reader.from_file(dataset_name)
+        df = reader.from_file(
+            dataset_name, self.read_metadata(dataset_name)["file_metadata"]["size"]
+        )
         self._replace_nans_in_numeric_cols_with_none(df)
         return df
 

@@ -3,6 +3,7 @@ from io import IOBase
 from typing import List, Optional
 
 import pandas as pd
+import dask.dataframe as dd
 
 from cdisc_rules_engine.dummy_models.dummy_dataset import DummyDataset
 from cdisc_rules_engine.exceptions.custom_exceptions import DatasetNotFoundError
@@ -54,11 +55,16 @@ class DummyDataService(BaseDataService):
                 return dataset
         return None
 
-    def get_dataset(self, dataset_name: str, **params) -> pd.DataFrame:
+    def get_dataset(self, dataset_name: str, **params):
         dataset: Optional[DummyDataset] = self.get_dataset_data(dataset_name)
         if dataset is not None:
-            df: pd.DataFrame = dataset.data
-            df = df.applymap(lambda x: x.decode("utf-8") if isinstance(x, bytes) else x)
+            if self.__get_dataset_metadata(dataset_name)["dataset_size"][0] > 100:
+                df = dd.from_pandas(dataset.data, npartitions=2)
+            else:
+                df = dataset.data
+                df = df.applymap(
+                    lambda x: x.decode("utf-8") if isinstance(x, bytes) else x
+                )
             self._replace_nans_in_numeric_cols_with_none(df)
             return df
         else:
