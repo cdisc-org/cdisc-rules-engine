@@ -1,8 +1,9 @@
 from cdisc_rules_engine.config.config import ConfigService
+from cdisc_rules_engine.models.dataset.dask_dataset import DaskDataset
 from cdisc_rules_engine.operations.day_data_validator import DayDataValidator
 from cdisc_rules_engine.models.operation_params import OperationParams
-import pandas as pd
 import pytest
+from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 
 from cdisc_rules_engine.services.cache.cache_service_factory import CacheServiceFactory
 
@@ -11,20 +12,18 @@ from cdisc_rules_engine.services.cache.cache_service_factory import CacheService
     "data, expected",
     [
         (
-            pd.DataFrame.from_dict(
-                {
-                    "values": [
-                        "1997-07-19T19:20:30",
-                        "1997-08-16T19:20:30",
-                        "1997-07-16T19:20",
-                        "2022-05-20T13:44",
-                        "2022-05-20T13:44",
-                        None,
-                        "2022-05-19T13:44",
-                    ],
-                    "USUBJID": [1, 2, 3, 4, 5, 6, 7],
-                }
-            ),
+            {
+                "values": [
+                    "1997-07-19T19:20:30",
+                    "1997-08-16T19:20:30",
+                    "1997-07-16T19:20",
+                    "2022-05-20T13:44",
+                    "2022-05-20T13:44",
+                    None,
+                    "2022-05-19T13:44",
+                ],
+                "USUBJID": [1, 2, 3, 4, 5, 6, 7],
+            },
             [4, 32, 1, 13, "", "", -1],
         ),
     ],
@@ -35,7 +34,7 @@ def test_day_data_calculation(
     config = ConfigService()
     cache = CacheServiceFactory(config).get_cache_service()
     datasets_map = {
-        "dm.xpt": pd.DataFrame.from_dict(
+        "dm.xpt": PandasDataset.from_dict(
             {
                 "RFSTDTC": [
                     "1997-07-16T19:20:30",
@@ -57,10 +56,68 @@ def test_day_data_calculation(
         name.split("/")[-1]
     )
     operation_params.datasets = datasets
-    operation_params.dataframe = data
+    operation_params.dataframe = PandasDataset.from_dict(data)
     operation_params.target = "values"
     result = DayDataValidator(
-        operation_params, data, cache, mock_data_service
+        operation_params, PandasDataset.from_dict(data), cache, mock_data_service
+    ).execute()
+    assert operation_params.operation_id in result
+    for i, val in enumerate(result[operation_params.operation_id]):
+        assert val == expected[i]
+
+
+@pytest.mark.parametrize(
+    "data, expected",
+    [
+        (
+            {
+                "values": [
+                    "1997-07-19T19:20:30",
+                    "1997-08-16T19:20:30",
+                    "1997-07-16T19:20",
+                    "2022-05-20T13:44",
+                    "2022-05-20T13:44",
+                    None,
+                    "2022-05-19T13:44",
+                ],
+                "USUBJID": [1, 2, 3, 4, 5, 6, 7],
+            },
+            [4, 32, 1, 13, "", "", -1],
+        ),
+    ],
+)
+def test_day_data_calculation_dask(
+    data, expected, mock_data_service, operation_params: OperationParams
+):
+    config = ConfigService()
+    cache = CacheServiceFactory(config).get_cache_service()
+    datasets_map = {
+        "dm.xpt": DaskDataset.from_dict(
+            {
+                "RFSTDTC": [
+                    "1997-07-16T19:20:30",
+                    "1997-07-16T19:20:30",
+                    "1997-07-16T19:20",
+                    "2022-05-08T13:44",
+                    "TEST",
+                    "2022-05-20T13:44",
+                    "2022-05-20T13:44",
+                ],
+                "USUBJID": [1, 2, 3, 4, 5, 6, 7],
+            }
+        )
+    }
+    datasets = [
+        {"domain": "DM", "filename": "dm.xpt"},
+    ]
+    mock_data_service.get_dataset.side_effect = lambda name: datasets_map.get(
+        name.split("/")[-1]
+    )
+    operation_params.datasets = datasets
+    operation_params.dataframe = DaskDataset.from_dict(data)
+    operation_params.target = "values"
+    result = DayDataValidator(
+        operation_params, DaskDataset.from_dict(data), cache, mock_data_service
     ).execute()
     assert operation_params.operation_id in result
     for i, val in enumerate(result[operation_params.operation_id]):

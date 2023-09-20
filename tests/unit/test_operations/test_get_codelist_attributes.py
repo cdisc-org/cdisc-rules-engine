@@ -1,10 +1,10 @@
 from cdisc_rules_engine.config.config import ConfigService
+from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
 import pandas as pd
 import pytest
-
 from typing import List
 
 from cdisc_rules_engine.models.operation_params import OperationParams
@@ -92,7 +92,7 @@ def test_get_codelist_attributes(
     Mocks cache call to return metadata.
     """
     # 1.0 set parameters
-    operation_params.dataframe = pd.DataFrame.from_dict(ts_data)
+    operation_params.dataframe = PandasDataset.from_dict(ts_data)
     operation_params.domain = "TS"
     operation_params.standard = "sdtmig"
     operation_params.standard_version = "3-4"

@@ -1,5 +1,6 @@
 from typing import List
 from cdisc_rules_engine.config.config import ConfigService
+from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
@@ -102,7 +103,7 @@ def test_get_column_order_from_library(
     Unit test for DataProcessor.get_column_order_from_library.
     Mocks cache call to return metadata.
     """
-    operation_params.dataframe = pd.DataFrame.from_dict(
+    operation_params.dataframe = PandasDataset.from_dict(
         {
             "STUDYID": [
                 "TEST_STUDY",
@@ -243,7 +244,7 @@ def test_get_findings_class_column_order_from_library(
     Unit test for DataProcessor.get_column_order_from_library.
     Mocks cache call to return metadata.
     """
-    operation_params.dataframe = pd.DataFrame.from_dict(
+    operation_params.dataframe = PandasDataset.from_dict(
         {
             "STUDYID": [
                 "TEST_STUDY",

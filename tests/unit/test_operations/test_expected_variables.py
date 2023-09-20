@@ -1,9 +1,9 @@
 from typing import List
 from cdisc_rules_engine.config.config import ConfigService
+from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
-
 import pandas as pd
 import pytest
 
@@ -93,7 +93,7 @@ def test_get_expected_variables(
     Unit test for DataProcessor.get_column_order_from_library.
     Mocks cache call to return metadata.
     """
-    operation_params.dataframe = pd.DataFrame.from_dict(
+    operation_params.dataframe = PandasDataset.from_dict(
         {
             "STUDYID": [
                 "TEST_STUDY",
@@ -127,7 +127,7 @@ def test_get_expected_variables(
         data_service,
         library_metadata,
     )
-    result: pd.DataFrame = operation.execute()
+    result = operation.execute()
     variables: List[str] = ["AENEW"]
     expected: pd.Series = pd.Series(
         [

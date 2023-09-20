@@ -20,4 +20,4 @@ class WhodrugReferencesValidator(BaseOperation):
             term.code for term in terms[WhodrugRecordTypes.ATC_TEXT.value].values()
         )
         result = self.params.dataframe[self.params.target].isin(valid_codes)
-        return result
+        return self.evaluation_dataset.convert_to_series(result)
