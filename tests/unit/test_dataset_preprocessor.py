@@ -8,6 +8,13 @@ from cdisc_rules_engine.services.cache.in_memory_cache_service import (
 )
 from cdisc_rules_engine.services.data_services import LocalDataService
 from cdisc_rules_engine.utilities.dataset_preprocessor import DatasetPreprocessor
+from cdisc_rules_engine.constants.rule_constants import ALL_KEYWORD
+from cdisc_rules_engine.models.rule_conditions import ConditionCompositeFactory
+from cdisc_rules_engine.utilities import sdtm_utilities
+from cdisc_rules_engine.config import ConfigService
+from cdisc_rules_engine.models.library_metadata_container import (
+    LibraryMetadataContainer,
+)
 
 
 def test_preprocess_no_datasets_in_rule(dataset_rule_equal_to_error_objects: dict):
@@ -328,6 +335,195 @@ def test_preprocess_relationship_dataset(
             "IDVARVAL": [
                 4.0,
                 5.0,
+            ],
+        }
+    )
+    assert preprocessed_dataset.equals(expected_dataset)
+
+
+@patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset")
+def test_preprocess_relrec_dataset(mock_get_dataset: MagicMock):
+    """
+    Unit test for preprocess method. Checks the case when
+    we are merging datasets using relrec.
+    """
+    # Rule
+    relrec_rule = {
+        "core_id": "MockRule",
+        "standards": [{"Name": "SDTMIG", "Version": "3.3"}],
+        "classes": {"Include": [ALL_KEYWORD]},
+        "domains": {"Include": ["EC"]},
+        "datasets": [{"domain_name": "RELREC", "wildcard": "__", "match_key": []}],
+        "conditions": ConditionCompositeFactory.get_condition_composite(
+            {
+                "all": [
+                    {
+                        "name": "get_dataset",
+                        "operator": "equal_to",
+                        "value": {
+                            "target": "ECSTDY",
+                            "comparator": "RELREC.__STDY",
+                        },
+                    }
+                ]
+            }
+        ),
+        "actions": [
+            {
+                "name": "generate_dataset_error_objects",
+                "params": {
+                    "message": "Value of ECSTDY is equal to AESTDY.",
+                },
+            }
+        ],
+        "output_variables": [
+            "ECSTDY",
+        ],
+    }
+    # create datasets
+    ec_dataset = pd.DataFrame.from_dict(
+        {
+            "ECSEQ": [
+                "1",
+                "2",
+                "3",
+                "4",
+                "5",
+            ],
+            "ECSTDY": [
+                4,
+                5,
+                6,
+                7,
+                8,
+            ],
+            "STUDYID": [
+                "1",
+                "2",
+                "1",
+                "2",
+                "3",
+            ],
+            "USUBJID": [
+                "CDISC001",
+                "CDISC001",
+                "CDISC002",
+                "CDISC002",
+                "CDISC003",
+            ],
+        }
+    )
+    ae_dataset = pd.DataFrame.from_dict(
+        {
+            "AESEQ": [
+                "1",
+                "2",
+                "3",
+                "4",
+            ],
+            "AESTDY": [
+                4,
+                5,
+                16,
+                17,
+            ],
+            "STUDYID": [
+                "1",
+                "2",
+                "1",
+                "2",
+            ],
+            "USUBJID": [
+                "CDISC001",
+                "CDISC001",
+                "CDISC002",
+                "CDISC002",
+            ],
+        }
+    )
+    relrec_dataset = pd.DataFrame.from_dict(
+        {
+            "RDOMAIN": [
+                "EC",
+                "AE",
+            ],
+            "IDVAR": [
+                "ECSEQ",
+                "AESEQ",
+            ],
+            "IDVARVAL": [
+                "",
+                "",
+            ],
+            "RELID": [
+                "ECAE",
+                "ECAE",
+            ],
+            "STUDYID": [
+                "1",
+                "1",
+            ],
+            "USUBJID": [
+                "",
+                "",
+            ],
+        }
+    )
+
+    # mock blob storage call
+    path_to_dataset_map: dict = {
+        os.path.join("path", "ae.xpt"): ae_dataset,
+        os.path.join("path", "relrec.xpt"): relrec_dataset,
+    }
+    mock_get_dataset.side_effect = lambda dataset_name: path_to_dataset_map[
+        dataset_name
+    ]
+
+    # call preprocessor
+    datasets: List[dict] = [
+        {"domain": "AE", "filename": "ae.xpt"},
+        {"domain": "RELREC", "filename": "relrec.xpt"},
+    ]
+
+    # save model metadata to cache
+    cache = InMemoryCacheService.get_instance()
+    sdtm_utilities.get_all_model_wildcard_variables = MagicMock(
+        return_value=["--SEQ", "--STDY"]
+    )
+    # execute operation
+    data_service = LocalDataService.get_instance(
+        cache_service=cache,
+        config=ConfigService(),
+    )
+    data_service.library_metadata = LibraryMetadataContainer()
+
+    preprocessor = DatasetPreprocessor(
+        ec_dataset,
+        "EC",
+        os.path.join("path", "ec.xpt"),
+        data_service,
+        InMemoryCacheService(),
+    )
+    preprocessed_dataset: pd.DataFrame = preprocessor.preprocess(relrec_rule, datasets)
+    expected_dataset = pd.DataFrame.from_dict(
+        {
+            "ECSEQ": ["1", "2", "3", "4"],
+            "ECSTDY": [4, 5, 6, 7],
+            "STUDYID": ["1", "2", "1", "2"],
+            "USUBJID": [
+                "CDISC001",
+                "CDISC001",
+                "CDISC002",
+                "CDISC002",
+            ],
+            "RELREC.__SEQ": ["1", "2", "3", "4"],
+            "RELREC.__STDY": [4, 5, 16, 17],
+            "RELREC.STUDYID": ["1", "2", "1", "2"],
+            "RELREC.USUBJID": [
+                "CDISC001",
+                "CDISC001",
+                "CDISC002",
+                "CDISC002",
             ],
         }
     )

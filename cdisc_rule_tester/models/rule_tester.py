@@ -16,7 +16,7 @@ from cdisc_rules_engine.models.library_metadata_container import (
 )
 from cdisc_rules_engine.utilities.utils import (
     get_standard_details_cache_key,
-    get_model_details_cache_key,
+    get_model_details_cache_key_from_ig,
     get_library_variables_metadata_cache_key,
     get_variable_codelist_map_cache_key,
 )
@@ -34,14 +34,6 @@ class RuleTester:
     ):
         self.datasets = [DummyDataset(dataset_data) for dataset_data in datasets]
         self.cache = cache or InMemoryCacheService()
-        self.data_service = DummyDataService.get_instance(
-            self.cache,
-            ConfigService(),
-            standard=standard,
-            standard_version=standard_version,
-            data=self.datasets,
-            define_xml=define_xml,
-        )
 
         standard_details_cache_key = get_standard_details_cache_key(
             standard, standard_version
@@ -51,13 +43,7 @@ class RuleTester:
         )
         standard_metadata = self.cache.get(standard_details_cache_key)
         if standard_metadata:
-            model_link = (
-                standard_metadata.get("_links", {}).get("model", {}).get("href", "")
-            )
-            model_link_parts = model_link.split("/")
-            model_type = model_link_parts[1]
-            model_version = model_link_parts[-1]
-            model_cache_key = get_model_details_cache_key(model_type, model_version)
+            model_cache_key = get_model_details_cache_key_from_ig(standard_metadata)
             model_metadata = self.cache.get(model_cache_key)
         else:
             model_metadata = {}
@@ -75,6 +61,15 @@ class RuleTester:
             variables_metadata=self.cache.get(variable_details_cache_key),
             variable_codelist_map=self.cache.get(variable_codelist_cache_key),
             ct_package_metadata=ct_package_metadata,
+        )
+        self.data_service = DummyDataService.get_instance(
+            self.cache,
+            ConfigService(),
+            standard=standard,
+            standard_version=standard_version,
+            data=self.datasets,
+            define_xml=define_xml,
+            library_metadata=self.library_metadata,
         )
         self.engine = RulesEngine(
             self.cache,

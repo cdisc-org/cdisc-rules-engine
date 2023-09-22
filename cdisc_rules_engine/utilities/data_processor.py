@@ -1,5 +1,6 @@
+from __future__ import annotations
 import asyncio
-from typing import List, Optional, Set
+from typing import List, Optional, Set, TYPE_CHECKING
 
 import pandas as pd
 
@@ -16,6 +17,10 @@ from cdisc_rules_engine.services.data_services import (
 )
 from cdisc_rules_engine.utilities.utils import search_in_list_of_dicts
 import os
+from cdisc_rules_engine.utilities.sdtm_utilities import add_variable_wildcards
+
+if TYPE_CHECKING:
+    from cdisc_rules_engine.utilities.dataset_preprocessor import DatasetPreprocessor
 
 
 class DataProcessor:
@@ -248,6 +253,131 @@ class DataProcessor:
             how="outer",
             suffixes=("", f".{right_dataset_domain_name}"),
         )
+
+    @staticmethod
+    def filter_if_present(df: pd.DataFrame, col: str, filter_value):
+        """
+        If a filter value is provided, filter the dataframe on that value.
+        Otherwise, return the whole dataframe.
+        """
+        return df[df[col] == filter_value] if filter_value else df
+
+    @staticmethod
+    def filter_relrec_for_domain(
+        domain_name: str,
+        relrec_dataset: pd.DataFrame,
+    ):
+        """
+        Find all relrec records associated with a given domain
+        """
+        relrec_left = relrec_dataset[relrec_dataset["RDOMAIN"] == domain_name]
+        left_relids_index = pd.MultiIndex.from_arrays(
+            [relrec_left[col] for col in ["USUBJID", "RELID"]]
+        )
+        all_relids_index = pd.MultiIndex.from_arrays(
+            [relrec_dataset[col] for col in ["USUBJID", "RELID"]]
+        )
+        relrec_right = relrec_dataset[all_relids_index.isin(left_relids_index)]
+        relrec_right = relrec_right[relrec_right["RDOMAIN"] != domain_name]
+        return pd.merge(
+            left=relrec_left,
+            right=relrec_right,
+            on=("STUDYID", "USUBJID", "RELID"),
+            suffixes=("_LEFT", "_RIGHT"),
+        )
+
+    @staticmethod
+    def merge_on_relrec_record(
+        relrec_row: pd.Series,
+        left_dataset: pd.DataFrame,
+        datasets: List[dict],
+        dataset_preprocessor: DatasetPreprocessor,
+        wildcard: str,
+    ):
+        """
+        Given a pair of relrec rows and a left dataset, find the right dataset and join
+          the left and right on the criteria given in the relrec pair
+        """
+        model_metadata = (
+            dataset_preprocessor._data_service.library_metadata.model_metadata
+        )
+        file_info: dict = search_in_list_of_dicts(
+            datasets, lambda item: item.get("domain") == relrec_row["RDOMAIN_RIGHT"]
+        )
+        if not file_info:
+            return pd.DataFrame()
+        right_dataset: pd.DataFrame = dataset_preprocessor._download_dataset(
+            file_info["filename"]
+        )
+        left_subset = left_dataset
+        right_subset = right_dataset
+        left_subset = DataProcessor.filter_if_present(
+            left_subset, "USUBJID", relrec_row["USUBJID"]
+        )
+        right_subset = DataProcessor.filter_if_present(
+            right_subset, "USUBJID", relrec_row["USUBJID"]
+        )
+        left_subset = DataProcessor.filter_if_present(
+            left_subset, "IDVAR_LEFT", relrec_row["IDVARVAL_LEFT"]
+        )
+        right_subset = DataProcessor.filter_if_present(
+            right_subset, "IDVAR_RIGHT", relrec_row["IDVARVAL_RIGHT"]
+        )
+        variables_with_wildcards = {
+            source: f"RELREC.{target}"
+            for (source, target) in add_variable_wildcards(
+                model_metadata,
+                right_dataset.columns,
+                relrec_row["RDOMAIN_RIGHT"],
+                wildcard,
+            ).items()
+        }
+        right_subset = right_subset.rename(columns=variables_with_wildcards)
+        return pd.merge(
+            left=left_subset,
+            right=right_subset,
+            left_on=["STUDYID", "USUBJID", relrec_row["IDVAR_LEFT"]],
+            right_on=[
+                variables_with_wildcards["STUDYID"],
+                variables_with_wildcards["USUBJID"],
+                variables_with_wildcards[relrec_row["IDVAR_RIGHT"]],
+            ],
+        )
+
+    @staticmethod
+    def merge_relrec_datasets(
+        left_dataset: pd.DataFrame,
+        left_dataset_domain_name: str,
+        relrec_dataset: pd.DataFrame,
+        datasets: List[dict],
+        dataset_preprocessor: DatasetPreprocessor,
+        wildcard: str,
+    ) -> pd.DataFrame:
+        """
+        1. Find each record within relrec_dataset where RDOMAIN matches the
+          left_dataset_domain_name
+        2. Join each of these (left) records with all other (right) records in
+          relrec_dataset sharing the same STUDYID, USUBJID, RELID
+        3. For each record in this new dataset:
+            1. Filter the left and right datasets by the criteria
+            2. Rename the right dataset columns with wildcards and a "RELREC." dataset
+              specifier
+            3. Join the records referenced by the left side with the records referenced
+              by the right side
+            4. Union the results
+        """
+        relrec_for_domain = DataProcessor.filter_relrec_for_domain(
+            left_dataset_domain_name, relrec_dataset
+        )
+        result = pd.concat(
+            objs=[
+                DataProcessor.merge_on_relrec_record(
+                    relrec_row, left_dataset, datasets, dataset_preprocessor, wildcard
+                )
+                for _, relrec_row in relrec_for_domain.iterrows()
+            ]
+        )
+        return result
 
     @staticmethod
     def merge_relationship_datasets(

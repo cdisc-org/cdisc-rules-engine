@@ -164,6 +164,14 @@ def get_model_details_cache_key(standard: str, model_version: str) -> str:
     return f"models/{standard}/{model_version.replace('.', '-')}"
 
 
+def get_model_details_cache_key_from_ig(standard_metadata: dict) -> str:
+    model_link = standard_metadata.get("_links", {}).get("model", {}).get("href", "")
+    model_link_parts = model_link.split("/")
+    return get_model_details_cache_key(
+        standard=model_link_parts[2], model_version=model_link_parts[3]
+    )
+
+
 def replace_pattern_in_list_of_strings(
     list_of_strings: List[str], pattern: str, value: str
 ) -> List[str]:
