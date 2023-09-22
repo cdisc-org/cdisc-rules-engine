@@ -3,6 +3,7 @@ from io import IOBase
 from typing import List, Optional, Tuple
 
 import pandas
+import psutil
 
 from cdisc_rules_engine.interfaces import CacheServiceInterface, ConfigInterface
 from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
@@ -159,3 +160,21 @@ class LocalDataService(BaseDataService):
         if size_unit:  # convert file size from bytes to desired unit if needed
             file_metadata["size"] = convert_file_size(file_metadata["size"], size_unit)
         return file_metadata, metadata["contents_metadata"]
+
+    def choose_library(self, file_path):
+        """Chooses the appropriate library for working with a dataset.
+        Args: file_path: The path to the dataset file.
+        Returns: A Pandas DataFrame or Dask DataFrame,
+        depending on the size of the dataset and the
+        available memory in the computer."""
+
+        if self._config.getValue("use_library"):
+            return self._config.getValue("use_library")
+        file_size = os.path.getsize(file_path)
+        file_size_in_mb = file_size / (1024 * 1024)
+        available_memory = psutil.virtual_memory().available
+        available_memory_in_mb = available_memory / (1024 * 1024)
+        if file_size_in_mb > available_memory_in_mb * 0.7:
+            return "dask"
+        else:
+            return "pandas"

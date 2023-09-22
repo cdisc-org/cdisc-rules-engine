@@ -8,8 +8,17 @@ class ConfigInterface(ABC):
     classes.
     """
 
+    def __init__(self):
+        self.configs = {}
+
     @abstractmethod
     def getValue(self, key: str, default=None):
         """
         Returns value of a configuration parameter.
         """
+        if key in self.configs:
+            return self.configs[key]
+        return None
+
+    def setValue(self, key: str, value: str):
+        self.configs[key] = value
