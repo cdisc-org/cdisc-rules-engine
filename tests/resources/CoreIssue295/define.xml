@@ -36,7 +36,7 @@
                           Type="IG"
                           Version="3.1"/>
          </def:Standards>
-         <!-- SEND-DM dataset definition with def:Structure present -->
+         <!-- SEND-DM dataset definition with def:Structure absent -->
          <ItemGroupDef Domain="DM"
                        IsReferenceData="No"
                        Name="DM"
@@ -45,8 +45,7 @@
                        Repeating="No"
                        SASDatasetName="DM"
                        def:ArchiveLocationID="Location.DM"
-                       def:StandardOID="STD.SEND-3.1"
-                       def:Structure="One record per USUBJID">
+                       def:StandardOID="STD.SEND-3.1">
             <Description>
                <TranslatedText xml:lang="en">Demographics</TranslatedText>
             </Description>

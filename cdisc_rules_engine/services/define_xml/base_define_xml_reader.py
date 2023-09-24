@@ -14,6 +14,7 @@ import odmlib.define_2_0.model  # noqa F401
 
 from cdisc_rules_engine.exceptions.custom_exceptions import (
     DomainNotFoundInDefineXMLError,
+    FailedSchemaValidation,
 )
 from cdisc_rules_engine.models.define import ValueLevelMetadata
 from cdisc_rules_engine.services import logger
@@ -75,11 +76,14 @@ class BaseDefineXMLReader(ABC):
         Reads Define XML metadata and returns it as a list of dicts.
         The output contains metadata for all datasets.
         """
-        metadata = self._odm_loader.MetaDataVersion()
-        output = []
-        for domain_metadata in metadata.ItemGroupDef:
-            output.append(self._get_metadata_representation(domain_metadata))
-        return output
+        try:
+            metadata = self._odm_loader.MetaDataVersion()
+            output = []
+            for domain_metadata in metadata.ItemGroupDef:
+                output.append(self._get_metadata_representation(domain_metadata))
+            return output
+        except Exception:
+            raise FailedSchemaValidation("Schema Validation Failed")
 
     @cached("define-domain-metadata")
     def extract_domain_metadata(self, domain_name: str = None) -> dict:

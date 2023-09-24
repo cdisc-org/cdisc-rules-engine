@@ -32,6 +32,7 @@ class TestTestCommand(unittest.TestCase):
             f"-v 3.4 "
             f"-dv 2.1 "
             f"-dxp {os.path.join('tests', 'resources','define.xml')}"
+            f"-vx y"
         )
         exit_code, stdout, stderr = self.run_command(command)
         self.assertEqual(exit_code, 0)
@@ -101,6 +102,32 @@ class TestTestCommand(unittest.TestCase):
         exit_code, stdout, stderr = self.run_command(command)
         self.assertNotEqual(exit_code, 0)
         self.assertNotEqual(stderr, "", f"Error while executing command:\n{stderr}")
+
+    def test_test_command_with_vx_as_no(self):
+        command = (
+            f"python core.py test "
+            f"-s sendig "
+            f"-v 3.1 "
+            f"-dv 2.1 "
+            f"-r {os.path.join('tests','resources','CoreIssue295','SEND4.json')} "
+            f"-dp {os.path.join('tests','resources','CoreIssue295','dm.json')} "
+            f"-vx no "
+        )
+        exit_code, stdout, stderr = self.run_command(command)
+        self.assertNotIn("failed schema validation", stdout)
+
+    def test_test_command_with_vx_as_yes(self):
+        command = (
+            f"python core.py test "
+            f"-s sendig "
+            f"-v 3.1 "
+            f"-dv 2.1 "
+            f"-r {os.path.join('tests','resources','CoreIssue295','SEND4.json')} "
+            f"-dp {os.path.join('tests','resources','CoreIssue295','dm.json')} "
+            f"-vx y"
+        )
+        exit_code, stdout, stderr = self.run_command(command)
+        self.assertIn("schema validation failed", stderr)
 
     def tearDown(self):
         for file_name in os.listdir("."):
