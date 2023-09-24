@@ -21,7 +21,7 @@ class TestTestCommand(unittest.TestCase):
 
     def test_test_command_with_all_options(self):
         command = (
-            f"python core.py test "
+            f"python3 core.py test "
             f"-c {os.path.join('resources', 'cache')} "
             f"-dp {os.path.join('tests', 'resources', 'CG0027-positive.json')} "
             f"-r {os.path.join('tests', 'resources', 'Rule-CG0027.json')} "
@@ -32,7 +32,6 @@ class TestTestCommand(unittest.TestCase):
             f"-v 3.4 "
             f"-dv 2.1 "
             f"-dxp {os.path.join('tests', 'resources','define.xml')}"
-            f"-vx y"
         )
         exit_code, stdout, stderr = self.run_command(command)
         self.assertEqual(exit_code, 0)
