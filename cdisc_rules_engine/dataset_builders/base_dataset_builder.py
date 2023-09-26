@@ -11,7 +11,6 @@ from cdisc_rules_engine.utilities.utils import (
     is_split_dataset,
     get_corresponding_datasets,
 )
-from cdisc_rules_engine.exceptions.custom_exceptions import FailedSchemaValidation
 from typing import List
 from cdisc_rules_engine import config
 from cdisc_rules_engine.utilities import sdtm_utilities
@@ -55,22 +54,19 @@ class BaseDatasetBuilder:
         pass
 
     def get_dataset(self, **kwargs):
-        try:
-            # If validating dataset content, ensure split datasets are handled.
-            if is_split_dataset(self.datasets, self.domain):
-                # Handle split datasets for content checks.
-                # A content check is any check that is not in the list of rule types
-                dataset: pd.DataFrame = self.data_service.concat_split_datasets(
-                    func_to_call=self.build,
-                    dataset_names=self.get_corresponding_datasets_names(),
-                    **kwargs,
-                )
-            else:
-                # single dataset. the most common case
-                dataset: pd.DataFrame = self.build()
-            return dataset
-        except Exception:
-            raise FailedSchemaValidation("Schema Validation Failed")
+        # If validating dataset content, ensure split datasets are handled.
+        if is_split_dataset(self.datasets, self.domain):
+            # Handle split datasets for content checks.
+            # A content check is any check that is not in the list of rule types
+            dataset: pd.DataFrame = self.data_service.concat_split_datasets(
+                func_to_call=self.build,
+                dataset_names=self.get_corresponding_datasets_names(),
+                **kwargs,
+            )
+        else:
+            # single dataset. the most common case
+            dataset: pd.DataFrame = self.build()
+        return dataset
 
     def get_dataset_contents(self, **kwargs):
         # If validating dataset content, ensure split datasets are handled.
