@@ -12,7 +12,7 @@ class Distinct(BaseOperation):
         else:
             grouped = self.params.dataframe.groupby(
                 self.params.grouping, as_index=False, group_keys=False
-            )
+            ).data
             if isinstance(self.params.dataframe.data, pd.DataFrame):
                 result = grouped[self.params.target].agg(self._unique_values_for_column)
             else:

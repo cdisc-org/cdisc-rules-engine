@@ -1,6 +1,5 @@
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 import dask.dataframe as dd
-import numpy as np
 import pandas as pd
 from typing import List
 
@@ -42,6 +41,9 @@ class DaskDataset(PandasDataset):
             return self._data[column].compute()
         return default
 
+    def apply(self, func, **kwargs):
+        return self._data.apply(func, **kwargs).compute()
+
     def __concat_columns(self, current, other):
         for column in other.columns:
             current[column] = other[column]
@@ -66,18 +68,14 @@ class DaskDataset(PandasDataset):
 
     def groupby(self, by: List[str], **kwargs):
         invalid_kwargs = ["as_index"]
-        for arg in invalid_kwargs:
-            del kwargs[arg]
-        return self._data.groupby(by, **kwargs)
+        return self.__class__(
+            self._data.groupby(
+                by, **self._remove_invalid_kwargs(invalid_kwargs, kwargs)
+            )
+        )
 
     def is_series(self, data) -> bool:
-        return isinstance(data, dd.Series)
+        return isinstance(data, dd.Series) or isinstance(data, pd.Series)
 
-    def convert_to_series(self, result):
-        if self.is_series(result):
-            return result
-        elif isinstance(result, np.ndarray):
-            return dd.from_array(result)
-        elif isinstance(result, pd.Series):
-            return dd.from_pandas(result, npartitions=1)
-        return pd.Series(result)
+    def len(self) -> int:
+        return self._data.shape[0].compute()

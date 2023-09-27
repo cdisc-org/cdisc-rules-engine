@@ -11,9 +11,12 @@ from cdisc_rules_engine.services.data_services.data_service_factory import (
     DataServiceFactory,
 )
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
+import pytest
 
 
+@pytest.mark.parametrize("dataset_type", [(PandasDataset), (DaskDataset)])
 def test_get_define_variable_metadata_variable_in_domain(
+    dataset_type,
     operation_params: OperationParams,
 ):
     config = ConfigService()
@@ -25,14 +28,16 @@ def test_get_define_variable_metadata_variable_in_domain(
     operation_params.target = "--SER"
     operation_params.attribute_name = "define_variable_ccode"
     result = DefineVariableMetadata(
-        operation_params, PandasDataset.from_dict({"A": [1, 2, 3]}), cache, data_service
+        operation_params, dataset_type.from_dict({"A": [1, 2, 3]}), cache, data_service
     ).execute()
     assert operation_params.operation_id in result
     for val in result[operation_params.operation_id]:
         val == "C49487"
 
 
+@pytest.mark.parametrize("dataset_type", [(PandasDataset), (DaskDataset)])
 def test_get_define_variable_metadata_variable_not_in_domain(
+    dataset_type,
     operation_params: OperationParams,
 ):
     config = ConfigService()
@@ -44,45 +49,7 @@ def test_get_define_variable_metadata_variable_not_in_domain(
     operation_params.target = "VERYFAKEVARIABLE"
     operation_params.attribute_name = "define_variable_ccode"
     result = DefineVariableMetadata(
-        operation_params, PandasDataset.from_dict({"A": [1, 2, 3]}), cache, data_service
-    ).execute()
-    assert operation_params.operation_id in result
-    for val in result[operation_params.operation_id]:
-        val == ""
-
-
-def test_get_define_variable_metadata_dask_variable_in_domain(
-    operation_params: OperationParams,
-):
-    config = ConfigService()
-    cache = CacheServiceFactory(config).get_cache_service()
-    data_service = DataServiceFactory(config, cache).get_data_service()
-    resources_path: Path = Path(__file__).parent.parent.parent.joinpath("resources")
-    operation_params.directory_path = str(resources_path)
-    operation_params.domain = "AE"
-    operation_params.target = "--SER"
-    operation_params.attribute_name = "define_variable_ccode"
-    result = DefineVariableMetadata(
-        operation_params, DaskDataset.from_dict({"A": [1, 2, 3]}), cache, data_service
-    ).execute()
-    assert operation_params.operation_id in result
-    for val in result[operation_params.operation_id]:
-        val == "C49487"
-
-
-def test_get_define_variable_metadata_dask_variable_not_in_domain(
-    operation_params: OperationParams,
-):
-    config = ConfigService()
-    cache = CacheServiceFactory(config).get_cache_service()
-    data_service = DataServiceFactory(config, cache).get_data_service()
-    resources_path: Path = Path(__file__).parent.parent.parent.joinpath("resources")
-    operation_params.directory_path = str(resources_path)
-    operation_params.domain = "AE"
-    operation_params.target = "VERYFAKEVARIABLE"
-    operation_params.attribute_name = "define_variable_ccode"
-    result = DefineVariableMetadata(
-        operation_params, DaskDataset.from_dict({"A": [1, 2, 3]}), cache, data_service
+        operation_params, dataset_type.from_dict({"A": [1, 2, 3]}), cache, data_service
     ).execute()
     assert operation_params.operation_id in result
     for val in result[operation_params.operation_id]:

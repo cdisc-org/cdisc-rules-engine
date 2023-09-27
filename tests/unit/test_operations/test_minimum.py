@@ -12,35 +12,17 @@ from cdisc_rules_engine.services.data_services.data_service_factory import (
 
 
 @pytest.mark.parametrize(
-    "data, expected",
+    "data, dataset_type, expected",
     [
-        ({"values": [11, 12, 12, 5, 18, 9]}, 5),
+        ({"values": [11, 12, 12, 5, 18, 9]}, PandasDataset, 5),
+        ({"values": [11, 12, 12, 5, 18, 9]}, DaskDataset, 5),
     ],
 )
-def test_minimum(data, expected, operation_params: OperationParams):
+def test_minimum(data, dataset_type, expected, operation_params: OperationParams):
     config = ConfigService()
     cache = CacheServiceFactory(config).get_cache_service()
     data_service = DataServiceFactory(config, cache).get_data_service()
-    dataset = PandasDataset.from_dict(data)
-    operation_params.dataframe = dataset
-    operation_params.target = "values"
-    result = Minimum(operation_params, dataset, cache, data_service).execute()
-    assert operation_params.operation_id in result
-    for val in result[operation_params.operation_id]:
-        assert val == expected
-
-
-@pytest.mark.parametrize(
-    "data, expected",
-    [
-        ({"values": [11, 12, 12, 5, 18, 9]}, 5),
-    ],
-)
-def test_minimum_dask(data, expected, operation_params: OperationParams):
-    config = ConfigService()
-    cache = CacheServiceFactory(config).get_cache_service()
-    data_service = DataServiceFactory(config, cache).get_data_service()
-    dataset = DaskDataset.from_dict(data)
+    dataset = dataset_type.from_dict(data)
     operation_params.dataframe = dataset
     operation_params.target = "values"
     result = Minimum(operation_params, dataset, cache, data_service).execute()

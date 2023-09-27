@@ -108,3 +108,9 @@ class DatasetInterface(ABC):
         """
         Create a series of a single value
         """
+
+    @abstractmethod
+    def len(self) -> int:
+        """
+        Return the length of the dataset
+        """

@@ -11,36 +11,17 @@ from cdisc_rules_engine.services.data_services.data_service_factory import (
 
 
 @pytest.mark.parametrize(
-    "data, expected",
+    "data, dataset_type, expected",
     [
-        ({"values": [11, 12, 12, 5, 18, 9]}, 18),
-        ({"values": [11, 12, 12, 5, 18, 29]}, 29),
+        ({"values": [11, 12, 12, 5, 18, 9]}, PandasDataset, 18),
+        ({"values": [11, 12, 12, 5, 18, 29]}, DaskDataset, 29),
     ],
 )
-def test_maximum(data, expected, operation_params: OperationParams):
+def test_maximum(data, dataset_type, expected, operation_params: OperationParams):
     config = ConfigService()
     cache = CacheServiceFactory(config).get_cache_service()
     data_service = DataServiceFactory(config, cache).get_data_service()
-    dataset = PandasDataset.from_dict(data)
-    operation_params.dataframe = dataset
-    operation_params.target = "values"
-    result = Maximum(operation_params, dataset, cache, data_service).execute()
-    for val in result[operation_params.operation_id]:
-        assert val == expected
-
-
-@pytest.mark.parametrize(
-    "data, expected",
-    [
-        ({"values": [11, 12, 12, 5, 18, 9]}, 18),
-        ({"values": [11, 12, 12, 5, 18, 29]}, 29),
-    ],
-)
-def test_maximum_dask(data, expected, operation_params: OperationParams):
-    config = ConfigService()
-    cache = CacheServiceFactory(config).get_cache_service()
-    data_service = DataServiceFactory(config, cache).get_data_service()
-    dataset = DaskDataset.from_dict(data)
+    dataset = dataset_type.from_dict(data)
     operation_params.dataframe = dataset
     operation_params.target = "values"
     result = Maximum(operation_params, dataset, cache, data_service).execute()

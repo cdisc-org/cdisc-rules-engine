@@ -49,7 +49,7 @@ class PandasDataset(DatasetInterface):
         return default
 
     def groupby(self, by: List[str], **kwargs):
-        return self._data.groupby(by, **kwargs)
+        return self.__class__(self._data.groupby(by, **kwargs))
 
     def concat(self, other: Union[DatasetInterface, List[DatasetInterface]], **kwargs):
         if isinstance(other, list):
@@ -65,7 +65,7 @@ class PandasDataset(DatasetInterface):
         return self.__class__(new_data)
 
     def apply(self, func, **kwargs):
-        return self._data.apply(func, **kwargs)
+        return self._data.apply(func, **self._remove_invalid_kwargs(["meta"], kwargs))
 
     def iterrows(self):
         return self._data.iterrows()
@@ -82,3 +82,13 @@ class PandasDataset(DatasetInterface):
         if hasattr(result, "__iter__"):
             return pd.Series([result] * len(self._data), index=self._data.index)
         return pd.Series(result, index=self._data.index)
+
+    def _remove_invalid_kwargs(self, invalid_args, kwargs) -> dict:
+        for arg in invalid_args:
+            if arg in kwargs:
+                del kwargs[arg]
+
+        return kwargs
+
+    def len(self) -> int:
+        return self._data.shape[0]
