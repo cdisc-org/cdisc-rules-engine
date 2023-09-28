@@ -1,5 +1,7 @@
 import re
 from typing import List, Optional, Set, Union, Tuple
+from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
+from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
@@ -210,14 +212,14 @@ class RuleProcessor:
     def perform_rule_operations(
         self,
         rule: dict,
-        dataset: pd.DataFrame,
+        dataset: DatasetInterface,
         domain: str,
         datasets: List[dict],
         dataset_path: str,
         standard: str,
         standard_version: str,
         **kwargs,
-    ) -> pd.DataFrame:
+    ) -> DatasetInterface:
         """
         Applies rule operations to the dataset.
         Returns the processed dataset. Operation result is appended as a new column.
@@ -242,7 +244,9 @@ class RuleProcessor:
             operation_params = OperationParams(
                 operation_id=operation.get("id"),
                 operation_name=operation.get("operator"),
-                dataframe=dataset_copy,
+                # TODO: Once data reading is updated dataset_copy will be a
+                # DatasetInterface so this conversion will not be necessary
+                dataframe=PandasDataset(dataset_copy),
                 target=target,
                 original_target=original_target,
                 domain=domain,
@@ -267,7 +271,9 @@ class RuleProcessor:
             )
 
             # execute operation
-            dataset_copy = self._execute_operation(operation_params, dataset_copy)
+            dataset_copy = self._execute_operation(
+                operation_params, PandasDataset(dataset_copy)
+            ).data
 
             logger.info(
                 f"Processed rule operation. "

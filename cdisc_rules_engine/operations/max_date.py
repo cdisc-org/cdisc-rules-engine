@@ -14,5 +14,5 @@ class MaxDate(BaseOperation):
         else:
             result = self.params.dataframe.groupby(
                 self.params.grouping, as_index=False
-            ).max()
+            ).data.max()
         return result

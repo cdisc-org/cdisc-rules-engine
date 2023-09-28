@@ -1,11 +1,9 @@
-# python -m pytest -s tests/unit/test_operations/test_get_model_filtered_variables.py
-
+from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
-import pandas as pd
 import pytest
-
+import pandas as pd
 from typing import List
 
 from cdisc_rules_engine.constants.classes import (
@@ -525,7 +523,7 @@ def test_get_model_filtered_variables(
     """
     if key_val is None:
         key_val = "Timing"
-    operation_params.dataframe = pd.DataFrame.from_dict(study_data)
+    operation_params.dataframe = PandasDataset.from_dict(study_data)
     operation_params.domain = "AE"
     operation_params.standard = "sdtmig"
     operation_params.standard_version = "3-4"
@@ -550,10 +548,10 @@ def test_get_model_filtered_variables(
         library_metadata,
     )
 
-    result: pd.DataFrame = operation.execute()
+    result = operation.execute()
 
     variables: List[str] = var_list
-    expected: pd.Series = pd.Series(
+    expected = pd.Series(
         [
             variables,
             variables,

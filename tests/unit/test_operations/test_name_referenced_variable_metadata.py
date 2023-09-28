@@ -1,8 +1,9 @@
 from cdisc_rules_engine.config.config import ConfigService
+from cdisc_rules_engine.models.dataset.dask_dataset import DaskDataset
+from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
-import pandas as pd
 from cdisc_rules_engine.constants.classes import GENERAL_OBSERVATIONS_CLASS
 from cdisc_rules_engine.enums.variable_roles import VariableRoles
 from cdisc_rules_engine.models.operation_params import OperationParams
@@ -11,9 +12,13 @@ from cdisc_rules_engine.operations.name_referenced_variable_metadata import (
 )
 from cdisc_rules_engine.services.cache import InMemoryCacheService
 from cdisc_rules_engine.services.data_services import LocalDataService
+import pytest
 
 
-def test_get_name_referenced_variable_metadata(operation_params: OperationParams):
+@pytest.mark.parametrize("dataset_type", [(PandasDataset), (DaskDataset)])
+def test_get_name_referenced_variable_metadata(
+    operation_params: OperationParams, dataset_type
+):
     model_metadata = {
         "datasets": [
             {
@@ -78,7 +83,7 @@ def test_get_name_referenced_variable_metadata(operation_params: OperationParams
             }
         ],
     }
-    operation_params.dataframe = pd.DataFrame.from_dict(
+    operation_params.dataframe = dataset_type.from_dict(
         {
             "STUDYID": [
                 "TEST_STUDY",
@@ -115,7 +120,7 @@ def test_get_name_referenced_variable_metadata(operation_params: OperationParams
         data_service,
         library_metadata,
     )
-    result: pd.DataFrame = operation.execute()
+    result = operation.execute()
     expected_columns = [
         "STUDYID",
         "AETERM",

@@ -1,10 +1,10 @@
 from cdisc_rules_engine.config.config import ConfigService
+from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
 from cdisc_rules_engine.operations.valid_codelist_dates import ValidCodelistDates
 from cdisc_rules_engine.models.operation_params import OperationParams
-import pandas as pd
 from cdisc_rules_engine.services.cache.cache_service_factory import CacheServiceFactory
 import pytest
 
@@ -37,7 +37,7 @@ def test_variable_count(
     operation_params.standard = standard
     result = ValidCodelistDates(
         operation_params,
-        pd.DataFrame.from_dict({"test": [1, 2, 33]}),
+        PandasDataset.from_dict({"test": [1, 2, 33]}),
         cache,
         mock_data_service,
         library_metadata,
