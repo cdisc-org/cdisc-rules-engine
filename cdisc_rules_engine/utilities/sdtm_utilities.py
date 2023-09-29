@@ -374,3 +374,25 @@ def get_model_domain_metadata(model_details: dict, domain_name: str) -> dict:
 
 def replace_variable_wildcards(variables_metadata, domain):
     return [var["name"].replace("--", domain) for var in variables_metadata]
+
+
+def get_all_model_wildcard_variables(model_details: dict):
+    return {
+        classVariable["name"]
+        for cls in model_details.get("classes", [])
+        for classVariable in cls.get("classVariables", [])
+        if classVariable["name"].startswith("--")
+    }
+
+
+def add_variable_wildcards(
+    model_details: dict, variables: list[str], domain: str, wildcard: str
+):
+    all_model_wildcard_variables = get_all_model_wildcard_variables(model_details)
+    return {
+        variable: variable.replace(domain, wildcard, 1)
+        if variable.startswith(domain)
+        and variable.replace(domain, "--", 1) in all_model_wildcard_variables
+        else variable
+        for variable in variables
+    }

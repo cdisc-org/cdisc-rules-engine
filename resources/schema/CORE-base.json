@@ -361,9 +361,12 @@
               "$ref": "#/$defs/VariableName"
             },
             "type": "array"
+          },
+          "Wildcard": {
+            "type": "string"
           }
         },
-        "required": ["Name", "Keys"],
+        "required": ["Name"],
         "type": "object"
       },
       "minItems": 1,
