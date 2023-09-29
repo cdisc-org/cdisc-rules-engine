@@ -9,7 +9,7 @@ xport.v56.LOG.disabled = True
 XPORT_LOG.disabled = True
 
 
-class DatasetMetadataReader:
+class XPTDatasetMetadataReader:
     """
     Responsibility of the class is to read metadata
     from .xpt file.
@@ -17,8 +17,9 @@ class DatasetMetadataReader:
 
     # TODO. Maybe in future it is worth having multiple constructors
     #  like from_bytes, from_file etc. But now there is no immediate need for that.
-    def __init__(self, contents_in_bytes: bytes, file_name: str):
-        self._file_contents = contents_in_bytes
+    def __init__(self, file_path: str, file_name: str):
+        with open(file_path, "rb") as f:
+            self._file_contents = f.read()
         self._metadata_container = None
         self._domain_name = None
         self._dataset_name = file_name.split(".")[0].upper()
