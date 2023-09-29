@@ -5,51 +5,41 @@ from cdisc_rules_engine.exceptions.custom_exceptions import InvalidDatasetFormat
 
 
 def test_invalid_dataset_data():
-    dataset_data = {
-        "datasets": [
-            {
-                "domain2": "AE",
-                "filename": "ae.xpt",
-                "name": "AE",
-                "records": {"AESEQ": [1, 2, 3, 4]},
-            }
-        ]
-    }
+    dataset_data = [
+        {
+            "domain2": "AE",
+            "filename": "ae.xpt",
+            "name": "AE",
+            "records": {"AESEQ": [1, 2, 3, 4]},
+        }
+    ]
     with pytest.raises(InvalidDatasetFormat):
-        DummyDataset(dataset_data, "editor")
+        DummyDataset(dataset_data)
 
 
 def test_valid_dataset_data():
     dataset_data = [
         {
-            "datasets": [
-                {
-                    "domain": "AE",
-                    "filename": "ae.xpt",
-                    "label": "Adverse Events",
-                    "records": {"AESEQ": [1, 2, 3, 4]},
-                }
-            ]
+            "domain": "AE",
+            "filename": "ae.xpt",
+            "label": "Adverse Events",
+            "records": {"AESEQ": [1, 2, 3, 4]},
         }
     ]
-    dataset = DummyDataset(dataset_data[0], "editor")
+    dataset = DummyDataset(dataset_data[0])
     assert dataset.domain == "AE"
 
 
 def test_get_dataset_metadata():
     dataset_data = [
         {
-            "datasets": [
-                {
-                    "domain": "AE",
-                    "filename": "ae.xpt",
-                    "label": "Adverse Events",
-                    "records": {"AESEQ": [1, 2, 3, 4]},
-                }
-            ]
+            "domain": "AE",
+            "filename": "ae.xpt",
+            "label": "Adverse Events",
+            "records": {"AESEQ": [1, 2, 3, 4]},
         }
     ]
-    dataset = DummyDataset(dataset_data[0], "editor")
+    dataset = DummyDataset(dataset_data[0])
     metadata = dataset.get_metadata()
     assert "dataset_name" in metadata
     assert metadata["dataset_name"] == ["AE"]
