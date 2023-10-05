@@ -82,8 +82,8 @@ class BaseDefineXMLReader(ABC):
             for domain_metadata in metadata.ItemGroupDef:
                 output.append(self._get_metadata_representation(domain_metadata))
             return output
-        except Exception:
-            raise FailedSchemaValidation("Schema Validation Failed")
+        except Exception as e:
+            raise FailedSchemaValidation(str(e))
 
     @cached("define-domain-metadata")
     def extract_domain_metadata(self, domain_name: str = None) -> dict:
@@ -105,8 +105,8 @@ class BaseDefineXMLReader(ABC):
                 for item in domain_metadata.ItemRef
                 if item.ItemOID in item_mapping
             ]
-        except ValueError:
-            raise FailedSchemaValidation("Schema Validation Failed")
+        except ValueError as e:
+            raise FailedSchemaValidation(str(e))
         logger.info(f"Extracted domain metadata = {domain_metadata_dict}")
         return domain_metadata_dict
 
@@ -130,8 +130,8 @@ class BaseDefineXMLReader(ABC):
                             itemdef[0], itemref, codelist_map
                         )
                     )
-        except ValueError:
-            raise FailedSchemaValidation("Schema Validation Failed")
+        except ValueError as e:
+            raise FailedSchemaValidation(str(e))
         logger.info(f"Extracted variables metadata = {variables_metadata}")
         return variables_metadata
 
@@ -202,8 +202,8 @@ class BaseDefineXMLReader(ABC):
                         item_data["type_check"] = vlm.get_type_check_function()
                         item_data["length_check"] = vlm.get_length_check_function()
                         value_level_metadata.append(item_data)
-        except ValueError:
-            raise FailedSchemaValidation("Schema Validation Failed")
+        except ValueError as e:
+            raise FailedSchemaValidation(str(e))
         logger.info(f"Extracted value level metadata = {value_level_metadata}")
         return value_level_metadata
 
@@ -388,8 +388,8 @@ class BaseDefineXMLReader(ABC):
                         for key_variable in key_variables
                         if key_variable[1] not in existing_key_variables
                     ]
-        except ValueError:
-            raise FailedSchemaValidation("Schema Validation Failed")
+        except ValueError as e:
+            raise FailedSchemaValidation(str(e))
 
         return [heappop(heap)[1] for _ in range(len(heap))]
 
