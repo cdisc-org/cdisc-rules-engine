@@ -113,7 +113,7 @@ class TestTestCommand(unittest.TestCase):
             f"-vx no "
         )
         exit_code, stdout, stderr = self.run_command(command)
-        self.assertNotIn("failed schema validation", stdout)
+        self.assertNotIn("error", stdout)
 
     def test_test_command_with_vx_as_yes(self):
         command = (
@@ -126,7 +126,8 @@ class TestTestCommand(unittest.TestCase):
             f"-vx y"
         )
         exit_code, stdout, stderr = self.run_command(command)
-        self.assertIn("schema validation failed", stderr)
+        self.assertFalse(stderr == "")
+        self.assertNotEqual(exit_code, 0)
 
     def tearDown(self):
         for file_name in os.listdir("."):
