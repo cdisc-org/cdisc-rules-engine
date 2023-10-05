@@ -23,7 +23,6 @@ class DataServiceFactory(FactoryInterface):
         cache_service: CacheServiceInterface,
         standard: str = None,
         standard_version: str = None,
-        data_format: str = None,
         library_metadata: LibraryMetadataContainer = None,
     ):
         self.data_service_name = config.getValue("DATA_SERVICE_TYPE") or "local"
@@ -31,7 +30,6 @@ class DataServiceFactory(FactoryInterface):
         self.cache_service = cache_service
         self.standard = standard
         self.standard_version = standard_version
-        self.data_format = data_format
         self.library_metadata = library_metadata
 
     def get_data_service(self) -> DataServiceInterface:
@@ -40,7 +38,6 @@ class DataServiceFactory(FactoryInterface):
             "local",
             standard=self.standard,
             standard_version=self.standard_version,
-            data_format=self.data_format,
             library_metadata=self.library_metadata,
         )
 
@@ -50,7 +47,6 @@ class DataServiceFactory(FactoryInterface):
             data=data,
             standard=self.standard,
             standard_version=self.standard_version,
-            data_format=self.data_format,
             library_metadata=self.library_metadata,
         )
 

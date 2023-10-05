@@ -173,7 +173,6 @@ def test(args: TestArgs):
         ["XLSX"],
         None,
         args.define_version,
-        "xpt",
         args.meddra,
         args.whodrug,
         rules,

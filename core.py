@@ -5,12 +5,11 @@ import os
 import pickle
 from datetime import datetime
 from multiprocessing import freeze_support
-from typing import Iterable, Tuple
+from typing import Tuple
 
 import click
 from pathlib import Path
 from cdisc_rules_engine.config import config
-from cdisc_rules_engine.constants.define_xml_constants import DEFINE_XML_FILE_NAME
 from cdisc_rules_engine.enums.default_file_paths import DefaultFilePaths
 from cdisc_rules_engine.enums.progress_parameter_options import ProgressParameterOptions
 from cdisc_rules_engine.enums.report_types import ReportTypes
@@ -30,11 +29,19 @@ from scripts.list_dataset_metadata_handler import list_dataset_metadata_handler
 from version import __version__
 
 
-def valid_data_file(file_name: str, data_format: str):
-    fn = os.path.basename(file_name)
-    return fn.lower() != DEFINE_XML_FILE_NAME and fn.lower().endswith(
-        f".{data_format.lower()}"
-    )
+def valid_data_file(data_path: list) -> Tuple[list, set]:
+    allowed_formats = [format.value for format in DataFormatTypes]
+    found_formats = set()
+    file_list = []
+    for file in data_path:
+        file_extension = os.path.splitext(file)[1][1:].upper()
+        if file_extension in allowed_formats:
+            found_formats.add(file_extension)
+            file_list.append(file)
+    if len(found_formats) > 1:
+        return [], found_formats
+    elif len(found_formats) == 1:
+        return file_list, found_formats
 
 
 @click.group()
@@ -125,14 +132,6 @@ def cli():
     "--define-version",
     help="Define-XML version used for validation",
 )
-@click.option(
-    "-df",
-    "--data-format",
-    help="Format in which data files are presented. Defaults to XPT.",
-    default=DataFormatTypes.XPT.value,
-    type=click.Choice(DataFormatTypes.values(), case_sensitive=False),
-    required=True,
-)
 @click.option("--whodrug", help="Path to directory with WHODrug dictionary files")
 @click.option("--meddra", help="Path to directory with MedDRA dictionary files")
 @click.option("--rules", "-r", multiple=True)
@@ -164,7 +163,6 @@ def validate(
     output_format: Tuple[str],
     raw_report: bool,
     define_version: str,
-    data_format: str,
     whodrug: str,
     meddra: str,
     rules: Tuple[str],
@@ -197,20 +195,26 @@ def validate(
                 "Argument --dataset-path cannot be used together with argument --data"
             )
             ctx.exit()
-        dataset_paths: Iterable[str] = [
-            str(Path(data).joinpath(fn))
-            for fn in os.listdir(data)
-            if valid_data_file(fn, data_format)
-        ]
+        dataset_paths, found_formats = valid_data_file(
+            [str(Path(data).joinpath(fn)) for fn in os.listdir(data)]
+        )
+        if len(found_formats) > 1:
+            logger.error(
+                f"Argument --data contains more than one allowed file format ({', '.join(found_formats)})."  # noqa: E501
+            )
+            ctx.exit()
     elif dataset_path:
         if data:
             logger.error(
                 "Argument --dataset-path cannot be used together with argument --data"
             )
             ctx.exit()
-        dataset_paths: Iterable[str] = [
-            dp for dp in dataset_path if valid_data_file(dp, data_format)
-        ]
+        dataset_paths, found_formats = valid_data_file([dp for dp in dataset_path])
+        if len(found_formats) > 1:
+            logger.error(
+                f"Argument --dataset_path contains more than one allowed file format ({', '.join(found_formats)})."  # noqa: E501
+            )
+            ctx.exit()
     else:
         logger.error(
             "You must pass one of the following arguments: --dataset-path, --data"
@@ -232,7 +236,6 @@ def validate(
             set(output_format),  # avoiding duplicates
             raw_report,
             define_version,
-            data_format.lower(),
             whodrug,
             meddra,
             rules,

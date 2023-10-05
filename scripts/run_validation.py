@@ -63,7 +63,6 @@ def validate_single_rule(
         cache=cache,
         standard=args.standard,
         standard_version=args.version.replace(".", "-"),
-        data_format=args.data_format,
         ct_packages=args.controlled_terminology_package,
         meddra_path=args.meddra,
         whodrug_path=args.whodrug,
