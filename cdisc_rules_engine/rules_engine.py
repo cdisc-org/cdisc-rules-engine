@@ -176,13 +176,10 @@ class RulesEngine:
                 return [error_obj.to_representation()]
         except Exception as e:
             logger.trace(e, __name__)
-            if not (
-                isinstance(e, FailedSchemaValidation) and self.validate_xml is False
-            ):
-                logger.error(
-                    f"""Error occurred during validation.
-                    Error: {e}. Error message: {str(e)}"""
-                )
+            logger.error(
+                f"""Error occurred during validation.
+                Error: {e}. Error message: {str(e)}"""
+            )
             error_obj: ValidationErrorContainer = self.handle_validation_exceptions(
                 e, dataset_path, dataset_path
             )
