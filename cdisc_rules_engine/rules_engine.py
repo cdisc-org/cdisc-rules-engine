@@ -14,6 +14,7 @@ from cdisc_rules_engine.exceptions.custom_exceptions import (
     DomainNotFoundInDefineXMLError,
     RuleFormatError,
     VariableMetadataNotFoundError,
+    FailedSchemaValidation,
 )
 from cdisc_rules_engine.interfaces import (
     CacheServiceInterface,
@@ -73,6 +74,7 @@ class RulesEngine:
         self.meddra_path: str = kwargs.get("meddra_path")
         self.whodrug_path: str = kwargs.get("whodrug_path")
         self.define_xml_path: str = kwargs.get("define_xml_path")
+        self.validate_xml: bool = kwargs.get("validate_xml")
 
     def get_schema(self):
         return export_rule_data(DatasetVariable, COREActions)
@@ -175,7 +177,8 @@ class RulesEngine:
         except Exception as e:
             logger.trace(e, __name__)
             logger.error(
-                f"Error occurred during validation. Error: {e}. Error message: {str(e)}"
+                f"""Error occurred during validation.
+                Error: {e}. Error message: {str(e)}"""
             )
             error_obj: ValidationErrorContainer = self.handle_validation_exceptions(
                 e, dataset_path, dataset_path
@@ -409,6 +412,27 @@ class RulesEngine:
                 message=exception.args[0],
             )
             message = "rule execution error"
+        elif isinstance(exception, FailedSchemaValidation):
+            if self.validate_xml:
+                error_obj: ValidationErrorContainer = ValidationErrorContainer(
+                    status=ExecutionStatus.SKIPPED.value,
+                    error=FailedSchemaValidation.description,
+                    message=exception.args[0],
+                )
+                message = "Schema Validation Error"
+                errors = [error_obj]
+                return ValidationErrorContainer(
+                    errors=errors, message=message, status=ExecutionStatus.SUCCESS.value
+                )
+            else:
+                error_obj: ValidationErrorContainer = ValidationErrorContainer(
+                    status=ExecutionStatus.SKIPPED.value
+                )
+                message = "Skipped because schema validation is off"
+                errors = [error_obj]
+                return ValidationErrorContainer(
+                    errors=errors, message=message, status=ExecutionStatus.SKIPPED.value
+                )
         else:
             error_obj = FailedValidationEntity(
                 error="An unknown exception has occurred", message=str(exception)
