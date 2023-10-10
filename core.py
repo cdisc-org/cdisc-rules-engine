@@ -355,6 +355,12 @@ def list_rules(ctx: click.Context, cache_path: str, standard: str, version: str)
     "--define-version",
     help="Define-XML version used for validation",
 )
+@click.option(
+    "-vx",
+    "--validate-xml",
+    default="y",
+    help="Enable XML validation (default: 'y' to enable, otherwise disable)",
+)
 @click.option("-dxp", "--define-xml-path", required=False, help="Path to Define-XML")
 @click.pass_context
 def test(
@@ -368,8 +374,10 @@ def test(
     whodrug: str,
     meddra: str,
     rule: str,
+    validate_xml,
     define_xml_path: str,
 ):
+    validate_xml = True if validate_xml.lower() in ("y", "yes") else False
     args = TestArgs(
         cache_path,
         dataset_path,
@@ -381,6 +389,7 @@ def test(
         controlled_terminology_package,
         define_version,
         define_xml_path,
+        validate_xml,
     )
     test_rule(args)
 

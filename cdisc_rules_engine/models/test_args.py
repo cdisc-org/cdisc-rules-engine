@@ -13,5 +13,6 @@ TestArgs = namedtuple(
         "controlled_terminology_package",
         "define_version",
         "define_xml_path",
+        "validate_xml",
     ],
 )

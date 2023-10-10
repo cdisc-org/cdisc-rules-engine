@@ -14,6 +14,7 @@ import odmlib.define_2_0.model  # noqa F401
 
 from cdisc_rules_engine.exceptions.custom_exceptions import (
     DomainNotFoundInDefineXMLError,
+    FailedSchemaValidation,
 )
 from cdisc_rules_engine.models.define import ValueLevelMetadata
 from cdisc_rules_engine.services import logger
@@ -75,11 +76,14 @@ class BaseDefineXMLReader(ABC):
         Reads Define XML metadata and returns it as a list of dicts.
         The output contains metadata for all datasets.
         """
-        metadata = self._odm_loader.MetaDataVersion()
-        output = []
-        for domain_metadata in metadata.ItemGroupDef:
-            output.append(self._get_metadata_representation(domain_metadata))
-        return output
+        try:
+            metadata = self._odm_loader.MetaDataVersion()
+            output = []
+            for domain_metadata in metadata.ItemGroupDef:
+                output.append(self._get_metadata_representation(domain_metadata))
+            return output
+        except Exception as e:
+            raise FailedSchemaValidation(str(e))
 
     @cached("define-domain-metadata")
     def extract_domain_metadata(self, domain_name: str = None) -> dict:
@@ -89,15 +93,20 @@ class BaseDefineXMLReader(ABC):
         logger.info(
             f"Extracting domain metadata from Define-XML. domain_name={domain_name}"
         )
-        metadata = self._odm_loader.MetaDataVersion()
-        item_mapping = {item.OID: item for item in metadata.ItemDef}
-        domain_metadata = self._get_domain_metadata(metadata, domain_name)
-        domain_metadata_dict: dict = self._get_metadata_representation(domain_metadata)
-        domain_metadata_dict["define_dataset_variables"] = [
-            item_mapping.get(item.ItemOID).Name
-            for item in domain_metadata.ItemRef
-            if item.ItemOID in item_mapping
-        ]
+        try:
+            metadata = self._odm_loader.MetaDataVersion()
+            item_mapping = {item.OID: item for item in metadata.ItemDef}
+            domain_metadata = self._get_domain_metadata(metadata, domain_name)
+            domain_metadata_dict: dict = self._get_metadata_representation(
+                domain_metadata
+            )
+            domain_metadata_dict["define_dataset_variables"] = [
+                item_mapping.get(item.ItemOID).Name
+                for item in domain_metadata.ItemRef
+                if item.ItemOID in item_mapping
+            ]
+        except ValueError as e:
+            raise FailedSchemaValidation(str(e))
         logger.info(f"Extracted domain metadata = {domain_metadata_dict}")
         return domain_metadata_dict
 
@@ -106,16 +115,23 @@ class BaseDefineXMLReader(ABC):
         logger.info(
             f"Extracting variables metadata from Define-XML. domain_name={domain_name}"
         )
-        metadata = self._odm_loader.MetaDataVersion()
-        domain_metadata = self._get_domain_metadata(metadata, domain_name)
-        variables_metadata = []
-        codelist_map = self._get_codelist_def_map(metadata.CodeList)
-        for itemref in domain_metadata.ItemRef:
-            itemdef = [item for item in metadata.ItemDef if item.OID == itemref.ItemOID]
-            if itemdef:
-                variables_metadata.append(
-                    self._get_item_def_representation(itemdef[0], itemref, codelist_map)
-                )
+        try:
+            metadata = self._odm_loader.MetaDataVersion()
+            domain_metadata = self._get_domain_metadata(metadata, domain_name)
+            variables_metadata = []
+            codelist_map = self._get_codelist_def_map(metadata.CodeList)
+            for itemref in domain_metadata.ItemRef:
+                itemdef = [
+                    item for item in metadata.ItemDef if item.OID == itemref.ItemOID
+                ]
+                if itemdef:
+                    variables_metadata.append(
+                        self._get_item_def_representation(
+                            itemdef[0], itemref, codelist_map
+                        )
+                    )
+        except ValueError as e:
+            raise FailedSchemaValidation(str(e))
         logger.info(f"Extracted variables metadata = {variables_metadata}")
         return variables_metadata
 
@@ -140,49 +156,54 @@ class BaseDefineXMLReader(ABC):
             f"Extracting value level metadata from Define-XML. "
             f"domain_name={domain_name}"
         )
-        metadata = self._odm_loader.MetaDataVersion()
-        item_def_map = {item_def.OID: item_def for item_def in metadata.ItemDef}
-        codelist_map = self._get_codelist_def_map(metadata.CodeList)
-        domain_metadata = self._get_domain_metadata(metadata, domain_name)
-        value_level_metadata_map = {}
-        value_level_metadata = []
+        try:
+            metadata = self._odm_loader.MetaDataVersion()
+            item_def_map = {item_def.OID: item_def for item_def in metadata.ItemDef}
+            codelist_map = self._get_codelist_def_map(metadata.CodeList)
+            domain_metadata = self._get_domain_metadata(metadata, domain_name)
+            value_level_metadata_map = {}
+            value_level_metadata = []
 
-        for where_clause in metadata.WhereClauseDef:
-            vlm = ValueLevelMetadata.from_where_clause_def(where_clause, item_def_map)
-            value_level_metadata_map[vlm.id] = vlm
-        domain_variables = [
-            item_def_map[item_ref.ItemOID] for item_ref in domain_metadata.ItemRef
-        ]
-        referenced_value_list_ids = [
-            (item.Name, item.ValueListRef.ValueListOID)
-            for item in domain_variables
-            if item.ValueListRef
-        ]
+            for where_clause in metadata.WhereClauseDef:
+                vlm = ValueLevelMetadata.from_where_clause_def(
+                    where_clause, item_def_map
+                )
+                value_level_metadata_map[vlm.id] = vlm
+            domain_variables = [
+                item_def_map[item_ref.ItemOID] for item_ref in domain_metadata.ItemRef
+            ]
+            referenced_value_list_ids = [
+                (item.Name, item.ValueListRef.ValueListOID)
+                for item in domain_variables
+                if item.ValueListRef
+            ]
 
-        value_lists = {
-            value_list_def.OID: value_list_def
-            for value_list_def in metadata.ValueListDef
-        }
-        for define_variable_name, value_list_id in referenced_value_list_ids:
-            value_list = value_lists.get(value_list_id)
-            for item_ref in value_list.ItemRef:
-                vlm = value_level_metadata_map.get(
-                    item_ref.WhereClauseRef[0].WhereClauseOID
-                )
-                item_data = self._get_item_def_representation(
-                    item_def_map.get(item_ref.ItemOID), item_ref, codelist_map
-                )
-                # Replace all `define_variable_...` names with `define_vlm_...` names
-                item_data = {
-                    k.replace("define_variable_", "define_vlm_"): v
-                    for k, v in item_data.items()
-                }
-                if vlm:
-                    item_data["define_variable_name"] = define_variable_name
-                    item_data["filter"] = vlm.get_filter_function()
-                    item_data["type_check"] = vlm.get_type_check_function()
-                    item_data["length_check"] = vlm.get_length_check_function()
-                    value_level_metadata.append(item_data)
+            value_lists = {
+                value_list_def.OID: value_list_def
+                for value_list_def in metadata.ValueListDef
+            }
+            for define_variable_name, value_list_id in referenced_value_list_ids:
+                value_list = value_lists.get(value_list_id)
+                for item_ref in value_list.ItemRef:
+                    vlm = value_level_metadata_map.get(
+                        item_ref.WhereClauseRef[0].WhereClauseOID
+                    )
+                    item_data = self._get_item_def_representation(
+                        item_def_map.get(item_ref.ItemOID), item_ref, codelist_map
+                    )
+                    # Replace all`define_variable_...` names with `define_vlm_...` names
+                    item_data = {
+                        k.replace("define_variable_", "define_vlm_"): v
+                        for k, v in item_data.items()
+                    }
+                    if vlm:
+                        item_data["define_variable_name"] = define_variable_name
+                        item_data["filter"] = vlm.get_filter_function()
+                        item_data["type_check"] = vlm.get_type_check_function()
+                        item_data["length_check"] = vlm.get_length_check_function()
+                        value_level_metadata.append(item_data)
+        except ValueError as e:
+            raise FailedSchemaValidation(str(e))
         logger.info(f"Extracted value level metadata = {value_level_metadata}")
         return value_level_metadata
 
@@ -337,36 +358,38 @@ class BaseDefineXMLReader(ABC):
         Returns:
             list: List of key variables ordered by key sequence attribute
         """
-
-        heap = []
-        existing_key_variables = set()
-        metadata = self._odm_loader.MetaDataVersion()
-        item_mapping = self.get_item_def_map()
-        value_list_mapping = self.get_value_list_def_map()
-        datasets = self._get_all_domain_metadata(metadata, domain_name)
-        for domain_metadata in datasets:
-            if (
-                domain_metadata.Name.startswith("SUPP")
-                and domain_name != domain_metadata.Name
-            ):
-                # handle supp vlm
-                key_variables = self._get_key_variables_for_supp_dataset(
-                    domain_metadata, item_mapping, value_list_mapping
-                )
-                [
-                    heappush(heap, key_variable)
-                    for key_variable in key_variables
-                    if key_variable[1] not in existing_key_variables
-                ]
-            else:
-                key_variables = self._get_key_variables_for_domain(
-                    domain_metadata, item_mapping
-                )
-                [
-                    heappush(heap, key_variable)
-                    for key_variable in key_variables
-                    if key_variable[1] not in existing_key_variables
-                ]
+        try:
+            heap = []
+            existing_key_variables = set()
+            metadata = self._odm_loader.MetaDataVersion()
+            item_mapping = self.get_item_def_map()
+            value_list_mapping = self.get_value_list_def_map()
+            datasets = self._get_all_domain_metadata(metadata, domain_name)
+            for domain_metadata in datasets:
+                if (
+                    domain_metadata.Name.startswith("SUPP")
+                    and domain_name != domain_metadata.Name
+                ):
+                    # handle supp vlm
+                    key_variables = self._get_key_variables_for_supp_dataset(
+                        domain_metadata, item_mapping, value_list_mapping
+                    )
+                    [
+                        heappush(heap, key_variable)
+                        for key_variable in key_variables
+                        if key_variable[1] not in existing_key_variables
+                    ]
+                else:
+                    key_variables = self._get_key_variables_for_domain(
+                        domain_metadata, item_mapping
+                    )
+                    [
+                        heappush(heap, key_variable)
+                        for key_variable in key_variables
+                        if key_variable[1] not in existing_key_variables
+                    ]
+        except ValueError as e:
+            raise FailedSchemaValidation(str(e))
 
         return [heappop(heap)[1] for _ in range(len(heap))]
 

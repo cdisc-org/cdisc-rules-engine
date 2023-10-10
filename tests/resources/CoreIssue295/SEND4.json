@@ -1,0 +1,71 @@
+{
+  "Check": {
+    "all": [
+      {
+        "name": "variable_name",
+        "operator": "equal_to",
+        "value": "define_variable_name"
+      },
+      {
+        "name": "variable_data_type",
+        "operator": "not_equal_to",
+        "value": "define_variable_data_type"
+      }
+    ]
+  },
+  "Core": {
+    "Id": "CDISC.SENDIG.4",
+    "Version": "1",
+    "Status": "Draft"
+  },
+  "Description": "Raise an error when the data type in the define.xml does not correspond to the data type in the dataset",
+  "Outcome": {
+    "Message": "Variable datatype in the define.xml does not correspond to the data type in the dataset",
+    "Output_Variables": [
+      "variable_name"
+    ]
+  },
+  "Sensitivity": "Record",
+  "Executability": "Fully Executable",
+  "Authorities": [
+    {
+      "Organization": "CDISC",
+      "Standards": [
+        {
+          "Name": "SENDIG",
+          "Version": "3.1",
+          "References": [
+            {
+              "Origin": "SEND Conformance Rules",
+              "Version": "5.0",
+              "Citations": [
+                {
+                  "Document": "IG v3.1",
+                  "Section": "3.2.2",
+                  "Cited_Guidance": "The define.xml specification includes seven distinct attributes to describe variable-level metadata: ..."
+                }
+              ],
+              "Rule_Identifier": {
+                "Id": "SEND4",
+                "Version": "1"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "Scope": {
+    "Classes": {
+      "Include": [
+        "ALL"
+      ]
+    },
+    "Domains": {
+      "Include": [
+        "ALL"
+      ]
+    }
+  },
+  "Rule_Type": "Variable Metadata Check against Define XML"
+}
