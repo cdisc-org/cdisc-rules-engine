@@ -2,6 +2,7 @@ from datetime import datetime
 from io import IOBase
 from typing import List, Optional
 
+import os
 import pandas as pd
 
 from cdisc_rules_engine.dummy_models.dummy_dataset import DummyDataset
@@ -48,7 +49,7 @@ class DummyDataService(BaseDataService):
             raise DatasetNotFoundError("dataset does not exist")
 
     def get_dataset_data(self, dataset_name: str) -> Optional[DummyDataset]:
-        dataset_name = dataset_name.split("/")[-1]
+        dataset_name = os.path.basename(dataset_name)
         for dataset in self.data:
             if dataset.filename == dataset_name:
                 return dataset
