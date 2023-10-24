@@ -119,6 +119,14 @@
       },
       "type": "array"
     },
+    "Strings": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "minItems": 1,
+      "type": "array"
+    },
     "Subclasses": {
       "items": {
         "enum": [
@@ -402,7 +410,7 @@
       "additionalProperties": false,
       "properties": {
         "Classes": {
-          "oneOf": [
+          "anyOf": [
             {
               "additionalProperties": false,
               "properties": {
@@ -421,6 +429,26 @@
                 }
               },
               "required": ["Exclude"],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "properties": {
+                "Exclude": {
+                  "$ref": "#/$defs/Strings"
+                },
+                "Include": {
+                  "$ref": "#/$defs/Strings"
+                }
+              },
+              "anyOf": [
+                {
+                  "required": ["Exclude"]
+                },
+                {
+                  "required": ["Include"]
+                }
+              ],
               "type": "object"
             }
           ]
@@ -489,7 +517,10 @@
           "type": "object"
         }
       },
-      "oneOf": [
+      "anyOf": [
+        {
+          "required": ["Classes"]
+        },
         {
           "required": ["Classes", "Domains"]
         },

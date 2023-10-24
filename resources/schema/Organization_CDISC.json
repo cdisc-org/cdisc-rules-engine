@@ -55,6 +55,44 @@
           {
             "properties": {
               "Name": {
+                "const": "DDF"
+              },
+              "References": {
+                "items": {
+                  "properties": {
+                    "Origin": {
+                      "const": "DDF Conformance Rules"
+                    },
+                    "Rule Identifier": {
+                      "properties": {
+                        "Id": {
+                          "pattern": "^DDF\\d{5}$",
+                          "type": "string"
+                        },
+                        "Version": {
+                          "enum": ["1"]
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "Version": {
+                      "enum": ["1.0"]
+                    }
+                  },
+                  "type": "object"
+                },
+                "minItems": 1,
+                "type": "array"
+              },
+              "Version": {
+                "enum": ["2"]
+              }
+            },
+            "type": "object"
+          },
+          {
+            "properties": {
+              "Name": {
                 "const": "SDTMIG"
               },
               "References": {
