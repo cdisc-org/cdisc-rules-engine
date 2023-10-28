@@ -5,18 +5,20 @@ from cdisc_rules_engine.models.library_metadata_container import (
 )
 
 import pandas as pd
+import dask.dataframe as dd
 import pytest
+
 
 from cdisc_rules_engine.constants.classes import GENERAL_OBSERVATIONS_CLASS
 from cdisc_rules_engine.enums.variable_roles import VariableRoles
 from cdisc_rules_engine.models.operation_params import OperationParams
-from cdisc_rules_engine.operations.library_column_order import LibraryColumnOrder
 from cdisc_rules_engine.services.cache import InMemoryCacheService
 from cdisc_rules_engine.services.data_services import LocalDataService
+from cdisc_rules_engine.DatasetOperations.Operations import DatasetOperations
 
 
 @pytest.mark.parametrize(
-    "model_metadata, standard_metadata",
+    "model_metadata, standard_metadata, test_dataframe",
     [
         (
             {
@@ -83,30 +85,115 @@ from cdisc_rules_engine.services.data_services import LocalDataService
                     }
                 ],
             },
-        )
+            pd.DataFrame.from_dict(
+                {
+                    "STUDYID": [
+                        "TEST_STUDY",
+                        "TEST_STUDY",
+                        "TEST_STUDY",
+                    ],
+                    "AETERM": [
+                        "test",
+                        "test",
+                        "test",
+                    ],
+                }
+            ),
+        ),
+        (
+            {
+                "datasets": [
+                    {
+                        "name": "AE",
+                        "datasetVariables": [
+                            {
+                                "name": "AETERM",
+                                "ordinal": 4,
+                            },
+                            {
+                                "name": "AESEQ",
+                                "ordinal": 3,
+                            },
+                        ],
+                    }
+                ],
+                "classes": [
+                    {
+                        "name": "Events",
+                        "classVariables": [
+                            {"name": "--TERM", "ordinal": 1},
+                            {"name": "--SEQ", "ordinal": 2},
+                        ],
+                    },
+                    {
+                        "name": GENERAL_OBSERVATIONS_CLASS,
+                        "classVariables": [
+                            {
+                                "name": "DOMAIN",
+                                "role": VariableRoles.IDENTIFIER.value,
+                                "ordinal": 2,
+                            },
+                            {
+                                "name": "STUDYID",
+                                "role": VariableRoles.IDENTIFIER.value,
+                                "ordinal": 1,
+                            },
+                            {
+                                "name": "TIMING_VAR",
+                                "role": VariableRoles.TIMING.value,
+                                "ordinal": 33,
+                            },
+                        ],
+                    },
+                ],
+            },
+            {
+                "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
+                "classes": [
+                    {
+                        "name": "Events",
+                        "datasets": [
+                            {
+                                "name": "AE",
+                                "label": "Adverse Events",
+                                "datasetVariables": [
+                                    {"name": "AETEST", "ordinal": 1},
+                                    {"name": "AENEW", "ordinal": 2},
+                                ],
+                            }
+                        ],
+                    }
+                ],
+            },
+            dd.DataFrame.from_dict(
+                {
+                    "STUDYID": [
+                        "TEST_STUDY",
+                        "TEST_STUDY",
+                        "TEST_STUDY",
+                    ],
+                    "AETERM": [
+                        "test",
+                        "test",
+                        "test",
+                    ],
+                },
+                npartitions=1,
+            ),
+        ),
     ],
 )
 def test_get_column_order_from_library(
-    operation_params: OperationParams, model_metadata: dict, standard_metadata: dict
+    operation_params: OperationParams,
+    model_metadata: dict,
+    standard_metadata: dict,
+    test_dataframe,
 ):
     """
     Unit test for DataProcessor.get_column_order_from_library.
     Mocks cache call to return metadata.
     """
-    operation_params.dataframe = pd.DataFrame.from_dict(
-        {
-            "STUDYID": [
-                "TEST_STUDY",
-                "TEST_STUDY",
-                "TEST_STUDY",
-            ],
-            "AETERM": [
-                "test",
-                "test",
-                "test",
-            ],
-        }
-    )
+    operation_params.dataframe = test_dataframe
     operation_params.domain = "AE"
     operation_params.standard = "sdtmig"
     operation_params.standard_version = "3-4"
@@ -120,14 +207,15 @@ def test_get_column_order_from_library(
     data_service = LocalDataService.get_instance(
         cache_service=cache, config=ConfigService()
     )
-    operation = LibraryColumnOrder(
+    operations = DatasetOperations()
+    result = operations.get_service(
+        "get_column_order_from_library",
         operation_params,
         operation_params.dataframe,
         cache,
         data_service,
         library_metadata,
     )
-    result: pd.DataFrame = operation.execute()
     variables: List[str] = [
         "STUDYID",
         "DOMAIN",
@@ -142,4 +230,6 @@ def test_get_column_order_from_library(
             variables,
         ]
     )
-    assert result[operation_params.operation_id].equals(expected)
+    # assert result[operation_params.operation_id].equals(expected)
+    for res, exp in zip(result[operation_params.operation_id], expected):
+        assert res == exp

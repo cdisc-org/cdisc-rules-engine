@@ -7,7 +7,7 @@ else:
 from typing import Dict, Type, Any
 
 from cdisc_rules_engine.interfaces import FactoryInterface
-from cdisc_rules_engine.operations import OperationsFactory
+from cdisc_rules_engine.DatasetOperations.Operations import DatasetOperations
 from cdisc_rules_engine.services import LoggingServiceFactory
 from cdisc_rules_engine.services.cache import CacheServiceFactory
 from cdisc_rules_engine.services.data_readers import DataReaderFactory
@@ -26,7 +26,7 @@ class PluginLoader:
         "core.plugins.cache_services": CacheServiceFactory,
         "core.plugins.data_readers": DataReaderFactory,
         "core.plugins.data_services": DataServiceFactory,
-        "core.plugins.rule_operations": OperationsFactory,
+        "core.plugins.rule_operations": DatasetOperations,
         "core.plugins.logging": LoggingServiceFactory,
     }
 

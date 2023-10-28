@@ -9,9 +9,9 @@ import pytest
 from cdisc_rules_engine.constants.classes import GENERAL_OBSERVATIONS_CLASS
 from cdisc_rules_engine.enums.variable_roles import VariableRoles
 from cdisc_rules_engine.models.operation_params import OperationParams
-from cdisc_rules_engine.operations.required_variables import RequiredVariables
 from cdisc_rules_engine.services.cache import InMemoryCacheService
 from cdisc_rules_engine.services.data_services import LocalDataService
+from cdisc_rules_engine.DatasetOperations.Operations import DatasetOperations
 
 
 @pytest.mark.parametrize(
@@ -122,14 +122,15 @@ def test_get_required_variables(
     )
     # execute operation
     data_service = LocalDataService.get_instance(cache_service=cache)
-    operation = RequiredVariables(
+    operations = DatasetOperations()
+    result = operations.get_service(
+        "required_variables",
         operation_params,
         operation_params.dataframe,
         cache,
         data_service,
         library_metadata,
     )
-    result: pd.DataFrame = operation.execute()
     variables: List[str] = sorted(["STUDYID", "DOMAIN", "AESEQ", "AETEST"])
     for result_array in result[operation_params.operation_id]:
         assert sorted(result_array) == variables

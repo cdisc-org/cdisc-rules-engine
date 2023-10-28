@@ -1,9 +1,10 @@
 from cdisc_rules_engine.config.config import ConfigService
-from cdisc_rules_engine.operations.day_data_validator import DayDataValidator
 from cdisc_rules_engine.models.operation_params import OperationParams
 import pandas as pd
+import dask.dataframe as dd
 import pytest
 
+from cdisc_rules_engine.DatasetOperations.Operations import DatasetOperations
 from cdisc_rules_engine.services.cache.cache_service_factory import CacheServiceFactory
 
 
@@ -27,11 +28,30 @@ from cdisc_rules_engine.services.cache.cache_service_factory import CacheService
             ),
             [4, 32, 1, 13, "", "", -1],
         ),
+        (
+            dd.DataFrame.from_dict(
+                {
+                    "values": [
+                        "1997-07-19T19:20:30",
+                        "1997-08-16T19:20:30",
+                        "1997-07-16T19:20",
+                        "2022-05-20T13:44",
+                        "2022-05-20T13:44",
+                        None,
+                        "2022-05-19T13:44",
+                    ],
+                    "USUBJID": [1, 2, 3, 4, 5, 6, 7],
+                },
+                npartitions=1,
+            ),
+            [4, 32, 1, 13, "", "", -1],
+        ),
     ],
 )
 def test_day_data_calculation(
     data, expected, mock_data_service, operation_params: OperationParams
 ):
+    operations = DatasetOperations()
     config = ConfigService()
     cache = CacheServiceFactory(config).get_cache_service()
     datasets_map = {
@@ -59,9 +79,9 @@ def test_day_data_calculation(
     operation_params.datasets = datasets
     operation_params.dataframe = data
     operation_params.target = "values"
-    result = DayDataValidator(
-        operation_params, data, cache, mock_data_service
-    ).execute()
+    result = operations.get_service(
+        "dy", operation_params, data, cache, mock_data_service
+    )
     assert operation_params.operation_id in result
     for i, val in enumerate(result[operation_params.operation_id]):
         assert val == expected[i]

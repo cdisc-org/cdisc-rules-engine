@@ -400,6 +400,7 @@ def test_validate_is_contained_by_distinct(mock_rule_distinct_operation: dict):
         validation_result: List[dict] = RulesEngine().validate_single_rule(
             mock_rule_distinct_operation, "path/ae.xpt", datasets, "AE"
         )
+        print("\n\nResult : ", validation_result)
         assert validation_result == [
             {
                 "executionStatus": "success",

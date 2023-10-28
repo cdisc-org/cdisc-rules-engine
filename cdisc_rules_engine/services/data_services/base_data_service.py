@@ -6,6 +6,7 @@ from concurrent.futures import ThreadPoolExecutor
 import os
 import numpy as np
 import pandas as pd
+import dask.dataframe as dd
 
 from cdisc_rules_engine.constants.domains import AP_DOMAIN_LENGTH
 from cdisc_rules_engine.interfaces import (
@@ -215,9 +216,12 @@ class BaseDataService(DataServiceInterface, ABC):
         Checks if the given dataset-class string ends with a particular variable string.
         Returns True/False
         """
+        if isinstance(dataset, dd.DataFrame):
+            dataset = dataset.compute()
         if "DOMAIN" not in dataset:
             return False
         domain = dataset["DOMAIN"].values[0]
+
         return domain.upper() + variable in dataset
 
     def _domain_starts_with(self, domain, variable):

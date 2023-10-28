@@ -3,17 +3,59 @@ from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
 import pandas as pd
+import dask.dataframe as dd
 from cdisc_rules_engine.constants.classes import GENERAL_OBSERVATIONS_CLASS
 from cdisc_rules_engine.enums.variable_roles import VariableRoles
 from cdisc_rules_engine.models.operation_params import OperationParams
-from cdisc_rules_engine.operations.label_referenced_variable_metadata import (
-    LabelReferencedVariableMetadata,
-)
 from cdisc_rules_engine.services.cache import InMemoryCacheService
 from cdisc_rules_engine.services.data_services import LocalDataService
+from cdisc_rules_engine.DatasetOperations.Operations import DatasetOperations
+import pytest
 
 
-def test_get_label_referenced_variable_metadata(operation_params: OperationParams):
+@pytest.mark.parametrize(
+    "dataframe",
+    [
+        (
+            pd.DataFrame.from_dict(
+                {
+                    "STUDYID": [
+                        "TEST_STUDY",
+                        "TEST_STUDY",
+                        "TEST_STUDY",
+                    ],
+                    "AETERM": [
+                        "test",
+                        "test",
+                        "test",
+                    ],
+                    "AELABEL": ["TEST AE", "NEW AE", "TEST A"],
+                }
+            )
+        ),
+        (
+            dd.DataFrame.from_dict(
+                {
+                    "STUDYID": [
+                        "TEST_STUDY",
+                        "TEST_STUDY",
+                        "TEST_STUDY",
+                    ],
+                    "AETERM": [
+                        "test",
+                        "test",
+                        "test",
+                    ],
+                    "AELABEL": ["TEST AE", "NEW AE", "TEST A"],
+                },
+                npartitions=1,
+            )
+        ),
+    ],
+)
+def test_get_label_referenced_variable_metadata(
+    operation_params: OperationParams, dataframe
+):
     model_metadata = {
         "datasets": [
             {
@@ -78,21 +120,7 @@ def test_get_label_referenced_variable_metadata(operation_params: OperationParam
             }
         ],
     }
-    operation_params.dataframe = pd.DataFrame.from_dict(
-        {
-            "STUDYID": [
-                "TEST_STUDY",
-                "TEST_STUDY",
-                "TEST_STUDY",
-            ],
-            "AETERM": [
-                "test",
-                "test",
-                "test",
-            ],
-            "AELABEL": ["TEST AE", "NEW AE", "TEST A"],
-        }
-    )
+    operation_params.dataframe = dataframe
     operation_params.domain = "AE"
     operation_params.standard = "sdtmig"
     operation_params.standard_version = "3-4"
@@ -108,14 +136,15 @@ def test_get_label_referenced_variable_metadata(operation_params: OperationParam
     data_service = LocalDataService.get_instance(
         cache_service=cache, config=ConfigService()
     )
-    operation = LabelReferencedVariableMetadata(
+    operations = DatasetOperations()
+    result = operations.get_service(
+        "label_referenced_variable_metadata",
         operation_params,
         operation_params.dataframe,
         cache,
         data_service,
         library_metadata,
     )
-    result: pd.DataFrame = operation.execute()
     expected_columns = [
         "STUDYID",
         "AETERM",

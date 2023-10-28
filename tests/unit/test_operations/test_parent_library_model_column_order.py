@@ -1,10 +1,13 @@
 from typing import List
+
 from cdisc_rules_engine.config.config import ConfigService
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
+from cdisc_rules_engine.DatasetOperations.Operations import DatasetOperations
 
 import pandas as pd
+import dask.dataframe as dd
 import pytest
 from unittest.mock import patch
 
@@ -16,9 +19,6 @@ from cdisc_rules_engine.constants.classes import (
 )
 from cdisc_rules_engine.enums.variable_roles import VariableRoles
 from cdisc_rules_engine.models.operation_params import OperationParams
-from cdisc_rules_engine.operations.parent_library_model_column_order import (
-    ParentLibraryModelColumnOrder,
-)
 from cdisc_rules_engine.services.cache import InMemoryCacheService
 from cdisc_rules_engine.services.data_services import LocalDataService
 
@@ -33,6 +33,83 @@ from cdisc_rules_engine.services.data_services import LocalDataService
                     "IDVAR": ["AESEQ", "AESEQ", "AESEQ", "AESEQ"],
                     "IDVARVAL": [1, 2, 1, 3],
                 }
+            ),
+            {
+                "datasets": [
+                    {
+                        "_links": {"parentClass": {"title": "Events"}},
+                        "name": "AE",
+                        "datasetVariables": [
+                            {
+                                "name": "AETERM",
+                                "ordinal": 4,
+                            },
+                            {
+                                "name": "AESEQ",
+                                "ordinal": 3,
+                            },
+                        ],
+                    }
+                ],
+                "classes": [
+                    {
+                        "name": "Events",
+                        "label": "Events",
+                        "classVariables": [
+                            {"name": "--TERM", "ordinal": 1},
+                            {"name": "--SEQ", "ordinal": 2},
+                        ],
+                    },
+                    {
+                        "name": GENERAL_OBSERVATIONS_CLASS,
+                        "label": GENERAL_OBSERVATIONS_CLASS,
+                        "classVariables": [
+                            {
+                                "name": "DOMAIN",
+                                "role": VariableRoles.IDENTIFIER.value,
+                                "ordinal": 2,
+                            },
+                            {
+                                "name": "STUDYID",
+                                "role": VariableRoles.IDENTIFIER.value,
+                                "ordinal": 1,
+                            },
+                            {
+                                "name": "TIMING_VAR",
+                                "role": VariableRoles.TIMING.value,
+                                "ordinal": 33,
+                            },
+                        ],
+                    },
+                ],
+            },
+            {
+                "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
+                "classes": [
+                    {
+                        "name": "Events",
+                        "datasets": [
+                            {
+                                "name": "AE",
+                                "label": "Adverse Events",
+                                "datasetVariables": [
+                                    {"name": "AETEST", "ordinal": 1},
+                                    {"name": "AENEW", "ordinal": 2},
+                                ],
+                            }
+                        ],
+                    }
+                ],
+            },
+        ),
+        (
+            dd.DataFrame.from_dict(
+                {
+                    "RDOMAIN": ["AE", "AE", "AE", "AE"],
+                    "IDVAR": ["AESEQ", "AESEQ", "AESEQ", "AESEQ"],
+                    "IDVARVAL": [1, 2, 1, 3],
+                },
+                npartitions=1,
             ),
             {
                 "datasets": [
@@ -143,14 +220,15 @@ def test_get_parent_column_order_from_library(
         data_service = LocalDataService.get_instance(
             cache_service=cache, config=ConfigService()
         )
-        operation = ParentLibraryModelColumnOrder(
+        operations = DatasetOperations()
+        result = operations.get_service(
+            "get_parent_model_column_order",
             operation_params,
             operation_params.dataframe,
             cache,
             data_service,
             library_metadata,
         )
-        result: pd.DataFrame = operation.execute()
         variables: List[str] = [
             "STUDYID",
             "DOMAIN",
@@ -166,7 +244,8 @@ def test_get_parent_column_order_from_library(
                 variables,
             ]
         )
-        assert result[operation_params.operation_id].equals(expected)
+        for res, exp in zip(result[operation_params.operation_id], expected):
+            assert res == exp
 
 
 @pytest.mark.parametrize(
@@ -264,7 +343,101 @@ def test_get_parent_column_order_from_library(
                     }
                 ],
             },
-        )
+        ),
+        (
+            dd.DataFrame.from_dict(
+                {
+                    "RDOMAIN": ["AE", "AE", "AE", "AE"],
+                    "IDVAR": ["AESEQ", "AESEQ", "AESEQ", "AESEQ"],
+                    "IDVARVAL": [1, 2, 1, 3],
+                },
+                npartitions=1,
+            ),
+            {
+                "datasets": [
+                    {
+                        "_links": {"parentClass": {"title": FINDINGS_ABOUT}},
+                        "name": "NOTTHESAME",
+                        "datasetVariables": [
+                            {
+                                "name": "AETERM",
+                                "ordinal": 4,
+                            },
+                            {
+                                "name": "AESEQ",
+                                "ordinal": 3,
+                            },
+                        ],
+                    }
+                ],
+                "classes": [
+                    {
+                        "name": FINDINGS_ABOUT,
+                        "label": FINDINGS_ABOUT,
+                        "classVariables": [
+                            {"name": "--OBJ", "ordinal": 1},
+                        ],
+                    },
+                    {
+                        "name": FINDINGS,
+                        "label": FINDINGS,
+                        "classVariables": [
+                            {"name": "--VAR1", "ordinal": 1},
+                            {"name": "--TEST", "ordinal": 2},
+                            {"name": "--VAR2", "ordinal": 3},
+                        ],
+                    },
+                    {
+                        "name": INTERVENTIONS,
+                        "label": INTERVENTIONS,
+                        "classVariables": [
+                            {"name": "--VAR1", "ordinal": 1},
+                            {"name": "--TRT", "ordinal": 2},
+                            {"name": "--VAR2", "ordinal": 3},
+                        ],
+                    },
+                    {
+                        "name": GENERAL_OBSERVATIONS_CLASS,
+                        "label": GENERAL_OBSERVATIONS_CLASS,
+                        "classVariables": [
+                            {
+                                "name": "DOMAIN",
+                                "role": VariableRoles.IDENTIFIER.value,
+                                "ordinal": 2,
+                            },
+                            {
+                                "name": "STUDYID",
+                                "role": VariableRoles.IDENTIFIER.value,
+                                "ordinal": 1,
+                            },
+                            {
+                                "name": "TIMING_VAR",
+                                "role": VariableRoles.TIMING.value,
+                                "ordinal": 33,
+                            },
+                        ],
+                    },
+                ],
+            },
+            {
+                "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
+                "classes": [
+                    {
+                        "name": FINDINGS_ABOUT,
+                        "datasets": [
+                            {
+                                "name": "AE",
+                                "label": "Adverse Events",
+                                "datasetVariables": [
+                                    {"name": "AETEST", "ordinal": 1},
+                                    {"name": "AENEW", "ordinal": 2},
+                                ],
+                            }
+                        ],
+                    }
+                ],
+            },
+        ),
     ],
 )
 def test_get_parent_findings_class_column_order_from_library(
@@ -332,14 +505,15 @@ def test_get_parent_findings_class_column_order_from_library(
         data_service = LocalDataService.get_instance(
             cache_service=cache, config=ConfigService()
         )
-        operation = ParentLibraryModelColumnOrder(
+        operations = DatasetOperations()
+        result = operations.get_service(
+            "get_parent_model_column_order",
             operation_params,
             operation_params.dataframe,
             cache,
             data_service,
             library_metadata,
         )
-        result: pd.DataFrame = operation.execute()
         variables: List[str] = [
             "STUDYID",
             "DOMAIN",
@@ -357,4 +531,5 @@ def test_get_parent_findings_class_column_order_from_library(
                 variables,
             ]
         )
-        assert result[operation_params.operation_id].equals(expected)
+        for res, exp in zip(result[operation_params.operation_id], expected):
+            assert res == exp
