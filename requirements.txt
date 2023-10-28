@@ -21,3 +21,4 @@ xport==3.6.1
 cachetools==5.3.1
 Pympler==1.0.1
 psutil==5.9.5
+dask==2023.10.0
