@@ -119,9 +119,9 @@
       },
       "type": "array"
     },
-    "Strings": {
+    "PascalCases": {
       "items": {
-        "minLength": 1,
+        "pattern": "^[A-Z](([a-z]+[A-Z]?)*)$",
         "type": "string"
       },
       "minItems": 1,
@@ -431,26 +431,6 @@
               },
               "required": ["Exclude"],
               "type": "object"
-            },
-            {
-              "additionalProperties": false,
-              "properties": {
-                "Exclude": {
-                  "$ref": "#/$defs/Strings"
-                },
-                "Include": {
-                  "$ref": "#/$defs/Strings"
-                }
-              },
-              "anyOf": [
-                {
-                  "required": ["Exclude"]
-                },
-                {
-                  "required": ["Include"]
-                }
-              ],
-              "type": "object"
             }
           ]
         },
@@ -505,6 +485,30 @@
           },
           "type": "object"
         },
+        "Entities": {
+          "anyOf": [
+            {
+              "additionalProperties": false,
+              "properties": {
+                "Exclude": {
+                  "$ref": "#/$defs/PascalCases"
+                },
+                "Include": {
+                  "$ref": "#/$defs/PascalCases"
+                }
+              },
+              "anyOf": [
+                {
+                  "required": ["Exclude"]
+                },
+                {
+                  "required": ["Include"]
+                }
+              ],
+              "type": "object"
+            }
+          ]
+        },
         "Subclasses": {
           "additionalProperties": false,
           "properties": {
@@ -518,15 +522,15 @@
           "type": "object"
         }
       },
-      "anyOf": [
-        {
-          "required": ["Classes"]
-        },
+      "oneOf": [
         {
           "required": ["Classes", "Domains"]
         },
         {
           "required": ["Data Structures"]
+        },
+        {
+          "required": ["Entities"]
         }
       ],
       "type": "object"
