@@ -3,8 +3,8 @@ This module contains unit tests for DatasetMetadataReader class.
 """
 import os
 
-from cdisc_rules_engine.services.dataset_metadata_reader import (
-    XPTDatasetMetadataReader,
+from cdisc_rules_engine.services.datasetxpt_metadata_reader import (
+    DatasetXPTMetadataReader,
 )
 
 
@@ -16,7 +16,7 @@ def test_read_metadata():
     test_dataset_path: str = (
         f"{os.path.dirname(__file__)}/../resources/test_dataset.xpt"
     )
-    reader = XPTDatasetMetadataReader(test_dataset_path, file_name="test_dataset.xpt")
+    reader = DatasetXPTMetadataReader(test_dataset_path, file_name="test_dataset.xpt")
     metadata: dict = reader.read()
     assert metadata["dataset_name"] == "TEST_DATASET", "Test file has been changed"
     assert metadata["domain_name"] == "EX", "Test file has been changed"
@@ -48,7 +48,7 @@ def test_read_metadata_with_variable_formats():
     test_dataset_path: str = (
         f"{os.path.dirname(__file__)}/../resources/test_adam_dataset.xpt"
     )
-    reader = XPTDatasetMetadataReader(
+    reader = DatasetXPTMetadataReader(
         test_dataset_path, file_name="test_adam_dataset.xpt"
     )
     metadata: dict = reader.read()

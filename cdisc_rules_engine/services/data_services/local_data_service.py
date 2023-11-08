@@ -13,8 +13,8 @@ from cdisc_rules_engine.models.variable_metadata_container import (
 from cdisc_rules_engine.services.data_readers.data_reader_factory import (
     DataReaderFactory,
 )
-from cdisc_rules_engine.services.dataset_metadata_reader import (
-    XPTDatasetMetadataReader,
+from cdisc_rules_engine.services.datasetxpt_metadata_reader import (
+    DatasetXPTMetadataReader,
 )
 from cdisc_rules_engine.services.datasetjson_metadata_reader import (
     DatasetJSONMetadataReader,
@@ -146,7 +146,7 @@ class LocalDataService(BaseDataService):
             "size": file_size,
         }
         _metadata_reader_map = {
-            "XPT": XPTDatasetMetadataReader,
+            "XPT": DatasetXPTMetadataReader,
             "JSON": DatasetJSONMetadataReader,
         }
         contents_metadata = _metadata_reader_map[file_name.split(".")[1].upper()](
