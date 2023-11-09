@@ -24,6 +24,7 @@ from cdisc_rules_engine.utilities.utils import (
     extract_file_name_from_path_string,
 )
 from .base_data_service import BaseDataService, cached_dataset
+from cdisc_rules_engine.enums.dataformat_types import DataFormatTypes
 
 
 class LocalDataService(BaseDataService):
@@ -146,8 +147,8 @@ class LocalDataService(BaseDataService):
             "size": file_size,
         }
         _metadata_reader_map = {
-            "XPT": DatasetXPTMetadataReader,
-            "JSON": DatasetJSONMetadataReader,
+            DataFormatTypes.XPT.value: DatasetXPTMetadataReader,
+            DataFormatTypes.JSON.value: DatasetJSONMetadataReader,
         }
         contents_metadata = _metadata_reader_map[file_name.split(".")[1].upper()](
             file_path, file_name

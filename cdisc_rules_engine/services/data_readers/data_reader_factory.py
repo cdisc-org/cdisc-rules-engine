@@ -6,10 +6,14 @@ from cdisc_rules_engine.interfaces import (
 )
 from cdisc_rules_engine.services.data_readers.xpt_reader import XPTReader
 from cdisc_rules_engine.services.data_readers.json_reader import DatasetJSONReader
+from cdisc_rules_engine.enums.dataformat_types import DataFormatTypes
 
 
 class DataReaderFactory(FactoryInterface):
-    _reader_map = {"XPT": XPTReader, "JSON": DatasetJSONReader}
+    _reader_map = {
+        DataFormatTypes.XPT.value: XPTReader,
+        DataFormatTypes.JSON.value: DatasetJSONReader,
+    }
 
     def __init__(self, service_name: str = None):
         self._default_service_name = service_name
