@@ -13,12 +13,18 @@ from cdisc_rules_engine.models.variable_metadata_container import (
 from cdisc_rules_engine.services.data_readers.data_reader_factory import (
     DataReaderFactory,
 )
-from cdisc_rules_engine.services.dataset_metadata_reader import DatasetMetadataReader
+from cdisc_rules_engine.services.datasetxpt_metadata_reader import (
+    DatasetXPTMetadataReader,
+)
+from cdisc_rules_engine.services.datasetjson_metadata_reader import (
+    DatasetJSONMetadataReader,
+)
 from cdisc_rules_engine.utilities.utils import (
     convert_file_size,
     extract_file_name_from_path_string,
 )
 from .base_data_service import BaseDataService, cached_dataset
+from cdisc_rules_engine.enums.dataformat_types import DataFormatTypes
 
 
 class LocalDataService(BaseDataService):
@@ -51,7 +57,9 @@ class LocalDataService(BaseDataService):
 
     @cached_dataset(DatasetTypes.CONTENTS.value)
     def get_dataset(self, dataset_name: str, **params) -> pandas.DataFrame:
-        reader = self._reader_factory.get_service()
+        reader = self._reader_factory.get_service(
+            extract_file_name_from_path_string(dataset_name).split(".")[1].upper()
+        )
         df = reader.from_file(dataset_name)
         self._replace_nans_in_numeric_cols_with_none(df)
         return df
@@ -138,9 +146,13 @@ class LocalDataService(BaseDataService):
             "name": file_name,
             "size": file_size,
         }
-        with open(file_path, "rb") as f:
-            contents_metadata = DatasetMetadataReader(f.read(), file_name).read()
-
+        _metadata_reader_map = {
+            DataFormatTypes.XPT.value: DatasetXPTMetadataReader,
+            DataFormatTypes.JSON.value: DatasetJSONMetadataReader,
+        }
+        contents_metadata = _metadata_reader_map[file_name.split(".")[1].upper()](
+            file_path, file_name
+        ).read()
         return {
             "file_metadata": file_metadata,
             "contents_metadata": contents_metadata,

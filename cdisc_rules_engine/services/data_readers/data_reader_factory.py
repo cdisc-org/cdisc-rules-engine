@@ -5,15 +5,18 @@ from cdisc_rules_engine.interfaces import (
     FactoryInterface,
 )
 from cdisc_rules_engine.services.data_readers.xpt_reader import XPTReader
+from cdisc_rules_engine.services.data_readers.json_reader import DatasetJSONReader
+from cdisc_rules_engine.enums.dataformat_types import DataFormatTypes
 
 
 class DataReaderFactory(FactoryInterface):
     _reader_map = {
-        "xpt": XPTReader,
+        DataFormatTypes.XPT.value: XPTReader,
+        DataFormatTypes.JSON.value: DatasetJSONReader,
     }
 
-    def __init__(self):
-        self._default_service_name: str = "xpt"
+    def __init__(self, service_name: str = None):
+        self._default_service_name = service_name
 
     @classmethod
     def register_service(cls, name: str, service: Type[DataReaderInterface]):
