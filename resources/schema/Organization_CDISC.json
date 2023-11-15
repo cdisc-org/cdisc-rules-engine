@@ -220,7 +220,51 @@
                 "type": "array"
               },
               "Version": {
-                "enum": ["1.1"]
+                "enum": ["1.1", "1.2"]
+              }
+            },
+            "type": "object"
+          },
+          {
+            "properties": {
+              "Name": {
+                "const": "SENDIG-GENETOX"
+              },
+              "References": {
+                "items": {
+                  "properties": {
+                    "Criteria": {
+                      "properties": {
+                        "Type": {
+                          "const": "Success"
+                        }
+                      },
+                      "required": ["Type"],
+                      "type": "object"
+                    },
+                    "Origin": {
+                      "const": "SEND Conformance Rules"
+                    },
+                    "Rule Identifier": {
+                      "properties": {
+                        "Id": {
+                          "pattern": "^SEND\\d{1,3}(\\.\\d+)?$",
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "Version": {
+                      "enum": ["5.0"]
+                    }
+                  },
+                  "type": "object"
+                },
+                "minItems": 1,
+                "type": "array"
+              },
+              "Version": {
+                "enum": ["1.0"]
               }
             },
             "type": "object"
