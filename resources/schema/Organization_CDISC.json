@@ -224,8 +224,8 @@
               }
             },
             "type": "object"
-          }
- {
+          },
+          {
             "properties": {
               "Name": {
                 "const": "SENDIG-GENETOX"
