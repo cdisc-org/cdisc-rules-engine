@@ -220,7 +220,7 @@
                 "type": "array"
               },
               "Version": {
-                "enum": ["1.1"]
+                "enum": ["1.1", "1.2"]
               }
             },
             "type": "object"
