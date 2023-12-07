@@ -16,6 +16,7 @@ from cdisc_rules_engine.constants.classes import (
     FINDINGS_ABOUT,
     INTERVENTIONS,
     EVENTS,
+    RELATIONSHIP,
 )
 
 
@@ -102,6 +103,18 @@ def test_get_raw_dataset_metadata(
             {"DOMAIN": ["AE"], "AETESTCD": ["test"], "AEOBJ": ["test"]},
             FINDINGS_ABOUT,
             "ae.xpt",
+        ),
+        (
+            [{"domain": "SUPPAE", "filename": "suppae.xpt"}],
+            {"RDOMAIN": ["AE"], "IDVAR": ["test"], "QNAM": ["test"]},
+            RELATIONSHIP,
+            "suppae.xpt",
+        ),
+        (
+            [{"domain": "SQAPFAMH", "filename": "sqapfamh.xpt"}],
+            {"RDOMAIN": ["APFAMH"], "IDVAR": ["test"], "QNAM": ["test"]},
+            RELATIONSHIP,
+            "sqapfamh.xpt",
         ),
         (
             [{"domain": "AE", "filename": "ae.xpt"}],
