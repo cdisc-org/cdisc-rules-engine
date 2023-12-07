@@ -18,6 +18,7 @@ from cdisc_rules_engine.constants.classes import (
     FINDINGS_ABOUT,
     EVENTS,
     INTERVENTIONS,
+    RELATIONSHIP,
 )
 from cdisc_rules_engine.models.dataset_types import DatasetTypes
 from cdisc_rules_engine.services import logger
@@ -145,33 +146,34 @@ class BaseDataService(DataServiceInterface, ABC):
     ) -> Optional[str]:
         if self._contains_topic_variable(dataset, "TERM"):
             return EVENTS
-        elif self._contains_topic_variable(dataset, "TRT"):
+        if self._contains_topic_variable(dataset, "TRT"):
             return INTERVENTIONS
-        elif self._contains_topic_variable(dataset, "TESTCD"):
+        if self._contains_topic_variable(dataset, "QNAM"):
+            return RELATIONSHIP
+        if self._contains_topic_variable(dataset, "TESTCD"):
             if self._contains_topic_variable(dataset, "OBJ"):
                 return FINDINGS_ABOUT
-            else:
-                return FINDINGS
-        elif self._is_associated_persons(dataset):
+            return FINDINGS
+
+        if self._is_associated_persons(dataset):
             return self._get_associated_persons_inherit_class(
                 dataset, file_path, datasets
             )
-        else:
-            if self.standard is None or self.version is None:
-                raise Exception("Missing standard and version data")
-            standard_data = None
-            if self.library_metadata:
-                standard_data = self.library_metadata.standard_metadata
-            if not standard_data:
-                standard_data = self.cdisc_library_service.get_standard_details(
-                    self.standard, self.version
-                )
-            class_data, _ = get_class_and_domain_metadata(standard_data, domain)
-            name = class_data.get("name")
-            if name:
-                return convert_library_class_name_to_ct_class(name)
-            else:
-                return None
+
+        if self.standard is None or self.version is None:
+            raise Exception("Missing standard and version data")
+
+        standard_data = (
+            self.library_metadata.standard_metadata
+            or self.cdisc_library_service.get_standard_details(
+                self.standard, self.version
+            )
+        )
+
+        class_data, _ = get_class_and_domain_metadata(standard_data, domain)
+        name = class_data.get("name")
+
+        return convert_library_class_name_to_ct_class(name) if name else None
 
     def _is_associated_persons(self, dataset) -> bool:
         """
@@ -215,10 +217,13 @@ class BaseDataService(DataServiceInterface, ABC):
         Checks if the given dataset-class string ends with a particular variable string.
         Returns True/False
         """
-        if "DOMAIN" not in dataset:
+        if "DOMAIN" not in dataset and "RDOMAIN" not in dataset:
             return False
-        domain = dataset["DOMAIN"].values[0]
-        return domain.upper() + variable in dataset
+        elif "DOMAIN" in dataset:
+            domain = dataset["DOMAIN"].values[0]
+            return domain.upper() + variable in dataset
+        elif "RDOMAIN" in dataset:
+            return variable in dataset
 
     def _domain_starts_with(self, domain, variable):
         """
