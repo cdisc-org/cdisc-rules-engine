@@ -17,6 +17,14 @@ from cdisc_rules_engine.constants.classes import (
     INTERVENTIONS,
     EVENTS,
     RELATIONSHIP,
+    TRIAL_DESIGN,
+    STUDY_REFERENCE,
+    SPECIAL_PURPOSE,
+)
+
+from cdisc_rules_engine.models.validation_args import Validation_args
+from scripts.script_utils import (
+    get_library_metadata_from_cache,
 )
 
 
@@ -87,22 +95,34 @@ def test_get_raw_dataset_metadata(
             "ae.xpt",
         ),
         (
-            [{"domain": "AE", "filename": "ae.xpt"}],
-            {"DOMAIN": ["AE"], "AETRT": ["test"]},
+            [{"domain": "CM", "filename": "cm.xpt"}],
+            {"DOMAIN": ["CM"], "CMTRT": ["test"]},
             INTERVENTIONS,
-            "ae.xpt",
+            "cm.xpt",
         ),
         (
-            [{"domain": "AE", "filename": "ae.xpt"}],
-            {"DOMAIN": ["AE"], "AETESTCD": ["test"]},
+            [{"domain": "VS", "filename": "vs.xpt"}],
+            {"DOMAIN": ["VS"], "VSTESTCD": ["test"]},
             FINDINGS,
-            "ae.xpt",
+            "vs.xpt",
         ),
         (
-            [{"domain": "AE", "filename": "ae.xpt"}],
-            {"DOMAIN": ["AE"], "AETESTCD": ["test"], "AEOBJ": ["test"]},
+            [{"domain": "FA", "filename": "fa.xpt"}],
+            {"DOMAIN": ["FA"], "FATESTCD": ["test"], "FAOBJ": ["test"]},
             FINDINGS_ABOUT,
-            "ae.xpt",
+            "fa.xpt",
+        ),
+        (
+            [{"domain": "FA", "filename": "famh.xpt"}],
+            {"DOMAIN": ["FA"], "FATESTCD": ["test"], "FAOBJ": ["test"]},
+            FINDINGS_ABOUT,
+            "famh.xpt",
+        ),
+        (
+            [{"domain": "RELREC", "filename": "relrec.xpt"}],
+            {"RDOMAIN": ["AE"], "IDVAR": ["test"], "POOLID": ["test"]},
+            RELATIONSHIP,
+            "relrec.xpt",
         ),
         (
             [{"domain": "SUPPAE", "filename": "suppae.xpt"}],
@@ -117,12 +137,60 @@ def test_get_raw_dataset_metadata(
             "sqapfamh.xpt",
         ),
         (
-            [{"domain": "AE", "filename": "ae.xpt"}],
-            {"DOMAIN": ["AE"], "AEOBJ": ["test"]},
-            None,
-            "ae.xpt",
+            [{"domain": "POOLDEF", "filename": "pooldef.xpt"}],
+            {"POOLID": ["test"], "USUBJID": ["test"], "APID": ["test"]},
+            RELATIONSHIP,
+            "pooldef.xpt",
         ),
-        ([{"domain": "AE", "filename": "ae.xpt"}], {"UNKNOWN": ["test"]}, None, "None"),
+        (
+            [{"domain": "APRELSUB", "filename": "aprelsub.xpt"}],
+            {"APID": ["test"], "RSUBJID": ["test"], "RDEVID": ["test"]},
+            RELATIONSHIP,
+            "aprelsub.xpt",
+        ),
+        (
+            [{"domain": "DR", "filename": "dr.xpt"}],
+            {"DOMAIN": ["DR"], "USUBJID": ["test"], "SPDEVID": ["test"]},
+            RELATIONSHIP,
+            "dr.xpt",
+        ),
+        (
+            [{"domain": "OI", "filename": "oi.xpt"}],
+            {"DOMAIN": ["OI"], "OIPARMCD": ["test"], "OIPARM": ["test"]},
+            STUDY_REFERENCE,
+            "oi.xpt",
+        ),
+        (
+            [{"domain": "DI", "filename": "di.xpt"}],
+            {"DOMAIN": ["DI"], "DIPARMCD": ["test"], "DIPARM": ["test"]},
+            STUDY_REFERENCE,
+            "di.xpt",
+        ),
+        (
+            [{"domain": "TX", "filename": "tx.xpt"}],
+            {"DOMAIN": ["TX"], "SETCD": ["test"], "SET": ["test"]},
+            TRIAL_DESIGN,
+            "tx.xpt",
+        ),
+        (
+            [{"domain": "TS", "filename": "ts.xpt"}],
+            {"DOMAIN": ["TS"], "TSPARMCD": ["test"], "TSPARM": ["test"]},
+            TRIAL_DESIGN,
+            "ts.xpt",
+        ),
+        (
+            [{"domain": "SJ", "filename": "sj.xpt"}],
+            {"DOMAIN": ["SJ"], "RSTGCD": ["test"], "RSTAGE": ["test"]},
+            SPECIAL_PURPOSE,
+            "sj.xpt",
+        ),
+        (
+            [{"domain": "XX", "filename": "xx.xpt"}],
+            {"DOMAIN": ["XX"], "XXOBJ": ["test"]},
+            None,
+            "xx.xpt",
+        ),
+        ([{"domain": "XY", "filename": "xy.xpt"}], {"UNKNOWN": ["test"]}, None, "None"),
         (
             [{"domain": "DM", "filename": "dm.xpt"}],
             {"UNKNOWN": ["test"]},
@@ -134,10 +202,26 @@ def test_get_raw_dataset_metadata(
 def test_get_dataset_class(datasets, data, expected_class, filename):
     df = pd.DataFrame.from_dict(data)
     mock_cache_service = MagicMock()
-    library_metadata = LibraryMetadataContainer(
-        standard_metadata={
-            "classes": [{"name": "SPECIAL PURPOSE", "datasets": [{"name": "DM"}]}]
-        }
+    library_metadata: LibraryMetadataContainer = get_library_metadata_from_cache(
+        Validation_args(
+            f"{os.path.dirname(__file__)}/../../resources/cache",
+            10,
+            [],
+            "",
+            "",
+            "sdtmig",
+            "3-4",
+            "",
+            "",
+            "",
+            False,
+            "",
+            None,
+            None,
+            "",
+            "",
+            None,
+        )
     )
     data_service = LocalDataService(
         mock_cache_service,
@@ -183,7 +267,35 @@ def test_get_dataset_class_associated_domains():
         return_value=ap_dataset,
         side_effect=lambda dataset_name: path_to_dataset_map[dataset_name],
     ):
-        data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
+        library_metadata: LibraryMetadataContainer = get_library_metadata_from_cache(
+            Validation_args(
+                f"{os.path.dirname(__file__)}/../../resources/cache",
+                10,
+                [],
+                "",
+                "",
+                "sdtmig",
+                "3-4",
+                "",
+                "",
+                "",
+                False,
+                "",
+                None,
+                None,
+                "",
+                "",
+                None,
+            )
+        )
+        data_service = LocalDataService(
+            MagicMock(),
+            MagicMock(),
+            MagicMock(),
+            standard="sdtmig",
+            standard_version="3-4",
+            library_metadata=library_metadata,
+        )
         filepath = f"{data_bundle_path}/ce.xpt"
         class_name = data_service.get_dataset_class(
             ap_dataset, filepath, datasets, "CE"

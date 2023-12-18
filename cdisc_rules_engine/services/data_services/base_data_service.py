@@ -19,6 +19,9 @@ from cdisc_rules_engine.constants.classes import (
     EVENTS,
     INTERVENTIONS,
     RELATIONSHIP,
+    TRIAL_DESIGN,
+    STUDY_REFERENCE,
+    SPECIAL_PURPOSE,
 )
 from cdisc_rules_engine.models.dataset_types import DatasetTypes
 from cdisc_rules_engine.services import logger
@@ -144,36 +147,53 @@ class BaseDataService(DataServiceInterface, ABC):
     def get_dataset_class(
         self, dataset: pd.DataFrame, file_path: str, datasets: List[dict], domain: str
     ) -> Optional[str]:
-        if self._contains_topic_variable(dataset, "TERM"):
-            return EVENTS
-        if self._contains_topic_variable(dataset, "TRT"):
-            return INTERVENTIONS
-        if self._contains_topic_variable(dataset, "QNAM"):
-            return RELATIONSHIP
-        if self._contains_topic_variable(dataset, "TESTCD"):
-            if self._contains_topic_variable(dataset, "OBJ"):
-                return FINDINGS_ABOUT
-            return FINDINGS
-
-        if self._is_associated_persons(dataset):
-            return self._get_associated_persons_inherit_class(
-                dataset, file_path, datasets
-            )
-
         if self.standard is None or self.version is None:
             raise Exception("Missing standard and version data")
 
-        standard_data = (
+        standard_data = self._get_standard_data()
+
+        class_data, _ = get_class_and_domain_metadata(standard_data, domain)
+        name = class_data.get("name")
+        if name:
+            return convert_library_class_name_to_ct_class(name)
+
+        return self._handle_special_cases(dataset, domain, file_path, datasets)
+
+    def _get_standard_data(self):
+        return (
             self.library_metadata.standard_metadata
             or self.cdisc_library_service.get_standard_details(
                 self.standard, self.version
             )
         )
 
-        class_data, _ = get_class_and_domain_metadata(standard_data, domain)
-        name = class_data.get("name")
+    def _handle_special_cases(self, dataset, domain, file_path, datasets):
+        if domain in ("DI"):
+            return STUDY_REFERENCE
+        if domain in ("TX", "TT", "TP", "AC"):
+            return TRIAL_DESIGN
+        if domain in ("SJ"):
+            return SPECIAL_PURPOSE
+        if self._contains_topic_variable(dataset, "TERM"):
+            return EVENTS
+        if self._contains_topic_variable(dataset, "TRT"):
+            return INTERVENTIONS
+        if self._contains_topic_variable(dataset, "QNAM") or domain in (
+            "POOLDEF",
+            "DR",
+            "APRELSUB",
+        ):
+            return RELATIONSHIP
+        if self._contains_topic_variable(dataset, "TESTCD"):
+            if self._contains_topic_variable(dataset, "OBJ"):
+                return FINDINGS_ABOUT
+            return FINDINGS
+        if self._is_associated_persons(dataset):
+            return self._get_associated_persons_inherit_class(
+                dataset, file_path, datasets
+            )
 
-        return convert_library_class_name_to_ct_class(name) if name else None
+        return None
 
     def _is_associated_persons(self, dataset) -> bool:
         """

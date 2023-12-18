@@ -2070,7 +2070,9 @@ def test_dataset_references_invalid_whodrug_terms(
 
 
 @patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset")
+@patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset_class")
 def test_validate_variables_order_against_library_metadata(
+    mock_get_dataset_class: MagicMock,
     mock_get_dataset: MagicMock,
     rule_validate_columns_order_against_library_metadata: dict,
 ):
@@ -2101,6 +2103,7 @@ def test_validate_variables_order_against_library_metadata(
 
     standard: str = "sdtmig"
     standard_version: str = "3-1-2"
+    mock_get_dataset_class.return_value = "EVENTS"
 
     # fill cache
     cache = InMemoryCacheService.get_instance()

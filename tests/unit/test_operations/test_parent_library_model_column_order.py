@@ -21,6 +21,7 @@ from cdisc_rules_engine.operations.parent_library_model_column_order import (
 )
 from cdisc_rules_engine.services.cache import InMemoryCacheService
 from cdisc_rules_engine.services.data_services import LocalDataService
+from cdisc_rules_engine.services.data_readers import DataReaderFactory
 
 
 @pytest.mark.parametrize(
@@ -329,8 +330,13 @@ def test_get_parent_findings_class_column_order_from_library(
             standard_metadata=standard_metadata, model_metadata=model_metadata
         )
         # execute operation
-        data_service = LocalDataService.get_instance(
-            cache_service=cache, config=ConfigService()
+        data_service = LocalDataService(
+            cache_service=cache,
+            config=ConfigService(),
+            reader_factory=DataReaderFactory(),
+            standard="sdtmig",
+            standard_version="3-4",
+            library_metadata=library_metadata,
         )
         operation = ParentLibraryModelColumnOrder(
             operation_params,
