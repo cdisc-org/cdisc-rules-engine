@@ -243,10 +243,6 @@ class BaseDefineXMLReader(ABC):
         return codelists
 
     def _get_order_number(self, itemref, index):
-        print("-------------------------------------")
-        print("itemref.ItemOID", itemref.ItemOID)
-        print("itemref.OrderNumber", itemref.OrderNumber)
-        print("index", index)
         if itemref.OrderNumber is not None:
             return itemref.OrderNumber
         else:
