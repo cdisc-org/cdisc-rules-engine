@@ -19,7 +19,7 @@ from cdisc_rules_engine.constants.rule_constants import ALL_KEYWORD
 from cdisc_rules_engine.interfaces import ConditionInterface
 from cdisc_rules_engine.models.operation_params import OperationParams
 from cdisc_rules_engine.models.rule_conditions import AllowedConditionsKeys
-from cdisc_rules_engine.operations import operations_factory
+from cdisc_rules_engine.DatasetOperations import operations_factory
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.utilities.data_processor import DataProcessor
 from cdisc_rules_engine.utilities.utils import (
@@ -313,7 +313,7 @@ class RuleProcessor:
             )
 
         # call the operation
-        operation = operations_factory.get_service(
+        result = operations_factory.get_service(
             operation_params.operation_name,
             operation_params=operation_params,
             original_dataset=dataset,
@@ -321,7 +321,7 @@ class RuleProcessor:
             data_service=self.data_service,
             library_metadata=self.library_metadata,
         )
-        result = operation.execute()
+        # result = operation.execute()
         if not DataProcessor.is_dummy_data(self.data_service):
             self.cache.add(cache_key, result)
         return result

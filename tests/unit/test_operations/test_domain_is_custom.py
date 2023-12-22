@@ -4,11 +4,12 @@ from cdisc_rules_engine.models.library_metadata_container import (
 )
 import pytest
 import pandas as pd
+import dask.dataframe as dd
 
 from cdisc_rules_engine.models.operation_params import OperationParams
-from cdisc_rules_engine.operations.domain_is_custom import DomainIsCustom
 from cdisc_rules_engine.services.cache import InMemoryCacheService
 from cdisc_rules_engine.services.data_services import LocalDataService
+from cdisc_rules_engine.DatasetOperations.Operations import DatasetOperations
 
 
 @pytest.mark.parametrize(
@@ -54,6 +55,48 @@ from cdisc_rules_engine.services.data_services import LocalDataService
             "3-4",
             True,
         ),
+        (
+            dd.DataFrame.from_dict(
+                {
+                    "STUDYID": [
+                        "TEST_STUDY",
+                        "TEST_STUDY",
+                        "TEST_STUDY",
+                    ],
+                    "AETERM": [
+                        "test",
+                        "test",
+                        "test",
+                    ],
+                },
+                npartitions=1,
+            ),
+            "AE",
+            "sdtmig",
+            "3-4",
+            False,
+        ),
+        (
+            dd.DataFrame.from_dict(
+                {
+                    "STUDYID": [
+                        "TEST_STUDY",
+                        "TEST_STUDY",
+                        "TEST_STUDY",
+                    ],
+                    "BCTERM": [
+                        "test",
+                        "test",
+                        "test",
+                    ],
+                },
+                npartitions=1,
+            ),
+            "BC",
+            "sdtmig",
+            "3-4",
+            True,
+        ),
     ],
 )
 def test_domain_is_custom(
@@ -78,14 +121,15 @@ def test_domain_is_custom(
     data_service = LocalDataService.get_instance(
         cache_service=cache, config=ConfigService()
     )
-    operation = DomainIsCustom(
+    operations = DatasetOperations()
+    result = operations.get_service(
+        "domain_is_custom",
         operation_params,
         operation_params.dataframe,
         cache,
         data_service,
         library_metadata,
     )
-    result: pd.DataFrame = operation.execute()
     assert result[operation_params.operation_id].equals(
         pd.Series([expected, expected, expected])
     )

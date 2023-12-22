@@ -3,10 +3,11 @@ from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
 import pandas as pd
+import dask.dataframe as dd
 from cdisc_rules_engine.models.operation_params import OperationParams
-from cdisc_rules_engine.operations.domain_label import DomainLabel
 from cdisc_rules_engine.services.cache import InMemoryCacheService
 from cdisc_rules_engine.services.data_services import LocalDataService
+from cdisc_rules_engine.DatasetOperations.Operations import DatasetOperations
 
 
 def test_get_domain_label_from_library(operation_params: OperationParams):
@@ -53,14 +54,15 @@ def test_get_domain_label_from_library(operation_params: OperationParams):
     data_service = LocalDataService.get_instance(
         cache_service=cache, config=ConfigService()
     )
-    operation = DomainLabel(
+    operations = DatasetOperations()
+    result = operations.get_service(
+        "domain_label",
         operation_params,
         operation_params.dataframe,
         cache,
         data_service,
         library_metadata,
     )
-    result: pd.DataFrame = operation.execute()
     expected: pd.Series = pd.Series(
         [
             "Adverse Events",
@@ -68,6 +70,33 @@ def test_get_domain_label_from_library(operation_params: OperationParams):
             "Adverse Events",
         ]
     )
+    assert result[operation_params.operation_id].equals(expected)
+    # test for dask
+    operation_params.dataframe = dd.DataFrame.from_dict(
+        {
+            "STUDYID": [
+                "TEST_STUDY",
+                "TEST_STUDY",
+                "TEST_STUDY",
+            ],
+            "AETERM": [
+                "test",
+                "test",
+                "test",
+            ],
+        },
+        npartitions=1,
+    )
+    result = operations.get_service(
+        "domain_label",
+        operation_params,
+        operation_params.dataframe,
+        cache,
+        data_service,
+        library_metadata,
+    )
+    for column in result.columns:
+        result[column] = result[column].astype(object)
     assert result[operation_params.operation_id].equals(expected)
 
 
@@ -118,14 +147,15 @@ def test_get_domain_label_from_library_domain_not_found(
     data_service = LocalDataService.get_instance(
         cache_service=cache, config=ConfigService()
     )
-    operation = DomainLabel(
+    operations = DatasetOperations()
+    result = operations.get_service(
+        "domain_label",
         operation_params,
         operation_params.dataframe,
         cache,
         data_service,
         library_metadata,
     )
-    result: pd.DataFrame = operation.execute()
     expected: pd.Series = pd.Series(
         [
             "",
@@ -133,6 +163,34 @@ def test_get_domain_label_from_library_domain_not_found(
             "",
         ]
     )
+    assert result[operation_params.operation_id].equals(expected)
+
+    # test dask
+    operation_params.dataframe = dd.DataFrame.from_dict(
+        {
+            "STUDYID": [
+                "TEST_STUDY",
+                "TEST_STUDY",
+                "TEST_STUDY",
+            ],
+            "AETERM": [
+                "test",
+                "test",
+                "test",
+            ],
+        },
+        npartitions=1,
+    )
+    result = operations.get_service(
+        "domain_label",
+        operation_params,
+        operation_params.dataframe,
+        cache,
+        data_service,
+        library_metadata,
+    )
+    for column in result.columns:
+        result[column] = result[column].astype(object)
     assert result[operation_params.operation_id].equals(expected)
 
 
@@ -168,7 +226,7 @@ def test_get_domain_label_from_library_domain_missing_label(
                 "test",
                 "test",
             ],
-        }
+        },
     )
     operation_params.domain = "AE"
     operation_params.standard = "sdtmig"
@@ -182,14 +240,15 @@ def test_get_domain_label_from_library_domain_missing_label(
     data_service = LocalDataService.get_instance(
         cache_service=cache, config=ConfigService()
     )
-    operation = DomainLabel(
+    operations = DatasetOperations()
+    result = operations.get_service(
+        "domain_label",
         operation_params,
         operation_params.dataframe,
         cache,
         data_service,
         library_metadata,
     )
-    result: pd.DataFrame = operation.execute()
     expected: pd.Series = pd.Series(
         [
             "",
@@ -197,4 +256,32 @@ def test_get_domain_label_from_library_domain_missing_label(
             "",
         ]
     )
+    assert result[operation_params.operation_id].equals(expected)
+
+    # test for dask
+    operation_params.dataframe = dd.DataFrame.from_dict(
+        {
+            "STUDYID": [
+                "TEST_STUDY",
+                "TEST_STUDY",
+                "TEST_STUDY",
+            ],
+            "AETERM": [
+                "test",
+                "test",
+                "test",
+            ],
+        },
+        npartitions=1,
+    )
+    result = operations.get_service(
+        "domain_label",
+        operation_params,
+        operation_params.dataframe,
+        cache,
+        data_service,
+        library_metadata,
+    )
+    for column in result.columns:
+        result[column] = result[column].astype(object)
     assert result[operation_params.operation_id].equals(expected)

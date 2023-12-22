@@ -1,15 +1,14 @@
 import pandas as pd
+import dask.dataframe as dd
 from cdisc_rules_engine.config.config import ConfigService
 from pathlib import Path
-from cdisc_rules_engine.operations.define_variable_metadata import (
-    DefineVariableMetadata,
-)
 from cdisc_rules_engine.models.operation_params import OperationParams
 
 from cdisc_rules_engine.services.cache.cache_service_factory import CacheServiceFactory
 from cdisc_rules_engine.services.data_services.data_service_factory import (
     DataServiceFactory,
 )
+from cdisc_rules_engine.DatasetOperations.Operations import DatasetOperations
 
 
 def test_get_define_variable_metadata_variable_in_domain(
@@ -23,11 +22,28 @@ def test_get_define_variable_metadata_variable_in_domain(
     operation_params.domain = "AE"
     operation_params.target = "--SER"
     operation_params.attribute_name = "define_variable_ccode"
-    result = DefineVariableMetadata(
-        operation_params, pd.DataFrame.from_dict({"A": [1, 2, 3]}), cache, data_service
-    ).execute()
-    assert operation_params.operation_id in result
-    for val in result[operation_params.operation_id]:
+    operations = DatasetOperations()
+    pandas_result = operations.get_service(
+        "define_variable_metadata",
+        operation_params,
+        pd.DataFrame.from_dict({"A": [1, 2, 3]}),
+        cache,
+        data_service,
+    )
+    assert operation_params.operation_id in pandas_result
+    for val in pandas_result[operation_params.operation_id]:
+        val == "C49487"
+
+    # test using dask
+    dask_result = operations.get_service(
+        "define_variable_metadata",
+        operation_params,
+        dd.DataFrame.from_dict({"A": [1, 2, 3]}, npartitions=1),
+        cache,
+        data_service,
+    )
+    assert operation_params.operation_id in dask_result
+    for val in dask_result[operation_params.operation_id]:
         val == "C49487"
 
 
@@ -42,9 +58,26 @@ def test_get_define_variable_metadata_variable_not_in_domain(
     operation_params.domain = "AE"
     operation_params.target = "VERYFAKEVARIABLE"
     operation_params.attribute_name = "define_variable_ccode"
-    result = DefineVariableMetadata(
-        operation_params, pd.DataFrame.from_dict({"A": [1, 2, 3]}), cache, data_service
-    ).execute()
+    operations = DatasetOperations()
+    result = operations.get_service(
+        "define_variable_metadata",
+        operation_params,
+        pd.DataFrame.from_dict({"A": [1, 2, 3]}),
+        cache,
+        data_service,
+    )
     assert operation_params.operation_id in result
     for val in result[operation_params.operation_id]:
+        val == ""
+
+    # test using dask
+    dask_result = operations.get_service(
+        "define_variable_metadata",
+        operation_params,
+        dd.DataFrame.from_dict({"A": [1, 2, 3]}, npartitions=1),
+        cache,
+        data_service,
+    )
+    assert operation_params.operation_id in dask_result
+    for val in dask_result[operation_params.operation_id]:
         val == ""
