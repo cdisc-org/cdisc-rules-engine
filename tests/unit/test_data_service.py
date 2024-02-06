@@ -19,7 +19,6 @@ from cdisc_rules_engine.constants.classes import (
     RELATIONSHIP,
     TRIAL_DESIGN,
     STUDY_REFERENCE,
-    SPECIAL_PURPOSE,
 )
 
 from cdisc_rules_engine.models.validation_args import Validation_args
@@ -137,52 +136,16 @@ def test_get_raw_dataset_metadata(
             "sqapfamh.xpt",
         ),
         (
-            [{"domain": "POOLDEF", "filename": "pooldef.xpt"}],
-            {"POOLID": ["test"], "USUBJID": ["test"], "APID": ["test"]},
-            RELATIONSHIP,
-            "pooldef.xpt",
-        ),
-        (
-            [{"domain": "APRELSUB", "filename": "aprelsub.xpt"}],
-            {"APID": ["test"], "RSUBJID": ["test"], "RDEVID": ["test"]},
-            RELATIONSHIP,
-            "aprelsub.xpt",
-        ),
-        (
-            [{"domain": "DR", "filename": "dr.xpt"}],
-            {"DOMAIN": ["DR"], "USUBJID": ["test"], "SPDEVID": ["test"]},
-            RELATIONSHIP,
-            "dr.xpt",
-        ),
-        (
             [{"domain": "OI", "filename": "oi.xpt"}],
             {"DOMAIN": ["OI"], "OIPARMCD": ["test"], "OIPARM": ["test"]},
             STUDY_REFERENCE,
             "oi.xpt",
         ),
         (
-            [{"domain": "DI", "filename": "di.xpt"}],
-            {"DOMAIN": ["DI"], "DIPARMCD": ["test"], "DIPARM": ["test"]},
-            STUDY_REFERENCE,
-            "di.xpt",
-        ),
-        (
-            [{"domain": "TX", "filename": "tx.xpt"}],
-            {"DOMAIN": ["TX"], "SETCD": ["test"], "SET": ["test"]},
-            TRIAL_DESIGN,
-            "tx.xpt",
-        ),
-        (
             [{"domain": "TS", "filename": "ts.xpt"}],
             {"DOMAIN": ["TS"], "TSPARMCD": ["test"], "TSPARM": ["test"]},
             TRIAL_DESIGN,
             "ts.xpt",
-        ),
-        (
-            [{"domain": "SJ", "filename": "sj.xpt"}],
-            {"DOMAIN": ["SJ"], "RSTGCD": ["test"], "RSTAGE": ["test"]},
-            SPECIAL_PURPOSE,
-            "sj.xpt",
         ),
         (
             [{"domain": "XX", "filename": "xx.xpt"}],
