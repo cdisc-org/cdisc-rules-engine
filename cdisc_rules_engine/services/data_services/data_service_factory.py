@@ -1,4 +1,4 @@
-from typing import List, Type
+from typing import Iterable, List, Type
 
 from cdisc_rules_engine.dummy_models.dummy_dataset import DummyDataset
 from cdisc_rules_engine.interfaces import (
@@ -8,14 +8,18 @@ from cdisc_rules_engine.interfaces import (
     FactoryInterface,
 )
 
-from . import DummyDataService, LocalDataService
+from . import DummyDataService, LocalDataService, USDMDataService
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
 
 
 class DataServiceFactory(FactoryInterface):
-    _registered_services_map = {"local": LocalDataService, "dummy": DummyDataService}
+    _registered_services_map = {
+        "local": LocalDataService,
+        "dummy": DummyDataService,
+        "usdm": USDMDataService,
+    }
 
     def __init__(
         self,
@@ -25,21 +29,39 @@ class DataServiceFactory(FactoryInterface):
         standard_version: str = None,
         library_metadata: LibraryMetadataContainer = None,
     ):
-        self.data_service_name = config.getValue("DATA_SERVICE_TYPE") or "local"
+        if config.getValue("DATA_SERVICE_TYPE"):
+            self.data_service_name = config.getValue("DATA_SERVICE_TYPE")
+        elif standard == "usdm":
+            self.data_service_name = "usdm"
+        else:
+            self.data_service_name = "local"
         self.config = config
         self.cache_service = cache_service
         self.standard = standard
         self.standard_version = standard_version
         self.library_metadata = library_metadata
 
-    def get_data_service(self) -> DataServiceInterface:
-        """Get local data service"""
-        return self.get_service(
-            "local",
-            standard=self.standard,
-            standard_version=self.standard_version,
-            library_metadata=self.library_metadata,
-        )
+    def get_data_service(
+        self, dataset_paths: Iterable[str] = []
+    ) -> DataServiceInterface:
+        if USDMDataService.is_USDM_data(dataset_paths):
+            """Get json file tree to dataset data service"""
+            return self.get_service(
+                "usdm",
+                standard=self.standard,
+                standard_version=self.standard_version,
+                library_metadata=self.library_metadata,
+                dataset_path=dataset_paths[0],
+            )
+        else:
+            """Get local Directory data service"""
+            return self.get_service(
+                "local",
+                standard=self.standard,
+                standard_version=self.standard_version,
+                library_metadata=self.library_metadata,
+                dataset_paths=dataset_paths,
+            )
 
     def get_dummy_data_service(self, data: List[DummyDataset]) -> DataServiceInterface:
         return self.get_service(
