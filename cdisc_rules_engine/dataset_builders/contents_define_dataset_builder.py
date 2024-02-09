@@ -1,6 +1,7 @@
-import pandas as pd
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.dataset_builders.base_dataset_builder import BaseDatasetBuilder
+from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
+import pandas as pd
 
 
 class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
@@ -35,8 +36,7 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
         dataset_df = self._get_dataset_dataframe()
 
         # 3. Merge the two data frames
-        merged = pd.merge(
-            dataset_df,
+        merged = dataset_df.merge(
             define_df,
             how="outer",
             left_on="dataset_name",
@@ -60,10 +60,10 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
             "define_dataset_variables",
         ]
         define_metadata = self.get_define_metadata()
-        define_df = pd.DataFrame(define_metadata)
+        define_df = self.dataset_class(define_metadata)
 
         if define_df.empty:
-            define_df = pd.DataFrame(columns=define_col_order)
+            define_df = self.dataset_class(columns=define_col_order)
             logger.info(f"No define_metadata is provided for {__name__}.")
         return define_df
 
@@ -76,10 +76,10 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
         ]
 
         if len(self.datasets) == 0:
-            dataset_df = pd.DataFrame(columns=dataset_col_order)
+            dataset_df = self.dataset_class(columns=dataset_col_order)
             logger.info(f"No datasets metadata is provided in {__name__}.")
         else:
-            datasets = pd.DataFrame()
+            datasets = self.dataset_class()
             for dataset in self.datasets:
                 try:
                     ds_metadata = self.data_service.get_dataset_metadata(
@@ -93,7 +93,7 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
                 )
 
             if datasets.empty or len(datasets) == 0:
-                dataset_df = pd.DataFrame(columns=dataset_col_order)
+                dataset_df = self.dataset_class(columns=dataset_col_order)
                 logger.info(f"No datasets metadata is provided for {__name__}.")
             else:
                 data_col_mapping = {

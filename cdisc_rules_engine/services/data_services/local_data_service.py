@@ -25,6 +25,8 @@ from cdisc_rules_engine.utilities.utils import (
 )
 from .base_data_service import BaseDataService, cached_dataset
 from cdisc_rules_engine.enums.dataformat_types import DataFormatTypes
+from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
+from cdisc_rules_engine.models.dataset import PandasDataset
 
 
 class LocalDataService(BaseDataService):
@@ -40,7 +42,7 @@ class LocalDataService(BaseDataService):
         if cls._instance is None:
             service = cls(
                 cache_service=cache_service,
-                reader_factory=DataReaderFactory(),
+                reader_factory=DataReaderFactory(dataset_class=kwargs.get("dataset_class", PandasDataset)),
                 config=config,
                 **kwargs
             )
@@ -56,18 +58,18 @@ class LocalDataService(BaseDataService):
         return all(item.lower() in files for item in file_names)
 
     @cached_dataset(DatasetTypes.CONTENTS.value)
-    def get_dataset(self, dataset_name: str, **params) -> pandas.DataFrame:
+    def get_dataset(self, dataset_name: str, **params) -> DatasetInterface:
         reader = self._reader_factory.get_service(
             extract_file_name_from_path_string(dataset_name).split(".")[1].upper()
         )
         df = reader.from_file(dataset_name)
-        self._replace_nans_in_numeric_cols_with_none(df)
+        # self._replace_nans_in_numeric_cols_with_none(df)
         return df
 
     @cached_dataset(DatasetTypes.METADATA.value)
     def get_dataset_metadata(
         self, dataset_name: str, size_unit: str = None, **params
-    ) -> pandas.DataFrame:
+    ) -> DatasetInterface:
         """
         Gets metadata of a dataset and returns it as a DataFrame.
         """
@@ -80,7 +82,7 @@ class LocalDataService(BaseDataService):
             "dataset_name": [contents_metadata["dataset_name"]],
             "dataset_label": [contents_metadata["dataset_label"]],
         }
-        return pandas.DataFrame.from_dict(metadata_to_return)
+        return self.dataset_class.from_dict(metadata_to_return)
 
     @cached_dataset(DatasetTypes.RAW_METADATA.value)
     def get_raw_dataset_metadata(self, dataset_name: str, **kwargs) -> DatasetMetadata:
@@ -103,7 +105,7 @@ class LocalDataService(BaseDataService):
         )
 
     @cached_dataset(DatasetTypes.VARIABLES_METADATA.value)
-    def get_variables_metadata(self, dataset_name: str, **params) -> pandas.DataFrame:
+    def get_variables_metadata(self, dataset_name: str, **params) -> DatasetInterface:
         """
         Gets dataset from blob storage and returns metadata of a certain variable.
         """
@@ -112,7 +114,7 @@ class LocalDataService(BaseDataService):
         metadata_to_return: VariableMetadataContainer = VariableMetadataContainer(
             contents_metadata
         )
-        return pandas.DataFrame.from_dict(metadata_to_return.to_representation())
+        return self.dataset_class.from_dict(metadata_to_return.to_representation())
 
     @cached_dataset(DatasetTypes.CONTENTS.value)
     def get_define_xml_contents(self, dataset_name: str) -> bytes:
@@ -172,3 +174,9 @@ class LocalDataService(BaseDataService):
         if size_unit:  # convert file size from bytes to desired unit if needed
             file_metadata["size"] = convert_file_size(file_metadata["size"], size_unit)
         return file_metadata, metadata["contents_metadata"]
+
+    def to_parquet(self, file_path: str) -> str:
+        reader = self._reader_factory.get_service(
+            extract_file_name_from_path_string(file_path).split(".")[1].upper()
+        )
+        return reader.to_parquet(file_path)

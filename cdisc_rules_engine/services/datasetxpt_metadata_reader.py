@@ -4,6 +4,8 @@ from xport import LOG as XPORT_LOG
 
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.services.adam_variable_reader import AdamVariableReader
+import psutil
+import os
 
 xport.v56.LOG.disabled = True
 XPORT_LOG.disabled = True
@@ -18,11 +20,20 @@ class DatasetXPTMetadataReader:
     # TODO. Maybe in future it is worth having multiple constructors
     #  like from_bytes, from_file etc. But now there is no immediate need for that.
     def __init__(self, file_path: str, file_name: str):
-        with open(file_path, "rb") as f:
-            self._file_contents = f.read()
-        self._metadata_container = None
+        file_size = os.path.getsize(file_path)
+        if file_size > psutil.virtual_memory().available * .25:
+            with open(file_path, "rb") as f:
+                self._file_contents = f.read()[:8000]
+            self._estimate_dataset_length = True
+        else:
+            with open(file_path, "rb") as f:
+                self._file_contents = f.read()
+            self._estimate_dataset_length = True
+        self._metadata_container = {}
         self._domain_name = None
         self._dataset_name = file_name.split(".")[0].upper()
+        self._file_path = file_path
+
 
     def read(self) -> dict:
         """
@@ -52,6 +63,9 @@ class DatasetXPTMetadataReader:
             "dataset_name": self._dataset_name,
             "dataset_modification_date": dataset.modified.isoformat(),
         }
+
+        if self._estimate_dataset_length:
+            self._metadata_container["dataset_length"] = self._calculate_dataset_length()
         self._domain_name = self._extract_domain_name(dataset)
         self._convert_variable_types()
         self._metadata_container["adam_info"] = self._extract_adam_info(
@@ -72,6 +86,10 @@ class DatasetXPTMetadataReader:
         except IndexError:
             pass
         return None
+
+    def _calculate_dataset_length(self):
+        row_size = sum(self._metadata_container["variable_name_to_size_map"].values())
+        return int(os.path.getsize(self._file_path)/row_size)
 
     def _convert_variable_types(self):
         """

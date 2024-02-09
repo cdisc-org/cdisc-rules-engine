@@ -12,6 +12,7 @@ from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
 from cdisc_rules_engine.models.dataset_types import DatasetTypes
 from cdisc_rules_engine.services.data_readers import DataReaderFactory
 from cdisc_rules_engine.services.data_services import BaseDataService
+from cdisc_rules_engine.models.dataset import PandasDataset
 
 
 class DummyDataService(BaseDataService):
@@ -48,26 +49,26 @@ class DummyDataService(BaseDataService):
         if dataset_name not in self.data:
             raise DatasetNotFoundError("dataset does not exist")
 
-    def get_dataset_data(self, dataset_name: str) -> Optional[DummyDataset]:
+    def  get_dataset_data(self, dataset_name: str) -> Optional[DummyDataset]:
         dataset_name = os.path.basename(dataset_name)
         for dataset in self.data:
             if dataset.filename == dataset_name:
                 return dataset
         return None
 
-    def get_dataset(self, dataset_name: str, **params) -> pd.DataFrame:
+    def get_dataset(self, dataset_name: str, **params) -> PandasDataset:
         dataset: Optional[DummyDataset] = self.get_dataset_data(dataset_name)
         if dataset is not None:
             df: pd.DataFrame = dataset.data
             df = df.applymap(lambda x: x.decode("utf-8") if isinstance(x, bytes) else x)
             self._replace_nans_in_numeric_cols_with_none(df)
-            return df
+            return PandasDataset(df)
         else:
-            return pd.DataFrame.from_dict({})
+            return PandasDataset.from_dict({})
 
     def get_dataset_metadata(self, dataset_name: str, **kwargs):
         dataset_metadata: dict = self.__get_dataset_metadata(dataset_name, **kwargs)
-        return pd.DataFrame.from_dict(dataset_metadata)
+        return PandasDataset.from_dict(dataset_metadata)
 
     def get_raw_dataset_metadata(self, dataset_name: str, **kwargs) -> DatasetMetadata:
         dataset_metadata: dict = self.__get_dataset_metadata(dataset_name, **kwargs)
@@ -82,7 +83,7 @@ class DummyDataService(BaseDataService):
             records=dataset_metadata["length"][0],
         )
 
-    def get_variables_metadata(self, dataset_name: str, **params) -> pd.DataFrame:
+    def get_variables_metadata(self, dataset_name: str, **params) -> PandasDataset:
         metadata_to_return = {
             "variable_name": [],
             "variable_order_number": [],
@@ -111,11 +112,11 @@ class DummyDataService(BaseDataService):
             metadata_to_return["variable_format"] = metadata_to_return[
                 "variable_format"
             ] + [variable.format]
-        return pd.DataFrame.from_dict(metadata_to_return)
+        return PandasDataset.from_dict(metadata_to_return)
 
     def get_dataset_by_type(
         self, dataset_name: str, dataset_type: str, **params
-    ) -> pd.DataFrame:
+    ) -> PandasDataset:
         dataset_type_to_function_map: dict = {
             DatasetTypes.CONTENTS.value: self.get_dataset,
             DatasetTypes.METADATA.value: self.get_dataset_metadata,
@@ -145,3 +146,6 @@ class DummyDataService(BaseDataService):
         if dataset:
             metadata_to_return: dict = dataset.get_metadata()
         return metadata_to_return
+
+    def to_parquet(self, file_path: str) -> str:
+        return ""

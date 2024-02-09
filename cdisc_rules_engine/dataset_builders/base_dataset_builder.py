@@ -14,6 +14,7 @@ from cdisc_rules_engine.utilities.utils import (
 from typing import List
 from cdisc_rules_engine import config
 from cdisc_rules_engine.utilities import sdtm_utilities
+from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 import os
 
 
@@ -45,9 +46,10 @@ class BaseDatasetBuilder:
         self.standard = standard
         self.standard_version = standard_version
         self.library_metadata = library_metadata
+        self.dataset_class = self.data_service.dataset_class
 
     @abstractmethod
-    def build(self) -> pd.DataFrame:
+    def build(self) -> DatasetInterface:
         """
         Returns correct dataframe to operate on
         """
@@ -58,14 +60,14 @@ class BaseDatasetBuilder:
         if is_split_dataset(self.datasets, self.domain):
             # Handle split datasets for content checks.
             # A content check is any check that is not in the list of rule types
-            dataset: pd.DataFrame = self.data_service.concat_split_datasets(
+            dataset: DatasetInterface = self.data_service.concat_split_datasets(
                 func_to_call=self.build,
                 dataset_names=self.get_corresponding_datasets_names(),
                 **kwargs,
             )
         else:
             # single dataset. the most common case
-            dataset: pd.DataFrame = self.build()
+            dataset: DatasetInterface = self.build()
         return dataset
 
     def get_dataset_contents(self, **kwargs):
@@ -73,14 +75,14 @@ class BaseDatasetBuilder:
         if is_split_dataset(self.datasets, self.domain):
             # Handle split datasets for content checks.
             # A content check is any check that is not in the list of rule types
-            dataset: pd.DataFrame = self.data_service.concat_split_datasets(
+            dataset: DatasetInterface = self.data_service.concat_split_datasets(
                 func_to_call=self.data_service.get_dataset,
                 dataset_names=self.get_corresponding_datasets_names(),
                 **kwargs,
             )
         else:
             # single dataset. the most common case
-            dataset: pd.DataFrame = self.data_service.get_dataset(self.dataset_path)
+            dataset: DatasetInterface = self.data_service.get_dataset(self.dataset_path)
         return dataset
 
     def get_corresponding_datasets_names(self) -> List[str]:
@@ -127,8 +129,8 @@ class BaseDatasetBuilder:
         return define_xml_reader.extract_value_level_metadata(domain_name=self.domain)
 
     @staticmethod
-    def add_row_number(dataframe: pd.DataFrame) -> None:
-        dataframe["row_number"] = range(1, len(dataframe) + 1)
+    def add_row_number(dataframe: DatasetInterface) -> None:
+        dataframe["row_number"] = range(1, len(dataframe.data) + 1)
 
     def get_define_metadata(self):
         define_xml_reader = DefineXMLReaderFactory.get_define_xml_reader(
@@ -136,7 +138,7 @@ class BaseDatasetBuilder:
         )
         return define_xml_reader.read()
 
-    def get_library_variables_metadata(self) -> pd.DataFrame:
+    def get_library_variables_metadata(self) -> DatasetInterface:
         # TODO: Update to support other standard types
         variables: List[dict] = sdtm_utilities.get_variables_metadata_from_standard(
             standard=self.standard,
@@ -158,4 +160,4 @@ class BaseDatasetBuilder:
             for key, new_key in column_name_mapping.items():
                 var[new_key] = var.pop(key)
 
-        return pd.DataFrame(variables).add_prefix("library_variable_")
+        return self.dataset_class(variables).add_prefix("library_variable_")

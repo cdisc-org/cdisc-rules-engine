@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List
+from typing import Union, List
 
 
 class DatasetInterface(ABC):
@@ -68,7 +68,7 @@ class DatasetInterface(ABC):
         """
 
     @abstractmethod
-    def concat(self, other: "DatasetInterface", **kwargs):
+    def concat(self, other: Union["DatasetInterface", List["DatasetInterface"]], **kwargs):
         """
         Concat two datasets
         """
@@ -108,9 +108,40 @@ class DatasetInterface(ABC):
         """
         Create a series of a single value
         """
+    
+    @abstractmethod
+    def rename(self, index = None, columns = None, inplace = True):
+        """
+        Rename columns or index labels.
+        """
+    
+    @abstractmethod
+    def drop(self, labels=None, axis=0, columns=None, errors='raise'):
+        """
+        Drop specified labels from rows or columns.
+        """
+    
+    @abstractmethod
+    def melt(self, id_vars=None, value_vars=None, var_name=None, value_name='value', col_level=None):
+        """
+        Unpivots a DataFrame from wide format to long format, optionally leaving identifier variables set.
+        """
+
 
     @abstractmethod
     def len(self) -> int:
         """
         Return the length of the dataset
+        """
+
+    @abstractmethod
+    def copy(self) -> "DatasetInterface":
+        """
+        Return a new instance of the dataset with the same data
+        """
+    
+    @abstractmethod
+    def get_error_rows(self, results: "pd.Series") -> "pd.Dataframe":
+        """
+        Returns a pandas dataframe with all errors found in the dataset. Limited to 1000
         """

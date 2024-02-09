@@ -4,8 +4,10 @@ from typing import Union, List
 
 
 class PandasDataset(DatasetInterface):
-    def __init__(self, data: pd.DataFrame = pd.DataFrame()):
+    def __init__(self, data: pd.DataFrame = pd.DataFrame(), columns = None):
         self._data = data
+        if columns and self._data.empty:
+            self._data.columns = columns
 
     @property
     def data(self):
@@ -73,6 +75,24 @@ class PandasDataset(DatasetInterface):
     def is_series(self, data) -> bool:
         return isinstance(data, pd.Series)
 
+    def rename(self, index = None, columns = None, inplace = True):
+        self._data.rename(index=index, columns=columns, inplace=inplace)
+        return self
+    
+    def drop(self, labels=None, axis=0, columns=None, errors='raise'):
+        """
+        Drop specified labels from rows or columns.
+        """
+        self._data.drop(labels=labels, axis=axis, columns=columns, errors=errors)
+        return self
+
+    def melt(self, id_vars=None, value_vars=None, var_name=None, value_name='value', col_level=None):
+        """
+        Unpivots a DataFrame from wide format to long format, optionally leaving identifier variables set.
+        """
+        new_data = self._data.melt(id_vars=id_vars, value_vars=value_vars, value_name=value_name, col_level=col_level)
+        return self.__class__(new_data)
+
     def convert_to_series(self, result):
         if self.is_series(result):
             return result
@@ -92,3 +112,18 @@ class PandasDataset(DatasetInterface):
 
     def len(self) -> int:
         return self._data.shape[0]
+
+    @property
+    def size(self) -> int:
+        return self._data.memory_usage().sum()
+    
+    def copy(self):
+        new_data = self._data.copy()
+        return self.__class__(new_data)
+    
+    def get_error_rows(self, results) -> "pd.Dataframe":
+        data_with_results = self._data.copy()
+        data_with_results["results"] = results
+        return data_with_results[
+            data_with_results["results"].isin([True])
+        ]

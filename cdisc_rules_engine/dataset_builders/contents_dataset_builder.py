@@ -1,6 +1,5 @@
 from cdisc_rules_engine.dataset_builders.base_dataset_builder import BaseDatasetBuilder
 from cdisc_rules_engine.utilities.utils import is_split_dataset
-import pandas as pd
 
 
 class ContentsDatasetBuilder(BaseDatasetBuilder):
@@ -15,12 +14,12 @@ class ContentsDatasetBuilder(BaseDatasetBuilder):
         if is_split_dataset(self.datasets, self.domain):
             # Handle split datasets for content checks.
             # A content check is any check that is not in the list of rule types
-            dataset: pd.DataFrame = self.data_service.concat_split_datasets(
+            dataset = self.data_service.concat_split_datasets(
                 func_to_call=self.build,
                 dataset_names=self.get_corresponding_datasets_names(),
                 **kwargs,
             )
         else:
             # single dataset. the most common case
-            dataset: pd.DataFrame = self.build(**kwargs)
+            dataset = self.build(**kwargs)
         return dataset

@@ -5,8 +5,10 @@ from typing import List
 
 
 class DaskDataset(PandasDataset):
-    def __init__(self, data=dd.from_pandas(pd.DataFrame(), npartitions=1)):
+    def __init__(self, data=dd.from_pandas(pd.DataFrame(), npartitions=1), columns = None):
         self._data = data
+        if columns and self._data.empty:
+            self._data.columns = columns
 
     @property
     def data(self):
@@ -21,7 +23,7 @@ class DaskDataset(PandasDataset):
 
     def __setitem__(self, key, value):
         if isinstance(value, list):
-            self._data[key] = dd.from_pandas(pd.Series(value), npartitions=1)
+            self._data[key] = dd.from_pandas(pd.Series(value), npartitions=self._data.npartitions)
         else:
             self._data[key] = value
 
@@ -79,3 +81,42 @@ class DaskDataset(PandasDataset):
 
     def len(self) -> int:
         return self._data.shape[0].compute()
+    
+    def rename(self, index = None, columns = None, inplace = True):
+        self._data.rename(index=index, columns=columns, inplace=inplace)
+        return self
+
+    def drop(self, labels=None, axis=0, columns=None, errors='raise'):
+        """
+        Drop specified labels from rows or columns.
+        """
+        self._data.drop(labels=labels, axis=axis, columns=columns, errors=errors)
+        return self
+
+    def melt(self, id_vars=None, value_vars=None, var_name=None, value_name='value', col_level=None):
+        """
+        Unpivots a DataFrame from wide format to long format, optionally leaving identifier variables set.
+        """
+        new_data = self._data.melt(id_vars=id_vars, value_vars=value_vars, value_name=value_name, col_level=col_level)
+        return self.__class__(new_data)
+
+    @property
+    def size(self):
+        memory_usage = self.data.get_partition(0).compute().memory_usage()
+        return memory_usage.sum()
+
+    def assign(self, **kwargs):
+        return self.data.assign(**kwargs)
+
+    def copy(self):
+        new_data = self._data.copy()
+        return self.__class__(new_data)
+
+    def get_error_rows(self, results) -> "pd.Dataframe":
+        """
+        Returns a pandas dataframe with all errors found in the dataset. Limited to 1000
+        """
+        results_frame = results.to_frame()
+        results_frame.columns = ["results"]
+        data_with_results = self.data.merge(results_frame)
+        return data_with_results[data_with_results["results"] == True].head(1000)

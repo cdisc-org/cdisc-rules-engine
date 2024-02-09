@@ -6,7 +6,7 @@ from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
 
-import pandas as pd
+from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 
 from cdisc_rules_engine.constants.classes import (
     FINDINGS_ABOUT,
@@ -282,7 +282,7 @@ class RuleProcessor:
         return dataset_copy
 
     def _execute_operation(
-        self, operation_params: OperationParams, dataset: pd.DataFrame
+        self, operation_params: OperationParams, dataset: DatasetInterface
     ):
         """
         Internal method that executes the given operation.
@@ -298,7 +298,7 @@ class RuleProcessor:
             target_variable=operation_params.target,
             dataset_path=operation_params.dataset_path,
         )
-        result: pd.DataFrame = self.cache.get(cache_key)
+        result: DatasetInterface = self.cache.get(cache_key)
         if result is not None:
             return result
 

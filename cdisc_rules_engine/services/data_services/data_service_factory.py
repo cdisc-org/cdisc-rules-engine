@@ -7,6 +7,9 @@ from cdisc_rules_engine.interfaces import (
     DataServiceInterface,
     FactoryInterface,
 )
+from cdisc_rules_engine.models.dataset import DaskDataset, PandasDataset
+import psutil
+
 
 from . import DummyDataService, LocalDataService
 from cdisc_rules_engine.models.library_metadata_container import (
@@ -24,6 +27,7 @@ class DataServiceFactory(FactoryInterface):
         standard: str = None,
         standard_version: str = None,
         library_metadata: LibraryMetadataContainer = None,
+        max_dataset_size: int = 0,
     ):
         self.data_service_name = config.getValue("DATA_SERVICE_TYPE") or "local"
         self.config = config
@@ -31,6 +35,8 @@ class DataServiceFactory(FactoryInterface):
         self.standard = standard
         self.standard_version = standard_version
         self.library_metadata = library_metadata
+        self.max_dataset_size = max_dataset_size
+        self.dataset_size_threshold = psutil.virtual_memory().available * 0.25
 
     def get_data_service(self) -> DataServiceInterface:
         """Get local data service"""
@@ -39,6 +45,7 @@ class DataServiceFactory(FactoryInterface):
             standard=self.standard,
             standard_version=self.standard_version,
             library_metadata=self.library_metadata,
+            dataset_class=self.get_datset_class(),
         )
 
     def get_dummy_data_service(self, data: List[DummyDataset]) -> DataServiceInterface:
@@ -48,7 +55,21 @@ class DataServiceFactory(FactoryInterface):
             standard=self.standard,
             standard_version=self.standard_version,
             library_metadata=self.library_metadata,
+            dataset_class=self.get_datset_class(),
         )
+
+    def get_datset_class(self):
+        """
+        Gets the class that should be used to represent datasets for the rules engine. This class may be dependent on 
+        rule size or config values
+
+        :returns DatasetInterface.__class__
+        """
+        if self.max_dataset_size >= self.dataset_size_threshold:
+            # Use large dataset class
+            return DaskDataset
+        return PandasDataset
+
 
     @classmethod
     def register_service(cls, name: str, service: Type[DataServiceInterface]) -> None:

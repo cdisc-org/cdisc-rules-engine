@@ -1,5 +1,4 @@
 from cdisc_rules_engine.operations.base_operation import BaseOperation
-import pandas as pd
 
 
 class VariableIsNull(BaseOperation):
@@ -19,7 +18,7 @@ class VariableIsNull(BaseOperation):
             return self._is_target_variable_null(dataframe, target_variable)
 
     def _is_target_variable_null(
-        self, dataframe: pd.DataFrame, target_variable: str
+        self, dataframe, target_variable: str
     ) -> bool:
         if target_variable not in dataframe:
             return True

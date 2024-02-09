@@ -2,6 +2,7 @@ from __future__ import annotations
 import asyncio
 from typing import List, Optional, Set, TYPE_CHECKING
 
+from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 import pandas as pd
 
 from cdisc_rules_engine.config import config
@@ -51,7 +52,7 @@ class DataProcessor:
         return dataframe.iloc[0]
 
     def preprocess_relationship_dataset(
-        self, dataset_path: str, dataset: pd.DataFrame, datasets: List[dict]
+        self, dataset_path: str, dataset: DatasetInterface, datasets: List[dict]
     ) -> dict:
         # Get unique RDOMAINS and corresponding ID Var
         reference_data = {}
@@ -119,11 +120,11 @@ class DataProcessor:
 
     @staticmethod
     def filter_dataset_by_match_keys_of_other_dataset(
-        dataset: pd.DataFrame,
+        dataset: DatasetInterface,
         dataset_match_keys: List[str],
-        other_dataset: pd.DataFrame,
+        other_dataset: DatasetInterface,
         other_dataset_match_keys: List[str],
-    ) -> pd.DataFrame:
+    ) -> DatasetInterface:
         """
         Returns a DataFrame where values of match keys of
         dataset are equal to values of match keys of other dataset.
@@ -147,11 +148,11 @@ class DataProcessor:
 
     @staticmethod
     def filter_parent_dataset_by_supp_dataset(
-        parent_dataset: pd.DataFrame,
-        supp_dataset: pd.DataFrame,
+        parent_dataset: DatasetInterface,
+        supp_dataset: DatasetInterface,
         column_with_names: str,
         column_with_values: str,
-    ) -> pd.DataFrame:
+    ) -> DatasetInterface:
         """
         A wrapper function for convenient filtering of parent dataset by supp dataset.
         Does two things:
@@ -168,8 +169,8 @@ class DataProcessor:
 
     @staticmethod
     def filter_parent_dataset_by_supp_dataset_rdomain(
-        parent_dataset: pd.DataFrame, supp_dataset: pd.DataFrame
-    ) -> pd.DataFrame:
+        parent_dataset: DatasetInterface, supp_dataset: DatasetInterface
+    ) -> DatasetInterface:
         """
         Leaves only those rows in parent dataset
         where DOMAIN is the same as RDOMAIN of supp dataset.
@@ -183,11 +184,11 @@ class DataProcessor:
 
     @staticmethod
     def filter_dataset_by_nested_columns_of_other_dataset(
-        dataset: pd.DataFrame,
-        other_dataset: pd.DataFrame,
+        dataset: DatasetInterface,
+        other_dataset: DatasetInterface,
         column_with_names: str,
         column_with_values: str,
-    ) -> pd.DataFrame:
+    ) -> DatasetInterface:
         """
         other_dataset has two columns:
             1. list of column names which exist in dataset - column_with_names.
@@ -209,7 +210,7 @@ class DataProcessor:
         """
         grouped = other_dataset.groupby(column_with_names, group_keys=False)
 
-        def filter_dataset_by_group_values(group) -> pd.DataFrame:
+        def filter_dataset_by_group_values(group) -> DatasetInterface:
             decimal_group_values: pd.Series = (
                 group[column_with_values].astype(float).astype(str)
             )
@@ -225,12 +226,12 @@ class DataProcessor:
 
     @staticmethod
     def merge_datasets_on_relationship_columns(
-        left_dataset: pd.DataFrame,
-        right_dataset: pd.DataFrame,
+        left_dataset: DatasetInterface,
+        right_dataset: DatasetInterface,
         right_dataset_domain_name: str,
         column_with_names: str,
         column_with_values: str,
-    ) -> pd.DataFrame:
+    ) -> DatasetInterface:
         """
         Uses full join to merge given datasets on the
         columns that describe their relation.
@@ -245,8 +246,7 @@ class DataProcessor:
             right_dataset, column_with_values, left_dataset, left_ds_col_name
         )
 
-        return pd.merge(
-            left=left_dataset,
+        return left_dataset.merge(
             right=right_dataset,
             left_on=[left_ds_col_name],
             right_on=[column_with_values],
@@ -255,7 +255,7 @@ class DataProcessor:
         )
 
     @staticmethod
-    def filter_if_present(df: pd.DataFrame, col: str, filter_value):
+    def filter_if_present(df: DatasetInterface, col: str, filter_value):
         """
         If a filter value is provided, filter the dataframe on that value.
         Otherwise, return the whole dataframe.
@@ -265,7 +265,7 @@ class DataProcessor:
     @staticmethod
     def filter_relrec_for_domain(
         domain_name: str,
-        relrec_dataset: pd.DataFrame,
+        relrec_dataset: DatasetInterface,
     ):
         """
         Find all relrec records associated with a given domain
@@ -279,8 +279,7 @@ class DataProcessor:
         )
         relrec_right = relrec_dataset[all_relids_index.isin(left_relids_index)]
         relrec_right = relrec_right[relrec_right["RDOMAIN"] != domain_name]
-        return pd.merge(
-            left=relrec_left,
+        return relrec_left.merge(
             right=relrec_right,
             on=("STUDYID", "USUBJID", "RELID"),
             suffixes=("_LEFT", "_RIGHT"),
@@ -289,7 +288,7 @@ class DataProcessor:
     @staticmethod
     def merge_on_relrec_record(
         relrec_row: pd.Series,
-        left_dataset: pd.DataFrame,
+        left_dataset: DatasetInterface,
         datasets: List[dict],
         dataset_preprocessor: DatasetPreprocessor,
         wildcard: str,
@@ -305,8 +304,8 @@ class DataProcessor:
             datasets, lambda item: item.get("domain") == relrec_row["RDOMAIN_RIGHT"]
         )
         if not file_info:
-            return pd.DataFrame()
-        right_dataset: pd.DataFrame = dataset_preprocessor._download_dataset(
+            return DatasetInterface()
+        right_dataset: DatasetInterface = dataset_preprocessor._download_dataset(
             file_info["filename"]
         )
         left_subset = left_dataset
@@ -333,8 +332,7 @@ class DataProcessor:
             ).items()
         }
         right_subset = right_subset.rename(columns=variables_with_wildcards)
-        return pd.merge(
-            left=left_subset,
+        return left_subset.merge(
             right=right_subset,
             left_on=["STUDYID", "USUBJID", relrec_row["IDVAR_LEFT"]],
             right_on=[
@@ -346,13 +344,13 @@ class DataProcessor:
 
     @staticmethod
     def merge_relrec_datasets(
-        left_dataset: pd.DataFrame,
+        left_dataset: DatasetInterface,
         left_dataset_domain_name: str,
-        relrec_dataset: pd.DataFrame,
+        relrec_dataset: DatasetInterface,
         datasets: List[dict],
         dataset_preprocessor: DatasetPreprocessor,
         wildcard: str,
-    ) -> pd.DataFrame:
+    ) -> DatasetInterface:
         """
         1. Find each record within relrec_dataset where RDOMAIN matches the
           left_dataset_domain_name
@@ -381,12 +379,12 @@ class DataProcessor:
 
     @staticmethod
     def merge_relationship_datasets(
-        left_dataset: pd.DataFrame,
+        left_dataset: DatasetInterface,
         left_dataset_match_keys: List[str],
-        right_dataset: pd.DataFrame,
+        right_dataset: DatasetInterface,
         right_dataset_match_keys: List[str],
         right_dataset_domain: dict,
-    ) -> pd.DataFrame:
+    ) -> DatasetInterface:
         result = DataProcessor.filter_dataset_by_match_keys_of_other_dataset(
             left_dataset,
             left_dataset_match_keys,
@@ -409,14 +407,13 @@ class DataProcessor:
 
     @staticmethod
     def merge_sdtm_datasets(
-        left_dataset: pd.DataFrame,
-        right_dataset: pd.DataFrame,
+        left_dataset: DatasetInterface,
+        right_dataset: DatasetInterface,
         left_dataset_match_keys: List[str],
         right_dataset_match_keys: List[str],
         right_dataset_domain_name: str,
-    ) -> pd.DataFrame:
-        result = pd.merge(
-            left_dataset,
+    ) -> DatasetInterface:
+        result = left_dataset.merge(
             right_dataset,
             left_on=left_dataset_match_keys,
             right_on=right_dataset_match_keys,
@@ -426,9 +423,9 @@ class DataProcessor:
 
     @staticmethod
     def cast_numeric_cols_to_same_data_type(
-        left_dataset: pd.DataFrame,
+        left_dataset: DatasetInterface,
         left_dataset_column: str,
-        right_dataset: pd.DataFrame,
+        right_dataset: DatasetInterface,
         right_dataset_column: str,
     ):
         """

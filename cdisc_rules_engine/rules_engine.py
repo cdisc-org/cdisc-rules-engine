@@ -1,7 +1,6 @@
 from copy import deepcopy
 from typing import List, Union
 
-import pandas as pd
 from business_rules import export_rule_data
 from business_rules.engine import run
 import os
@@ -22,6 +21,7 @@ from cdisc_rules_engine.interfaces import (
     DataServiceInterface,
 )
 from cdisc_rules_engine.models.actions import COREActions
+from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from cdisc_rules_engine.models.dataset_variable import DatasetVariable
 from cdisc_rules_engine.models.failed_validation_entity import FailedValidationEntity
 from cdisc_rules_engine.models.validation_error_container import (
@@ -55,14 +55,19 @@ class RulesEngine:
         self.standard = kwargs.get("standard")
         self.standard_version = (kwargs.get("standard_version") or "").replace(".", "-")
         self.library_metadata = kwargs.get("library_metadata")
+        self.max_dataset_size = kwargs.get("max_dataset_size")
         self.cache = cache or CacheServiceFactory(self.config).get_cache_service()
-        self.data_service = data_service or DataServiceFactory(
+        data_service_factory = DataServiceFactory(
             self.config,
             self.cache,
             self.standard,
             self.standard_version,
             self.library_metadata,
-        ).get_service(**kwargs)
+            self.max_dataset_size,
+        )
+        self.dataset_class = data_service_factory.get_datset_class()
+        kwargs["dataset_class"] = self.dataset_class
+        self.data_service = data_service or data_service_factory.get_service(**kwargs)
         self.rule_processor = RuleProcessor(
             self.data_service, self.cache, self.library_metadata
         )
@@ -204,6 +209,7 @@ class RulesEngine:
             standard=self.standard,
             standard_version=self.standard_version,
             library_metadata=self.library_metadata,
+            dataset_class=self.data_service.dataset_class
         )
 
     def validate_rule(
@@ -283,7 +289,7 @@ class RulesEngine:
     def execute_rule(
         self,
         rule: dict,
-        dataset: pd.DataFrame,
+        dataset: DatasetInterface,
         dataset_path: str,
         datasets: List[dict],
         domain: str,

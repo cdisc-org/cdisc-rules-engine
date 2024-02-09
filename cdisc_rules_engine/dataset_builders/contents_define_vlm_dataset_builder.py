@@ -2,6 +2,7 @@ from cdisc_rules_engine.dataset_builders.values_dataset_builder import (
     ValuesDatasetBuilder,
 )
 import pandas as pd
+from cdisc_rules_engine.models.dataset import DatasetInterface
 
 
 class ContentsDefineVLMDatasetBuilder(ValuesDatasetBuilder):
@@ -26,18 +27,18 @@ class ContentsDefineVLMDatasetBuilder(ValuesDatasetBuilder):
         ...,
         """
         # get dataset contents and convert it from wide to long
-        data_contents_df: pd.DataFrame = self.data_service.get_dataset(
+        data_contents_df: DatasetInterface = self.data_service.get_dataset(
             dataset_name=self.dataset_path
         )
         self.add_row_number(data_contents_df)
-        data_contents_long_df: pd.DataFrame = ValuesDatasetBuilder.build(self)
+        data_contents_long_df: DatasetInterface = ValuesDatasetBuilder.build(self)
 
         # get Define XML VLM for domain
-        vlm_df: pd.DataFrame = pd.DataFrame(self.get_define_xml_value_level_metadata())
+        vlm_df: DatasetInterface = self.dataset_class(self.get_define_xml_value_level_metadata())
 
         # merge dataset contents with define variable metadata
         # LUT columns: row_number, define_variable_name, define_vlm_name
-        lookup_table: pd.DataFrame = pd.concat(
+        lookup_table: DatasetInterface = self.dataset_class().concat(
             vlm_df.apply(
                 self.apply_filters,
                 axis=1,
@@ -47,15 +48,13 @@ class ContentsDefineVLMDatasetBuilder(ValuesDatasetBuilder):
         lookup_table.rename(
             columns={"define_variable_name": "variable_name"}, inplace=True
         )
-        data_contents_with_lut: pd.DataFrame = pd.merge(
-            data_contents_long_df,
+        data_contents_with_lut: DatasetInterface = data_contents_long_df.merge(
             lookup_table,
             how="inner",
             on=["row_number", "variable_name"],
         )
         vlm_df.drop(labels=["filter"], axis=1, inplace=True)
-        data_contents_with_vlm: pd.DataFrame = pd.merge(
-            data_contents_with_lut,
+        data_contents_with_vlm: DatasetInterface = data_contents_with_lut.merge(
             vlm_df,
             how="inner",
             on="define_vlm_name",
@@ -69,12 +68,11 @@ class ContentsDefineVLMDatasetBuilder(ValuesDatasetBuilder):
         return data_contents_with_vlm
 
     @staticmethod
-    def apply_filters(vlm_row: dict, data_contents_df: pd.DataFrame) -> pd.DataFrame:
-        filter_results: pd.Series = data_contents_df.apply(
+    def apply_filters(vlm_row: dict, data_contents_df: DatasetInterface) -> DatasetInterface:
+        filter_results = data_contents_df.apply(
             lambda data_contents_row: vlm_row["filter"](data_contents_row), axis=1
         )
-        lut_subset: pd.DataFrame = pd.merge(
-            data_contents_df[filter_results]["row_number"],
+        lut_subset: DatasetInterface = data_contents_df[filter_results]["row_number"].merge(
             vlm_row.to_frame().T[["define_variable_name", "define_vlm_name"]],
             how="cross",
         )

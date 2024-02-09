@@ -22,16 +22,19 @@ from cdisc_rules_engine.services.cache import (
 from cdisc_rules_engine.services.data_services import (
     DataServiceFactory,
 )
+from cdisc_rules_engine.models.dataset import PandasDataset
 from scripts.script_utils import (
     fill_cache_with_dictionaries,
     get_cache_service,
     get_library_metadata_from_cache,
     get_rules,
     get_datasets,
+    get_max_dataset_size,
 )
 from cdisc_rules_engine.services.reporting import BaseReport, ReportFactory
 from cdisc_rules_engine.utilities.progress_displayers import get_progress_displayer
 from warnings import simplefilter
+import os
 
 simplefilter(
     action="ignore", category=FutureWarning
@@ -57,7 +60,7 @@ def validate_single_rule(
     rule["conditions"] = ConditionCompositeFactory.get_condition_composite(
         rule["conditions"]
     )
-    set_log_level(args)
+    max_dataset_size = max(datasets, key=lambda x:x['size'])['size']
     # call rule engine
     engine = RulesEngine(
         cache=cache,
@@ -68,6 +71,7 @@ def validate_single_rule(
         whodrug_path=args.whodrug,
         define_xml_path=args.define_xml_path,
         library_metadata=library_metadata,
+        max_dataset_size=max_dataset_size,
     )
     results = []
     validated_domains = set()
@@ -112,8 +116,22 @@ def run_validation(args: Validation_args):
     # install dictionaries if needed
     fill_cache_with_dictionaries(shared_cache, args)
     rules = get_rules(args)
-    data_service = DataServiceFactory(config, shared_cache).get_data_service()
+    max_dataset_size = get_max_dataset_size(args.dataset_paths)
+    data_service = DataServiceFactory(config, shared_cache, max_dataset_size=max_dataset_size).get_data_service()
+    large_dataset_validation: bool = data_service.dataset_class != PandasDataset
     datasets = get_datasets(data_service, args.dataset_paths)
+    created_files = []
+    if large_dataset_validation:
+        # convert all files to parquet temp files
+        engine_logger.warning("Large datasets must use parquet format, converting all datasets to parquet")
+        for dataset in datasets:
+            file_path = dataset.get("full_path")
+            if file_path.endswith(".parquet"):
+                continue
+            new_file = data_service.to_parquet(file_path)
+            created_files.append(new_file)
+            dataset["full_path"] = new_file
+
     engine_logger.info(f"Running {len(rules)} rules against {len(datasets)} datasets")
     start = time.time()
     results = []
@@ -137,3 +155,8 @@ def run_validation(args: Validation_args):
     reporting_services: List[BaseReport] = reporting_factory.get_report_services()
     for reporting_service in reporting_services:
         reporting_service.write_report(args.define_xml_path)
+    
+    engine_logger.info(f"Cleaning up intermediate files")
+    for file in created_files:
+        engine_logger.info(f"Deleting file {file}")
+        os.remove(file)

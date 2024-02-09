@@ -1,4 +1,5 @@
 import pandas as pd
+import dask.dataframe as dd
 import os
 import json
 import jsonschema
@@ -6,6 +7,10 @@ import jsonschema
 from cdisc_rules_engine.interfaces import (
     DataReaderInterface,
 )
+
+from cdisc_rules_engine.models.dataset.dask_dataset import DaskDataset
+from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
+import tempfile
 
 
 class DatasetJSONReader(DataReaderInterface):
@@ -42,9 +47,18 @@ class DatasetJSONReader(DataReaderInterface):
 
             df = df.applymap(lambda x: round(x, 15) if isinstance(x, float) else x)
 
-            return df
+            # TODO: Handle Dask dataset case
+            if self.dataset_class == PandasDataset:
+                return PandasDataset(df)
+            else:
+                return DaskDataset(dd.from_pandas(df), npartitions=4)
         except jsonschema.exceptions.ValidationError:
-            return pd.DataFrame()
+            return PandasDataset(pd.DataFrame())
+    
+    def to_parquet(self, file_path: str) -> str:
+        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".parquet")
+        dataset = self.from_file(file_path)
+        dataset.data.to_parquet(temp_file.name)
 
     def read(self, data):
         pass

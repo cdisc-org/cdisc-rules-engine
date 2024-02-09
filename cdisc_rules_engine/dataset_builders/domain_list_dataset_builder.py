@@ -14,6 +14,6 @@ class DomainListDatasetBuilder(BaseDatasetBuilder):
         0  ae.xpt  ec.xpt
         """
 
-        return pd.DataFrame(
+        return self.dataset_class(
             {ds["domain"]: ds["filename"] for ds in self.datasets}, index=[0]
         )
