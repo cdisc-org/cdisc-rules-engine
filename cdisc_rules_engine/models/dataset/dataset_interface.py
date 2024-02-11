@@ -127,6 +127,12 @@ class DatasetInterface(ABC):
         Unpivots a DataFrame from wide format to long format, optionally leaving identifier variables set.
         """
 
+    @abstractmethod
+    def set_index(self, keys, **kwargs):
+        """
+        Wrapper for DataFrame set_index method
+        """
+
 
     @abstractmethod
     def len(self) -> int:

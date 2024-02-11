@@ -16,6 +16,8 @@ from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
 
+from cdisc_rules_engine.models.dataset import PandasDataset
+
 
 def test_preprocess_no_datasets_in_rule(dataset_rule_equal_to_error_objects: dict):
     """
@@ -23,7 +25,7 @@ def test_preprocess_no_datasets_in_rule(dataset_rule_equal_to_error_objects: dic
     no datasets are provided in the rule.
     Expected behaviour is the original dataset returned.
     """
-    dataset = pd.DataFrame.from_dict(
+    dataset = PandasDataset(pd.DataFrame.from_dict(
         {
             "USUBJID": ["CDISC01", "CDISC01", "CDISC01"],
             "AESEQ": [
@@ -32,16 +34,16 @@ def test_preprocess_no_datasets_in_rule(dataset_rule_equal_to_error_objects: dic
                 3,
             ],
         }
-    )
+    ))
     datasets: List[dict] = [{"domain": "AE", "filename": "ae.xpt"}]
     data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
     preprocessor = DatasetPreprocessor(
         dataset, "AE", "path", data_service, InMemoryCacheService()
     )
-    preprocessed_dataset: pd.DataFrame = preprocessor.preprocess(
+    preprocessed_dataset: PandasDataset = preprocessor.preprocess(
         dataset_rule_equal_to_error_objects, datasets
     )
-    assert preprocessed_dataset.equals(dataset)
+    assert preprocessed_dataset.data.equals(dataset.data)
 
 
 @patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset")
@@ -52,7 +54,7 @@ def test_preprocess(mock_get_dataset: MagicMock, dataset_rule_equal_to: dict):
     with rows from all 3 datasets filtered by match keys.
     """
     # create datasets
-    ec_dataset = pd.DataFrame.from_dict(
+    ec_dataset = PandasDataset(pd.DataFrame.from_dict(
         {
             "ECSEQ": [
                 "1",
@@ -83,8 +85,8 @@ def test_preprocess(mock_get_dataset: MagicMock, dataset_rule_equal_to: dict):
                 "CDISC003",
             ],
         }
-    )
-    ae_dataset = pd.DataFrame.from_dict(
+    ))
+    ae_dataset = PandasDataset(pd.DataFrame.from_dict(
         {
             "AESEQ": [
                 "1",
@@ -111,8 +113,8 @@ def test_preprocess(mock_get_dataset: MagicMock, dataset_rule_equal_to: dict):
                 "CDISC002",
             ],
         }
-    )
-    ts_dataset = pd.DataFrame.from_dict(
+    ))
+    ts_dataset = PandasDataset(pd.DataFrame.from_dict(
         {
             "TSSEQ": [
                 "1",
@@ -131,7 +133,7 @@ def test_preprocess(mock_get_dataset: MagicMock, dataset_rule_equal_to: dict):
                 "CDISC001",
             ],
         }
-    )
+    ))
 
     # mock blob storage call
     path_to_dataset_map: dict = {
@@ -162,7 +164,7 @@ def test_preprocess(mock_get_dataset: MagicMock, dataset_rule_equal_to: dict):
     preprocessed_dataset: pd.DataFrame = preprocessor.preprocess(
         dataset_rule_equal_to, datasets
     )
-    expected_dataset = pd.DataFrame.from_dict(
+    expected_dataset = PandasDataset(pd.DataFrame.from_dict(
         {
             "ECSEQ": [
                 "1",
@@ -197,8 +199,8 @@ def test_preprocess(mock_get_dataset: MagicMock, dataset_rule_equal_to: dict):
                 74,
             ],
         }
-    )
-    assert preprocessed_dataset.equals(expected_dataset)
+    ))
+    assert preprocessed_dataset.data.equals(expected_dataset.data)
 
 
 @patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset")
@@ -210,7 +212,7 @@ def test_preprocess_relationship_dataset(
     we are merging relationship datasets.
     """
     # create datasets
-    ec_dataset = pd.DataFrame.from_dict(
+    ec_dataset = PandasDataset(pd.DataFrame.from_dict(
         {
             "USUBJID": ["CDISC001", "CDISC005", "CDISC005", "CDISC005", "CDISC005"],
             "DOMAIN": [
@@ -242,8 +244,8 @@ def test_preprocess_relationship_dataset(
                 5,
             ],
         }
-    )
-    suppec_dataset = pd.DataFrame.from_dict(
+    ))
+    suppec_dataset = PandasDataset(pd.DataFrame.from_dict(
         {
             "USUBJID": [
                 "CDISC005",
@@ -266,7 +268,7 @@ def test_preprocess_relationship_dataset(
                 "5.0",
             ],
         }
-    )
+    ))
 
     # mock blob storage call
     path_to_dataset_map: dict = {
@@ -300,7 +302,7 @@ def test_preprocess_relationship_dataset(
     preprocessed_dataset: pd.DataFrame = preprocessor.preprocess(
         dataset_rule_record_in_parent_domain_equal_to, datasets
     )
-    expected_dataset = pd.DataFrame.from_dict(
+    expected_dataset = PandasDataset(pd.DataFrame.from_dict(
         {
             "USUBJID": ["CDISC005", "CDISC005"],
             "DOMAIN": [
@@ -337,8 +339,8 @@ def test_preprocess_relationship_dataset(
                 5.0,
             ],
         }
-    )
-    assert preprocessed_dataset.equals(expected_dataset)
+    ))
+    assert preprocessed_dataset.data.equals(expected_dataset.data)
 
 
 @patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset")
@@ -381,7 +383,7 @@ def test_preprocess_relrec_dataset(mock_get_dataset: MagicMock):
         ],
     }
     # create datasets
-    ec_dataset = pd.DataFrame.from_dict(
+    ec_dataset = PandasDataset(pd.DataFrame.from_dict(
         {
             "ECSEQ": [
                 "1",
@@ -412,8 +414,8 @@ def test_preprocess_relrec_dataset(mock_get_dataset: MagicMock):
                 "CDISC003",
             ],
         }
-    )
-    ae_dataset = pd.DataFrame.from_dict(
+    ))
+    ae_dataset = PandasDataset(pd.DataFrame.from_dict(
         {
             "AESEQ": [
                 "1",
@@ -440,8 +442,8 @@ def test_preprocess_relrec_dataset(mock_get_dataset: MagicMock):
                 "CDISC002",
             ],
         }
-    )
-    relrec_dataset = pd.DataFrame.from_dict(
+    ))
+    relrec_dataset = PandasDataset(pd.DataFrame.from_dict(
         {
             "RDOMAIN": [
                 "EC",
@@ -468,7 +470,7 @@ def test_preprocess_relrec_dataset(mock_get_dataset: MagicMock):
                 "",
             ],
         }
-    )
+    ))
 
     # mock blob storage call
     path_to_dataset_map: dict = {
@@ -505,7 +507,7 @@ def test_preprocess_relrec_dataset(mock_get_dataset: MagicMock):
         InMemoryCacheService(),
     )
     preprocessed_dataset: pd.DataFrame = preprocessor.preprocess(relrec_rule, datasets)
-    expected_dataset = pd.DataFrame.from_dict(
+    expected_dataset = PandasDataset(pd.DataFrame.from_dict(
         {
             "ECSEQ": ["1", "2", "3", "4"],
             "ECSTDY": [4, 5, 6, 7],
@@ -526,8 +528,8 @@ def test_preprocess_relrec_dataset(mock_get_dataset: MagicMock):
                 "CDISC002",
             ],
         }
-    )
-    assert preprocessed_dataset.equals(expected_dataset)
+    ))
+    assert preprocessed_dataset.data.equals(expected_dataset.data)
 
 
 @patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset")
@@ -540,7 +542,7 @@ def test_preprocess_with_merge_comparison(
     the preprocess method correctly names variables from
     merged datasets.
     """
-    target_dataset = pd.DataFrame.from_dict(
+    target_dataset = PandasDataset(pd.DataFrame.from_dict(
         {
             "STUDYID": [
                 "CDISCPILOT01",
@@ -553,8 +555,8 @@ def test_preprocess_with_merge_comparison(
             ],
             "NOTVISIT": [12],
         }
-    )
-    match_dataset = pd.DataFrame.from_dict(
+    ))
+    match_dataset = PandasDataset(pd.DataFrame.from_dict(
         {
             "STUDYID": [
                 "CDISCPILOT01",
@@ -567,7 +569,7 @@ def test_preprocess_with_merge_comparison(
             ],
             "VISIT": [24],
         }
-    )
+    ))
 
     path_to_dataset_map: dict = {
         os.path.join("study_id", "data_bundle_id", "ae.xpt"): match_dataset,

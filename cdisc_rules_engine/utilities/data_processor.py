@@ -30,6 +30,7 @@ class DataProcessor:
         self.data_service = (
             data_service or DataServiceFactory(config, self.cache).get_data_service()
         )
+        self.dataset_class = self.data_service.get_dataset_class()
 
     @staticmethod
     async def get_dataset_variables(study_path, dataset, data_service) -> Set:
@@ -222,7 +223,7 @@ class DataProcessor:
 
         result = grouped.apply(lambda group: filter_dataset_by_group_values(group))
         # grouping breaks sorting, need to sort once again
-        return result.sort_values(list(grouped.groups.keys()))
+        return dataset.__class__(result.sort_values(list(grouped.groups.keys())))
 
     @staticmethod
     def merge_datasets_on_relationship_columns(
@@ -247,7 +248,7 @@ class DataProcessor:
         )
 
         return left_dataset.merge(
-            right=right_dataset,
+            other=right_dataset.data,
             left_on=[left_ds_col_name],
             right_on=[column_with_values],
             how="outer",
@@ -333,7 +334,7 @@ class DataProcessor:
         }
         right_subset = right_subset.rename(columns=variables_with_wildcards)
         return left_subset.merge(
-            right=right_subset,
+            other=right_subset.data,
             left_on=["STUDYID", "USUBJID", relrec_row["IDVAR_LEFT"]],
             right_on=[
                 variables_with_wildcards["STUDYID"],
@@ -367,14 +368,15 @@ class DataProcessor:
         relrec_for_domain = DataProcessor.filter_relrec_for_domain(
             left_dataset_domain_name, relrec_dataset
         )
-        result = pd.concat(
-            objs=[
+
+        # TODO: FIX
+        objs=[
                 DataProcessor.merge_on_relrec_record(
                     relrec_row, left_dataset, datasets, dataset_preprocessor, wildcard
                 )
                 for _, relrec_row in relrec_for_domain.iterrows()
             ]
-        )
+        result = objs[0].concat(objs[1:])
         return result
 
     @staticmethod
@@ -396,7 +398,9 @@ class DataProcessor:
             right_dataset,
             **right_dataset_domain["relationship_columns"],
         )
-        result = result.reset_index(drop=True)
+
+        # convert result back to DatasetInterface class
+        result = left_dataset.__class__(result.reset_index(drop=True))
         result = DataProcessor.merge_datasets_on_relationship_columns(
             left_dataset=result,
             right_dataset=right_dataset,
@@ -414,7 +418,7 @@ class DataProcessor:
         right_dataset_domain_name: str,
     ) -> DatasetInterface:
         result = left_dataset.merge(
-            right_dataset,
+            right_dataset.data,
             left_on=left_dataset_match_keys,
             right_on=right_dataset_match_keys,
             suffixes=("", f".{right_dataset_domain_name}"),

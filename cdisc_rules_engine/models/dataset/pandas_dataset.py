@@ -21,6 +21,18 @@ class PandasDataset(DatasetInterface):
     def columns(self):
         return self._data.columns
 
+    @columns.setter
+    def columns(self, columns):
+        self._data.columns = columns
+
+    @property
+    def index(self):
+        return self._data.index
+    
+    @property
+    def groups(self):
+        return self._data.groups
+
     @classmethod
     def from_dict(cls, data: dict, **kwargs):
         dataframe = pd.DataFrame.from_dict(data, **kwargs)
@@ -92,6 +104,11 @@ class PandasDataset(DatasetInterface):
         """
         new_data = self._data.melt(id_vars=id_vars, value_vars=value_vars, value_name=value_name, col_level=col_level)
         return self.__class__(new_data)
+
+    def set_index(self, keys, **kwargs):
+        new_data = self._data.set_index(keys, **kwargs)
+        return self.__class__(new_data)
+
 
     def convert_to_series(self, result):
         if self.is_series(result):
