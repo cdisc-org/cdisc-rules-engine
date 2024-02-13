@@ -3,7 +3,7 @@ from io import IOBase
 from typing import Iterable, List
 from json import load
 import pandas
-from jsonpath_ng import DatumInContext
+from jsonpath_ng import DatumInContext, This
 from jsonpath_ng.ext import parse
 from datetime import datetime
 from yaml import safe_load
@@ -162,14 +162,47 @@ class USDMDataService(BaseDataService):
         json = self._reader_factory.get_service("USDM").from_file(self.dataset_path)
         return self.__get_datasets(json)
 
-    def __get_record(self, node: dict, parent="") -> dict:
-        flattened = {}
-        for key, value in node.items():
-            if type(value) is dict:
-                flattened |= self.__get_record(value, f"{parent}{key}.")
-            elif type(value) is not list:
-                flattened[f"{parent}{key}"] = value
+    def __get_record_data(self, node: dict, parent="") -> dict:
+        if type(node) is dict:
+            flattened = {}
+            for key, value in node.items():
+                if type(value) is dict:
+                    flattened |= self.__get_record_data(value, f"{parent}{key}.")
+                elif type(value) is not list:
+                    flattened[f"{parent}{key}"] = value
+        else:
+            flattened = {"value": node}
         return flattened
+
+    def __get_record_metadata(self, node) -> dict:
+        record = {}
+        if type(node.context.value) is list:
+            record = {
+                "parent_id": node.context.context.value.get("id", ""),
+                "parent_rel": f"{node.context.path}",
+                "parent_entity": self.__get_entity_name(
+                    node.context.context.value,
+                    node.context.context.context.path,
+                ),
+            }
+        elif node.context.context and type(node.context.context.value) is list:
+            record = {
+                "parent_id": node.context.value.get("id", ""),
+                "parent_rel": f"{node.path}",
+                "parent_entity": self.__get_entity_name(
+                    node.context.value, node.context.context.path
+                ),
+            }
+        else:
+            record = {
+                "parent_id": node.context.value.get("id", ""),
+                "parent_rel": f"{node.path}",
+                "parent_entity": self.__get_entity_name(
+                    node.context.value, node.context.path
+                ),
+            }
+        record |= {"rel_type": node.type}
+        return record
 
     def __get_dataset(self, dataset_name: str) -> pandas.DataFrame:
         json = self._reader_factory.get_service("USDM").from_file(self.dataset_path)
@@ -195,22 +228,7 @@ class USDMDataService(BaseDataService):
                 node.type = "definition"
             all_nodes.append(node)
         records = [
-            {
-                **(
-                    {
-                        "parent_id": node.context.context.value.get("id", ""),
-                        "parent_rel": f"{node.context.path}",
-                    }
-                    if type(node.context.value) is list
-                    else {
-                        "parent_id": node.context.value.get("id", ""),
-                        "parent_rel": f"{node.path}",
-                    }
-                ),
-                "parent_entity": dataset_name,
-                "rel_type": node.type,
-                **self.__get_record(node.value),
-            }
+            self.__get_record_metadata(node) | self.__get_record_data(node.value)
             for node in all_nodes
         ]
         return pandas.DataFrame(records)
@@ -223,16 +241,14 @@ class USDMDataService(BaseDataService):
             return definition[0].value
         return None
 
-    def __get_entity_name(self, child_value, parent_node: DatumInContext):
-        if type(child_value) is dict:
+    def __get_entity_name(self, value, path: This):
+        if type(value) is dict:
             api_type = (
-                child_value.get("instanceType")
-                if "instanceType" in child_value
-                else f"{parent_node.path}"
+                value.get("instanceType") if "instanceType" in value else f"{path}"
             )
         else:
             # primitive types
-            api_type = child_value.__class__.__name__
+            api_type = value.__class__.__name__
         return self.entity_dict.get(api_type, api_type)
 
     def __read_metadata(
@@ -251,7 +267,7 @@ class USDMDataService(BaseDataService):
             if definition:
                 child_value = definition
                 ty = "reference"
-        entity_name = self.__get_entity_name(child_value, parent_node)
+        entity_name = self.__get_entity_name(child_value, parent_node.path)
         return {
             "path": full_path,
             "entity": entity_name,

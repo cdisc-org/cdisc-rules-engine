@@ -8,6 +8,7 @@ from core import list_dataset_metadata
 import os
 from cdisc_rules_engine.config.config import ConfigService
 from cdisc_rules_engine.services.data_services import USDMDataService
+from pytest import mark
 
 dataset_file = "USDM_EliLilly_NCT03421379_Diabetes.json"
 dataset_path = f"{os.path.dirname(__file__)}/../resources/{dataset_file}"
@@ -40,18 +41,22 @@ def test_get_datasets():
         config=ConfigService(), cache_service=mock_cache, dataset_path=dataset_path
     )
     datasets = data_service.get_datasets()
-    assert len(datasets) == 34
+    assert len(datasets) == 35
 
 
-def test_get_dataset():
+@mark.parametrize(
+    "dataset_name, record_count",
+    [("Activity", 321), ("string", 1309), ("Study", 1)],
+)
+def test_get_dataset(dataset_name, record_count):
     mock_cache = MagicMock()
     mock_cache.get.return_value = None
     data_service = USDMDataService.get_instance(
         config=ConfigService(), cache_service=mock_cache, dataset_path=dataset_path
     )
-    data = data_service.get_dataset(dataset_name="Activity")
+    data = data_service.get_dataset(dataset_name=dataset_name)
     assert isinstance(data, pd.DataFrame)
-    assert data.shape[0] == 321
+    assert data.shape[0] == record_count
 
 
 def test_get_raw_dataset_metadata():

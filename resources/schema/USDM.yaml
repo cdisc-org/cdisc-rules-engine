@@ -1,3 +1,4 @@
+"`this`": "null"
 ACTIVITY: Activity
 activities: Activity
 activityIds: Activity
@@ -50,7 +51,7 @@ studyInvestigationalInterventions: StudyIntervention
 studyObjectives: Objective
 studyPhase: AliasCode
 studyPopulations: PopulationDefinition
-studyProtocolVersions: string
+studyProtocolVersions: studyProtocolVersions
 studyScheduleTimelines: ScheduleTimeline
 timingRelativeToFrom: Timing
 transitionEndRule: TransitionRule
