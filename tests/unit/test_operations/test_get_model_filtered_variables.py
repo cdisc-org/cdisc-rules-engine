@@ -21,6 +21,7 @@ from cdisc_rules_engine.operations.get_model_filtered_variables import (
 from cdisc_rules_engine.services.cache import InMemoryCacheService
 from cdisc_rules_engine.services.data_services import LocalDataService
 from cdisc_rules_engine.config import ConfigService
+from cdisc_rules_engine.services.data_readers import DataReaderFactory
 
 test_set1 = (
     {
@@ -538,8 +539,13 @@ def test_get_model_filtered_variables(
         standard_metadata=standard_metadata, model_metadata=model_metadata
     )
     # execute operation
-    data_service = LocalDataService.get_instance(
-        cache_service=cache, config=ConfigService()
+    data_service = LocalDataService(
+        cache_service=cache,
+        config=ConfigService(),
+        reader_factory=DataReaderFactory(),
+        standard="sdtmig",
+        standard_version="3-4",
+        library_metadata=library_metadata,
     )
 
     operation = LibraryModelVariablesFilter(
