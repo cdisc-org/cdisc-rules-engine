@@ -338,6 +338,8 @@ class RuleProcessor:
             result = True
         elif domain.startswith("SUPP"):
             result = True
+        elif domain.startswith("SQ"):
+            result = True
         else:
             result = False
         logger.info(f"is_relationship_dataset. domain={domain}, result={result}")

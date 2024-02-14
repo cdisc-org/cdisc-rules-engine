@@ -121,7 +121,7 @@ def test(args: TestArgs):
     library_metadata: LibraryMetadataContainer = get_library_metadata_from_cache(args)
     # install dictionaries if needed
     fill_cache_with_dictionaries(shared_cache, args)
-    with open(args.rule, "r") as f:
+    with open(args.rule, "r", encoding="utf-8") as f:
         rules = [Rule.from_cdisc_metadata(json.load(f))]
     with open(args.dataset_path, "r") as f:
         data_json = json.load(f)
