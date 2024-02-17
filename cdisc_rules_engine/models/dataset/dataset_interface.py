@@ -156,3 +156,9 @@ class DatasetInterface(ABC):
         """
         Returns a pandas dataframe with all errors found in the dataset. Limited to 1000
         """
+    
+    @abstractmethod
+    def equals(self) -> bool:
+        """
+        Determine if two datasets are equal
+        """

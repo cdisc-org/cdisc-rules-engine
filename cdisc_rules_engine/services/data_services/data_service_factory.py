@@ -45,7 +45,7 @@ class DataServiceFactory(FactoryInterface):
             standard=self.standard,
             standard_version=self.standard_version,
             library_metadata=self.library_metadata,
-            dataset_class=self.get_datset_type(),
+            dataset_class=self.get_dataset_type(),
         )
 
     def get_dummy_data_service(self, data: List[DummyDataset]) -> DataServiceInterface:
@@ -55,7 +55,7 @@ class DataServiceFactory(FactoryInterface):
             standard=self.standard,
             standard_version=self.standard_version,
             library_metadata=self.library_metadata,
-            dataset_class=self.get_datset_type(),
+            dataset_class=self.get_dataset_type(),
         )
 
     def get_dataset_type(self):

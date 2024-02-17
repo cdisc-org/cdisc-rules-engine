@@ -7,21 +7,22 @@ from cdisc_rules_engine.services.cache.in_memory_cache_service import (
     InMemoryCacheService,
 )
 from cdisc_rules_engine.utilities.data_processor import DataProcessor
+from cdisc_rules_engine.models.dataset import PandasDataset, DaskDataset
 
 
 @pytest.mark.parametrize(
     "data",
     [
         (
-            pd.DataFrame.from_dict(
+            PandasDataset(pd.DataFrame.from_dict(
                 {
                     "RDOMAIN": ["AE", "EC", "EC", "AE"],
                     "IDVAR": ["AESEQ", "ECSEQ", "ECSEQ", "AESEQ"],
                     "IDVARVAL": [1, 2, 1, 3],
                 }
-            )
+            ))
         ),
-        (pd.DataFrame.from_dict({"RSUBJID": [1, 4, 6000]})),
+        (PandasDataset(pd.DataFrame.from_dict({"RSUBJID": [1, 4, 6000]}))),
     ],
 )
 def test_preprocess_relationship_dataset(data):
@@ -43,21 +44,21 @@ def test_preprocess_relationship_dataset(data):
             "filename": "dm.xpt",
         },
     ]
-    ae = pd.DataFrame.from_dict(
+    ae = PandasDataset(pd.DataFrame.from_dict(
         {
             "AESTDY": [4, 5, 6],
             "STUDYID": [101, 201, 300],
             "AESEQ": [1, 2, 3],
         }
-    )
-    ec = pd.DataFrame.from_dict(
+    ))
+    ec = PandasDataset(pd.DataFrame.from_dict(
         {
             "ECSTDY": [500, 4],
             "STUDYID": [201, 101],
             "ECSEQ": [2, 1],
         }
-    )
-    dm = pd.DataFrame.from_dict({"USUBJID": [1, 2, 3, 4, 5, 6000]})
+    ))
+    dm = PandasDataset(pd.DataFrame.from_dict({"USUBJID": [1, 2, 3, 4, 5, 6000]}))
     path_to_dataset_map: dict = {
         os.path.join("path", "ae.xpt"): ae,
         os.path.join("path", "ec.xpt"): ec,
@@ -129,12 +130,16 @@ def test_filter_dataset_columns_by_metadata_and_rule():
     ]
 
 
-def test_merge_datasets_on_relationship_columns():
+@pytest.mark.parametrize(
+    "dataset_class",
+    [PandasDataset, DaskDataset]
+)
+def test_merge_datasets_on_relationship_columns(dataset_class):
     """
     Unit test for DataProcessor.merge_datasets_on_relationship_columns method.
     """
     # prepare data
-    left_dataset: pd.DataFrame = pd.DataFrame.from_dict(
+    left_dataset = dataset_class.from_dict(
         {
             "USUBJID": [
                 "CDISC01",
@@ -153,7 +158,7 @@ def test_merge_datasets_on_relationship_columns():
             ],
         }
     )
-    right_dataset: pd.DataFrame = pd.DataFrame.from_dict(
+    right_dataset = dataset_class.from_dict(
         {
             "USUBJID": [
                 "CDISC01",
@@ -189,14 +194,14 @@ def test_merge_datasets_on_relationship_columns():
     )
 
     # call the tested function and check the results
-    merged_df: pd.DataFrame = DataProcessor.merge_datasets_on_relationship_columns(
+    merged_df = DataProcessor.merge_datasets_on_relationship_columns(
         left_dataset=left_dataset,
         right_dataset=right_dataset,
         right_dataset_domain_name="SUPPAE",
         column_with_names="IDVAR",
         column_with_values="IDVARVAL",
     )
-    expected_df: pd.DataFrame = pd.DataFrame.from_dict(
+    expected_df = dataset_class.from_dict(
         {
             "USUBJID": [
                 "CDISC01",
@@ -250,15 +255,18 @@ def test_merge_datasets_on_relationship_columns():
     )
     assert merged_df.equals(expected_df)
 
-
-def test_merge_datasets_on_string_relationship_columns():
+@pytest.mark.parametrize(
+    "dataset_class",
+    [PandasDataset, DaskDataset]
+)
+def test_merge_datasets_on_string_relationship_columns(dataset_class):
     """
     Unit test for DataProcessor.merge_datasets_on_relationship_columns method.
     Test the case when the columns that describe the relation
     are of a string type.
     """
     # prepare data
-    left_dataset: pd.DataFrame = pd.DataFrame.from_dict(
+    left_dataset = dataset_class.from_dict(
         {
             "USUBJID": [
                 "CDISC01",
@@ -277,7 +285,7 @@ def test_merge_datasets_on_string_relationship_columns():
             ],
         }
     )
-    right_dataset: pd.DataFrame = pd.DataFrame.from_dict(
+    right_dataset = dataset_class.from_dict(
         {
             "USUBJID": [
                 "CDISC01",
@@ -313,14 +321,14 @@ def test_merge_datasets_on_string_relationship_columns():
     )
 
     # call the tested function and check the results
-    merged_df: pd.DataFrame = DataProcessor.merge_datasets_on_relationship_columns(
+    merged_df = DataProcessor.merge_datasets_on_relationship_columns(
         left_dataset=left_dataset,
         right_dataset=right_dataset,
         right_dataset_domain_name="SUPPAE",
         column_with_names="IDVAR",
         column_with_values="IDVARVAL",
     )
-    expected_df: pd.DataFrame = pd.DataFrame.from_dict(
+    expected_df = dataset_class.from_dict(
         {
             "USUBJID": [
                 "CDISC01",

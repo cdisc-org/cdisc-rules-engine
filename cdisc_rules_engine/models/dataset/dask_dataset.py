@@ -112,6 +112,14 @@ class DaskDataset(PandasDataset):
         new_data = self._data.copy()
         return self.__class__(new_data)
 
+    def equals(self, other_dataset):
+        is_equal = True
+        for column in self.data:
+            if column not in other_dataset:
+                return False
+            is_equal = is_equal & self[column].eq(other_dataset[column]).all()
+        return is_equal
+
     def get_error_rows(self, results) -> "pd.Dataframe":
         """
         Returns a pandas dataframe with all errors found in the dataset. Limited to 1000
