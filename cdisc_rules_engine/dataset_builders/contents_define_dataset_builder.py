@@ -37,7 +37,7 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
 
         # 3. Merge the two data frames
         merged = dataset_df.merge(
-            define_df,
+            define_df.data,
             how="outer",
             left_on="dataset_name",
             right_on="define_dataset_name",
@@ -47,7 +47,7 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
         # outer join, so some data contents may be missing or some define metadata may
         # be missing. Replace nans with None
         merged_no_nans = merged.where(pd.notnull(merged), None)
-        return merged_no_nans
+        return self.dataset_class(merged_no_nans)
 
     def _get_define_xml_dataframe(self):
         define_col_order = [
@@ -60,12 +60,11 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
             "define_dataset_variables",
         ]
         define_metadata = self.get_define_metadata()
-        define_df = self.dataset_class(define_metadata)
 
-        if define_df.empty:
-            define_df = self.dataset_class(columns=define_col_order)
+        if not define_metadata:
             logger.info(f"No define_metadata is provided for {__name__}.")
-        return define_df
+            return self.dataset_class(columns=define_col_order)
+        return self.dataset_class.from_records(define_metadata)
 
     def _get_dataset_dataframe(self):
         dataset_col_order = [
@@ -88,11 +87,11 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
                 except Exception as e:
                     logger.trace(e, __name__)
                     logger.error(f"Error: {e}. Error message: {str(e)}")
-                datasets = (
-                    ds_metadata if datasets.empty else datasets.append(ds_metadata)
+                datasets.data = (
+                    ds_metadata.data if datasets.data.empty else datasets.data.append(ds_metadata)
                 )
 
-            if datasets.empty or len(datasets) == 0:
+            if datasets.data.empty or len(datasets.data) == 0:
                 dataset_df = self.dataset_class(columns=dataset_col_order)
                 logger.info(f"No datasets metadata is provided for {__name__}.")
             else:

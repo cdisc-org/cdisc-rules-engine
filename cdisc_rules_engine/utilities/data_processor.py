@@ -30,7 +30,7 @@ class DataProcessor:
         self.data_service = (
             data_service or DataServiceFactory(config, self.cache).get_data_service()
         )
-        self.dataset_class = self.data_service.get_dataset_class()
+        self.dataset_class = self.data_service.dataset_class
 
     @staticmethod
     async def get_dataset_variables(study_path, dataset, data_service) -> Set:

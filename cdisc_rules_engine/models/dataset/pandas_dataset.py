@@ -110,6 +110,10 @@ class PandasDataset(DatasetInterface):
         return self.__class__(new_data)
 
 
+    def filter(self, **kwargs):
+        new_data = self._data.filter(**kwargs)
+        return self.__class__(new_data)
+
     def convert_to_series(self, result):
         if self.is_series(result):
             return result

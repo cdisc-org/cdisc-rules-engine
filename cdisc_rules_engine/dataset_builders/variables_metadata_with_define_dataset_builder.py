@@ -35,9 +35,9 @@ class VariablesMetadataWithDefineDatasetBuilder(BaseDatasetBuilder):
         content_metadata: DatasetInterface = self.data_service.get_variables_metadata(
             self.dataset_path, drop_duplicates=True
         )
-        define_metadata: DatasetInterface = self.dataset_class(variable_metadata)
+        define_metadata: DatasetInterface = self.dataset_class.from_records(variable_metadata)
         return content_metadata.merge(
-            define_metadata,
+            define_metadata.data,
             left_on="variable_name",
             right_on="define_variable_name",
             how="left",

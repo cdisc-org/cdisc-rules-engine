@@ -45,7 +45,7 @@ class DataServiceFactory(FactoryInterface):
             standard=self.standard,
             standard_version=self.standard_version,
             library_metadata=self.library_metadata,
-            dataset_class=self.get_datset_class(),
+            dataset_class=self.get_datset_type(),
         )
 
     def get_dummy_data_service(self, data: List[DummyDataset]) -> DataServiceInterface:
@@ -55,17 +55,17 @@ class DataServiceFactory(FactoryInterface):
             standard=self.standard,
             standard_version=self.standard_version,
             library_metadata=self.library_metadata,
-            dataset_class=self.get_datset_class(),
+            dataset_class=self.get_datset_type(),
         )
 
-    def get_datset_class(self):
+    def get_dataset_type(self):
         """
         Gets the class that should be used to represent datasets for the rules engine. This class may be dependent on 
         rule size or config values
 
         :returns DatasetInterface.__class__
         """
-        if self.max_dataset_size >= self.dataset_size_threshold:
+        if self.max_dataset_size and self.max_dataset_size >= self.dataset_size_threshold:
             # Use large dataset class
             return DaskDataset
         return PandasDataset

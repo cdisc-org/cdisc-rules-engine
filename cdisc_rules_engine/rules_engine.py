@@ -65,7 +65,7 @@ class RulesEngine:
             self.library_metadata,
             self.max_dataset_size,
         )
-        self.dataset_class = data_service_factory.get_datset_class()
+        self.dataset_class = data_service_factory.get_dataset_type()
         kwargs["dataset_class"] = self.dataset_class
         self.data_service = data_service or data_service_factory.get_service(**kwargs)
         self.rule_processor = RuleProcessor(
@@ -185,6 +185,7 @@ class RulesEngine:
                 f"""Error occurred during validation.
                 Error: {e}. Error message: {str(e)}"""
             )
+            raise e
             error_obj: ValidationErrorContainer = self.handle_validation_exceptions(
                 e, dataset_path, dataset_path
             )

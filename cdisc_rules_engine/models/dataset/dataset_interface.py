@@ -133,6 +133,11 @@ class DatasetInterface(ABC):
         Wrapper for DataFrame set_index method
         """
 
+    @abstractmethod
+    def filter(self, **kwargs):
+        """
+        Wrapper for DataFrame filter method
+        """
 
     @abstractmethod
     def len(self) -> int:

@@ -244,9 +244,7 @@ class RuleProcessor:
             operation_params = OperationParams(
                 operation_id=operation.get("id"),
                 operation_name=operation.get("operator"),
-                # TODO: Once data reading is updated dataset_copy will be a
-                # DatasetInterface so this conversion will not be necessary
-                dataframe=PandasDataset(dataset_copy),
+                dataframe=dataset_copy,
                 target=target,
                 original_target=original_target,
                 domain=domain,
@@ -272,8 +270,8 @@ class RuleProcessor:
 
             # execute operation
             dataset_copy = self._execute_operation(
-                operation_params, PandasDataset(dataset_copy)
-            ).data
+                operation_params, dataset_copy
+            )
 
             logger.info(
                 f"Processed rule operation. "
