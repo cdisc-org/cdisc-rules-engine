@@ -55,7 +55,7 @@ def test_get_raw_dataset_metadata(
 
     # mock cache service
     cache_mock = MagicMock()
-    cache_mock.get = lambda cache_key: None
+    cache_mock.get_dataset = lambda cache_key: None
 
     data_service = LocalDataService(cache_mock, MagicMock(), MagicMock())
     actual_metadata: DatasetMetadata = data_service.get_raw_dataset_metadata(
@@ -198,7 +198,7 @@ def test_cached_data_cache_exists():
     )
     test_cache_data: dict = {cache_key: pd.DataFrame()}
     instance_to_pass = Mock()
-    instance_to_pass.cache_service.get = lambda x: test_cache_data[x]
+    instance_to_pass.cache_service.get_dataset = lambda x: test_cache_data[x]
 
     # ensure that cache data was returned
     result = to_be_decorated(instance_to_pass, dataset_name=test_dataset_name)
@@ -222,9 +222,9 @@ def test_cached_data_empty_cache():
 
     # mock cache get() and add() methods
     instance_to_pass = Mock()
-    instance_to_pass.cache_service.get = lambda x: None
+    instance_to_pass.cache_service.get_dataset = lambda x: None
     mock_db = {}
-    instance_to_pass.cache_service.add = lambda key, dataset: mock_db.update(
+    instance_to_pass.cache_service.add_dataset = lambda key, dataset: mock_db.update(
         {key: dataset}
     )
 
