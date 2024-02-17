@@ -21,6 +21,7 @@ from cdisc_rules_engine.constants.classes import (
     EVENTS,
     INTERVENTIONS,
 )
+from cdisc_rules_engine.models.dataset import PandasDataset, DaskDataset
 
 
 @pytest.mark.parametrize(
@@ -364,8 +365,11 @@ def test_rule_applies_to_class(
             == outcome
         )
 
-
-def test_perform_rule_operation(mock_data_service):
+@pytest.mark.parametrize(
+    "dataset_class",
+    [PandasDataset, DaskDataset]
+)
+def test_perform_rule_operation(mock_data_service, dataset_class):
     conditions = {
         "any": [
             {
@@ -413,7 +417,7 @@ def test_perform_rule_operation(mock_data_service):
             },
         ],
     }
-    df = pd.DataFrame.from_dict(
+    df = dataset_class.from_dict(
         {"AESTDY": [11, 12, 40, 59, 59], "DOMAIN": ["AE", "AE", "AE", "AE", "AE"]}
     )
     processor = RuleProcessor(mock_data_service, InMemoryCacheService())
@@ -439,8 +443,11 @@ def test_perform_rule_operation(mock_data_service):
         assert result["$avg_aestdy"][0] == df["AESTDY"].mean()
         assert result["$unique_aestdy"].equals(pd.Series([{11, 12, 40, 59}] * len(df)))
 
-
-def test_perform_rule_operation_with_grouping(mock_data_service):
+@pytest.mark.parametrize(
+    "dataset_class",
+    [PandasDataset, DaskDataset]
+)
+def test_perform_rule_operation_with_grouping(mock_data_service, dataset_class):
     conditions = {
         "all": [
             {
@@ -494,7 +501,7 @@ def test_perform_rule_operation_with_grouping(mock_data_service):
             },
         ],
     }
-    df = pd.DataFrame.from_dict(
+    df = dataset_class.from_dict(
         {
             "AESTDY": [10, 11, 40, 59],
             "USUBJID": [1, 200, 1, 200],
@@ -554,7 +561,11 @@ def test_perform_rule_operation_with_grouping(mock_data_service):
         )
 
 
-def test_perform_rule_operation_with_multi_key_grouping(mock_data_service):
+@pytest.mark.parametrize(
+    "dataset_class",
+    [PandasDataset, DaskDataset]
+)
+def test_perform_rule_operation_with_multi_key_grouping(mock_data_service, dataset_class):
     conditions = {
         "all": [
             {
@@ -601,7 +612,7 @@ def test_perform_rule_operation_with_multi_key_grouping(mock_data_service):
             },
         ],
     }
-    df = pd.DataFrame.from_dict(
+    df = dataset_class.from_dict(
         {
             "AESTDY": [10, 11, 40, 59, 30, 112],
             "USUBJID": [1, 200, 1, 200, 200, 1],
@@ -630,8 +641,11 @@ def test_perform_rule_operation_with_multi_key_grouping(mock_data_service):
         assert "$min_aestdy" in data
         assert data["$min_aestdy"].values.tolist() == [10, 11, 10, 11, 30, 112]
 
-
-def test_perform_rule_operation_with_null_operations(mock_data_service):
+@pytest.mark.parametrize(
+    "dataset_class",
+    [PandasDataset, DaskDataset]
+)
+def test_perform_rule_operation_with_null_operations(mock_data_service, dataset_class):
     conditions = {
         "all": [
             {
@@ -656,7 +670,7 @@ def test_perform_rule_operation_with_null_operations(mock_data_service):
         ],
         "operations": None,
     }
-    df = pd.DataFrame.from_dict(
+    df = dataset_class.from_dict(
         {"AESTDY": [11, 12, 40, 59], "USUBJID": [1, 200, 1, 200]}
     )
     processor = RuleProcessor(mock_data_service, InMemoryCacheService())
@@ -675,8 +689,13 @@ def test_perform_rule_operation_with_null_operations(mock_data_service):
 @patch(
     "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset_metadata"
 )
+@pytest.mark.parametrize(
+    "dataset_class",
+    [PandasDataset, DaskDataset]
+)
 def test_perform_extract_metadata_operation(
     mock_get_dataset_metadata: MagicMock,
+    dataset_class,
     rule_equal_to_with_extract_metadata_operation: dict,
 ):
     """
@@ -694,7 +713,7 @@ def test_perform_extract_metadata_operation(
     )
 
     # call rule processor
-    dataset = pd.DataFrame.from_dict(
+    dataset = dataset_class.from_dict(
         {
             "RDOMAIN": [
                 "EC",
@@ -716,7 +735,7 @@ def test_perform_extract_metadata_operation(
 
     mock = MagicMock()
     mock.get_dataset.return_value = dataset
-    mock.get_dataset_metadata.return_value = pd.DataFrame.from_dict(
+    mock.get_dataset_metadata.return_value = dataset_class.from_dict(
         {
             "dataset_name": [
                 "SUPPEC",
@@ -741,8 +760,6 @@ def test_perform_extract_metadata_operation(
         "SUPPEC",
         "SUPPEC",
     ]
-    print(dataset_after_operation)
-    print(expected_dataset)
     assert dataset_after_operation.equals(expected_dataset)
 
 
