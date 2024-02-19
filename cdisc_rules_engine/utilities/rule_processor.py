@@ -1,12 +1,9 @@
 import re
 from typing import List, Optional, Set, Union, Tuple
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
-from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
-
-from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 
 from cdisc_rules_engine.constants.classes import (
     FINDINGS_ABOUT,
@@ -269,9 +266,7 @@ class RuleProcessor:
             )
 
             # execute operation
-            dataset_copy = self._execute_operation(
-                operation_params, dataset_copy
-            )
+            dataset_copy = self._execute_operation(operation_params, dataset_copy)
 
             logger.info(
                 f"Processed rule operation. "
@@ -332,7 +327,7 @@ class RuleProcessor:
 
     def is_current_domain(self, dataset, target_domain):
         if not self.is_relationship_dataset(target_domain):
-            return "DOMAIN" in dataset and dataset["DOMAIN"][0] == target_domain
+            return "DOMAIN" in dataset and dataset["DOMAIN"].iloc[0] == target_domain
         else:
             # Always lookup relationship datasets when performing operations on them.
             return False

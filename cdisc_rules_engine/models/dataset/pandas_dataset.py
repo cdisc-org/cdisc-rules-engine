@@ -4,7 +4,7 @@ from typing import Union, List
 
 
 class PandasDataset(DatasetInterface):
-    def __init__(self, data: pd.DataFrame = pd.DataFrame(), columns = None):
+    def __init__(self, data: pd.DataFrame = pd.DataFrame(), columns=None):
         self._data = data
         if columns and self._data.empty:
             self._data = pd.DataFrame(columns=columns)
@@ -28,7 +28,7 @@ class PandasDataset(DatasetInterface):
     @property
     def index(self):
         return self._data.index
-    
+
     @property
     def groups(self):
         return self._data.groups
@@ -91,28 +91,43 @@ class PandasDataset(DatasetInterface):
     def is_series(self, data) -> bool:
         return isinstance(data, pd.Series)
 
-    def rename(self, index = None, columns = None, inplace = True):
+    def rename(self, index=None, columns=None, inplace=True):
         self._data.rename(index=index, columns=columns, inplace=inplace)
         return self
-    
-    def drop(self, labels=None, axis=0, columns=None, errors='raise'):
+
+    def drop(self, labels=None, axis=0, columns=None, errors="raise"):
         """
         Drop specified labels from rows or columns.
         """
-        self._data.drop(labels=labels, axis=axis, columns=columns, errors=errors)
+        self._data = self._data.drop(
+            labels=labels, axis=axis, columns=columns, errors=errors
+        )
         return self
 
-    def melt(self, id_vars=None, value_vars=None, var_name=None, value_name='value', col_level=None):
+    def melt(
+        self,
+        id_vars=None,
+        value_vars=None,
+        var_name=None,
+        value_name="value",
+        col_level=None,
+    ):
         """
-        Unpivots a DataFrame from wide format to long format, optionally leaving identifier variables set.
+        Unpivots a DataFrame from wide format to long format,
+        optionally leaving identifier variables set.
         """
-        new_data = self._data.melt(id_vars=id_vars, value_vars=value_vars, value_name=value_name, col_level=col_level)
+        new_data = self._data.melt(
+            id_vars=id_vars,
+            var_name=var_name,
+            value_vars=value_vars,
+            value_name=value_name,
+            col_level=col_level,
+        )
         return self.__class__(new_data)
 
     def set_index(self, keys, **kwargs):
         new_data = self._data.set_index(keys, **kwargs)
         return self.__class__(new_data)
-
 
     def filter(self, **kwargs):
         new_data = self._data.filter(**kwargs)
@@ -141,20 +156,18 @@ class PandasDataset(DatasetInterface):
     @property
     def size(self) -> int:
         return self._data.memory_usage().sum()
-    
+
     def copy(self):
         new_data = self._data.copy()
         return self.__class__(new_data)
 
     def equals(self, other_dataset: DatasetInterface):
         return self._data.equals(other_dataset.data)
-    
+
     def get_error_rows(self, results) -> "pd.Dataframe":
         data_with_results = self._data.copy()
         data_with_results["results"] = results
-        return data_with_results[
-            data_with_results["results"].isin([True])
-        ]
+        return data_with_results[data_with_results["results"].isin([True])]
 
     def where(self, cond, other, **kwargs):
         """
@@ -162,3 +175,10 @@ class PandasDataset(DatasetInterface):
         """
         new_data = self._data.where(cond, other, **kwargs)
         return self.__class__(new_data)
+
+    @classmethod
+    def cartesian_product(cls, left, right):
+        """
+        Return the cartesian product of two dataframes
+        """
+        return cls(left.merge(right, how="cross"))

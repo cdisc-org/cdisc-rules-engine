@@ -2,7 +2,6 @@ from abc import abstractmethod
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
-import pandas as pd
 from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import (
     DefineXMLReaderFactory,
 )
@@ -130,7 +129,7 @@ class BaseDatasetBuilder:
 
     @staticmethod
     def add_row_number(dataframe: DatasetInterface) -> None:
-        dataframe["row_number"] = range(1, len(dataframe.data) + 1)
+        dataframe["row_number"] = list(range(1, len(dataframe.data) + 1))
 
     def get_define_metadata(self):
         define_xml_reader = DefineXMLReaderFactory.get_define_xml_reader(
@@ -160,4 +159,6 @@ class BaseDatasetBuilder:
             for key, new_key in column_name_mapping.items():
                 var[new_key] = var.pop(key)
 
-        return self.dataset_class(variables).add_prefix("library_variable_")
+        dataset = self.dataset_class.from_records(variables)
+        dataset.data = dataset.data.add_prefix("library_variable_")
+        return dataset

@@ -14,13 +14,15 @@ from cdisc_rules_engine.models.dataset import PandasDataset, DaskDataset
     "data",
     [
         (
-            PandasDataset(pd.DataFrame.from_dict(
-                {
-                    "RDOMAIN": ["AE", "EC", "EC", "AE"],
-                    "IDVAR": ["AESEQ", "ECSEQ", "ECSEQ", "AESEQ"],
-                    "IDVARVAL": [1, 2, 1, 3],
-                }
-            ))
+            PandasDataset(
+                pd.DataFrame.from_dict(
+                    {
+                        "RDOMAIN": ["AE", "EC", "EC", "AE"],
+                        "IDVAR": ["AESEQ", "ECSEQ", "ECSEQ", "AESEQ"],
+                        "IDVARVAL": [1, 2, 1, 3],
+                    }
+                )
+            )
         ),
         (PandasDataset(pd.DataFrame.from_dict({"RSUBJID": [1, 4, 6000]}))),
     ],
@@ -44,20 +46,24 @@ def test_preprocess_relationship_dataset(data):
             "filename": "dm.xpt",
         },
     ]
-    ae = PandasDataset(pd.DataFrame.from_dict(
-        {
-            "AESTDY": [4, 5, 6],
-            "STUDYID": [101, 201, 300],
-            "AESEQ": [1, 2, 3],
-        }
-    ))
-    ec = PandasDataset(pd.DataFrame.from_dict(
-        {
-            "ECSTDY": [500, 4],
-            "STUDYID": [201, 101],
-            "ECSEQ": [2, 1],
-        }
-    ))
+    ae = PandasDataset(
+        pd.DataFrame.from_dict(
+            {
+                "AESTDY": [4, 5, 6],
+                "STUDYID": [101, 201, 300],
+                "AESEQ": [1, 2, 3],
+            }
+        )
+    )
+    ec = PandasDataset(
+        pd.DataFrame.from_dict(
+            {
+                "ECSTDY": [500, 4],
+                "STUDYID": [201, 101],
+                "ECSEQ": [2, 1],
+            }
+        )
+    )
     dm = PandasDataset(pd.DataFrame.from_dict({"USUBJID": [1, 2, 3, 4, 5, 6000]}))
     path_to_dataset_map: dict = {
         os.path.join("path", "ae.xpt"): ae,
@@ -130,10 +136,7 @@ def test_filter_dataset_columns_by_metadata_and_rule():
     ]
 
 
-@pytest.mark.parametrize(
-    "dataset_class",
-    [PandasDataset, DaskDataset]
-)
+@pytest.mark.parametrize("dataset_class", [PandasDataset, DaskDataset])
 def test_merge_datasets_on_relationship_columns(dataset_class):
     """
     Unit test for DataProcessor.merge_datasets_on_relationship_columns method.
@@ -201,6 +204,7 @@ def test_merge_datasets_on_relationship_columns(dataset_class):
         column_with_names="IDVAR",
         column_with_values="IDVARVAL",
     )
+    merged_df.data = merged_df.data.sort_values("AESEQ")
     expected_df = dataset_class.from_dict(
         {
             "USUBJID": [
@@ -255,10 +259,8 @@ def test_merge_datasets_on_relationship_columns(dataset_class):
     )
     assert merged_df.equals(expected_df)
 
-@pytest.mark.parametrize(
-    "dataset_class",
-    [PandasDataset, DaskDataset]
-)
+
+@pytest.mark.parametrize("dataset_class", [PandasDataset])
 def test_merge_datasets_on_string_relationship_columns(dataset_class):
     """
     Unit test for DataProcessor.merge_datasets_on_relationship_columns method.

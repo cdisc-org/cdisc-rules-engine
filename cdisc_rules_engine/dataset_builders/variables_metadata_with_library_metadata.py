@@ -30,7 +30,7 @@ class VariablesMetadataWithLibraryMetadataDatasetBuilder(BaseDatasetBuilder):
         library_variables_metadata = self.get_library_variables_metadata()
 
         data = content_variables_metadata.merge(
-            library_variables_metadata,
+            library_variables_metadata.data,
             how="outer",
             left_on="variable_name",
             right_on="library_variable_name",
@@ -44,7 +44,9 @@ class VariablesMetadataWithLibraryMetadataDatasetBuilder(BaseDatasetBuilder):
         )
         return data
 
-    def variable_has_null_values(self, variable: str, content: DatasetInterface) -> bool:
+    def variable_has_null_values(
+        self, variable: str, content: DatasetInterface
+    ) -> bool:
         if variable not in content:
             return True
         series = content[variable]

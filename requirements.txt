@@ -20,7 +20,7 @@ setuptools~=63.2.0
 cachetools==5.3.1
 Pympler==1.0.1
 psutil==5.9.5
-dask[dataframe]==2023.9.1
-dask[array]==2023.9.1
+dask[dataframe]==2024.2.0
+dask[array]==2024.2.0
 business-rules-enhanced==1.4.0
 pyreadstat==1.2.6

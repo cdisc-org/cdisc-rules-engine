@@ -31,15 +31,15 @@ class DefineVariablesWithLibraryMetadataDatasetBuilder(BaseDatasetBuilder):
         "library_variable_order_number"
         """
         # get Define XML metadata for domain and use it as a rule comparator
-        variable_metadata = self.dataset_class(
+        variable_metadata = self.dataset_class.from_records(
             self.get_define_xml_variables_metadata()
         )
         library_variables_metadata = self.get_library_variables_metadata()
 
         data = variable_metadata.merge(
-            library_variables_metadata,
+            library_variables_metadata.data,
             how="outer",
             left_on="define_variable_name",
             right_on="library_variable_name",
-        ).fillna("")
-        return data
+        ).data.fillna("")
+        return self.dataset_class(data)

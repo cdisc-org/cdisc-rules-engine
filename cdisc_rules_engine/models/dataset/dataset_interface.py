@@ -75,7 +75,9 @@ class DatasetInterface(ABC):
         """
 
     @abstractmethod
-    def concat(self, other: Union["DatasetInterface", List["DatasetInterface"]], **kwargs):
+    def concat(
+        self, other: Union["DatasetInterface", List["DatasetInterface"]], **kwargs
+    ):
         """
         Concat two datasets
         """
@@ -115,23 +117,31 @@ class DatasetInterface(ABC):
         """
         Create a series of a single value
         """
-    
+
     @abstractmethod
-    def rename(self, index = None, columns = None, inplace = True):
+    def rename(self, index=None, columns=None, inplace=True):
         """
         Rename columns or index labels.
         """
-    
+
     @abstractmethod
-    def drop(self, labels=None, axis=0, columns=None, errors='raise'):
+    def drop(self, labels=None, axis=0, columns=None, errors="raise"):
         """
         Drop specified labels from rows or columns.
         """
-    
+
     @abstractmethod
-    def melt(self, id_vars=None, value_vars=None, var_name=None, value_name='value', col_level=None):
+    def melt(
+        self,
+        id_vars=None,
+        value_vars=None,
+        var_name=None,
+        value_name="value",
+        col_level=None,
+    ):
         """
-        Unpivots a DataFrame from wide format to long format, optionally leaving identifier variables set.
+        Unpivots a DataFrame from wide format to long format,
+        optionally leaving identifier variables set.
         """
 
     @abstractmethod
@@ -157,21 +167,27 @@ class DatasetInterface(ABC):
         """
         Return a new instance of the dataset with the same data
         """
-    
+
     @abstractmethod
-    def get_error_rows(self, results: "pd.Series") -> "pd.Dataframe":
+    def get_error_rows(self, results):
         """
         Returns a pandas dataframe with all errors found in the dataset. Limited to 1000
         """
-    
+
     @abstractmethod
     def equals(self) -> bool:
         """
         Determine if two datasets are equal
         """
-    
+
     @abstractmethod
     def where(cond, other, **kwargs):
         """
         Wrapper for dataframe where function
+        """
+
+    @abstractmethod
+    def cartesian_product(cls, left, right):
+        """
+        Return the cartesian product of two dataframes
         """

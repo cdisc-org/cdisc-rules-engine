@@ -1,14 +1,23 @@
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 import dask.dataframe as dd
+import dask.array as da
 import pandas as pd
 from typing import List
 
+DEFAULT_NUM_PARTITIONS = 4
+
 
 class DaskDataset(PandasDataset):
-    def __init__(self, data=dd.from_pandas(pd.DataFrame(), npartitions=1), columns = None):
+    def __init__(
+        self,
+        data=dd.from_pandas(pd.DataFrame(), npartitions=DEFAULT_NUM_PARTITIONS),
+        columns=None,
+    ):
         self._data = data
         if columns and self._data.empty:
-            self._data = dd.from_pandas(pd.DataFrame(columns=columns), npartitions=1)
+            self._data = dd.from_pandas(
+                pd.DataFrame(columns=columns), npartitions=DEFAULT_NUM_PARTITIONS
+            )
 
     @property
     def data(self):
@@ -19,23 +28,25 @@ class DaskDataset(PandasDataset):
         self._data = data
 
     def __getitem__(self, item):
-        return self._data[item].compute()
+        return self._data[item].compute().reset_index(drop=True)
 
     def __setitem__(self, key, value):
         if isinstance(value, list):
-            self._data[key] = dd.from_pandas(pd.Series(value), npartitions=self._data.npartitions)
+            chunks = self._data.map_partitions(lambda x: len(x)).compute().to_numpy()
+            array_values = da.from_array(value, chunks=tuple(chunks))
+            self._data[key] = array_values
         else:
             self._data[key] = value
 
     @classmethod
     def from_dict(cls, data: dict, **kwargs):
-        dataframe = dd.from_dict(data, npartitions=1, **kwargs)
+        dataframe = dd.from_dict(data, npartitions=DEFAULT_NUM_PARTITIONS, **kwargs)
         return cls(dataframe)
 
     @classmethod
     def from_records(cls, data: List[dict], **kwargs):
         data = pd.DataFrame.from_records(data)
-        dataframe = dd.from_pandas(data, npartitions=1)
+        dataframe = dd.from_pandas(data, npartitions=DEFAULT_NUM_PARTITIONS)
         return cls(dataframe)
 
     def get(self, column: str, default=None):
@@ -81,23 +92,39 @@ class DaskDataset(PandasDataset):
 
     def len(self) -> int:
         return self._data.shape[0].compute()
-    
-    def rename(self, index = None, columns = None, inplace = True):
-        self._data.rename(index=index, columns=columns, inplace=inplace)
+
+    def rename(self, index=None, columns=None, inplace=True):
+        self._data = self._data.rename(index=index, columns=columns)
         return self
 
-    def drop(self, labels=None, axis=0, columns=None, errors='raise'):
+    def drop(self, labels=None, axis=0, columns=None, errors="raise"):
         """
         Drop specified labels from rows or columns.
         """
-        self._data.drop(labels=labels, axis=axis, columns=columns, errors=errors)
+        self._data = self._data.drop(
+            labels=labels, axis=axis, columns=columns, errors=errors
+        )
         return self
 
-    def melt(self, id_vars=None, value_vars=None, var_name=None, value_name='value', col_level=None):
+    def melt(
+        self,
+        id_vars=None,
+        value_vars=None,
+        var_name=None,
+        value_name="value",
+        col_level=None,
+    ):
         """
-        Unpivots a DataFrame from wide format to long format, optionally leaving identifier variables set.
+        Unpivots a DataFrame from wide format to long format,
+        optionally leaving identifier variables set.
         """
-        new_data = self._data.melt(id_vars=id_vars, value_vars=value_vars, value_name=value_name, col_level=col_level)
+        new_data = self._data.melt(
+            id_vars=id_vars,
+            var_name=var_name,
+            value_vars=value_vars,
+            value_name=value_name,
+            col_level=col_level,
+        )
         return self.__class__(new_data)
 
     @property
@@ -117,7 +144,13 @@ class DaskDataset(PandasDataset):
         for column in self.data:
             if column not in other_dataset:
                 return False
-            is_equal = is_equal & self[column].eq(other_dataset[column]).all()
+            is_equal = (
+                is_equal
+                & self[column]
+                .reset_index(drop=True)
+                .eq(other_dataset[column].reset_index(drop=True))
+                .all()
+            )
         return is_equal
 
     def get_error_rows(self, results) -> "pd.Dataframe":
@@ -127,4 +160,17 @@ class DaskDataset(PandasDataset):
         results_frame = results.to_frame()
         results_frame.columns = ["results"]
         data_with_results = self.data.merge(results_frame)
-        return data_with_results[data_with_results["results"] == True].head(1000)
+        return data_with_results[data_with_results["results"]].head(1000)
+
+    @classmethod
+    def cartesian_product(cls, left, right):
+        """
+        Return the cartesian product of two dataframes
+        """
+        print(right)
+        return cls(
+            dd.from_pandas(
+                left.compute().merge(right, how="cross"),
+                npartitions=DEFAULT_NUM_PARTITIONS,
+            )
+        )
