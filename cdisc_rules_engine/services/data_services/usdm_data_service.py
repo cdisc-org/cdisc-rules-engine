@@ -1,9 +1,9 @@
 import os
 from io import IOBase
-from typing import Iterable, List
+from typing import Iterable, List, Union
 from json import load
 import pandas
-from jsonpath_ng import DatumInContext, This
+from jsonpath_ng import DatumInContext, Fields, This
 from jsonpath_ng.ext import parse
 from datetime import datetime
 from yaml import safe_load
@@ -241,7 +241,7 @@ class USDMDataService(BaseDataService):
             return definition[0].value
         return None
 
-    def __get_entity_name(self, value, path: This):
+    def __get_entity_name(self, value, path: Union[Fields, This]):
         if type(value) is dict:
             api_type = (
                 value.get("instanceType") if "instanceType" in value else f"{path}"
@@ -274,6 +274,10 @@ class USDMDataService(BaseDataService):
             "type": ty,
         }
 
+    @staticmethod
+    def __get_full_path(node: DatumInContext):
+        return f"{node.full_path}".replace(".[", "[")
+
     def __get_datasets(self, json) -> List[dict]:
         """
         This is a bit convoluted because there is a bug in jsonpath_ng
@@ -284,12 +288,15 @@ class USDMDataService(BaseDataService):
             if type(node.value) is list:
                 for index, child in enumerate(node.value):
                     if metadatum := self.__read_metadata(
-                        json, node, child, f"{node.full_path}[{index}]"
+                        json,
+                        node,
+                        child,
+                        f"{USDMDataService.__get_full_path(node)}[{index}]",
                     ):
                         metadata.append(metadatum)
             else:
                 if metadatum := self.__read_metadata(
-                    json, node, node.value, f"{node.full_path}"
+                    json, node, node.value, USDMDataService.__get_full_path(node)
                 ):
                     metadata.append(metadatum)
         dataset_dict = {}
