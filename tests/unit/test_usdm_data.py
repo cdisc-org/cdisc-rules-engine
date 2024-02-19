@@ -41,12 +41,12 @@ def test_get_datasets():
         config=ConfigService(), cache_service=mock_cache, dataset_path=dataset_path
     )
     datasets = data_service.get_datasets()
-    assert len(datasets) == 35
+    assert len(datasets) == 33
 
 
 @mark.parametrize(
     "dataset_name, record_count",
-    [("Activity", 321), ("string", 1309), ("Study", 1)],
+    [("Activity", 225), ("string", 1309), ("Study", 1)],
 )
 def test_get_dataset(dataset_name, record_count):
     mock_cache = MagicMock()

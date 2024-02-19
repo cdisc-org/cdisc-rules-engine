@@ -228,7 +228,7 @@
             ]
           }
         ],
-        "studyInvestigationalInterventions": [
+        "studyInterventions": [
           {
             "id": "InvestigationalIntervention_1",
             "description": "An intervention",
@@ -520,7 +520,7 @@
               {
                 "id": "ScheduledActivityInstance_18",
                 "instanceType": "ACTIVITY",
-                "scheduledInstanceTimings": [
+                "timings": [
                   {
                     "id": "Timing_18",
                     "name": "TIMING_3",
@@ -574,7 +574,7 @@
               {
                 "id": "ScheduledActivityInstance_19",
                 "instanceType": "ACTIVITY",
-                "scheduledInstanceTimings": [
+                "timings": [
                   {
                     "id": "Timing_19",
                     "name": "TIMING_4",
@@ -619,7 +619,7 @@
               {
                 "id": "ScheduledActivityInstance_20",
                 "instanceType": "ACTIVITY",
-                "scheduledInstanceTimings": [
+                "timings": [
                   {
                     "id": "Timing_20",
                     "name": "TIMING_5",
@@ -670,7 +670,7 @@
               {
                 "id": "ScheduledActivityInstance_21",
                 "instanceType": "ACTIVITY",
-                "scheduledInstanceTimings": [
+                "timings": [
                   {
                     "id": "Timing_21",
                     "name": "TIMING_6",
@@ -708,7 +708,7 @@
               {
                 "id": "ScheduledActivityInstance_22",
                 "instanceType": "ACTIVITY",
-                "scheduledInstanceTimings": [
+                "timings": [
                   {
                     "id": "Timing_22",
                     "name": "TIMING_7",
@@ -752,7 +752,7 @@
               {
                 "id": "ScheduledActivityInstance_23",
                 "instanceType": "ACTIVITY",
-                "scheduledInstanceTimings": [
+                "timings": [
                   {
                     "id": "Timing_23",
                     "name": "TIMING_8",
@@ -801,7 +801,7 @@
               {
                 "id": "ScheduledActivityInstance_24",
                 "instanceType": "ACTIVITY",
-                "scheduledInstanceTimings": [
+                "timings": [
                   {
                     "id": "Timing_24",
                     "name": "TIMING_9",
@@ -865,7 +865,7 @@
               {
                 "id": "ScheduledActivityInstance_1",
                 "instanceType": "ACTIVITY",
-                "scheduledInstanceTimings": [
+                "timings": [
                   {
                     "id": "Timing_1",
                     "name": "TIMING_3",
@@ -915,7 +915,7 @@
               {
                 "id": "ScheduledActivityInstance_2",
                 "instanceType": "ACTIVITY",
-                "scheduledInstanceTimings": [
+                "timings": [
                   {
                     "id": "Timing_2",
                     "name": "TIMING_4",
@@ -953,7 +953,7 @@
               {
                 "id": "ScheduledActivityInstance_3",
                 "instanceType": "ACTIVITY",
-                "scheduledInstanceTimings": [
+                "timings": [
                   {
                     "id": "Timing_3",
                     "name": "TIMING_5",
@@ -991,7 +991,7 @@
               {
                 "id": "ScheduledActivityInstance_4",
                 "instanceType": "ACTIVITY",
-                "scheduledInstanceTimings": [
+                "timings": [
                   {
                     "id": "Timing_4",
                     "name": "TIMING_6",
@@ -1034,7 +1034,7 @@
               {
                 "id": "ScheduledActivityInstance_5",
                 "instanceType": "ACTIVITY",
-                "scheduledInstanceTimings": [
+                "timings": [
                   {
                     "id": "Timing_5",
                     "name": "TIMING_7",
@@ -1072,7 +1072,7 @@
               {
                 "id": "ScheduledActivityInstance_6",
                 "instanceType": "ACTIVITY",
-                "scheduledInstanceTimings": [
+                "timings": [
                   {
                     "id": "Timing_6",
                     "name": "TIMING_8",
@@ -1110,7 +1110,7 @@
               {
                 "id": "ScheduledActivityInstance_7",
                 "instanceType": "ACTIVITY",
-                "scheduledInstanceTimings": [
+                "timings": [
                   {
                     "id": "Timing_7",
                     "name": "TIMING_9",
@@ -1148,7 +1148,7 @@
               {
                 "id": "ScheduledActivityInstance_8",
                 "instanceType": "ACTIVITY",
-                "scheduledInstanceTimings": [
+                "timings": [
                   {
                     "id": "Timing_8",
                     "name": "TIMING_10",
@@ -1193,7 +1193,7 @@
               {
                 "id": "ScheduledActivityInstance_9",
                 "instanceType": "ACTIVITY",
-                "scheduledInstanceTimings": [
+                "timings": [
                   {
                     "id": "Timing_9",
                     "name": "TIMING_11",
@@ -1231,7 +1231,7 @@
               {
                 "id": "ScheduledActivityInstance_10",
                 "instanceType": "ACTIVITY",
-                "scheduledInstanceTimings": [
+                "timings": [
                   {
                     "id": "Timing_10",
                     "name": "TIMING_12",
@@ -1269,7 +1269,7 @@
               {
                 "id": "ScheduledActivityInstance_11",
                 "instanceType": "ACTIVITY",
-                "scheduledInstanceTimings": [
+                "timings": [
                   {
                     "id": "Timing_11",
                     "name": "TIMING_13",
@@ -1314,7 +1314,7 @@
               {
                 "id": "ScheduledActivityInstance_12",
                 "instanceType": "ACTIVITY",
-                "scheduledInstanceTimings": [
+                "timings": [
                   {
                     "id": "Timing_12",
                     "name": "TIMING_14",
@@ -1352,7 +1352,7 @@
               {
                 "id": "ScheduledActivityInstance_13",
                 "instanceType": "ACTIVITY",
-                "scheduledInstanceTimings": [
+                "timings": [
                   {
                     "id": "Timing_13",
                     "name": "TIMING_15",
@@ -1390,7 +1390,7 @@
               {
                 "id": "ScheduledActivityInstance_14",
                 "instanceType": "ACTIVITY",
-                "scheduledInstanceTimings": [
+                "timings": [
                   {
                     "id": "Timing_14",
                     "name": "TIMING_16",
@@ -1435,7 +1435,7 @@
               {
                 "id": "ScheduledActivityInstance_15",
                 "instanceType": "ACTIVITY",
-                "scheduledInstanceTimings": [
+                "timings": [
                   {
                     "id": "Timing_15",
                     "name": "TIMING_17",
@@ -1478,7 +1478,7 @@
               {
                 "id": "ScheduledActivityInstance_16",
                 "instanceType": "ACTIVITY",
-                "scheduledInstanceTimings": [
+                "timings": [
                   {
                     "id": "Timing_16",
                     "name": "TIMING_18",
@@ -1523,7 +1523,7 @@
               {
                 "id": "ScheduledActivityInstance_17",
                 "instanceType": "ACTIVITY",
-                "scheduledInstanceTimings": [
+                "timings": [
                   {
                     "id": "Timing_17",
                     "name": "TIMING_19",
@@ -1893,7 +1893,7 @@
             "biomedicalConceptIds": [],
             "bcCategoryIds": [],
             "bcSurrogateIds": [],
-            "activityTimelineId": ""
+            "timelineId": ""
           },
           {
             "id": "Activity_2",
@@ -1908,7 +1908,7 @@
             "biomedicalConceptIds": [],
             "bcCategoryIds": [],
             "bcSurrogateIds": [],
-            "activityTimelineId": ""
+            "timelineId": ""
           },
           {
             "id": "Activity_3",
@@ -1940,7 +1940,7 @@
             "biomedicalConceptIds": [],
             "bcCategoryIds": [],
             "bcSurrogateIds": [],
-            "activityTimelineId": ""
+            "timelineId": ""
           },
           {
             "id": "Activity_4",
@@ -1972,7 +1972,7 @@
             "biomedicalConceptIds": [],
             "bcCategoryIds": [],
             "bcSurrogateIds": [],
-            "activityTimelineId": ""
+            "timelineId": ""
           },
           {
             "id": "Activity_5",
@@ -1987,7 +1987,7 @@
             "biomedicalConceptIds": [],
             "bcCategoryIds": [],
             "bcSurrogateIds": [],
-            "activityTimelineId": ""
+            "timelineId": ""
           },
           {
             "id": "Activity_6",
@@ -2002,7 +2002,7 @@
             "biomedicalConceptIds": [],
             "bcCategoryIds": [],
             "bcSurrogateIds": [],
-            "activityTimelineId": ""
+            "timelineId": ""
           },
           {
             "id": "Activity_7",
@@ -2020,7 +2020,7 @@
               "BiomedicalConceptSurrogate_7",
               "BiomedicalConceptSurrogate_8"
             ],
-            "activityTimelineId": ""
+            "timelineId": ""
           },
           {
             "id": "Activity_8",
@@ -2038,7 +2038,7 @@
               "BiomedicalConceptSurrogate_9",
               "BiomedicalConceptSurrogate_10"
             ],
-            "activityTimelineId": ""
+            "timelineId": ""
           },
           {
             "id": "Activity_9",
@@ -2053,7 +2053,7 @@
             "biomedicalConceptIds": [],
             "bcCategoryIds": [],
             "bcSurrogateIds": ["BiomedicalConceptSurrogate_11"],
-            "activityTimelineId": ""
+            "timelineId": ""
           },
           {
             "id": "Activity_10",
@@ -2068,7 +2068,7 @@
             "biomedicalConceptIds": [],
             "bcCategoryIds": [],
             "bcSurrogateIds": [],
-            "activityTimelineId": ""
+            "timelineId": ""
           },
           {
             "id": "Activity_11",
@@ -2083,7 +2083,7 @@
             "biomedicalConceptIds": [],
             "bcCategoryIds": [],
             "bcSurrogateIds": [],
-            "activityTimelineId": ""
+            "timelineId": ""
           },
           {
             "id": "Activity_12",
@@ -2115,7 +2115,7 @@
             "biomedicalConceptIds": [],
             "bcCategoryIds": [],
             "bcSurrogateIds": [],
-            "activityTimelineId": ""
+            "timelineId": ""
           },
           {
             "id": "Activity_13",
@@ -2130,7 +2130,7 @@
             "biomedicalConceptIds": [],
             "bcCategoryIds": [],
             "bcSurrogateIds": [],
-            "activityTimelineId": ""
+            "timelineId": ""
           },
           {
             "id": "Activity_14",
@@ -2145,7 +2145,7 @@
             "biomedicalConceptIds": [],
             "bcCategoryIds": [],
             "bcSurrogateIds": [],
-            "activityTimelineId": ""
+            "timelineId": ""
           },
           {
             "id": "Activity_15",
@@ -2160,7 +2160,7 @@
             "biomedicalConceptIds": [],
             "bcCategoryIds": [],
             "bcSurrogateIds": [],
-            "activityTimelineId": ""
+            "timelineId": ""
           },
           {
             "id": "Activity_35",
@@ -2175,7 +2175,7 @@
             "biomedicalConceptIds": [],
             "bcCategoryIds": [],
             "bcSurrogateIds": [],
-            "activityTimelineId": "ScheduleTimeline_1"
+            "timelineId": "ScheduleTimeline_1"
           },
           {
             "id": "Activity_18",
@@ -2193,7 +2193,7 @@
               "BiomedicalConceptSurrogate_12",
               "BiomedicalConceptSurrogate_13"
             ],
-            "activityTimelineId": ""
+            "timelineId": ""
           },
           {
             "id": "Activity_19",
@@ -2208,7 +2208,7 @@
             "biomedicalConceptIds": [],
             "bcCategoryIds": [],
             "bcSurrogateIds": [],
-            "activityTimelineId": ""
+            "timelineId": ""
           },
           {
             "id": "Activity_20",
@@ -2223,7 +2223,7 @@
             "biomedicalConceptIds": [],
             "bcCategoryIds": [],
             "bcSurrogateIds": [],
-            "activityTimelineId": ""
+            "timelineId": ""
           },
           {
             "id": "Activity_21",
@@ -2238,7 +2238,7 @@
             "biomedicalConceptIds": [],
             "bcCategoryIds": [],
             "bcSurrogateIds": [],
-            "activityTimelineId": ""
+            "timelineId": ""
           },
           {
             "id": "Activity_22",
@@ -2253,7 +2253,7 @@
             "biomedicalConceptIds": [],
             "bcCategoryIds": [],
             "bcSurrogateIds": [],
-            "activityTimelineId": ""
+            "timelineId": ""
           },
           {
             "id": "Activity_23",
@@ -2268,7 +2268,7 @@
             "biomedicalConceptIds": [],
             "bcCategoryIds": [],
             "bcSurrogateIds": [],
-            "activityTimelineId": ""
+            "timelineId": ""
           },
           {
             "id": "Activity_24",
@@ -2283,7 +2283,7 @@
             "biomedicalConceptIds": [],
             "bcCategoryIds": [],
             "bcSurrogateIds": [],
-            "activityTimelineId": ""
+            "timelineId": ""
           },
           {
             "id": "Activity_25",
@@ -2298,7 +2298,7 @@
             "biomedicalConceptIds": [],
             "bcCategoryIds": [],
             "bcSurrogateIds": [],
-            "activityTimelineId": ""
+            "timelineId": ""
           },
           {
             "id": "Activity_26",
@@ -2313,7 +2313,7 @@
             "biomedicalConceptIds": [],
             "bcCategoryIds": [],
             "bcSurrogateIds": [],
-            "activityTimelineId": ""
+            "timelineId": ""
           },
           {
             "id": "Activity_27",
@@ -2328,7 +2328,7 @@
             "biomedicalConceptIds": [],
             "bcCategoryIds": [],
             "bcSurrogateIds": [],
-            "activityTimelineId": ""
+            "timelineId": ""
           },
           {
             "id": "Activity_28",
@@ -2343,7 +2343,7 @@
             "biomedicalConceptIds": [],
             "bcCategoryIds": [],
             "bcSurrogateIds": [],
-            "activityTimelineId": ""
+            "timelineId": ""
           },
           {
             "id": "Activity_29",
@@ -2358,7 +2358,7 @@
             "biomedicalConceptIds": [],
             "bcCategoryIds": [],
             "bcSurrogateIds": [],
-            "activityTimelineId": ""
+            "timelineId": ""
           },
           {
             "id": "Activity_30",
@@ -2373,7 +2373,7 @@
             "biomedicalConceptIds": [],
             "bcCategoryIds": [],
             "bcSurrogateIds": [],
-            "activityTimelineId": ""
+            "timelineId": ""
           },
           {
             "id": "Activity_31",
@@ -2388,7 +2388,7 @@
             "biomedicalConceptIds": [],
             "bcCategoryIds": [],
             "bcSurrogateIds": [],
-            "activityTimelineId": ""
+            "timelineId": ""
           },
           {
             "id": "Activity_32",
@@ -2403,7 +2403,7 @@
             "biomedicalConceptIds": [],
             "bcCategoryIds": [],
             "bcSurrogateIds": [],
-            "activityTimelineId": ""
+            "timelineId": ""
           },
           {
             "id": "Activity_16",
@@ -2418,7 +2418,7 @@
             "biomedicalConceptIds": [],
             "bcCategoryIds": [],
             "bcSurrogateIds": [],
-            "activityTimelineId": ""
+            "timelineId": ""
           },
           {
             "id": "Activity_17",
@@ -2433,7 +2433,7 @@
             "biomedicalConceptIds": [],
             "bcCategoryIds": [],
             "bcSurrogateIds": [],
-            "activityTimelineId": ""
+            "timelineId": ""
           },
           {
             "id": "Activity_33",
@@ -2448,7 +2448,7 @@
             "biomedicalConceptIds": [],
             "bcCategoryIds": [],
             "bcSurrogateIds": [],
-            "activityTimelineId": ""
+            "timelineId": ""
           },
           {
             "id": "Activity_34",
@@ -2463,7 +2463,7 @@
             "biomedicalConceptIds": [],
             "bcCategoryIds": [],
             "bcSurrogateIds": [],
-            "activityTimelineId": ""
+            "timelineId": ""
           }
         ],
         "studyDesignRationale": "Basic study",
