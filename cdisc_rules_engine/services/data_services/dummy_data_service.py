@@ -49,7 +49,7 @@ class DummyDataService(BaseDataService):
         if dataset_name not in self.data:
             raise DatasetNotFoundError("dataset does not exist")
 
-    def  get_dataset_data(self, dataset_name: str) -> Optional[DummyDataset]:
+    def get_dataset_data(self, dataset_name: str) -> Optional[DummyDataset]:
         dataset_name = os.path.basename(dataset_name)
         for dataset in self.data:
             if dataset.filename == dataset_name:
@@ -61,8 +61,9 @@ class DummyDataService(BaseDataService):
         if dataset is not None:
             df: pd.DataFrame = dataset.data
             df = df.applymap(lambda x: x.decode("utf-8") if isinstance(x, bytes) else x)
-            self._replace_nans_in_numeric_cols_with_none(df)
-            return PandasDataset(df)
+            result = PandasDataset(df)
+            self._replace_nans_in_numeric_cols_with_none(result)
+            return result
         else:
             return PandasDataset.from_dict({})
 
