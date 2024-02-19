@@ -1,11 +1,11 @@
 import pandas as pd
-import xport.v56
+import pyreadstat
 from xport import LOG as XPORT_LOG
 
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.services.adam_variable_reader import AdamVariableReader
 
-xport.v56.LOG.disabled = True
+
 XPORT_LOG.disabled = True
 
 
@@ -18,8 +18,9 @@ class DatasetXPTMetadataReader:
     # TODO. Maybe in future it is worth having multiple constructors
     #  like from_bytes, from_file etc. But now there is no immediate need for that.
     def __init__(self, file_path: str, file_name: str):
-        with open(file_path, "rb") as f:
-            self._file_contents = f.read()
+        # with open(file_path, "rb") as f:
+        # self._file_contents = f.read()
+        self.file_path = file_path
         self._metadata_container = None
         self._domain_name = None
         self._dataset_name = file_name.split(".")[0].upper()
@@ -28,32 +29,42 @@ class DatasetXPTMetadataReader:
         """
         Extracts metadata from binary contents of .xpt file.
         """
-        dataset_container = xport.v56.loads(self._file_contents)
-        dataset_id = next(iter(dataset_container))
-        dataset = dataset_container.get(dataset_id)
-        self._domain_name = self._extract_domain_name(dataset)
+        chunk_size = 1000000
+        dataset_row_count: int = 0
+        df, meta = pyreadstat.read_xport(self.file_path, metadataonly=True)
+        for df, _meta in pyreadstat.read_file_in_chunks(
+            pyreadstat.read_xport,
+            self.file_path,
+            chunk_size,
+            usecols=[list(meta.column_names)[0]],
+        ):
+            dataset_row_count += _meta.number_rows
+            print(dataset_row_count)
+
+        meta_Format = [
+            "" if item == "NULL" else item + "."
+            for item in list(meta.original_variable_types.values())
+        ]
+        self._domain_name = meta.table_name
         self._metadata_container = {
-            "variable_labels": list(dataset.contents.Label.values),
-            "variable_names": list(dataset.contents.Variable.values),
-            "variable_formats": list(dataset.contents.Format.values),
+            "variable_labels": list(meta.column_labels),
+            "variable_names": list(meta.column_names),
+            "variable_formats": meta_Format,
             "variable_name_to_label_map": pd.Series(
-                dataset.contents.Label.values, index=dataset.contents.Variable
+                meta.column_labels, index=meta.column_names
             ).to_dict(),
-            "variable_name_to_data_type_map": pd.Series(
-                dataset.contents.Type.values, index=dataset.contents.Variable
-            ).to_dict(),
-            "variable_name_to_size_map": pd.Series(
-                dataset.contents.Length.values, index=dataset.contents.Variable
-            ).to_dict(),
-            "number_of_variables": len(dataset.columns),
-            "dataset_label": dataset.dataset_label,
-            "dataset_length": dataset.shape[0],
+            "variable_name_to_data_type_map": {
+                key: "Char" if value == "string" else "Num"
+                for key, value in meta.readstat_variable_types.items()
+            },
+            "variable_name_to_size_map": meta.variable_storage_width,
+            "number_of_variables": len(meta.column_names),
+            "dataset_label": meta.file_label,
+            "dataset_length": dataset_row_count,
             "domain_name": self._domain_name,
             "dataset_name": self._dataset_name,
-            "dataset_modification_date": dataset.modified.isoformat(),
+            "dataset_modification_date": meta.modification_time.isoformat(),
         }
-        self._domain_name = self._extract_domain_name(dataset)
-        self._convert_variable_types()
         self._metadata_container["adam_info"] = self._extract_adam_info(
             self._metadata_container["variable_names"]
         )

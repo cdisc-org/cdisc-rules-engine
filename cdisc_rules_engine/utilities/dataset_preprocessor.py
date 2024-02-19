@@ -55,7 +55,7 @@ class DatasetPreprocessor:
 
         rule_targets = self._rule_processor.extract_referenced_variables_from_rule(rule)
         # Get all targets that reference the merge domain.
-        result: pd.DataFrame = self._dataset.copy()
+        result: pd.DataFrame = self._dataset
         for domain_details in rule_datasets:
             domain_name: str = domain_details.get("domain_name")
             if self._is_split_domain(domain_name):

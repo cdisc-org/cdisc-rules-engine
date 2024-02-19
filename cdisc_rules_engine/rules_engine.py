@@ -308,8 +308,6 @@ class RulesEngine:
             rule["conditions"], dataset.columns.to_list()
         )
         rule_copy["conditions"].set_conditions(updated_conditions)
-        # Adding copy for now to avoid updating cached dataset
-        dataset = deepcopy(dataset)
         # preprocess dataset
         dataset_preprocessor = DatasetPreprocessor(
             dataset, domain, dataset_path, self.data_service, self.cache

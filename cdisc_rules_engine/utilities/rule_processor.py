@@ -227,7 +227,7 @@ class RuleProcessor:
             # stop function execution if no operations have been provided
             return dataset
 
-        dataset_copy = dataset.copy()
+        dataset_copy = dataset
         for operation in operations:
             # change -- pattern to domain name
             original_target: str = operation.get("name")
