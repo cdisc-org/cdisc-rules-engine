@@ -8,7 +8,7 @@ class DaskDataset(PandasDataset):
     def __init__(self, data=dd.from_pandas(pd.DataFrame(), npartitions=1), columns = None):
         self._data = data
         if columns and self._data.empty:
-            self._data.columns = columns
+            self._data = dd.from_pandas(pd.DataFrame(columns=columns), npartitions=1)
 
     @property
     def data(self):

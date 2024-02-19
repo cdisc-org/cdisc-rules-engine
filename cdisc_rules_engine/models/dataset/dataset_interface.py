@@ -12,6 +12,13 @@ class DatasetInterface(ABC):
 
     @property
     @abstractmethod
+    def empty(self):
+        """
+        Returns whether or not the underlying dataframe is empty
+        """
+
+    @property
+    @abstractmethod
     def columns(self):
         """
         Stores the columns of the underlying dataset
@@ -161,4 +168,10 @@ class DatasetInterface(ABC):
     def equals(self) -> bool:
         """
         Determine if two datasets are equal
+        """
+    
+    @abstractmethod
+    def where(cond, other, **kwargs):
+        """
+        Wrapper for dataframe where function
         """

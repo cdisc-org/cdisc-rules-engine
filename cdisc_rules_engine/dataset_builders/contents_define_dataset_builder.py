@@ -46,8 +46,8 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
         # 4. Replace Nan with None
         # outer join, so some data contents may be missing or some define metadata may
         # be missing. Replace nans with None
-        merged_no_nans = merged.where(pd.notnull(merged), None)
-        return self.dataset_class(merged_no_nans)
+        merged_no_nans = merged.where(pd.notnull(merged.data), None)
+        return merged_no_nans
 
     def _get_define_xml_dataframe(self):
         define_col_order = [
@@ -88,7 +88,7 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
                     logger.trace(e, __name__)
                     logger.error(f"Error: {e}. Error message: {str(e)}")
                 datasets.data = (
-                    ds_metadata.data if datasets.data.empty else datasets.data.append(ds_metadata)
+                    ds_metadata.data if datasets.data.empty else datasets.data.append(ds_metadata.data)
                 )
 
             if datasets.data.empty or len(datasets.data) == 0:
@@ -103,5 +103,5 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
                 dataset_df = datasets.rename(columns=data_col_mapping)
                 if "dataset_size" not in dataset_df.columns:
                     dataset_df["dataset_size"] = None
-                dataset_df = dataset_df[dataset_col_order]
+                dataset_df = self.dataset_class(dataset_df[dataset_col_order])
         return dataset_df

@@ -7,7 +7,7 @@ class PandasDataset(DatasetInterface):
     def __init__(self, data: pd.DataFrame = pd.DataFrame(), columns = None):
         self._data = data
         if columns and self._data.empty:
-            self._data.columns = columns
+            self._data = pd.DataFrame(columns=columns)
 
     @property
     def data(self):
@@ -32,6 +32,10 @@ class PandasDataset(DatasetInterface):
     @property
     def groups(self):
         return self._data.groups
+
+    @property
+    def empty(self):
+        return self._data.empty
 
     @classmethod
     def from_dict(cls, data: dict, **kwargs):
@@ -151,3 +155,10 @@ class PandasDataset(DatasetInterface):
         return data_with_results[
             data_with_results["results"].isin([True])
         ]
+
+    def where(self, cond, other, **kwargs):
+        """
+        Wrapper for dataframe where function
+        """
+        new_data = self._data.where(cond, other, **kwargs)
+        return self.__class__(new_data)
