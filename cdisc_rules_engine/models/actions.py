@@ -42,10 +42,7 @@ class COREActions(BaseActions):
     @rule_action(params={"message": FIELD_TEXT})
     def generate_dataset_error_objects(self, message: str, results: pd.Series):
         # leave only those columns where errors have been found
-        self.variable.dataset["results"] = results
-        rows_with_error = self.variable.dataset[
-            self.variable.dataset["results"].isin([True])
-        ]
+        rows_with_error = self.variable.dataset.get_error_rows(results)
         target_names: Set[str] = RuleProcessor.extract_target_names_from_rule(
             self.rule, self.domain, self.variable.dataset.columns.tolist()
         )
@@ -95,7 +92,7 @@ class COREActions(BaseActions):
         df_columns: set = set(data)
         targets_in_dataset = targets.intersection(df_columns)
         targets_not_in_dataset = targets.difference(df_columns)
-        errors_df = data[targets_in_dataset]
+        errors_df = data[list(targets_in_dataset)]
         if not targets:
             errors_df = data
         if errors_df.empty:

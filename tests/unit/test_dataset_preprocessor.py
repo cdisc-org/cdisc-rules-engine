@@ -16,6 +16,8 @@ from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
 
+from cdisc_rules_engine.models.dataset import PandasDataset
+
 
 def test_preprocess_no_datasets_in_rule(dataset_rule_equal_to_error_objects: dict):
     """
@@ -23,25 +25,27 @@ def test_preprocess_no_datasets_in_rule(dataset_rule_equal_to_error_objects: dic
     no datasets are provided in the rule.
     Expected behaviour is the original dataset returned.
     """
-    dataset = pd.DataFrame.from_dict(
-        {
-            "USUBJID": ["CDISC01", "CDISC01", "CDISC01"],
-            "AESEQ": [
-                1,
-                2,
-                3,
-            ],
-        }
+    dataset = PandasDataset(
+        pd.DataFrame.from_dict(
+            {
+                "USUBJID": ["CDISC01", "CDISC01", "CDISC01"],
+                "AESEQ": [
+                    1,
+                    2,
+                    3,
+                ],
+            }
+        )
     )
     datasets: List[dict] = [{"domain": "AE", "filename": "ae.xpt"}]
     data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
     preprocessor = DatasetPreprocessor(
         dataset, "AE", "path", data_service, InMemoryCacheService()
     )
-    preprocessed_dataset: pd.DataFrame = preprocessor.preprocess(
+    preprocessed_dataset: PandasDataset = preprocessor.preprocess(
         dataset_rule_equal_to_error_objects, datasets
     )
-    assert preprocessed_dataset.equals(dataset)
+    assert preprocessed_dataset.data.equals(dataset.data)
 
 
 @patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset")
@@ -52,85 +56,91 @@ def test_preprocess(mock_get_dataset: MagicMock, dataset_rule_equal_to: dict):
     with rows from all 3 datasets filtered by match keys.
     """
     # create datasets
-    ec_dataset = pd.DataFrame.from_dict(
-        {
-            "ECSEQ": [
-                "1",
-                "2",
-                "3",
-                "4",
-                "5",
-            ],
-            "ECSTDY": [
-                4,
-                5,
-                6,
-                7,
-                8,
-            ],
-            "STUDYID": [
-                "1",
-                "2",
-                "1",
-                "2",
-                "3",
-            ],
-            "USUBJID": [
-                "CDISC001",
-                "CDISC001",
-                "CDISC002",
-                "CDISC002",
-                "CDISC003",
-            ],
-        }
+    ec_dataset = PandasDataset(
+        pd.DataFrame.from_dict(
+            {
+                "ECSEQ": [
+                    "1",
+                    "2",
+                    "3",
+                    "4",
+                    "5",
+                ],
+                "ECSTDY": [
+                    4,
+                    5,
+                    6,
+                    7,
+                    8,
+                ],
+                "STUDYID": [
+                    "1",
+                    "2",
+                    "1",
+                    "2",
+                    "3",
+                ],
+                "USUBJID": [
+                    "CDISC001",
+                    "CDISC001",
+                    "CDISC002",
+                    "CDISC002",
+                    "CDISC003",
+                ],
+            }
+        )
     )
-    ae_dataset = pd.DataFrame.from_dict(
-        {
-            "AESEQ": [
-                "1",
-                "2",
-                "3",
-                "4",
-            ],
-            "AESTDY": [
-                4,
-                5,
-                16,
-                17,
-            ],
-            "STUDYID": [
-                "1",
-                "2",
-                "1",
-                "2",
-            ],
-            "USUBJID": [
-                "CDISC001",
-                "CDISC001",
-                "CDISC002",
-                "CDISC002",
-            ],
-        }
+    ae_dataset = PandasDataset(
+        pd.DataFrame.from_dict(
+            {
+                "AESEQ": [
+                    "1",
+                    "2",
+                    "3",
+                    "4",
+                ],
+                "AESTDY": [
+                    4,
+                    5,
+                    16,
+                    17,
+                ],
+                "STUDYID": [
+                    "1",
+                    "2",
+                    "1",
+                    "2",
+                ],
+                "USUBJID": [
+                    "CDISC001",
+                    "CDISC001",
+                    "CDISC002",
+                    "CDISC002",
+                ],
+            }
+        )
     )
-    ts_dataset = pd.DataFrame.from_dict(
-        {
-            "TSSEQ": [
-                "1",
-                "2",
-            ],
-            "TSSTDY": [
-                31,
-                74,
-            ],
-            "STUDYID": [
-                "1",
-                "2",
-            ],
-            "USUBJID": [
-                "CDISC001",
-                "CDISC001",
-            ],
-        }
+    ts_dataset = PandasDataset(
+        pd.DataFrame.from_dict(
+            {
+                "TSSEQ": [
+                    "1",
+                    "2",
+                ],
+                "TSSTDY": [
+                    31,
+                    74,
+                ],
+                "STUDYID": [
+                    "1",
+                    "2",
+                ],
+                "USUBJID": [
+                    "CDISC001",
+                    "CDISC001",
+                ],
+            }
+        )
     )
 
     # mock blob storage call
@@ -162,43 +172,45 @@ def test_preprocess(mock_get_dataset: MagicMock, dataset_rule_equal_to: dict):
     preprocessed_dataset: pd.DataFrame = preprocessor.preprocess(
         dataset_rule_equal_to, datasets
     )
-    expected_dataset = pd.DataFrame.from_dict(
-        {
-            "ECSEQ": [
-                "1",
-                "2",
-            ],
-            "ECSTDY": [
-                4,
-                5,
-            ],
-            "STUDYID": [
-                "1",
-                "2",
-            ],
-            "USUBJID": [
-                "CDISC001",
-                "CDISC001",
-            ],
-            "AESEQ": [
-                "1",
-                "2",
-            ],
-            "AESTDY": [
-                4,
-                5,
-            ],
-            "TSSEQ": [
-                "1",
-                "2",
-            ],
-            "TSSTDY": [
-                31,
-                74,
-            ],
-        }
+    expected_dataset = PandasDataset(
+        pd.DataFrame.from_dict(
+            {
+                "ECSEQ": [
+                    "1",
+                    "2",
+                ],
+                "ECSTDY": [
+                    4,
+                    5,
+                ],
+                "STUDYID": [
+                    "1",
+                    "2",
+                ],
+                "USUBJID": [
+                    "CDISC001",
+                    "CDISC001",
+                ],
+                "AESEQ": [
+                    "1",
+                    "2",
+                ],
+                "AESTDY": [
+                    4,
+                    5,
+                ],
+                "TSSEQ": [
+                    "1",
+                    "2",
+                ],
+                "TSSTDY": [
+                    31,
+                    74,
+                ],
+            }
+        )
     )
-    assert preprocessed_dataset.equals(expected_dataset)
+    assert preprocessed_dataset.data.equals(expected_dataset.data)
 
 
 @patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset")
@@ -210,62 +222,66 @@ def test_preprocess_relationship_dataset(
     we are merging relationship datasets.
     """
     # create datasets
-    ec_dataset = pd.DataFrame.from_dict(
-        {
-            "USUBJID": ["CDISC001", "CDISC005", "CDISC005", "CDISC005", "CDISC005"],
-            "DOMAIN": [
-                "EC",
-                "AE",
-                "EC",
-                "EC",
-                "EC",
-            ],
-            "ECPRESP": [
-                "A",
-                "Y",
-                "Y",
-                "Y",
-                "B",
-            ],
-            "ECSEQ": [
-                1,
-                2,
-                3,
-                4,
-                5,
-            ],
-            "ECNUM": [
-                1,
-                2,
-                3,
-                4,
-                5,
-            ],
-        }
+    ec_dataset = PandasDataset(
+        pd.DataFrame.from_dict(
+            {
+                "USUBJID": ["CDISC001", "CDISC005", "CDISC005", "CDISC005", "CDISC005"],
+                "DOMAIN": [
+                    "EC",
+                    "AE",
+                    "EC",
+                    "EC",
+                    "EC",
+                ],
+                "ECPRESP": [
+                    "A",
+                    "Y",
+                    "Y",
+                    "Y",
+                    "B",
+                ],
+                "ECSEQ": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                ],
+                "ECNUM": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                ],
+            }
+        )
     )
-    suppec_dataset = pd.DataFrame.from_dict(
-        {
-            "USUBJID": [
-                "CDISC005",
-                "CDISC005",
-            ],
-            "RDOMAIN": [
-                "EC",
-                "EC",
-            ],
-            "QNAM": [
-                "ECREASOC",
-                "ECREASOS",
-            ],
-            "IDVAR": [
-                "ECSEQ",
-                "ECSEQ",
-            ],
-            "IDVARVAL": [
-                "4.0",
-                "5.0",
-            ],
-        }
+    suppec_dataset = PandasDataset(
+        pd.DataFrame.from_dict(
+            {
+                "USUBJID": [
+                    "CDISC005",
+                    "CDISC005",
+                ],
+                "RDOMAIN": [
+                    "EC",
+                    "EC",
+                ],
+                "QNAM": [
+                    "ECREASOC",
+                    "ECREASOS",
+                ],
+                "IDVAR": [
+                    "ECSEQ",
+                    "ECSEQ",
+                ],
+                "IDVARVAL": [
+                    "4.0",
+                    "5.0",
+                ],
+            }
+        )
     )
 
     # mock blob storage call
@@ -300,45 +316,47 @@ def test_preprocess_relationship_dataset(
     preprocessed_dataset: pd.DataFrame = preprocessor.preprocess(
         dataset_rule_record_in_parent_domain_equal_to, datasets
     )
-    expected_dataset = pd.DataFrame.from_dict(
-        {
-            "USUBJID": ["CDISC005", "CDISC005"],
-            "DOMAIN": [
-                "EC",
-                "EC",
-            ],
-            "ECPRESP": [
-                "Y",
-                "B",
-            ],
-            "ECSEQ": [
-                4.0,
-                5.0,
-            ],
-            "ECNUM": [
-                4,
-                5,
-            ],
-            "USUBJID.SUPPEC": ["CDISC005", "CDISC005"],
-            "RDOMAIN": [
-                "EC",
-                "EC",
-            ],
-            "QNAM": [
-                "ECREASOC",
-                "ECREASOS",
-            ],
-            "IDVAR": [
-                "ECSEQ",
-                "ECSEQ",
-            ],
-            "IDVARVAL": [
-                4.0,
-                5.0,
-            ],
-        }
+    expected_dataset = PandasDataset(
+        pd.DataFrame.from_dict(
+            {
+                "USUBJID": ["CDISC005", "CDISC005"],
+                "DOMAIN": [
+                    "EC",
+                    "EC",
+                ],
+                "ECPRESP": [
+                    "Y",
+                    "B",
+                ],
+                "ECSEQ": [
+                    4.0,
+                    5.0,
+                ],
+                "ECNUM": [
+                    4,
+                    5,
+                ],
+                "USUBJID.SUPPEC": ["CDISC005", "CDISC005"],
+                "RDOMAIN": [
+                    "EC",
+                    "EC",
+                ],
+                "QNAM": [
+                    "ECREASOC",
+                    "ECREASOS",
+                ],
+                "IDVAR": [
+                    "ECSEQ",
+                    "ECSEQ",
+                ],
+                "IDVARVAL": [
+                    4.0,
+                    5.0,
+                ],
+            }
+        )
     )
-    assert preprocessed_dataset.equals(expected_dataset)
+    assert preprocessed_dataset.data.equals(expected_dataset.data)
 
 
 @patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset")
@@ -381,93 +399,99 @@ def test_preprocess_relrec_dataset(mock_get_dataset: MagicMock):
         ],
     }
     # create datasets
-    ec_dataset = pd.DataFrame.from_dict(
-        {
-            "ECSEQ": [
-                "1",
-                "2",
-                "3",
-                "4",
-                "5",
-            ],
-            "ECSTDY": [
-                4,
-                5,
-                6,
-                7,
-                8,
-            ],
-            "STUDYID": [
-                "1",
-                "2",
-                "1",
-                "2",
-                "3",
-            ],
-            "USUBJID": [
-                "CDISC001",
-                "CDISC001",
-                "CDISC002",
-                "CDISC002",
-                "CDISC003",
-            ],
-        }
+    ec_dataset = PandasDataset(
+        pd.DataFrame.from_dict(
+            {
+                "ECSEQ": [
+                    "1",
+                    "2",
+                    "3",
+                    "4",
+                    "5",
+                ],
+                "ECSTDY": [
+                    4,
+                    5,
+                    6,
+                    7,
+                    8,
+                ],
+                "STUDYID": [
+                    "1",
+                    "2",
+                    "1",
+                    "2",
+                    "3",
+                ],
+                "USUBJID": [
+                    "CDISC001",
+                    "CDISC001",
+                    "CDISC002",
+                    "CDISC002",
+                    "CDISC003",
+                ],
+            }
+        )
     )
-    ae_dataset = pd.DataFrame.from_dict(
-        {
-            "AESEQ": [
-                "1",
-                "2",
-                "3",
-                "4",
-            ],
-            "AESTDY": [
-                4,
-                5,
-                16,
-                17,
-            ],
-            "STUDYID": [
-                "1",
-                "2",
-                "1",
-                "2",
-            ],
-            "USUBJID": [
-                "CDISC001",
-                "CDISC001",
-                "CDISC002",
-                "CDISC002",
-            ],
-        }
+    ae_dataset = PandasDataset(
+        pd.DataFrame.from_dict(
+            {
+                "AESEQ": [
+                    "1",
+                    "2",
+                    "3",
+                    "4",
+                ],
+                "AESTDY": [
+                    4,
+                    5,
+                    16,
+                    17,
+                ],
+                "STUDYID": [
+                    "1",
+                    "2",
+                    "1",
+                    "2",
+                ],
+                "USUBJID": [
+                    "CDISC001",
+                    "CDISC001",
+                    "CDISC002",
+                    "CDISC002",
+                ],
+            }
+        )
     )
-    relrec_dataset = pd.DataFrame.from_dict(
-        {
-            "RDOMAIN": [
-                "EC",
-                "AE",
-            ],
-            "IDVAR": [
-                "ECSEQ",
-                "AESEQ",
-            ],
-            "IDVARVAL": [
-                "",
-                "",
-            ],
-            "RELID": [
-                "ECAE",
-                "ECAE",
-            ],
-            "STUDYID": [
-                "1",
-                "1",
-            ],
-            "USUBJID": [
-                "",
-                "",
-            ],
-        }
+    relrec_dataset = PandasDataset(
+        pd.DataFrame.from_dict(
+            {
+                "RDOMAIN": [
+                    "EC",
+                    "AE",
+                ],
+                "IDVAR": [
+                    "ECSEQ",
+                    "AESEQ",
+                ],
+                "IDVARVAL": [
+                    "",
+                    "",
+                ],
+                "RELID": [
+                    "ECAE",
+                    "ECAE",
+                ],
+                "STUDYID": [
+                    "1",
+                    "1",
+                ],
+                "USUBJID": [
+                    "",
+                    "",
+                ],
+            }
+        )
     )
 
     # mock blob storage call
@@ -505,29 +529,31 @@ def test_preprocess_relrec_dataset(mock_get_dataset: MagicMock):
         InMemoryCacheService(),
     )
     preprocessed_dataset: pd.DataFrame = preprocessor.preprocess(relrec_rule, datasets)
-    expected_dataset = pd.DataFrame.from_dict(
-        {
-            "ECSEQ": ["1", "2", "3", "4"],
-            "ECSTDY": [4, 5, 6, 7],
-            "STUDYID": ["1", "2", "1", "2"],
-            "USUBJID": [
-                "CDISC001",
-                "CDISC001",
-                "CDISC002",
-                "CDISC002",
-            ],
-            "RELREC.__SEQ": ["1", "2", "3", "4"],
-            "RELREC.__STDY": [4, 5, 16, 17],
-            "RELREC.STUDYID": ["1", "2", "1", "2"],
-            "RELREC.USUBJID": [
-                "CDISC001",
-                "CDISC001",
-                "CDISC002",
-                "CDISC002",
-            ],
-        }
+    expected_dataset = PandasDataset(
+        pd.DataFrame.from_dict(
+            {
+                "ECSEQ": ["1", "2", "3", "4"],
+                "ECSTDY": [4, 5, 6, 7],
+                "STUDYID": ["1", "2", "1", "2"],
+                "USUBJID": [
+                    "CDISC001",
+                    "CDISC001",
+                    "CDISC002",
+                    "CDISC002",
+                ],
+                "RELREC.__SEQ": ["1", "2", "3", "4"],
+                "RELREC.__STDY": [4, 5, 16, 17],
+                "RELREC.STUDYID": ["1", "2", "1", "2"],
+                "RELREC.USUBJID": [
+                    "CDISC001",
+                    "CDISC001",
+                    "CDISC002",
+                    "CDISC002",
+                ],
+            }
+        )
     )
-    assert preprocessed_dataset.equals(expected_dataset)
+    assert preprocessed_dataset.data.equals(expected_dataset.data)
 
 
 @patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset")
@@ -540,33 +566,37 @@ def test_preprocess_with_merge_comparison(
     the preprocess method correctly names variables from
     merged datasets.
     """
-    target_dataset = pd.DataFrame.from_dict(
-        {
-            "STUDYID": [
-                "CDISCPILOT01",
-            ],
-            "DOMAIN": [
-                "IE",
-            ],
-            "USUBJID": [
-                "CDISC015",
-            ],
-            "NOTVISIT": [12],
-        }
+    target_dataset = PandasDataset(
+        pd.DataFrame.from_dict(
+            {
+                "STUDYID": [
+                    "CDISCPILOT01",
+                ],
+                "DOMAIN": [
+                    "IE",
+                ],
+                "USUBJID": [
+                    "CDISC015",
+                ],
+                "NOTVISIT": [12],
+            }
+        )
     )
-    match_dataset = pd.DataFrame.from_dict(
-        {
-            "STUDYID": [
-                "CDISCPILOT01",
-            ],
-            "DOMAIN": [
-                "AE",
-            ],
-            "USUBJID": [
-                "CDISC015",
-            ],
-            "VISIT": [24],
-        }
+    match_dataset = PandasDataset(
+        pd.DataFrame.from_dict(
+            {
+                "STUDYID": [
+                    "CDISCPILOT01",
+                ],
+                "DOMAIN": [
+                    "AE",
+                ],
+                "USUBJID": [
+                    "CDISC015",
+                ],
+                "VISIT": [24],
+            }
+        )
     )
 
     path_to_dataset_map: dict = {

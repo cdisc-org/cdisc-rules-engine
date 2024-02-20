@@ -11,9 +11,14 @@ from cdisc_rules_engine.operations.label_referenced_variable_metadata import (
 )
 from cdisc_rules_engine.services.cache import InMemoryCacheService
 from cdisc_rules_engine.services.data_services import LocalDataService
+from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
+import pytest
 
 
-def test_get_label_referenced_variable_metadata(operation_params: OperationParams):
+@pytest.mark.parametrize("dataset_type", [(PandasDataset)])
+def test_get_label_referenced_variable_metadata(
+    operation_params: OperationParams, dataset_type
+):
     model_metadata = {
         "datasets": [
             {
@@ -78,7 +83,7 @@ def test_get_label_referenced_variable_metadata(operation_params: OperationParam
             }
         ],
     }
-    operation_params.dataframe = pd.DataFrame.from_dict(
+    operation_params.dataframe = dataset_type.from_dict(
         {
             "STUDYID": [
                 "TEST_STUDY",
@@ -127,8 +132,15 @@ def test_get_label_referenced_variable_metadata(operation_params: OperationParam
     ]
 
     assert result.columns.to_list() == expected_columns
-    assert result["$label_referenced_variable_name"][0] == "AETEST"
-    assert result["$label_referenced_variable_name"][1] == "AENEW"
-
-    # Check unmatched label in the AELABEL column
-    assert result["$label_referenced_variable_name"][2] == ""
+    assert (
+        result.data[result["$label_referenced_variable_label"] == "TEST AE"][
+            "$label_referenced_variable_name"
+        ].values
+        == "AETEST"
+    )
+    assert (
+        result.data[result["$label_referenced_variable_label"] == "NEW AE"][
+            "$label_referenced_variable_name"
+        ].values
+        == "AENEW"
+    )

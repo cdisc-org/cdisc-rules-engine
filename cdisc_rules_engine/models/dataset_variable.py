@@ -1,5 +1,10 @@
-from business_rules.variables import BaseVariables, dataframe_rule_variable
+from business_rules.variables import BaseVariables, rule_variable
 from pandas import DataFrame
+from cdisc_rules_engine.check_operators.dataframe_operators import DataframeType
+
+
+def dataframe_rule_variable(label=None, options=None):
+    return rule_variable(DataframeType, label=label, options=options)
 
 
 class DatasetVariable(BaseVariables):

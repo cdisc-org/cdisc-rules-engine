@@ -18,13 +18,21 @@ def test_read_metadata():
     )
     reader = DatasetXPTMetadataReader(test_dataset_path, file_name="test_dataset.xpt")
     metadata: dict = reader.read()
-    assert metadata["dataset_name"] == "TEST_DATASET", "Test file has been changed"
-    assert metadata["domain_name"] == "EX", "Test file has been changed"
-    assert metadata["dataset_label"] == "Exposure", "Test file has been changed"
-    assert metadata["number_of_variables"] == 17, "Test file has been changed"
+    assert (
+        metadata["dataset_name"] == "TEST_DATASET"
+    ), "Wrong dataset name. Test file has been changed"
+    assert (
+        metadata["domain_name"] == "EX"
+    ), "Wrong domain name. Test file has been changed"
+    assert (
+        metadata["dataset_label"] == "Exposure"
+    ), "Wrong dataset label. Test file has been changed"
+    assert (
+        metadata["number_of_variables"] == 17
+    ), "Wrong number of variables. Test file has been changed"
     assert (
         metadata["dataset_modification_date"] == "2020-08-21T09:14:26"
-    ), "Test file has been changed"
+    ), "Incorrect modification date. Test file has been changed"
     assert isinstance(metadata["variable_labels"], list)
     assert isinstance(metadata["variable_names"], list)
     assert isinstance(metadata["variable_name_to_data_type_map"], dict)
@@ -58,10 +66,10 @@ def test_read_metadata_with_variable_formats():
         "",
         "",
         "",
-        "DATE9.",
-        "DATE9.",
-        "DATE9.",
-        "DATE9.",
+        "DATE9",
+        "DATE9",
+        "DATE9",
+        "DATE9",
         "",
         "",
         "",
@@ -78,7 +86,7 @@ def test_read_metadata_with_variable_formats():
         "",
         "",
         "",
-        "DATE9.",
+        "DATE9",
         "",
         "",
         "",

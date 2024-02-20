@@ -21,13 +21,15 @@ class ParentLibraryModelColumnOrder(LibraryModelColumnOrder):
         """
         domain_to_datasets = self._get_domain_to_datasets()
         rdomain_names_list = {}
-        return Series(
-            rdomain_names_list.setdefault(
-                rdomain,
-                self._get_parent_variable_names_list(domain_to_datasets, rdomain),
-            )
-            for rdomain in self.params.dataframe.get(
-                "RDOMAIN", [None] * len(self.params.dataframe)
+        return self.evaluation_dataset.convert_to_series(
+            Series(
+                rdomain_names_list.setdefault(
+                    rdomain,
+                    self._get_parent_variable_names_list(domain_to_datasets, rdomain),
+                )
+                for rdomain in self.params.dataframe.get(
+                    "RDOMAIN", [None] * len(self.params.dataframe)
+                )
             )
         )
 

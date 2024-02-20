@@ -155,7 +155,17 @@ def get_datasets(
                 "label": metadata.label,
                 "size": metadata.size,
                 "modification_date": metadata.modification_date,
+                "temp_filename": None,
             }
         )
 
     return datasets
+
+
+def get_max_dataset_size(dataset_paths: Iterable[str]):
+    max_dataset_size = 0
+    for file_path in dataset_paths:
+        file_size = os.path.getsize(file_path)
+        if file_size > max_dataset_size:
+            max_dataset_size = file_size
+    return max_dataset_size

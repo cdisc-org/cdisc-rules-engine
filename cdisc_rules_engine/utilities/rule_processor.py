@@ -1,10 +1,9 @@
 import re
 from typing import List, Optional, Set, Union, Tuple
+from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
-
-import pandas as pd
 
 from cdisc_rules_engine.constants.classes import (
     FINDINGS_ABOUT,
@@ -210,14 +209,14 @@ class RuleProcessor:
     def perform_rule_operations(
         self,
         rule: dict,
-        dataset: pd.DataFrame,
+        dataset: DatasetInterface,
         domain: str,
         datasets: List[dict],
         dataset_path: str,
         standard: str,
         standard_version: str,
         **kwargs,
-    ) -> pd.DataFrame:
+    ) -> DatasetInterface:
         """
         Applies rule operations to the dataset.
         Returns the processed dataset. Operation result is appended as a new column.
@@ -276,7 +275,7 @@ class RuleProcessor:
         return dataset_copy
 
     def _execute_operation(
-        self, operation_params: OperationParams, dataset: pd.DataFrame
+        self, operation_params: OperationParams, dataset: DatasetInterface
     ):
         """
         Internal method that executes the given operation.
@@ -292,7 +291,7 @@ class RuleProcessor:
             target_variable=operation_params.target,
             dataset_path=operation_params.dataset_path,
         )
-        result: pd.DataFrame = self.cache.get(cache_key)
+        result: DatasetInterface = self.cache.get(cache_key)
         if result is not None:
             return result
 
@@ -328,7 +327,7 @@ class RuleProcessor:
 
     def is_current_domain(self, dataset, target_domain):
         if not self.is_relationship_dataset(target_domain):
-            return "DOMAIN" in dataset and dataset["DOMAIN"][0] == target_domain
+            return "DOMAIN" in dataset and dataset["DOMAIN"].iloc[0] == target_domain
         else:
             # Always lookup relationship datasets when performing operations on them.
             return False

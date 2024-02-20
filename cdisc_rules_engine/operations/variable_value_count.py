@@ -1,4 +1,4 @@
-import pandas as pd
+from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from cdisc_rules_engine.operations.base_operation import BaseOperation
 import asyncio
 import os
@@ -38,11 +38,11 @@ class VariableValueCount(BaseOperation):
                 os.path.join(self.params.directory_path, dataset.get("filename"))
                 for dataset in get_corresponding_datasets(self.params.datasets, domain)
             ]
-            data: pd.DataFrame = self.data_service.join_split_datasets(
+            data: DatasetInterface = self.data_service.join_split_datasets(
                 self.data_service.get_dataset, files
             )
         else:
-            data: pd.DataFrame = self.data_service.get_dataset(
+            data: DatasetInterface = self.data_service.get_dataset(
                 os.path.join(self.params.directory_path, dataset.get("filename"))
             )
         target_variable = self.params.original_target.replace("--", domain, 1)
