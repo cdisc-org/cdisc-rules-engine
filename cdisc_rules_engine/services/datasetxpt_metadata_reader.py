@@ -34,7 +34,6 @@ class DatasetXPTMetadataReader:
         dataset, metadata = pyreadstat.read_xport(
             self._file_path, row_limit=self.row_limit
         )
-        print(metadata.file_label)
         self._domain_name = self._extract_domain_name(dataset)
         self._metadata_container = {
             "variable_labels": list(metadata.column_labels),
