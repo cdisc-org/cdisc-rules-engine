@@ -54,7 +54,7 @@ class DatasetJSONReader(DataReaderInterface):
                 return DaskDataset(dd.from_pandas(df), npartitions=4)
         except jsonschema.exceptions.ValidationError:
             return PandasDataset(pd.DataFrame())
-    
+
     def to_parquet(self, file_path: str) -> str:
         temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".parquet")
         dataset = self.from_file(file_path)

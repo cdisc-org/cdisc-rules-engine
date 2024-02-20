@@ -89,7 +89,7 @@ class DataServiceInterface(ABC):
         """
         Returns dataset class based on its contents
         """
-    
+
     @abstractmethod
     def to_parquet(self, file_path: str) -> str:
         """

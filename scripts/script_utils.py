@@ -11,8 +11,6 @@ from cdisc_rules_engine.services import logger as engine_logger
 import os
 import pickle
 from cdisc_rules_engine.models.dictionaries import DictionaryTypes
-from cdisc_rules_engine.models.dataset import PandasDataset, DaskDataset
-import psutil
 from cdisc_rules_engine.models.dictionaries.get_dictionary_terms import (
     extract_dictionary_terms,
 )
@@ -157,11 +155,12 @@ def get_datasets(
                 "label": metadata.label,
                 "size": metadata.size,
                 "modification_date": metadata.modification_date,
-                "temp_filename": None
+                "temp_filename": None,
             }
         )
 
     return datasets
+
 
 def get_max_dataset_size(dataset_paths: Iterable[str]):
     max_dataset_size = 0

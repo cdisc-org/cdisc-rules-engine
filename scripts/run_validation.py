@@ -60,7 +60,7 @@ def validate_single_rule(
     rule["conditions"] = ConditionCompositeFactory.get_condition_composite(
         rule["conditions"]
     )
-    max_dataset_size = max(datasets, key=lambda x:x['size'])['size']
+    max_dataset_size = max(datasets, key=lambda x: x["size"])["size"]
     # call rule engine
     engine = RulesEngine(
         cache=cache,
@@ -117,13 +117,17 @@ def run_validation(args: Validation_args):
     fill_cache_with_dictionaries(shared_cache, args)
     rules = get_rules(args)
     max_dataset_size = get_max_dataset_size(args.dataset_paths)
-    data_service = DataServiceFactory(config, shared_cache, max_dataset_size=max_dataset_size).get_data_service()
+    data_service = DataServiceFactory(
+        config, shared_cache, max_dataset_size=max_dataset_size
+    ).get_data_service()
     large_dataset_validation: bool = data_service.dataset_class != PandasDataset
     datasets = get_datasets(data_service, args.dataset_paths)
     created_files = []
     if large_dataset_validation:
         # convert all files to parquet temp files
-        engine_logger.warning("Large datasets must use parquet format, converting all datasets to parquet")
+        engine_logger.warning(
+            "Large datasets must use parquet format, converting all datasets to parquet"
+        )
         for dataset in datasets:
             file_path = dataset.get("full_path")
             if file_path.endswith(".parquet"):
@@ -155,8 +159,8 @@ def run_validation(args: Validation_args):
     reporting_services: List[BaseReport] = reporting_factory.get_report_services()
     for reporting_service in reporting_services:
         reporting_service.write_report(args.define_xml_path)
-    
-    engine_logger.info(f"Cleaning up intermediate files")
+
+    engine_logger.info("Cleaning up intermediate files")
     for file in created_files:
         engine_logger.info(f"Deleting file {file}")
         os.remove(file)

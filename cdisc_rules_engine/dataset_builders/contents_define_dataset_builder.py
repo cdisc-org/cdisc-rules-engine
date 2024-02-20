@@ -1,6 +1,5 @@
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.dataset_builders.base_dataset_builder import BaseDatasetBuilder
-from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 import pandas as pd
 
 
@@ -88,7 +87,9 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
                     logger.trace(e, __name__)
                     logger.error(f"Error: {e}. Error message: {str(e)}")
                 datasets.data = (
-                    ds_metadata.data if datasets.data.empty else datasets.data.append(ds_metadata.data)
+                    ds_metadata.data
+                    if datasets.data.empty
+                    else datasets.data.append(ds_metadata.data)
                 )
 
             if datasets.data.empty or len(datasets.data) == 0:

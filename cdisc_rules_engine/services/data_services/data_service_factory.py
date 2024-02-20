@@ -60,16 +60,18 @@ class DataServiceFactory(FactoryInterface):
 
     def get_dataset_type(self):
         """
-        Gets the class that should be used to represent datasets for the rules engine. This class may be dependent on 
+        Gets the class that should be used to represent datasets for the rules engine. This class may be dependent on
         rule size or config values
 
         :returns DatasetInterface.__class__
         """
-        if self.max_dataset_size and self.max_dataset_size >= self.dataset_size_threshold:
+        if (
+            self.max_dataset_size
+            and self.max_dataset_size >= self.dataset_size_threshold
+        ):
             # Use large dataset class
             return DaskDataset
         return PandasDataset
-
 
     @classmethod
     def register_service(cls, name: str, service: Type[DataServiceInterface]) -> None:

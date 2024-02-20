@@ -370,12 +370,12 @@ class DataProcessor:
         )
 
         # TODO: FIX
-        objs=[
-                DataProcessor.merge_on_relrec_record(
-                    relrec_row, left_dataset, datasets, dataset_preprocessor, wildcard
-                )
-                for _, relrec_row in relrec_for_domain.iterrows()
-            ]
+        objs = [
+            DataProcessor.merge_on_relrec_record(
+                relrec_row, left_dataset, datasets, dataset_preprocessor, wildcard
+            )
+            for _, relrec_row in relrec_for_domain.iterrows()
+        ]
         result = objs[0].concat(objs[1:])
         return result
 

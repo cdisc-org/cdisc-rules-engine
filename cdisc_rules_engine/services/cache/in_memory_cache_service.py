@@ -8,11 +8,13 @@ from cdisc_rules_engine.models.dataset import DatasetInterface
 from cachetools import LRUCache
 import psutil
 
+
 def get_data_size(dataset):
     if isinstance(dataset, DatasetInterface):
         return dataset.size
     else:
         return asizeof.asizeof(dataset)
+
 
 class InMemoryCacheService(CacheServiceInterface):
     _instance = None
@@ -27,16 +29,18 @@ class InMemoryCacheService(CacheServiceInterface):
         self.max_size = max_size or psutil.virtual_memory().available * 0.25
         self.cache = LRUCache(maxsize=self.max_size, getsizeof=asizeof.asizeof)
         self.max_dataset_cache_size = psutil.virtual_memory().available * 0.5
-        self.dataset_cache = LRUCache(maxsize=self.max_dataset_cache_size, getsizeof=get_data_size)
+        self.dataset_cache = LRUCache(
+            maxsize=self.max_dataset_cache_size, getsizeof=get_data_size
+        )
 
     def add(self, cache_key, data):
         if get_data_size(data) > self.max_size:
             return
         self.cache[cache_key] = data
-    
+
     def add_dataset(self, cache_key, data):
         self.dataset_cache[cache_key] = data
-    
+
     def get_dataset(self, cache_key):
         return self.dataset_cache.get(cache_key, None)
 

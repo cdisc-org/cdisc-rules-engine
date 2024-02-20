@@ -365,10 +365,8 @@ def test_rule_applies_to_class(
             == outcome
         )
 
-@pytest.mark.parametrize(
-    "dataset_class",
-    [PandasDataset, DaskDataset]
-)
+
+@pytest.mark.parametrize("dataset_class", [PandasDataset, DaskDataset])
 def test_perform_rule_operation(mock_data_service, dataset_class):
     conditions = {
         "any": [
@@ -443,10 +441,8 @@ def test_perform_rule_operation(mock_data_service, dataset_class):
         assert result["$avg_aestdy"][0] == df["AESTDY"].mean()
         assert result["$unique_aestdy"].equals(pd.Series([{11, 12, 40, 59}] * len(df)))
 
-@pytest.mark.parametrize(
-    "dataset_class",
-    [PandasDataset, DaskDataset]
-)
+
+@pytest.mark.parametrize("dataset_class", [PandasDataset, DaskDataset])
 def test_perform_rule_operation_with_grouping(mock_data_service, dataset_class):
     conditions = {
         "all": [
@@ -561,11 +557,10 @@ def test_perform_rule_operation_with_grouping(mock_data_service, dataset_class):
         )
 
 
-@pytest.mark.parametrize(
-    "dataset_class",
-    [PandasDataset, DaskDataset]
-)
-def test_perform_rule_operation_with_multi_key_grouping(mock_data_service, dataset_class):
+@pytest.mark.parametrize("dataset_class", [PandasDataset, DaskDataset])
+def test_perform_rule_operation_with_multi_key_grouping(
+    mock_data_service, dataset_class
+):
     conditions = {
         "all": [
             {
@@ -641,10 +636,8 @@ def test_perform_rule_operation_with_multi_key_grouping(mock_data_service, datas
         assert "$min_aestdy" in data
         assert data["$min_aestdy"].values.tolist() == [10, 11, 10, 11, 30, 112]
 
-@pytest.mark.parametrize(
-    "dataset_class",
-    [PandasDataset, DaskDataset]
-)
+
+@pytest.mark.parametrize("dataset_class", [PandasDataset, DaskDataset])
 def test_perform_rule_operation_with_null_operations(mock_data_service, dataset_class):
     conditions = {
         "all": [
@@ -689,10 +682,7 @@ def test_perform_rule_operation_with_null_operations(mock_data_service, dataset_
 @patch(
     "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset_metadata"
 )
-@pytest.mark.parametrize(
-    "dataset_class",
-    [PandasDataset, DaskDataset]
-)
+@pytest.mark.parametrize("dataset_class", [PandasDataset, DaskDataset])
 def test_perform_extract_metadata_operation(
     mock_get_dataset_metadata: MagicMock,
     dataset_class,

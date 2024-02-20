@@ -1,11 +1,9 @@
-import pandas as pd
 import pyreadstat
 
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.services.adam_variable_reader import AdamVariableReader
 import psutil
 import os
-
 
 
 class DatasetXPTMetadataReader:
@@ -18,7 +16,7 @@ class DatasetXPTMetadataReader:
     #  like from_bytes, from_file etc. But now there is no immediate need for that.
     def __init__(self, file_path: str, file_name: str):
         file_size = os.path.getsize(file_path)
-        if file_size > psutil.virtual_memory().available * .25:
+        if file_size > psutil.virtual_memory().available * 0.25:
             self._estimate_dataset_length = True
             self.row_limit = 1
         else:
@@ -29,18 +27,22 @@ class DatasetXPTMetadataReader:
         self._dataset_name = file_name.split(".")[0].upper()
         self._file_path = file_path
 
-
     def read(self) -> dict:
         """
         Extracts metadata from binary contents of .xpt file.
         """
-        dataset, metadata = pyreadstat.read_xport(self._file_path, row_limit = self.row_limit)
+        dataset, metadata = pyreadstat.read_xport(
+            self._file_path, row_limit=self.row_limit
+        )
         print(metadata.file_label)
         self._domain_name = self._extract_domain_name(dataset)
         self._metadata_container = {
             "variable_labels": list(metadata.column_labels),
             "variable_names": list(metadata.column_names),
-            "variable_formats": ['' if data_type == 'NULL' else data_type for data_type in metadata.original_variable_types.values()],
+            "variable_formats": [
+                "" if data_type == "NULL" else data_type
+                for data_type in metadata.original_variable_types.values()
+            ],
             "variable_name_to_label_map": metadata.column_names_to_labels,
             "variable_name_to_data_type_map": metadata.readstat_variable_types,
             "variable_name_to_size_map": metadata.variable_storage_width,
@@ -53,7 +55,9 @@ class DatasetXPTMetadataReader:
         }
 
         if self._estimate_dataset_length:
-            self._metadata_container["dataset_length"] = self._calculate_dataset_length()
+            self._metadata_container[
+                "dataset_length"
+            ] = self._calculate_dataset_length()
         self._domain_name = self._extract_domain_name(dataset)
         self._convert_variable_types()
         self._metadata_container["adam_info"] = self._extract_adam_info(
@@ -77,7 +81,7 @@ class DatasetXPTMetadataReader:
 
     def _calculate_dataset_length(self):
         row_size = sum(self._metadata_container["variable_name_to_size_map"].values())
-        return int(os.path.getsize(self._file_path)/row_size)
+        return int(os.path.getsize(self._file_path) / row_size)
 
     def _convert_variable_types(self):
         """

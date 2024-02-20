@@ -4,9 +4,4 @@ from .parquet_reader import ParquetReader
 from .json_reader import DatasetJSONReader
 
 
-__all__ = [
-    "DataReaderFactory",
-    "XPTReader",
-    "DatasetJSONReader",
-    "ParquetReader"
-]
+__all__ = ["DataReaderFactory", "XPTReader", "DatasetJSONReader", "ParquetReader"]

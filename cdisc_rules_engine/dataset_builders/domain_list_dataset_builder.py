@@ -1,5 +1,4 @@
 from cdisc_rules_engine.dataset_builders.base_dataset_builder import BaseDatasetBuilder
-import pandas as pd
 
 
 class DomainListDatasetBuilder(BaseDatasetBuilder):

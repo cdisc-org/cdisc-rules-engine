@@ -67,7 +67,9 @@ class DatasetPreprocessor:
             )
             if not file_info:
                 continue
-            other_dataset: DatasetInterface = self._download_dataset(file_info["filename"])
+            other_dataset: DatasetInterface = self._download_dataset(
+                file_info["filename"]
+            )
             referenced_targets = set(
                 [
                     target.replace(f"{domain_name}.", "")

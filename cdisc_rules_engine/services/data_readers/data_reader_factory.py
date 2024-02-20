@@ -10,6 +10,7 @@ from cdisc_rules_engine.services.data_readers.parquet_reader import ParquetReade
 from cdisc_rules_engine.enums.dataformat_types import DataFormatTypes
 from cdisc_rules_engine.models.dataset import PandasDataset
 
+
 class DataReaderFactory(FactoryInterface):
     _reader_map = {
         DataFormatTypes.XPT.value: XPTReader,
@@ -17,7 +18,7 @@ class DataReaderFactory(FactoryInterface):
         DataFormatTypes.JSON.value: DatasetJSONReader,
     }
 
-    def __init__(self, service_name: str = None, dataset_class = PandasDataset):
+    def __init__(self, service_name: str = None, dataset_class=PandasDataset):
         self._default_service_name = service_name
         self.dataset_class = dataset_class
 
