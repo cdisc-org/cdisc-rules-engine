@@ -180,7 +180,6 @@ class DaskDataset(PandasDataset):
         """
         Return the cartesian product of two dataframes
         """
-        print(right)
         return cls(
             dd.from_pandas(
                 left.compute().merge(right, how="cross"),
