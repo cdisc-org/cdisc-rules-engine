@@ -174,34 +174,27 @@ class USDMDataService(BaseDataService):
             flattened = {"value": node}
         return flattened
 
+    @staticmethod
+    def __get_parent_rel(node) -> Union[Fields, This]:
+        return (
+            node.context.path
+            if node.context and type(node.context.value) is list
+            else node.path
+        )
+
     def __get_record_metadata(self, node) -> dict:
-        record = {}
-        if type(node.context.value) is list:
-            record = {
-                "parent_id": node.context.context.value.get("id", ""),
-                "parent_rel": f"{node.context.path}",
-                "parent_entity": self.__get_entity_name(
-                    node.context.context.value,
-                    node.context.context.context.path,
-                ),
-            }
-        elif node.context.context and type(node.context.context.value) is list:
-            record = {
-                "parent_id": node.context.value.get("id", ""),
-                "parent_rel": f"{node.path}",
-                "parent_entity": self.__get_entity_name(
-                    node.context.value, node.context.context.path
-                ),
-            }
-        else:
-            record = {
-                "parent_id": node.context.value.get("id", ""),
-                "parent_rel": f"{node.path}",
-                "parent_entity": self.__get_entity_name(
-                    node.context.value, node.context.path
-                ),
-            }
-        record |= {"rel_type": node.type}
+        closest_non_list_ancestor = (
+            node.context.context if type(node.context.value) is list else node.context
+        )
+        record = {
+            "parent_entity": self.__get_entity_name(
+                closest_non_list_ancestor.value,
+                USDMDataService.__get_parent_rel(closest_non_list_ancestor),
+            ),
+            "parent_id": closest_non_list_ancestor.value.get("id", ""),
+            "parent_rel": f"{USDMDataService.__get_parent_rel(node)}",
+            "rel_type": node.type,
+        }
         return record
 
     def __get_dataset(self, dataset_name: str) -> pandas.DataFrame:
