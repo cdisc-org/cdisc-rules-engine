@@ -5,6 +5,7 @@ from typing import List, Optional, Set, TYPE_CHECKING
 import pandas as pd
 
 from cdisc_rules_engine.config import config
+from cdisc_rules_engine.enums.join_types import JoinTypes
 from cdisc_rules_engine.exceptions.custom_exceptions import InvalidMatchKeyError
 from cdisc_rules_engine.services.cache.cache_service_factory import CacheServiceFactory
 from cdisc_rules_engine.interfaces import (
@@ -414,14 +415,23 @@ class DataProcessor:
         left_dataset_match_keys: List[str],
         right_dataset_match_keys: List[str],
         right_dataset_domain_name: str,
+        join_type: JoinTypes,
     ) -> pd.DataFrame:
         result = pd.merge(
             left_dataset,
             right_dataset,
+            how=join_type.value,
             left_on=left_dataset_match_keys,
             right_on=right_dataset_match_keys,
             suffixes=("", f".{right_dataset_domain_name}"),
+            indicator=(join_type is not JoinTypes.INNER),
         )
+        if join_type is JoinTypes.LEFT:
+            if "left_only" in result["_merge"].values:
+                right_columns = [
+                    col for col in result.columns if right_dataset_domain_name in col
+                ]
+                result.loc[result["_merge"] == "left_only", right_columns] = None
         return result
 
     @staticmethod

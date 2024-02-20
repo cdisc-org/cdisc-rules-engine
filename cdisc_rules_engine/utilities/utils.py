@@ -330,3 +330,11 @@ def convert_library_class_name_to_ct_class(class_name: str):
 
 def decode_line(line: bytes) -> str:
     return line.decode("utf-8").replace("\n", "").replace("\r", "")
+
+
+def get_left_match_keys(match_keys: List[str]) -> List[str]:
+    return ["".join(match_key.split(" = ")[0]) for match_key in match_keys]
+
+
+def get_right_match_keys(match_keys: List[str]) -> List[str]:
+    return ["".join(match_key.split(" = ")[-1]) for match_key in match_keys]

@@ -2,6 +2,7 @@ from typing import List
 
 import pandas as pd
 
+from cdisc_rules_engine.enums.join_types import JoinTypes
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.interfaces import (
     CacheServiceInterface,
@@ -12,6 +13,8 @@ from cdisc_rules_engine.utilities.rule_processor import RuleProcessor
 from cdisc_rules_engine.utilities.utils import (
     replace_pattern_in_list_of_strings,
     search_in_list_of_dicts,
+    get_left_match_keys,
+    get_right_match_keys,
 )
 import os
 
@@ -112,11 +115,11 @@ class DatasetPreprocessor:
         # replace -- pattern in match keys for each domain
         match_keys: List[str] = right_dataset_domain_details.get("match_key")
         left_dataset_match_keys = replace_pattern_in_list_of_strings(
-            match_keys, "--", left_dataset_domain_name
+            get_left_match_keys(match_keys), "--", left_dataset_domain_name
         )
         right_dataset_domain_name: str = right_dataset_domain_details.get("domain_name")
         right_dataset_match_keys = replace_pattern_in_list_of_strings(
-            match_keys, "--", right_dataset_domain_name
+            get_right_match_keys(match_keys), "--", right_dataset_domain_name
         )
 
         # merge datasets based on their type
@@ -144,5 +147,8 @@ class DatasetPreprocessor:
                 left_dataset_match_keys=left_dataset_match_keys,
                 right_dataset_match_keys=right_dataset_match_keys,
                 right_dataset_domain_name=right_dataset_domain_name,
+                join_type=JoinTypes(
+                    right_dataset_domain_details.get("join_type", "inner")
+                ),
             )
         return result

@@ -168,5 +168,7 @@ class Rule:
             }
             if data.get("Is_Relationship", False):
                 join_data["relationship_columns"] = relationship_columns
+            if "Join_Type" in data:
+                join_data["join_type"] = data.get("Join_Type")
             datasets.append(join_data)
         return datasets
