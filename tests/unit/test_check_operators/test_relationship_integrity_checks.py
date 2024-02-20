@@ -31,7 +31,7 @@ import pandas as pd
             1,
             "USUBJID",
             DaskDataset,
-            [True, True, True, False, True, True],
+            [True, True, True, True, True, False],
         ),
         (
             {

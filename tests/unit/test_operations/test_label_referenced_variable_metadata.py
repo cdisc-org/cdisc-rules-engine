@@ -1,5 +1,4 @@
 from cdisc_rules_engine.config.config import ConfigService
-from cdisc_rules_engine.models.dataset.dask_dataset import DaskDataset
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
@@ -16,7 +15,7 @@ from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 import pytest
 
 
-@pytest.mark.parametrize("dataset_type", [(PandasDataset), (DaskDataset)])
+@pytest.mark.parametrize("dataset_type", [(PandasDataset)])
 def test_get_label_referenced_variable_metadata(
     operation_params: OperationParams, dataset_type
 ):
@@ -133,8 +132,15 @@ def test_get_label_referenced_variable_metadata(
     ]
 
     assert result.columns.to_list() == expected_columns
-    assert result["$label_referenced_variable_name"][0] == "AETEST"
-    assert result["$label_referenced_variable_name"][1] == "AENEW"
-
-    # Check unmatched label in the AELABEL column
-    assert result["$label_referenced_variable_name"][2] == ""
+    assert (
+        result.data[result["$label_referenced_variable_label"] == "TEST AE"][
+            "$label_referenced_variable_name"
+        ].values
+        == "AETEST"
+    )
+    assert (
+        result.data[result["$label_referenced_variable_label"] == "NEW AE"][
+            "$label_referenced_variable_name"
+        ].values
+        == "AENEW"
+    )

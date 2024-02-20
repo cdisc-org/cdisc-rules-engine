@@ -23,6 +23,7 @@ def test_meddra_code_term_pairs_validator(
     config = ConfigService()
     cache = installed_meddra_dictionaries["cache_service"]
     data_service = DataServiceFactory(config, cache).get_data_service()
+    data_service.dataset_class = dataset_type
     # create a dataset where 2 rows reference invalid terms
     invalid_df = dataset_type.from_dict(
         {"AELLTCD": ["TEST1", "TEST2", "LLT3"], "AELLT": ["TEST1", "TEST2", "TESTLLT3"]}

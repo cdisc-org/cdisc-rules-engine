@@ -22,10 +22,14 @@ class MedDRACodeTermPairsValidator(BaseOperation):
             valid_code_term_pairs = MedDRATerm.get_code_term_pairs(terms)
             self.cache.add(cache_key, valid_code_term_pairs)
         column = str(uuid4()) + "_pairs"
-        self.params.dataframe[column] = list(
-            zip(
-                self.params.dataframe[columns[0]],
-                self.params.dataframe[columns[1]],
+        self.params.dataframe[
+            column
+        ] = self.data_service.dataset_class().convert_to_series(
+            list(
+                zip(
+                    self.params.dataframe[columns[0]],
+                    self.params.dataframe[columns[1]],
+                )
             )
         )
         result = self.params.dataframe[column].isin(valid_code_term_pairs[term_type])

@@ -35,6 +35,9 @@ class DaskDataset(PandasDataset):
             chunks = self._data.map_partitions(lambda x: len(x)).compute().to_numpy()
             array_values = da.from_array(value, chunks=tuple(chunks))
             self._data[key] = array_values
+        elif isinstance(value, dd.DataFrame):
+            for column in value:
+                self._data[column] = value[column]
         else:
             self._data[key] = value
 
@@ -56,6 +59,16 @@ class DaskDataset(PandasDataset):
 
     def apply(self, func, **kwargs):
         return self._data.apply(func, **kwargs).compute()
+
+    def merge(self, other, **kwargs):
+        if isinstance(other, pd.Series):
+            new_data = self._data.merge(
+                dd.from_pandas(other.reset_index(), npartitions=self._data.npartitions),
+                **kwargs
+            )
+        else:
+            new_data = self._data.merge(other, **kwargs)
+        return self.__class__(new_data)
 
     def __concat_columns(self, current, other):
         for column in other.columns:

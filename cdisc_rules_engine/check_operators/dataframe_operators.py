@@ -1019,18 +1019,18 @@ class DataframeType(BaseType):
         target = self.replace_prefix(other_value.get("target"))
         min_count: int = other_value.get("comparator") or 1
         group_by_column = self.replace_prefix(other_value.get("within"))
-        grouped = self.value.groupby(group_by_column)
-        meta = (target, type(self.value[target].iloc[0]))
+        grouped = self.value.groupby([group_by_column, target])
+        meta = (target, bool)
         results = grouped.apply(
             lambda x: self.validate_series_length(x, target, min_count), meta=meta
         )
-        return self.value.convert_to_series(results.sort_index(level=1).tolist())
+        uuid = str(uuid4())
+        return self.value.merge(results.rename(uuid), on=target)[uuid]
 
     def validate_series_length(
         self, data: DatasetInterface, target: str, min_length: int
     ):
-        value_counts = data[target].value_counts().to_dict()
-        return data[target].apply(lambda x: value_counts.get(x, 0) > min_length)
+        return len(data) > min_length
 
     @type_operator(FIELD_DATAFRAME)
     def not_present_on_multiple_rows_within(self, other_value: dict):

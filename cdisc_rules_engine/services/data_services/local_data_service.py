@@ -42,7 +42,9 @@ class LocalDataService(BaseDataService):
         if cls._instance is None:
             service = cls(
                 cache_service=cache_service,
-                reader_factory=DataReaderFactory(dataset_class=kwargs.get("dataset_class", PandasDataset)),
+                reader_factory=DataReaderFactory(
+                    dataset_class=kwargs.get("dataset_class", PandasDataset)
+                ),
                 config=config,
                 **kwargs
             )
@@ -63,7 +65,7 @@ class LocalDataService(BaseDataService):
             extract_file_name_from_path_string(dataset_name).split(".")[1].upper()
         )
         df = reader.from_file(dataset_name)
-        # self._replace_nans_in_numeric_cols_with_none(df)
+        self._replace_nans_in_numeric_cols_with_none(df)
         return df
 
     @cached_dataset(DatasetTypes.METADATA.value)

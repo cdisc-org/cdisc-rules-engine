@@ -12,7 +12,7 @@ class NameReferencedVariableMetadata(BaseOperation):
         df = self.evaluation_dataset.__class__.from_records(variables_metadata)
         df.data = df.data.add_prefix(f"{self.params.operation_id}_")
         target_columns = df.columns
-        return self.evaluation_dataset.__class__(
+        result = self.evaluation_dataset.__class__(
             df.merge(
                 self.evaluation_dataset.data,
                 left_on=f"{self.params.operation_id}_name",
@@ -20,3 +20,4 @@ class NameReferencedVariableMetadata(BaseOperation):
                 how="right",
             ).data.fillna("")[target_columns]
         )
+        return result

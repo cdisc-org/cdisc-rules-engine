@@ -33,7 +33,6 @@ from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from cdisc_rules_engine.models.dataset import PandasDataset
 
 
-
 def cached_dataset(dataset_type: str):
     """
     Decorator that can be applied to get_dataset_... functions
@@ -145,7 +144,11 @@ class BaseDataService(DataServiceInterface, ABC):
         return full_dataset
 
     def get_dataset_class(
-        self, dataset: DatasetInterface, file_path: str, datasets: List[dict], domain: str
+        self,
+        dataset: DatasetInterface,
+        file_path: str,
+        datasets: List[dict],
+        domain: str,
     ) -> Optional[str]:
         if self._contains_topic_variable(dataset, "TERM"):
             return EVENTS
@@ -238,7 +241,7 @@ class BaseDataService(DataServiceInterface, ABC):
         Replaces NaN in numeric columns with None.
         """
         numeric_columns = dataset.data.select_dtypes(include=np.number).columns
-        dataset.data[numeric_columns] = dataset.data[numeric_columns].replace(np.nan, None)
+        dataset[numeric_columns] = dataset.data[numeric_columns].replace(np.nan, None)
 
     async def _async_get_dataset(
         self, function_to_call: Callable, dataset_name: str, **kwargs
