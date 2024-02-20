@@ -185,7 +185,6 @@ class RulesEngine:
                 f"""Error occurred during validation.
                 Error: {e}. Error message: {str(e)}"""
             )
-            raise e
             error_obj: ValidationErrorContainer = self.handle_validation_exceptions(
                 e, dataset_path, dataset_path
             )
@@ -210,7 +209,7 @@ class RulesEngine:
             standard=self.standard,
             standard_version=self.standard_version,
             library_metadata=self.library_metadata,
-            dataset_class=self.data_service.dataset_class
+            dataset_class=self.data_service.dataset_class,
         )
 
     def validate_rule(
