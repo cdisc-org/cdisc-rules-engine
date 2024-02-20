@@ -189,6 +189,8 @@ def validate(
 
     cache_path: str = os.path.join(os.path.dirname(__file__), cache)
 
+    print(os.path.dirname(__file__))
+
     if data:
         if dataset_path:
             logger.error(
