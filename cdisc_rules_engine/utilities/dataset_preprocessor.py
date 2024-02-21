@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Union
 
 import pandas as pd
 
@@ -13,8 +13,7 @@ from cdisc_rules_engine.utilities.rule_processor import RuleProcessor
 from cdisc_rules_engine.utilities.utils import (
     replace_pattern_in_list_of_strings,
     search_in_list_of_dicts,
-    get_left_match_keys,
-    get_right_match_keys,
+    get_sided_match_keys,
 )
 import os
 
@@ -113,13 +112,19 @@ class DatasetPreprocessor:
         Identifies dataset type and merges based on it.
         """
         # replace -- pattern in match keys for each domain
-        match_keys: List[str] = right_dataset_domain_details.get("match_key")
+        match_keys: List[Union[str, dict]] = right_dataset_domain_details.get(
+            "match_key"
+        )
         left_dataset_match_keys = replace_pattern_in_list_of_strings(
-            get_left_match_keys(match_keys), "--", left_dataset_domain_name
+            get_sided_match_keys(match_keys=match_keys, side="left"),
+            "--",
+            left_dataset_domain_name,
         )
         right_dataset_domain_name: str = right_dataset_domain_details.get("domain_name")
         right_dataset_match_keys = replace_pattern_in_list_of_strings(
-            get_right_match_keys(match_keys), "--", right_dataset_domain_name
+            get_sided_match_keys(match_keys=match_keys, side="right"),
+            "--",
+            right_dataset_domain_name,
         )
 
         # merge datasets based on their type
