@@ -166,10 +166,11 @@ class USDMDataService(BaseDataService):
         if type(node) is dict:
             flattened = {}
             for key, value in node.items():
+                flattened[f"{parent}{key}"] = (
+                    True if type(value) in (dict, list) else value
+                )
                 if type(value) is dict:
                     flattened |= self.__get_record_data(value, f"{parent}{key}.")
-                elif type(value) is not list:
-                    flattened[f"{parent}{key}"] = value
         else:
             flattened = {"value": node}
         return flattened
