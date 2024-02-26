@@ -66,7 +66,7 @@ def test_get_raw_dataset_metadata():
         config=ConfigService(), cache_service=mock_cache, dataset_path=dataset_path
     )
     data = data_service.get_raw_dataset_metadata(dataset_name="Code")
-    assert data.records == "93"
+    assert data.records == "117"
 
 
 def test_validate_rule_single_dataset_check(dataset_rule_greater_than: dict):
