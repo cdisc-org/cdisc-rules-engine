@@ -59,7 +59,7 @@ studyProtocolVersions: studyProtocolVersions
 studyScheduleTimelines: ScheduleTimeline
 SUBJECT_ENROLLMENT: SubjectEnrollment
 timelineId: ScheduleTimeline
-timingRelativeToFrom: Timing
+timingRelativeToFrom: Code
 transitionEndRule: TransitionRule
 transitionStartRule: TransitionRule
 treatmentId: StudyIntervention
