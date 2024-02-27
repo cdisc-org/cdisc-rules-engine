@@ -30,7 +30,6 @@ from cdisc_rules_engine.utilities.utils import generate_report_filename
 from scripts.script_utils import (
     fill_cache_with_dictionaries,
     get_cache_service,
-    get_datasets,
     get_library_metadata_from_cache,
 )
 from cdisc_rules_engine.utilities.utils import get_directory_path
@@ -181,7 +180,7 @@ def test(args: TestArgs):
         args.define_xml_path,
     )
     reporting_factory = ReportFactory(
-        get_datasets(dummy_data_service, [dataset.filename for dataset in datasets]),
+        dummy_data_service.get_datasets(),
         results,
         elapsed_time,
         validation_args,

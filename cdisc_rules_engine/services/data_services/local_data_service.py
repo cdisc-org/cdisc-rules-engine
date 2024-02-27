@@ -1,6 +1,6 @@
 import os
 from io import IOBase
-from typing import List, Optional, Tuple
+from typing import Iterable, List, Optional, Tuple
 
 import pandas
 
@@ -30,19 +30,31 @@ from cdisc_rules_engine.enums.dataformat_types import DataFormatTypes
 class LocalDataService(BaseDataService):
     _instance = None
 
+    def __init__(
+        self,
+        cache_service: CacheServiceInterface,
+        reader_factory: DataReaderFactory,
+        config: ConfigInterface,
+        **kwargs,
+    ):
+        super(LocalDataService, self).__init__(
+            cache_service, reader_factory, config, **kwargs
+        )
+        self.dataset_paths: Iterable[str] = kwargs.get("dataset_paths", [])
+
     @classmethod
     def get_instance(
         cls,
         cache_service: CacheServiceInterface,
         config: ConfigInterface = None,
-        **kwargs
+        **kwargs,
     ):
         if cls._instance is None:
             service = cls(
                 cache_service=cache_service,
                 reader_factory=DataReaderFactory(),
                 config=config,
-                **kwargs
+                **kwargs,
             )
             cls._instance = service
         return cls._instance
@@ -172,3 +184,21 @@ class LocalDataService(BaseDataService):
         if size_unit:  # convert file size from bytes to desired unit if needed
             file_metadata["size"] = convert_file_size(file_metadata["size"], size_unit)
         return file_metadata, metadata["contents_metadata"]
+
+    def get_datasets(self) -> List[dict]:
+        datasets = []
+        for dataset_path in self.dataset_paths:
+            metadata = self.get_raw_dataset_metadata(dataset_name=dataset_path)
+            datasets.append(
+                {
+                    "domain": metadata.domain_name,
+                    "filename": metadata.filename,
+                    "full_path": dataset_path,
+                    "length": metadata.records,
+                    "label": metadata.label,
+                    "size": metadata.size,
+                    "modification_date": metadata.modification_date,
+                }
+            )
+
+        return datasets

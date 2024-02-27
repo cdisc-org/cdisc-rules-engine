@@ -1,11 +1,11 @@
-from cdisc_rules_engine.interfaces import CacheServiceInterface, DataServiceInterface
+from cdisc_rules_engine.interfaces import CacheServiceInterface
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
 from cdisc_rules_engine.services.data_services import (
     DataServiceFactory,
 )
-from typing import List, Iterable
+from typing import List
 from cdisc_rules_engine.config import config
 from cdisc_rules_engine.services import logger as engine_logger
 import os
@@ -138,24 +138,3 @@ def get_rules(args) -> List[dict]:
                     rules.append(rule)
                     core_ids.add(rule.get("core_id"))
     return rules
-
-
-def get_datasets(
-    data_service: DataServiceInterface, dataset_paths: Iterable[str]
-) -> List[dict]:
-    datasets = []
-    for dataset_path in dataset_paths:
-        metadata = data_service.get_raw_dataset_metadata(dataset_name=dataset_path)
-        datasets.append(
-            {
-                "domain": metadata.domain_name,
-                "filename": metadata.filename,
-                "full_path": dataset_path,
-                "length": metadata.records,
-                "label": metadata.label,
-                "size": metadata.size,
-                "modification_date": metadata.modification_date,
-            }
-        )
-
-    return datasets
