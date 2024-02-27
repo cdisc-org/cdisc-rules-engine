@@ -1,0 +1,182 @@
+{
+    "datasets": [
+        {
+            "filename": "ds.xpt",
+            "label": "Disposition",
+            "domain": "DS",
+            "variables": [
+                {
+                    "name": "STUDYID",
+                    "label": "Study Identifier",
+                    "type": "Char",
+                    "length": 12
+                },
+                {
+                    "name": "DOMAIN",
+                    "label": "Domain Abbreviation",
+                    "type": "Char",
+                    "length": 2
+                },
+                {
+                    "name": "USUBJID",
+                    "label": "Unique Subject Identifier",
+                    "type": "Char",
+                    "length": 20
+                },
+                {
+                    "name": "DSSEQ",
+                    "label": "Sequence Number",
+                    "type": "Num",
+                    "length": 8
+                },
+                {
+                    "name": "DSTERM",
+                    "label": "Reported Term for the Disposition Event",
+                    "type": "Char",
+                    "length": 200
+                },
+                {
+                    "name": "DSDECOD",
+                    "label": "Standardized Disposition Term",
+                    "type": "Char",
+                    "length": 50
+                },
+                {
+                    "name": "DSCAT",
+                    "label": "Category for Disposition Event",
+                    "type": "Char",
+                    "length": 50
+                },
+                {
+                    "name": "DSSCAT",
+                    "label": "Subcategory for Disposition Event",
+                    "type": "Char",
+                    "length": 50
+                },
+                {
+                    "name": "EPOCH",
+                    "label": "Epoch",
+                    "type": "Char",
+                    "length": 50
+                },
+                {
+                    "name": "DSDY",
+                    "label": "Study Day of Collection",
+                    "type": "Num",
+                    "length": 2
+                },
+                {
+                    "name": "DSSTDY",
+                    "label": "Study Day of Start of Disposition Event",
+                    "type": "Num",
+                    "length": 2
+                },
+                {
+                    "name": "DSENDY",
+                    "label": "Study Day of End of Disposition Event",
+                    "type": "Num",
+                    "length": 2
+                }
+            ],
+            "records": {
+                "STUDYID": [
+                    "CDISCCORE01",
+                    "CDISCCORE01",
+                    "CDISCCORE01",
+                    "CDISCCORE01",
+                    "CDISCCORE01",
+                    "CDISCCORE01"
+                ],
+                "DOMAIN": [
+                    "DS",
+                    "DS",
+                    "DS",
+                    "DS",
+                    "DS",
+                    "DS"
+                ],
+                "USUBJID": [
+                    "015246-300-0004-00002",
+                    "015246-300-0004-00002",
+                    "015246-300-0004-00002",
+                    "015246-300-0004-00002",
+                    "015246-300-0004-00002",
+                    "015246-300-0004-00002"
+                ],
+                "DSSEQ": [
+                    5,
+                    3,
+                    3,
+                    3,
+                    3,
+                    5
+                ],
+                "DSTERM": [
+                    "ADVERSE EVENT",
+                    "RANDOMIZED",
+                    "RANDOMIZED",
+                    "RANDOMIZED",
+                    "RANDOMIZED",
+                    "ADVERSE EVENT"
+                ],
+                "DSDECOD": [
+                    "LAST CONTACT",
+                    "RANDOMIZED",
+                    "RANDOMIZED",
+                    "RANDOMIZED",
+                    "RANDOMIZED",
+                    "LAST CONTACT"
+                ],
+                "DSCAT": [
+                    "DISPOSITION EVENT",
+                    "PROTOCOL MILESTONE",
+                    "PROTOCOL MILESTONE",
+                    "PROTOCOL MILESTONE",
+                    "PROTOCOL MILESTONE",
+                    "DISPOSITION EVENT"
+                ],
+                "DSSCAT": [
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "EPOCH": [
+                    "TREATMENT",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "TREATMENT"
+                ],
+                "DSDY": [
+                    22,
+                    -5,
+                    1,
+                    2,
+                    22,
+                    11
+                ],
+                "DSSTDY": [
+                    44,
+                    null,
+                    44,
+                    null,
+                    null,
+                    null
+                ],
+                "DSENDY": [
+                    65,
+                    null,
+                    null,
+                    65,
+                    null,
+                    null
+                ]
+            }
+        }
+    ],
+    "codelists": []
+}
