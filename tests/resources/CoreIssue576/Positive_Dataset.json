@@ -1,0 +1,144 @@
+{
+    "datasets": [
+        {
+            "filename": "relrec.xpt",
+            "label": "Related Records",
+            "domain": "RELREC",
+            "variables": [
+                {
+                    "name": "STUDYID",
+                    "label": "Study Identifier",
+                    "type": "Char",
+                    "length": 12
+                },
+                {
+                    "name": "RDOMAIN",
+                    "label": "Related Domain Abbreviation",
+                    "type": "Char",
+                    "length": 6
+                },
+                {
+                    "name": "USUBJID",
+                    "label": "Unique Subject Identifier",
+                    "type": "Char",
+                    "length": 8
+                },
+                {
+                    "name": "IDVAR",
+                    "label": "Identifying Variable",
+                    "type": "Char",
+                    "length": 200
+                },
+                {
+                    "name": "IDVARVAL",
+                    "label": "Identifying Variable Value",
+                    "type": "Char",
+                    "length": 200
+                },
+                {
+                    "name": "RELTYPE",
+                    "label": "Relationship Type",
+                    "type": "Char",
+                    "length": 4
+                },
+                {
+                    "name": "RELID",
+                    "label": "Relationship Identifier",
+                    "type": "Char",
+                    "length": 200
+                }
+            ],
+            "records": {
+                "STUDYID": [
+                    "CDISCPILOT01",
+                    "CDISCPILOT01",
+                    "CDISCPILOT01",
+                    "CDISCPILOT01",
+                    "CDISCPILOT01",
+                    "CDISCPILOT01",
+                    "CDISCPILOT01",
+                    "CDISCPILOT01",
+                    "CDISCPILOT01",
+                    "CDISCPILOT01"
+                ],
+                "RDOMAIN": [
+                    "AE",
+                    "DS",
+                    "AE",
+                    "DD",
+                    "AE",
+                    "FA",
+                    "AE",
+                    "CM",
+                    "AE",
+                    "CM"
+                ],
+                "USUBJID": [
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "CDISC001",
+                    "CDISC001",
+                    "CDISC001",
+                    "CDISC001"
+                ],
+                "IDVAR": [
+                    "AELNKID",
+                    "DSLNKID",
+                    "AELNKID",
+                    "DDLNKID",
+                    "AELNKID",
+                    "FALNKGRP",
+                    "AESEQ",
+                    "CMSEQ",
+                    "AESEQ",
+                    "CMSEQ"
+                ],
+                "IDVARVAL": [
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "1",
+                    "2",
+                    "2",
+                    "4"
+                ],
+                "RELTYPE": [
+                    "ONE",
+                    "ONE",
+                    "ONE",
+                    "ONE",
+                    "ONE",
+                    "MANY",
+                    "ONE",
+                    "ONE",
+                    "ONE",
+                    "ONE"
+                ],
+                "RELID": [
+                    "AEDS1",
+                    "AEDS2",
+                    "AEDD",
+                    "AEDD",
+                    "AEFA",
+                    "AEFA",
+                    "AECM1",
+                    "AECM1",
+                    "AECM2",
+                    "AECM2"
+                ]
+            }
+        }
+    ],
+    "standard": {
+        "product": "sdtmig",
+        "version": "3-3"
+    },
+    "codelists": []
+}
