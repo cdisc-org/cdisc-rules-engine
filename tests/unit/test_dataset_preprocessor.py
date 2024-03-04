@@ -202,6 +202,220 @@ def test_preprocess(mock_get_dataset: MagicMock, dataset_rule_equal_to: dict):
 
 
 @patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset")
+def test_preprocess_left_join(mock_get_dataset: MagicMock, dataset_rule_equal_to: dict):
+    """
+    Unit test for preprocess method. Checks the case when
+    we are merging 3 datasets. Expected behavior is a dataset
+    with rows from the first dataset with rows added from the
+    other 2 datasets when there are matching key values.
+    """
+    # create datasets
+    ec_dataset = pd.DataFrame.from_dict(
+        {
+            "ECSEQ": [
+                "1",
+                "2",
+                "3",
+                "4",
+                "5",
+            ],
+            "ECSTDY": [
+                4,
+                5,
+                6,
+                7,
+                8,
+            ],
+            "STUDYID": [
+                "1",
+                "2",
+                "1",
+                "2",
+                "3",
+            ],
+            "USUBJID": [
+                "CDISC001",
+                "CDISC001",
+                "CDISC002",
+                "CDISC002",
+                "CDISC003",
+            ],
+        }
+    )
+    ae_dataset = pd.DataFrame.from_dict(
+        {
+            "AESEQ": [
+                "1",
+                "2",
+                "3",
+                "4",
+            ],
+            "AESTDY": [
+                4,
+                5,
+                16,
+                17,
+            ],
+            "STUDYID": [
+                "1",
+                "2",
+                "1",
+                "2",
+            ],
+            "USUBJID": [
+                "CDISC001",
+                "CDISC001",
+                "CDISC002",
+                "CDISC002",
+            ],
+        }
+    )
+    ts_dataset = pd.DataFrame.from_dict(
+        {
+            "TSSEQ": [
+                "1",
+                "2",
+            ],
+            "TSSTDY": [
+                31,
+                74,
+            ],
+            "STUDYID": [
+                "1",
+                "2",
+            ],
+            "USUBJID": [
+                "CDISC001",
+                "CDISC001",
+            ],
+        }
+    )
+
+    # mock blob storage call
+    path_to_dataset_map: dict = {
+        os.path.join("path", "ae.xpt"): ae_dataset,
+        os.path.join("path", "ts.xpt"): ts_dataset,
+    }
+    mock_get_dataset.side_effect = lambda dataset_name: path_to_dataset_map[
+        dataset_name
+    ]
+
+    # add join_type to existing dataset(s)
+    for ds in dataset_rule_equal_to["datasets"]:
+        ds["join_type"] = "left"
+    # add another dataset
+    dataset_rule_equal_to["datasets"].append(
+        {"domain_name": "TS", "match_key": ["STUDYID", "USUBJID"], "join_type": "left"}
+    )
+    datasets: List[dict] = [
+        {"domain": "AE", "filename": "ae.xpt"},
+        {"domain": "TS", "filename": "ts.xpt"},
+    ]
+
+    # call preprocessor
+    data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
+    preprocessor = DatasetPreprocessor(
+        ec_dataset,
+        "EC",
+        os.path.join("path", "ec.xpt"),
+        data_service,
+        InMemoryCacheService(),
+    )
+    preprocessed_dataset: pd.DataFrame = preprocessor.preprocess(
+        dataset_rule_equal_to, datasets
+    )
+    expected_dataset = pd.DataFrame(
+        {
+            "ECSEQ": [
+                "1",
+                "2",
+                "3",
+                "4",
+                "5",
+            ],
+            "ECSTDY": [
+                4,
+                5,
+                6,
+                7,
+                8,
+            ],
+            "STUDYID": [
+                "1",
+                "2",
+                "1",
+                "2",
+                "3",
+            ],
+            "USUBJID": [
+                "CDISC001",
+                "CDISC001",
+                "CDISC002",
+                "CDISC002",
+                "CDISC003",
+            ],
+            "AESEQ": [
+                "1",
+                "2",
+                "3",
+                "4",
+                None,
+            ],
+            "AESTDY": pd.Series(
+                [
+                    4,
+                    5,
+                    16,
+                    17,
+                    None,
+                ],
+                dtype="object",
+            ),
+            "_merge_AE": pd.Categorical(
+                [
+                    "both",
+                    "both",
+                    "both",
+                    "both",
+                    "left_only",
+                ],
+                categories=["left_only", "right_only", "both"],
+                ordered=False,
+            ),
+            "TSSEQ": [
+                "1",
+                "2",
+                None,
+                None,
+                None,
+            ],
+            "TSSTDY": pd.Series(
+                [
+                    31,
+                    74,
+                    None,
+                    None,
+                    None,
+                ],
+                dtype="object",
+            ),
+            "_merge_TS": pd.Categorical(
+                [
+                    "both",
+                    "both",
+                    "left_only",
+                    "left_only",
+                    "left_only",
+                ],
+                categories=["left_only", "right_only", "both"],
+                ordered=False,
+            ),
+        }
+    )
+    assert preprocessed_dataset.equals(expected_dataset)
+
+
+@patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset")
 def test_preprocess_relationship_dataset(
     mock_get_dataset: MagicMock, dataset_rule_record_in_parent_domain_equal_to: dict
 ):

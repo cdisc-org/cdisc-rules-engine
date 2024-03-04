@@ -424,15 +424,21 @@ class DataProcessor:
             left_on=left_dataset_match_keys,
             right_on=right_dataset_match_keys,
             suffixes=("", f".{right_dataset_domain_name}"),
-            indicator=(join_type is not JoinTypes.INNER),
+            indicator=(
+                False
+                if join_type is JoinTypes.INNER
+                else f"_merge_{right_dataset_domain_name}"
+            ),
         )
         if join_type is JoinTypes.LEFT:
-            if "left_only" in result["_merge"].values:
+            if "left_only" in result[f"_merge_{right_dataset_domain_name}"].values:
                 DummyDataService._replace_nans_in_numeric_cols_with_none(result)
                 result.loc[
-                    result["_merge"] == "left_only",
+                    result[f"_merge_{right_dataset_domain_name}"] == "left_only",
                     result.columns.symmetric_difference(
-                        left_dataset.columns.union(["_merge"])
+                        left_dataset.columns.union(
+                            [f"_merge_{right_dataset_domain_name}"]
+                        )
                     ),
                 ] = None
         return result
