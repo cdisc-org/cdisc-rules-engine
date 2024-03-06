@@ -251,8 +251,8 @@ class DataProcessor:
         df=pd.merge(
             left=left_dataset,
             right=right_dataset,
-            left_on=[left_dataset_match_keys],
-            right_on=[right_dataset_match_keys],
+            left_on=left_dataset_match_keys,
+            right_on=right_dataset_match_keys,
             how="outer",
             suffixes=("", f".{right_dataset_domain_name}"),
         )

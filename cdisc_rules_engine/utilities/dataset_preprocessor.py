@@ -139,14 +139,6 @@ class DatasetPreprocessor:
                 right_dataset_match_keys=right_dataset_match_keys,
                 right_dataset_domain=right_dataset_domain_details,
             )
-        # elif self._rule_processor.is_relationship_dataset(left_dataset_domain_name):
-        #     result: pd.DataFrame = DataProcessor.merge_left_relationship_datasets(
-        #         left_dataset=right_dataset,
-        #         left_dataset_match_keys=right_dataset,
-        #         right_dataset=left_dataset,
-        #         right_dataset_match_keys=left_dataset_match_keys,
-        #         right_dataset_domain=right_dataset_domain_details,
-        #     )
         else:
             result: pd.DataFrame = DataProcessor.merge_sdtm_datasets(
                 left_dataset=left_dataset,
