@@ -413,36 +413,6 @@ class DataProcessor:
         )
         return result
     @staticmethod
-    def merge_left_relationship_datasets(
-        left_dataset: pd.DataFrame,
-        left_dataset_match_keys: List[str],
-        right_dataset: pd.DataFrame,
-        right_dataset_match_keys: List[str],
-        right_dataset_domain: dict,
-    ) -> pd.DataFrame:
-        
-        result = DataProcessor.filter_dataset_by_match_keys_of_other_dataset(
-            left_dataset,
-            left_dataset_match_keys,
-            right_dataset,
-            right_dataset_match_keys,
-        )
-        result = DataProcessor.filter_parent_dataset_by_supp_dataset(
-            result,
-            right_dataset,
-            **right_dataset_domain["relationship_columns"],
-        )
-        result = result.reset_index(drop=True)
-
-        result = DataProcessor.merge_datasets_on_relationship_columns(
-            left_dataset=result,
-            right_dataset=right_dataset,
-            right_dataset_domain_name=right_dataset_domain.get("domain_name"),
-            **right_dataset_domain["relationship_columns"],
-        )
-
-        return result
-    @staticmethod
     def merge_sdtm_datasets(
         left_dataset: pd.DataFrame,
         right_dataset: pd.DataFrame,
