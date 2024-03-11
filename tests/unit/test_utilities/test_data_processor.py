@@ -473,7 +473,7 @@ def test_merge_datasets_on_string_relationship_columns():
 def test_merge_datasets_on_join_type(join_type: JoinTypes, expected_df: pd.DataFrame):
     """
     Unit test for DataProcessor.merge_sdtm_datasets method.
-    Test the case when a left join type is specified.
+    Test cases when either inner or left join type is specified.
     """
     # prepare data
     left_dataset: pd.DataFrame = pd.DataFrame.from_dict(
