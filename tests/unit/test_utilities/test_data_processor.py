@@ -376,7 +376,101 @@ def test_merge_datasets_on_string_relationship_columns():
     assert merged_df.equals(expected_df)
 
 
-def test_merge_datasets_on_left_join():
+@pytest.mark.parametrize(
+    "join_type, expected_df",
+    [
+        (
+            JoinTypes.INNER,
+            pd.DataFrame(
+                {
+                    "USUBJID": [
+                        "CDISC01",
+                        "CDISC01",
+                    ],
+                    "DOMAIN": [
+                        "BE",
+                        "BE",
+                    ],
+                    "BESEQ": [
+                        1,
+                        3,
+                    ],
+                    "BEREFID": [
+                        "SAMPLE_1",
+                        "SAMPLE_3",
+                    ],
+                    "REFID": [
+                        "SAMPLE_1",
+                        "SAMPLE_3",
+                    ],
+                    "PARENT": [
+                        "",
+                        "SAMPLE_1",
+                    ],
+                    "LEVEL": [
+                        1,
+                        2,
+                    ],
+                }
+            ),
+        ),
+        (
+            JoinTypes.LEFT,
+            pd.DataFrame(
+                {
+                    "USUBJID": [
+                        "CDISC01",
+                        "CDISC01",
+                        "CDISC01",
+                    ],
+                    "DOMAIN": [
+                        "BE",
+                        "BE",
+                        "BE",
+                    ],
+                    "BESEQ": [
+                        1,
+                        2,
+                        3,
+                    ],
+                    "BEREFID": [
+                        "SAMPLE_1",
+                        "SAMPLE_2",
+                        "SAMPLE_3",
+                    ],
+                    "REFID": [
+                        "SAMPLE_1",
+                        None,
+                        "SAMPLE_3",
+                    ],
+                    "PARENT": [
+                        "",
+                        None,
+                        "SAMPLE_1",
+                    ],
+                    "LEVEL": pd.Series(
+                        [
+                            1,
+                            None,
+                            2,
+                        ],
+                        dtype="object",
+                    ),
+                    "_merge_RELSPEC": pd.Categorical(
+                        [
+                            "both",
+                            "left_only",
+                            "both",
+                        ],
+                        categories=["left_only", "right_only", "both"],
+                        ordered=False,
+                    ),
+                }
+            ),
+        ),
+    ],
+)
+def test_merge_datasets_on_join_type(join_type: JoinTypes, expected_df: pd.DataFrame):
     """
     Unit test for DataProcessor.merge_sdtm_datasets method.
     Test the case when a left join type is specified.
@@ -434,57 +528,6 @@ def test_merge_datasets_on_left_join():
         right_dataset=right_dataset,
         right_dataset_domain_name="RELSPEC",
         right_dataset_match_keys=["USUBJID", "REFID"],
-        join_type=JoinTypes.LEFT,
-    )
-    expected_df = pd.DataFrame(
-        {
-            "USUBJID": [
-                "CDISC01",
-                "CDISC01",
-                "CDISC01",
-            ],
-            "DOMAIN": [
-                "BE",
-                "BE",
-                "BE",
-            ],
-            "BESEQ": [
-                1,
-                2,
-                3,
-            ],
-            "BEREFID": [
-                "SAMPLE_1",
-                "SAMPLE_2",
-                "SAMPLE_3",
-            ],
-            "REFID": [
-                "SAMPLE_1",
-                None,
-                "SAMPLE_3",
-            ],
-            "PARENT": [
-                "",
-                None,
-                "SAMPLE_1",
-            ],
-            "LEVEL": pd.Series(
-                [
-                    1,
-                    None,
-                    2,
-                ],
-                dtype="object",
-            ),
-            "_merge_RELSPEC": pd.Categorical(
-                [
-                    "both",
-                    "left_only",
-                    "both",
-                ],
-                categories=["left_only", "right_only", "both"],
-                ordered=False,
-            ),
-        }
+        join_type=join_type,
     )
     assert merged_df.equals(expected_df)
