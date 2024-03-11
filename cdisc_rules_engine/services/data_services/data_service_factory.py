@@ -31,7 +31,7 @@ class DataServiceFactory(FactoryInterface):
     ):
         if config.getValue("DATA_SERVICE_TYPE"):
             self.data_service_name = config.getValue("DATA_SERVICE_TYPE")
-        elif standard == "usdm":
+        elif standard == "ddf":
             self.data_service_name = "usdm"
         else:
             self.data_service_name = "local"
