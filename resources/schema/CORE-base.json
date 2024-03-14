@@ -119,6 +119,23 @@
       },
       "type": "array"
     },
+    "JoinType": {
+      "enum": ["inner", "left"],
+      "type": "string"
+    },
+    "LeftRightKeys": {
+      "additionalProperties": false,
+      "properties": {
+        "Left": {
+          "$ref": "#/$defs/VariableName"
+        },
+        "Right": {
+          "$ref": "#/$defs/VariableName"
+        }
+      },
+      "required": ["Left", "Right"],
+      "type": "object"
+    },
     "PascalCases": {
       "items": {
         "pattern": "^[A-Z](([a-z]+[A-Z]?)*)$",
@@ -367,9 +384,19 @@
           },
           "Keys": {
             "items": {
-              "$ref": "#/$defs/VariableName"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/VariableName"
+                },
+                {
+                  "$ref": "#/$defs/LeftRightKeys"
+                }
+              ]
             },
             "type": "array"
+          },
+          "Join Type": {
+            "$ref": "#/$defs/JoinType"
           },
           "Wildcard": {
             "type": "string"
