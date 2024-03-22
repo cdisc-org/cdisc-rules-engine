@@ -46,7 +46,9 @@ class USDMDataService(BaseDataService):
             self.dataset_path
         )
 
-        self.dataset_content_index: dict = self.__get_datasets_content_index(self.json)
+        self.dataset_content_index: dict = self.__get_datasets_content_index(
+            dataset_name="USDM_content_index", json=self.json
+        )
 
     @classmethod
     def get_instance(
@@ -314,7 +316,8 @@ class USDMDataService(BaseDataService):
     def __get_full_path(node: DatumInContext):
         return f"{node.full_path}".replace(".[", "[")
 
-    def __get_datasets_content_index(self, json) -> List[dict]:
+    @cached_dataset(DatasetTypes.CONTENTS.value)
+    def __get_datasets_content_index(self, dataset_name: str, json) -> List[dict]:
         """
         This is a bit convoluted because there is a bug in jsonpath_ng
         where this query does not return object values within an array
