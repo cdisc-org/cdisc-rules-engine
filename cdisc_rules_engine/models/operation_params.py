@@ -35,3 +35,4 @@ class OperationParams:
     external_dictionary_type: str = None
     dictionary_term_type: str = None
     case_sensitive: bool = True
+    filter: dict = None

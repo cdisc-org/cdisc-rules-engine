@@ -182,6 +182,7 @@
         "operator": { "const": "record_count" }
       },
       "required": ["id", "operator"],
+      "optional": ["filter"],
       "type": "object"
     },
     {
