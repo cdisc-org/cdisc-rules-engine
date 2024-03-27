@@ -1,4 +1,6 @@
 from cdisc_rules_engine.config.config import ConfigService
+from cdisc_rules_engine.models.dataset.dask_dataset import DaskDataset
+from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.operations.whodrug_references_validator import (
     WhodrugReferencesValidator,
 )
@@ -9,10 +11,14 @@ from cdisc_rules_engine.services.cache.cache_service_factory import CacheService
 from cdisc_rules_engine.services.data_services.data_service_factory import (
     DataServiceFactory,
 )
+import pytest
 
 
+@pytest.mark.parametrize("dataset_type", [(PandasDataset), (DaskDataset)])
 def test_valid_whodrug_references(
-    installed_whodrug_dictionaries: dict, operation_params: OperationParams
+    installed_whodrug_dictionaries: dict,
+    operation_params: OperationParams,
+    dataset_type,
 ):
     """
     Unit test for valid_whodrug_references function.
@@ -21,7 +27,7 @@ def test_valid_whodrug_references(
     cache = CacheServiceFactory(config).get_cache_service()
     data_service = DataServiceFactory(config, cache).get_data_service()
     # create a dataset where 2 rows reference invalid terms
-    invalid_df = pd.DataFrame.from_dict(
+    invalid_df = dataset_type.from_dict(
         {
             "DOMAIN": [
                 "AE",

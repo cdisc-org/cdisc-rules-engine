@@ -1,4 +1,5 @@
 from cdisc_rules_engine.config.config import ConfigService
+from cdisc_rules_engine.models.dataset.dask_dataset import DaskDataset
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
@@ -11,9 +12,14 @@ from cdisc_rules_engine.operations.label_referenced_variable_metadata import (
 )
 from cdisc_rules_engine.services.cache import InMemoryCacheService
 from cdisc_rules_engine.services.data_services import LocalDataService
+from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
+import pytest
 
 
-def test_get_label_referenced_variable_metadata(operation_params: OperationParams):
+@pytest.mark.parametrize("dataset_type", [(PandasDataset), (DaskDataset)])
+def test_get_label_referenced_variable_metadata(
+    operation_params: OperationParams, dataset_type
+):
     model_metadata = {
         "datasets": [
             {
@@ -78,7 +84,7 @@ def test_get_label_referenced_variable_metadata(operation_params: OperationParam
             }
         ],
     }
-    operation_params.dataframe = pd.DataFrame.from_dict(
+    operation_params.dataframe = dataset_type.from_dict(
         {
             "STUDYID": [
                 "TEST_STUDY",

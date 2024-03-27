@@ -1,4 +1,6 @@
 from cdisc_rules_engine.config.config import ConfigService
+from cdisc_rules_engine.models.dataset.dask_dataset import DaskDataset
+from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.operations.variable_library_metadata import (
     VariableLibraryMetadata,
 )
@@ -13,8 +15,11 @@ import json
 
 
 @pytest.mark.parametrize(
-    "target, standard, standard_version, expected_result",
-    [("core", "sdtmig", "3-1-2", {"STUDYID": "Req", "DOMAIN": "Req"})],
+    "target, standard, standard_version, expected_result, dataset_type",
+    [
+        ("core", "sdtmig", "3-1-2", {"STUDYID": "Req", "DOMAIN": "Req"}, PandasDataset),
+        ("core", "sdtmig", "3-1-2", {"STUDYID": "Req", "DOMAIN": "Req"}, DaskDataset),
+    ],
 )
 @patch(
     "cdisc_rules_engine.services.cdisc_library_service.CDISCLibraryClient.get_sdtmig"
@@ -25,6 +30,7 @@ def test_get_variable_metadata_for_given_standard(
     standard,
     standard_version,
     expected_result,
+    dataset_type,
     mock_data_service,
     operation_params: OperationParams,
 ):
@@ -39,9 +45,9 @@ def test_get_variable_metadata_for_given_standard(
     mock_get_sdtmig.return_value = mock_sdtmig_details
     dataset_path = "study/bundle/blah"
     datasets_map = {
-        "DM": pd.DataFrame.from_dict({"STUDYID": [4, 7, 9], "DOMAIN": [12, 6, 1]}),
-        "EX": pd.DataFrame.from_dict({"STUDYID": [4, 8, 12], "DOMAIN": [12, 6, 1]}),
-        "DM2": pd.DataFrame.from_dict({"STUDYID": [4, 7, 9], "DOMAIN": [12, 6, 1]}),
+        "DM": dataset_type.from_dict({"STUDYID": [4, 7, 9], "DOMAIN": [12, 6, 1]}),
+        "EX": dataset_type.from_dict({"STUDYID": [4, 8, 12], "DOMAIN": [12, 6, 1]}),
+        "DM2": dataset_type.from_dict({"STUDYID": [4, 7, 9], "DOMAIN": [12, 6, 1]}),
     }
 
     datasets = [

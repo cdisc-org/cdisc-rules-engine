@@ -1,4 +1,6 @@
 from cdisc_rules_engine.config.config import ConfigService
+from cdisc_rules_engine.models.dataset.dask_dataset import DaskDataset
+from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
@@ -7,9 +9,11 @@ from cdisc_rules_engine.models.operation_params import OperationParams
 from cdisc_rules_engine.operations.domain_label import DomainLabel
 from cdisc_rules_engine.services.cache import InMemoryCacheService
 from cdisc_rules_engine.services.data_services import LocalDataService
+import pytest
 
 
-def test_get_domain_label_from_library(operation_params: OperationParams):
+@pytest.mark.parametrize("dataset_type", [(PandasDataset), (DaskDataset)])
+def test_get_domain_label_from_library(dataset_type, operation_params: OperationParams):
     standard_metadata = {
         "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
         "classes": [
@@ -28,7 +32,7 @@ def test_get_domain_label_from_library(operation_params: OperationParams):
             }
         ],
     }
-    operation_params.dataframe = pd.DataFrame.from_dict(
+    operation_params.dataframe = dataset_type.from_dict(
         {
             "STUDYID": [
                 "TEST_STUDY",
@@ -60,7 +64,7 @@ def test_get_domain_label_from_library(operation_params: OperationParams):
         data_service,
         library_metadata,
     )
-    result: pd.DataFrame = operation.execute()
+    result = operation.execute()
     expected: pd.Series = pd.Series(
         [
             "Adverse Events",
@@ -71,7 +75,9 @@ def test_get_domain_label_from_library(operation_params: OperationParams):
     assert result[operation_params.operation_id].equals(expected)
 
 
+@pytest.mark.parametrize("dataset_type", [(PandasDataset), (DaskDataset)])
 def test_get_domain_label_from_library_domain_not_found(
+    dataset_type,
     operation_params: OperationParams,
 ):
     standard_metadata = {
@@ -92,7 +98,7 @@ def test_get_domain_label_from_library_domain_not_found(
             }
         ],
     }
-    operation_params.dataframe = pd.DataFrame.from_dict(
+    operation_params.dataframe = dataset_type.from_dict(
         {
             "STUDYID": [
                 "TEST_STUDY",
@@ -125,7 +131,7 @@ def test_get_domain_label_from_library_domain_not_found(
         data_service,
         library_metadata,
     )
-    result: pd.DataFrame = operation.execute()
+    result = operation.execute()
     expected: pd.Series = pd.Series(
         [
             "",
@@ -136,7 +142,9 @@ def test_get_domain_label_from_library_domain_not_found(
     assert result[operation_params.operation_id].equals(expected)
 
 
+@pytest.mark.parametrize("dataset_type", [(PandasDataset), (DaskDataset)])
 def test_get_domain_label_from_library_domain_missing_label(
+    dataset_type,
     operation_params: OperationParams,
 ):
     standard_metadata = {
@@ -156,7 +164,7 @@ def test_get_domain_label_from_library_domain_missing_label(
             }
         ],
     }
-    operation_params.dataframe = pd.DataFrame.from_dict(
+    operation_params.dataframe = dataset_type.from_dict(
         {
             "STUDYID": [
                 "TEST_STUDY",
@@ -189,7 +197,7 @@ def test_get_domain_label_from_library_domain_missing_label(
         data_service,
         library_metadata,
     )
-    result: pd.DataFrame = operation.execute()
+    result = operation.execute()
     expected: pd.Series = pd.Series(
         [
             "",

@@ -1,5 +1,4 @@
 from cdisc_rules_engine.operations.base_operation import BaseOperation
-import pandas as pd
 
 
 class LabelReferencedVariableMetadata(BaseOperation):
@@ -10,14 +9,14 @@ class LabelReferencedVariableMetadata(BaseOperation):
         found in the column provided in self.params.target.
         """
         variables_metadata = self._get_variables_metadata_from_standard()
-        df = pd.DataFrame(variables_metadata).add_prefix(f"{self.params.operation_id}_")
-        return (
+        df = self.evaluation_dataset.__class__.from_records(variables_metadata)
+        df.data = df.data.add_prefix(f"{self.params.operation_id}_")
+        target_columns = df.columns
+        return self.evaluation_dataset.__class__(
             df.merge(
-                self.evaluation_dataset,
+                self.evaluation_dataset.data,
                 left_on=f"{self.params.operation_id}_label",
                 right_on=self.params.target,
                 how="right",
-            )
-            .filter(like=self.params.operation_id, axis=1)
-            .fillna("")
+            ).data.fillna("")[target_columns]
         )

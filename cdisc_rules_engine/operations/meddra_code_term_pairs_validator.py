@@ -29,7 +29,7 @@ class MedDRACodeTermPairsValidator(BaseOperation):
             )
         )
         result = self.params.dataframe[column].isin(valid_code_term_pairs[term_type])
-        return result
+        return self.evaluation_dataset.convert_to_series(result)
 
     def _get_columns_by_meddra_variable_name(
         self,

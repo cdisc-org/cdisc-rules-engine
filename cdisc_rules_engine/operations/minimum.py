@@ -8,5 +8,5 @@ class Minimum(BaseOperation):
         else:
             result = self.params.dataframe.groupby(
                 self.params.grouping, as_index=False
-            ).min()
+            ).data.min()
         return result
