@@ -29,9 +29,15 @@ class RecordCount(BaseOperation):
         ]
         matching_values = [grouped.groups[key] for key in matching_keys]
         flattened_indexes = list(chain.from_iterable(matching_values))
+
+        # merged_df = dataframe.merge(filtered, grouped[self.params.grouping],
+        # on=self.params.grouping, how='inner')
+        # record_count = len(dataframe)
+        # return record_cound
         print(flattened_indexes)
         breakpoint()
 
+        #  original filter fx
         # if self.params.filter:
         #     for variable, value in self.params.filter.items():
         #         if filter_exp:
@@ -43,17 +49,3 @@ class RecordCount(BaseOperation):
         #     filtered = dataframe
         # if not self.params.grouping:
         #     return len(filtered)
-
-        #     grouped_DF = self.params.dataframe.groupby(
-        #         self.params.grouping, as_index=False)
-        #     if self.params.filter:
-        #         for variable, value in self.params.filter.items():
-        #             if filter_exp:
-        #                 filter_exp += " & "
-        #             filter_exp += f"{variable} == '{value}'"
-        #         if filter_exp:
-        #             dataframe = dataframe.query(filter_exp)
-        #     dataframe = pd.merge(dataframe, grouped_DF[self.params.grouping],
-        # on=self.params.grouping, how='inner')
-        # record_count = len(dataframe)
-        # return record_count

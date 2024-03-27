@@ -48,6 +48,8 @@ class BaseOperation:
         return self._handle_operation_result(result)
 
     def _handle_operation_result(self, result) -> pd.DataFrame:
+        if self.params.filter:
+            return self._handle_filtered_result(result)
         if self.params.grouping:
             return self._handle_grouped_result(result)
         elif isinstance(result, dict):
@@ -65,6 +67,18 @@ class BaseOperation:
                 [result] * len(self.evaluation_dataset)
             )
             return self.evaluation_dataset
+
+    def _handle_filtered_result(self, result):
+        # Handle filtered results
+        if self.params.filter:
+            for col, val in self.params.filter.items():
+                result = result[result[col] == val]
+            if result.empty:
+                return None
+        result = result.rename(columns={self.params.target: self.params.operation_id})
+        return self.evaluation_dataset.merge(
+            merged_result=self.evaluation_dataset.merge(result, how="left")
+        )
 
     def _handle_grouped_result(self, result):
         # Handle grouped results
