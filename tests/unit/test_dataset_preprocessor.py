@@ -319,7 +319,7 @@ def test_preprocess_relationship_dataset(
                 4,
                 5,
             ],
-            "USUBJID.SUPPEC": ["CDISC005", "CDISC005"],
+
             "RDOMAIN": [
                 "EC",
                 "EC",
