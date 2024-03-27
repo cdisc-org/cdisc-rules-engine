@@ -473,7 +473,6 @@ def test_preprocess_relationship_dataset(
                 4,
                 5,
             ],
-
             "RDOMAIN": [
                 "EC",
                 "EC",
