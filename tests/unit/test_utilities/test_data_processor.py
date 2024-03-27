@@ -192,7 +192,9 @@ def test_merge_datasets_on_relationship_columns():
     # call the tested function and check the results
     merged_df: pd.DataFrame = DataProcessor.merge_datasets_on_relationship_columns(
         left_dataset=left_dataset,
+        left_dataset_match_keys=[],
         right_dataset=right_dataset,
+        right_dataset_match_keys=[],
         right_dataset_domain_name="SUPPAE",
         column_with_names="IDVAR",
         column_with_values="IDVARVAL",
@@ -316,7 +318,9 @@ def test_merge_datasets_on_string_relationship_columns():
     # call the tested function and check the results
     merged_df: pd.DataFrame = DataProcessor.merge_datasets_on_relationship_columns(
         left_dataset=left_dataset,
+        left_dataset_match_keys=[],
         right_dataset=right_dataset,
+        right_dataset_match_keys=[],
         right_dataset_domain_name="SUPPAE",
         column_with_names="IDVAR",
         column_with_values="IDVARVAL",
