@@ -89,7 +89,7 @@ def test_validate_rule_single_dataset_check(dataset_rule_greater_than: dict):
         return_value=dataset_mock,
     ):
         validation_result: List[dict] = RulesEngine(
-            standard="ddf", dataset_paths=[dataset_path]
+            standard="usdm", dataset_paths=[dataset_path]
         ).validate_single_rule(dataset_rule_greater_than, dataset_path, [{}], "EC")
         assert validation_result == [
             {
