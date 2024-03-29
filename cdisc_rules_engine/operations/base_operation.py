@@ -73,7 +73,6 @@ class BaseOperation:
         return self.evaluation_dataset.merge(
             result[target_columns], on=self.params.grouping, how="left"
         )
-        return result
 
     def _handle_dictionary_result(self, result):
         self.evaluation_dataset[self.params.operation_id] = [result] * len(
