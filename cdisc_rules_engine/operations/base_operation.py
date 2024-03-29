@@ -70,7 +70,7 @@ class BaseOperation:
         # Handle grouped results
         result = result.rename(columns={self.params.target: self.params.operation_id})
         target_columns = self.params.grouping + [self.params.operation_id]
-        result = self.evaluation_dataset.merge(
+        return self.evaluation_dataset.merge(
             result[target_columns], on=self.params.grouping, how="left"
         )
         return result
