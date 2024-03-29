@@ -14,16 +14,9 @@ class RecordCount(BaseOperation):
         4    5
         dtype: int64
         """
-        # if not self.params.grouping:
-        #     result = len(self.params.dataframe)
-        # else:
-        #     result = self.params.dataframe.groupby(
-        #         self.params.grouping, as_index=False
-        #     ).count()
-        # return result
-
         copy_dataframe = self.params.dataframe.copy()
         filter_exp = ""
+        self.params.target = "size"
         if not self.params.grouping and not self.params.filter:
             return len(copy_dataframe)
         if self.params.filter:
@@ -33,41 +26,17 @@ class RecordCount(BaseOperation):
                 filter_exp += f"{variable} == '{value}'"
                 if filter_exp:
                     filtered = copy_dataframe.query(filter_exp)
+            if self.params.grouping:
+                result = copy_dataframe.groupby(
+                    self.params.grouping, as_index=False
+                ).size()
+                filtered = filtered[self.params.grouping]
+                filtered_group = result[
+                    result[self.params.grouping[0]].isin(
+                        filtered[self.params.grouping[0]]
+                    )
+                ]
+                return filtered_group
         if self.params.grouping:
-            copy_dataframe = copy_dataframe.groupby(
-                self.params.grouping, as_index=False
-            )
-            # breakpoint()
-            # return copy_dataframe
-            matching_keys = [
-                key
-                for key, values in copy_dataframe.groups.items()
-                if any(value in filtered.index for value in values)
-            ]
-            result = pd.DataFrame()
-            for group in matching_keys:
-                result = result.append(copy_dataframe.get_group(group))
-            # filtered_df = {key: group for key, group in
-            #  dataframe if key in matching_keys}
-            breakpoint()
-            return result
+            return copy_dataframe.groupby(self.params.grouping, as_index=False).size()
         return len(filtered)
-
-        # merged_df = dataframe.merge(filtered, grouped[self.params.grouping],
-        # on=self.params.grouping, how='inner')
-        # record_count = len(dataframe)
-        # return record_count
-        # print(flattened_indexes)
-
-        #  original filter fx
-        # if self.params.filter:
-        #     for variable, value in self.params.filter.items():
-        #         if filter_exp:
-        #             filter_exp += " & "
-        #         filter_exp += f"{variable} == '{value}'"
-        #     if filter_exp:
-        #         filtered = dataframe.query(filter_exp)
-        # else:
-        #     filtered = dataframe
-        # if not self.params.grouping:
-        #     return len(filtered)

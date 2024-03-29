@@ -44,19 +44,8 @@ class BaseOperation:
         pass
 
     def execute(self) -> pd.DataFrame:
-        # if self.params.filter:
-        #     self._handle_filtering()
         result = self._execute_operation()
         return self._handle_operation_result(result)
-
-    # def _handle_filtering(self) -> pd.DataFrame:
-    #     filter_exp = ''
-    #     for variable, value in self.params.filter.items():
-    #         if filter_exp:
-    #             filter_exp += " & "
-    #         filter_exp += f"{variable} == '{value}'"
-    #     self.params.dataframe = self.params.dataframe.query(filter_exp)
-    #     return
 
     def _handle_operation_result(self, result) -> pd.DataFrame:
         if self.params.grouping:
@@ -81,9 +70,10 @@ class BaseOperation:
         # Handle grouped results
         result = result.rename(columns={self.params.target: self.params.operation_id})
         target_columns = self.params.grouping + [self.params.operation_id]
-        return self.evaluation_dataset.merge(
+        result = self.evaluation_dataset.merge(
             result[target_columns], on=self.params.grouping, how="left"
         )
+        return result
 
     def _handle_dictionary_result(self, result):
         self.evaluation_dataset[self.params.operation_id] = [result] * len(
