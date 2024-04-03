@@ -515,7 +515,7 @@ Returns the permissible variables for a given domain and standard
 
 ## record_count
 
-If no 'filter' or 'group' is provided, returns the number of records in the dataset. If 'filter' is provided, returns the number of records in the dataset that contain the values(s) in the corresponding column(s) provided in the filter. If 'group' is provided, returns the number of rows matching each unique set of the grouping variables. If both 'filter' and 'group' are provided, returns the number of records in the dataset that contain the values(s) in the corresponding column(s) provided in the filter that are also match each unique set of the grouping variables.
+If no 'filter' or 'group' is provided, returns the number of records in the dataset. If 'filter' is provided, returns the number of records in the dataset that contain the values(s) in the corresponding column(s) provided in the filter. If 'group' is provided, returns the number of rows matching each unique set of the grouping variables. If both 'filter' and 'group' are provided, returns the number of records in the dataset that contain the values(s) in the corresponding column(s) provided in the filter that also match each unique set of the grouping variables.
 
 ## required_variables
 

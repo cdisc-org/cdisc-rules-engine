@@ -37,6 +37,7 @@ class BaseOperation:
         self.data_service = data_service
         self.evaluation_dataset = original_dataset
         self.library_metadata = library_metadata
+        self.filtered = original_dataset.copy()
 
     @abstractmethod
     def _execute_operation(self):
@@ -79,6 +80,13 @@ class BaseOperation:
             self.evaluation_dataset
         )
         return self.evaluation_dataset
+
+    def filter_data(self, data) -> pd.DataFrame:
+        # filters copy of inputted dataframe on self.param.filter dictionary
+        filtered_df = data.copy()
+        for variable, value in self.params.filter.items():
+            filtered_df = filtered_df[filtered_df[variable] == value]
+        return filtered_df
 
     def _get_variables_metadata_from_standard(self) -> List[dict]:
         # TODO: Update to handle other standard types: adam, cdash, etc.

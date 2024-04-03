@@ -14,29 +14,23 @@ class RecordCount(BaseOperation):
         4    5
         dtype: int64
         """
-        copy_dataframe = self.params.dataframe.copy()
-        filter_exp = ""
-        self.params.target = "size"
-        if not self.params.grouping and not self.params.filter:
-            return len(copy_dataframe)
+        filtered = None
+        result = len(self.params.dataframe)
         if self.params.filter:
-            for variable, value in self.params.filter.items():
-                if filter_exp:
-                    filter_exp += " & "
-                filter_exp += f"{variable} == '{value}'"
-                if filter_exp:
-                    filtered = copy_dataframe.query(filter_exp)
-            if self.params.grouping:
-                result = copy_dataframe.groupby(
-                    self.params.grouping, as_index=False
-                ).size()
+            filtered = self.filter_data(self.params.dataframe)
+            result = len(filtered)
+        if self.params.grouping:
+            self.params.target = "size"
+            group_df = self.params.dataframe.groupby(
+                self.params.grouping, as_index=False
+            ).size()
+            if filtered is not None:
                 filtered = filtered[self.params.grouping]
-                filtered_group = result[
-                    result[self.params.grouping[0]].isin(
+                group_df = group_df[
+                    group_df[self.params.grouping[0]].isin(
                         filtered[self.params.grouping[0]]
                     )
                 ]
-                return filtered_group
-        if self.params.grouping:
-            return copy_dataframe.groupby(self.params.grouping, as_index=False).size()
-        return len(filtered)
+
+            return group_df
+        return result
