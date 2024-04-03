@@ -37,7 +37,6 @@ class BaseOperation:
         self.data_service = data_service
         self.evaluation_dataset = original_dataset
         self.library_metadata = library_metadata
-        self.filtered = original_dataset.copy()
 
     @abstractmethod
     def _execute_operation(self):
