@@ -99,6 +99,23 @@ def test_valid_parse_actions():
                 }
             ],
         ),
+        (
+            [
+                {
+                    "Name": "AA",
+                    "Keys": ["STUDYID", {"left": "USUBJID", "right": "RSUBJID"}],
+                    "Join_Type": "left",
+                }
+            ],
+            [
+                {
+                    "domain_name": "AA",
+                    "match_key": ["STUDYID", {"left": "USUBJID", "right": "RSUBJID"}],
+                    "join_type": "left",
+                    "wildcard": "**",
+                }
+            ],
+        ),
     ],
 )
 def test_parse_datasets(match_datasets, expected_result):

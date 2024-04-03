@@ -150,3 +150,21 @@ class DummyDataService(BaseDataService):
 
     def to_parquet(self, file_path: str) -> str:
         return ""
+ 
+    def get_datasets(self) -> List[dict]:
+        datasets = []
+        for dataset_path in [dataset.filename for dataset in self.data]:
+            metadata = self.get_raw_dataset_metadata(dataset_name=dataset_path)
+            datasets.append(
+                {
+                    "domain": metadata.domain_name,
+                    "filename": metadata.filename,
+                    "full_path": dataset_path,
+                    "length": metadata.records,
+                    "label": metadata.label,
+                    "size": metadata.size,
+                    "modification_date": metadata.modification_date,
+                }
+            )
+
+        return datasets

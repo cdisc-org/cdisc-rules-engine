@@ -1,7 +1,8 @@
-from typing import List
+from typing import List, Union
 
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 
+from cdisc_rules_engine.enums.join_types import JoinTypes
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.interfaces import (
     CacheServiceInterface,
@@ -12,6 +13,7 @@ from cdisc_rules_engine.utilities.rule_processor import RuleProcessor
 from cdisc_rules_engine.utilities.utils import (
     replace_pattern_in_list_of_strings,
     search_in_list_of_dicts,
+    get_sided_match_keys,
 )
 import os
 
@@ -112,13 +114,19 @@ class DatasetPreprocessor:
         Identifies dataset type and merges based on it.
         """
         # replace -- pattern in match keys for each domain
-        match_keys: List[str] = right_dataset_domain_details.get("match_key")
+        match_keys: List[Union[str, dict]] = right_dataset_domain_details.get(
+            "match_key"
+        )
         left_dataset_match_keys = replace_pattern_in_list_of_strings(
-            match_keys, "--", left_dataset_domain_name
+            get_sided_match_keys(match_keys=match_keys, side="left"),
+            "--",
+            left_dataset_domain_name,
         )
         right_dataset_domain_name: str = right_dataset_domain_details.get("domain_name")
         right_dataset_match_keys = replace_pattern_in_list_of_strings(
-            match_keys, "--", right_dataset_domain_name
+            get_sided_match_keys(match_keys=match_keys, side="right"),
+            "--",
+            right_dataset_domain_name,
         )
 
         # merge datasets based on their type
@@ -146,5 +154,8 @@ class DatasetPreprocessor:
                 left_dataset_match_keys=left_dataset_match_keys,
                 right_dataset_match_keys=right_dataset_match_keys,
                 right_dataset_domain_name=right_dataset_domain_name,
+                join_type=JoinTypes(
+                    right_dataset_domain_details.get("join_type", "inner")
+                ),
             )
         return result
