@@ -1,6 +1,6 @@
 import pandas as pd
 
-from .base_operation import BaseOperation
+from cdisc_rules_engine.operations.base_operation import BaseOperation
 
 
 class RecordCount(BaseOperation):
@@ -14,5 +14,18 @@ class RecordCount(BaseOperation):
         4    5
         dtype: int64
         """
-        record_count: int = len(self.params.dataframe)
-        return record_count
+        filtered = None
+        result = len(self.params.dataframe)
+        if self.params.filter:
+            filtered = self._filter_data(self.params.dataframe)
+            result = len(filtered)
+        if self.params.grouping:
+            self.params.target = "size"
+            if filtered is not None:
+                group_df = filtered.groupby(self.params.grouping, as_index=False).size()
+            else:
+                group_df = self.params.dataframe.groupby(
+                    self.params.grouping, as_index=False
+                ).size()
+            return group_df
+        return result
