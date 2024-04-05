@@ -202,7 +202,7 @@ def test_multi_group_record_count(data, expected, operation_params: OperationPar
                     "DOMAIN": ["AE", "AE", "AE"],
                     "EQ": [1, 2, 3],
                     "USUBJID": ["TEST2", "TEST1", "TEST2"],
-                    "operation_id": [2, 1, 2],
+                    "operation_id": [1, 1, 1],
                 }
             ),
         ),

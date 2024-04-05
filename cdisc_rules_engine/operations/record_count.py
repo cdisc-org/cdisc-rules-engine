@@ -17,20 +17,15 @@ class RecordCount(BaseOperation):
         filtered = None
         result = len(self.params.dataframe)
         if self.params.filter:
-            filtered = self.filter_data(self.params.dataframe)
+            filtered = self._filter_data(self.params.dataframe)
             result = len(filtered)
         if self.params.grouping:
             self.params.target = "size"
-            group_df = self.params.dataframe.groupby(
-                self.params.grouping, as_index=False
-            ).size()
             if filtered is not None:
-                filtered = filtered[self.params.grouping]
-                group_df = group_df[
-                    group_df[self.params.grouping[0]].isin(
-                        filtered[self.params.grouping[0]]
-                    )
-                ]
-
+                group_df = filtered.groupby(self.params.grouping, as_index=False).size()
+            else:
+                group_df = self.params.dataframe.groupby(
+                    self.params.grouping, as_index=False
+                ).size()
             return group_df
         return result
