@@ -263,6 +263,7 @@ class RuleProcessor:
                 case_sensitive=operation.get("case_sensitive", True),
                 external_dictionary_type=operation.get("external_dictionary_type"),
                 dictionary_term_type=operation.get("dictionary_term_type"),
+                filter=operation.get("filter", None),
             )
 
             # execute operation
