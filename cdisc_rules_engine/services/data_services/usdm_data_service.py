@@ -2,7 +2,6 @@ import os
 from io import IOBase
 from typing import Iterable, List, Union
 from json import load
-import pandas
 from jsonpath_ng import DatumInContext, Fields, This
 from jsonpath_ng.ext import parse
 from datetime import datetime
@@ -10,6 +9,8 @@ from yaml import safe_load
 from numpy import empty, vectorize
 
 from cdisc_rules_engine.interfaces import CacheServiceInterface, ConfigInterface
+from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
+from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
 from cdisc_rules_engine.models.dataset_types import DatasetTypes
 from cdisc_rules_engine.models.variable_metadata_container import (
@@ -52,7 +53,9 @@ class USDMDataService(BaseDataService):
         if cls._instance is None:
             service = cls(
                 cache_service=cache_service,
-                reader_factory=DataReaderFactory(),
+                reader_factory=DataReaderFactory(
+                    dataset_class=kwargs.get("dataset_class", PandasDataset)
+                ),
                 config=config,
                 **kwargs,
             )
@@ -63,20 +66,20 @@ class USDMDataService(BaseDataService):
         return os.path.isfile(self.dataset_path)
 
     @cached_dataset(DatasetTypes.CONTENTS.value)
-    def get_dataset(self, dataset_name: str, **params) -> pandas.DataFrame:
+    def get_dataset(self, dataset_name: str, **params) -> DatasetInterface:
         return self.__get_dataset(dataset_name)
 
     @cached_dataset(DatasetTypes.METADATA.value)
     def get_dataset_metadata(
         self, dataset_name: str, size_unit: str = None, **params
-    ) -> pandas.DataFrame:
+    ) -> DatasetInterface:
         """
         Gets metadata of a dataset and returns it as a DataFrame.
         """
         metadata_to_return: dict = {
             "dataset_name": [dataset_name],
         }
-        return pandas.DataFrame.from_dict(metadata_to_return)
+        return self._reader_factory.dataset_class.from_dict(metadata_to_return)
 
     @cached_dataset(DatasetTypes.RAW_METADATA.value)
     def get_raw_dataset_metadata(self, dataset_name: str, **kwargs) -> DatasetMetadata:
@@ -94,11 +97,11 @@ class USDMDataService(BaseDataService):
             filename=os.path.basename(self.dataset_path),
             full_path=self.dataset_path,
             size=0,
-            records=f"{dataset.shape[0]}",
+            records=f"{len(dataset)}",
         )
 
     @cached_dataset(DatasetTypes.VARIABLES_METADATA.value)
-    def get_variables_metadata(self, dataset_name: str, **params) -> pandas.DataFrame:
+    def get_variables_metadata(self, dataset_name: str, **params) -> DatasetInterface:
         """
         Gets dataset from blob storage and returns metadata of a certain variable.
         """
@@ -107,7 +110,9 @@ class USDMDataService(BaseDataService):
         metadata_to_return: VariableMetadataContainer = VariableMetadataContainer(
             contents_metadata
         )
-        return pandas.DataFrame.from_dict(metadata_to_return.to_representation())
+        return self._reader_factory.dataset_class.from_dict(
+            metadata_to_return.to_representation()
+        )
 
     @cached_dataset(DatasetTypes.CONTENTS.value)
     def get_define_xml_contents(self, dataset_name: str) -> bytes:
@@ -132,17 +137,17 @@ class USDMDataService(BaseDataService):
         contents_metadata = {
             "variable_labels": dataset.columns.values.tolist(),
             "variable_names": dataset.columns.values.tolist(),
-            "variable_formats": empty(dataset.shape[1], dtype=str).tolist(),
-            "variable_name_to_label_map": dict(zip(dataset, dataset)),
+            "variable_formats": empty(dataset.data.shape[1], dtype=str).tolist(),
+            "variable_name_to_label_map": dict(zip(dataset.data, dataset.data)),
             "variable_name_to_data_type_map": dict(
-                zip(dataset, dataset.dtypes.map(np_json_type_map))
+                zip(dataset.data, dataset.data.dtypes.map(np_json_type_map))
             ),
             "variable_name_to_size_map": dict(
-                zip(dataset, measurer(dataset.values.astype(str)).max(axis=0))
+                zip(dataset.data, measurer(dataset.data.values.astype(str)).max(axis=0))
             ),
-            "number_of_variables": dataset.shape[1],
+            "number_of_variables": len(dataset.columns.values.tolist()),
             "dataset_label": dataset_name,
-            "dataset_length": dataset.shape[0],
+            "dataset_length": len(dataset),
             "domain_name": dataset_name,
             "dataset_name": dataset_name,
             "dataset_modification_date": datetime.fromtimestamp(
@@ -161,6 +166,12 @@ class USDMDataService(BaseDataService):
     def get_datasets(self) -> List[dict]:
         json = self._reader_factory.get_service("USDM").from_file(self.dataset_path)
         return self.__get_datasets(json)
+
+    def to_parquet(self, file_path: str) -> str:
+        json = self._reader_factory.get_service("USDM").from_file(
+            extract_file_name_from_path_string(file_path).split(".")[1].upper()
+        )
+        return self.__get_dataset(json).data.to_parquet(file_path)
 
     def __get_record_data(self, node: dict, parent="") -> dict:
         if type(node) is dict:
@@ -198,7 +209,7 @@ class USDMDataService(BaseDataService):
         }
         return record
 
-    def __get_dataset(self, dataset_name: str) -> pandas.DataFrame:
+    def __get_dataset(self, dataset_name: str) -> DatasetInterface:
         json = self._reader_factory.get_service("USDM").from_file(self.dataset_path)
         datasets = self.__get_datasets(json)
         dataset_paths = [
@@ -225,7 +236,7 @@ class USDMDataService(BaseDataService):
             self.__get_record_metadata(node) | self.__get_record_data(node.value)
             for node in all_nodes
         ]
-        return pandas.DataFrame(records)
+        return self._reader_factory.dataset_class.from_records(records)
 
     def __find_definition(self, json, id: str):
         definition = parse(f"$..*[?(@.id = '{id}')]").find(json)

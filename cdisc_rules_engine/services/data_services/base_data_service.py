@@ -56,7 +56,6 @@ def cached_dataset(dataset_type: str):
                 f" wrapped function={func.__name__}"
             )
             cache_key: str = get_dataset_cache_key_from_path(dataset_name, dataset_type)
-            print(cache_key)
             cache_data = instance.cache_service.get_dataset(cache_key)
             if cache_data is not None:
                 logger.info(

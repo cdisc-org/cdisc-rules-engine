@@ -80,11 +80,11 @@ class BaseOperation:
         )
         return self.evaluation_dataset
 
-    def _filter_data(self, data) -> pd.DataFrame:
+    def _filter_data(self, data):
         # filters inputted dataframe on self.param.filter dictionary
         for variable, value in self.params.filter.items():
             filtered_df = data[data[variable] == value]
-        return filtered_df
+        return self.evaluation_dataset.__class__(filtered_df)
 
     def _get_variables_metadata_from_standard(self) -> List[dict]:
         # TODO: Update to handle other standard types: adam, cdash, etc.

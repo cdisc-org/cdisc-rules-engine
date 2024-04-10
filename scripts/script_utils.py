@@ -1,11 +1,12 @@
 from cdisc_rules_engine.interfaces import CacheServiceInterface
+from cdisc_rules_engine.interfaces.data_service_interface import DataServiceInterface
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
 from cdisc_rules_engine.services.data_services import (
     DataServiceFactory,
 )
-from typing import List
+from typing import List, Iterable
 from cdisc_rules_engine.config import config
 from cdisc_rules_engine.services import logger as engine_logger
 import os
@@ -139,6 +140,7 @@ def get_rules(args) -> List[dict]:
                     core_ids.add(rule.get("core_id"))
     return rules
 
+
 def get_datasets(
     data_service: DataServiceInterface, dataset_paths: Iterable[str]
 ) -> List[dict]:
@@ -168,4 +170,3 @@ def get_max_dataset_size(dataset_paths: Iterable[str]):
         if file_size > max_dataset_size:
             max_dataset_size = file_size
     return max_dataset_size
-

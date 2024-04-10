@@ -54,171 +54,177 @@ def test_preprocess_no_datasets_in_rule(dataset_rule_equal_to_error_objects: dic
     [
         (
             None,
-            pd.DataFrame.from_dict(
-                {
-                    "ECSEQ": [
-                        "1",
-                        "2",
-                    ],
-                    "ECSTDY": [
-                        4,
-                        5,
-                    ],
-                    "STUDYID": [
-                        "1",
-                        "2",
-                    ],
-                    "USUBJID": [
-                        "CDISC001",
-                        "CDISC001",
-                    ],
-                    "AESEQ": [
-                        "1",
-                        "2",
-                    ],
-                    "AESTDY": [
-                        4,
-                        5,
-                    ],
-                    "TSSEQ": [
-                        "1",
-                        "2",
-                    ],
-                    "TSSTDY": [
-                        31,
-                        74,
-                    ],
-                }
+            PandasDataset(
+                pd.DataFrame.from_dict(
+                    {
+                        "ECSEQ": [
+                            "1",
+                            "2",
+                        ],
+                        "ECSTDY": [
+                            4,
+                            5,
+                        ],
+                        "STUDYID": [
+                            "1",
+                            "2",
+                        ],
+                        "USUBJID": [
+                            "CDISC001",
+                            "CDISC001",
+                        ],
+                        "AESEQ": [
+                            "1",
+                            "2",
+                        ],
+                        "AESTDY": [
+                            4,
+                            5,
+                        ],
+                        "TSSEQ": [
+                            "1",
+                            "2",
+                        ],
+                        "TSSTDY": [
+                            31,
+                            74,
+                        ],
+                    }
+                )
             ),
         ),
         (
             "inner",
-            pd.DataFrame.from_dict(
-                {
-                    "ECSEQ": [
-                        "1",
-                        "2",
-                    ],
-                    "ECSTDY": [
-                        4,
-                        5,
-                    ],
-                    "STUDYID": [
-                        "1",
-                        "2",
-                    ],
-                    "USUBJID": [
-                        "CDISC001",
-                        "CDISC001",
-                    ],
-                    "AESEQ": [
-                        "1",
-                        "2",
-                    ],
-                    "AESTDY": [
-                        4,
-                        5,
-                    ],
-                    "TSSEQ": [
-                        "1",
-                        "2",
-                    ],
-                    "TSSTDY": [
-                        31,
-                        74,
-                    ],
-                }
+            PandasDataset(
+                pd.DataFrame.from_dict(
+                    {
+                        "ECSEQ": [
+                            "1",
+                            "2",
+                        ],
+                        "ECSTDY": [
+                            4,
+                            5,
+                        ],
+                        "STUDYID": [
+                            "1",
+                            "2",
+                        ],
+                        "USUBJID": [
+                            "CDISC001",
+                            "CDISC001",
+                        ],
+                        "AESEQ": [
+                            "1",
+                            "2",
+                        ],
+                        "AESTDY": [
+                            4,
+                            5,
+                        ],
+                        "TSSEQ": [
+                            "1",
+                            "2",
+                        ],
+                        "TSSTDY": [
+                            31,
+                            74,
+                        ],
+                    }
+                )
             ),
         ),
         (
             "left",
-            pd.DataFrame(
-                {
-                    "ECSEQ": [
-                        "1",
-                        "2",
-                        "3",
-                        "4",
-                        "5",
-                    ],
-                    "ECSTDY": [
-                        4,
-                        5,
-                        6,
-                        7,
-                        8,
-                    ],
-                    "STUDYID": [
-                        "1",
-                        "2",
-                        "1",
-                        "2",
-                        "3",
-                    ],
-                    "USUBJID": [
-                        "CDISC001",
-                        "CDISC001",
-                        "CDISC002",
-                        "CDISC002",
-                        "CDISC003",
-                    ],
-                    "AESEQ": [
-                        "1",
-                        "2",
-                        "3",
-                        "4",
-                        None,
-                    ],
-                    "AESTDY": pd.Series(
-                        [
+            PandasDataset(
+                pd.DataFrame(
+                    {
+                        "ECSEQ": [
+                            "1",
+                            "2",
+                            "3",
+                            "4",
+                            "5",
+                        ],
+                        "ECSTDY": [
                             4,
                             5,
-                            16,
-                            17,
+                            6,
+                            7,
+                            8,
+                        ],
+                        "STUDYID": [
+                            "1",
+                            "2",
+                            "1",
+                            "2",
+                            "3",
+                        ],
+                        "USUBJID": [
+                            "CDISC001",
+                            "CDISC001",
+                            "CDISC002",
+                            "CDISC002",
+                            "CDISC003",
+                        ],
+                        "AESEQ": [
+                            "1",
+                            "2",
+                            "3",
+                            "4",
                             None,
                         ],
-                        dtype="object",
-                    ),
-                    "_merge_AE": pd.Categorical(
-                        [
-                            "both",
-                            "both",
-                            "both",
-                            "both",
-                            "left_only",
-                        ],
-                        categories=["left_only", "right_only", "both"],
-                        ordered=False,
-                    ),
-                    "TSSEQ": [
-                        "1",
-                        "2",
-                        None,
-                        None,
-                        None,
-                    ],
-                    "TSSTDY": pd.Series(
-                        [
-                            31,
-                            74,
+                        "AESTDY": pd.Series(
+                            [
+                                4,
+                                5,
+                                16,
+                                17,
+                                None,
+                            ],
+                            dtype="object",
+                        ),
+                        "_merge_AE": pd.Categorical(
+                            [
+                                "both",
+                                "both",
+                                "both",
+                                "both",
+                                "left_only",
+                            ],
+                            categories=["left_only", "right_only", "both"],
+                            ordered=False,
+                        ),
+                        "TSSEQ": [
+                            "1",
+                            "2",
                             None,
                             None,
                             None,
                         ],
-                        dtype="object",
-                    ),
-                    "_merge_TS": pd.Categorical(
-                        [
-                            "both",
-                            "both",
-                            "left_only",
-                            "left_only",
-                            "left_only",
-                        ],
-                        categories=["left_only", "right_only", "both"],
-                        ordered=False,
-                    ),
-                }
+                        "TSSTDY": pd.Series(
+                            [
+                                31,
+                                74,
+                                None,
+                                None,
+                                None,
+                            ],
+                            dtype="object",
+                        ),
+                        "_merge_TS": pd.Categorical(
+                            [
+                                "both",
+                                "both",
+                                "left_only",
+                                "left_only",
+                                "left_only",
+                            ],
+                            categories=["left_only", "right_only", "both"],
+                            ordered=False,
+                        ),
+                    }
+                ),
             ),
         ),
     ],
@@ -362,44 +368,6 @@ def test_preprocess(
     preprocessed_dataset: pd.DataFrame = preprocessor.preprocess(
         dataset_rule_equal_to, datasets
     )
-    expected_dataset = PandasDataset(
-        pd.DataFrame.from_dict(
-            {
-                "ECSEQ": [
-                    "1",
-                    "2",
-                ],
-                "ECSTDY": [
-                    4,
-                    5,
-                ],
-                "STUDYID": [
-                    "1",
-                    "2",
-                ],
-                "USUBJID": [
-                    "CDISC001",
-                    "CDISC001",
-                ],
-                "AESEQ": [
-                    "1",
-                    "2",
-                ],
-                "AESTDY": [
-                    4,
-                    5,
-                ],
-                "TSSEQ": [
-                    "1",
-                    "2",
-                ],
-                "TSSTDY": [
-                    31,
-                    74,
-                ],
-            }
-        )
-    )
     assert preprocessed_dataset.data.equals(expected_dataset.data)
 
 
@@ -506,43 +474,45 @@ def test_preprocess_relationship_dataset(
     preprocessed_dataset: pd.DataFrame = preprocessor.preprocess(
         dataset_rule_record_in_parent_domain_equal_to, datasets
     )
-    expected_dataset = PandasDataset(pd.DataFrame.from_dict(
-        {
-            "USUBJID": ["CDISC005", "CDISC005"],
-            "DOMAIN": [
-                "EC",
-                "EC",
-            ],
-            "ECPRESP": [
-                "Y",
-                "B",
-            ],
-            "ECSEQ": [
-                4.0,
-                5.0,
-            ],
-            "ECNUM": [
-                4,
-                5,
-            ],
-            "RDOMAIN": [
-                "EC",
-                "EC",
-            ],
-            "QNAM": [
-                "ECREASOC",
-                "ECREASOS",
-            ],
-            "IDVAR": [
-                "ECSEQ",
-                "ECSEQ",
-            ],
-            "IDVARVAL": [
-                4.0,
-                5.0,
-            ],
-        }
-    ))
+    expected_dataset = PandasDataset(
+        pd.DataFrame.from_dict(
+            {
+                "USUBJID": ["CDISC005", "CDISC005"],
+                "DOMAIN": [
+                    "EC",
+                    "EC",
+                ],
+                "ECPRESP": [
+                    "Y",
+                    "B",
+                ],
+                "ECSEQ": [
+                    4.0,
+                    5.0,
+                ],
+                "ECNUM": [
+                    4,
+                    5,
+                ],
+                "RDOMAIN": [
+                    "EC",
+                    "EC",
+                ],
+                "QNAM": [
+                    "ECREASOC",
+                    "ECREASOS",
+                ],
+                "IDVAR": [
+                    "ECSEQ",
+                    "ECSEQ",
+                ],
+                "IDVARVAL": [
+                    4.0,
+                    5.0,
+                ],
+            }
+        )
+    )
     assert preprocessed_dataset.data.equals(expected_dataset.data)
 
 

@@ -440,7 +440,7 @@ class DataProcessor:
         if join_type is JoinTypes.LEFT:
             if "left_only" in result[f"_merge_{right_dataset_domain_name}"].values:
                 DummyDataService._replace_nans_in_numeric_cols_with_none(result)
-                result.loc[
+                result.data.loc[
                     result[f"_merge_{right_dataset_domain_name}"] == "left_only",
                     result.columns.symmetric_difference(
                         left_dataset.columns.union(

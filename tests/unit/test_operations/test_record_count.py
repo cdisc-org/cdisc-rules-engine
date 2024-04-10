@@ -5,6 +5,12 @@ import pandas as pd
 from cdisc_rules_engine.models.dataset.dask_dataset import DaskDataset
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 import pytest
+from unittest.mock import MagicMock
+
+from cdisc_rules_engine.services.cache.cache_service_factory import CacheServiceFactory
+from cdisc_rules_engine.services.data_services.data_service_factory import (
+    DataServiceFactory,
+)
 
 
 @pytest.mark.parametrize("dataset_type", [(PandasDataset), (DaskDataset)])
@@ -37,7 +43,7 @@ def test_record_count_operation(operation_params: OperationParams, dataset_type)
     operation = RecordCount(
         operation_params, operation_params.dataframe, MagicMock(), MagicMock()
     )
-    result: pd.DataFrame = operation.execute()
+    result: PandasDataset = operation.execute()
     expected: pd.Series = pd.Series(
         [
             2,
@@ -46,11 +52,12 @@ def test_record_count_operation(operation_params: OperationParams, dataset_type)
     )
     assert result[operation_params.operation_id].equals(expected)
 
+
 @pytest.mark.parametrize(
     "data, expected",
     [
         (
-            pd.DataFrame.from_dict(
+            PandasDataset.from_dict(
                 {
                     "STUDYID": ["CDISC01", "CDISC02"],
                     "DOMAIN": ["AE", "AE"],
@@ -58,7 +65,7 @@ def test_record_count_operation(operation_params: OperationParams, dataset_type)
                     "USUBJID": ["TEST1", "TEST1"],
                 }
             ),
-            pd.DataFrame.from_dict(
+            PandasDataset.from_dict(
                 {
                     "STUDYID": ["CDISC01", "CDISC02"],
                     "DOMAIN": ["AE", "AE"],
@@ -85,7 +92,7 @@ def test_filtered_record_count(data, expected, operation_params: OperationParams
     "data, expected",
     [
         (
-            pd.DataFrame.from_dict(
+            PandasDataset.from_dict(
                 {
                     "STUDYID": ["CDISC01", "CDISC02", "CDISC02"],
                     "DOMAIN": ["AE", "AE", "AE"],
@@ -93,7 +100,7 @@ def test_filtered_record_count(data, expected, operation_params: OperationParams
                     "USUBJID": ["TEST1", "TEST1", "TEST1"],
                 }
             ),
-            pd.DataFrame.from_dict(
+            PandasDataset.from_dict(
                 {
                     "STUDYID": ["CDISC01", "CDISC02", "CDISC02"],
                     "DOMAIN": ["AE", "AE", "AE"],
@@ -120,7 +127,7 @@ def test_multi_filter_record_count(data, expected, operation_params: OperationPa
     "data, expected",
     [
         (
-            pd.DataFrame.from_dict(
+            PandasDataset.from_dict(
                 {
                     "STUDYID": ["CDISC01", "CDISC01", "CDISC02"],
                     "DOMAIN": ["AE", "AE", "AE"],
@@ -128,7 +135,7 @@ def test_multi_filter_record_count(data, expected, operation_params: OperationPa
                     "USUBJID": ["TEST1", "TEST1", "TEST2"],
                 }
             ),
-            pd.DataFrame.from_dict(
+            PandasDataset.from_dict(
                 {
                     "STUDYID": ["CDISC01", "CDISC01", "CDISC02"],
                     "DOMAIN": ["AE", "AE", "AE"],
@@ -155,7 +162,7 @@ def test_grouped_record_count(data, expected, operation_params: OperationParams)
     "data, expected",
     [
         (
-            pd.DataFrame.from_dict(
+            PandasDataset.from_dict(
                 {
                     "STUDYID": ["CDISC01", "CDISC01", "CDISC02"],
                     "DOMAIN": ["AE", "AE", "AE"],
@@ -163,7 +170,7 @@ def test_grouped_record_count(data, expected, operation_params: OperationParams)
                     "USUBJID": ["TEST1", "TEST1", "TEST2"],
                 }
             ),
-            pd.DataFrame.from_dict(
+            PandasDataset.from_dict(
                 {
                     "STUDYID": ["CDISC01", "CDISC01", "CDISC02"],
                     "DOMAIN": ["AE", "AE", "AE"],
@@ -190,7 +197,7 @@ def test_multi_group_record_count(data, expected, operation_params: OperationPar
     "data, expected",
     [
         (
-            pd.DataFrame.from_dict(
+            PandasDataset.from_dict(
                 {
                     "STUDYID": ["CDISC01", "CDISC01", "CDISC02"],
                     "DOMAIN": ["AE", "AE", "AE"],
@@ -198,7 +205,7 @@ def test_multi_group_record_count(data, expected, operation_params: OperationPar
                     "USUBJID": ["TEST2", "TEST1", "TEST2"],
                 }
             ),
-            pd.DataFrame.from_dict(
+            PandasDataset.from_dict(
                 {
                     "STUDYID": ["CDISC01", "CDISC01", "CDISC02"],
                     "DOMAIN": ["AE", "AE", "AE"],
