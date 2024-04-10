@@ -164,10 +164,9 @@ def test_extract_variable_metadata(filename):
                     assert variable[key] == expected_exroute_metadata[key]
 
             assert variable["define_variable_order_number"] == index + 1
-            
-@pytest.mark.parametrize(
-    "filename", [(test_define_file_path)]
-)
+
+
+@pytest.mark.parametrize("filename", [(test_define_file_path)])
 def test_extract_variable_metadata_when_one_ordernumber_non_1_based(filename):
     """
     Unit test for DefineXMLReader.extract_domain_metadata function.
@@ -178,12 +177,13 @@ def test_extract_variable_metadata_when_one_ordernumber_non_1_based(filename):
         variable_metadata: List[dict] = reader.extract_variables_metadata(
             domain_name="AE"
         )
-        for index, variable in enumerate(variable_metadata): 
+        for index, variable in enumerate(variable_metadata):
             if index == 0:
-                assert variable["define_variable_order_number"] != index+1
+                assert variable["define_variable_order_number"] != index + 1
             else:
-                assert variable["define_variable_order_number"] == index+1
-            
+                assert variable["define_variable_order_number"] == index + 1
+
+
 def test_extract_variable_metadata_with_has_no_data():
     """
     Unit test for DefineXMLReader.extract_domain_metadata function.
