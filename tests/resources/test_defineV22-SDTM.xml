@@ -2161,7 +2161,7 @@
         <ItemRef ItemOID="IT.EX.USUBJID" Mandatory="Yes" OrderNumber="3" KeySequence="2" Role="Identifier"/>
         <ItemRef ItemOID="IT.EX.SPDEVID" Mandatory="Yes" OrderNumber="4" Role="Identifier"/>
         <ItemRef ItemOID="IT.EX.EXSEQ" Mandatory="Yes" OrderNumber="5" MethodOID="MT.SEQ" Role="Identifier"/>
-        <ItemRef ItemOID="IT.EX.EXTRT" Mandatory="Yes" OrderNumber="6" KeySequence="3" Role="Topic"/>
+        <ItemRef ItemOID="IT.EX.EXTRT" Mandatory="Yes" KeySequence="3" Role="Topic"/>
         <ItemRef ItemOID="IT.EX.EXDOSE" Mandatory="No" OrderNumber="7" MethodOID="MT.EXDOSE" Role="Record Qualifier"/>
         <ItemRef ItemOID="IT.EX.EXDOSU" Mandatory="No" OrderNumber="8" Role="Variable Qualifier"/>
         <ItemRef ItemOID="IT.EX.EXDOSFRM" Mandatory="No" OrderNumber="9" Role="Variable Qualifier"/>
@@ -2169,7 +2169,7 @@
         <ItemRef ItemOID="IT.EX.EXROUTE" Mandatory="No" OrderNumber="11" Role="Variable Qualifier"/>
         <ItemRef ItemOID="IT.EX.EXLOT" Mandatory="No" OrderNumber="12" Role="Record Qualifier"/>
         <ItemRef ItemOID="IT.EX.EPOCH" Mandatory="No" OrderNumber="13" Role="Timing"/>
-        <ItemRef ItemOID="IT.EX.EXSTDTC" Mandatory="No" OrderNumber="14" KeySequence="4" Role="Timing"/>
+        <ItemRef ItemOID="IT.EX.EXSTDTC" Mandatory="No" KeySequence="4" Role="Timing"/>
         <ItemRef ItemOID="IT.EX.EXENDTC" Mandatory="No" OrderNumber="15" Role="Timing"/>
         <ItemRef ItemOID="IT.EX.EXSTDY" Mandatory="No" OrderNumber="16" Role="Timing"/>
         <ItemRef ItemOID="IT.EX.EXENDY" Mandatory="No" OrderNumber="17" Role="Timing"/>
@@ -2187,7 +2187,7 @@
         <Description>
           <TranslatedText xml:lang="en">Adverse Events</TranslatedText>
         </Description>
-        <ItemRef ItemOID="IT.AE.STUDYID" Mandatory="Yes" OrderNumber="1" KeySequence="1" Role="Identifier"/>
+        <ItemRef ItemOID="IT.AE.STUDYID" Mandatory="Yes" OrderNumber="21" KeySequence="1" Role="Identifier"/>
         <ItemRef ItemOID="IT.AE.DOMAIN" Mandatory="Yes" OrderNumber="2" Role="Identifier"/>
         <ItemRef ItemOID="IT.AE.USUBJID" Mandatory="Yes" OrderNumber="3" KeySequence="2" Role="Identifier"/>
         <ItemRef ItemOID="IT.AE.AESEQ" Mandatory="Yes" OrderNumber="4" MethodOID="MT.SEQ" Role="Identifier"/>
