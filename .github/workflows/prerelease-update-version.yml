@@ -1,0 +1,37 @@
+name: Prerelease - Increment Version
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_str:
+        description: "Choose the version increment type"
+        type: choice
+        required: true
+        default: PATCH
+        options:
+          - PATCH
+          - MINOR
+          - MAJOR
+
+jobs:
+  update_version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.9"
+
+      - name: Run Update Version Script
+        id: update_version
+        run: |
+          version_output=$(python update_version.py ${{ github.event.inputs.version_str }})
+          echo "::set-output name=version_output::${version_output}"
+
+      - name: Commit and Push Changes
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "Update version.py to ${{ steps.update_version.outputs.version_output }}"
