@@ -3,6 +3,9 @@ name: Prerelease - Update Cache
 on:
   workflow_dispatch:
 
+env:
+  CDISC_LIBRARY_API_KEY: ${{ secrets.CDISC_LIBRARY_API_KEY }}
+
 jobs:
   update_version:
     runs-on: ubuntu-latest
