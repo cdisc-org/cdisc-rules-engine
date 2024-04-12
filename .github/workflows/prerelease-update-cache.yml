@@ -3,9 +3,6 @@ name: Prerelease - Update Cache
 on:
   workflow_dispatch:
 
-env:
-  CDISC_LIBRARY_API_KEY: ${{ secrets.CDISC_LIBRARY_API_KEY }}
-
 jobs:
   update_version:
     runs-on: ubuntu-latest
@@ -30,6 +27,8 @@ jobs:
 
       - name: Run Update Cache Script
         run: python core.py update-cache
+        env:
+          CDISC_LIBRARY_API_KEY: ${{ secrets.CDISC_LIBRARY_API_KEY }}
 
       - name: Commit and Push Changes
         uses: stefanzweifel/git-auto-commit-action@v5
