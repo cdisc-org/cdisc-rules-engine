@@ -85,6 +85,7 @@ def validate_single_rule(
     results = list(itertools.chain(*results))
     if args.progress == ProgressParameterOptions.VERBOSE_OUTPUT.value:
         engine_logger.log(f"{rule['core_id']} validation complete")
+    breakpoint()
     return RuleValidationResult(rule, results)
 
 
@@ -111,6 +112,7 @@ def run_validation(args: Validation_args):
     # install dictionaries if needed
     fill_cache_with_dictionaries(shared_cache, args)
     rules = get_rules(args)
+    # run rules differently if unpublished vs published
     data_service = DataServiceFactory(config, shared_cache).get_data_service(
         args.dataset_paths
     )

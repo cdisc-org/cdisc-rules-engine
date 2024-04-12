@@ -48,7 +48,7 @@ class Rule:
                 "standards": cls.parse_standards(authorities),
                 "classes": rule_metadata.get("Scope", {}).get("Classes"),
                 "domains": rule_metadata.get("Scope", {}).get("Domains"),
-                "rule_type": rule_metadata.get("Rule_Type"),
+                "rule_type": cls.get_key(rule_metadata, "Rule_Type"),
                 "conditions": cls.parse_conditions(rule_metadata.get("Check")),
                 "actions": cls.parse_actions(rule_metadata.get("Outcome")),
             }
@@ -68,6 +68,13 @@ class Rule:
             return executable_rule
         else:
             return rule_metadata
+
+    @classmethod
+    def get_key(cls, data_dict, key):
+        if key in data_dict:
+            return data_dict.get(key)
+        yml_key = key.replace("_", " ")
+        return data_dict.get(yml_key)
 
     @classmethod
     def parse_standards(cls, authorities: List[dict]) -> List[dict]:

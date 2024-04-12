@@ -1,3 +1,6 @@
+import json
+import yaml
+
 from cdisc_rules_engine.interfaces import CacheServiceInterface
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
@@ -14,6 +17,7 @@ from cdisc_rules_engine.models.dictionaries import DictionaryTypes
 from cdisc_rules_engine.models.dictionaries.get_dictionary_terms import (
     extract_dictionary_terms,
 )
+from cdisc_rules_engine.models.rule import Rule
 from cdisc_rules_engine.utilities.utils import (
     get_rules_cache_key,
     get_standard_details_cache_key,
@@ -122,6 +126,29 @@ def get_rules(args) -> List[dict]:
         with open(rules_file, "rb") as f:
             rules_data = pickle.load(f)
             rules = [rules_data.get(key) for key in keys]
+    elif args.unpublished:
+        # iterate through paths
+        for rule_path in args.unpublished:
+            # split rule at root and check file type
+            _, file_extension = os.path.splitext(rule_path)
+            try:
+                with open(rule_path, "r", encoding="utf-8") as file:
+                    if file_extension in [".yml", ".yaml"]:
+                        rule = Rule.from_cdisc_metadata(yaml.safe_load(file))
+                    elif file_extension == ".json":
+                        rule = Rule.from_cdisc_metadata(json.load(file))
+                    else:
+                        raise ValueError(f"Unsupported file type: {file_extension}")
+                    rules.append(rule)
+            except Exception as e:
+                engine_logger.error(f"Error loading rule file {rule_path}: {e}")
+        breakpoint()
+        return rules
+
+        # test rule logic
+        # with open(args.rule, "r", encoding="utf-8") as f:
+        #     rules = [Rule.from_cdisc_metadata(json.load(f))]
+
     else:
         engine_logger.warning(
             f"No rules specified. Running all rules for {args.standard}"

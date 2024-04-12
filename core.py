@@ -89,12 +89,8 @@ def cli():
     default=DefaultFilePaths.EXCEL_TEMPLATE_FILE.value,
     help="File path of report template to use for excel output",
 )
-@click.option(
-    "-s", "--standard", required=True, help="CDISC standard to validate against"
-)
-@click.option(
-    "-v", "--version", required=True, help="Standard version to validate against"
-)
+@click.option("-s", "--standard", help="CDISC standard to validate against")
+@click.option("-v", "--version", help="Standard version to validate against")
 @click.option(
     "-ct",
     "--controlled-terminology-package",
@@ -134,7 +130,20 @@ def cli():
 )
 @click.option("--whodrug", help="Path to directory with WHODrug dictionary files")
 @click.option("--meddra", help="Path to directory with MedDRA dictionary files")
-@click.option("--rules", "-r", multiple=True)
+@click.option(
+    "--rules",
+    "-r",
+    multiple=True,
+    help="specify rule core ID ex. CORE-000001. Can be specified multiple times",
+)
+@click.option(
+    "--unpublished",
+    "-u",
+    required=False,
+    multiple=True,
+    type=click.Path(exists=True, readable=True, resolve_path=True),
+    help="Absolute path to unpublished rule. Can be specified multiple times",
+)
 @click.option(
     "-p",
     "--progress",
@@ -166,6 +175,7 @@ def validate(
     whodrug: str,
     meddra: str,
     rules: Tuple[str],
+    unpublished: Tuple[str],
     progress: str,
     define_xml_path: str,
 ):
@@ -190,6 +200,14 @@ def validate(
     cache_path: str = os.path.join(os.path.dirname(__file__), cache)
 
     print(os.path.dirname(__file__))
+
+    # if not unpublished:
+    #     if not standard or not version:
+    #         raise click.UsageError("If not using unpublished rules,"
+    #                                " both a standard and version must be provided.")
+    #     logger.info(f"Validating against {standard} version {version}...")
+    # else:
+    #     logger.info("Validating against unpublished rules.")
 
     if data:
         if dataset_path:
@@ -241,6 +259,7 @@ def validate(
             whodrug,
             meddra,
             rules,
+            unpublished,
             progress,
             define_xml_path,
         )
