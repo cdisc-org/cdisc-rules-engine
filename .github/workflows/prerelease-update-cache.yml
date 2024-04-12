@@ -13,6 +13,12 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          # https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent#generating-a-new-ssh-key
+          # git bash: ssh-keygen -t ed25519 -C "github-actions@cdisc.org"
+          # Add public key (.pub one) as a deploy key at Your repo -> Settings -> Security -> Deploy keys, check "Allow write access".
+          # Add private key as a secret at Your repo -> Settings -> Security -> Secrets and variables -> Actions
+          ssh-key: ${{ secrets.GH_ACTION_PRIVATE_KEY }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
