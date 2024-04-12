@@ -16,6 +16,10 @@ on:
 jobs:
   update_version:
     runs-on: ubuntu-latest
+    permissions:
+      # Give the default GITHUB_TOKEN write permission to commit and push the
+      # added or changed files to the repository.
+      contents: write
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -26,12 +30,9 @@ jobs:
           python-version: "3.9"
 
       - name: Run Update Version Script
-        id: update_version
-        run: |
-          version_output=$(python update_version.py ${{ github.event.inputs.version_str }})
-          echo "::set-output name=version_output::${version_output}"
+        run: echo "VERSION_OUTPUT=$(python update_version.py ${{ github.event.inputs.version_str }})" >> $GITHUB_ENV
 
       - name: Commit and Push Changes
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: "Update version.py to ${{ steps.update_version.outputs.version_output }}"
+          commit_message: "Update version.py: ${{ env.VERSION_OUTPUT }}"
