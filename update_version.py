@@ -47,4 +47,4 @@ if __name__ == "__main__":
     # Update version.py with the new version
     update_version_file(new_version)
 
-    print(f"Version updated to {new_version}")
+    print(f"{current_version} -> {new_version}")
