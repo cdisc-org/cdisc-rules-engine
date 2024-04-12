@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  update_version:
+  update_cache:
     runs-on: ubuntu-latest
 
     steps:
