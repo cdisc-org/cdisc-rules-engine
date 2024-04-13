@@ -96,7 +96,7 @@ def test_filtered_record_count(data, expected, operation_params: OperationParams
                 {
                     "STUDYID": ["CDISC01", "CDISC02", "CDISC02"],
                     "DOMAIN": ["AE", "AE", "AE"],
-                    "EQ": [1, 2, 3],
+                    "EQ": [2, 2, 3],
                     "USUBJID": ["TEST1", "TEST1", "TEST1"],
                 }
             ),
@@ -104,7 +104,7 @@ def test_filtered_record_count(data, expected, operation_params: OperationParams
                 {
                     "STUDYID": ["CDISC01", "CDISC02", "CDISC02"],
                     "DOMAIN": ["AE", "AE", "AE"],
-                    "EQ": [1, 2, 3],
+                    "EQ": [2, 2, 3],
                     "USUBJID": ["TEST1", "TEST1", "TEST1"],
                     "operation_id": [1, 1, 1],
                 }

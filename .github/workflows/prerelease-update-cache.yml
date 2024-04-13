@@ -1,0 +1,36 @@
+name: Prerelease - Update Cache
+
+on:
+  workflow_dispatch:
+
+jobs:
+  update_cache:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          # https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent#generating-a-new-ssh-key
+          # git bash: ssh-keygen -t ed25519 -C "github-actions@cdisc.org"
+          # Add public key (.pub one) as a deploy key at Your repo -> Settings -> Security -> Deploy keys, check "Allow write access".
+          # Add private key as a secret at Your repo -> Settings -> Security -> Secrets and variables -> Actions
+          ssh-key: ${{ secrets.GH_ACTION_PRIVATE_KEY }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
+
+      - name: Install requirements
+        run: pip install -r requirements.txt
+
+      - name: Run Update Cache Script
+        run: python core.py update-cache
+        env:
+          CDISC_LIBRARY_API_KEY: ${{ secrets.CDISC_LIBRARY_API_KEY }}
+
+      - name: Commit and Push Changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Update cache"

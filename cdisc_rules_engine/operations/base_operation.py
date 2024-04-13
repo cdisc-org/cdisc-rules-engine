@@ -82,8 +82,9 @@ class BaseOperation:
 
     def _filter_data(self, data):
         # filters inputted dataframe on self.param.filter dictionary
+        filtered_df = data
         for variable, value in self.params.filter.items():
-            filtered_df = data[data[variable] == value]
+            filtered_df = filtered_df[filtered_df[variable] == value]
         return self.evaluation_dataset.__class__(filtered_df)
 
     def _get_variables_metadata_from_standard(self) -> List[dict]:
