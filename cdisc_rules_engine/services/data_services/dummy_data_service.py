@@ -150,7 +150,7 @@ class DummyDataService(BaseDataService):
 
     def to_parquet(self, file_path: str) -> str:
         return ""
- 
+
     def get_datasets(self) -> List[dict]:
         datasets = []
         for dataset_path in [dataset.filename for dataset in self.data]:
