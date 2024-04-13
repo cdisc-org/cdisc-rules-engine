@@ -318,6 +318,42 @@ def test_non_empty(data, dataset_type, expected_result):
             DaskDataset,
             [False, False],
         ),
+        (
+            {
+                "target": [224, None],
+            },
+            "^[1-9]{1}\d*$",  # noqa: W605
+            2,
+            PandasDataset,
+            [True, False],
+        ),
+        (
+            {
+                "target": [224, None],
+            },
+            "^[1-9]{1}\d*$",  # noqa: W605
+            2,
+            DaskDataset,
+            [True, False],
+        ),
+        (
+            {
+                "target": [-25, 3.14],
+            },
+            "^[1-9]{1}\d*$",  # noqa: W605
+            2,
+            PandasDataset,
+            [False, False],
+        ),
+        (
+            {
+                "target": [-25, 3.14],
+            },
+            "^[1-9]{1}\d*$",  # noqa: W605
+            2,
+            DaskDataset,
+            [False, False],
+        ),
     ],
 )
 def test_prefix_matches_regex(data, comparator, prefix, dataset_type, expected_result):
@@ -350,6 +386,42 @@ def test_prefix_matches_regex(data, comparator, prefix, dataset_type, expected_r
             PandasDataset,
             [False, False],
         ),
+        (
+            {
+                "target": [224, None],
+            },
+            "^[1-9]{1}\d*$",  # noqa: W605
+            2,
+            PandasDataset,
+            [True, False],
+        ),
+        (
+            {
+                "target": [224, None],
+            },
+            "^[1-9]{1}\d*$",  # noqa: W605
+            2,
+            DaskDataset,
+            [True, False],
+        ),
+        (
+            {
+                "target": [-25, 3.14],
+            },
+            "^[1-9]{1}\d*$",  # noqa: W605
+            2,
+            PandasDataset,
+            [True, True],
+        ),
+        (
+            {
+                "target": [-25, 3.14],
+            },
+            "^[1-9]{1}\d*$",  # noqa: W605
+            2,
+            DaskDataset,
+            [True, True],
+        ),
     ],
 )
 def test_suffix_matches_regex(data, comparator, suffix, dataset_type, expected_result):
@@ -381,6 +453,42 @@ def test_suffix_matches_regex(data, comparator, suffix, dataset_type, expected_r
             3,
             DaskDataset,
             [True, True],
+        ),
+        (
+            {
+                "target": [224, None],
+            },
+            "^[1-9]{1}\d*$",  # noqa: W605
+            2,
+            PandasDataset,
+            [False, False],
+        ),
+        (
+            {
+                "target": [224, None],
+            },
+            "^[1-9]{1}\d*$",  # noqa: W605
+            2,
+            DaskDataset,
+            [False, False],
+        ),
+        (
+            {
+                "target": [-25, 3.14],
+            },
+            "^[1-9]{1}\d*$",  # noqa: W605
+            2,
+            PandasDataset,
+            [False, False],
+        ),
+        (
+            {
+                "target": [-25, 3.14],
+            },
+            "^[1-9]{1}\d*$",  # noqa: W605
+            2,
+            DaskDataset,
+            [False, False],
         ),
     ],
 )
@@ -416,6 +524,42 @@ def test_not_suffix_matches_regex(
             PandasDataset,
             [True, True],
         ),
+        (
+            {
+                "target": [224, None],
+            },
+            "^[1-9]{1}\d*$",  # noqa: W605
+            2,
+            PandasDataset,
+            [False, False],
+        ),
+        (
+            {
+                "target": [224, None],
+            },
+            "^[1-9]{1}\d*$",  # noqa: W605
+            2,
+            DaskDataset,
+            [False, False],
+        ),
+        (
+            {
+                "target": [-25, 3.14],
+            },
+            "^[1-9]{1}\d*$",  # noqa: W605
+            2,
+            PandasDataset,
+            [True, True],
+        ),
+        (
+            {
+                "target": [-25, 3.14],
+            },
+            "^[1-9]{1}\d*$",  # noqa: W605
+            2,
+            DaskDataset,
+            [True, True],
+        ),
     ],
 )
 def test_not_prefix_matches_regex(
@@ -425,5 +569,129 @@ def test_not_prefix_matches_regex(
     dataframe_type = DataframeType({"value": df})
     result = dataframe_type.not_prefix_matches_regex(
         {"target": "target", "comparator": comparator, "prefix": prefix}
+    )
+    assert result.equals(df.convert_to_series(expected_result))
+
+
+@pytest.mark.parametrize(
+    "data,comparator,dataset_type, expected_result",
+    [
+        (
+            {
+                "target": ["word", "TEST"],
+            },
+            ".*",
+            DaskDataset,
+            [True, True],
+        ),
+        (
+            {
+                "target": ["word", "TEST"],
+            },
+            "[0-9].*",
+            PandasDataset,
+            [False, False],
+        ),
+        (
+            {
+                "target": [224, None],
+            },
+            "^[1-9]{1}\d*$",  # noqa: W605
+            PandasDataset,
+            [True, False],
+        ),
+        (
+            {
+                "target": [224, None],
+            },
+            "^[1-9]{1}\d*$",  # noqa: W605
+            DaskDataset,
+            [True, False],
+        ),
+        (
+            {
+                "target": [-25, 3.14],
+            },
+            "^-?[1-9]{1}\d*$",  # noqa: W605
+            PandasDataset,
+            [True, False],
+        ),
+        (
+            {
+                "target": [-25, 3.14],
+            },
+            "^-?[1-9]{1}\d*$",  # noqa: W605
+            DaskDataset,
+            [True, False],
+        ),
+    ],
+)
+def test_matches_regex(data, comparator, dataset_type, expected_result):
+    df = dataset_type.from_dict(data)
+    dataframe_type = DataframeType({"value": df})
+    result = dataframe_type.matches_regex(
+        {"target": "target", "comparator": comparator}
+    )
+    assert result.equals(df.convert_to_series(expected_result))
+
+
+@pytest.mark.parametrize(
+    "data,comparator,dataset_type, expected_result",
+    [
+        (
+            {
+                "target": ["word", "TEST"],
+            },
+            ".*",
+            DaskDataset,
+            [False, False],
+        ),
+        (
+            {
+                "target": ["word", "TEST"],
+            },
+            "[0-9].*",
+            PandasDataset,
+            [True, True],
+        ),
+        (
+            {
+                "target": [224, None],
+            },
+            "^[1-9]{1}\d*$",  # noqa: W605
+            PandasDataset,
+            [False, False],
+        ),
+        (
+            {
+                "target": [224, None],
+            },
+            "^[1-9]{1}\d*$",  # noqa: W605
+            DaskDataset,
+            [False, False],
+        ),
+        (
+            {
+                "target": [-25, 3.14],
+            },
+            "^-?[1-9]{1}\d*$",  # noqa: W605
+            PandasDataset,
+            [False, True],
+        ),
+        (
+            {
+                "target": [-25, 3.14],
+            },
+            "^-?[1-9]{1}\d*$",  # noqa: W605
+            DaskDataset,
+            [False, True],
+        ),
+    ],
+)
+def test_not_matches_regex(data, comparator, dataset_type, expected_result):
+    df = dataset_type.from_dict(data)
+    dataframe_type = DataframeType({"value": df})
+    result = dataframe_type.not_matches_regex(
+        {"target": "target", "comparator": comparator}
     )
     assert result.equals(df.convert_to_series(expected_result))

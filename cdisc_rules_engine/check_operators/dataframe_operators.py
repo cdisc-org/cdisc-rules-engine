@@ -35,6 +35,14 @@ class DataframeType(BaseType):
     def _assert_valid_value_and_cast(self, value):
         return value
 
+    def _custom_str_conversion(self, x):
+        if pd.notna(x):
+            if isinstance(x, int):
+                return str(x).strip()
+            elif isinstance(x, float):
+                return f"{x:.0f}" if x.is_integer() else str(x).strip()
+        return x
+
     def convert_string_data_to_lower(self, data):
         if self.value.is_series(data):
             data = data.str.lower()
@@ -521,39 +529,76 @@ class DataframeType(BaseType):
         target = self.replace_prefix(other_value.get("target"))
         comparator = other_value.get("comparator")
         prefix = other_value.get("prefix")
-        results = self.value[target].map(
+        converted_strings = self.value[target].map(
+            lambda x: self._custom_str_conversion(x)
+        )
+        results = converted_strings.notna() & converted_strings.astype(str).map(
             lambda x: re.search(comparator, x[:prefix]) is not None
         )
         return results
 
     @type_operator(FIELD_DATAFRAME)
     def not_prefix_matches_regex(self, other_value):
-        return ~self.prefix_matches_regex(other_value)
+        target = self.replace_prefix(other_value.get("target"))
+        comparator = other_value.get("comparator")
+        prefix = other_value.get("prefix")
+        converted_strings = self.value[target].map(
+            lambda x: self._custom_str_conversion(x)
+        )
+        results = converted_strings.notna() & ~converted_strings.astype(str).map(
+            lambda x: re.search(comparator, x[:prefix]) is not None
+        )
+        return results
 
     @type_operator(FIELD_DATAFRAME)
     def suffix_matches_regex(self, other_value):
         target = self.replace_prefix(other_value.get("target"))
         comparator = other_value.get("comparator")
         suffix = other_value.get("suffix")
-        results = self.value[target].apply(
+        converted_strings = self.value[target].map(
+            lambda x: self._custom_str_conversion(x)
+        )
+        results = converted_strings.notna() & converted_strings.astype(str).map(
             lambda x: re.search(comparator, x[-suffix:]) is not None
         )
         return results
 
     @type_operator(FIELD_DATAFRAME)
     def not_suffix_matches_regex(self, other_value):
-        return ~self.suffix_matches_regex(other_value)
+        target = self.replace_prefix(other_value.get("target"))
+        comparator = other_value.get("comparator")
+        suffix = other_value.get("suffix")
+        converted_strings = self.value[target].map(
+            lambda x: self._custom_str_conversion(x)
+        )
+        results = converted_strings.notna() & ~converted_strings.astype(str).map(
+            lambda x: re.search(comparator, x[-suffix:]) is not None
+        )
+        return results
 
     @type_operator(FIELD_DATAFRAME)
     def matches_regex(self, other_value):
         target = self.replace_prefix(other_value.get("target"))
         comparator = other_value.get("comparator")
-        results = self.value[target].str.match(comparator)
+        converted_strings = self.value[target].map(
+            lambda x: self._custom_str_conversion(x)
+        )
+        results = converted_strings.notna() & converted_strings.astype(str).str.match(
+            comparator
+        )
         return results
 
     @type_operator(FIELD_DATAFRAME)
     def not_matches_regex(self, other_value):
-        return ~self.matches_regex(other_value)
+        target = self.replace_prefix(other_value.get("target"))
+        comparator = other_value.get("comparator")
+        converted_strings = self.value[target].map(
+            lambda x: self._custom_str_conversion(x)
+        )
+        results = converted_strings.notna() & ~converted_strings.astype(str).str.match(
+            comparator
+        )
+        return results
 
     @type_operator(FIELD_DATAFRAME)
     def equals_string_part(self, other_value):
