@@ -53,13 +53,20 @@ class BaseDatasetBuilder:
         """
         pass
 
+    @abstractmethod
+    def build_split_datasets(self) -> pd.DataFrame:
+        """
+        Returns correct dataframe to operate on
+        """
+        pass
+
     def get_dataset(self, **kwargs):
         # If validating dataset content, ensure split datasets are handled.
         if is_split_dataset(self.datasets, self.domain):
             # Handle split datasets for content checks.
             # A content check is any check that is not in the list of rule types
             dataset: pd.DataFrame = self.data_service.concat_split_datasets(
-                func_to_call=self.build,
+                func_to_call=self.build_split_datasets,
                 dataset_names=self.get_corresponding_datasets_names(),
                 **kwargs,
             )
