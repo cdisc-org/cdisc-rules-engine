@@ -85,7 +85,6 @@ def validate_single_rule(
     results = list(itertools.chain(*results))
     if args.progress == ProgressParameterOptions.VERBOSE_OUTPUT.value:
         engine_logger.log(f"{rule['core_id']} validation complete")
-    breakpoint()
     return RuleValidationResult(rule, results)
 
 

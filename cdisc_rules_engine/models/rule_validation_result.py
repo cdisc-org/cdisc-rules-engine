@@ -23,7 +23,9 @@ class RuleValidationResult(RepresentationInterface):
         return ", ".join(
             sorted(
                 {
-                    reference.get("Rule_Identifier", {}).get("Id")
+                    self._yml_key_get(
+                        reference, "Rule_Identifier", "Rule Identifier"
+                    ).get("Id")
                     for authority in rule.get("authorities", [])
                     for standard in authority.get("Standards", [])
                     for reference in standard.get("References", [])
@@ -31,6 +33,9 @@ class RuleValidationResult(RepresentationInterface):
                 }
             )
         )
+
+    def _yml_key_get(self, data_dict, json_key, yml_key):
+        return data_dict.get(json_key) or data_dict.get(yml_key) or {}
 
     def to_representation(self) -> dict:
         return {

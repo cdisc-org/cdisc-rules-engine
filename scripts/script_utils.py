@@ -142,13 +142,7 @@ def get_rules(args) -> List[dict]:
                     rules.append(rule)
             except Exception as e:
                 engine_logger.error(f"Error loading rule file {rule_path}: {e}")
-        breakpoint()
         return rules
-
-        # test rule logic
-        # with open(args.rule, "r", encoding="utf-8") as f:
-        #     rules = [Rule.from_cdisc_metadata(json.load(f))]
-
     else:
         engine_logger.warning(
             f"No rules specified. Running all rules for {args.standard}"

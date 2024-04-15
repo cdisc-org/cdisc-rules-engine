@@ -56,15 +56,17 @@ class Rule:
             if "Operations" in rule_metadata:
                 executable_rule["operations"] = rule_metadata.get("Operations")
 
-            if "Match_Datasets" in rule_metadata:
+            if "Match_Datasets" or "Match Datasets" in rule_metadata:
                 executable_rule["datasets"] = cls.parse_datasets(
-                    rule_metadata.get("Match_Datasets")
+                    cls.get_key(rule_metadata, "Match_Datasets")
                 )
 
-            if "Output_Variables" in rule_metadata.get("Outcome", {}):
-                executable_rule["output_variables"] = rule_metadata.get("Outcome", {})[
-                    "Output_Variables"
-                ]
+            if "Output_Variables" or "Output Variables" in rule_metadata.get(
+                "Outcome", {}
+            ):
+                outcome = rule_metadata.get("Outcome", {})
+                output_variables = cls.get_key(outcome, "Output_Variables")
+                executable_rule["output_variables"] = output_variables
             return executable_rule
         else:
             return rule_metadata
