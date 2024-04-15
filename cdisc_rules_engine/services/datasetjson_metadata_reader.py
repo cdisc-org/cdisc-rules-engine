@@ -131,9 +131,12 @@ class DatasetJSONMetadataReader:
         rule authors use.
         """
         rule_author_type_map: dict = {
-            "string": "Char",
-            "integer": "Num",
+            "boolean": "Num",
+            "decimal": "Num",
+            "double": "Num",
             "float": "Num",
+            "integer": "Num",
+            "string": "Char",
         }
         for key, value in self._metadata_container[
             "variable_name_to_data_type_map"

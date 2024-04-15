@@ -67,6 +67,7 @@ def validate_single_rule(
         whodrug_path=args.whodrug,
         define_xml_path=args.define_xml_path,
         library_metadata=library_metadata,
+        dataset_paths=args.dataset_paths,
     )
     results = []
     validated_domains = set()

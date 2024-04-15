@@ -33,7 +33,9 @@ class DataProcessor:
 
     @staticmethod
     async def get_dataset_variables(study_path, dataset, data_service) -> Set:
-        data = data_service.get_dataset(f"{study_path}/{dataset.get('filename')}")
+        data = data_service.get_dataset(
+            os.path.join(study_path, dataset.get("filename"))
+        )
         return set(data.columns)
 
     @staticmethod

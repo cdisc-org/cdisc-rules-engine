@@ -4,6 +4,7 @@ from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
 
+import os
 import pandas as pd
 
 from cdisc_rules_engine.constants.classes import (
@@ -305,9 +306,9 @@ class RuleProcessor:
                 operation_params.datasets,
                 lambda item: item.get("domain") == operation_params.domain,
             )
-            file_path: str = (
-                f"{get_directory_path(operation_params.dataset_path)}/"
-                f"{domain_details['filename']}"
+            file_path: str = os.path.join(
+                get_directory_path(operation_params.dataset_path),
+                domain_details["filename"],
             )
             operation_params.dataframe = self.data_service.get_dataset(
                 dataset_name=file_path
