@@ -55,6 +55,7 @@ class RulesEngine:
         self.standard = kwargs.get("standard")
         self.standard_version = (kwargs.get("standard_version") or "").replace(".", "-")
         self.library_metadata = kwargs.get("library_metadata")
+        self.dataset_paths = kwargs.get("dataset_paths")
         self.cache = cache or CacheServiceFactory(self.config).get_cache_service()
         self.data_service = data_service or DataServiceFactory(
             self.config,
@@ -62,7 +63,7 @@ class RulesEngine:
             self.standard,
             self.standard_version,
             self.library_metadata,
-        ).get_service(**kwargs)
+        ).get_data_service(self.dataset_paths)
         self.rule_processor = RuleProcessor(
             self.data_service, self.cache, self.library_metadata
         )
