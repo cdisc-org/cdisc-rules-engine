@@ -5,6 +5,7 @@ from typing import List, Optional, Set, TYPE_CHECKING
 import pandas as pd
 
 from cdisc_rules_engine.config import config
+from cdisc_rules_engine.enums.join_types import JoinTypes
 from cdisc_rules_engine.exceptions.custom_exceptions import InvalidMatchKeyError
 from cdisc_rules_engine.services.cache.cache_service_factory import CacheServiceFactory
 from cdisc_rules_engine.interfaces import (
@@ -228,7 +229,9 @@ class DataProcessor:
     @staticmethod
     def merge_datasets_on_relationship_columns(
         left_dataset: pd.DataFrame,
+        left_dataset_match_keys: List[str],
         right_dataset: pd.DataFrame,
+        right_dataset_match_keys: List[str],
         right_dataset_domain_name: str,
         column_with_names: str,
         column_with_values: str,
@@ -246,12 +249,14 @@ class DataProcessor:
         DataProcessor.cast_numeric_cols_to_same_data_type(
             right_dataset, column_with_values, left_dataset, left_ds_col_name
         )
+        left_dataset_match_keys.append(left_ds_col_name)
+        right_dataset_match_keys.append(column_with_values)
 
         return pd.merge(
             left=left_dataset,
             right=right_dataset,
-            left_on=[left_ds_col_name],
-            right_on=[column_with_values],
+            left_on=left_dataset_match_keys,
+            right_on=right_dataset_match_keys,
             how="outer",
             suffixes=("", f".{right_dataset_domain_name}"),
         )
@@ -403,7 +408,9 @@ class DataProcessor:
         result = result.reset_index(drop=True)
         result = DataProcessor.merge_datasets_on_relationship_columns(
             left_dataset=result,
+            left_dataset_match_keys=left_dataset_match_keys,
             right_dataset=right_dataset,
+            right_dataset_match_keys=right_dataset_match_keys,
             right_dataset_domain_name=right_dataset_domain.get("domain_name"),
             **right_dataset_domain["relationship_columns"],
         )
@@ -416,14 +423,32 @@ class DataProcessor:
         left_dataset_match_keys: List[str],
         right_dataset_match_keys: List[str],
         right_dataset_domain_name: str,
+        join_type: JoinTypes,
     ) -> pd.DataFrame:
         result = pd.merge(
             left_dataset,
             right_dataset,
+            how=join_type.value,
             left_on=left_dataset_match_keys,
             right_on=right_dataset_match_keys,
             suffixes=("", f".{right_dataset_domain_name}"),
+            indicator=(
+                False
+                if join_type is JoinTypes.INNER
+                else f"_merge_{right_dataset_domain_name}"
+            ),
         )
+        if join_type is JoinTypes.LEFT:
+            if "left_only" in result[f"_merge_{right_dataset_domain_name}"].values:
+                DummyDataService._replace_nans_in_numeric_cols_with_none(result)
+                result.loc[
+                    result[f"_merge_{right_dataset_domain_name}"] == "left_only",
+                    result.columns.symmetric_difference(
+                        left_dataset.columns.union(
+                            [f"_merge_{right_dataset_domain_name}"]
+                        )
+                    ),
+                ] = None
         return result
 
     @staticmethod
