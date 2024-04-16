@@ -112,7 +112,6 @@ def run_validation(args: Validation_args):
     # install dictionaries if needed
     fill_cache_with_dictionaries(shared_cache, args)
     rules = get_rules(args)
-    # run rules differently if unpublished vs published
     data_service = DataServiceFactory(config, shared_cache).get_data_service(
         args.dataset_paths
     )
