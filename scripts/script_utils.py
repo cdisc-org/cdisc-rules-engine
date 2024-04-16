@@ -130,9 +130,7 @@ def get_rules(args) -> List[dict]:
             rules_data = pickle.load(f)
             rules = [rules_data.get(key) for key in keys]
     elif args.unpublished:
-        # iterate through paths
         for rule_path in args.unpublished:
-            # split rule at root and check file type
             _, file_extension = os.path.splitext(rule_path)
             try:
                 with open(rule_path, "r", encoding="utf-8") as file:
