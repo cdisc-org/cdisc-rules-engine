@@ -201,14 +201,6 @@ def validate(
 
     print(os.path.dirname(__file__))
 
-    # if not unpublished:
-    #     if not standard or not version:
-    #         raise click.UsageError("If not using unpublished rules,"
-    #                                " both a standard and version must be provided.")
-    #     logger.info(f"Validating against {standard} version {version}...")
-    # else:
-    #     logger.info("Validating against unpublished rules.")
-
     if data:
         if dataset_path:
             logger.error(

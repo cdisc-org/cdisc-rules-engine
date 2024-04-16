@@ -188,12 +188,35 @@ class TestValidate(unittest.TestCase):
             "--meddra",
             os.path.join("tests", "resources", "dictionaries", "meddra"),
             "-r",
-            os.path.join("tests", "resources", "CG0027-positive.json"),
+            os.path.join("tests", "resources", "Rule-CG0027.json"),
+            "-u",
+            os.path.join("tests", "resources", "CG0272.yml"),
             "-p",
             "bar",
         ]
         exit_code, stdout, stderr = self.run_command(args)
         self.assertNotEqual(stderr, "")
+
+    def test_validate_unpublished_rule(self):
+        args = [
+            "python",
+            "-m",
+            "core",
+            "validate",
+            "-s",
+            "sdtmig",
+            "-v",
+            "3.4",
+            "-d",
+            os.path.join("tests", "resources", "report_test_data"),
+            "-u",
+            os.path.join("tests", "resources", "CG0272.yml"),
+        ]
+        exit_code, stdout, stderr = self.run_command(args)
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(stderr, "")
+        self.assertFalse(self.error_message in stdout)
+        self.assertTrue(self.check_issue_summary_tab_empty())
 
     def test_validate_minimum_options(self):
         args = [

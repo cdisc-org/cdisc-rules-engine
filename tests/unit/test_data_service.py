@@ -183,6 +183,7 @@ def test_get_dataset_class(datasets, data, expected_class, filename):
             None,
             "",
             "",
+            "",
             None,
         )
     )
@@ -246,6 +247,7 @@ def test_get_dataset_class_associated_domains():
                 "",
                 None,
                 None,
+                "",
                 "",
                 "",
                 None,
