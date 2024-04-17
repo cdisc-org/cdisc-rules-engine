@@ -106,7 +106,6 @@ Run `python core.py validate --help` to see the list of validation options.
   -r, --rules TEXT                Specify rule core ID ex. CORE-000001. Can be specified multiple times.
   -u, --unpublished TEXT          Specify absolute path to unpublished rule yml and/or json rule file.
                                   Can be specified multiple times.
-
   -vo, --verbose-output           Specify this option to print rules as they
                                   are completed
   -p, --progress [verbose_output|disabled|percents|bar]
