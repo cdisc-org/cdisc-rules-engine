@@ -89,8 +89,12 @@ def cli():
     default=DefaultFilePaths.EXCEL_TEMPLATE_FILE.value,
     help="File path of report template to use for excel output",
 )
-@click.option("-s", "--standard", help="CDISC standard to validate against")
-@click.option("-v", "--version", help="Standard version to validate against")
+@click.option(
+    "-s", "--standard", required=True, help="CDISC standard to validate against"
+)
+@click.option(
+    "-v", "--version", required=True, help="Standard version to validate against"
+)
 @click.option(
     "-ct",
     "--controlled-terminology-package",
