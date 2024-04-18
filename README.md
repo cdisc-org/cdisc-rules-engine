@@ -104,8 +104,7 @@ Run `python core.py validate --help` to see the list of validation options.
   --meddra TEXT                   Path to directory with MedDRA dictionary
                                   files
   -r, --rules TEXT                Specify rule core ID ex. CORE-000001. Can be specified multiple times.
-  -u, --unpublished TEXT          Specify absolute path to unpublished rule yml and/or json rule file.
-                                  Can be specified multiple times.
+  -lr, --local_rules TEXT          Specify absolute path to unpublished rule yml and/or json rule file.
   -vo, --verbose-output           Specify this option to print rules as they
                                   are completed
   -p, --progress [verbose_output|disabled|percents|bar]

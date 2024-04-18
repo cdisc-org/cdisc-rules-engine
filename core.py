@@ -141,12 +141,11 @@ def cli():
     help="specify rule core ID ex. CORE-000001. Can be specified multiple times",
 )
 @click.option(
-    "--unpublished",
-    "-u",
+    "--local_rules",
+    "-lr",
     required=False,
-    multiple=True,
     type=click.Path(exists=True, readable=True, resolve_path=True),
-    help="Absolute path to unpublished rule. Can be specified multiple times",
+    help="path to directory containing unpublished rules.",
 )
 @click.option(
     "-p",
@@ -179,7 +178,7 @@ def validate(
     whodrug: str,
     meddra: str,
     rules: Tuple[str],
-    unpublished: Tuple[str],
+    local_rules: str,
     progress: str,
     define_xml_path: str,
 ):
@@ -255,7 +254,7 @@ def validate(
             whodrug,
             meddra,
             rules,
-            unpublished,
+            local_rules,
             progress,
             define_xml_path,
         )

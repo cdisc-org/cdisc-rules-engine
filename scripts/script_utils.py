@@ -117,6 +117,7 @@ def get_cache_service(manager):
         return manager.InMemoryCacheService()
 
 
+# flake8: noqa: C901
 def get_rules(args) -> List[dict]:
     core_ids = set()
     rules_file = os.path.join(args.cache, "rules.pkl")
@@ -129,22 +130,31 @@ def get_rules(args) -> List[dict]:
         with open(rules_file, "rb") as f:
             rules_data = pickle.load(f)
             rules = [rules_data.get(key) for key in keys]
-    elif args.unpublished:
-        for rule_path in args.unpublished:
-            _, file_extension = os.path.splitext(rule_path)
-            try:
-                with open(rule_path, "r", encoding="utf-8") as file:
-                    if file_extension in [".yml", ".yaml"]:
-                        rule = Rule.from_cdisc_metadata(yaml.safe_load(file))
-                    elif file_extension == ".json":
-                        rule = Rule.from_cdisc_metadata(json.load(file))
-                    else:
-                        raise ValueError(f"Unsupported file type: {file_extension}")
-                    rules.append(rule)
-            except Exception as e:
-                engine_logger.error(f"Error loading rule file {rule_path}: {e}")
-        return rules
-    else:
+    if args.local_rules:
+        try:
+            rule_files = [
+                os.path.join(args.local_rules, file)
+                for file in os.listdir(args.local_rules)
+            ]
+        except Exception as e:
+            engine_logger.error(f"Error accessing directory {args.local_rules}: {e}")
+        else:
+            for rule_file in rule_files:
+                _, file_extension = os.path.splitext(rule_file)
+                try:
+                    with open(rule_file, "r", encoding="utf-8") as file:
+                        if file_extension in [".yml", ".yaml"]:
+                            rule = Rule.from_cdisc_metadata(yaml.safe_load(file))
+                        elif file_extension == ".json":
+                            rule = Rule.from_cdisc_metadata(json.load(file))
+                        else:
+                            raise ValueError(f"Unsupported file type: {file_extension}")
+                        rules.append(rule)
+                except Exception as e:
+                    engine_logger.error(f"Error loading rule file {rule_file}: {e}")
+        transformed = replace_yml_spaces(rules)
+        return transformed
+    if not rules:
         engine_logger.warning(
             f"No rules specified. Running all rules for {args.standard}"
             + f" version {args.version}"
@@ -160,3 +170,15 @@ def get_rules(args) -> List[dict]:
                     rules.append(rule)
                     core_ids.add(rule.get("core_id"))
     return rules
+
+
+def replace_yml_spaces(data):
+    if isinstance(data, dict):
+        return {
+            key.replace(" ", "_"): replace_yml_spaces(value)
+            for key, value in data.items()
+        }
+    elif isinstance(data, list):
+        return [replace_yml_spaces(item) for item in data]
+    else:
+        return data

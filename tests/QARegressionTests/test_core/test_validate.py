@@ -189,7 +189,7 @@ class TestValidate(unittest.TestCase):
             os.path.join("tests", "resources", "dictionaries", "meddra"),
             "-r",
             os.path.join("tests", "resources", "Rule-CG0027.json"),
-            "-u",
+            "-lr",
             os.path.join("tests", "resources", "CG0272.yml"),
             "-p",
             "bar",
@@ -209,7 +209,7 @@ class TestValidate(unittest.TestCase):
             "3.4",
             "-d",
             os.path.join("tests", "resources", "report_test_data"),
-            "-u",
+            "-lr",
             os.path.join("tests", "resources", "CG0272.yml"),
         ]
         exit_code, stdout, stderr = self.run_command(args)

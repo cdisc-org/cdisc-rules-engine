@@ -18,7 +18,7 @@ Validation_args = namedtuple(
         "whodrug",
         "meddra",
         "rules",
-        "unpublished",
+        "local_rules",
         "progress",
         "define_xml_path",
     ],

@@ -48,7 +48,7 @@ class Rule:
                 "standards": cls.parse_standards(authorities),
                 "classes": rule_metadata.get("Scope", {}).get("Classes"),
                 "domains": rule_metadata.get("Scope", {}).get("Domains"),
-                "rule_type": cls.get_key(rule_metadata, "Rule_Type"),
+                "rule_type": rule_metadata.get("Rule_Type"),
                 "conditions": cls.parse_conditions(rule_metadata.get("Check")),
                 "actions": cls.parse_actions(rule_metadata.get("Outcome")),
             }
@@ -56,27 +56,17 @@ class Rule:
             if "Operations" in rule_metadata:
                 executable_rule["operations"] = rule_metadata.get("Operations")
 
-            if "Match_Datasets" or "Match Datasets" in rule_metadata:
+            if "Match_Datasets" in rule_metadata:
                 executable_rule["datasets"] = cls.parse_datasets(
-                    cls.get_key(rule_metadata, "Match_Datasets")
+                    rule_metadata.get("Match_Datasets")
                 )
-
-            if "Output_Variables" or "Output Variables" in rule_metadata.get(
-                "Outcome", {}
-            ):
-                outcome = rule_metadata.get("Outcome", {})
-                output_variables = cls.get_key(outcome, "Output_Variables")
-                executable_rule["output_variables"] = output_variables
+            if "Output_Variables" in rule_metadata.get("Outcome", {}):
+                executable_rule["output_variables"] = rule_metadata.get("Outcome", {})[
+                    "Output_Variables"
+                ]
             return executable_rule
         else:
             return rule_metadata
-
-    @classmethod
-    def get_key(cls, data_dict, key):
-        if key in data_dict:
-            return data_dict.get(key)
-        yml_key = key.replace("_", " ")
-        return data_dict.get(yml_key)
 
     @classmethod
     def parse_standards(cls, authorities: List[dict]) -> List[dict]:
