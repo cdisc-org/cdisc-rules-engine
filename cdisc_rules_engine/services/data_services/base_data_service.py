@@ -289,6 +289,6 @@ class BaseDataService(DataServiceInterface, ABC):
         """
         with ThreadPoolExecutor() as executor:
             return executor.map(
-                lambda name: function_to_call(dataset_name=name, **kwargs),
+                lambda name: function_to_call(**kwargs),
                 dataset_names,
             )

@@ -36,10 +36,13 @@ def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:
         data = pickle.load(f)
         standard_metadata = data.get(standard_details_cache_key, {})
 
-    model_cache_key = get_model_details_cache_key_from_ig(standard_metadata)
-    with open(models_file, "rb") as f:
-        data = pickle.load(f)
-        model_details = data.get(model_cache_key, {})
+    if standard_metadata:
+        model_cache_key = get_model_details_cache_key_from_ig(standard_metadata)
+        with open(models_file, "rb") as f:
+            data = pickle.load(f)
+            model_details = data.get(model_cache_key, {})
+    else:
+        model_details = {}
 
     with open(variables_codelist_file, "rb") as f:
         data = pickle.load(f)

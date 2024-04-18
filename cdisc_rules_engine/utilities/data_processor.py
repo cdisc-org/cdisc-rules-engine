@@ -33,7 +33,9 @@ class DataProcessor:
 
     @staticmethod
     async def get_dataset_variables(study_path, dataset, data_service) -> Set:
-        data = data_service.get_dataset(f"{study_path}/{dataset.get('filename')}")
+        data = data_service.get_dataset(
+            os.path.join(study_path, dataset.get("filename"))
+        )
         return set(data.columns)
 
     @staticmethod
@@ -227,7 +229,9 @@ class DataProcessor:
     @staticmethod
     def merge_datasets_on_relationship_columns(
         left_dataset: pd.DataFrame,
+        left_dataset_match_keys: List[str],
         right_dataset: pd.DataFrame,
+        right_dataset_match_keys: List[str],
         right_dataset_domain_name: str,
         column_with_names: str,
         column_with_values: str,
@@ -245,12 +249,14 @@ class DataProcessor:
         DataProcessor.cast_numeric_cols_to_same_data_type(
             right_dataset, column_with_values, left_dataset, left_ds_col_name
         )
+        left_dataset_match_keys.append(left_ds_col_name)
+        right_dataset_match_keys.append(column_with_values)
 
         return pd.merge(
             left=left_dataset,
             right=right_dataset,
-            left_on=[left_ds_col_name],
-            right_on=[column_with_values],
+            left_on=left_dataset_match_keys,
+            right_on=right_dataset_match_keys,
             how="outer",
             suffixes=("", f".{right_dataset_domain_name}"),
         )
@@ -402,7 +408,9 @@ class DataProcessor:
         result = result.reset_index(drop=True)
         result = DataProcessor.merge_datasets_on_relationship_columns(
             left_dataset=result,
+            left_dataset_match_keys=left_dataset_match_keys,
             right_dataset=right_dataset,
+            right_dataset_match_keys=right_dataset_match_keys,
             right_dataset_domain_name=right_dataset_domain.get("domain_name"),
             **right_dataset_domain["relationship_columns"],
         )
