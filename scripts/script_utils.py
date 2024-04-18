@@ -152,8 +152,7 @@ def get_rules(args) -> List[dict]:
                         rules.append(rule)
                 except Exception as e:
                     engine_logger.error(f"Error loading rule file {rule_file}: {e}")
-        transformed = replace_yml_spaces(rules)
-        return transformed
+        return replace_yml_spaces(rules)
     if not rules:
         engine_logger.warning(
             f"No rules specified. Running all rules for {args.standard}"
