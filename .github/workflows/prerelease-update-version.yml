@@ -1,0 +1,40 @@
+name: Prerelease - Increment Version
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_str:
+        description: "Choose the version increment type"
+        type: choice
+        required: true
+        default: PATCH
+        options:
+          - PATCH
+          - MINOR
+          - MAJOR
+
+jobs:
+  update_version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          # https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent#generating-a-new-ssh-key
+          # git bash: ssh-keygen -t ed25519 -C "github-actions@cdisc.org"
+          # Add public key (.pub one) as a deploy key at Your repo -> Settings -> Security -> Deploy keys, check "Allow write access".
+          # Add private key as a secret at Your repo -> Settings -> Security -> Secrets and variables -> Actions
+          ssh-key: ${{ secrets.GH_ACTION_PRIVATE_KEY }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
+
+      - name: Run Update Version Script
+        run: echo "VERSION_OUTPUT=$(python update_version.py ${{ github.event.inputs.version_str }})" >> $GITHUB_ENV
+
+      - name: Commit and Push Changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Update version.py: ${{ env.VERSION_OUTPUT }}"

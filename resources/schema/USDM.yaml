@@ -5,7 +5,16 @@ activityIds: Activity
 analysisPopulation: AnalysisPopulation
 bcSurrogateIds: BiomedicalConceptSurrogate
 bcSurrogates: BiomedicalConceptSurrogate
-code: Code
+code:
+  BiomedicalConcept: AliasCode
+  BiomedicalConceptCategory: AliasCode
+  BiomedicalConceptProperty: AliasCode
+  Code: string
+  GeographicScope: AliasCode
+  SubjectEnrollment: AliasCode
+  Procedure: Code
+  ResponseCode: Code
+  StudyAmendmentReason: Code
 codes: Code
 country: Code
 DECISION: ScheduledDecisionInstance
@@ -71,3 +80,59 @@ NoneType: "null"
 bool: boolean
 int: number
 str: string
+documentedBy: StudyProtocolDocument
+documentVersionId: StudyProtocolDocumentVersion
+dateValues: GovernanceDate
+amendments: StudyAmendment
+businessTherapeuticAreas: Code
+primaryReason: StudyAmendmentReason
+secondaryReasons: StudyAmendmentReason
+legalAddress: Address
+therapeuticAreas: Code
+biomedicalConcepts: BiomedicalConcept
+arms: StudyArm
+blindingSchema: Code
+epochs: StudyEpoch
+elements: StudyElement
+indications: Indication
+scheduleTimelines: ScheduleTimeline
+environmentalSetting: Code
+contactModes: Code
+scheduledAtId: Timing
+biomedicalConceptIds: BiomedicalConcept
+properties: BiomedicalConceptProperty
+responseCodes: ResponseCode
+armId: StudyArm
+elementIds: StudyElement
+level: Code
+dictionaryId: SyntaxTemplateDictionary
+category: Code
+exits: ScheduleTimelineExit
+encounterId: Encounter
+relativeToFrom: Code
+timelineExitId: ScheduleTimelineExit
+parameterMap: Map
+contents: NarrativeContent
+versions:
+  Study: StudyVersion
+  StudyProtocolDocument: StudyProtocolDocumentVersion
+nextId:
+  Activity: Activity
+  EligibilityCriteria: EligibilityCriteria
+  Encounter: Encounter
+  StudyEpoch: StudyEpoch
+previousId:
+  Activity: Activity
+  EligibilityCriteria: EligibilityCriteria
+  Encounter: Encounter
+  StudyAmendment: StudyAmendment
+  StudyEpoch: StudyEpoch
+childrenIds:
+  BiomedicalConceptCategory: BiomedicalConceptCategory
+  NarrativeContent: NarrativeContent
+  StudyProtocolDocumentVersion: StudyProtocolDocumentVersion
+population: StudyDesignPopulation
+populations: StudyDesignPopulation
+plannedEnrollmentNumber: Range
+plannedCompletionNumber: Range
+dictionaries: SyntaxTemplateDictionary
