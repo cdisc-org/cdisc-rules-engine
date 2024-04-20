@@ -135,8 +135,7 @@ class BaseDataService(DataServiceInterface, ABC):
         full_dataset = pd.DataFrame()
         for dataset in datasets:
             if "RDOMAIN" in dataset.columns:
-                supp_merged_dataset = self.merge_supp_dataset(full_dataset, dataset)
-                full_dataset = supp_merged_dataset
+                full_dataset = self.merge_supp_dataset(full_dataset, dataset)
             else:
                 full_dataset = pd.concat([full_dataset, dataset], ignore_index=True)
 
@@ -154,7 +153,6 @@ class BaseDataService(DataServiceInterface, ABC):
             left_on="IDVAR",
             right_on="IDVARVAL",
         )
-        print(merged_df.head())
         return merged_df
 
     def get_dataset_class(
@@ -289,6 +287,6 @@ class BaseDataService(DataServiceInterface, ABC):
         """
         with ThreadPoolExecutor() as executor:
             return executor.map(
-                lambda name: function_to_call(**kwargs),
+                lambda name: function_to_call(dataset_name=name, **kwargs),
                 dataset_names,
             )

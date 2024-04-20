@@ -92,7 +92,6 @@ def test_get_code_hierarchies(tmp_path, operation_params: OperationParams):
         operation_params, pd.DataFrame(), cache, data_service
     )
     valid_hierarchies = operation.get_code_hierarchies(terms)
-    print(valid_hierarchies)
     assert valid_hierarchies == {
         "ALDOMET [METHYLDOPA]/STOMATOLOGICAL PREPARATIONS/C02AB",
         "METHYLDOPA/STOMATOLOGICAL PREPARATIONS/C02AB",
