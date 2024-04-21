@@ -197,7 +197,7 @@ class TestValidate(unittest.TestCase):
         exit_code, stdout, stderr = self.run_command(args)
         self.assertNotEqual(stderr, "")
 
-    def test_validate_unpublished_rule(self):
+    def test_validate_local_rule(self):
         args = [
             "python",
             "-m",

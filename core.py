@@ -145,7 +145,7 @@ def cli():
     "-lr",
     required=False,
     type=click.Path(exists=True, readable=True, resolve_path=True),
-    help="path to directory containing unpublished rules.",
+    help="path to directory containing local rules.",
 )
 @click.option(
     "-p",
