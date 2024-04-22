@@ -110,7 +110,7 @@ jobs:
           pip install setuptools wheel twine
           pip install -r requirements.txt
       - name: Build Binary
-        run: pyinstaller core.py --dist ./dist/output/windows --add-data="$env:pythonLocation\Lib\site-packages\xmlschema\schemas;xmlschema/schemas" --add-data="resources/cache;resources/cache" --add-data="resources/templates;resources/templates" --add-data="resources/schema:resources/schema"
+        run: pyinstaller core.py --dist ./dist/output/windows --add-data="$env:pythonLocation\Lib\site-packages\xmlschema\schemas;xmlschema/schemas" --add-data="resources/cache;resources/cache" --add-data="resources/templates;resources/templates" --add-data="resources/schema;resources/schema"
       - name: Archive Windows Artifacts
         uses: vimtor/action-zip@v1
         with:
