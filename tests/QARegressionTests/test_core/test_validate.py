@@ -210,7 +210,7 @@ class TestValidate(unittest.TestCase):
             "-d",
             os.path.join("tests", "resources", "report_test_data"),
             "-lr",
-            os.path.join("tests", "resources", "CG0272.yml"),
+            os.path.join("tests", "resources", "datasets"),
         ]
         exit_code, stdout, stderr = self.run_command(args)
         self.assertEqual(exit_code, 0)
