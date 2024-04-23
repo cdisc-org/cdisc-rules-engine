@@ -117,58 +117,68 @@ def get_cache_service(manager):
         return manager.InMemoryCacheService()
 
 
-# flake8: noqa: C901
 def get_rules(args) -> List[dict]:
-    core_ids = set()
-    rules_file = os.path.join(args.cache, "rules.pkl")
     rules = []
     if args.rules:
-        keys = [
-            get_rules_cache_key(args.standard, args.version.replace(".", "-"), rule)
-            for rule in args.rules
-        ]
-        with open(rules_file, "rb") as f:
-            rules_data = pickle.load(f)
-            rules = [rules_data.get(key) for key in keys]
+        rules.extend(load_rules_from_cache(args))
     if args.local_rules:
-        try:
-            rule_files = [
-                os.path.join(args.local_rules, file)
-                for file in os.listdir(args.local_rules)
-            ]
-        except Exception as e:
-            engine_logger.error(f"Error accessing directory {args.local_rules}: {e}")
-        else:
-            for rule_file in rule_files:
-                _, file_extension = os.path.splitext(rule_file)
-                try:
-                    with open(rule_file, "r", encoding="utf-8") as file:
-                        if file_extension in [".yml", ".yaml"]:
-                            rule = Rule.from_cdisc_metadata(yaml.safe_load(file))
-                        elif file_extension == ".json":
-                            rule = Rule.from_cdisc_metadata(json.load(file))
-                        else:
-                            raise ValueError(f"Unsupported file type: {file_extension}")
-                        rules.append(rule)
-                except Exception as e:
-                    engine_logger.error(f"Error loading rule file {rule_file}: {e}")
-        return replace_yml_spaces(rules)
+        rules.extend(load_rules_from_local(args))
     if not rules:
         engine_logger.warning(
-            f"No rules specified. Running all rules for {args.standard}"
-            + f" version {args.version}"
+            "No rules specified. Running all rules"
+            f"for {args.standard} version {args.version}"
         )
-        with open(rules_file, "rb") as f:
-            rules_data = pickle.load(f)
-            for key, rule in rules_data.items():
-                core_id = rule.get("core_id")
-                rule_identifier = get_rules_cache_key(
-                    args.standard, args.version.replace(".", "-"), core_id
-                )
-                if core_id not in core_ids and key == rule_identifier:
-                    rules.append(rule)
-                    core_ids.add(rule.get("core_id"))
+        rules = load_all_rules(args)
     return rules
+
+
+def load_rules_from_cache(args) -> List[dict]:
+    rules_file = os.path.join(args.cache, "rules.pkl")
+    keys = [
+        get_rules_cache_key(args.standard, args.version.replace(".", "-"), rule)
+        for rule in args.rules
+    ]
+    with open(rules_file, "rb") as f:
+        rules_data = pickle.load(f)
+        return [rules_data.get(key) for key in keys]
+
+
+def load_rules_from_local(args) -> List[dict]:
+    rule_files = [
+        os.path.join(args.local_rules, file) for file in os.listdir(args.local_rules)
+    ]
+    rules = []
+    for rule_file in rule_files:
+        _, file_extension = os.path.splitext(rule_file)
+        try:
+            with open(rule_file, "r", encoding="utf-8") as file:
+                if file_extension in [".yml", ".yaml"]:
+                    rule = Rule.from_cdisc_metadata(yaml.safe_load(file))
+                elif file_extension == ".json":
+                    rule = Rule.from_cdisc_metadata(json.load(file))
+                else:
+                    raise ValueError(f"Unsupported file type: {file_extension}")
+                rules.append(rule)
+        except Exception as e:
+            engine_logger.error(f"Error loading rule file {rule_file}: {e}")
+    return replace_yml_spaces(rules)
+
+
+def load_all_rules(args) -> List[dict]:
+    rules_file = os.path.join(args.cache, "rules.pkl")
+    with open(rules_file, "rb") as f:
+        rules_data = pickle.load(f)
+        core_ids = set()
+        rules = []
+        for key, rule in rules_data.items():
+            core_id = rule.get("core_id")
+            rule_identifier = get_rules_cache_key(
+                args.standard, args.version.replace(".", "-"), core_id
+            )
+            if core_id not in core_ids and key == rule_identifier:
+                rules.append(rule)
+                core_ids.add(core_id)
+        return rules
 
 
 def replace_yml_spaces(data):
