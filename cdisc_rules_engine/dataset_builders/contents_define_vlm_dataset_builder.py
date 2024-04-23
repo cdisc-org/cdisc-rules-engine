@@ -33,16 +33,16 @@ class ContentsDefineVLMDatasetBuilder(ValuesDatasetBuilder):
         data_contents_long_df: DatasetInterface = ValuesDatasetBuilder.build(self)
 
         # get Define XML VLM for domain
-        vlm_df: DatasetInterface = self.dataset_class.from_records(
+        vlm_df: DatasetInterface = self.dataset_implementation.from_records(
             self.get_define_xml_value_level_metadata()
         )
 
         # merge dataset contents with define variable metadata
         # LUT columns: row_number, define_variable_name, define_vlm_name
-        lookup_table: DatasetInterface = self.dataset_class().concat(
+        lookup_table: DatasetInterface = self.dataset_implementation().concat(
             vlm_df.apply(
                 self.apply_filters,
-                meta=self.dataset_class,
+                meta=self.dataset_implementation,
                 axis=1,
                 data_contents_df=data_contents_df,
             ).tolist()

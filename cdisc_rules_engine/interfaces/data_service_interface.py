@@ -1,9 +1,7 @@
 from abc import ABC, abstractmethod
 from io import IOBase
 from typing import Callable, List, Optional
-
-import pandas as pd
-
+from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
 from .cache_service_interface import CacheServiceInterface
 
@@ -31,15 +29,15 @@ class DataServiceInterface(ABC):
         """
 
     @abstractmethod
-    def get_dataset(self, dataset_name: str, **params) -> pd.DataFrame:
+    def get_dataset(self, dataset_name: str, **params) -> DatasetInterface:
         """
         Gets dataset from blob storage.
         """
 
     @abstractmethod
-    def get_dataset_metadata(self, dataset_name: str, **kwargs) -> pd.DataFrame:
+    def get_dataset_metadata(self, dataset_name: str, **kwargs) -> DatasetInterface:
         """
-        Gets dataset metadata and returns it as pd.DataFrame.
+        Gets dataset metadata and returns it as DatasetInterface.
         """
 
     @abstractmethod
@@ -49,7 +47,7 @@ class DataServiceInterface(ABC):
         """
 
     @abstractmethod
-    def get_variables_metadata(self, dataset_name: str, **params) -> pd.DataFrame:
+    def get_variables_metadata(self, dataset_name: str, **params) -> DatasetInterface:
         """
         Gets variables metadata of a dataset.
         """
@@ -57,7 +55,7 @@ class DataServiceInterface(ABC):
     @abstractmethod
     def get_dataset_by_type(
         self, dataset_name: str, dataset_type: str, **params
-    ) -> pd.DataFrame:
+    ) -> DatasetInterface:
         """
         Generic function to return dataset based on the type.
         dataset_type param can be: contents, metadata, variables_metadata.
@@ -90,7 +88,7 @@ class DataServiceInterface(ABC):
 
     @abstractmethod
     def get_dataset_class(
-        self, dataset: pd.DataFrame, file_path: str, datasets: List[dict]
+        self, dataset: DatasetInterface, file_path: str, datasets: List[dict]
     ) -> Optional[str]:
         """
         Returns dataset class based on its contents

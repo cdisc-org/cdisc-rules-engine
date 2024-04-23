@@ -1,4 +1,5 @@
 from io import BytesIO
+from typing import Union
 
 import pandas as pd
 import dask.dataframe as dd
@@ -24,11 +25,15 @@ class ParquetReader(DataReaderInterface):
             PandasDataset: self._read_pandas,
             DaskDataset: self._read_dask,
         }
-        return type_to_reader_map.get(self.dataset_class, self._read_pandas)(file_path)
+        return type_to_reader_map.get(self.dataset_implementation, self._read_pandas)(
+            file_path
+        )
 
-    def _format_floats(self, dataframe: pd.DataFrame) -> pd.DataFrame:
+    def _format_floats(
+        self, dataframe: Union[pd.DataFrame, dd.DataFrame]
+    ) -> Union[pd.DataFrame, dd.DataFrame]:
         return dataframe.applymap(lambda x: round(x, 15) if isinstance(x, float) else x)
 
     def _read_dask(self, file_path):
-        dask_dataset = DaskDataset(dd.read_parquet(file_path))
-        return dask_dataset
+        data = dd.read_parquet(file_path)
+        return DaskDataset(data)

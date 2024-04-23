@@ -24,7 +24,7 @@ class MedDRACodeTermPairsValidator(BaseOperation):
         column = str(uuid4()) + "_pairs"
         self.params.dataframe[
             column
-        ] = self.data_service.dataset_class().convert_to_series(
+        ] = self.data_service.dataset_implementation().convert_to_series(
             list(
                 zip(
                     self.params.dataframe[columns[0]],

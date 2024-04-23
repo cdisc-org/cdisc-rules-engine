@@ -65,8 +65,8 @@ class RulesEngine:
             self.library_metadata,
             self.max_dataset_size,
         )
-        self.dataset_class = data_service_factory.get_dataset_type()
-        kwargs["dataset_class"] = self.dataset_class
+        self.dataset_implementation = data_service_factory.get_dataset_implementation()
+        kwargs["dataset_implementation"] = self.dataset_implementation
         self.data_service = data_service or data_service_factory.get_service(**kwargs)
         self.rule_processor = RuleProcessor(
             self.data_service, self.cache, self.library_metadata
@@ -209,7 +209,7 @@ class RulesEngine:
             standard=self.standard,
             standard_version=self.standard_version,
             library_metadata=self.library_metadata,
-            dataset_class=self.data_service.dataset_class,
+            dataset_implementation=self.data_service.dataset_implementation,
         )
 
     def validate_rule(
@@ -226,7 +226,6 @@ class RulesEngine:
         kwargs = {}
         builder = self.get_dataset_builder(rule, dataset_path, datasets, domain)
         dataset = builder.get_dataset()
-
         # Update rule for certain rule types
         # SPECIAL CASES FOR RULE TYPES ###############################
         # TODO: Handle these special cases better.

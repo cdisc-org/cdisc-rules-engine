@@ -12,8 +12,10 @@ class DaskDataset(PandasDataset):
         self,
         data=dd.from_pandas(pd.DataFrame(), npartitions=DEFAULT_NUM_PARTITIONS),
         columns=None,
+        length=None,
     ):
         self._data = data
+        self.length = length
         if columns and self._data.empty:
             self._data = dd.from_pandas(
                 pd.DataFrame(columns=columns), npartitions=DEFAULT_NUM_PARTITIONS
@@ -40,6 +42,9 @@ class DaskDataset(PandasDataset):
                 self._data[column] = value[column]
         else:
             self._data[key] = value
+
+    def __len__(self):
+        return self.length or self._data.shape[0].compute()
 
     @classmethod
     def from_dict(cls, data: dict, **kwargs):

@@ -47,8 +47,7 @@ class DatasetJSONReader(DataReaderInterface):
 
             df = df.applymap(lambda x: round(x, 15) if isinstance(x, float) else x)
 
-            # TODO: Handle Dask dataset case
-            if self.dataset_class == PandasDataset:
+            if self.dataset_implementation == PandasDataset:
                 return PandasDataset(df)
             else:
                 return DaskDataset(dd.from_pandas(df), npartitions=4)

@@ -1,5 +1,8 @@
 from cdisc_rules_engine.dataset_builders.base_dataset_builder import BaseDatasetBuilder
-from cdisc_rules_engine.utilities.utils import is_split_dataset
+from cdisc_rules_engine.utilities.utils import (
+    is_split_dataset,
+    get_corresponding_datasets,
+)
 
 
 class ContentsDatasetBuilder(BaseDatasetBuilder):
@@ -22,4 +25,11 @@ class ContentsDatasetBuilder(BaseDatasetBuilder):
         else:
             # single dataset. the most common case
             dataset = self.build(**kwargs)
+        length = sum(
+            [
+                dataset.get("length", 0)
+                for dataset in get_corresponding_datasets(self.datasets, self.domain)
+            ]
+        )
+        dataset.length = length
         return dataset

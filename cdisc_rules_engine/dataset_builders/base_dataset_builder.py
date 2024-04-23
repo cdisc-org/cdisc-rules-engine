@@ -45,7 +45,7 @@ class BaseDatasetBuilder:
         self.standard = standard
         self.standard_version = standard_version
         self.library_metadata = library_metadata
-        self.dataset_class = self.data_service.dataset_class
+        self.dataset_implementation = self.data_service.dataset_implementation
 
     @abstractmethod
     def build(self) -> DatasetInterface:
@@ -98,7 +98,7 @@ class BaseDatasetBuilder:
             "define_dataset_name"
             "define_dataset_label"
             "define_dataset_location"
-            "define_dataset_class"
+            "define_dataset_implementation"
             "define_dataset_structure"
             "define_dataset_is_non_standard"
             "define_dataset_variables"
@@ -159,6 +159,6 @@ class BaseDatasetBuilder:
             for key, new_key in column_name_mapping.items():
                 var[new_key] = var.pop(key)
 
-        dataset = self.dataset_class.from_records(variables)
+        dataset = self.dataset_implementation.from_records(variables)
         dataset.data = dataset.data.add_prefix("library_variable_")
         return dataset

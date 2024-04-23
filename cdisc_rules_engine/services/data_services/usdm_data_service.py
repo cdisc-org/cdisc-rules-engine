@@ -54,7 +54,9 @@ class USDMDataService(BaseDataService):
             service = cls(
                 cache_service=cache_service,
                 reader_factory=DataReaderFactory(
-                    dataset_class=kwargs.get("dataset_class", PandasDataset)
+                    dataset_implementation=kwargs.get(
+                        "dataset_implementation", PandasDataset
+                    )
                 ),
                 config=config,
                 **kwargs,
@@ -79,7 +81,7 @@ class USDMDataService(BaseDataService):
         metadata_to_return: dict = {
             "dataset_name": [dataset_name],
         }
-        return self._reader_factory.dataset_class.from_dict(metadata_to_return)
+        return self._reader_factory.dataset_implementation.from_dict(metadata_to_return)
 
     @cached_dataset(DatasetTypes.RAW_METADATA.value)
     def get_raw_dataset_metadata(self, dataset_name: str, **kwargs) -> DatasetMetadata:
@@ -110,7 +112,7 @@ class USDMDataService(BaseDataService):
         metadata_to_return: VariableMetadataContainer = VariableMetadataContainer(
             contents_metadata
         )
-        return self._reader_factory.dataset_class.from_dict(
+        return self._reader_factory.dataset_implementation.from_dict(
             metadata_to_return.to_representation()
         )
 
@@ -236,7 +238,7 @@ class USDMDataService(BaseDataService):
             self.__get_record_metadata(node) | self.__get_record_data(node.value)
             for node in all_nodes
         ]
-        return self._reader_factory.dataset_class.from_records(records)
+        return self._reader_factory.dataset_implementation.from_records(records)
 
     def __find_definition(self, json, id: str):
         definition = parse(f"$..*[?(@.id = '{id}')]").find(json)

@@ -6,6 +6,7 @@ from typing import Union, List
 class PandasDataset(DatasetInterface):
     def __init__(self, data: pd.DataFrame = pd.DataFrame(), columns=None):
         self._data = data
+        self.length = len(data)
         if columns and self._data.empty:
             self._data = pd.DataFrame(columns=columns)
 

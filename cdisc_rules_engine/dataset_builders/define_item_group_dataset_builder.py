@@ -19,4 +19,4 @@ class DefineItemGroupDatasetBuilder(BaseDatasetBuilder):
         item_group_metadata: List[dict] = self.get_define_xml_item_group_metadata(
             self.domain,
         )
-        return self.dataset_class([item_group_metadata])
+        return self.dataset_implementation([item_group_metadata])

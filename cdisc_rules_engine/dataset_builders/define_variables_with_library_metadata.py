@@ -31,7 +31,7 @@ class DefineVariablesWithLibraryMetadataDatasetBuilder(BaseDatasetBuilder):
         "library_variable_order_number"
         """
         # get Define XML metadata for domain and use it as a rule comparator
-        variable_metadata = self.dataset_class.from_records(
+        variable_metadata = self.dataset_implementation.from_records(
             self.get_define_xml_variables_metadata()
         )
         library_variables_metadata = self.get_library_variables_metadata()
@@ -42,4 +42,4 @@ class DefineVariablesWithLibraryMetadataDatasetBuilder(BaseDatasetBuilder):
             left_on="define_variable_name",
             right_on="library_variable_name",
         ).data.fillna("")
-        return self.dataset_class(data)
+        return self.dataset_implementation(data)

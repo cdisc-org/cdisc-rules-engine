@@ -117,10 +117,19 @@ def run_validation(args: Validation_args):
     fill_cache_with_dictionaries(shared_cache, args)
     rules = get_rules(args)
     max_dataset_size = get_max_dataset_size(args.dataset_paths)
+    standard = args.standard
+    standard_version = args.version.replace(".", "-")
     data_service = DataServiceFactory(
-        config, shared_cache, max_dataset_size=max_dataset_size
+        config,
+        shared_cache,
+        max_dataset_size=max_dataset_size,
+        standard=standard,
+        standard_version=standard_version,
+        library_metadata=library_metadata,
     ).get_data_service()
-    large_dataset_validation: bool = data_service.dataset_class != PandasDataset
+    large_dataset_validation: bool = (
+        data_service.dataset_implementation != PandasDataset
+    )
     datasets = get_datasets(data_service, args.dataset_paths)
     created_files = []
     if large_dataset_validation:
@@ -132,9 +141,10 @@ def run_validation(args: Validation_args):
             file_path = dataset.get("full_path")
             if file_path.endswith(".parquet"):
                 continue
-            new_file = data_service.to_parquet(file_path)
+            num_rows, new_file = data_service.to_parquet(file_path)
             created_files.append(new_file)
             dataset["full_path"] = new_file
+            dataset["length"] = num_rows
 
     engine_logger.info(f"Running {len(rules)} rules against {len(datasets)} datasets")
     start = time.time()

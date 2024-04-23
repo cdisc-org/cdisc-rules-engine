@@ -6,11 +6,11 @@ class DataReaderInterface:
     Interface for reading binary data from different file typs into pandas dataframes
     """
 
-    def __init__(self, dataset_class=PandasDataset):
+    def __init__(self, dataset_implementation=PandasDataset):
         """
-        :param dataset_class DatasetInterface: The dataset type to return.
+        :param dataset_implementation DatasetInterface: The dataset type to return.
         """
-        self.dataset_class = dataset_class
+        self.dataset_implementation = dataset_implementation
 
     def read(self, data):
         """

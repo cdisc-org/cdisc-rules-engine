@@ -13,6 +13,6 @@ class DomainListDatasetBuilder(BaseDatasetBuilder):
         0  ae.xpt  ec.xpt
         """
 
-        return self.dataset_class.from_records(
+        return self.dataset_implementation.from_records(
             {ds["domain"]: ds["filename"] for ds in self.datasets}, index=[0]
         )

@@ -12,7 +12,7 @@ class VariableIsNull(BaseOperation):
                 self._is_target_variable_null(dataframe, value)
                 for value in target_column
             ]
-            return self.data_service.dataset_class().convert_to_series(result)
+            return self.data_service.dataset_implementation().convert_to_series(result)
         else:
             target_variable = self.params.target.replace("--", self.params.domain, 1)
             return self._is_target_variable_null(dataframe, target_variable)

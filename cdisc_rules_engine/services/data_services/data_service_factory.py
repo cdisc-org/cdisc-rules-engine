@@ -15,6 +15,7 @@ from . import DummyDataService, LocalDataService, USDMDataService
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
+from cdisc_rules_engine.services import logger
 
 
 class DataServiceFactory(FactoryInterface):
@@ -58,6 +59,7 @@ class DataServiceFactory(FactoryInterface):
                 standard_version=self.standard_version,
                 library_metadata=self.library_metadata,
                 dataset_path=dataset_paths[0],
+                dataset_implementation=self.get_dataset_implementation(),
             )
         else:
             """Get local Directory data service"""
@@ -67,6 +69,7 @@ class DataServiceFactory(FactoryInterface):
                 standard_version=self.standard_version,
                 library_metadata=self.library_metadata,
                 dataset_paths=dataset_paths,
+                dataset_implementation=self.get_dataset_implementation(),
             )
 
     def get_dummy_data_service(self, data: List[DummyDataset]) -> DataServiceInterface:
@@ -76,10 +79,10 @@ class DataServiceFactory(FactoryInterface):
             standard=self.standard,
             standard_version=self.standard_version,
             library_metadata=self.library_metadata,
-            dataset_class=self.get_dataset_type(),
+            dataset_implementation=self.get_dataset_implementation(),
         )
 
-    def get_dataset_type(self):
+    def get_dataset_implementation(self):
         """
         Gets the class that should be used to represent datasets for the rules engine. This class may be dependent on
         rule size or config values
@@ -91,7 +94,9 @@ class DataServiceFactory(FactoryInterface):
             and self.max_dataset_size >= self.dataset_size_threshold
         ):
             # Use large dataset class
+            logger.info("Using DASK dataset implentation")
             return DaskDataset
+        logger.info("Using PANDAS dataset implentation")
         return PandasDataset
 
     @classmethod

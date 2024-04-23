@@ -11,7 +11,7 @@ from cdisc_rules_engine.models.dataset import PandasDataset, DaskDataset
 
 
 @pytest.mark.parametrize(
-    "dataset_class, content, vlm_metadata, expected",
+    "dataset_implementation, content, vlm_metadata, expected",
     [
         (
             PandasDataset,
@@ -105,17 +105,20 @@ from cdisc_rules_engine.models.dataset import PandasDataset, DaskDataset
 def test_contents_define_vlm_dataset_builder(
     mock_get_dataset: MagicMock,
     mock_get_define_xml_value_level_metadata: MagicMock,
-    dataset_class,
+    dataset_implementation,
     content,
     vlm_metadata,
     expected,
 ):
-    mock_get_dataset.return_value = dataset_class.from_dict(content)
+    mock_get_dataset.return_value = dataset_implementation.from_dict(content)
     mock_get_define_xml_value_level_metadata.return_value = vlm_metadata
     result = ContentsDefineVLMDatasetBuilder(
         rule=None,
         data_service=LocalDataService(
-            MagicMock(), MagicMock(), MagicMock(), dataset_class=dataset_class
+            MagicMock(),
+            MagicMock(),
+            MagicMock(),
+            dataset_implementation=dataset_implementation,
         ),
         cache_service=None,
         rule_processor=None,
@@ -128,8 +131,8 @@ def test_contents_define_vlm_dataset_builder(
         standard_version="3-4",
         library_metadata=LibraryMetadataContainer(),
     ).build()
-    expected_df = dataset_class.from_dict(expected)
-    if dataset_class == PandasDataset:
+    expected_df = dataset_implementation.from_dict(expected)
+    if dataset_implementation == PandasDataset:
         expected_df.data.sort_index(axis=1, inplace=True)
         result.data.sort_index(axis=1, inplace=True)
         assert result.equals(expected_df)

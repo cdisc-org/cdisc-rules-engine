@@ -25,7 +25,9 @@ class ContentsDefineVariablesDatasetBuilder(ValuesDatasetBuilder):
         data_contents_long_df = ValuesDatasetBuilder.build(self)
         # get Define XML variable metadata for domain
         variables_metadata: List[dict] = self.get_define_xml_variables_metadata()
-        variables_metadata_df = self.dataset_class.from_records(variables_metadata)
+        variables_metadata_df = self.dataset_implementation.from_records(
+            variables_metadata
+        )
         # merge dataset contents with define variable metadata
         merged = data_contents_long_df.merge(
             variables_metadata_df.data,

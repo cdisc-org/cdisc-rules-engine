@@ -23,15 +23,17 @@ class XPTReader(DataReaderInterface):
         temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".parquet")
         dataset = pd.read_sas(file_path, chunksize=20000, encoding="utf-8")
         created = False
+        num_rows = 0
         for chunk in dataset:
             self._format_floats(chunk)
             for chunk in dataset:
+                num_rows += len(chunk)
                 if not created:
                     chunk.to_parquet(temp_file.name, engine="fastparquet")
                     created = True
                 else:
                     chunk.to_parquet(temp_file.name, engine="fastparquet", append=True)
-        return temp_file.name
+        return num_rows, temp_file.name
 
     def from_file(self, file_path):
         return self._read_pandas(file_path)

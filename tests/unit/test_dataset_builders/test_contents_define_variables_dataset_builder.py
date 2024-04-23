@@ -13,7 +13,7 @@ from cdisc_rules_engine.models.dataset import PandasDataset
 
 
 @pytest.mark.parametrize(
-    "dataset_class, content, variables_metadata, expected",
+    "dataset_implementation, content, variables_metadata, expected",
     [
         (
             PandasDataset,
@@ -86,12 +86,12 @@ from cdisc_rules_engine.models.dataset import PandasDataset
 def test_contents_define_variables_dataset_builder(
     mock_get_dataset: MagicMock,
     mock_get_define_xml_variables_metadata: MagicMock,
-    dataset_class,
+    dataset_implementation,
     content,
     variables_metadata,
     expected,
 ):
-    mock_get_dataset.return_value = dataset_class.from_dict(content)
+    mock_get_dataset.return_value = dataset_implementation.from_dict(content)
     mock_get_define_xml_variables_metadata.return_value = pd.DataFrame.from_dict(
         variables_metadata
     ).to_records(index=False)
@@ -109,6 +109,6 @@ def test_contents_define_variables_dataset_builder(
         standard_version="3-4",
         library_metadata=LibraryMetadataContainer(),
     ).build()
-    expected_data = dataset_class.from_dict(expected)
+    expected_data = dataset_implementation.from_dict(expected)
     expected_data.data = expected_data.data.replace(np.nan, None)
     assert result.equals(expected_data)

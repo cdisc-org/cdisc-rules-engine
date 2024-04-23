@@ -62,8 +62,8 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
 
         if not define_metadata:
             logger.info(f"No define_metadata is provided for {__name__}.")
-            return self.dataset_class(columns=define_col_order)
-        return self.dataset_class.from_records(define_metadata)
+            return self.dataset_implementation(columns=define_col_order)
+        return self.dataset_implementation.from_records(define_metadata)
 
     def _get_dataset_dataframe(self):
         dataset_col_order = [
@@ -74,10 +74,10 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
         ]
 
         if len(self.datasets) == 0:
-            dataset_df = self.dataset_class(columns=dataset_col_order)
+            dataset_df = self.dataset_implementation(columns=dataset_col_order)
             logger.info(f"No datasets metadata is provided in {__name__}.")
         else:
-            datasets = self.dataset_class()
+            datasets = self.dataset_implementation()
             for dataset in self.datasets:
                 try:
                     ds_metadata = self.data_service.get_dataset_metadata(
@@ -93,7 +93,7 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
                 )
 
             if datasets.data.empty or len(datasets.data) == 0:
-                dataset_df = self.dataset_class(columns=dataset_col_order)
+                dataset_df = self.dataset_implementation(columns=dataset_col_order)
                 logger.info(f"No datasets metadata is provided for {__name__}.")
             else:
                 data_col_mapping = {
@@ -104,5 +104,5 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
                 dataset_df = datasets.rename(columns=data_col_mapping)
                 if "dataset_size" not in dataset_df.columns:
                     dataset_df["dataset_size"] = None
-                dataset_df = self.dataset_class(dataset_df[dataset_col_order])
+                dataset_df = self.dataset_implementation(dataset_df[dataset_col_order])
         return dataset_df

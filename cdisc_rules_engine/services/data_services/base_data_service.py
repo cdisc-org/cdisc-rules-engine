@@ -98,7 +98,9 @@ class BaseDataService(DataServiceInterface, ABC):
         self.standard = kwargs.get("standard")
         self.version = (kwargs.get("standard_version") or "").replace(".", "-")
         self.library_metadata = kwargs.get("library_metadata")
-        self.dataset_class = kwargs.get("dataset_class", PandasDataset)
+        self.dataset_implementation = kwargs.get(
+            "dataset_implementation", PandasDataset
+        )
 
     def get_dataset_by_type(
         self, dataset_name: str, dataset_type: str, **params
@@ -135,7 +137,7 @@ class BaseDataService(DataServiceInterface, ABC):
         )
 
         # concat datasets
-        full_dataset: DatasetInterface = self.dataset_class().concat(
+        full_dataset: DatasetInterface = self.dataset_implementation().concat(
             [dataset for dataset in datasets],
             ignore_index=True,
         )

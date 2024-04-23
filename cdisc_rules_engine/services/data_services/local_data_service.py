@@ -2,7 +2,6 @@ import os
 from io import IOBase
 from typing import Iterable, List, Optional, Tuple
 
-import pandas
 
 from cdisc_rules_engine.interfaces import CacheServiceInterface, ConfigInterface
 from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
@@ -55,7 +54,9 @@ class LocalDataService(BaseDataService):
             service = cls(
                 cache_service=cache_service,
                 reader_factory=DataReaderFactory(
-                    dataset_class=kwargs.get("dataset_class", PandasDataset)
+                    dataset_implementation=kwargs.get(
+                        "dataset_implementation", PandasDataset
+                    )
                 ),
                 config=config,
                 **kwargs,
@@ -96,7 +97,7 @@ class LocalDataService(BaseDataService):
             "dataset_name": [contents_metadata["dataset_name"]],
             "dataset_label": [contents_metadata["dataset_label"]],
         }
-        return self.dataset_class.from_dict(metadata_to_return)
+        return self.dataset_implementation.from_dict(metadata_to_return)
 
     @cached_dataset(DatasetTypes.RAW_METADATA.value)
     def get_raw_dataset_metadata(self, dataset_name: str, **kwargs) -> DatasetMetadata:
@@ -128,7 +129,9 @@ class LocalDataService(BaseDataService):
         metadata_to_return: VariableMetadataContainer = VariableMetadataContainer(
             contents_metadata
         )
-        return self.dataset_class.from_dict(metadata_to_return.to_representation())
+        return self.dataset_implementation.from_dict(
+            metadata_to_return.to_representation()
+        )
 
     @cached_dataset(DatasetTypes.CONTENTS.value)
     def get_define_xml_contents(self, dataset_name: str) -> bytes:
@@ -140,7 +143,7 @@ class LocalDataService(BaseDataService):
 
     def get_dataset_by_type(
         self, dataset_name: str, dataset_type: str, **params
-    ) -> pandas.DataFrame:
+    ) -> DatasetInterface:
         """
         Generic function to return dataset based on the type.
         dataset_type param can be: contents, metadata, variables_metadata.

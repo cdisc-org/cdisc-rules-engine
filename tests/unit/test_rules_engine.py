@@ -1121,7 +1121,7 @@ def test_validate_dataset_metadata_against_define_xml(
     mock_get_define_xml_metadata_for_domain: MagicMock,
     define_xml_validation_rule: dict,
     define_xml_metadata: dict,
-    dataset_mock: pd.DataFrame,
+    dataset_mock: PandasDataset,
     expected_validation_result: List[dict],
 ):
     """
@@ -1235,7 +1235,7 @@ def test_validate_variable_metadata_against_define_xml(
     mock_get_define_xml_variables_metadata: MagicMock,
     define_xml_variable_validation_rule: dict,
     variable_metadata: dict,
-    dataset_mock: pd.DataFrame,
+    dataset_mock: PandasDataset,
     expected_validation_result: List[dict],
 ):
     """

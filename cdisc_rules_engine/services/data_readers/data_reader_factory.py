@@ -21,9 +21,9 @@ class DataReaderFactory(FactoryInterface):
         DataFormatTypes.XPT.value: XPTReader,
     }
 
-    def __init__(self, service_name: str = None, dataset_class=PandasDataset):
+    def __init__(self, service_name: str = None, dataset_implementation=PandasDataset):
         self._default_service_name = service_name
-        self.dataset_class = dataset_class
+        self.dataset_implementation = dataset_implementation
 
     @classmethod
     def register_service(cls, name: str, service: Type[DataReaderInterface]):
@@ -42,7 +42,7 @@ class DataReaderFactory(FactoryInterface):
         """
         service_name = name or self._default_service_name
         if service_name in self._reader_map:
-            return self._reader_map[service_name](self.dataset_class)
+            return self._reader_map[service_name](self.dataset_implementation)
         raise ValueError(
             f"Service name must be in {list(self._reader_map.keys())}, "
             f"given service name is {service_name}"

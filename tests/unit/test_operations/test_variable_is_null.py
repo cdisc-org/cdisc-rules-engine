@@ -45,7 +45,7 @@ def test_variable_is_null(
     operation_params.target = "--VAR"
     operation_params.domain = "AE"
     mock_data_service.get_dataset.return_value = data
-    mock_data_service.dataset_class = data.__class__
+    mock_data_service.dataset_implementation = data.__class__
     result = VariableIsNull(operation_params, data, cache, mock_data_service).execute()
     assert operation_params.operation_id in result
     for val in result[operation_params.operation_id]:
@@ -65,7 +65,7 @@ def test_define_crosscheck_variable_is_null(mock_data_service, operation_params)
     operation_params.dataframe = define_metadata
     operation_params.target = "define_variable_name"
     mock_data_service.get_dataset.return_value = dataset
-    mock_data_service.dataset_class = PandasDataset
+    mock_data_service.dataset_implementation = PandasDataset
     result = VariableIsNull(
         operation_params, PandasDataset(define_metadata.data), cache, mock_data_service
     ).execute()

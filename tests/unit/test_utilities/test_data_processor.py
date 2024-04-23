@@ -137,13 +137,13 @@ def test_filter_dataset_columns_by_metadata_and_rule():
     ]
 
 
-@pytest.mark.parametrize("dataset_class", [PandasDataset, DaskDataset])
-def test_merge_datasets_on_relationship_columns(dataset_class):
+@pytest.mark.parametrize("dataset_implementation", [PandasDataset, DaskDataset])
+def test_merge_datasets_on_relationship_columns(dataset_implementation):
     """
     Unit test for DataProcessor.merge_datasets_on_relationship_columns method.
     """
     # prepare data
-    left_dataset = dataset_class.from_dict(
+    left_dataset = dataset_implementation.from_dict(
         {
             "USUBJID": [
                 "CDISC01",
@@ -162,7 +162,7 @@ def test_merge_datasets_on_relationship_columns(dataset_class):
             ],
         }
     )
-    right_dataset = dataset_class.from_dict(
+    right_dataset = dataset_implementation.from_dict(
         {
             "USUBJID": [
                 "CDISC01",
@@ -208,7 +208,7 @@ def test_merge_datasets_on_relationship_columns(dataset_class):
         column_with_values="IDVARVAL",
     )
     merged_df.data = merged_df.data.sort_values("AESEQ")
-    expected_df = dataset_class.from_dict(
+    expected_df = dataset_implementation.from_dict(
         {
             "USUBJID": [
                 "CDISC01",
@@ -263,15 +263,15 @@ def test_merge_datasets_on_relationship_columns(dataset_class):
     assert merged_df.equals(expected_df)
 
 
-@pytest.mark.parametrize("dataset_class", [PandasDataset])
-def test_merge_datasets_on_string_relationship_columns(dataset_class):
+@pytest.mark.parametrize("dataset_implementation", [PandasDataset])
+def test_merge_datasets_on_string_relationship_columns(dataset_implementation):
     """
     Unit test for DataProcessor.merge_datasets_on_relationship_columns method.
     Test the case when the columns that describe the relation
     are of a string type.
     """
     # prepare data
-    left_dataset = dataset_class.from_dict(
+    left_dataset = dataset_implementation.from_dict(
         {
             "USUBJID": [
                 "CDISC01",
@@ -290,7 +290,7 @@ def test_merge_datasets_on_string_relationship_columns(dataset_class):
             ],
         }
     )
-    right_dataset = dataset_class.from_dict(
+    right_dataset = dataset_implementation.from_dict(
         {
             "USUBJID": [
                 "CDISC01",
@@ -335,7 +335,7 @@ def test_merge_datasets_on_string_relationship_columns(dataset_class):
         column_with_names="IDVAR",
         column_with_values="IDVARVAL",
     )
-    expected_df = dataset_class.from_dict(
+    expected_df = dataset_implementation.from_dict(
         {
             "USUBJID": [
                 "CDISC01",

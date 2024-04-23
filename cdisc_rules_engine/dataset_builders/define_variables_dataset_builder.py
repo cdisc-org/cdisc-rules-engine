@@ -26,4 +26,4 @@ class DefineVariablesDatasetBuilder(BaseDatasetBuilder):
         """
         # get Define XML metadata for domain and use it as a rule comparator
         variable_metadata: List[dict] = self.get_define_xml_variables_metadata()
-        return self.dataset_class(variable_metadata)
+        return self.dataset_implementation(variable_metadata)

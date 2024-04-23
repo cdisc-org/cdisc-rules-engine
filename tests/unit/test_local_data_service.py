@@ -43,33 +43,37 @@ def test_has_all_files(files, expected_result):
 
 
 @pytest.mark.parametrize(
-    "dataset_class",
+    "dataset_implementation",
     [PandasDataset],
 )
-def test_get_dataset(dataset_class):
+def test_get_dataset(dataset_implementation):
     dataset_path = f"{os.path.dirname(__file__)}/../resources/test_dataset.xpt"
     mock_cache = MagicMock()
     mock_cache.get_dataset.return_value = None
     data_service = LocalDataService.get_instance(
-        config=ConfigService(), cache_service=mock_cache, dataset_class=dataset_class
+        config=ConfigService(),
+        cache_service=mock_cache,
+        dataset_implementation=dataset_implementation,
     )
     data = data_service.get_dataset(dataset_name=dataset_path)
-    assert isinstance(data, dataset_class)
+    assert isinstance(data, dataset_implementation)
 
 
 @pytest.mark.parametrize(
-    "dataset_class",
+    "dataset_implementation",
     [PandasDataset],
 )
-def test_get_variables_metdata(dataset_class):
+def test_get_variables_metdata(dataset_implementation):
     dataset_path = f"{os.path.dirname(__file__)}/../resources/test_adam_dataset.xpt"
     mock_cache = MagicMock()
     mock_cache.get_dataset.return_value = None
     data_service = LocalDataService.get_instance(
-        config=ConfigService(), cache_service=mock_cache, dataset_class=dataset_class
+        config=ConfigService(),
+        cache_service=mock_cache,
+        dataset_implementation=dataset_implementation,
     )
     data = data_service.get_variables_metadata(dataset_name=dataset_path)
-    assert isinstance(data, dataset_class)
+    assert isinstance(data, dataset_implementation)
     expected_keys = [
         "variable_name",
         "variable_format",

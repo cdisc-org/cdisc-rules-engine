@@ -76,6 +76,8 @@ class DataframeType(BaseType):
     @type_operator(FIELD_DATAFRAME)
     def exists(self, other_value):
         target_column = self.replace_prefix(other_value.get("target"))
+        print(target_column in self.value)
+        print(len(self.value))
         return self.value.convert_to_series(
             [target_column in self.value] * len(self.value)
         )
