@@ -72,6 +72,7 @@ def validate_single_rule(
         define_xml_path=args.define_xml_path,
         library_metadata=library_metadata,
         max_dataset_size=max_dataset_size,
+        dataset_paths=args.dataset_paths,
     )
     results = []
     validated_domains = set()

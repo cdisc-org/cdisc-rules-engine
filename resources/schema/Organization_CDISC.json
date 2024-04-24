@@ -38,7 +38,7 @@
                       "type": "object"
                     },
                     "Version": {
-                      "enum": ["4.0"]
+                      "enum": ["5.0"]
                     }
                   },
                   "type": "object"
@@ -48,44 +48,6 @@
               },
               "Version": {
                 "enum": ["1.0", "1.1", "1.2", "1.3"]
-              }
-            },
-            "type": "object"
-          },
-          {
-            "properties": {
-              "Name": {
-                "const": "DDF"
-              },
-              "References": {
-                "items": {
-                  "properties": {
-                    "Origin": {
-                      "const": "DDF Conformance Rules"
-                    },
-                    "Rule Identifier": {
-                      "properties": {
-                        "Id": {
-                          "pattern": "^DDF\\d{5}$",
-                          "type": "string"
-                        },
-                        "Version": {
-                          "enum": ["1"]
-                        }
-                      },
-                      "type": "object"
-                    },
-                    "Version": {
-                      "enum": ["1.0"]
-                    }
-                  },
-                  "type": "object"
-                },
-                "minItems": 1,
-                "type": "array"
-              },
-              "Version": {
-                "enum": ["2"]
               }
             },
             "type": "object"
@@ -265,6 +227,44 @@
               },
               "Version": {
                 "enum": ["1.0"]
+              }
+            },
+            "type": "object"
+          },
+          {
+            "properties": {
+              "Name": {
+                "const": "USDM"
+              },
+              "References": {
+                "items": {
+                  "properties": {
+                    "Origin": {
+                      "const": "USDM Conformance Rules"
+                    },
+                    "Rule Identifier": {
+                      "properties": {
+                        "Id": {
+                          "pattern": "^DDF\\d{5}$",
+                          "type": "string"
+                        },
+                        "Version": {
+                          "enum": ["1"]
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "Version": {
+                      "enum": ["1.0"]
+                    }
+                  },
+                  "type": "object"
+                },
+                "minItems": 1,
+                "type": "array"
+              },
+              "Version": {
+                "enum": ["3.0", "4.0"]
               }
             },
             "type": "object"

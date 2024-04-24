@@ -1,8 +1,8 @@
 import os
 from io import IOBase
-from typing import Iterable, List, Union
+from typing import Iterable, List
 from json import load
-from jsonpath_ng import DatumInContext, Fields, This
+from jsonpath_ng import DatumInContext
 from jsonpath_ng.ext import parse
 from datetime import datetime
 from yaml import safe_load
@@ -42,6 +42,14 @@ class USDMDataService(BaseDataService):
 
         with open(os.path.join("resources", "schema", "USDM.yaml")) as entity_dict:
             self.entity_dict: dict = safe_load(entity_dict)
+
+        self.json = self._reader_factory.get_service("USDM").from_file(
+            self.dataset_path
+        )
+
+        self.dataset_content_index: dict = self.__get_datasets_content_index(
+            dataset_name="USDM_content_index", json=self.json
+        )
 
     @classmethod
     def get_instance(
@@ -88,16 +96,17 @@ class USDMDataService(BaseDataService):
         """
         Returns dataset metadata as DatasetMetadata instance.
         """
-        dataset = self.__get_dataset(dataset_name)
+        dataset = self.get_dataset(dataset_name=dataset_name)
+        domain_name = self.__get_domain_from_dataset_name(dataset_name)
         return DatasetMetadata(
             name=dataset_name,
-            domain_name=dataset_name,
-            label="",
+            domain_name=domain_name,
+            label=domain_name,
             modification_date=datetime.fromtimestamp(
                 os.path.getmtime(self.dataset_path)
             ).isoformat(),
-            filename=os.path.basename(self.dataset_path),
-            full_path=self.dataset_path,
+            filename=extract_file_name_from_path_string(dataset_name),
+            full_path=dataset_name,
             size=0,
             records=f"{len(dataset)}",
         )
@@ -166,8 +175,23 @@ class USDMDataService(BaseDataService):
         return open(file_path, "rb")
 
     def get_datasets(self) -> List[dict]:
-        json = self._reader_factory.get_service("USDM").from_file(self.dataset_path)
-        return self.__get_datasets(json)
+        datasets = []
+        for dataset in self.dataset_content_index:
+            metadata = self.get_raw_dataset_metadata(
+                dataset_name=dataset["dataset_name"]
+            )
+            datasets.append(
+                {
+                    "domain": metadata.domain_name,
+                    "filename": metadata.filename,
+                    "full_path": metadata.full_path,
+                    "length": metadata.records,
+                    "label": metadata.label,
+                    "size": metadata.size,
+                    "modification_date": metadata.modification_date,
+                }
+            )
+        return datasets
 
     def to_parquet(self, file_path: str) -> str:
         json = self._reader_factory.get_service("USDM").from_file(
@@ -180,7 +204,7 @@ class USDMDataService(BaseDataService):
             flattened = {}
             for key, value in node.items():
                 flattened[f"{parent}{key}"] = (
-                    True if type(value) in (dict, list) else value
+                    (len(value) > 0) if type(value) in (dict, list) else value
                 )
                 if type(value) is dict:
                     flattened |= self.__get_record_data(value, f"{parent}{key}.")
@@ -189,47 +213,50 @@ class USDMDataService(BaseDataService):
         return flattened
 
     @staticmethod
-    def __get_parent_rel(node) -> Union[Fields, This]:
+    def __get_parent(node) -> DatumInContext:
         return (
-            node.context.path
-            if node.context and type(node.context.value) is list
-            else node.path
+            node.context if node.context and type(node.context.value) is list else node
+        )
+
+    @staticmethod
+    def __get_closest_non_list_ancestor(node) -> DatumInContext:
+        return (
+            node.context.context if type(node.context.value) is list else node.context
         )
 
     def __get_record_metadata(self, node) -> dict:
-        closest_non_list_ancestor = (
-            node.context.context if type(node.context.value) is list else node.context
+        closest_non_list_ancestor = USDMDataService.__get_closest_non_list_ancestor(
+            node
         )
         record = {
             "parent_entity": self.__get_entity_name(
                 closest_non_list_ancestor.value,
-                USDMDataService.__get_parent_rel(closest_non_list_ancestor),
+                USDMDataService.__get_parent(closest_non_list_ancestor),
             ),
             "parent_id": closest_non_list_ancestor.value.get("id", ""),
-            "parent_rel": f"{USDMDataService.__get_parent_rel(node)}",
+            "parent_rel": f"{USDMDataService.__get_parent(node).path}",
             "rel_type": node.type,
         }
         return record
 
     def __get_dataset(self, dataset_name: str) -> DatasetInterface:
-        json = self._reader_factory.get_service("USDM").from_file(self.dataset_path)
-        datasets = self.__get_datasets(json)
+        datasets = self.dataset_content_index
         dataset_paths = [
             path
             for dataset_metadata in datasets
-            if dataset_metadata["domain"] == dataset_name
-            for path in dataset_metadata["full_path"]
+            if dataset_metadata["dataset_name"] == dataset_name
+            for path in dataset_metadata["content_paths"]
         ]
         all_nodes = []
         for dataset_path in dataset_paths:
-            nodes = [match for match in parse(dataset_path["path"]).find(json)]
+            nodes = [match for match in parse(dataset_path["path"]).find(self.json)]
             if len(nodes) != 1:
                 raise Exception(
                     f"Multiple objects found with path: {dataset_path['path']}"
                 )
             node = nodes[0]
             if dataset_path["type"] == "reference":
-                node.value = self.__find_definition(json, node.value)
+                node.value = self.__find_definition(self.json, node.value)
                 node.type = "reference"
             else:
                 node.type = "definition"
@@ -248,22 +275,37 @@ class USDMDataService(BaseDataService):
             return definition[0].value
         return None
 
-    def __get_entity_name(self, value, path: Union[Fields, This]):
+    def __get_entity_name(self, value, parent: DatumInContext):
         if type(value) is dict:
             api_type = (
-                value.get("instanceType") if "instanceType" in value else f"{path}"
+                value.get("instanceType")
+                if "instanceType" in value
+                else f"{parent.path}"
             )
         else:
             # primitive types
             api_type = value.__class__.__name__
-        return self.entity_dict.get(api_type, api_type)
+        mapped_entity = self.entity_dict.get(api_type, api_type)
+        if isinstance(mapped_entity, str):
+            return mapped_entity
+        else:
+            closest_non_list_ancestor = USDMDataService.__get_closest_non_list_ancestor(
+                parent
+            )
+            return mapped_entity.get(
+                self.__get_entity_name(
+                    closest_non_list_ancestor.value,
+                    USDMDataService.__get_parent(closest_non_list_ancestor),
+                ),
+                api_type,
+            )
 
     def __read_metadata(
         self,
         json,
         parent_node: DatumInContext,
         child_value,
-        full_path: str,
+        content_path: str,
     ):
         ty = "definition"
         if type(child_value) is str and (
@@ -274,9 +316,9 @@ class USDMDataService(BaseDataService):
             if definition:
                 child_value = definition
                 ty = "reference"
-        entity_name = self.__get_entity_name(child_value, parent_node.path)
+        entity_name = self.__get_entity_name(child_value, parent_node)
         return {
-            "path": full_path,
+            "path": content_path,
             "entity": entity_name,
             "type": ty,
         }
@@ -285,7 +327,8 @@ class USDMDataService(BaseDataService):
     def __get_full_path(node: DatumInContext):
         return f"{node.full_path}".replace(".[", "[")
 
-    def __get_datasets(self, json) -> List[dict]:
+    @cached_dataset(DatasetTypes.CONTENTS.value)
+    def __get_datasets_content_index(self, dataset_name: str, json) -> List[dict]:
         """
         This is a bit convoluted because there is a bug in jsonpath_ng
         where this query does not return object values within an array
@@ -312,12 +355,27 @@ class USDMDataService(BaseDataService):
                 {"path": path["path"], "type": path["type"]}
             )
         return [
-            {"domain": key, "full_path": value} for key, value in dataset_dict.items()
+            {
+                "dataset_name": self.__get_dataset_name_from_domain(key),
+                "domain": key,
+                "content_paths": value,
+            }
+            for key, value in dataset_dict.items()
         ]
+
+    def __get_dataset_name_from_domain(self, domain_name: str) -> str:
+        return os.path.join(self.dataset_path, "{}.json".format(domain_name))
+
+    def __get_domain_from_dataset_name(self, dataset_name: str) -> str:
+        return extract_file_name_from_path_string(dataset_name).split(".")[0]
 
     @staticmethod
     def is_USDM_data(dataset_paths: Iterable[str]):
-        if len(dataset_paths) == 1 and dataset_paths[0].lower().endswith(".json"):
+        if (
+            dataset_paths
+            and len(dataset_paths) == 1
+            and dataset_paths[0].lower().endswith(".json")
+        ):
             with open(dataset_paths[0]) as fp:
                 json = load(fp)
                 return "study" in json and "datasetJSONVersion" not in json

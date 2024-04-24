@@ -46,16 +46,17 @@ def test_get_datasets():
 
 
 @mark.parametrize(
-    "dataset_name, record_count",
+    "domain_name, record_count",
     [("Activity", 225), ("string", 1309), ("Study", 1)],
 )
-def test_get_dataset(dataset_name, record_count):
+def test_get_dataset(domain_name, record_count):
     USDMDataService._instance = None
     mock_cache = MagicMock()
     mock_cache.get_dataset.return_value = None
     data_service = USDMDataService.get_instance(
         config=ConfigService(), cache_service=mock_cache, dataset_path=dataset_path
     )
+    dataset_name = os.path.join(dataset_path, "{}.json".format(domain_name))
     data = data_service.get_dataset(dataset_name=dataset_name)
     assert isinstance(data, PandasDataset)
     assert len(data) == record_count
@@ -68,7 +69,9 @@ def test_get_raw_dataset_metadata():
     data_service = USDMDataService.get_instance(
         config=ConfigService(), cache_service=cache, dataset_path=dataset_path
     )
-    data = data_service.get_raw_dataset_metadata(dataset_name="Code")
+    data = data_service.get_raw_dataset_metadata(
+        dataset_name=os.path.join(dataset_path, "Code.json")
+    )
     assert data.records == "117"
 
 
@@ -89,7 +92,7 @@ def test_validate_rule_single_dataset_check(dataset_rule_greater_than: dict):
         return_value=dataset_mock,
     ):
         validation_result: List[dict] = RulesEngine(
-            standard="usdm"
+            standard="usdm", dataset_paths=[dataset_path]
         ).validate_single_rule(dataset_rule_greater_than, dataset_path, [{}], "EC")
         assert validation_result == [
             {
@@ -112,7 +115,9 @@ def test_get_variables_metdata():
     data_service = USDMDataService.get_instance(
         config=ConfigService(), cache_service=mock_cache, dataset_path=dataset_path
     )
-    data = data_service.get_variables_metadata(dataset_name="StudyIdentifier")
+    data = data_service.get_variables_metadata(
+        dataset_name=os.path.join(dataset_path, "StudyIdentifier.json")
+    )
     assert isinstance(data, PandasDataset)
     expected_keys = [
         "variable_name",

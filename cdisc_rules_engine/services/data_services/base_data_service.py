@@ -136,14 +136,27 @@ class BaseDataService(DataServiceInterface, ABC):
             func_to_call, dataset_names, **kwargs
         )
 
-        # concat datasets
-        full_dataset: DatasetInterface = self.dataset_implementation().concat(
-            [dataset for dataset in datasets],
-            ignore_index=True,
-        )
+        full_dataset = self.dataset_implementation()
+        for dataset in datasets:
+            if "RDOMAIN" in dataset.columns:
+                full_dataset = self.merge_supp_dataset(full_dataset, dataset)
+            else:
+                full_dataset = full_dataset.concat(dataset, ignore_index=True)
+
         if drop_duplicates:
             full_dataset.drop_duplicates()
         return full_dataset
+
+    def merge_supp_dataset(self, full_dataset, supp_dataset):
+        merge_keys = ["STUDYID", "USUBJID", "APID", "POOLID", "SPDEVID"]
+        merged_df = full_dataset.merge(
+            supp_dataset,
+            how="inner",
+            on=merge_keys,
+            left_on="IDVAR",
+            right_on="IDVARVAL",
+        )
+        return merged_df
 
     def get_dataset_class(
         self,
@@ -279,6 +292,6 @@ class BaseDataService(DataServiceInterface, ABC):
         """
         with ThreadPoolExecutor() as executor:
             return executor.map(
-                lambda name: function_to_call(**kwargs),
+                lambda name: function_to_call(dataset_name=name, **kwargs),
                 dataset_names,
             )

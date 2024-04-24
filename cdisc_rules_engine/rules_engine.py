@@ -56,6 +56,7 @@ class RulesEngine:
         self.standard_version = (kwargs.get("standard_version") or "").replace(".", "-")
         self.library_metadata = kwargs.get("library_metadata")
         self.max_dataset_size = kwargs.get("max_dataset_size")
+        self.dataset_paths = kwargs.get("dataset_paths")
         self.cache = cache or CacheServiceFactory(self.config).get_cache_service()
         data_service_factory = DataServiceFactory(
             self.config,
@@ -67,7 +68,9 @@ class RulesEngine:
         )
         self.dataset_implementation = data_service_factory.get_dataset_implementation()
         kwargs["dataset_implementation"] = self.dataset_implementation
-        self.data_service = data_service or data_service_factory.get_service(**kwargs)
+        self.data_service = data_service or data_service_factory.get_data_service(
+            self.dataset_paths
+        )
         self.rule_processor = RuleProcessor(
             self.data_service, self.cache, self.library_metadata
         )
