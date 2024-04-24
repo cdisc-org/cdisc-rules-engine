@@ -37,7 +37,7 @@ class TestListDatasetMetadata(unittest.TestCase):
 def test_get_datasets():
     USDMDataService._instance = None
     mock_cache = MagicMock()
-    mock_cache.get.return_value = None
+    mock_cache.get_dataset.return_value = None
     data_service = USDMDataService.get_instance(
         config=ConfigService(), cache_service=mock_cache, dataset_path=dataset_path
     )
