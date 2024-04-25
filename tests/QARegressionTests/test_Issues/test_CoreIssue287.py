@@ -3,6 +3,8 @@ import subprocess
 import unittest
 from openpyxl import load_workbook
 import pytest
+from conftest import get_python_executable
+
 
 
 @pytest.mark.regression
@@ -10,7 +12,7 @@ class TestCoreIssue287(unittest.TestCase):
     def test_generate_excel_file(self):
         # Execute the command to generate the Excel file
         command = [
-            "python",
+            f"{get_python_executable()}",
             "-m",
             "core",
             "test",

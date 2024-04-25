@@ -2,12 +2,14 @@ import subprocess
 import os
 import openpyxl
 import pytest
+from conftest import get_python_executable
+
 
 
 @pytest.mark.regression
 def test_negative_case_VS_dataset():
     command = (
-        "python -m core test -s sdtmig -v 3.4 -r "
+        f"{get_python_executable()} -m core test -s sdtmig -v 3.4 -r "
         + os.path.join("tests", "resources", "CoreIssue286", "rule.json")
         + " -dp "
         + os.path.join("tests", "resources", "CoreIssue286", "dataset.json")

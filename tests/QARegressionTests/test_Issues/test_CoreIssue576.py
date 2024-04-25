@@ -2,12 +2,14 @@ import subprocess
 import os
 import openpyxl
 import pytest
+from conftest import get_python_executable
+
 
 
 @pytest.mark.regression
 def test_negative_dataset():
     command = (
-        "python3 -m core test -s sdtmig -v 3.4 -r "
+        f"{get_python_executable()} -m core test -s sdtmig -v 3.4 -r "
         + os.path.join("tests", "resources", "CoreIssue576", "rule.json")
         + " -dp "
         + os.path.join("tests", "resources", "CoreIssue576", "Negative_Dataset.json")
@@ -74,7 +76,7 @@ def test_negative_dataset():
 @pytest.mark.regression
 def test_positive_dataset():
     command = (
-        "python3 -m core test -s sdtmig -v 3.4 -r "
+        f"{get_python_executable()} -m core test -s sdtmig -v 3.4 -r "
         + os.path.join("tests", "resources", "CoreIssue164", "rule.json")
         + " -dp "
         + os.path.join("tests", "resources", "CoreIssue164", "Positive_Dataset.json")

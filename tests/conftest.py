@@ -4,6 +4,7 @@ from unittest.mock import MagicMock
 
 import pandas as pd
 import pytest
+import sys
 from cdisc_rules_engine.config.config import ConfigService
 
 from cdisc_rules_engine.enums.rule_types import RuleTypes
@@ -1249,3 +1250,6 @@ def dataset_metadata() -> dict:
             "dataset_length": 20,
         },
     }
+
+def get_python_executable():
+    return sys.executable
