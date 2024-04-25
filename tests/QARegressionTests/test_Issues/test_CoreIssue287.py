@@ -6,7 +6,6 @@ import pytest
 from conftest import get_python_executable
 
 
-
 @pytest.mark.regression
 class TestCoreIssue287(unittest.TestCase):
     def test_generate_excel_file(self):

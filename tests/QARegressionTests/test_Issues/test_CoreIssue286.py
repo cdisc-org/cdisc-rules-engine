@@ -5,7 +5,6 @@ import pytest
 from conftest import get_python_executable
 
 
-
 @pytest.mark.regression
 def test_negative_case_VS_dataset():
     command = (
