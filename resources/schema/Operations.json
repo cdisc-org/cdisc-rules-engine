@@ -349,6 +349,7 @@
     "external_dictionary_type": {
       "enum": ["meddra"]
     },
+    "filter": { "type": "object" },
     "group": {
       "items": {
         "$ref": "CORE-base.json#/$defs/VariableName"

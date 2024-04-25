@@ -390,15 +390,15 @@ def test_validate_is_contained_by_distinct(mock_rule_distinct_operation: dict):
     dm_dataset = pd.DataFrame.from_dict({"USUBJID": [1, 2, 2, 3, 4, 5, 5, 3, 3, 3]})
 
     path_to_dataset_map: dict = {
-        "path/ae.xpt": ae_dataset,
-        "path/dm.xpt": dm_dataset,
+        os.path.join("path", "ae.xpt"): ae_dataset,
+        os.path.join("path", "dm.xpt"): dm_dataset,
     }
     with patch(
         "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
         side_effect=lambda dataset_name: path_to_dataset_map[dataset_name],
     ):
         validation_result: List[dict] = RulesEngine().validate_single_rule(
-            mock_rule_distinct_operation, "path/ae.xpt", datasets, "AE"
+            mock_rule_distinct_operation, os.path.join("path", "ae.xpt"), datasets, "AE"
         )
         assert validation_result == [
             {
@@ -1871,8 +1871,8 @@ def test_validate_single_rule_operation_dataset_larger_than_target_dataset(
     )
 
     path_to_dataset_map: dict = {
-        "study_id/data_bundle_id/ie.xpt": target_dataset,
-        "study_id/data_bundle_id/ti.xpt": operation_result_dataset,
+        os.path.join("study_id", "data_bundle_id", "ie.xpt"): target_dataset,
+        os.path.join("study_id", "data_bundle_id", "ti.xpt"): operation_result_dataset,
     }
     mock_get_dataset.side_effect = lambda dataset_name: path_to_dataset_map[
         dataset_name
@@ -1882,7 +1882,7 @@ def test_validate_single_rule_operation_dataset_larger_than_target_dataset(
         standard="sdtmig", standard_version="3-4"
     ).validate_single_rule(
         rule=rule_distinct_operation_is_not_contained_by,
-        dataset_path="study_id/data_bundle_id/ie.xpt",
+        dataset_path=os.path.join("study_id", "data_bundle_id", "ie.xpt"),
         datasets=[
             {
                 "domain": "IE",

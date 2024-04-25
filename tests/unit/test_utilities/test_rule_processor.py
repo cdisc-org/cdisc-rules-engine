@@ -741,8 +741,6 @@ def test_perform_extract_metadata_operation(
         "SUPPEC",
         "SUPPEC",
     ]
-    print(dataset_after_operation)
-    print(expected_dataset)
     assert dataset_after_operation.equals(expected_dataset)
 
 

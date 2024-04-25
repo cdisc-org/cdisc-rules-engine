@@ -20,12 +20,6 @@ def test_negative_case_VS_dataset():
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
 
-    # Print the output and error messages
-    print("Standard output:")
-    print(stdout.decode())
-    print("Standard error:")
-    print(stderr.decode())
-
     # Get the generated Excel file name from the standard output
     file_name = stdout.decode().strip().split(": ")[1] + ".xlsx"
 
@@ -44,7 +38,6 @@ def test_negative_case_VS_dataset():
     # Remove None values using list comprehension
     dataset_values = [value for value in dataset_values if value is not None]
 
-    print("Dataset Values : ", dataset_values)
     # Perform the assertion
     assert len(dataset_values) == 1  # Ensure only one value
     assert dataset_values[0] == "VS"  # Ensure the value is "VS"

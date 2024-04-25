@@ -25,6 +25,12 @@ class DataServiceInterface(ABC):
         """
 
     @abstractmethod
+    def get_datasets(self) -> List[dict]:
+        """
+        Gets a list of datasets.
+        """
+
+    @abstractmethod
     def get_dataset(self, dataset_name: str, **params) -> pd.DataFrame:
         """
         Gets dataset from blob storage.

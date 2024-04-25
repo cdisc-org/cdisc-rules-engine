@@ -27,7 +27,6 @@ from scripts.script_utils import (
     get_cache_service,
     get_library_metadata_from_cache,
     get_rules,
-    get_datasets,
 )
 from cdisc_rules_engine.services.reporting import BaseReport, ReportFactory
 from cdisc_rules_engine.utilities.progress_displayers import get_progress_displayer
@@ -68,6 +67,7 @@ def validate_single_rule(
         whodrug_path=args.whodrug,
         define_xml_path=args.define_xml_path,
         library_metadata=library_metadata,
+        dataset_paths=args.dataset_paths,
     )
     results = []
     validated_domains = set()
@@ -112,8 +112,10 @@ def run_validation(args: Validation_args):
     # install dictionaries if needed
     fill_cache_with_dictionaries(shared_cache, args)
     rules = get_rules(args)
-    data_service = DataServiceFactory(config, shared_cache).get_data_service()
-    datasets = get_datasets(data_service, args.dataset_paths)
+    data_service = DataServiceFactory(config, shared_cache).get_data_service(
+        args.dataset_paths
+    )
+    datasets = data_service.get_datasets()
     engine_logger.info(f"Running {len(rules)} rules against {len(datasets)} datasets")
     start = time.time()
     results = []

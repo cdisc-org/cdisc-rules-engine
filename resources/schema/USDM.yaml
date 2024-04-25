@@ -1,0 +1,138 @@
+"`this`": Wrapper
+ACTIVITY: ScheduledActivityInstance
+activities: Activity
+activityIds: Activity
+analysisPopulation: AnalysisPopulation
+bcSurrogateIds: BiomedicalConceptSurrogate
+bcSurrogates: BiomedicalConceptSurrogate
+code:
+  BiomedicalConcept: AliasCode
+  BiomedicalConceptCategory: AliasCode
+  BiomedicalConceptProperty: AliasCode
+  Code: string
+  GeographicScope: AliasCode
+  SubjectEnrollment: AliasCode
+  Procedure: Code
+  ResponseCode: Code
+  StudyAmendmentReason: Code
+codes: Code
+country: Code
+DECISION: ScheduledDecisionInstance
+dataOriginType: Code
+definedProcedures: Procedure
+ELIGIBILITY_CRITERIA: EligibilityCriteria
+encounterContactModes: Code
+encounterEnvironmentalSetting: Code
+encounters: Encounter
+ENDPOINT: Endpoint
+endpointLevel: Code
+epochId: StudyEpoch
+GEOGRAPHIC_SCOPE: GeographicScope
+intercurrentEvents: IntercurrentEvent
+interventionModel: Code
+nextActivityId: Activity
+nextEncounterId: Encounter
+nextStudyEpochId: StudyEpoch
+OBJECTIVE: Objective
+objectiveEndpoints: Endpoint
+objectiveLevel: Code
+organizationLegalAddress: Address
+plannedSexOfParticipants: Code
+previousActivityId: Activity
+previousEncounterId: Encounter
+previousStudyEpochId: StudyEpoch
+protocolStatus: Code
+scheduleTimelineExits: ScheduleTimelineExit
+scheduledActivityInstanceEncounterId: Encounter
+timings: Timing
+standardCode: Code
+study: Study
+studyArmId: StudyArm
+studyArms: StudyArm
+studyCells: StudyCell
+studyDesignBlindingScheme: Code
+studyDesigns: StudyDesign
+studyElementIds: StudyElement
+studyElements: StudyElement
+studyEpochId: StudyEpoch
+studyEpochs: StudyEpoch
+studyEstimands: Estimand
+studyIdentifierScope: Organization
+studyIdentifiers: StudyIdentifier
+studyIndications: Indication
+studyInterventions: StudyIntervention
+studyObjectives: Objective
+studyPhase: AliasCode
+studyPopulations: PopulationDefinition
+studyProtocolVersions: studyProtocolVersions
+studyScheduleTimelines: ScheduleTimeline
+SUBJECT_ENROLLMENT: SubjectEnrollment
+timelineId: ScheduleTimeline
+timingRelativeToFrom: Code
+transitionEndRule: TransitionRule
+transitionStartRule: TransitionRule
+treatmentId: StudyIntervention
+trialIntentTypes: Code
+trialTypes: Code
+type: Code
+variableOfInterestId: Endpoint
+NoneType: "null"
+bool: boolean
+int: number
+str: string
+documentedBy: StudyProtocolDocument
+documentVersionId: StudyProtocolDocumentVersion
+dateValues: GovernanceDate
+amendments: StudyAmendment
+businessTherapeuticAreas: Code
+primaryReason: StudyAmendmentReason
+secondaryReasons: StudyAmendmentReason
+legalAddress: Address
+therapeuticAreas: Code
+biomedicalConcepts: BiomedicalConcept
+arms: StudyArm
+blindingSchema: Code
+epochs: StudyEpoch
+elements: StudyElement
+indications: Indication
+scheduleTimelines: ScheduleTimeline
+environmentalSetting: Code
+contactModes: Code
+scheduledAtId: Timing
+biomedicalConceptIds: BiomedicalConcept
+properties: BiomedicalConceptProperty
+responseCodes: ResponseCode
+armId: StudyArm
+elementIds: StudyElement
+level: Code
+dictionaryId: SyntaxTemplateDictionary
+category: Code
+exits: ScheduleTimelineExit
+encounterId: Encounter
+relativeToFrom: Code
+timelineExitId: ScheduleTimelineExit
+parameterMap: Map
+contents: NarrativeContent
+versions:
+  Study: StudyVersion
+  StudyProtocolDocument: StudyProtocolDocumentVersion
+nextId:
+  Activity: Activity
+  EligibilityCriteria: EligibilityCriteria
+  Encounter: Encounter
+  StudyEpoch: StudyEpoch
+previousId:
+  Activity: Activity
+  EligibilityCriteria: EligibilityCriteria
+  Encounter: Encounter
+  StudyAmendment: StudyAmendment
+  StudyEpoch: StudyEpoch
+childrenIds:
+  BiomedicalConceptCategory: BiomedicalConceptCategory
+  NarrativeContent: NarrativeContent
+  StudyProtocolDocumentVersion: StudyProtocolDocumentVersion
+population: StudyDesignPopulation
+populations: StudyDesignPopulation
+plannedEnrollmentNumber: Range
+plannedCompletionNumber: Range
+dictionaries: SyntaxTemplateDictionary

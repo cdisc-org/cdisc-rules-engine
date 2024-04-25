@@ -132,14 +132,28 @@ class BaseDataService(DataServiceInterface, ABC):
             func_to_call, dataset_names, **kwargs
         )
 
-        # concat datasets
-        full_dataset: pd.DataFrame = pd.concat(
-            [dataset for dataset in datasets],
-            ignore_index=True,
-        )
+        full_dataset = pd.DataFrame()
+        for dataset in datasets:
+            if "RDOMAIN" in dataset.columns:
+                full_dataset = self.merge_supp_dataset(full_dataset, dataset)
+            else:
+                full_dataset = pd.concat([full_dataset, dataset], ignore_index=True)
+
         if drop_duplicates:
             full_dataset.drop_duplicates()
         return full_dataset
+
+    def merge_supp_dataset(self, full_dataset, supp_dataset):
+        merge_keys = ["STUDYID", "USUBJID", "APID", "POOLID", "SPDEVID"]
+        merged_df = pd.merge(
+            full_dataset,
+            supp_dataset,
+            how="inner",
+            on=merge_keys,
+            left_on="IDVAR",
+            right_on="IDVARVAL",
+        )
+        return merged_df
 
     def get_dataset_class(
         self, dataset: pd.DataFrame, file_path: str, datasets: List[dict], domain: str
