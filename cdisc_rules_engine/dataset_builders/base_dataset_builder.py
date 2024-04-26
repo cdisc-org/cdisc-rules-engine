@@ -98,7 +98,7 @@ class BaseDatasetBuilder:
             "define_dataset_name"
             "define_dataset_label"
             "define_dataset_location"
-            "define_dataset_implementation"
+            "define_dataset_class"
             "define_dataset_structure"
             "define_dataset_is_non_standard"
             "define_dataset_variables"
