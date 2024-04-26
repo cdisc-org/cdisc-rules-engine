@@ -97,7 +97,7 @@ class LocalDataService(BaseDataService):
     @cached_dataset(DatasetTypes.METADATA.value)
     def get_contents_metadata(self, dataset_name: str) -> pandas.DataFrame:
         """
-        Gets metadata of contents from a dataset.
+        Gets metadata of a dataset's contents and returns it as a DataFrame.
         """
         metadata: dict = self.read_metadata(dataset_name)
         contents_metadata: dict = metadata["contents_metadata"]
