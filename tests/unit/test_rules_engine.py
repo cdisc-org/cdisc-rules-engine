@@ -646,6 +646,41 @@ def test_validate_dataset_metadata_wrong_metadata(
 
 
 @patch(
+    "cdisc_rules_engine.services.data_services.LocalDataService."
+    "get_dataset_contents_metadata"
+)
+@patch("cdisc_rules_engine.services.data_services.LocalDataService.read_metadata")
+def test_validate_dataset_contents_metadata(
+    mock_get_contents_metadata, mock_read_metadata
+):
+    """
+    Unit test that checks dataset contents metadata validation.
+    """
+    mock_read_metadata.return_value = {
+        "variable_names": [["var1", "var2"]],
+        "variable_labels": [["Label 1", "Label 2"]],
+        "variable_formats": [["format1", "format2"]],
+        "variable_name_to_size_map": [{"var1": 10, "var2": 20}],
+        "variable_name_to_label_map": [{"var1": "Label 1", "var2": "Label 2"}],
+        "variable_name_to_data_type_map": [{"var1": "int", "var2": "float"}],
+    }
+
+    expected_df = pd.DataFrame(
+        {
+            "variable_names": [["var1", "var2"]],
+            "variable_labels": [["Label 1", "Label 2"]],
+            "variable_formats": [["format1", "format2"]],
+            "variable_name_to_size_map": [{"var1": 10, "var2": 20}],
+            "variable_name_to_label_map": [{"var1": "Label 1", "var2": "Label 2"}],
+            "variable_name_to_data_type_map": [{"var1": "int", "var2": "float"}],
+        }
+    )
+    mock_get_contents_metadata.return_value = expected_df
+    result_df = mock_get_contents_metadata("some_dataset")
+    pd.testing.assert_frame_equal(result_df, expected_df)
+
+
+@patch(
     "cdisc_rules_engine.services.data_services.LocalDataService.get_variables_metadata",
 )
 def test_validate_variable_metadata(

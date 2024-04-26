@@ -180,7 +180,9 @@ class RuleProcessor:
         if included_classes:
             if ALL_KEYWORD in included_classes:
                 return True
-            dataset = self.data_service.get_contents_metadata(dataset_name=file_path)
+            dataset = self.data_service.get_dataset_contents_metadata(
+                dataset_name=file_path
+            )
             dataset_columns = dataset["variable_names"].iloc[0]
             transformed_columns = pd.DataFrame(columns=dataset_columns)
             class_name = self.data_service.get_dataset_class(
@@ -192,7 +194,9 @@ class RuleProcessor:
                 is_included = False
 
         if excluded_classes:
-            dataset = self.data_service.get_contents_metadata(dataset_name=file_path)
+            dataset = self.data_service.get_dataset_contents_metadata(
+                dataset_name=file_path
+            )
             dataset_columns = dataset["variable_names"].iloc[0]
             transformed_columns = pd.DataFrame(columns=dataset_columns)
             class_name = self.data_service.get_dataset_class(
