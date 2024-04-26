@@ -2104,38 +2104,63 @@ def test_dataset_references_invalid_whodrug_terms(
     ]
 
 
-@patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset")
+@patch(
+    "cdisc_rules_engine.services.data_services.LocalDataService"
+    ".get_dataset_contents_metadata"
+)
 @patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset_class")
 def test_validate_variables_order_against_library_metadata(
     mock_get_dataset_class: MagicMock,
-    mock_get_dataset: MagicMock,
+    mock_get_dataset_contents_metadata: MagicMock,
     rule_validate_columns_order_against_library_metadata: dict,
 ):
     """
     The test validates order of dataset columns against the library metadata.
     """
     # mock dataset download
-    mock_get_dataset.return_value = pd.DataFrame.from_dict(
+    mock_get_dataset_contents_metadata.return_value = pd.DataFrame.from_dict(
         {
-            "DOMAIN": [
-                "AE",
-                "AE",
+            "variable_names": [["STUDYID", "DOMAIN", "AESEQ", "AETERM"]],
+            "variable_labels": [
+                ["Study Identifier", "Domain", "Sequence", "Adverse Event Term"]
             ],
-            "AESEQ": [
-                1,
-                2,
+            "variable_formats": [["$CHAR", "$NUM", "$CHAR", "$CHAR"]],
+            "variable_name_to_size_map": [
+                {"STUDYID": 12, "DOMAIN": 8, "AESEQ": 8, "AETERM": 8}
             ],
-            "STUDYID": [
-                "TEST_STUDY",
-                "TEST_STUDY",
+            "variable_name_to_label_map": [
+                {
+                    "STUDYID": "Study Identifier",
+                    "DOMAIN": "Domain",
+                    "AESEQ": "Sequence",
+                    "AETERM": "Adverse Event Term",
+                }
             ],
-            "AETERM": [
-                "test",
-                "test",
+            "variable_name_to_data_type_map": [
+                {"STUDYID": "Char", "DOMAIN": "Char", "AESEQ": "Num", "AETERM": "Char"}
             ],
         }
     )
-
+    # mock_get_dataset.return_value = pd.DataFrame.from_dict(
+    #     {
+    #         "DOMAIN": [
+    #             "AE",
+    #             "AE",
+    #         ],
+    #         "AESEQ": [
+    #             1,
+    #             2,
+    #         ],
+    #         "STUDYID": [
+    #             "TEST_STUDY",
+    #             "TEST_STUDY",
+    #         ],
+    #         "AETERM": [
+    #             "test",
+    #             "test",
+    #         ],
+    #     }
+    #     )
     standard: str = "sdtmig"
     standard_version: str = "3-1-2"
     mock_get_dataset_class.return_value = "EVENTS"
@@ -2208,6 +2233,7 @@ def test_validate_variables_order_against_library_metadata(
         ],
         "AE",
     )
+    breakpoint()
     assert result == [
         {
             "executionStatus": "success",
