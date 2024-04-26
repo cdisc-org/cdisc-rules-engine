@@ -180,11 +180,11 @@ class RuleProcessor:
         if included_classes:
             if ALL_KEYWORD in included_classes:
                 return True
-            dataset_columns = self.data_service.get_dataset(
-                dataset_name=file_path
-            ).columns
+            dataset = self.data_service.get_contents_metadata(dataset_name=file_path)
+            dataset_columns = dataset["variable_names"].iloc[0]
+            transformed_columns = pd.DataFrame(columns=dataset_columns)
             class_name = self.data_service.get_dataset_class(
-                dataset_columns, file_path, datasets, domain
+                transformed_columns, file_path, datasets, domain
             )
             if (class_name not in included_classes) and not (
                 class_name == FINDINGS_ABOUT and FINDINGS in included_classes
@@ -192,11 +192,11 @@ class RuleProcessor:
                 is_included = False
 
         if excluded_classes:
-            dataset_columns = self.data_service.get_dataset(
-                dataset_name=file_path
-            ).columns
+            dataset = self.data_service.get_contents_metadata(dataset_name=file_path)
+            dataset_columns = dataset["variable_names"].iloc[0]
+            transformed_columns = pd.DataFrame(columns=dataset_columns)
             class_name = self.data_service.get_dataset_class(
-                dataset_columns, file_path, datasets, domain
+                dataset, file_path, datasets, domain
             )
             if class_name and (
                 (class_name in excluded_classes)
