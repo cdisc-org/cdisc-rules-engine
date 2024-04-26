@@ -94,9 +94,9 @@ class DataServiceFactory(FactoryInterface):
             and self.max_dataset_size >= self.dataset_size_threshold
         ):
             # Use large dataset class
-            logger.info("Using DASK dataset implentation")
+            logger.info("Using DASK dataset implementation")
             return DaskDataset
-        logger.info("Using PANDAS dataset implentation")
+        logger.info("Using PANDAS dataset implementation")
         return PandasDataset
 
     @classmethod
