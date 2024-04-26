@@ -2105,8 +2105,8 @@ def test_dataset_references_invalid_whodrug_terms(
 
 
 @patch(
-    "cdisc_rules_engine.services.data_services.LocalDataService"
-    ".get_dataset_contents_metadata"
+    "cdisc_rules_engine.services.data_services"
+    ".LocalDataService.get_dataset_contents_metadata"
 )
 @patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset_class")
 def test_validate_variables_order_against_library_metadata(
@@ -2141,26 +2141,28 @@ def test_validate_variables_order_against_library_metadata(
             ],
         }
     )
-    # mock_get_dataset.return_value = pd.DataFrame.from_dict(
-    #     {
-    #         "DOMAIN": [
-    #             "AE",
-    #             "AE",
-    #         ],
-    #         "AESEQ": [
-    #             1,
-    #             2,
-    #         ],
-    #         "STUDYID": [
-    #             "TEST_STUDY",
-    #             "TEST_STUDY",
-    #         ],
-    #         "AETERM": [
-    #             "test",
-    #             "test",
-    #         ],
-    #     }
-    #     )
+
+    mock_data = pd.DataFrame.from_dict(
+        {
+            "DOMAIN": [
+                "AE",
+                "AE",
+            ],
+            "AESEQ": [
+                1,
+                2,
+            ],
+            "STUDYID": [
+                "TEST_STUDY",
+                "TEST_STUDY",
+            ],
+            "AETERM": [
+                "test",
+                "test",
+            ],
+        }
+    )
+
     standard: str = "sdtmig"
     standard_version: str = "3-1-2"
     mock_get_dataset_class.return_value = "EVENTS"
@@ -2218,48 +2220,55 @@ def test_validate_variables_order_against_library_metadata(
     library_metadata = LibraryMetadataContainer(
         model_metadata=cache_data, standard_metadata=standard_data
     )
-    # run validation
-    engine = RulesEngine(
-        cache=cache,
-        standard=standard,
-        standard_version=standard_version,
-        library_metadata=library_metadata,
-    )
-    result: List[dict] = engine.validate_single_rule(
-        rule_validate_columns_order_against_library_metadata,
-        "dataset_path",
-        [
-            {"domain": "AE", "filename": "ae.xpt"},
-        ],
-        "AE",
-    )
-    breakpoint()
-    assert result == [
-        {
-            "executionStatus": "success",
-            "domain": "AE",
-            "variables": ["$column_order_from_dataset", "$column_order_from_library"],
-            "message": RuleProcessor.extract_message_from_rule(
-                rule_validate_columns_order_against_library_metadata
-            ),
-            "errors": [
-                {
-                    "value": {
-                        "$column_order_from_library": [
-                            "STUDYID",
-                            "DOMAIN",
-                            "AETERM",
-                            "AESEQ",
-                            "TIMING_VAR",
-                        ],
-                        "$column_order_from_dataset": [
-                            "DOMAIN",
-                            "AESEQ",
-                            "STUDYID",
-                            "AETERM",
-                        ],
-                    }
-                }
+
+    with patch(
+        "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
+        return_value=mock_data,
+    ):
+        # run validation
+        engine = RulesEngine(
+            cache=cache,
+            standard=standard,
+            standard_version=standard_version,
+            library_metadata=library_metadata,
+        )
+        result: List[dict] = engine.validate_single_rule(
+            rule_validate_columns_order_against_library_metadata,
+            "dataset_path",
+            [
+                {"domain": "AE", "filename": "ae.xpt"},
             ],
-        }
-    ]
+            "AE",
+        )
+        assert result == [
+            {
+                "executionStatus": "success",
+                "domain": "AE",
+                "variables": [
+                    "$column_order_from_dataset",
+                    "$column_order_from_library",
+                ],
+                "message": RuleProcessor.extract_message_from_rule(
+                    rule_validate_columns_order_against_library_metadata
+                ),
+                "errors": [
+                    {
+                        "value": {
+                            "$column_order_from_library": [
+                                "STUDYID",
+                                "DOMAIN",
+                                "AETERM",
+                                "AESEQ",
+                                "TIMING_VAR",
+                            ],
+                            "$column_order_from_dataset": [
+                                "DOMAIN",
+                                "AESEQ",
+                                "STUDYID",
+                                "AETERM",
+                            ],
+                        }
+                    }
+                ],
+            }
+        ]
