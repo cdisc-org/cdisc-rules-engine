@@ -121,18 +121,6 @@ def get_rules(args) -> List[dict]:
     return (
         load_rules_from_local(args) if args.local_rules else load_rules_from_cache(args)
     )
-    # rules = []
-    # if args.rules:
-    #     rules.extend(load_rules_from_cache(args))
-    # if args.local_rules:
-    #     rules.extend(load_rules_from_local(args))
-    # if not rules:
-    #     engine_logger.warning(
-    #         "No rules specified. Running all rules"
-    #         f"for {args.standard} version {args.version}"
-    #     )
-    #     rules = load_all_rules(args)
-    # return rules
 
 
 def load_rules_from_cache(args) -> List[dict]:
@@ -161,16 +149,8 @@ def load_rules_from_cache(args) -> List[dict]:
                 )
                 if core_id not in core_ids and key == rule_identifier:
                     rules.append(rule)
-                    core_ids.add(rule.get("core_id"))
+                    core_ids.add(core_id)
     return rules
-    # rules_file = os.path.join(args.cache, "rules.pkl")
-    # keys = [
-    #     get_rules_cache_key(args.standard, args.version.replace(".", "-"), rule)
-    #     for rule in args.rules
-    # ]
-    # with open(rules_file, "rb") as f:
-    #     rules_data = pickle.load(f)
-    #     return [rules_data.get(key) for key in keys]
 
 
 def load_rules_from_local(args) -> List[dict]:
@@ -178,37 +158,55 @@ def load_rules_from_local(args) -> List[dict]:
     rule_files = [
         os.path.join(args.local_rules, file) for file in os.listdir(args.local_rules)
     ]
+    rule_data = {}
+
+    if args.rules:
+        keys = set(
+            get_rules_cache_key(args.standard, args.version.replace(".", "-"), rule)
+            for rule in args.rules
+        )
+    else:
+        engine_logger.warning(
+            "No rules specified with -r rules flag. "
+            "Validating with all rules in local directory"
+        )
+        keys = None
+
     for rule_file in rule_files:
         _, file_extension = os.path.splitext(rule_file)
         try:
             with open(rule_file, "r", encoding="utf-8") as file:
                 if file_extension in [".yml", ".yaml"]:
-                    rule = Rule.from_cdisc_metadata(yaml.safe_load(file))
+                    loaded_data = Rule.from_cdisc_metadata(yaml.safe_load(file))
+                    rule = replace_yml_spaces(loaded_data)
                 elif file_extension == ".json":
                     rule = Rule.from_cdisc_metadata(json.load(file))
                 else:
                     raise ValueError(f"Unsupported file type: {file_extension}")
-                rules.append(rule)
         except Exception as e:
-            engine_logger.error(f"Error loading rule file {rule_file}: {e}")
-    return replace_yml_spaces(rules)
+            engine_logger.warning(f"error while loading {rule_file}: {e}")
+            continue
+        rule_identifier = get_rules_cache_key(
+            args.standard, args.version.replace(".", "-"), rule.get("core_id")
+        )
+        if keys is None or rule_identifier in keys:
+            rule_data[rule_identifier] = rule
+            rules.append(rule)
+        else:
+            engine_logger.warning(
+                f"Rule {rule.get('core_id')} not specified with "
+                "-r rule flag or duplicate rule. Skipping..."
+            )
 
+    if keys:
+        missing_keys = keys - rule_data.keys()
+        if missing_keys:
+            missing_keys_str = ", ".join(missing_keys)
+            raise ValueError(
+                f"Specified rules not found in the local directory: {missing_keys_str}"
+            )
 
-# def load_all_rules(args) -> List[dict]:
-#     rules_file = os.path.join(args.cache, "rules.pkl")
-#     with open(rules_file, "rb") as f:
-#         rules_data = pickle.load(f)
-#         core_ids = set()
-#         rules = []
-#         for key, rule in rules_data.items():
-#             core_id = rule.get("core_id")
-#             rule_identifier = get_rules_cache_key(
-#                 args.standard, args.version.replace(".", "-"), core_id
-#             )
-#             if core_id not in core_ids and key == rule_identifier:
-#                 rules.append(rule)
-#                 core_ids.add(core_id)
-#         return rules
+    return rules
 
 
 def replace_yml_spaces(data):
