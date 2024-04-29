@@ -76,9 +76,9 @@ def test_negative_dataset():
 def test_positive_dataset():
     command = (
         f"{get_python_executable()} -m core test -s sdtmig -v 3.4 -r "
-        + os.path.join("tests", "resources", "CoreIssue164", "rule.json")
+        + os.path.join("tests", "resources", "CoreIssue576", "rule.json")
         + " -dp "
-        + os.path.join("tests", "resources", "CoreIssue164", "Positive_Dataset.json")
+        + os.path.join("tests", "resources", "CoreIssue576", "Positive_Dataset.json")
     )
 
     # Construct the command

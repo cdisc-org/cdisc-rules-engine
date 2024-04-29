@@ -122,7 +122,7 @@ class BaseDataService(DataServiceInterface, ABC):
         all of them and merges into a single DataFrame.
 
         function_to_call must accept dataset_name and kwargs
-        as input parameters and return pandas DataFrame.
+        as input parameters and return pandas DataFrame.`
         """
         # pop drop_duplicates param at the beginning to avoid passing it to func_to_call
         drop_duplicates: bool = kwargs.pop("drop_duplicates", False)
