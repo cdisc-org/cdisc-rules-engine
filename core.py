@@ -134,7 +134,19 @@ def cli():
 )
 @click.option("--whodrug", help="Path to directory with WHODrug dictionary files")
 @click.option("--meddra", help="Path to directory with MedDRA dictionary files")
-@click.option("--rules", "-r", multiple=True)
+@click.option(
+    "--rules",
+    "-r",
+    multiple=True,
+    help="specify rule core ID ex. CORE-000001. Can be specified multiple times",
+)
+@click.option(
+    "--local_rules",
+    "-lr",
+    required=False,
+    type=click.Path(exists=True, readable=True, resolve_path=True),
+    help="path to directory containing local rules.",
+)
 @click.option(
     "-p",
     "--progress",
@@ -166,6 +178,7 @@ def validate(
     whodrug: str,
     meddra: str,
     rules: Tuple[str],
+    local_rules: str,
     progress: str,
     define_xml_path: str,
 ):
@@ -241,6 +254,7 @@ def validate(
             whodrug,
             meddra,
             rules,
+            local_rules,
             progress,
             define_xml_path,
         )
