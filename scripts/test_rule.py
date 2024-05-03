@@ -176,6 +176,7 @@ def test(args: TestArgs):
         args.meddra,
         args.whodrug,
         rules,
+        None,
         ProgressParameterOptions.BAR.value,
         args.define_xml_path,
     )
