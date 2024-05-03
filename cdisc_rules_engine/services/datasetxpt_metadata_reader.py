@@ -73,6 +73,17 @@ class DatasetXPTMetadataReader:
             pass
         return None
 
+    def _calculate_dataset_length(self):
+        iterator = pd.read_sas(self.file_path, iterator=True, chunksize=1)
+        try:
+            next(iterator)
+            breakpoint()
+        except StopIteration:
+            print("error")
+            breakpoint()
+        # row_size = sum(self._metadata_container["variable_name_to_size_map"].values())
+        # return int(os.path.getsize(self._file_path) / row_size)
+
     def _convert_variable_types(self):
         """
         Converts variable types to the format that
