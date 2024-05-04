@@ -156,9 +156,9 @@ class BaseDataService(DataServiceInterface, ABC):
                 how="inner",
                 left_on=["DOMAIN"] + merge_keys,
                 right_on=["RDOMAIN"] + merge_keys,
-                suffixes=('_full', '_supp')
+                suffixes=("_full", "_supp"),
             )
- 
+
         return merged_df
 
     def get_dataset_class(
