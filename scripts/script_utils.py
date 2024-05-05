@@ -209,6 +209,7 @@ def load_rules_from_local(args) -> List[dict]:
 
     return rules
 
+
 def get_datasets(
     data_service: DataServiceInterface, dataset_paths: Iterable[str]
 ) -> List[dict]:
@@ -239,6 +240,7 @@ def get_max_dataset_size(dataset_paths: Iterable[str]):
             max_dataset_size = file_size
     return max_dataset_size
 
+
 def replace_yml_spaces(data):
     if isinstance(data, dict):
         return {
@@ -249,4 +251,3 @@ def replace_yml_spaces(data):
         return [replace_yml_spaces(item) for item in data]
     else:
         return data
-

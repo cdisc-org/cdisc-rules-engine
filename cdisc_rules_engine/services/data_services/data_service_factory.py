@@ -8,7 +8,6 @@ from cdisc_rules_engine.interfaces import (
     FactoryInterface,
 )
 from cdisc_rules_engine.models.dataset import DaskDataset, PandasDataset
-import psutil
 
 
 from . import DummyDataService, LocalDataService, USDMDataService
@@ -46,7 +45,7 @@ class DataServiceFactory(FactoryInterface):
         self.standard_version = standard_version
         self.library_metadata = library_metadata
         self.max_dataset_size = max_dataset_size
-        self.dataset_size_threshold = psutil.virtual_memory().available * 0.25
+        self.dataset_size_threshold = self.config.get_dataset_size_threshold()
 
     def get_data_service(
         self, dataset_paths: Iterable[str] = []

@@ -26,13 +26,12 @@ class XPTReader(DataReaderInterface):
         num_rows = 0
         for chunk in dataset:
             self._format_floats(chunk)
-            for chunk in dataset:
-                num_rows += len(chunk)
-                if not created:
-                    chunk.to_parquet(temp_file.name, engine="fastparquet")
-                    created = True
-                else:
-                    chunk.to_parquet(temp_file.name, engine="fastparquet", append=True)
+            num_rows += len(chunk)
+            if not created:
+                chunk.to_parquet(temp_file.name, engine="fastparquet")
+                created = True
+            else:
+                chunk.to_parquet(temp_file.name, engine="fastparquet", append=True)
         return num_rows, temp_file.name
 
     def from_file(self, file_path):

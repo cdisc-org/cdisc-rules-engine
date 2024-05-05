@@ -1,8 +1,8 @@
 import pyreadstat
 
 from cdisc_rules_engine.services import logger
+from cdisc_rules_engine.config import config
 from cdisc_rules_engine.services.adam_variable_reader import AdamVariableReader
-import psutil
 import os
 
 
@@ -16,7 +16,7 @@ class DatasetXPTMetadataReader:
     #  like from_bytes, from_file etc. But now there is no immediate need for that.
     def __init__(self, file_path: str, file_name: str):
         file_size = os.path.getsize(file_path)
-        if file_size > psutil.virtual_memory().available * 0.25:
+        if file_size > config.get_dataset_size_threshold():
             self._estimate_dataset_length = True
             self.row_limit = 1
         else:

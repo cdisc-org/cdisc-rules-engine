@@ -3,6 +3,7 @@ import os
 from dotenv import load_dotenv
 
 from cdisc_rules_engine.interfaces import ConfigInterface
+import psutil
 
 load_dotenv()
 
@@ -11,6 +12,8 @@ class ConfigService(ConfigInterface):
 
     _config_keys = []
     _instance = None
+    # TODO: Make this configurable via env variable
+    _dataset_size_threshold = psutil.virtual_memory().available * 0.25
 
     def __new__(cls):
         if cls._instance is None:
@@ -32,3 +35,6 @@ class ConfigService(ConfigInterface):
             return os.getenv(key)
         else:
             return default
+
+    def get_dataset_size_threshold(self):
+        return self._dataset_size_threshold
