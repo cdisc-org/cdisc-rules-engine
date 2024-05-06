@@ -1,6 +1,7 @@
 import pandas as pd
 import xport.v56
 from xport import LOG as XPORT_LOG
+import pyreadstat
 
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.services.adam_variable_reader import AdamVariableReader
@@ -23,6 +24,7 @@ class DatasetXPTMetadataReader:
         self._metadata_container = None
         self._domain_name = None
         self._dataset_name = file_name.split(".")[0].upper()
+        self._file_path = file_path
 
     def read(self) -> dict:
         """
@@ -47,7 +49,7 @@ class DatasetXPTMetadataReader:
             ).to_dict(),
             "number_of_variables": len(dataset.columns),
             "dataset_label": dataset.dataset_label,
-            "dataset_length": dataset.shape[0],
+            "dataset_length": self._calculate_dataset_length(),
             "domain_name": self._domain_name,
             "dataset_name": self._dataset_name,
             "dataset_modification_date": dataset.modified.isoformat(),
@@ -74,13 +76,21 @@ class DatasetXPTMetadataReader:
         return None
 
     def _calculate_dataset_length(self):
-        iterator = pd.read_sas(self.file_path, iterator=True, chunksize=1)
-        try:
-            next(iterator)
-            breakpoint()
-        except StopIteration:
-            print("error")
-            breakpoint()
+        df, meta = pyreadstat.read_xport(self._file_path, metadataonly=True)
+        meta.variable_storage_width
+        breakpoint()
+        return meta
+        # sas_iterator = pd.read_sas(self._file_path, iterator=True, chunksize=1)
+        # first_chunk = next(sas_iterator)
+        # breakpoint()
+        # return
+
+        # with open(self.file_path, 'rb') as data:
+        #     library = xport.Library(data)
+        #     dataset = next(iter(library))
+        #     record_size = dataset.header.record_size
+        #     start = dataset.header.start
+
         # row_size = sum(self._metadata_container["variable_name_to_size_map"].values())
         # return int(os.path.getsize(self._file_path) / row_size)
 
