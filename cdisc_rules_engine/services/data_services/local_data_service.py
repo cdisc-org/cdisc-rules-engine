@@ -94,31 +94,6 @@ class LocalDataService(BaseDataService):
         }
         return pandas.DataFrame.from_dict(metadata_to_return)
 
-    @cached_dataset(DatasetTypes.METADATA.value)
-    def get_dataset_contents_metadata(
-        self, dataset_name: str, **params
-    ) -> pandas.DataFrame:
-        """
-        Gets metadata of a dataset's contents and returns it as a DataFrame.
-        """
-        metadata: dict = self.read_metadata(dataset_name)
-        contents_metadata: dict = metadata["contents_metadata"]
-        metadata_to_return: dict = {
-            "variable_names": [contents_metadata["variable_names"]],
-            "variable_labels": [contents_metadata["variable_labels"]],
-            "variable_formats": [contents_metadata["variable_formats"]],
-            "variable_name_to_size_map": [
-                contents_metadata["variable_name_to_size_map"]
-            ],
-            "variable_name_to_label_map": [
-                contents_metadata["variable_name_to_label_map"]
-            ],
-            "variable_name_to_data_type_map": [
-                contents_metadata["variable_name_to_data_type_map"]
-            ],
-        }
-        return pandas.DataFrame.from_dict(metadata_to_return)
-
     @cached_dataset(DatasetTypes.RAW_METADATA.value)
     def get_raw_dataset_metadata(self, dataset_name: str, **kwargs) -> DatasetMetadata:
         """

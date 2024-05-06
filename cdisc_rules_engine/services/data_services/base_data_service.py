@@ -21,6 +21,7 @@ from cdisc_rules_engine.constants.classes import (
     RELATIONSHIP,
 )
 from cdisc_rules_engine.models.dataset_types import DatasetTypes
+from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.services.cdisc_library_service import CDISCLibraryService
 from cdisc_rules_engine.services.data_readers import DataReaderFactory
@@ -156,7 +157,12 @@ class BaseDataService(DataServiceInterface, ABC):
         return merged_df
 
     def get_dataset_class(
-        self, dataset: pd.DataFrame, file_path: str, datasets: List[dict], domain: str
+        self,
+        dataset: pd.DataFrame,
+        file_path: str,
+        datasets: List[dict],
+        domain: str,
+        dataset_metadata: DatasetMetadata,
     ) -> Optional[str]:
         if self.standard is None or self.version is None:
             raise Exception("Missing standard and version data")
@@ -168,7 +174,9 @@ class BaseDataService(DataServiceInterface, ABC):
         if name:
             return convert_library_class_name_to_ct_class(name)
 
-        return self._handle_special_cases(dataset, domain, file_path, datasets)
+        return self._handle_special_cases(
+            dataset, domain, file_path, datasets, dataset_metadata
+        )
 
     def _get_standard_data(self):
         return (
@@ -178,40 +186,46 @@ class BaseDataService(DataServiceInterface, ABC):
             )
         )
 
-    def _handle_special_cases(self, dataset, domain, file_path, datasets):
-        if self._contains_topic_variable(dataset, "TERM"):
+    def _handle_special_cases(
+        self, dataset, domain, file_path, datasets, dataset_metadata
+    ):
+        if self._contains_topic_variable(dataset, dataset_metadata, "TERM"):
             return EVENTS
-        if self._contains_topic_variable(dataset, "TRT"):
+        if self._contains_topic_variable(dataset, dataset_metadata, "TRT"):
             return INTERVENTIONS
-        if self._contains_topic_variable(dataset, "QNAM"):
+        if self._contains_topic_variable(dataset, dataset_metadata, "QNAM"):
             return RELATIONSHIP
-        if self._contains_topic_variable(dataset, "TESTCD"):
-            if self._contains_topic_variable(dataset, "OBJ"):
+        if self._contains_topic_variable(dataset, dataset_metadata, "TESTCD"):
+            if self._contains_topic_variable(dataset, dataset_metadata, "OBJ"):
                 return FINDINGS_ABOUT
             return FINDINGS
-        if self._is_associated_persons(dataset):
+        if self._is_associated_persons(dataset, dataset_metadata):
             return self._get_associated_persons_inherit_class(
-                dataset, file_path, datasets
+                dataset, file_path, datasets, dataset_metadata
             )
         return None
 
-    def _is_associated_persons(self, dataset) -> bool:
+    def _is_associated_persons(self, dataset, dataset_metadata) -> bool:
         """
         Check if AP-- domain.
         """
         return (
             "DOMAIN" in dataset
-            and self._domain_starts_with(dataset["DOMAIN"].values[0], "AP")
-            and len(dataset["DOMAIN"].values[0]) == AP_DOMAIN_LENGTH
+            and self._domain_starts_with(dataset_metadata, "AP")
+            and len(dataset_metadata.domain_name) == AP_DOMAIN_LENGTH
         )
 
     def _get_associated_persons_inherit_class(
-        self, dataset, file_path, datasets: List[dict]
+        self,
+        dataset,
+        file_path,
+        datasets: List[dict],
+        dataset_metadata: DatasetMetadata,
     ):
         """
         Check with inherit class AP-- belongs to.
         """
-        domain = dataset["DOMAIN"].values[0]
+        domain = dataset_metadata.domain_name
         ap_suffix = domain[2:]
         directory_path = get_directory_path(file_path)
         if len(datasets) > 1:
@@ -222,17 +236,24 @@ class BaseDataService(DataServiceInterface, ABC):
                 file_name = domain_details["filename"]
                 new_file_path = os.path.join(directory_path, file_name)
                 new_domain_dataset = self.get_dataset(dataset_name=new_file_path)
+                new_dataset_metadata = self.get_raw_dataset_metadata(
+                    dataset_name=new_file_path
+                )
             else:
                 raise ValueError("Filename for domain doesn't exist")
             if self._is_associated_persons(new_domain_dataset):
                 raise ValueError("Nested Associated Persons domain reference")
             return self.get_dataset_class(
-                new_domain_dataset, new_file_path, datasets, domain_details["domain"]
+                new_domain_dataset,
+                new_file_path,
+                datasets,
+                domain_details["domain"],
+                new_dataset_metadata,
             )
         else:
             return None
 
-    def _contains_topic_variable(self, dataset, variable):
+    def _contains_topic_variable(self, dataset, dataset_metadata, variable):
         """
         Checks if the given dataset-class string ends with a particular variable string.
         Returns True/False
@@ -240,18 +261,17 @@ class BaseDataService(DataServiceInterface, ABC):
         if "DOMAIN" not in dataset and "RDOMAIN" not in dataset:
             return False
         elif "DOMAIN" in dataset:
-            domain = dataset["DOMAIN"].values[0]
-            return domain.upper() + variable in dataset
+            return dataset_metadata.domaine_name.upper() + variable in dataset
         elif "RDOMAIN" in dataset:
             return variable in dataset
 
-    def _domain_starts_with(self, domain, variable):
+    def _domain_starts_with(self, dataset_metadata, variable):
         """
         Checks if the given dataset-class string starts with
          a particular variable string.
         Returns True/False
         """
-        return domain.startswith(variable)
+        return dataset_metadata.domain_name.startswith(variable)
 
     @staticmethod
     def _replace_nans_in_numeric_cols_with_none(dataset: pd.DataFrame):

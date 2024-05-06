@@ -90,7 +90,12 @@ class DataServiceInterface(ABC):
 
     @abstractmethod
     def get_dataset_class(
-        self, dataset: pd.DataFrame, file_path: str, datasets: List[dict]
+        self,
+        dataset: pd.DataFrame,
+        file_path: str,
+        datasets: List[dict],
+        domain: str,
+        dataset_metadata: DatasetMetadata,
     ) -> Optional[str]:
         """
         Returns dataset class based on its contents
