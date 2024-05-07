@@ -261,7 +261,7 @@ class BaseDataService(DataServiceInterface, ABC):
         if "DOMAIN" not in dataset and "RDOMAIN" not in dataset:
             return False
         elif "DOMAIN" in dataset:
-            return dataset_metadata.domaine_name.upper() + variable in dataset
+            return dataset_metadata.domain_name.upper() + variable in dataset
         elif "RDOMAIN" in dataset:
             return variable in dataset
 
