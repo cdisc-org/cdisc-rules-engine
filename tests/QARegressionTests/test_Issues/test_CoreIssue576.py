@@ -5,13 +5,22 @@ import pytest
 from conftest import get_python_executable
 
 
+""" These tests utilize positive and negative dataset
+to validate successful working CG0202. Positive
+dataset have supp datasets so rule should run
+successfully. while Negative datasets have no
+supp datasets so rule should be skipped. The
+succesfuly running against postive dataset means
+the scope skip problem is resolved """
+
+
 @pytest.mark.regression
 def test_negative_dataset():
     command = (
         f"{get_python_executable()} -m core test -s sdtmig -v 3.4 -r "
-        + os.path.join("tests", "resources", "CoreIssue576", "rule.json")
+        + os.path.join("tests", "resources", "CoreIssue576", "Rule_underscores.json")
         + " -dp "
-        + os.path.join("tests", "resources", "CoreIssue576", "Negative_Dataset.json")
+        + os.path.join("tests", "resources", "CoreIssue576", "Datasets_Negative.json")
     )
 
     # Construct the command
@@ -22,48 +31,36 @@ def test_negative_dataset():
     stdout, stderr = process.communicate()
 
     file_name = stdout.decode().strip().split(": ")[1] + ".xlsx"
-    print(file_name)
     # Open the Excel file
     workbook = openpyxl.load_workbook(file_name)
 
     # Go to the "Issue Details" sheet
-    sheet = workbook["Issue Details"]
+    Issues_Sheet = workbook["Issue Details"]
+    Dataset_Sheet = workbook["Dataset Details"]
+    Rules_Sheet = workbook["Rules Report"]
 
-    record_column = sheet["F"]
-    variables_column = sheet["H"]
-    values_column = sheet["I"]
+    COREID_Column = Issues_Sheet["A"]
+    Dataset_Column = Dataset_Sheet["A"]
+    Rule_Status_Column = Rules_Sheet["G"]
 
-    record_values = [cell.value for cell in record_column[1:]]
-    variables_values = [cell.value for cell in variables_column[1:]]
-    values_column_values = [cell.value for cell in values_column[1:]]
+    COREID_Values = [cell.value for cell in COREID_Column[1:]]
+    Dataset_Values = [cell.value for cell in Dataset_Column[1:]]
+    Rule_Status_Column_values = [cell.value for cell in Rule_Status_Column[1:]]
 
     # Remove None values using list comprehension
-    record_values = [value for value in record_values if value is not None]
-    variables_values = [value for value in variables_values if value is not None]
-    values_column_values = [
-        value for value in values_column_values if value is not None
+    COREID_Values = [value for value in COREID_Values if value is not None]
+    Dataset_Values = [value for value in Dataset_Values if value is not None]
+    Rule_Status_Column_values = [
+        value for value in Rule_Status_Column_values if value is not None
     ]
 
     # Perform the assertion
-    # Ensure only two negative values are caught
-    assert len(record_values) == 4
-    assert len(variables_values) == 4
-    assert len(values_column_values) == 4
+    assert Dataset_Values[0] == "dm.xpt"
+    assert len(Dataset_Values) == 1
 
-    # Ensure negatives are detected at correct rows in dataset
-    assert record_values[0] == 7
-    assert record_values[1] == 8
-    assert record_values[2] == 9
-    assert record_values[3] == 10
+    assert len(COREID_Values) == 0
 
-    # Ensure correct variable is marked as negative
-    assert variables_values[0] == variables_values[1] == "RELID, USUBJID"
-
-    # Ensure correct values were marked negatives
-    assert values_column_values[0] == "AECM1, CDISC001"
-    assert values_column_values[1] == "AECM2, CDISC001"
-    assert values_column_values[2] == "AECM3, CDISC001"
-    assert values_column_values[3] == "AECM4, CDISC001"
+    assert Rule_Status_Column_values[0] == "SKIPPED"
 
     # Close the workbook
     workbook.close()
@@ -76,9 +73,9 @@ def test_negative_dataset():
 def test_positive_dataset():
     command = (
         f"{get_python_executable()} -m core test -s sdtmig -v 3.4 -r "
-        + os.path.join("tests", "resources", "CoreIssue576", "rule.json")
+        + os.path.join("tests", "resources", "CoreIssue576", "Rule_underscores.json")
         + " -dp "
-        + os.path.join("tests", "resources", "CoreIssue576", "Positive_Dataset.json")
+        + os.path.join("tests", "resources", "CoreIssue576", "Datasets_positive.json")
     )
 
     # Construct the command
@@ -89,33 +86,36 @@ def test_positive_dataset():
     stdout, stderr = process.communicate()
 
     file_name = stdout.decode().strip().split(": ")[1] + ".xlsx"
-    print(file_name)
     # Open the Excel file
     workbook = openpyxl.load_workbook(file_name)
 
     # Go to the "Issue Details" sheet
-    sheet = workbook["Issue Details"]
+    Issues_Sheet = workbook["Issue Details"]
+    Dataset_Sheet = workbook["Dataset Details"]
+    Rules_Sheet = workbook["Rules Report"]
 
-    record_column = sheet["F"]
-    variables_column = sheet["H"]
-    values_column = sheet["I"]
+    COREID_Column = Issues_Sheet["A"]
+    Dataset_Column = Dataset_Sheet["A"]
+    Rule_Status_Column = Rules_Sheet["G"]
 
-    record_values = [cell.value for cell in record_column[1:]]
-    variables_values = [cell.value for cell in variables_column[1:]]
-    values_column_values = [cell.value for cell in values_column[1:]]
+    COREID_Values = [cell.value for cell in COREID_Column[1:]]
+    Dataset_Values = [cell.value for cell in Dataset_Column[1:]]
+    Rule_Status_Column_values = [cell.value for cell in Rule_Status_Column[1:]]
 
     # Remove None values using list comprehension
-    record_values = [value for value in record_values if value is not None]
-    variables_values = [value for value in variables_values if value is not None]
-    values_column_values = [
-        value for value in values_column_values if value is not None
+    COREID_Values = [value for value in COREID_Values if value is not None]
+    Dataset_Values = [value for value in Dataset_Values if value is not None]
+    Rule_Status_Column_values = [
+        value for value in Rule_Status_Column_values if value is not None
     ]
 
     # Perform the assertion
-    # Ensure only two negative values are caught
-    assert len(record_values) == 0
-    assert len(variables_values) == 0
-    assert len(values_column_values) == 0
+    assert Dataset_Values[0] == "suppae.xpt"
+    assert Dataset_Values[1] == "suppec.xpt"
+
+    assert len(COREID_Values) == 0
+
+    assert Rule_Status_Column_values[0] == "SUCCESS"
 
     # Close the workbook
     workbook.close()
