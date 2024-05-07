@@ -1,5 +1,7 @@
 from typing import List
 from cdisc_rules_engine.config.config import ConfigService
+from cdisc_rules_engine.models.dataset.dask_dataset import DaskDataset
+from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
@@ -21,89 +23,83 @@ from cdisc_rules_engine.services.cache import InMemoryCacheService
 from cdisc_rules_engine.services.data_services import LocalDataService
 from cdisc_rules_engine.services.data_readers import DataReaderFactory
 
-
-@pytest.mark.parametrize(
-    "model_metadata, standard_metadata",
-    [
-        (
-            {
-                "datasets": [
-                    {
-                        "_links": {"parentClass": {"title": "Events"}},
-                        "name": "AE",
-                        "datasetVariables": [
-                            {
-                                "name": "AETERM",
-                                "ordinal": 4,
-                            },
-                            {
-                                "name": "AESEQ",
-                                "ordinal": 3,
-                            },
-                        ],
-                    }
-                ],
-                "classes": [
-                    {
-                        "name": "Events",
-                        "label": "Events",
-                        "classVariables": [
-                            {"name": "--TERM", "ordinal": 1},
-                            {"name": "--SEQ", "ordinal": 2},
-                        ],
-                    },
-                    {
-                        "name": GENERAL_OBSERVATIONS_CLASS,
-                        "label": GENERAL_OBSERVATIONS_CLASS,
-                        "classVariables": [
-                            {
-                                "name": "DOMAIN",
-                                "role": VariableRoles.IDENTIFIER.value,
-                                "ordinal": 2,
-                            },
-                            {
-                                "name": "STUDYID",
-                                "role": VariableRoles.IDENTIFIER.value,
-                                "ordinal": 1,
-                            },
-                            {
-                                "name": "TIMING_VAR",
-                                "role": VariableRoles.TIMING.value,
-                                "ordinal": 33,
-                            },
-                        ],
-                    },
-                ],
-            },
-            {
-                "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
-                "classes": [
-                    {
-                        "name": "Events",
-                        "datasets": [
-                            {
-                                "name": "AE",
-                                "label": "Adverse Events",
-                                "datasetVariables": [
-                                    {"name": "AETEST", "ordinal": 1},
-                                    {"name": "AENEW", "ordinal": 2},
-                                ],
-                            }
-                        ],
-                    }
-                ],
-            },
-        )
+model_metadata = {
+    "datasets": [
+        {
+            "_links": {"parentClass": {"title": "Events"}},
+            "name": "AE",
+            "datasetVariables": [
+                {
+                    "name": "AETERM",
+                    "ordinal": 4,
+                },
+                {
+                    "name": "AESEQ",
+                    "ordinal": 3,
+                },
+            ],
+        }
     ],
-)
-def test_get_column_order_from_library(
-    operation_params: OperationParams, model_metadata: dict, standard_metadata: dict
-):
+    "classes": [
+        {
+            "name": "Events",
+            "label": "Events",
+            "classVariables": [
+                {"name": "--TERM", "ordinal": 1},
+                {"name": "--SEQ", "ordinal": 2},
+            ],
+        },
+        {
+            "name": GENERAL_OBSERVATIONS_CLASS,
+            "label": GENERAL_OBSERVATIONS_CLASS,
+            "classVariables": [
+                {
+                    "name": "DOMAIN",
+                    "role": VariableRoles.IDENTIFIER.value,
+                    "ordinal": 2,
+                },
+                {
+                    "name": "STUDYID",
+                    "role": VariableRoles.IDENTIFIER.value,
+                    "ordinal": 1,
+                },
+                {
+                    "name": "TIMING_VAR",
+                    "role": VariableRoles.TIMING.value,
+                    "ordinal": 33,
+                },
+            ],
+        },
+    ],
+}
+
+standard_metadata = {
+    "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
+    "classes": [
+        {
+            "name": "Events",
+            "datasets": [
+                {
+                    "name": "AE",
+                    "label": "Adverse Events",
+                    "datasetVariables": [
+                        {"name": "AETEST", "ordinal": 1},
+                        {"name": "AENEW", "ordinal": 2},
+                    ],
+                }
+            ],
+        }
+    ],
+}
+
+
+@pytest.mark.parametrize("dataset_type", [(PandasDataset), (DaskDataset)])
+def test_get_column_order_from_library(operation_params: OperationParams, dataset_type):
     """
     Unit test for DataProcessor.get_column_order_from_library.
     Mocks cache call to return metadata.
     """
-    operation_params.dataframe = pd.DataFrame.from_dict(
+    operation_params.dataframe = dataset_type.from_dict(
         {
             "STUDYID": [
                 "TEST_STUDY",
@@ -244,7 +240,7 @@ def test_get_findings_class_column_order_from_library(
     Unit test for DataProcessor.get_column_order_from_library.
     Mocks cache call to return metadata.
     """
-    operation_params.dataframe = pd.DataFrame.from_dict(
+    operation_params.dataframe = PandasDataset.from_dict(
         {
             "STUDYID": [
                 "TEST_STUDY",

@@ -8,5 +8,5 @@ class Mean(BaseOperation):
         else:
             result = self.params.dataframe.groupby(
                 self.params.grouping, as_index=False
-            ).mean()
+            ).data.mean()
         return result

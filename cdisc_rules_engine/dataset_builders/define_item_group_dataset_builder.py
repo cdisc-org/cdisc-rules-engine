@@ -1,5 +1,4 @@
 from cdisc_rules_engine.dataset_builders.base_dataset_builder import BaseDatasetBuilder
-import pandas as pd
 from typing import List
 
 
@@ -20,4 +19,4 @@ class DefineItemGroupDatasetBuilder(BaseDatasetBuilder):
         item_group_metadata: List[dict] = self.get_define_xml_item_group_metadata(
             self.domain,
         )
-        return pd.DataFrame([item_group_metadata])
+        return self.dataset_implementation([item_group_metadata])
