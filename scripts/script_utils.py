@@ -203,7 +203,7 @@ def load_rules_from_local(args) -> List[dict]:
         missing_keys = keys - rule_data.keys()
         if missing_keys:
             missing_keys_str = ", ".join(missing_keys)
-            raise ValueError(
+            engine_logger.warning(
                 f"Specified rules not found in the local directory: {missing_keys_str}"
             )
 
