@@ -103,4 +103,5 @@ class RedisCacheService(CacheServiceInterface):
         return {key: pickle.loads(value) for key, value in key_value_pairs}
 
     def add_all(self, data: dict):
-        raise NotImplementedError("Method add_all not implemented in RedisCacheService")
+        for key, val in data.items():
+            self.add(key, val)

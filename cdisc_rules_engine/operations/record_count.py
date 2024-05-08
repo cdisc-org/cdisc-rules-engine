@@ -24,7 +24,7 @@ class RecordCount(BaseOperation):
             group_df = (
                 (filtered if filtered is not None else self.params.dataframe)
                 .groupby(self.params.grouping, as_index=False)
-                .size()
+                .data.size()
             )
             return group_df
         return result

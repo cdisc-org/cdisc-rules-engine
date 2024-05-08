@@ -1,10 +1,11 @@
 from cdisc_rules_engine.config.config import ConfigService
+from cdisc_rules_engine.models.dataset.dask_dataset import DaskDataset
+from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
 import pandas as pd
 import pytest
-
 from typing import List
 
 from cdisc_rules_engine.models.operation_params import OperationParams
@@ -40,6 +41,7 @@ test_set1 = (
             "C141663": {"extensible": False, "allowed_terms": []},
         },
     ],
+    PandasDataset,
     {"C141663", "C25473", "C49487"},
 )
 
@@ -73,18 +75,20 @@ test_set2 = (
             "C141663": {"extensible": False, "allowed_terms": []},
         },
     ],
+    DaskDataset,
     {"C141656", "C141663", "C141657"},
 )
 
 
 @pytest.mark.parametrize(
-    "ct_packages, ts_data, ct_data, ct_list", [test_set1, test_set2]
+    "ct_packages, ts_data, ct_data, dataset_type, ct_list", [test_set1, test_set2]
 )
 def test_get_codelist_attributes(
     operation_params: OperationParams,
     ct_packages,
     ts_data: dict,
     ct_data: list,
+    dataset_type,
     ct_list,
 ):
     """
@@ -92,7 +96,7 @@ def test_get_codelist_attributes(
     Mocks cache call to return metadata.
     """
     # 1.0 set parameters
-    operation_params.dataframe = pd.DataFrame.from_dict(ts_data)
+    operation_params.dataframe = dataset_type.from_dict(ts_data)
     operation_params.domain = "TS"
     operation_params.standard = "sdtmig"
     operation_params.standard_version = "3-4"
