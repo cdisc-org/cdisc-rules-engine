@@ -183,8 +183,8 @@ def test_get_dataset_class(datasets, data, expected_class, filename):
             None,
             "",
             "",
-            None,
             "",
+            None,
         )
     )
     data_service = LocalDataService(
@@ -249,8 +249,8 @@ def test_get_dataset_class_associated_domains():
                 None,
                 "",
                 "",
-                None,
                 "",
+                None,
             )
         )
         data_service = LocalDataService(
