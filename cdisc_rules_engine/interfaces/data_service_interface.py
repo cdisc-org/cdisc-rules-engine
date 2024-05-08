@@ -95,7 +95,6 @@ class DataServiceInterface(ABC):
         file_path: str,
         datasets: List[dict],
         domain: str,
-        dataset_metadata: DatasetMetadata,
     ) -> Optional[str]:
         """
         Returns dataset class based on its contents

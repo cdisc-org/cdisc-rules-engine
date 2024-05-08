@@ -646,41 +646,6 @@ def test_validate_dataset_metadata_wrong_metadata(
 
 
 @patch(
-    "cdisc_rules_engine.services.data_services.LocalDataService."
-    "get_dataset_contents_metadata"
-)
-@patch("cdisc_rules_engine.services.data_services.LocalDataService.read_metadata")
-def test_validate_dataset_contents_metadata(
-    mock_get_contents_metadata, mock_read_metadata
-):
-    """
-    Unit test that checks dataset contents metadata validation.
-    """
-    mock_read_metadata.return_value = {
-        "variable_names": [["var1", "var2"]],
-        "variable_labels": [["Label 1", "Label 2"]],
-        "variable_formats": [["format1", "format2"]],
-        "variable_name_to_size_map": [{"var1": 10, "var2": 20}],
-        "variable_name_to_label_map": [{"var1": "Label 1", "var2": "Label 2"}],
-        "variable_name_to_data_type_map": [{"var1": "int", "var2": "float"}],
-    }
-
-    expected_df = pd.DataFrame(
-        {
-            "variable_names": [["var1", "var2"]],
-            "variable_labels": [["Label 1", "Label 2"]],
-            "variable_formats": [["format1", "format2"]],
-            "variable_name_to_size_map": [{"var1": 10, "var2": 20}],
-            "variable_name_to_label_map": [{"var1": "Label 1", "var2": "Label 2"}],
-            "variable_name_to_data_type_map": [{"var1": "int", "var2": "float"}],
-        }
-    )
-    mock_get_contents_metadata.return_value = expected_df
-    result_df = mock_get_contents_metadata("some_dataset")
-    pd.testing.assert_frame_equal(result_df, expected_df)
-
-
-@patch(
     "cdisc_rules_engine.services.data_services.LocalDataService.get_variables_metadata",
 )
 def test_validate_variable_metadata(
@@ -2104,45 +2069,22 @@ def test_dataset_references_invalid_whodrug_terms(
     ]
 
 
+@patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset")
 @patch(
-    "cdisc_rules_engine.services.data_services"
-    ".LocalDataService.get_dataset_contents_metadata"
+    "cdisc_rules_engine.services.data_services.LocalDataService.get_variables_metadata"
 )
 @patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset_class")
 def test_validate_variables_order_against_library_metadata(
     mock_get_dataset_class: MagicMock,
-    mock_get_dataset_contents_metadata: MagicMock,
+    mock_get_variables_metadata: MagicMock,
+    mock_get_dataset: MagicMock,
     rule_validate_columns_order_against_library_metadata: dict,
 ):
     """
     The test validates order of dataset columns against the library metadata.
     """
     # mock dataset download
-    mock_get_dataset_contents_metadata.return_value = pd.DataFrame.from_dict(
-        {
-            "variable_names": [["STUDYID", "DOMAIN", "AESEQ", "AETERM"]],
-            "variable_labels": [
-                ["Study Identifier", "Domain", "Sequence", "Adverse Event Term"]
-            ],
-            "variable_formats": [["$CHAR", "$NUM", "$CHAR", "$CHAR"]],
-            "variable_name_to_size_map": [
-                {"STUDYID": 12, "DOMAIN": 8, "AESEQ": 8, "AETERM": 8}
-            ],
-            "variable_name_to_label_map": [
-                {
-                    "STUDYID": "Study Identifier",
-                    "DOMAIN": "Domain",
-                    "AESEQ": "Sequence",
-                    "AETERM": "Adverse Event Term",
-                }
-            ],
-            "variable_name_to_data_type_map": [
-                {"STUDYID": "Char", "DOMAIN": "Char", "AESEQ": "Num", "AETERM": "Char"}
-            ],
-        }
-    )
-
-    mock_data = pd.DataFrame.from_dict(
+    dataset_df = pd.DataFrame.from_dict(
         {
             "DOMAIN": [
                 "AE",
@@ -2162,9 +2104,15 @@ def test_validate_variables_order_against_library_metadata(
             ],
         }
     )
+    mock_get_dataset.return_value = dataset_df
 
     standard: str = "sdtmig"
     standard_version: str = "3-1-2"
+
+    mock_get_variables_metadata.return_value = pd.DataFrame.from_dict(
+        {"variable_name": dataset_df.columns.tolist()}
+    )
+
     mock_get_dataset_class.return_value = "EVENTS"
 
     # fill cache
@@ -2220,55 +2168,47 @@ def test_validate_variables_order_against_library_metadata(
     library_metadata = LibraryMetadataContainer(
         model_metadata=cache_data, standard_metadata=standard_data
     )
-
-    with patch(
-        "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
-        return_value=mock_data,
-    ):
-        # run validation
-        engine = RulesEngine(
-            cache=cache,
-            standard=standard,
-            standard_version=standard_version,
-            library_metadata=library_metadata,
-        )
-        result: List[dict] = engine.validate_single_rule(
-            rule_validate_columns_order_against_library_metadata,
-            "dataset_path",
-            [
-                {"domain": "AE", "filename": "ae.xpt"},
-            ],
-            "AE",
-        )
-        assert result == [
-            {
-                "executionStatus": "success",
-                "domain": "AE",
-                "variables": [
-                    "$column_order_from_dataset",
-                    "$column_order_from_library",
-                ],
-                "message": RuleProcessor.extract_message_from_rule(
-                    rule_validate_columns_order_against_library_metadata
-                ),
-                "errors": [
-                    {
-                        "value": {
-                            "$column_order_from_library": [
-                                "STUDYID",
-                                "DOMAIN",
-                                "AETERM",
-                                "AESEQ",
-                                "TIMING_VAR",
-                            ],
-                            "$column_order_from_dataset": [
-                                "DOMAIN",
-                                "AESEQ",
-                                "STUDYID",
-                                "AETERM",
-                            ],
-                        }
+    # run validation
+    engine = RulesEngine(
+        cache=cache,
+        standard=standard,
+        standard_version=standard_version,
+        library_metadata=library_metadata,
+    )
+    result: List[dict] = engine.validate_single_rule(
+        rule_validate_columns_order_against_library_metadata,
+        "dataset_path",
+        [
+            {"domain": "AE", "filename": "ae.xpt"},
+        ],
+        "AE",
+    )
+    assert result == [
+        {
+            "executionStatus": "success",
+            "domain": "AE",
+            "variables": ["$column_order_from_dataset", "$column_order_from_library"],
+            "message": RuleProcessor.extract_message_from_rule(
+                rule_validate_columns_order_against_library_metadata
+            ),
+            "errors": [
+                {
+                    "value": {
+                        "$column_order_from_library": [
+                            "STUDYID",
+                            "DOMAIN",
+                            "AETERM",
+                            "AESEQ",
+                            "TIMING_VAR",
+                        ],
+                        "$column_order_from_dataset": [
+                            "DOMAIN",
+                            "AESEQ",
+                            "STUDYID",
+                            "AETERM",
+                        ],
                     }
-                ],
-            }
-        ]
+                }
+            ],
+        }
+    ]

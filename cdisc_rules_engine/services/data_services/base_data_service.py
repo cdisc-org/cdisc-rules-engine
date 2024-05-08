@@ -21,7 +21,6 @@ from cdisc_rules_engine.constants.classes import (
     RELATIONSHIP,
 )
 from cdisc_rules_engine.models.dataset_types import DatasetTypes
-from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.services.cdisc_library_service import CDISCLibraryService
 from cdisc_rules_engine.services.data_readers import DataReaderFactory
@@ -162,7 +161,6 @@ class BaseDataService(DataServiceInterface, ABC):
         file_path: str,
         datasets: List[dict],
         domain: str,
-        dataset_metadata: DatasetMetadata,
     ) -> Optional[str]:
         if self.standard is None or self.version is None:
             raise Exception("Missing standard and version data")
@@ -174,9 +172,7 @@ class BaseDataService(DataServiceInterface, ABC):
         if name:
             return convert_library_class_name_to_ct_class(name)
 
-        return self._handle_special_cases(
-            dataset, domain, file_path, datasets, dataset_metadata
-        )
+        return self._handle_special_cases(dataset, domain, file_path, datasets)
 
     def _get_standard_data(self):
         return (
@@ -186,46 +182,39 @@ class BaseDataService(DataServiceInterface, ABC):
             )
         )
 
-    def _handle_special_cases(
-        self, dataset, domain, file_path, datasets, dataset_metadata
-    ):
-        if self._contains_topic_variable(dataset, dataset_metadata, "TERM"):
+    def _handle_special_cases(self, dataset, domain, file_path, datasets):
+        if self._contains_topic_variable(dataset, domain, "TERM"):
             return EVENTS
-        if self._contains_topic_variable(dataset, dataset_metadata, "TRT"):
+        if self._contains_topic_variable(dataset, domain, "TRT"):
             return INTERVENTIONS
-        if self._contains_topic_variable(dataset, dataset_metadata, "QNAM"):
+        if self._contains_topic_variable(dataset, domain, "QNAM"):
             return RELATIONSHIP
-        if self._contains_topic_variable(dataset, dataset_metadata, "TESTCD"):
-            if self._contains_topic_variable(dataset, dataset_metadata, "OBJ"):
+        if self._contains_topic_variable(dataset, domain, "TESTCD"):
+            if self._contains_topic_variable(dataset, domain, "OBJ"):
                 return FINDINGS_ABOUT
             return FINDINGS
-        if self._is_associated_persons(dataset, dataset_metadata):
+        if self._is_associated_persons(dataset, domain):
             return self._get_associated_persons_inherit_class(
-                dataset, file_path, datasets, dataset_metadata
+                dataset, file_path, datasets, domain
             )
         return None
 
-    def _is_associated_persons(self, dataset, dataset_metadata) -> bool:
+    def _is_associated_persons(self, dataset, domain) -> bool:
         """
         Check if AP-- domain.
         """
         return (
             "DOMAIN" in dataset
-            and self._domain_starts_with(dataset_metadata, "AP")
-            and len(dataset_metadata.domain_name) == AP_DOMAIN_LENGTH
+            and self._domain_starts_with(domain, "AP")
+            and len(domain) == AP_DOMAIN_LENGTH
         )
 
     def _get_associated_persons_inherit_class(
-        self,
-        dataset,
-        file_path,
-        datasets: List[dict],
-        dataset_metadata: DatasetMetadata,
+        self, dataset, file_path, datasets: List[dict], domain: str
     ):
         """
         Check with inherit class AP-- belongs to.
         """
-        domain = dataset_metadata.domain_name
         ap_suffix = domain[2:]
         directory_path = get_directory_path(file_path)
         if len(datasets) > 1:
@@ -236,9 +225,6 @@ class BaseDataService(DataServiceInterface, ABC):
                 file_name = domain_details["filename"]
                 new_file_path = os.path.join(directory_path, file_name)
                 new_domain_dataset = self.get_dataset(dataset_name=new_file_path)
-                new_dataset_metadata = self.get_raw_dataset_metadata(
-                    dataset_name=new_file_path
-                )
             else:
                 raise ValueError("Filename for domain doesn't exist")
             if self._is_associated_persons(new_domain_dataset):
@@ -248,12 +234,11 @@ class BaseDataService(DataServiceInterface, ABC):
                 new_file_path,
                 datasets,
                 domain_details["domain"],
-                new_dataset_metadata,
             )
         else:
             return None
 
-    def _contains_topic_variable(self, dataset, dataset_metadata, variable):
+    def _contains_topic_variable(self, dataset, domain, variable):
         """
         Checks if the given dataset-class string ends with a particular variable string.
         Returns True/False
@@ -261,17 +246,17 @@ class BaseDataService(DataServiceInterface, ABC):
         if "DOMAIN" not in dataset and "RDOMAIN" not in dataset:
             return False
         elif "DOMAIN" in dataset:
-            return dataset_metadata.domain_name.upper() + variable in dataset
+            return domain.upper() + variable in dataset
         elif "RDOMAIN" in dataset:
             return variable in dataset
 
-    def _domain_starts_with(self, dataset_metadata, variable):
+    def _domain_starts_with(self, domain, variable):
         """
         Checks if the given dataset-class string starts with
          a particular variable string.
         Returns True/False
         """
-        return dataset_metadata.domain_name.startswith(variable)
+        return domain.startswith(variable)
 
     @staticmethod
     def _replace_nans_in_numeric_cols_with_none(dataset: pd.DataFrame):

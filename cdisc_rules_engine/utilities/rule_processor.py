@@ -185,11 +185,8 @@ class RuleProcessor:
                     dataset_name=file_path
                 ).variable_name
             )
-            dataset_metadata = self.data_service.get_raw_dataset_metadata(
-                dataset_name=file_path
-            )
             class_name = self.data_service.get_dataset_class(
-                variables, file_path, datasets, domain, dataset_metadata
+                variables, file_path, datasets, domain
             )
             if (class_name not in included_classes) and not (
                 class_name == FINDINGS_ABOUT and FINDINGS in included_classes
@@ -202,11 +199,8 @@ class RuleProcessor:
                     dataset_name=file_path
                 ).variable_name
             )
-            dataset_metadata = self.data_service.get_raw_dataset_metadata(
-                dataset_name=file_path
-            )
             class_name = self.data_service.get_dataset_class(
-                variables, file_path, datasets, domain, dataset_metadata
+                variables, file_path, datasets, domain
             )
             if class_name and (
                 (class_name in excluded_classes)

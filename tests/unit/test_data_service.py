@@ -85,102 +85,84 @@ def test_get_raw_dataset_metadata(
 
 
 @pytest.mark.parametrize(
-    "datasets, data, expected_class, filename, domain_name",
+    "datasets, data, expected_class, filename",
     [
         (
             [{"domain": "AE", "filename": "ae.xpt"}],
             {"DOMAIN": ["AE"], "AETERM": ["test"]},
             EVENTS,
             "ae.xpt",
-            "AE",
         ),
         (
             [{"domain": "CM", "filename": "cm.xpt"}],
             {"DOMAIN": ["CM"], "CMTRT": ["test"]},
             INTERVENTIONS,
             "cm.xpt",
-            "CM",
         ),
         (
             [{"domain": "VS", "filename": "vs.xpt"}],
             {"DOMAIN": ["VS"], "VSTESTCD": ["test"]},
             FINDINGS,
             "vs.xpt",
-            "VS",
         ),
         (
             [{"domain": "FA", "filename": "fa.xpt"}],
             {"DOMAIN": ["FA"], "FATESTCD": ["test"], "FAOBJ": ["test"]},
             FINDINGS_ABOUT,
             "fa.xpt",
-            "FA",
         ),
         (
             [{"domain": "FA", "filename": "famh.xpt"}],
             {"DOMAIN": ["FA"], "FATESTCD": ["test"], "FAOBJ": ["test"]},
             FINDINGS_ABOUT,
             "famh.xpt",
-            "FA",
         ),
         (
             [{"domain": "RELREC", "filename": "relrec.xpt"}],
             {"RDOMAIN": ["AE"], "IDVAR": ["test"], "POOLID": ["test"]},
             RELATIONSHIP,
             "relrec.xpt",
-            "AE",
         ),
         (
             [{"domain": "SUPPAE", "filename": "suppae.xpt"}],
             {"RDOMAIN": ["AE"], "IDVAR": ["test"], "QNAM": ["test"]},
             RELATIONSHIP,
             "suppae.xpt",
-            "AE",
         ),
         (
             [{"domain": "SQAPFAMH", "filename": "sqapfamh.xpt"}],
             {"RDOMAIN": ["APFAMH"], "IDVAR": ["test"], "QNAM": ["test"]},
             RELATIONSHIP,
             "sqapfamh.xpt",
-            "APFAMH",
         ),
         (
             [{"domain": "OI", "filename": "oi.xpt"}],
             {"DOMAIN": ["OI"], "OIPARMCD": ["test"], "OIPARM": ["test"]},
             STUDY_REFERENCE,
             "oi.xpt",
-            "OI",
         ),
         (
             [{"domain": "TS", "filename": "ts.xpt"}],
             {"DOMAIN": ["TS"], "TSPARMCD": ["test"], "TSPARM": ["test"]},
             TRIAL_DESIGN,
             "ts.xpt",
-            "TS",
         ),
         (
             [{"domain": "XX", "filename": "xx.xpt"}],
             {"DOMAIN": ["XX"], "XXOBJ": ["test"]},
             None,
             "xx.xpt",
-            "XX",
         ),
-        (
-            [{"domain": "XY", "filename": "xy.xpt"}],
-            {"UNKNOWN": ["test"]},
-            None,
-            "None",
-            "XY",
-        ),
+        ([{"domain": "XY", "filename": "xy.xpt"}], {"UNKNOWN": ["test"]}, None, "None"),
         (
             [{"domain": "DM", "filename": "dm.xpt"}],
             {"UNKNOWN": ["test"]},
             "SPECIAL PURPOSE",
             "dm.xpt",
-            "DM",
         ),
     ],
 )
-def test_get_dataset_class(datasets, data, expected_class, filename, domain_name):
+def test_get_dataset_class(datasets, data, expected_class, filename):
     df = pd.DataFrame.from_dict(data)
     mock_cache_service = MagicMock()
     library_metadata: LibraryMetadataContainer = get_library_metadata_from_cache(
@@ -201,18 +183,9 @@ def test_get_dataset_class(datasets, data, expected_class, filename, domain_name
             None,
             "",
             "",
-            "",
             None,
+            "",
         )
-    )
-    dataset_metadata = DatasetMetadata(
-        name="Test Dataset",
-        domain_name=domain_name,
-        label="Test Label",
-        modification_date="2023-05-07",
-        filename=filename,
-        size=1024,
-        records="10",
     )
     data_service = LocalDataService(
         mock_cache_service,
@@ -223,7 +196,7 @@ def test_get_dataset_class(datasets, data, expected_class, filename, domain_name
         library_metadata=library_metadata,
     )
     class_name = data_service.get_dataset_class(
-        df, filename, datasets, datasets[0].get("domain"), dataset_metadata
+        df, filename, datasets, datasets[0].get("domain")
     )
     assert class_name == expected_class
 
@@ -237,11 +210,7 @@ def test_get_dataset_class_without_standard_and_version():
     data_service = LocalDataService(mock_cache_service, MagicMock(), MagicMock())
     with pytest.raises(Exception):
         data_service.get_dataset_class(
-            df,
-            "dm.xpt",
-            [{"domain": "DM", "filename": "dm.xpt"}],
-            "DM",
-            DatasetMetadata(),
+            df, "dm.xpt", [{"domain": "DM", "filename": "dm.xpt"}], "DM"
         )
 
 
@@ -280,8 +249,8 @@ def test_get_dataset_class_associated_domains():
                 None,
                 "",
                 "",
-                "",
                 None,
+                "",
             )
         )
         data_service = LocalDataService(
@@ -293,17 +262,8 @@ def test_get_dataset_class_associated_domains():
             library_metadata=library_metadata,
         )
         filepath = f"{data_bundle_path}/ce.xpt"
-        dataset_metadata = DatasetMetadata(
-            name="Test CE Dataset",
-            domain_name="CE",
-            label="Clinical Events",
-            modification_date="2024-05-07",
-            filename=filepath,
-            size=1024,
-            records="50",
-        )
         class_name = data_service.get_dataset_class(
-            ap_dataset, filepath, datasets, "CE", dataset_metadata
+            ap_dataset, filepath, datasets, "CE"
         )
         assert class_name == EVENTS
 
