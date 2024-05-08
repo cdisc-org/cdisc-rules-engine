@@ -120,14 +120,14 @@ class BaseDefineXMLReader(ABC):
             domain_metadata = self._get_domain_metadata(metadata, domain_name)
             variables_metadata = []
             codelist_map = self._get_codelist_def_map(metadata.CodeList)
-            for itemref in domain_metadata.ItemRef:
+            for index, itemref in enumerate(domain_metadata.ItemRef):
                 itemdef = [
                     item for item in metadata.ItemDef if item.OID == itemref.ItemOID
                 ]
                 if itemdef:
                     variables_metadata.append(
                         self._get_item_def_representation(
-                            itemdef[0], itemref, codelist_map
+                            itemdef[0], itemref, codelist_map, index
                         )
                     )
         except ValueError as e:
@@ -184,12 +184,15 @@ class BaseDefineXMLReader(ABC):
             }
             for define_variable_name, value_list_id in referenced_value_list_ids:
                 value_list = value_lists.get(value_list_id)
-                for item_ref in value_list.ItemRef:
+                for index, item_ref in enumerate(value_list.ItemRef):
                     vlm = value_level_metadata_map.get(
                         item_ref.WhereClauseRef[0].WhereClauseOID
                     )
                     item_data = self._get_item_def_representation(
-                        item_def_map.get(item_ref.ItemOID), item_ref, codelist_map
+                        item_def_map.get(item_ref.ItemOID),
+                        item_ref,
+                        codelist_map,
+                        index,
                     )
                     # Replace all`define_variable_...` names with `define_vlm_...` names
                     item_data = {
@@ -239,7 +242,13 @@ class BaseDefineXMLReader(ABC):
             codelists[codelist.OID] = codelist
         return codelists
 
-    def _get_item_def_representation(self, itemdef, itemref, codelists) -> dict:
+    def _get_order_number(self, itemref, index):
+        if itemref.OrderNumber is not None:
+            return itemref.OrderNumber
+        else:
+            return index + 1
+
+    def _get_item_def_representation(self, itemdef, itemref, codelists, index) -> dict:
         """
         Returns item def as a dictionary
         """
@@ -290,7 +299,9 @@ class BaseDefineXMLReader(ABC):
             if itemdef.Origin:
                 data["define_variable_origin_type"] = self._get_origin_type(itemdef)
             data["define_variable_has_no_data"] = getattr(itemref, "HasNoData", "")
-            data["define_variable_order_number"] = itemref.OrderNumber
+            data["define_variable_order_number"] = self._get_order_number(
+                itemref, index
+            )
             data["define_variable_has_comment"] = itemdef.CommentOID is not None
         return data
 

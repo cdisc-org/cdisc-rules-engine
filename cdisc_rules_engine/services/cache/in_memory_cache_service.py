@@ -4,8 +4,16 @@ from pympler import asizeof
 from cdisc_rules_engine.interfaces import (
     CacheServiceInterface,
 )
+from cdisc_rules_engine.models.dataset import DatasetInterface
 from cachetools import LRUCache
 import psutil
+
+
+def get_data_size(dataset):
+    if isinstance(dataset, DatasetInterface):
+        return dataset.size
+    else:
+        return asizeof.asizeof(dataset)
 
 
 class InMemoryCacheService(CacheServiceInterface):
@@ -18,13 +26,23 @@ class InMemoryCacheService(CacheServiceInterface):
         return cls._instance
 
     def __init__(self, max_size=None, **kwargs):
-        self.max_size = max_size or psutil.virtual_memory().available * 0.75
+        self.max_size = max_size or psutil.virtual_memory().available * 0.25
         self.cache = LRUCache(maxsize=self.max_size, getsizeof=asizeof.asizeof)
+        self.max_dataset_cache_size = psutil.virtual_memory().available * 0.5
+        self.dataset_cache = LRUCache(
+            maxsize=self.max_dataset_cache_size, getsizeof=get_data_size
+        )
 
     def add(self, cache_key, data):
-        if asizeof.asizeof(data) > self.max_size:
+        if get_data_size(data) > self.max_size:
             return
         self.cache[cache_key] = data
+
+    def add_dataset(self, cache_key, data):
+        self.dataset_cache[cache_key] = data
+
+    def get_dataset(self, cache_key):
+        return self.dataset_cache.get(cache_key, None)
 
     def add_batch(
         self,
@@ -51,6 +69,9 @@ class InMemoryCacheService(CacheServiceInterface):
             if key.startswith(prefix):
                 items.append(self.cache[key])
         return items
+
+    def dataset_keys(self):
+        return self.dataset_cache.keys()
 
     def filter_cache(self, prefix: str) -> dict:
         return {k: self.cache[k] for k in self.cache.keys() if k.startswith(prefix)}

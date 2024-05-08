@@ -60,7 +60,6 @@ class Rule:
                 executable_rule["datasets"] = cls.parse_datasets(
                     rule_metadata.get("Match_Datasets")
                 )
-
             if "Output_Variables" in rule_metadata.get("Outcome", {}):
                 executable_rule["output_variables"] = rule_metadata.get("Outcome", {})[
                     "Output_Variables"

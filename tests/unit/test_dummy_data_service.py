@@ -1,7 +1,6 @@
 from unittest.mock import MagicMock
 
 import numpy as np
-import pandas as pd
 
 from cdisc_rules_engine.dummy_models.dummy_dataset import DummyDataset
 from cdisc_rules_engine.services.data_services import DummyDataService
@@ -52,7 +51,6 @@ def test_get_dataset():
         MagicMock(), MagicMock(), MagicMock(), data=datasets
     )
     dataset = data_service.get_dataset("ae.xpt")
-    assert isinstance(dataset, pd.DataFrame)
     assert dataset["AESEQ"].to_list() == [
         1,
         2,
@@ -101,7 +99,6 @@ def test_get_dataset_metadata():
         MagicMock(), MagicMock(), MagicMock(), data=datasets
     )
     metadata = data_service.get_dataset_metadata("ae.xpt")
-    assert isinstance(metadata, pd.DataFrame)
     assert metadata["dataset_label"].iloc[0] == "ADVERSE EVENTS"
     assert metadata["dataset_name"].iloc[0] == "AE"
     assert metadata["dataset_size"].iloc[0] == 2000
@@ -131,7 +128,6 @@ def test_get_variables_metadata():
         MagicMock(), MagicMock(), MagicMock(), data=datasets
     )
     metadata = data_service.get_variables_metadata("/ae.xpt")
-    assert isinstance(metadata, pd.DataFrame)
     assert metadata["variable_name"].iloc[0] == "AESEQ"
     assert metadata["variable_label"].iloc[0] == "AE Sequence"
     assert metadata["variable_data_type"].iloc[0] == "integer"

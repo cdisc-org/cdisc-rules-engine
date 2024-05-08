@@ -9,12 +9,14 @@ from cdisc_rules_engine.dataset_builders.contents_define_variables_dataset_build
     ContentsDefineVariablesDatasetBuilder,
 )
 from cdisc_rules_engine.services.data_services import LocalDataService
+from cdisc_rules_engine.models.dataset import PandasDataset
 
 
 @pytest.mark.parametrize(
-    "content, variables_metadata, expected",
+    "dataset_implementation, content, variables_metadata, expected",
     [
         (
+            PandasDataset,
             {"VAR1": ["1A", "1B", "1C"], "VAR2": ["2A", "2B", "2C"]},
             {
                 "define_variable_name": ["VAR1", "VAR3"],
@@ -23,7 +25,7 @@ from cdisc_rules_engine.services.data_services import LocalDataService
                 "define_variable_role": ["VAR1 ROLE", "VAR3 ROLE"],
             },
             {
-                "row_number": [1, 2, 3, 1, 2, 3, np.nan],
+                "row_number": [1, 2, 3, 1, 2, 3, None],
                 "variable_name": [
                     "VAR1",
                     "VAR1",
@@ -84,14 +86,15 @@ from cdisc_rules_engine.services.data_services import LocalDataService
 def test_contents_define_variables_dataset_builder(
     mock_get_dataset: MagicMock,
     mock_get_define_xml_variables_metadata: MagicMock,
+    dataset_implementation,
     content,
     variables_metadata,
     expected,
 ):
-    mock_get_dataset.return_value = pd.DataFrame.from_dict(content)
+    mock_get_dataset.return_value = dataset_implementation.from_dict(content)
     mock_get_define_xml_variables_metadata.return_value = pd.DataFrame.from_dict(
         variables_metadata
-    )
+    ).to_records(index=False)
     result = ContentsDefineVariablesDatasetBuilder(
         rule=None,
         data_service=LocalDataService(MagicMock(), MagicMock(), MagicMock()),
@@ -106,4 +109,6 @@ def test_contents_define_variables_dataset_builder(
         standard_version="3-4",
         library_metadata=LibraryMetadataContainer(),
     ).build()
-    assert result.equals(pd.DataFrame.from_dict(expected))
+    expected_data = dataset_implementation.from_dict(expected)
+    expected_data.data = expected_data.data.replace(np.nan, None)
+    assert result.equals(expected_data)

@@ -1,10 +1,10 @@
 from typing import List
 from unittest.mock import Mock, patch, MagicMock
+from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
 
-import pandas as pd
 import pytest
 import os
 from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
@@ -37,11 +37,11 @@ def test_get_dataset_metadata(mock_read_metadata: MagicMock, dataset_metadata: d
     cache_mock.get = lambda cache_key: None
 
     data_service = LocalDataService(cache_mock, MagicMock(), MagicMock())
-    actual_metadata: pd.DataFrame = data_service.get_dataset_metadata(
+    actual_metadata: PandasDataset = data_service.get_dataset_metadata(
         dataset_name="dataset_name"
     )
     assert actual_metadata.equals(
-        pd.DataFrame.from_dict(
+        PandasDataset.from_dict(
             {
                 "dataset_size": [dataset_metadata["file_metadata"]["size"]],
                 "dataset_location": [dataset_metadata["file_metadata"]["name"]],
@@ -63,7 +63,7 @@ def test_get_raw_dataset_metadata(
 
     # mock cache service
     cache_mock = MagicMock()
-    cache_mock.get = lambda cache_key: None
+    cache_mock.get_dataset = lambda cache_key: None
 
     data_service = LocalDataService(cache_mock, MagicMock(), MagicMock())
     actual_metadata: DatasetMetadata = data_service.get_raw_dataset_metadata(
@@ -163,7 +163,7 @@ def test_get_raw_dataset_metadata(
     ],
 )
 def test_get_dataset_class(datasets, data, expected_class, filename):
-    df = pd.DataFrame.from_dict(data)
+    df = PandasDataset.from_dict(data)
     mock_cache_service = MagicMock()
     library_metadata: LibraryMetadataContainer = get_library_metadata_from_cache(
         Validation_args(
@@ -181,6 +181,7 @@ def test_get_dataset_class(datasets, data, expected_class, filename):
             "",
             None,
             None,
+            "",
             "",
             "",
             None,
@@ -201,7 +202,7 @@ def test_get_dataset_class(datasets, data, expected_class, filename):
 
 
 def test_get_dataset_class_without_standard_and_version():
-    df = pd.DataFrame.from_dict({"UNKNOWN": ["test"]})
+    df = PandasDataset.from_dict({"UNKNOWN": ["test"]})
     mock_cache_service = MagicMock()
     mock_cache_service.get.return_value = {
         "classes": [{"name": "SPECIAL PURPOSE", "datasets": [{"name": "DM"}]}]
@@ -218,8 +219,8 @@ def test_get_dataset_class_associated_domains():
         {"domain": "APCE", "filename": "ap.xpt"},
         {"domain": "CE", "filename": "ce.xpt"},
     ]
-    ap_dataset = pd.DataFrame.from_dict({"DOMAIN": ["APCE"]})
-    ce_dataset = pd.DataFrame.from_dict({"DOMAIN": ["CE"], "CETERM": ["test"]})
+    ap_dataset = PandasDataset.from_dict({"DOMAIN": ["APCE"]})
+    ce_dataset = PandasDataset.from_dict({"DOMAIN": ["CE"], "CETERM": ["test"]})
     data_bundle_path = "cdisc/databundle"
     path_to_dataset_map: dict = {
         os.path.join(data_bundle_path, "ap.xpt"): ap_dataset,
@@ -246,6 +247,7 @@ def test_get_dataset_class_associated_domains():
                 "",
                 None,
                 None,
+                "",
                 "",
                 "",
                 None,
@@ -284,9 +286,9 @@ def test_cached_data_cache_exists():
     cache_key: str = get_dataset_cache_key_from_path(
         test_dataset_name, DatasetTypes.CONTENTS.value
     )
-    test_cache_data: dict = {cache_key: pd.DataFrame()}
+    test_cache_data: dict = {cache_key: PandasDataset()}
     instance_to_pass = Mock()
-    instance_to_pass.cache_service.get = lambda x: test_cache_data[x]
+    instance_to_pass.cache_service.get_dataset = lambda x: test_cache_data[x]
 
     # ensure that cache data was returned
     result = to_be_decorated(instance_to_pass, dataset_name=test_dataset_name)
@@ -300,7 +302,7 @@ def test_cached_data_empty_cache():
     a wrapped function has to be called.
     """
     test_dataset_name: str = "CDISC01/test/ae.xpt"
-    test_df = pd.DataFrame.from_dict({"AETESTCD": [100]})
+    test_df = PandasDataset.from_dict({"AETESTCD": [100]})
 
     # create a test wrapped function
     @cached_dataset(DatasetTypes.CONTENTS.value)
@@ -310,9 +312,9 @@ def test_cached_data_empty_cache():
 
     # mock cache get() and add() methods
     instance_to_pass = Mock()
-    instance_to_pass.cache_service.get = lambda x: None
+    instance_to_pass.cache_service.get_dataset = lambda x: None
     mock_db = {}
-    instance_to_pass.cache_service.add = lambda key, dataset: mock_db.update(
+    instance_to_pass.cache_service.add_dataset = lambda key, dataset: mock_db.update(
         {key: dataset}
     )
 

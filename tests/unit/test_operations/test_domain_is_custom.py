@@ -1,10 +1,11 @@
 from cdisc_rules_engine.config.config import ConfigService
+from cdisc_rules_engine.models.dataset.dask_dataset import DaskDataset
+from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
+from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
 import pytest
-import pandas as pd
-
 from cdisc_rules_engine.models.operation_params import OperationParams
 from cdisc_rules_engine.operations.domain_is_custom import DomainIsCustom
 from cdisc_rules_engine.services.cache import InMemoryCacheService
@@ -15,7 +16,7 @@ from cdisc_rules_engine.services.data_services import LocalDataService
     "dataframe, domain, standard, standard_version, expected",
     [
         (
-            pd.DataFrame.from_dict(
+            PandasDataset.from_dict(
                 {
                     "STUDYID": [
                         "TEST_STUDY",
@@ -35,7 +36,27 @@ from cdisc_rules_engine.services.data_services import LocalDataService
             False,
         ),
         (
-            pd.DataFrame.from_dict(
+            DaskDataset.from_dict(
+                {
+                    "STUDYID": [
+                        "TEST_STUDY",
+                        "TEST_STUDY",
+                        "TEST_STUDY",
+                    ],
+                    "AETERM": [
+                        "test",
+                        "test",
+                        "test",
+                    ],
+                }
+            ),
+            "AE",
+            "sdtmig",
+            "3-4",
+            False,
+        ),
+        (
+            PandasDataset.from_dict(
                 {
                     "STUDYID": [
                         "TEST_STUDY",
@@ -58,7 +79,7 @@ from cdisc_rules_engine.services.data_services import LocalDataService
 )
 def test_domain_is_custom(
     operation_params: OperationParams,
-    dataframe: pd.DataFrame,
+    dataframe: DatasetInterface,
     domain: str,
     standard: str,
     standard_version: str,
@@ -85,7 +106,7 @@ def test_domain_is_custom(
         data_service,
         library_metadata,
     )
-    result: pd.DataFrame = operation.execute()
+    result = operation.execute()
     assert result[operation_params.operation_id].equals(
-        pd.Series([expected, expected, expected])
+        dataframe.convert_to_series([expected, expected, expected])
     )

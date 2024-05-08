@@ -5,7 +5,6 @@ from typing import Callable, List, Optional, Iterable, Iterator
 from concurrent.futures import ThreadPoolExecutor
 import os
 import numpy as np
-import pandas as pd
 
 from cdisc_rules_engine.constants.domains import AP_DOMAIN_LENGTH
 from cdisc_rules_engine.interfaces import (
@@ -31,6 +30,8 @@ from cdisc_rules_engine.utilities.utils import (
     search_in_list_of_dicts,
 )
 from cdisc_rules_engine.utilities.sdtm_utilities import get_class_and_domain_metadata
+from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
+from cdisc_rules_engine.models.dataset import PandasDataset
 
 
 def cached_dataset(dataset_type: str):
@@ -55,7 +56,7 @@ def cached_dataset(dataset_type: str):
                 f" wrapped function={func.__name__}"
             )
             cache_key: str = get_dataset_cache_key_from_path(dataset_name, dataset_type)
-            cache_data = instance.cache_service.get(cache_key)
+            cache_data = instance.cache_service.get_dataset(cache_key)
             if cache_data is not None:
                 logger.info(
                     f'Dataset "{dataset_name}" was found in cache.'
@@ -64,7 +65,7 @@ def cached_dataset(dataset_type: str):
                 dataset = cache_data
             else:
                 dataset = func(*args, **kwargs)
-                instance.cache_service.add(cache_key, dataset)
+                instance.cache_service.add_dataset(cache_key, dataset)
             logger.info(f"Downloaded dataset. dataset={dataset}")
             return dataset
 
@@ -97,10 +98,13 @@ class BaseDataService(DataServiceInterface, ABC):
         self.standard = kwargs.get("standard")
         self.version = (kwargs.get("standard_version") or "").replace(".", "-")
         self.library_metadata = kwargs.get("library_metadata")
+        self.dataset_implementation = kwargs.get(
+            "dataset_implementation", PandasDataset
+        )
 
     def get_dataset_by_type(
         self, dataset_name: str, dataset_type: str, **params
-    ) -> pd.DataFrame:
+    ) -> DatasetInterface:
         """
         Generic function to return dataset based on the type.
         dataset_type param can be: contents, metadata, variables_metadata.
@@ -116,7 +120,7 @@ class BaseDataService(DataServiceInterface, ABC):
 
     def concat_split_datasets(
         self, func_to_call: Callable, dataset_names: List[str], **kwargs
-    ) -> pd.DataFrame:
+    ) -> DatasetInterface:
         """
         Accepts a list of split dataset filenames, asynchronously downloads
         all of them and merges into a single DataFrame.
@@ -128,17 +132,16 @@ class BaseDataService(DataServiceInterface, ABC):
         drop_duplicates: bool = kwargs.pop("drop_duplicates", False)
 
         # download datasets asynchronously
-        datasets: Iterable[pd.DataFrame] = self._async_get_datasets(
+        datasets: Iterable[DatasetInterface] = self._async_get_datasets(
             func_to_call, dataset_names, **kwargs
         )
 
-        full_dataset = pd.DataFrame()
+        full_dataset = self.dataset_implementation()
         for dataset in datasets:
             if "RDOMAIN" in dataset.columns:
-                supp_merged_dataset = self.merge_supp_dataset(full_dataset, dataset)
-                full_dataset = supp_merged_dataset
+                full_dataset = self.merge_supp_dataset(full_dataset, dataset)
             else:
-                full_dataset = pd.concat([full_dataset, dataset], ignore_index=True)
+                full_dataset = full_dataset.concat(dataset, ignore_index=True)
 
         if drop_duplicates:
             full_dataset.drop_duplicates()
@@ -146,19 +149,21 @@ class BaseDataService(DataServiceInterface, ABC):
 
     def merge_supp_dataset(self, full_dataset, supp_dataset):
         merge_keys = ["STUDYID", "USUBJID", "APID", "POOLID", "SPDEVID"]
-        merged_df = pd.merge(
-            full_dataset,
+        merged_df = full_dataset.merge(
             supp_dataset,
             how="inner",
             on=merge_keys,
             left_on="IDVAR",
             right_on="IDVARVAL",
         )
-        print(merged_df.head())
         return merged_df
 
     def get_dataset_class(
-        self, dataset: pd.DataFrame, file_path: str, datasets: List[dict], domain: str
+        self,
+        dataset: DatasetInterface,
+        file_path: str,
+        datasets: List[dict],
+        domain: str,
     ) -> Optional[str]:
         if self.standard is None or self.version is None:
             raise Exception("Missing standard and version data")
@@ -256,18 +261,16 @@ class BaseDataService(DataServiceInterface, ABC):
         return domain.startswith(variable)
 
     @staticmethod
-    def _replace_nans_in_numeric_cols_with_none(dataset: pd.DataFrame):
+    def _replace_nans_in_numeric_cols_with_none(dataset: DatasetInterface):
         """
         Replaces NaN in numeric columns with None.
         """
-        numeric_columns = dataset.select_dtypes(include=np.number).columns
-        dataset[numeric_columns] = dataset[numeric_columns].apply(
-            lambda x: x.replace({np.nan: None})
-        )
+        numeric_columns = dataset.data.select_dtypes(include=np.number).columns
+        dataset[numeric_columns] = dataset.data[numeric_columns].replace(np.nan, None)
 
     async def _async_get_dataset(
         self, function_to_call: Callable, dataset_name: str, **kwargs
-    ) -> pd.DataFrame:
+    ) -> DatasetInterface:
         """
         Asynchronously executes passed function_to_call.
         """
@@ -278,7 +281,7 @@ class BaseDataService(DataServiceInterface, ABC):
 
     def _async_get_datasets(
         self, function_to_call: Callable, dataset_names: List[str], **kwargs
-    ) -> Iterator[pd.DataFrame]:
+    ) -> Iterator[DatasetInterface]:
         """
         The method uses multithreading to download each
         dataset in dataset_names param in parallel.
@@ -289,6 +292,6 @@ class BaseDataService(DataServiceInterface, ABC):
         """
         with ThreadPoolExecutor() as executor:
             return executor.map(
-                lambda name: function_to_call(**kwargs),
+                lambda name: function_to_call(dataset_name=name, **kwargs),
                 dataset_names,
             )

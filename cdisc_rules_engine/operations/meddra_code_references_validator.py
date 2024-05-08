@@ -32,4 +32,4 @@ class MedDRACodeReferencesValidator(BaseOperation):
             "/".join, axis=1
         )
         result = self.params.dataframe[column].isin(valid_code_hierarchies)
-        return result
+        return self.evaluation_dataset.convert_to_series(result)
