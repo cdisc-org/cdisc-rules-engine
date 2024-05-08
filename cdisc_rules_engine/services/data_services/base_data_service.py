@@ -149,13 +149,20 @@ class BaseDataService(DataServiceInterface, ABC):
 
     def merge_supp_dataset(self, full_dataset, supp_dataset):
         merge_keys = ["STUDYID", "USUBJID", "APID", "POOLID", "SPDEVID"]
-        merged_df = full_dataset.merge(
-            supp_dataset,
-            how="inner",
-            on=merge_keys,
-            left_on="IDVAR",
-            right_on="IDVARVAL",
-        )
+        if full_dataset.empty:
+            return supp_dataset.copy()
+        else:
+            if "IDVAR" in full_dataset:
+                merge_keys.append("IDVAR")
+            merged_df = PandasDataset.merge(
+                full_dataset,
+                supp_dataset,
+                how="inner",
+                left_on=["DOMAIN"] + merge_keys,
+                right_on=["RDOMAIN"] + merge_keys,
+                suffixes=("_full", "_supp"),
+            )
+
         return merged_df
 
     def get_dataset_class(
