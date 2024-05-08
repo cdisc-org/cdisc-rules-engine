@@ -208,9 +208,11 @@ class TestValidate(unittest.TestCase):
             "-v",
             "3.4",
             "-d",
-            os.path.join("tests", "resources", "report_test_data"),
-            "-lr",
             os.path.join("tests", "resources", "datasets"),
+            "-lr",
+            os.path.join("tests", "resources", "rules"),
+            "-r",
+            "CORE-000473",
         ]
         exit_code, stdout, stderr = self.run_command(args)
         self.assertEqual(exit_code, 0)
