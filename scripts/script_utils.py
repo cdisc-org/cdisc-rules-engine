@@ -136,6 +136,19 @@ def load_rules_from_cache(args) -> List[dict]:
         with open(rules_file, "rb") as f:
             rules_data = pickle.load(f)
             rules = [rules_data.get(key) for key in keys]
+
+        missing_rules = [rule for rule, data in zip(args.rules, rules) if data is None]
+        if missing_rules:
+            for missing_rule in missing_rules:
+                engine_logger.error(
+                    f"The rule specified '{missing_rule}' is not"
+                    " in the standard {args.standard} and version {args.version}"
+                )
+        rules = [rule for rule in rules if rule is not None]
+        if not rules:
+            raise ValueError(
+                "All specified rules were excluded because they are not in the standard and version specified."
+            )
     else:
         engine_logger.warning(
             f"No rules specified. Running all rules for {args.standard}"
@@ -167,7 +180,7 @@ def load_rules_from_local(args) -> List[dict]:
             for rule in args.rules
         )
     else:
-        engine_logger.warning(
+        engine_logger.warn(
             "No rules specified with -r rules flag. "
             "Validating with all rules in local directory"
         )
@@ -194,16 +207,16 @@ def load_rules_from_local(args) -> List[dict]:
             rule_data[rule_identifier] = rule
             rules.append(rule)
         else:
-            engine_logger.warning(
+            engine_logger.error(
                 f"Rule {rule.get('core_id')} not specified with "
-                "-r rule flag or duplicate rule. Skipping..."
+                "-r rule flag and in local directory or is a duplicate rule. Skipping..."
             )
 
     if keys:
         missing_keys = keys - rule_data.keys()
         if missing_keys:
             missing_keys_str = ", ".join(missing_keys)
-            engine_logger.warning(
+            engine_logger.error(
                 f"Specified rules not found in the local directory: {missing_keys_str}"
             )
 
