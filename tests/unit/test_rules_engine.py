@@ -2193,7 +2193,7 @@ def test_validate_variables_order_against_library_metadata(
     standard_version: str = "3-1-2"
 
     mock_get_variables_metadata.return_value = pd.DataFrame.from_dict(
-        {"variable_name": dataset_df.columns.tolist()}
+        {"data": {"variable_name": dataset_df.columns.tolist()}}
     )
 
     mock_get_dataset_class.return_value = "EVENTS"

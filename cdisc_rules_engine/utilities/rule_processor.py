@@ -1,8 +1,6 @@
 import re
-import pandas as pd
 from typing import List, Optional, Set, Union, Tuple
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
-from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
@@ -181,13 +179,9 @@ class RuleProcessor:
         if included_classes:
             if ALL_KEYWORD in included_classes:
                 return True
-            variables = PandasDataset(
-                pd.DataFrame(
-                    columns=self.data_service.get_variables_metadata(
-                        dataset_name=file_path
-                    ).variable_name
-                )
-            )
+            variables = self.data_service.get_variables_metadata(
+                dataset_name=file_path
+            ).data.variable_name
             class_name = self.data_service.get_dataset_class(
                 variables, file_path, datasets, domain
             )
@@ -197,11 +191,9 @@ class RuleProcessor:
                 is_included = False
 
         if excluded_classes:
-            variables = pd.DataFrame(
-                columns=self.data_service.get_variables_metadata(
-                    dataset_name=file_path
-                ).variable_name
-            )
+            variables = self.data_service.get_variables_metadata(
+                dataset_name=file_path
+            ).data.variable_name
             class_name = self.data_service.get_dataset_class(
                 variables, file_path, datasets, domain
             )
