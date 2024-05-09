@@ -2,7 +2,6 @@ import os
 from io import IOBase
 from typing import Iterable, List, Optional, Tuple
 
-
 from cdisc_rules_engine.interfaces import CacheServiceInterface, ConfigInterface
 from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
 from cdisc_rules_engine.models.dataset_types import DatasetTypes
@@ -165,6 +164,9 @@ class LocalDataService(BaseDataService):
             "name": file_name,
             "size": file_size,
         }
+        if file_name.endswith(".parquet"):
+            for original_filepath in self.dataset_paths:
+                self.read_metadata(original_filepath)
         _metadata_reader_map = {
             DataFormatTypes.XPT.value: DatasetXPTMetadataReader,
             DataFormatTypes.JSON.value: DatasetJSONMetadataReader,
