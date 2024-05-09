@@ -1,6 +1,6 @@
 from typing import List
 from unittest.mock import patch, MagicMock
-import pandas as pd
+from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.rules_engine import RulesEngine
 import unittest
 from click.testing import CliRunner
@@ -35,8 +35,9 @@ class TestListDatasetMetadata(unittest.TestCase):
 
 
 def test_get_datasets():
+    USDMDataService._instance = None
     mock_cache = MagicMock()
-    mock_cache.get.return_value = None
+    mock_cache.get_dataset.return_value = None
     data_service = USDMDataService.get_instance(
         config=ConfigService(), cache_service=mock_cache, dataset_path=dataset_path
     )
@@ -49,22 +50,24 @@ def test_get_datasets():
     [("Activity", 225), ("string", 1309), ("Study", 1)],
 )
 def test_get_dataset(domain_name, record_count):
+    USDMDataService._instance = None
     mock_cache = MagicMock()
-    mock_cache.get.return_value = None
+    mock_cache.get_dataset.return_value = None
     data_service = USDMDataService.get_instance(
         config=ConfigService(), cache_service=mock_cache, dataset_path=dataset_path
     )
     dataset_name = os.path.join(dataset_path, "{}.json".format(domain_name))
     data = data_service.get_dataset(dataset_name=dataset_name)
-    assert isinstance(data, pd.DataFrame)
-    assert data.shape[0] == record_count
+    assert isinstance(data, PandasDataset)
+    assert len(data) == record_count
 
 
 def test_get_raw_dataset_metadata():
-    mock_cache = MagicMock()
-    mock_cache.get.return_value = None
+    USDMDataService._instance = None
+    cache = MagicMock()
+    cache.get_dataset.return_value = None
     data_service = USDMDataService.get_instance(
-        config=ConfigService(), cache_service=mock_cache, dataset_path=dataset_path
+        config=ConfigService(), cache_service=cache, dataset_path=dataset_path
     )
     data = data_service.get_raw_dataset_metadata(
         dataset_name=os.path.join(dataset_path, "Code.json")
@@ -78,7 +81,7 @@ def test_validate_rule_single_dataset_check(dataset_rule_greater_than: dict):
     In this case the rules does not have "datasets" key
     and datasets map is also empty.
     """
-    dataset_mock = pd.DataFrame.from_dict(
+    dataset_mock = PandasDataset.from_dict(
         {
             "ECCOOLVAR": [20, 100, 10, 34],
             "AESTDY": [1, 2, 40, 50],
@@ -106,15 +109,16 @@ def test_validate_rule_single_dataset_check(dataset_rule_greater_than: dict):
 
 
 def test_get_variables_metdata():
+    USDMDataService._instance = None
     mock_cache = MagicMock()
-    mock_cache.get.return_value = None
+    mock_cache.get_dataset.return_value = None
     data_service = USDMDataService.get_instance(
         config=ConfigService(), cache_service=mock_cache, dataset_path=dataset_path
     )
     data = data_service.get_variables_metadata(
         dataset_name=os.path.join(dataset_path, "StudyIdentifier.json")
     )
-    assert isinstance(data, pd.DataFrame)
+    assert isinstance(data, PandasDataset)
     expected_keys = [
         "variable_name",
         "variable_format",

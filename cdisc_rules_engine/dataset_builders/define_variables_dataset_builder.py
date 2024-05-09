@@ -1,5 +1,4 @@
 from cdisc_rules_engine.dataset_builders.base_dataset_builder import BaseDatasetBuilder
-import pandas as pd
 from typing import List
 
 
@@ -27,4 +26,4 @@ class DefineVariablesDatasetBuilder(BaseDatasetBuilder):
         """
         # get Define XML metadata for domain and use it as a rule comparator
         variable_metadata: List[dict] = self.get_define_xml_variables_metadata()
-        return pd.DataFrame(variable_metadata)
+        return self.dataset_implementation(variable_metadata)

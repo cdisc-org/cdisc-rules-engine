@@ -1,4 +1,6 @@
 from cdisc_rules_engine.config.config import ConfigService
+from cdisc_rules_engine.models.dataset.dask_dataset import DaskDataset
+from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.operations.meddra_code_term_pairs_validator import (
     MedDRACodeTermPairsValidator,
 )
@@ -8,10 +10,12 @@ import pandas as pd
 from cdisc_rules_engine.services.data_services.data_service_factory import (
     DataServiceFactory,
 )
+import pytest
 
 
+@pytest.mark.parametrize("dataset_type", [(PandasDataset), (DaskDataset)])
 def test_meddra_code_term_pairs_validator(
-    installed_meddra_dictionaries: dict, operation_params: OperationParams
+    installed_meddra_dictionaries: dict, operation_params: OperationParams, dataset_type
 ):
     """
     Unit test for valid_whodrug_references function.
@@ -19,8 +23,9 @@ def test_meddra_code_term_pairs_validator(
     config = ConfigService()
     cache = installed_meddra_dictionaries["cache_service"]
     data_service = DataServiceFactory(config, cache).get_data_service()
+    data_service.dataset_implementation = dataset_type
     # create a dataset where 2 rows reference invalid terms
-    invalid_df = pd.DataFrame.from_dict(
+    invalid_df = dataset_type.from_dict(
         {"AELLTCD": ["TEST1", "TEST2", "LLT3"], "AELLT": ["TEST1", "TEST2", "TESTLLT3"]}
     )
 

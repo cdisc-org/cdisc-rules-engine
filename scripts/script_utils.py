@@ -2,13 +2,14 @@ import json
 import yaml
 
 from cdisc_rules_engine.interfaces import CacheServiceInterface
+from cdisc_rules_engine.interfaces.data_service_interface import DataServiceInterface
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
 from cdisc_rules_engine.services.data_services import (
     DataServiceFactory,
 )
-from typing import List
+from typing import List, Iterable
 from cdisc_rules_engine.config import config
 from cdisc_rules_engine.services import logger as engine_logger
 import os
@@ -207,6 +208,37 @@ def load_rules_from_local(args) -> List[dict]:
             )
 
     return rules
+
+
+def get_datasets(
+    data_service: DataServiceInterface, dataset_paths: Iterable[str]
+) -> List[dict]:
+    datasets = []
+    for dataset_path in dataset_paths:
+        metadata = data_service.get_raw_dataset_metadata(dataset_name=dataset_path)
+        datasets.append(
+            {
+                "domain": metadata.domain_name,
+                "filename": metadata.filename,
+                "full_path": dataset_path,
+                "length": metadata.records,
+                "label": metadata.label,
+                "size": metadata.size,
+                "modification_date": metadata.modification_date,
+                "temp_filename": None,
+            }
+        )
+
+    return datasets
+
+
+def get_max_dataset_size(dataset_paths: Iterable[str]):
+    max_dataset_size = 0
+    for file_path in dataset_paths:
+        file_size = os.path.getsize(file_path)
+        if file_size > max_dataset_size:
+            max_dataset_size = file_size
+    return max_dataset_size
 
 
 def replace_yml_spaces(data):
