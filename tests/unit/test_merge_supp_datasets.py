@@ -1,5 +1,5 @@
 import unittest
-import pandas as pd
+from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.services.data_services.local_data_service import (
     LocalDataService,
 )
@@ -16,7 +16,7 @@ class TestConcatSplitDatasets(unittest.TestCase):
 
     def test_concat_split_datasets(self):
         # Mock datasets
-        full_dataset = pd.DataFrame(
+        full_dataset = PandasDataset.from_dict(
             {
                 "STUDYID": [1, 2, 3],
                 "USUBJID": [101, 102, 103],
@@ -28,7 +28,7 @@ class TestConcatSplitDatasets(unittest.TestCase):
         )
 
         # Sample supplementary dataset
-        supp_dataset = pd.DataFrame(
+        supp_dataset = PandasDataset.from_dict(
             {
                 "STUDYID": [1, 2, 3],
                 "USUBJID": [101, 102, 103],
@@ -41,7 +41,7 @@ class TestConcatSplitDatasets(unittest.TestCase):
             }
         )
 
-        expected_merged_df = pd.DataFrame(
+        expected_merged_df = PandasDataset.from_dict(
             {
                 "STUDYID": [1, 2, 3],
                 "USUBJID": [101, 102, 103],

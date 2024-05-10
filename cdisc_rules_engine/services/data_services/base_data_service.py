@@ -154,9 +154,8 @@ class BaseDataService(DataServiceInterface, ABC):
         else:
             if "IDVAR" in full_dataset:
                 merge_keys.append("IDVAR")
-            merged_df = pd.merge(
-                full_dataset,
-                supp_dataset,
+            merged_df = full_dataset.merge(
+                supp_dataset.data,
                 how="inner",
                 left_on=["DOMAIN"] + merge_keys,
                 right_on=["RDOMAIN"] + merge_keys,
