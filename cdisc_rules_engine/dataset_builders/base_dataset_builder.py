@@ -60,7 +60,7 @@ class BaseDatasetBuilder:
             # Handle split datasets for content checks.
             # A content check is any check that is not in the list of rule types
             dataset: DatasetInterface = self.data_service.concat_split_datasets(
-                func_to_call=self.build,
+                func_to_call=self.build_split_datasets,
                 dataset_names=self.get_corresponding_datasets_names(),
                 **kwargs,
             )
