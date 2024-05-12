@@ -46,6 +46,7 @@ class DatasetJSONReader(DataReaderInterface):
         )
 
     def _raw_dataset_from_file(self, file_path) -> pd.DataFrame:
+        # Load Dataset-JSON Schema
         schema = self.get_schema()
         datasetjson = self.read_json_file(file_path)
 
@@ -55,7 +56,6 @@ class DatasetJSONReader(DataReaderInterface):
         return df.applymap(lambda x: round(x, 15) if isinstance(x, float) else x)
 
     def from_file(self, file_path):
-        # Load Dataset-JSON Schema
         try:
             df = self._raw_dataset_from_file(file_path)
             if self.dataset_implementation == PandasDataset:
