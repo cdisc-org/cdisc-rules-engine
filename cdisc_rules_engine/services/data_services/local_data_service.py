@@ -25,6 +25,7 @@ from .base_data_service import BaseDataService, cached_dataset
 from cdisc_rules_engine.enums.dataformat_types import DataFormatTypes
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from cdisc_rules_engine.models.dataset import PandasDataset
+from cdisc_rules_engine.services.data_mapping.data_map import GlobalDataMap
 
 
 class LocalDataService(BaseDataService):
@@ -165,8 +166,16 @@ class LocalDataService(BaseDataService):
             "size": file_size,
         }
         if file_name.endswith(".parquet"):
-            for original_filepath in self.dataset_paths:
-                self.read_metadata(original_filepath)
+            breakpoint()
+            file_path = GlobalDataMap.get_original_path(file_path)
+            file_name = extract_file_name_from_path_string(file_path)
+            file_size = os.path.getsize(file_path)
+            file_metadata = {
+                "path": file_path,
+                "name": file_name,
+                "size": file_size,
+            }
+            breakpoint()
         _metadata_reader_map = {
             DataFormatTypes.XPT.value: DatasetXPTMetadataReader,
             DataFormatTypes.JSON.value: DatasetJSONMetadataReader,
@@ -174,6 +183,7 @@ class LocalDataService(BaseDataService):
         contents_metadata = _metadata_reader_map[file_name.split(".")[1].upper()](
             file_path, file_name
         ).read()
+        breakpoint()
         return {
             "file_metadata": file_metadata,
             "contents_metadata": contents_metadata,
@@ -198,7 +208,10 @@ class LocalDataService(BaseDataService):
         reader = self._reader_factory.get_service(
             extract_file_name_from_path_string(file_path).split(".")[1].upper()
         )
-        return reader.to_parquet(file_path)
+        parquet_path = reader.to_parquet(file_path)
+        GlobalDataMap.add_mapping(parquet_path[1], file_path)
+        breakpoint()
+        return parquet_path
 
     def get_datasets(self) -> List[dict]:
         datasets = []
