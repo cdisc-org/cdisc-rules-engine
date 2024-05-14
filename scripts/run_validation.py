@@ -14,6 +14,7 @@ from cdisc_rules_engine.models.rule_conditions import ConditionCompositeFactory
 from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
 from cdisc_rules_engine.models.validation_args import Validation_args
 from cdisc_rules_engine.rules_engine import RulesEngine
+from cdisc_rules_engine.services.data_mapping.data_map import GlobalDataMap
 from cdisc_rules_engine.services import logger as engine_logger
 from cdisc_rules_engine.services.cache import (
     InMemoryCacheService,
@@ -105,6 +106,7 @@ def set_log_level(args):
 
 
 def run_validation(args: Validation_args):
+    GlobalDataMap.clear_cache()
     set_log_level(args)
     # fill cache
     CacheManager.register("RedisCacheService", RedisCacheService)
@@ -175,3 +177,5 @@ def run_validation(args: Validation_args):
     for file in created_files:
         engine_logger.info(f"Deleting file {file}")
         os.remove(file)
+    engine_logger.info("clearing datamap cache")
+    GlobalDataMap.clear_cache()

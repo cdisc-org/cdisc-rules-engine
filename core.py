@@ -20,7 +20,6 @@ from scripts.run_validation import run_validation
 from scripts.test_rule import test as test_rule
 from cdisc_rules_engine.services.cache.cache_populator_service import CachePopulator
 from cdisc_rules_engine.services.cache.cache_service_factory import CacheServiceFactory
-from cdisc_rules_engine.services.data_mapping.manager import MyManager
 from cdisc_rules_engine.services.cdisc_library_service import CDISCLibraryService
 from cdisc_rules_engine.utilities.utils import (
     generate_report_filename,
@@ -514,7 +513,4 @@ cli.add_command(list_ct)
 
 if __name__ == "__main__":
     freeze_support()
-    manager = MyManager()
-    manager.start()
-    data_map = manager.GlobalDataMap()
     cli()

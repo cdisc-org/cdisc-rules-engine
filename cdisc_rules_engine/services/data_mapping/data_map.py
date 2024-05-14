@@ -1,23 +1,55 @@
+import json
+import os
+
+
 class GlobalDataMap:
-    def __init__(self):
-        self.parquet_to_original_map = {}
+    # Define class-level attribute for the file path
+    module_dir = os.path.dirname(__file__)
+    filepath = os.path.join(module_dir, "global_data_map.json")
+
+    @staticmethod
+    def initialize_file():
+        """Ensures the JSON file exists on disk."""
+        if not os.path.exists(GlobalDataMap.filepath):
+            with open(GlobalDataMap.filepath, "w") as file:
+                json.dump({}, file)
 
     @classmethod
-    def add_mapping(self, parquet_path, original_path):
+    def add_mapping(cls, parquet_path, original_path):
         """
         Adds a mapping from a parquet file path to its original file path.
-
-        :param parquet_path: The file path of the parquet file.
-        :param original_path: The file path of the original file.
+        Writes the new mapping to the JSON file.
         """
-        self.parquet_to_original_map[parquet_path] = original_path
+        data = cls._read_data()
+        data[parquet_path] = original_path
+        cls._write_data(data)
 
     @classmethod
-    def get_original_path(self, parquet_path):
+    def get_original_path(cls, parquet_path):
         """
         Retrieves the original file path corresponding to a parquet file path.
-
-        :param parquet_path: The file path of the parquet file.
-        :return: The original file path or None if no mapping exists.
+        Reads the mapping from the JSON file.
         """
-        return self.parquet_to_original_map.get(parquet_path, None)
+        data = cls._read_data()
+        return data.get(parquet_path)
+
+    @classmethod
+    def _read_data(cls):
+        """Helper method to read data from the JSON file."""
+        with open(cls.filepath, "r") as file:
+            return json.load(file)
+
+    @classmethod
+    def _write_data(cls, data):
+        """Helper method to write data to the JSON file."""
+        with open(cls.filepath, "w") as file:
+            json.dump(data, file)
+
+    @classmethod
+    def clear_cache(cls):
+        """Clears the data file by writing an empty dictionary."""
+        if os.path.exists(cls.filepath):
+            os.remove(cls.filepath)
+
+
+GlobalDataMap.initialize_file()
