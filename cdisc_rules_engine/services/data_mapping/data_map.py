@@ -3,7 +3,6 @@ import os
 
 
 class GlobalDataMap:
-    # Define class-level attribute for the file path
     module_dir = os.path.dirname(__file__)
     filepath = os.path.join(module_dir, "global_data_map.json")
 
@@ -47,9 +46,8 @@ class GlobalDataMap:
 
     @classmethod
     def clear_cache(cls):
-        """Clears the data file by writing an empty dictionary."""
-        if os.path.exists(cls.filepath):
-            os.remove(cls.filepath)
+        """Clears the contents of the JSON file by writing an empty dictionary."""
+        cls._write_data({})
 
 
 GlobalDataMap.initialize_file()
