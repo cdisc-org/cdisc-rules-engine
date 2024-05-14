@@ -43,6 +43,7 @@ class GlobalDataMap:
         """Helper method to write data to the JSON file."""
         with open(cls.filepath, "w") as file:
             json.dump(data, file)
+            file.write("\n")
 
     @classmethod
     def clear_cache(cls):
