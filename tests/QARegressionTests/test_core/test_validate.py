@@ -414,10 +414,10 @@ class TestValidate(unittest.TestCase):
             "warn",
         ]
         exit_code, stdout, stderr = self.run_command(args)
-
+        breakpoint()
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_message in stdout)
-        self.assertIn("warning", stderr)
+        self.assertFalse("warning", stderr)
         self.assertTrue(self.check_issue_summary_tab_empty())
 
     def test_validate_with_invalid_log_level(self):
