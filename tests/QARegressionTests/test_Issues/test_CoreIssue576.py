@@ -3,7 +3,14 @@ import os
 import openpyxl
 import pytest
 from conftest import get_python_executable
-
+from QARegressionTests.globals import (
+    issue_datails_sheet,
+    dataset_details_sheet,
+    rules_report_sheet,
+    issue_sheet_coreid_column,
+    dataset_sheet_dataset_column,
+    rules_sheet_rule_status_column,
+)
 
 """ These tests utilize positive and negative dataset
 to validate successful working CG0202. Positive
@@ -35,32 +42,32 @@ def test_negative_dataset():
     workbook = openpyxl.load_workbook(file_name)
 
     # Go to the "Issue Details" sheet
-    Issues_Sheet = workbook["Issue Details"]
-    Dataset_Sheet = workbook["Dataset Details"]
-    Rules_Sheet = workbook["Rules Report"]
+    issues_sheet = workbook[issue_datails_sheet]
+    dataset_sheet = workbook[dataset_details_sheet]
+    rules_sheet = workbook[rules_report_sheet]
 
-    COREID_Column = Issues_Sheet["A"]
-    Dataset_Column = Dataset_Sheet["A"]
-    Rule_Status_Column = Rules_Sheet["G"]
+    coreid_column = issues_sheet[issue_sheet_coreid_column]
+    dataset_column = dataset_sheet[dataset_sheet_dataset_column]
+    rule_status_column = rules_sheet[rules_sheet_rule_status_column]
 
-    COREID_Values = [cell.value for cell in COREID_Column[1:]]
-    Dataset_Values = [cell.value for cell in Dataset_Column[1:]]
-    Rule_Status_Column_values = [cell.value for cell in Rule_Status_Column[1:]]
+    coreid_values = [cell.value for cell in coreid_column[1:]]
+    dataset_values = [cell.value for cell in dataset_column[1:]]
+    rule_status_column_values = [cell.value for cell in rule_status_column[1:]]
 
     # Remove None values using list comprehension
-    COREID_Values = [value for value in COREID_Values if value is not None]
-    Dataset_Values = [value for value in Dataset_Values if value is not None]
-    Rule_Status_Column_values = [
-        value for value in Rule_Status_Column_values if value is not None
+    coreid_values = [value for value in coreid_values if value is not None]
+    dataset_values = [value for value in dataset_values if value is not None]
+    rule_status_column_values = [
+        value for value in rule_status_column_values if value is not None
     ]
 
     # Perform the assertion
-    assert Dataset_Values[0] == "dm.xpt"
-    assert len(Dataset_Values) == 1
+    assert dataset_values[0] == "dm.xpt"
+    assert len(dataset_values) == 1
 
-    assert len(COREID_Values) == 0
+    assert len(coreid_values) == 0
 
-    assert Rule_Status_Column_values[0] == "SKIPPED"
+    assert rule_status_column_values[0] == "SKIPPED"
 
     # Close the workbook
     workbook.close()
@@ -90,32 +97,32 @@ def test_positive_dataset():
     workbook = openpyxl.load_workbook(file_name)
 
     # Go to the "Issue Details" sheet
-    Issues_Sheet = workbook["Issue Details"]
-    Dataset_Sheet = workbook["Dataset Details"]
-    Rules_Sheet = workbook["Rules Report"]
+    issues_sheet = workbook[issue_datails_sheet]
+    dataset_sheet = workbook[dataset_details_sheet]
+    rules_sheet = workbook[rules_report_sheet]
 
-    COREID_Column = Issues_Sheet["A"]
-    Dataset_Column = Dataset_Sheet["A"]
-    Rule_Status_Column = Rules_Sheet["G"]
+    coreid_column = issues_sheet[issue_sheet_coreid_column]
+    dataset_column = dataset_sheet[dataset_sheet_dataset_column]
+    rule_status_column = rules_sheet[rules_sheet_rule_status_column]
 
-    COREID_Values = [cell.value for cell in COREID_Column[1:]]
-    Dataset_Values = [cell.value for cell in Dataset_Column[1:]]
-    Rule_Status_Column_values = [cell.value for cell in Rule_Status_Column[1:]]
+    coreid_values = [cell.value for cell in coreid_column[1:]]
+    dataset_values = [cell.value for cell in dataset_column[1:]]
+    rule_status_column_values = [cell.value for cell in rule_status_column[1:]]
 
     # Remove None values using list comprehension
-    COREID_Values = [value for value in COREID_Values if value is not None]
-    Dataset_Values = [value for value in Dataset_Values if value is not None]
-    Rule_Status_Column_values = [
-        value for value in Rule_Status_Column_values if value is not None
+    coreid_values = [value for value in coreid_values if value is not None]
+    dataset_values = [value for value in dataset_values if value is not None]
+    rule_status_column_values = [
+        value for value in rule_status_column_values if value is not None
     ]
 
     # Perform the assertion
-    assert Dataset_Values[0] == "suppae.xpt"
-    assert Dataset_Values[1] == "suppec.xpt"
+    assert dataset_values[0] == "suppae.xpt"
+    assert dataset_values[1] == "suppec.xpt"
 
-    assert len(COREID_Values) == 0
+    assert len(coreid_values) == 0
 
-    assert Rule_Status_Column_values[0] == "SUCCESS"
+    assert rule_status_column_values[0] == "SUCCESS"
 
     # Close the workbook
     workbook.close()

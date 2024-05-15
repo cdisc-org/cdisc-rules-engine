@@ -3,6 +3,12 @@ import os
 import openpyxl
 import pytest
 from conftest import get_python_executable
+from QARegressionTests.globals import (
+    issue_datails_sheet,
+    issue_sheet_record_column,
+    issue_sheet_variable_column,
+    issue_sheet_values_column,
+)
 
 
 @pytest.mark.regression
@@ -22,16 +28,15 @@ def test_negative_dataset():
     stdout, stderr = process.communicate()
 
     file_name = stdout.decode().strip().split(": ")[1] + ".xlsx"
-    print(file_name)
     # Open the Excel file
     workbook = openpyxl.load_workbook(file_name)
 
     # Go to the "Issue Details" sheet
-    sheet = workbook["Issue Details"]
+    sheet = workbook[issue_datails_sheet]
 
-    record_column = sheet["F"]
-    variables_column = sheet["H"]
-    values_column = sheet["I"]
+    record_column = sheet[issue_sheet_record_column]
+    variables_column = sheet[issue_sheet_variable_column]
+    values_column = sheet[issue_sheet_values_column]
 
     record_values = [cell.value for cell in record_column[1:]]
     variables_values = [cell.value for cell in variables_column[1:]]
@@ -90,11 +95,11 @@ def test_positive_dataset():
     workbook = openpyxl.load_workbook(file_name)
 
     # Go to the "Issue Details" sheet
-    sheet = workbook["Issue Details"]
+    sheet = workbook[issue_datails_sheet]
 
-    record_column = sheet["F"]
-    variables_column = sheet["H"]
-    values_column = sheet["I"]
+    record_column = sheet[issue_sheet_record_column]
+    variables_column = sheet[issue_sheet_variable_column]
+    values_column = sheet[issue_sheet_values_column]
 
     record_values = [cell.value for cell in record_column[1:]]
     variables_values = [cell.value for cell in variables_column[1:]]
