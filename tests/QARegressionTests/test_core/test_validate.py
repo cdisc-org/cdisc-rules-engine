@@ -414,7 +414,6 @@ class TestValidate(unittest.TestCase):
             "warn",
         ]
         exit_code, stdout, stderr = self.run_command(args)
-        breakpoint()
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_message in stdout)
         self.assertFalse("warning", stderr)
