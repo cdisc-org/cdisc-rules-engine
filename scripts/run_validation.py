@@ -175,4 +175,3 @@ def run_validation(args: Validation_args):
     for file in created_files:
         engine_logger.info(f"Deleting file {file}")
         os.remove(file)
-    engine_logger.info("clearing datamap cache")
