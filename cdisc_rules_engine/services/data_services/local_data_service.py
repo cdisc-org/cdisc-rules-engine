@@ -25,7 +25,6 @@ from .base_data_service import BaseDataService, cached_dataset
 from cdisc_rules_engine.enums.dataformat_types import DataFormatTypes
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from cdisc_rules_engine.models.dataset import PandasDataset
-from cdisc_rules_engine.services.data_mapping.data_map import GlobalDataMap
 
 
 class LocalDataService(BaseDataService):
@@ -120,11 +119,13 @@ class LocalDataService(BaseDataService):
         )
 
     @cached_dataset(DatasetTypes.VARIABLES_METADATA.value)
-    def get_variables_metadata(self, dataset_name: str, **params) -> DatasetInterface:
+    def get_variables_metadata(
+        self, dataset_name: str, datasets: list, **params
+    ) -> DatasetInterface:
         """
         Gets dataset from blob storage and returns metadata of a certain variable.
         """
-        metadata: dict = self.read_metadata(dataset_name)
+        metadata: dict = self.read_metadata(dataset_name, datasets=datasets)
         contents_metadata: dict = metadata["contents_metadata"]
         metadata_to_return: VariableMetadataContainer = VariableMetadataContainer(
             contents_metadata
@@ -157,7 +158,7 @@ class LocalDataService(BaseDataService):
             dataset_name=dataset_name, **params
         )
 
-    def read_metadata(self, file_path: str) -> dict:
+    def read_metadata(self, file_path: str, datasets: Optional[List] = None) -> dict:
         file_size = os.path.getsize(file_path)
         file_name = extract_file_name_from_path_string(file_path)
         file_metadata = {
@@ -165,15 +166,18 @@ class LocalDataService(BaseDataService):
             "name": file_name,
             "size": file_size,
         }
-        if file_name.endswith(".parquet"):
-            file_path = GlobalDataMap.get_original_path(file_path)
-            file_name = extract_file_name_from_path_string(file_path)
-            file_size = os.path.getsize(file_path)
-            file_metadata = {
-                "path": file_path,
-                "name": file_name,
-                "size": file_size,
-            }
+        if file_name.endswith(".parquet") and datasets:
+            for obj in datasets:
+                if obj["full_path"] == file_path:
+                    file_metadata = {
+                        "path": obj["original_path"],
+                        "name": extract_file_name_from_path_string(
+                            obj["original_path"]
+                        ),
+                        "size": os.path.getsize(obj["original_path"]),
+                    }
+                break
+
         _metadata_reader_map = {
             DataFormatTypes.XPT.value: DatasetXPTMetadataReader,
             DataFormatTypes.JSON.value: DatasetJSONMetadataReader,
@@ -205,9 +209,7 @@ class LocalDataService(BaseDataService):
         reader = self._reader_factory.get_service(
             extract_file_name_from_path_string(file_path).split(".")[1].upper()
         )
-        parquet_path = reader.to_parquet(file_path)
-        GlobalDataMap.add_mapping(parquet_path[1], file_path)
-        return parquet_path
+        return reader.to_parquet(file_path)
 
     def get_datasets(self) -> List[dict]:
         datasets = []
