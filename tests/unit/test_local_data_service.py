@@ -72,7 +72,7 @@ def test_get_variables_metdata(dataset_implementation):
         cache_service=mock_cache,
         dataset_implementation=dataset_implementation,
     )
-    data = data_service.get_variables_metadata(dataset_name=dataset_path)
+    data = data_service.get_variables_metadata(dataset_name=dataset_path, datasets=[])
     assert isinstance(data, dataset_implementation)
     expected_keys = [
         "variable_name",
