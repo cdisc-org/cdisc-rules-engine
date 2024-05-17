@@ -176,6 +176,7 @@ class LocalDataService(BaseDataService):
                         ),
                         "size": os.path.getsize(obj["original_path"]),
                     }
+                    file_name = obj["filename"]
                 break
 
         _metadata_reader_map = {
