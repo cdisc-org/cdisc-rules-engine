@@ -179,9 +179,11 @@ class RuleProcessor:
         if included_classes:
             if ALL_KEYWORD in included_classes:
                 return True
-            dataset = self.data_service.get_dataset(dataset_name=file_path)
+            variables = self.data_service.get_variables_metadata(
+                dataset_name=file_path, datasets=datasets
+            ).data.variable_name
             class_name = self.data_service.get_dataset_class(
-                dataset, file_path, datasets, domain
+                variables, file_path, datasets, domain
             )
             if (class_name not in included_classes) and not (
                 class_name == FINDINGS_ABOUT and FINDINGS in included_classes
@@ -189,9 +191,11 @@ class RuleProcessor:
                 is_included = False
 
         if excluded_classes:
-            dataset = self.data_service.get_dataset(dataset_name=file_path)
+            variables = self.data_service.get_variables_metadata(
+                dataset_name=file_path
+            ).data.variable_name
             class_name = self.data_service.get_dataset_class(
-                dataset, file_path, datasets, domain
+                variables, file_path, datasets, domain
             )
             if class_name and (
                 (class_name in excluded_classes)

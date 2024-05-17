@@ -2,7 +2,6 @@ import os
 from io import IOBase
 from typing import Iterable, List, Optional, Tuple
 
-
 from cdisc_rules_engine.interfaces import CacheServiceInterface, ConfigInterface
 from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
 from cdisc_rules_engine.models.dataset_types import DatasetTypes
@@ -120,11 +119,13 @@ class LocalDataService(BaseDataService):
         )
 
     @cached_dataset(DatasetTypes.VARIABLES_METADATA.value)
-    def get_variables_metadata(self, dataset_name: str, **params) -> DatasetInterface:
+    def get_variables_metadata(
+        self, dataset_name: str, datasets: list, **params
+    ) -> DatasetInterface:
         """
         Gets dataset from blob storage and returns metadata of a certain variable.
         """
-        metadata: dict = self.read_metadata(dataset_name)
+        metadata: dict = self.read_metadata(dataset_name, datasets=datasets)
         contents_metadata: dict = metadata["contents_metadata"]
         metadata_to_return: VariableMetadataContainer = VariableMetadataContainer(
             contents_metadata
@@ -157,7 +158,7 @@ class LocalDataService(BaseDataService):
             dataset_name=dataset_name, **params
         )
 
-    def read_metadata(self, file_path: str) -> dict:
+    def read_metadata(self, file_path: str, datasets: Optional[List] = None) -> dict:
         file_size = os.path.getsize(file_path)
         file_name = extract_file_name_from_path_string(file_path)
         file_metadata = {
@@ -165,12 +166,25 @@ class LocalDataService(BaseDataService):
             "name": file_name,
             "size": file_size,
         }
+        if file_name.endswith(".parquet") and datasets:
+            for obj in datasets:
+                if obj["full_path"] == file_path:
+                    file_metadata = {
+                        "path": obj["original_path"],
+                        "name": extract_file_name_from_path_string(
+                            obj["original_path"]
+                        ),
+                        "size": os.path.getsize(obj["original_path"]),
+                    }
+                    file_name = obj["filename"]
+                break
+
         _metadata_reader_map = {
             DataFormatTypes.XPT.value: DatasetXPTMetadataReader,
             DataFormatTypes.JSON.value: DatasetJSONMetadataReader,
         }
         contents_metadata = _metadata_reader_map[file_name.split(".")[1].upper()](
-            file_path, file_name
+            file_metadata["path"], file_name
         ).read()
         return {
             "file_metadata": file_metadata,
