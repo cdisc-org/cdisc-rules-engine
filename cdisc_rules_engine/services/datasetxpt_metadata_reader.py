@@ -1,13 +1,12 @@
-import pandas as pd
-import xport.v56
-from xport import LOG as XPORT_LOG
+# import pandas as pd
+# import xport.v56
+# from xport import LOG as XPORT_LOG
 import pyreadstat
 
 from cdisc_rules_engine.services import logger
+from cdisc_rules_engine.config import config
 from cdisc_rules_engine.services.adam_variable_reader import AdamVariableReader
-
-xport.v56.LOG.disabled = True
-XPORT_LOG.disabled = True
+import os
 
 
 class DatasetXPTMetadataReader:
@@ -19,41 +18,49 @@ class DatasetXPTMetadataReader:
     # TODO. Maybe in future it is worth having multiple constructors
     #  like from_bytes, from_file etc. But now there is no immediate need for that.
     def __init__(self, file_path: str, file_name: str):
-        with open(file_path, "rb") as f:
-            self._file_contents = f.read()
-        self._metadata_container = None
+        file_size = os.path.getsize(file_path)
+        if file_size > config.get_dataset_size_threshold():
+            self._estimate_dataset_length = True
+            self.row_limit = 1
+        else:
+            self._estimate_dataset_length = False
+            self.row_limit = 0
+        self._metadata_container = {}
         self._domain_name = None
         self._dataset_name = file_name.split(".")[0].upper()
+        self._file_path = file_path
         self._file_path = file_path
 
     def read(self) -> dict:
         """
         Extracts metadata from binary contents of .xpt file.
         """
-        dataset_container = xport.v56.loads(self._file_contents)
-        dataset_id = next(iter(dataset_container))
-        dataset = dataset_container.get(dataset_id)
+        dataset, metadata = pyreadstat.read_xport(
+            self._file_path, row_limit=self.row_limit
+        )
         self._domain_name = self._extract_domain_name(dataset)
         self._metadata_container = {
-            "variable_labels": list(dataset.contents.Label.values),
-            "variable_names": list(dataset.contents.Variable.values),
-            "variable_formats": list(dataset.contents.Format.values),
-            "variable_name_to_label_map": pd.Series(
-                dataset.contents.Label.values, index=dataset.contents.Variable
-            ).to_dict(),
-            "variable_name_to_data_type_map": pd.Series(
-                dataset.contents.Type.values, index=dataset.contents.Variable
-            ).to_dict(),
-            "variable_name_to_size_map": pd.Series(
-                dataset.contents.Length.values, index=dataset.contents.Variable
-            ).to_dict(),
-            "number_of_variables": len(dataset.columns),
-            "dataset_label": dataset.dataset_label,
-            "dataset_length": self._calculate_dataset_length(),
+            "variable_labels": list(metadata.column_labels),
+            "variable_names": list(metadata.column_names),
+            "variable_formats": [
+                "" if data_type == "NULL" else data_type
+                for data_type in metadata.original_variable_types.values()
+            ],
+            "variable_name_to_label_map": metadata.column_names_to_labels,
+            "variable_name_to_data_type_map": metadata.readstat_variable_types,
+            "variable_name_to_size_map": metadata.variable_storage_width,
+            "number_of_variables": metadata.number_columns,
+            "dataset_label": metadata.file_label,
+            "dataset_length": metadata.number_rows,
             "domain_name": self._domain_name,
             "dataset_name": self._dataset_name,
-            "dataset_modification_date": dataset.modified.isoformat(),
+            "dataset_modification_date": metadata.modification_time.isoformat(),
         }
+
+        if self._estimate_dataset_length:
+            self._metadata_container[
+                "dataset_length"
+            ] = self._calculate_dataset_length()
         self._domain_name = self._extract_domain_name(dataset)
         self._convert_variable_types()
         self._metadata_container["adam_info"] = self._extract_adam_info(
@@ -76,23 +83,8 @@ class DatasetXPTMetadataReader:
         return None
 
     def _calculate_dataset_length(self):
-        df, meta = pyreadstat.read_xport(self._file_path, metadataonly=True)
-        meta.variable_storage_width
-        breakpoint()
-        return meta
-        # sas_iterator = pd.read_sas(self._file_path, iterator=True, chunksize=1)
-        # first_chunk = next(sas_iterator)
-        # breakpoint()
-        # return
-
-        # with open(self.file_path, 'rb') as data:
-        #     library = xport.Library(data)
-        #     dataset = next(iter(library))
-        #     record_size = dataset.header.record_size
-        #     start = dataset.header.start
-
-        # row_size = sum(self._metadata_container["variable_name_to_size_map"].values())
-        # return int(os.path.getsize(self._file_path) / row_size)
+        row_size = sum(self._metadata_container["variable_name_to_size_map"].values())
+        return int(os.path.getsize(self._file_path) / row_size)
 
     def _convert_variable_types(self):
         """

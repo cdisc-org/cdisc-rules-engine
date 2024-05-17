@@ -1,9 +1,10 @@
 from cdisc_rules_engine.config.config import ConfigService
+from cdisc_rules_engine.models.dataset.dask_dataset import DaskDataset
+from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.operations.distinct import Distinct
 from cdisc_rules_engine.models.operation_params import OperationParams
-import pandas as pd
-import pytest
 
+import pytest
 from cdisc_rules_engine.services.cache.cache_service_factory import CacheServiceFactory
 from cdisc_rules_engine.services.data_services.data_service_factory import (
     DataServiceFactory,
@@ -14,7 +15,11 @@ from cdisc_rules_engine.services.data_services.data_service_factory import (
     "data, expected",
     [
         (
-            pd.DataFrame.from_dict({"values": [11, 12, 12, 5, 18, 9]}),
+            PandasDataset.from_dict({"values": [11, 12, 12, 5, 18, 9]}),
+            {5, 9, 11, 12, 18},
+        ),
+        (
+            DaskDataset.from_dict({"values": [11, 12, 12, 5, 18, 9]}),
             {5, 9, 11, 12, 18},
         ),
     ],
@@ -36,7 +41,13 @@ def test_distinct(data, expected, operation_params: OperationParams):
     "data, expected",
     [
         (
-            pd.DataFrame.from_dict(
+            PandasDataset.from_dict(
+                {"values": [11, 12, 12, 5, 18, 9], "patient": [1, 2, 2, 1, 2, 1]}
+            ),
+            {1: {5, 9, 11}, 2: {12, 18}},
+        ),
+        (
+            DaskDataset.from_dict(
                 {"values": [11, 12, 12, 5, 18, 9], "patient": [1, 2, 2, 1, 2, 1]}
             ),
             {1: {5, 9, 11}, 2: {12, 18}},
