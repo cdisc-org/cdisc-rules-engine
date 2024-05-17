@@ -88,7 +88,11 @@ class DataServiceInterface(ABC):
 
     @abstractmethod
     def get_dataset_class(
-        self, dataset: DatasetInterface, file_path: str, datasets: List[dict]
+        self,
+        dataset: DatasetInterface,
+        file_path: str,
+        datasets: List[dict],
+        domain: str,
     ) -> Optional[str]:
         """
         Returns dataset class based on its contents

@@ -208,9 +208,11 @@ class TestValidate(unittest.TestCase):
             "-v",
             "3.4",
             "-d",
-            os.path.join("tests", "resources", "report_test_data"),
-            "-lr",
             os.path.join("tests", "resources", "datasets"),
+            "-lr",
+            os.path.join("tests", "resources", "rules"),
+            "-r",
+            "CORE-000473",
         ]
         exit_code, stdout, stderr = self.run_command(args)
         self.assertEqual(exit_code, 0)
@@ -412,10 +414,9 @@ class TestValidate(unittest.TestCase):
             "warn",
         ]
         exit_code, stdout, stderr = self.run_command(args)
-
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_message in stdout)
-        self.assertIn("warning", stderr)
+        self.assertNotIn("warning", stderr)
         self.assertTrue(self.check_issue_summary_tab_empty())
 
     def test_validate_with_invalid_log_level(self):
