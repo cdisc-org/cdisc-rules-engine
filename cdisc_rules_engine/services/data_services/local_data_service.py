@@ -184,7 +184,7 @@ class LocalDataService(BaseDataService):
             DataFormatTypes.JSON.value: DatasetJSONMetadataReader,
         }
         contents_metadata = _metadata_reader_map[file_name.split(".")[1].upper()](
-            file_path, file_name
+            file_metadata["path"], file_name
         ).read()
         return {
             "file_metadata": file_metadata,
