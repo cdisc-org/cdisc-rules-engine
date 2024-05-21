@@ -375,3 +375,277 @@ def test_is_not_valid_reference(data, context, dataset_type, expected_result):
         {"target": "target", "context": context}
     )
     assert result.equals(df.convert_to_series(expected_result))
+
+
+def test_empty_within_except_last_row():
+    df = pd.DataFrame.from_dict(
+        {
+            "USUBJID": [1, 1, 1, 2, 2, 2],
+            "valid": [
+                "2020-10-10",
+                "2020-10-10",
+                "2020-10-10",
+                "2021",
+                "2021",
+                "2021",
+            ],
+            "invalid": [
+                "2020-10-10",
+                None,
+                None,
+                "2020",
+                "2020",
+                None,
+            ],
+        }
+    )
+    valid_df = pd.DataFrame.from_dict(
+        {
+            "USUBJID": [
+                789,
+                789,
+                789,
+                789,
+                790,
+                790,
+                790,
+                790,
+            ],
+            "SESEQ": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+            ],
+            "SEENDTC": [
+                "2006-06-03T10:32",
+                "2006-06-10T09:47",
+                "2006-06-17",
+                "",
+                "2006-06-03T10:14",
+                "2006-06-10T10:32",
+                "2006-06-17",
+                "2006-06-17",
+            ],
+            "SESTDTC": [
+                "2006-06-01",
+                "2006-06-03T10:32",
+                "2006-06-10T09:47",
+                "2006-06-17",
+                "2006-06-01",
+                "2006-06-03T10:14",
+                "2006-06-10T10:32",
+                "2006-06-17",
+            ],
+        }
+    )
+    invalid_df = pd.DataFrame.from_dict(
+        {
+            "USUBJID": [
+                789,
+                789,
+                789,
+                789,
+                790,
+                790,
+                790,
+                790,
+            ],
+            "SESEQ": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+            ],
+            "SEENDTC": [
+                "",
+                "2006-06-10T09:47",
+                "2006-06-17",
+                "",
+                "2006-06-03T10:14",
+                "2006-06-10T10:32",
+                "2006-06-17",
+                "2006-06-17",
+            ],
+            "SESTDTC": [
+                "2006-06-01",
+                "2006-06-03T10:32",
+                "2006-06-10T09:47",
+                "2006-06-17",
+                "2006-06-01",
+                "2006-06-03T10:14",
+                "2006-06-10T10:32",
+                "2006-06-17",
+            ],
+        }
+    )
+    assert (
+        not DataframeType({"value": df})
+        .empty_within_except_last_row({"target": "valid", "comparator": "USUBJID"})
+        .equals(pd.Series({0: True, 1: True, 3: True, 4: True}))
+    )
+    assert (
+        DataframeType({"value": df})
+        .empty_within_except_last_row({"target": "invalid", "comparator": "USUBJID"})
+        .equals(pd.Series({0: False, 1: True, 3: False, 4: False}))
+    )
+    assert (
+        DataframeType({"value": valid_df})
+        .empty_within_except_last_row(
+            {"target": "SEENDTC", "ordering": "SESTDTC", "comparator": "USUBJID"}
+        )
+        .equals(pd.Series({0: False, 1: False, 2: False, 4: False, 5: False, 6: False}))
+    )
+    assert (
+        DataframeType({"value": invalid_df})
+        .empty_within_except_last_row(
+            {"target": "SEENDTC", "ordering": "SESTDTC", "comparator": "USUBJID"}
+        )
+        .equals(pd.Series({0: True, 1: False, 2: False, 4: False, 5: False, 6: False}))
+    )
+
+
+def test_non_empty_within_except_last_row():
+    df = pd.DataFrame.from_dict(
+        {
+            "USUBJID": [1, 1, 1, 2, 2, 2],
+            "valid": [
+                "2020-10-10",
+                "2020-10-10",
+                "2020-10-10",
+                "2021",
+                "2021",
+                "2021",
+            ],
+            "invalid": [
+                "2020-10-10",
+                None,
+                None,
+                "2020",
+                "2020",
+                None,
+            ],
+        }
+    )
+    valid_df = pd.DataFrame.from_dict(
+        {
+            "USUBJID": [
+                789,
+                789,
+                789,
+                789,
+                790,
+                790,
+                790,
+                790,
+            ],
+            "SESEQ": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+            ],
+            "SEENDTC": [
+                "2006-06-03T10:32",
+                "2006-06-10T09:47",
+                "2006-06-17",
+                "",
+                "2006-06-03T10:14",
+                "2006-06-10T10:32",
+                "2006-06-17",
+                "2006-06-17",
+            ],
+            "SESTDTC": [
+                "2006-06-01",
+                "2006-06-03T10:32",
+                "2006-06-10T09:47",
+                "2006-06-17",
+                "2006-06-01",
+                "2006-06-03T10:14",
+                "2006-06-10T10:32",
+                "2006-06-17",
+            ],
+        }
+    )
+    invalid_df = pd.DataFrame.from_dict(
+        {
+            "USUBJID": [
+                789,
+                789,
+                789,
+                789,
+                790,
+                790,
+                790,
+                790,
+            ],
+            "SESEQ": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+            ],
+            "SEENDTC": [
+                "",
+                "2006-06-10T09:47",
+                "2006-06-17",
+                "",
+                "2006-06-03T10:14",
+                "2006-06-10T10:32",
+                "2006-06-17",
+                "2006-06-17",
+            ],
+            "SESTDTC": [
+                "2006-06-01",
+                "2006-06-03T10:32",
+                "2006-06-10T09:47",
+                "2006-06-17",
+                "2006-06-01",
+                "2006-06-03T10:14",
+                "2006-06-10T10:32",
+                "2006-06-17",
+            ],
+        }
+    )
+    assert (
+        DataframeType({"value": df})
+        .non_empty_within_except_last_row({"target": "valid", "comparator": "USUBJID"})
+        .equals(pd.Series({0: True, 1: True, 3: True, 4: True}))
+    )
+    assert (
+        not DataframeType({"value": df})
+        .non_empty_within_except_last_row(
+            {"target": "invalid", "comparator": "USUBJID"}
+        )
+        .equals(pd.Series({0: False, 1: True, 3: False, 4: False}))
+    )
+    assert (
+        DataframeType({"value": valid_df})
+        .non_empty_within_except_last_row(
+            {"target": "SEENDTC", "ordering": "SESTDTC", "comparator": "USUBJID"}
+        )
+        .equals(pd.Series({0: True, 1: True, 2: True, 4: True, 5: True, 6: True}))
+    )
+    assert (
+        DataframeType({"value": invalid_df})
+        .non_empty_within_except_last_row(
+            {"target": "SEENDTC", "ordering": "SESTDTC", "comparator": "USUBJID"}
+        )
+        .equals(pd.Series({0: False, 1: True, 2: True, 4: True, 5: True, 6: True}))
+    )
