@@ -23,12 +23,11 @@ class DatasetXPTMetadataReader:
             self._estimate_dataset_length = True
             self.row_limit = 1
         else:
-            self._estimate_dataset_length = False
+            self._estimate_dataset_length = True
             self.row_limit = 0
         self._metadata_container = {}
         self._domain_name = None
         self._dataset_name = file_name.split(".")[0].upper()
-        self._file_path = file_path
         self._file_path = file_path
 
     def read(self) -> dict:
@@ -83,8 +82,74 @@ class DatasetXPTMetadataReader:
         return None
 
     def _calculate_dataset_length(self):
-        row_size = sum(self._metadata_container["variable_name_to_size_map"].values())
-        return int(os.path.getsize(self._file_path) / row_size)
+        df, meta = pyreadstat.read_xport(self._file_path, metadataonly=True)
+        row_size = sum(meta.variable_storage_width.values())
+        total_size = os.path.getsize(self._file_path)
+        padding = self._count_trailing_padding(self._file_path)
+        start = self._read_header(self._file_path)
+        breakpoint()
+        return (total_size - start - padding) / row_size
+
+    def _count_trailing_padding(self, file_path):
+        """
+        reads the file from the end in chunks of chunk_size bytes and counts the total number of trailing padding bytes
+        """
+        chunk_size = 300
+        padding_chars = (b"\x00", b" ")
+        total_size = os.path.getsize(file_path)
+        read_size = min(chunk_size, total_size)
+        total_padding = 0
+
+        with open(file_path, "rb") as file:
+            offset = total_size
+            while offset > 0:
+                new_offset = max(0, offset - read_size)
+                read_length = offset - new_offset
+                file.seek(new_offset)
+                data = file.read(read_length)
+
+                current_padding = 0
+                padding_found = False
+                for byte in reversed(data):
+                    byte = bytes([byte])
+                    if byte in padding_chars:
+                        if not padding_found:
+                            padding_found = True
+                        current_padding += 1
+                    else:
+                        if padding_found:
+                            break
+                if current_padding == read_length and padding_found:
+                    total_padding += current_padding
+                    offset = new_offset
+                else:
+                    total_padding += current_padding
+                    break
+        breakpoint()
+        return total_padding
+
+    def _read_header(self, file_path):
+        """
+        read the header of the file to find the start of the data section in 10kb chunks
+        """
+        marker = b"HEADER RECORD!!!!!!!000000000000000000000000000000"
+        chunk_size = 1024
+        read_header = b""
+        padding_chars = (b"\x00", b" ")
+        with open(file_path, "rb") as file:
+            while True:
+                chunk = file.read(chunk_size)
+                if not chunk:
+                    break
+                read_header += chunk
+                position = read_header.find(marker)
+                if position != -1:
+                    data_start = position + len(marker)
+                    for i in range(data_start, len(read_header)):
+                        if read_header[i : i + 1] not in padding_chars:
+                            breakpoint()
+                            return i
+        raise ValueError("End descriptor not found in the file header.")
 
     def _convert_variable_types(self):
         """
