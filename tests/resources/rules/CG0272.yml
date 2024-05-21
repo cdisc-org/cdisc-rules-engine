@@ -66,8 +66,8 @@ Check:
         - name: TSVAL
           operator: non_empty
 Core:
-  Id: CDISC.SDTMIG.CG0272
-  Status: Draft
+  Id: CORE-000473
+  Status: Published
   Version: "1"
 Description: "Raise an error when a record exists in TS where TSPARMCD =
   HLTSUBJI and TSVAL = Y but TSVAL for TSPARMCD = TDIGRP is not empty or does

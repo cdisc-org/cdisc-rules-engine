@@ -730,15 +730,19 @@ class DataframeType(BaseType):
     def empty_within_except_last_row(self, other_value: dict):
         target = self.replace_prefix(other_value.get("target"))
         comparator = other_value.get("comparator")
+        order_by_column: str = self.replace_prefix(other_value.get("ordering"))
         # group all targets by comparator
-        grouped_target = self.value.groupby(comparator)[target]
+        if order_by_column:
+            ordered_df = self.value.sort_values(by=[comparator, order_by_column])
+        else:
+            ordered_df = self.value.sort_values(by=[comparator])
+        grouped_target = ordered_df.groupby(comparator)[target]
         # validate all targets except the last one
         results = grouped_target.apply(lambda x: x[:-1]).apply(
             lambda x: x in ["", None]
         )
-        # extract values with corresponding indexes from results
-        self.value[f"result_{uuid4()}"] = results.reset_index(level=0, drop=True)
-        return True in results.values
+        # return values with corresponding indexes from results
+        return pd.Series(results.reset_index(level=0, drop=True))
 
     @type_operator(FIELD_DATAFRAME)
     def non_empty(self, other_value: dict):
@@ -748,15 +752,19 @@ class DataframeType(BaseType):
     def non_empty_within_except_last_row(self, other_value: dict):
         target = self.replace_prefix(other_value.get("target"))
         comparator = other_value.get("comparator")
+        order_by_column: str = self.replace_prefix(other_value.get("ordering"))
         # group all targets by comparator
-        grouped_target = self.value.groupby(comparator)[target]
+        if order_by_column:
+            ordered_df = self.value.sort_values(by=[comparator, order_by_column])
+        else:
+            ordered_df = self.value.sort_values(by=[comparator])
+        grouped_target = ordered_df.groupby(comparator)[target]
         # validate all targets except the last one
         results = ~grouped_target.apply(lambda x: x[:-1]).apply(
             lambda x: x in ["", None]
         )
-        # extract values with corresponding indexes from results
-        self.value[f"result_{uuid4()}"] = results.reset_index(level=0, drop=True)
-        return not (False in results.values)
+        # return values with corresponding indexes from results
+        return pd.Series(results.reset_index(level=0, drop=True))
 
     @type_operator(FIELD_DATAFRAME)
     def contains_all(self, other_value: dict):

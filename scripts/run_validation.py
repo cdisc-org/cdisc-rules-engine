@@ -146,7 +146,7 @@ def run_validation(args: Validation_args):
             created_files.append(new_file)
             dataset["full_path"] = new_file
             dataset["length"] = num_rows
-
+            dataset["original_path"] = file_path
     engine_logger.info(f"Running {len(rules)} rules against {len(datasets)} datasets")
     start = time.time()
     results = []
