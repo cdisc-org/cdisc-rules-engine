@@ -102,18 +102,20 @@ class DatasetXPTMetadataReader:
         with open(file_path, "rb") as file:
             file.seek(0, os.SEEK_END)
             file_size = file.tell()
-            last_possible_start = max(80, file_size - 80)
-            file.seek(last_possible_start)
-            last_data = file.read(80)
+            file.seek(file_size - 1)
 
         padding_size = 0
-        for i in range(0, 80, row_size):
-            if i + row_size <= len(last_data):
-                potential_record = last_data[i : i + row_size]
-                if all(x == 32 for x in potential_record):
-                    padding_size += row_size
-                else:
-                    break
+        while file.tell() > 0:
+            byte = file.read(1)
+            # may need to change this check to include null bytes; or ASCII 32 digit for space
+            if byte == b" ":
+                padding_size += 1
+                # Move back 2: 1 for the byte just read, 1 more to move to the next byte to check
+                if file.tell() == 1:
+                    break  # if we are at the beginning of the file, break
+                file.seek(file.tell() - 2)
+            else:
+                break
 
         return padding_size
         # old padding calculator
