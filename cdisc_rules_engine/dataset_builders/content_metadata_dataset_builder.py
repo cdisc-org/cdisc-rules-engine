@@ -15,7 +15,7 @@ class ContentMetadataDatasetBuilder(BaseDatasetBuilder):
             self.dataset_path, size_unit=size_unit
         )
 
-    def build_split_datasets(self, name):
+    def build_split_datasets(self, dataset_name):
         """
         Returns the metadata from a given file as a dataframe with columns:
         dataset_size - File size
@@ -24,4 +24,4 @@ class ContentMetadataDatasetBuilder(BaseDatasetBuilder):
         dataset_label - Label for the dataset
         """
         size_unit: str = self.rule_processor.get_size_unit_from_rule(self.rule)
-        return self.data_service.get_dataset_metadata(name, size_unit=size_unit)
+        return self.data_service.get_dataset_metadata(dataset_name, size_unit=size_unit)
