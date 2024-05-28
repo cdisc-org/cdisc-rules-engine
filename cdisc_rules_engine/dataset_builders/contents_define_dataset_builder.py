@@ -33,13 +33,14 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
         define_df["merge_key"] = define_df["define_dataset_name"] + define_df[
             "define_dataset_location"
         ].apply(lambda x: x if x else "")
+        breakpoint()
 
         # 2. Build dataset dataframe
         dataset_df = self._get_dataset_dataframe()
         dataset_df["merge_key"] = dataset_df["dataset_name"] + dataset_df[
             "dataset_location"
         ].apply(lambda x: x if x else "")
-
+        breakpoint()
         # 3. Merge the two data frames
         merged = dataset_df.merge(
             define_df.data,
@@ -47,7 +48,7 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
             on="merge_key",
         )
         merged.drop(columns=["merge_key"])
-
+        breakpoint()
         # 4. Replace Nan with None
         # outer join, so some data contents may be missing or some define metadata may
         # be missing. Replace nans with None
