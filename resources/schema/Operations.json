@@ -356,6 +356,12 @@
       },
       "type": "array"
     },
+    "group_aliases": {
+      "items": {
+        "$ref": "CORE-base.json#/$defs/VariableName"
+      },
+      "type": "array"
+    },
     "id": {
       "type": "string"
     },

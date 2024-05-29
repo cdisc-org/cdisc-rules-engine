@@ -40,6 +40,8 @@ If no target variable `name` specified, returns a dictionary containing the spec
 
 Get a distinct list of values for the given `name`. If a `group` list is specified, the distinct value list will be grouped by the variables within `group`.
 
+If `group` is provided, `group_aliases` may also be provided to assign new grouping variable names so that results grouped by the values in one set of grouping variables can be merged onto a dataset according to the same grouping value(s) stored in different set of grouping variables. When both `group` and `group_aliases` are provided, columns are renamed according to corresponding list position (i.e., the 1st column in `group` is renamed to the 1st columnin `group_aliases`, etc.). If there are more columns listed in `group` than in `group_aliases`, only the `group` columns with corresponding `group_aliases` columns will be renamed. If there are more columns listed in `group_aliases` than in `group`, the extra column names in `group_aliases` will be ignored. See [record_count](#record_count) for an example of the use of `group_aliases`.
+
 ```yaml
 Check:
   all:
@@ -51,13 +53,13 @@ Check:
       operator: does_not_contain
       value: DEATH
       value_is_literal: true
-  Operations:
-    - operator: distinct
-      domain: DS
-      name: DSDECOD
-      id: $ds_dsdecod
-      group:
-        - USUBJID
+Operations:
+  - operator: distinct
+    domain: DS
+    name: DSDECOD
+    id: $ds_dsdecod
+    group:
+      - USUBJID
 ```
 
 ## domain_is_custom
@@ -312,8 +314,8 @@ Generates a dataframe where each record in the dataframe is the library ig varia
   Rule:
 
   ```yaml
-  - operation: label_referenced_variable_metadata`
-    id: $label_referenced_variable_metadata`
+  - operation: label_referenced_variable_metadata
+    id: $label_referenced_variable_metadata
     name: "QLABEL"
   ```
 
@@ -515,7 +517,62 @@ Returns the permissible variables for a given domain and standard
 
 ## record_count
 
-If no 'filter' or 'group' is provided, returns the number of records in the dataset. If 'filter' is provided, returns the number of records in the dataset that contain the values(s) in the corresponding column(s) provided in the filter. If 'group' is provided, returns the number of rows matching each unique set of the grouping variables. If both 'filter' and 'group' are provided, returns the number of records in the dataset that contain the values(s) in the corresponding column(s) provided in the filter that also match each unique set of the grouping variables.
+If no `filter` or `group` is provided, returns the number of records in the dataset. If `filter` is provided, returns the number of records in the dataset that contain the value(s) in the corresponding column(s) provided in the filter. If `group` is provided, returns the number of rows matching each unique set of the grouping variables. If both `filter` and `group` are provided, returns the number of records in the dataset that contain the value(s) in the corresponding column(s) provided in the filter that also match each unique set of the grouping variables.
+
+If `group` is provided, `group_aliases` may also be provided to assign new grouping variable names so that results grouped by the values in one set of grouping variables can be merged onto a dataset according to the same grouping value(s) stored in different set of grouping variables. When both `group` and `group_aliases` are provided, columns are renamed according to corresponding list position (i.e., the 1st column in `group` is renamed to the 1st columnin `group_aliases`, etc.). If there are more columns listed in `group` than in `group_aliases`, only the `group` columns with corresponding `group_aliases` columns will be renamed. If there are more columns listed in `group_aliases` than in `group`, the extra column names in `group_aliases` will be ignored.
+
+Example: return the number of records in a dataset.
+
+```yaml
+- operation: record_count
+  id: $records_in_dataset
+```
+
+Example: return the number of records where STUDYID = "CDISC01" and FLAGVAR = "Y".
+
+```yaml
+- operation: record_count
+  id: $flagged_cdisc01_records_in_dataset
+  filter:
+    STUDYID: "CDISC01"
+    FLAGVAR: "Y"
+```
+
+Example: return the number of records grouped by USUBJID.
+
+```yaml
+- operation: record_count
+  id: $records_per_usubjid
+  group:
+    - USUBJID
+```
+
+Example: return the number of records grouped by USUBJID where FLAGVAR = "Y".
+
+```yaml
+- operation: record_count
+  id: $flagged_records_per_usubjid
+  group:
+    - USUBJID
+  filter:
+    FLAGVAR: "Y"
+```
+
+Example: return the number of records grouped by USUBJID and IDVARVAL where QNAM = "TEST1" and "IDVAR" = "GROUPID", renaming the IDVARVAL column to GROUPID for subsequent merging.
+
+```yaml
+- operation: record_count
+  id: $test1_records_per_usubjid_groupid
+  group:
+    - USUBJID
+    - IDVARVAL
+  filter:
+    QNAM: "TEST1"
+    IDVAR: "GROUPID"
+  group_aliases:
+    - USUBJID
+    - GROUPID
+```
 
 ## required_variables
 
@@ -530,8 +587,8 @@ Returns the required variables for a given domain and standard
   Version: `3-4`
 
   ```yaml
-  - operation: required_variables`
-    id: $required_variables`
+  - operation: required_variables
+    id: $required_variables
   ```
 
 - Output:
