@@ -189,10 +189,9 @@ def load_rules_from_local(args) -> List[dict]:
         rule = load_and_parse_rule(rule_file)
         if rule:
             process_rule(rule, args, rule_data, rules, keys)
-    missing_keys = set()
+
     if keys:
         missing_keys = keys - rule_data.keys()
-    if missing_keys:
         missing_keys_str = ", ".join(missing_keys)
         engine_logger.error(
             f"Specified rules not found in the local directory: {missing_keys_str}"
