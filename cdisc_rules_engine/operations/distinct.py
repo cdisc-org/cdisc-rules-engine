@@ -22,6 +22,8 @@ class Distinct(BaseOperation):
                     .rename({self.params.target: self.params.operation_id})
                 )
                 result = result.apply(set).to_frame().reset_index()
+            if self.params.grouping_aliases:
+                result = self._rename_grouping_columns(result)
         return result
 
     def _unique_values_for_column(self, column):
