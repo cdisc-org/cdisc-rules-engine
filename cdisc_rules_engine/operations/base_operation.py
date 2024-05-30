@@ -68,23 +68,16 @@ class BaseOperation:
     def _handle_grouped_result(self, result):
         # Handle grouped results
         result = result.rename(columns={self.params.target: self.params.operation_id})
-        grouping_columns = (
-            self.params.grouping
-            if not self.params.grouping_aliases
-            else [
-                self.params.grouping_aliases[i]
-                if 0 <= i < len(self.params.grouping_aliases)
-                else v
-                for i, v in enumerate(self.params.grouping)
-            ]
-        )
+        grouping_columns = self._get_grouping_columns()
         target_columns = grouping_columns + [self.params.operation_id]
         result = result.reset_index()
         merged = self.evaluation_dataset.merge(
             result[target_columns], on=grouping_columns, how="left"
         )
-        self.data_service._replace_nans_in_numeric_cols_with_none(merged)
-        return merged
+        self.data_service._replace_nans_in_specified_cols_with_none(
+            merged, [self.params.operation_id]
+        )
+        return self.evaluation_dataset.__class__(merged.data)
 
     def _handle_dictionary_result(self, result):
         self.evaluation_dataset[self.params.operation_id] = [result] * len(
@@ -108,6 +101,18 @@ class BaseOperation:
                 if 0 <= i < len(self.params.grouping_aliases)
                 and self.params.grouping_aliases[i] != v
             }
+        )
+
+    def _get_grouping_columns(self) -> List[str]:
+        return (
+            self.params.grouping
+            if not self.params.grouping_aliases
+            else [
+                self.params.grouping_aliases[i]
+                if 0 <= i < len(self.params.grouping_aliases)
+                else v
+                for i, v in enumerate(self.params.grouping)
+            ]
         )
 
     def _get_variables_metadata_from_standard(self) -> List[dict]:
