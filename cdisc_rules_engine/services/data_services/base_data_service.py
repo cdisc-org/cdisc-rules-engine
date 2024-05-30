@@ -328,7 +328,7 @@ class BaseDataService(DataServiceInterface, ABC):
         """
         if isinstance(column_names, List):
             column_names = dataset.data[column_names].columns
-        dataset[column_names] = dataset.data[column_names].replace(np.nan, None)
+        dataset.data = dataset.data.replace(np.nan, {col: None for col in column_names})
 
     async def _async_get_dataset(
         self, function_to_call: Callable, dataset_name: str, **kwargs
