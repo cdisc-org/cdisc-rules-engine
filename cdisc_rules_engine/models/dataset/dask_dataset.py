@@ -2,7 +2,7 @@ from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 import dask.dataframe as dd
 import dask.array as da
 import pandas as pd
-from typing import List
+from typing import List, Union
 
 DEFAULT_NUM_PARTITIONS = 4
 
@@ -57,9 +57,15 @@ class DaskDataset(PandasDataset):
         dataframe = dd.from_pandas(data, npartitions=DEFAULT_NUM_PARTITIONS)
         return cls(dataframe)
 
-    def get(self, column: str, default=None):
-        if column in self._data:
-            return self._data[column].compute()
+    def get(self, target: Union[str, List[str]], default=None):
+        if isinstance(target, list):
+            for column in target:
+                if column not in self._data:
+                    # List contains values not in the dataset, treat as list of values
+                    return default
+            return self._data[target].compute()
+        elif target in self._data:
+            return self._data[target].compute()
         return default
 
     def apply(self, func, **kwargs):

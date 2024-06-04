@@ -159,3 +159,79 @@ def test_not_contains_all(data, comparator, dataset_type, expected_result):
         {"target": "target", "comparator": comparator}
     )
     assert result.equals(df.convert_to_series(expected_result))
+
+
+@pytest.mark.parametrize(
+    "data,comparator,dataset_type, expected_result",
+    [
+        (
+            {"target": ["Ctt", "Btt", "A"], "VAR2": ["A", "btt", "lll"]},
+            ["Ctt", "B", "A"],
+            PandasDataset,
+            [True, False, True],
+        ),
+        (
+            {"target": ["A", "B", "C"]},
+            ["C", "Z", "A"],
+            DaskDataset,
+            [True, False, True],
+        ),
+        (
+            {"target": [1, 2, 3], "VAR2": [[1, 2], [3], [3]]},
+            "VAR2",
+            PandasDataset,
+            [True, False, True],
+        ),
+        (
+            {"target": [1, 2, 3], "VAR2": [[1, 2], [3], [3]]},
+            "VAR2",
+            DaskDataset,
+            [True, False, True],
+        ),
+    ],
+)
+def test_is_contained_by(data, comparator, dataset_type, expected_result):
+    df = dataset_type.from_dict(data)
+    dataframe_operator = DataframeType({"value": df})
+    result = dataframe_operator.is_contained_by(
+        {"target": "target", "comparator": comparator}
+    )
+    assert result.equals(df.convert_to_series(expected_result))
+
+
+@pytest.mark.parametrize(
+    "data,comparator,dataset_type, expected_result",
+    [
+        (
+            {"target": ["Ctt", "Btt", "A"], "VAR2": ["A", "btt", "lll"]},
+            ["Ctt", "B", "A"],
+            PandasDataset,
+            [False, True, False],
+        ),
+        (
+            {"target": ["A", "B", "C"]},
+            ["C", "Z", "A"],
+            DaskDataset,
+            [False, True, False],
+        ),
+        (
+            {"target": [1, 2, 3], "VAR2": [[1, 2], [2], [2]]},
+            "VAR2",
+            PandasDataset,
+            [False, False, True],
+        ),
+        (
+            {"target": [1, 2, 3], "VAR2": [[1, 2], [2], [2]]},
+            "VAR2",
+            DaskDataset,
+            [False, False, True],
+        ),
+    ],
+)
+def test_is_not_contained_by(data, comparator, dataset_type, expected_result):
+    df = dataset_type.from_dict(data)
+    dataframe_operator = DataframeType({"value": df})
+    result = dataframe_operator.is_not_contained_by(
+        {"target": "target", "comparator": comparator}
+    )
+    assert result.equals(df.convert_to_series(expected_result))
