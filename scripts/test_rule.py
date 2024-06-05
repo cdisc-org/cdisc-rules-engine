@@ -69,6 +69,7 @@ def validate_single_rule(
         define_xml_path=args.define_xml_path,
         library_metadata=library_metadata,
         validate_xml=args.validate_xml,
+        dataset_paths=args.dataset_path,
     )
     validated_domains = set()
     results = []
@@ -93,7 +94,7 @@ def validate_single_rule(
                 validated_domains.add(dataset.domain)
                 validated_result = engine.test_validation(
                     rule,
-                    os.path.join(directory, dataset.filename),
+                    args.dataset_path,
                     datasets,
                     dataset.domain,
                 )

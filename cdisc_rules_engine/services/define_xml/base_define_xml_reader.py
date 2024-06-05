@@ -81,7 +81,6 @@ class BaseDefineXMLReader(ABC):
             output = []
             for domain_metadata in metadata.ItemGroupDef:
                 output.append(self._get_metadata_representation(domain_metadata))
-            breakpoint()
             return output
         except Exception as e:
             raise FailedSchemaValidation(str(e))
