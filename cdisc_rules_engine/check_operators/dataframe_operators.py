@@ -16,6 +16,7 @@ import numpy as np
 import pandas as pd
 import operator
 from uuid import uuid4
+from cdisc_rules_engine.models.dataset.dask_dataset import DaskDataset
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from pandas.api.types import is_integer_dtype
 
@@ -741,6 +742,8 @@ class DataframeType(BaseType):
         results = grouped_target.apply(lambda x: x[:-1]).apply(
             lambda x: x in ["", None]
         )
+        if isinstance(self.value, DaskDataset) and self.value.is_series(results):
+            return results.compute()
         # return values with corresponding indexes from results
         return pd.Series(results.reset_index(level=0, drop=True))
 
@@ -763,6 +766,9 @@ class DataframeType(BaseType):
         results = ~grouped_target.apply(lambda x: x[:-1]).apply(
             lambda x: x in ["", None]
         )
+        if isinstance(self.value, DaskDataset) and self.value.is_series(results):
+            return results.compute()
+
         # return values with corresponding indexes from results
         return pd.Series(results.reset_index(level=0, drop=True))
 
@@ -1027,7 +1033,8 @@ class DataframeType(BaseType):
         comparator = self.replace_prefix(other_value.get("comparator"))
         group_by_column: str = self.replace_prefix(other_value.get("within"))
         order_by_column: str = self.replace_prefix(other_value.get("ordering"))
-        ordered_df = self.value.sort_values(by=[order_by_column])
+        target_columns = [target, comparator, group_by_column, order_by_column]
+        ordered_df = self.value[target_columns].sort_values(by=[order_by_column])
         grouped_df = ordered_df.groupby(group_by_column)
         results = grouped_df.apply(
             lambda x: self.compare_target_with_comparator_next_row(
@@ -1062,7 +1069,7 @@ class DataframeType(BaseType):
                 *results,
                 np.NAN,
             ]
-        )
+        ).tolist()
 
     @type_operator(FIELD_DATAFRAME)
     def present_on_multiple_rows_within(self, other_value: dict):
@@ -1272,7 +1279,8 @@ class DataframeType(BaseType):
             na_pos: str = col["null_position"]
 
             grouped_df = (
-                self.value.sort_values(by=[within, comparator], na_position=na_pos)
+                self.value[[target, within, comparator]]
+                .sort_values(by=[within, comparator], na_position=na_pos)
                 .groupby([within])
                 .apply(lambda x: x)
             )

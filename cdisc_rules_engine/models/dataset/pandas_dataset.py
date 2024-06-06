@@ -183,3 +183,9 @@ class PandasDataset(DatasetInterface):
         Return the cartesian product of two dataframes
         """
         return cls(left.merge(right, how="cross"))
+
+    def sort_values(self, by: Union[str, list[str]], **kwargs) -> "pd.Dataframe":
+        """
+        Sort the underlying dataframe and return a raw dataframe.
+        """
+        return self._data.sort_values(by, **kwargs)
