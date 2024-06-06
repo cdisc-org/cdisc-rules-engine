@@ -62,10 +62,8 @@ class PandasDataset(DatasetInterface):
     def __contains__(self, item: str) -> bool:
         return item in self._data
 
-    def get(self, column: str, default=None):
-        if column in self._data:
-            return self._data[column]
-        return default
+    def get(self, target: Union[str, List[str]], default=None):
+        return self._data.get(target, default)
 
     def groupby(self, by: List[str], **kwargs):
         return self.__class__(self._data.groupby(by, **kwargs))
