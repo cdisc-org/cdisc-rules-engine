@@ -5,6 +5,7 @@ from typing import Callable, List, Optional, Iterable, Iterator
 from concurrent.futures import ThreadPoolExecutor
 import os
 import numpy as np
+import pandas as pd
 
 from cdisc_rules_engine.constants.domains import AP_DOMAIN_LENGTH
 from cdisc_rules_engine.interfaces import (
@@ -32,6 +33,7 @@ from cdisc_rules_engine.utilities.utils import (
 from cdisc_rules_engine.utilities.sdtm_utilities import get_class_and_domain_metadata
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from cdisc_rules_engine.models.dataset import PandasDataset
+from cdisc_rules_engine.dummy_models.dummy_dataset import DummyDataset
 
 
 def cached_dataset(dataset_type: str):
@@ -119,43 +121,96 @@ class BaseDataService(DataServiceInterface, ABC):
         )
 
     def concat_split_datasets(
-        self, func_to_call: Callable, dataset_names: List[str], **kwargs
+        self,
+        func_to_call: Callable,
+        dataset_names: List[str],
+        dataset_path: Optional[str] = None,
+        **kwargs,
     ) -> DatasetInterface:
         """
-        Accepts a list of split dataset filenames, asynchronously downloads
-        all of them and merges into a single DataFrame.
+        Accepts a list of split dataset filenames or Parent/Supplementary dataset filenames,
+        asynchronously downloads all of them and merges into a single DataFrame.
 
         function_to_call must accept dataset_name and kwargs
         as input parameters and return pandas DataFrame.
         """
         # pop drop_duplicates param at the beginning to avoid passing it to func_to_call
         drop_duplicates: bool = kwargs.pop("drop_duplicates", False)
-
-        # download datasets asynchronously
-        datasets: Iterable[DatasetInterface] = self._async_get_datasets(
-            func_to_call, dataset_names, **kwargs
-        )
-
+        # check if multiple datasets at same directory path
+        # dataset_names paths will not exist in this case
+        single_datafile = [name for name in dataset_names if not os.path.exists(name)]
+        if single_datafile:
+            # datasets: Iterable[DatasetInterface] = self._async_get_datasets(
+            #     func_to_call, dataset_names, **kwargs
+            # )
+            datasets: Iterable[DatasetInterface] = []
+            for name in dataset_names:
+                dataset = self.get_dataset_data(dataset_name=name)
+                datasets.append(dataset)
+            breakpoint()
+        else:
+            # download datasets asynchronously
+            datasets: Iterable[DatasetInterface] = self._async_get_datasets(
+                func_to_call, dataset_names, **kwargs
+            )
         full_dataset = self.dataset_implementation()
         for dataset in datasets:
             if "RDOMAIN" in dataset.columns:
+                if isinstance(dataset, DummyDataset):
+                    dataset = dataset.data
+                    breakpoint()
                 full_dataset = self.merge_supp_dataset(full_dataset, dataset)
             else:
                 full_dataset = full_dataset.concat(dataset, ignore_index=True)
-
         if drop_duplicates:
             full_dataset.drop_duplicates()
+        breakpoint()
+        full_dataset = func_to_call()
+        breakpoint()
         return full_dataset
 
     def merge_supp_dataset(self, full_dataset, supp_dataset):
-        merge_keys = ["STUDYID", "USUBJID", "APID", "POOLID", "SPDEVID"]
-        merged_df = full_dataset.merge(
-            supp_dataset,
-            how="inner",
-            on=merge_keys,
-            left_on="IDVAR",
-            right_on="IDVARVAL",
+        if supp_dataset["RDOMAIN"].iloc[0] != full_dataset["DOMAIN"].iloc[0]:
+            raise ValueError(
+                "No matching RDOMAIN found in the supplementary dataset for the parent dataset DOMAIN."
+            )
+
+        # static keys for merge
+        static_keys = ["STUDYID", "USUBJID", "APID", "POOLID", "SPDEVID"]
+        # Determine the common keys present in both datasets
+        common_keys = [
+            key
+            for key in static_keys
+            if key in full_dataset.columns and key in supp_dataset.columns
+        ]
+        dynamic_key = supp_dataset["IDVAR"].iloc[0]
+        supp_df_filtered = supp_dataset.copy()
+        unique_qnams = supp_df_filtered["QNAM"].unique()
+        for qnam in unique_qnams:
+            current_supp = supp_df_filtered[supp_df_filtered["QNAM"] == qnam]
+            if (
+                "IDVARVAL" in current_supp.columns
+                and dynamic_key in full_dataset.columns
+            ):
+                common_keys.append(dynamic_key)
+                current_supp = current_supp.rename(columns={"IDVARVAL": dynamic_key})
+        full_dataset[dynamic_key] = full_dataset[dynamic_key].astype(str)
+        current_supp[dynamic_key] = current_supp[dynamic_key].astype(str)
+        merged_df = pd.merge(
+            full_dataset.data,
+            current_supp,
+            how="left",
+            on=common_keys,
+            suffixes=("", "_supp"),
         )
+        breakpoint()
+        if merged_df.duplicated(subset=common_keys).any():
+            raise ValueError(
+                f"Multiple Supp records with the same QNAM '{qnam}' match a single parent record"
+            )
+        # Add new columns corresponding to each QNAM
+        merged_df = PandasDataset(merged_df)
+        breakpoint()
         return merged_df
 
     def get_dataset_class(

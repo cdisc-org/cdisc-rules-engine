@@ -62,7 +62,13 @@ class DataServiceInterface(ABC):
         """
 
     @abstractmethod
-    def concat_split_datasets(self, func_to_call: Callable, dataset_names, **kwargs):
+    def concat_split_datasets(
+        self,
+        func_to_call: Callable,
+        dataset_names,
+        dataset_path: Optional[str],
+        **kwargs
+    ):
         """
         Accepts a list of split dataset filenames,
         downloads all of them and merges into a single DataFrame.

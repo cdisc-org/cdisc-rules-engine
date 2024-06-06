@@ -183,6 +183,7 @@ class RulesEngine:
                 error_obj.domain = dataset_domain
                 return [error_obj.to_representation()]
         except Exception as e:
+            breakpoint()
             logger.trace(e, __name__)
             logger.error(
                 f"""Error occurred during validation.
@@ -284,6 +285,7 @@ class RulesEngine:
         kwargs["ct_packages"] = list(self.ct_packages)
 
         logger.info(f"Using dataset build by: {builder.__class__}")
+        breakpoint()
         return self.execute_rule(
             rule, dataset, dataset_path, datasets, domain, **kwargs
         )
@@ -349,6 +351,7 @@ class RulesEngine:
             codelist_term_maps=codelist_term_maps,
         )
         results = []
+        breakpoint()
         run(
             serialize_rule(rule_copy),  # engine expects a JSON serialized dict
             defined_variables=dataset_variable,
@@ -360,6 +363,7 @@ class RulesEngine:
                 value_level_metadata=value_level_metadata,
             ),
         )
+        breakpoint()
         return results
 
     def get_define_xml_metadata_for_domain(

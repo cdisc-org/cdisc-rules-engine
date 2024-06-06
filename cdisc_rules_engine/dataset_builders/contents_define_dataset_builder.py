@@ -33,14 +33,12 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
         define_df["merge_key"] = define_df["define_dataset_name"] + define_df[
             "define_dataset_location"
         ].apply(lambda x: x if x else "")
-        breakpoint()
 
         # 2. Build dataset dataframe
         dataset_df = self._get_dataset_dataframe()
         dataset_df["merge_key"] = dataset_df["dataset_name"] + dataset_df[
             "dataset_location"
         ].apply(lambda x: x if x else "")
-        breakpoint()
         # 3. Merge the two data frames
         merged = dataset_df.merge(
             define_df.data,
@@ -48,11 +46,34 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
             on="merge_key",
         )
         merged.drop(columns=["merge_key"])
-        breakpoint()
         # 4. Replace Nan with None
-        # outer join, so some data contents may be missing or some define metadata may
-        # be missing. Replace nans with None
         merged_no_nans = merged.where(pd.notnull(merged.data), None)
+        breakpoint()
+        return merged_no_nans
+
+    def build_split_datasets(self, name=None):
+        breakpoint()
+        # 1. Build define xml dataframe
+        define_df = self._get_define_xml_dataframe()
+        define_df["merge_key"] = define_df["define_dataset_name"] + define_df[
+            "define_dataset_location"
+        ].apply(lambda x: x if x else "")
+
+        # 2. Build dataset dataframe
+        dataset_df = self._get_dataset_dataframe()
+        dataset_df["merge_key"] = dataset_df["dataset_name"] + dataset_df[
+            "dataset_location"
+        ].apply(lambda x: x if x else "")
+        # 3. Merge the two data frames
+        merged = dataset_df.merge(
+            define_df.data,
+            how="outer",
+            on="merge_key",
+        )
+        merged.drop(columns=["merge_key"])
+        # 4. Replace Nan with None
+        merged_no_nans = merged.where(pd.notnull(merged.data), None)
+        breakpoint()
         return merged_no_nans
 
     def _get_define_xml_dataframe(self):
@@ -79,7 +100,6 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
             "dataset_name",
             "dataset_label",
         ]
-        # breakpoint()
         if len(self.datasets) == 0:
             dataset_df = self.dataset_implementation(columns=dataset_col_order)
             logger.info(f"No datasets metadata is provided in {__name__}.")
@@ -90,7 +110,6 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
                     ds_metadata = self.data_service.get_dataset_metadata(
                         dataset["filename"]
                     )
-                    # breakpoint()
                 except Exception as e:
                     logger.trace(e, __name__)
                     logger.error(f"Error: {e}. Error message: {str(e)}")
@@ -99,7 +118,6 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
                     if datasets.data.empty
                     else datasets.data.append(ds_metadata.data)
                 )
-                # breakpoint()
 
             if datasets.data.empty or len(datasets.data) == 0:
                 dataset_df = self.dataset_implementation(columns=dataset_col_order)

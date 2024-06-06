@@ -119,5 +119,4 @@ class DefineXMLReaderFactory:
         define_xml_reader = DefineXMLReaderFactory.from_file_contents(
             define_xml_contents, cache_service_obj=cache
         )
-
         return define_xml_reader
