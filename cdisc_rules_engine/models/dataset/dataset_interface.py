@@ -191,3 +191,9 @@ class DatasetInterface(ABC):
         """
         Return the cartesian product of two dataframes
         """
+
+    @abstractmethod
+    def sort_values(self, by, **kwargs):
+        """
+        Sort the dataframe by the provided columns
+        """
