@@ -1,6 +1,3 @@
-# import pandas as pd
-# import xport.v56
-# from xport import LOG as XPORT_LOG
 import pyreadstat
 
 from cdisc_rules_engine.services import logger
