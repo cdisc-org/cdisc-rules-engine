@@ -20,7 +20,7 @@ class DatasetXPTMetadataReader:
             self._estimate_dataset_length = True
             self.row_limit = 1
         else:
-            self._estimate_dataset_length = True
+            self._estimate_dataset_length = False
             self.row_limit = 0
         self._metadata_container = {}
         self._domain_name = None
