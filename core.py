@@ -497,7 +497,7 @@ def list_ct(cache_path: str, subsets: Tuple[str]):
         subsets = set([subset.lower() for subset in subsets])
 
     for file in os.listdir(cache_path):
-        file_prefix = file.split("-")[0]
+        file_prefix = file[0 : file.find("ct-") + 2]
         if file_prefix.endswith("ct") and (not subsets or file_prefix in subsets):
             print(os.path.splitext(file)[0])
 
