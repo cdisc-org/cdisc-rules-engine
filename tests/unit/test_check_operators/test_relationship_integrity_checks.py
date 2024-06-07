@@ -3,6 +3,7 @@ import pytest
 from cdisc_rules_engine.models.dataset.dask_dataset import DaskDataset
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 import pandas as pd
+import numpy as np
 
 
 @pytest.mark.parametrize(
@@ -375,3 +376,848 @@ def test_is_not_valid_reference(data, context, dataset_type, expected_result):
         {"target": "target", "context": context}
     )
     assert result.equals(df.convert_to_series(expected_result))
+
+
+@pytest.mark.parametrize("dataset_class", [PandasDataset, DaskDataset])
+def test_empty_within_except_last_row(dataset_class):
+    df = dataset_class.from_dict(
+        {
+            "USUBJID": [1, 1, 1, 2, 2, 2],
+            "valid": [
+                "2020-10-10",
+                "2020-10-10",
+                "2020-10-10",
+                "2021",
+                "2021",
+                "2021",
+            ],
+            "invalid": [
+                "2020-10-10",
+                None,
+                None,
+                "2020",
+                "2020",
+                None,
+            ],
+        }
+    )
+    valid_df = dataset_class.from_dict(
+        {
+            "USUBJID": [
+                789,
+                789,
+                789,
+                789,
+                790,
+                790,
+                790,
+                790,
+            ],
+            "SESEQ": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+            ],
+            "SEENDTC": [
+                "2006-06-03T10:32",
+                "2006-06-10T09:47",
+                "2006-06-17",
+                "",
+                "2006-06-03T10:14",
+                "2006-06-10T10:32",
+                "2006-06-17",
+                "2006-06-17",
+            ],
+            "SESTDTC": [
+                "2006-06-01",
+                "2006-06-03T10:32",
+                "2006-06-10T09:47",
+                "2006-06-17",
+                "2006-06-01",
+                "2006-06-03T10:14",
+                "2006-06-10T10:32",
+                "2006-06-17",
+            ],
+        }
+    )
+    invalid_df = dataset_class.from_dict(
+        {
+            "USUBJID": [
+                789,
+                789,
+                789,
+                789,
+                790,
+                790,
+                790,
+                790,
+            ],
+            "SESEQ": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+            ],
+            "SEENDTC": [
+                "",
+                "2006-06-10T09:47",
+                "2006-06-17",
+                "",
+                "2006-06-03T10:14",
+                "2006-06-10T10:32",
+                "2006-06-17",
+                "2006-06-17",
+            ],
+            "SESTDTC": [
+                "2006-06-01",
+                "2006-06-03T10:32",
+                "2006-06-10T09:47",
+                "2006-06-17",
+                "2006-06-01",
+                "2006-06-03T10:14",
+                "2006-06-10T10:32",
+                "2006-06-17",
+            ],
+        }
+    )
+    assert (
+        not DataframeType({"value": df})
+        .empty_within_except_last_row({"target": "valid", "comparator": "USUBJID"})
+        .equals(pd.Series({0: True, 1: True, 3: True, 4: True}))
+    )
+    assert (
+        DataframeType({"value": df})
+        .empty_within_except_last_row({"target": "invalid", "comparator": "USUBJID"})
+        .equals(pd.Series({0: False, 1: True, 3: False, 4: False}))
+    )
+    assert (
+        DataframeType({"value": valid_df})
+        .empty_within_except_last_row(
+            {"target": "SEENDTC", "ordering": "SESTDTC", "comparator": "USUBJID"}
+        )
+        .equals(pd.Series({0: False, 1: False, 2: False, 4: False, 5: False, 6: False}))
+    )
+    assert (
+        DataframeType({"value": invalid_df})
+        .empty_within_except_last_row(
+            {"target": "SEENDTC", "ordering": "SESTDTC", "comparator": "USUBJID"}
+        )
+        .equals(pd.Series({0: True, 1: False, 2: False, 4: False, 5: False, 6: False}))
+    )
+
+
+@pytest.mark.parametrize("dataset_class", [PandasDataset, DaskDataset])
+def test_non_empty_within_except_last_row(dataset_class):
+    df = dataset_class.from_dict(
+        {
+            "USUBJID": [1, 1, 1, 2, 2, 2],
+            "valid": [
+                "2020-10-10",
+                "2020-10-10",
+                "2020-10-10",
+                "2021",
+                "2021",
+                "2021",
+            ],
+            "invalid": [
+                "2020-10-10",
+                None,
+                None,
+                "2020",
+                "2020",
+                None,
+            ],
+        }
+    )
+    valid_df = dataset_class.from_dict(
+        {
+            "USUBJID": [
+                789,
+                789,
+                789,
+                789,
+                790,
+                790,
+                790,
+                790,
+            ],
+            "SESEQ": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+            ],
+            "SEENDTC": [
+                "2006-06-03T10:32",
+                "2006-06-10T09:47",
+                "2006-06-17",
+                "",
+                "2006-06-03T10:14",
+                "2006-06-10T10:32",
+                "2006-06-17",
+                "2006-06-17",
+            ],
+            "SESTDTC": [
+                "2006-06-01",
+                "2006-06-03T10:32",
+                "2006-06-10T09:47",
+                "2006-06-17",
+                "2006-06-01",
+                "2006-06-03T10:14",
+                "2006-06-10T10:32",
+                "2006-06-17",
+            ],
+        }
+    )
+    invalid_df = dataset_class.from_dict(
+        {
+            "USUBJID": [
+                789,
+                789,
+                789,
+                789,
+                790,
+                790,
+                790,
+                790,
+            ],
+            "SESEQ": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+            ],
+            "SEENDTC": [
+                "",
+                "2006-06-10T09:47",
+                "2006-06-17",
+                "",
+                "2006-06-03T10:14",
+                "2006-06-10T10:32",
+                "2006-06-17",
+                "2006-06-17",
+            ],
+            "SESTDTC": [
+                "2006-06-01",
+                "2006-06-03T10:32",
+                "2006-06-10T09:47",
+                "2006-06-17",
+                "2006-06-01",
+                "2006-06-03T10:14",
+                "2006-06-10T10:32",
+                "2006-06-17",
+            ],
+        }
+    )
+    assert (
+        DataframeType({"value": df})
+        .non_empty_within_except_last_row({"target": "valid", "comparator": "USUBJID"})
+        .equals(pd.Series({0: True, 1: True, 3: True, 4: True}))
+    )
+    assert (
+        not DataframeType({"value": df})
+        .non_empty_within_except_last_row(
+            {"target": "invalid", "comparator": "USUBJID"}
+        )
+        .equals(pd.Series({0: False, 1: True, 3: False, 4: False}))
+    )
+    assert (
+        DataframeType({"value": valid_df})
+        .non_empty_within_except_last_row(
+            {"target": "SEENDTC", "ordering": "SESTDTC", "comparator": "USUBJID"}
+        )
+        .equals(pd.Series({0: True, 1: True, 2: True, 4: True, 5: True, 6: True}))
+    )
+    assert (
+        DataframeType({"value": invalid_df})
+        .non_empty_within_except_last_row(
+            {"target": "SEENDTC", "ordering": "SESTDTC", "comparator": "USUBJID"}
+        )
+        .equals(pd.Series({0: False, 1: True, 2: True, 4: True, 5: True, 6: True}))
+    )
+
+
+@pytest.mark.parametrize("dataset_class", [PandasDataset, DaskDataset])
+def test_has_next_corresponding_record(dataset_class):
+    """
+    Test for has_next_corresponding_record operator.
+    """
+    valid_df = dataset_class.from_dict(
+        {
+            "USUBJID": [
+                789,
+                789,
+                789,
+                789,
+                790,
+                790,
+                790,
+                790,
+            ],
+            "SESEQ": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+            ],
+            "SEENDTC": [
+                "2006-06-03T10:32",
+                "2006-06-10T09:47",
+                "2006-06-17",
+                "2006-06-17",
+                "2006-06-03T10:14",
+                "2006-06-10T10:32",
+                "2006-06-17",
+                "2006-06-17",
+            ],
+            "SESTDTC": [
+                "2006-06-01",
+                "2006-06-03T10:32",
+                "2006-06-10T09:47",
+                "2006-06-17",
+                "2006-06-01",
+                "2006-06-03T10:14",
+                "2006-06-10T10:32",
+                "2006-06-17",
+            ],
+        }
+    )
+    other_value: dict = {
+        "target": "SEENDTC",
+        "comparator": "SESTDTC",
+        "within": "USUBJID",
+        "ordering": "SESEQ",
+    }
+    result = DataframeType({"value": valid_df}).has_next_corresponding_record(
+        other_value
+    )
+    assert result.equals(
+        pd.Series([True, True, True, np.NAN, True, True, True, np.NAN])
+    )
+
+    invalid_df = dataset_class.from_dict(
+        {
+            "USUBJID": [
+                789,
+                789,
+                789,
+                789,
+                790,
+                790,
+                790,
+                790,
+            ],
+            "SESEQ": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+            ],
+            "SEENDTC": [
+                "2006-06-03T10:32",
+                "2006-06-10T09:47",
+                "2006-06-17",
+                "2006-06-17",
+                "2006-06-03T10:14",
+                "2006-06-10T10:32",
+                "2006-06-17",
+                "2006-06-17",
+            ],
+            "SESTDTC": [
+                "2006-06-01",
+                "2010-08-03",
+                "2008-08",
+                "2006-06-17T10:20",
+                "2006-06-01",
+                "2006-06-03T10:14",
+                "2006-06-10T10:32",
+                "2006-06-17",
+            ],
+        }
+    )
+    other_value: dict = {
+        "target": "SEENDTC",
+        "comparator": "SESTDTC",
+        "within": "USUBJID",
+        "ordering": "SESEQ",
+    }
+    result = DataframeType({"value": invalid_df}).has_next_corresponding_record(
+        other_value
+    )
+    assert result.equals(
+        pd.Series([False, False, False, np.NAN, True, True, True, np.NAN])
+    )
+
+
+@pytest.mark.parametrize("dataset_class", [PandasDataset, DaskDataset])
+def test_target_is_sorted_by(dataset_class):
+    """
+    Unit test for target_is_sorted_by  operator.
+    The test verifies if --SEQ is  sorted based on set of  user-defined columns
+    """
+    valid_asc_df = dataset_class.from_dict(
+        {
+            "USUBJID": ["CDISC001", "CDISC002", "CDISC002", "CDISC001", "CDISC001"],
+            "SESEQ": [1, 2, 1, 3, 2],
+            "SESTDTC": [
+                "2006-06-02",
+                "2006-06-04",
+                "2006-06-01",
+                "2006-06-05",
+                "2006-06-03",
+            ],
+        }
+    )
+
+    other_value: dict = {
+        "target": "--SEQ",
+        "within": "USUBJID",
+        "comparator": [
+            {"name": "--STDTC", "sort_order": "ASC", "null_position": "last"}
+        ],
+    }
+    result = DataframeType(
+        {"value": valid_asc_df, "column_prefix_map": {"--": "SE"}}
+    ).target_is_sorted_by(other_value)
+    assert result.equals(
+        pd.Series(
+            [
+                True,
+                True,
+                True,
+                True,
+                True,
+            ]
+        )
+    )
+
+    valid_desc_df = dataset_class.from_dict(
+        {
+            "USUBJID": ["CDISC001", "CDISC002", "CDISC002", "CDISC001", "CDISC001"],
+            "SESEQ": [2, 1, 2, 3, 1],
+            "SESTDTC": [
+                "2006-06-02",
+                "2006-06-04",
+                "2006-06-01",
+                "2006-06-05",
+                "2006-06-03",
+            ],
+        }
+    )
+
+    other_value: dict = {
+        "target": "--SEQ",
+        "within": "USUBJID",
+        "comparator": [
+            {"name": "--STDTC", "sort_order": "DESC", "null_position": "last"}
+        ],
+    }
+    result = DataframeType(
+        {"value": valid_desc_df, "column_prefix_map": {"--": "SE"}}
+    ).target_is_sorted_by(other_value)
+    assert result.equals(
+        pd.Series(
+            [
+                True,
+                True,
+                True,
+                True,
+                True,
+            ]
+        )
+    )
+
+    valid_asc_df = dataset_class.from_dict(
+        {
+            "USUBJID": [123, 456, 456, 123, 123],
+            "SESEQ": [1, 2, 1, 3, 2],
+            "SESTDTC": [
+                "2006-06-02",
+                "2006-06-04",
+                "2006-06-01",
+                "2006-06-05",
+                "2006-06-03",
+            ],
+        }
+    )
+    other_value: dict = {
+        "target": "--SEQ",
+        "within": "USUBJID",
+        "comparator": [
+            {"name": "--STDTC", "sort_order": "ASC", "null_position": "last"}
+        ],
+    }
+    result = DataframeType(
+        {"value": valid_asc_df, "column_prefix_map": {"--": "SE"}}
+    ).target_is_sorted_by(other_value)
+    assert result.equals(
+        pd.Series(
+            [
+                True,
+                True,
+                True,
+                True,
+                True,
+            ]
+        )
+    )
+
+    valid_desc_df = dataset_class.from_dict(
+        {
+            "USUBJID": [123, 456, 456, 123, 123],
+            "SESEQ": [2, 1, 2, 3, 1],
+            "SESTDTC": [
+                "2006-06-02",
+                "2006-06-04",
+                "2006-06-01",
+                "2006-06-05",
+                "2006-06-03",
+            ],
+        }
+    )
+    other_value: dict = {
+        "target": "--SEQ",
+        "within": "USUBJID",
+        "comparator": [
+            {"name": "--STDTC", "sort_order": "DESC", "null_position": "last"}
+        ],
+    }
+    result = DataframeType(
+        {"value": valid_desc_df, "column_prefix_map": {"--": "SE"}}
+    ).target_is_sorted_by(other_value)
+    assert result.equals(
+        pd.Series(
+            [
+                True,
+                True,
+                True,
+                True,
+                True,
+            ]
+        )
+    )
+
+    invalid_df = dataset_class.from_dict(
+        {
+            "USUBJID": ["CDISC001", "CDISC002", "CDISC002", "CDISC001", "CDISC001"],
+            "SESEQ": [1, 2, 3, 1, 2],
+            "SESTDTC": [
+                "2006-06-02",
+                "2006-06-04",
+                "2006-06-01",
+                "2006-06-05",
+                "2006-06-03",
+            ],
+        }
+    )
+
+    other_value: dict = {
+        "target": "--SEQ",
+        "within": "USUBJID",
+        "comparator": [
+            {"name": "--STDTC", "sort_order": "ASC", "null_position": "last"}
+        ],
+    }
+    result = DataframeType(
+        {"value": invalid_df, "column_prefix_map": {"--": "SE"}}
+    ).target_is_sorted_by(other_value)
+    assert result.equals(
+        pd.Series(
+            [
+                True,
+                True,
+                False,
+                False,
+                True,
+            ]
+        )
+    )
+
+    valid_mul_df = dataset_class.from_dict(
+        {
+            "USUBJID": ["CDISC001", "CDISC002", "CDISC002", "CDISC001", "CDISC001"],
+            "SESEQ": [1, 2, 1, 3, 2],
+            "SESTDTC": [
+                "2006-06-02",
+                "2006-06-04",
+                "2006-06-01",
+                "2006-06-05",
+                "2006-06-03",
+            ],
+            "STUDYID": [
+                "CDISCPILOT1",
+                "CDISCPILOT1",
+                "CDISCPILOT1",
+                "CDISCPILOT1",
+                "CDISCPILOT1",
+            ],
+            "SEENDTC": [
+                "2006-06-02",
+                "2006-06-04",
+                "2006-06-01",
+                "2006-06-05",
+                "2006-06-03",
+            ],
+        }
+    )
+
+    other_value: dict = {
+        "target": "--SEQ",
+        "within": "USUBJID",
+        "comparator": [
+            {"name": "--STDTC", "sort_order": "ASC", "null_position": "last"},
+            {"name": "--ENDTC", "sort_order": "ASC", "null_position": "last"},
+        ],
+    }
+    result = DataframeType(
+        {"value": valid_mul_df, "column_prefix_map": {"--": "SE"}}
+    ).target_is_sorted_by(other_value)
+    assert result.equals(
+        pd.Series(
+            [
+                True,
+                True,
+                True,
+                True,
+                True,
+            ]
+        )
+    )
+
+    valid_mul_df = dataset_class.from_dict(
+        {
+            "USUBJID": ["CDISC001", "CDISC002", "CDISC002", "CDISC001", "CDISC001"],
+            "SESEQ": [2, 1, 2, 3, 1],
+            "SESTDTC": [
+                "2006-06-02",
+                "2006-06-04",
+                "2006-06-01",
+                "2006-06-05",
+                "2006-06-03",
+            ],
+            "STUDYID": [
+                "CDISCPILOT1",
+                "CDISCPILOT1",
+                "CDISCPILOT1",
+                "CDISCPILOT1",
+                "CDISCPILOT1",
+            ],
+            "SEENDTC": [
+                "2006-06-02",
+                "2006-06-04",
+                "2006-06-01",
+                "2006-06-05",
+                "2006-06-03",
+            ],
+        }
+    )
+
+    other_value: dict = {
+        "target": "--SEQ",
+        "within": "USUBJID",
+        "comparator": [
+            {"name": "--STDTC", "sort_order": "DESC", "null_position": "last"},
+            {"name": "--ENDTC", "sort_order": "DESC", "null_position": "last"},
+        ],
+    }
+    result = DataframeType(
+        {"value": valid_mul_df, "column_prefix_map": {"--": "SE"}}
+    ).target_is_sorted_by(other_value)
+    assert result.equals(
+        pd.Series(
+            [
+                True,
+                True,
+                True,
+                True,
+                True,
+            ]
+        )
+    )
+
+    valid_mul_df = dataset_class.from_dict(
+        {
+            "USUBJID": ["CDISC001", "CDISC002", "CDISC002", "CDISC001", "CDISC001"],
+            "SESEQ": [1, 2, 1, 3, 2],
+            "SESTDTC": [
+                "2006-06-02",
+                "2006-06-04",
+                "2006-06-01",
+                "2006-06-05",
+                "2006-06-03",
+            ],
+            "STUDYID": [
+                "CDISCPILOT1",
+                "CDISCPILOT1",
+                "CDISCPILOT1",
+                "CDISCPILOT1",
+                "CDISCPILOT1",
+            ],
+            "SEENDTC": [
+                "2006-06-03",
+                "2006-06-01",
+                "2006-06-04",
+                "2006-06-05",
+                "2006-06-02",
+            ],
+        }
+    )
+
+    other_value: dict = {
+        "target": "--SEQ",
+        "within": "USUBJID",
+        "comparator": [
+            {"name": "--STDTC", "sort_order": "ASC", "null_position": "last"},
+            {"name": "--ENDTC", "sort_order": "DESC", "null_position": "last"},
+        ],
+    }
+    result = DataframeType(
+        {"value": valid_mul_df, "column_prefix_map": {"--": "SE"}}
+    ).target_is_sorted_by(other_value)
+    assert result.equals(
+        pd.Series(
+            [
+                True,
+                True,
+                True,
+                True,
+                True,
+            ]
+        )
+    )
+
+    invalid_mul_df = dataset_class.from_dict(
+        {
+            "USUBJID": ["CDISC001", "CDISC002", "CDISC002", "CDISC001", "CDISC001"],
+            "SESEQ": [1, 2, 3, 1, 2],
+            "SESTDTC": [
+                "2006-06-02",
+                "2006-06-04",
+                "2006-06-01",
+                "2006-06-05",
+                "2006-06-03",
+            ],
+            "STUDYID": [
+                "CDISCPILOT1",
+                "CDISCPILOT1",
+                "CDISCPILOT1",
+                "CDISCPILOT1",
+                "CDISCPILOT1",
+            ],
+            "SEENDTC": [
+                "2006-06-02",
+                "2006-06-04",
+                "2006-06-01",
+                "2006-06-05",
+                "2006-06-03",
+            ],
+        }
+    )
+
+    other_value: dict = {
+        "target": "--SEQ",
+        "within": "USUBJID",
+        "comparator": [
+            {"name": "--STDTC", "sort_order": "ASC", "null_position": "last"},
+            {"name": "--ENDTC", "sort_order": "ASC", "null_position": "last"},
+        ],
+    }
+    result = DataframeType(
+        {"value": invalid_mul_df, "column_prefix_map": {"--": "SE"}}
+    ).target_is_sorted_by(other_value)
+    assert result.equals(
+        pd.Series(
+            [
+                True,
+                True,
+                False,
+                False,
+                True,
+            ]
+        )
+    )
+
+    valid_na_df = dataset_class.from_dict(
+        {
+            "USUBJID": [123, 456, 456, 123, 123],
+            "SESEQ": [1, 2, 1, None, None],
+            "SESTDTC": ["2006-06-02", None, "2006-06-01", None, "2006-06-03"],
+        }
+    )
+
+    other_value: dict = {
+        "target": "--SEQ",
+        "within": "USUBJID",
+        "comparator": [
+            {"name": "--STDTC", "sort_order": "ASC", "null_position": "last"}
+        ],
+    }
+    result = DataframeType(
+        {"value": valid_na_df, "column_prefix_map": {"--": "SE"}}
+    ).target_is_sorted_by(other_value)
+    assert result.equals(
+        pd.Series(
+            [
+                True,
+                True,
+                True,
+                False,
+                False,
+            ]
+        )
+    )
+
+    invalid_na_df = dataset_class.from_dict(
+        {
+            "USUBJID": [123, 456, 456, 123, 123],
+            "SESEQ": [1, 2, 3, None, None],
+            "SESTDTC": ["2006-06-02", None, "2006-06-01", None, "2006-06-03"],
+        }
+    )
+
+    other_value: dict = {
+        "target": "--SEQ",
+        "within": "USUBJID",
+        "comparator": [
+            {"name": "--STDTC", "sort_order": "ASC", "null_position": "last"}
+        ],
+    }
+    result = DataframeType(
+        {"value": invalid_na_df, "column_prefix_map": {"--": "SE"}}
+    ).target_is_sorted_by(other_value)
+    assert result.equals(
+        pd.Series(
+            [
+                True,
+                True,
+                False,
+                False,
+                False,
+            ]
+        )
+    )
