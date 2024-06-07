@@ -2,7 +2,7 @@
 This module contains unit tests for DatasetMetadataReader class.
 """
 import os
-
+from unittest.mock import patch
 from cdisc_rules_engine.services.datasetxpt_metadata_reader import (
     DatasetXPTMetadataReader,
 )
@@ -96,3 +96,35 @@ def test_read_metadata_with_variable_formats():
         "",
         "",
     ]
+
+
+def test_read_header():
+    """
+    Unit test for the method _read_header.
+    Loads test .xpt file and reads the header, returning the start of the dataset.
+    Mock_open cannot simulate partial read() behavior so normal file reading is employed.
+    """
+    test_dataset_path = f"{os.path.dirname(__file__)}/../resources/test_dataset.xpt"
+
+    reader = DatasetXPTMetadataReader(test_dataset_path, file_name="test_dataset.xpt")
+    start_index = reader._read_header(test_dataset_path)
+
+    assert start_index == 3120
+
+
+def test_calculate_dataset_length_with_mocked_header():
+    """
+    Unit test for the method _calculate_dataset_length with mocked _read_header.
+    Calculates the length of the dataset based on the  and row size.
+    """
+    test_dataset_path: str = (
+        f"{os.path.dirname(__file__)}/../resources/test_dataset.xpt"
+    )
+    reader = DatasetXPTMetadataReader(test_dataset_path, file_name="test_dataset.xpt")
+
+    # Mock the _read_header method to return a start position
+    with patch.object(reader, "_read_header", return_value=3120):
+        expected_length = 1583
+        dataset_length = reader._calculate_dataset_length()
+
+    assert dataset_length == expected_length
