@@ -68,6 +68,8 @@ class BaseOperation:
     def _handle_grouped_result(self, result):
         # Handle grouped results
         result = result.rename(columns={self.params.target: self.params.operation_id})
+        if self.params.grouping_aliases:
+            result = self._rename_grouping_columns(result)
         grouping_columns = self._get_grouping_columns()
         target_columns = grouping_columns + [self.params.operation_id]
         result = result.reset_index()
