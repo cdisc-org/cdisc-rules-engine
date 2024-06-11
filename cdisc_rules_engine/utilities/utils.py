@@ -206,7 +206,12 @@ def get_corresponding_datasets(datasets: List[dict], domain: str) -> List[dict]:
 
 
 def is_split_dataset(datasets: List[dict], domain: str) -> bool:
-    return len(get_corresponding_datasets(datasets, domain)) > 1
+    corresponding_datasets = get_corresponding_datasets(datasets, domain)
+    return any(
+        len(dataset.get("filename", "")) == len(domain) + 2
+        and dataset.get("filename", "").startswith(domain)
+        for dataset in corresponding_datasets
+    )
 
 
 def serialize_rule(rule: dict) -> dict:
