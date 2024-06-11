@@ -36,8 +36,5 @@ class RecordCount(BaseOperation):
                     )
                     .fillna(0)
                 )
-            if self.params.grouping_aliases:
-                return self._rename_grouping_columns(group_df)
-            else:
-                return group_df
+            return group_df
         return result
