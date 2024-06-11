@@ -5,7 +5,6 @@ from typing import Callable, List, Optional, Iterable, Iterator
 from concurrent.futures import ThreadPoolExecutor
 import os
 import numpy as np
-import pandas as pd
 
 from cdisc_rules_engine.constants.domains import AP_DOMAIN_LENGTH
 from cdisc_rules_engine.interfaces import (
@@ -120,10 +119,7 @@ class BaseDataService(DataServiceInterface, ABC):
         )
 
     def concat_split_datasets(
-        self,
-        func_to_call: Callable,
-        dataset_names: List[str],
-        **kwargs,
+        self, func_to_call: Callable, dataset_names: List[str], **kwargs
     ) -> DatasetInterface:
         """
         Accepts a list of split dataset filenames, asynchronously downloads
@@ -134,53 +130,32 @@ class BaseDataService(DataServiceInterface, ABC):
         """
         # pop drop_duplicates param at the beginning to avoid passing it to func_to_call
         drop_duplicates: bool = kwargs.pop("drop_duplicates", False)
+
         # download datasets asynchronously
         datasets: Iterable[DatasetInterface] = self._async_get_datasets(
             func_to_call, dataset_names, **kwargs
         )
+
         full_dataset = self.dataset_implementation()
-        # get split datasets and merge them
         for dataset in datasets:
-            full_dataset = full_dataset.concat(dataset, ignore_index=True)
+            if "RDOMAIN" in dataset.columns:
+                full_dataset = self.merge_supp_dataset(full_dataset, dataset)
+            else:
+                full_dataset = full_dataset.concat(dataset, ignore_index=True)
+
         if drop_duplicates:
             full_dataset.drop_duplicates()
         return full_dataset
 
-    def merge_split_dataset(self, full_dataset, supp_dataset):
-        # static keys for merge
-        static_keys = ["STUDYID", "USUBJID", "APID", "POOLID", "SPDEVID"]
-        # Determine the common keys present in both datasets
-        common_keys = [
-            key
-            for key in static_keys
-            if key in full_dataset.columns and key in supp_dataset.columns
-        ]
-        dynamic_key = supp_dataset["IDVAR"].iloc[0]
-        splitDF_filtered = supp_dataset.copy()
-        unique_qnams = splitDF_filtered["QNAM"].unique()
-        for qnam in unique_qnams:
-            current_split = splitDF_filtered[splitDF_filtered["QNAM"] == qnam]
-            if (
-                "IDVARVAL" in current_split.columns
-                and dynamic_key in full_dataset.columns
-            ):
-                common_keys.append(dynamic_key)
-                current_split = current_split.rename(columns={"IDVARVAL": dynamic_key})
-        full_dataset[dynamic_key] = full_dataset[dynamic_key].astype(str)
-        current_split[dynamic_key] = current_split[dynamic_key].astype(str)
-        merged_df = pd.merge(
-            full_dataset.data,
-            current_split,
-            how="left",
-            on=common_keys,
-            suffixes=("", "_supp"),
+    def merge_supp_dataset(self, full_dataset, supp_dataset):
+        merge_keys = ["STUDYID", "USUBJID", "APID", "POOLID", "SPDEVID"]
+        merged_df = full_dataset.merge(
+            supp_dataset,
+            how="inner",
+            on=merge_keys,
+            left_on="IDVAR",
+            right_on="IDVARVAL",
         )
-        if merged_df.duplicated(subset=common_keys).any():
-            raise ValueError(
-                f"Multiple records with the same QNAM '{qnam}' match a single parent record"
-            )
-        # Add new columns corresponding to each QNAM
-        merged_df = PandasDataset(merged_df)
         return merged_df
 
     def get_dataset_class(
