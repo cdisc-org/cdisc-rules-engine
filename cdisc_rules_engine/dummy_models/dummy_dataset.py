@@ -18,11 +18,6 @@ class DummyDataset:
         ]
         self.data = pd.DataFrame.from_dict(dataset_data.get("records", {}))
 
-    @property
-    def columns(self):
-        """Returns the column names of the DataFrame."""
-        return self.data.columns
-
     def get_metadata(self):
         return {
             "dataset_size": [self.filesize or 1000],

@@ -285,7 +285,6 @@ class RulesEngine:
         kwargs["ct_packages"] = list(self.ct_packages)
 
         logger.info(f"Using dataset build by: {builder.__class__}")
-        breakpoint()
         return self.execute_rule(
             rule, dataset, dataset_path, datasets, domain, **kwargs
         )
@@ -351,7 +350,6 @@ class RulesEngine:
             codelist_term_maps=codelist_term_maps,
         )
         results = []
-        breakpoint()
         run(
             serialize_rule(rule_copy),  # engine expects a JSON serialized dict
             defined_variables=dataset_variable,

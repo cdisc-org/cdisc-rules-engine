@@ -33,7 +33,6 @@ from cdisc_rules_engine.utilities.utils import (
 from cdisc_rules_engine.utilities.sdtm_utilities import get_class_and_domain_metadata
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from cdisc_rules_engine.models.dataset import PandasDataset
-from cdisc_rules_engine.dummy_models.dummy_dataset import DummyDataset
 
 
 def cached_dataset(dataset_type: str):
@@ -135,40 +134,21 @@ class BaseDataService(DataServiceInterface, ABC):
         """
         # pop drop_duplicates param at the beginning to avoid passing it to func_to_call
         drop_duplicates: bool = kwargs.pop("drop_duplicates", False)
-        # check if multiple datasets at same directory path
-        # dataset_names paths will not exist in this case
-        single_datafile = [name for name in dataset_names if not os.path.exists(name)]
-        if single_datafile:
-            # datasets: Iterable[DatasetInterface] = self._async_get_datasets(
-            #     func_to_call, dataset_names, **kwargs
-            # )
-            datasets: Iterable[DatasetInterface] = []
-            for name in dataset_names:
-                dataset = self.get_dataset_data(dataset_name=name)
-                datasets.append(dataset)
-            breakpoint()
-        else:
-            # download datasets asynchronously
-            datasets: Iterable[DatasetInterface] = self._async_get_datasets(
-                func_to_call, dataset_names, **kwargs
-            )
+        # download datasets asynchronously
+        datasets: Iterable[DatasetInterface] = self._async_get_datasets(
+            func_to_call, dataset_names, **kwargs
+        )
+        breakpoint()
         full_dataset = self.dataset_implementation()
+        # get split datasets and merge them
         for dataset in datasets:
-            if "RDOMAIN" in dataset.columns:
-                if isinstance(dataset, DummyDataset):
-                    dataset = dataset.data
-                    breakpoint()
-                full_dataset = self.merge_supp_dataset(full_dataset, dataset)
-            else:
-                full_dataset = full_dataset.concat(dataset, ignore_index=True)
+            full_dataset = full_dataset.concat(dataset, ignore_index=True)
         if drop_duplicates:
             full_dataset.drop_duplicates()
         breakpoint()
-        full_dataset = func_to_call()
-        breakpoint()
         return full_dataset
 
-    def merge_supp_dataset(self, full_dataset, supp_dataset):
+    def merge_split_dataset(self, full_dataset, supp_dataset):
         if supp_dataset["RDOMAIN"].iloc[0] != full_dataset["DOMAIN"].iloc[0]:
             raise ValueError(
                 "No matching RDOMAIN found in the supplementary dataset for the parent dataset DOMAIN."
@@ -335,7 +315,7 @@ class BaseDataService(DataServiceInterface, ABC):
         )
 
     def _async_get_datasets(
-        self, function_to_call: Callable, dataset_names: List[str], **kwargs
+        self, function_to_call: Callable, **kwargs
     ) -> Iterator[DatasetInterface]:
         """
         The method uses multithreading to download each
@@ -348,5 +328,4 @@ class BaseDataService(DataServiceInterface, ABC):
         with ThreadPoolExecutor() as executor:
             return executor.map(
                 lambda name: function_to_call(name, **kwargs),
-                dataset_names,
             )
