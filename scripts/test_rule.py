@@ -94,7 +94,7 @@ def validate_single_rule(
                 validated_domains.add(dataset.domain)
                 validated_result = engine.test_validation(
                     rule,
-                    args.dataset_path,
+                    os.path.join(directory, dataset.filename),
                     datasets,
                     dataset.domain,
                 )

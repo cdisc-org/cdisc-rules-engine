@@ -306,7 +306,7 @@ class BaseDataService(DataServiceInterface, ABC):
         )
 
     def _async_get_datasets(
-        self, function_to_call: Callable, **kwargs
+        self, function_to_call: Callable, dataset_names: List[str], **kwargs
     ) -> Iterator[DatasetInterface]:
         """
         The method uses multithreading to download each
@@ -319,4 +319,5 @@ class BaseDataService(DataServiceInterface, ABC):
         with ThreadPoolExecutor() as executor:
             return executor.map(
                 lambda name: function_to_call(name, **kwargs),
+                dataset_names,
             )
