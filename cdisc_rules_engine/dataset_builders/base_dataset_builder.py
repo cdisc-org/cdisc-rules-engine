@@ -62,14 +62,18 @@ class BaseDatasetBuilder:
         pass
 
     def get_dataset(self, **kwargs):
+        # If validating dataset content, ensure split datasets are handled.
         if is_split_dataset(self.datasets, self.domain):
             # Handle split datasets for content checks.
             # A content check is any check that is not in the list of rule types
-            dataset: DatasetInterface = self.data_service.concat_split_datasets(
-                func_to_call=self.build_split_datasets,
-                dataset_names=self.get_corresponding_datasets_names(),
-                **kwargs,
-            )
+            if hasattr(self.data_service, "build_split_datasets"):
+                # if data service has method get_split_datasets, we use it
+                # otherwise we use the default implementation
+                dataset: DatasetInterface = self.data_service.concat_split_datasets(
+                    func_to_call=self.build_split_datasets,
+                    dataset_names=self.get_corresponding_datasets_names(),
+                    **kwargs,
+                )
         else:
             # single dataset. the most common case
             dataset: DatasetInterface = self.build()
@@ -78,7 +82,7 @@ class BaseDatasetBuilder:
     def get_dataset_contents(self, **kwargs):
         # If validating dataset content, ensure split datasets are handled.
         if is_split_dataset(self.datasets, self.domain):
-            # Handle split & supp datasets for content checks.
+            # Handle split datasets for content checks.
             # A content check is any check that is not in the list of rule types
             dataset: DatasetInterface = self.data_service.concat_split_datasets(
                 func_to_call=self.data_service.get_dataset,

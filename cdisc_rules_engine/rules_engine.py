@@ -183,7 +183,6 @@ class RulesEngine:
                 error_obj.domain = dataset_domain
                 return [error_obj.to_representation()]
         except Exception as e:
-            breakpoint()
             logger.trace(e, __name__)
             logger.error(
                 f"""Error occurred during validation.
@@ -361,7 +360,6 @@ class RulesEngine:
                 value_level_metadata=value_level_metadata,
             ),
         )
-        breakpoint()
         return results
 
     def get_define_xml_metadata_for_domain(

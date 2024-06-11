@@ -126,8 +126,8 @@ class BaseDataService(DataServiceInterface, ABC):
         **kwargs,
     ) -> DatasetInterface:
         """
-        Accepts a list of split dataset filenames or Parent/Supplementary dataset filenames,
-        asynchronously downloads all of them and merges into a single DataFrame.
+        Accepts a list of split dataset filenames, asynchronously downloads
+        all of them and merges into a single DataFrame.
 
         function_to_call must accept dataset_name and kwargs
         as input parameters and return pandas DataFrame.
@@ -138,22 +138,15 @@ class BaseDataService(DataServiceInterface, ABC):
         datasets: Iterable[DatasetInterface] = self._async_get_datasets(
             func_to_call, dataset_names, **kwargs
         )
-        breakpoint()
         full_dataset = self.dataset_implementation()
         # get split datasets and merge them
         for dataset in datasets:
             full_dataset = full_dataset.concat(dataset, ignore_index=True)
         if drop_duplicates:
             full_dataset.drop_duplicates()
-        breakpoint()
         return full_dataset
 
     def merge_split_dataset(self, full_dataset, supp_dataset):
-        if supp_dataset["RDOMAIN"].iloc[0] != full_dataset["DOMAIN"].iloc[0]:
-            raise ValueError(
-                "No matching RDOMAIN found in the supplementary dataset for the parent dataset DOMAIN."
-            )
-
         # static keys for merge
         static_keys = ["STUDYID", "USUBJID", "APID", "POOLID", "SPDEVID"]
         # Determine the common keys present in both datasets
@@ -163,33 +156,31 @@ class BaseDataService(DataServiceInterface, ABC):
             if key in full_dataset.columns and key in supp_dataset.columns
         ]
         dynamic_key = supp_dataset["IDVAR"].iloc[0]
-        supp_df_filtered = supp_dataset.copy()
-        unique_qnams = supp_df_filtered["QNAM"].unique()
+        splitDF_filtered = supp_dataset.copy()
+        unique_qnams = splitDF_filtered["QNAM"].unique()
         for qnam in unique_qnams:
-            current_supp = supp_df_filtered[supp_df_filtered["QNAM"] == qnam]
+            current_split = splitDF_filtered[splitDF_filtered["QNAM"] == qnam]
             if (
-                "IDVARVAL" in current_supp.columns
+                "IDVARVAL" in current_split.columns
                 and dynamic_key in full_dataset.columns
             ):
                 common_keys.append(dynamic_key)
-                current_supp = current_supp.rename(columns={"IDVARVAL": dynamic_key})
+                current_split = current_split.rename(columns={"IDVARVAL": dynamic_key})
         full_dataset[dynamic_key] = full_dataset[dynamic_key].astype(str)
-        current_supp[dynamic_key] = current_supp[dynamic_key].astype(str)
+        current_split[dynamic_key] = current_split[dynamic_key].astype(str)
         merged_df = pd.merge(
             full_dataset.data,
-            current_supp,
+            current_split,
             how="left",
             on=common_keys,
             suffixes=("", "_supp"),
         )
-        breakpoint()
         if merged_df.duplicated(subset=common_keys).any():
             raise ValueError(
-                f"Multiple Supp records with the same QNAM '{qnam}' match a single parent record"
+                f"Multiple records with the same QNAM '{qnam}' match a single parent record"
             )
         # Add new columns corresponding to each QNAM
         merged_df = PandasDataset(merged_df)
-        breakpoint()
         return merged_df
 
     def get_dataset_class(
