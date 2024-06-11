@@ -124,7 +124,6 @@ class BaseDataService(DataServiceInterface, ABC):
         self,
         func_to_call: Callable,
         dataset_names: List[str],
-        dataset_path: Optional[str] = None,
         **kwargs,
     ) -> DatasetInterface:
         """

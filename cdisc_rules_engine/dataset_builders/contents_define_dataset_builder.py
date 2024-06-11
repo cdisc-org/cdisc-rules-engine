@@ -51,30 +51,30 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
         breakpoint()
         return merged_no_nans
 
-    def build_split_datasets(self, name=None):
-        breakpoint()
-        # 1. Build define xml dataframe
-        define_df = self._get_define_xml_dataframe()
-        define_df["merge_key"] = define_df["define_dataset_name"] + define_df[
-            "define_dataset_location"
-        ].apply(lambda x: x if x else "")
+    # def build_split_datasets(self, name=None):
+    #     breakpoint()
+    #     # 1. Build define xml dataframe
+    #     define_df = self._get_define_xml_dataframe()
+    #     define_df["merge_key"] = define_df["define_dataset_name"] + define_df[
+    #         "define_dataset_location"
+    #     ].apply(lambda x: x if x else "")
 
-        # 2. Build dataset dataframe
-        dataset_df = self._get_dataset_dataframe()
-        dataset_df["merge_key"] = dataset_df["dataset_name"] + dataset_df[
-            "dataset_location"
-        ].apply(lambda x: x if x else "")
-        # 3. Merge the two data frames
-        merged = dataset_df.merge(
-            define_df.data,
-            how="outer",
-            on="merge_key",
-        )
-        merged.drop(columns=["merge_key"])
-        # 4. Replace Nan with None
-        merged_no_nans = merged.where(pd.notnull(merged.data), None)
-        breakpoint()
-        return merged_no_nans
+    #     # 2. Build dataset dataframe
+    #     dataset_df = self._get_dataset_dataframe()
+    #     dataset_df["merge_key"] = dataset_df["dataset_name"] + dataset_df[
+    #         "dataset_location"
+    #     ].apply(lambda x: x if x else "")
+    #     # 3. Merge the two data frames
+    #     merged = dataset_df.merge(
+    #         define_df.data,
+    #         how="outer",
+    #         on="merge_key",
+    #     )
+    #     merged.drop(columns=["merge_key"])
+    #     # 4. Replace Nan with None
+    #     merged_no_nans = merged.where(pd.notnull(merged.data), None)
+    #     breakpoint()
+    #     return merged_no_nans
 
     def _get_define_xml_dataframe(self):
         define_col_order = [

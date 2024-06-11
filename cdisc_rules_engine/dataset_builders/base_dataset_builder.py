@@ -62,10 +62,9 @@ class BaseDatasetBuilder:
         pass
 
     def get_dataset(self, **kwargs):
-        # If validating dataset content, ensure split and supp datasets are handled.
+        breakpoint()
         if is_split_dataset(self.datasets, self.domain):
-            breakpoint()
-            # Handle split & supp datasets for content checks.
+            # Handle split datasets for content checks.
             # A content check is any check that is not in the list of rule types
             dataset: DatasetInterface = self.data_service.concat_split_datasets(
                 func_to_call=self.build_split_datasets,
@@ -80,7 +79,7 @@ class BaseDatasetBuilder:
         return dataset
 
     def get_dataset_contents(self, **kwargs):
-        # If validating dataset content, ensure split & supp datasets are handled.
+        # If validating dataset content, ensure split datasets are handled.
         if is_split_dataset(self.datasets, self.domain):
             # Handle split & supp datasets for content checks.
             # A content check is any check that is not in the list of rule types
