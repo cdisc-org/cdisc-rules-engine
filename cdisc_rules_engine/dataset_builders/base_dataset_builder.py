@@ -55,7 +55,7 @@ class BaseDatasetBuilder:
         pass
 
     @abstractmethod
-    def build_split_datasets(self, name) -> DatasetInterface:
+    def build_split_datasets(self) -> DatasetInterface:
         """
         Returns correct dataframe to operate on
         """
@@ -66,14 +66,11 @@ class BaseDatasetBuilder:
         if is_split_dataset(self.datasets, self.domain):
             # Handle split datasets for content checks.
             # A content check is any check that is not in the list of rule types
-            if hasattr(self.data_service, "build_split_datasets"):
-                # if data service has method get_split_datasets, we use it
-                # otherwise we use the default implementation
-                dataset: DatasetInterface = self.data_service.concat_split_datasets(
-                    func_to_call=self.build_split_datasets,
-                    dataset_names=self.get_corresponding_datasets_names(),
-                    **kwargs,
-                )
+            dataset: DatasetInterface = self.data_service.concat_split_datasets(
+                func_to_call=self.build_split_datasets,
+                dataset_names=self.get_corresponding_datasets_names(),
+                **kwargs,
+            )
         else:
             # single dataset. the most common case
             dataset: DatasetInterface = self.build()
