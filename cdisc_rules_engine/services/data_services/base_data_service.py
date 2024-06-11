@@ -191,39 +191,38 @@ class BaseDataService(DataServiceInterface, ABC):
         )
 
     def _handle_special_cases(self, dataset, domain, file_path, datasets):
-        if self._contains_topic_variable(dataset, "TERM"):
+        if self._contains_topic_variable(dataset, domain, "TERM"):
             return EVENTS
-        if self._contains_topic_variable(dataset, "TRT"):
+        if self._contains_topic_variable(dataset, domain, "TRT"):
             return INTERVENTIONS
-        if self._contains_topic_variable(dataset, "QNAM"):
+        if self._contains_topic_variable(dataset, domain, "QNAM"):
             return RELATIONSHIP
-        if self._contains_topic_variable(dataset, "TESTCD"):
-            if self._contains_topic_variable(dataset, "OBJ"):
+        if self._contains_topic_variable(dataset, domain, "TESTCD"):
+            if self._contains_topic_variable(dataset, domain, "OBJ"):
                 return FINDINGS_ABOUT
             return FINDINGS
-        if self._is_associated_persons(dataset):
+        if self._is_associated_persons(dataset, domain):
             return self._get_associated_persons_inherit_class(
-                dataset, file_path, datasets
+                dataset, file_path, datasets, domain
             )
         return None
 
-    def _is_associated_persons(self, dataset) -> bool:
+    def _is_associated_persons(self, dataset, domain) -> bool:
         """
         Check if AP-- domain.
         """
         return (
             "DOMAIN" in dataset
-            and self._domain_starts_with(dataset["DOMAIN"].values[0], "AP")
-            and len(dataset["DOMAIN"].values[0]) == AP_DOMAIN_LENGTH
+            and self._domain_starts_with(domain, "AP")
+            and len(domain) == AP_DOMAIN_LENGTH
         )
 
     def _get_associated_persons_inherit_class(
-        self, dataset, file_path, datasets: List[dict]
+        self, dataset, file_path, datasets: List[dict], domain: str
     ):
         """
         Check with inherit class AP-- belongs to.
         """
-        domain = dataset["DOMAIN"].values[0]
         ap_suffix = domain[2:]
         directory_path = get_directory_path(file_path)
         if len(datasets) > 1:
@@ -239,12 +238,15 @@ class BaseDataService(DataServiceInterface, ABC):
             if self._is_associated_persons(new_domain_dataset):
                 raise ValueError("Nested Associated Persons domain reference")
             return self.get_dataset_class(
-                new_domain_dataset, new_file_path, datasets, domain_details["domain"]
+                new_domain_dataset,
+                new_file_path,
+                datasets,
+                domain_details["domain"],
             )
         else:
             return None
 
-    def _contains_topic_variable(self, dataset, variable):
+    def _contains_topic_variable(self, dataset, domain, variable):
         """
         Checks if the given dataset-class string ends with a particular variable string.
         Returns True/False
@@ -252,7 +254,6 @@ class BaseDataService(DataServiceInterface, ABC):
         if "DOMAIN" not in dataset and "RDOMAIN" not in dataset:
             return False
         elif "DOMAIN" in dataset:
-            domain = dataset["DOMAIN"].values[0]
             return domain.upper() + variable in dataset
         elif "RDOMAIN" in dataset:
             return variable in dataset
@@ -297,6 +298,6 @@ class BaseDataService(DataServiceInterface, ABC):
         """
         with ThreadPoolExecutor() as executor:
             return executor.map(
-                lambda name: function_to_call(dataset_name=name, **kwargs),
+                lambda name: function_to_call(name, **kwargs),
                 dataset_names,
             )

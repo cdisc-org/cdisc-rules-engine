@@ -861,11 +861,12 @@ Check:
 
 ## empty_within_except_last_row
 
-> SEENDTC is not empty when it is not the last record, grouped by USUBJID
+> SEENDTC is not empty when it is not the last record, grouped by USUBJID, sorted by SESTDTC
 
 ```yaml
 - name: SEENDTC
   operator: empty_within_except_last_row
+  ordering: SESTDTC
   value: USUBJID
 ```
 
