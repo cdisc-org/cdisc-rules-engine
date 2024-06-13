@@ -33,7 +33,7 @@ class VariablesMetadataWithDefineDatasetBuilder(BaseDatasetBuilder):
         variable_metadata: List[dict] = self.get_define_xml_variables_metadata()
         # get dataset metadata and execute the rule
         content_metadata: DatasetInterface = self.data_service.get_variables_metadata(
-            self.dataset_path, drop_duplicates=True
+            dataset_name=self.dataset_path, datasets=self.datasets, drop_duplicates=True
         )
         define_metadata: DatasetInterface = self.dataset_implementation.from_records(
             variable_metadata
