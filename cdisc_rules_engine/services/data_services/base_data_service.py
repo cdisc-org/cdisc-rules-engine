@@ -144,7 +144,25 @@ class BaseDataService(DataServiceInterface, ABC):
             full_dataset = full_dataset.drop_duplicates()
         return full_dataset
 
-    def merge_supp_dataset(self, parent_dataset, supp_dataset):
+    def check_filepath(self, dataset_names: List[str]) -> List:
+        """
+        Check if single file with multiple datasets.
+        """
+        return any(not os.path.exists(name) for name in dataset_names)
+
+    def merge_supp_dataset(self, func_to_call, dataset_names, **kwargs):
+        breakpoint()
+        if self.check_filepath(dataset_names):
+            datasets = []
+            for dataset in dataset_names:
+                datasets.append(self.get_dataset(dataset))
+        else:
+            datasets: List[DatasetInterface] = list(
+                self._async_get_datasets(func_to_call, dataset_names, **kwargs)
+            )
+        parent_dataset = datasets[0]
+        supp_dataset = datasets[1]
+        breakpoint()
         # static keys for merge
         static_keys = ["STUDYID", "USUBJID", "APID", "POOLID", "SPDEVID"]
         # Determine the common keys present in both datasets

@@ -9,6 +9,7 @@ from cdisc_rules_engine.utilities.utils import (
     get_directory_path,
     is_split_dataset,
     get_corresponding_datasets,
+    is_supp_dataset,
 )
 from typing import List
 from cdisc_rules_engine import config
@@ -74,10 +75,19 @@ class BaseDatasetBuilder:
                     dataset_names=self.get_corresponding_datasets_names(),
                     **kwargs,
                 )
-            # elif is_supp_dataset(self.datasets, self.domain) and :
-            #     # Handle supplemental datasets
-
-            # else:
+        elif (
+            is_supp_dataset(self.datasets, self.domain)
+            and self.rule.get("core_id") == "CDISC.SDTMIG.CG0320"
+        ):
+            breakpoint()
+            # TODO: the filter above will need to be changed when CG0019 is published and the filter may need
+            # to be expanded if we wish to merge more datasets via this method
+            dataset: DatasetInterface = self.data_service.merge_supp_dataset(
+                func_to_call=self.build,
+                dataset_names=self.get_corresponding_datasets_names(),
+                **kwargs,
+            )
+        else:
             # single dataset. the most common case
             dataset: DatasetInterface = self.build()
         return dataset
