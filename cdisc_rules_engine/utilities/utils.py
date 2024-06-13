@@ -226,6 +226,17 @@ def is_split_dataset(datasets: List[dict], domain: str) -> bool:
     return False
 
 
+def is_supp_dataset(datasets: List[dict], domain: str) -> bool:
+    corresponding_datasets = get_corresponding_datasets(datasets, domain)
+    # Check if there are multiple datasets for the domain and if their names match the supp naming convention
+    if len(corresponding_datasets) > 1:
+        return any(
+            dataset.get("filename", "").split(".")[0].lower().startswith("supp")
+            for dataset in corresponding_datasets
+        )
+    return False
+
+
 def serialize_rule(rule: dict) -> dict:
     """
     Converts rule "conditions" to dict.
