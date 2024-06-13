@@ -192,7 +192,7 @@ class RuleProcessor:
 
         if excluded_classes:
             variables = self.data_service.get_variables_metadata(
-                dataset_name=file_path
+                dataset_name=file_path, datasets=datasets
             ).data.variable_name
             class_name = self.data_service.get_dataset_class(
                 variables, file_path, datasets, domain
