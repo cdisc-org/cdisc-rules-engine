@@ -38,6 +38,14 @@ class PandasDataset(DatasetInterface):
     def empty(self):
         return self._data.empty
 
+    @property
+    def at(self):
+        return self._data.at
+
+    @property
+    def iat(self):
+        return self._data.iat
+
     @classmethod
     def from_dict(cls, data: dict, **kwargs):
         dataframe = pd.DataFrame.from_dict(data, **kwargs)

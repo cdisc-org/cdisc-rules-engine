@@ -162,52 +162,49 @@ class BaseDataService(DataServiceInterface, ABC):
         parent_dataset = datasets.pop(0)
         static_keys = ["STUDYID", "USUBJID", "APID", "POOLID", "SPDEVID"]
         for supp_dataset in datasets:
+            qnam_list = supp_dataset["QNAM"].unique()
             supp_dataset = self.process_supp(supp_dataset)
             dynamic_key = supp_dataset["IDVAR"].iloc[0]
+
             # Determine the common keys present in both datasets
             common_keys = [
                 key
                 for key in static_keys
                 if key in parent_dataset.columns and key in supp_dataset.columns
             ]
-            suppDF_filtered = supp_dataset.copy()
-            unique_qnams = suppDF_filtered["QNAM"].unique()
-            for qnam in unique_qnams:
-                current_supp = suppDF_filtered[suppDF_filtered["QNAM"] == qnam]
-                if (
-                    "IDVARVAL" in current_supp.columns
-                    and dynamic_key in parent_dataset.columns
-                ):
-                    common_keys.append(dynamic_key)
-                    current_supp = current_supp.rename(
-                        columns={"IDVARVAL": dynamic_key}
-                    )
+            common_keys.append(dynamic_key)
+            current_supp = supp_dataset.rename(columns={"IDVARVAL": dynamic_key})
+            current_supp = current_supp.drop(columns=["IDVAR"])
             parent_dataset[dynamic_key] = parent_dataset[dynamic_key].astype(str)
             current_supp[dynamic_key] = current_supp[dynamic_key].astype(str)
             parent_dataset = PandasDataset(
                 pd.merge(
                     parent_dataset.data,
-                    current_supp,
+                    current_supp.data,
                     how="left",
                     on=common_keys,
                     suffixes=("", "_supp"),
                 )
             )
-            if parent_dataset.duplicated(subset=common_keys).any():
-                raise ValueError(
-                    f"Multiple records with the same QNAM '{qnam}' match a single parent record"
-                )
+            for qnam in qnam_list:
+                qnam_check = parent_dataset.data.dropna(subset=[qnam])
+                grouped = qnam_check.groupby(common_keys).size()
+                if (grouped > 1).any():
+                    raise ValueError(
+                        f"Multiple records with the same QNAM '{qnam}' match a single parent record"
+                    )
+
         return parent_dataset
 
     def process_supp(self, supp_dataset):
         # TODO: QLABEL is not added to the new columns.  This functionality is not supported directly in pandas.
         # initialize new columns for each unique QNAM in the dataset with NaN
         for qnam in supp_dataset["QNAM"].unique():
-            supp_dataset[qnam] = pd.NA
+            supp_dataset.data[qnam] = pd.NA
         # Set the value of the new columns only in their respective rows
         for index, row in supp_dataset.iterrows():
             supp_dataset.at[index, row["QNAM"]] = row["QVAL"]
-        supp_dataset.drop(labels=["QNAM", "QVAL", "QLABEL"], axis=1, inplace=True)
+        supp_dataset.drop(labels=["QNAM", "QVAL", "QLABEL"], axis=1)
         return supp_dataset
 
     def get_dataset_class(
