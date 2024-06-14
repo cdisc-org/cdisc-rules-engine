@@ -160,17 +160,16 @@ class BaseDataService(DataServiceInterface, ABC):
                 self._async_get_datasets(func_to_call, dataset_names, **kwargs)
             )
         parent_dataset = datasets.pop(0)
+        static_keys = ["STUDYID", "USUBJID", "APID", "POOLID", "SPDEVID"]
         for supp_dataset in datasets:
-            supp_dataset = self.process_supp(datasets[1])
-            static_keys = ["STUDYID", "USUBJID", "APID", "POOLID", "SPDEVID"]
+            supp_dataset = self.process_supp(supp_dataset)
+            dynamic_key = supp_dataset["IDVAR"].iloc[0]
             # Determine the common keys present in both datasets
             common_keys = [
                 key
                 for key in static_keys
                 if key in parent_dataset.columns and key in supp_dataset.columns
             ]
-            # dynamic key is parent.[supp.IDVAR] = supp.IDVARVAL
-            dynamic_key = supp_dataset["IDVAR"].iloc[0]
             suppDF_filtered = supp_dataset.copy()
             unique_qnams = suppDF_filtered["QNAM"].unique()
             for qnam in unique_qnams:
@@ -201,15 +200,14 @@ class BaseDataService(DataServiceInterface, ABC):
         return parent_dataset
 
     def process_supp(self, supp_dataset):
-        qnam = supp_dataset["QNAM"].iloc[0]
-        qval = supp_dataset["QVAL"].iloc[0]
-        # qlabel = supp_dataset['QLABEL'].iloc[0]
-
-        # Drop the QNAM, QVAL, and QLABEL columns
+        # TODO: QLABEL is not added to the new columns.  This functionality is not supported directly in pandas.
+        # initialize new columns for each unique QNAM in the dataset with NaN
+        for qnam in supp_dataset["QNAM"].unique():
+            supp_dataset[qnam] = pd.NA
+        # Set the value of the new columns only in their respective rows
+        for index, row in supp_dataset.iterrows():
+            supp_dataset.at[index, row["QNAM"]] = row["QVAL"]
         supp_dataset.drop(labels=["QNAM", "QVAL", "QLABEL"], axis=1, inplace=True)
-        # Add new column with name set to QNAM and value set to QVAL
-        supp_dataset[qnam] = qval
-        # TODO: Set label of new column using QLABEL.  This functionality is not supported directly in pandas.
         return supp_dataset
 
     def get_dataset_class(
