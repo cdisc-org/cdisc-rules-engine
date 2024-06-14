@@ -151,7 +151,6 @@ class BaseDataService(DataServiceInterface, ABC):
         return any(not os.path.exists(name) for name in dataset_names)
 
     def merge_supp_dataset(self, func_to_call, dataset_names, **kwargs):
-        breakpoint()
         if self.check_filepath(dataset_names):
             datasets = []
             for dataset in dataset_names:
@@ -160,43 +159,58 @@ class BaseDataService(DataServiceInterface, ABC):
             datasets: List[DatasetInterface] = list(
                 self._async_get_datasets(func_to_call, dataset_names, **kwargs)
             )
-        parent_dataset = datasets[0]
-        supp_dataset = datasets[1]
-        breakpoint()
-        # static keys for merge
-        static_keys = ["STUDYID", "USUBJID", "APID", "POOLID", "SPDEVID"]
-        # Determine the common keys present in both datasets
-        common_keys = [
-            key
-            for key in static_keys
-            if key in parent_dataset.columns and key in supp_dataset.columns
-        ]
-        dynamic_key = supp_dataset["IDVAR"].iloc[0]
-        suppDF_filtered = supp_dataset.copy()
-        unique_qnams = suppDF_filtered["QNAM"].unique()
-        for qnam in unique_qnams:
-            current_supp = suppDF_filtered[suppDF_filtered["QNAM"] == qnam]
-            if (
-                "IDVARVAL" in current_supp.columns
-                and dynamic_key in parent_dataset.columns
-            ):
-                common_keys.append(dynamic_key)
-                current_supp = current_supp.rename(columns={"IDVARVAL": dynamic_key})
-        parent_dataset[dynamic_key] = parent_dataset[dynamic_key].astype(str)
-        current_supp[dynamic_key] = current_supp[dynamic_key].astype(str)
-        merged_df = pd.merge(
-            parent_dataset.data,
-            current_supp,
-            how="left",
-            on=common_keys,
-            suffixes=("", "_supp"),
-        )
-        if merged_df.duplicated(subset=common_keys).any():
-            raise ValueError(
-                f"Multiple records with the same QNAM '{qnam}' match a single parent record"
+        parent_dataset = datasets.pop(0)
+        for supp_dataset in datasets:
+            supp_dataset = self.process_supp(datasets[1])
+            static_keys = ["STUDYID", "USUBJID", "APID", "POOLID", "SPDEVID"]
+            # Determine the common keys present in both datasets
+            common_keys = [
+                key
+                for key in static_keys
+                if key in parent_dataset.columns and key in supp_dataset.columns
+            ]
+            # dynamic key is parent.[supp.IDVAR] = supp.IDVARVAL
+            dynamic_key = supp_dataset["IDVAR"].iloc[0]
+            suppDF_filtered = supp_dataset.copy()
+            unique_qnams = suppDF_filtered["QNAM"].unique()
+            for qnam in unique_qnams:
+                current_supp = suppDF_filtered[suppDF_filtered["QNAM"] == qnam]
+                if (
+                    "IDVARVAL" in current_supp.columns
+                    and dynamic_key in parent_dataset.columns
+                ):
+                    common_keys.append(dynamic_key)
+                    current_supp = current_supp.rename(
+                        columns={"IDVARVAL": dynamic_key}
+                    )
+            parent_dataset[dynamic_key] = parent_dataset[dynamic_key].astype(str)
+            current_supp[dynamic_key] = current_supp[dynamic_key].astype(str)
+            parent_dataset = PandasDataset(
+                pd.merge(
+                    parent_dataset.data,
+                    current_supp,
+                    how="left",
+                    on=common_keys,
+                    suffixes=("", "_supp"),
+                )
             )
-        # TODO: Add new columns corresponding to each QNAM
-        return merged_df
+            if parent_dataset.duplicated(subset=common_keys).any():
+                raise ValueError(
+                    f"Multiple records with the same QNAM '{qnam}' match a single parent record"
+                )
+        return parent_dataset
+
+    def process_supp(self, supp_dataset):
+        qnam = supp_dataset["QNAM"].iloc[0]
+        qval = supp_dataset["QVAL"].iloc[0]
+        # qlabel = supp_dataset['QLABEL'].iloc[0]
+
+        # Drop the QNAM, QVAL, and QLABEL columns
+        supp_dataset.drop(labels=["QNAM", "QVAL", "QLABEL"], axis=1, inplace=True)
+        # Add new column with name set to QNAM and value set to QVAL
+        supp_dataset[qnam] = qval
+        # TODO: Set label of new column using QLABEL.  This functionality is not supported directly in pandas.
+        return supp_dataset
 
     def get_dataset_class(
         self,

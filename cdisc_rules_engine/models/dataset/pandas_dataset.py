@@ -146,11 +146,13 @@ class PandasDataset(DatasetInterface):
         for arg in invalid_args:
             if arg in kwargs:
                 del kwargs[arg]
-
         return kwargs
 
     def len(self) -> int:
         return self._data.shape[0]
+
+    def duplicated(self, subset=None, keep="first"):
+        return self._data.duplicated(subset=subset, keep=keep)
 
     @property
     def size(self) -> int:
