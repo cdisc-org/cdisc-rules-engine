@@ -8,14 +8,13 @@ from unittest.mock import MagicMock
 
 class TestConcatSplitDatasets(unittest.TestCase):
     def setUp(self):
-        # Initialize necessary objects for testing
-        self.cache_service = None  # Replace with actual cache service if needed
-        self.reader_factory = None  # Replace with actual reader factory if needed
-        self.config = None  # Replace with actual config if needed
+
+        self.cache_service = None
+        self.reader_factory = None
+        self.config = None
         self.data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
 
     def test_concat_split_datasets(self):
-        # Mock datasets
         full_dataset = PandasDataset.from_dict(
             {
                 "STUDYID": [1, 2, 3],

@@ -90,7 +90,6 @@ class BaseDatasetBuilder:
 
     def get_dataset_contents(self, **kwargs):
         # If validating dataset content, ensure split datasets are handled.
-        # TODO: need to add supp logic in this function
         if is_split_dataset(self.datasets, self.domain):
             # Handle split datasets for content checks.
             # A content check is any check that is not in the list of rule types
