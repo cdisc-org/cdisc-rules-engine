@@ -79,9 +79,8 @@ class BaseDatasetBuilder:
             is_supp_dataset(self.datasets, self.domain)
             and self.rule.get("core_id") == "CDISC.SDTMIG.CG0320"
         ):
-            breakpoint()
-            # TODO: the filter above will need to be changed when CG0019 is published and the filter may need
-            # to be expanded if we wish to merge more datasets via this method
+            # TODO: the filter above will need to be changed to CG0019, CG0320 was used in testing
+            # it will need to be changed again when it is published and gets a new core_id
             dataset: DatasetInterface = self.data_service.merge_supp_dataset(
                 func_to_call=self.build,
                 dataset_names=self.get_corresponding_datasets_names(),
@@ -90,7 +89,6 @@ class BaseDatasetBuilder:
         else:
             # single dataset. the most common case
             dataset: DatasetInterface = self.build()
-            breakpoint()
         return dataset
 
     def get_dataset_contents(self, **kwargs):
