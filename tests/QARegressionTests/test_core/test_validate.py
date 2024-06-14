@@ -218,7 +218,7 @@ class TestValidate(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertEqual(stderr, "")
         self.assertFalse(self.error_message in stdout)
-        self.assertFalse(self.check_issue_summary_tab_empty())
+        self.assertTrue(self.check_issue_summary_tab_empty())
 
     def test_validate_minimum_options(self):
         args = [
