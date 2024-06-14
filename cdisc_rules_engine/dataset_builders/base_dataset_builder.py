@@ -74,7 +74,7 @@ class BaseDatasetBuilder:
             )
         elif (
             is_supp_dataset(self.datasets, self.domain)
-            and self.rule.get("core_id") == "CDISC.SDTMIG.CG0320"
+            and self.rule.get("core_id") == "CDISC.SDTMIG.CG0019"
         ):
             # TODO: the filter above will need to be changed to CG0019, CG0320 was used in testing
             # it will need to be changed again when it is published and gets a new core_id
