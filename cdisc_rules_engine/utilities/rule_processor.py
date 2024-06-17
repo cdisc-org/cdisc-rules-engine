@@ -192,7 +192,7 @@ class RuleProcessor:
 
         if excluded_classes:
             variables = self.data_service.get_variables_metadata(
-                dataset_name=file_path
+                dataset_name=file_path, datasets=datasets
             ).data.variable_name
             class_name = self.data_service.get_dataset_class(
                 variables, file_path, datasets, domain
@@ -232,6 +232,7 @@ class RuleProcessor:
             return dataset
 
         dataset_copy = dataset.copy()
+        previous_operations = []
         for operation in operations:
             # change -- pattern to domain name
             original_target: str = operation.get("name")
@@ -272,7 +273,10 @@ class RuleProcessor:
             )
 
             # execute operation
-            dataset_copy = self._execute_operation(operation_params, dataset_copy)
+            dataset_copy = self._execute_operation(
+                operation_params, dataset_copy, previous_operations
+            )
+            previous_operations.append(operation_params.operation_name)
 
             logger.info(
                 f"Processed rule operation. "
@@ -281,7 +285,10 @@ class RuleProcessor:
         return dataset_copy
 
     def _execute_operation(
-        self, operation_params: OperationParams, dataset: DatasetInterface
+        self,
+        operation_params: OperationParams,
+        dataset: DatasetInterface,
+        previous_operations: List[str] = [],
     ):
         """
         Internal method that executes the given operation.
@@ -297,6 +304,8 @@ class RuleProcessor:
             target_variable=operation_params.target,
             dataset_path=operation_params.dataset_path,
         )
+        if previous_operations:
+            cache_key = f'{cache_key}-{";".join(previous_operations)}'
         result: DatasetInterface = self.cache.get(cache_key)
         if result is not None:
             return result
