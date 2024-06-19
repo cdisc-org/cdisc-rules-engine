@@ -104,6 +104,14 @@ def set_log_level(args):
         engine_logger.setLevel("verbose")
 
 
+def initialize_logger(disabled, log_level):
+    if disabled:
+        engine_logger.disabled = True
+    else:
+        engine_logger.disabled = False
+        engine_logger.setLevel(log_level)
+
+
 def run_validation(args: Validation_args):
     set_log_level(args)
     # fill cache
@@ -150,8 +158,12 @@ def run_validation(args: Validation_args):
     engine_logger.info(f"Running {len(rules)} rules against {len(datasets)} datasets")
     start = time.time()
     results = []
+    # instantiate logger in each child process to maintain log level
+    initializer = partial(
+        initialize_logger, engine_logger.disabled, engine_logger._logger.level
+    )
     # run each rule in a separate process
-    with Pool(args.pool_size) as pool:
+    with Pool(args.pool_size, initializer=initializer) as pool:
         validation_results: Iterable[RuleValidationResult] = pool.imap_unordered(
             partial(
                 validate_single_rule, shared_cache, datasets, args, library_metadata
