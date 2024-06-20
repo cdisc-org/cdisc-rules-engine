@@ -722,7 +722,7 @@ class DataframeType(BaseType):
     @type_operator(FIELD_DATAFRAME)
     def empty(self, other_value: dict):
         target = self.replace_prefix(other_value.get("target"))
-        results = np.where(self.value[target].isin(["", None]), True, False)
+        results = np.where(self.value[target].isin(["", None, {None}]), True, False)
         return self.value.convert_to_series(results)
 
     @type_operator(FIELD_DATAFRAME)
