@@ -55,7 +55,7 @@ class BaseDatasetBuilder:
         pass
 
     @abstractmethod
-    def build_split_datasets(self) -> DatasetInterface:
+    def build_split_datasets(self, dataset_name) -> DatasetInterface:
         """
         Returns correct dataframe to operate on
         """
