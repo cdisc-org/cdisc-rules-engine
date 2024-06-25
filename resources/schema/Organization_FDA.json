@@ -18,7 +18,6 @@
                         "additionalProperties": false,
                         "properties": {
                           "Cited Guidance": {
-                            "pattern": "^(\\d{1,3}(\\.\\d+)?|CG\\d{4})(, (\\d{1,3}(\\.\\d+)?|CG\\d{4}))*$",
                             "type": "string"
                           },
                           "Document": {
