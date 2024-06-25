@@ -30,7 +30,6 @@
                         "additionalProperties": false,
                         "properties": {
                           "Cited Guidance": {
-                            "pattern": "^(eCTD \\d{4}|FDAB\\d{3}|TCG \\d(\\.\\d){2,3})(, (eCTD \\d{4}|FDAB\\d{3}|TCG \\d(\\.\\d){2,3}))*$",
                             "type": "string"
                           },
                           "Document": {
@@ -59,7 +58,7 @@
                 "Rule Identifier": {
                   "properties": {
                     "Id": {
-                      "pattern": "^(CT|SD|SE)\\d{4}[A-Z]?$",
+                      "pattern": "^(FB|CT|SD|SE)\\d{4}[A-Z]?$",
                       "type": "string"
                     }
                   },
