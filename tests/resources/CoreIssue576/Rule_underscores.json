@@ -1,0 +1,93 @@
+{
+    "Authorities": [
+        {
+            "Organization": "CDISC",
+            "Standards": [
+                {
+                    "Name": "SDTMIG",
+                    "References": [
+                        {
+                            "Citations": [
+                                {
+                                    "Document": "IG v3.2",
+                                    "Section": "8.4",
+                                    "Cited_Guidance": "For objective data, the value in QEVAL will be null. For subjective data (when QORIG=”ASSIGNED”), the value in QEVAL should reflect the role of the person or institution assigning the value (e.g., SPONSOR or ADJUDICATION COMMITTEE)."
+                                }
+                            ],
+                            "Origin": "SDTM and SDTMIG Conformance Rules",
+                            "Version": "2.0",
+                            "Rule_Identifier": {
+                                "Id": "CG0202",
+                                "Version": "2"
+                            }
+                        }
+                    ],
+                    "Version": "3.2"
+                },
+                {
+                    "Name": "SDTMIG",
+                    "References": [
+                        {
+                            "Citations": [
+                                {
+                                    "Document": "IG v3.3",
+                                    "Section": "8.4",
+                                    "Cited_Guidance": "For objective data, the value in QEVAL will be null. For subjective data (when QORIG=”ASSIGNED”), the value in QEVAL should reflect the role of the person or institution assigning the value (e.g., SPONSOR or ADJUDICATION COMMITTEE)."
+                                }
+                            ],
+                            "Origin": "SDTM and SDTMIG Conformance Rules",
+                            "Version": "2.0",
+                            "Rule_Identifier": {
+                                "Id": "CG0202",
+                                "Version": "2"
+                            }
+                        }
+                    ],
+                    "Version": "3.3"
+                }
+            ]
+        }
+    ],
+    "Check": {
+        "all": [
+            {
+                "name": "QORIG",
+                "operator": "equal_to_case_insensitive",
+                "value": "ASSIGNED",
+                "value_is_literal": true
+            },
+            {
+                "name": "QEVAL",
+                "operator": "empty"
+            }
+        ]
+    },
+    "Core": {
+        "Id": "CORE-000375",
+        "Status": "Published",
+        "Version": "1"
+    },
+    "Description": "Raise an error when QORIG = ASSIGNED and QEVAL is not populated.",
+    "Executability": "Fully Executable",
+    "Outcome": {
+        "Message": "QORIG = ASSIGNED but QEVAL is not populated",
+        "Output_Variables": [
+            "QORIG",
+            "QEVAL"
+        ]
+    },
+    "Scope": {
+        "Classes": {
+            "Include": [
+                "RELATIONSHIP"
+            ]
+        },
+        "Domains": {
+            "Include": [
+                "SUPP--"
+            ]
+        }
+    },
+    "Sensitivity": "Record",
+    "Rule_Type": "Record Data"
+}

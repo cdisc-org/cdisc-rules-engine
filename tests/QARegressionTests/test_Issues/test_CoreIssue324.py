@@ -3,6 +3,7 @@ import subprocess
 import unittest
 import openpyxl
 import pytest
+from conftest import get_python_executable
 
 
 @pytest.mark.regression
@@ -11,7 +12,7 @@ class TerminalCommandTestCase(unittest.TestCase):
     def setUpClass(cls):
         # Run the command in the terminal
         command = [
-            "python",
+            f"{get_python_executable()}",
             "-m",
             "core",
             "validate",

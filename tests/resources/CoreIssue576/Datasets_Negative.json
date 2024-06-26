@@ -1,0 +1,382 @@
+{
+    "datasets": [
+        {
+            "filename": "dm.xpt",
+            "label": "Demographics",
+            "domain": "DM",
+            "variables": [
+                {
+                    "name": "STUDYID",
+                    "label": "Study Identifier",
+                    "type": "Char",
+                    "length": 12
+                },
+                {
+                    "name": "DOMAIN",
+                    "label": "Domain Abbreviation",
+                    "type": "Char",
+                    "length": 2
+                },
+                {
+                    "name": "USUBJID",
+                    "label": "Unique Subject Identifier",
+                    "type": "Char",
+                    "length": 8
+                },
+                {
+                    "name": "SUBJID",
+                    "label": "Subject Identifier for the Study",
+                    "type": "Char",
+                    "length": 4
+                },
+                {
+                    "name": "RFSTDTC",
+                    "label": "Subject Reference Start Date/Time",
+                    "type": "Char",
+                    "length": 10
+                },
+                {
+                    "name": "RFENDTC",
+                    "label": "Subject Reference End Date/Time",
+                    "type": "Char",
+                    "length": 10
+                },
+                {
+                    "name": "RFXSTDTC",
+                    "label": "Date/Time of First Study Treatment",
+                    "type": "Char",
+                    "length": 10
+                },
+                {
+                    "name": "RFXENDTC",
+                    "label": "Date/Time of Last Study Treatment",
+                    "type": "Char",
+                    "length": 10
+                },
+                {
+                    "name": "RFICDTC",
+                    "label": "Date/Time of Informed Consent",
+                    "type": "Char",
+                    "length": 10
+                },
+                {
+                    "name": "RFPENDTC",
+                    "label": "Date/Time of End of Participation",
+                    "type": "Char",
+                    "length": 10
+                },
+                {
+                    "name": "DTHDTC",
+                    "label": "Date/Time of Death",
+                    "type": "Char",
+                    "length": 10
+                },
+                {
+                    "name": "DTHFL",
+                    "label": "Subject Death Flag",
+                    "type": "Char",
+                    "length": 1
+                },
+                {
+                    "name": "SITEID",
+                    "label": "Study Site Identifier",
+                    "type": "Char",
+                    "length": 3
+                },
+                {
+                    "name": "BRTHDTC",
+                    "label": "Date/Time of Birth",
+                    "type": "Char",
+                    "length": 10
+                },
+                {
+                    "name": "AGE",
+                    "label": "Age",
+                    "type": "Num",
+                    "length": 8
+                },
+                {
+                    "name": "AGEU",
+                    "label": "Age Units",
+                    "type": "Char",
+                    "length": 5
+                },
+                {
+                    "name": "SEX",
+                    "label": "Sex",
+                    "type": "Char",
+                    "length": 1
+                },
+                {
+                    "name": "RACE",
+                    "label": "Race",
+                    "type": "Char",
+                    "length": 41
+                },
+                {
+                    "name": "ETHNIC",
+                    "label": "Ethnicity",
+                    "type": "Char",
+                    "length": 22
+                },
+                {
+                    "name": "ARMCD",
+                    "label": "Planned Arm Code",
+                    "type": "Char",
+                    "length": 8
+                },
+                {
+                    "name": "ARM",
+                    "label": "Description of Planned Arm",
+                    "type": "Char",
+                    "length": 28
+                },
+                {
+                    "name": "ACTARMCD",
+                    "label": "Actual Arm Code",
+                    "type": "Char",
+                    "length": 8
+                },
+                {
+                    "name": "ACTARM",
+                    "label": "Description of Actual Arm",
+                    "type": "Char",
+                    "length": 28
+                },
+                {
+                    "name": "ARMNRS",
+                    "label": "Reason Arm and/or Actual Arm is Null",
+                    "type": "Char",
+                    "length": 14
+                },
+                {
+                    "name": "ACTARMUD",
+                    "label": "Description of Unplanned Actual Arm",
+                    "type": "Char",
+                    "length": 200
+                },
+                {
+                    "name": "COUNTRY",
+                    "label": "Country",
+                    "type": "Char",
+                    "length": 3
+                }
+            ],
+            "records": {
+                "STUDYID": [
+                    "CDISCPILOT01",
+                    "CDISCPILOT01",
+                    "CDISCPILOT01",
+                    "CDISCPILOT01",
+                    "CDISCPILOT01",
+                    "CDISCPILOT01"
+                ],
+                "DOMAIN": [
+                    "DM",
+                    "DM",
+                    "DM",
+                    "DM",
+                    "DM",
+                    "DM"
+                ],
+                "USUBJID": [
+                    "CDISC001",
+                    "CDISC002",
+                    "CDISC003",
+                    "CDISC004",
+                    "CDISC005",
+                    "CDISC015"
+                ],
+                "SUBJID": [
+                    "1115",
+                    "1211",
+                    "1302",
+                    "1345",
+                    "1383",
+                    "1022"
+                ],
+                "RFSTDTC": [
+                    "2012-11-30",
+                    "2013-01-14",
+                    "",
+                    "2014-03-17",
+                    "2013-02-04",
+                    ""
+                ],
+                "RFENDTC": [
+                    "2013-01-23",
+                    "2013-01-14",
+                    "2013-11-05",
+                    "2014-03-18",
+                    "",
+                    ""
+                ],
+                "RFXSTDTC": [
+                    "2012-11-30",
+                    "2012-11-15",
+                    "2013-08-29",
+                    "2013-10-08",
+                    "2013-02-04",
+                    ""
+                ],
+                "RFXENDTC": [
+                    "2013-01-23",
+                    "2013-01-12",
+                    "2013-11-05",
+                    "2014-03-18",
+                    "2013-08-06",
+                    ""
+                ],
+                "RFICDTC": [
+                    "2012-11-23",
+                    "2012-10-30",
+                    "2013-08-20",
+                    "2013-10-01",
+                    "2013-01-22",
+                    "2014-03-17"
+                ],
+                "RFPENDTC": [
+                    "2013-05-20",
+                    "2013-01-14",
+                    "2014-02-13",
+                    "2014-03-18",
+                    "2013-08-06",
+                    "2014-03-17"
+                ],
+                "DTHDTC": [
+                    "",
+                    "2013-01-14",
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "DTHFL": [
+                    "",
+                    "Y",
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "SITEID": [
+                    "701",
+                    "701",
+                    "701",
+                    "701",
+                    "701",
+                    "711"
+                ],
+                "BRTHDTC": [
+                    "1928",
+                    "1936",
+                    "1951",
+                    "1950",
+                    "1941",
+                    "1928"
+                ],
+                "AGE": [
+                    84,
+                    76,
+                    61,
+                    63,
+                    72,
+                    86
+                ],
+                "AGEU": [
+                    "YEARS",
+                    "YEARS",
+                    "YEARS",
+                    "YEARS",
+                    "YEARS",
+                    "YEARS"
+                ],
+                "SEX": [
+                    "M",
+                    "F",
+                    "M",
+                    "F",
+                    "F",
+                    "F"
+                ],
+                "RACE": [
+                    "WHITE",
+                    "WHITE",
+                    "WHITE",
+                    "WHITE",
+                    "WHITE",
+                    "WHITE"
+                ],
+                "ETHNIC": [
+                    "NOT HISPANIC OR LATINO",
+                    "NOT HISPANIC OR LATINO",
+                    "NOT HISPANIC OR LATINO",
+                    "NOT HISPANIC OR LATINO",
+                    "NOT HISPANIC OR LATINO",
+                    "NOT HISPANIC OR LATINO"
+                ],
+                "ARMCD": [
+                    "ZAN_LOW",
+                    "ZAN_LOW",
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "ARM": [
+                    "Zanomaline Low Dose (54 mg)",
+                    "Zanomaline High Dose (81 mg)",
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "ACTARMCD": [
+                    "ZAN_LOW",
+                    "ZAN_HIGH",
+                    "ZAN_HIGH",
+                    "PLACEBO",
+                    "",
+                    ""
+                ],
+                "ACTARM": [
+                    "Zanomaline Low Dose (54 mg)",
+                    "Zanomaline High Dose (81 mg)",
+                    "Zanomaline High Dose (81 mg)",
+                    "Placebo",
+                    "",
+                    ""
+                ],
+                "ARMNRS": [
+                    "",
+                    "",
+                    "",
+                    "",
+                    "NOT ASSIGNED",
+                    "SCREEN FAILURE"
+                ],
+                "ACTARMUD": [
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                "COUNTRY": [
+                    "USA",
+                    "USA",
+                    "USA",
+                    "USA",
+                    "USA",
+                    "USA"
+                ]
+            }
+        }
+    ],
+    "standard": {
+        "product": "sdtmig",
+        "version": "3-3"
+    },
+    "codelists": []
+}
