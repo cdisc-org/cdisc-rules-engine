@@ -819,13 +819,13 @@ def test_target_is_sorted_by(dataset_class):
     valid_desc_df = dataset_class.from_dict(
         {
             "USUBJID": ["CDISC001", "CDISC002", "CDISC002", "CDISC001", "CDISC001"],
-            "SESEQ": [2, 1, 2, 3, 1],
+            "SESEQ": [3, 2, 1, 2, 1],
             "SESTDTC": [
-                "2006-06-02",
+                "2006-06-05",
                 "2006-06-04",
                 "2006-06-01",
-                "2006-06-05",
                 "2006-06-03",
+                "2006-06-02",
             ],
         }
     )
@@ -890,7 +890,7 @@ def test_target_is_sorted_by(dataset_class):
     valid_desc_df = dataset_class.from_dict(
         {
             "USUBJID": [123, 456, 456, 123, 123],
-            "SESEQ": [2, 1, 2, 3, 1],
+            "SESEQ": [1, 2, 1, 3, 2],
             "SESTDTC": [
                 "2006-06-02",
                 "2006-06-04",
@@ -925,7 +925,7 @@ def test_target_is_sorted_by(dataset_class):
     invalid_df = dataset_class.from_dict(
         {
             "USUBJID": ["CDISC001", "CDISC002", "CDISC002", "CDISC001", "CDISC001"],
-            "SESEQ": [1, 2, 3, 1, 2],
+            "SESEQ": [1, 2, 3, 3, 2],
             "SESTDTC": [
                 "2006-06-02",
                 "2006-06-04",
@@ -950,9 +950,9 @@ def test_target_is_sorted_by(dataset_class):
         pd.Series(
             [
                 True,
+                False,
+                False,
                 True,
-                False,
-                False,
                 True,
             ]
         )
@@ -1012,13 +1012,13 @@ def test_target_is_sorted_by(dataset_class):
     valid_mul_df = dataset_class.from_dict(
         {
             "USUBJID": ["CDISC001", "CDISC002", "CDISC002", "CDISC001", "CDISC001"],
-            "SESEQ": [2, 1, 2, 3, 1],
+            "SESEQ": [7, 3, 2, 8, 6],
             "SESTDTC": [
-                "2006-06-02",
+                "2006-06-03",
                 "2006-06-04",
                 "2006-06-01",
                 "2006-06-05",
-                "2006-06-03",
+                "2006-06-01",
             ],
             "STUDYID": [
                 "CDISCPILOT1",
@@ -1028,11 +1028,11 @@ def test_target_is_sorted_by(dataset_class):
                 "CDISCPILOT1",
             ],
             "SEENDTC": [
-                "2006-06-02",
+                "2006-06-03",
                 "2006-06-04",
                 "2006-06-01",
                 "2006-06-05",
-                "2006-06-03",
+                "2006-06-01",
             ],
         }
     )
@@ -1062,14 +1062,14 @@ def test_target_is_sorted_by(dataset_class):
 
     valid_mul_df = dataset_class.from_dict(
         {
-            "USUBJID": ["CDISC001", "CDISC002", "CDISC002", "CDISC001", "CDISC001"],
-            "SESEQ": [1, 2, 1, 3, 2],
+            "USUBJID": ["CDISC001", "CDISC001", "CDISC001", "CDISC001", "CDISC001"],
+            "SESEQ": [1, 2, 5, 8, 12.2],
             "SESTDTC": [
-                "2006-06-02",
-                "2006-06-04",
                 "2006-06-01",
-                "2006-06-05",
+                "2006-06-02",
                 "2006-06-03",
+                "2006-06-04",
+                "2006-06-05",
             ],
             "STUDYID": [
                 "CDISCPILOT1",
@@ -1079,11 +1079,11 @@ def test_target_is_sorted_by(dataset_class):
                 "CDISCPILOT1",
             ],
             "SEENDTC": [
-                "2006-06-03",
-                "2006-06-01",
                 "2006-06-04",
                 "2006-06-05",
-                "2006-06-02",
+                "2006-06-06",
+                "2006-06-07",
+                "2006-06-08",
             ],
         }
     )
@@ -1114,7 +1114,7 @@ def test_target_is_sorted_by(dataset_class):
     invalid_mul_df = dataset_class.from_dict(
         {
             "USUBJID": ["CDISC001", "CDISC002", "CDISC002", "CDISC001", "CDISC001"],
-            "SESEQ": [1, 2, 3, 1, 2],
+            "SESEQ": [1, 2, 1, 1, 2],
             "SESTDTC": [
                 "2006-06-02",
                 "2006-06-04",
@@ -1153,11 +1153,11 @@ def test_target_is_sorted_by(dataset_class):
     assert result.equals(
         pd.Series(
             [
+                False,
                 True,
                 True,
                 False,
                 False,
-                True,
             ]
         )
     )
@@ -1183,7 +1183,7 @@ def test_target_is_sorted_by(dataset_class):
     assert result.equals(
         pd.Series(
             [
-                True,
+                False,
                 True,
                 True,
                 False,
@@ -1213,8 +1213,8 @@ def test_target_is_sorted_by(dataset_class):
     assert result.equals(
         pd.Series(
             [
-                True,
-                True,
+                False,
+                False,
                 False,
                 False,
                 False,
