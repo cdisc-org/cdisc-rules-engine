@@ -206,11 +206,9 @@ class DaskDataset(PandasDataset):
         value = partition_index.at[row_label, col_label]
         return value
 
-    def drop_duplicates(self, subset=None, keep="first", inplace=False, **kwargs):
+    def drop_duplicates(self, subset=None, keep="first", **kwargs):
         """
         Drop duplicate rows from the dataset.
         """
-        new_data = self._data.drop_duplicates(
-            subset=subset, keep=keep, inplace=inplace, **kwargs
-        )
+        new_data = self._data.drop_duplicates(subset=subset, keep=keep, **kwargs)
         return self.__class__(new_data)

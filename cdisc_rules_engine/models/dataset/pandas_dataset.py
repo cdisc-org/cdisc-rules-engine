@@ -42,10 +42,6 @@ class PandasDataset(DatasetInterface):
     def at(self):
         return self._data.at
 
-    @property
-    def iat(self):
-        return self._data.iat
-
     @classmethod
     def from_dict(cls, data: dict, **kwargs):
         dataframe = pd.DataFrame.from_dict(data, **kwargs)
@@ -158,9 +154,6 @@ class PandasDataset(DatasetInterface):
 
     def len(self) -> int:
         return self._data.shape[0]
-
-    def duplicated(self, subset=None, keep="first"):
-        return self._data.duplicated(subset=subset, keep=keep)
 
     @property
     def size(self) -> int:

@@ -32,7 +32,7 @@ from cdisc_rules_engine.utilities.utils import (
 )
 from cdisc_rules_engine.utilities.sdtm_utilities import get_class_and_domain_metadata
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
-from cdisc_rules_engine.models.dataset import PandasDataset
+from cdisc_rules_engine.models.dataset import PandasDataset, DaskDataset
 
 
 def cached_dataset(dataset_type: str):
@@ -193,7 +193,8 @@ class BaseDataService(DataServiceInterface, ABC):
                     raise ValueError(
                         f"Multiple records with the same QNAM '{qnam}' match a single parent record"
                     )
-
+        if self.dataset_implementation == DaskDataset:
+            parent_dataset = DaskDataset(parent_dataset.data)
         return parent_dataset
 
     def process_supp(self, supp_dataset):
