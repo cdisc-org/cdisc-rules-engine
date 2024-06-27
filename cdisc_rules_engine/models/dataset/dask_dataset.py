@@ -197,3 +197,20 @@ class DaskDataset(PandasDataset):
                 npartitions=DEFAULT_NUM_PARTITIONS,
             )
         )
+
+    def at(self, row_label, col_label):
+        """
+        Get a single value for a row/column pair.
+        """
+        partition_index = self.data.loc[row_label:row_label].partitions[0].compute()
+        value = partition_index.at[row_label, col_label]
+        return value
+
+    def drop_duplicates(self, subset=None, keep="first", inplace=False, **kwargs):
+        """
+        Drop duplicate rows from the dataset.
+        """
+        new_data = self._data.drop_duplicates(
+            subset=subset, keep=keep, inplace=inplace, **kwargs
+        )
+        return self.__class__(new_data)

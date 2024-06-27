@@ -197,3 +197,12 @@ class PandasDataset(DatasetInterface):
         Sort the underlying dataframe and return a raw dataframe.
         """
         return self._data.sort_values(by, **kwargs)
+
+    def drop_duplicates(self, subset=None, keep="first", inplace=False, **kwargs):
+        """
+        Drop duplicate rows from the dataset.
+        """
+        new_data = self._data.drop_duplicates(
+            subset=subset, keep=keep, inplace=inplace, **kwargs
+        )
+        return self.__class__(new_data)
