@@ -1,7 +1,7 @@
 {
   "datasets": [
     {
-      "filename": "ss1.xpt",
+      "filename": "ss.xpt",
       "label": "Subject Status",
       "domain": "SS",
       "variables": [
@@ -171,7 +171,7 @@
       }
     },
     {
-      "filename": "ss2.xpt",
+      "filename": "ss12.xpt",
       "label": "Subject Status",
       "domain": "SS",
       "variables": [

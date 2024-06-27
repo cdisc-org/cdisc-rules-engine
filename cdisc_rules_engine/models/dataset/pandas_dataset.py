@@ -38,6 +38,10 @@ class PandasDataset(DatasetInterface):
     def empty(self):
         return self._data.empty
 
+    @property
+    def at(self):
+        return self._data.at
+
     @classmethod
     def from_dict(cls, data: dict, **kwargs):
         dataframe = pd.DataFrame.from_dict(data, **kwargs)
@@ -146,7 +150,6 @@ class PandasDataset(DatasetInterface):
         for arg in invalid_args:
             if arg in kwargs:
                 del kwargs[arg]
-
         return kwargs
 
     def len(self) -> int:
@@ -187,3 +190,12 @@ class PandasDataset(DatasetInterface):
         Sort the underlying dataframe and return a raw dataframe.
         """
         return self._data.sort_values(by, **kwargs)
+
+    def drop_duplicates(self, subset=None, keep="first", inplace=False, **kwargs):
+        """
+        Drop duplicate rows from the dataset.
+        """
+        new_data = self._data.drop_duplicates(
+            subset=subset, keep=keep, inplace=inplace, **kwargs
+        )
+        return self.__class__(new_data)

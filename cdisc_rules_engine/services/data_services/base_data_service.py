@@ -5,6 +5,7 @@ from typing import Callable, List, Optional, Iterable, Iterator
 from concurrent.futures import ThreadPoolExecutor
 import os
 import numpy as np
+import pandas as pd
 
 from cdisc_rules_engine.constants.domains import AP_DOMAIN_LENGTH
 from cdisc_rules_engine.interfaces import (
@@ -31,7 +32,7 @@ from cdisc_rules_engine.utilities.utils import (
 )
 from cdisc_rules_engine.utilities.sdtm_utilities import get_class_and_domain_metadata
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
-from cdisc_rules_engine.models.dataset import PandasDataset
+from cdisc_rules_engine.models.dataset import PandasDataset, DaskDataset
 
 
 def cached_dataset(dataset_type: str):
@@ -125,7 +126,7 @@ class BaseDataService(DataServiceInterface, ABC):
         Accepts a list of split dataset filenames, asynchronously downloads
         all of them and merges into a single DataFrame.
 
-        function_to_call must accept dataset_name and kwargs
+        func_to_call must accept dataset_name and kwargs
         as input parameters and return pandas DataFrame.
         """
         # pop drop_duplicates param at the beginning to avoid passing it to func_to_call
@@ -135,28 +136,77 @@ class BaseDataService(DataServiceInterface, ABC):
         datasets: Iterable[DatasetInterface] = self._async_get_datasets(
             func_to_call, dataset_names, **kwargs
         )
-
         full_dataset = self.dataset_implementation()
         for dataset in datasets:
-            if "RDOMAIN" in dataset.columns:
-                full_dataset = self.merge_supp_dataset(full_dataset, dataset)
-            else:
-                full_dataset = full_dataset.concat(dataset, ignore_index=True)
+            full_dataset = full_dataset.concat(dataset, ignore_index=True)
 
         if drop_duplicates:
-            full_dataset.drop_duplicates()
+            full_dataset = full_dataset.drop_duplicates()
         return full_dataset
 
-    def merge_supp_dataset(self, full_dataset, supp_dataset):
-        merge_keys = ["STUDYID", "USUBJID", "APID", "POOLID", "SPDEVID"]
-        merged_df = full_dataset.merge(
-            supp_dataset,
-            how="inner",
-            on=merge_keys,
-            left_on="IDVAR",
-            right_on="IDVARVAL",
-        )
-        return merged_df
+    def check_filepath(self, dataset_names: List[str]) -> List:
+        """
+        Check if single file with multiple datasets.
+        """
+        return any(not os.path.exists(name) for name in dataset_names)
+
+    def merge_supp_dataset(self, func_to_call, dataset_names, **kwargs):
+        if self.check_filepath(dataset_names):
+            datasets = []
+            for dataset in dataset_names:
+                datasets.append(self.get_dataset(dataset))
+        else:
+            datasets: List[DatasetInterface] = list(
+                self._async_get_datasets(func_to_call, dataset_names, **kwargs)
+            )
+        parent_dataset = datasets.pop(0)
+        static_keys = ["STUDYID", "USUBJID", "APID", "POOLID", "SPDEVID"]
+        for supp_dataset in datasets:
+            qnam_list = supp_dataset["QNAM"].unique()
+            supp_dataset = self.process_supp(supp_dataset)
+            dynamic_key = supp_dataset["IDVAR"].iloc[0]
+
+            # Determine the common keys present in both datasets
+            common_keys = [
+                key
+                for key in static_keys
+                if key in parent_dataset.columns and key in supp_dataset.columns
+            ]
+            common_keys.append(dynamic_key)
+            current_supp = supp_dataset.rename(columns={"IDVARVAL": dynamic_key})
+            current_supp = current_supp.drop(columns=["IDVAR"])
+            parent_dataset[dynamic_key] = parent_dataset[dynamic_key].astype(str)
+            current_supp[dynamic_key] = current_supp[dynamic_key].astype(str)
+            parent_dataset = PandasDataset(
+                pd.merge(
+                    parent_dataset.data,
+                    current_supp.data,
+                    how="left",
+                    on=common_keys,
+                    suffixes=("", "_supp"),
+                )
+            )
+            for qnam in qnam_list:
+                qnam_check = parent_dataset.data.dropna(subset=[qnam])
+                grouped = qnam_check.groupby(common_keys).size()
+                if (grouped > 1).any():
+                    raise ValueError(
+                        f"Multiple records with the same QNAM '{qnam}' match a single parent record"
+                    )
+        if self.dataset_implementation == DaskDataset:
+            parent_dataset = DaskDataset(parent_dataset.data)
+        return parent_dataset
+
+    def process_supp(self, supp_dataset):
+        # TODO: QLABEL is not added to the new columns.  This functionality is not supported directly in pandas.
+        # initialize new columns for each unique QNAM in the dataset with NaN
+        for qnam in supp_dataset["QNAM"].unique():
+            supp_dataset.data[qnam] = pd.NA
+        # Set the value of the new columns only in their respective rows
+        for index, row in supp_dataset.iterrows():
+            supp_dataset.at[index, row["QNAM"]] = row["QVAL"]
+        supp_dataset.drop(labels=["QNAM", "QVAL", "QLABEL"], axis=1)
+        return supp_dataset
 
     def get_dataset_class(
         self,
