@@ -32,7 +32,9 @@ class ConsoleLogger(LoggerInterface):
             "warn": logging.WARNING,
             "verbose": logging.CRITICAL + 1,
         }
-        self._logger.setLevel(levels.get(level, logging.ERROR))
+        if isinstance(level, str):
+            level = levels.get(level.lower(), logging.ERROR)
+        self._logger.setLevel(level)
 
     def debug(self, msg: str, *args, **kwargs):
         self._logger.debug(msg, *args, **kwargs)
