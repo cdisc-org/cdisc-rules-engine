@@ -38,6 +38,10 @@ class PandasDataset(DatasetInterface):
     def empty(self):
         return self._data.empty
 
+    @property
+    def loc(self):
+        return self._data.loc
+
     @classmethod
     def from_dict(cls, data: dict, **kwargs):
         dataframe = pd.DataFrame.from_dict(data, **kwargs)
@@ -187,3 +191,11 @@ class PandasDataset(DatasetInterface):
         Sort the underlying dataframe and return a raw dataframe.
         """
         return self._data.sort_values(by, **kwargs)
+
+    def dropna(self, inplace=False, **kwargs):
+        result = self._data.dropna(**kwargs)
+        if inplace:
+            self._data = result
+            return None
+        else:
+            return self.__class__(result)

@@ -1,6 +1,5 @@
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.dataset_builders.base_dataset_builder import BaseDatasetBuilder
-import pandas as pd
 
 
 class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
@@ -46,9 +45,9 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
             on="merge_key",
         )
         merged.drop(columns=["merge_key"])
-        # 4. Replace Nan with None
-        merged_no_nans = merged.where(pd.notnull(merged.data), None)
-        return merged_no_nans
+        # 4. Remove unused rows
+        merged_cleaned = merged.dropna(subset=["dataset_name"])
+        return merged_cleaned
 
     def _get_define_xml_dataframe(self):
         define_col_order = [

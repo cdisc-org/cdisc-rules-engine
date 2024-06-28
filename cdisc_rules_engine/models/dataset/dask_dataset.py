@@ -25,6 +25,15 @@ class DaskDataset(PandasDataset):
     def data(self):
         return self._data
 
+    @property
+    def loc(self):
+        return self._data.loc
+
+    @property
+    def size(self):
+        memory_usage = self.data.get_partition(0).compute().memory_usage()
+        return memory_usage.sum()
+
     @data.setter
     def data(self, data):
         self._data = data
@@ -151,11 +160,6 @@ class DaskDataset(PandasDataset):
         )
         return self.__class__(new_data)
 
-    @property
-    def size(self):
-        memory_usage = self.data.get_partition(0).compute().memory_usage()
-        return memory_usage.sum()
-
     def assign(self, **kwargs):
         return self.data.assign(**kwargs)
 
@@ -197,3 +201,11 @@ class DaskDataset(PandasDataset):
                 npartitions=DEFAULT_NUM_PARTITIONS,
             )
         )
+
+    def dropna(self, inplace=False, **kwargs):
+        result = self._data.dropna(**kwargs)
+        if inplace:
+            self._data = result
+            return None
+        else:
+            return self.__class__(result)
