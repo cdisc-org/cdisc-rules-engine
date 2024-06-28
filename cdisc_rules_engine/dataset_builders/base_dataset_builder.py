@@ -9,6 +9,7 @@ from cdisc_rules_engine.utilities.utils import (
     get_directory_path,
     is_split_dataset,
     get_corresponding_datasets,
+    is_supp_dataset,
 )
 from typing import List
 from cdisc_rules_engine import config
@@ -55,7 +56,7 @@ class BaseDatasetBuilder:
         pass
 
     @abstractmethod
-    def build_split_datasets(self) -> DatasetInterface:
+    def build_split_datasets(self, dataset_name) -> DatasetInterface:
         """
         Returns correct dataframe to operate on
         """
@@ -68,6 +69,17 @@ class BaseDatasetBuilder:
             # A content check is any check that is not in the list of rule types
             dataset: DatasetInterface = self.data_service.concat_split_datasets(
                 func_to_call=self.build_split_datasets,
+                dataset_names=self.get_corresponding_datasets_names(),
+                **kwargs,
+            )
+        elif (
+            is_supp_dataset(self.datasets, self.domain)
+            and self.rule.get("core_id") == "CDISC.SDTMIG.CG0019"
+        ):
+            # TODO: the filter above will need to be changed to CG0019, CG0320 was used in testing
+            # it will need to be changed again when it is published and gets a new core_id
+            dataset: DatasetInterface = self.data_service.merge_supp_dataset(
+                func_to_call=self.build,
                 dataset_names=self.get_corresponding_datasets_names(),
                 **kwargs,
             )

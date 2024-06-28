@@ -79,8 +79,59 @@ class DatasetXPTMetadataReader:
         return None
 
     def _calculate_dataset_length(self):
-        row_size = sum(self._metadata_container["variable_name_to_size_map"].values())
-        return int(os.path.getsize(self._file_path) / row_size)
+        df, meta = pyreadstat.read_xport(self._file_path, metadataonly=True)
+        row_size = sum(meta.variable_storage_width.values())
+        total_size = os.path.getsize(self._file_path)
+        start = self._read_header(self._file_path)
+        remainder = (total_size - start) % row_size
+        estimated_rows = (total_size - start - remainder) / row_size
+        if row_size < 80:
+            padding = self._count_trailing_padding(self._file_path, row_size)
+            return (total_size - start - padding) / row_size
+        return estimated_rows
+
+    def _count_trailing_padding(self, file_path, row_size):
+        """
+        reads the file from the end in chunks of 80 bytes and counts the total number of trailing padding bytes
+        """
+        padding_size = 0
+        with open(file_path, "rb") as file:
+            file.seek(0, os.SEEK_END)
+            file_size = file.tell()
+            file.seek(file_size - 1)
+
+            while file.tell() > 0:
+                byte = file.read(1)
+                if byte == b" ":
+                    padding_size += 1
+                    if file.tell() == 1:
+                        break
+                    file.seek(file.tell() - 2)
+                else:
+                    break
+        return padding_size
+
+    def _read_header(self, file_path):
+        """
+        read the header of the file to find the start of the data section in 10kb chunks
+        """
+        marker = b"HEADER RECORD*******OBS     HEADER RECORD!!!!!!!000000000000000000000000000000"
+        chunk_size = 1024
+        read_header = b""
+        padding_chars = (b"\x00", b" ")
+        with open(file_path, "rb") as file:
+            while True:
+                chunk = file.read(chunk_size)
+                if not chunk:
+                    break
+                read_header += chunk
+                position = read_header.find(marker)
+                if position != -1:
+                    data_start = position + len(marker)
+                    for i in range(data_start, len(read_header)):
+                        if read_header[i : i + 1] not in padding_chars:
+                            return i
+        raise ValueError("End descriptor not found in the file header.")
 
     def _convert_variable_types(self):
         """

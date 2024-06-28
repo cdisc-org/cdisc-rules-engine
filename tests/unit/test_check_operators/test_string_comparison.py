@@ -272,8 +272,16 @@ def test_shorter_than_or_equal_to(data, comparator, dataset_type, expected_resul
 @pytest.mark.parametrize(
     "data,dataset_type,expected_result",
     [
-        ({"target": ["Att", "", None]}, PandasDataset, [False, True, True]),
-        ({"target": ["Att", "", None]}, DaskDataset, [False, True, True]),
+        (
+            {"target": ["Att", "", None, {None}, {None, 1}, {1, 2}]},
+            PandasDataset,
+            [False, True, True, True, False, False],
+        ),
+        (
+            {"target": ["Att", "", None, {None}, {None, 1}, {1, 2}]},
+            DaskDataset,
+            [False, True, True, True, False, False],
+        ),
     ],
 )
 def test_empty(data, dataset_type, expected_result):

@@ -722,7 +722,7 @@ class DataframeType(BaseType):
     @type_operator(FIELD_DATAFRAME)
     def empty(self, other_value: dict):
         target = self.replace_prefix(other_value.get("target"))
-        results = np.where(self.value[target].isin(["", None]), True, False)
+        results = np.where(self.value[target].isin(["", None, {None}]), True, False)
         return self.value.convert_to_series(results)
 
     @type_operator(FIELD_DATAFRAME)
@@ -1271,22 +1271,32 @@ class DataframeType(BaseType):
         target: str = self.replace_prefix(other_value.get("target"))
         within: str = self.replace_prefix(other_value.get("within"))
         columns = other_value["comparator"]
+
+        result = pd.Series([True] * len(self.value), index=self.value.index)
         for col in columns:
             comparator: str = self.replace_prefix(col["name"])
-            ascending: str = col["sort_order"] != "DESC"
+            ascending: bool = col["sort_order"].lower() != "desc"
             na_pos: str = col["null_position"]
-
-            grouped_df = (
-                self.value[[target, within, comparator]]
-                .sort_values(by=[within, comparator], na_position=na_pos)
-                .groupby([within])
-                .apply(lambda x: x)
+            sorted_df = self.value[[target, within, comparator]].sort_values(
+                by=[within, comparator], ascending=ascending, na_position=na_pos
             )
-            temp_target = grouped_df.groupby(within).cumcount().apply(lambda x: x + 1)
-            if not ascending:
-                grouped_df = grouped_df.reset_index(drop=True)
-                temp_target = temp_target[::-1].reset_index(drop=True)
-        return temp_target.eq(grouped_df[target]).sort_index(axis=0)
+            # temporary DataFrame to check the order
+            grouped_df = sorted_df.groupby(within)
+            # Series to hold the sorted check results
+            sorted_check = pd.Series(index=sorted_df.index, dtype=bool)
+
+            for name, group in grouped_df:
+                sorted_values = group[target].values
+                expected_values = (
+                    np.sort(sorted_values)
+                    if ascending
+                    else np.sort(sorted_values)[::-1]
+                )
+                sorted_check[group.index] = np.array_equal(
+                    sorted_values, expected_values
+                )
+            result.update(sorted_check)
+        return result
 
     @type_operator(FIELD_DATAFRAME)
     def target_is_not_sorted_by(self, other_value: dict):
