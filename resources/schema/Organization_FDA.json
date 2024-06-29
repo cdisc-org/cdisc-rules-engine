@@ -33,6 +33,10 @@
                           },
                           "Document": {
                             "const": "FDA"
+                          },
+                          "Section": {
+                            "pattern": "^(FDAB\\d{3}|TRC\\d{4}[A-Z]?|\\d{4}[A-Z])$",
+                            "type": "string"
                           }
                         }
                       }
@@ -57,7 +61,7 @@
                 "Rule Identifier": {
                   "properties": {
                     "Id": {
-                      "pattern": "^(FB|CT|SD|SE)\\d{4}[A-Z]?$",
+                      "pattern": "^(FB|CT|SD|SE)\\d{4}[A-Z]?$|^TRC.*$",
                       "type": "string"
                     }
                   },
