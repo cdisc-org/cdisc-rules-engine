@@ -36,3 +36,4 @@ class OperationParams:
     dictionary_term_type: str = None
     case_sensitive: bool = True
     filter: dict = None
+    grouping_aliases: List[str] = None

@@ -319,6 +319,17 @@ class BaseDataService(DataServiceInterface, ABC):
         numeric_columns = dataset.data.select_dtypes(include=np.number).columns
         dataset[numeric_columns] = dataset.data[numeric_columns].replace(np.nan, None)
 
+    @staticmethod
+    def _replace_nans_in_specified_cols_with_none(
+        dataset: DatasetInterface, column_names: Iterable
+    ):
+        """
+        Replaces NaN in specified columns with None.
+        """
+        if isinstance(column_names, List):
+            column_names = dataset.data[column_names].columns
+        dataset.data = dataset.data.replace(np.nan, {col: None for col in column_names})
+
     async def _async_get_dataset(
         self, function_to_call: Callable, dataset_name: str, **kwargs
     ) -> DatasetInterface:
