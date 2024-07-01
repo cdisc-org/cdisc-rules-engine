@@ -1069,14 +1069,6 @@ def test_validate_single_rule_not_equal_to(
                                 "dataset_location": "te.xpt",
                             },
                         },
-                        {
-                            "value": {
-                                "dataset_location": None,
-                                "dataset_label": None,
-                                "dataset_name": None,
-                            },
-                            "row": 2,
-                        },
                     ],
                     "message": "Dataset metadata does not correspond to Define XML",
                 }

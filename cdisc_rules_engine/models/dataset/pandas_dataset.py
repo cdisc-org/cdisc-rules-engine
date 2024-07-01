@@ -42,6 +42,7 @@ class PandasDataset(DatasetInterface):
     def loc(self):
         return self._data.loc
 
+    @property
     def at(self):
         return self._data.at
 

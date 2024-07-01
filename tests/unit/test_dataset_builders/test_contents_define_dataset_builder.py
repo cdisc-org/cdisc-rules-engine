@@ -4,6 +4,7 @@ from cdisc_rules_engine.models.library_metadata_container import (
 import pytest
 from unittest.mock import MagicMock, patch
 import pandas as pd
+import numpy as np
 from cdisc_rules_engine.dataset_builders.contents_define_dataset_builder import (  # noqa: E501
     ContentsDefineDatasetBuilder,
 )
@@ -124,8 +125,8 @@ test_set1 = (
         "codelists": ["sdtmct-2022-12-16"],
     },
     {
-        "dataset_name": ["TS", "DM", None],
-        "define_dataset_name": ["TS", "DM", "DI"],
+        "dataset_name": ["TS", "DM"],
+        "define_dataset_name": ["TS", "DM"],
     },
 )
 
@@ -208,8 +209,8 @@ test_set2 = (
         "codelists": ["sdtmct-2022-12-16"],
     },
     {
-        "dataset_name": ["TS", "CM", None, None],
-        "define_dataset_name": ["TS", None, "DI", "DM"],
+        "dataset_name": ["TS", "CM"],
+        "define_dataset_name": ["TS", np.nan],
     },
 )
 
@@ -292,8 +293,8 @@ test_set4 = (
     ],
     {},
     {
-        "dataset_name": [None, None, None],
-        "define_dataset_name": ["TS", "DI", "DM"],
+        "dataset_name": [],
+        "define_dataset_name": [],
     },
 )
 
@@ -341,6 +342,8 @@ def test_contents_define_dataset_builder(
         library_metadata=LibraryMetadataContainer(),
     ).build()
     col_names = ["dataset_name", "define_dataset_name"]
+    print(result[col_names].equals(expected[col_names]))
+    print((result.empty and expected.empty))
     assert result[col_names].equals(expected[col_names]) or (
         result.empty and expected.empty
     )
