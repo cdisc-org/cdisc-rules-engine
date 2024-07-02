@@ -30,18 +30,9 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
         """
         # 1. Build define xml dataframe
         define_df = self._get_define_xml_dataframe()
-        if not define_df.empty:
-            define_df._data["merge_key"] = define_df._data[
-                "define_dataset_name"
-            ] + define_df._data["define_dataset_location"].apply(
-                lambda x: x if x else ""
-            )
+        # )
         # 2. Build dataset dataframe
         dataset_df = self._get_dataset_dataframe()
-        if not define_df.empty:
-            dataset_df._data["merge_key"] = dataset_df._data[
-                "dataset_name"
-            ] + dataset_df._data["dataset_location"].apply(lambda x: x if x else "")
         if define_df.empty or dataset_df.empty:
             raise ValueError(
                 "ContentsDefineDatasetBuilder: Define or Dataset metadata is empty."
@@ -49,10 +40,10 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
         # 3. Merge the two data frames
         merged = dataset_df.merge(
             define_df.data,
+            left_on=["dataset_name", "dataset_location"],
+            right_on=["define_dataset_name", "define_dataset_location"],
             how="outer",
-            on="merge_key",
         )
-        merged.drop(columns=["merge_key"])
         # 4. Remove NaN
         merged._data = merged._data.astype(object).replace({np.nan: None})
         # 5. remove unused rows, replace rows with target row

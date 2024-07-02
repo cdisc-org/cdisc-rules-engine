@@ -1057,20 +1057,16 @@ def test_validate_single_rule_not_equal_to(
             ),
             [
                 {
+                    "executionStatus": "execution_error",
                     "domain": "AE",
-                    "executionStatus": ExecutionStatus.SUCCESS.value,
-                    "variables": ["dataset_label", "dataset_location", "dataset_name"],
+                    "variables": [],
+                    "message": "rule execution error",
                     "errors": [
                         {
-                            "row": 1,
-                            "value": {
-                                "dataset_name": "AE",
-                                "dataset_label": "Adverse Events",
-                                "dataset_location": "te.xpt",
-                            },
-                        },
+                            "error": "An unknown exception has occurred",
+                            "message": "single positional indexer is out-of-bounds",
+                        }
                     ],
-                    "message": "Dataset metadata does not correspond to Define XML",
                 }
             ],
         ),
