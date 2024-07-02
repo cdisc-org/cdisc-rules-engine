@@ -1,5 +1,6 @@
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.dataset_builders.base_dataset_builder import BaseDatasetBuilder
+import os
 
 
 class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
@@ -47,7 +48,13 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
         merged.drop(columns=["merge_key"])
         # 4. Remove unused rows
         merged_cleaned = merged.dropna(subset=["dataset_name"])
-        return merged_cleaned
+        dataset_filename = os.path.basename(self.dataset_path).lower()
+        matching_row = merged_cleaned[
+            merged_cleaned["dataset_location"].str.lower() == dataset_filename
+        ]
+        for column in merged.columns:
+            merged[column] = matching_row[column].iloc[0]
+        return merged
 
     def _get_define_xml_dataframe(self):
         define_col_order = [

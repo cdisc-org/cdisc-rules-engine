@@ -342,8 +342,6 @@ def test_contents_define_dataset_builder(
         library_metadata=LibraryMetadataContainer(),
     ).build()
     col_names = ["dataset_name", "define_dataset_name"]
-    print(result[col_names].equals(expected[col_names]))
-    print((result.empty and expected.empty))
     assert result[col_names].equals(expected[col_names]) or (
         result.empty and expected.empty
     )
