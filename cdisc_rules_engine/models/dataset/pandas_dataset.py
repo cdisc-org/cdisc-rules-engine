@@ -39,6 +39,10 @@ class PandasDataset(DatasetInterface):
         return self._data.empty
 
     @property
+    def loc(self):
+        return self._data.loc
+
+    @property
     def at(self):
         return self._data.at
 
@@ -190,6 +194,14 @@ class PandasDataset(DatasetInterface):
         Sort the underlying dataframe and return a raw dataframe.
         """
         return self._data.sort_values(by, **kwargs)
+
+    def dropna(self, inplace=False, **kwargs):
+        result = self._data.dropna(**kwargs)
+        if inplace:
+            self._data = result
+            return None
+        else:
+            return self.__class__(result)
 
     def drop_duplicates(self, subset=None, keep="first", inplace=False, **kwargs):
         """

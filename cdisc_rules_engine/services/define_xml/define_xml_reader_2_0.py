@@ -28,7 +28,7 @@ class DefineXMLReader20(BaseDefineXMLReader):
         Returns metadata as dictionary.
         """
         return {
-            "define_dataset_name": metadata.Domain,
+            "define_dataset_name": metadata.Name,
             "define_dataset_label": str(metadata.Description.TranslatedText[0]),
             "define_dataset_location": getattr(metadata.leaf, "href", None),
             "define_dataset_class": metadata.Class,

@@ -1,6 +1,6 @@
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.dataset_builders.base_dataset_builder import BaseDatasetBuilder
-import pandas as pd
+import os
 
 
 class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
@@ -30,23 +30,31 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
         """
         # 1. Build define xml dataframe
         define_df = self._get_define_xml_dataframe()
+        define_df["merge_key"] = define_df["define_dataset_name"] + define_df[
+            "define_dataset_location"
+        ].apply(lambda x: x if x else "")
 
         # 2. Build dataset dataframe
         dataset_df = self._get_dataset_dataframe()
-
+        dataset_df["merge_key"] = dataset_df["dataset_name"] + dataset_df[
+            "dataset_location"
+        ].apply(lambda x: x if x else "")
         # 3. Merge the two data frames
         merged = dataset_df.merge(
             define_df.data,
             how="outer",
-            left_on="dataset_name",
-            right_on="define_dataset_name",
+            on="merge_key",
         )
-
-        # 4. Replace Nan with None
-        # outer join, so some data contents may be missing or some define metadata may
-        # be missing. Replace nans with None
-        merged_no_nans = merged.where(pd.notnull(merged.data), None)
-        return merged_no_nans
+        merged.drop(columns=["merge_key"])
+        # 4. Remove unused rows
+        merged_cleaned = merged.dropna(subset=["dataset_name"])
+        dataset_filename = os.path.basename(self.dataset_path).lower()
+        matching_row = merged_cleaned[
+            merged_cleaned["dataset_location"].str.lower() == dataset_filename
+        ]
+        for column in merged.columns:
+            merged[column] = matching_row[column].iloc[0]
+        return merged
 
     def _get_define_xml_dataframe(self):
         define_col_order = [
