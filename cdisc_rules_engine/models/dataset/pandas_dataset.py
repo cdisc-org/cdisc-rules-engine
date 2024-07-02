@@ -211,3 +211,11 @@ class PandasDataset(DatasetInterface):
             subset=subset, keep=keep, inplace=inplace, **kwargs
         )
         return self.__class__(new_data)
+
+    def replace(self, to_replace, value, **kwargs):
+        self._data = self._data.replace(to_replace, value, **kwargs)
+        return self
+
+    def astype(self, dtype, **kwargs):
+        self._data = self._data.astype(dtype, **kwargs)
+        return self

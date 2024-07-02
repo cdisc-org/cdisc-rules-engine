@@ -1,6 +1,7 @@
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.dataset_builders.base_dataset_builder import BaseDatasetBuilder
 import os
+import numpy as np
 
 
 class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
@@ -24,21 +25,27 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
         define_dataset_class - dataset class
         define_dataset_structure - dataset structure
         define_dataset_is_non_standard - whether a dataset is a standard
-        define_dataset_variables - dataset variable list
 
         ...,
         """
         # 1. Build define xml dataframe
         define_df = self._get_define_xml_dataframe()
-        define_df["merge_key"] = define_df["define_dataset_name"] + define_df[
-            "define_dataset_location"
-        ].apply(lambda x: x if x else "")
-
+        if not define_df.empty:
+            define_df._data["merge_key"] = define_df._data[
+                "define_dataset_name"
+            ] + define_df._data["define_dataset_location"].apply(
+                lambda x: x if x else ""
+            )
         # 2. Build dataset dataframe
         dataset_df = self._get_dataset_dataframe()
-        dataset_df["merge_key"] = dataset_df["dataset_name"] + dataset_df[
-            "dataset_location"
-        ].apply(lambda x: x if x else "")
+        if not define_df.empty:
+            dataset_df._data["merge_key"] = dataset_df._data[
+                "dataset_name"
+            ] + dataset_df._data["dataset_location"].apply(lambda x: x if x else "")
+        if define_df.empty or dataset_df.empty:
+            raise ValueError(
+                "ContentsDefineDatasetBuilder: Define or Dataset metadata is empty."
+            )
         # 3. Merge the two data frames
         merged = dataset_df.merge(
             define_df.data,
@@ -46,9 +53,13 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
             on="merge_key",
         )
         merged.drop(columns=["merge_key"])
-        # 4. Remove unused rows
+        # 4. Remove NaN
+        merged._data = merged._data.astype(object).replace({np.nan: None})
+        # 5. remove unused rows, replace rows with target row
         merged_cleaned = merged.dropna(subset=["dataset_name"])
-        dataset_filename = os.path.basename(self.dataset_path).lower()
+        dataset_filename = (
+            os.path.basename(self.dataset_path).lower() if self.dataset_path else None
+        )
         matching_row = merged_cleaned[
             merged_cleaned["dataset_location"].str.lower() == dataset_filename
         ]
