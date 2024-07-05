@@ -1,6 +1,7 @@
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.dataset_builders.base_dataset_builder import BaseDatasetBuilder
-import pandas as pd
+import os
+import numpy as np
 
 
 class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
@@ -24,29 +25,38 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
         define_dataset_class - dataset class
         define_dataset_structure - dataset structure
         define_dataset_is_non_standard - whether a dataset is a standard
-        define_dataset_variables - dataset variable list
 
         ...,
         """
         # 1. Build define xml dataframe
         define_df = self._get_define_xml_dataframe()
-
+        # )
         # 2. Build dataset dataframe
         dataset_df = self._get_dataset_dataframe()
-
+        if define_df.empty or dataset_df.empty:
+            raise ValueError(
+                "ContentsDefineDatasetBuilder: Define or Dataset metadata is empty."
+            )
         # 3. Merge the two data frames
         merged = dataset_df.merge(
             define_df.data,
+            left_on=["dataset_name", "dataset_location"],
+            right_on=["define_dataset_name", "define_dataset_location"],
             how="outer",
-            left_on="dataset_name",
-            right_on="define_dataset_name",
         )
-
-        # 4. Replace Nan with None
-        # outer join, so some data contents may be missing or some define metadata may
-        # be missing. Replace nans with None
-        merged_no_nans = merged.where(pd.notnull(merged.data), None)
-        return merged_no_nans
+        # 4. Remove NaN
+        merged._data = merged._data.astype(object).replace({np.nan: None})
+        # 5. remove unused rows, replace rows with target row
+        merged_cleaned = merged.dropna(subset=["dataset_name"])
+        dataset_filename = (
+            os.path.basename(self.dataset_path).lower() if self.dataset_path else None
+        )
+        matching_row = merged_cleaned[
+            merged_cleaned["dataset_location"].str.lower() == dataset_filename
+        ]
+        for column in merged.columns:
+            merged[column] = matching_row[column].iloc[0]
+        return merged
 
     def _get_define_xml_dataframe(self):
         define_col_order = [

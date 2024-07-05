@@ -25,6 +25,15 @@ class DaskDataset(PandasDataset):
     def data(self):
         return self._data
 
+    @property
+    def loc(self):
+        return self._data.loc
+
+    @property
+    def size(self):
+        memory_usage = self.data.get_partition(0).compute().memory_usage()
+        return memory_usage.sum()
+
     @data.setter
     def data(self, data):
         self._data = data
@@ -151,11 +160,6 @@ class DaskDataset(PandasDataset):
         )
         return self.__class__(new_data)
 
-    @property
-    def size(self):
-        memory_usage = self.data.get_partition(0).compute().memory_usage()
-        return memory_usage.sum()
-
     def assign(self, **kwargs):
         return self.data.assign(**kwargs)
 
@@ -198,6 +202,14 @@ class DaskDataset(PandasDataset):
             )
         )
 
+    def dropna(self, inplace=False, **kwargs):
+        result = self._data.dropna(**kwargs)
+        if inplace:
+            self._data = result
+            return None
+        else:
+            return self.__class__(result)
+
     def at(self, row_label, col_label):
         """
         Get a single value for a row/column pair.
@@ -212,3 +224,11 @@ class DaskDataset(PandasDataset):
         """
         new_data = self._data.drop_duplicates(subset=subset, keep=keep, **kwargs)
         return self.__class__(new_data)
+
+    def replace(self, to_replace, value, **kwargs):
+        self._data = self._data.replace(to_replace, value, **kwargs)
+        return self
+
+    def astype(self, dtype, **kwargs):
+        self._data = self._data.astype(dtype, **kwargs)
+        return self

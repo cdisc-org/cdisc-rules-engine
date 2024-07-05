@@ -39,6 +39,10 @@ class PandasDataset(DatasetInterface):
         return self._data.empty
 
     @property
+    def loc(self):
+        return self._data.loc
+
+    @property
     def at(self):
         return self._data.at
 
@@ -191,6 +195,14 @@ class PandasDataset(DatasetInterface):
         """
         return self._data.sort_values(by, **kwargs)
 
+    def dropna(self, inplace=False, **kwargs):
+        result = self._data.dropna(**kwargs)
+        if inplace:
+            self._data = result
+            return None
+        else:
+            return self.__class__(result)
+
     def drop_duplicates(self, subset=None, keep="first", inplace=False, **kwargs):
         """
         Drop duplicate rows from the dataset.
@@ -199,3 +211,11 @@ class PandasDataset(DatasetInterface):
             subset=subset, keep=keep, inplace=inplace, **kwargs
         )
         return self.__class__(new_data)
+
+    def replace(self, to_replace, value, **kwargs):
+        self._data = self._data.replace(to_replace, value, **kwargs)
+        return self
+
+    def astype(self, dtype, **kwargs):
+        self._data = self._data.astype(dtype, **kwargs)
+        return self
