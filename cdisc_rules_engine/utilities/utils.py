@@ -215,8 +215,11 @@ def is_split_dataset(datasets: List[dict], domain: str) -> bool:
         filename_wo_extension = dataset.get("filename", "").split(".")[0].lower()
         if filename_wo_extension == domain.lower():
             domain_match = True
-        if (len(filename_wo_extension) > len(domain) and len(filename_wo_extension) <= len(domain) + 2
-            and filename_wo_extension.startswith(domain.lower())):
+        if (
+            len(filename_wo_extension) > len(domain)
+            and len(filename_wo_extension) <= len(domain) + 2
+            and filename_wo_extension.startswith(domain.lower())
+        ):
             domain_plus_two_match = True
 
         if domain_match and domain_plus_two_match:
