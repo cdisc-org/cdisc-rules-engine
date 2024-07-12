@@ -31,6 +31,7 @@ class DefineXMLReader20(BaseDefineXMLReader):
             "define_dataset_name": metadata.Name,
             "define_dataset_label": str(metadata.Description.TranslatedText[0]),
             "define_dataset_location": getattr(metadata.leaf, "href", None),
+            "define_dataset_domain": metadata.Domain,
             "define_dataset_class": metadata.Class,
             "define_dataset_structure": str(metadata.Structure),
             # v2.0 does not support is_non_standard. Default to blank
