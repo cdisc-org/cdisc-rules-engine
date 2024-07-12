@@ -1,3 +1,4 @@
+from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.dataset_builders.base_dataset_builder import BaseDatasetBuilder
 import os
@@ -59,6 +60,9 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
         for column in merged.columns:
             merged[column] = matching_row[column].iloc[0]
         return merged
+
+    def build_split_datasets(self, dataset_name) -> DatasetInterface:
+        return
 
     def _get_define_xml_dataframe(self):
         define_col_order = [
