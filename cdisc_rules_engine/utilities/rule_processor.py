@@ -270,6 +270,7 @@ class RuleProcessor:
                 external_dictionary_type=operation.get("external_dictionary_type"),
                 dictionary_term_type=operation.get("dictionary_term_type"),
                 filter=operation.get("filter", None),
+                grouping_aliases=operation.get("group_aliases"),
             )
 
             # execute operation
