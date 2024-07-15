@@ -231,7 +231,6 @@ def is_split_dataset(datasets: List[dict], domain: str) -> bool:
         for dataset in corresponding_datasets
     )
     logger.info(f"{domain} is a split dataset: {result}")
-    breakpoint()
     return result
 
 
