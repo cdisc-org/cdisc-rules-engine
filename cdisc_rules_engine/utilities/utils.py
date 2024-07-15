@@ -211,12 +211,27 @@ def is_split_dataset(datasets: List[dict], domain: str) -> bool:
     if len(corresponding_datasets) < 2:
         logger.info(f"Domain {domain} is not a split dataset")
         return False
+
+    non_supp_datasets = [
+        dataset
+        for dataset in corresponding_datasets
+        if not dataset.get("filename", "").lower().startswith("supp")
+    ]
+
+    if len(non_supp_datasets) < 2:
+        logger.info(f"Domain {domain} does not have at least 2 split datasets")
+        return False
+
     result = all(
-        dataset.get("filename", "").split(".")[0].lower().startswith(domain.lower())
-        and len(dataset.get("filename", "").split(".")[0]) > len(domain)
+        (
+            dataset.get("filename", "").split(".")[0].lower().startswith(domain.lower())
+            and len(dataset.get("filename", "").split(".")[0]) > len(domain)
+        )
+        or dataset.get("filename", "").lower().startswith("supp")
         for dataset in corresponding_datasets
     )
     logger.info(f"{domain} is a split dataset: {result}")
+    breakpoint()
     return result
 
 
