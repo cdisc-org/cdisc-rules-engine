@@ -33,9 +33,11 @@ Attach define xml metadata at variable level and library metadata at variable le
 - `dataset_location`
 - `dataset_name`
 - `dataset_label`
+- `dataset_domain`
 - `define_dataset_name`
 - `define_dataset_label`
 - `define_dataset_location`
+- `define_dataset_domain`
 - `define_dataset_class`
 - `define_dataset_structure`
 - `define_dataset_is_non_standard`

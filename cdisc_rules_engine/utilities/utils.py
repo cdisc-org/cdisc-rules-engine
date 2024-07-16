@@ -8,7 +8,6 @@ import re
 from datetime import datetime
 from typing import Callable, List, Optional, Set, Union
 from uuid import UUID
-from cdisc_rules_engine.services import logger
 
 from cdisc_rules_engine.constants.domains import (
     AP_DOMAIN,
@@ -207,17 +206,23 @@ def get_corresponding_datasets(datasets: List[dict], domain: str) -> List[dict]:
 
 
 def is_split_dataset(datasets: List[dict], domain: str) -> bool:
+    domain_match = False
+    domain_plus_two_match = False
     corresponding_datasets = get_corresponding_datasets(datasets, domain)
-    if len(corresponding_datasets) < 2:
-        logger.info(f"Domain {domain} is not a split dataset")
-        return False
-    result = all(
-        dataset.get("filename", "").split(".")[0].lower().startswith(domain.lower())
-        and len(dataset.get("filename", "").split(".")[0]) > len(domain)
-        for dataset in corresponding_datasets
-    )
-    logger.info(f"{domain} is a split dataset: {result}")
-    return result
+    for dataset in corresponding_datasets:
+        # drop file extension
+        filename_wo_extension = dataset.get("filename", "").split(".")[0].lower()
+        if filename_wo_extension == domain.lower():
+            domain_match = True
+        elif len(filename_wo_extension) == len(
+            domain
+        ) + 2 and filename_wo_extension.startswith(domain.lower()):
+            domain_plus_two_match = True
+
+        if domain_match and domain_plus_two_match:
+            return True
+
+    return False
 
 
 def is_supp_dataset(datasets: List[dict], domain: str) -> bool:
