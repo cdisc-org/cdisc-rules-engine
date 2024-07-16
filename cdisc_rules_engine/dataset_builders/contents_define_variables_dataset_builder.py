@@ -1,7 +1,6 @@
 from cdisc_rules_engine.dataset_builders.values_dataset_builder import (
     ValuesDatasetBuilder,
 )
-import pandas as pd
 from typing import List
 
 
@@ -26,16 +25,17 @@ class ContentsDefineVariablesDatasetBuilder(ValuesDatasetBuilder):
         data_contents_long_df = ValuesDatasetBuilder.build(self)
         # get Define XML variable metadata for domain
         variables_metadata: List[dict] = self.get_define_xml_variables_metadata()
-        variables_metadata_df = pd.DataFrame(variables_metadata)
+        variables_metadata_df = self.dataset_implementation.from_records(
+            variables_metadata
+        )
         # merge dataset contents with define variable metadata
-        merged = pd.merge(
-            data_contents_long_df,
-            variables_metadata_df,
+        merged = data_contents_long_df.merge(
+            variables_metadata_df.data,
             how="outer",
             left_on="variable_name",
             right_on="define_variable_name",
         )
         # outer join, so some data contents may be missing or some define metadata may
         # be missing. Replace nans with None
-        merged_no_nans = merged.where(pd.notnull(merged), None)
-        return merged_no_nans
+        self.data_service._replace_nans_in_numeric_cols_with_none(merged)
+        return merged

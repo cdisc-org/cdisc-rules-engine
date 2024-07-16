@@ -1,4 +1,3 @@
-import pandas as pd
 from cdisc_rules_engine.models.operation_params import OperationParams
 from cdisc_rules_engine.constants.permissibility import (
     REQUIRED,
@@ -21,13 +20,14 @@ from collections import OrderedDict
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
+from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 
 
 class BaseOperation:
     def __init__(
         self,
         params: OperationParams,
-        original_dataset: pd.DataFrame,
+        original_dataset: DatasetInterface,
         cache_service: CacheServiceInterface,
         data_service: DataServiceInterface,
         library_metadata: LibraryMetadataContainer = LibraryMetadataContainer(),
@@ -43,36 +43,43 @@ class BaseOperation:
         """Perform operation calculations."""
         pass
 
-    def execute(self) -> pd.DataFrame:
+    def execute(self) -> DatasetInterface:
         result = self._execute_operation()
         return self._handle_operation_result(result)
 
-    def _handle_operation_result(self, result) -> pd.DataFrame:
-        if self.params.grouping:
-            return self._handle_grouped_result(result)
-        elif isinstance(result, dict):
-            return self._handle_dictionary_result(result)
-        elif isinstance(result, pd.Series):
+    def _handle_operation_result(self, result) -> DatasetInterface:
+        if self.evaluation_dataset.is_series(result):
             self.evaluation_dataset[self.params.operation_id] = result
             return self.evaluation_dataset
-        elif isinstance(result, pd.DataFrame):
+        elif self.params.grouping:
+            return self._handle_grouped_result(result)
+        elif isinstance(result, DatasetInterface):
             # Assume that the operation id has been applied and
             # result matches the length of the evaluation dataset.
-            return pd.concat([self.evaluation_dataset, result], axis=1)
+            return self.evaluation_dataset.concat(result, axis=1)
         else:
             # Handle single results
-            self.evaluation_dataset[self.params.operation_id] = pd.Series(
-                [result] * len(self.evaluation_dataset)
-            )
+
+            self.evaluation_dataset[
+                self.params.operation_id
+            ] = self.evaluation_dataset.get_series_from_value(result)
             return self.evaluation_dataset
 
     def _handle_grouped_result(self, result):
         # Handle grouped results
         result = result.rename(columns={self.params.target: self.params.operation_id})
-        target_columns = self.params.grouping + [self.params.operation_id]
-        return self.evaluation_dataset.merge(
-            result[target_columns], on=self.params.grouping, how="left"
+        if self.params.grouping_aliases:
+            result = self._rename_grouping_columns(result)
+        grouping_columns = self._get_grouping_columns()
+        target_columns = grouping_columns + [self.params.operation_id]
+        result = result.reset_index()
+        merged = self.evaluation_dataset.merge(
+            result[target_columns], on=grouping_columns, how="left"
         )
+        self.data_service._replace_nans_in_specified_cols_with_none(
+            merged, [self.params.operation_id]
+        )
+        return self.evaluation_dataset.__class__(merged.data)
 
     def _handle_dictionary_result(self, result):
         self.evaluation_dataset[self.params.operation_id] = [result] * len(
@@ -80,12 +87,35 @@ class BaseOperation:
         )
         return self.evaluation_dataset
 
-    def _filter_data(self, data) -> pd.DataFrame:
+    def _filter_data(self, data):
         # filters inputted dataframe on self.param.filter dictionary
         filtered_df = data
         for variable, value in self.params.filter.items():
             filtered_df = filtered_df[filtered_df[variable] == value]
-        return filtered_df
+        return self.evaluation_dataset.__class__(filtered_df)
+
+    def _rename_grouping_columns(self, data):
+        # Renames grouping columns to any corresponding grouping aliases columns
+        return data.rename(
+            columns={
+                v: self.params.grouping_aliases[i]
+                for i, v in enumerate(self.params.grouping)
+                if 0 <= i < len(self.params.grouping_aliases)
+                and self.params.grouping_aliases[i] != v
+            }
+        )
+
+    def _get_grouping_columns(self) -> List[str]:
+        return (
+            self.params.grouping
+            if not self.params.grouping_aliases
+            else [
+                self.params.grouping_aliases[i]
+                if 0 <= i < len(self.params.grouping_aliases)
+                else v
+                for i, v in enumerate(self.params.grouping)
+            ]
+        )
 
     def _get_variables_metadata_from_standard(self) -> List[dict]:
         # TODO: Update to handle other standard types: adam, cdash, etc.

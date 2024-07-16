@@ -1,0 +1,345 @@
+{
+  "datasets": [
+    {
+      "filename": "ss.xpt",
+      "label": "Subject Status",
+      "domain": "SS",
+      "variables": [
+        {
+          "name": "STUDYID",
+          "label": "Study Identifier",
+          "type": "Char",
+          "length": 12
+        },
+        {
+          "name": "DOMAIN",
+          "label": "Domain Abbreviation",
+          "type": "Char",
+          "length": 2
+        },
+        {
+          "name": "USUBJID",
+          "label": "Unique Subject Identifier",
+          "type": "Char",
+          "length": 20
+        },
+        {
+          "name": "SSSEQ",
+          "label": "Sequence Number",
+          "type": "Num",
+          "length": 8
+        },
+        {
+          "name": "SSTESTCD",
+          "label": "Status Short Name",
+          "type": "Char",
+          "length": 8
+        },
+        {
+          "name": "SSTEST",
+          "label": "Status Name",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "SSORRES",
+          "label": "Result or Finding\r\nOriginal Result",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "SSSTRESC",
+          "label": "Character\r\nResult/Finding in\r\nStd Format",
+          "type": "Char",
+          "length": 50
+        }
+      ],
+      "records": {
+        "STUDYID": [
+          "CDISCCORE01",
+          "CDISCCORE01",
+          "CDISCCORE01",
+          "CDISCCORE01",
+          "CDISCCORE01",
+          "CDISCCORE01",
+          "CDISCCORE01",
+          "CDISCCORE01",
+          "CDISCCORE01",
+          "CDISCCORE01",
+          "CDISCCORE01",
+          "CDISCCORE01",
+          "CDISCCORE01",
+          "CDISCCORE01"
+        ],
+        "DOMAIN": [
+          "SS",
+          "SS",
+          "SS",
+          "SS",
+          "SS",
+          "SS",
+          "SS",
+          "SS",
+          "SS",
+          "SS",
+          "SS",
+          "SS",
+          "SS",
+          "SS"
+        ],
+        "USUBJID": [
+          "0001",
+          "0001",
+          "0001",
+          "0001",
+          "0001",
+          "0001",
+          "0001",
+          "0002",
+          "0002",
+          "0002",
+          "0002",
+          "0002",
+          "0002",
+          "0002"
+        ],
+        "SSSEQ": [1, 2, 3, 4, 5, 6, 7, 1, 1, 3, 4, 5, 6, 7],
+        "SSTESTCD": [
+          "SURVSTAT",
+          "SURVSTAT",
+          "SURVSTAT",
+          "SURVSTAT",
+          "SURVSTAT",
+          "SURVSTAT",
+          "SURVSTAT",
+          "SURVSTAT",
+          "SURVSTAT",
+          "SURVSTAT",
+          "SURVSTAT",
+          "SURVSTAT",
+          "SURVSTAT",
+          "SURVSTAT"
+        ],
+        "SSTEST": [
+          "Survival Status",
+          "Survival Status",
+          "Survival Status",
+          "Survival Status",
+          "Survival Status",
+          "Survival Status",
+          "Survival Status",
+          "Survival Status",
+          "Survival Status",
+          "Survival Status",
+          "Survival Status",
+          "Survival Status",
+          "Survival Status",
+          "Survival Status"
+        ],
+        "SSORRES": [
+          "ALIVE",
+          "DEAD",
+          "ALIVE",
+          "DEAD",
+          "ALIVE",
+          "DEAD",
+          "ALIVE",
+          "DEAD",
+          "ALIVE",
+          "DEAD",
+          "ALIVE",
+          "DEAD",
+          "ALIVE",
+          "DEAD"
+        ],
+        "SSSTRESC": [
+          "ALIVE",
+          "DEAD",
+          "ALIVE",
+          "DEAD",
+          "ALIVE",
+          "DEAD",
+          "ALIVE",
+          "DEAD",
+          "ALIVE",
+          "DEAD",
+          "ALIVE",
+          "DEAD",
+          "ALIVE",
+          "DEAD"
+        ]
+      }
+    },
+    {
+      "filename": "ss12.xpt",
+      "label": "Subject Status",
+      "domain": "SS",
+      "variables": [
+        {
+          "name": "STUDYID",
+          "label": "Study Identifier",
+          "type": "Char",
+          "length": 12
+        },
+        {
+          "name": "DOMAIN",
+          "label": "Domain Abbreviation",
+          "type": "Char",
+          "length": 2
+        },
+        {
+          "name": "USUBJID",
+          "label": "Unique Subject Identifier",
+          "type": "Char",
+          "length": 20
+        },
+        {
+          "name": "SSSEQ",
+          "label": "Sequence Number",
+          "type": "Num",
+          "length": 8
+        },
+        {
+          "name": "SSTESTCD",
+          "label": "Status Short Name",
+          "type": "Char",
+          "length": 8
+        },
+        {
+          "name": "SSTEST",
+          "label": "Status Name",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "SSORRES",
+          "label": "Result or Finding\r\nOriginal Result",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "SSSTRESC",
+          "label": "Character\r\nResult/Finding in\r\nStd Format",
+          "type": "Char",
+          "length": 50
+        }
+      ],
+      "records": {
+        "STUDYID": [
+          "CDISCCORE01",
+          "CDISCCORE01",
+          "CDISCCORE01",
+          "CDISCCORE01",
+          "CDISCCORE01",
+          "CDISCCORE01",
+          "CDISCCORE01",
+          "CDISCCORE01",
+          "CDISCCORE01",
+          "CDISCCORE01",
+          "CDISCCORE01",
+          "CDISCCORE01",
+          "CDISCCORE01",
+          "CDISCCORE01"
+        ],
+        "DOMAIN": [
+          "SS",
+          "SS",
+          "SS",
+          "SS",
+          "SS",
+          "SS",
+          "SS",
+          "SS",
+          "SS",
+          "SS",
+          "SS",
+          "SS",
+          "SS",
+          "SS"
+        ],
+        "USUBJID": [
+          "0001",
+          "0001",
+          "0001",
+          "0001",
+          "0001",
+          "0001",
+          "0001",
+          "0002",
+          "0002",
+          "0002",
+          "0002",
+          "0002",
+          "0002",
+          "0002"
+        ],
+        "SSSEQ": [8, 9, 10, 11, 12, 13, 14, 8, 9, 10, 11, 12, 13, 14],
+        "SSTESTCD": [
+          "SURVSTAT",
+          "SURVSTAT",
+          "SURVSTAT",
+          "SURVSTAT",
+          "SURVSTAT",
+          "SURVSTAT",
+          "SURVSTAT",
+          "SURVSTAT",
+          "SURVSTAT",
+          "SURVSTAT",
+          "SURVSTAT",
+          "SURVSTAT",
+          "SURVSTAT",
+          "SURVSTAT"
+        ],
+        "SSTEST": [
+          "Survival Status",
+          "Survival Status",
+          "Survival Status",
+          "Survival Status",
+          "Survival Status",
+          "Survival Status",
+          "Survival Status",
+          "Survival Status",
+          "Survival Status",
+          "Survival Status",
+          "Survival Status",
+          "Survival Status",
+          "Survival Status",
+          "Survival Status"
+        ],
+        "SSORRES": [
+          "ALIVE",
+          "DEAD",
+          "ALIVE",
+          "DEAD",
+          "ALIVE",
+          "DEAD",
+          "ALIVE",
+          "DEAD",
+          "ALIVE",
+          "DEAD",
+          "ALIVE",
+          "DEAD",
+          "ALIVE",
+          "DEAD"
+        ],
+        "SSSTRESC": [
+          "ALIVE",
+          "DEAD",
+          "ALIVE",
+          "DEAD",
+          "ALIVE",
+          "DEAD",
+          "ALIVE",
+          "DEAD",
+          "ALIVE",
+          "DEAD",
+          "ALIVE",
+          "DEAD",
+          "ALIVE",
+          "DEAD"
+        ]
+      }
+    }
+  ],
+  "codelists": []
+}

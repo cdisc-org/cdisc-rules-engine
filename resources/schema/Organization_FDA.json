@@ -18,7 +18,6 @@
                         "additionalProperties": false,
                         "properties": {
                           "Cited Guidance": {
-                            "pattern": "^(\\d{1,3}(\\.\\d+)?|CG\\d{4})(, (\\d{1,3}(\\.\\d+)?|CG\\d{4}))*$",
                             "type": "string"
                           },
                           "Document": {
@@ -30,11 +29,14 @@
                         "additionalProperties": false,
                         "properties": {
                           "Cited Guidance": {
-                            "pattern": "^(eCTD \\d{4}|FDAB\\d{3}|TCG \\d(\\.\\d){2,3})(, (eCTD \\d{4}|FDAB\\d{3}|TCG \\d(\\.\\d){2,3}))*$",
                             "type": "string"
                           },
                           "Document": {
                             "const": "FDA"
+                          },
+                          "Section": {
+                            "pattern": "^(FDAB\\d{3}|TRC\\d{4}[A-Z]?|\\d{4}[A-Z])$",
+                            "type": "string"
                           }
                         }
                       }
@@ -59,7 +61,7 @@
                 "Rule Identifier": {
                   "properties": {
                     "Id": {
-                      "pattern": "^(CT|SD|SE)\\d{4}[A-Z]?$",
+                      "pattern": "^(FB|CT|SD|SE)\\d{4}[A-Z]?$|^TRC.*$",
                       "type": "string"
                     }
                   },

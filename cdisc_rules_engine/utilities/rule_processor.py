@@ -1,12 +1,11 @@
 import re
 from typing import List, Optional, Set, Union, Tuple
+from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
 
 import os
-import pandas as pd
-
 from cdisc_rules_engine.constants.classes import (
     FINDINGS_ABOUT,
     FINDINGS,
@@ -180,9 +179,11 @@ class RuleProcessor:
         if included_classes:
             if ALL_KEYWORD in included_classes:
                 return True
-            dataset = self.data_service.get_dataset(dataset_name=file_path)
+            variables = self.data_service.get_variables_metadata(
+                dataset_name=file_path, datasets=datasets
+            ).data.variable_name
             class_name = self.data_service.get_dataset_class(
-                dataset, file_path, datasets, domain
+                variables, file_path, datasets, domain
             )
             if (class_name not in included_classes) and not (
                 class_name == FINDINGS_ABOUT and FINDINGS in included_classes
@@ -190,9 +191,11 @@ class RuleProcessor:
                 is_included = False
 
         if excluded_classes:
-            dataset = self.data_service.get_dataset(dataset_name=file_path)
+            variables = self.data_service.get_variables_metadata(
+                dataset_name=file_path, datasets=datasets
+            ).data.variable_name
             class_name = self.data_service.get_dataset_class(
-                dataset, file_path, datasets, domain
+                variables, file_path, datasets, domain
             )
             if class_name and (
                 (class_name in excluded_classes)
@@ -211,14 +214,14 @@ class RuleProcessor:
     def perform_rule_operations(
         self,
         rule: dict,
-        dataset: pd.DataFrame,
+        dataset: DatasetInterface,
         domain: str,
         datasets: List[dict],
         dataset_path: str,
         standard: str,
         standard_version: str,
         **kwargs,
-    ) -> pd.DataFrame:
+    ) -> DatasetInterface:
         """
         Applies rule operations to the dataset.
         Returns the processed dataset. Operation result is appended as a new column.
@@ -229,6 +232,7 @@ class RuleProcessor:
             return dataset
 
         dataset_copy = dataset.copy()
+        previous_operations = []
         for operation in operations:
             # change -- pattern to domain name
             original_target: str = operation.get("name")
@@ -266,10 +270,14 @@ class RuleProcessor:
                 external_dictionary_type=operation.get("external_dictionary_type"),
                 dictionary_term_type=operation.get("dictionary_term_type"),
                 filter=operation.get("filter", None),
+                grouping_aliases=operation.get("group_aliases"),
             )
 
             # execute operation
-            dataset_copy = self._execute_operation(operation_params, dataset_copy)
+            dataset_copy = self._execute_operation(
+                operation_params, dataset_copy, previous_operations
+            )
+            previous_operations.append(operation_params.operation_name)
 
             logger.info(
                 f"Processed rule operation. "
@@ -278,7 +286,10 @@ class RuleProcessor:
         return dataset_copy
 
     def _execute_operation(
-        self, operation_params: OperationParams, dataset: pd.DataFrame
+        self,
+        operation_params: OperationParams,
+        dataset: DatasetInterface,
+        previous_operations: List[str] = [],
     ):
         """
         Internal method that executes the given operation.
@@ -294,7 +305,9 @@ class RuleProcessor:
             target_variable=operation_params.target,
             dataset_path=operation_params.dataset_path,
         )
-        result: pd.DataFrame = self.cache.get(cache_key)
+        if previous_operations:
+            cache_key = f'{cache_key}-{";".join(previous_operations)}'
+        result: DatasetInterface = self.cache.get(cache_key)
         if result is not None:
             return result
 
@@ -330,7 +343,7 @@ class RuleProcessor:
 
     def is_current_domain(self, dataset, target_domain):
         if not self.is_relationship_dataset(target_domain):
-            return "DOMAIN" in dataset and dataset["DOMAIN"][0] == target_domain
+            return "DOMAIN" in dataset and dataset["DOMAIN"].iloc[0] == target_domain
         else:
             # Always lookup relationship datasets when performing operations on them.
             return False
@@ -482,6 +495,8 @@ class RuleProcessor:
             target_names: List[str] = []
             conditions: ConditionInterface = rule["conditions"]
             for condition in conditions.values():
+                if condition.get("operator") == "not_exists":
+                    continue
                 target: str = condition["value"].get("target")
                 if target is None:
                     continue

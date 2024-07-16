@@ -1,6 +1,6 @@
 from cdisc_rules_engine.dataset_builders.base_dataset_builder import BaseDatasetBuilder
 from typing import List
-import pandas as pd
+from cdisc_rules_engine.models.dataset import DatasetInterface
 
 
 class VariablesMetadataWithDefineDatasetBuilder(BaseDatasetBuilder):
@@ -32,12 +32,14 @@ class VariablesMetadataWithDefineDatasetBuilder(BaseDatasetBuilder):
         # get Define XML metadata for domain and use it as a rule comparator
         variable_metadata: List[dict] = self.get_define_xml_variables_metadata()
         # get dataset metadata and execute the rule
-        content_metadata: pd.DataFrame = self.data_service.get_variables_metadata(
-            self.dataset_path, drop_duplicates=True
+        content_metadata: DatasetInterface = self.data_service.get_variables_metadata(
+            dataset_name=self.dataset_path, datasets=self.datasets, drop_duplicates=True
         )
-        define_metadata: pd.DataFrame = pd.DataFrame(variable_metadata)
+        define_metadata: DatasetInterface = self.dataset_implementation.from_records(
+            variable_metadata
+        )
         return content_metadata.merge(
-            define_metadata,
+            define_metadata.data,
             left_on="variable_name",
             right_on="define_variable_name",
             how="left",

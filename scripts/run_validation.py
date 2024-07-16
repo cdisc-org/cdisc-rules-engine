@@ -22,15 +22,19 @@ from cdisc_rules_engine.services.cache import (
 from cdisc_rules_engine.services.data_services import (
     DataServiceFactory,
 )
+from cdisc_rules_engine.models.dataset import PandasDataset
 from scripts.script_utils import (
     fill_cache_with_dictionaries,
     get_cache_service,
     get_library_metadata_from_cache,
     get_rules,
+    get_datasets,
+    get_max_dataset_size,
 )
 from cdisc_rules_engine.services.reporting import BaseReport, ReportFactory
 from cdisc_rules_engine.utilities.progress_displayers import get_progress_displayer
 from warnings import simplefilter
+import os
 
 simplefilter(
     action="ignore", category=FutureWarning
@@ -56,7 +60,7 @@ def validate_single_rule(
     rule["conditions"] = ConditionCompositeFactory.get_condition_composite(
         rule["conditions"]
     )
-    set_log_level(args)
+    max_dataset_size = max(datasets, key=lambda x: x["size"])["size"]
     # call rule engine
     engine = RulesEngine(
         cache=cache,
@@ -67,6 +71,7 @@ def validate_single_rule(
         whodrug_path=args.whodrug,
         define_xml_path=args.define_xml_path,
         library_metadata=library_metadata,
+        max_dataset_size=max_dataset_size,
         dataset_paths=args.dataset_paths,
     )
     results = []
@@ -99,6 +104,14 @@ def set_log_level(args):
         engine_logger.setLevel("verbose")
 
 
+def initialize_logger(disabled, log_level):
+    if disabled:
+        engine_logger.disabled = True
+    else:
+        engine_logger.disabled = False
+        engine_logger.setLevel(log_level)
+
+
 def run_validation(args: Validation_args):
     set_log_level(args)
     # fill cache
@@ -112,15 +125,45 @@ def run_validation(args: Validation_args):
     # install dictionaries if needed
     fill_cache_with_dictionaries(shared_cache, args)
     rules = get_rules(args)
-    data_service = DataServiceFactory(config, shared_cache).get_data_service(
-        args.dataset_paths
+    max_dataset_size = get_max_dataset_size(args.dataset_paths)
+    standard = args.standard
+    standard_version = args.version.replace(".", "-")
+    data_service = DataServiceFactory(
+        config,
+        shared_cache,
+        max_dataset_size=max_dataset_size,
+        standard=standard,
+        standard_version=standard_version,
+        library_metadata=library_metadata,
+    ).get_data_service()
+    large_dataset_validation: bool = (
+        data_service.dataset_implementation != PandasDataset
     )
-    datasets = data_service.get_datasets()
+    datasets = get_datasets(data_service, args.dataset_paths)
+    created_files = []
+    if large_dataset_validation:
+        # convert all files to parquet temp files
+        engine_logger.warning(
+            "Large datasets must use parquet format, converting all datasets to parquet"
+        )
+        for dataset in datasets:
+            file_path = dataset.get("full_path")
+            if file_path.endswith(".parquet"):
+                continue
+            num_rows, new_file = data_service.to_parquet(file_path)
+            created_files.append(new_file)
+            dataset["full_path"] = new_file
+            dataset["length"] = num_rows
+            dataset["original_path"] = file_path
     engine_logger.info(f"Running {len(rules)} rules against {len(datasets)} datasets")
     start = time.time()
     results = []
+    # instantiate logger in each child process to maintain log level
+    initializer = partial(
+        initialize_logger, engine_logger.disabled, engine_logger._logger.level
+    )
     # run each rule in a separate process
-    with Pool(args.pool_size) as pool:
+    with Pool(args.pool_size, initializer=initializer) as pool:
         validation_results: Iterable[RuleValidationResult] = pool.imap_unordered(
             partial(
                 validate_single_rule, shared_cache, datasets, args, library_metadata
@@ -139,3 +182,8 @@ def run_validation(args: Validation_args):
     reporting_services: List[BaseReport] = reporting_factory.get_report_services()
     for reporting_service in reporting_services:
         reporting_service.write_report(args.define_xml_path)
+
+    engine_logger.info("Cleaning up intermediate files")
+    for file in created_files:
+        engine_logger.info(f"Deleting file {file}")
+        os.remove(file)

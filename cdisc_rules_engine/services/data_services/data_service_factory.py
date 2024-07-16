@@ -7,11 +7,14 @@ from cdisc_rules_engine.interfaces import (
     DataServiceInterface,
     FactoryInterface,
 )
+from cdisc_rules_engine.models.dataset import DaskDataset, PandasDataset
+
 
 from . import DummyDataService, LocalDataService, USDMDataService
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
+from cdisc_rules_engine.services import logger
 
 
 class DataServiceFactory(FactoryInterface):
@@ -28,6 +31,7 @@ class DataServiceFactory(FactoryInterface):
         standard: str = None,
         standard_version: str = None,
         library_metadata: LibraryMetadataContainer = None,
+        max_dataset_size: int = 0,
     ):
         if config.getValue("DATA_SERVICE_TYPE"):
             self.data_service_name = config.getValue("DATA_SERVICE_TYPE")
@@ -40,6 +44,8 @@ class DataServiceFactory(FactoryInterface):
         self.standard = standard
         self.standard_version = standard_version
         self.library_metadata = library_metadata
+        self.max_dataset_size = max_dataset_size
+        self.dataset_size_threshold = self.config.get_dataset_size_threshold()
 
     def get_data_service(
         self, dataset_paths: Iterable[str] = []
@@ -52,6 +58,7 @@ class DataServiceFactory(FactoryInterface):
                 standard_version=self.standard_version,
                 library_metadata=self.library_metadata,
                 dataset_path=dataset_paths[0],
+                dataset_implementation=self.get_dataset_implementation(),
             )
         else:
             """Get local Directory data service"""
@@ -61,6 +68,7 @@ class DataServiceFactory(FactoryInterface):
                 standard_version=self.standard_version,
                 library_metadata=self.library_metadata,
                 dataset_paths=dataset_paths,
+                dataset_implementation=self.get_dataset_implementation(),
             )
 
     def get_dummy_data_service(self, data: List[DummyDataset]) -> DataServiceInterface:
@@ -70,7 +78,25 @@ class DataServiceFactory(FactoryInterface):
             standard=self.standard,
             standard_version=self.standard_version,
             library_metadata=self.library_metadata,
+            dataset_implementation=self.get_dataset_implementation(),
         )
+
+    def get_dataset_implementation(self):
+        """
+        Gets the class that should be used to represent datasets for the rules engine. This class may be dependent on
+        rule size or config values
+
+        :returns DatasetInterface.__class__
+        """
+        if (
+            self.max_dataset_size
+            and self.max_dataset_size >= self.dataset_size_threshold
+        ):
+            # Use large dataset class
+            logger.info("Using DASK dataset implementation")
+            return DaskDataset
+        logger.info("Using PANDAS dataset implementation")
+        return PandasDataset
 
     @classmethod
     def register_service(cls, name: str, service: Type[DataServiceInterface]) -> None:

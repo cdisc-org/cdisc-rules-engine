@@ -1,6 +1,7 @@
-import pandas as pd
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.dataset_builders.base_dataset_builder import BaseDatasetBuilder
+import os
+import numpy as np
 
 
 class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
@@ -24,30 +25,38 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
         define_dataset_class - dataset class
         define_dataset_structure - dataset structure
         define_dataset_is_non_standard - whether a dataset is a standard
-        define_dataset_variables - dataset variable list
 
         ...,
         """
         # 1. Build define xml dataframe
         define_df = self._get_define_xml_dataframe()
-
+        # )
         # 2. Build dataset dataframe
         dataset_df = self._get_dataset_dataframe()
-
+        if define_df.empty or dataset_df.empty:
+            raise ValueError(
+                "ContentsDefineDatasetBuilder: Define or Dataset metadata is empty."
+            )
         # 3. Merge the two data frames
-        merged = pd.merge(
-            dataset_df,
-            define_df,
+        merged = dataset_df.merge(
+            define_df.data,
+            left_on=["dataset_name", "dataset_location"],
+            right_on=["define_dataset_name", "define_dataset_location"],
             how="outer",
-            left_on="dataset_name",
-            right_on="define_dataset_name",
         )
-
-        # 4. Replace Nan with None
-        # outer join, so some data contents may be missing or some define metadata may
-        # be missing. Replace nans with None
-        merged_no_nans = merged.where(pd.notnull(merged), None)
-        return merged_no_nans
+        # 4. Remove NaN
+        merged._data = merged._data.astype(object).replace({np.nan: None})
+        # 5. remove unused rows, replace rows with target row
+        merged_cleaned = merged.dropna(subset=["dataset_name"])
+        dataset_filename = (
+            os.path.basename(self.dataset_path).lower() if self.dataset_path else None
+        )
+        matching_row = merged_cleaned[
+            merged_cleaned["dataset_location"].str.lower() == dataset_filename
+        ]
+        for column in merged.columns:
+            merged[column] = matching_row[column].iloc[0]
+        return merged
 
     def _get_define_xml_dataframe(self):
         define_col_order = [
@@ -60,12 +69,11 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
             "define_dataset_variables",
         ]
         define_metadata = self.get_define_metadata()
-        define_df = pd.DataFrame(define_metadata)
 
-        if define_df.empty:
-            define_df = pd.DataFrame(columns=define_col_order)
+        if not define_metadata:
             logger.info(f"No define_metadata is provided for {__name__}.")
-        return define_df
+            return self.dataset_implementation(columns=define_col_order)
+        return self.dataset_implementation.from_records(define_metadata)
 
     def _get_dataset_dataframe(self):
         dataset_col_order = [
@@ -76,10 +84,10 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
         ]
 
         if len(self.datasets) == 0:
-            dataset_df = pd.DataFrame(columns=dataset_col_order)
+            dataset_df = self.dataset_implementation(columns=dataset_col_order)
             logger.info(f"No datasets metadata is provided in {__name__}.")
         else:
-            datasets = pd.DataFrame()
+            datasets = self.dataset_implementation()
             for dataset in self.datasets:
                 try:
                     ds_metadata = self.data_service.get_dataset_metadata(
@@ -88,12 +96,14 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
                 except Exception as e:
                     logger.trace(e, __name__)
                     logger.error(f"Error: {e}. Error message: {str(e)}")
-                datasets = (
-                    ds_metadata if datasets.empty else datasets.append(ds_metadata)
+                datasets.data = (
+                    ds_metadata.data
+                    if datasets.data.empty
+                    else datasets.data.append(ds_metadata.data)
                 )
 
-            if datasets.empty or len(datasets) == 0:
-                dataset_df = pd.DataFrame(columns=dataset_col_order)
+            if datasets.data.empty or len(datasets.data) == 0:
+                dataset_df = self.dataset_implementation(columns=dataset_col_order)
                 logger.info(f"No datasets metadata is provided for {__name__}.")
             else:
                 data_col_mapping = {
@@ -104,5 +114,5 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
                 dataset_df = datasets.rename(columns=data_col_mapping)
                 if "dataset_size" not in dataset_df.columns:
                     dataset_df["dataset_size"] = None
-                dataset_df = dataset_df[dataset_col_order]
+                dataset_df = self.dataset_implementation(dataset_df[dataset_col_order])
         return dataset_df

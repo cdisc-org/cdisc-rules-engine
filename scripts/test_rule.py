@@ -69,6 +69,7 @@ def validate_single_rule(
         define_xml_path=args.define_xml_path,
         library_metadata=library_metadata,
         validate_xml=args.validate_xml,
+        dataset_paths=args.dataset_path,
     )
     validated_domains = set()
     results = []
@@ -176,6 +177,7 @@ def test(args: TestArgs):
         args.meddra,
         args.whodrug,
         rules,
+        None,
         ProgressParameterOptions.BAR.value,
         args.define_xml_path,
     )

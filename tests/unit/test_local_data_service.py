@@ -1,11 +1,11 @@
 import os
 from unittest.mock import MagicMock
 
-import pandas as pd
 import pytest
 from cdisc_rules_engine.config.config import ConfigService
 
 from cdisc_rules_engine.services.data_services import LocalDataService
+from cdisc_rules_engine.models.dataset import PandasDataset
 
 
 def test_read_metadata():
@@ -42,26 +42,38 @@ def test_has_all_files(files, expected_result):
     assert data_service.has_all_files(directory, files) == expected_result
 
 
-def test_get_dataset():
+@pytest.mark.parametrize(
+    "dataset_implementation",
+    [PandasDataset],
+)
+def test_get_dataset(dataset_implementation):
     dataset_path = f"{os.path.dirname(__file__)}/../resources/test_dataset.xpt"
     mock_cache = MagicMock()
-    mock_cache.get.return_value = None
+    mock_cache.get_dataset.return_value = None
     data_service = LocalDataService.get_instance(
-        config=ConfigService(), cache_service=mock_cache
+        config=ConfigService(),
+        cache_service=mock_cache,
+        dataset_implementation=dataset_implementation,
     )
     data = data_service.get_dataset(dataset_name=dataset_path)
-    assert isinstance(data, pd.DataFrame)
+    assert isinstance(data, dataset_implementation)
 
 
-def test_get_variables_metdata():
+@pytest.mark.parametrize(
+    "dataset_implementation",
+    [PandasDataset],
+)
+def test_get_variables_metdata(dataset_implementation):
     dataset_path = f"{os.path.dirname(__file__)}/../resources/test_adam_dataset.xpt"
     mock_cache = MagicMock()
-    mock_cache.get.return_value = None
+    mock_cache.get_dataset.return_value = None
     data_service = LocalDataService.get_instance(
-        config=ConfigService(), cache_service=mock_cache
+        config=ConfigService(),
+        cache_service=mock_cache,
+        dataset_implementation=dataset_implementation,
     )
-    data = data_service.get_variables_metadata(dataset_name=dataset_path)
-    assert isinstance(data, pd.DataFrame)
+    data = data_service.get_variables_metadata(dataset_name=dataset_path, datasets=[])
+    assert isinstance(data, dataset_implementation)
     expected_keys = [
         "variable_name",
         "variable_format",

@@ -1,5 +1,5 @@
 from cdisc_rules_engine.dataset_builders.base_dataset_builder import BaseDatasetBuilder
-import pandas as pd
+from cdisc_rules_engine.models.dataset import DatasetInterface
 
 
 class VariablesMetadataWithLibraryMetadataDatasetBuilder(BaseDatasetBuilder):
@@ -21,16 +21,18 @@ class VariablesMetadataWithLibraryMetadataDatasetBuilder(BaseDatasetBuilder):
         library_variable_order_number
         """
         # get dataset metadata and execute the rule
-        content_variables_metadata: pd.DataFrame = (
+        content_variables_metadata: DatasetInterface = (
             self.data_service.get_variables_metadata(
-                self.dataset_path, drop_duplicates=True
+                dataset_name=self.dataset_path,
+                datasets=self.datasets,
+                drop_duplicates=True,
             )
         )
         dataset_contents = self.get_dataset_contents()
         library_variables_metadata = self.get_library_variables_metadata()
 
         data = content_variables_metadata.merge(
-            library_variables_metadata,
+            library_variables_metadata.data,
             how="outer",
             left_on="variable_name",
             right_on="library_variable_name",
@@ -44,7 +46,9 @@ class VariablesMetadataWithLibraryMetadataDatasetBuilder(BaseDatasetBuilder):
         )
         return data
 
-    def variable_has_null_values(self, variable: str, content: pd.DataFrame) -> bool:
+    def variable_has_null_values(
+        self, variable: str, content: DatasetInterface
+    ) -> bool:
         if variable not in content:
             return True
         series = content[variable]

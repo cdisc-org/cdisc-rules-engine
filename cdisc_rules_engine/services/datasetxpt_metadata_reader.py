@@ -1,12 +1,9 @@
-import pandas as pd
-import xport.v56
-from xport import LOG as XPORT_LOG
+import pyreadstat
 
 from cdisc_rules_engine.services import logger
+from cdisc_rules_engine.config import config
 from cdisc_rules_engine.services.adam_variable_reader import AdamVariableReader
-
-xport.v56.LOG.disabled = True
-XPORT_LOG.disabled = True
+import os
 
 
 class DatasetXPTMetadataReader:
@@ -18,40 +15,48 @@ class DatasetXPTMetadataReader:
     # TODO. Maybe in future it is worth having multiple constructors
     #  like from_bytes, from_file etc. But now there is no immediate need for that.
     def __init__(self, file_path: str, file_name: str):
-        with open(file_path, "rb") as f:
-            self._file_contents = f.read()
-        self._metadata_container = None
+        file_size = os.path.getsize(file_path)
+        if file_size > config.get_dataset_size_threshold():
+            self._estimate_dataset_length = True
+            self.row_limit = 1
+        else:
+            self._estimate_dataset_length = False
+            self.row_limit = 0
+        self._metadata_container = {}
         self._domain_name = None
         self._dataset_name = file_name.split(".")[0].upper()
+        self._file_path = file_path
 
     def read(self) -> dict:
         """
         Extracts metadata from binary contents of .xpt file.
         """
-        dataset_container = xport.v56.loads(self._file_contents)
-        dataset_id = next(iter(dataset_container))
-        dataset = dataset_container.get(dataset_id)
+        dataset, metadata = pyreadstat.read_xport(
+            self._file_path, row_limit=self.row_limit
+        )
         self._domain_name = self._extract_domain_name(dataset)
         self._metadata_container = {
-            "variable_labels": list(dataset.contents.Label.values),
-            "variable_names": list(dataset.contents.Variable.values),
-            "variable_formats": list(dataset.contents.Format.values),
-            "variable_name_to_label_map": pd.Series(
-                dataset.contents.Label.values, index=dataset.contents.Variable
-            ).to_dict(),
-            "variable_name_to_data_type_map": pd.Series(
-                dataset.contents.Type.values, index=dataset.contents.Variable
-            ).to_dict(),
-            "variable_name_to_size_map": pd.Series(
-                dataset.contents.Length.values, index=dataset.contents.Variable
-            ).to_dict(),
-            "number_of_variables": len(dataset.columns),
-            "dataset_label": dataset.dataset_label,
-            "dataset_length": dataset.shape[0],
+            "variable_labels": list(metadata.column_labels),
+            "variable_names": list(metadata.column_names),
+            "variable_formats": [
+                "" if data_type == "NULL" else data_type
+                for data_type in metadata.original_variable_types.values()
+            ],
+            "variable_name_to_label_map": metadata.column_names_to_labels,
+            "variable_name_to_data_type_map": metadata.readstat_variable_types,
+            "variable_name_to_size_map": metadata.variable_storage_width,
+            "number_of_variables": metadata.number_columns,
+            "dataset_label": metadata.file_label,
+            "dataset_length": metadata.number_rows,
             "domain_name": self._domain_name,
             "dataset_name": self._dataset_name,
-            "dataset_modification_date": dataset.modified.isoformat(),
+            "dataset_modification_date": metadata.modification_time.isoformat(),
         }
+
+        if self._estimate_dataset_length:
+            self._metadata_container[
+                "dataset_length"
+            ] = self._calculate_dataset_length()
         self._domain_name = self._extract_domain_name(dataset)
         self._convert_variable_types()
         self._metadata_container["adam_info"] = self._extract_adam_info(
@@ -72,6 +77,61 @@ class DatasetXPTMetadataReader:
         except IndexError:
             pass
         return None
+
+    def _calculate_dataset_length(self):
+        df, meta = pyreadstat.read_xport(self._file_path, metadataonly=True)
+        row_size = sum(meta.variable_storage_width.values())
+        total_size = os.path.getsize(self._file_path)
+        start = self._read_header(self._file_path)
+        remainder = (total_size - start) % row_size
+        estimated_rows = (total_size - start - remainder) / row_size
+        if row_size < 80:
+            padding = self._count_trailing_padding(self._file_path, row_size)
+            return (total_size - start - padding) / row_size
+        return estimated_rows
+
+    def _count_trailing_padding(self, file_path, row_size):
+        """
+        reads the file from the end in chunks of 80 bytes and counts the total number of trailing padding bytes
+        """
+        padding_size = 0
+        with open(file_path, "rb") as file:
+            file.seek(0, os.SEEK_END)
+            file_size = file.tell()
+            file.seek(file_size - 1)
+
+            while file.tell() > 0:
+                byte = file.read(1)
+                if byte == b" ":
+                    padding_size += 1
+                    if file.tell() == 1:
+                        break
+                    file.seek(file.tell() - 2)
+                else:
+                    break
+        return padding_size
+
+    def _read_header(self, file_path):
+        """
+        read the header of the file to find the start of the data section in 10kb chunks
+        """
+        marker = b"HEADER RECORD*******OBS     HEADER RECORD!!!!!!!000000000000000000000000000000"
+        chunk_size = 1024
+        read_header = b""
+        padding_chars = (b"\x00", b" ")
+        with open(file_path, "rb") as file:
+            while True:
+                chunk = file.read(chunk_size)
+                if not chunk:
+                    break
+                read_header += chunk
+                position = read_header.find(marker)
+                if position != -1:
+                    data_start = position + len(marker)
+                    for i in range(data_start, len(read_header)):
+                        if read_header[i : i + 1] not in padding_chars:
+                            return i
+        raise ValueError("End descriptor not found in the file header.")
 
     def _convert_variable_types(self):
         """

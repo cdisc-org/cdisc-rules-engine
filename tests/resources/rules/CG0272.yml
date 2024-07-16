@@ -1,0 +1,101 @@
+# Variable: TSVAL
+# Condition: TSPARMCD = 'TDIGRP' and record exists where TSPARMCD = 'HLTSUBJI' and TSVAL = 'Y'
+# Rule: TSVAL = null or 'HEALTHY SUBJECTS'
+Authorities:
+  - Organization: CDISC
+    Standards:
+      - Name: SDTMIG
+        References:
+          - Citations:
+              - Cited Guidance:
+                  IG v3.2[7.4][Assumption 3][Further information about the
+                  parameters is included below in Table 1. TSVAL may have
+                  controlled terminology depending on the value of TSPARMCD]|IG
+                  v3.2[Appendix C1][If the study population is healthy subjects
+                  (i.e., healthy subjects flag is Y), this parameter is not
+                  expected. If the healthy subject flag is N, then this
+                  parameter would contain the diagnosis/medical problem of the
+                  study population. [Validation rule; IF healthy volunteers = N
+                  then TDIGRP must be present and not null]
+                Document: IG v3.2
+                Item: IG v3.2[7.4][Assumption 3]|IG v3.2[Appendix C1]
+                Section: IG v3.2[7.4]|IG v3.2[Appendix C1]
+            Origin: SDTM and SDTMIG Conformance Rules
+            Rule Identifier:
+              Id: CG0272
+              Version: "2"
+            Version: "2.0"
+        Version: "3.2"
+      - Name: SDTMIG
+        References:
+          - Citations:
+              - Cited Guidance:
+                  IG v3.3[7.4.2][Assumption 3][Further information about the
+                  parameters is included Appendix C1, Trial Summary Codes. TSVAL
+                  may have controlled terminology depending on the value of
+                  TSPARMCD. Conditions for including parameters are included in
+                  Appendix C1, Trial Summary Codes.]|IG v3.3[Appendix C1][ If
+                  the study population is healthy subjects (i.e., healthy
+                  subjects flag is Y), this parameter is not expected. If the
+                  healthy subject flag is N, then this parameter would contain
+                  the diagnosis/medical problem of the study population.
+                  [Validation rule; IF healthy volunteers = N then TDIGRP must
+                  be present and not null]
+                Document: IG v3.3
+                Item: IG v3.3[7.4.2][Assumption 3]|IG v3.3[Appendix C1]
+                Section: IG v3.3[7.4.2]|IG v3.3[Appendix C1]
+            Origin: SDTM and SDTMIG Conformance Rules
+            Rule Identifier:
+              Id: CG0272
+              Version: "2"
+            Version: "2.0"
+        Version: "3.3"
+Check:
+  all:
+    - name: TSPARMCD
+      operator: equal_to
+      value: TDIGRP
+    - name: $HLTSUBJI_Y
+      operator: greater_than_or_equal_to
+      value: 1
+    - all:
+        - name: TSVAL
+          operator: not_equal_to
+          value: "HEALTHY SUBJECTS"
+          value_is_literal: true
+        - name: TSVAL
+          operator: non_empty
+Core:
+  Id: CORE-000473
+  Status: Published
+  Version: "1"
+Description: "Raise an error when a record exists in TS where TSPARMCD =
+  HLTSUBJI and TSVAL = Y but TSVAL for TSPARMCD = TDIGRP is not empty or does
+  not equal HEALTHY SUBJECTS."
+Executability: Fully Executable
+Operations:
+  - filter:
+      TSPARMCD: HLTSUBJI
+      TSVAL: "Y"
+    group:
+      - TSGRPID
+    id: $HLTSUBJI_Y
+    operator: record_count
+Outcome:
+  Message: "A record exists in TS where TSPARMCD = HLTSUBJI and TSVAL = Y but
+    TSVAL for TSPARMCD = TDIGRP is not empty or does not equal HEALTHY
+    SUBJECTS."
+  Output Variables:
+    - TSGRPID
+    - TSPARMCD
+    - TSVAL
+    - $HLTSUBJI_Y
+Rule Type: Record Data
+Scope:
+  Classes:
+    Include:
+      - TRIAL DESIGN
+  Domains:
+    Include:
+      - TS
+Sensitivity: Record

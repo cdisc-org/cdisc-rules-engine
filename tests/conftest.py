@@ -2,7 +2,7 @@ import os
 from datetime import datetime
 from unittest.mock import MagicMock
 
-import pandas as pd
+from cdisc_rules_engine.models.dataset import PandasDataset
 import pytest
 import sys
 from cdisc_rules_engine.config.config import ConfigService
@@ -35,10 +35,10 @@ def run_regression_tests(request):
 
 def mock_get_dataset(dataset_name):
     dataframe_map = {
-        "ae.xpt": pd.DataFrame.from_dict(
+        "ae.xpt": PandasDataset.from_dict(
             {"AESTDY": [1, 2, 40, 59], "USUBJID": [1, 2, 3, 45]}
         ),
-        "ec.xpt": pd.DataFrame.from_dict(
+        "ec.xpt": PandasDataset.from_dict(
             {"ECCOOLVAR": [3, 4, 5000, 35], "USUBJID": [1, 2, 3, 45]}
         ),
     }
@@ -1219,7 +1219,7 @@ def operation_params() -> OperationParams:
     return OperationParams(
         operation_id="operation_id",
         operation_name="operation_name",
-        dataframe=pd.DataFrame.from_dict({}),
+        dataframe=PandasDataset.from_dict({}),
         target="target",
         domain="domain",
         dataset_path="dataset_path",
