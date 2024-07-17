@@ -43,7 +43,7 @@ def test_get_study_domains_with_missing_domains(
     datasets = [
         {"domain": "TS"},
         {"filename": "dm1.xpt", "domain": "DM"},
-        {"filename": "ae.xpt", "domain": "AE"},
+        {"filename": "AE.xpt", "domain": "AE"},
         {"filename": "tv.xpt", "domain": "TV"},
     ]
     operation_params.datasets = datasets
@@ -52,4 +52,4 @@ def test_get_study_domains_with_missing_domains(
     ).execute()
     assert operation_params.operation_id in result
     for val in result[operation_params.operation_id]:
-        assert sorted(val) == ["", "ae", "dm1", "tv"]
+        assert sorted(val) == ["", "AE", "dm1", "tv"]

@@ -8,7 +8,7 @@ class DatasetNames(BaseOperation):
         """
         return list(
             {
-                dataset.get("filename", "").split(".")[0].lower()
+                dataset.get("filename", "").split(".")[0]
                 for dataset in self.params.datasets
             }
         )
