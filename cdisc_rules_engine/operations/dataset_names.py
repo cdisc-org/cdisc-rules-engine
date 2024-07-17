@@ -6,4 +6,9 @@ class DatasetNames(BaseOperation):
         """
         Returns a list of the domains in the study
         """
-        return list({dataset.get("filename", "") for dataset in self.params.datasets})
+        return list(
+            {
+                dataset.get("filename", "").split(".")[0].lower()
+                for dataset in self.params.datasets
+            }
+        )
