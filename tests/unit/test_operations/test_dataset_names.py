@@ -1,7 +1,7 @@
 from cdisc_rules_engine.config.config import ConfigService
 from cdisc_rules_engine.models.dataset.dask_dataset import DaskDataset
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
-from cdisc_rules_engine.operations.study_domains import DatasetNames
+from cdisc_rules_engine.operations.dataset_names import DatasetNames
 from cdisc_rules_engine.models.operation_params import OperationParams
 
 from cdisc_rules_engine.services.cache.cache_service_factory import CacheServiceFactory
