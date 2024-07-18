@@ -38,6 +38,7 @@ from cdisc_rules_engine.utilities.dataset_preprocessor import DatasetPreprocesso
 from cdisc_rules_engine.utilities.rule_processor import RuleProcessor
 from cdisc_rules_engine.utilities.utils import (
     is_split_dataset,
+    is_supp_dataset,
     serialize_rule,
 )
 from cdisc_rules_engine.dataset_builders import builder_factory
@@ -160,6 +161,7 @@ class RulesEngine:
                 dataset_domain,
                 dataset_path,
                 is_split_dataset(datasets, dataset_domain),
+                is_supp_dataset(datasets, dataset_domain, dataset_path),
                 datasets,
             ):
                 result: List[Union[dict, str]] = self.validate_rule(

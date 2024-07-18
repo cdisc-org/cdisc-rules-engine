@@ -226,15 +226,31 @@ def is_split_dataset(datasets: List[dict], domain: str) -> bool:
     return False
 
 
-def is_supp_dataset(datasets: List[dict], domain: str) -> bool:
-    corresponding_datasets = get_corresponding_datasets(datasets, domain)
-    # Check if there are multiple datasets for the domain and if their names match the supp naming convention
-    if len(corresponding_datasets) > 1:
-        return any(
-            dataset.get("filename", "").split(".")[0].lower().startswith("supp")
-            for dataset in corresponding_datasets
-        )
-    return False
+def is_supp_dataset(
+    datasets: List[dict], domain: str, dataset_path: str = None
+) -> bool:
+    """
+    this function is gated by dataset_path's presence.
+    - If it has  path, it is the call from the rule_processor
+        and we are trying to ID the specific supplementary dataset.
+    - If it doesn't have path, it is the call from the dataset_builder
+        and we are trying to ID if the domain is a supplementary domain.
+    """
+    if dataset_path:
+        filename = os.path.splitext(os.path.basename(dataset_path))[0].lower()
+        return filename.startswith(("supp", "sq"))
+    else:
+        corresponding_datasets = get_corresponding_datasets(datasets, domain)
+        # Check if there are multiple datasets for the domain and if their names match the supp naming convention
+        if len(corresponding_datasets) > 1:
+            return any(
+                dataset.get("filename", "")
+                .split(".")[0]
+                .lower()
+                .startswith("supp", "sq")
+                for dataset in corresponding_datasets
+            )
+        return False
 
 
 def serialize_rule(rule: dict) -> dict:

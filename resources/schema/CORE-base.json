@@ -508,6 +508,9 @@
             },
             "include_split_datasets": {
               "type": "boolean"
+            },
+            "include_supp_datasets": {
+              "type": "boolean"
             }
           },
           "type": "object"

@@ -41,25 +41,40 @@ class RuleProcessor:
 
     @classmethod
     def rule_applies_to_domain(
-        cls, dataset_domain: str, rule: dict, is_split_domain: bool
+        cls,
+        dataset_domain: str,
+        rule: dict,
+        is_supp_domain: bool,
+        is_split_domain: bool,
     ) -> bool:
         """
         Check that rule is applicable to dataset domain
         """
         domains = rule.get("domains") or {}
+        include_supp_datasets: bool = domains.get("include_supp_datasets")
         include_split_datasets: bool = domains.get("include_split_datasets")
 
         included_domains = domains.get("Include", [])
         excluded_domains = domains.get("Exclude", [])
 
         is_included = cls._is_domain_name_included(
-            dataset_domain, included_domains, include_split_datasets, is_split_domain
+            dataset_domain,
+            included_domains,
+            include_split_datasets,
+            is_split_domain,
+            include_supp_datasets,
+            is_supp_domain,
         )
         is_excluded = cls._is_domain_name_excluded(dataset_domain, excluded_domains)
 
         # additional check for split domains based on the flag
         is_excluded, is_included = cls._handle_split_domains(
             is_split_domain, include_split_datasets, is_excluded, is_included
+        )
+
+        # additional check for split domains based on the flag
+        is_excluded, is_included = cls._handle_supp_domains(
+            is_supp_domain, include_supp_datasets, is_excluded, is_included
         )
 
         return is_included and not is_excluded
@@ -71,6 +86,8 @@ class RuleProcessor:
         included_domains: List[str],
         include_split_datasets: bool,
         is_split_domain: bool,
+        include_supp_datasets: bool,
+        is_supp_domain: bool,
     ) -> bool:
         """
         If included domains aren't specified
@@ -136,6 +153,30 @@ class RuleProcessor:
         if include_split_datasets is True and is_split_domain and not is_excluded:
             is_included = True
         if include_split_datasets is False and is_split_domain:
+            is_excluded = True
+        return is_excluded, is_included
+
+    @classmethod
+    def _handle_supp_domains(
+        cls,
+        is_supp_domain: bool,
+        include_supp_datasets: bool,
+        is_excluded: bool,
+        is_included: bool,
+    ) -> Tuple[bool, bool]:
+        """
+        HANDLING SUPP DOMAINS
+
+        If include_supp_datasets is True -
+        add supp domains to the list of included domains.
+        If no included domains specified, only validate supp domains
+
+        If include_supp_datasets is False - Exclude supp domains
+        If include_supp_datasets is None - Do nothing
+        """
+        if include_supp_datasets is True and is_supp_domain and not is_excluded:
+            is_included = True
+        if include_supp_datasets is False and is_supp_domain:
             is_excluded = True
         return is_excluded, is_included
 
@@ -455,11 +496,14 @@ class RuleProcessor:
         dataset_domain: str,
         file_path: str,
         is_split_domain: bool,
+        is_supp_domain: bool,
         datasets: List[dict],
     ) -> bool:
         is_suitable: bool = (
             self.valid_rule_structure(rule)
-            and self.rule_applies_to_domain(dataset_domain, rule, is_split_domain)
+            and self.rule_applies_to_domain(
+                dataset_domain, rule, is_supp_domain, is_split_domain
+            )
             and self.rule_applies_to_class(rule, file_path, datasets, dataset_domain)
         )
         logger.info(
