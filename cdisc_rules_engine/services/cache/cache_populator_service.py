@@ -18,6 +18,8 @@ from cdisc_rules_engine.utilities.utils import (
     get_model_details_cache_key,
 )
 from cdisc_rules_engine.constants.cache_constants import PUBLISHED_CT_PACKAGES
+import json
+import yaml
 
 
 class CachePopulator:
@@ -27,12 +29,12 @@ class CachePopulator:
         self.cache = cache
         self.library_service = library_service
 
-    async def load_cache_data(self):
+    async def load_cache_data(self, include_local_rules=False, local_rules_path=None):
         """
         This function populates a cache implementation with
         all data necessary for running rules against local data.
         Including
-        * rules
+        * rules (from CDISC Library and optionally local draft rules)
         * library metadata
         * codelist metadata
         """
@@ -45,6 +47,14 @@ class CachePopulator:
             self.cache.add_batch(
                 rules.get("rules", []), "core_id", prefix=rules.get("key_prefix")
             )
+
+        if include_local_rules:
+            if not local_rules_path:
+                raise ValueError(
+                    "a path to the local rules direct must be provided when the local rules cache flag is indicated"
+                )
+            local_rules = await self._get_local_draft_rules(local_rules_path)
+            self.cache.add_batch(local_rules, "core_id", prefix="local_draft")
 
         # save codelists to cache as a map of codelist to terms
         codelist_term_maps = await self._get_codelist_term_maps()
@@ -85,6 +95,33 @@ class CachePopulator:
         self.cache.add_batch(variables_metadata, "cache_key", pop_cache_key=True)
 
         return self.cache
+
+    async def _get_local_draft_rules(self, local_rules_path: str) -> List[dict]:
+        """
+        Retrieve local rules from the file system.
+        """
+        local_rules = []
+
+        # Ensure the directory exists
+        if not os.path.isdir(local_rules_path):
+            raise FileNotFoundError(f"The directory {local_rules_path} does not exist")
+
+        # Iterate through all files in the directory provided
+        for filename in os.listdir(local_rules_path):
+            if filename.endswith((".json", ".yml", ".yaml")):
+                file_path = os.path.join(local_rules_path, filename)
+                try:
+                    with open(file_path, "r") as file:
+                        if filename.endswith(".json"):
+                            rule_data = json.load(file)
+                        else:
+                            rule_data = yaml.safe_load(file)
+                        local_rules.append(rule_data)
+                except (json.JSONDecodeError, yaml.YAMLError) as e:
+                    print(f"Error decoding {filename}: {str(e)}")
+                except Exception as e:
+                    print(f"Error reading file {file_path}: {str(e)}")
+        return local_rules
 
     async def load_codelists(self, packages: List[str]):
         coroutines = [
