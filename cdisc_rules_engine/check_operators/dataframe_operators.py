@@ -175,7 +175,7 @@ class DataframeType(BaseType):
                 row, target, comparator, value_is_literal, case_insensitive=True
             ),
             axis=1,
-        )
+        ).astype(bool)
 
     @type_operator(FIELD_DATAFRAME)
     def not_equal_to_case_insensitive(self, other_value):
