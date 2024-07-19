@@ -150,6 +150,13 @@ class BaseDataService(DataServiceInterface, ABC):
         """
         return any(not os.path.exists(name) for name in dataset_names)
 
+    def find_parent(self, datasets):
+        for i, dataset in enumerate(datasets):
+            if "DOMAIN" in dataset.columns:
+                parent_dataset = datasets.pop(i)
+                return parent_dataset
+        raise ValueError("No parent dataset with 'DOMAIN' column found in the datasets")
+
     def merge_supp_dataset(self, func_to_call, dataset_names, **kwargs):
         if self.check_filepath(dataset_names):
             datasets = []
@@ -159,13 +166,13 @@ class BaseDataService(DataServiceInterface, ABC):
             datasets: List[DatasetInterface] = list(
                 self._async_get_datasets(func_to_call, dataset_names, **kwargs)
             )
-        parent_dataset = datasets.pop(0)
+        parent_dataset = self.find_parent(datasets)
         static_keys = ["STUDYID", "USUBJID", "APID", "POOLID", "SPDEVID"]
         for supp_dataset in datasets:
             qnam_list = supp_dataset["QNAM"].unique()
             supp_dataset = self.process_supp(supp_dataset)
             dynamic_key = supp_dataset["IDVAR"].iloc[0]
-
+            breakpoint()
             # Determine the common keys present in both datasets
             common_keys = [
                 key

@@ -40,6 +40,7 @@ from cdisc_rules_engine.utilities.utils import (
     is_split_dataset,
     is_supp_dataset,
     serialize_rule,
+    remove_supp_datasets,
 )
 from cdisc_rules_engine.dataset_builders import builder_factory
 
@@ -160,10 +161,15 @@ class RulesEngine:
                 rule,
                 dataset_domain,
                 dataset_path,
-                is_split_dataset(datasets, dataset_domain),
+                is_split_dataset(datasets, dataset_domain, dataset_path),
                 is_supp_dataset(datasets, dataset_domain, dataset_path),
                 datasets,
             ):
+                domains = rule.get("domains")
+                if domains.get("include_split_datasets") and not domains.get(
+                    "include_supp_datasets"
+                ):
+                    datasets = remove_supp_datasets(datasets)
                 result: List[Union[dict, str]] = self.validate_rule(
                     rule, dataset_path, datasets, dataset_domain
                 )
@@ -351,6 +357,7 @@ class RulesEngine:
             codelist_term_maps=codelist_term_maps,
         )
         results = []
+        breakpoint()
         run(
             serialize_rule(rule_copy),  # engine expects a JSON serialized dict
             defined_variables=dataset_variable,

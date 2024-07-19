@@ -72,7 +72,7 @@ class BaseDatasetBuilder:
                 dataset_names=self.get_corresponding_datasets_names(),
                 **kwargs,
             )
-        elif (
+        if (
             is_supp_dataset(self.datasets, self.domain)
             and self.rule.get("core_id") == "CDISC.SDTMIG.CG0019"
         ):

@@ -1,5 +1,6 @@
 from cdisc_rules_engine.dataset_builders.base_dataset_builder import BaseDatasetBuilder
 from cdisc_rules_engine.utilities.utils import (
+    is_supp_dataset,
     is_split_dataset,
     get_corresponding_datasets,
 )
@@ -23,6 +24,17 @@ class ContentsDatasetBuilder(BaseDatasetBuilder):
         if is_split_dataset(self.datasets, self.domain):
             # Handle split datasets for content checks.
             # A content check is any check that is not in the list of rule types
+            dataset = self.data_service.concat_split_datasets(
+                func_to_call=self.build_split_dataset,
+                dataset_names=self.get_corresponding_datasets_names(),
+                **kwargs,
+            )
+        if is_supp_dataset(self.datasets, self.domain):
+            # dataset = self.data_service.merge_supp_dataset(
+            #     func_to_call=self.build,
+            #     dataset_names=self.get_corresponding_datasets_names(),
+            #     **kwargs,
+            # )
             dataset = self.data_service.concat_split_datasets(
                 func_to_call=self.build_split_dataset,
                 dataset_names=self.get_corresponding_datasets_names(),

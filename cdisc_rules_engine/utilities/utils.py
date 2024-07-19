@@ -8,6 +8,7 @@ import re
 from datetime import datetime
 from typing import Callable, List, Optional, Set, Union
 from uuid import UUID
+from cdisc_rules_engine.services import logger
 
 from cdisc_rules_engine.constants.domains import (
     AP_DOMAIN,
@@ -197,25 +198,51 @@ def get_corresponding_datasets(datasets: List[dict], domain: str) -> List[dict]:
     return [dataset for dataset in datasets if dataset.get("domain") == domain]
 
 
-def is_split_dataset(datasets: List[dict], domain: str) -> bool:
-    corresponding_datasets = get_corresponding_datasets(datasets, domain)
-    domain_match = False
-    domain_plus_two_match = False
+def is_split_dataset(
+    datasets: List[dict], domain: str, dataset_path: str = None
+) -> bool:
+    """
+    this function is gated by dataset_path's presence.
+    - If it has  path, it is the call from the rule_processor
+        and we are trying to ID the specific split dataset.
+    - If it doesn't have path, it is the call from the dataset_builder
+        and we are trying to ID if the domain is a supplementary domain.
+    """
+    if dataset_path:
+        filename = os.path.splitext(os.path.basename(dataset_path))[0].lower()
+        if filename.startswith(("supp", "sq")):
+            return False
+        else:
+            return filename.startswith(domain.lower())
+    else:
+        corresponding_datasets = get_corresponding_datasets(datasets, domain)
+        if len(corresponding_datasets) < 2:
+            logger.info(f"Domain {domain} is not a split dataset")
+            return False
 
-    for dataset in corresponding_datasets:
-        # drop file extension
-        filename_wo_extension = dataset.get("filename", "").split(".")[0].lower()
-        if filename_wo_extension == domain.lower():
-            domain_match = True
-        elif len(filename_wo_extension) == len(
-            domain
-        ) + 2 and filename_wo_extension.startswith(domain.lower()):
-            domain_plus_two_match = True
+        non_supp_datasets = [
+            dataset
+            for dataset in corresponding_datasets
+            if not dataset.get("filename", "").lower().startswith("supp")
+        ]
 
-        if domain_match and domain_plus_two_match:
-            return True
+        if len(non_supp_datasets) < 2:
+            logger.info(f"Domain {domain} does not have at least 2 split datasets")
+            return False
 
-    return False
+        result = all(
+            (
+                dataset.get("filename", "")
+                .split(".")[0]
+                .lower()
+                .startswith(domain.lower())
+                and len(dataset.get("filename", "").split(".")[0]) > len(domain)
+            )
+            or dataset.get("filename", "").lower().startswith("supp")
+            for dataset in corresponding_datasets
+        )
+        logger.info(f"{domain} is a split dataset: {result}")
+    return result
 
 
 def is_supp_dataset(
@@ -223,7 +250,7 @@ def is_supp_dataset(
 ) -> bool:
     """
     this function is gated by dataset_path's presence.
-    - If it has  path, it is the call from the rule_processor
+    - If it has path, it is the call from the rule_processor
         and we are trying to ID the specific supplementary dataset.
     - If it doesn't have path, it is the call from the dataset_builder
         and we are trying to ID if the domain is a supplementary domain.
@@ -239,10 +266,22 @@ def is_supp_dataset(
                 dataset.get("filename", "")
                 .split(".")[0]
                 .lower()
-                .startswith("supp", "sq")
+                .startswith(("supp", "sq"))
                 for dataset in corresponding_datasets
             )
         return False
+
+
+def remove_supp_datasets(datasets: List[dict]) -> List[dict]:
+    """
+    this function is for the rare instance we want a split dataset
+    but not the supplementary datasets associated with a domain
+    """
+    return [
+        dataset
+        for dataset in datasets
+        if not dataset.get("filename", "").lower().startswith(("supp", "sq"))
+    ]
 
 
 def serialize_rule(rule: dict) -> dict:

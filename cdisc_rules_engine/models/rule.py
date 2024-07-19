@@ -55,7 +55,6 @@ class Rule:
 
             if "Operations" in rule_metadata:
                 executable_rule["operations"] = rule_metadata.get("Operations")
-
             if "Match_Datasets" in rule_metadata:
                 executable_rule["datasets"] = cls.parse_datasets(
                     rule_metadata.get("Match_Datasets")
