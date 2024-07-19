@@ -13,7 +13,6 @@ from cdisc_rules_engine.constants.classes import (
 from cdisc_rules_engine.constants.domains import (
     AP_DOMAIN,
     APFA_DOMAIN,
-    SUPPLEMENTARY_DOMAINS,
 )
 from cdisc_rules_engine.constants.rule_constants import ALL_KEYWORD
 from cdisc_rules_engine.interfaces import ConditionInterface
@@ -26,7 +25,6 @@ from cdisc_rules_engine.utilities.utils import (
     get_directory_path,
     get_operations_cache_key,
     is_ap_domain,
-    is_supp_domain,
     search_in_list_of_dicts,
 )
 
@@ -65,7 +63,9 @@ class RuleProcessor:
             include_supp_datasets,
             is_supp_domain,
         )
-        is_excluded = cls._is_domain_name_excluded(dataset_domain, excluded_domains)
+        is_excluded = cls._is_domain_name_excluded(
+            dataset_domain, excluded_domains, include_supp_datasets, is_supp_domain
+        )
 
         # additional check for split domains based on the flag
         is_excluded, is_included = cls._handle_split_domains(
@@ -103,17 +103,25 @@ class RuleProcessor:
         if not included_domains:
             if include_split_datasets is True and not is_split_domain:
                 return False
+            if include_supp_datasets is True and not is_supp_domain:
+                return False
             return True
 
         if dataset_domain in included_domains or ALL_KEYWORD in included_domains:
             return True
-        if cls._domain_matched_ap_or_supp(dataset_domain, included_domains):
+        if cls._domain_matched_ap(dataset_domain, included_domains) or (
+            include_supp_datasets and is_supp_domain
+        ):
             return True
         return False
 
     @classmethod
     def _is_domain_name_excluded(
-        cls, dataset_domain: str, excluded_domains: List[str]
+        cls,
+        dataset_domain: str,
+        excluded_domains: List[str],
+        include_supp_datasets,
+        is_supp_domain,
     ) -> bool:
         """
         If excluded domains are specified,
@@ -128,7 +136,9 @@ class RuleProcessor:
 
         if dataset_domain in excluded_domains or ALL_KEYWORD in excluded_domains:
             return True
-        if cls._domain_matched_ap_or_supp(dataset_domain, excluded_domains):
+        if cls._domain_matched_ap(dataset_domain, excluded_domains):
+            return True
+        if not include_supp_datasets and is_supp_domain:
             return True
         return False
 
@@ -181,18 +191,17 @@ class RuleProcessor:
         return is_excluded, is_included
 
     @classmethod
-    def _domain_matched_ap_or_supp(
+    def _domain_matched_ap(
         cls, dataset_domain: str, domains_to_check: List[str]
     ) -> bool:
         """
         Check that domain name match with only
-        AP / APFA / APRELSUB / SUPP / SQ naming pattern
+        AP / APFA / APRELSUB naming pattern
         """
-        supp_ap_domains = {f"{domain}--" for domain in SUPPLEMENTARY_DOMAINS}
-        supp_ap_domains.update({f"{AP_DOMAIN}--", f"{APFA_DOMAIN}--"})
+        ap_domains = {f"{AP_DOMAIN}--", f"{APFA_DOMAIN}--"}
 
-        return any(set(domains_to_check).intersection(supp_ap_domains)) and (
-            is_supp_domain(dataset_domain) or is_ap_domain(dataset_domain)
+        return any(set(domains_to_check).intersection(ap_domains)) and (
+            is_ap_domain(dataset_domain)
         )
 
     def rule_applies_to_class(self, rule, file_path, datasets: List[dict], domain: str):

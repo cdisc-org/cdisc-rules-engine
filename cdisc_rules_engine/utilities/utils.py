@@ -13,7 +13,6 @@ from cdisc_rules_engine.constants.domains import (
     AP_DOMAIN,
     APFA_DOMAIN,
     APRELSUB_DOMAIN,
-    SUPPLEMENTARY_DOMAINS,
 )
 from cdisc_rules_engine.constants.classes import SPECIAL_PURPOSE
 from cdisc_rules_engine.enums.execution_status import ExecutionStatus
@@ -127,13 +126,6 @@ def get_dataset_cache_key_from_path(dataset_path: str, dataset_type: str) -> str
     return DATASET_CACHE_KEY_TEMPLATE.format(
         dataset_path=dataset_path, dataset_type=dataset_type
     )
-
-
-def is_supp_domain(dataset_domain: str) -> bool:
-    """
-    Returns true if domain name starts with SUPP or SQ
-    """
-    return dataset_domain.startswith(SUPPLEMENTARY_DOMAINS)
 
 
 def is_ap_domain(dataset_domain: str) -> bool:
