@@ -30,13 +30,8 @@ class ContentsDatasetBuilder(BaseDatasetBuilder):
                 **kwargs,
             )
         if is_supp_dataset(self.datasets, self.domain):
-            # dataset = self.data_service.merge_supp_dataset(
-            #     func_to_call=self.build,
-            #     dataset_names=self.get_corresponding_datasets_names(),
-            #     **kwargs,
-            # )
-            dataset = self.data_service.concat_split_datasets(
-                func_to_call=self.build_split_dataset,
+            dataset = self.data_service.merge_supp_dataset(
+                func_to_call=self.build,
                 dataset_names=self.get_corresponding_datasets_names(),
                 **kwargs,
             )
