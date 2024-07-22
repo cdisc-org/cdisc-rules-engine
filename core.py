@@ -281,12 +281,9 @@ def validate(
 @click.option(
     "-rr",
     "--remove_rules",
-    help=(
-        "rule IDs to be removed from the local rules in the cache"
-        "can be done multiple times to remove multiple rules"
-        "or specify `ALL` to remove all local rules from the cache",
-    ),
-    multiple=True,
+    help=("removes all local rules from the cache",),
+    is_flag=True,
+    default=False,
 )
 @click.pass_context
 def update_cache(
@@ -294,16 +291,21 @@ def update_cache(
     cache_path: str,
     apikey: str,
     local_rules: str,
-    remove_rules: Tuple[str],
+    remove_rules: bool,
 ):
     cache = CacheServiceFactory(config).get_cache_service()
-    if not local_rules and not remove_rules:
+    if not local_rules and remove_rules is False:
         library_service = CDISCLibraryService(apikey, cache)
     cache_populator = CachePopulator(cache, library_service, local_rules, remove_rules)
+
     cache = asyncio.run(cache_populator.load_cache_data())
     cache_populator.save_rules_locally(
         os.path.join(cache_path, DefaultFilePaths.RULES_CACHE_FILE.value)
     )
+    if local_rules:
+        cache_populator.save_Local_rules_locally(
+            os.path.join(cache_path, DefaultFilePaths.LOCAL_RULES_CACHE_FILE.value)
+        )
     cache_populator.save_ct_packages_locally(f"{cache_path}")
     cache_populator.save_standards_metadata_locally(
         os.path.join(cache_path, DefaultFilePaths.STANDARD_DETAILS_CACHE_FILE.value)

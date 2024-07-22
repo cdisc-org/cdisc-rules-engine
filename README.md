@@ -150,10 +150,9 @@ To obtain an api key, please follow the instructions found here: <https://wiki.c
 
           `python core.py update-cache -lr 'path/to/directory'`
 
-- to remove these local rules from to the cache, the remove rules `-rr` flag is added to update-cache to remove local rules from the cache. This is done by either specifying the rule IDs to be removed or `ALL` to remove all custom rules
+- to remove these local rules from to the cache, the remove rules `-rr` flag is added to update-cache to remove local rules from the cache.
 
-          `python core.py update-cache -rr ALL`
-          `python core.py update-cache -rr 'CUSTOMID01' -rr 'CUSTOMID03'`
+          `python core.py update-cache -rr`
 
 **- list-rules** - list rules available in the cache
 

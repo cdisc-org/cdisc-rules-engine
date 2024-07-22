@@ -24,10 +24,16 @@ import yaml
 
 class CachePopulator:
     def __init__(
-        self, cache: CacheServiceInterface, library_service: CDISCLibraryService
+        self,
+        cache: CacheServiceInterface,
+        library_service: CDISCLibraryService = None,
+        local_rules_path=None,
+        remove_local_rules=False,
     ):
         self.cache = cache
         self.library_service = library_service
+        self.local_rules_path = local_rules_path
+        self.remove_local_rules = remove_local_rules
 
     async def load_cache_data(self, include_local_rules=False, local_rules_path=None):
         """
@@ -165,6 +171,14 @@ class CachePopulator:
         rules_data = self.cache.filter_cache("rules")
         with open(file_path, "wb") as f:
             pickle.dump(rules_data, f)
+
+    def save_local_rules_locally(self, file_path: str):
+        """
+        Store cached local rules in local_rules.pkl in cache path directory
+        """
+        local_rules_data = self.cache.filter_cache("local_rules")
+        with open(file_path, "wb") as f:
+            pickle.dump(local_rules_data, f)
 
     def save_ct_packages_locally(self, file_path: str):
         """
