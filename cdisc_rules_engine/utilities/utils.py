@@ -225,7 +225,7 @@ def is_split_dataset(datasets: List[dict], domain: str) -> bool:
     result = all(
         (
             dataset.get("filename", "").split(".")[0].lower().startswith(domain.lower())
-            and len(dataset.get("filename", "").split(".")[0]) > len(domain)
+            and len(dataset.get("filename", "").split(".")[0]) >= len(domain)
         )
         or dataset.get("filename", "").lower().startswith("supp")
         for dataset in corresponding_datasets
