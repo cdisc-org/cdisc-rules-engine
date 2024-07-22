@@ -219,11 +219,6 @@ def validate(
             )
             ctx.exit()
     elif dataset_path:
-        if data:
-            logger.error(
-                "Argument --dataset-path cannot be used together with argument --data"
-            )
-            ctx.exit()
         dataset_paths, found_formats = valid_data_file([dp for dp in dataset_path])
         if len(found_formats) > 1:
             logger.error(
@@ -281,18 +276,30 @@ def validate(
 @click.option(
     "-lr",
     "--local_rules",
-    help="Relative path to folder containing local rules in JSON format to be added to the cache",
+    help="Relative path to folder containing local rules in yaml or JSON formats to be added to the cache",
 )
 @click.option(
     "-rr",
     "--remove_rules",
-    help="List of rule core IDs to be removed from the cache",
+    help=(
+        "rule IDs to be removed from the local rules in the cache"
+        "can be done multiple times to remove multiple rules"
+        "or specify `ALL` to remove all local rules from the cache",
+    ),
+    multiple=True,
 )
 @click.pass_context
-def update_cache(ctx: click.Context, cache_path: str, apikey: str):
+def update_cache(
+    ctx: click.Context,
+    cache_path: str,
+    apikey: str,
+    local_rules: str,
+    remove_rules: Tuple[str],
+):
     cache = CacheServiceFactory(config).get_cache_service()
-    library_service = CDISCLibraryService(apikey, cache)
-    cache_populator = CachePopulator(cache, library_service)
+    if not local_rules and not remove_rules:
+        library_service = CDISCLibraryService(apikey, cache)
+    cache_populator = CachePopulator(cache, library_service, local_rules, remove_rules)
     cache = asyncio.run(cache_populator.load_cache_data())
     cache_populator.save_rules_locally(
         os.path.join(cache_path, DefaultFilePaths.RULES_CACHE_FILE.value)
