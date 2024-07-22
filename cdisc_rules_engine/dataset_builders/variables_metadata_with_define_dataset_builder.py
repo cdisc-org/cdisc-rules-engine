@@ -18,7 +18,7 @@ class VariablesMetadataWithDefineDatasetBuilder(BaseDatasetBuilder):
         define_variable_data_type,
         define_variable_role,
         define_variable_size,
-        define_variable_ccode,
+        define_variable_code,
         define_variable_format,
         define_variable_allowed_terms,
         define_variable_origin_type,

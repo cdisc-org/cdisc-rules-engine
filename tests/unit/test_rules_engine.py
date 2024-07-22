@@ -1440,7 +1440,7 @@ def test_validate_split_dataset_contents(
         dataset_path="CDISC01/test/ae.xpt",
         rule=dataset_rule_equal_to_error_objects,
         datasets=[
-            {"domain": "AE", "filename": "ae.xpt"},
+            {"domain": "AE", "filename": "ae_2.xpt"},
             {"domain": "AE", "filename": "ae_1.xpt"},
         ],
     )
@@ -1465,7 +1465,7 @@ def test_validate_split_dataset_metadata(
                     5,
                 ],
                 "dataset_location": [
-                    "ec.xpt",
+                    "ec_2.xpt",
                 ],
                 "dataset_name": [
                     "EC",
@@ -1502,7 +1502,7 @@ def test_validate_split_dataset_metadata(
         dataset_path="CDISC01/test/ec.xpt",
         rule=dataset_metadata_not_equal_to_rule,
         datasets=[
-            {"domain": "EC", "filename": "ec.xpt"},
+            {"domain": "EC", "filename": "ec_2.xpt"},
             {"domain": "EC", "filename": "ec_1.xpt"},
         ],
     )
@@ -1567,7 +1567,7 @@ def test_validate_split_dataset_variables_metadata(
         rule=variables_metadata_rule,
         dataset_path="CDISC/test/ec.xpt",
         datasets=[
-            {"domain": "EC", "filename": "ec.xpt"},
+            {"domain": "EC", "filename": "ec_2.xpt"},
             {"domain": "EC", "filename": "ec_1.xpt"},
         ],
         dataset_domain="EC",
