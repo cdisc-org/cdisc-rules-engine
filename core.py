@@ -278,6 +278,16 @@ def validate(
     ),
     required=True,
 )
+@click.option(
+    "-lr",
+    "--local_rules",
+    help="Relative path to folder containing local rules in JSON format to be added to the cache",
+)
+@click.option(
+    "-rr",
+    "--remove_rules",
+    help="List of rule core IDs to be removed from the cache",
+)
 @click.pass_context
 def update_cache(ctx: click.Context, cache_path: str, apikey: str):
     cache = CacheServiceFactory(config).get_cache_service()
