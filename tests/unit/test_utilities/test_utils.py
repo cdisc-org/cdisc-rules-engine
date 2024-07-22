@@ -8,7 +8,7 @@ from cdisc_rules_engine.utilities.utils import (
 
 
 mock_datasets = [
-    {"filename": "SS.xpt", "domain": "SS"},
+    {"filename": "SS11.xpt", "domain": "SS"},
     {"filename": "SS12.xpt", "domain": "SS"},
 ]
 
