@@ -36,6 +36,10 @@ If no target variable `name` specified, returns a dictionary containing the spec
   }
   ```
 
+## dataset_names
+
+Returns a list of the dataset filenames in the study
+
 ## distinct
 
 Get a distinct list of values for the given `name`. If a `group` list is specified, the distinct value list will be grouped by the variables within `group`.
