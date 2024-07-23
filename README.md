@@ -146,7 +146,7 @@ The possible rule run statuses are:
 
 To obtain an api key, please follow the instructions found here: <https://wiki.cdisc.org/display/LIBSUPRT/Getting+Started%3A+Access+to+CDISC+Library+API+using+API+Key+Authentication>. Please note it can take up to an hour after sign up to have an api key issued
 
-- an additional local rule `-lr` flag can be added to the update-cache command that points to a directory of local rules. This adds the rules contained in the directory to the cache.
+- an additional local rule `-lr` flag can be added to the update-cache command that points to a directory of local rules. This adds the rules contained in the directory to the cache. It will not update the cache from library when `-lr` is specified.
 
           `python core.py update-cache -lr 'path/to/directory'`
 

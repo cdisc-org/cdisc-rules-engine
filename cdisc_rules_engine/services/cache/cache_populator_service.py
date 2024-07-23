@@ -35,7 +35,7 @@ class CachePopulator:
         self.local_rules_path = local_rules_path
         self.remove_local_rules = remove_local_rules
 
-    async def load_cache_data(self, include_local_rules=False, local_rules_path=None):
+    async def load_cache_data(self, local_rules_path=None):
         """
         This function populates a cache implementation with
         all data necessary for running rules against local data.
@@ -45,21 +45,17 @@ class CachePopulator:
         * codelist metadata
         """
         # send request to get all rules
-        self.library_service.cache_library_json(LibraryEndpoints.PRODUCTS.value)
-        self.library_service.cache_library_json(LibraryEndpoints.RULES.value)
-
-        rules_lists: List[dict] = await self._get_rules_from_cdisc_library()
-        for rules in rules_lists:
-            self.cache.add_batch(
-                rules.get("rules", []), "core_id", prefix=rules.get("key_prefix")
-            )
-
-        if include_local_rules:
-            if not local_rules_path:
-                raise ValueError(
-                    "a path to the local rules direct must be provided when the local rules cache flag is indicated"
+        if not self.local_rules_path:
+            self.library_service.cache_library_json(LibraryEndpoints.PRODUCTS.value)
+            self.library_service.cache_library_json(LibraryEndpoints.RULES.value)
+            rules_lists: List[dict] = await self._get_rules_from_cdisc_library()
+            for rules in rules_lists:
+                self.cache.add_batch(
+                    rules.get("rules", []), "core_id", prefix=rules.get("key_prefix")
                 )
-            local_rules = await self._get_local_draft_rules(local_rules_path)
+
+        else:
+            local_rules = await self._get_local_rules(local_rules_path)
             self.cache.add_batch(local_rules, "core_id", prefix="local_draft")
 
         # save codelists to cache as a map of codelist to terms
@@ -102,7 +98,7 @@ class CachePopulator:
 
         return self.cache
 
-    async def _get_local_draft_rules(self, local_rules_path: str) -> List[dict]:
+    async def _get_local_rules(self, local_rules_path: str) -> List[dict]:
         """
         Retrieve local rules from the file system.
         """
