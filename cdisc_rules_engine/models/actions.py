@@ -106,12 +106,26 @@ class COREActions(BaseActions):
                     value=dict(errors_df.iloc[0].to_dict()),
                 )
             ]
-        else:
-            # Rule is treated as record level
+        elif self.rule.get("sensitivity") == Sensitivity.RECORD.value:
             errors_series: pd.Series = errors_df.apply(
                 lambda df_row: self._create_error_object(df_row, data), axis=1
             )
             errors_list: List[ValidationErrorEntity] = errors_series.tolist()
+        else:  # rule sensitivity is not defined
+            error_entity = ValidationErrorEntity(
+                {
+                    "row": 0,
+                    "value": {"ERROR": "Invalid or undefined sensitivity in the rule"},
+                    "uSubjId": "2",
+                    "seq": 1,
+                }
+            )
+            return ValidationErrorContainer(
+                domain=self.domain,
+                targets=sorted(targets),
+                message="Invalid or undefined sensitivity in the rule",
+                errors=[error_entity],
+            )
         missing_vars = {target: "Not in dataset" for target in targets_not_in_dataset}
         if missing_vars:
             for error in errors_list:
