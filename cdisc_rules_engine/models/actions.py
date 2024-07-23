@@ -111,7 +111,9 @@ class COREActions(BaseActions):
                 lambda df_row: self._create_error_object(df_row, data), axis=1
             )
             errors_list: List[ValidationErrorEntity] = errors_series.tolist()
-        else:  # rule sensitivity is not defined
+        elif (
+            self.rule.get("sensitivity") is not None
+        ):  # rule sensitivity is incorrectly defined
             error_entity = ValidationErrorEntity(
                 {
                     "row": 0,
@@ -126,6 +128,11 @@ class COREActions(BaseActions):
                 message="Invalid or undefined sensitivity in the rule",
                 errors=[error_entity],
             )
+        else:  # rule sensitivity is undefined
+            errors_series: pd.Series = errors_df.apply(
+                lambda df_row: self._create_error_object(df_row, data), axis=1
+            )
+            errors_list: List[ValidationErrorEntity] = errors_series.tolist()
         missing_vars = {target: "Not in dataset" for target in targets_not_in_dataset}
         if missing_vars:
             for error in errors_list:
