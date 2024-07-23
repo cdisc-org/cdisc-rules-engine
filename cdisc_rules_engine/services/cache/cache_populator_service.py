@@ -45,7 +45,7 @@ class CachePopulator:
         * codelist metadata
         """
         # send request to get all rules
-        if not self.local_rules_path:
+        if not self.local_rules_path and not self.remove_local_rules:
             self.library_service.cache_library_json(LibraryEndpoints.PRODUCTS.value)
             self.library_service.cache_library_json(LibraryEndpoints.RULES.value)
             rules_lists: List[dict] = await self._get_rules_from_cdisc_library()
@@ -53,48 +53,48 @@ class CachePopulator:
                 self.cache.add_batch(
                     rules.get("rules", []), "core_id", prefix=rules.get("key_prefix")
                 )
+            # save codelists to cache as a map of codelist to terms
+            codelist_term_maps = await self._get_codelist_term_maps()
+            self.cache.add_batch(codelist_term_maps, "package")
 
-        else:
-            local_rules = await self._get_local_rules(local_rules_path)
-            self.cache.add_batch(local_rules, "core_id", prefix="local_draft")
+            # Add a list of all published ct packages to the cache
+            available_packages = [
+                package.get("package")
+                for package in codelist_term_maps
+                if "package" in package
+            ]
+            self.cache.add(PUBLISHED_CT_PACKAGES, available_packages)
 
-        # save codelists to cache as a map of codelist to terms
-        codelist_term_maps = await self._get_codelist_term_maps()
-        self.cache.add_batch(codelist_term_maps, "package")
+            # save standard codelists to cache as a map of variable to allowed_values
+            standards = self.library_service.get_all_tabulation_ig_standards()
+            standards.extend(self.library_service.get_all_collection_ig_standards())
+            standards.extend(self.library_service.get_all_analysis_ig_standards())
 
-        # Add a list of all published ct packages to the cache
-        available_packages = [
-            package.get("package")
-            for package in codelist_term_maps
-            if "package" in package
-        ]
-        self.cache.add(PUBLISHED_CT_PACKAGES, available_packages)
+            variable_codelist_maps = await self._get_variable_codelist_maps(standards)
+            self.cache.add_batch(variable_codelist_maps, "name")
 
-        # save standard codelists to cache as a map of variable to allowed_values
-        standards = self.library_service.get_all_tabulation_ig_standards()
-        standards.extend(self.library_service.get_all_collection_ig_standards())
-        standards.extend(self.library_service.get_all_analysis_ig_standards())
+            # save details of all standards to cache
+            standards_details: List[
+                dict
+            ] = await self._async_get_details_of_all_standards(standards)
+            self.cache.add_batch(standards_details, "cache_key", pop_cache_key=True)
 
-        variable_codelist_maps = await self._get_variable_codelist_maps(standards)
-        self.cache.add_batch(variable_codelist_maps, "name")
+            # save details of all standard's models to cache
+            standards_models: Iterable[
+                dict
+            ] = await self._async_get_details_of_all_standards_models(standards_details)
+            self.cache.add_batch(standards_models, "cache_key", pop_cache_key=True)
 
-        # save details of all standards to cache
-        standards_details: List[dict] = await self._async_get_details_of_all_standards(
-            standards
-        )
-        self.cache.add_batch(standards_details, "cache_key", pop_cache_key=True)
-
-        # save details of all standard's models to cache
-        standards_models: Iterable[
-            dict
-        ] = await self._async_get_details_of_all_standards_models(standards_details)
-        self.cache.add_batch(standards_models, "cache_key", pop_cache_key=True)
-
-        # save variables metadata to cache
-        variables_metadata: Iterable[dict] = await self._get_variables_metadata(
-            standards
-        )
-        self.cache.add_batch(variables_metadata, "cache_key", pop_cache_key=True)
+            # save variables metadata to cache
+            variables_metadata: Iterable[dict] = await self._get_variables_metadata(
+                standards
+            )
+            self.cache.add_batch(variables_metadata, "cache_key", pop_cache_key=True)
+        elif self.local_rules_path:
+            local_rules = await self._get_local_rules(self.local_rules_path)
+            self.cache.add_batch(local_rules, "id", prefix="local")
+        elif self.remove_local_rules:
+            self.cache.clear_all("local")
 
         return self.cache
 
@@ -116,8 +116,12 @@ class CachePopulator:
                     with open(file_path, "r") as file:
                         if filename.endswith(".json"):
                             rule_data = json.load(file)
-                        else:
+                        elif filename.endswith(".yaml"):
                             rule_data = yaml.safe_load(file)
+                            # may need to recursively deal with spaces in property names from yaml rules
+                        else:
+                            print(f"Unsupported file type: {filename}")
+                            continue
                         local_rules.append(rule_data)
                 except (json.JSONDecodeError, yaml.YAMLError) as e:
                     print(f"Error decoding {filename}: {str(e)}")
