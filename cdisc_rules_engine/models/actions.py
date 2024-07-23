@@ -118,8 +118,8 @@ class COREActions(BaseActions):
                 {
                     "row": 0,
                     "value": {"ERROR": "Invalid or undefined sensitivity in the rule"},
-                    "uSubjId": "2",
-                    "seq": 1,
+                    "uSubjId": "N/A",
+                    "SEQ": 0,
                 }
             )
             return ValidationErrorContainer(
