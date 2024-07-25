@@ -104,7 +104,13 @@ Run `python core.py validate --help` to see the list of validation options.
   --meddra TEXT                   Path to directory with MedDRA dictionary
                                   files
   -r, --rules TEXT                Specify rule core ID ex. CORE-000001. Can be specified multiple times.
-  -lr, --local_rules TEXT         Specify absolute path to local rule yml and/or json rule file.
+  -lr, --local_rules TEXT         Specify relative path to directory containing
+                                  local rule yml and/or json rule files.
+  -lrc, --local_rules_cache       Adding this flag tells engine to use local rules
+                                  uploaded to the cache instead of published rules
+                                  in the cache for in the validation run.
+  -lri, --local_rule_id TEXT      Specify ID for custom, local rules in the cache
+                                  you wish to run a validation with.
   -vo, --verbose-output           Specify this option to print rules as they
                                   are completed
   -p, --progress [verbose_output|disabled|percents|bar]
@@ -146,17 +152,17 @@ The possible rule run statuses are:
 
 To obtain an api key, please follow the instructions found here: <https://wiki.cdisc.org/display/LIBSUPRT/Getting+Started%3A+Access+to+CDISC+Library+API+using+API+Key+Authentication>. Please note it can take up to an hour after sign up to have an api key issued
 
-- an additional local rule `-lr` flag can be added to the update-cache command that points to a directory of local rules. This adds the rules contained in the directory to the cache. It will not update the cache from library when `-lr` is specified.
+- an additional local rule `-lr` flag can be added to the update-cache command that points to a directory of local rules. This adds the rules contained in the directory to the cache. It will not update the cache from library when `-lr` is specified. A `-lri` local rules ID must be given when -lr is used to ID your rules in the cache.
 
-          `python core.py update-cache -lr 'path/to/directory'`
+          `python core.py update-cache -lr 'path/to/directory' -lri 'CUSTOM123"`
 
-- to remove these local rules from to the cache, the remove rules `-rr` flag is added to update-cache to remove local rules from the cache.
+- to remove local rules from to the cache, remove rules `-rlr` is added to update-cache to remove local rules from the cache. A previously used local_rules_id can be specified to remove all local rules with that ID from the cache or the keyword 'ALL' is reserved to remove all local rules from the cache.
 
-          `python core.py update-cache -rr`
+          `python core.py update-cache -rlr 'CUSTOM123'`
 
-**- list-rules** - list rules available in the cache
+**- list-rules** - list published rules available in the cache
 
-- list all rules:
+- list all published rules:
 
       `python core.py list-rules`
 

@@ -126,17 +126,23 @@ def get_rules(args) -> List[dict]:
 
 def load_rules_from_cache(args) -> List[dict]:
     core_ids = set()
-    rules_file = os.path.join(args.cache, "rules.pkl")
+    if args.local_rules_cache:
+        rules_file = os.path.join(args.local_rules_cache, "local_rules.pkl")
+    else:
+        rules_file.append(os.path.join(args.cache, "rules.pkl"))
     rules = []
+    rules_data = {}
+    # Load rules from all specified cache files
+    for rules_file in rules_file:
+        with open(rules_file, "rb") as f:
+            rules_data.update(pickle.load(f))
+
     if args.rules:
         keys = [
             get_rules_cache_key(args.standard, args.version.replace(".", "-"), rule)
             for rule in args.rules
         ]
-        with open(rules_file, "rb") as f:
-            rules_data = pickle.load(f)
-            rules = [rules_data.get(key) for key in keys]
-
+        rules = [rules_data.get(key) for key in keys]
         missing_rules = [rule for rule, data in zip(args.rules, rules) if data is None]
         for missing_rule in missing_rules:
             engine_logger.error(
@@ -153,16 +159,14 @@ def load_rules_from_cache(args) -> List[dict]:
             f"No rules specified. Running all rules for {args.standard}"
             + f" version {args.version}"
         )
-        with open(rules_file, "rb") as f:
-            rules_data = pickle.load(f)
-            for key, rule in rules_data.items():
-                core_id = rule.get("core_id")
-                rule_identifier = get_rules_cache_key(
-                    args.standard, args.version.replace(".", "-"), core_id
-                )
-                if core_id not in core_ids and key == rule_identifier:
-                    rules.append(rule)
-                    core_ids.add(core_id)
+        for key, rule in rules_data.items():
+            core_id = rule.get("core_id")
+            rule_identifier = get_rules_cache_key(
+                args.standard, args.version.replace(".", "-"), core_id
+            )
+            if core_id not in core_ids and key == rule_identifier:
+                rules.append(rule)
+                core_ids.add(core_id)
     return rules
 
 
