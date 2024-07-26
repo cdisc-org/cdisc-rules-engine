@@ -138,6 +138,8 @@ def load_rules_from_cache(args) -> List[dict]:
             rules_data.update(pickle.load(f))
 
     if args.local_rules_id:
+        keys = []
+    if args.rules:
         keys = [
             get_rules_cache_key(args.standard, args.version.replace(".", "-"), rule)
             for rule in args.rules

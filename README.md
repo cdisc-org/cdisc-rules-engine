@@ -108,7 +108,7 @@ Run `python core.py validate --help` to see the list of validation options.
                                   local rule yml and/or json rule files.
   -lrc, --local_rules_cache       Adding this flag tells engine to use local rules
                                   uploaded to the cache instead of published rules
-                                  in the cache for in the validation run.
+                                  in the cache for the validation run.
   -lri, --local_rule_id TEXT      Specify ID for custom, local rules in the cache
                                   you wish to run a validation with.
   -vo, --verbose-output           Specify this option to print rules as they
@@ -169,6 +169,14 @@ To obtain an api key, please follow the instructions found here: <https://wiki.c
 - list rules for standard:
 
       `python core.py list-rules -s sdtmig -v 3-4`
+
+-list all local rules:
+
+      `python core.py list-rules -lr`
+
+-list local rules with a specific local rules id:
+
+      `python core.py list-rules -lr -lri 'CUSTOM1'`
 
 **- list-rule-sets** - lists all standards and versions for which rules are available:
 `python core.py list-rule-sets`

@@ -36,7 +36,7 @@ class CachePopulator:
         self.local_rules_id = local__rules_id
         self.remove_local_rules = remove_local_rules
 
-    async def load_cache_data(self, local_rules_path=None):
+    async def load_cache_data(self):
         """
         This function populates a cache implementation with
         all data necessary for running rules against local data.
@@ -45,8 +45,15 @@ class CachePopulator:
         * library metadata
         * codelist metadata
         """
+        if self.remove_local_rules:
+            self.remove_specified_rules()
+        elif self.local_rules_path and self.local_rules_id:
+            local_rules: List[dict] = await self._get_local_rules(self.local_rules_path)
+            key_prefix = f"local/{self.local_rules_id}/"
+            for rules in local_rules:
+                self.cache.add_batch(local_rules, "custom_id", prefix=key_prefix)
         # send request to get all rules
-        if not self.local_rules_path and not self.remove_local_rules:
+        elif not self.local_rules_path and not self.remove_local_rules:
             self.library_service.cache_library_json(LibraryEndpoints.PRODUCTS.value)
             self.library_service.cache_library_json(LibraryEndpoints.RULES.value)
             rules_lists: List[dict] = await self._get_rules_from_cdisc_library()
@@ -91,14 +98,10 @@ class CachePopulator:
                 standards
             )
             self.cache.add_batch(variables_metadata, "cache_key", pop_cache_key=True)
-        elif self.local_rules_path and self.local_rules_id:
-            local_rules: List[dict] = await self._get_local_rules(self.local_rules_path)
-            key_prefix = f"rules/{self.local_rules_id}/"
-            for rules in local_rules:
-                self.cache.add_batch(local_rules, "custom_id", prefix=key_prefix)
-        elif self.remove_local_rules:
-            self.cache.clear_all("local")
-
+        else:
+            raise ValueError(
+                "Must Specify either local_rules_path and local_rules_id, remove_local_rules, or neither"
+            )
         return self.cache
 
     async def _get_local_rules(self, local_rules_path: str) -> List[dict]:
@@ -117,9 +120,8 @@ class CachePopulator:
         # Iterate through all files in the directory provided
         for rule_file in rule_files:
             rule = load_and_parse_local_rule(rule_file)
-        if rule:
-            rules.append(rule)
-
+            if rule:
+                rules.append(rule)
         return rules
 
     async def load_codelists(self, packages: List[str]):
@@ -157,6 +159,14 @@ class CachePopulator:
         )
         self.cache.add_batch(variables_metadata, "cache_key", pop_cache_key=True)
 
+    def remove_specified_rules(self):
+        if self.remove_local_rules == "ALL":
+            print("Clearing all local rules")
+            self.cache.clear_all("local/")
+        else:
+            print(f"Clearing rules with prefix: local/{self.remove_local_rules}/")
+            self.cache.clear_all(f"local/{self.remove_local_rules}/")
+
     def save_rules_locally(self, file_path: str):
         """
         Store cached rules in rules.pkl in cache path directory
@@ -165,13 +175,18 @@ class CachePopulator:
         with open(file_path, "wb") as f:
             pickle.dump(rules_data, f)
 
-    def save_local_rules_locally(self, file_path: str):
+    def save_local_rules_locally(self, file_path: str, local_rules_id: str):
         """
         Store cached local rules in local_rules.pkl in cache path directory
         """
-        local_rules_data = self.cache.filter_cache("local_rules")
-        with open(file_path, "wb") as f:
-            pickle.dump(local_rules_data, f)
+        local_rules_prefix = f"local/{local_rules_id}/"
+        local_rules_data = self.cache.filter_cache(prefix=local_rules_prefix)
+        try:
+            with open(file_path, "wb") as f:
+                pickle.dump(local_rules_data, f)
+            print(f"Successfully wrote data to {file_path}")
+        except Exception as e:
+            print(f"Error occurred while writing to file: {e}")
 
     def save_ct_packages_locally(self, file_path: str):
         """
