@@ -175,16 +175,44 @@ class CachePopulator:
         with open(file_path, "wb") as f:
             pickle.dump(rules_data, f)
 
+    def save_removed_rules_locally(self, file_path: str, remove_rules: str):
+        """
+        Store removed rules in removed_rules.pkl in cache path directory
+        """
+        current_prefix = f"local/{remove_rules}/"
+        current_rules = self.cache.filter_cache(prefix=current_prefix)
+        try:
+            with open(file_path, "wb") as f:
+                pickle.dump(current_rules, f)
+            print(f"Successfully saved removed rules to {file_path}")
+        except Exception as e:
+            print(f"Error occurred while writing removed rules to file: {e}")
+
     def save_local_rules_locally(self, file_path: str, local_rules_id: str):
         """
         Store cached local rules in local_rules.pkl in cache path directory
         """
-        local_rules_prefix = f"local/{local_rules_id}/"
-        local_rules_data = self.cache.filter_cache(prefix=local_rules_prefix)
+        existing_rules = {}
+        if os.path.exists(file_path):
+            try:
+                with open(file_path, "rb") as f:
+                    existing_rules = pickle.load(f)
+            except Exception as e:
+                print(f"Error loading existing rules: {e}")
+        current_prefix = f"local/{local_rules_id}/"
+
+        current_rules = self.cache.filter_cache(prefix=current_prefix)
+        existing_rules = {
+            k: v for k, v in existing_rules.items() if not k.startswith(current_prefix)
+        }
+        for key, value in current_rules.items():
+            existing_rules[key] = value
+
+        # Save updated rules
         try:
             with open(file_path, "wb") as f:
-                pickle.dump(local_rules_data, f)
-            print(f"Successfully wrote data to {file_path}")
+                pickle.dump(existing_rules, f)
+            print(f"Successfully saved updated local rules to {file_path}")
         except Exception as e:
             print(f"Error occurred while writing to file: {e}")
 

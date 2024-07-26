@@ -337,9 +337,20 @@ def update_cache(
     cache_populator = CachePopulator(
         cache, library_service, local_rules, local_rules_id, remove_rules
     )
-
     cache = asyncio.run(cache_populator.load_cache_data())
-    if not local_rules:
+    if remove_rules:
+        cache_populator.save_removed_rules_locally(
+            os.path.join(cache_path, DefaultFilePaths.LOCAL_RULES_CACHE_FILE.value),
+            remove_rules,
+        )
+        print("Local rules removed from cache")
+    elif local_rules and local_rules_id:
+        cache_populator.save_local_rules_locally(
+            os.path.join(cache_path, DefaultFilePaths.LOCAL_RULES_CACHE_FILE.value),
+            local_rules_id,
+        )
+        print("Local rules saved to cache")
+    else:
         cache_populator.save_rules_locally(
             os.path.join(cache_path, DefaultFilePaths.RULES_CACHE_FILE.value)
         )
@@ -359,11 +370,6 @@ def update_cache(
             os.path.join(
                 cache_path, DefaultFilePaths.VARIABLE_METADATA_CACHE_FILE.value
             )
-        )
-    else:
-        cache_populator.save_local_rules_locally(
-            os.path.join(cache_path, DefaultFilePaths.LOCAL_RULES_CACHE_FILE.value),
-            local_rules_id,
         )
     print("Cache updated successfully")
 
