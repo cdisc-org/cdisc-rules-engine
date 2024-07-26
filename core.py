@@ -329,12 +329,15 @@ def update_cache(
     cache_path: str,
     apikey: str,
     local_rules: str,
-    remove_rules: bool,
+    local_rules_id: str,
+    remove_rules: str,
 ):
     cache = CacheServiceFactory(config).get_cache_service()
     if not local_rules and remove_rules is False:
         library_service = CDISCLibraryService(apikey, cache)
-    cache_populator = CachePopulator(cache, library_service, local_rules, remove_rules)
+    cache_populator = CachePopulator(
+        cache, library_service, local_rules, local_rules_id, remove_rules
+    )
 
     cache = asyncio.run(cache_populator.load_cache_data())
     cache_populator.save_rules_locally(

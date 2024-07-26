@@ -127,9 +127,9 @@ def get_rules(args) -> List[dict]:
 def load_rules_from_cache(args) -> List[dict]:
     core_ids = set()
     if args.local_rules_cache:
-        rules_file = os.path.join(args.local_rules_cache, "local_rules.pkl")
+        rules_file = os.path.join(args.cache, "local_rules.pkl")
     else:
-        rules_file.append(os.path.join(args.cache, "rules.pkl"))
+        rules_file = os.path.join(args.cache, "rules.pkl")
     rules = []
     rules_data = {}
     # Load rules from all specified cache files
@@ -137,7 +137,7 @@ def load_rules_from_cache(args) -> List[dict]:
         with open(rules_file, "rb") as f:
             rules_data.update(pickle.load(f))
 
-    if args.rules:
+    if args.local_rules_id:
         keys = [
             get_rules_cache_key(args.standard, args.version.replace(".", "-"), rule)
             for rule in args.rules
@@ -156,7 +156,7 @@ def load_rules_from_cache(args) -> List[dict]:
             )
     else:
         engine_logger.info(
-            f"No rules specified. Running all rules for {args.standard}"
+            f"No rules specified. Running all local rules for {args.standard}"
             + f" version {args.version}"
         )
         for key, rule in rules_data.items():
@@ -167,6 +167,7 @@ def load_rules_from_cache(args) -> List[dict]:
             if core_id not in core_ids and key == rule_identifier:
                 rules.append(rule)
                 core_ids.add(core_id)
+
     return rules
 
 
@@ -218,6 +219,22 @@ def load_and_parse_rule(rule_file):
                 raise ValueError(f"Unsupported file type: {file_extension}")
     except Exception as e:
         engine_logger.error(f"error while loading {rule_file}: {e}")
+        return None
+
+
+def load_and_parse_local_rule(rule_file: str) -> dict:
+    _, file_extension = os.path.splitext(rule_file)
+    try:
+        with open(rule_file, "r", encoding="utf-8") as file:
+            if file_extension in [".yml", ".yaml"]:
+                loaded_data = yaml.safe_load(file)
+                return replace_yml_spaces(loaded_data)
+            elif file_extension == ".json":
+                return json.load(file)
+            else:
+                raise ValueError(f"Unsupported file type: {file_extension}")
+    except Exception as e:
+        print(f"Error while loading {rule_file}: {e}")
         return None
 
 

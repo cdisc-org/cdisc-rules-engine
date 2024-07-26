@@ -17,9 +17,8 @@ from cdisc_rules_engine.utilities.utils import (
     get_standard_details_cache_key,
     get_model_details_cache_key,
 )
+from scripts.script_utils import load_and_parse_local_rule
 from cdisc_rules_engine.constants.cache_constants import PUBLISHED_CT_PACKAGES
-import json
-import yaml
 
 
 class CachePopulator:
@@ -28,11 +27,13 @@ class CachePopulator:
         cache: CacheServiceInterface,
         library_service: CDISCLibraryService = None,
         local_rules_path=None,
-        remove_local_rules=False,
+        local__rules_id=None,
+        remove_local_rules=None,
     ):
         self.cache = cache
         self.library_service = library_service
         self.local_rules_path = local_rules_path
+        self.local_rules_id = local__rules_id
         self.remove_local_rules = remove_local_rules
 
     async def load_cache_data(self, local_rules_path=None):
@@ -90,9 +91,11 @@ class CachePopulator:
                 standards
             )
             self.cache.add_batch(variables_metadata, "cache_key", pop_cache_key=True)
-        elif self.local_rules_path:
-            local_rules = await self._get_local_rules(self.local_rules_path)
-            self.cache.add_batch(local_rules, "id", prefix="local")
+        elif self.local_rules_path and self.local_rules_id:
+            local_rules: List[dict] = await self._get_local_rules(self.local_rules_path)
+            key_prefix = f"rules/{self.local_rules_id}/"
+            for rules in local_rules:
+                self.cache.add_batch(local_rules, "custom_id", prefix=key_prefix)
         elif self.remove_local_rules:
             self.cache.clear_all("local")
 
@@ -102,32 +105,22 @@ class CachePopulator:
         """
         Retrieve local rules from the file system.
         """
-        local_rules = []
-
+        rules = []
         # Ensure the directory exists
         if not os.path.isdir(local_rules_path):
             raise FileNotFoundError(f"The directory {local_rules_path} does not exist")
-
+        rule_files = [
+            os.path.join(local_rules_path, file)
+            for file in os.listdir(local_rules_path)
+            if file.endswith((".json", ".yml", ".yaml"))
+        ]
         # Iterate through all files in the directory provided
-        for filename in os.listdir(local_rules_path):
-            if filename.endswith((".json", ".yml", ".yaml")):
-                file_path = os.path.join(local_rules_path, filename)
-                try:
-                    with open(file_path, "r") as file:
-                        if filename.endswith(".json"):
-                            rule_data = json.load(file)
-                        elif filename.endswith(".yaml"):
-                            rule_data = yaml.safe_load(file)
-                            # may need to recursively deal with spaces in property names from yaml rules
-                        else:
-                            print(f"Unsupported file type: {filename}")
-                            continue
-                        local_rules.append(rule_data)
-                except (json.JSONDecodeError, yaml.YAMLError) as e:
-                    print(f"Error decoding {filename}: {str(e)}")
-                except Exception as e:
-                    print(f"Error reading file {file_path}: {str(e)}")
-        return local_rules
+        for rule_file in rule_files:
+            rule = load_and_parse_local_rule(rule_file)
+        if rule:
+            rules.append(rule)
+
+        return rules
 
     async def load_codelists(self, packages: List[str]):
         coroutines = [
