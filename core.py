@@ -91,10 +91,10 @@ def cli():
     help="File path of report template to use for excel output",
 )
 @click.option(
-    "-s", "--standard", required=True, help="CDISC standard to validate against"
+    "-s", "--standard", required=False, help="CDISC standard to validate against"
 )
 @click.option(
-    "-v", "--version", required=True, help="Standard version to validate against"
+    "-v", "--version", required=False, help="Standard version to validate against"
 )
 @click.option(
     "-ct",
