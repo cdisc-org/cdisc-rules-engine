@@ -124,22 +124,33 @@ def get_rules(args) -> List[dict]:
     )
 
 
+def rule_cache_file(args) -> str:
+    if args.local_rules_cache:
+        return os.path.join(args.cache, "local_rules.pkl")
+    else:
+        return os.path.join(args.cache, "rules.pkl")
+
+
 def load_rules_from_cache(args) -> List[dict]:
     core_ids = set()
-    if args.local_rules_cache:
-        rules_file = os.path.join(args.cache, "local_rules.pkl")
-    else:
-        rules_file = os.path.join(args.cache, "rules.pkl")
+    rules_file = rule_cache_file(args)
     rules = []
     rules_data = {}
-    # Load rules from all specified cache files
-    for rules_file in rules_file:
+    try:
         with open(rules_file, "rb") as f:
-            rules_data.update(pickle.load(f))
+            rules_data = pickle.load(f)
+    except FileNotFoundError:
+        engine_logger.error(f"Rules file not found: {rules_file}")
+        return []
+    except Exception as e:
+        engine_logger.error(f"Error loading rules file: {e}")
+        return []
 
     if args.local_rules_id:
-        keys = []
-    if args.rules:
+        local_prefix = f"local/{args.local_rules_id}/"
+        rules = {k: v for k, v in rules_data.items() if k.startswith(local_prefix)}
+        rules = list(rules.values())
+    elif args.rules:
         keys = [
             get_rules_cache_key(args.standard, args.version.replace(".", "-"), rule)
             for rule in args.rules
@@ -169,7 +180,6 @@ def load_rules_from_cache(args) -> List[dict]:
             if core_id not in core_ids and key == rule_identifier:
                 rules.append(rule)
                 core_ids.add(core_id)
-
     return rules
 
 
