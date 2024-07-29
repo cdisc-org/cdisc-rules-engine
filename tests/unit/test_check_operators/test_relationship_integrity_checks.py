@@ -1221,3 +1221,376 @@ def test_target_is_sorted_by(dataset_class):
             ]
         )
     )
+
+
+@pytest.mark.parametrize(
+    "target, comparator, dataset_type, expected_result",
+    [
+        ("TESTID", "TESTNAME", PandasDataset, [True, False, True, False]),
+        ("TESTID", "TESTNAME", DaskDataset, [True, False, True, False]),
+        ("TESTNAME", "TESTID", PandasDataset, [True, False, True, False]),
+        ("TESTNAME", "TESTID", DaskDataset, [True, False, True, False]),
+    ],
+)
+def test_is_unique_relationship(target, comparator, dataset_type, expected_result):
+    data = {
+        "STUDYID": [
+            "TEST",
+            "TEST-1",
+            "TEST-2",
+            "TEST-3",
+        ],
+        "TESTID": [1, 2, 1, 3],
+        "TESTNAME": [
+            "Functional",
+            "Stress",
+            "Functional",
+            "Stress",
+        ],
+    }
+    df = dataset_type.from_dict(data)
+    result = DataframeType({"value": df}).is_unique_relationship(
+        {"target": target, "comparator": comparator}
+    )
+    assert result.equals(df.convert_to_series(expected_result))
+
+
+@pytest.mark.parametrize(
+    "target, order, dataset_type, data, expected_result",
+    [
+        (
+            "AESEQ",
+            "asc",
+            PandasDataset,
+            {
+                "USUBJID": [
+                    "a",
+                    "a",
+                    "a",
+                    "a",
+                    "a",
+                ],
+                "AESEQ": [
+                    "a",
+                    "b",
+                    "c",
+                    "d",
+                    "e",
+                ],
+            },
+            [True, True, True, True, True],
+        ),
+        (
+            "AESEQ",
+            "asc",
+            DaskDataset,
+            {
+                "USUBJID": [
+                    "a",
+                    "a",
+                    "a",
+                    "a",
+                    "a",
+                ],
+                "AESEQ": [
+                    "a",
+                    "b",
+                    "c",
+                    "d",
+                    "e",
+                ],
+            },
+            [True, True, True, True, True],
+        ),
+        (
+            "AESEQ",
+            "dsc",
+            PandasDataset,
+            {
+                "USUBJID": [
+                    "2020-02-23",
+                    "2020-02-23",
+                    "2020-02-23",
+                    "2020-02-23",
+                    "2020-02-23",
+                ],
+                "AESEQ": [
+                    "2020-02-27",
+                    "2020-02-26",
+                    "2020-02-25",
+                    "2020-02-24",
+                    "2020-02-23",
+                ],
+            },
+            [True, True, True, True, True],
+        ),
+        (
+            "AESEQ",
+            "dsc",
+            DaskDataset,
+            {
+                "USUBJID": [
+                    "2020-02-23",
+                    "2020-02-23",
+                    "2020-02-23",
+                    "2020-02-23",
+                    "2020-02-23",
+                ],
+                "AESEQ": [
+                    "2020-02-27",
+                    "2020-02-26",
+                    "2020-02-25",
+                    "2020-02-24",
+                    "2020-02-23",
+                ],
+            },
+            [True, True, True, True, True],
+        ),
+        (
+            "AESEQ",
+            "dsc",
+            PandasDataset,
+            {
+                "USUBJID": [
+                    "2020-02-23",
+                    "2020-02-23",
+                    "2020-02-23",
+                    "2020-02-23",
+                    "2020-02-23",
+                ],
+                "AESEQ": [
+                    "2020-02-24",
+                    "2020-02-25",
+                    "2020-02-27",
+                    "2020-02-26",
+                    "2020-02-23",
+                ],
+            },
+            [False, False, False, False, True],
+        ),
+        (
+            "AESEQ",
+            "dsc",
+            DaskDataset,
+            {
+                "USUBJID": [
+                    "2020-02-23",
+                    "2020-02-23",
+                    "2020-02-23",
+                    "2020-02-23",
+                    "2020-02-23",
+                ],
+                "AESEQ": [
+                    "2020-02-24",
+                    "2020-02-25",
+                    "2020-02-27",
+                    "2020-02-26",
+                    "2020-02-23",
+                ],
+            },
+            [False, False, False, False, True],
+        ),
+    ],
+)
+def test_is_ordered_by(target, order, dataset_type, data, expected_result):
+    df = dataset_type.from_dict(data)
+    result = DataframeType({"value": df}).is_ordered_by(
+        {"target": target, "order": order}
+    )
+    print(result)
+    assert result.equals(df.convert_to_series(expected_result))
+
+
+@pytest.mark.parametrize(
+    "target, order, dataset_type, data, expected_result",
+    [
+        (
+            "AESEQ",
+            "asc",
+            PandasDataset,
+            {
+                "USUBJID": [
+                    "a",
+                    "a",
+                    "a",
+                    "a",
+                    "a",
+                ],
+                "AESEQ": [
+                    "a",
+                    "b",
+                    "c",
+                    "d",
+                    "e",
+                ],
+            },
+            [False, False, False, False, False],
+        ),
+        (
+            "AESEQ",
+            "asc",
+            DaskDataset,
+            {
+                "USUBJID": [
+                    "a",
+                    "a",
+                    "a",
+                    "a",
+                    "a",
+                ],
+                "AESEQ": [
+                    "a",
+                    "b",
+                    "c",
+                    "d",
+                    "e",
+                ],
+            },
+            [False, False, False, False, False],
+        ),
+        (
+            "AESEQ",
+            "dsc",
+            PandasDataset,
+            {
+                "USUBJID": [
+                    "2020-02-23",
+                    "2020-02-23",
+                    "2020-02-23",
+                    "2020-02-23",
+                    "2020-02-23",
+                ],
+                "AESEQ": [
+                    "2020-02-27",
+                    "2020-02-26",
+                    "2020-02-25",
+                    "2020-02-24",
+                    "2020-02-23",
+                ],
+            },
+            [False, False, False, False, False],
+        ),
+        (
+            "AESEQ",
+            "dsc",
+            DaskDataset,
+            {
+                "USUBJID": [
+                    "2020-02-23",
+                    "2020-02-23",
+                    "2020-02-23",
+                    "2020-02-23",
+                    "2020-02-23",
+                ],
+                "AESEQ": [
+                    "2020-02-27",
+                    "2020-02-26",
+                    "2020-02-25",
+                    "2020-02-24",
+                    "2020-02-23",
+                ],
+            },
+            [False, False, False, False, False],
+        ),
+        (
+            "AESEQ",
+            "dsc",
+            PandasDataset,
+            {
+                "USUBJID": [
+                    "2020-02-23",
+                    "2020-02-23",
+                    "2020-02-23",
+                    "2020-02-23",
+                    "2020-02-23",
+                ],
+                "AESEQ": [
+                    "2020-02-24",
+                    "2020-02-25",
+                    "2020-02-27",
+                    "2020-02-26",
+                    "2020-02-23",
+                ],
+            },
+            [True, True, True, True, False],
+        ),
+        (
+            "AESEQ",
+            "dsc",
+            DaskDataset,
+            {
+                "USUBJID": [
+                    "2020-02-23",
+                    "2020-02-23",
+                    "2020-02-23",
+                    "2020-02-23",
+                    "2020-02-23",
+                ],
+                "AESEQ": [
+                    "2020-02-24",
+                    "2020-02-25",
+                    "2020-02-27",
+                    "2020-02-26",
+                    "2020-02-23",
+                ],
+            },
+            [True, True, True, True, False],
+        ),
+    ],
+)
+def test_is_not_ordered_by(target, order, dataset_type, data, expected_result):
+    df = dataset_type.from_dict(data)
+    result = DataframeType({"value": df}).is_not_ordered_by(
+        {"target": target, "order": order}
+    )
+    assert result.equals(df.convert_to_series(expected_result))
+
+
+@pytest.mark.parametrize(
+    "dataset_type",
+    [
+        PandasDataset,
+        DaskDataset,
+    ],
+)
+def test_value_has_multiple_references(dataset_type):
+    data = {
+        "LNKGRP": ["A", "B", "A", "A", "A"],
+        "$VALUE_COUNTS": [
+            {"A": 2, "B": 1},
+            {"A": 2, "B": 1},
+            {"A": 2, "B": 1},
+            {"A": 2, "B": 1},
+            {"A": 2, "B": 1},
+        ],
+    }
+    df = dataset_type.from_dict(data)
+    result = DataframeType({"value": df}).value_has_multiple_references(
+        {"target": "LNKGRP", "comparator": "$VALUE_COUNTS"}
+    )
+    assert result.equals(df.convert_to_series([True, False, True, True, True]))
+
+
+@pytest.mark.parametrize(
+    "dataset_type",
+    [
+        PandasDataset,
+        DaskDataset,
+    ],
+)
+def test_value_does_not_have_multiple_references(dataset_type):
+    data = {
+        "LNKGRP": ["A", "B", "A", "A", "A"],
+        "$VALUE_COUNTS": [
+            {"A": 2, "B": 1},
+            {"A": 2, "B": 1},
+            {"A": 2, "B": 1},
+            {"A": 2, "B": 1},
+            {"A": 2, "B": 1},
+        ],
+    }
+    df = dataset_type.from_dict(data)
+    result = DataframeType({"value": df}).value_does_not_have_multiple_references(
+        {"target": "LNKGRP", "comparator": "$VALUE_COUNTS"}
+    )
+    assert result.equals(df.convert_to_series([False, True, False, False, False]))
