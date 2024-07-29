@@ -2,6 +2,7 @@ from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 import dask.dataframe as dd
 import dask.array as da
 import pandas as pd
+import numpy as np
 from typing import List, Union
 
 DEFAULT_NUM_PARTITIONS = 4
@@ -40,6 +41,22 @@ class DaskDataset(PandasDataset):
 
     def __getitem__(self, item):
         return self._data[item].compute().reset_index(drop=True)
+
+    def is_column_sorted_within(self, group, column):
+        return (
+            False
+            not in np.concatenate(
+                self._data.groupby(group, sort=False)[column]
+                .apply(
+                    lambda partition: sorted(partition.sort_index().values)
+                    == partition.sort_index().values
+                )
+                .compute()
+                .values
+            )
+            .ravel()
+            .tolist()
+        )
 
     def __setitem__(self, key, value):
         if isinstance(value, list):

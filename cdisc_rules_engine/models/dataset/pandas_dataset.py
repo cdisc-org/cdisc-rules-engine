@@ -76,6 +76,15 @@ class PandasDataset(DatasetInterface):
     def groupby(self, by: List[str], **kwargs):
         return self.__class__(self._data.groupby(by, **kwargs))
 
+    def is_column_sorted_within(self, group, column):
+        return (
+            False
+            not in self.groupby(group)[column]
+            .apply(list)
+            .map(lambda x: sorted(x) == x)
+            .values
+        )
+
     def concat(self, other: Union[DatasetInterface, List[DatasetInterface]], **kwargs):
         if isinstance(other, list):
             new_data = self._data.copy()
