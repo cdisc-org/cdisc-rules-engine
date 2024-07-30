@@ -93,14 +93,14 @@ def cli():
 @click.option(
     "-s",
     "--standard",
-    required=False,
+    required=True,
     default=None,
     help="CDISC standard to validate against",
 )
 @click.option(
     "-v",
     "--version",
-    required=False,
+    required=True,
     default=None,
     help="Standard version to validate against",
 )

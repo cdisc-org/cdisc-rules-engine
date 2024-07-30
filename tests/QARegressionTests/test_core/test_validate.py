@@ -243,6 +243,7 @@ class TestValidate(unittest.TestCase):
     def test_validate_less_than_minimum_options(self):
         args = ["python", "-m", "core", "validate", "-s", "sdtmig"]
         exit_code, stdout, stderr = self.run_command(args)
+        breakpoint()
         self.assertNotEqual(exit_code, 0)
         self.assertIn("error: missing option", stderr)
 
