@@ -234,17 +234,26 @@ def load_and_parse_rule(rule_file):
         return None
 
 
+def replace_rule_keys(rule):
+    if "Operations" in rule:
+        rule["actions"] = rule.pop("Operations")
+    if "Check" in rule:
+        rule["conditions"] = rule.pop("Check")
+        return rule
+
+
 def load_and_parse_local_rule(rule_file: str) -> dict:
     _, file_extension = os.path.splitext(rule_file)
     try:
         with open(rule_file, "r", encoding="utf-8") as file:
             if file_extension in [".yml", ".yaml"]:
                 loaded_data = yaml.safe_load(file)
-                return replace_yml_spaces(loaded_data)
+                loaded_data = replace_yml_spaces(loaded_data)
             elif file_extension == ".json":
-                return json.load(file)
+                loaded_data = json.load(file)
             else:
                 raise ValueError(f"Unsupported file type: {file_extension}")
+            return replace_rule_keys(loaded_data)
     except Exception as e:
         print(f"Error while loading {rule_file}: {e}")
         return None

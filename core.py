@@ -91,10 +91,18 @@ def cli():
     help="File path of report template to use for excel output",
 )
 @click.option(
-    "-s", "--standard", required=False, help="CDISC standard to validate against"
+    "-s",
+    "--standard",
+    required=False,
+    default=None,
+    help="CDISC standard to validate against",
 )
 @click.option(
-    "-v", "--version", required=False, help="Standard version to validate against"
+    "-v",
+    "--version",
+    required=False,
+    default=None,
+    help="Standard version to validate against",
 )
 @click.option(
     "-ct",
@@ -335,7 +343,7 @@ def update_cache(
     cache = CacheServiceFactory(config).get_cache_service()
     library_service = CDISCLibraryService(apikey, cache)
     cache_populator = CachePopulator(
-        cache, library_service, local_rules, local_rules_id, remove_rules
+        cache, library_service, local_rules, local_rules_id, remove_rules, cache_path
     )
     cache = asyncio.run(cache_populator.load_cache_data())
     if remove_rules:

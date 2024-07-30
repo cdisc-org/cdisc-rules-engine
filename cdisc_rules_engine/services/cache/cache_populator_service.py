@@ -29,12 +29,14 @@ class CachePopulator:
         local_rules_path=None,
         local__rules_id=None,
         remove_local_rules=None,
+        cache_path=str,
     ):
         self.cache = cache
         self.library_service = library_service
         self.local_rules_path = local_rules_path
         self.local_rules_id = local__rules_id
         self.remove_local_rules = remove_local_rules
+        self.cache_path = cache_path
 
     async def load_cache_data(self):
         """
@@ -46,7 +48,8 @@ class CachePopulator:
         * codelist metadata
         """
         if self.remove_local_rules:
-            self.remove_specified_rules()
+            self.remove_specified_rules(self.cache_path)
+
         elif self.local_rules_path and self.local_rules_id:
             local_rules: List[dict] = await self._get_local_rules(self.local_rules_path)
             key_prefix = f"local/{self.local_rules_id}/"
@@ -159,13 +162,31 @@ class CachePopulator:
         )
         self.cache.add_batch(variables_metadata, "cache_key", pop_cache_key=True)
 
-    def remove_specified_rules(self):
+    def remove_specified_rules(self, cache):
+        pickle_file = os.path.join(cache, "local_rules.pkl")
+        if os.path.exists(pickle_file):
+            try:
+                with open(pickle_file, "rb") as f:
+                    existing_rules = pickle.load(f)
+                print(f"Loaded {len(existing_rules)} rules from {pickle_file}")
+                for key, value in existing_rules.items():
+                    self.cache.add(key, value)
+            except Exception as e:
+                print(f"Error loading rules from {pickle_file}: {e}")
+        else:
+            print(f"No existing rules file found at {pickle_file}")
+
+        # Remove specified rules
         if self.remove_local_rules == "ALL":
             print("Clearing all local rules")
             self.cache.clear_all("local/")
         else:
-            print(f"Clearing rules with prefix: local/{self.remove_local_rules}/")
-            self.cache.clear_all(f"local/{self.remove_local_rules}/")
+            prefix_to_remove = f"local/{self.remove_local_rules}/"
+            print(f"Clearing rules with prefix: {prefix_to_remove}")
+            self.cache.clear_all(prefix_to_remove)
+
+        remaining_rules = self.cache.filter_cache(prefix="local/")
+        print(f"Remaining local rules after removal: {len(remaining_rules)}")
 
     def save_rules_locally(self, file_path: str):
         """
@@ -177,16 +198,15 @@ class CachePopulator:
 
     def save_removed_rules_locally(self, file_path: str, remove_rules: str):
         """
-        Store removed rules in removed_rules.pkl in cache path directory
+        Store rules remaining after removal in cache path directory
         """
-        current_prefix = f"local/{remove_rules}/"
-        current_rules = self.cache.filter_cache(prefix=current_prefix)
+        remaining_rules = self.cache.filter_cache(prefix="local/")
         try:
             with open(file_path, "wb") as f:
-                pickle.dump(current_rules, f)
-            print(f"Successfully saved removed rules to {file_path}")
+                pickle.dump(remaining_rules, f)
+            print(f"Successfully saved remaining rules to {file_path}")
         except Exception as e:
-            print(f"Error occurred while writing removed rules to file: {e}")
+            print(f"Error occurred while writing remaining rules to file: {e}")
 
     def save_local_rules_locally(self, file_path: str, local_rules_id: str):
         """

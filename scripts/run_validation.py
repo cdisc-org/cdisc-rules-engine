@@ -122,7 +122,6 @@ def run_validation(args: Validation_args):
     shared_cache = get_cache_service(manager)
     engine_logger.info(f"Populating cache, cache path: {args.cache}")
     rules = get_rules(args)
-    breakpoint()
     library_metadata: LibraryMetadataContainer = get_library_metadata_from_cache(args)
     # install dictionaries if needed
     fill_cache_with_dictionaries(shared_cache, args)
