@@ -251,6 +251,8 @@ def test_get_dataset_class_associated_domains():
                 None,
                 "",
                 "",
+                None,
+                None,
                 "",
                 None,
             )
