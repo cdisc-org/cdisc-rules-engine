@@ -38,7 +38,9 @@ If no target variable `name` specified, returns a dictionary containing the spec
 
 ## dataset_names
 
-Returns a list of the dataset filenames in the study
+Returns a list of the submitted dataset filenames in all uppercase
+
+ex. if TS.xpt, AE.xpt, EC.xpt, and SUPPEC.xpt are submitted -> [TS, AE, EC, SUPPEC] will be returned
 
 ## distinct
 
