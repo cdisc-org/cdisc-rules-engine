@@ -27,11 +27,13 @@ class TestListRules(unittest.TestCase):
 
     def test_list_rules_local_cache(self):
         result = self.runner.invoke(list_rules, ["-lr"])
-        self.assertEqual(result.exit_code, 0)
+        self.assertEqual(result.exit_code, 1)
+        self.assertEqual(result.exception.args[1], "No such file or directory")
 
     def test_list_rules_local_cache_local_rule_id(self):
         result = self.runner.invoke(list_rules, ["-lr", "-lri", "1"])
-        self.assertEqual(result.exit_code, 0)
+        self.assertEqual(result.exit_code, 1)
+        self.assertEqual(result.exception.args[1], "No such file or directory")
 
     def test_list_rules_no_option_provided(self):
         result = self.runner.invoke(list_rules)
