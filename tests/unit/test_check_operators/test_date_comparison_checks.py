@@ -703,3 +703,47 @@ def test_date_greater_than_or_equal_to_date_components(
         {"target": "target", "comparator": comparator, "date_component": date_component}
     )
     assert result.equals(df.convert_to_series(expected_result))
+
+
+@pytest.mark.parametrize(
+    "target, dataset_type, expected_result",
+    [
+        ("var1", PandasDataset, [False, False, False]),
+        ("var1", DaskDataset, [False, False, False]),
+        ("var2", PandasDataset, [True, True, True]),
+        ("var2", DaskDataset, [True, True, True]),
+    ],
+)
+def test_is_complete_date(target, dataset_type, expected_result):
+    data = {
+        "var1": ["2021", "2021", "2099"],
+        "var2": ["1997-07-16", "1997-07-16T19:20:30+01:00", "1997-07-16T19:20+01:00"],
+    }
+    df = dataset_type.from_dict(data)
+    assert (
+        DataframeType({"value": df})
+        .is_complete_date({"target": target})
+        .equals(df.convert_to_series(expected_result))
+    )
+
+
+@pytest.mark.parametrize(
+    "target, dataset_type, expected_result",
+    [
+        ("var1", PandasDataset, [True, True, True]),
+        ("var1", DaskDataset, [True, True, True]),
+        ("var2", PandasDataset, [False, False, False]),
+        ("var2", DaskDataset, [False, False, False]),
+    ],
+)
+def test_is_incomplete_date(target, dataset_type, expected_result):
+    data = {
+        "var1": ["2021", "2021", "2099"],
+        "var2": ["1997-07-16", "1997-07-16T19:20:30+01:00", "1997-07-16T19:20+01:00"],
+    }
+    df = dataset_type.from_dict(data)
+    assert (
+        DataframeType({"value": df})
+        .is_incomplete_date({"target": target})
+        .equals(df.convert_to_series(expected_result))
+    )
