@@ -224,7 +224,6 @@ class BaseDataService(DataServiceInterface, ABC):
         name = class_data.get("name")
         if name:
             return convert_library_class_name_to_ct_class(name)
-
         return self._handle_special_cases(dataset, domain, file_path, datasets)
 
     def _get_standard_data(self):
@@ -296,11 +295,11 @@ class BaseDataService(DataServiceInterface, ABC):
         Checks if the given dataset-class string ends with a particular variable string.
         Returns True/False
         """
-        if "DOMAIN" not in dataset and "RDOMAIN" not in dataset:
+        if "DOMAIN" not in dataset and "RDOMAIN" not in dataset.values:
             return False
-        elif "DOMAIN" in dataset:
+        elif "DOMAIN" in dataset.values:
             return domain.upper() + variable in dataset
-        elif "RDOMAIN" in dataset:
+        elif "RDOMAIN" in dataset.values:
             return variable in dataset
 
     def _domain_starts_with(self, domain, variable):
