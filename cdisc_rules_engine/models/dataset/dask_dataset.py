@@ -3,6 +3,7 @@ import dask.dataframe as dd
 import dask.array as da
 import pandas as pd
 import numpy as np
+import re
 from typing import List, Union
 
 DEFAULT_NUM_PARTITIONS = 4
@@ -249,3 +250,11 @@ class DaskDataset(PandasDataset):
     def astype(self, dtype, **kwargs):
         self._data = self._data.astype(dtype, **kwargs)
         return self
+
+    def filter(self, **kwargs):
+        columns_regex = kwargs.get("regex")
+        columns_subset = [
+            column for column in self.columns if re.match(columns_regex, column)
+        ]
+        new_data = self._data[columns_subset]
+        return self.__class__(new_data)
