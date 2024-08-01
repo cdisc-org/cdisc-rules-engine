@@ -295,12 +295,12 @@ class BaseDataService(DataServiceInterface, ABC):
         Checks if the given dataset-class string ends with a particular variable string.
         Returns True/False
         """
-        if "DOMAIN" not in dataset and "RDOMAIN" not in dataset.values:
+        if "DOMAIN" not in dataset.values and "RDOMAIN" not in dataset.values:
             return False
         elif "DOMAIN" in dataset.values:
-            return domain.upper() + variable in dataset
+            return domain.upper() + variable in dataset.values
         elif "RDOMAIN" in dataset.values:
-            return variable in dataset
+            return variable in dataset.values
 
     def _domain_starts_with(self, domain, variable):
         """
