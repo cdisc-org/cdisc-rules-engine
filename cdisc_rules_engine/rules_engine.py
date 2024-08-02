@@ -172,7 +172,11 @@ class RulesEngine:
                     # No errors were generated, create success error container
                     return [
                         ValidationErrorContainer(
-                            **{"domain": dataset_domain, "errors": []}
+                            **{
+                                "dataset": os.path.basename(dataset_path),
+                                "domain": dataset_domain,
+                                "errors": [],
+                            }
                         ).to_representation()
                     ]
             else:
@@ -360,6 +364,10 @@ class RulesEngine:
                 value_level_metadata=value_level_metadata,
             ),
         )
+        if results:
+            dataset = os.path.basename(dataset_path)
+            for result in results:
+                result["dataset"] = dataset
         return results
 
     def get_define_xml_metadata_for_domain(
@@ -390,32 +398,42 @@ class RulesEngine:
     ) -> ValidationErrorContainer:
         if isinstance(exception, DatasetNotFoundError):
             error_obj = FailedValidationEntity(
-                error="Dataset Not Found", message=exception.message
+                dataset=os.path.basename(dataset_path),
+                error="Dataset Not Found",
+                message=exception.message,
             )
             message = "rule execution error"
         elif isinstance(exception, RuleFormatError):
             error_obj = FailedValidationEntity(
-                error="Rule format error", message=exception.message
+                dataset=os.path.basename(dataset_path),
+                error="Rule format error",
+                message=exception.message,
             )
             message = "rule execution error"
         elif isinstance(exception, AssertionError):
             error_obj = FailedValidationEntity(
-                error="Rule format error", message="Rule contains invalid operator"
+                dataset=os.path.basename(dataset_path),
+                error="Rule format error",
+                message="Rule contains invalid operator",
             )
             message = "rule execution error"
         elif isinstance(exception, KeyError):
             error_obj = FailedValidationEntity(
-                error="Column not found in data", message=exception.args[0]
+                dataset=os.path.basename(dataset_path),
+                error="Column not found in data",
+                message=exception.args[0],
             )
             message = "rule execution error"
         elif isinstance(exception, DomainNotFoundInDefineXMLError):
             error_obj = FailedValidationEntity(
+                dataset=os.path.basename(dataset_path),
                 error=DomainNotFoundInDefineXMLError.description,
                 message=exception.args[0],
             )
             message = "rule execution error"
         elif isinstance(exception, VariableMetadataNotFoundError):
             error_obj = FailedValidationEntity(
+                dataset=os.path.basename(dataset_path),
                 error=VariableMetadataNotFoundError.description,
                 message=exception.args[0],
             )
@@ -430,16 +448,23 @@ class RulesEngine:
                 message = "Schema Validation Error"
                 errors = [error_obj]
                 return ValidationErrorContainer(
-                    errors=errors, message=message, status=ExecutionStatus.SUCCESS.value
+                    errors=errors,
+                    message=message,
+                    status=ExecutionStatus.SUCCESS.value,
+                    dataset=os.path.basename(dataset_path),
                 )
             else:
                 error_obj: ValidationErrorContainer = ValidationErrorContainer(
-                    status=ExecutionStatus.SKIPPED.value
+                    status=ExecutionStatus.SKIPPED.value,
+                    dataset=os.path.basename(dataset_path),
                 )
                 message = "Skipped because schema validation is off"
                 errors = [error_obj]
                 return ValidationErrorContainer(
-                    errors=errors, message=message, status=ExecutionStatus.SKIPPED.value
+                    dataset=os.path.basename(dataset_path),
+                    errors=errors,
+                    message=message,
+                    status=ExecutionStatus.SKIPPED.value,
                 )
         else:
             error_obj = FailedValidationEntity(
@@ -448,5 +473,8 @@ class RulesEngine:
             message = "rule execution error"
         errors = [error_obj]
         return ValidationErrorContainer(
-            errors=errors, message=message, status=ExecutionStatus.EXECUTION_ERROR.value
+            dataset=os.path.basename(dataset_path),
+            errors=errors,
+            message=message,
+            status=ExecutionStatus.EXECUTION_ERROR.value,
         )
