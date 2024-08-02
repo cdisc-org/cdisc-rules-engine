@@ -17,11 +17,13 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
         dataset_location - Path to file
         dataset_name - Name of the dataset
         dataset_label - Label for the dataset
+        dataset_domain - Domain of the dataset
 
         Columns from Define XML:
         define_dataset_name - dataset name from define_xml
         define_dataset_label - dataset label from define
         define_dataset_location - dataset location from define
+        define_dataset_domain - dataset domain from define
         define_dataset_class - dataset class
         define_dataset_structure - dataset structure
         define_dataset_is_non_standard - whether a dataset is a standard
@@ -63,13 +65,12 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
             "define_dataset_name",
             "define_dataset_label",
             "define_dataset_location",
-            "define_dataset_class",
+            "define_dataset_domain" "define_dataset_class",
             "define_dataset_structure",
             "define_dataset_is_non_standard",
             "define_dataset_variables",
         ]
         define_metadata = self.get_define_metadata()
-
         if not define_metadata:
             logger.info(f"No define_metadata is provided for {__name__}.")
             return self.dataset_implementation(columns=define_col_order)
@@ -81,6 +82,7 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
             "dataset_location",
             "dataset_name",
             "dataset_label",
+            "dataset_domain",
         ]
 
         if len(self.datasets) == 0:
@@ -93,6 +95,7 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
                     ds_metadata = self.data_service.get_dataset_metadata(
                         dataset["filename"]
                     )
+                    ds_metadata.data["dataset_domain"] = dataset.get("domain", None)
                 except Exception as e:
                     logger.trace(e, __name__)
                     logger.error(f"Error: {e}. Error message: {str(e)}")
