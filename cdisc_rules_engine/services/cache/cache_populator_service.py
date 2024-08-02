@@ -112,6 +112,7 @@ class CachePopulator:
         Retrieve local rules from the file system.
         """
         rules = []
+        custom_ids = set()
         # Ensure the directory exists
         if not os.path.isdir(local_rules_path):
             raise FileNotFoundError(f"The directory {local_rules_path} does not exist")
@@ -123,8 +124,11 @@ class CachePopulator:
         # Iterate through all files in the directory provided
         for rule_file in rule_files:
             rule = load_and_parse_local_rule(rule_file)
-            if rule:
+            if rule and rule["custom_id"] not in custom_ids:
                 rules.append(rule)
+                custom_ids.add(rule["custom_id"])
+            else:
+                print(f"Skipping rule with duplicate custom_id: {rule['custom_id']}")
         return rules
 
     async def load_codelists(self, packages: List[str]):
@@ -220,7 +224,10 @@ class CachePopulator:
             except Exception as e:
                 print(f"Error loading existing rules: {e}")
         current_prefix = f"local/{local_rules_id}/"
-
+        if any(rule.startswith(current_prefix) for rule in existing_rules):
+            raise ValueError(
+                f"Rules with prefix '{current_prefix}' already exist in the cache."
+            )
         current_rules = self.cache.filter_cache(prefix=current_prefix)
         existing_rules = {
             k: v for k, v in existing_rules.items() if not k.startswith(current_prefix)
