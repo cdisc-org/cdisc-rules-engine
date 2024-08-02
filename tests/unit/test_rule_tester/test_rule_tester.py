@@ -57,10 +57,11 @@ def test_rule_with_errors(mock_get_dataset_class):
     assert "LB" in data
     assert len(data["LB"]) == 1
     assert len(data["LB"][0]["errors"]) == 1
-    error = data["LB"][0]["errors"][0]
-    assert error["row"] == 1
-    assert error["SEQ"] == 1
-    assert error["value"] == {"LBSEQ": 1}
+    error = data["LB"][0]["errors"][0]["value"]
+    assert error["row"] == 0
+    assert error["SEQ"] == 0
+    assert error["uSubjId"] == "N/A"
+    assert error["value"] == {"ERROR": "Invalid or undefined sensitivity in the rule"}
 
 
 @patch("cdisc_rules_engine.services.data_services.DummyDataService.get_dataset_class")

@@ -200,6 +200,13 @@
     },
     {
       "properties": {
+        "operator": { "const": "dataset_names" }
+      },
+      "required": ["id", "operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
         "operator": {
           "const": "valid_codelist_dates"
         }

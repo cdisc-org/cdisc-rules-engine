@@ -36,6 +36,12 @@ If no target variable `name` specified, returns a dictionary containing the spec
   }
   ```
 
+## dataset_names
+
+Returns a list of the submitted dataset filenames in all uppercase
+
+ex. if TS.xpt, AE.xpt, EC.xpt, and SUPPEC.xpt are submitted -> [TS, AE, EC, SUPPEC] will be returned
+
 ## distinct
 
 Get a distinct list of values for the given `name`. If a `group` list is specified, the distinct value list will be grouped by the variables within `group`.

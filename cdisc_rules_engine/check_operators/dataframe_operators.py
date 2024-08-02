@@ -159,7 +159,7 @@ class DataframeType(BaseType):
         return self.value.apply(
             lambda row: self._check_equality(row, target, comparator, value_is_literal),
             axis=1,
-        )
+        ).astype(bool)
 
     @type_operator(FIELD_DATAFRAME)
     def equal_to_case_insensitive(self, other_value):
