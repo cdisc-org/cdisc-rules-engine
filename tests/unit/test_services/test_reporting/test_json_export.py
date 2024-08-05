@@ -1,4 +1,5 @@
 from unittest.mock import MagicMock
+from version import __version__
 
 from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
@@ -176,7 +177,8 @@ def test_get_detailed_data():
             "core_id": mock_validation_results[0].id,
             "message": "AESTDY and DOMAIN are equal to test",
             "executability": "Fully Executable",
-            "dataset": "AE",
+            "dataset": None,
+            "domain": "AE",
             "USUBJID": "CDISC002",
             "row": 1,
             "SEQ": 2,
@@ -187,7 +189,8 @@ def test_get_detailed_data():
             "core_id": mock_validation_results[0].id,
             "message": "AESTDY and DOMAIN are equal to test",
             "executability": "Fully Executable",
-            "dataset": "AE",
+            "dataset": None,
+            "domain": "AE",
             "USUBJID": "CDISC003",
             "row": 9,
             "SEQ": 10,
@@ -198,7 +201,8 @@ def test_get_detailed_data():
             "core_id": mock_validation_results[1].id,
             "message": "TTVARs are wrong",
             "executability": "Partially Executable",
-            "dataset": "TT",
+            "dataset": None,
+            "domain": "TT",
             "USUBJID": "CDISC002",
             "row": 1,
             "SEQ": 2,
@@ -219,13 +223,15 @@ def test_get_summary_data():
     summary_data = report.get_summary_data()
     errors = [
         {
-            "dataset": "AE",
+            "dataset": None,
+            "domain": "AE",
             "core_id": mock_validation_results[0].id,
             "message": "AESTDY and DOMAIN are equal to test",
             "issues": 2,
         },
         {
-            "dataset": "TT",
+            "dataset": None,
+            "domain": "TT",
             "core_id": mock_validation_results[1].id,
             "message": "TTVARs are wrong",
             "issues": 1,
@@ -249,9 +255,30 @@ def test_get_export():
         version="3.4",
         raw_report=False,
     )
-    assert export["conformance_details"]["data_path"] == "test"
-    assert export["conformance_details"]["runtime"] == 10.1
-    assert export["bundle_details"]["standard"] == "SDTMIG"
-    assert export["bundle_details"]["version"] == "3.4"
-    assert export["bundle_details"]["cdisc_ct"] == cdiscCt
-    assert export["bundle_details"]["define_version"] == "2.1"
+    assert export["conformance_details"]["CORE_Engine_Version"] == __version__
+    assert export["conformance_details"]["Total_Runtime"] == "10.1 seconds"
+    assert export["conformance_details"]["Standard"] == "SDTMIG"
+    assert export["conformance_details"]["Version"] == "V3.4"
+    assert export["conformance_details"]["CT_Version"] == "sdtmct-03-2021"
+    assert export["conformance_details"]["Define_XML_Version"] == "2.1"
+    assert "dataset_details" in export
+    assert isinstance(export["dataset_details"], list)
+
+    assert "issue_summary" in export
+    assert isinstance(export["issue_summary"], list)
+    assert "issue_details" in export
+    assert isinstance(export["issue_details"], list)
+    assert "rules_report" in export
+    assert isinstance(export["rules_report"], list)
+    assert "Issue_Summary" in export
+    assert isinstance(export["Issue_Summary"], list)
+    assert "issue_Details" in export
+    assert isinstance(export["issue_Details"], list)
+    assert "Rules_Report" in export
+    assert isinstance(export["Rules_Report"], list)
+    assert len(export["issue_summary"]) > 0
+    assert len(export["issue_details"]) > 0
+    assert len(export["rules_report"]) > 0
+    assert len(export["Issue_Summary"]) > 0
+    assert len(export["issue_Details"]) > 0
+    assert len(export["Rules_Report"]) > 0
