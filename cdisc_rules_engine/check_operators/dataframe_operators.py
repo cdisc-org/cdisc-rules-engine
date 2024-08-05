@@ -159,7 +159,7 @@ class DataframeType(BaseType):
         return self.value.apply(
             lambda row: self._check_equality(row, target, comparator, value_is_literal),
             axis=1,
-        )
+        ).astype(bool)
 
     @type_operator(FIELD_DATAFRAME)
     def equal_to_case_insensitive(self, other_value):
@@ -926,29 +926,11 @@ class DataframeType(BaseType):
         value = other_value.get("comparator")
         if not isinstance(value, str):
             raise Exception("Comparator must be a single String value")
-
-        return not (
-            False
-            in self.value.groupby(value)
-            .agg(lambda x: list(x))[target]
-            .map(lambda x: sorted(x) == x)
-            .tolist()
-        )
+        return self.value.is_column_sorted_within(value, target)
 
     @type_operator(FIELD_DATAFRAME)
     def is_not_ordered_set(self, other_value):
-        target = self.replace_prefix(other_value.get("target"))
-        value = other_value.get("comparator")
-        if not isinstance(value, str):
-            raise Exception("Comparator must be a single String value")
-
-        return (
-            False
-            in self.value.groupby(value)
-            .agg(lambda x: list(x))[target]
-            .map(lambda x: sorted(x) == x)
-            .tolist()
-        )
+        return not self.is_ordered_set(other_value)
 
     @type_operator(FIELD_DATAFRAME)
     def is_valid_reference(self, other_value):

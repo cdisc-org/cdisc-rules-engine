@@ -197,3 +197,9 @@ class DatasetInterface(ABC):
         """
         Sort the dataframe by the provided columns
         """
+
+    @abstractmethod
+    def is_column_sorted_within(self, group, column):
+        """
+        Returns true if the column is sorted within each grouping otherwise false
+        """
