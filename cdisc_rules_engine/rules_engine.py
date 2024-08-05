@@ -468,7 +468,9 @@ class RulesEngine:
                 )
         else:
             error_obj = FailedValidationEntity(
-                error="An unknown exception has occurred", message=str(exception)
+                dataset=os.path.basename(dataset_path),
+                error="An unknown exception has occurred",
+                message=str(exception),
             )
             message = "rule execution error"
         errors = [error_obj]

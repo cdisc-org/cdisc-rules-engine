@@ -1086,6 +1086,7 @@ def test_validate_single_rule_not_equal_to(
                     "message": "rule execution error",
                     "errors": [
                         {
+                            "dataset": "ae.xpt",
                             "error": "An unknown exception has occurred",
                             "message": "single positional indexer is out-of-bounds",
                         }
