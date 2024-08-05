@@ -89,6 +89,7 @@ def test_validate_rule_invalid_suffix(
         assert validation_result == [
             {
                 "executionStatus": "success",
+                "dataset": "bundle",
                 "domain": "AE",
                 "variables": ["AESTDY"],
                 "message": "Suffix of AESTDY is equal to test.",
@@ -125,6 +126,7 @@ def test_validate_rule_invalid_prefix(
         assert validation_result == [
             {
                 "executionStatus": "success",
+                "dataset": "bundle",
                 "domain": "AE",
                 "variables": ["AESTDY"],
                 "message": "Prefix of AESTDY is equal to test.",
@@ -226,6 +228,7 @@ def test_validate_rule_cross_dataset_check(
         assert validation_result == [
             {
                 "executionStatus": "success",
+                "dataset": "ec.xpt",
                 "domain": "EC",
                 "variables": ["ECSTDY"],
                 "message": "Value of ECSTDY is equal to AESTDY.",
@@ -317,6 +320,7 @@ def test_validate_one_to_one_rel_across_datasets(dataset_rule_one_to_one_related
         assert validation_result == [
             {
                 "executionStatus": "success",
+                "dataset": "ec.xpt",
                 "domain": "EC",
                 "variables": ["VISITNUM"],
                 "message": "VISITNUM is not one-to-one related to VISIT",
@@ -354,6 +358,7 @@ def test_validate_rule_single_dataset_check(dataset_rule_greater_than: dict):
             {
                 "executionStatus": "success",
                 "domain": "EC",
+                "dataset": "bundle",
                 "variables": ["ECCOOLVAR"],
                 "message": "Value for ECCOOLVAR greater than 30.",
                 "errors": [
@@ -390,6 +395,7 @@ def test_validate_rule_equal_length(dataset_rule_has_equal_length: dict):
             {
                 "executionStatus": "success",
                 "domain": "EC",
+                "dataset": "bundle",
                 "variables": ["ECCOOLVAR"],
                 "message": "Length of ECCOOLVAR is equal to 5.",
                 "errors": [{"value": {"ECCOOLVAR": "equal"}, "row": 2}],
@@ -422,6 +428,7 @@ def test_validate_is_contained_by_distinct(mock_rule_distinct_operation: dict):
         assert validation_result == [
             {
                 "executionStatus": "success",
+                "dataset": "ae.xpt",
                 "domain": "AE",
                 "variables": ["AESTDY"],
                 "message": "Value for AESTDY not in DM.USUBJID",
@@ -456,6 +463,7 @@ def test_validate_rule_not_equal_length(dataset_rule_has_not_equal_length: dict)
             {
                 "executionStatus": "success",
                 "domain": "EC",
+                "dataset": "bundle",
                 "variables": ["ECCOOLVAR"],
                 "message": "Length of ECCOOLVAR is not equal to 5.",
                 "errors": [{"value": {"ECCOOLVAR": "first_string"}, "row": 1}],
@@ -483,6 +491,7 @@ def test_validate_rule_multiple_conditions(dataset_rule_multiple_conditions: dic
             {
                 "executionStatus": "success",
                 "domain": "EC",
+                "dataset": "bundle",
                 "variables": ["ECCOOLVAR"],
                 "message": (
                     "Length of ECCOOLVAR is not equal to 5 or ECCOOLVAR == cool."
@@ -514,6 +523,7 @@ def test_validate_record_rule_numbers_separated_by_dash_pattern():
         assert validation_result == [
             {
                 "executionStatus": "success",
+                "dataset": "bundle",
                 "domain": "AE",
                 "variables": ["AESTDY"],
                 "message": "Records have the following pattern: ^\\d+\\-\\d+$",
@@ -545,6 +555,7 @@ def test_validate_record_rule_semi_colon_delimited_pattern():
             {
                 "executionStatus": "success",
                 "domain": "AE",
+                "dataset": "bundle",
                 "variables": ["AESTDY"],
                 "message": "Records have the following pattern: [^,]*;[^,]*",
                 "errors": [
@@ -576,6 +587,7 @@ def test_validate_record_rule_no_letters_numbers_underscores():
         assert validation_result == [
             {
                 "executionStatus": "success",
+                "dataset": "bundle",
                 "domain": "AE",
                 "variables": ["AESTDY"],
                 "message": "Records have the following pattern: ^((?![a-zA-Z0-9_]).)*$",
@@ -619,6 +631,7 @@ def test_validate_dataset_metadata(
     assert validation_result == [
         {
             "domain": "EC",
+            "dataset": "bundle",
             "errors": [],
             "executionStatus": "success",
             "message": None,
@@ -661,6 +674,7 @@ def test_validate_dataset_metadata_wrong_metadata(
     assert validation_result == [
         {
             "domain": "EC",
+            "dataset": "bundle",
             "executionStatus": ExecutionStatus.SUCCESS.value,
             "variables": ["dataset_label", "dataset_name", "dataset_size"],
             "errors": [
@@ -705,6 +719,7 @@ def test_validate_variable_metadata(
     assert validation_result == [
         {
             "domain": "EC",
+            "dataset": "bundle",
             "errors": [],
             "executionStatus": "success",
             "message": None,
@@ -718,6 +733,7 @@ def test_validate_variable_metadata(
     assert validation_result == [
         {
             "domain": "EC",
+            "dataset": "bundle",
             "errors": [],
             "executionStatus": "success",
             "message": None,
@@ -757,6 +773,7 @@ def test_validate_variable_metadata_wrong_metadata(
     assert validation_result == [
         {
             "domain": "EC",
+            "dataset": "bundle",
             "variables": ["variable_data_type", "variable_label", "variable_name"],
             "executionStatus": ExecutionStatus.SUCCESS.value,
             "errors": [
@@ -824,6 +841,7 @@ def test_rule_with_domain_prefix_replacement(mock_get_dataset: MagicMock):
     assert validation_result == [
         {
             "executionStatus": "success",
+            "dataset": "bundle",
             "domain": "AE",
             "variables": ["AESTDY"],
             "message": "Invalid AESTDY value",
@@ -849,6 +867,7 @@ def test_rule_with_domain_prefix_replacement(mock_get_dataset: MagicMock):
             [
                 {
                     "executionStatus": "success",
+                    "dataset": "bundle",
                     "domain": "AE",
                     "variables": ["AE"],
                     "message": "Domain AE exists",
@@ -861,6 +880,7 @@ def test_rule_with_domain_prefix_replacement(mock_get_dataset: MagicMock):
             [
                 {
                     "domain": "AE",
+                    "dataset": "bundle",
                     "errors": [],
                     "executionStatus": "success",
                     "message": None,
@@ -925,6 +945,7 @@ def test_validate_single_rule(dataset_rule_equal_to_error_objects: dict):
         assert validation_result == [
             {
                 "domain": "AE",
+                "dataset": "bundle",
                 "executionStatus": ExecutionStatus.SUCCESS.value,
                 "variables": ["AESTDY"],
                 "errors": [
@@ -1002,6 +1023,7 @@ def test_validate_single_rule_not_equal_to(
         assert validation_result == [
             {
                 "domain": "AE",
+                "dataset": "data_bundle",
                 "executionStatus": ExecutionStatus.SUCCESS.value,
                 "variables": ["AESTDY"],
                 "errors": [
@@ -1058,6 +1080,7 @@ def test_validate_single_rule_not_equal_to(
             [
                 {
                     "executionStatus": "execution_error",
+                    "dataset": "ae.xpt",
                     "domain": "AE",
                     "variables": [],
                     "message": "rule execution error",
@@ -1096,6 +1119,7 @@ def test_validate_single_rule_not_equal_to(
             [
                 {
                     "domain": "AE",
+                    "dataset": "ae.xpt",
                     "errors": [],
                     "executionStatus": "success",
                     "message": None,
@@ -1167,6 +1191,7 @@ def test_validate_dataset_metadata_against_define_xml(
             [
                 {
                     "domain": "AE",
+                    "dataset": "test",
                     "executionStatus": ExecutionStatus.SUCCESS.value,
                     "variables": ["variable_size"],
                     "errors": [{"row": 1, "value": {"variable_size": 30}}],
@@ -1207,6 +1232,7 @@ def test_validate_dataset_metadata_against_define_xml(
             [
                 {
                     "domain": "AE",
+                    "dataset": "test",
                     "executionStatus": ExecutionStatus.SUCCESS.value,
                     "variables": ["variable_size"],
                     "errors": [{"row": 1, "value": {"variable_size": 30}}],
@@ -1303,6 +1329,7 @@ def test_validate_value_level_metadata_against_define_xml(
         assert validation_result == [
             {
                 "domain": "AE",
+                "dataset": "test",
                 "executionStatus": ExecutionStatus.SUCCESS.value,
                 "variables": [
                     "AETERM",
@@ -1338,6 +1365,7 @@ def test_validate_value_level_metadata_against_define_xml(
             [
                 {
                     "domain": "AE",
+                    "dataset": None,
                     "executionStatus": ExecutionStatus.SKIPPED.value,
                     "variables": [],
                     "message": None,
@@ -1351,6 +1379,7 @@ def test_validate_value_level_metadata_against_define_xml(
             [
                 {
                     "domain": "AE",
+                    "dataset": "ae.xpt",
                     "executionStatus": ExecutionStatus.SUCCESS.value,
                     "variables": ["AESTDY"],
                     "errors": [
@@ -1511,6 +1540,7 @@ def test_validate_split_dataset_metadata(
     assert validation_result == [
         {
             "domain": "EC",
+            "dataset": "ec.xpt",
             "executionStatus": ExecutionStatus.SUCCESS.value,
             "errors": [
                 {
@@ -1575,6 +1605,7 @@ def test_validate_split_dataset_variables_metadata(
     assert validation_result == [
         {
             "domain": "EC",
+            "dataset": "ec.xpt",
             "executionStatus": ExecutionStatus.SUCCESS.value,
             "variables": ["variable_data_type", "variable_label", "variable_name"],
             "errors": [
@@ -1694,6 +1725,7 @@ def test_validate_record_in_parent_domain(
             {
                 "executionStatus": "success",
                 "domain": "EC",
+                "dataset": "ec.xpt",
                 "variables": ["ECPRESP", "QNAM"],
                 "message": "Dataset contents is wrong.",
                 "errors": [
@@ -1757,6 +1789,7 @@ def test_validate_additional_columns(
         assert validation_result == [
             {
                 "executionStatus": "success",
+                "dataset": "ts.xpt",
                 "domain": "TS",
                 "variables": ["TSVAL1", "TSVAL2", "TSVAL3"],
                 "message": "Additional columns for TSVAL are empty.",
@@ -1872,6 +1905,7 @@ def test_validate_dataset_contents_against_define_and_library_variable_metadata(
     assert validation_result == [
         {
             "executionStatus": "success",
+            "dataset": "filename",
             "domain": "AE",
             "variables": [
                 "AESER",
@@ -1969,6 +2003,7 @@ def test_validate_single_rule_operation_dataset_larger_than_target_dataset(
     assert validation_result == [
         {
             "executionStatus": "success",
+            "dataset": "ie.xpt",
             "domain": "IE",
             "variables": [],
             "message": None,
@@ -2041,6 +2076,7 @@ def test_validate_extract_metadata_operation(
     assert validation_result == [
         {
             "executionStatus": "success",
+            "dataset": "suppec.xpt",
             "domain": "SUPPEC",
             "variables": [
                 "RDOMAIN",
@@ -2117,11 +2153,11 @@ def test_dataset_references_invalid_whodrug_terms(
         datasets=[{"domain": "AE", "filename": "ae.xpt"}],
         dataset_domain="AE",
     )
-
     assert validation_result == [
         {
             "executionStatus": "success",
             "domain": "AE",
+            "dataset": "dataset_path",
             "variables": [
                 "AEINA",
             ],
@@ -2265,6 +2301,7 @@ def test_validate_variables_order_against_library_metadata(
     assert result == [
         {
             "executionStatus": "success",
+            "dataset": "dataset_path",
             "domain": "AE",
             "variables": ["$column_order_from_dataset", "$column_order_from_library"],
             "message": RuleProcessor.extract_message_from_rule(
