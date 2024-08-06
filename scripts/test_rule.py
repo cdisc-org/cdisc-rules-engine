@@ -178,6 +178,8 @@ def test(args: TestArgs):
         args.whodrug,
         rules,
         None,
+        None,
+        None,
         ProgressParameterOptions.BAR.value,
         args.define_xml_path,
     )

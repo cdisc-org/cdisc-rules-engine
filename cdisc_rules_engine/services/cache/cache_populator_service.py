@@ -17,74 +17,119 @@ from cdisc_rules_engine.utilities.utils import (
     get_standard_details_cache_key,
     get_model_details_cache_key,
 )
+from scripts.script_utils import load_and_parse_local_rule
 from cdisc_rules_engine.constants.cache_constants import PUBLISHED_CT_PACKAGES
 
 
 class CachePopulator:
     def __init__(
-        self, cache: CacheServiceInterface, library_service: CDISCLibraryService
+        self,
+        cache: CacheServiceInterface,
+        library_service: CDISCLibraryService = None,
+        local_rules_path=None,
+        local__rules_id=None,
+        remove_local_rules=None,
+        cache_path=str,
     ):
         self.cache = cache
         self.library_service = library_service
+        self.local_rules_path = local_rules_path
+        self.local_rules_id = local__rules_id
+        self.remove_local_rules = remove_local_rules
+        self.cache_path = cache_path
 
     async def load_cache_data(self):
         """
         This function populates a cache implementation with
         all data necessary for running rules against local data.
         Including
-        * rules
+        * rules (from CDISC Library and optionally local draft rules)
         * library metadata
         * codelist metadata
         """
+        if self.remove_local_rules:
+            self.remove_specified_rules(self.cache_path)
+
+        elif self.local_rules_path and self.local_rules_id:
+            local_rules: List[dict] = await self._get_local_rules(self.local_rules_path)
+            key_prefix = f"local/{self.local_rules_id}/"
+            for rules in local_rules:
+                self.cache.add_batch(local_rules, "custom_id", prefix=key_prefix)
         # send request to get all rules
-        self.library_service.cache_library_json(LibraryEndpoints.PRODUCTS.value)
-        self.library_service.cache_library_json(LibraryEndpoints.RULES.value)
+        elif not self.local_rules_path and not self.remove_local_rules:
+            self.library_service.cache_library_json(LibraryEndpoints.PRODUCTS.value)
+            self.library_service.cache_library_json(LibraryEndpoints.RULES.value)
+            rules_lists: List[dict] = await self._get_rules_from_cdisc_library()
+            for rules in rules_lists:
+                self.cache.add_batch(
+                    rules.get("rules", []), "core_id", prefix=rules.get("key_prefix")
+                )
+            # save codelists to cache as a map of codelist to terms
+            codelist_term_maps = await self._get_codelist_term_maps()
+            self.cache.add_batch(codelist_term_maps, "package")
 
-        rules_lists: List[dict] = await self._get_rules_from_cdisc_library()
-        for rules in rules_lists:
-            self.cache.add_batch(
-                rules.get("rules", []), "core_id", prefix=rules.get("key_prefix")
+            # Add a list of all published ct packages to the cache
+            available_packages = [
+                package.get("package")
+                for package in codelist_term_maps
+                if "package" in package
+            ]
+            self.cache.add(PUBLISHED_CT_PACKAGES, available_packages)
+
+            # save standard codelists to cache as a map of variable to allowed_values
+            standards = self.library_service.get_all_tabulation_ig_standards()
+            standards.extend(self.library_service.get_all_collection_ig_standards())
+            standards.extend(self.library_service.get_all_analysis_ig_standards())
+
+            variable_codelist_maps = await self._get_variable_codelist_maps(standards)
+            self.cache.add_batch(variable_codelist_maps, "name")
+
+            # save details of all standards to cache
+            standards_details: List[
+                dict
+            ] = await self._async_get_details_of_all_standards(standards)
+            self.cache.add_batch(standards_details, "cache_key", pop_cache_key=True)
+
+            # save details of all standard's models to cache
+            standards_models: Iterable[
+                dict
+            ] = await self._async_get_details_of_all_standards_models(standards_details)
+            self.cache.add_batch(standards_models, "cache_key", pop_cache_key=True)
+
+            # save variables metadata to cache
+            variables_metadata: Iterable[dict] = await self._get_variables_metadata(
+                standards
             )
-
-        # save codelists to cache as a map of codelist to terms
-        codelist_term_maps = await self._get_codelist_term_maps()
-        self.cache.add_batch(codelist_term_maps, "package")
-
-        # Add a list of all published ct packages to the cache
-        available_packages = [
-            package.get("package")
-            for package in codelist_term_maps
-            if "package" in package
-        ]
-        self.cache.add(PUBLISHED_CT_PACKAGES, available_packages)
-
-        # save standard codelists to cache as a map of variable to allowed_values
-        standards = self.library_service.get_all_tabulation_ig_standards()
-        standards.extend(self.library_service.get_all_collection_ig_standards())
-        standards.extend(self.library_service.get_all_analysis_ig_standards())
-
-        variable_codelist_maps = await self._get_variable_codelist_maps(standards)
-        self.cache.add_batch(variable_codelist_maps, "name")
-
-        # save details of all standards to cache
-        standards_details: List[dict] = await self._async_get_details_of_all_standards(
-            standards
-        )
-        self.cache.add_batch(standards_details, "cache_key", pop_cache_key=True)
-
-        # save details of all standard's models to cache
-        standards_models: Iterable[
-            dict
-        ] = await self._async_get_details_of_all_standards_models(standards_details)
-        self.cache.add_batch(standards_models, "cache_key", pop_cache_key=True)
-
-        # save variables metadata to cache
-        variables_metadata: Iterable[dict] = await self._get_variables_metadata(
-            standards
-        )
-        self.cache.add_batch(variables_metadata, "cache_key", pop_cache_key=True)
-
+            self.cache.add_batch(variables_metadata, "cache_key", pop_cache_key=True)
+        else:
+            raise ValueError(
+                "Must Specify either local_rules_path and local_rules_id, remove_local_rules, or neither"
+            )
         return self.cache
+
+    async def _get_local_rules(self, local_rules_path: str) -> List[dict]:
+        """
+        Retrieve local rules from the file system.
+        """
+        rules = []
+        custom_ids = set()
+        # Ensure the directory exists
+        if not os.path.isdir(local_rules_path):
+            raise FileNotFoundError(f"The directory {local_rules_path} does not exist")
+        rule_files = [
+            os.path.join(local_rules_path, file)
+            for file in os.listdir(local_rules_path)
+            if file.endswith((".json", ".yml", ".yaml"))
+        ]
+        # Iterate through all files in the directory provided
+        for rule_file in rule_files:
+            rule = load_and_parse_local_rule(rule_file)
+            if rule and rule["custom_id"] not in custom_ids:
+                rules.append(rule)
+                custom_ids.add(rule["custom_id"])
+            else:
+                print(f"Skipping rule with duplicate custom_id: {rule['custom_id']}")
+        return rules
 
     async def load_codelists(self, packages: List[str]):
         coroutines = [
@@ -121,6 +166,32 @@ class CachePopulator:
         )
         self.cache.add_batch(variables_metadata, "cache_key", pop_cache_key=True)
 
+    def remove_specified_rules(self, cache):
+        pickle_file = os.path.join(cache, "local_rules.pkl")
+        if os.path.exists(pickle_file):
+            try:
+                with open(pickle_file, "rb") as f:
+                    existing_rules = pickle.load(f)
+                print(f"Loaded {len(existing_rules)} rules from {pickle_file}")
+                for key, value in existing_rules.items():
+                    self.cache.add(key, value)
+            except Exception as e:
+                print(f"Error loading rules from {pickle_file}: {e}")
+        else:
+            print(f"No existing rules file found at {pickle_file}")
+
+        # Remove specified rules
+        if self.remove_local_rules == "ALL":
+            print("Clearing all local rules")
+            self.cache.clear_all("local/")
+        else:
+            prefix_to_remove = f"local/{self.remove_local_rules}/"
+            print(f"Clearing rules with prefix: {prefix_to_remove}")
+            self.cache.clear_all(prefix_to_remove)
+
+        remaining_rules = self.cache.filter_cache(prefix="local/")
+        print(f"Remaining local rules after removal: {len(remaining_rules)}")
+
     def save_rules_locally(self, file_path: str):
         """
         Store cached rules in rules.pkl in cache path directory
@@ -128,6 +199,49 @@ class CachePopulator:
         rules_data = self.cache.filter_cache("rules")
         with open(file_path, "wb") as f:
             pickle.dump(rules_data, f)
+
+    def save_removed_rules_locally(self, file_path: str, remove_rules: str):
+        """
+        Store rules remaining after removal in cache path directory
+        """
+        remaining_rules = self.cache.filter_cache(prefix="local/")
+        try:
+            with open(file_path, "wb") as f:
+                pickle.dump(remaining_rules, f)
+            print(f"Successfully saved remaining rules to {file_path}")
+        except Exception as e:
+            print(f"Error occurred while writing remaining rules to file: {e}")
+
+    def save_local_rules_locally(self, file_path: str, local_rules_id: str):
+        """
+        Store cached local rules in local_rules.pkl in cache path directory
+        """
+        existing_rules = {}
+        if os.path.exists(file_path):
+            try:
+                with open(file_path, "rb") as f:
+                    existing_rules = pickle.load(f)
+            except Exception as e:
+                print(f"Error loading existing rules: {e}")
+        current_prefix = f"local/{local_rules_id}/"
+        if any(rule.startswith(current_prefix) for rule in existing_rules):
+            raise ValueError(
+                f"Rules with prefix '{current_prefix}' already exist in the cache."
+            )
+        current_rules = self.cache.filter_cache(prefix=current_prefix)
+        existing_rules = {
+            k: v for k, v in existing_rules.items() if not k.startswith(current_prefix)
+        }
+        for key, value in current_rules.items():
+            existing_rules[key] = value
+
+        # Save updated rules
+        try:
+            with open(file_path, "wb") as f:
+                pickle.dump(existing_rules, f)
+            print(f"Successfully saved updated local rules to {file_path}")
+        except Exception as e:
+            print(f"Error occurred while writing to file: {e}")
 
     def save_ct_packages_locally(self, file_path: str):
         """

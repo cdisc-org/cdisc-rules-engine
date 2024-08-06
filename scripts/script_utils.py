@@ -124,19 +124,38 @@ def get_rules(args) -> List[dict]:
     )
 
 
+def rule_cache_file(args) -> str:
+    if args.local_rules_cache:
+        return os.path.join(args.cache, "local_rules.pkl")
+    else:
+        return os.path.join(args.cache, "rules.pkl")
+
+
 def load_rules_from_cache(args) -> List[dict]:
     core_ids = set()
-    rules_file = os.path.join(args.cache, "rules.pkl")
+    rules_file = rule_cache_file(args)
     rules = []
-    if args.rules:
+    rules_data = {}
+    try:
+        with open(rules_file, "rb") as f:
+            rules_data = pickle.load(f)
+    except FileNotFoundError:
+        engine_logger.error(f"Rules file not found: {rules_file}")
+        return []
+    except Exception as e:
+        engine_logger.error(f"Error loading rules file: {e}")
+        return []
+
+    if args.local_rules_id:
+        local_prefix = f"local/{args.local_rules_id}/"
+        rules = {k: v for k, v in rules_data.items() if k.startswith(local_prefix)}
+        rules = list(rules.values())
+    elif args.rules:
         keys = [
             get_rules_cache_key(args.standard, args.version.replace(".", "-"), rule)
             for rule in args.rules
         ]
-        with open(rules_file, "rb") as f:
-            rules_data = pickle.load(f)
-            rules = [rules_data.get(key) for key in keys]
-
+        rules = [rules_data.get(key) for key in keys]
         missing_rules = [rule for rule, data in zip(args.rules, rules) if data is None]
         for missing_rule in missing_rules:
             engine_logger.error(
@@ -150,19 +169,17 @@ def load_rules_from_cache(args) -> List[dict]:
             )
     else:
         engine_logger.info(
-            f"No rules specified. Running all rules for {args.standard}"
+            f"No rules specified. Running all local rules for {args.standard}"
             + f" version {args.version}"
         )
-        with open(rules_file, "rb") as f:
-            rules_data = pickle.load(f)
-            for key, rule in rules_data.items():
-                core_id = rule.get("core_id")
-                rule_identifier = get_rules_cache_key(
-                    args.standard, args.version.replace(".", "-"), core_id
-                )
-                if core_id not in core_ids and key == rule_identifier:
-                    rules.append(rule)
-                    core_ids.add(core_id)
+        for key, rule in rules_data.items():
+            core_id = rule.get("core_id")
+            rule_identifier = get_rules_cache_key(
+                args.standard, args.version.replace(".", "-"), core_id
+            )
+            if core_id not in core_ids and key == rule_identifier:
+                rules.append(rule)
+                core_ids.add(core_id)
     return rules
 
 
@@ -214,6 +231,31 @@ def load_and_parse_rule(rule_file):
                 raise ValueError(f"Unsupported file type: {file_extension}")
     except Exception as e:
         engine_logger.error(f"error while loading {rule_file}: {e}")
+        return None
+
+
+def replace_rule_keys(rule):
+    if "Operations" in rule:
+        rule["actions"] = rule.pop("Operations")
+    if "Check" in rule:
+        rule["conditions"] = rule.pop("Check")
+        return rule
+
+
+def load_and_parse_local_rule(rule_file: str) -> dict:
+    _, file_extension = os.path.splitext(rule_file)
+    try:
+        with open(rule_file, "r", encoding="utf-8") as file:
+            if file_extension in [".yml", ".yaml"]:
+                loaded_data = yaml.safe_load(file)
+                loaded_data = replace_yml_spaces(loaded_data)
+            elif file_extension == ".json":
+                loaded_data = json.load(file)
+            else:
+                raise ValueError(f"Unsupported file type: {file_extension}")
+            return replace_rule_keys(loaded_data)
+    except Exception as e:
+        print(f"Error while loading {rule_file}: {e}")
         return None
 
 
