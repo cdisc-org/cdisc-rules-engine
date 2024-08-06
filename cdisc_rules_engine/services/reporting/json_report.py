@@ -64,9 +64,6 @@ class JsonReport(BaseReport):
                 }
                 for dataset in self._datasets
             ],
-            "issue_summary": self.get_summary_data(),
-            "issue_details": self.get_detailed_data(),
-            "rules_report": self.get_rules_report_data(),
         }
 
         if kwargs.get("raw_report") is True:
