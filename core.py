@@ -141,6 +141,7 @@ def cli():
 @click.option(
     "-dv",
     "--define-version",
+    type=click.Choice(["2-1", "2-0", "2.0", "2.1"]),
     help="Define-XML version used for validation",
 )
 @click.option("--whodrug", help="Path to directory with WHODrug dictionary files")
@@ -474,7 +475,7 @@ def list_rules(
 @click.option(
     "-dv",
     "--define-version",
-    type=click.Choice(["2-1", "2-0"]),
+    type=click.Choice(["2-1", "2-0", "2.0", "2.1"]),
     help="Define-XML version used for validation",
 )
 @click.option("--whodrug", help="Path to directory with WHODrug dictionary files")
