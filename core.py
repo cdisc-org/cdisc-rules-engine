@@ -141,6 +141,7 @@ def cli():
 @click.option(
     "-dv",
     "--define-version",
+    type=click.Choice(["2-1", "2-0", "2.0", "2.1"]),
     help="Define-XML version used for validation",
 )
 @click.option("--whodrug", help="Path to directory with WHODrug dictionary files")
@@ -456,8 +457,6 @@ def list_rules(
     required=True,
     help="Absolute path to rule file",
 )
-@click.option("--whodrug", help="Path to directory with WHODrug dictionary files")
-@click.option("--meddra", help="Path to directory with MedDRA dictionary files")
 @click.option(
     "-s", "--standard", required=False, help="CDISC standard to get rules for"
 )
@@ -476,8 +475,11 @@ def list_rules(
 @click.option(
     "-dv",
     "--define-version",
+    type=click.Choice(["2-1", "2-0", "2.0", "2.1"]),
     help="Define-XML version used for validation",
 )
+@click.option("--whodrug", help="Path to directory with WHODrug dictionary files")
+@click.option("--meddra", help="Path to directory with MedDRA dictionary files")
 @click.option(
     "-vx",
     "--validate-xml",
@@ -490,13 +492,13 @@ def test(
     ctx,
     cache_path: str,
     dataset_path: Tuple[str],
+    rule: str,
     standard: str,
     version: str,
     controlled_terminology_package: Tuple[str],
     define_version: str,
     whodrug: str,
     meddra: str,
-    rule: str,
     validate_xml,
     define_xml_path: str,
 ):
