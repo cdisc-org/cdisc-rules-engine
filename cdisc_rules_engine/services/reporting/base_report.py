@@ -49,13 +49,15 @@ class BaseReport(ABC):
         for validation_result in self._results:
             if validation_result.execution_status == "success":
                 for result in validation_result.results or []:
-                    dataset = result.get("domain")
+                    dataset = result.get("dataset")
+                    domain = result.get("domain")
                     if (
                         result.get("errors")
                         and result.get("executionStatus") == "success"
                     ):
                         summary_item = {
                             "dataset": dataset,
+                            "domain": domain,
                             "core_id": validation_result.id,
                             "message": result.get("message"),
                             "issues": len(result.get("errors")),
@@ -97,7 +99,8 @@ class BaseReport(ABC):
             "CORE-ID",
             "Message",
             "Executability",
-            "Dataset",
+            "Dataset Name"
+            "Dataset Domain",
             "USUBJID",
             "Record",
             "Sequence",
@@ -114,7 +117,8 @@ class BaseReport(ABC):
                         "core_id": validation_result.id,
                         "message": result.get("message"),
                         "executability": validation_result.executability,
-                        "dataset": result.get("domain"),
+                        "dataset": result.get("dataset"),
+                        "domain": result.get("domain"),
                         "USUBJID": error.get("USUBJID", ""),
                         "row": error.get("row", ""),
                         "SEQ": error.get("SEQ", ""),

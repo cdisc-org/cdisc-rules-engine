@@ -9,6 +9,8 @@ from cdisc_rules_engine.utilities.reporting_utilities import (
     get_define_version,
 )
 from .base_report import BaseReport
+from version import __version__
+from pathlib import Path
 
 
 class JsonReport(BaseReport):
@@ -35,28 +37,48 @@ class JsonReport(BaseReport):
         return ReportTypes.JSON.value.lower()
 
     def get_export(self, define_version, cdiscCt, standard, version, **kwargs) -> dict:
-        json_export = {
-            "conformance_details": {
-                "data_path": self._dataset_paths,
-                "report_date": datetime.now().replace(microsecond=0).isoformat(),
-                "runtime": round(self._elapsed_time, 2),
-            },
-            "bundle_details": {
-                "standard": standard.upper(),
-                "version": version,
-                "cdisc_ct": cdiscCt,
-                "define_version": define_version,
-            },
+        conformance_details = {
+            "CORE_Engine_Version": __version__,
+            "Report_Generation": datetime.now().replace(microsecond=0).isoformat(),
+            "Total_Runtime": f"{round(self._elapsed_time, 2)} seconds",
+            "Standard": standard.upper(),
+            "Version": f"V{version}",
+            "CT_Version": ", ".join(cdiscCt),
+            "Define_XML_Version": define_version,
         }
+        conformance_details["UNII_Version"] = None
+        conformance_details["Med-RT_Version"] = None
+        conformance_details["Meddra_Version"] = (
+            self._args.meddra if hasattr(self._args, "meddra") else None
+        )
+        conformance_details["WHODRUG_Version"] = (
+            self._args.whodrug if hasattr(self._args, "whodrug") else None
+        )
+        conformance_details["SNOMED_Version"] = None
+
+        json_export = {
+            "Conformance_Details": conformance_details,
+            "Dataset_Details": [
+                {
+                    "filename": dataset.get("filename"),
+                    "label": dataset.get("label"),
+                    "path": str(Path(dataset.get("full_path", "")).parent),
+                    "modification_date": dataset.get("modification_date"),
+                    "size_kb": dataset.get("size", 0) / 1000,
+                    "length": dataset.get("length"),
+                }
+                for dataset in self._datasets
+            ],
+        }
+
         if kwargs.get("raw_report") is True:
             json_export["results_data"] = [
                 rule_result.to_representation() for rule_result in self._results
             ]
         else:
-            json_export["summary_data"] = self.get_summary_data()
-            json_export["rules_report_data"] = self.get_rules_report_data()
-            json_export["detailed_data"] = self.get_detailed_data()
-
+            json_export["Issue_Summary"] = self.get_summary_data()
+            json_export["Issue_Details"] = self.get_detailed_data()
+            json_export["Rules_Report"] = self.get_rules_report_data()
         return json_export
 
     def write_report(self, define_xml_path: str = None):
