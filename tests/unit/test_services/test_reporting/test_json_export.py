@@ -255,30 +255,22 @@ def test_get_export():
         version="3.4",
         raw_report=False,
     )
-    assert export["conformance_details"]["CORE_Engine_Version"] == __version__
-    assert export["conformance_details"]["Total_Runtime"] == "10.1 seconds"
-    assert export["conformance_details"]["Standard"] == "SDTMIG"
-    assert export["conformance_details"]["Version"] == "V3.4"
-    assert export["conformance_details"]["CT_Version"] == "sdtmct-03-2021"
-    assert export["conformance_details"]["Define_XML_Version"] == "2.1"
-    assert "dataset_details" in export
-    assert isinstance(export["dataset_details"], list)
+    assert export["Conformance_Details"]["CORE_Engine_Version"] == __version__
+    assert export["Conformance_Details"]["Total_Runtime"] == "10.1 seconds"
+    assert export["Conformance_Details"]["Standard"] == "SDTMIG"
+    assert export["Conformance_Details"]["Version"] == "V3.4"
+    assert export["Conformance_Details"]["CT_Version"] == "sdtmct-03-2021"
+    assert export["Conformance_Details"]["Define_XML_Version"] == "2.1"
+    assert "Dataset_Details" in export
+    assert isinstance(export["Dataset_Details"], list)
 
-    assert "issue_summary" in export
-    assert isinstance(export["issue_summary"], list)
-    assert "issue_details" in export
-    assert isinstance(export["issue_details"], list)
-    assert "rules_report" in export
-    assert isinstance(export["rules_report"], list)
     assert "Issue_Summary" in export
     assert isinstance(export["Issue_Summary"], list)
-    assert "issue_Details" in export
-    assert isinstance(export["issue_Details"], list)
+    assert "Issue_Details" in export
+    assert isinstance(export["Issue_Details"], list)
     assert "Rules_Report" in export
     assert isinstance(export["Rules_Report"], list)
-    assert len(export["issue_summary"]) > 0
-    assert len(export["issue_details"]) > 0
-    assert len(export["rules_report"]) > 0
+    assert "Issue_Summary" in export
     assert len(export["Issue_Summary"]) > 0
-    assert len(export["issue_Details"]) > 0
+    assert len(export["Issue_Details"]) > 0
     assert len(export["Rules_Report"]) > 0

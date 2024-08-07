@@ -57,8 +57,8 @@ class JsonReport(BaseReport):
         conformance_details["SNOMED_Version"] = None
 
         json_export = {
-            "conformance_details": conformance_details,
-            "dataset_details": [
+            "Conformance_Details": conformance_details,
+            "Dataset_Details": [
                 {
                     "filename": dataset.get("filename"),
                     "label": dataset.get("label"),
@@ -77,7 +77,7 @@ class JsonReport(BaseReport):
             ]
         else:
             json_export["Issue_Summary"] = self.get_summary_data()
-            json_export["issue_Details"] = self.get_detailed_data()
+            json_export["Issue_Details"] = self.get_detailed_data()
             json_export["Rules_Report"] = self.get_rules_report_data()
         return json_export
 
