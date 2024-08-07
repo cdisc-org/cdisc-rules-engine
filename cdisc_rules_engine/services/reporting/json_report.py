@@ -46,10 +46,16 @@ class JsonReport(BaseReport):
             "CT_Version": ", ".join(cdiscCt),
             "Define_XML_Version": define_version,
         }
-        if self._args.meddra:
-            conformance_details["Meddra-RT_Version"] = self._args.meddra
-        if self._args.whodrug:
-            conformance_details["WHODRUG_Version"] = self._args.whodrug
+        conformance_details["UNII_Version"] = None
+        conformance_details["Med-RT_Version"] = None
+        conformance_details["Meddra_Version"] = (
+            self._args.meddra if hasattr(self._args, "meddra") else None
+        )
+        conformance_details["WHODRUG_Version"] = (
+            self._args.whodrug if hasattr(self._args, "whodrug") else None
+        )
+        conformance_details["WHODRUG_Version"] = None
+        conformance_details["SNOMED_Version"] = None
 
         json_export = {
             "conformance_details": conformance_details,
