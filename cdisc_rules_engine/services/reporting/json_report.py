@@ -54,7 +54,6 @@ class JsonReport(BaseReport):
         conformance_details["WHODRUG_Version"] = (
             self._args.whodrug if hasattr(self._args, "whodrug") else None
         )
-        conformance_details["WHODRUG_Version"] = None
         conformance_details["SNOMED_Version"] = None
 
         json_export = {
@@ -80,7 +79,7 @@ class JsonReport(BaseReport):
             json_export["Issue_Summary"] = self.get_summary_data()
             json_export["issue_Details"] = self.get_detailed_data()
             json_export["Rules_Report"] = self.get_rules_report_data()
-
+        breakpoint()
         return json_export
 
     def write_report(self, define_xml_path: str = None):
