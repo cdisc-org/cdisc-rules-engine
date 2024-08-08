@@ -303,6 +303,15 @@
     {
       "properties": {
         "operator": {
+          "const": "invalid_duration"
+        }
+      },
+      "required": ["operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
           "const": "invalid_date"
         }
       },

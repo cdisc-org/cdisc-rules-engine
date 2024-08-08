@@ -4,6 +4,7 @@ from business_rules.fields import FIELD_DATAFRAME
 from business_rules.utils import (
     flatten_list,
     vectorized_is_valid,
+    vectorized_is_valid_duration,
     vectorized_is_complete_date,
     vectorized_get_dict_key,
     vectorized_is_in,
@@ -792,6 +793,12 @@ class DataframeType(BaseType):
     def invalid_date(self, other_value):
         target = self.replace_prefix(other_value.get("target"))
         results = ~vectorized_is_valid(self.value[target])
+        return self.value.convert_to_series(results)
+
+    @type_operator(FIELD_DATAFRAME)
+    def invalid_duration(self, other_value):
+        target = self.replace_prefix(other_value.get("target"))
+        results = ~vectorized_is_valid_duration(self.value[target])
         return self.value.convert_to_series(results)
 
     def date_comparison(self, other_value, operator):
