@@ -482,7 +482,7 @@ Date check
 
 ## invalid_duration
 
-Duration ISO-8601 check
+Duration ISO-8601 check, returns True if a duration is not in ISO-8601 format
 
 > DURVAR is invalid
 
