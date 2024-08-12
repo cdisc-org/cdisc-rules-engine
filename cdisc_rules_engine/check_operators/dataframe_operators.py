@@ -77,9 +77,21 @@ class DataframeType(BaseType):
     @type_operator(FIELD_DATAFRAME)
     def exists(self, other_value):
         target_column = self.replace_prefix(other_value.get("target"))
-        return self.value.convert_to_series(
-            [target_column in self.value] * len(self.value)
-        )
+
+        def check_row(row):
+            for item in row:
+                if isinstance(item, list):
+                    return target_column in item
+                elif isinstance(item, str):
+                    try:
+                        item_list = eval(item)
+                        if isinstance(item_list, list):
+                            return target_column in item_list
+                    except (SyntaxError, ValueError, NameError):
+                        pass
+            return False
+
+        return self.value.convert_to_series(self.value.apply(check_row, axis=1))
 
     @type_operator(FIELD_DATAFRAME)
     def not_exists(self, other_value):
