@@ -16,6 +16,7 @@ import numpy as np
 import pandas as pd
 import dask.dataframe as dd
 import dask.array as da
+from datetime import datetime, date, time
 import operator
 from uuid import uuid4
 from cdisc_rules_engine.models.dataset.dask_dataset import DaskDataset
@@ -1247,7 +1248,74 @@ class DataframeType(BaseType):
     def value_does_not_have_multiple_references(self, other_value: dict):
         return ~self.value_has_multiple_references(other_value)
 
+    def normalize_datetime(val):
+        if isinstance(val, (datetime, date, time)):
+            return val
+        if isinstance(val, str):
+            try:
+                # Try parsing as datetime
+                return datetime.strptime(val, "%Y-%m-%d %H:%M:%S")
+            except ValueError:
+                try:
+                    # Try parsing as date
+                    return datetime.strptime(val, "%Y-%m-%d").date()
+                except ValueError:
+                    try:
+                        # Try parsing as time
+                        return datetime.strptime(val, "%H:%M:%S").time()
+                    except ValueError:
+                        # If it's just a date without time, add "00:00:00"
+                        return datetime.strptime(val + " 00:00:00", "%Y-%m-%d %H:%M:%S")
+        return val
+
+    def compare_datetimes(self, a, b):
+        a, b = self.normalize_datetime(a), self.normalize_datetime(b)
+        if isinstance(a, date) and isinstance(b, datetime):
+            return a == b.date()
+        elif isinstance(a, datetime) and isinstance(b, date):
+            return a.date() == b
+        elif isinstance(a, time) and isinstance(b, datetime):
+            return a == b.time()
+        elif isinstance(a, datetime) and isinstance(b, time):
+            return a.time() == b
+        return a == b
+
     @type_operator(FIELD_DATAFRAME)
+    def target_is_sorted_by(self, other_value: dict):
+        """
+        Checking the sort order based on comparators
+        """
+        is_dask = isinstance(self.data, dd.DataFrame)
+        if is_dask:
+            return self.target_is_sorted_by_dask(self, other_value)
+        else:
+            target: str = self.replace_prefix(other_value.get("target"))
+            within: str = self.replace_prefix(other_value.get("within"))
+            columns = other_value["comparator"]
+            result = pd.Series([True] * len(self.value), index=self.value.index)
+            for col in columns:
+                comparator: str = self.replace_prefix(col["name"])
+                ascending: bool = col["sort_order"].lower() != "desc"
+                na_pos: str = col["null_position"]
+                sorted_df = self.value[[target, within, comparator]].sort_values(
+                    by=[within, comparator], ascending=ascending, na_position=na_pos
+                )
+                grouped_df = sorted_df.groupby(within)
+                sorted_check = pd.Series(index=sorted_df.index, dtype=bool)
+                for name, group in grouped_df:
+                    sorted_values = (
+                        group[target].apply(self.normalize_datetime).tolist()
+                    )
+                    is_sorted = all(
+                        self.compare_datetimes(a, b)
+                        if ascending
+                        else self.compare_datetimes(b, a)
+                        for a, b in zip(sorted_values[:-1], sorted_values[1:])
+                    )
+                    sorted_check[group.index] = is_sorted
+                result.update(sorted_check)
+            return result
+
     def target_is_sorted_by_dask(self, other_value: dict):
         """
         Checking the sort order based on comparators for DaskDataset.
@@ -1262,60 +1330,64 @@ class DataframeType(BaseType):
                 comparator: str = self.replace_prefix(col["name"])
                 ascending: bool = col["sort_order"].lower() != "desc"
                 na_pos: str = col["null_position"]
-                # Sort the group by the comparator
                 sorted_group = group.sort_values(
                     by=[comparator], ascending=ascending, na_position=na_pos
                 )
-                target_values = sorted_group[target].values
-                # Check if the target column is sorted
-                if ascending:
-                    is_sorted = (target_values[:-1] <= target_values[1:]).all()
-                else:
-                    is_sorted = (target_values[:-1] >= target_values[1:]).all()
+                target_values = (
+                    sorted_group[target]
+                    .map_partitions(lambda x: x.apply(self.normalize_datetime))
+                    .compute()
+                )
+                is_sorted = all(
+                    self.compare_datetimes(a, b)
+                    if ascending
+                    else self.compare_datetimes(b, a)
+                    for a, b in zip(target_values[:-1], target_values[1:])
+                )
                 result &= is_sorted
             return result
 
         result = self.data.groupby(within).apply(check_sorted, meta=(target, "bool"))
         return result
 
-    @type_operator(FIELD_DATAFRAME)
-    def target_is_sorted_by(self, other_value: dict):
-        """
-        Checking the sort order based on  comparators
-        """
-        is_dask = isinstance(self.data, dd.DataFrame)
-        if is_dask:
-            return self.target_is_sorted_by_dask(self, other_value)
-        else:
-            target: str = self.replace_prefix(other_value.get("target"))
-            within: str = self.replace_prefix(other_value.get("within"))
-            columns = other_value["comparator"]
+    # @type_operator(FIELD_DATAFRAME)
+    # def target_is_sorted_by(self, other_value: dict):
+    #     """
+    #     Checking the sort order based on  comparators
+    #     """
+    #     is_dask = isinstance(self.data, dd.DataFrame)
+    #     if is_dask:
+    #         return self.target_is_sorted_by_dask(self, other_value)
+    #     else:
+    #         target: str = self.replace_prefix(other_value.get("target"))
+    #         within: str = self.replace_prefix(other_value.get("within"))
+    #         columns = other_value["comparator"]
 
-            result = pd.Series([True] * len(self.value), index=self.value.index)
-            for col in columns:
-                comparator: str = self.replace_prefix(col["name"])
-                ascending: bool = col["sort_order"].lower() != "desc"
-                na_pos: str = col["null_position"]
-                sorted_df = self.value[[target, within, comparator]].sort_values(
-                    by=[within, comparator], ascending=ascending, na_position=na_pos
-                )
-                # temporary DataFrame to check the order
-                grouped_df = sorted_df.groupby(within)
-                # Series to hold the sorted check results
-                sorted_check = pd.Series(index=sorted_df.index, dtype=bool)
+    #         result = pd.Series([True] * len(self.value), index=self.value.index)
+    #         for col in columns:
+    #             comparator: str = self.replace_prefix(col["name"])
+    #             ascending: bool = col["sort_order"].lower() != "desc"
+    #             na_pos: str = col["null_position"]
+    #             sorted_df = self.value[[target, within, comparator]].sort_values(
+    #                 by=[within, comparator], ascending=ascending, na_position=na_pos
+    #             )
+    #             # temporary DataFrame to check the order
+    #             grouped_df = sorted_df.groupby(within)
+    #             # Series to hold the sorted check results
+    #             sorted_check = pd.Series(index=sorted_df.index, dtype=bool)
 
-                for name, group in grouped_df:
-                    sorted_values = group[target].values
-                    expected_values = (
-                        np.sort(sorted_values)
-                        if ascending
-                        else np.sort(sorted_values)[::-1]
-                    )
-                    sorted_check[group.index] = np.array_equal(
-                        sorted_values, expected_values
-                    )
-                result.update(sorted_check)
-            return result
+    #             for name, group in grouped_df:
+    #                 sorted_values = group[target].values
+    #                 expected_values = (
+    #                     np.sort(sorted_values)
+    #                     if ascending
+    #                     else np.sort(sorted_values)[::-1]
+    #                 )
+    #                 sorted_check[group.index] = np.array_equal(
+    #                     sorted_values, expected_values
+    #                 )
+    #             result.update(sorted_check)
+    #         return result
 
     @type_operator(FIELD_DATAFRAME)
     def target_is_not_sorted_by(self, other_value: dict):
