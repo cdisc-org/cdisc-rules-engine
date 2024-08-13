@@ -943,6 +943,9 @@
     },
     "within": {
       "$ref": "CORE-base.json#/$defs/VariableName"
+    },
+    "regex": {
+      "type": "string"
     }
   },
   "required": ["operator"],
