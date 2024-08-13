@@ -85,7 +85,8 @@ class DataframeType(BaseType):
         if column_exists:
             return self.value.convert_to_series([True] * len(self.value))
         else:
-            return self.value.convert_to_series(self.value.apply(check_row, axis=1))
+            exists_in_nested = self.value.apply(check_row, axis=1).any()
+            return self.value.convert_to_series([exists_in_nested] * len(self.value))
 
     @type_operator(FIELD_DATAFRAME)
     def not_exists(self, other_value):
