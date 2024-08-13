@@ -81,9 +81,16 @@ class DataframeType(BaseType):
     @type_operator(FIELD_DATAFRAME)
     def exists(self, other_value):
         target_column = self.replace_prefix(other_value.get("target"))
-        return self.value.convert_to_series(
-            [target_column in self.value] * len(self.value)
-        )
+
+        def check_row(row):
+            return any(target_column in item for item in row if isinstance(item, list))
+
+        column_exists = target_column in self.value.columns
+        if column_exists:
+            return self.value.convert_to_series([True] * len(self.value))
+        else:
+            exists_in_nested = self.value.apply(check_row, axis=1).any()
+            return self.value.convert_to_series([exists_in_nested] * len(self.value))
 
     @type_operator(FIELD_DATAFRAME)
     def not_exists(self, other_value):
