@@ -134,6 +134,8 @@ class Rule:
         }
         if condition.get("name"):
             data["value"]["target"] = condition.get("name")
+        if condition.get("regex"):
+            data["value"]["regex"] = condition.get("regex")
         if "variables" in condition:
             data["variables"] = condition["variables"]
         for optional_parameter in OptionalConditionParameters.values():

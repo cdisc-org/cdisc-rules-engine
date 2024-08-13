@@ -480,6 +480,17 @@ Date check
   operator: "invalid_date"
 ```
 
+## invalid_duration
+
+Duration ISO-8601 check, returns True if a duration is not in ISO-8601 format
+
+> DURVAR is invalid
+
+```yaml
+- name: "BRTHDTC"
+  operator: "invalid_duration"
+```
+
 # Metadata
 
 ## exists
