@@ -4,6 +4,7 @@ from business_rules.fields import FIELD_DATAFRAME
 from business_rules.utils import (
     flatten_list,
     vectorized_is_valid,
+    vectorized_is_valid_duration,
     vectorized_is_complete_date,
     vectorized_get_dict_key,
     vectorized_is_in,
@@ -77,9 +78,16 @@ class DataframeType(BaseType):
     @type_operator(FIELD_DATAFRAME)
     def exists(self, other_value):
         target_column = self.replace_prefix(other_value.get("target"))
-        return self.value.convert_to_series(
-            [target_column in self.value] * len(self.value)
-        )
+
+        def check_row(row):
+            return any(target_column in item for item in row if isinstance(item, list))
+
+        column_exists = target_column in self.value.columns
+        if column_exists:
+            return self.value.convert_to_series([True] * len(self.value))
+        else:
+            exists_in_nested = self.value.apply(check_row, axis=1).any()
+            return self.value.convert_to_series([exists_in_nested] * len(self.value))
 
     @type_operator(FIELD_DATAFRAME)
     def not_exists(self, other_value):
@@ -792,6 +800,12 @@ class DataframeType(BaseType):
     def invalid_date(self, other_value):
         target = self.replace_prefix(other_value.get("target"))
         results = ~vectorized_is_valid(self.value[target])
+        return self.value.convert_to_series(results)
+
+    @type_operator(FIELD_DATAFRAME)
+    def invalid_duration(self, other_value):
+        target = self.replace_prefix(other_value.get("target"))
+        results = ~vectorized_is_valid_duration(self.value[target])
         return self.value.convert_to_series(results)
 
     def date_comparison(self, other_value, operator):

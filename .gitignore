@@ -141,3 +141,6 @@ local.settings.json
 
 logs
 ~$CORE-*.xlsx
+
+# Ignore local rules
+resources/cache/local_rules.pkl

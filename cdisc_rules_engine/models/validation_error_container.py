@@ -10,6 +10,7 @@ from .validation_error_entity import ValidationErrorEntity
 
 class ValidationErrorContainer(BaseValidationEntity):
     def __init__(self, **params):
+        self.dataset: str = params.get("dataset")
         self.domain: str = params.get("domain")
         self.targets: List[str] = params.get("targets", [])
         self.errors: List[
@@ -23,6 +24,7 @@ class ValidationErrorContainer(BaseValidationEntity):
     def to_representation(self) -> dict:
         return {
             "executionStatus": self.status,
+            "dataset": self.dataset,
             "domain": self.domain,
             "variables": sorted(self.targets),
             "message": self.message,

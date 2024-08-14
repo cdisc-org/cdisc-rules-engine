@@ -9,13 +9,15 @@ class FailedValidationEntity(BaseValidationEntity):
     indicating that the process has finished its execution with error.
     """
 
-    def __init__(self, error: str, message: str):
+    def __init__(self, error: str, message: str, dataset: str):
+        self.dataset = dataset
         self._error = error
         self._message = message
         self.status = ExecutionStatus.EXECUTION_ERROR
 
     def to_representation(self) -> dict:
         return {
+            "dataset": self.dataset,
             "error": self._error,
             "message": self._message,
         }

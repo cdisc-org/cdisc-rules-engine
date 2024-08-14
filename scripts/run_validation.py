@@ -122,10 +122,10 @@ def run_validation(args: Validation_args):
     manager.start()
     shared_cache = get_cache_service(manager)
     engine_logger.info(f"Populating cache, cache path: {args.cache}")
+    rules = get_rules(args)
     library_metadata: LibraryMetadataContainer = get_library_metadata_from_cache(args)
     # install dictionaries if needed
     fill_cache_with_dictionaries(shared_cache, args)
-    rules = get_rules(args)
     max_dataset_size = get_max_dataset_size(args.dataset_paths)
     standard = args.standard
     standard_version = args.version.replace(".", "-")

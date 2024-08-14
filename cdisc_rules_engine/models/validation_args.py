@@ -20,6 +20,8 @@ Validation_args = namedtuple(
         "loinc",
         "rules",
         "local_rules",
+        "local_rules_cache",
+        "local_rules_id",
         "progress",
         "define_xml_path",
     ],

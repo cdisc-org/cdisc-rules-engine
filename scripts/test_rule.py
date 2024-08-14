@@ -180,6 +180,8 @@ def test(args: TestArgs):
         args.loinc,
         rules,
         None,
+        None,
+        None,
         ProgressParameterOptions.BAR.value,
         args.define_xml_path,
     )

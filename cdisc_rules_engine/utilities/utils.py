@@ -306,6 +306,13 @@ def get_rules_cache_key(standard: str, version: str, rule_id: str = None) -> str
     return key
 
 
+def get_local_cache_key(local_rule_id: str, rule_id: str = None) -> str:
+    key = f"local/{local_rule_id}/"
+    if rule_id:
+        key = f"{key}{rule_id}"
+    return key
+
+
 def get_metadata_cache_key(metadata_key: str):
     return f"library/metadata{metadata_key}"
 

@@ -497,7 +497,6 @@ class TestValidate(unittest.TestCase):
             os.path.join("tests", "resources", "define.xml"),
         ]
         exit_code, stdout, stderr = self.run_command(args)
-
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_message in stdout)
         self.assertEqual(stderr, "")

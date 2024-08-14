@@ -185,6 +185,7 @@ def test_get_detailed_data():
                 mock_validation_results[0].id,
                 "AESTDY and DOMAIN are equal to test",
                 "Partially Executable",
+                None,
                 "AE",
                 "CDISC002",
                 1,
@@ -196,6 +197,7 @@ def test_get_detailed_data():
                 mock_validation_results[0].id,
                 "AESTDY and DOMAIN are equal to test",
                 "Partially Executable",
+                None,
                 "AE",
                 "CDISC003",
                 9,
@@ -207,6 +209,7 @@ def test_get_detailed_data():
                 mock_validation_results[1].id,
                 "TTVARs are wrong",
                 "Fully Executable",
+                None,
                 "TT",
                 "CDISC002",
                 1,
@@ -229,12 +232,14 @@ def test_get_summary_data():
         summary_data = report.get_summary_data()
         errors = [
             [
+                None,
                 "AE",
                 mock_validation_results[0].id,
                 "AESTDY and DOMAIN are equal to test",
                 2,
             ],
             [
+                None,
                 "TT",
                 mock_validation_results[1].id,
                 "TTVARs are wrong",

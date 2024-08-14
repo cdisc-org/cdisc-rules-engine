@@ -303,6 +303,15 @@
     {
       "properties": {
         "operator": {
+          "const": "invalid_duration"
+        }
+      },
+      "required": ["operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
           "const": "invalid_date"
         }
       },
@@ -943,6 +952,9 @@
     },
     "within": {
       "$ref": "CORE-base.json#/$defs/VariableName"
+    },
+    "regex": {
+      "type": "string"
     }
   },
   "required": ["operator"],
