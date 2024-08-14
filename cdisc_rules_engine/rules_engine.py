@@ -81,6 +81,7 @@ class RulesEngine:
         self.ct_package = kwargs.get("ct_package")
         self.meddra_path: str = kwargs.get("meddra_path")
         self.whodrug_path: str = kwargs.get("whodrug_path")
+        self.loinc_path: str = kwargs.get("loinc_path")
         self.define_xml_path: str = kwargs.get("define_xml_path")
         self.validate_xml: bool = kwargs.get("validate_xml")
 
@@ -333,6 +334,7 @@ class RulesEngine:
             standard_version=self.standard_version,
             meddra_path=self.meddra_path,
             whodrug_path=self.whodrug_path,
+            loinc_path=self.loinc_path,
             ct_packages=ct_packages,
         )
         relationship_data = {}

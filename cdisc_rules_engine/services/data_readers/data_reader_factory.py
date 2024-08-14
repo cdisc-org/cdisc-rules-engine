@@ -18,7 +18,6 @@ class DataReaderFactory(FactoryInterface):
         DataFormatTypes.PARQUET.value: ParquetReader,
         DataFormatTypes.JSON.value: DatasetJSONReader,
         DataFormatTypes.USDM.value: USDMJSONReader,
-        DataFormatTypes.XPT.value: XPTReader,
     }
 
     def __init__(self, service_name: str = None, dataset_implementation=PandasDataset):

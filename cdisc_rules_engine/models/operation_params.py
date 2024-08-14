@@ -28,6 +28,7 @@ class OperationParams:
     original_target: str = None
     meddra_path: str = None
     whodrug_path: str = None
+    loinc_path: str = None
     grouping: List[str] = None
     key_name: str = None
     key_value: str = None
