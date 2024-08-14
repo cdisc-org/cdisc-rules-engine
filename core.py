@@ -134,6 +134,7 @@ def cli():
 )
 @click.option("--whodrug", help="Path to directory with WHODrug dictionary files")
 @click.option("--meddra", help="Path to directory with MedDRA dictionary files")
+@click.option("--loinc", help="Path to directory with LOINC dictionary files")
 @click.option(
     "--rules",
     "-r",
@@ -177,6 +178,7 @@ def validate(
     define_version: str,
     whodrug: str,
     meddra: str,
+    loinc: str,
     rules: Tuple[str],
     local_rules: str,
     progress: str,
@@ -253,6 +255,7 @@ def validate(
             define_version,
             whodrug,
             meddra,
+            loinc,
             rules,
             local_rules,
             progress,
@@ -351,6 +354,7 @@ def list_rules(ctx: click.Context, cache_path: str, standard: str, version: str)
 )
 @click.option("--whodrug", help="Path to directory with WHODrug dictionary files")
 @click.option("--meddra", help="Path to directory with MedDRA dictionary files")
+@click.option("--loinc", help="Path to directory with LOINC dictionary files")
 @click.option(
     "-s", "--standard", required=False, help="CDISC standard to get rules for"
 )
@@ -389,6 +393,7 @@ def test(
     define_version: str,
     whodrug: str,
     meddra: str,
+    loinc: str,
     rule: str,
     validate_xml,
     define_xml_path: str,
@@ -402,6 +407,7 @@ def test(
         version,
         whodrug,
         meddra,
+        loinc,
         controlled_terminology_package,
         define_version,
         define_xml_path,
