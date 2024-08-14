@@ -1,4 +1,7 @@
 from cdisc_rules_engine.exceptions.custom_exceptions import MissingDataError
+from cdisc_rules_engine.models.dictionaries.base_external_dictionary import (
+    ExternalDictionary,
+)
 from cdisc_rules_engine.models.dictionaries.meddra.meddra_file_names import (
     MeddraFileNames,
 )
@@ -23,7 +26,7 @@ class MedDRATermsFactory(TermsFactoryInterface):
     def install_terms(
         self,
         directory_path: str,
-    ):
+    ) -> ExternalDictionary:
         """
         Create MedDRA dictionary terms from files in directory.
         """
@@ -72,7 +75,7 @@ class MedDRATermsFactory(TermsFactoryInterface):
                     term.code_hierarchy = f"{parent.code_hierarchy}/{term.code}"
                     term.term_hierarchy = f"{parent.term_hierarchy}/{term.term}"
 
-        return data
+        return ExternalDictionary(terms=data)
 
     def read_data(self, file_path, data_type: str) -> dict:
         """
