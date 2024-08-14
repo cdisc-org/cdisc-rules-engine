@@ -66,8 +66,6 @@ class LoincValidator(AbstractDictionaryValidator):
         term_dictionary = self.get_term_dictionary()
         case_sensitive_check = kwargs.get("case_sensitive")
         if case_sensitive_check:
-            print("here")
-            print(term in term_dictionary)
             return term in term_dictionary
         else:
             for key in term_dictionary:
