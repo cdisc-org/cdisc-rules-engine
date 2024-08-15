@@ -5,11 +5,19 @@ that can be reused.
 import copy
 import os
 import re
-from datetime import datetime
+from datetime import datetime, date, time
+
 from typing import Callable, List, Optional, Set, Union
 from uuid import UUID
 from cdisc_rules_engine.services import logger
-
+from cdisc_rules_engine.check_operators.helpers import (
+    get_date,
+    get_day,
+    get_hour,
+    get_minute,
+    get_second,
+    get_microsecond,
+)
 from cdisc_rules_engine.constants.domains import (
     AP_DOMAIN,
     APFA_DOMAIN,
@@ -380,3 +388,80 @@ def get_sided_match_keys(match_keys: List[Union[str, dict]], side: str) -> List[
         match_key if isinstance(match_key, str) else match_key[side]
         for match_key in match_keys
     ]
+
+
+def normalize_datetime(val, for_sorting=False):
+    if isinstance(val, (datetime, date, time)):
+        if for_sorting and isinstance(val, date):
+            return datetime.combine(val, time(0, 0, 0)), "date"
+        return val, type(val).__name__
+
+    if not isinstance(val, str):
+        return val, type(val).__name__
+
+    try:
+        parsed_date = get_date(val)
+
+        if (
+            get_hour(val) is not None
+            or get_minute(val) is not None
+            or get_second(val) is not None
+            or get_microsecond(val) is not None
+        ):
+            # If any time component is present, fill missing with 00
+            hour = get_hour(val) or 0
+            minute = get_minute(val) or 0
+            second = get_second(val) or 0
+            microsecond = get_microsecond(val) or 0
+            return (
+                datetime(
+                    parsed_date.year,
+                    parsed_date.month,
+                    parsed_date.day,
+                    hour,
+                    minute,
+                    second,
+                    microsecond,
+                ),
+                "datetime",
+            )
+        elif get_day(val) is not None:
+            if for_sorting:
+                return (
+                    datetime(
+                        parsed_date.year, parsed_date.month, parsed_date.day, 0, 0, 0
+                    ),
+                    "date",
+                )
+            return parsed_date.date(), "date"
+        else:
+            raise ValueError("Invalid date format")
+    except ValueError:
+        return val, type(val).__name__
+
+
+def compare_values(a, b, ascending=True):
+    """
+    Compare two values, which may be datetimes or other types.
+    """
+    a_val, a_type = normalize_datetime(a)
+    b_val, b_type = normalize_datetime(b)
+
+    if a_type == "date" and b_type == "datetime":
+        a_val = datetime.combine(a_val, time(0, 0, 0))
+    elif a_type == "datetime" and b_type == "date":
+        b_val = datetime.combine(b_val, time(0, 0, 0))
+
+    if a_type in ["date", "datetime"] and b_type in ["date", "datetime"]:
+        if ascending:
+            return a_val <= b_val
+        else:
+            return a_val >= b_val
+    elif a_type == "time" or b_type == "time":
+        logger.error(f"Cannot compare {a} ({a_type}) and {b} ({b_type})")
+        return False
+    else:
+        if ascending:
+            return a_val <= b_val
+        else:
+            return a_val >= b_val
