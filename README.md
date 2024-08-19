@@ -108,6 +108,8 @@ Run `python core.py validate --help` to see the list of validation options.
                                   files
   --meddra TEXT                   Path to directory with MedDRA dictionary
                                   files
+  --loinc TEXT                  Path to directory with LOINC dictionary
+                                  files
   -r, --rules TEXT                Specify rule core ID ex. CORE-000001. Can be specified multiple times.
   -lr, --local_rules TEXT         Specify relative path to directory containing
                                   local rule yml and/or json rule files.
@@ -204,6 +206,8 @@ To obtain an api key, please follow the instructions found here: <https://wiki.c
   --whodrug TEXT                  Path to directory with WHODrug dictionary
                                   files
   --meddra TEXT                   Path to directory with MedDRA dictionary
+                                  files
+  --loinc TEXT                    Path to directory with LOINC dictionary
                                   files
   -r, --rule TEXT                 Path to rule json file.
   -dxp                            Path to define-xml file.
