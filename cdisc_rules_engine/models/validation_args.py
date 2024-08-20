@@ -17,6 +17,7 @@ Validation_args = namedtuple(
         "define_version",
         "whodrug",
         "meddra",
+        "loinc",
         "rules",
         "local_rules",
         "local_rules_cache",

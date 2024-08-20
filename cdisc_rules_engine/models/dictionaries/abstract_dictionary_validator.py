@@ -4,18 +4,12 @@ from abc import ABC, abstractmethod
 class AbstractDictionaryValidator(ABC):
     @abstractmethod
     def is_valid_term(
-        self,
-        term_dictionary: dict,
-        term: str,
-        term_type: str = "",
-        variable: str = "",
-        **kwargs
+        self, term: str, term_type: str = "", variable: str = "", **kwargs
     ) -> bool:
         """
         Method to identify whether a term is valid based on its term type.
 
         Args:
-            term_dictionary: The dictionary of available terms.
             term: The dictionary term used
             term_type: The component of the dictionary to validate against.
             variable: The source variable of the term value.

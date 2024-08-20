@@ -10,6 +10,7 @@ TestArgs = namedtuple(
         "version",
         "whodrug",
         "meddra",
+        "loinc",
         "controlled_terminology_package",
         "define_version",
         "define_xml_path",

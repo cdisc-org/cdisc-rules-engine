@@ -1,9 +1,11 @@
 from collections import defaultdict
-from typing import Dict
 
 from cdisc_rules_engine.interfaces import (
     TermsFactoryInterface,
     DataServiceInterface,
+)
+from cdisc_rules_engine.models.dictionaries.base_external_dictionary import (
+    ExternalDictionary,
 )
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.utilities.utils import get_dictionary_path, decode_line
@@ -28,9 +30,7 @@ class WhoDrugTermsFactory(TermsFactoryInterface):
             WhodrugFileNames.INA_FILE_NAME.value: AtcText,
         }
 
-    def install_terms(
-        self, directory_path: str
-    ) -> Dict[str, Dict[str, BaseWhoDrugTerm]]:
+    def install_terms(self, directory_path: str) -> ExternalDictionary:
         """
         Accepts directory path and creates
         term records for each line.
@@ -57,7 +57,7 @@ class WhoDrugTermsFactory(TermsFactoryInterface):
             self.__create_term_objects_from_file(
                 code_to_term_map, dictionary_filename, file_path
             )
-        return code_to_term_map
+        return ExternalDictionary(terms=code_to_term_map)
 
     def __create_term_objects_from_file(
         self, code_to_term_map: defaultdict, dictionary_filename: str, file_path: str

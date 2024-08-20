@@ -1,4 +1,5 @@
 from cdisc_rules_engine.exceptions.custom_exceptions import UnsupportedDictionaryType
+from cdisc_rules_engine.models.dictionaries.loinc.loinc_validator import LoincValidator
 from cdisc_rules_engine.models.dictionaries.meddra.meddra_validator import (
     MedDRAValidator,
 )
@@ -13,7 +14,10 @@ class ValidExternalDictionaryValue(BaseOperation):
                 f"{self.params.external_dictionary_type} is not supported by the engine"
             )
 
-        validator_map = {DictionaryTypes.MEDDRA.value: MedDRAValidator}
+        validator_map = {
+            DictionaryTypes.MEDDRA.value: MedDRAValidator,
+            DictionaryTypes.LOINC.value: LoincValidator,
+        }
 
         validator_type = validator_map.get(self.params.external_dictionary_type)
         if not validator_type:
@@ -24,8 +28,10 @@ class ValidExternalDictionaryValue(BaseOperation):
 
         validator = validator_type(
             cache_service=self.cache,
+            data_service=self.data_service,
             meddra_path=self.params.meddra_path,
             whodrug_path=self.params.whodrug_path,
+            loinc_path=self.params.loinc_path,
         )
 
         return self.params.dataframe.apply(
