@@ -11,7 +11,7 @@ RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && python3.10 get-pi
 COPY . /app
 RUN mkdir -p /app/output && \
     chmod -R 777 /app
-    RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install --no-cache-dir pyinstaller
 EXPOSE 80
 RUN chmod +x /app/tests/run_validation.sh
