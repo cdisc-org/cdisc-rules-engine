@@ -12,12 +12,11 @@ from business_rules.utils import (
     apply_regex,
 )
 from cdisc_rules_engine.check_operators.helpers import vectorized_compare_dates
-from cdisc_rules_engine.utilities.utils import normalize_datetime, compare_values
+from cdisc_rules_engine.utilities.utils import parse_partial_datetime, compare_values
 import re
 import numpy as np
 import pandas as pd
 import dask.dataframe as dd
-import dask.array as da
 import operator
 from uuid import uuid4
 from cdisc_rules_engine.models.dataset.dask_dataset import DaskDataset
@@ -1275,128 +1274,77 @@ class DataframeType(BaseType):
             within: str = self.replace_prefix(other_value.get("within"))
             columns = other_value["comparator"]
             result = pd.Series([True] * len(self.value), index=self.value.index)
-            df = self.value.data
+
             for col in columns:
                 comparator: str = self.replace_prefix(col["name"])
                 ascending: bool = col["sort_order"].lower() != "desc"
                 na_pos: str = col["null_position"]
-
-                temp_series = df[target].apply(lambda x: normalize_datetime(x)[0])
-
-                sorted_indices = (
-                    df[[within, comparator]]
-                    .join(temp_series)
-                    .sort_values(
-                        by=[within, comparator, target],
-                        ascending=[True, ascending, ascending],
-                        na_position=na_pos,
-                    )
-                    .index
+                sorted_df = self.value[[target, within, comparator]].sort_values(
+                    by=[within, comparator, target],
+                    ascending=[True, ascending, ascending],
+                    na_position=na_pos,
                 )
-
-                sorted_values = df.loc[sorted_indices, target]
-
-                sorted_check = pd.Series(index=sorted_indices, dtype=bool)
-                for (_, group), (_, sorted_group) in zip(
-                    df.groupby(within), sorted_values.groupby(within)
-                ):
-                    group_values = sorted_group.tolist()
-                    is_sorted = all(
-                        compare_values(a, b, ascending)
-                        for a, b in zip(group_values[:-1], group_values[1:])
-                    )
-                    sorted_check[sorted_group.index] = is_sorted
-
-                result.update(sorted_check)
-
+                grouped_df = sorted_df.groupby(within)
+                sorted_check = pd.Series([True] * len(sorted_df), index=sorted_df.index)
+                for name, group in grouped_df:
+                    values = group[target].tolist()
+                    if len(values) < 2:
+                        sorted_check[group.index] = True
+                        continue
+                    sorted_check[group.index] = True
+                    for i in range(len(values) - 1):
+                        is_sorted = compare_values(values[i], values[i + 1], ascending)
+                        if not is_sorted:
+                            sorted_check[group.index[i]] = False
+                            sorted_check[group.index[i + 1]] = False
+                result &= sorted_check
             return result
 
     def target_is_sorted_by_dask(self, other_value: dict):
         """
-        Checking the sort order based on comparators for DaskDataset.
+        Checking the sort order based on comparators for DaskDataset with date/time criteria.
         """
         target: str = self.replace_prefix(other_value.get("target"))
         within: str = self.replace_prefix(other_value.get("within"))
         columns = other_value["comparator"]
 
         def check_sorted(group):
-            result = da.ones(len(group), dtype=bool)
+            result = pd.Series([True] * len(group), index=group.index)
             for col in columns:
                 comparator: str = self.replace_prefix(col["name"])
                 ascending: bool = col["sort_order"].lower() != "desc"
                 na_pos: str = col["null_position"]
 
-                temp_series = group[target].apply(
-                    lambda x: normalize_datetime(x)[0], meta=(target, "object")
+                # Parse dates and create a temporary series for sorting
+                temp_series = group[target].map(
+                    lambda x: parse_partial_datetime(str(x))[0]
                 )
 
-                sorted_indices = (
-                    group[[within, comparator]]
-                    .join(temp_series)
-                    .sort_values(
-                        by=[within, comparator, target],
-                        ascending=[True, ascending, ascending],
-                        na_position=na_pos,
-                    )
-                    .index
+                sorted_group = group.assign(temp=temp_series).sort_values(
+                    by=[within, comparator, "temp"],
+                    ascending=[True, ascending, ascending],
+                    na_position=na_pos,
                 )
 
-                sorted_values = group.loc[sorted_indices, target].compute()
+                values = sorted_group[target].tolist()
 
-                is_sorted = da.from_array(
-                    [
-                        compare_values(a, b, ascending)
-                        for a, b in zip(sorted_values[:-1], sorted_values[1:])
-                    ],
-                    chunks=group[target].chunks,
+                # Perform pairwise comparison
+                is_sorted = all(
+                    compare_values(values[i], values[i + 1], ascending)
+                    for i in range(len(values) - 1)
                 )
-                result &= is_sorted.all()
+
+                result &= is_sorted
 
             return result
 
-        result = self.value.data.groupby(within).apply(
-            check_sorted, meta=(target, "bool")
+        # Apply the check_sorted function to each partition
+        result = self.value.data.map_partitions(
+            lambda df: df.groupby(within).apply(check_sorted), meta=(None, "bool")
         )
-        return result
 
-    # @type_operator(FIELD_DATAFRAME)
-    # def target_is_sorted_by(self, other_value: dict):
-    #     """
-    #     Checking the sort order based on  comparators
-    #     """
-    #     is_dask = isinstance(self.data, dd.DataFrame)
-    #     if is_dask:
-    #         return self.target_is_sorted_by_dask(self, other_value)
-    #     else:
-    #         target: str = self.replace_prefix(other_value.get("target"))
-    #         within: str = self.replace_prefix(other_value.get("within"))
-    #         columns = other_value["comparator"]
-
-    #         result = pd.Series([True] * len(self.value), index=self.value.index)
-    #         for col in columns:
-    #             comparator: str = self.replace_prefix(col["name"])
-    #             ascending: bool = col["sort_order"].lower() != "desc"
-    #             na_pos: str = col["null_position"]
-    #             sorted_df = self.value[[target, within, comparator]].sort_values(
-    #                 by=[within, comparator], ascending=ascending, na_position=na_pos
-    #             )
-    #             # temporary DataFrame to check the order
-    #             grouped_df = sorted_df.groupby(within)
-    #             # Series to hold the sorted check results
-    #             sorted_check = pd.Series(index=sorted_df.index, dtype=bool)
-
-    #             for name, group in grouped_df:
-    #                 sorted_values = group[target].values
-    #                 expected_values = (
-    #                     np.sort(sorted_values)
-    #                     if ascending
-    #                     else np.sort(sorted_values)[::-1]
-    #                 )
-    #                 sorted_check[group.index] = np.array_equal(
-    #                     sorted_values, expected_values
-    #                 )
-    #             result.update(sorted_check)
-    #         return result
+        # Combine results from all partitions
+        return result.compute()
 
     @type_operator(FIELD_DATAFRAME)
     def target_is_not_sorted_by(self, other_value: dict):

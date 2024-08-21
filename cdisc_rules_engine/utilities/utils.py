@@ -5,19 +5,12 @@ that can be reused.
 import copy
 import os
 import re
-from datetime import datetime, date, time
+from datetime import datetime, timedelta
 
 from typing import Callable, List, Optional, Set, Union
 from uuid import UUID
 from cdisc_rules_engine.services import logger
-from cdisc_rules_engine.check_operators.helpers import (
-    get_date,
-    get_day,
-    get_hour,
-    get_minute,
-    get_second,
-    get_microsecond,
-)
+
 from cdisc_rules_engine.constants.domains import (
     AP_DOMAIN,
     APFA_DOMAIN,
@@ -390,78 +383,106 @@ def get_sided_match_keys(match_keys: List[Union[str, dict]], side: str) -> List[
     ]
 
 
-def normalize_datetime(val, for_sorting=False):
-    if isinstance(val, (datetime, date, time)):
-        if for_sorting and isinstance(val, date):
-            return datetime.combine(val, time(0, 0, 0)), "date"
-        return val, type(val).__name__
+def parse_partial_datetime(dt_string):
+    formats = [
+        "%Y-%m-%d %H:%M:%S",
+        "%Y-%m-%d %H:%M",
+        "%Y-%m-%d %H",
+        "%Y-%m-%d",
+        "%Y-%m",
+        "%Y",
+    ]
+    for fmt in formats:
+        try:
+            dt = datetime.strptime(dt_string, fmt)
+            return dt, fmt
+        except ValueError:
+            pass
+    return None, None
 
-    if not isinstance(val, str):
-        return val, type(val).__name__
 
-    try:
-        parsed_date = get_date(val)
+def normalize_for_comparison(value, ascending=True):
+    dt, fmt = parse_partial_datetime(str(value))
+    if dt is None:
+        return value  # Not a date/datetime, return as is
 
-        if (
-            get_hour(val) is not None
-            or get_minute(val) is not None
-            or get_second(val) is not None
-            or get_microsecond(val) is not None
-        ):
-            # If any time component is present, fill missing with 00
-            hour = get_hour(val) or 0
-            minute = get_minute(val) or 0
-            second = get_second(val) or 0
-            microsecond = get_microsecond(val) or 0
-            return (
-                datetime(
-                    parsed_date.year,
-                    parsed_date.month,
-                    parsed_date.day,
-                    hour,
-                    minute,
-                    second,
-                    microsecond,
-                ),
-                "datetime",
+    if fmt == "%Y":
+        return dt.replace(
+            month=12 if ascending else 1,
+            day=31 if ascending else 1,
+            hour=23 if ascending else 0,
+            minute=59 if ascending else 0,
+            second=59 if ascending else 0,
+        )
+    elif fmt == "%Y-%m":
+        last_day = 31 if dt.month in [1, 3, 5, 7, 8, 10, 12] else 30
+        if dt.month == 2:
+            last_day = (
+                29
+                if dt.year % 4 == 0 and (dt.year % 100 != 0 or dt.year % 400 == 0)
+                else 28
             )
-        elif get_day(val) is not None:
-            if for_sorting:
-                return (
-                    datetime(
-                        parsed_date.year, parsed_date.month, parsed_date.day, 0, 0, 0
-                    ),
-                    "date",
-                )
-            return parsed_date.date(), "date"
-        else:
-            raise ValueError("Invalid date format")
-    except ValueError:
-        return val, type(val).__name__
+        return dt.replace(
+            day=last_day if ascending else 1,
+            hour=23 if ascending else 0,
+            minute=59 if ascending else 0,
+            second=59 if ascending else 0,
+        )
+    elif fmt == "%Y-%m-%d":
+        return dt.replace(
+            hour=23 if ascending else 0,
+            minute=59 if ascending else 0,
+            second=59 if ascending else 0,
+        )
+    else:
+        return dt  # Full datetime, no normalization needed
+
+
+def get_date_range(dt, fmt):
+    if fmt == "%Y":
+        start = dt.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
+        end = dt.replace(
+            month=12, day=31, hour=23, minute=59, second=59, microsecond=999999
+        )
+    elif fmt == "%Y-%m":
+        start = dt.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        next_month = dt.replace(day=28) + timedelta(
+            days=4
+        )  # This will always be in the next month
+        end = next_month - timedelta(
+            days=next_month.day
+        )  # Last day of the current month
+        end = end.replace(hour=23, minute=59, second=59, microsecond=999999)
+    elif fmt == "%Y-%m-%d":
+        start = dt.replace(hour=0, minute=0, second=0, microsecond=0)
+        end = dt.replace(hour=23, minute=59, second=59, microsecond=999999)
+    else:
+        start = end = dt
+    return start, end
 
 
 def compare_values(a, b, ascending=True):
-    """
-    Compare two values, which may be datetimes or other types.
-    """
-    a_val, a_type = normalize_datetime(a)
-    b_val, b_type = normalize_datetime(b)
+    a_dt, a_fmt = parse_partial_datetime(str(a))
+    b_dt, b_fmt = parse_partial_datetime(str(b))
 
-    if a_type == "date" and b_type == "datetime":
-        a_val = datetime.combine(a_val, time(0, 0, 0))
-    elif a_type == "datetime" and b_type == "date":
-        b_val = datetime.combine(b_val, time(0, 0, 0))
+    if a_dt is None or b_dt is None:
+        # If either value is not a date/datetime, use standard comparison
+        return a <= b if ascending else a >= b
 
-    if a_type in ["date", "datetime"] and b_type in ["date", "datetime"]:
-        if ascending:
-            return a_val <= b_val
+    a_start, a_end = get_date_range(a_dt, a_fmt)
+    b_start, b_end = get_date_range(b_dt, b_fmt)
+
+    if ascending:
+        if a_end < b_start:
+            return True
+        elif a_start > b_end:
+            return False
         else:
-            return a_val >= b_val
-    elif a_type == "time" or b_type == "time":
-        logger.error(f"Cannot compare {a} ({a_type}) and {b} ({b_type})")
-        return False
+            return False  # Dates overlap, consider them not sorted
     else:
-        if ascending:
-            return a_val <= b_val
+        if a_start > b_end:
+            return True
+        elif a_end < b_start:
+            return False
         else:
-            return a_val >= b_val
+            return False
