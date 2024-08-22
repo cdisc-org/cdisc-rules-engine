@@ -12,7 +12,7 @@ from business_rules.utils import (
     apply_regex,
 )
 from cdisc_rules_engine.check_operators.helpers import vectorized_compare_dates
-from cdisc_rules_engine.utilities.utils import parse_partial_datetime, compare_values
+from cdisc_rules_engine.utilities.utils import parse_datetime, compare_values
 import re
 import numpy as np
 import pandas as pd
@@ -1274,14 +1274,13 @@ class DataframeType(BaseType):
             within: str = self.replace_prefix(other_value.get("within"))
             columns = other_value["comparator"]
             result = pd.Series([True] * len(self.value), index=self.value.index)
-
             for col in columns:
                 comparator: str = self.replace_prefix(col["name"])
                 ascending: bool = col["sort_order"].lower() != "desc"
                 na_pos: str = col["null_position"]
                 sorted_df = self.value[[target, within, comparator]].sort_values(
-                    by=[within, comparator, target],
-                    ascending=[True, ascending, ascending],
+                    by=[within, comparator],
+                    ascending=ascending,
                     na_position=na_pos,
                 )
                 grouped_df = sorted_df.groupby(within)
@@ -1289,14 +1288,13 @@ class DataframeType(BaseType):
                 for name, group in grouped_df:
                     values = group[target].tolist()
                     if len(values) < 2:
-                        sorted_check[group.index] = True
                         continue
-                    sorted_check[group.index] = True
+                    breakpoint()
                     for i in range(len(values) - 1):
                         is_sorted = compare_values(values[i], values[i + 1], ascending)
                         if not is_sorted:
                             sorted_check[group.index[i]] = False
-                            sorted_check[group.index[i + 1]] = False
+                            break
                 result &= sorted_check
             return result
 
@@ -1315,35 +1313,31 @@ class DataframeType(BaseType):
                 ascending: bool = col["sort_order"].lower() != "desc"
                 na_pos: str = col["null_position"]
 
-                # Parse dates and create a temporary series for sorting
+                # Create a temporary series for sorting
                 temp_series = group[target].map(
-                    lambda x: parse_partial_datetime(str(x))[0]
+                    lambda x: parse_datetime(str(x))[0], meta=(target, "datetime64[ns]")
                 )
 
+                # Sort the group
                 sorted_group = group.assign(temp=temp_series).sort_values(
                     by=[within, comparator, "temp"],
                     ascending=[True, ascending, ascending],
                     na_position=na_pos,
                 )
 
-                values = sorted_group[target].tolist()
+                values = sorted_group[target].compute().tolist()
 
                 # Perform pairwise comparison
-                is_sorted = all(
-                    compare_values(values[i], values[i + 1], ascending)
-                    for i in range(len(values) - 1)
-                )
-
-                result &= is_sorted
-
+                for i in range(len(values) - 1):
+                    is_sorted = compare_values(values[i], values[i + 1], ascending)
+                    if not is_sorted:
+                        result[sorted_group.index[i]] = False
+                        result[sorted_group.index[i + 1]] = False
             return result
 
-        # Apply the check_sorted function to each partition
         result = self.value.data.map_partitions(
-            lambda df: df.groupby(within).apply(check_sorted), meta=(None, "bool")
+            lambda df: df.groupby(within).apply(check_sorted), meta=(Any, "bool")
         )
-
-        # Combine results from all partitions
         return result.compute()
 
     @type_operator(FIELD_DATAFRAME)
