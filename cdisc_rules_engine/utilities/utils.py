@@ -5,9 +5,9 @@ that can be reused.
 import copy
 import os
 import re
-from datetime import datetime, date
-
-from typing import Callable, List, Optional, Set, Union, Tuple
+from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
+from typing import Callable, List, Optional, Set, Union
 from uuid import UUID
 from cdisc_rules_engine.services import logger
 
@@ -383,96 +383,82 @@ def get_sided_match_keys(match_keys: List[Union[str, dict]], side: str) -> List[
     ]
 
 
-def parse_datetime(value: str) -> Tuple:
+def normalize_datetime(value):
+    if isinstance(value, int):
+        return value
     formats = [
-        ("%Y-%m-%d %H:%M:%S", datetime),
-        ("%Y-%m-%d %H:%M", datetime),
-        ("%Y-%m-%d %H", datetime),
-        ("%Y-%m-%d", date),
-        ("%Y-%m", date),
-        ("%Y", date),
+        ("%Y-%m-%d %H:%M:%S", 6),
+        ("%Y-%m-%d %H:%M", 5),
+        ("%Y-%m-%d %H", 4),
+        ("%Y-%m-%d", 3),
+        ("%Y-%m", 2),
+        ("%Y", 1),
     ]
-    for fmt, dt_type in formats:
+    for fmt, precision in formats:
         try:
-            return datetime.strptime(value, fmt), fmt
+            dt = datetime.strptime(value, fmt)
+            if precision < 4:  # If time is missing
+                return dt.strftime("%Y-%m-%d 00:00:00")
+            elif precision < 5:
+                return dt.strftime("%Y-%m-%d %H:00:00")
+            elif precision < 6:
+                return dt.strftime("%Y-%m-%d %H:%M:00")
+            else:
+                return dt.strftime("%Y-%m-%d %H:%M:%S")
         except ValueError:
             continue
-    return value, ""
+    return value
 
 
-# def compare_values(a, b, ascending: bool = True) -> bool:
-#     a_dt, a_fmt = parse_datetime(str(a))
-#     b_dt, b_fmt = parse_datetime(str(b))
+def dates_overlap(date1, date2):
+    """
+    Check if two dates potentially overlap due to imprecision.
 
-#     # If either value is not a date/time, use standard comparison
-#     if not isinstance(a_dt, (datetime, date)) or not isinstance(b_dt, (datetime, date)):
-#         breakpoint()
-#         return a <= b if ascending else a >= b
+    :param date1: First date string
+    :param date2: Second date string
+    :return: True if dates potentially overlap, False otherwise
+    """
+    formats = [
+        ("%Y-%m-%d %H:%M:%S", 6),
+        ("%Y-%m-%d %H:%M", 5),
+        ("%Y-%m-%d %H", 4),
+        ("%Y-%m-%d", 3),
+        ("%Y-%m", 2),
+        ("%Y", 1),
+    ]
 
-#     def get_precision(fmt):
-#         return len(fmt.replace("%Y-", "").replace("%m-", "").replace("%d", ""))
+    def parse_date(date_str):
+        for fmt, precision in formats:
+            try:
+                return datetime.strptime(date_str, fmt), precision
+            except ValueError:
+                continue
+        return None, 0
 
-#     a_precision = get_precision(a_fmt)
-#     b_precision = get_precision(b_fmt)
-#     breakpoint()
-#     # Handle partial date comparisons and overlaps
-#     if a_precision != b_precision:
-#         less_precise, more_precise = (
-#             (a_dt, b_dt) if a_precision < b_precision else (b_dt, a_dt)
-#         )
-#         less_precise_fmt = a_fmt if a_precision < b_precision else b_fmt
-#         breakpoint()
-#         if "%Y" in less_precise_fmt:
-#             if less_precise.year == more_precise.year:
-#                 if "%m" in less_precise_fmt:
-#                     breakpoint()
-#                     if less_precise.month == more_precise.month:
-#                         return False  # Overlap found, return False for both ascending and descending
-#                 else:
-#                     breakpoint()
-#                     return False  # Year-only overlaps with a more precise date
+    date1_obj, precision1 = parse_date(date1)
+    date2_obj, precision2 = parse_date(date2)
 
-#         # If no overlap, compare normally
-#         return a_dt < b_dt if ascending else a_dt > b_dt
+    if precision1 == precision2:
+        return date1_obj == date2_obj, "same"
 
-#     # For different years, simple comparison
-#     if a_dt.year != b_dt.year:
-#         breakpoint()
-#         return a_dt.year < b_dt.year if ascending else a_dt.year > b_dt.year
+    # For imprecise dates, check if they fall within the same period
+    if precision1 < precision2:
+        less_precise, more_precise = date1_obj, date2_obj
+        less_precise_format = formats[6 - precision1][0]
+    else:
+        less_precise, more_precise = date2_obj, date1_obj
+        less_precise_format = formats[6 - precision2][0]
 
-#     # For same year but different months
-#     if (
-#         a_dt.year == b_dt.year
-#         and hasattr(a_dt, "month")
-#         and hasattr(b_dt, "month")
-#         and a_dt.month != b_dt.month
-#     ):
-#         breakpoint()
-#         return a_dt.month < b_dt.month if ascending else a_dt.month > b_dt.month
+    less_precise_start = datetime.strptime(
+        less_precise.strftime(less_precise_format), less_precise_format
+    )
+    if less_precise_format == "%Y":
+        less_precise_end = datetime(less_precise.year + 1, 1, 1)
+    elif less_precise_format == "%Y-%m":
+        less_precise_end = (less_precise + relativedelta(months=1)).replace(day=1)
+    else:  # "%Y-%m-%d"
+        less_precise_end = less_precise + timedelta(days=1)
 
-#     # For same year and month, but different days
-#     if (
-#         a_dt.year == b_dt.year
-#         and a_dt.month == b_dt.month
-#         and hasattr(a_dt, "day")
-#         and hasattr(b_dt, "day")
-#         and a_dt.day != b_dt.day
-#     ):
-#         breakpoint()
-#         return a_dt.day < b_dt.day if ascending else a_dt.day > b_dt.day
-
-#     # For same date but different times
-#     if (
-#         isinstance(a_dt, datetime)
-#         and isinstance(b_dt, datetime)
-#         and a_dt.date() == b_dt.date()
-#     ):
-#         breakpoint()
-#         if a_dt.time() != b_dt.time():
-#             breakpoint()
-#             return a_dt.time() < b_dt.time() if ascending else a_dt.time() > b_dt.time()
-#         else:
-#             return False  # Same date and time, consider unsorted
-
-#     # If we've made it here, dates are equal
-#     return False
+    return less_precise_start <= more_precise < less_precise_end, less_precise.strftime(
+        less_precise_format
+    )
