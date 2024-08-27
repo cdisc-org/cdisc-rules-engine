@@ -1263,71 +1263,72 @@ class DataframeType(BaseType):
     def value_does_not_have_multiple_references(self, other_value: dict):
         return ~self.value_has_multiple_references(other_value)
 
-    # flake8: noqa: C901
     @type_operator(FIELD_DATAFRAME)
     def target_is_sorted_by(self, other_value: dict):
         """
         Checking the sort order based on comparators, accounting for date overlaps
         """
-        # is_dask = isinstance(self.value.data, dd.DataFrame)
-        # if is_dask:
-        #     return self.target_is_sorted_by_dask(other_value)
-        # else:
         target: str = self.replace_prefix(other_value.get("target"))
         within: str = self.replace_prefix(other_value.get("within"))
         columns = other_value["comparator"]
         result = pd.Series([True] * len(self.value), index=self.value.index)
+
         for col in columns:
             comparator: str = self.replace_prefix(col["name"])
             ascending: bool = col["sort_order"].lower() != "desc"
             na_pos: str = col["null_position"]
-            # this loop looks for overlap between precise and imprecise dates,
-            # and marks the imprecise date as False
-            if isinstance(self.value.data[comparator].iloc[0], str):
-                grouped_df = self.value.data.groupby(within)
-                for name, group in grouped_df:
-                    unsorted_group = group[comparator].values
-                    for i in range(len(unsorted_group) - 1):
-                        bool_value, less_precise_date = dates_overlap(
-                            unsorted_group[i], unsorted_group[i + 1]
-                        )
-                        if bool_value:
-                            if less_precise_date == "same":
-                                continue
-                            less_precise_index = self.value.index[
-                                self.value[comparator] == less_precise_date
-                            ]
-                            result[less_precise_index] = False
-            sorted_df = self.value
-            sorted_df["normalized_date"] = sorted_df[comparator].apply(
-                normalize_datetime
+
+            result = self.check_date_overlaps(result, within, comparator)
+            result &= self.check_sort_order(
+                target, within, comparator, ascending, na_pos
             )
-            sorted_normal = sorted_df[
-                [target, within, comparator, "normalized_date"]
-            ].sort_values(
-                by=[within, "normalized_date"],
-                ascending=ascending,
-                na_position=na_pos,
-            )
-            sorted_normal = sorted_normal.drop(columns=["normalized_date"])
-            sorted_group = sorted_normal.groupby(within)
-            sorted_check = pd.Series(index=sorted_normal.index, dtype=bool)
-            for name, sgroup in sorted_group:
-                sorted_values = sgroup[target].values
-                expected_values = np.sort(sorted_values)
-                if not ascending:
-                    expected_values = expected_values[::-1]
-                element_wise_check = np.ones(len(sorted_values), dtype=bool)
 
-                for i in range(len(sorted_values)):
-                    if sorted_values[i] != expected_values[i]:
-                        element_wise_check[i] = False
-
-                group_check = pd.Series(element_wise_check, index=sgroup.index)
-                sorted_check.loc[sgroup.index] = group_check
-
-            result &= sorted_check
         return result
+
+    @type_operator(FIELD_DATAFRAME)
+    def check_date_overlaps(self, result, within, comparator):
+        if isinstance(self.value.data[comparator].iloc[0], str):
+            grouped_df = self.value.data.groupby(within)
+            for name, group in grouped_df:
+                unsorted_group = group[comparator].values
+                for i in range(len(unsorted_group) - 1):
+                    bool_value, less_precise_date = dates_overlap(
+                        unsorted_group[i], unsorted_group[i + 1]
+                    )
+                    if bool_value:
+                        if less_precise_date == "same":
+                            continue
+                        less_precise_index = self.value.index[
+                            self.value[comparator] == less_precise_date
+                        ]
+                        result[less_precise_index] = False
+        return result
+
+    def check_sort_order(self, target, within, comparator, ascending, na_pos):
+        sorted_df = self.value
+        sorted_df["normalized_date"] = sorted_df[comparator].apply(normalize_datetime)
+        sorted_normal = sorted_df[
+            [target, within, comparator, "normalized_date"]
+        ].sort_values(
+            by=[within, "normalized_date"],
+            ascending=ascending,
+            na_position=na_pos,
+        )
+        sorted_normal = sorted_normal.drop(columns=["normalized_date"])
+        sorted_group = sorted_normal.groupby(within)
+        sorted_check = pd.Series(index=sorted_normal.index, dtype=bool)
+        for name, sgroup in sorted_group:
+            sorted_values = sgroup[target].values
+            expected_values = np.sort(sorted_values)
+            if not ascending:
+                expected_values = expected_values[::-1]
+            element_wise_check = np.ones(len(sorted_values), dtype=bool)
+            for i in range(len(sorted_values)):
+                if sorted_values[i] != expected_values[i]:
+                    element_wise_check[i] = False
+            group_check = pd.Series(element_wise_check, index=sgroup.index)
+            sorted_check.loc[sgroup.index] = group_check
+        return sorted_check
 
     @type_operator(FIELD_DATAFRAME)
     def target_is_not_sorted_by(self, other_value: dict):
