@@ -384,7 +384,7 @@ def get_sided_match_keys(match_keys: List[Union[str, dict]], side: str) -> List[
 
 
 def normalize_datetime(value):
-    if isinstance(value, int):
+    if isinstance(value, (int, type(None))):
         return value
     formats = [
         ("%Y-%m-%d %H:%M:%S", 6),
@@ -410,14 +410,7 @@ def normalize_datetime(value):
     return value
 
 
-def dates_overlap(date1, date2):
-    """
-    Check if two dates potentially overlap due to imprecision.
-
-    :param date1: First date string
-    :param date2: Second date string
-    :return: True if dates potentially overlap, False otherwise
-    """
+def parse_date(date_str):
     formats = [
         ("%Y-%m-%d %H:%M:%S", 6),
         ("%Y-%m-%d %H:%M", 5),
@@ -427,13 +420,32 @@ def dates_overlap(date1, date2):
         ("%Y", 1),
     ]
 
-    def parse_date(date_str):
-        for fmt, precision in formats:
-            try:
-                return datetime.strptime(date_str, fmt), precision
-            except ValueError:
-                continue
-        return None, 0
+    for fmt, precision in formats:
+        try:
+            return datetime.strptime(date_str, fmt), precision
+        except ValueError:
+            continue
+    return None, 0
+
+
+def dates_overlap(date1, date2):
+    """
+    Check if two dates potentially overlap due to imprecision.
+
+    :param date1: First date string
+    :param date2: Second date string
+    :return: True if dates potentially overlap, False otherwise
+    """
+    if date1 is None or date2 is None:
+        return False, None
+    formats = [
+        ("%Y-%m-%d %H:%M:%S", 6),
+        ("%Y-%m-%d %H:%M", 5),
+        ("%Y-%m-%d %H", 4),
+        ("%Y-%m-%d", 3),
+        ("%Y-%m", 2),
+        ("%Y", 1),
+    ]
 
     date1_obj, precision1 = parse_date(date1)
     date2_obj, precision2 = parse_date(date2)
@@ -441,13 +453,14 @@ def dates_overlap(date1, date2):
     if precision1 == precision2:
         return date1_obj == date2_obj, "same"
 
-    # For imprecise dates, check if they fall within the same period
     if precision1 < precision2:
         less_precise, more_precise = date1_obj, date2_obj
         less_precise_format = formats[6 - precision1][0]
+        less_precise_original = date1
     else:
         less_precise, more_precise = date2_obj, date1_obj
         less_precise_format = formats[6 - precision2][0]
+        less_precise_original = date2
 
     less_precise_start = datetime.strptime(
         less_precise.strftime(less_precise_format), less_precise_format
@@ -456,9 +469,13 @@ def dates_overlap(date1, date2):
         less_precise_end = datetime(less_precise.year + 1, 1, 1)
     elif less_precise_format == "%Y-%m":
         less_precise_end = (less_precise + relativedelta(months=1)).replace(day=1)
-    else:  # "%Y-%m-%d"
+    elif less_precise_format == "%Y-%m-%d":
         less_precise_end = less_precise + timedelta(days=1)
-
-    return less_precise_start <= more_precise < less_precise_end, less_precise.strftime(
-        less_precise_format
-    )
+    elif less_precise_format == "%Y-%m-%d %H":
+        less_precise_end = less_precise + timedelta(hours=1)
+    elif less_precise_format == "%Y-%m-%d %H:%M":
+        less_precise_end = less_precise + timedelta(minutes=1)
+    else:
+        less_precise_end = less_precise + timedelta(seconds=1)
+    overlaps = less_precise_start <= more_precise < less_precise_end
+    return overlaps, less_precise_original

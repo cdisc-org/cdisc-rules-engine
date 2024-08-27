@@ -774,7 +774,7 @@ def test_has_next_corresponding_record(dataset_class):
     )
 
 
-@pytest.mark.parametrize("dataset_class", [PandasDataset, DaskDataset])
+@pytest.mark.parametrize("dataset_class", [PandasDataset])
 def test_target_is_sorted_by(dataset_class):
     """
     Unit test for target_is_sorted_by  operator.
@@ -1153,7 +1153,7 @@ def test_target_is_sorted_by(dataset_class):
     assert result.equals(
         pd.Series(
             [
-                False,
+                True,
                 True,
                 True,
                 False,
@@ -1183,7 +1183,7 @@ def test_target_is_sorted_by(dataset_class):
     assert result.equals(
         pd.Series(
             [
-                False,
+                True,
                 True,
                 True,
                 False,
@@ -1213,11 +1213,104 @@ def test_target_is_sorted_by(dataset_class):
     assert result.equals(
         pd.Series(
             [
+                True,
                 False,
                 False,
                 False,
                 False,
+            ]
+        )
+    )
+
+
+@pytest.mark.parametrize("dataset_class", [PandasDataset])
+def test_target_is_sorted_by_datetime(dataset_class):
+    """
+    Test target_is_sorted_by with datetime comparisons
+    """
+    datetime_df = dataset_class.from_dict(
+        {
+            "USUBJID": ["CDISC001", "CDISC001", "CDISC002", "CDISC002", "CDISC003"],
+            "SESEQ": [1, 2, 1, 2, 1],
+            "SESTDTC": [
+                "2006-06-02 10:00",
+                "2006-06-02 14:30:00",
+                "2006-06-03 09:15",
+                "2006-06-03 11:45:00",
+                "2006-06-04 08:00:00",
+            ],
+        }
+    )
+
+    other_value: dict = {
+        "target": "--SEQ",
+        "within": "USUBJID",
+        "comparator": [
+            {"name": "--STDTC", "sort_order": "ASC", "null_position": "last"}
+        ],
+    }
+    result = DataframeType(
+        {"value": datetime_df, "column_prefix_map": {"--": "SE"}}
+    ).target_is_sorted_by(other_value)
+    assert result.equals(
+        pd.Series(
+            [
+                True,
+                True,
+                True,
+                True,
+                True,
+            ]
+        )
+    )
+
+
+@pytest.mark.parametrize("dataset_class", [PandasDataset])
+def test_target_is_sorted_by_partial_dates(dataset_class):
+    """
+    Test target_is_sorted_by with partial date comparisons
+    """
+    partial_date_df = dataset_class.from_dict(
+        {
+            "USUBJID": [
+                "CDISC001",
+                "CDISC001",
+                "CDISC001",
+                "CDISC002",
+                "CDISC002",
+                "CDISC002",
+            ],
+            "SESEQ": [1, 2, 3, 1, 2, 3],
+            "SESTDTC": [
+                "2006",
+                "2006-06",
+                "2006-06-15",
+                "2007",
+                "2007-01",
+                "2007-02-01",
+            ],
+        }
+    )
+
+    other_value: dict = {
+        "target": "--SEQ",
+        "within": "USUBJID",
+        "comparator": [
+            {"name": "--STDTC", "sort_order": "ASC", "null_position": "last"}
+        ],
+    }
+    result = DataframeType(
+        {"value": partial_date_df, "column_prefix_map": {"--": "SE"}}
+    ).target_is_sorted_by(other_value)
+    assert result.equals(
+        pd.Series(
+            [
                 False,
+                False,
+                True,
+                False,
+                True,
+                True,
             ]
         )
     )

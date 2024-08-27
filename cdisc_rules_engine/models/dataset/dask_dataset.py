@@ -258,3 +258,9 @@ class DaskDataset(PandasDataset):
         ]
         new_data = self._data[columns_subset]
         return self.__class__(new_data)
+
+    def iloc(self, row, column):
+        """
+        Purely integer-location based indexing for selection by position.
+        """
+        return self.data.iloc[row, column].compute()
