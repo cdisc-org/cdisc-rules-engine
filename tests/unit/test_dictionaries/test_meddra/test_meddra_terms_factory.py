@@ -16,6 +16,7 @@ def test_install():
         DictionaryTypes.MEDDRA.value
     )
     dictionary = factory.install_terms(dictionary_path)
+    assert dictionary.version == "22.0"
     for term_type in TermTypes.values():
         assert len(dictionary[term_type]) == 5
 
