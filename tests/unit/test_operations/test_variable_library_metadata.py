@@ -58,7 +58,7 @@ def test_get_variable_metadata_for_given_standard(
     mock_data_service.get_dataset.side_effect = lambda name: datasets_map.get(
         name.split("/")[-1]
     )
-    mock_data_service.join_split_datasets.side_effect = lambda func, files: pd.concat(
+    mock_data_service.concat_split_datasets.side_effect = lambda func, files: pd.concat(
         [func(f) for f in files]
     )
     operation_params.target = target

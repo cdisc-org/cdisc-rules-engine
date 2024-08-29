@@ -49,7 +49,7 @@ def test_variable_count(
     mock_data_service.get_dataset.side_effect = lambda name: datasets_map.get(
         os.path.split(name)[-1]
     )
-    mock_data_service.join_split_datasets.side_effect = lambda func, files: pd.concat(
+    mock_data_service.concat_split_datasets.side_effect = lambda func, files: pd.concat(
         [func(f) for f in files]
     )
     operation_params.datasets = datasets
