@@ -258,3 +258,17 @@ class DaskDataset(PandasDataset):
         ]
         new_data = self._data[columns_subset]
         return self.__class__(new_data)
+
+    def min(self, *args, **kwargs):
+        """
+        Return the minimum of the values over the requested axis.
+        """
+        result = self._data.min(*args, **kwargs)
+        return self.__class__(result)
+
+    def reset_index(self, drop=False, **kwargs):
+        """
+        Reset the index of the dataset.
+        """
+        self._data = self._data.reset_index(drop=drop, **kwargs)
+        return self
