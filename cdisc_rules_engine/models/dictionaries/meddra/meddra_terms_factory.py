@@ -25,7 +25,7 @@ class MedDRATermsFactory(TermsFactoryInterface):
 
     def get_version(self, directory_path: str) -> str:
         if not self.data_service.has_all_files(
-            directory_path, MeddraFileNames.VERSION.value
+            directory_path, [MeddraFileNames.VERSION.value]
         ):
             raise MissingDataError(message="MedDRA version file missing")
         file_path = get_dictionary_path(directory_path, MeddraFileNames.VERSION.value)

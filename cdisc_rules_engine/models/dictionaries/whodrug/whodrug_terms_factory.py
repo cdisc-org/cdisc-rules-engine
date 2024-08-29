@@ -32,12 +32,12 @@ class WhoDrugTermsFactory(TermsFactoryInterface):
         }
 
     def get_version(self, directory_path: str) -> str:
-        if not self.data_service.has_all_files(
-            directory_path, WhodrugFileNames.VERSION.value
+        if not self.__data_service.has_all_files(
+            directory_path, [WhodrugFileNames.VERSION.value]
         ):
             raise MissingDataError(message="WhoDrug version file missing")
         file_path = get_dictionary_path(directory_path, WhodrugFileNames.VERSION.value)
-        with self.data_service.read_data(file_path) as file_data:
+        with self.__data_service.read_data(file_path) as file_data:
             for bytes_line in file_data:
                 value = decode_line(bytes_line)
                 month = value[-5:-2]
