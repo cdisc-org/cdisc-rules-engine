@@ -3,12 +3,12 @@ from cdisc_rules_engine.interfaces.data_service_interface import DataServiceInte
 from cdisc_rules_engine.models.dictionaries.base_dictionary_validator import (
     BaseDictionaryValidator,
 )
-from cdisc_rules_engine.models.dictionaries.loinc.loinc_terms_factory import (
-    LoincTermsFactory,
+from cdisc_rules_engine.models.dictionaries.whodrug.whodrug_terms_factory import (
+    WhoDrugTermsFactory,
 )
 
 
-class LoincValidator(BaseDictionaryValidator):
+class WhoDrugValidator(BaseDictionaryValidator):
     def __init__(
         self,
         data_service: DataServiceInterface = None,
@@ -17,9 +17,9 @@ class LoincValidator(BaseDictionaryValidator):
     ):
         self.cache_service = cache_service
         self.data_service = data_service
-        self.path = kwargs.get("loinc_path")
+        self.path = kwargs.get("whodrug_path")
         self.term_dictionary = kwargs.get("terms")
-        self.terms_factory = LoincTermsFactory(self.data_service)
+        self.terms_factory = WhoDrugTermsFactory(self.data_service)
 
     def is_valid_term(
         self, term: str, term_type: str = "", variable: str = "", **kwargs
@@ -40,9 +40,9 @@ class LoincValidator(BaseDictionaryValidator):
         term_dictionary = self.get_term_dictionary()
         case_sensitive_check = kwargs.get("case_sensitive")
         if case_sensitive_check:
-            return term in term_dictionary
+            return term in term_dictionary.get(term_type, {})
         else:
-            for key in term_dictionary:
+            for key in term_dictionary.get(term_type, {}):
                 if key.lower() == term.lower():
                     return True
             return False

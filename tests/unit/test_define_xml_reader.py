@@ -359,3 +359,12 @@ def test_get_domain_key_sequence_for_supp():
             "IDVARVAL",
             "QNAM",
         ]
+
+
+@pytest.mark.parametrize("dictionary_type, expected_version", [("meddra", "22.0")])
+def test_read_dictionary_version(dictionary_type, expected_version):
+    with open(test_define_file_path, "rb") as file:
+        contents = file.read()
+        reader = DefineXMLReaderFactory.from_file_contents(contents)
+        version = reader.get_external_dictionary_version(dictionary_type)
+    assert version == expected_version

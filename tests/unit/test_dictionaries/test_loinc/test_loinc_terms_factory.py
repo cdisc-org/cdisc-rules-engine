@@ -15,6 +15,7 @@ def test_install():
         DictionaryTypes.LOINC.value
     )
     dictionary = factory.install_terms(dictionary_path)
+    assert dictionary.version == "2.74"
     items = dictionary.items()
     assert len(items) == 3
     expected = ["100000-9", "100001-7", "100002-5"]
