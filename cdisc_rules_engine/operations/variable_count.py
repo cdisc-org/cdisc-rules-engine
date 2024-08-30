@@ -35,7 +35,9 @@ class VariableCount(BaseOperation):
     async def _get_dataset_variable_count(self, dataset: dict) -> Counter:
         domain = dataset.get("domain", "")
         data: pd.DataFrame = self.data_service.get_dataset(
-            os.path.join(self.params.directory_path, dataset.get("filename"))
+            dataset_name=os.path.join(
+                self.params.directory_path, dataset.get("filename")
+            )
         )
         target_variable = self.params.original_target.replace("--", domain, 1)
         return 1 if target_variable in data else 0
