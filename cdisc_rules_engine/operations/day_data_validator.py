@@ -21,7 +21,9 @@ class DayDataValidator(BaseOperation):
             files = [dataset["filename"] for dataset in dm_datasets]
             dm_data = self.data_service.join_split_datasets(files)
         else:
-            dm_data = self.data_service.get_dataset(dm_datasets[0]["filename"])
+            dm_data = self.data_service.get_dataset(
+                dataset_name=dm_datasets[0]["filename"]
+            )
 
         new_dataset = self.evaluation_dataset.merge(
             dm_data[["USUBJID", "RFSTDTC"]], on="USUBJID", suffixes=("", "_dm")
