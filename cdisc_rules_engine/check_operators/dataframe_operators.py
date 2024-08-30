@@ -1050,8 +1050,6 @@ class DataframeType(BaseType):
         compare last row of target with the next row of comparator
         because there is no row after the last one.
         """
-        if len(df) <= 1:
-            return [True] * len(df)
         target_without_last_row = df[target].drop(df[target].tail(1).index)
         comparator_without_first_row = df[comparator].drop(df[comparator].head(1).index)
         results = np.where(
