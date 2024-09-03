@@ -9,3 +9,4 @@ class WhodrugFileNames(BaseEnum):
     DD_FILE_NAME = "DD.txt"
     INA_FILE_NAME = "INA.txt"
     DDA_FILE_NAME = "DDA.txt"
+    VERSION = "version.txt"
