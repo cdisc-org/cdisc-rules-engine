@@ -139,7 +139,7 @@ class DummyDataService(BaseDataService):
         return True
 
     def read_data(self, file_path: str) -> IOBase:
-        pass
+        return open(file_path, "rb")
 
     def __get_dataset_metadata(self, dataset_name: str, **kwargs) -> dict:
         dataset: Optional[DummyDataset] = self.get_dataset_data(dataset_name)

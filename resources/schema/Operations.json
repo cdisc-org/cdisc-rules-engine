@@ -217,6 +217,16 @@
     {
       "properties": {
         "operator": {
+          "const": "valid_define_external_dictionary_version"
+        }
+      },
+      "required": ["id", "operator", "external_dictionary_type"],
+      "type": "object"
+    },
+
+    {
+      "properties": {
+        "operator": {
           "const": "valid_external_dictionary_value"
         }
       },

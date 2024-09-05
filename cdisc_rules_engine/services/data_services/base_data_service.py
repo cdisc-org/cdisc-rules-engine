@@ -133,8 +133,8 @@ class BaseDataService(DataServiceInterface, ABC):
         drop_duplicates: bool = kwargs.pop("drop_duplicates", False)
 
         # download datasets asynchronously
-        datasets: Iterable[DatasetInterface] = self._async_get_datasets(
-            func_to_call, dataset_names, **kwargs
+        datasets: Iterator[DatasetInterface] = self._async_get_datasets(
+            func_to_call, dataset_names=dataset_names, **kwargs
         )
         full_dataset = self.dataset_implementation()
         for dataset in datasets:

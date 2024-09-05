@@ -228,3 +228,13 @@ class PandasDataset(DatasetInterface):
     def astype(self, dtype, **kwargs):
         self._data = self._data.astype(dtype, **kwargs)
         return self
+
+    def min(self, *args, **kwargs):
+        return self.__class__(self._data.min(*args, **kwargs))
+
+    def reset_index(self, drop=False, **kwargs):
+        """
+        Reset the index of the dataset.
+        """
+        self._data = self._data.reset_index(drop=drop, **kwargs)
+        return self

@@ -404,6 +404,17 @@ class BaseDefineXMLReader(ABC):
 
         return [heappop(heap)[1] for _ in range(len(heap))]
 
+    def get_external_dictionary_version(self, external_dictionary_type: str) -> str:
+        metadata = self._odm_loader.MetaDataVersion()
+        for codelist in metadata.CodeList:
+            if codelist.ExternalCodeList and codelist.ExternalCodeList.Dictionary:
+                if (
+                    codelist.ExternalCodeList.Dictionary.lower()
+                    == external_dictionary_type.lower()
+                ):
+                    return codelist.ExternalCodeList.Version
+        return ""
+
     def _get_key_variables_for_domain(self, domain_metadata, item_mapping):
         key_variables = []
         for item in domain_metadata.ItemRef:

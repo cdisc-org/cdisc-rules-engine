@@ -630,6 +630,25 @@ the operation will return
 ["2023-10-26", "2023-12-13"]
 ```
 
+## valid_define_external_dictionary_version
+
+Returns true if the version of an external dictionary provided in the define.xml file matches
+the version parsed from the dictionary files.
+
+Input:
+
+```yaml
+- operation: valid_define_external_dictionary_version
+  id: $is_valid_loinc_version
+  external_dictionary_type: loinc
+```
+
+Output:
+
+```json
+[true, true, true, true]
+```
+
 ## valid_external_dictionary_value
 
 Returns true if the target variable contains a valid external dictionary value, otherwise false

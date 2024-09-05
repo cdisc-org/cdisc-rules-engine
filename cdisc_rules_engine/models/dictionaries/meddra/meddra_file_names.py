@@ -11,3 +11,4 @@ class MeddraFileNames(BaseEnum):
     SOC_HLGT = "soc_hlgt.asc"
     HLGT_HLT = "hlgt_hlt.asc"
     HLT_PT = "hlt_pt.asc"
+    VERSION = "meddra_release.asc"
