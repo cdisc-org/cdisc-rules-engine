@@ -38,7 +38,7 @@ class VariableValueCount(BaseOperation):
                 os.path.join(self.params.directory_path, dataset.get("filename"))
                 for dataset in get_corresponding_datasets(self.params.datasets, domain)
             ]
-            data: DatasetInterface = self.data_service.join_split_datasets(
+            data: DatasetInterface = self.data_service.concat_split_datasets(
                 self.data_service.get_dataset, files
             )
         else:

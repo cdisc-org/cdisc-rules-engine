@@ -203,3 +203,15 @@ class DatasetInterface(ABC):
         """
         Returns true if the column is sorted within each grouping otherwise false
         """
+
+    @abstractmethod
+    def min(self, *args, **kwargs):
+        """
+        Return the minimum of the values over the requested axis.
+        """
+
+    @abstractmethod
+    def reset_index(self, drop=False, **kwargs):
+        """
+        Reset the index of the dataset.
+        """
