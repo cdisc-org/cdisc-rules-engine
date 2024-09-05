@@ -1,9 +1,7 @@
 from cdisc_rules_engine.exceptions.custom_exceptions import UnsupportedDictionaryType
-from cdisc_rules_engine.models.dictionaries.meddra.meddra_validator import (
-    MedDRAValidator,
-)
 from cdisc_rules_engine.operations.base_operation import BaseOperation
 from cdisc_rules_engine.models.dictionaries.dictionary_types import DictionaryTypes
+from cdisc_rules_engine.models.dictionaries.constants import DICTIONARY_VALIDATORS
 
 
 class ValidExternalDictionaryValue(BaseOperation):
@@ -13,9 +11,7 @@ class ValidExternalDictionaryValue(BaseOperation):
                 f"{self.params.external_dictionary_type} is not supported by the engine"
             )
 
-        validator_map = {DictionaryTypes.MEDDRA.value: MedDRAValidator}
-
-        validator_type = validator_map.get(self.params.external_dictionary_type)
+        validator_type = DICTIONARY_VALIDATORS.get(self.params.external_dictionary_type)
         if not validator_type:
             raise UnsupportedDictionaryType(
                 f"{self.params.external_dictionary_type} is not supported by the "
@@ -24,8 +20,10 @@ class ValidExternalDictionaryValue(BaseOperation):
 
         validator = validator_type(
             cache_service=self.cache,
+            data_service=self.data_service,
             meddra_path=self.params.meddra_path,
             whodrug_path=self.params.whodrug_path,
+            loinc_path=self.params.loinc_path,
         )
 
         return self.params.dataframe.apply(

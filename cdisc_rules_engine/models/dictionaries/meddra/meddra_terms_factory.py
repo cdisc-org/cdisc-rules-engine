@@ -1,4 +1,7 @@
 from cdisc_rules_engine.exceptions.custom_exceptions import MissingDataError
+from cdisc_rules_engine.models.dictionaries.base_external_dictionary import (
+    ExternalDictionary,
+)
 from cdisc_rules_engine.models.dictionaries.meddra.meddra_file_names import (
     MeddraFileNames,
 )
@@ -20,10 +23,23 @@ class MedDRATermsFactory(TermsFactoryInterface):
     def __init__(self, data_service: DataServiceInterface):
         self.data_service = data_service
 
+    def get_version(self, directory_path: str) -> str:
+        if not self.data_service.has_all_files(
+            directory_path, [MeddraFileNames.VERSION.value]
+        ):
+            raise MissingDataError(message="MedDRA version file missing")
+        file_path = get_dictionary_path(directory_path, MeddraFileNames.VERSION.value)
+        with self.data_service.read_data(file_path) as file_data:
+            for bytes_line in file_data:
+                value = decode_line(bytes_line)
+                values = value.split("$")
+                return values[0]
+        return ""
+
     def install_terms(
         self,
         directory_path: str,
-    ):
+    ) -> ExternalDictionary:
         """
         Create MedDRA dictionary terms from files in directory.
         """
@@ -41,6 +57,10 @@ class MedDRATermsFactory(TermsFactoryInterface):
             MeddraFileNames.HLT_PT.value,
         ]
         data = {}
+        try:
+            version = self.get_version(directory_path)
+        except MissingDataError:
+            version = ""
 
         required_files = list(files.keys()) + relationship_files
         if not self.data_service.has_all_files(directory_path, required_files):
@@ -72,7 +92,7 @@ class MedDRATermsFactory(TermsFactoryInterface):
                     term.code_hierarchy = f"{parent.code_hierarchy}/{term.code}"
                     term.term_hierarchy = f"{parent.term_hierarchy}/{term.term}"
 
-        return data
+        return ExternalDictionary(terms=data, version=version)
 
     def read_data(self, file_path, data_type: str) -> dict:
         """
