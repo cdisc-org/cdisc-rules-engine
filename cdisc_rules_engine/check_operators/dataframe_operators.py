@@ -1057,11 +1057,12 @@ class DataframeType(BaseType):
             True,
             False,
         )
-        # appending NA here to make the length of results list the same as length of df
+        # we add True at the end as the last row of target has nothing to compare
+        # so as to not raise errors or incorrect issues in the report with False or NaN
         return self.value.convert_to_series(
             [
                 *results,
-                np.NAN,
+                True,
             ]
         ).tolist()
 
