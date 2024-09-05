@@ -45,8 +45,10 @@ def test_variable_value_count(
         {"domain": "EX", "filename": "EX"},
         {"domain": "AE", "filename": "AE2"},
     ]
-    mock_data_service.get_dataset.side_effect = lambda name: datasets_map.get(
-        os.path.split(name)[-1]
+    mock_data_service.get_dataset.side_effect = (
+        lambda *args, **kwargs: datasets_map.get(
+            os.path.split(args[0] if args else kwargs.get("dataset_name", ""))[-1]
+        )
     )
     mock_data_service.concat_split_datasets.side_effect = (
         lambda func, files: dataset_type().concat([func(f) for f in files])
