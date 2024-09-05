@@ -1057,6 +1057,8 @@ class DataframeType(BaseType):
             True,
             False,
         )
+        # we add True at the end as the last row of target has nothing to compare
+        # so as to not raise errors or incorrect issues in the report with False or NaN
         return self.value.convert_to_series(
             [
                 *results,

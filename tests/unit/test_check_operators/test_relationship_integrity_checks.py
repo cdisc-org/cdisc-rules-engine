@@ -3,7 +3,6 @@ import pytest
 from cdisc_rules_engine.models.dataset.dask_dataset import DaskDataset
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 import pandas as pd
-import numpy as np
 
 
 @pytest.mark.parametrize(
@@ -712,9 +711,7 @@ def test_has_next_corresponding_record(dataset_class):
     result = DataframeType({"value": valid_df}).has_next_corresponding_record(
         other_value
     )
-    assert result.equals(
-        pd.Series([True, True, True, np.NAN, True, True, True, np.NAN])
-    )
+    assert result.equals(pd.Series([True, True, True, True, True, True, True, True]))
 
     invalid_df = dataset_class.from_dict(
         {
@@ -769,9 +766,7 @@ def test_has_next_corresponding_record(dataset_class):
     result = DataframeType({"value": invalid_df}).has_next_corresponding_record(
         other_value
     )
-    assert result.equals(
-        pd.Series([False, False, False, np.NAN, True, True, True, np.NAN])
-    )
+    assert result.equals(pd.Series([False, False, False, True, True, True, True, True]))
 
 
 @pytest.mark.parametrize("dataset_class", [PandasDataset, DaskDataset])
