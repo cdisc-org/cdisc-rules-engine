@@ -5,6 +5,9 @@ from cdisc_rules_engine.operations.base_operation import BaseOperation
 from cdisc_rules_engine.operations.dataset_names import DatasetNames
 from cdisc_rules_engine.operations.dataset_column_order import DatasetColumnOrder
 from cdisc_rules_engine.operations.day_data_validator import DayDataValidator
+from cdisc_rules_engine.operations.define_dictionary_version_validator import (
+    DefineDictionaryVersionValidator,
+)
 from cdisc_rules_engine.operations.distinct import Distinct
 from cdisc_rules_engine.operations.extract_metadata import ExtractMetadata
 from cdisc_rules_engine.operations.library_column_order import LibraryColumnOrder
@@ -110,6 +113,7 @@ class OperationsFactory(FactoryInterface):
         "name_referenced_variable_metadata": NameReferencedVariableMetadata,
         "define_variable_metadata": DefineVariableMetadata,
         "valid_external_dictionary_value": ValidExternalDictionaryValue,
+        "valid_define_external_dictionary_version": DefineDictionaryVersionValidator,
     }
 
     @classmethod

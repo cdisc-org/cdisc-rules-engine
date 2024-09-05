@@ -23,6 +23,7 @@ from cdisc_rules_engine.services.cache.cache_service_factory import CacheService
                     "2022-05-19T13:44",
                 ],
                 "USUBJID": [1, 2, 3, 4, 5, 6, 7],
+                "DOMAIN": ["DM", "DM", "DM", "DM", "DM", "DM", "DM"],
             },
             PandasDataset,
             [4, 32, 1, 13, "", "", -1],
@@ -39,6 +40,7 @@ from cdisc_rules_engine.services.cache.cache_service_factory import CacheService
                     "2022-05-19T13:44",
                 ],
                 "USUBJID": [1, 2, 3, 4, 5, 6, 7],
+                "DOMAIN": ["DM", "DM", "DM", "DM", "DM", "DM", "DM"],
             },
             DaskDataset,
             [4, 32, 1, 13, "", "", -1],
@@ -67,10 +69,14 @@ def test_day_data_calculation(
         )
     }
     datasets = [
-        {"domain": "DM", "filename": "dm.xpt"},
+        {"domain": "DM", "filename": "dm.xpt", "full_path": "/path/to/dm.xpt"},
     ]
-    mock_data_service.get_dataset.side_effect = lambda name: datasets_map.get(
-        name.split("/")[-1]
+    mock_data_service.get_dataset.side_effect = (
+        lambda *args, **kwargs: datasets_map.get(
+            args.split("/")[-1]
+            if args
+            else kwargs.get("dataset_name", "").split("/")[-1]
+        )
     )
     operation_params.datasets = datasets
     operation_params.dataframe = PandasDataset.from_dict(data)
