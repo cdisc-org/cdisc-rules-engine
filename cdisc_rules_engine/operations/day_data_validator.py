@@ -1,15 +1,17 @@
 from cdisc_rules_engine.operations.base_operation import BaseOperation
 from datetime import datetime
 import numpy as np
+from cdisc_rules_engine.services import logger
 
 
 class DayDataValidator(BaseOperation):
     def _execute_operation(self):
-
+        logger.info(
+            f"trying to find '{self.params.target}' in the {self.evaluation_dataset['DOMAIN'].iloc[0]}."
+        )
         dtc_value = self.evaluation_dataset[self.params.target].map(
             self.parse_timestamp
         )
-
         # Always get RFSTDTC column from DM dataset.
         dm_datasets = [
             dataset for dataset in self.params.datasets if dataset["domain"] == "DM"
@@ -19,10 +21,13 @@ class DayDataValidator(BaseOperation):
             return [0] * len(self.evaluation_dataset[self.params.target])
         if len(dm_datasets) > 1:
             files = [dataset["filename"] for dataset in dm_datasets]
-            dm_data = self.data_service.join_split_datasets(files)
+            dm_data = self.data_service.concat_split_datasets(
+                self.data_service.get_dataset, files
+            )
         else:
             dm_data = self.data_service.get_dataset(
-                dataset_name=dm_datasets[0]["filename"]
+                dataset_name=dm_datasets[0].get("full_path")
+                or dm_datasets[0]["filename"]
             )
 
         new_dataset = self.evaluation_dataset.merge(
