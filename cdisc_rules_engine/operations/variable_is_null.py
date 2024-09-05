@@ -4,7 +4,7 @@ from cdisc_rules_engine.operations.base_operation import BaseOperation
 class VariableIsNull(BaseOperation):
     def _execute_operation(self):
         # Always get the content dataframe. Similar to variable_exists check
-        dataframe = self.data_service.get_dataset(self.params.dataset_path)
+        dataframe = self.data_service.get_dataset(dataset_name=self.params.dataset_path)
         if self.params.target.startswith("define_variable"):
             # Handle checks against define metadata
             target_column = self.evaluation_dataset[self.params.target]
