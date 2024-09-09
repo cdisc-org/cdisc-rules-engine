@@ -24,4 +24,6 @@ class ContentMetadataDatasetBuilder(BaseDatasetBuilder):
         dataset_label - Label for the dataset
         """
         size_unit: str = self.rule_processor.get_size_unit_from_rule(self.rule)
-        return self.data_service.get_dataset_metadata(dataset_name, size_unit=size_unit)
+        return self.data_service.get_dataset_metadata(
+            dataset_name=dataset_name, size_unit=size_unit
+        )

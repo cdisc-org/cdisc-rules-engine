@@ -1,4 +1,7 @@
 from cdisc_rules_engine.exceptions.custom_exceptions import InvalidDictionaryVariable
+from cdisc_rules_engine.models.dictionaries.base_external_dictionary import (
+    ExternalDictionary,
+)
 from cdisc_rules_engine.models.dictionaries.meddra.meddra_validator import (
     MedDRAValidator,
 )
@@ -44,7 +47,7 @@ def test_is_valid_term_case_sensitive(
     }
 
     assert (
-        MedDRAValidator(terms=terms_dictionary).is_valid_term(
+        MedDRAValidator(terms=ExternalDictionary(terms_dictionary)).is_valid_term(
             term, term_type, variable, case_sensitive=True
         )
         == expected_outcome
@@ -85,7 +88,9 @@ def test_is_valid_term_case_insensitive(
     }
 
     assert (
-        MedDRAValidator(terms=terms_dictionary).is_valid_term(term, term_type, variable)
+        MedDRAValidator(terms=ExternalDictionary(terms_dictionary)).is_valid_term(
+            term, term_type, variable
+        )
         == expected_outcome
     )
 
@@ -100,6 +105,6 @@ def test_is_valid_term_throws_error_on_invalid_variable():
     }
 
     with pytest.raises(InvalidDictionaryVariable):
-        MedDRAValidator(terms=terms_dictionary).is_valid_term(
+        MedDRAValidator(terms=ExternalDictionary(terms_dictionary)).is_valid_term(
             "AAA", "TEST", "--INVALID_VARIABLE"
         )
