@@ -8,7 +8,12 @@ Note: The Windows commands provided in this README are written for PowerShell. W
 
 # cdisc-rules-engine
 
-Open source offering of the cdisc rules engine
+Open source offering of the CDISC Rules Engine, a tool designed for validating clinical trial data against data standards.
+To learn more, visit our official CDISC website or for other implementation options, see our DockerHub repository:  
+<br>  
+[CDISC Website](https://www.cdisc.org/)  
+<br>  
+[CDISC Rules Engine on DockerHub](https://hub.docker.com/repository/docker/cdiscdocker/cdisc-rules-engine/general)
 
 ### **Quick start**
 
