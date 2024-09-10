@@ -7,6 +7,7 @@ import os
 import re
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
+from dateutil.parser import parse as dateutil_parse
 from typing import Callable, List, Optional, Set, Union
 from uuid import UUID
 from cdisc_rules_engine.services import logger
@@ -21,6 +22,7 @@ from cdisc_rules_engine.constants.classes import SPECIAL_PURPOSE
 from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 from cdisc_rules_engine.interfaces import ConditionInterface
 from cdisc_rules_engine.models.base_validation_entity import BaseValidationEntity
+from business_rules.utils import is_valid_date
 
 
 def convert_file_size(size_in_bytes: int, desired_unit: str) -> float:
@@ -383,99 +385,88 @@ def get_sided_match_keys(match_keys: List[Union[str, dict]], side: str) -> List[
     ]
 
 
-def normalize_datetime(value):
-    if isinstance(value, (int, type(None))):
-        return value
-    formats = [
-        ("%Y-%m-%d %H:%M:%S", 6),
-        ("%Y-%m-%d %H:%M", 5),
-        ("%Y-%m-%d %H", 4),
-        ("%Y-%m-%d", 3),
-        ("%Y-%m", 2),
-        ("%Y", 1),
-    ]
-    for fmt, precision in formats:
-        try:
-            dt = datetime.strptime(value, fmt)
-            if precision < 4:  # If time is missing
-                return dt.strftime("%Y-%m-%d 00:00:00")
-            elif precision < 5:
-                return dt.strftime("%Y-%m-%d %H:00:00")
-            elif precision < 6:
-                return dt.strftime("%Y-%m-%d %H:%M:00")
-            else:
-                return dt.strftime("%Y-%m-%d %H:%M:%S")
-        except ValueError:
-            continue
-    return value
-
-
 def parse_date(date_str):
-    formats = [
-        ("%Y-%m-%d %H:%M:%S", 6),
-        ("%Y-%m-%d %H:%M", 5),
-        ("%Y-%m-%d %H", 4),
-        ("%Y-%m-%d", 3),
-        ("%Y-%m", 2),
-        ("%Y", 1),
-    ]
-
-    for fmt, precision in formats:
-        try:
-            return datetime.strptime(date_str, fmt), precision
-        except ValueError:
-            continue
-    return None, 0
+    if not isinstance(date_str, str) or not is_valid_date(date_str):
+        return None, 0
+    cleaned_str = re.sub(r"-+", "-", date_str)
+    parts = re.split(r"[-T:]", cleaned_str)
+    precision = len(parts)
+    date_obj = dateutil_parse(date_str)
+    return date_obj, precision
 
 
 def dates_overlap(date1, date2):
     """
     Check if two dates potentially overlap due to imprecision.
-
     :param date1: First date string
     :param date2: Second date string
-    :return: True if dates potentially overlap, False otherwise
+    :return: Tuple (bool, str) - True if dates potentially overlap, False otherwise, and the less precise date
     """
-    if date1 is None or date2 is None:
+    if not is_valid_date(date1) or not is_valid_date(date2):
         return False, None
-    formats = [
-        ("%Y-%m-%d %H:%M:%S", 6),
-        ("%Y-%m-%d %H:%M", 5),
-        ("%Y-%m-%d %H", 4),
-        ("%Y-%m-%d", 3),
-        ("%Y-%m", 2),
-        ("%Y", 1),
-    ]
 
     date1_obj, precision1 = parse_date(date1)
     date2_obj, precision2 = parse_date(date2)
 
     if precision1 == precision2:
-        return date1_obj == date2_obj, "same"
+        return date1_obj == date2_obj, None
+
+    less_precise = date1 if precision1 < precision2 else date2
+    more_precise = date2 if precision1 < precision2 else date1
+    less_precise_obj = date1_obj if precision1 < precision2 else date2_obj
 
     if precision1 < precision2:
-        less_precise, more_precise = date1_obj, date2_obj
-        less_precise_format = formats[6 - precision1][0]
-        less_precise_original = date1
+        less_precise_end = get_end_date(less_precise_obj, precision1)
     else:
-        less_precise, more_precise = date2_obj, date1_obj
-        less_precise_format = formats[6 - precision2][0]
-        less_precise_original = date2
+        less_precise_end = get_end_date(less_precise_obj, precision2)
 
-    less_precise_start = datetime.strptime(
-        less_precise.strftime(less_precise_format), less_precise_format
-    )
-    if less_precise_format == "%Y":
-        less_precise_end = datetime(less_precise.year + 1, 1, 1)
-    elif less_precise_format == "%Y-%m":
-        less_precise_end = (less_precise + relativedelta(months=1)).replace(day=1)
-    elif less_precise_format == "%Y-%m-%d":
-        less_precise_end = less_precise + timedelta(days=1)
-    elif less_precise_format == "%Y-%m-%d %H":
-        less_precise_end = less_precise + timedelta(hours=1)
-    elif less_precise_format == "%Y-%m-%d %H:%M":
-        less_precise_end = less_precise + timedelta(minutes=1)
+    overlaps = less_precise_obj <= dateutil_parse(more_precise) < less_precise_end
+    return overlaps, less_precise
+
+
+def get_end_date(date_obj, precision):
+    if precision == 1:  # Year only
+        return datetime(date_obj.year + 1, 1, 1)
+    elif precision == 2:  # Year and month
+        return date_obj + relativedelta(months=1)
+    elif precision == 3:  # Year, month, and day
+        return date_obj + timedelta(days=1)
+    elif precision == 4:  # Year, month, day, and hour
+        return date_obj + timedelta(hours=1)
+    elif precision == 5:  # Year, month, day, hour, and minute
+        return date_obj + timedelta(minutes=1)
+    else:  # Full precision
+        return date_obj + timedelta(seconds=1)
+
+
+def compare_dates(date1, date2, ascending):
+    overlaps, less_precise = dates_overlap(date1, date2)
+    if overlaps:
+        if less_precise is None:
+            return 0
+        else:
+            return -1 if less_precise == date1 else 1
+    date1_obj, _ = parse_date(date1)
+    date2_obj, _ = parse_date(date2)
+    if date1_obj < date2_obj:
+        return -1 if ascending else 1
+    elif date1_obj > date2_obj:
+        return 1 if ascending else -1
     else:
-        less_precise_end = less_precise + timedelta(seconds=1)
-    overlaps = less_precise_start <= more_precise < less_precise_end
-    return overlaps, less_precise_original
+        return 0
+
+
+def compare_values(a, b, ascending):
+    if is_valid_date(a) and is_valid_date(b):
+        return compare_dates(a, b, ascending)
+    elif is_valid_date(a):
+        return 1 if ascending else -1
+    elif is_valid_date(b):
+        return -1 if ascending else 1
+    else:
+        try:
+            a_val = float(a)
+            b_val = float(b)
+            return -1 if a_val < b_val else 1 if a_val > b_val else 0
+        except ValueError:
+            return -1 if a < b else 1 if a > b else 0
