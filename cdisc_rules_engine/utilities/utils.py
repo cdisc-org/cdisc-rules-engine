@@ -5,9 +5,7 @@ that can be reused.
 import copy
 import os
 import re
-from datetime import datetime, timedelta
-from dateutil.relativedelta import relativedelta
-from dateutil.parser import parse as dateutil_parse
+from datetime import datetime
 from typing import Callable, List, Optional, Set, Union
 from uuid import UUID
 from cdisc_rules_engine.services import logger
@@ -387,86 +385,19 @@ def get_sided_match_keys(match_keys: List[Union[str, dict]], side: str) -> List[
 
 def parse_date(date_str):
     if not isinstance(date_str, str) or not is_valid_date(date_str):
-        return None, 0
-    cleaned_str = re.sub(r"-+", "-", date_str)
-    parts = re.split(r"[-T:]", cleaned_str)
-    precision = len(parts)
-    date_obj = dateutil_parse(date_str)
-    return date_obj, precision
+        return 0, 0
+    if "--" in date_str:
+        date_str = date_str.split("--", 1)[0]
+    parts = re.split(r"[-T:]", date_str)
+    precision = len([part for part in parts if part])
+    return date_str, precision
 
 
-def dates_overlap(date1, date2):
-    """
-    Check if two dates potentially overlap due to imprecision.
-    :param date1: First date string
-    :param date2: Second date string
-    :return: Tuple (bool, str) - True if dates potentially overlap, False otherwise, and the less precise date
-    """
-    if not is_valid_date(date1) or not is_valid_date(date2):
-        return False, None
-
-    date1_obj, precision1 = parse_date(date1)
-    date2_obj, precision2 = parse_date(date2)
-
+def dates_overlap(date1_str, precision1, date2_str, precision2):
     if precision1 == precision2:
-        return date1_obj == date2_obj, None
+        return date1_str == date2_str, None
 
-    less_precise = date1 if precision1 < precision2 else date2
-    more_precise = date2 if precision1 < precision2 else date1
-    less_precise_obj = date1_obj if precision1 < precision2 else date2_obj
+    less_precise = date1_str if precision1 < precision2 else date2_str
+    more_precise = date2_str if precision1 < precision2 else date1_str
 
-    if precision1 < precision2:
-        less_precise_end = get_end_date(less_precise_obj, precision1)
-    else:
-        less_precise_end = get_end_date(less_precise_obj, precision2)
-
-    overlaps = less_precise_obj <= dateutil_parse(more_precise) < less_precise_end
-    return overlaps, less_precise
-
-
-def get_end_date(date_obj, precision):
-    if precision == 1:  # Year only
-        return datetime(date_obj.year + 1, 1, 1)
-    elif precision == 2:  # Year and month
-        return date_obj + relativedelta(months=1)
-    elif precision == 3:  # Year, month, and day
-        return date_obj + timedelta(days=1)
-    elif precision == 4:  # Year, month, day, and hour
-        return date_obj + timedelta(hours=1)
-    elif precision == 5:  # Year, month, day, hour, and minute
-        return date_obj + timedelta(minutes=1)
-    else:  # Full precision
-        return date_obj + timedelta(seconds=1)
-
-
-def compare_dates(date1, date2, ascending):
-    overlaps, less_precise = dates_overlap(date1, date2)
-    if overlaps:
-        if less_precise is None:
-            return 0
-        else:
-            return -1 if less_precise == date1 else 1
-    date1_obj, _ = parse_date(date1)
-    date2_obj, _ = parse_date(date2)
-    if date1_obj < date2_obj:
-        return -1 if ascending else 1
-    elif date1_obj > date2_obj:
-        return 1 if ascending else -1
-    else:
-        return 0
-
-
-def compare_values(a, b, ascending):
-    if is_valid_date(a) and is_valid_date(b):
-        return compare_dates(a, b, ascending)
-    elif is_valid_date(a):
-        return 1 if ascending else -1
-    elif is_valid_date(b):
-        return -1 if ascending else 1
-    else:
-        try:
-            a_val = float(a)
-            b_val = float(b)
-            return -1 if a_val < b_val else 1 if a_val > b_val else 0
-        except ValueError:
-            return -1 if a < b else 1 if a > b else 0
+    return more_precise.startswith(less_precise), less_precise

@@ -838,11 +838,11 @@ def test_target_is_sorted_by(dataset_class):
     assert result.equals(
         pd.Series(
             [
+                False,
+                False,
+                False,
                 True,
-                True,
-                True,
-                True,
-                True,
+                False,
             ]
         )
     )
@@ -908,10 +908,10 @@ def test_target_is_sorted_by(dataset_class):
     assert result.equals(
         pd.Series(
             [
-                True,
-                True,
-                True,
-                True,
+                False,
+                False,
+                False,
+                False,
                 True,
             ]
         )
@@ -1007,7 +1007,7 @@ def test_target_is_sorted_by(dataset_class):
     valid_mul_df = dataset_class.from_dict(
         {
             "USUBJID": ["CDISC001", "CDISC002", "CDISC002", "CDISC001", "CDISC001"],
-            "SESEQ": [7, 3, 2, 8, 6],
+            "SESEQ": [7, 1, 2, 8, 6],
             "SESTDTC": [
                 "2006-06-03",
                 "2006-06-04",
@@ -1049,8 +1049,8 @@ def test_target_is_sorted_by(dataset_class):
                 True,
                 True,
                 True,
-                True,
-                True,
+                False,
+                False,
             ]
         )
     )
@@ -1058,7 +1058,7 @@ def test_target_is_sorted_by(dataset_class):
     valid_mul_df = dataset_class.from_dict(
         {
             "USUBJID": ["CDISC001", "CDISC001", "CDISC001", "CDISC001", "CDISC001"],
-            "SESEQ": [1, 2, 5, 8, 12.2],
+            "SESEQ": [1, 2, 5, 8, 12],
             "SESTDTC": [
                 "2006-06-01",
                 "2006-06-02",
@@ -1097,11 +1097,11 @@ def test_target_is_sorted_by(dataset_class):
     assert result.equals(
         pd.Series(
             [
+                False,
+                False,
                 True,
-                True,
-                True,
-                True,
-                True,
+                False,
+                False,
             ]
         )
     )
