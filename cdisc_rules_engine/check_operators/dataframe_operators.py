@@ -1,7 +1,6 @@
 from business_rules.operators import BaseType, type_operator
 from typing import Union, Any, List, Tuple
 from business_rules.fields import FIELD_DATAFRAME
-import dask.dataframe as dd
 from business_rules.utils import (
     flatten_list,
     is_valid_date,
@@ -22,6 +21,7 @@ import re
 import operator
 from uuid import uuid4
 from cdisc_rules_engine.models.dataset.dask_dataset import DaskDataset
+from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from pandas.api.types import is_integer_dtype
 
@@ -1264,83 +1264,226 @@ class DataframeType(BaseType):
     def value_does_not_have_multiple_references(self, other_value: dict):
         return ~self.value_has_multiple_references(other_value)
 
+    def check_basic_sort_order(self, group, target, comparator, ascending):
+        target_values = group[target].tolist()
+        comparator_values = group[comparator].tolist()
+        is_sorted = pd.Series(True, index=group.index)
+
+        expected_order = sorted(
+            range(len(comparator_values)),
+            key=lambda k: comparator_values[k],
+            reverse=not ascending,
+        )
+        actual_order = sorted(range(len(target_values)), key=lambda k: target_values[k])
+
+        for i, (exp, act) in enumerate(zip(expected_order, actual_order)):
+            if exp != act:
+                is_sorted.iloc[i] = False
+
+        return is_sorted
+        # target_values = group[target].tolist()
+        # chronological = sorted(target_values)
+        # is_sorted = pd.Series(True, index=group.index)
+
+        # for i, (actual, correct) in enumerate(zip(target_values, chronological)):
+        #     if actual != correct:
+        #         is_sorted.iloc[i] = False
+
+        # return is_sorted
+
+    def check_date_overlaps(self, group, target, comparator):
+        comparator_values = group[comparator].tolist()
+        is_sorted = pd.Series(True, index=group.index)
+
+        for i in range(len(comparator_values) - 1):
+            if is_valid_date(comparator_values[i]) and is_valid_date(
+                comparator_values[i + 1]
+            ):
+                date1, prec1 = parse_date(comparator_values[i])
+                date2, prec2 = parse_date(comparator_values[i + 1])
+                if prec1 != prec2:
+                    overlaps, less_precise = dates_overlap(date1, prec1, date2, prec2)
+                    if overlaps:
+                        is_sorted.iloc[i] = False
+                        is_sorted.iloc[i + 1] = False
+
+        return is_sorted
+        # target_values = group[target].tolist()
+        # comparator_values = group[comparator].tolist()
+        # is_sorted = [True] * len(target_values)
+
+        # for i in range(len(comparator_values) - 1):
+        #     if is_valid_date(comparator_values[i]) and is_valid_date(comparator_values[i + 1]):
+        #         date1, prec1 = parse_date(comparator_values[i])
+        #         date2, prec2 = parse_date(comparator_values[i + 1])
+        #         if prec1 != prec2:
+        #             overlaps, less_precise = dates_overlap(date1, prec1, date2, prec2)
+        #             if overlaps:
+        #                 if less_precise == date1:
+        #                     is_sorted[i] = False
+        #                 else:
+        #                     is_sorted[i + 1] = False
+
+        # return pd.Series(is_sorted, index=group.index)
+
     @type_operator(FIELD_DATAFRAME)
     def target_is_sorted_by(self, other_value: dict):
         """
-        Checking the sort order based on comparators, accounting for date overlaps
+        Checking the sort order based on comparators, including date overlap checks
         """
         target: str = self.replace_prefix(other_value.get("target"))
         within: str = self.replace_prefix(other_value.get("within"))
         columns = other_value["comparator"]
         result = pd.Series([True] * len(self.value), index=self.value.index)
-        df = self.value
+        pandas = isinstance(self.value, PandasDataset)
         for col in columns:
             comparator: str = self.replace_prefix(col["name"])
             ascending: bool = col["sort_order"].lower() != "desc"
             na_pos: str = col["null_position"]
-            if isinstance(df.data, dd.DataFrame):
-                mapped_result = df.data.map_partitions(
-                    lambda partition: self.check_sort_order(
-                        partition, target, within, comparator, ascending, na_pos
-                    ),
-                )
-                computed_result = mapped_result.compute()
-                result &= computed_result
+
+            sorted_df = self.value[[target, within, comparator]].sort_values(
+                by=[within, comparator], ascending=ascending, na_position=na_pos
+            )
+
+            grouped_df = sorted_df.groupby(within)
+
+            # Check basic sort order, remove multiindex from series
+            basic_sort_check = grouped_df.apply(
+                lambda x: self.check_basic_sort_order(x, target, comparator, ascending)
+            )
+            if pandas:
+                basic_sort_check = basic_sort_check.reset_index(level=0, drop=True)
             else:
-                result &= self.check_sort_order(
-                    df, target, within, comparator, ascending, na_pos
-                )
+                basic_sort_check = basic_sort_check.reset_index(drop=True)
+            result = result & basic_sort_check
+            # basic_sort_check = basic_sort_check.to_frame('SortCheckResult').reset_index()
+            # result = result & basic_sort_check['SortCheckResult']
+
+            # Check date overlaps
+            date_overlap_check = grouped_df.apply(
+                lambda x: self.check_date_overlaps(x, target, comparator)
+            )
+            if pandas:
+                date_overlap_check = date_overlap_check.reset_index(level=0, drop=True)
+            else:
+                date_overlap_check = date_overlap_check.reset_index(drop=True)
+            result = result & date_overlap_check
+            # date_overlap_check = date_overlap_check.to_frame('DateCheckResult').reset_index()
+            # result = result & date_overlap_check['DateCheckResult']
         return result
 
-    def check_sort_order(self, df, target, within, comparator, ascending, na_pos):
-        def check_order(group):
-            target_values = group[target].tolist()
-            comparator_values = group[comparator].tolist()
-            is_sorted = [True] * len(target_values)
-            chronological = sorted(target_values)
-            for i, (actual, ideal) in enumerate(zip(target_values, chronological)):
-                if actual != ideal:
-                    is_sorted[i] = False
+    # @type_operator(FIELD_DATAFRAME)
+    #     def target_is_sorted_by(self, other_value: dict):
+    #         """
+    #         Checking the sort order based on  comparators
+    #         """
+    #         target: str = self.replace_prefix(other_value.get("target"))
+    #         within: str = self.replace_prefix(other_value.get("within"))
+    #         columns = other_value["comparator"]
 
-            # Check for less precise dates that overlap
-            for i in range(len(comparator_values) - 1):
-                if is_valid_date(comparator_values[i]) and is_valid_date(
-                    comparator_values[i + 1]
-                ):
-                    date1, prec1 = parse_date(comparator_values[i])
-                    date2, prec2 = parse_date(comparator_values[i + 1])
+    #         result = pd.Series([True] * len(self.value), index=self.value.index)
+    #         for col in columns:
+    #             comparator: str = self.replace_prefix(col["name"])
+    #             ascending: bool = col["sort_order"].lower() != "desc"
+    #             na_pos: str = col["null_position"]
+    #             sorted_df = self.value[[target, within, comparator]].sort_values(
+    #                 by=[within, comparator], ascending=ascending, na_position=na_pos
+    #             )
+    #             # temporary DataFrame to check the order
+    #             grouped_df = sorted_df.groupby(within)
+    #             # Series to hold the sorted check results
+    #             sorted_check = pd.Series(index=sorted_df.index, dtype=bool)
 
-                    if prec1 != prec2:
-                        overlaps, less_precise = dates_overlap(
-                            date1, prec1, date2, prec2
-                        )
-                        if overlaps:
-                            if less_precise == date1:
-                                is_sorted[i] = False
-                            else:
-                                is_sorted[i + 1] = False
+    #             for name, group in grouped_df:
+    #                 sorted_values = group[target].values
+    #                 expected_values = (
+    #                     np.sort(sorted_values)
+    #                     if ascending
+    #                     else np.sort(sorted_values)[::-1]
+    #                 )
+    #                 sorted_check[group.index] = np.array_equal(
+    #                     sorted_values, expected_values
+    #                 )
+    #             result.update(sorted_check)
+    #         return result
 
-            return pd.Series(is_sorted, index=group.index)
+    # @type_operator(FIELD_DATAFRAME)
+    # def target_is_sorted_by(self, other_value: dict):
+    #     """
+    #     Checking the sort order based on comparators, accounting for date overlaps
+    #     """
+    #     target: str = self.replace_prefix(other_value.get("target"))
+    #     within: str = self.replace_prefix(other_value.get("within"))
+    #     columns = other_value["comparator"]
+    #     result = pd.Series([True] * len(self.value), index=self.value.index)
+    #     df = self.value
+    #     for col in columns:
+    #         comparator: str = self.replace_prefix(col["name"])
+    #         ascending: bool = col["sort_order"].lower() != "desc"
+    #         na_pos: str = col["null_position"]
+    #         if isinstance(df.data, dd.DataFrame):
+    #             mapped_result = df.data.map_partitions(
+    #                 lambda partition: self.check_sort_order(
+    #                     partition, target, within, comparator, ascending, na_pos
+    #                 ),
+    #             )
+    #             computed_result = mapped_result.compute()
+    #             result &= computed_result
+    #         else:
+    #             result &= self.check_sort_order(
+    #                 df, target, within, comparator, ascending, na_pos
+    #             )
+    #     return result
 
-        if na_pos == "first":
-            df = df.sort_values(
-                [comparator, target],
-                na_position="first",
-                ascending=[ascending, ascending],
-            )
-        else:
-            df = df.sort_values(
-                [comparator, target],
-                na_position="last",
-                ascending=[ascending, ascending],
-            )
-        result = (
-            df.groupby(within)
-            .apply(check_order)
-            .reset_index(level=0, drop=True)
-            .squeeze()
-        )
-        return result
+    # def check_sort_order(self, df, target, within, comparator, ascending, na_pos):
+    #     def check_order(group):
+    #         target_values = group[target].tolist()
+    #         comparator_values = group[comparator].tolist()
+    #         is_sorted = [True] * len(target_values)
+    #         chronological = sorted(target_values)
+    #         for i, (actual, ideal) in enumerate(zip(target_values, chronological)):
+    #             if actual != ideal:
+    #                 is_sorted[i] = False
+
+    #         # Check for less precise dates that overlap
+    #         for i in range(len(comparator_values) - 1):
+    #             if is_valid_date(comparator_values[i]) and is_valid_date(
+    #                 comparator_values[i + 1]
+    #             ):
+    #                 date1, prec1 = parse_date(comparator_values[i])
+    #                 date2, prec2 = parse_date(comparator_values[i + 1])
+
+    #                 if prec1 != prec2:
+    #                     overlaps, less_precise = dates_overlap(
+    #                         date1, prec1, date2, prec2
+    #                     )
+    #                     if overlaps:
+    #                         if less_precise == date1:
+    #                             is_sorted[i] = False
+    #                         else:
+    #                             is_sorted[i + 1] = False
+
+    #         return pd.Series(is_sorted, index=group.index)
+
+    #     if na_pos == "first":
+    #         df = df.sort_values(
+    #             [comparator, target],
+    #             na_position="first",
+    #             ascending=[ascending, ascending],
+    #         )
+    #     else:
+    #         df = df.sort_values(
+    #             [comparator, target],
+    #             na_position="last",
+    #             ascending=[ascending, ascending],
+    #         )
+    #     result = (
+    #         df.groupby(within)
+    #         .apply(check_order)
+    #         .reset_index(level=0, drop=True)
+    #         .squeeze()
+    #     )
+    #     return result
 
     @type_operator(FIELD_DATAFRAME)
     def target_is_not_sorted_by(self, other_value: dict):

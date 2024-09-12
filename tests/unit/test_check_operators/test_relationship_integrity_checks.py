@@ -769,7 +769,7 @@ def test_has_next_corresponding_record(dataset_class):
     assert result.equals(pd.Series([False, False, False, True, True, True, True, True]))
 
 
-@pytest.mark.parametrize("dataset_class", [PandasDataset])
+@pytest.mark.parametrize("dataset_class", [PandasDataset, DaskDataset])
 def test_target_is_sorted_by(dataset_class):
     """
     Unit test for target_is_sorted_by  operator.
@@ -839,9 +839,9 @@ def test_target_is_sorted_by(dataset_class):
         pd.Series(
             [
                 False,
-                False,
-                False,
                 True,
+                False,
+                False,
                 False,
             ]
         )
@@ -909,10 +909,10 @@ def test_target_is_sorted_by(dataset_class):
         pd.Series(
             [
                 False,
-                False,
-                False,
-                False,
                 True,
+                False,
+                False,
+                False,
             ]
         )
     )
