@@ -839,9 +839,9 @@ def test_target_is_sorted_by(dataset_class):
         pd.Series(
             [
                 False,
+                False,
+                False,
                 True,
-                False,
-                False,
                 False,
             ]
         )
@@ -909,10 +909,10 @@ def test_target_is_sorted_by(dataset_class):
         pd.Series(
             [
                 False,
+                False,
+                False,
+                False,
                 True,
-                False,
-                False,
-                False,
             ]
         )
     )
@@ -1179,10 +1179,10 @@ def test_target_is_sorted_by(dataset_class):
         pd.Series(
             [
                 True,
-                True,
+                False,
                 True,
                 False,
-                False,
+                True,
             ]
         )
     )
@@ -1212,7 +1212,7 @@ def test_target_is_sorted_by(dataset_class):
                 False,
                 False,
                 False,
-                False,
+                True,
             ]
         )
     )
