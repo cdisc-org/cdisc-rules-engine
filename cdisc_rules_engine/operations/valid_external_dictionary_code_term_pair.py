@@ -4,7 +4,7 @@ from cdisc_rules_engine.models.dictionaries.dictionary_types import DictionaryTy
 from cdisc_rules_engine.models.dictionaries.constants import DICTIONARY_VALIDATORS
 
 
-class ValidExternalDictionaryValue(BaseOperation):
+class ValidExternalDictionaryCodeTermPair(BaseOperation):
     def _execute_operation(self):
         if self.params.external_dictionary_type not in DictionaryTypes.values():
             raise UnsupportedDictionaryType(
@@ -15,7 +15,7 @@ class ValidExternalDictionaryValue(BaseOperation):
         if not validator_type:
             raise UnsupportedDictionaryType(
                 f"{self.params.external_dictionary_type} is not supported by the "
-                + "valid_external_dictionary_value operation"
+                + "valid_external_dictionary_code_term_pair operation"
             )
 
         validator = validator_type(
@@ -28,10 +28,10 @@ class ValidExternalDictionaryValue(BaseOperation):
         )
 
         return self.params.dataframe.apply(
-            lambda row: validator.is_valid_term(
-                term=row[self.params.target],
-                term_type=self.params.dictionary_term_type,
-                variable=self.params.original_target,
+            lambda row: validator.is_valid_code_term_pair(
+                row,
+                term_var=self.params.external_dictionary_term_variable,
+                code_var=self.params.original_target,
             ),
             axis=1,
         )

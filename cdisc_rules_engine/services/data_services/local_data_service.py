@@ -25,6 +25,7 @@ from .base_data_service import BaseDataService, cached_dataset
 from cdisc_rules_engine.enums.dataformat_types import DataFormatTypes
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from cdisc_rules_engine.models.dataset import PandasDataset
+import re
 
 
 class LocalDataService(BaseDataService):
@@ -70,6 +71,16 @@ class LocalDataService(BaseDataService):
             if os.path.isfile(os.path.join(prefix, f))
         ]
         return all(item.lower() in files for item in file_names)
+
+    def get_file_matching_pattern(self, prefix: str, pattern: str) -> str:
+        """
+        Returns the path to the file if one matches the pattern given, otherwise
+        return None.
+        """
+        for f in os.listdir(prefix):
+            if os.path.isfile(os.path.join(prefix, f)) and re.match(pattern, f):
+                return f
+        return None
 
     @cached_dataset(DatasetTypes.CONTENTS.value)
     def get_dataset(self, dataset_name: str, **params) -> DatasetInterface:

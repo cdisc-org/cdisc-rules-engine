@@ -260,6 +260,7 @@ class RuleProcessor:
                 meddra_path=kwargs.get("meddra_path"),
                 whodrug_path=kwargs.get("whodrug_path"),
                 loinc_path=kwargs.get("loinc_path"),
+                medrt_path=kwargs.get("medrt_path"),
                 ct_version=operation.get("version"),
                 ct_attribute=operation.get("attribute"),
                 ct_packages=kwargs.get("ct_packages"),
@@ -269,6 +270,9 @@ class RuleProcessor:
                 key_value=operation.get("key_value", ""),
                 case_sensitive=operation.get("case_sensitive", True),
                 external_dictionary_type=operation.get("external_dictionary_type"),
+                external_dictionary_term_variable=operation.get(
+                    "external_dictionary_term_variable"
+                ),
                 dictionary_term_type=operation.get("dictionary_term_type"),
                 filter=operation.get("filter", None),
                 grouping_aliases=operation.get("group_aliases"),

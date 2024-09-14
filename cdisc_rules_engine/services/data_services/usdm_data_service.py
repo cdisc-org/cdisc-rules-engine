@@ -7,6 +7,7 @@ from jsonpath_ng.ext import parse
 from datetime import datetime
 from yaml import safe_load
 from numpy import empty, vectorize
+import re
 
 from cdisc_rules_engine.interfaces import CacheServiceInterface, ConfigInterface
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
@@ -74,6 +75,16 @@ class USDMDataService(BaseDataService):
 
     def has_all_files(self, prefix: str, file_names: List[str]) -> bool:
         return os.path.isfile(self.dataset_path)
+
+    def get_file_matching_pattern(self, prefix: str, pattern: str) -> str:
+        """
+        Returns the path to the file if one matches the pattern given, otherwise
+        return None.
+        """
+        for f in os.listdir(prefix):
+            if os.path.isfile(os.path.join(prefix, f)) and re.match(pattern, f):
+                return f
+        return None
 
     @cached_dataset(DatasetTypes.CONTENTS.value)
     def get_dataset(self, dataset_name: str, **params) -> DatasetInterface:
