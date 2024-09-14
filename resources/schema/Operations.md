@@ -672,6 +672,48 @@ Output:
 [true, false, false, true]
 ```
 
+## valid_external_dictionary_code
+
+Returns true if the target variable contains a valid external dictionary code, otherwise false
+
+Input:
+
+```yaml
+- operation: valid_external_dictionary_code
+  name: --COD
+  id: $is_valid_cod_code
+  external_dictionary_type: meddra
+  dictionary_term_type: PT
+```
+
+Output:
+
+```json
+[true, false, false, true]
+```
+
+## valid_external_dictionary_code_term_pair
+
+Returns true if the row in the dataset contains a matching pair of code and term, otherwise false
+
+For this operator, the name parameter should contain the name of the variable containing the code, and the
+external_dictionary_term_variable parameter should contain the name of the variable containing the term
+Input:
+
+```yaml
+- operation: valid_external_dictionary_code_term_pair
+  name: --COD
+  id: $is_valid_loinc_code_term_pair
+  external_dictionary_type: loinc
+  external_dictionary_term_variable: --DECOD
+```
+
+Output:
+
+```json
+[true, false, false, true]
+```
+
 ## valid_meddra_code_references
 
 Determines whether the values are valid in the following variables:

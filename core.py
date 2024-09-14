@@ -147,6 +147,7 @@ def cli():
 @click.option("--whodrug", help="Path to directory with WHODrug dictionary files")
 @click.option("--meddra", help="Path to directory with MedDRA dictionary files")
 @click.option("--loinc", help="Path to directory with LOINC dictionary files")
+@click.option("--medrt", help="Path to directory with MEDRT dictionary files")
 @click.option(
     "--rules",
     "-r",
@@ -211,6 +212,7 @@ def validate(
     whodrug: str,
     meddra: str,
     loinc: str,
+    medrt: str,
     rules: Tuple[str],
     local_rules: str,
     local_rules_cache: bool,
@@ -285,6 +287,7 @@ def validate(
             whodrug,
             meddra,
             loinc,
+            medrt,
             rules,
             local_rules,
             local_rules_cache,
@@ -484,6 +487,7 @@ def list_rules(
 @click.option("--whodrug", help="Path to directory with WHODrug dictionary files")
 @click.option("--meddra", help="Path to directory with MedDRA dictionary files")
 @click.option("--loinc", help="Path to directory with LOINC dictionary files")
+@click.option("--medrt", help="Path to directory with MEDRT dictionary files")
 @click.option(
     "-vx",
     "--validate-xml",
@@ -504,6 +508,7 @@ def test(
     whodrug: str,
     meddra: str,
     loinc: str,
+    medrt: str,
     validate_xml,
     define_xml_path: str,
 ):
@@ -517,6 +522,7 @@ def test(
         whodrug,
         meddra,
         loinc,
+        medrt,
         controlled_terminology_package,
         define_version,
         define_xml_path,

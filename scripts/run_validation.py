@@ -70,6 +70,7 @@ def validate_single_rule(
         meddra_path=args.meddra,
         whodrug_path=args.whodrug,
         loinc_path=args.loinc,
+        medrt_path=args.medrt,
         define_xml_path=args.define_xml_path,
         library_metadata=library_metadata,
         max_dataset_size=max_dataset_size,
