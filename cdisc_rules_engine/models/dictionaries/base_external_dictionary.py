@@ -21,3 +21,6 @@ class ExternalDictionary:
 
     def get(self, key, default=None):
         return self.terms.get(key, default)
+
+    def values(self):
+        return self.terms.values()
