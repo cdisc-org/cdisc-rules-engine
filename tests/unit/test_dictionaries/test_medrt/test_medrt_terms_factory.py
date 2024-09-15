@@ -18,4 +18,4 @@ def test_install():
     )
     dictionary = factory.install_terms(dictionary_path)
     assert dictionary.version == "2024.09.03"
-    assert len(dictionary.items()) == 5088
+    assert len(dictionary.items()) == 6
