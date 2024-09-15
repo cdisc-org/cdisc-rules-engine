@@ -31,7 +31,7 @@ class ValidExternalDictionaryCodeTermPair(BaseOperation):
             lambda row: validator.is_valid_code_term_pair(
                 row,
                 term_var=self.params.external_dictionary_term_variable,
-                code_var=self.params.original_target,
+                code_var=self.params.target,
             ),
             axis=1,
         )
