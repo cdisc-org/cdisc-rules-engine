@@ -81,6 +81,13 @@ class DataServiceInterface(ABC):
         """
 
     @abstractmethod
+    def get_file_matching_pattern(self, prefix: str, pattern: str) -> str:
+        """
+        Returns the path to the file if one matches the pattern given, otherwise
+        return None.
+        """
+
+    @abstractmethod
     def read_data(self, file_path: str) -> IOBase:
         """
         Reads byte data from the given path and returns BinaryIO instance.

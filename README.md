@@ -4,7 +4,8 @@
 [![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/downloads/release/python-3100)
 
 ### Windows Command Compatibility
-Note: The Windows commands provided in this README are written for PowerShell. While most commands are compatible with both PowerShell and Command Prompt, some adjustments may be necessary when using Command Prompt.  If you encounter any issues running these commands in Command Prompt, try using PowerShell or consult the Command Prompt documentation for equivalent commands.
+
+Note: The Windows commands provided in this README are written for PowerShell. While most commands are compatible with both PowerShell and Command Prompt, some adjustments may be necessary when using Command Prompt. If you encounter any issues running these commands in Command Prompt, try using PowerShell or consult the Command Prompt documentation for equivalent commands.
 
 # cdisc-rules-engine
 
@@ -117,6 +118,8 @@ Run `python core.py validate --help` to see the list of validation options.
   --meddra TEXT                   Path to directory with MedDRA dictionary
                                   files
   --loinc TEXT                  Path to directory with LOINC dictionary
+                                  files
+  --medrt TEXT                  Path to directory with MEDRT dictionary
                                   files
   -r, --rules TEXT                Specify rule core ID ex. CORE-000001. Can be specified multiple times.
   -lr, --local_rules TEXT         Specify relative path to directory containing

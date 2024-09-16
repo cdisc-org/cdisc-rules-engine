@@ -20,6 +20,43 @@ class BaseDictionaryValidator:
         """
         raise NotImplementedError
 
+    def is_valid_code(
+        self, code: str, term_type: str = "", variable: str = "", **kwargs
+    ) -> bool:
+        """
+        Method to identify whether a code is valid based on its term type.
+
+        Args:
+            code: The dictionary code used
+            term_type: The component of the dictionary to validate against.
+            variable: The source variable of the term value.
+            kwargs: Additional validator specific variables
+
+        Returns:
+            True: The code is valid
+            False: The code is not valid
+
+            Note: The definition of "valid" may be different for each dictionary.
+
+        """
+        raise NotImplementedError
+
+    def is_valid_code_term_pair(self, row, term_var, code_var) -> bool:
+        """
+        Method to identify whether a term in a dictionary matches the code used to specify it.
+
+        Args:
+            row: the dataframe row
+            term_var: The variable containing the term text
+            code_var: The variable containing the term code
+        Returns:
+            True: The code matches the term.
+            False: The code does not match the term.
+
+            Note: The definition of "matches" may be different for each dictionary.
+        """
+        raise NotImplementedError
+
     def get_dictionary_version(self) -> str:
         return self.terms_factory.get_version(self.path)
 

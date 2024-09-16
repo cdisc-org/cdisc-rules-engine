@@ -144,3 +144,6 @@ logs
 
 # Ignore local rules
 resources/cache/local_rules.pkl
+
+#ignore vim .swp files
+*.swp

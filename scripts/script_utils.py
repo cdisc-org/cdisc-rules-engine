@@ -92,7 +92,7 @@ def fill_cache_with_dictionaries(cache: CacheServiceInterface, args):
     Extracts file contents from provided dictionaries files
     and saves to cache (inmemory or redis).
     """
-    if not args.meddra and not args.whodrug and not args.loinc:
+    if not args.meddra and not args.whodrug and not args.loinc and not args.medrt:
         return
 
     data_service = DataServiceFactory(config, cache).get_data_service()
@@ -101,6 +101,7 @@ def fill_cache_with_dictionaries(cache: CacheServiceInterface, args):
         DictionaryTypes.MEDDRA: args.meddra,
         DictionaryTypes.WHODRUG: args.whodrug,
         DictionaryTypes.LOINC: args.loinc,
+        DictionaryTypes.MEDRT: args.medrt,
     }
     for dictionary_type, dictionary_path in dictionary_type_to_path_map.items():
         if not dictionary_path:

@@ -37,12 +37,30 @@ class LoincValidator(BaseDictionaryValidator):
             True: The term is valid
             False: The term is not valid
         """
+        return self.is_valid_code(term, term_type, variable, **kwargs)
+
+    def is_valid_code(
+        self, code: str, term_type: str = "", variable: str = "", **kwargs
+    ) -> bool:
+        """
+        Method to identify whether a term is valid based on its term type.
+
+        Args:
+            code: The dictionary code used
+            term_type: The term type to validate against
+            variable: The variable used to source the term data
+            kwargs: Additional validator specific variables
+
+        Returns:
+            True: The term is valid
+            False: The term is not valid
+        """
         term_dictionary = self.get_term_dictionary()
         case_sensitive_check = kwargs.get("case_sensitive")
         if case_sensitive_check:
-            return term in term_dictionary
+            return code in term_dictionary
         else:
             for key in term_dictionary:
-                if key.lower() == term.lower():
+                if key.lower() == code.lower():
                     return True
             return False

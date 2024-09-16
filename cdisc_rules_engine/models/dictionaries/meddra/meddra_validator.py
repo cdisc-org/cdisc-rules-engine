@@ -87,3 +87,38 @@ class MedDRAValidator(BaseDictionaryValidator):
             ]
 
         return len(valid_terms) > 0
+
+    def is_valid_code(self, code: str, term_type: str, variable: str, **kwargs) -> bool:
+        """
+        Method to identify whether a term is valid based on its term type.
+
+        Args:
+            term_dictionary: The dictionary of available terms. Ex:
+                {
+                    "soc": {
+                        <soc term code>: instance of MedDRATerm
+                        ...
+                    },
+                    "hlt": {
+                        <high level term code>: instance of MedDRATerm
+                        ...
+                    }
+                    ...
+                }
+            term: The dictionary term used
+            term_type: The term type to validate against
+            variable: The variable used to source the term data
+            kwargs: Additional validator specific variables
+
+        Returns:
+            True: The term is valid
+            False: The term is not valid
+        """
+        term_dictionary = self.get_term_dictionary()
+        term_type = term_type.lower()
+        if term_type not in TermTypes.values():
+            raise InvalidDictionaryVariable(
+                f"{term_type} does not correspond to a MedDRA term type"
+            )
+
+        return code in term_dictionary.get(term_type, {})

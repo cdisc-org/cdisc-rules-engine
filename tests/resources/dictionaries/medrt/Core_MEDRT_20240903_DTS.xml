@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- DTS Export Terminology File Version 2 -->
+<terminology type="namespace">
+ <namespace type="Thesaurus">
+  <name>MED-RT</name>
+  <code>N32768</code>
+  <id>32768</id>
+  <version>2024.09.03</version>
+  <authority>Apelon, Inc.</authority>
+ </namespace>
+ <proptype type="C">
+  <content>MED-RT</content>
+  <name>CTY</name>
+  <id>1</id>
+ </proptype>
+ <proptype type="C">
+  <content>MED-RT</content>
+  <name>NUI</name>
+  <id>2</id>
+ </proptype>
+ <assntype type="S" purpose="A">
+  <namespace>MED-RT</namespace>
+  <name>Preferred Term</name>
+  <id>2</id>
+  <inverse_name>Preferred Term for</inverse_name>
+ </assntype>
+ <assntype type="S" purpose="A">
+  <namespace>MED-RT</namespace>
+  <name>Synonym</name>
+  <id>5</id>
+  <inverse_name>Synonym for</inverse_name>
+ </assntype>
+ <assntype type="C" purpose="A">
+  <namespace>MED-RT</namespace>
+  <name>Parent Of</name>
+  <id>1</id>
+  <inverse_name>Child Of</inverse_name>
+ </assntype>
+ <assntype type="C" purpose="A">
+  <namespace>MED-RT</namespace>
+  <name>Synonym Of</name>
+  <id>9</id>
+  <inverse_name>Synonym Of</inverse_name>
+ </assntype>
+ <assntype type="C" purpose="A">
+  <namespace>MED-RT</namespace>
+  <name>has_MoA</name>
+  <id>10</id>
+  <inverse_name>MoA_of</inverse_name>
+ </assntype>
+ <assntype type="C" purpose="A">
+  <namespace>MED-RT</namespace>
+  <name>has_PE</name>
+  <id>11</id>
+  <inverse_name>PE_of</inverse_name>
+ </assntype>
+ <assntype type="C" purpose="A">
+  <namespace>MED-RT</namespace>
+  <name>may_treat</name>
+  <id>12</id>
+  <inverse_name>may_be_treated_by</inverse_name>
+ </assntype>
+ <assntype type="C" purpose="A">
+  <namespace>MED-RT</namespace>
+  <name>CI_with</name>
+  <id>13</id>
+  <inverse_name>[Inv] CI_with</inverse_name>
+ </assntype>
+ <assntype type="C" purpose="A">
+  <namespace>MED-RT</namespace>
+  <name>has_SC</name>
+  <id>14</id>
+  <inverse_name>SC_of</inverse_name>
+ </assntype>
+ <assntype type="C" purpose="A">
+  <namespace>MED-RT</namespace>
+  <name>may_prevent</name>
+  <id>15</id>
+  <inverse_name>may_be_prevented_by</inverse_name>
+ </assntype>
+ <assntype type="C" purpose="A">
+  <namespace>MED-RT</namespace>
+  <name>has_PK</name>
+  <id>16</id>
+  <inverse_name>PK_of</inverse_name>
+ </assntype>
+ <assntype type="C" purpose="A">
+  <namespace>MED-RT</namespace>
+  <name>CI_PE</name>
+  <id>17</id>
+  <inverse_name>[Inv] CI_PE</inverse_name>
+ </assntype>
+ <assntype type="C" purpose="A">
+  <namespace>MED-RT</namespace>
+  <name>CI_ChemClass</name>
+  <id>18</id>
+  <inverse_name>[Inv] CI_ChemClass</inverse_name>
+ </assntype>
+ <assntype type="C" purpose="A">
+  <namespace>MED-RT</namespace>
+  <name>may_diagnose</name>
+  <id>19</id>
+  <inverse_name>diagnosed_with</inverse_name>
+ </assntype>
+ <assntype type="C" purpose="A">
+  <namespace>MED-RT</namespace>
+  <name>has_TC</name>
+  <id>20</id>
+  <inverse_name>TC_of</inverse_name>
+ </assntype>
+ <assntype type="C" purpose="A">
+  <namespace>MED-RT</namespace>
+  <name>CI_MoA</name>
+  <id>21</id>
+  <inverse_name>[Inv] CI_MoA</inverse_name>
+ </assntype>
+ <assntype type="C" purpose="A">
+  <namespace>MED-RT</namespace>
+  <name>induces</name>
+  <id>22</id>
+  <inverse_name>induced_by</inverse_name>
+ </assntype>
+ <assntype type="C" purpose="A">
+  <namespace>MED-RT</namespace>
+  <name>has_active_metabolites</name>
+  <id>23</id>
+  <inverse_name>active_metabolites_of</inverse_name>
+ </assntype>
+ <assntype type="C" purpose="A">
+  <namespace>MED-RT</namespace>
+  <name>site_of_metabolism</name>
+  <id>24</id>
+  <inverse_name>metabolism_at_site</inverse_name>
+ </assntype>
+ <assntype type="C" purpose="A">
+  <namespace>MED-RT</namespace>
+  <name>effect_may_be_inhibited_by</name>
+  <id>25</id>
+  <inverse_name>may_inhibit_effect_of</inverse_name>
+ </assntype>
+ <qualtype type="CA">
+  <content>MED-RT</content>
+  <name>Authority</name>
+  <id>1</id>
+ </qualtype>
+ <term>
+  <namespace>MED-RT</namespace>
+  <name> Cyclin-dependent Kinase 4 Inhibitors</name>
+  <code>T58551</code>  <id>58551</id>
+  <status>ACTIVE</status>
+ </term>
+ <term>
+  <namespace>MED-RT</namespace>
+  <name> Cyclin-dependent Kinase 6 Inhibitors</name>
+  <code>T58554</code>  <id>58554</id>
+  <status>ACTIVE</status>
+ </term>
+ <term>
+  <namespace>MED-RT</namespace>
+  <name>1-Compartment</name>
+  <code>T82</code>  <id>82</id>
+  <status>ACTIVE</status>
+ </term>
+ <term>
+  <namespace>MED-RT</namespace>
+  <name>11 beta-Hydroxysteroid Dehydrogenase Inhibitors</name>
+  <code>T58876</code>  <id>58876</id>
+  <status>ACTIVE</status>
+ </term>
+ <term>
+  <namespace>MED-RT</namespace>
+  <name>11 beta-Hydroxysteroid Dehydrogenase Type 1 Inhibitors</name>
+  <code>T58869</code>  <id>58869</id>
+  <status>ACTIVE</status>
+ </term>
+ <term>
+  <namespace>MED-RT</namespace>
+  <name>11-beta Hydroxysteroid Dehydrogenase Inhibitors</name>
+  <code>T58875</code>  <id>58875</id>
+  <status>ACTIVE</status>
+ </term>
+</terminology>

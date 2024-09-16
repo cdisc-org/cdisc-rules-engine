@@ -242,6 +242,36 @@
     {
       "properties": {
         "operator": {
+          "const": "valid_external_dictionary_code"
+        }
+      },
+      "required": [
+        "id",
+        "operator",
+        "name",
+        "external_dictionary_type",
+        "dictionary_term_type"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "valid_external_dictionary_code_term_pair"
+        }
+      },
+      "required": [
+        "id",
+        "operator",
+        "name",
+        "external_dictionary_type",
+        "external_dictionary_term_variable"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
           "const": "valid_meddra_code_references"
         }
       },

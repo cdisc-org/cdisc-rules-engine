@@ -138,6 +138,13 @@ class DummyDataService(BaseDataService):
     def has_all_files(self, prefix: str, file_names: List[str]) -> bool:
         return True
 
+    def get_file_matching_pattern(self, prefix: str, pattern: str) -> str:
+        """
+        Returns the path to the file if one matches the pattern given, otherwise
+        return None.
+        """
+        return None
+
     def read_data(self, file_path: str) -> IOBase:
         return open(file_path, "rb")
 

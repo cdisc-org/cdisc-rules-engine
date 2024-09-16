@@ -9,3 +9,4 @@ class DictionaryTypes(BaseEnum):
     MEDDRA = "meddra"
     WHODRUG = "whodrug"
     LOINC = "loinc"
+    MEDRT = "med-rt"
