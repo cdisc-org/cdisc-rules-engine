@@ -1303,7 +1303,7 @@ class DataframeType(BaseType):
                     overlaps, less_precise = dates_overlap(date1, prec1, date2, prec2)
                     if overlaps and date1.startswith(less_precise):
                         is_sorted.iloc[i] = False
-                    else:
+                    elif overlaps and date2.startswith(less_precise):
                         is_sorted.iloc[i + 1] = False
 
         return is_sorted
