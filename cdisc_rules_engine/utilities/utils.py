@@ -20,6 +20,7 @@ from cdisc_rules_engine.constants.classes import SPECIAL_PURPOSE
 from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 from cdisc_rules_engine.interfaces import ConditionInterface
 from cdisc_rules_engine.models.base_validation_entity import BaseValidationEntity
+from business_rules.utils import is_valid_date
 
 
 def convert_file_size(size_in_bytes: int, desired_unit: str) -> float:
@@ -380,3 +381,23 @@ def get_sided_match_keys(match_keys: List[Union[str, dict]], side: str) -> List[
         match_key if isinstance(match_key, str) else match_key[side]
         for match_key in match_keys
     ]
+
+
+def parse_date(date_str):
+    if not isinstance(date_str, str) or not is_valid_date(date_str):
+        return 0, 0
+    if "--" in date_str:
+        date_str = date_str.split("--", 1)[0]
+    parts = re.split(r"[-T:]", date_str)
+    precision = len([part for part in parts if part])
+    return date_str, precision
+
+
+def dates_overlap(date1_str, precision1, date2_str, precision2):
+    if precision1 == precision2:
+        return date1_str == date2_str, None
+
+    less_precise = date1_str if precision1 < precision2 else date2_str
+    more_precise = date2_str if precision1 < precision2 else date1_str
+
+    return more_precise.startswith(less_precise), less_precise
