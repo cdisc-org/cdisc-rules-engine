@@ -1301,8 +1301,10 @@ class DataframeType(BaseType):
                 date2, prec2 = parse_date(comparator_values[i + 1])
                 if prec1 != prec2:
                     overlaps, less_precise = dates_overlap(date1, prec1, date2, prec2)
-                    if overlaps:
+                    if overlaps and date1.startswith(less_precise):
                         is_sorted.iloc[i] = False
+                    else:
+                        is_sorted.iloc[i + 1] = False
 
         return is_sorted
 
