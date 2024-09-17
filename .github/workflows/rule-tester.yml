@@ -15,9 +15,9 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Use Python 3.9
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v5
         with:
           python-version: 3.9
       - name: Install application dependencies
@@ -27,7 +27,7 @@ jobs:
           pip install -r requirements-rule-tester.txt
         shell: bash
       - name: Upload artifact for deployment jobs
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           path: |
             . 
@@ -42,7 +42,7 @@ jobs:
     if: success()
     steps:
       - name: Download artifact from build job
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: python-app
           path: .
