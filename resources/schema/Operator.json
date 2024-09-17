@@ -857,6 +857,15 @@
       },
       "required": ["operator", "metadata", "value"],
       "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "inconsistent_enumerated_columns"
+        }
+      },
+      "required": ["operator", "name"],
+      "type": "object"
     }
   ],
   "properties": {
