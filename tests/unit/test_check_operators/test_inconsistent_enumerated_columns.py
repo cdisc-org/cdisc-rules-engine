@@ -26,7 +26,7 @@ from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
                 "TSVAL1": ["value", "value", "value", None],
                 "TSVAL2": [None, "value 2", "value 2", None],
             },
-            [False, True, False, False],
+            [True, True, False, False],
         ),
         (
             PandasDataset,
