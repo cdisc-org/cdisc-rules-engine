@@ -1115,35 +1115,39 @@ class DataframeType(BaseType):
         )
 
     @type_operator(FIELD_DATAFRAME)
-    def additional_columns_empty(self, other_value: dict):
+    def inconsistent_enumerated_columns(self, other_value: dict):
         """
-        The dataframe column might have some additional columns.
-        If the next additional column exists,
-        the previous one cannot be empty.
-        Example:
-            column - TSVAL
-            additional columns - TSVAL1, TSVAL2, ...
-            If TSVAL2 exists -> TSVAL1 cannot be empty.
-            Original column (TSVAL) can be empty.
+        Check for inconsistencies in enumerated columns of a DataFrame.
 
-        The operator extracts these
-        additional columns from the DF
-        and ensures they are not empty.
+        Starting with the smallest/largest enumeration of the given variable,
+        return an error if VARIABLE(N+1) is populated but VARIABLE(N) is not populated.
+        Repeat for all variables belonging to the enumeration.
+        Note that the initial variable will not have an index (VARIABLE) and
+        the next enumerated variable has index 1 (VARIABLE1).
         """
-        target: str = self.replace_prefix(other_value.get("target"))
-        # starting from target,
-        # ending with integers and nothing is between them
-        regex: str = rf"^{target}\d+$"
-        df: DatasetInterface = self.value.filter(regex=regex)
-        # applying a function to each row
-        result = df.apply(
-            lambda row: self.next_column_exists_and_previous_is_null(row), axis=1
-        )
-        return result
+        variable_name: str = self.replace_prefix(other_value.get("target"))
+        df = self.value
+        pattern = rf"^{re.escape(variable_name)}(\d*)$"
+        matching_columns = [col for col in df.columns if re.match(pattern, col)]
+        if not matching_columns:
+            return pd.Series(
+                [False] * len(df)
+            )  # Return a series of False values if no matching columns
+        sorted_columns = sorted(matching_columns, key=lambda x: (len(x), x))
 
-    @type_operator(FIELD_DATAFRAME)
-    def additional_columns_not_empty(self, other_value: dict):
-        return ~self.additional_columns_empty(other_value)
+        def check_inconsistency(row):
+            prev_populated = (
+                pd.notna(row[sorted_columns[0]]) and row[sorted_columns[0]] != ""
+            )
+            for i in range(1, len(sorted_columns)):
+                curr_col = sorted_columns[i]
+                curr_value = row[curr_col]
+                if pd.notna(curr_value) and curr_value != "" and not prev_populated:
+                    return True
+                prev_populated = pd.notna(curr_value) and curr_value != ""
+            return False
+
+        return df.apply(check_inconsistency, axis=1)
 
     @type_operator(FIELD_DATAFRAME)
     def references_correct_codelist(self, other_value: dict):

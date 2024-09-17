@@ -535,53 +535,18 @@ Check:
       operator: "not_exists"
 ```
 
-## additional_columns_empty
+## inconsistent_enumerated_columns
 
-True if value in column `name` XXXXn is not empty and value in column XXXX(n+1) is empty
+Checks for inconsistencies in enumerated columns of a DataFrame. Starting with the smallest/largest enumeration of the given variable, returns True if VARIABLE(N+1) is populated but VARIABLE(N) is not populated. Repeats for all variables belonging to the enumeration. Note that the initial variable will not have an index (VARIABLE) and the next enumerated variable has index 1 (VARIABLE1).
 
-- ID: CG0262
-- Class: TDM
-- Domain: TS
-- Variable: TSVALn
-- Condition: TSVAL(n+1) ^= null
-- Rule: TSVALn ^= null
+ex: Check if there are inconsistencies in the TSVAL columns (TSVAL, TSVAL1, TSVAL2, etc.)
 
 ```yaml
-Scopes:
-  Domains:
-    - TS
 Check:
   all:
-    - operator: additional_columns_not_empty
-      name: --VAL
+    - name: "TSVAL"
+      operator: "inconsistent_enumerated_columns"
 ```
-
-This operator is technically compatible with COVALn. There is no similar rule for it.
-
-## additional_columns_not_empty
-
-Complement of `additional_columns_empty`
-
-True if value in column `name` XXXXn is empty and value in column XXXX(n+1) is not empty
-
-- ID: CG0262
-- Class: TDM
-- Domain: TS
-- Variable: TSVALn
-- Condition: TSVAL(n+1) ^= null
-- Rule: TSVALn ^= null
-
-```yaml
-Scopes:
-  Domains:
-    - TS
-Check:
-  all:
-    - operator: additional_columns_not_empty
-      name: --VAL
-```
-
-This operator is technically compatible with COVALn. There is no similar rule for it.
 
 ## variable_metadata_equal_to
 
