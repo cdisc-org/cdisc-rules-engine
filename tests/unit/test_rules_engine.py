@@ -1743,7 +1743,7 @@ def test_validate_record_in_parent_domain(
 
 @patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset_class")
 def test_validate_additional_columns(
-    mock_get_dataset_class, dataset_rule_additional_columns_not_null: dict
+    mock_get_dataset_class, dataset_rule_inconsistent_enumerated_columns: dict
 ):
     """
     Unit test for validating additional columns like TSVAL1, TSVAL2.
@@ -1777,7 +1777,7 @@ def test_validate_additional_columns(
         validation_result: List[dict] = RulesEngine(
             standard="sdtmig", standard_version="3-4"
         ).validate_single_rule(
-            rule=dataset_rule_additional_columns_not_null,
+            rule=dataset_rule_inconsistent_enumerated_columns,
             dataset_path="CDISC01/test/ts.xpt",
             datasets=[
                 {
@@ -1792,27 +1792,11 @@ def test_validate_additional_columns(
                 "executionStatus": "success",
                 "dataset": "ts.xpt",
                 "domain": "TS",
-                "variables": ["TSVAL1", "TSVAL2", "TSVAL3"],
-                "message": "Additional columns for TSVAL are empty.",
+                "variables": ["TSVAL"],
+                "message": "Inconsistencies found in enumerated TSVAL columns.",
                 "errors": [
-                    {
-                        "row": 2,
-                        "value": {
-                            "TSVAL1": None,
-                            "TSVAL2": "value 2",
-                            "TSVAL3": "value 3",
-                        },
-                        "USUBJID": "1",
-                    },
-                    {
-                        "row": 4,
-                        "value": {
-                            "TSVAL1": "value",
-                            "TSVAL2": None,
-                            "TSVAL3": "value 3",
-                        },
-                        "USUBJID": "1",
-                    },
+                    {"value": {"TSVAL": None}, "row": 2, "USUBJID": "1"},
+                    {"value": {"TSVAL": None}, "row": 4, "USUBJID": "1"},
                 ],
             }
         ]

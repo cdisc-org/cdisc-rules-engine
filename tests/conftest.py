@@ -938,12 +938,12 @@ def define_xml_allowed_terms_check_rule() -> dict:
 
 
 @pytest.fixture
-def dataset_rule_additional_columns_not_null() -> dict:
+def dataset_rule_inconsistent_enumerated_columns() -> dict:
     """
-    A sample rule that can be used to check values of additional columns.
+    A sample rule that checks for inconsistencies in enumerated columns.
     """
     return {
-        "core_id": "MockRule",
+        "core_id": "CDISC.SDTMIG.CG0262",
         "standards": [{"Name": "SDTMIG", "Version": "3.3"}],
         "classes": {"Include": [ALL_KEYWORD]},
         "domains": {"Include": ["TS"]},
@@ -952,9 +952,9 @@ def dataset_rule_additional_columns_not_null() -> dict:
                 "all": [
                     {
                         "name": "get_dataset",
-                        "operator": "additional_columns_empty",
+                        "operator": "inconsistent_enumerated_columns",
                         "value": {
-                            "target": "--VAL",
+                            "target": "TSVAL",
                         },
                     },
                 ]
@@ -963,7 +963,9 @@ def dataset_rule_additional_columns_not_null() -> dict:
         "actions": [
             {
                 "name": "generate_dataset_error_objects",
-                "params": {"message": "Additional columns for TSVAL are empty."},
+                "params": {
+                    "message": "Inconsistencies found in enumerated TSVAL columns."
+                },
             }
         ],
     }
