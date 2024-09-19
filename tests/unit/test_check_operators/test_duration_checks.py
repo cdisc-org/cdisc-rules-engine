@@ -37,7 +37,7 @@ from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 def test_invalid_duration(data, dataset_type, expected_result):
     df = dataset_type.from_dict(data)
     dataframe_type = DataframeType({"value": df})
-    result = dataframe_type.invalid_duration({"target": "target"})
+    result = dataframe_type.invalid_duration({"target": "target", "negative": False})
     assert result.equals(df.convert_to_series(expected_result))
 
 
@@ -63,7 +63,7 @@ def test_invalid_duration_edge_cases():
     }
     df = PandasDataset.from_dict(data)
     dataframe_type = DataframeType({"value": df})
-    result = dataframe_type.invalid_duration({"target": "target"})
+    result = dataframe_type.invalid_duration({"target": "target", "negative": False})
     expected = [
         True,
         False,
@@ -81,4 +81,13 @@ def test_invalid_duration_edge_cases():
         False,
         True,
     ]
+    assert result.equals(df.convert_to_series(expected))
+
+
+def test_invalid_duration_negative_positive():
+    data = {"target": ["-P1Y", "P1M", "P1D", "-PT1H", "P1Y2M", "-P1.5D", "P1Y,5M"]}
+    df = PandasDataset.from_dict(data)
+    dataframe_type = DataframeType({"value": df})
+    result = dataframe_type.invalid_duration({"target": "target", "negative": True})
+    expected = [False, False, False, False, False, False, False]
     assert result.equals(df.convert_to_series(expected))
