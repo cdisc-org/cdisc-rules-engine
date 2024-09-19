@@ -46,15 +46,39 @@ def test_invalid_duration_edge_cases():
         "target": [
             "P1Y2M3W4DT5H6M7.89S",
             "PT0.1S",
+            "PT0,1S",
             "P0D",
             "P1Y2M3DT",
             "P1.5Y",
             "P1M2.5D",
             "P 1Y",
+            "P1Y2.5M",
+            "P1.5W",
+            "P1Y,5M",
+            "P1Y2M3.4D5H",
+            "PT1H2M3.4S5M",
+            "P4W",
+            "P1Y1W",
         ]
     }
     df = PandasDataset.from_dict(data)
     dataframe_type = DataframeType({"value": df})
     result = dataframe_type.invalid_duration({"target": "target"})
-    expected = [False, False, False, True, True, True, True]
+    expected = [
+        True,
+        False,
+        False,
+        False,
+        True,
+        False,
+        False,
+        True,
+        False,
+        False,
+        False,
+        True,
+        True,
+        False,
+        True,
+    ]
     assert result.equals(df.convert_to_series(expected))
