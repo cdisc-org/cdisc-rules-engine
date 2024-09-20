@@ -278,3 +278,22 @@ class DaskDataset(PandasDataset):
         Purely integer-location based indexing for selection by position.
         """
         return self.data.iloc[row, column].compute()
+
+    def fillna(
+        self,
+        value=None,
+        method=None,
+        axis=None,
+        inplace=False,
+        limit=None,
+        downcast=None,
+    ):
+        """
+        Fill NA/NaN values using the specified method.
+        """
+        result = self._data.fillna(value=value, method=method, axis=axis, limit=limit)
+        if inplace:
+            self._data = result
+            return None
+        else:
+            return self.__class__(result)
