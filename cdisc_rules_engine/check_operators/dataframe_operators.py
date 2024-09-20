@@ -810,7 +810,10 @@ class DataframeType(BaseType):
     @type_operator(FIELD_DATAFRAME)
     def invalid_duration(self, other_value):
         target = self.replace_prefix(other_value.get("target"))
-        results = ~vectorized_is_valid_duration(self.value[target])
+        if other_value.get("negative") is False:
+            results = ~vectorized_is_valid_duration(self.value[target], False)
+        else:
+            results = ~vectorized_is_valid_duration(self.value[target], True)
         return self.value.convert_to_series(results)
 
     def date_comparison(self, other_value, operator):
