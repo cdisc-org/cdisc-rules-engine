@@ -489,7 +489,7 @@ Duration ISO-8601 check, returns True if a duration is not in ISO-8601 format. P
 ```yaml
 - name: "BRTHDTC"
   operator: "invalid_duration"
-  negative: False
+  negative: "False"
 ```
 
 # Metadata
