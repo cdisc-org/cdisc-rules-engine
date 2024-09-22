@@ -21,7 +21,7 @@ def test_valid_external_dictionary_code_term_pairs(
     config = ConfigService()
     cache = CacheServiceFactory(config).get_cache_service()
     medrt_path = "medrt"
-    operation_params.external_dictionary_type = "med-rt"
+    operation_params.external_dictionary_type = "medrt"
     operation_params.dictionary_term_type = "PT"
     operation_params.original_target = "--COD"
     operation_params.target = "AECOD"
