@@ -1409,10 +1409,9 @@ class DataframeType(BaseType):
                 if isinstance(row[comparator], (list, set))
                 else {row[comparator]}
             )
-            return len(target_set.intersection(comparator_set)) > 0
+            return bool(target_set.intersection(comparator_set))
 
-        result = self.value.apply(check_shared_elements, axis=1)
-        return self.value.convert_to_series(result)
+        return self.value.apply(check_shared_elements, axis=1).any()
 
     @type_operator(FIELD_DATAFRAME)
     def shares_exactly_one_element_with(self, other_value: dict):
@@ -1432,15 +1431,14 @@ class DataframeType(BaseType):
             )
             return len(target_set.intersection(comparator_set)) == 1
 
-        result = self.value.apply(check_exactly_one_shared_element, axis=1)
-        return self.value.convert_to_series(result)
+        return self.value.apply(check_exactly_one_shared_element, axis=1).all()
 
     @type_operator(FIELD_DATAFRAME)
     def shares_no_elements_with(self, other_value: dict):
         target: str = self.replace_prefix(other_value.get("target"))
         comparator: str = self.replace_prefix(other_value.get("comparator"))
 
-        def check_shared_elements(row):
+        def check_no_shared_elements(row):
             target_set = (
                 set(row[target])
                 if isinstance(row[target], (list, set))
@@ -1451,12 +1449,6 @@ class DataframeType(BaseType):
                 if isinstance(row[comparator], (list, set))
                 else {row[comparator]}
             )
-            return bool(target_set.intersection(comparator_set))
+            return len(target_set.intersection(comparator_set)) == 0
 
-        shared_elements = self.value.apply(check_shared_elements, axis=1)
-        result = (
-            ~shared_elements
-            if shared_elements.any()
-            else pd.Series([True] * len(self.value))
-        )
-        return self.value.convert_to_series(result)
+        return self.value.apply(check_no_shared_elements, axis=1).all()
