@@ -108,7 +108,8 @@ def get_variables_metadata_from_standard(
     model_details = library_metadata.model_metadata
 
     variables_metadata = domain_details.get("datasetVariables", [])
-    variables_metadata.sort(key=lambda item: item["ordinal"])
+    sort_key = "ordinal" if "ordinal" in variables_metadata[0] else "order_number"
+    variables_metadata.sort(key=lambda item: item[sort_key])
     class_name = convert_library_class_name_to_ct_class(class_details.get("name"))
     if class_name in DETECTABLE_CLASSES and model_details and include_model_variables:
         existing_variables = set([var["name"] for var in variables_metadata])
@@ -192,14 +193,19 @@ def get_allowed_class_variables(
     # General Observation class variables to variables metadata
     class_name = convert_library_class_name_to_ct_class(class_details.get("name"))
     variables_metadata = class_details.get("classVariables", [])
-    variables_metadata.sort(key=lambda item: item["ordinal"])
+    if variables_metadata:
+        sort_key = "ordinal" if "ordinal" in variables_metadata[0] else "order_number"
+        variables_metadata.sort(key=lambda item: item[sort_key])
 
     if class_name == FINDINGS_ABOUT:
         # Add FINDINGS class variables. Findings About class variables should
         # Appear in the list after the --TEST variable
         findings_class_metadata: dict = get_class_metadata(model_details, FINDINGS)
         findings_class_variables = findings_class_metadata["classVariables"]
-        findings_class_variables.sort(key=lambda item: item["ordinal"])
+        FAsort_key = (
+            "ordinal" if "ordinal" in findings_class_variables[0] else "order_number"
+        )
+        findings_class_variables.sort(key=lambda item: item[FAsort_key])
         test_index = len(findings_class_variables) - 1
         for i, v in enumerate(findings_class_variables):
             if v["name"] == FINDINGS_TEST_VARIABLE:
@@ -217,9 +223,17 @@ def get_allowed_class_variables(
     identifiers_metadata, timing_metadata = group_class_variables_by_role(
         gen_obs_class_metadata["classVariables"]
     )
+
+    def standardize_order_number(var):
+        if "ordinal" in var:
+            var["order_number"] = var.pop("ordinal")
+        return var
+
+    identifiers_metadata = list(map(standardize_order_number, identifiers_metadata))
+    timing_metadata = list(map(standardize_order_number, timing_metadata))
     # Identifiers are added to the beginning and Timing to the end
-    identifiers_metadata.sort(key=lambda item: item["ordinal"])
-    timing_metadata.sort(key=lambda item: item["ordinal"])
+    identifiers_metadata.sort(key=lambda item: item["order_number"])
+    timing_metadata.sort(key=lambda item: item["order_number"])
     return identifiers_metadata, variables_metadata, timing_metadata
 
 
@@ -339,7 +353,11 @@ def get_variables_metadata_from_standard_model(
         )
         class_details = get_class_metadata(model_details, class_name)
         variables_metadata = domain_details.get("datasetVariables", [])
-        variables_metadata.sort(key=lambda item: item["ordinal"])
+        if variables_metadata:
+            sort_key = (
+                "ordinal" if "ordinal" in variables_metadata[0] else "order_number"
+            )
+            variables_metadata.sort(key=lambda item: item[sort_key])
     else:
         # Domain not found in the model. Detect class name from data
         class_name = data_service.get_dataset_class(

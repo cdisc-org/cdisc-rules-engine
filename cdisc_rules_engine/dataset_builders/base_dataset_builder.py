@@ -176,7 +176,8 @@ class BaseDatasetBuilder:
         for var in variables:
             var["name"] = var["name"].replace("--", self.domain)
             for key, new_key in column_name_mapping.items():
-                var[new_key] = var.pop(key)
+                if key in var:
+                    var[new_key] = var.pop(key)
 
         dataset = self.dataset_implementation.from_records(variables)
         dataset.data = dataset.data.add_prefix("library_variable_")
