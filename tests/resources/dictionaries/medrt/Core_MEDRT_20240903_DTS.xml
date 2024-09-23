@@ -145,13 +145,13 @@
  </qualtype>
  <term>
   <namespace>MED-RT</namespace>
-  <name> Cyclin-dependent Kinase 4 Inhibitors</name>
+  <name>Cyclin-dependent Kinase 4 Inhibitors</name>
   <code>T58551</code>  <id>58551</id>
   <status>ACTIVE</status>
  </term>
  <term>
   <namespace>MED-RT</namespace>
-  <name> Cyclin-dependent Kinase 6 Inhibitors</name>
+  <name>Cyclin-dependent Kinase 6 Inhibitors</name>
   <code>T58554</code>  <id>58554</id>
   <status>ACTIVE</status>
  </term>

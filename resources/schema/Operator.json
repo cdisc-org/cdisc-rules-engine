@@ -306,7 +306,7 @@
           "const": "invalid_duration"
         }
       },
-      "required": ["operator"],
+      "required": ["operator", "negative"],
       "type": "object"
     },
     {

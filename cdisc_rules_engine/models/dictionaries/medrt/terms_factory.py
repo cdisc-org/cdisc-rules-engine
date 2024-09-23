@@ -73,7 +73,7 @@ class MEDRTTermsFactory(TermsFactoryInterface):
 
     def _get_element_attribute(self, element: ElementTree, attribute_name: str) -> str:
         attribute = element.find(attribute_name)
-        if attribute:
+        if attribute is not None:
             return attribute.text
         return None
 
