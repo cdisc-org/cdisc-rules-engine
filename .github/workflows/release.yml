@@ -20,7 +20,7 @@ jobs:
           pip install setuptools wheel twine
           pip install -r requirements.txt
       - name: Build Binary
-        run: pyinstaller core.py --dist ./dist/output/ubuntu-latest --add-data=$pythonLocation/lib/python3.9/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates --add-data=resources/schema:resources/schema --collect-submodules pyreadstat
+        run: pyinstaller core.py --dist ./dist/output/ubuntu-latest --add-data=$pythonLocation/lib/python3.9/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates --add-data=resources/schema:resources/schema
       - name: Archive Artifacts
         uses: vimtor/action-zip@v1
         with:
@@ -50,7 +50,7 @@ jobs:
           pip install setuptools wheel twine
           pip install -r requirements.txt
       - name: Build Binary
-        run: pyinstaller core.py --dist ./dist/output/ubuntu-20-04 --add-data=$pythonLocation/lib/python3.9/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates --add-data=resources/schema:resources/schema --collect-submodules pyreadstat
+        run: pyinstaller core.py --dist ./dist/output/ubuntu-20-04 --add-data=$pythonLocation/lib/python3.9/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates --add-data=resources/schema:resources/schema
       - name: Archive Artifacts
         uses: vimtor/action-zip@v1
         with:
@@ -80,7 +80,7 @@ jobs:
           pip install setuptools wheel twine
           pip install -r requirements.txt
       - name: Build Binary
-        run: pyinstaller core.py --dist ./dist/output/mac --add-data=$pythonLocation/lib/python3.9/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates --add-data=resources/schema:resources/schema --collect-submodules pyreadstat
+        run: pyinstaller core.py --dist ./dist/output/mac --add-data=$pythonLocation/lib/python3.9/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates --add-data=resources/schema:resources/schema
       - name: Archive Artifacts
         uses: vimtor/action-zip@v1
         with:
@@ -110,7 +110,7 @@ jobs:
           pip install setuptools wheel twine
           pip install -r requirements.txt
       - name: Build Binary
-        run: pyinstaller core.py --dist ./dist/output/windows --add-data="$env:pythonLocation\Lib\site-packages\xmlschema\schemas;xmlschema/schemas" --add-data="resources/cache;resources/cache" --add-data="resources/templates;resources/templates" --add-data="resources/schema;resources/schema" --collect-submodules pyreadstat
+        run: pyinstaller core.py --dist ./dist/output/windows --add-data="$env:pythonLocation\Lib\site-packages\xmlschema\schemas;xmlschema/schemas" --add-data="resources/cache;resources/cache" --add-data="resources/templates;resources/templates" --add-data="resources/schema;resources/schema"
       - name: Archive Windows Artifacts
         uses: vimtor/action-zip@v1
         with:
