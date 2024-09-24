@@ -1431,7 +1431,7 @@ class DataframeType(BaseType):
             )
             return len(target_set.intersection(comparator_set)) == 1
 
-        return self.value.apply(check_exactly_one_shared_element, axis=1).all()
+        return self.value.apply(check_exactly_one_shared_element, axis=1).any()
 
     @type_operator(FIELD_DATAFRAME)
     def shares_no_elements_with(self, other_value: dict):
