@@ -923,15 +923,29 @@ Check:
 
 ## shares_at_least_one_element_with
 
-True if at least one of the values in `name` is the same as one of the values in `value`
+Will raise an issue if at least one of the values in `name` is the same as one of the values in `value`
 
 ## shares_exactly_one_element_with
 
-True if exactly one of the values in `name` is the same as one of the values in `value`
+Will raise an issue if exactly one of the values in `name` is the same as one of the values in `value`
 
 ## shares_no_elements_with
 
-True if the values in `name` do not share any of the values in `value`
+Will raise an issue if the values in `name` do not share any of the values in `value`
+
+> Check if $dataset_variables shares no elements with $timing_variables
+
+```yaml
+  "Check": {
+    "all": [
+      {
+        "name": "$dataset_variables",
+        "operator": "shares_no_elements_with",
+        "value": "$timing_variables"
+      }
+    ]
+  },
+```
 
 ## has_same_values
 

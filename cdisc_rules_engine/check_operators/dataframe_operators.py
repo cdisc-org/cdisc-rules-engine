@@ -1392,3 +1392,63 @@ class DataframeType(BaseType):
     @type_operator(FIELD_DATAFRAME)
     def variable_metadata_not_equal_to(self, other_value: dict):
         return ~self.variable_metadata_equal_to(other_value)
+
+    @type_operator(FIELD_DATAFRAME)
+    def shares_at_least_one_element_with(self, other_value: dict):
+        target: str = self.replace_prefix(other_value.get("target"))
+        comparator: str = self.replace_prefix(other_value.get("comparator"))
+
+        def check_shared_elements(row):
+            target_set = (
+                set(row[target])
+                if isinstance(row[target], (list, set))
+                else {row[target]}
+            )
+            comparator_set = (
+                set(row[comparator])
+                if isinstance(row[comparator], (list, set))
+                else {row[comparator]}
+            )
+            return bool(target_set.intersection(comparator_set))
+
+        return self.value.apply(check_shared_elements, axis=1).any()
+
+    @type_operator(FIELD_DATAFRAME)
+    def shares_exactly_one_element_with(self, other_value: dict):
+        target: str = self.replace_prefix(other_value.get("target"))
+        comparator: str = self.replace_prefix(other_value.get("comparator"))
+
+        def check_exactly_one_shared_element(row):
+            target_set = (
+                set(row[target])
+                if isinstance(row[target], (list, set))
+                else {row[target]}
+            )
+            comparator_set = (
+                set(row[comparator])
+                if isinstance(row[comparator], (list, set))
+                else {row[comparator]}
+            )
+            return len(target_set.intersection(comparator_set)) == 1
+
+        return self.value.apply(check_exactly_one_shared_element, axis=1).any()
+
+    @type_operator(FIELD_DATAFRAME)
+    def shares_no_elements_with(self, other_value: dict):
+        target: str = self.replace_prefix(other_value.get("target"))
+        comparator: str = self.replace_prefix(other_value.get("comparator"))
+
+        def check_no_shared_elements(row):
+            target_set = (
+                set(row[target])
+                if isinstance(row[target], (list, set))
+                else {row[target]}
+            )
+            comparator_set = (
+                set(row[comparator])
+                if isinstance(row[comparator], (list, set))
+                else {row[comparator]}
+            )
+            return len(target_set.intersection(comparator_set)) == 0
+
+        return self.value.apply(check_no_shared_elements, axis=1).all()
