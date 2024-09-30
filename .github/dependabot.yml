@@ -10,5 +10,5 @@ updates:
     open-pull-requests-limit: 5
     schedule:
       interval: "weekly"
-labels:
-  - "pip dependencies"
+    labels:
+    - "pip dependencies"
