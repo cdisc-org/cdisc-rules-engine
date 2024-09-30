@@ -1,0 +1,72 @@
+name: CORE Test Suite Validation
+# will need to set up the secrets for testsuite access token, API_KEY and API_ID for cdisc library
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  DATASET_SIZE_THRESHOLD: 100000000
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout CORE_Test_Suite repository
+        uses: actions/checkout@v3
+        with:
+          repository: cdisc-org/CORE_Test_Suite
+          path: CORE_Test_Suite
+          token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Update rules cache
+        env:
+          CDISC_LIBRARY_API_KEY: ${{ secrets.CDISC_LIBRARY_API_KEY }}
+        run: |
+          python core.py update-cache
+
+      - name: Parse rule list and run validation
+        run: |
+          cd CORE_Test_Suite
+          rules=$(cat rulelist/testrulelist.txt | sed 's/^/-r /' | tr '\n' ' ')
+          cd ..
+          python core.py validate -s sdtmig -v 3-3 $rules -d CORE_Test_Suite/data -ct sdtmct-2020-03-27 -o CORE_Test_Suite/test-results.xml
+
+      - name: Pandas comparison script
+        run: |
+          cd CORE_Test_Suite
+          # Add command to run compare script here, script should compare the output with CORE-Report.xlsx
+          # should spit out comparison file named panda_comparison.xlxs
+
+      - name: Run validation with Dask
+        env:
+          DATASET_SIZE_THRESHOLD: 0
+        run: |
+          rules=$(cat rulelist/testrulelist.txt | sed 's/^/-r /' | tr '\n' ' ')
+          cd ..
+          python core.py validate -s sdtmig -v 3-3 $rules -d ./data -ct sdtmct-2020-03-27 -o CORE_Test_Suite/dask-results.xlxs
+
+      - name: Dask comparison script
+        run: |
+          cd CORE_Test_Suite
+          # Add command to run compare script here, script should compare the output with CORE-Report.xlsx
+          # should spit out comparison file named dask_comparison.xlxs
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        with:
+          name: comparison-results
+          path: |
+            CORE_Test_Suite/pandas_comparison.xlsx
+            CORE_Test_Suite/dask_comparison.xlsx
