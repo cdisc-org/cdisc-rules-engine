@@ -1,20 +1,25 @@
 name: CORE Test Suite Validation
-# will need to set up the secrets for testsuite access token, API_KEY and API_ID for cdisc library
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+  #   we will turn automatic triggers when DASK is ready
+  #   push:
+  #     branches: [main]
+  #   pull_request:
+  #     branches: [main]
   workflow_dispatch:
 
 env:
-  DATASET_SIZE_THRESHOLD: 100000000
+  DATASET_SIZE_THRESHOLD: 1000000000
+  PANDAS_DIFF: False
+  DASK_DIFF: False
 
 jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout CORE_Test_Suite repository
+      - name: Get Engine Changes
+        uses: actions/checkout@v3
+
+      - name: Get Test Suite Repository
         uses: actions/checkout@v3
         with:
           repository: cdisc-org/CORE_Test_Suite
@@ -41,13 +46,14 @@ jobs:
           cd CORE_Test_Suite
           rules=$(cat rulelist/testrulelist.txt | sed 's/^/-r /' | tr '\n' ' ')
           cd ..
-          python core.py validate -s sdtmig -v 3-3 $rules -d CORE_Test_Suite/data -ct sdtmct-2020-03-27 -o CORE_Test_Suite/test-results.xml
+          python core.py validate -s sdtmig -v 3-3 $rules -d CORE_Test_Suite/data -ct sdtmct-2020-03-27 -o CORE_Test_Suite/pandas-results.xlsx
 
       - name: Pandas comparison script
         run: |
           cd CORE_Test_Suite
-          # Add command to run compare script here, script should compare the output with CORE-Report.xlsx
-          # should spit out comparison file named panda_comparison.xlxs
+          result=$(python ../comparison.py pandas-results.xlsx CORE-Report.xlsx pandas_comparison.xlsx)
+          echo "PANDAS_DIFF=$result" >> $GITHUB_ENV
+          echo "Pandas comparison result: $result"
 
       - name: Run validation with Dask
         env:
@@ -60,8 +66,9 @@ jobs:
       - name: Dask comparison script
         run: |
           cd CORE_Test_Suite
-          # Add command to run compare script here, script should compare the output with CORE-Report.xlsx
-          # should spit out comparison file named dask_comparison.xlxs
+          result=$(python ../comparison.py dask-results.xlsx DASK-Report.xlsx dask_comparison.xlsx)
+          echo "DASK_DIFF=$result" >> $GITHUB_ENV
+          echo "Dask comparison result: $result"
 
       - name: Upload test results
         uses: actions/upload-artifact@v3
@@ -70,3 +77,12 @@ jobs:
           path: |
             CORE_Test_Suite/pandas_comparison.xlsx
             CORE_Test_Suite/dask_comparison.xlsx
+
+      - name: Check for differences
+        run: |
+          if [[ "${{ env.PANDAS_DIFF }}" == "true" || "${{ env.DASK_DIFF }}" == "true" ]]; then
+            echo "Differences found in either Pandas or Dask comparison"
+            exit 1
+          else
+            echo "No differences found in either comparison"
+          fi
