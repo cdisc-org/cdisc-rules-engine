@@ -1,4 +1,4 @@
-name: CORE Test Suite Validation
+ame: CORE Test Suite Validation
 on:
   #   we will turn automatic triggers when DASK is ready
   #   push:
