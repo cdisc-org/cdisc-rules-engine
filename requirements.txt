@@ -25,5 +25,5 @@ Pympler==1.1
 psutil==5.9.5
 dask[dataframe]==2024.2.0
 dask[array]==2024.2.0
-pyreadstat==1.2.6
+pyreadstat==1.2.7
 fastparquet==2024.2.0
