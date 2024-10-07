@@ -225,8 +225,8 @@ def load_and_parse_rule(rule_file):
     try:
         with open(rule_file, "r", encoding="utf-8") as file:
             if file_extension in [".yml", ".yaml"]:
-                loaded_data = Rule.from_cdisc_metadata(yaml.safe_load(file))
-                return replace_yml_spaces(loaded_data)
+                loaded_data = yaml.safe_load(file)
+                return Rule.from_cdisc_metadata(replace_yml_spaces(loaded_data))
             elif file_extension == ".json":
                 return Rule.from_cdisc_metadata(json.load(file))
             else:
