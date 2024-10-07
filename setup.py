@@ -24,7 +24,7 @@ setuptools.setup(
         "pandas>=1.3.5",
         "business-rules-enhanced==1.4.0",
         "python-dotenv==0.20.0",
-        "cdisc-library-client==0.1.4",
+        "cdisc-library-client==0.1.5",
         "odmlib==0.1.4",
         "xport==3.6.1",
         "redis==4.0.2",
