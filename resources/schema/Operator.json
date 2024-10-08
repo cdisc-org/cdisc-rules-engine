@@ -304,6 +304,9 @@
       "properties": {
         "operator": {
           "const": "invalid_duration"
+        },
+        "negative": {
+          "type": "boolean"
         }
       },
       "required": ["operator", "negative"],

@@ -482,7 +482,7 @@ Date check
 
 ## invalid_duration
 
-Duration ISO-8601 check, returns True if a duration is not in ISO-8601 format. Parameter `negative` must be given to either allow or disallow negative durations as valid.
+Duration ISO-8601 check, returns True if a duration is not in ISO-8601 format. Parameter `negative` must be given to either allow or disallow negative durations as valid. Note: it should be a string argument of "False" or "True" as it will be converted to boolean by engine.
 
 > DURVAR is invalid
 
