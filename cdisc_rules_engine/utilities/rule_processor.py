@@ -28,6 +28,7 @@ from cdisc_rules_engine.utilities.utils import (
     is_ap_domain,
     is_supp_domain,
     search_in_list_of_dicts,
+    get_dataset_name_from_details,
 )
 
 
@@ -324,9 +325,10 @@ class RuleProcessor:
                 operation_params.datasets,
                 lambda item: item.get("domain") == operation_params.domain,
             )
+            filename = get_dataset_name_from_details(domain_details)
             file_path: str = os.path.join(
                 get_directory_path(operation_params.dataset_path),
-                domain_details["filename"],
+                filename,
             )
             operation_params.dataframe = self.data_service.get_dataset(
                 dataset_name=file_path

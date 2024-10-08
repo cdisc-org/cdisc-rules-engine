@@ -17,7 +17,10 @@ from cdisc_rules_engine.services.data_services import (
     DataServiceFactory,
     DummyDataService,
 )
-from cdisc_rules_engine.utilities.utils import search_in_list_of_dicts
+from cdisc_rules_engine.utilities.utils import (
+    search_in_list_of_dicts,
+    get_dataset_name_from_details,
+)
 import os
 from cdisc_rules_engine.utilities.sdtm_utilities import add_variable_wildcards
 
@@ -96,7 +99,8 @@ class DataProcessor:
             datasets, lambda item: item.get("domain") == domain
         )
         if domain_details:
-            data_filename = os.path.join(dataset_path, domain_details["filename"])
+            filename = get_dataset_name_from_details(domain_details)
+            data_filename = os.path.join(dataset_path, filename)
             new_data = self.data_service.get_dataset(dataset_name=data_filename)
             reference_data[domain] = self.get_columns(new_data, columns)
         return reference_data

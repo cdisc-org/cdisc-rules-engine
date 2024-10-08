@@ -58,9 +58,9 @@ class ConsoleLogger(LoggerInterface):
         self._logger.log(logging.CRITICAL + 1, msg, *args, **kwargs)
 
     def trace(self, exc: Exception, msg: str, *args, **kwargs):
-        current_level = self._logger.getEffectiveLevel()
-        if current_level > 50:
-            self.display_trace(exc, inspect.currentframe())
+        # current_level = self._logger.getEffectiveLevel()
+        # if current_level > 50:
+        self.display_trace(exc, inspect.currentframe())
 
     def display_trace(self, e: Exception = None, f=None):
         if e is None:
