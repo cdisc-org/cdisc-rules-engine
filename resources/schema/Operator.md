@@ -484,10 +484,10 @@ Date check
 
 Duration ISO-8601 check, returns True if a duration is not in ISO-8601 format. The negative parameter must be specified to indicate if negative durations are either allowed (True) or disallowed (False)
 
-> DURVAR is invalid
+> DURVAR is invalid (negative durations disallowed)
 
 ```yaml
-- name: "BRTHDTC"
+- name: "DURVAR"
   operator: "invalid_duration"
   negative: False
 ```
