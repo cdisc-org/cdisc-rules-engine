@@ -16,7 +16,9 @@ class ContentsDatasetBuilder(BaseDatasetBuilder):
         """
         Returns the contents of a file as a dataframe for evaluation.
         """
-        return self.data_service.get_dataset(dataset_name=dataset_name)
+        return self.data_service.get_dataset(
+            dataset_name=dataset_name, datasets=self.datasets
+        )
 
     def get_dataset(self, **kwargs):
         # If validating dataset content, ensure split datasets are handled.

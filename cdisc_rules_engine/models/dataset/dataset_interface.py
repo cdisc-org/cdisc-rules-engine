@@ -38,6 +38,13 @@ class DatasetInterface(ABC):
         Create the underlying dataset from provided list of records
         """
 
+    @classmethod
+    @abstractmethod
+    def get_series_values(cls, series) -> list:
+        """
+        Returns the values for a series.
+        """
+
     @abstractmethod
     def __getitem__(self, item: str):
         """
@@ -100,8 +107,9 @@ class DatasetInterface(ABC):
         Return iterator over all dataset rows
         """
 
+    @classmethod
     @abstractmethod
-    def is_series(self, data) -> bool:
+    def is_series(cls, data) -> bool:
         """
         Return true if the data is a series compatible with the underlying dataset
         """
@@ -228,4 +236,11 @@ class DatasetInterface(ABC):
     ):
         """
         Fill NA/NaN values using the specified method.
+        """
+
+    @abstractmethod
+    def get_grouped_size(self, by, **kwargs):
+        """
+        Returns a dataframe containing the sizes of each group in
+        the dataframe.
         """

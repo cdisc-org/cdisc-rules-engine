@@ -188,7 +188,12 @@ class LocalDataService(BaseDataService):
                         "size": os.path.getsize(obj["original_path"]),
                     }
                     file_name = obj["filename"]
-                break
+                    print(file_name)
+                    break
+            # If we reach this line a parquet dataset was provided without a
+            # corresponding xpt or json file. This should not happen
+            # TODO: Implement a DatasetParquetMetadataReader so we don't have to
+            # perform this check.
 
         _metadata_reader_map = {
             DataFormatTypes.XPT.value: DatasetXPTMetadataReader,
@@ -210,7 +215,7 @@ class LocalDataService(BaseDataService):
         Internal method that gets dataset metadata
         and converts file size if needed.
         """
-        metadata: dict = self.read_metadata(dataset_name)
+        metadata: dict = self.read_metadata(dataset_name, kwargs.get("datasets"))
         file_metadata: dict = metadata["file_metadata"]
         size_unit: Optional[str] = kwargs.get("size_unit")
         if size_unit:  # convert file size from bytes to desired unit if needed

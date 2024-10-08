@@ -298,7 +298,7 @@ class BaseDataService(DataServiceInterface, ABC):
 
         def check_presence(key):
             in_dataset = key in dataset
-            in_values = hasattr(dataset, "values") and key in dataset.values
+            in_values = key in self.dataset_implementation.get_series_values(dataset)
             return in_dataset or in_values
 
         if not check_presence("DOMAIN") and not check_presence("RDOMAIN"):

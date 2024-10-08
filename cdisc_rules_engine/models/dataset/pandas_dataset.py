@@ -76,6 +76,10 @@ class PandasDataset(DatasetInterface):
     def groupby(self, by: List[str], **kwargs):
         return self.__class__(self._data.groupby(by, **kwargs))
 
+    def get_grouped_size(self, by, **kwargs):
+        grouped_data = self._data.groupby(by, **kwargs)
+        return grouped_data.size()
+
     def is_column_sorted_within(self, group, column):
         return (
             False
@@ -104,8 +108,15 @@ class PandasDataset(DatasetInterface):
     def iterrows(self):
         return self._data.iterrows()
 
-    def is_series(self, data) -> bool:
+    @classmethod
+    def is_series(cls, data) -> bool:
         return isinstance(data, pd.Series)
+
+    @classmethod
+    def get_series_values(cls, series) -> list:
+        if not cls.is_series(series):
+            return []
+        return series.values
 
     def rename(self, index=None, columns=None, inplace=True):
         self._data.rename(index=index, columns=columns, inplace=inplace)

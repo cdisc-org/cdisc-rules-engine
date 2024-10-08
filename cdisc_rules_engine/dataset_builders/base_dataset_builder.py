@@ -10,6 +10,7 @@ from cdisc_rules_engine.utilities.utils import (
     is_split_dataset,
     get_corresponding_datasets,
     is_supp_dataset,
+    get_dataset_name_from_details,
 )
 from typing import List
 from cdisc_rules_engine import config
@@ -106,7 +107,7 @@ class BaseDatasetBuilder:
     def get_corresponding_datasets_names(self) -> List[str]:
         directory_path = get_directory_path(self.dataset_path)
         return [
-            os.path.join(directory_path, dataset["filename"])
+            os.path.join(directory_path, get_dataset_name_from_details(dataset))
             for dataset in get_corresponding_datasets(self.datasets, self.domain)
         ]
 
