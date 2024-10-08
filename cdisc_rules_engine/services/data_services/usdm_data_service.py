@@ -119,7 +119,7 @@ class USDMDataService(BaseDataService):
             filename=extract_file_name_from_path_string(dataset_name),
             full_path=dataset_name,
             size=0,
-            records=f"{len(dataset)}",
+            records=len(dataset),
         )
 
     @cached_dataset(DatasetTypes.VARIABLES_METADATA.value)
