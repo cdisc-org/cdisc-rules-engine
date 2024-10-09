@@ -72,7 +72,7 @@ def test_get_raw_dataset_metadata():
     data = data_service.get_raw_dataset_metadata(
         dataset_name=os.path.join(dataset_path, "Code.json")
     )
-    assert data.records == "117"
+    assert data.records == 117
 
 
 def test_validate_rule_single_dataset_check(dataset_rule_greater_than: dict):
