@@ -285,6 +285,8 @@ def get_datasets(
     data_service: DataServiceInterface, dataset_paths: Iterable[str]
 ) -> List[dict]:
     datasets = []
+    if data_service.standard == "usdm":
+        return data_service.get_datasets()
     for dataset_path in dataset_paths:
         metadata = data_service.get_raw_dataset_metadata(dataset_name=dataset_path)
         datasets.append(

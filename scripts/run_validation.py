@@ -137,7 +137,7 @@ def run_validation(args: Validation_args):
         standard=standard,
         standard_version=standard_version,
         library_metadata=library_metadata,
-    ).get_data_service()
+    ).get_data_service(args.dataset_paths)
     large_dataset_validation: bool = (
         data_service.dataset_implementation != PandasDataset
     )
