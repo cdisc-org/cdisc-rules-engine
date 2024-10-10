@@ -123,24 +123,32 @@ class BaseReport(ABC):
                         "row": error.get("row", ""),
                         "SEQ": error.get("SEQ", ""),
                     }
-
+                    values = [
+                        str(error.get("value", {}).get(variable))
+                        for variable in variables
+                    ]
+                    processed_values = self.process_values(", ".join(values))
                     if self._item_type == "list":
                         error_item["variables"] = ", ".join(variables)
-                        error_item["values"] = ", ".join(
-                            [
-                                str(error.get("value", {}).get(variable))
-                                for variable in variables
-                            ]
-                        )
-                        errors = errors + [[*error_item.values()]]
+                        error_item["values"] = processed_values
+                        errors.append(list(error_item.values()))
                     elif self._item_type == "dict":
                         error_item["variables"] = variables
-                        error_item["values"] = [
-                            str(error.get("value", {}).get(variable))
-                            for variable in variables
-                        ]
-                        errors = errors + [error_item]
+                        error_item["values"] = processed_values
+                        errors.append(error_item)
         return errors
+
+    def process_values(self, values: str) -> str:
+        if values is None or values == "":
+            return "null"
+        processed_values = []
+        for value in values.split(","):
+            value = value.strip()
+            if value == "" or value.lower() == "none":
+                processed_values.append("null")
+            else:
+                processed_values.append(value)
+        return ", ".join(processed_values)
 
     def get_rules_report_data(self) -> List[List]:
         """
