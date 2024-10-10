@@ -75,11 +75,11 @@ class BaseReport(ABC):
             else (x["dataset"], x["core_id"]),
         )
 
-    def get_detailed_data(self) -> List[List]:
+    def get_detailed_data(self, excel=False) -> List[List]:
         detailed_data = []
         for validation_result in self._results:
             detailed_data = detailed_data + self._generate_error_details(
-                validation_result
+                validation_result, excel
             )
         return sorted(
             detailed_data,
@@ -89,7 +89,7 @@ class BaseReport(ABC):
         )
 
     def _generate_error_details(
-        self, validation_result: RuleValidationResult
+        self, validation_result: RuleValidationResult, excel
     ) -> List[List]:
         """
         Generates the Issue details data that goes into the excel export.
@@ -123,24 +123,32 @@ class BaseReport(ABC):
                         "row": error.get("row", ""),
                         "SEQ": error.get("SEQ", ""),
                     }
-
+                    values = [
+                        str(error.get("value", {}).get(variable))
+                        for variable in variables
+                    ]
+                    processed_values = self.process_values(values, excel)
                     if self._item_type == "list":
                         error_item["variables"] = ", ".join(variables)
-                        error_item["values"] = ", ".join(
-                            [
-                                str(error.get("value", {}).get(variable))
-                                for variable in variables
-                            ]
-                        )
-                        errors = errors + [[*error_item.values()]]
+                        error_item["values"] = processed_values
+                        errors.append(list(error_item.values()))
                     elif self._item_type == "dict":
                         error_item["variables"] = variables
-                        error_item["values"] = [
-                            str(error.get("value", {}).get(variable))
-                            for variable in variables
-                        ]
-                        errors = errors + [error_item]
+                        error_item["values"] = processed_values
+                        errors.append(error_item)
         return errors
+
+    def process_values(self, values: List[str], excel: bool) -> Union[str, List[str]]:
+        if not values or values is None:
+            return "null" if excel else ["null"]
+        processed_values = []
+        for value in values:
+            value = value.strip()
+            if value == "" or value.lower() == "none":
+                processed_values.append("null")
+            else:
+                processed_values.append(value)
+        return ", ".join(processed_values) if excel else processed_values
 
     def get_rules_report_data(self) -> List[List]:
         """

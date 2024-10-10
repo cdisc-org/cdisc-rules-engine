@@ -174,12 +174,12 @@ def test_get_rules_report_data():
             assert report_data[i] == expected_reports[i]
 
 
-def test_get_detailed_data():
+def test_get_detailed_data(excel=True):
     with open(test_report_template, "rb") as f:
         report: ExcelReport = ExcelReport(
             [], "test", mock_validation_results, 10.1, MagicMock(), f
         )
-        detailed_data = report.get_detailed_data()
+        detailed_data = report.get_detailed_data(excel=True)
         errors = [
             [
                 mock_validation_results[0].id,

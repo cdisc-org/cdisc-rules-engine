@@ -48,7 +48,7 @@ class ExcelReport(BaseReport):
     ) -> Workbook:
         wb = excel_open_workbook(self._template.read())
         summary_data = self.get_summary_data()
-        detailed_data = self.get_detailed_data()
+        detailed_data = self.get_detailed_data(excel=True)
         rules_report_data = self.get_rules_report_data()
         excel_update_worksheet(wb["Issue Summary"], summary_data, dict(wrap_text=True))
         excel_update_worksheet(wb["Issue Details"], detailed_data, dict(wrap_text=True))
