@@ -14,6 +14,7 @@ from cdisc_rules_engine.utilities.utils import (
     replace_pattern_in_list_of_strings,
     search_in_list_of_dicts,
     get_sided_match_keys,
+    get_dataset_name_from_details,
 )
 import os
 
@@ -69,9 +70,8 @@ class DatasetPreprocessor:
             )
             if not file_info:
                 continue
-            other_dataset: DatasetInterface = self._download_dataset(
-                file_info["filename"]
-            )
+            filename = get_dataset_name_from_details(file_info)
+            other_dataset: DatasetInterface = self._download_dataset(filename)
             referenced_targets = set(
                 [
                     target.replace(f"{domain_name}.", "")

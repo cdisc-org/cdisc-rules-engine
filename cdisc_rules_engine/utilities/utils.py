@@ -246,6 +246,14 @@ def is_supp_dataset(datasets: List[dict], domain: str) -> bool:
     return False
 
 
+def get_dataset_name_from_details(domain_details) -> str:
+    return (
+        os.path.split(domain_details["full_path"])[-1]
+        if "full_path" in domain_details
+        else domain_details["filename"]
+    )
+
+
 def serialize_rule(rule: dict) -> dict:
     """
     Converts rule "conditions" to dict.

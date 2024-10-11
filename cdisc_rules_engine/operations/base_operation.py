@@ -57,6 +57,8 @@ class BaseOperation:
             # Assume that the operation id has been applied and
             # result matches the length of the evaluation dataset.
             return self.evaluation_dataset.concat(result, axis=1)
+        elif isinstance(result, dict):
+            return self._handle_dictionary_result(result)
         else:
             # Handle single results
 
