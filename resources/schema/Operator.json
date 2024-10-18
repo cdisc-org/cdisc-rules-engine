@@ -304,9 +304,6 @@
       "properties": {
         "operator": {
           "const": "invalid_duration"
-        },
-        "negative": {
-          "type": "boolean"
         }
       },
       "required": ["operator", "negative"],
@@ -905,6 +902,9 @@
           "$ref": "CORE-base.json#/$defs/VariableName"
         }
       ]
+    },
+    "negative": {
+      "type": "boolean"
     },
     "operator": {
       "type": "string"
