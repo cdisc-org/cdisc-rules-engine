@@ -1,3 +1,4 @@
+from datetime import datetime
 from cdisc_rules_engine.config.config import ConfigService
 from cdisc_rules_engine.models.dataset.dask_dataset import DaskDataset
 from cdisc_rules_engine.operations.day_data_validator import DayDataValidator
@@ -87,3 +88,27 @@ def test_day_data_calculation(
     assert operation_params.operation_id in result
     for i, val in enumerate(result[operation_params.operation_id]):
         assert val == expected[i]
+
+
+@pytest.mark.parametrize(
+    "dtc, rfstdtc, expected",
+    [
+        (datetime(2023, 1, 1), datetime(2023, 1, 1), 1),
+        (datetime(2023, 1, 2), datetime(2023, 1, 1), 2),
+        (datetime(2022, 12, 31), datetime(2023, 1, 1), -1),
+        (datetime(2024, 2, 29), datetime(2024, 2, 28), 2),
+        (datetime(2023, 3, 1), datetime(2023, 2, 28), 2),
+        (datetime(2024, 1, 1), datetime(2023, 12, 31), 2),
+        (datetime(2023, 1, 15), datetime(2023, 1, 1), 15),
+        (datetime(2022, 12, 15), datetime(2023, 1, 1), -17),
+        (datetime(2023, 1, 1, 23, 59, 59), datetime(2023, 1, 1, 0, 0, 0), 1),
+        (datetime(2023, 5, 24), datetime(2023, 5, 24, 15, 42, 0), 1),
+        (datetime(2023, 5, 25, 15, 42, 0), datetime(2023, 5, 24), 2),
+        (datetime(2023, 5, 26, 10, 0, 0), datetime(2023, 5, 24, 15, 42, 0), 3),
+    ],
+)
+def test_get_day_difference(dtc, rfstdtc, expected):
+    validator = DayDataValidator(None, None, None, None)
+    delta = dtc.date() - rfstdtc.date()
+    result = validator.get_day_difference(delta)
+    assert result == expected
