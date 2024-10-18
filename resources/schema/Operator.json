@@ -903,6 +903,9 @@
         }
       ]
     },
+    "negative": {
+      "type": "boolean"
+    },
     "operator": {
       "type": "string"
     },
