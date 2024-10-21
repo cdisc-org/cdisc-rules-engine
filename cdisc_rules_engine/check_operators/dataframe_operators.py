@@ -877,9 +877,10 @@ class DataframeType(BaseType):
             if target_name in self.value.columns:
                 target_names.append(target_name)
         target_names = list(set(target_names))
-        counts = (
-            self.value[target_names].groupby(target_names)[target].transform("size")
-        )
+        df_group = self.value[target_names].copy()
+        df_group = df_group.fillna("_NaN_")
+        group_sizes = df_group.groupby(target_names).size()
+        counts = df_group.apply(tuple, axis=1).map(group_sizes)
         results = np.where(counts <= 1, True, False)
         return self.value.convert_to_series(results)
 
