@@ -259,7 +259,10 @@ class DataframeType(BaseType):
             if not value_is_literal
             else other_value.get("comparator")
         )
-        comparison_data = self.get_comparator_data(comparator, value_is_literal)
+        if comparator == "DOMAIN":
+            comparison_data = self.column_prefix_map["--"]
+        else:
+            comparison_data = self.get_comparator_data(comparator, value_is_literal)
         prefix: int = self.replace_prefix(other_value.get("prefix"))
         return self._check_equality_of_string_part(
             target, comparison_data, "prefix", prefix
