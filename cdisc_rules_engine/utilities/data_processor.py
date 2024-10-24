@@ -216,6 +216,11 @@ class DataProcessor:
             where dataset["ECSEQ"] is equal to 100 or 101
             AND dataset["ECNUM"] is equal to 105.
         """
+        if (
+            other_dataset[column_with_names].str.strip().eq("").all()
+            and other_dataset[column_with_values].str.strip().eq("").all()
+        ):
+            return dataset
         grouped = other_dataset.groupby(column_with_names, group_keys=False)
 
         def filter_dataset_by_group_values(group) -> DatasetInterface:
@@ -248,6 +253,17 @@ class DataProcessor:
         """
         # right dataset holds column names of left dataset.
         # all values in the column are the same
+        if (
+            right_dataset[column_with_names].str.strip().eq("").all()
+            and right_dataset[column_with_values].str.strip().eq("").all()
+        ):
+            return left_dataset.merge(
+                other=right_dataset.data,
+                left_on=left_dataset_match_keys,
+                right_on=right_dataset_match_keys,
+                how="outer",
+                suffixes=("", f".{right_dataset_domain_name}"),
+            )
         left_ds_col_name: str = right_dataset[column_with_names][0]
 
         # convert numeric columns to one data type to avoid merging errors
