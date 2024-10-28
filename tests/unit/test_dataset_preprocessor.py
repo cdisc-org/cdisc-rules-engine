@@ -789,3 +789,63 @@ def test_preprocess_with_merge_comparison(
     assert result["NOTVISIT"].iloc[0] == 12
     assert "AE.VISIT" in result
     assert result["AE.VISIT"].iloc[0] == 24
+
+
+@patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset")
+def test_preprocess_supp_with_blank_idvar_idvarval(mock_get_dataset):
+    """
+    Test preprocessing when SUPP dataset has blank IDVAR and IDVARVAL.
+    Should merge successfully without attempting float conversion.
+    """
+    main_data = {
+        "USUBJID": ["CDISC001", "CDISC002"],
+        "DOMAIN": ["AE", "AE"],
+        "AESEQ": [1, 2],
+        "AETERM": ["Headache", "Nausea"],
+    }
+    main_dataset = PandasDataset(pd.DataFrame(main_data))
+    supp_data = {
+        "USUBJID": ["CDISC001", "CDISC002"],
+        "RDOMAIN": ["AE", "AE"],
+        "IDVAR": ["", ""],  # Blank IDVAR
+        "IDVARVAL": ["", ""],  # Blank IDVARVAL
+        "QNAM": ["AESPID", "AESPID"],
+        "QVAL": ["SCREENING", "BASELINE"],
+    }
+    supp_dataset = PandasDataset(pd.DataFrame(supp_data))
+
+    mock_get_dataset.return_value = supp_dataset
+    data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
+    preprocessor = DatasetPreprocessor(
+        main_dataset, "AE", "path", data_service, InMemoryCacheService()
+    )
+    rule = {
+        "core_id": "MockRule",
+        "datasets": [
+            {
+                "domain_name": "SUPPAE",
+                "match_key": ["USUBJID"],
+                "relationship_columns": {
+                    "column_with_names": "IDVAR",
+                    "column_with_values": "IDVARVAL",
+                },
+            }
+        ],
+        "conditions": ConditionCompositeFactory.get_condition_composite(
+            {
+                "all": [
+                    {
+                        "name": "get_dataset",
+                        "operator": "equal_to",
+                        "value": {"target": "QVAL", "comparator": "SCREENING"},
+                    }
+                ]
+            }
+        ),
+    }
+    datasets = [{"domain": "SUPPAE", "filename": "suppae.xpt"}]
+    result = preprocessor.preprocess(rule, datasets)
+    assert len(result.data) == 2
+    assert "QNAM" in result.data.columns
+    assert "QVAL" in result.data.columns
+    assert all(qnam == "AESPID" for qnam in result.data["QNAM"])
