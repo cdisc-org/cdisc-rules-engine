@@ -3,7 +3,7 @@ from typing import List
 from cdisc_rules_engine.models.dataset import DatasetInterface
 
 
-class VariablesMetadataWithDefineDatasetBuilder(BaseDatasetBuilder):
+class VariablesMetadataWithDefineAndLibraryDatasetBuilder(BaseDatasetBuilder):
     def build(self):
         """
         Returns the variable metadata from a given file.
