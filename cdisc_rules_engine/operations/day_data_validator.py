@@ -43,7 +43,8 @@ class DayDataValidator(BaseOperation):
 
     def parse_timestamp(self, timestamp: str) -> datetime:
         try:
-            return datetime.fromisoformat(timestamp)
+            dt = datetime.fromisoformat(timestamp)
+            return dt.date()
         except TypeError:
             # Null date time
             return None
