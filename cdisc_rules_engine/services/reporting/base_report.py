@@ -167,6 +167,7 @@ class BaseReport(ABC):
         """
         rules_report = []
         for validation_result in self._results:
+            print(validation_result)
             rules_item = {
                 "core_id": validation_result.id,
                 "version": "1",
@@ -195,10 +196,16 @@ class BaseReport(ABC):
 
     @abstractmethod
     def get_export(
-        self, define_version, cdiscCt, standard, version, **kwargs
+        self,
+        define_version,
+        cdiscCt,
+        standard,
+        version,
+        dictionary_versions={},
+        **kwargs,
     ) -> Union[dict, Workbook]:
         pass
 
     @abstractmethod
-    def write_report(self):
+    def write_report(self, **kwargs):
         pass
