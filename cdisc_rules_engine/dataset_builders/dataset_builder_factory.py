@@ -38,7 +38,7 @@ from cdisc_rules_engine.dataset_builders.variables_metadata_with_library_metadat
 from cdisc_rules_engine.dataset_builders.define_variables_with_library_metadata import (
     DefineVariablesWithLibraryMetadataDatasetBuilder,
 )
-from cdisc_rules_engine.dataset_builders.variables_metadata_with_define_and_library_dataset_builder.py import (
+from cdisc_rules_engine.dataset_builders.variables_metadata_with_define_and_library_dataset_builder import (
     VariablesMetadataWithDefineAndLibraryDatasetBuilder,
 )
 from cdisc_rules_engine.dataset_builders.base_dataset_builder import BaseDatasetBuilder

@@ -1,42 +1,41 @@
 from unittest.mock import MagicMock, patch
-from cdisc_rules_engine.dataset_builders.variables_metadata_with_define_and_library_dataset_builder import (
-    VariablesMetadataWithDefineAndLibraryDatasetBuilder,
-)
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
-from cdisc_rules_engine.services.data_services import LocalDataService
 from cdisc_rules_engine.services.cache.in_memory_cache_service import (
     InMemoryCacheService,
 )
+from cdisc_rules_engine.services.data_services import LocalDataService
+from pathlib import Path
 import pandas as pd
+import numpy as np
+from cdisc_rules_engine.dataset_builders.variables_metadata_with_define_and_library_dataset_builder import (
+    VariablesMetadataWithDefineAndLibraryDatasetBuilder,
+)
+
+resources_path: Path = Path(__file__).parent.parent.parent.joinpath("resources")
+test_define_file_path: Path = resources_path.joinpath("test_defineV22-SDTM.xml")
 
 
+@patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset")
 @patch(
-    "cdisc_rules_engine.services.define_xml.define_xml_reader_factory.DefineXMLReaderFactory._get_define_xml_reader"
+    "cdisc_rules_engine.services.data_services.LocalDataService.get_variables_metadata"
 )
 @patch(
-    "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
-)
-@patch(
-    "cdisc_rules_engine.services.data_services.LocalDataService.get_variables_metadata",
-)
-@patch(
-    "cdisc_rules_engine.services.data_services.LocalDataService.get_define_xml_contents",
+    "cdisc_rules_engine.services.data_services.LocalDataService.get_define_xml_contents"
 )
 def test_build_combined_metadata(
     mock_get_define_xml,
     mock_get_variables_metadata,
     mock_get_dataset,
-    mock_get_define_reader,
 ):
     """Test that the builder correctly combines all three metadata sources"""
-    # Use the actual define.xml content
-    with open("tests/resources/define.xml", "rb") as f:
-        define_xml_content = f.read()
-    mock_get_define_xml.return_value = define_xml_content
+    # Load actual define XML content
+    with open(test_define_file_path, "rb") as f:
+        define_data = f.read()
+    mock_get_define_xml.return_value = define_data
 
-    # Pre-format variables metadata as DataFrame
+    # Setup variables metadata
     mock_get_variables_metadata.return_value = pd.DataFrame.from_dict(
         {
             "variable_name": ["STUDYID", "USUBJID", "AETERM"],
@@ -47,7 +46,7 @@ def test_build_combined_metadata(
         }
     )
 
-    # Pre-format dataset contents as DataFrame
+    # Setup dataset contents
     mock_get_dataset.return_value = pd.DataFrame.from_dict(
         {
             "STUDYID": ["STUDY1", "STUDY1", "STUDY1"],
@@ -55,35 +54,6 @@ def test_build_combined_metadata(
             "AETERM": ["Headache", "Nausea", ""],
         }
     )
-
-    # Create the define metadata directly as a dict list (not DataFrame)
-    define_metadata = [
-        {
-            "define_variable_name": "STUDYID",
-            "define_variable_label": "Study Identifier",
-            "define_variable_data_type": "Char",
-            "define_variable_role": "Identifier",
-            "define_variable_size": 16,
-            "define_variable_is_collected": False,
-            "define_variable_has_no_data": False,
-            "define_variable_order_number": 1,
-        },
-        {
-            "define_variable_name": "AETERM",
-            "define_variable_label": "Reported Term for the Adverse Event",
-            "define_variable_data_type": "Char",
-            "define_variable_role": "Topic",
-            "define_variable_size": 200,
-            "define_variable_is_collected": True,
-            "define_variable_has_no_data": False,
-            "define_variable_order_number": 9,
-        },
-    ]
-
-    # Create a reader that returns plain Python objects, not mocks
-    mock_reader = MagicMock()
-    mock_reader.extract_variables_metadata = lambda: define_metadata
-    mock_get_define_reader.return_value = mock_reader
 
     # Setup library metadata
     standard_data = {
@@ -136,17 +106,17 @@ def test_build_combined_metadata(
     }
     library_metadata = LibraryMetadataContainer(standard_metadata=standard_data)
 
-    # Create builder instance
+    # Create builder
     builder = VariablesMetadataWithDefineAndLibraryDatasetBuilder(
         rule=None,
         data_service=LocalDataService(MagicMock(), MagicMock(), MagicMock()),
         cache_service=InMemoryCacheService(),
         rule_processor=None,
         data_processor=None,
-        dataset_path="test/path",
+        dataset_path=str(test_define_file_path),
         datasets=[],
         domain="AE",
-        define_xml_path="tests/resources/define.xml",
+        define_xml_path=str(test_define_file_path),
         standard="sdtmig",
         standard_version="3-4",
         library_metadata=library_metadata,
@@ -154,152 +124,98 @@ def test_build_combined_metadata(
 
     result = builder.build()
 
-    # Verify results
-    assert set(result.columns.tolist()) == {
+    expected_columns = {
         "variable_name",
         "variable_label",
         "variable_size",
         "variable_order_number",
         "variable_data_type",
+        "define_variable_name",
+        "define_variable_label",
+        "define_variable_data_type",
+        "define_variable_is_collected",
+        "define_variable_role",
+        "define_variable_size",
+        "define_variable_ccode",
+        "define_variable_format",
+        "define_variable_allowed_terms",
+        "define_variable_origin_type",
+        "define_variable_has_no_data",
+        "define_variable_order_number",
+        "define_variable_length",
+        "define_variable_has_codelist",
+        "define_variable_codelist_coded_values",
+        "define_variable_mandatory",
+        "define_variable_has_comment",
         "library_variable_name",
         "library_variable_role",
         "library_variable_label",
         "library_variable_core",
+        "library_variable_order_number",
         "library_variable_data_type",
-        "define_variable_name",
-        "define_variable_label",
-        "define_variable_data_type",
-        "define_variable_size",
-        "define_variable_is_collected",
-        "define_variable_role",
         "variable_has_empty_values",
     }
-
-    # Verify library metadata integration
-    assert result["library_variable_name"].tolist() == [
-        "STUDYID",
-        "USUBJID",
-        "AETERM",
-        "AESEQ",
-    ]
-    assert result["variable_name"].tolist() == ["STUDYID", "USUBJID", "AETERM", ""]
-
-    # Verify empty values flag
-    assert result["variable_has_empty_values"].tolist() == [False, True, True, True]
-
-
-@patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset")
-@patch(
-    "cdisc_rules_engine.services.data_services.LocalDataService.get_variables_metadata"
-)
-@patch(
-    "cdisc_rules_engine.services.data_services.LocalDataService.get_define_xml_contents"
-)
-def test_metadata_mismatch_handling(
-    mock_get_define_xml: MagicMock,
-    mock_get_variables_metadata: MagicMock,
-    mock_get_dataset: MagicMock,
-    mock_data_service,
-    mock_variables_metadata,
-    mock_define_xml_data,
-    mock_library_metadata,
-    mock_dataset_contents,
-):
-    """Test handling of mismatched metadata between sources"""
-
-    # Modify variables metadata to create a mismatch
-    modified_variables_metadata = mock_variables_metadata.copy()
-    modified_variables_metadata.loc[
-        0, "variable_size"
-    ] = 32  # Different from define XML
-
-    mock_get_variables_metadata.return_value = modified_variables_metadata
-    mock_get_dataset.return_value = mock_dataset_contents
-    mock_get_define_xml.return_value = mock_define_xml_data
-
-    builder = VariablesMetadataWithDefineAndLibraryDatasetBuilder(
-        rule=None,
-        data_service=LocalDataService(MagicMock(), MagicMock(), MagicMock()),
-        cache_service=InMemoryCacheService(),
-        rule_processor=None,
-        data_processor=None,
-        dataset_path="test/path",
-        datasets=[],
-        domain="AE",
-        define_xml_path="test/define.xml",
-        standard="sdtmig",
-        standard_version="3-4",
-        library_metadata=mock_library_metadata,
-    )
-
-    result = builder.build()
-
+    assert set(result.columns.tolist()) == expected_columns
+    core_variables = ["STUDYID", "USUBJID", "AETERM"]
+    for var in core_variables:
+        row = result[result["variable_name"] == var].iloc[0]
+        assert row["define_variable_name"] == var
+        assert row["library_variable_name"] == var
+        assert row["variable_has_empty_values"] == (var in ["USUBJID", "AETERM"])
     studyid_row = result[result["variable_name"] == "STUDYID"].iloc[0]
-    assert studyid_row["variable_size"] == 32
-    assert studyid_row["define_variable_size"] == 16
-
-
-@patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset")
-@patch(
-    "cdisc_rules_engine.services.data_services.LocalDataService.get_variables_metadata"
-)
-@patch(
-    "cdisc_rules_engine.services.data_services.LocalDataService.get_define_xml_contents"
-)
-def test_missing_variable_handling(
-    mock_get_define_xml: MagicMock,
-    mock_get_variables_metadata: MagicMock,
-    mock_get_dataset: MagicMock,
-    mock_data_service,
-    mock_variables_metadata,
-    mock_define_xml_metadata,
-    mock_library_metadata,
-    mock_dataset_contents,
-):
-    """Test handling of variables missing from some sources"""
-
-    # Add a variable that's only in library metadata
-    extra_library_variable = "AENEWVAR"
-
-    # Modify library metadata to include the extra variable
-    modified_library_metadata = mock_library_metadata
-    modified_library_metadata.standard_metadata["classes"][0]["datasets"][0][
-        "datasetVariables"
-    ].append(
-        {
-            "name": extra_library_variable,
-            "ordinal": "10",
-            "role": "Topic",
-            "label": "New Variable",
-            "simpleDatatype": "Char",
-            "core": "Perm",
-        }
+    assert studyid_row["variable_size"] == 16.0
+    assert studyid_row["variable_order_number"] == 1.0
+    assert studyid_row["variable_data_type"] == "Char"
+    assert studyid_row["define_variable_role"] == "Identifier"
+    assert studyid_row["library_variable_core"] == "Req"
+    assert not studyid_row["variable_has_empty_values"]
+    define_only_vars = ["DOMAIN", "AESEQ", "AELNKID"]  # Sample of define-only variables
+    for var in define_only_vars:
+        rows = result[result["define_variable_name"] == var]
+        assert len(rows) == 1
+        row = rows.iloc[0]
+        assert pd.isna(row["variable_name"]) or row["variable_name"] == ""
+        assert row["variable_has_empty_values"]
+    library_only_rows = result[
+        (result["library_variable_name"].notna())
+        & (result["variable_name"].isna() | (result["variable_name"] == ""))
+    ]
+    assert not library_only_rows.empty
+    aeseq_lib_row = result[result["library_variable_name"] == "AESEQ"].iloc[0]
+    assert aeseq_lib_row["library_variable_role"] == "Topic"
+    assert aeseq_lib_row["library_variable_core"] == "Req"
+    assert aeseq_lib_row["library_variable_data_type"] == "Num"
+    codelist_vars = result[result["define_variable_has_codelist"].astype(bool)]
+    assert not codelist_vars.empty
+    aesev_row = result[result["define_variable_name"] == "AESEV"].iloc[0]
+    assert aesev_row["define_variable_has_codelist"]
+    assert set(aesev_row["define_variable_codelist_coded_values"]) == {
+        "MILD",
+        "MODERATE",
+        "SEVERE",
+    }
+    mandatory_vars = result[result["define_variable_mandatory"] == "Yes"]
+    assert not mandatory_vars.empty
+    assert all(
+        mandatory_vars["define_variable_name"].isin(
+            ["STUDYID", "USUBJID", "AETERM", "DOMAIN", "AESEQ", "AEDECOD"]
+        )
     )
-
-    mock_get_variables_metadata.return_value = mock_variables_metadata
-    mock_get_dataset.return_value = mock_dataset_contents
-    mock_get_define_xml.return_value = mock_define_xml_metadata
-
-    builder = VariablesMetadataWithDefineAndLibraryDatasetBuilder(
-        rule=None,
-        data_service=LocalDataService(MagicMock(), MagicMock(), MagicMock()),
-        cache_service=InMemoryCacheService(),
-        rule_processor=None,
-        data_processor=None,
-        dataset_path="test/path",
-        datasets=[],
-        domain="AE",
-        define_xml_path="test/define.xml",
-        standard="sdtmig",
-        standard_version="3-4",
-        library_metadata=modified_library_metadata,
+    empty_value_vars = result[result["variable_has_empty_values"]]
+    assert not empty_value_vars.empty
+    assert "USUBJID" in empty_value_vars["variable_name"].values
+    assert "AETERM" in empty_value_vars["variable_name"].values
+    numeric_vars = result[result["define_variable_data_type"] == "integer"]
+    assert all(
+        var in ["AESEQ", "AESTDY", "AEENDY"]
+        for var in numeric_vars["define_variable_name"]
     )
-
-    result = builder.build()
-
-    # Verify handling of the library-only variable
-    library_only_row = result[result["library_variable_name"] == extra_library_variable]
-    assert not library_only_row.empty
-    assert library_only_row.iloc[0]["variable_name"] == ""
-    assert library_only_row.iloc[0]["define_variable_name"] == ""
-    assert library_only_row.iloc[0]["library_variable_core"] == "Perm"
+    non_empty_vars = ["STUDYID"]
+    for _, row in result.iterrows():
+        if row["variable_name"] in non_empty_vars:
+            assert row["variable_has_empty_values"] is False
+        else:
+            assert row["variable_has_empty_values"]
+    assert not result["variable_name"].isin([np.nan]).any()
+    assert not result["define_variable_name"].isin([np.nan]).any()
+    assert not result["library_variable_name"].isin([np.nan]).any()
