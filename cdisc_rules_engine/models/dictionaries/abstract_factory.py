@@ -12,6 +12,7 @@ from .meddra import MedDRATermsFactory
 from .whodrug import WhoDrugTermsFactory
 from .loinc import LoincTermsFactory
 from .medrt import MEDRTTermsFactory
+from .unii import UNIITermsFactory
 
 
 class AbstractTermsFactory(FactoryInterface):
@@ -20,6 +21,7 @@ class AbstractTermsFactory(FactoryInterface):
         DictionaryTypes.WHODRUG.value: WhoDrugTermsFactory,
         DictionaryTypes.LOINC.value: LoincTermsFactory,
         DictionaryTypes.MEDRT.value: MEDRTTermsFactory,
+        DictionaryTypes.UNII.value: UNIITermsFactory,
     }
 
     def __init__(self, data_service: DataServiceInterface):

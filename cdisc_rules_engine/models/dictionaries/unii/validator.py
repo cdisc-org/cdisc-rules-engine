@@ -3,11 +3,10 @@ from cdisc_rules_engine.interfaces.data_service_interface import DataServiceInte
 from cdisc_rules_engine.models.dictionaries.base_dictionary_validator import (
     BaseDictionaryValidator,
 )
-from cdisc_rules_engine.models.dictionaries.medrt.term import MEDRTConcept
-from cdisc_rules_engine.models.dictionaries.medrt.terms_factory import MEDRTTermsFactory
+from cdisc_rules_engine.models.dictionaries.unii.terms_factory import UNIITermsFactory
 
 
-class MEDRTValidator(BaseDictionaryValidator):
+class UNIIValidator(BaseDictionaryValidator):
     def __init__(
         self,
         data_service: DataServiceInterface = None,
@@ -17,14 +16,14 @@ class MEDRTValidator(BaseDictionaryValidator):
     ):
         self.cache_service = cache_service
         self.data_service = data_service
-        self.path = dictionary_path or kwargs.get("medrt_path")
+        self.path = dictionary_path or kwargs.get("unii_path")
         self.term_dictionary = kwargs.get("terms")
-        self.terms_factory = MEDRTTermsFactory(self.data_service)
+        self.terms_factory = UNIITermsFactory(self.data_service)
 
     def is_valid_term(self, term: str, term_type: str, variable: str, **kwargs) -> bool:
         term_dictionary = self.get_term_dictionary()
         case_sensitive_check = kwargs.get("case_sensitive")
-        all_terms = set([term.name for term in term_dictionary.values()])
+        all_terms = set([term.display_name for term in term_dictionary.values()])
         if case_sensitive_check:
             return term in all_terms
         else:
@@ -50,11 +49,4 @@ class MEDRTValidator(BaseDictionaryValidator):
         dictionary_term = term_dictionary.get(code)
         if not dictionary_term:
             return False
-        valid = row[term_var] == dictionary_term.name
-        if isinstance(dictionary_term, MEDRTConcept):
-            # Check the synonyms against the concept code
-            for synonym in dictionary_term.synonyms:
-                term = term_dictionary.get(synonym)
-                if term:
-                    valid = valid or term.name == row[term_var]
-        return valid
+        return row[term_var] == dictionary_term.display_name
