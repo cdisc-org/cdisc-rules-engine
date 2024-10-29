@@ -16,8 +16,15 @@ from cdisc_rules_engine.models.rule_conditions import ConditionCompositeFactory
 from cdisc_rules_engine.services.cache import (
     InMemoryCacheService,
 )
+from cdisc_rules_engine.models.external_dictionaries_container import (
+    ExternalDictionariesContainer,
+    DictionaryTypes,
+)
 from cdisc_rules_engine.services.data_services import LocalDataService
 from cdisc_rules_engine.constants.rule_constants import ALL_KEYWORD
+
+meddra_path: str = f"{os.path.dirname(__file__)}/resources/dictionaries/meddra"
+whodrug_path: str = f"{os.path.dirname(__file__)}/resources/dictionaries/whodrug"
 
 
 def pytest_collection_modifyitems(config, items):
@@ -1175,7 +1182,6 @@ def installed_whodrug_dictionaries(request) -> dict:
     )
     factory = WhoDrugTermsFactory(local_data_service)
 
-    whodrug_path: str = f"{os.path.dirname(__file__)}/resources/dictionaries/whodrug"
     terms: dict = factory.install_terms(whodrug_path)
     cache_service.add(whodrug_path, terms)
 
@@ -1202,7 +1208,6 @@ def installed_meddra_dictionaries(request) -> dict:
     local_data_service = LocalDataService.get_instance(cache_service=cache_service)
     factory = MedDRATermsFactory(local_data_service)
 
-    meddra_path: str = f"{os.path.dirname(__file__)}/resources/dictionaries/meddra"
     terms: dict = factory.install_terms(meddra_path)
     cache_service.add(meddra_path, terms)
 
@@ -1229,8 +1234,12 @@ def operation_params() -> OperationParams:
         datasets=[{}],
         standard="standard",
         standard_version="standard_version",
-        meddra_path="meddra_path",
-        whodrug_path="whodrug_path",
+        external_dictionaries=ExternalDictionariesContainer(
+            {
+                DictionaryTypes.MEDDRA.value: meddra_path,
+                DictionaryTypes.WHODRUG.value: whodrug_path,
+            }
+        ),
         grouping=[],
         attribute_name="attribute_name",
     )

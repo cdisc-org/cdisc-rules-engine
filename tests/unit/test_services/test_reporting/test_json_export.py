@@ -254,6 +254,7 @@ def test_get_export():
         standard="sdtmig",
         version="3.4",
         raw_report=False,
+        dictionary_versions={},
     )
     assert export["Conformance_Details"]["CORE_Engine_Version"] == __version__
     assert export["Conformance_Details"]["Total_Runtime"] == "10.1 seconds"
