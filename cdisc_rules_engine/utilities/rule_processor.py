@@ -30,6 +30,9 @@ from cdisc_rules_engine.utilities.utils import (
     search_in_list_of_dicts,
     get_dataset_name_from_details,
 )
+from cdisc_rules_engine.models.external_dictionaries_container import (
+    ExternalDictionariesContainer,
+)
 
 
 class RuleProcessor:
@@ -221,6 +224,7 @@ class RuleProcessor:
         dataset_path: str,
         standard: str,
         standard_version: str,
+        external_dictionaries: ExternalDictionariesContainer = ExternalDictionariesContainer(),
         **kwargs,
     ) -> DatasetInterface:
         """
@@ -258,10 +262,7 @@ class RuleProcessor:
                 grouping=operation.get("group", []),
                 standard=standard,
                 standard_version=standard_version,
-                meddra_path=kwargs.get("meddra_path"),
-                whodrug_path=kwargs.get("whodrug_path"),
-                loinc_path=kwargs.get("loinc_path"),
-                medrt_path=kwargs.get("medrt_path"),
+                external_dictionaries=external_dictionaries,
                 ct_version=operation.get("version"),
                 ct_attribute=operation.get("attribute"),
                 ct_packages=kwargs.get("ct_packages"),
