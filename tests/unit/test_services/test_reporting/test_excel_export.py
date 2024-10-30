@@ -46,17 +46,6 @@ mock_validation_results = [
                         }
                     ],
                 },
-                {
-                    "Organization": "PMDA",
-                    "Standards": [
-                        {
-                            "References": [
-                                {"Rule_Identifier": {"Id": "PMDARuleID1"}},
-                                {"Rule_Identifier": {"Id": "PMDARuleID2"}},
-                            ]
-                        }
-                    ],
-                },
             ],
         },
         results=[
@@ -116,17 +105,6 @@ mock_validation_results = [
                         }
                     ],
                 },
-                {
-                    "Organization": "PMDA",
-                    "Standards": [
-                        {
-                            "References": [
-                                {"Rule_Identifier": {"Id": "PMDARuleID1"}},
-                                {"Rule_Identifier": {"Id": "PMDARuleID2"}},
-                            ]
-                        }
-                    ],
-                },
             ],
         },
         results=[
@@ -163,7 +141,6 @@ def test_get_rules_report_data():
                     "1",
                     result.cdisc_rule_id,
                     result.fda_rule_id,
-                    result.pmda_rule_id,
                     result.message,
                     ExecutionStatus.SUCCESS.value.upper(),
                 ]

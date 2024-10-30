@@ -308,9 +308,6 @@
           },
           {
             "$ref": "Organization_FDA.json"
-          },
-          {
-            "$ref": "Organization_PMDA.json"
           }
         ],
         "required": ["Organization", "Standards"],
