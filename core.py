@@ -454,8 +454,21 @@ def list_rules(
 @click.option(
     "-dp",
     "--dataset-path",
-    required=True,
+    required=False,
     help="Absolute path to dataset file",
+)
+@click.option(
+    "-d",
+    "--data",
+    required=False,
+    help="Path to directory containing data files",
+)
+@click.option(
+    "-l",
+    "--log-level",
+    default="disabled",
+    type=click.Choice(["info", "debug", "error", "critical", "disabled", "warn"]),
+    help="Sets log level for engine logs, logs are disabled by default",
 )
 @click.option(
     "-r",
@@ -500,6 +513,8 @@ def test(
     ctx,
     cache_path: str,
     dataset_path: Tuple[str],
+    data: str,
+    log_level: str,
     rule: str,
     standard: str,
     version: str,
@@ -512,10 +527,39 @@ def test(
     validate_xml,
     define_xml_path: str,
 ):
+    logger = logging.getLogger("tester")
+    if data:
+        if dataset_path:
+            logger.error(
+                "Argument --dataset-path cannot be used together with argument --data"
+            )
+            ctx.exit()
+        dataset_paths, found_formats = valid_data_file(
+            [str(Path(data).joinpath(fn)) for fn in os.listdir(data)]
+        )
+        if len(found_formats) > 1:
+            logger.error(
+                f"Argument --data contains more than one allowed file format ({', '.join(found_formats)})."  # noqa: E501
+            )
+            ctx.exit()
+    elif dataset_path:
+        dataset_paths, found_formats = valid_data_file([dp for dp in dataset_path])
+        if len(found_formats) > 1:
+            logger.error(
+                f"Argument --dataset_path contains more than one allowed file format ({', '.join(found_formats)})."  # noqa: E501
+            )
+            ctx.exit()
+    else:
+        logger.error(
+            "You must pass one of the following arguments: --dataset-path, --data"
+        )
+        # no need to define dataset_paths here, the program execution will stop
+        ctx.exit()
     validate_xml = True if validate_xml.lower() in ("y", "yes") else False
     args = TestArgs(
         cache_path,
-        dataset_path,
+        dataset_paths,
+        log_level,
         rule,
         standard,
         version,

@@ -4,7 +4,8 @@ TestArgs = namedtuple(
     "TestArgs",
     [
         "cache",
-        "dataset_path",
+        "dataset_paths",
+        "log_level",
         "rule",
         "standard",
         "version",
