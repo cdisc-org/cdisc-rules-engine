@@ -13,6 +13,7 @@ from cdisc_rules_engine.config import config
 from cdisc_rules_engine.enums.default_file_paths import DefaultFilePaths
 from cdisc_rules_engine.enums.progress_parameter_options import ProgressParameterOptions
 from cdisc_rules_engine.enums.report_types import ReportTypes
+from cdisc_rules_engine.enums.dataformat_test_types import TestDataFormatTypes
 from cdisc_rules_engine.enums.dataformat_types import DataFormatTypes
 from cdisc_rules_engine.models.validation_args import Validation_args
 from cdisc_rules_engine.models.test_args import TestArgs
@@ -30,8 +31,11 @@ from scripts.list_dataset_metadata_handler import list_dataset_metadata_handler
 from version import __version__
 
 
-def valid_data_file(data_path: list) -> Tuple[list, set]:
-    allowed_formats = [format.value for format in DataFormatTypes]
+def valid_data_file(data_path: list, test: bool = False) -> Tuple[list, set]:
+    if test:
+        allowed_formats = [format.value for format in TestDataFormatTypes]
+    else:
+        allowed_formats = [format.value for format in DataFormatTypes]
     found_formats = set()
     file_list = []
     for file in data_path:
@@ -543,7 +547,7 @@ def test(
             )
             ctx.exit()
     elif dataset_path:
-        dataset_paths, found_formats = valid_data_file([dp for dp in dataset_path])
+        dataset_paths, found_formats = valid_data_file([dataset_path])
         if len(found_formats) > 1:
             logger.error(
                 f"Argument --dataset_path contains more than one allowed file format ({', '.join(found_formats)})."  # noqa: E501
