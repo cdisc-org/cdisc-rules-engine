@@ -20,7 +20,7 @@ pyyaml==6.0.1
 redis==4.0.2
 requests~=2.32.3
 setuptools~=75.1.0
-cachetools==5.3.1
+cachetools==5.5.0
 Pympler==1.1
 psutil==6.0.0
 dask[dataframe]==2024.2.0
