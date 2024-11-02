@@ -272,7 +272,11 @@ def test_get_export():
         )
         cdiscCt = ["sdtmct-03-2021"]
         wb = report.get_export(
-            define_version="2.1", cdiscCt=cdiscCt, standard="sdtmig", version="3.4"
+            define_version="2.1",
+            cdiscCt=cdiscCt,
+            standard="sdtmig",
+            version="3.4",
+            dictionary_versions={},
         )
         assert wb["Conformance Details"]["B3"].value == "10.1 seconds"
         assert wb["Conformance Details"]["B4"].value == __version__

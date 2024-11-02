@@ -7,15 +7,19 @@ from cdisc_rules_engine.models.dictionaries.meddra.terms.meddra_term import MedD
 from cdisc_rules_engine.models.dictionaries.meddra.terms.term_types import TermTypes
 from cdisc_rules_engine.utilities.utils import get_meddra_code_term_pairs_cache_key
 from typing import Optional, Tuple
+from cdisc_rules_engine.models.dictionaries.dictionary_types import DictionaryTypes
 
 
 class MedDRACodeTermPairsValidator(BaseOperation):
     def _execute_operation(self):
         # get metadata
-        if not self.params.meddra_path:
-            raise ValueError("Can't execute the operation, no meddra path provided")
+        meddra_path = self.params.external_dictionaries.get_dictionary_path(
+            DictionaryTypes.MEDDRA.value
+        )
+        if not meddra_path:
+            raise ValueError("Can't execute the operation, no whodrug path provided")
         term_type, columns = self._get_columns_by_meddra_variable_name()
-        cache_key: str = get_meddra_code_term_pairs_cache_key(self.params.meddra_path)
+        cache_key: str = get_meddra_code_term_pairs_cache_key(meddra_path)
         valid_code_term_pairs = self.cache.get(cache_key)
         if not valid_code_term_pairs:
             terms: dict = self.cache.get(self.params.meddra_path)

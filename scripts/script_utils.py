@@ -14,7 +14,6 @@ from cdisc_rules_engine.config import config
 from cdisc_rules_engine.services import logger as engine_logger
 import os
 import pickle
-from cdisc_rules_engine.models.dictionaries import DictionaryTypes
 from cdisc_rules_engine.models.dictionaries.get_dictionary_terms import (
     extract_dictionary_terms,
 )
@@ -92,22 +91,19 @@ def fill_cache_with_dictionaries(cache: CacheServiceInterface, args):
     Extracts file contents from provided dictionaries files
     and saves to cache (inmemory or redis).
     """
-    if not args.meddra and not args.whodrug and not args.loinc and not args.medrt:
-        return
-
     data_service = DataServiceFactory(config, cache).get_data_service()
+    versions_map = {}
 
-    dictionary_type_to_path_map: dict = {
-        DictionaryTypes.MEDDRA: args.meddra,
-        DictionaryTypes.WHODRUG: args.whodrug,
-        DictionaryTypes.LOINC: args.loinc,
-        DictionaryTypes.MEDRT: args.medrt,
-    }
-    for dictionary_type, dictionary_path in dictionary_type_to_path_map.items():
+    for (
+        dictionary_type,
+        dictionary_path,
+    ) in args.external_dictionaries.dictionary_path_mapping.items():
         if not dictionary_path:
             continue
         terms = extract_dictionary_terms(data_service, dictionary_type, dictionary_path)
         cache.add(dictionary_path, terms)
+        versions_map[dictionary_type] = terms.version
+    return versions_map
 
 
 def get_cache_service(manager):

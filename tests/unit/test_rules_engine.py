@@ -18,6 +18,10 @@ from cdisc_rules_engine.rules_engine import RulesEngine
 from cdisc_rules_engine.services.cache.in_memory_cache_service import (
     InMemoryCacheService,
 )
+from cdisc_rules_engine.models.external_dictionaries_container import (
+    ExternalDictionariesContainer,
+    DictionaryTypes,
+)
 from cdisc_rules_engine.utilities.rule_processor import RuleProcessor
 from cdisc_rules_engine.models.dataset import PandasDataset
 
@@ -2128,7 +2132,13 @@ def test_dataset_references_invalid_whodrug_terms(
     engine = RulesEngine(
         cache_service,
         installed_whodrug_dictionaries["data_service"],
-        whodrug_path=installed_whodrug_dictionaries["whodrug_path"],
+        external_dictionaries=ExternalDictionariesContainer(
+            {
+                DictionaryTypes.WHODRUG.value: installed_whodrug_dictionaries[
+                    "whodrug_path"
+                ]
+            }
+        ),
         standard="sdtmig",
         standard_version="3-4",
     )

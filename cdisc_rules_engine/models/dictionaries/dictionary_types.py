@@ -10,3 +10,4 @@ class DictionaryTypes(BaseEnum):
     WHODRUG = "whodrug"
     LOINC = "loinc"
     MEDRT = "medrt"
+    UNII = "unii"

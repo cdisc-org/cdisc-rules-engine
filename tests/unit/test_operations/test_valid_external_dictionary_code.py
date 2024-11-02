@@ -9,6 +9,10 @@ from cdisc_rules_engine.operations.valid_external_dictionary_code import (
 from cdisc_rules_engine.services.cache.cache_service_factory import CacheServiceFactory
 from cdisc_rules_engine.models.dictionaries.meddra.terms.term_types import TermTypes
 from cdisc_rules_engine.models.dictionaries.meddra.terms.meddra_term import MedDRATerm
+from cdisc_rules_engine.models.external_dictionaries_container import (
+    ExternalDictionariesContainer,
+    DictionaryTypes,
+)
 import pytest
 
 
@@ -31,7 +35,9 @@ def test_valid_external_dictionary_code_with_meddra(
     )
 
     operation_params.dataframe = data
-    operation_params.meddra_path = meddra_path
+    operation_params.external_dictionaries = ExternalDictionariesContainer(
+        {DictionaryTypes.MEDDRA.value: meddra_path}
+    )
     terms_dictionary = {
         TermTypes.PT.value: {
             "1234": MedDRATerm({"term": "A"}),
