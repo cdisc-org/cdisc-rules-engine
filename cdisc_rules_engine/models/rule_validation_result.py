@@ -10,7 +10,6 @@ class RuleValidationResult(RepresentationInterface):
         self.id: str = rule.get("core_id")
         self.cdisc_rule_id: str = self._get_rule_ids(rule, "CDISC")
         self.fda_rule_id: str = self._get_rule_ids(rule, "FDA")
-        self.pmda_rule_id: str = self._get_rule_ids(rule, "PMDA")
         self.executability: str = rule.get("executability")
         actions = rule.get("actions")
         self.message: str = None

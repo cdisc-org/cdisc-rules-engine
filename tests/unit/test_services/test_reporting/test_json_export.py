@@ -40,17 +40,6 @@ mock_validation_results = [
                         }
                     ],
                 },
-                {
-                    "Organization": "PMDA",
-                    "Standards": [
-                        {
-                            "References": [
-                                {"Rule_Identifier": {"Id": "PMDARuleID1"}},
-                                {"Rule_Identifier": {"Id": "PMDARuleID2"}},
-                            ]
-                        }
-                    ],
-                },
             ],
         },
         results=[
@@ -110,17 +99,6 @@ mock_validation_results = [
                         }
                     ],
                 },
-                {
-                    "Organization": "PMDA",
-                    "Standards": [
-                        {
-                            "References": [
-                                {"Rule_Identifier": {"Id": "PMDARuleID1"}},
-                                {"Rule_Identifier": {"Id": "PMDARuleID2"}},
-                            ]
-                        }
-                    ],
-                },
             ],
         },
         results=[
@@ -156,7 +134,6 @@ def test_get_rules_report_data():
                 "version": "1",
                 "cdisc_rule_id": result.cdisc_rule_id,
                 "fda_rule_id": result.fda_rule_id,
-                "pmda_rule_id": result.pmda_rule_id,
                 "message": result.message,
                 "status": ExecutionStatus.SUCCESS.value.upper(),
             }

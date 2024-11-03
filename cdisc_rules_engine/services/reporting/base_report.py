@@ -160,7 +160,6 @@ class BaseReport(ABC):
             "Version",
             "CDISC RuleID",
             "FDA RuleID",
-            "PMDA RuleID",
             "Message",
             "Status"
         ]
@@ -173,7 +172,6 @@ class BaseReport(ABC):
                 "version": "1",
                 "cdisc_rule_id": validation_result.cdisc_rule_id,
                 "fda_rule_id": validation_result.fda_rule_id,
-                "pmda_rule_id": validation_result.pmda_rule_id,
                 "message": validation_result.message,
                 "status": ExecutionStatus.SUCCESS.value.upper()
                 if validation_result.execution_status == ExecutionStatus.SUCCESS.value
