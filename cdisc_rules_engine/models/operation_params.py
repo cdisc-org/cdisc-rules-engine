@@ -1,5 +1,8 @@
 from dataclasses import dataclass
 from typing import List
+from cdisc_rules_engine.models.external_dictionaries_container import (
+    ExternalDictionariesContainer,
+)
 
 import pandas as pd
 
@@ -26,10 +29,7 @@ class OperationParams:
     ct_version: str = None
     target: str = None
     original_target: str = None
-    meddra_path: str = None
-    whodrug_path: str = None
-    loinc_path: str = None
-    medrt_path: str = None
+    external_dictionaries: ExternalDictionariesContainer = None
     grouping: List[str] = None
     key_name: str = None
     key_value: str = None

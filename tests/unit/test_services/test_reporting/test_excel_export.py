@@ -46,17 +46,6 @@ mock_validation_results = [
                         }
                     ],
                 },
-                {
-                    "Organization": "PMDA",
-                    "Standards": [
-                        {
-                            "References": [
-                                {"Rule_Identifier": {"Id": "PMDARuleID1"}},
-                                {"Rule_Identifier": {"Id": "PMDARuleID2"}},
-                            ]
-                        }
-                    ],
-                },
             ],
         },
         results=[
@@ -116,17 +105,6 @@ mock_validation_results = [
                         }
                     ],
                 },
-                {
-                    "Organization": "PMDA",
-                    "Standards": [
-                        {
-                            "References": [
-                                {"Rule_Identifier": {"Id": "PMDARuleID1"}},
-                                {"Rule_Identifier": {"Id": "PMDARuleID2"}},
-                            ]
-                        }
-                    ],
-                },
             ],
         },
         results=[
@@ -163,7 +141,6 @@ def test_get_rules_report_data():
                     "1",
                     result.cdisc_rule_id,
                     result.fda_rule_id,
-                    result.pmda_rule_id,
                     result.message,
                     ExecutionStatus.SUCCESS.value.upper(),
                 ]
@@ -272,7 +249,11 @@ def test_get_export():
         )
         cdiscCt = ["sdtmct-03-2021"]
         wb = report.get_export(
-            define_version="2.1", cdiscCt=cdiscCt, standard="sdtmig", version="3.4"
+            define_version="2.1",
+            cdiscCt=cdiscCt,
+            standard="sdtmig",
+            version="3.4",
+            dictionary_versions={},
         )
         assert wb["Conformance Details"]["B3"].value == "10.1 seconds"
         assert wb["Conformance Details"]["B4"].value == __version__

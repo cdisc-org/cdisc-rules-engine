@@ -7,15 +7,19 @@ from cdisc_rules_engine.models.dictionaries.whodrug.whodrug_record_types import 
     WhodrugRecordTypes,
 )
 from typing import Set
+from cdisc_rules_engine.models.dictionaries.dictionary_types import DictionaryTypes
 
 
 class WhodrugHierarchyValidator(BaseOperation):
     def _execute_operation(self):
         # get metadata
-        if not self.params.whodrug_path:
+        whodrug_path = self.params.external_dictionaries.get_dictionary_path(
+            DictionaryTypes.WHODRUG.value
+        )
+        if not whodrug_path:
             raise ValueError("Can't execute the operation, no whodrug path provided")
 
-        terms: dict = self.cache.get(self.params.whodrug_path)
+        terms: dict = self.cache.get(whodrug_path)
         code_variables = [
             WhodrugVariableNames.DRUG_NAME.value,
             WhodrugVariableNames.ATC_TEXT.value,

@@ -22,6 +22,10 @@ from scripts.test_rule import test as test_rule
 from cdisc_rules_engine.services.cache.cache_populator_service import CachePopulator
 from cdisc_rules_engine.services.cache.cache_service_factory import CacheServiceFactory
 from cdisc_rules_engine.services.cdisc_library_service import CDISCLibraryService
+from cdisc_rules_engine.models.external_dictionaries_container import (
+    ExternalDictionariesContainer,
+    DictionaryTypes,
+)
 from cdisc_rules_engine.utilities.utils import (
     generate_report_filename,
     get_rules_cache_key,
@@ -152,6 +156,7 @@ def cli():
 @click.option("--meddra", help="Path to directory with MedDRA dictionary files")
 @click.option("--loinc", help="Path to directory with LOINC dictionary files")
 @click.option("--medrt", help="Path to directory with MEDRT dictionary files")
+@click.option("--unii", help="Path to directory with UNII dictionary files")
 @click.option(
     "--rules",
     "-r",
@@ -217,6 +222,7 @@ def validate(
     meddra: str,
     loinc: str,
     medrt: str,
+    unii: str,
     rules: Tuple[str],
     local_rules: str,
     local_rules_cache: bool,
@@ -246,6 +252,16 @@ def validate(
 
     print(os.path.dirname(__file__))
 
+    # Construct ExternalDictionariesContainer:
+    external_dictionaries = ExternalDictionariesContainer(
+        {
+            DictionaryTypes.UNII.value: unii,
+            DictionaryTypes.MEDRT.value: medrt,
+            DictionaryTypes.MEDDRA.value: meddra,
+            DictionaryTypes.WHODRUG.value: whodrug,
+            DictionaryTypes.LOINC.value: loinc,
+        }
+    )
     if data:
         if dataset_path:
             logger.error(
@@ -288,10 +304,7 @@ def validate(
             set(output_format),  # avoiding duplicates
             raw_report,
             define_version,
-            whodrug,
-            meddra,
-            loinc,
-            medrt,
+            external_dictionaries,
             rules,
             local_rules,
             local_rules_cache,
@@ -505,6 +518,7 @@ def list_rules(
 @click.option("--meddra", help="Path to directory with MedDRA dictionary files")
 @click.option("--loinc", help="Path to directory with LOINC dictionary files")
 @click.option("--medrt", help="Path to directory with MEDRT dictionary files")
+@click.option("--unii", help="Path to directory with UNII dictionary files")
 @click.option(
     "-vx",
     "--validate-xml",
@@ -528,6 +542,7 @@ def test(
     meddra: str,
     loinc: str,
     medrt: str,
+    unii: str,
     validate_xml,
     define_xml_path: str,
 ):
@@ -559,6 +574,15 @@ def test(
         )
         # no need to define dataset_paths here, the program execution will stop
         ctx.exit()
+    external_dictionaries = ExternalDictionariesContainer(
+        {
+            DictionaryTypes.MEDDRA.value: meddra,
+            DictionaryTypes.MEDRT.value: medrt,
+            DictionaryTypes.WHODRUG.value: whodrug,
+            DictionaryTypes.LOINC.value: loinc,
+            DictionaryTypes.UNII.value: unii,
+        }
+    )
     validate_xml = True if validate_xml.lower() in ("y", "yes") else False
     args = TestArgs(
         cache_path,
@@ -567,10 +591,7 @@ def test(
         rule,
         standard,
         version,
-        whodrug,
-        meddra,
-        loinc,
-        medrt,
+        external_dictionaries,
         controlled_terminology_package,
         define_version,
         define_xml_path,

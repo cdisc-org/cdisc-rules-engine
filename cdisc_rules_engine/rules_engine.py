@@ -41,6 +41,9 @@ from cdisc_rules_engine.utilities.utils import (
     serialize_rule,
 )
 from cdisc_rules_engine.dataset_builders import builder_factory
+from cdisc_rules_engine.models.external_dictionaries_container import (
+    ExternalDictionariesContainer,
+)
 
 
 class RulesEngine:
@@ -49,6 +52,7 @@ class RulesEngine:
         cache: CacheServiceInterface = None,
         data_service: DataServiceInterface = None,
         config_obj: ConfigInterface = None,
+        external_dictionaries: ExternalDictionariesContainer = ExternalDictionariesContainer(),
         **kwargs,
     ):
         self.config = config_obj or default_config
@@ -79,10 +83,7 @@ class RulesEngine:
         self.standard_version = kwargs.get("standard_version")
         self.ct_packages = kwargs.get("ct_packages", [])
         self.ct_package = kwargs.get("ct_package")
-        self.meddra_path: str = kwargs.get("meddra_path")
-        self.whodrug_path: str = kwargs.get("whodrug_path")
-        self.loinc_path: str = kwargs.get("loinc_path")
-        self.medrt_path: str = kwargs.get("medrt_path")
+        self.external_dictionaries = external_dictionaries
         self.define_xml_path: str = kwargs.get("define_xml_path")
         self.validate_xml: bool = kwargs.get("validate_xml")
 
@@ -337,10 +338,7 @@ class RulesEngine:
             dataset_path,
             standard=self.standard,
             standard_version=self.standard_version,
-            meddra_path=self.meddra_path,
-            whodrug_path=self.whodrug_path,
-            loinc_path=self.loinc_path,
-            medrt_path=self.medrt_path,
+            external_dictionaries=self.external_dictionaries,
             ct_packages=ct_packages,
         )
         relationship_data = {}

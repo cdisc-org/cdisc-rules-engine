@@ -64,10 +64,7 @@ def validate_single_rule(
         standard=args.standard,
         standard_version=args.version.replace(".", "-"),
         ct_packages=args.controlled_terminology_package,
-        meddra_path=args.meddra,
-        whodrug_path=args.whodrug,
-        loinc_path=args.loinc,
-        medrt_path=args.medrt,
+        external_dictionaries=args.external_dictionaries,
         define_xml_path=args.define_xml_path,
         library_metadata=library_metadata,
         validate_xml=args.validate_xml,
@@ -132,7 +129,7 @@ def test(args: TestArgs):
     engine_logger.info(f"Populating cache, cache path: {args.cache}")
     library_metadata: LibraryMetadataContainer = get_library_metadata_from_cache(args)
     # install dictionaries if needed
-    fill_cache_with_dictionaries(shared_cache, args)
+    dictionary_versions = fill_cache_with_dictionaries(shared_cache, args)
     with open(args.rule, "r", encoding="utf-8") as f:
         rules = [Rule.from_cdisc_metadata(json.load(f))]
     data_service_factory = DataServiceFactory(
@@ -148,7 +145,7 @@ def test(args: TestArgs):
                     [DummyDataset(data) for data in data_json.get("datasets", [])]
                 )
         except Exception as e:
-            engine_logger.error(f"Error processing {dataset_path}: {e}")
+            engine_logger.info(f"Dataset {dataset_path} is not encoded in {e}")
     if not datasets:
         engine_logger.info(
             "No datasets loaded from JSON files, attempting to load using data service"
@@ -206,10 +203,7 @@ def test(args: TestArgs):
         ["XLSX"],
         None,
         args.define_version,
-        args.meddra,
-        args.whodrug,
-        args.loinc,
-        args.medrt,
+        args.external_dictionaries,
         rules,
         None,
         None,
@@ -226,5 +220,8 @@ def test(args: TestArgs):
     )
     reporting_services: List[BaseReport] = reporting_factory.get_report_services()
     for reporting_service in reporting_services:
-        reporting_service.write_report(define_xml_path=args.define_xml_path)
+        reporting_service.write_report(
+            define_xml_path=args.define_xml_path,
+            dictionary_versions=dictionary_versions,
+        )
     print(f"Output: {output_file}")

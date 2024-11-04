@@ -13,11 +13,12 @@ class LoincValidator(BaseDictionaryValidator):
         self,
         data_service: DataServiceInterface = None,
         cache_service: CacheServiceInterface = None,
+        dictionary_path: str = None,
         **kwargs,
     ):
         self.cache_service = cache_service
         self.data_service = data_service
-        self.path = kwargs.get("loinc_path")
+        self.path = dictionary_path or kwargs.get("loinc_path")
         self.term_dictionary = kwargs.get("terms")
         self.terms_factory = LoincTermsFactory(self.data_service)
 

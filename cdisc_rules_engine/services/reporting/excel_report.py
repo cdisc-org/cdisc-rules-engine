@@ -7,6 +7,7 @@ from openpyxl import Workbook
 from version import __version__
 from cdisc_rules_engine.enums.report_types import ReportTypes
 from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
+from cdisc_rules_engine.models.external_dictionaries_container import DictionaryTypes
 from cdisc_rules_engine.models.validation_args import Validation_args
 from .base_report import BaseReport
 from .excel_writer import (
@@ -44,7 +45,7 @@ class ExcelReport(BaseReport):
         return ReportTypes.XLSX.value.lower()
 
     def get_export(
-        self, define_version, cdiscCt, standard, version, **kwargs
+        self, define_version, cdiscCt, standard, version, dictionary_versions, **kwargs
     ) -> Workbook:
         wb = excel_open_workbook(self._template.read())
         summary_data = self.get_summary_data()
@@ -83,14 +84,26 @@ class ExcelReport(BaseReport):
         wb["Conformance Details"]["B8"] = f"V{version}"
         wb["Conformance Details"]["B9"] = ", ".join(cdiscCt)
         wb["Conformance Details"]["B10"] = define_version
-        if self._args.meddra:
-            wb["Conformance Details"]["B13"] = self._args.meddra
-        if self._args.whodrug:
-            wb["Conformance Details"]["B14"] = self._args.whodrug
+
+        # Populate external dictionary versions
+        wb["Conformance Details"]["B11"] = dictionary_versions.get(
+            DictionaryTypes.UNII.value
+        )
+        wb["Conformance Details"]["B12"] = dictionary_versions.get(
+            DictionaryTypes.MEDRT.value
+        )
+        wb["Conformance Details"]["B13"] = dictionary_versions.get(
+            DictionaryTypes.MEDDRA.value
+        )
+        wb["Conformance Details"]["B14"] = dictionary_versions.get(
+            DictionaryTypes.WHODRUG.value
+        )
         return wb
 
-    def write_report(self, define_xml_path: str = None):
+    def write_report(self, **kwargs):
         logger = logging.getLogger("validator")
+        define_xml_path = kwargs.get("define_xml_path")
+        dictionary_versions = kwargs.get("dictionary_versions", {})
         try:
             if define_xml_path:
                 define_version = get_define_version([define_xml_path])
@@ -103,6 +116,7 @@ class ExcelReport(BaseReport):
                 self._args.controlled_terminology_package,
                 self._args.standard,
                 self._args.version.replace("-", "."),
+                dictionary_versions,
             )
             with open(self._output_name, "wb") as f:
                 f.write(excel_workbook_to_stream(report_data))

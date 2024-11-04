@@ -40,17 +40,6 @@ mock_validation_results = [
                         }
                     ],
                 },
-                {
-                    "Organization": "PMDA",
-                    "Standards": [
-                        {
-                            "References": [
-                                {"Rule_Identifier": {"Id": "PMDARuleID1"}},
-                                {"Rule_Identifier": {"Id": "PMDARuleID2"}},
-                            ]
-                        }
-                    ],
-                },
             ],
         },
         results=[
@@ -110,17 +99,6 @@ mock_validation_results = [
                         }
                     ],
                 },
-                {
-                    "Organization": "PMDA",
-                    "Standards": [
-                        {
-                            "References": [
-                                {"Rule_Identifier": {"Id": "PMDARuleID1"}},
-                                {"Rule_Identifier": {"Id": "PMDARuleID2"}},
-                            ]
-                        }
-                    ],
-                },
             ],
         },
         results=[
@@ -156,7 +134,6 @@ def test_get_rules_report_data():
                 "version": "1",
                 "cdisc_rule_id": result.cdisc_rule_id,
                 "fda_rule_id": result.fda_rule_id,
-                "pmda_rule_id": result.pmda_rule_id,
                 "message": result.message,
                 "status": ExecutionStatus.SUCCESS.value.upper(),
             }
@@ -254,6 +231,7 @@ def test_get_export():
         standard="sdtmig",
         version="3.4",
         raw_report=False,
+        dictionary_versions={},
     )
     assert export["Conformance_Details"]["CORE_Engine_Version"] == __version__
     assert export["Conformance_Details"]["Total_Runtime"] == "10.1 seconds"

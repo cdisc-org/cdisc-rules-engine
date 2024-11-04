@@ -11,6 +11,10 @@ from cdisc_rules_engine.operations.valid_external_dictionary_code_term_pair impo
     ValidExternalDictionaryCodeTermPair,
 )
 from cdisc_rules_engine.services.cache.cache_service_factory import CacheServiceFactory
+from cdisc_rules_engine.models.external_dictionaries_container import (
+    ExternalDictionariesContainer,
+    DictionaryTypes,
+)
 import pytest
 
 
@@ -32,7 +36,9 @@ def test_valid_external_dictionary_code_term_pairs(
     )
 
     operation_params.dataframe = data
-    operation_params.medrt_path = medrt_path
+    operation_params.external_dictionaries = ExternalDictionariesContainer(
+        {DictionaryTypes.MEDRT.value: medrt_path}
+    )
     terms_dictionary = ExternalDictionary(
         {
             "T1234": MEDRTTerm(code="T1234", id=1, name="A"),
