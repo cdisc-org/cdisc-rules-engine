@@ -1,4 +1,5 @@
 import os
+import re
 import subprocess
 import unittest
 
@@ -19,11 +20,11 @@ class TestTestCommand(unittest.TestCase):
         exit_code = process.returncode
         return exit_code, stdout.lower(), stderr.lower()
 
-    def test_test_command_with_all_options(self):
+    def test_test_command_with_all_options_one_data_source(self):
         command = (
             f"python core.py test "
             f"-c {os.path.join('resources', 'cache')} "
-            f"-dp {os.path.join('tests', 'resources', 'CG0027-positive.json')} "
+            f"-dp {os.path.join('tests', 'resources', 'CoreIssue164', 'Positive_Dataset.json')} "
             f"-r {os.path.join('tests', 'resources', 'Rule-CG0027.json')} "
             f"--whodrug "
             f"{os.path.join('tests', 'resources', 'dictionaries', 'whodrug')} "
@@ -31,12 +32,45 @@ class TestTestCommand(unittest.TestCase):
             f"-s sdtmig "
             f"-v 3.4 "
             f"-dv 2.1 "
-            f"-dxp {os.path.join('tests', 'resources','define.xml')}"
+            f"-dxp {os.path.join('tests', 'resources','define.xml')} "
+            f"-l error"
         )
         exit_code, stdout, stderr = self.run_command(command)
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
         self.assertEqual(stderr, "", f"Error while executing command:\n{stderr}")
+
+    def test_test_command_with_all_options(self):
+        command = (
+            f"python core.py test "
+            f"-c {os.path.join('resources', 'cache')} "
+            f"-dp {os.path.join('tests', 'resources', 'CG0027-positive.json')} "
+            f"-d {os.path.join('tests', 'resources', 'report_test_data')} "
+            f"-r {os.path.join('tests', 'resources', 'Rule-CG0027.json')} "
+            f"--whodrug "
+            f"{os.path.join('tests', 'resources', 'dictionaries', 'whodrug')} "
+            f"--meddra {os.path.join('tests', 'resources', 'dictionaries', 'meddra')} "
+            f"-s sdtmig "
+            f"-v 3.4 "
+            f"-dv 2.1 "
+            f"-dxp {os.path.join('tests', 'resources','define.xml')} "
+            f"-l error"
+        )
+        exit_code, stdout, stderr = self.run_command(command)
+        self.assertEqual(exit_code, 0)
+        self.assertFalse(self.error_keyword in stdout)
+        self.assertFalse(self.error_keyword in stdout)
+        expected_pattern = (
+            r"\[error \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3} - "
+            r"core\.py:\d+\] - argument --dataset-path cannot be used together "
+            r"with argument --data\n"
+        )
+        error_msg = (
+            f"Error message format doesn't match expected pattern.\n"
+            f"Actual: {stderr}\n"
+            f"Expected pattern: {expected_pattern}"
+        )
+        self.assertTrue(re.match(expected_pattern, stderr), error_msg)
 
     def test_test_command_without_dataset_path(self):
         command = (
@@ -45,10 +79,18 @@ class TestTestCommand(unittest.TestCase):
             f"-r {os.path.join('tests', 'resources', 'Rule-CG0027.json')}"
         )
         exit_code, stdout, stderr = self.run_command(command)
-        self.assertNotEqual(exit_code, 0)
-        self.assertNotEqual(
-            stderr, "", f"Error not raised while executing invalid command:\n{stderr}"
+        self.assertEqual(exit_code, 0)
+        expected_pattern = (
+            r"\[error \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3} - "
+            r"core\.py:\d+\] - you must pass one of the following arguments: "
+            r"--dataset-path, --data\n"
         )
+        error_msg = (
+            f"Error message format doesn't match expected pattern.\n"
+            f"Actual: {stderr}\n"
+            f"Expected pattern: {expected_pattern}"
+        )
+        self.assertTrue(re.match(expected_pattern, stderr), error_msg)
 
     def test_test_command_without_rule(self):
         command = (
@@ -126,7 +168,8 @@ class TestTestCommand(unittest.TestCase):
             f"-vx y"
         )
         exit_code, stdout, stderr = self.run_command(command)
-        self.assertFalse(stderr == "")
+        self.assertEqual(exit_code, 0)
+        self.assertTrue(stderr == "")
 
     def tearDown(self):
         for file_name in os.listdir("."):
