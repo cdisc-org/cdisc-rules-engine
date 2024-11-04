@@ -155,6 +155,15 @@ def test(args: TestArgs):
                 DummyDataset(dataset)
                 for dataset in get_datasets(data_service, args.dataset_paths)
             ]
+            for dataset_path in args.dataset_paths:
+                filename = os.path.basename(dataset_path).lower()
+                matching_dataset = next(
+                    dataset
+                    for dataset in datasets
+                    if dataset.filename.lower() == filename
+                )
+                df = data_service.get_dataset(dataset_name=dataset_path)
+                matching_dataset.data = df.data
         except Exception as e:
             engine_logger.error(f"Data service failed to load datasets: {e}")
     dummy_data_service = data_service_factory.get_dummy_data_service(datasets)
