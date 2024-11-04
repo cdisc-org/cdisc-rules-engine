@@ -62,7 +62,7 @@ class TestTestCommand(unittest.TestCase):
         self.assertFalse(self.error_keyword in stdout)
         expected_pattern = (
             r"\[error \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3} - "
-            r"core\.py:537\] - argument --dataset-path cannot be used together "
+            r"core\.py:\d+\] - argument --dataset-path cannot be used together "
             r"with argument --data\n"
         )
         error_msg = (
@@ -82,7 +82,7 @@ class TestTestCommand(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         expected_pattern = (
             r"\[error \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3} - "
-            r"core\.py:557\] - you must pass one of the following arguments: "
+            r"core\.py:\d+\] - you must pass one of the following arguments: "
             r"--dataset-path, --data\n"
         )
         error_msg = (
