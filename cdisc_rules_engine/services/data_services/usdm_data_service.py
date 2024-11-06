@@ -205,10 +205,14 @@ class USDMDataService(BaseDataService):
         return datasets
 
     def to_parquet(self, file_path: str) -> str:
-        json = self._reader_factory.get_service("USDM").from_file(
-            extract_file_name_from_path_string(file_path).split(".")[1].upper()
-        )
-        return self.__get_dataset(json).data.to_parquet(file_path)
+        """
+        Stub implementation to satisfy abstract interface requirements.
+
+        This method exists only to fulfill the abstract method requirement from the parent class.
+        While implemented to prevent TypeError, it is not intended to be called in this class.
+        Other classes implementing this interface make actual use of to_parquet().
+        """
+        raise NotImplementedError("to_parquet is not supported for this class")
 
     def __get_record_data(self, node: dict, parent="") -> dict:
         if type(node) is dict:
