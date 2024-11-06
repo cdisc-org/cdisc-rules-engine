@@ -140,7 +140,7 @@ def run_validation(args: Validation_args):
     )
     datasets = get_datasets(data_service, args.dataset_paths)
     created_files = []
-    if large_dataset_validation:
+    if large_dataset_validation and data_service.standard != "usdm":
         # convert all files to parquet temp files
         engine_logger.warning(
             "Large datasets must use parquet format, converting all datasets to parquet"
