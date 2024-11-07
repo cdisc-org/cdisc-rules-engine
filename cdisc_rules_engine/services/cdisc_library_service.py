@@ -138,13 +138,15 @@ class CDISCLibraryService:
         for codelist in package.get("codelists"):
             terms_map = {
                 "extensible": codelist.get("extensible", "").lower() == "true",
+                "terms": [],
             }
-            allowed_values = []
             for term in codelist.get("terms", []):
-                allowed_values.append(term.get("preferredTerm"))
-                allowed_values.append(term.get("submissionValue"))
-                allowed_values.extend(term.get("synonyms", []))
-            terms_map["allowed_terms"] = allowed_values
+                term_info = {
+                    "preferredTerm": term.get("preferredTerm"),
+                    "submissionValue": term.get("submissionValue"),
+                    "synonyms": term.get("synonyms", []),
+                }
+                terms_map["terms"].append(term_info)
             codelist_map[codelist.get("conceptId")] = terms_map
         return codelist_map
 

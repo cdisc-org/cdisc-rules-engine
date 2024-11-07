@@ -239,6 +239,13 @@ class RulesEngine:
         # Update rule for certain rule types
         # SPECIAL CASES FOR RULE TYPES ###############################
         # TODO: Handle these special cases better.
+        if self.library_metadata:
+            kwargs[
+                "variable_codelist_map"
+            ] = self.library_metadata.variable_codelist_map
+            kwargs[
+                "codelist_term_maps"
+            ] = self.library_metadata.get_all_ct_package_metadata()
         if rule.get("rule_type") == RuleTypes.DEFINE_ITEM_METADATA_CHECK.value:
             if self.library_metadata:
                 kwargs[
