@@ -12,11 +12,12 @@ class MEDRTValidator(BaseDictionaryValidator):
         self,
         data_service: DataServiceInterface = None,
         cache_service: CacheServiceInterface = None,
+        dictionary_path: str = None,
         **kwargs,
     ):
         self.cache_service = cache_service
         self.data_service = data_service
-        self.path = kwargs.get("medrt_path")
+        self.path = dictionary_path or kwargs.get("medrt_path")
         self.term_dictionary = kwargs.get("terms")
         self.terms_factory = MEDRTTermsFactory(self.data_service)
 

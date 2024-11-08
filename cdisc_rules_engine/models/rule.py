@@ -139,7 +139,7 @@ class Rule:
         if "variables" in condition:
             data["variables"] = condition["variables"]
         if "negative" in condition:
-            data["value"]["negative"] = condition.get("negative").lower() == "true"
+            data["value"]["negative"] = condition.get("negative")
         for optional_parameter in OptionalConditionParameters.values():
             if optional_parameter in condition:
                 data["value"][optional_parameter] = condition.get(optional_parameter)

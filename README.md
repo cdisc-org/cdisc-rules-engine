@@ -206,6 +206,10 @@ To obtain an api key, please follow the instructions found here: <https://wiki.c
   -ca, --cache TEXT               Relative path to cache files containing pre
                                   loaded metadata and rules
   -dp, --dataset-path TEXT        Absolute path to dataset file
+  -d, --data TEXT                 Path to directory containing data files
+  -l, --log-level [info|debug|error|critical|disabled|warn]
+                                  Sets log level for engine logs, logs are
+                                  disabled by default
   -s, --standard TEXT             CDISC standard to validate against
                                   [required]
   -v, --version TEXT              Standard version to validate against

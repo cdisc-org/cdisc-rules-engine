@@ -91,6 +91,7 @@ class DataServiceFactory(FactoryInterface):
         if (
             self.max_dataset_size
             and self.max_dataset_size >= self.dataset_size_threshold
+            and self.data_service_name != "usdm"
         ):
             # Use large dataset class
             logger.info("Using DASK dataset implementation")

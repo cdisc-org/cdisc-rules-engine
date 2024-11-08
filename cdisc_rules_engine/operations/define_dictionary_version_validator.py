@@ -1,10 +1,12 @@
 from cdisc_rules_engine.constants.define_xml_constants import DEFINE_XML_FILE_NAME
-from cdisc_rules_engine.models.dictionaries.constants import DICTIONARY_VALIDATORS
+from cdisc_rules_engine.models.external_dictionaries_container import (
+    DICTIONARY_VALIDATORS,
+    DictionaryTypes,
+)
 from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import (
     DefineXMLReaderFactory,
 )
 from .base_operation import BaseOperation
-from cdisc_rules_engine.models.dictionaries.dictionary_types import DictionaryTypes
 from cdisc_rules_engine.exceptions.custom_exceptions import UnsupportedDictionaryType
 import os
 

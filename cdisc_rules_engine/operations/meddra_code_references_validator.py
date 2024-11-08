@@ -4,13 +4,17 @@ from cdisc_rules_engine.models.dictionaries.meddra.meddra_variables import (
     MedDRAVariables,
 )
 from cdisc_rules_engine.models.dictionaries.meddra.terms.meddra_term import MedDRATerm
+from cdisc_rules_engine.models.dictionaries.dictionary_types import DictionaryTypes
 
 
 class MedDRACodeReferencesValidator(BaseOperation):
     def _execute_operation(self):
         # get metadata
-        if not self.params.meddra_path:
-            raise ValueError("Can't execute the operation, no meddra path provided")
+        meddra_path = self.params.external_dictionaries.get_dictionary_path(
+            DictionaryTypes.MEDDRA.value
+        )
+        if not meddra_path:
+            raise ValueError("Can't execute the operation, no whodrug path provided")
         code_variables = [
             MedDRAVariables.SOCCD.value,
             MedDRAVariables.HLGTCD.value,
@@ -21,7 +25,7 @@ class MedDRACodeReferencesValidator(BaseOperation):
         code_strings = [
             f"{self.params.domain}{variable}" for variable in code_variables
         ]
-        cache_key = f"meddra_valid_code_hierarchies_{self.params.meddra_path}"
+        cache_key = f"meddra_valid_code_hierarchies_{meddra_path}"
         valid_code_hierarchies = self.cache.get(cache_key)
         if not valid_code_hierarchies:
             terms: dict = self.cache.get(self.params.meddra_path)

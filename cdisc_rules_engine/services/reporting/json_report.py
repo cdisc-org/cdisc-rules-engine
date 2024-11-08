@@ -11,6 +11,7 @@ from cdisc_rules_engine.utilities.reporting_utilities import (
 from .base_report import BaseReport
 from version import __version__
 from pathlib import Path
+from cdisc_rules_engine.models.external_dictionaries_container import DictionaryTypes
 
 
 class JsonReport(BaseReport):
@@ -36,7 +37,15 @@ class JsonReport(BaseReport):
     def _file_format(self) -> str:
         return ReportTypes.JSON.value.lower()
 
-    def get_export(self, define_version, cdiscCt, standard, version, **kwargs) -> dict:
+    def get_export(
+        self,
+        define_version,
+        cdiscCt,
+        standard,
+        version,
+        dictionary_versions={},
+        **kwargs,
+    ) -> dict:
         conformance_details = {
             "CORE_Engine_Version": __version__,
             "Report_Generation": datetime.now().replace(microsecond=0).isoformat(),
@@ -46,13 +55,20 @@ class JsonReport(BaseReport):
             "CT_Version": ", ".join(cdiscCt),
             "Define_XML_Version": define_version,
         }
-        conformance_details["UNII_Version"] = None
-        conformance_details["Med-RT_Version"] = None
-        conformance_details["Meddra_Version"] = (
-            self._args.meddra if hasattr(self._args, "meddra") else None
+        conformance_details["UNII_Version"] = dictionary_versions.get(
+            DictionaryTypes.UNII.value
         )
-        conformance_details["WHODRUG_Version"] = (
-            self._args.whodrug if hasattr(self._args, "whodrug") else None
+        conformance_details["Med-RT_Version"] = dictionary_versions.get(
+            DictionaryTypes.MEDRT.value
+        )
+        conformance_details["Meddra_Version"] = dictionary_versions.get(
+            DictionaryTypes.MEDDRA.value
+        )
+        conformance_details["WHODRUG_Version"] = dictionary_versions.get(
+            DictionaryTypes.WHODRUG.value
+        )
+        conformance_details["LOINC_Version"] = dictionary_versions.get(
+            DictionaryTypes.LOINC.value
         )
         conformance_details["SNOMED_Version"] = None
 
@@ -81,7 +97,9 @@ class JsonReport(BaseReport):
             json_export["Rules_Report"] = self.get_rules_report_data()
         return json_export
 
-    def write_report(self, define_xml_path: str = None):
+    def write_report(self, **kwargs):
+        define_xml_path = kwargs.get("define_xml_path")
+        dictionary_versions = kwargs.get("dictionary_versions", {})
         if define_xml_path:
             define_version = get_define_version([define_xml_path])
         else:
@@ -94,6 +112,7 @@ class JsonReport(BaseReport):
             self._args.standard,
             self._args.version.replace("-", "."),
             raw_report=self._args.raw_report,
+            dictionary_versions=dictionary_versions,
         )
         with open(self._output_name, "w") as f:
             json.dump(report_data, f)

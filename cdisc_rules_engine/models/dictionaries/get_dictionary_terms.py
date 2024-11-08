@@ -11,7 +11,7 @@ def extract_dictionary_terms(
 ) -> ExternalDictionary:
     """Extract dictionary terms from provided directory"""
     factory: TermsFactoryInterface = AbstractTermsFactory(data_service).get_service(
-        dictionary_type.value
+        dictionary_type
     )
     terms: ExternalDictionary = factory.install_terms(dictionaries_directory)
     return terms

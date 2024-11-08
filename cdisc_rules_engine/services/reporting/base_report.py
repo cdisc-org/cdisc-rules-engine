@@ -160,19 +160,18 @@ class BaseReport(ABC):
             "Version",
             "CDISC RuleID",
             "FDA RuleID",
-            "PMDA RuleID",
             "Message",
             "Status"
         ]
         """
         rules_report = []
         for validation_result in self._results:
+            print(validation_result)
             rules_item = {
                 "core_id": validation_result.id,
                 "version": "1",
                 "cdisc_rule_id": validation_result.cdisc_rule_id,
                 "fda_rule_id": validation_result.fda_rule_id,
-                "pmda_rule_id": validation_result.pmda_rule_id,
                 "message": validation_result.message,
                 "status": ExecutionStatus.SUCCESS.value.upper()
                 if validation_result.execution_status == ExecutionStatus.SUCCESS.value
@@ -195,10 +194,16 @@ class BaseReport(ABC):
 
     @abstractmethod
     def get_export(
-        self, define_version, cdiscCt, standard, version, **kwargs
+        self,
+        define_version,
+        cdiscCt,
+        standard,
+        version,
+        dictionary_versions={},
+        **kwargs,
     ) -> Union[dict, Workbook]:
         pass
 
     @abstractmethod
-    def write_report(self):
+    def write_report(self, **kwargs):
         pass

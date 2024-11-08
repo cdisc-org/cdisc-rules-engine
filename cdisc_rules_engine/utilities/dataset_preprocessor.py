@@ -76,7 +76,7 @@ class DatasetPreprocessor:
                 [
                     target.replace(f"{domain_name}.", "")
                     for target in rule_targets
-                    if target.startswith(f"{domain_name}.")
+                    if isinstance(target, str) and target.startswith(f"{domain_name}.")
                 ]
             )
             other_dataset.columns = [
