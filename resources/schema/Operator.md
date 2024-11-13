@@ -975,6 +975,25 @@ True if the value in `name` has more than one count in the dictionary defined in
 
 Complement of `value_has_multiple_references`
 
+## uses_valid_codelist_terms
+
+True if the value in the target column (name) is valid using the specified codelist(s) (value). Operator currently expects the -ct flag to be used for the controlled terminology package to extract codelists from.
+Operator expects 2 additional parameters:
+`codelistlevel` to check at either `codelist` or `term` level
+`codelistcheck` to check against NCI code `code` or submission value `value`
+
+```yaml
+- "name": "PPSTRESU"
+  "operator": "uses_valid_codelist_terms"
+  "value": ["PKUDMG"]
+  "codelistlevel": "term"
+  "codelistcheck": "value"
+```
+
+## does_not_use_valid_codelist_terms
+
+Complement of `uses_valid_codelist_terms`. True if the values in the target column are NOT valid terms in the specified codelist(s).
+
 # Define.XML
 
 ## conformant_value_data_type
@@ -1004,11 +1023,3 @@ True if the codelist named within `value` is a valid codelist for the variable n
 ## does_not_reference_correct_codelist
 
 Complement of `references_correct_codelist`
-
-## uses_valid_codelist_terms
-
-True if the value within `value` is a valid term within the codelist named within `name` in the define.xml
-
-## does_not_use_valid_codelist_terms
-
-Complement of `uses_valid_codelist_terms`

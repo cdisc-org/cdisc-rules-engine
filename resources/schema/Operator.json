@@ -171,7 +171,7 @@
           "const": "does_not_use_valid_codelist_terms"
         }
       },
-      "required": ["operator", "value"],
+      "required": ["operator", "value", "codelistlevel", "codelistcheck"],
       "type": "object"
     },
     {
@@ -819,7 +819,7 @@
           "const": "uses_valid_codelist_terms"
         }
       },
-      "required": ["operator", "value"],
+      "required": ["operator", "value", "codelistlevel", "codelistcheck"],
       "type": "object"
     },
     {
@@ -905,6 +905,14 @@
     },
     "negative": {
       "type": "boolean"
+    },
+    "codelistcheck": {
+      "enum": ["code", "value"],
+      "type": "string"
+    },
+    "codelistlevel": {
+      "enum": ["term", "codelist"],
+      "type": "string"
     },
     "operator": {
       "type": "string"

@@ -254,7 +254,6 @@ class RulesEngine:
                 kwargs[
                     "codelist_term_maps"
                 ] = self.library_metadata.get_all_ct_package_metadata()
-
         elif (
             rule.get("rule_type")
             == RuleTypes.VARIABLE_METADATA_CHECK_AGAINST_DEFINE.value

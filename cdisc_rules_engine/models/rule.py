@@ -140,6 +140,10 @@ class Rule:
             data["variables"] = condition["variables"]
         if "negative" in condition:
             data["value"]["negative"] = condition.get("negative")
+        if "codelistlevel" in condition:
+            data["value"]["codelistlevel"] = condition.get("codelistlevel")
+        if "codelistcheck" in condition:
+            data["value"]["codelistcheck"] = condition.get("codelistcheck")
         for optional_parameter in OptionalConditionParameters.values():
             if optional_parameter in condition:
                 data["value"][optional_parameter] = condition.get(optional_parameter)
