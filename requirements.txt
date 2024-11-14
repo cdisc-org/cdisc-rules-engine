@@ -1,5 +1,5 @@
 black==24.3.0
-business-rules-enhanced==1.4.4
+business-rules-enhanced==1.4.5
 cdisc-library-client==0.1.5
 click==8.1.7
 flake8==5.0.4
