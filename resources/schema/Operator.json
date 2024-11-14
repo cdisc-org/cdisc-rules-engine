@@ -816,15 +816,6 @@
     {
       "properties": {
         "operator": {
-          "const": "uses_valid_codelist_terms"
-        }
-      },
-      "required": ["operator", "value", "codelistlevel", "codelistcheck"],
-      "type": "object"
-    },
-    {
-      "properties": {
-        "operator": {
           "const": "value_does_not_have_multiple_references"
         }
       },

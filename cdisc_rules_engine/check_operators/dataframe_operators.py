@@ -27,6 +27,7 @@ from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from pandas.api.types import is_integer_dtype
 from cdisc_rules_engine.services import logger
 from functools import wraps
+import traceback
 
 
 def log_operator_execution(func):
@@ -39,9 +40,9 @@ def log_operator_execution(func):
             return result
         except Exception as e:
             logger.error(
-                f"Error in {func.__name__}: {str(e)}, traceback: {e.__traceback__}"
+                f"Error in {func.__name__}: {str(e)}, "
+                f"traceback: {traceback.format_exc()}"
             )
-            return self.value.convert_to_series([False] * len(self.value))
 
     return wrapper
 
@@ -1293,57 +1294,6 @@ class DataframeType(BaseType):
                             generic_column_name
                         )
         return True
-
-    @log_operator_execution
-    @type_operator(FIELD_DATAFRAME)
-    def uses_valid_codelist_terms(self, other_value: dict):
-        """
-        Check for usage of codelists in enumerated columns of a DataFrame.
-        Both the level of the codelist check (codelist or term level) and
-        the type of check (code or value) are specified.
-        A list of appropriate submission values or codes is generated
-        using the list from comparator and the codelist map which is checked against the column target.
-        Returns a Series of booleans indicating whether each value is valid.
-        """
-        # TODO uses 1st map only; may have multiple specified by defineXML, could merge them to keep current logic
-        # TODO need extensible logic
-        column: str = self.replace_prefix(other_value.get("target"))
-        codelists: str = self.replace_prefix(other_value.get("comparator"))
-        codelist_level = other_value.get("codelistlevel")
-        check = other_value.get("codelistcheck")
-        codes = []
-        for codelist in codelists:
-            codes.append(
-                self.codelist_term_maps[0]["submission_lookup"].get(codelist, [])
-            )
-        values = []
-
-        for code_obj in codes:
-            codelist_id = code_obj.get("codelist")
-            if codelist_id in self.codelist_term_maps[0]:
-                codelist_info = self.codelist_term_maps[0][codelist_id]
-                if codelist_level == "codelist":
-                    if code_obj.get("term") == "N/A":
-                        if check == "code":
-                            values.append(codelist_id)
-                        else:
-                            values.append(codelist_info["submissionValue"])
-                else:
-                    terms = codelist_info.get("terms", [])
-                    # need to do check for extensibility here
-                    for term in terms:
-                        if check == "value":
-                            values.append(term["submissionValue"])
-                        else:
-                            values.append(term["conceptId"])
-
-        result = self.value[column].apply(lambda x: x in values)
-        return result
-
-    @log_operator_execution
-    @type_operator(FIELD_DATAFRAME)
-    def does_not_use_valid_codelist_terms(self, other_value: dict):
-        return ~self.uses_valid_codelist_terms(other_value)
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)

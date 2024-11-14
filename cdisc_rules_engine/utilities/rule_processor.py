@@ -278,6 +278,10 @@ class RuleProcessor:
                 dictionary_term_type=operation.get("dictionary_term_type"),
                 filter=operation.get("filter", None),
                 grouping_aliases=operation.get("group_aliases"),
+                level=operation.get("level"),
+                returntype=operation.get("returntype"),
+                codelists=operation.get("codelists"),
+                codelist=operation.get("codelist"),
             )
 
             # execute operation

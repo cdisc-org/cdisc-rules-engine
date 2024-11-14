@@ -1,3 +1,42 @@
+## codelist_terms
+
+Returns a list of valid codelist/term values. Used for evaluating whether NCI code or submission values are valid based on controlled terminology. This operator requires the -ct flag to specify the controlled terminology package presently. Expects three parameters: `codelists` which is a list of the codelist submission value(s) to retrieve, `level` which is the level of data (either "codelist" or "term") at which to return data from, and `returntype` which is the type of values to return, either "code" for NCI Code(s) or "value" for submission value(s)
+
+```yaml
+-   "Check": {
+    "all": [
+      {
+        "name": "PPSTRESU",
+        "operator": "is_not_contained_by",
+        "value": "$terms"
+      },
+      {
+        "name": "$extensible",
+        "operator": "equal_to",
+        "value": true
+      }
+    ]
+},
+-   "Operations": [
+      {
+        "id": "$terms",
+        "operator": "codelist_terms",
+        "codelists": ["PKUDUG"],
+        "level": "term",
+        "returntype": "value"
+      },
+      {
+        "id": "$extensible",
+        "codelist": "PKUDUG",
+        "operator": "codelist_extensible"
+      }
+    ],
+```
+
+## codelist_extensible
+
+Returns a Series indicating whether a specified `codelist` is extensible. Used in conjunction with `codelist_terms` to determine if values outside the codelist are acceptable. From the above example, `$extensible` will contain a bool if the codelist PKUDUG is extensible in all rows of the column.
+
 ## define_variable_metadata
 
 If a target variable `name` is specified, returns the specified metadata in the define for the specified target variable.
