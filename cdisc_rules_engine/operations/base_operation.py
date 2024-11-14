@@ -21,6 +21,7 @@ from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
+from cdisc_rules_engine.services import logger
 
 
 class BaseOperation:
@@ -44,8 +45,15 @@ class BaseOperation:
         pass
 
     def execute(self) -> DatasetInterface:
-        result = self._execute_operation()
-        return self._handle_operation_result(result)
+        try:
+            logger.info(f"Starting operation {self.params.operation_name}")
+            result = self._execute_operation()
+            logger.info(f"Operation {self.params.operation_name} completed.")
+            return self._handle_operation_result(result)
+        except Exception as e:
+            logger.error(
+                f"Error executing operation {self.params.operation_name}: {str(e)}"
+            )
 
     def _handle_operation_result(self, result) -> DatasetInterface:
         if self.evaluation_dataset.is_series(result):
