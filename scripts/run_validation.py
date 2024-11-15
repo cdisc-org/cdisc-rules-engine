@@ -184,7 +184,7 @@ def run_validation(args: Validation_args):
             define_xml_path=args.define_xml_path,
             dictionary_versions=dictionary_versions,
         )
-    print(f"Output: {args.output_file}")
+    print(f"Output: {args.output}")
     engine_logger.info("Cleaning up intermediate files")
     for file in created_files:
         engine_logger.info(f"Deleting file {file}")
