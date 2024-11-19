@@ -25,6 +25,9 @@ from cdisc_rules_engine.utilities.utils import (
     get_library_variables_metadata_cache_key,
     get_standard_codelist_cache_key,
 )
+from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import (
+    DefineXMLReaderFactory,
+)
 
 
 def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:
@@ -71,11 +74,22 @@ def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:
             args.controlled_terminology_package
             and ct_version in args.controlled_terminology_package
         ):
-            # Only load ct package corresponding to the provided ct
             with open(os.path.join(args.cache, file_name), "rb") as f:
                 data = pickle.load(f)
                 ct_package_data[ct_version] = data
-
+    if args.define_xml_path:
+        define_xml_reader = DefineXMLReaderFactory.from_filename(args.define_xml_path)
+        define_version = define_xml_reader.class_define_xml_version()
+        if define_version.model_package == "define_2_1":
+            standards = define_xml_reader.get_ct_standards_metadata()
+            for standard in standards:
+                pickle_filename = (
+                    f"{standard.publishing_set.lower()}ct-{standard.version}.pkl"
+                )
+                if pickle_filename in ct_files:
+                    with open(os.path.join(args.cache, pickle_filename), "rb") as f:
+                        data = pickle.load(f)
+                        ct_package_data[pickle_filename.split(".")[0]] = data
     return LibraryMetadataContainer(
         standard_metadata=standard_metadata,
         model_metadata=model_details,

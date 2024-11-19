@@ -2,7 +2,9 @@ from odmlib.define_2_1.rules.metadata_schema import MetadataSchema
 from cdisc_rules_engine.services.define_xml.base_define_xml_reader import (
     BaseDefineXMLReader,
     DefineXMLVersion,
+    StandardsMetadata,
 )
+from typing import List
 
 
 class DefineXMLReader21(BaseDefineXMLReader):
@@ -36,3 +38,19 @@ class DefineXMLReader21(BaseDefineXMLReader):
             "define_dataset_structure": str(metadata.Structure),
             "define_dataset_is_non_standard": str(metadata.IsNonStandard or ""),
         }
+
+    def get_ct_standards_metadata(self) -> List[StandardsMetadata]:
+        """Extract standards metadata from Define-XML 2.1"""
+        metadata = self._odm_loader.MetaDataVersion()
+        standards = []
+        for standard in metadata.Standards:
+            if standard.Type == "CT":
+                standards.append(
+                    StandardsMetadata(
+                        name=standard.Name,
+                        version=standard.Version,
+                        type=standard.Type,
+                        publishing_set=standard.PublishingSet,
+                    )
+                )
+        return standards
