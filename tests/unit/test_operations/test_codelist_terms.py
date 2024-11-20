@@ -6,6 +6,7 @@ from cdisc_rules_engine.operations.codelist_terms import CodelistTerms
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
+from cdisc_rules_engine.exceptions.custom_exceptions import MissingDataError
 
 
 @pytest.fixture
@@ -170,8 +171,8 @@ def test_missing_codelist(operation_params):
         library_metadata,
     )
 
-    result = operation._execute_operation()
-    assert result is None
+    with pytest.raises(MissingDataError, match="Codelist 'CL3' not found in metadata"):
+        operation._execute_operation()
 
 
 def test_empty_terms(operation_params):

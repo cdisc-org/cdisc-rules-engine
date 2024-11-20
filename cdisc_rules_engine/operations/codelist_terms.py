@@ -1,5 +1,6 @@
 import pandas as pd
 from cdisc_rules_engine.operations.base_operation import BaseOperation
+from cdisc_rules_engine.exceptions.custom_exceptions import MissingDataError
 
 
 class CodelistTerms(BaseOperation):
@@ -12,7 +13,6 @@ class CodelistTerms(BaseOperation):
         using the list from comparator and the codelist map.
         Returns a Series of booleans indicating whether each value is valid.
         """
-        # TODO uses 1st map only; may have multiple specified by defineXML, could merge them to keep current logic
         codelists = self.params.codelists
         codelist_level = self.params.level
         check = self.params.returntype
@@ -21,24 +21,39 @@ class CodelistTerms(BaseOperation):
             iter(self.library_metadata._ct_package_metadata.values())
         )
         for codelist in codelists:
-            codes.append(ct_package_data["submission_lookup"].get(codelist, []))
+            code_obj = ct_package_data["submission_lookup"].get(codelist)
+            if code_obj is None:
+                raise MissingDataError(f"Codelist '{codelist}' not found in metadata")
+            codes.append(code_obj)
         values = []
 
         for code_obj in codes:
-            codelist_id = code_obj.get("codelist")
-            if codelist_id in ct_package_data:
-                codelist_info = ct_package_data[codelist_id]
-                if codelist_level == "codelist":
-                    if code_obj.get("term") == "N/A":
-                        if check == "code":
-                            values.append(codelist_id)
-                        else:
-                            values.append(codelist_info["submissionValue"])
-                elif codelist_level == "term":
-                    terms = codelist_info.get("terms", [])
-                    for term in terms:
-                        if check == "value":
-                            values.append(term["submissionValue"])
-                        else:
-                            values.append(term["conceptId"])
+            values.extend(
+                self._get_codelist_values(
+                    code_obj, ct_package_data, codelist_level, check
+                )
+            )
+        return values
+
+    def _get_codelist_values(
+        self, code_obj: dict, ct_package_data: dict, codelist_level: str, check: str
+    ) -> list:
+        """Extract values from a codelist based on level and check type."""
+        values = []
+        codelist_id = code_obj.get("codelist")
+        if codelist_id in ct_package_data:
+            codelist_info = ct_package_data[codelist_id]
+            if codelist_level == "codelist":
+                if code_obj.get("term") == "N/A":
+                    if check == "code":
+                        values.append(codelist_id)
+                    else:
+                        values.append(codelist_info["submissionValue"])
+            elif codelist_level == "term":
+                terms = codelist_info.get("terms", [])
+                for term in terms:
+                    if check == "value":
+                        values.append(term["submissionValue"])
+                    else:
+                        values.append(term["conceptId"])
         return values

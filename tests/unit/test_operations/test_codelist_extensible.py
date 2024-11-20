@@ -6,6 +6,7 @@ from cdisc_rules_engine.operations.codelist_extensible import CodelistExtensible
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
+from cdisc_rules_engine.exceptions.custom_exceptions import MissingDataError
 
 
 @pytest.fixture
@@ -119,7 +120,7 @@ def test_missing_codelist(operation_params):
         library_metadata,
     )
     with pytest.raises(
-        AttributeError, match="'NoneType' object has no attribute 'get'"
+        MissingDataError, match="Codelist 'CL_NONEXISTENT' not found in metadata"
     ):
         operation._execute_operation()
 
