@@ -1,5 +1,6 @@
 import pandas as pd
 from cdisc_rules_engine.operations.base_operation import BaseOperation
+from cdisc_rules_engine.exceptions.custom_exceptions import MissingDataError
 
 
 class CodelistExtensible(BaseOperation):
@@ -12,6 +13,8 @@ class CodelistExtensible(BaseOperation):
             iter(self.library_metadata._ct_package_metadata.values())
         )
         code_obj = ct_package_data["submission_lookup"].get(codelist, None)
+        if code_obj is None:
+            raise MissingDataError(f"Codelist '{codelist}' not found in metadata")
         codelist_id = code_obj.get("codelist")
         is_extensible = False
         if codelist_id in ct_package_data:

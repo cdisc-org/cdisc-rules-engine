@@ -77,11 +77,23 @@ def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:
             with open(os.path.join(args.cache, file_name), "rb") as f:
                 data = pickle.load(f)
                 ct_package_data[ct_version] = data
+    # TODO: need to discuss how to handle >1 CT package in 2.0
     if args.define_xml_path:
         define_xml_reader = DefineXMLReaderFactory.from_filename(args.define_xml_path)
         define_version = define_xml_reader.class_define_xml_version()
-        if define_version.model_package == "define_2_1":
-            standards = define_xml_reader.get_ct_standards_metadata()
+        if (
+            define_version.model_package == "define_2_1"
+            and len(args.controlled_terminology_package) > 0
+        ):
+            raise ValueError(
+                "Cannot use -ct controlled terminology package command with Define-XML2.1 submission"
+            )
+        elif define_version.model_package == "define_2_1":
+            (
+                standards,
+                merged_CT_packages,
+                merged_flag,
+            ) = define_xml_reader.get_ct_standards_metadata()
             for standard in standards:
                 pickle_filename = (
                     f"{standard.publishing_set.lower()}ct-{standard.version}.pkl"
@@ -90,6 +102,9 @@ def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:
                     with open(os.path.join(args.cache, pickle_filename), "rb") as f:
                         data = pickle.load(f)
                         ct_package_data[pickle_filename.split(".")[0]] = data
+            if merged_flag:
+                ct_package_data["define_XML_merged_CT"] = merged_CT_packages
+    # TODO: need to update args.controlled_terminology_package tuple to include ct packages for define for reporting
     return LibraryMetadataContainer(
         standard_metadata=standard_metadata,
         model_metadata=model_details,

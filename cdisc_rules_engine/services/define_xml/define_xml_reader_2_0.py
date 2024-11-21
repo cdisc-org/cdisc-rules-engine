@@ -37,3 +37,6 @@ class DefineXMLReader20(BaseDefineXMLReader):
             # v2.0 does not support is_non_standard. Default to blank
             "define_dataset_is_non_standard": "",
         }
+
+    def get_extensible_codelist_mappings(metadata):
+        return

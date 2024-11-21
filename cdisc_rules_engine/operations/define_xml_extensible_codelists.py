@@ -13,7 +13,7 @@ class DefineCodelists(BaseOperation):
         Returns a list of codelist values from the define.xml file.
         fxn to be be used when a codelist is extensible to acquire the additional values
         """
-        # get define xml - currently expects fine named define.xml
+        # get define xml - currently expects file named define.xml
         define_contents = self.data_service.get_define_xml_contents(
             dataset_name=os.path.join(self.params.directory_path, DEFINE_XML_FILE_NAME)
         )

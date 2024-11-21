@@ -27,6 +27,17 @@ class DefineXMLVersion:
     model_package: str
 
 
+@dataclass
+class StandardsCTMetadata:
+    """Represents metadata about a standard referenced in Define-XML"""
+
+    name: str
+    version: str
+    type: str = None
+    publishing_set: str = None
+    oid: str
+
+
 class BaseDefineXMLReader(ABC):
     """
     This class is responsible for extracting
