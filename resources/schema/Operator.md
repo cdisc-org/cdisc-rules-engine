@@ -1004,11 +1004,3 @@ True if the codelist named within `value` is a valid codelist for the variable n
 ## does_not_reference_correct_codelist
 
 Complement of `references_correct_codelist`
-
-## uses_valid_codelist_terms
-
-True if the value within `value` is a valid term within the codelist named within `name` in the define.xml
-
-## does_not_use_valid_codelist_terms
-
-Complement of `uses_valid_codelist_terms`
