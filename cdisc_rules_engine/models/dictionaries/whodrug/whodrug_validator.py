@@ -41,7 +41,7 @@ class WhoDrugValidator(BaseDictionaryValidator):
         return self.is_valid_code(term, term_type, variable, **kwargs)
 
     def is_valid_code(
-        self, code: str, term_type: str = "", variable: str = "", **kwargs
+        self, code: str, term_type: str = "", variable: str = "", codes=[], **kwargs
     ) -> bool:
         """
         Method to identify whether a term is valid based on its term type.

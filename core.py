@@ -157,6 +157,8 @@ def cli():
 @click.option("--loinc", help="Path to directory with LOINC dictionary files")
 @click.option("--medrt", help="Path to directory with MEDRT dictionary files")
 @click.option("--unii", help="Path to directory with UNII dictionary files")
+@click.option("--snomed-version", help="Version of snomed to use.")
+@click.option("--snomed-edition", help="Edition of snomed to use.")
 @click.option(
     "--rules",
     "-r",
@@ -223,6 +225,8 @@ def validate(
     loinc: str,
     medrt: str,
     unii: str,
+    snomed_version: str,
+    snomed_edition: str,
     rules: Tuple[str],
     local_rules: str,
     local_rules_cache: bool,
@@ -250,8 +254,6 @@ def validate(
 
     cache_path: str = os.path.join(os.path.dirname(__file__), cache)
 
-    print(os.path.dirname(__file__))
-
     # Construct ExternalDictionariesContainer:
     external_dictionaries = ExternalDictionariesContainer(
         {
@@ -260,6 +262,10 @@ def validate(
             DictionaryTypes.MEDDRA.value: meddra,
             DictionaryTypes.WHODRUG.value: whodrug,
             DictionaryTypes.LOINC.value: loinc,
+            DictionaryTypes.SNOMED.value: {
+                "edition": snomed_edition,
+                "version": snomed_version,
+            },
         }
     )
     if data:
@@ -519,6 +525,8 @@ def list_rules(
 @click.option("--loinc", help="Path to directory with LOINC dictionary files")
 @click.option("--medrt", help="Path to directory with MEDRT dictionary files")
 @click.option("--unii", help="Path to directory with UNII dictionary files")
+@click.option("--snomed-version", help="Version of snomed to use.")
+@click.option("--snomed-edition", help="Edition of snomed to use.")
 @click.option(
     "-vx",
     "--validate-xml",
@@ -543,6 +551,8 @@ def test(
     loinc: str,
     medrt: str,
     unii: str,
+    snomed_version: str,
+    snomed_edition: str,
     validate_xml,
     define_xml_path: str,
 ):
@@ -581,6 +591,10 @@ def test(
             DictionaryTypes.WHODRUG.value: whodrug,
             DictionaryTypes.LOINC.value: loinc,
             DictionaryTypes.UNII.value: unii,
+            DictionaryTypes.SNOMED.value: {
+                "edition": snomed_edition,
+                "version": snomed_version,
+            },
         }
     )
     validate_xml = True if validate_xml.lower() in ("y", "yes") else False

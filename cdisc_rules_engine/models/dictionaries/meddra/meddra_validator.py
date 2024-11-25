@@ -89,7 +89,9 @@ class MedDRAValidator(BaseDictionaryValidator):
 
         return len(valid_terms) > 0
 
-    def is_valid_code(self, code: str, term_type: str, variable: str, **kwargs) -> bool:
+    def is_valid_code(
+        self, code: str, term_type: str, variable: str, codes=[], **kwargs
+    ) -> bool:
         """
         Method to identify whether a term is valid based on its term type.
 

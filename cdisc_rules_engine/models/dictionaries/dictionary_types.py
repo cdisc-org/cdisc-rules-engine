@@ -11,3 +11,4 @@ class DictionaryTypes(BaseEnum):
     LOINC = "loinc"
     MEDRT = "medrt"
     UNII = "unii"
+    SNOMED = "snomed"

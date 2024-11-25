@@ -98,6 +98,9 @@ class ExcelReport(BaseReport):
         wb["Conformance Details"]["B14"] = dictionary_versions.get(
             DictionaryTypes.WHODRUG.value
         )
+        wb["Conformance Details"]["B15"] = dictionary_versions.get(
+            DictionaryTypes.SNOMED.value
+        )
         return wb
 
     def write_report(self, **kwargs):

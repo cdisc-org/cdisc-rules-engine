@@ -121,6 +121,10 @@ Run `python core.py validate --help` to see the list of validation options.
                                   files
   --medrt TEXT                  Path to directory with MEDRT dictionary
                                   files
+  --unii TEXT                  Path to directory with UNII dictionary
+                                  files
+  --snomed-version TEXT        Version of snomed to use. (ex. 2024-09-01)
+  --snomed-edition TEXT        Edition of snomed to use. (ex. SNOMEDCT-US)
   -r, --rules TEXT                Specify rule core ID ex. CORE-000001. Can be specified multiple times.
   -lr, --local_rules TEXT         Specify relative path to directory containing
                                   local rule yml and/or json rule files.
