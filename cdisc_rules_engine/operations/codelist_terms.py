@@ -1,6 +1,7 @@
 import pandas as pd
 from cdisc_rules_engine.operations.base_operation import BaseOperation
 from cdisc_rules_engine.exceptions.custom_exceptions import MissingDataError
+from cdisc_rules_engine.services import logger
 
 
 class CodelistTerms(BaseOperation):
@@ -17,6 +18,16 @@ class CodelistTerms(BaseOperation):
         codelist_level = self.params.level
         check = self.params.returntype
         codes = []
+        try:
+            ct_package_data = next(
+                iter(self.library_metadata._ct_package_metadata.values())
+            )
+        except (AttributeError) as e:
+            logger.warning(
+                "CT package data is not populated: %s "
+                "-- a valid define.xml file or -ct command is required to execute",
+                e,
+            )
         ct_package_data = next(
             iter(self.library_metadata._ct_package_metadata.values())
         )

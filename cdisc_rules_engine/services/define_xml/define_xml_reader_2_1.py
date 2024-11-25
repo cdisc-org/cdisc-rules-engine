@@ -111,7 +111,8 @@ class DefineXMLReader21(BaseDefineXMLReader):
                     }
         return combined_CT_package
 
-    def get_extensible_codelist_mappings(metadata):  # noqa
+    def get_extensible_codelist_mappings(self):  # noqa
+        metadata = self._odm_loader.MetaDataVersion()
         submission_lookup = {}
         extended_values = {}
         for codelist in metadata.CodeList:

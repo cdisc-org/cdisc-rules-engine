@@ -19,6 +19,7 @@ from cdisc_rules_engine.exceptions.custom_exceptions import (
 from cdisc_rules_engine.models.define import ValueLevelMetadata
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.utilities.decorators import cached
+from typing import Dict
 
 
 @dataclass
@@ -29,13 +30,12 @@ class DefineXMLVersion:
 
 @dataclass
 class StandardsCTMetadata:
-    """Represents metadata about a standard referenced in Define-XML"""
-
     name: str
     version: str
+    oid: str
+
     type: str = None
     publishing_set: str = None
-    oid: str
 
 
 class BaseDefineXMLReader(ABC):
@@ -54,6 +54,10 @@ class BaseDefineXMLReader(ABC):
     @staticmethod
     @abstractmethod
     def _meta_data_schema() -> type:
+        pass
+
+    @abstractmethod
+    def get_extensible_codelist_mappings() -> Dict:
         pass
 
     def __init__(
