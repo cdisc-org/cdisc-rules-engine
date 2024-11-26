@@ -58,7 +58,6 @@ class SNOMEDTermsFactory(TermsFactoryInterface):
 
     def _request_concepts(self, url):
         response = requests.get(url)
-        print(response.json())
 
         if response.status_code != 200:
             self._handle_api_error(response)
