@@ -57,7 +57,11 @@ class SNOMEDTermsFactory(TermsFactoryInterface):
         return [SNOMEDTerm.from_json(term) for term in response.get("items", [])]
 
     def _request_concepts(self, url):
-        response = requests.get(url)
+        headers = {
+            "Content-Type": "application/json",
+            "User-Agent": "CDISC CORE Engine",
+        }
+        response = requests.get(url, headers=headers)
 
         if response.status_code != 200:
             self._handle_api_error(response)
