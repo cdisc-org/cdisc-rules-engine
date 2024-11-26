@@ -24,6 +24,7 @@ class SNOMEDValidator(BaseDictionaryValidator):
             self.data_service,
             edition=self.path.get("edition"),
             version=self.path.get("version"),
+            base_url=self.path.get("base_url"),
         )
 
     def get_term_dictionary(self, concepts=[]):

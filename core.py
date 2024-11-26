@@ -158,6 +158,11 @@ def cli():
 @click.option("--medrt", help="Path to directory with MEDRT dictionary files")
 @click.option("--unii", help="Path to directory with UNII dictionary files")
 @click.option("--snomed-version", help="Version of snomed to use.")
+@click.option(
+    "--snomed-url",
+    help="The Base URL of snomed to use. Defaults to snowstorm test instance",
+    default="https://snowstorm.snomedtools.org/snowstorm/snomed-ct/",
+)
 @click.option("--snomed-edition", help="Edition of snomed to use.")
 @click.option(
     "--rules",
@@ -227,6 +232,7 @@ def validate(
     unii: str,
     snomed_version: str,
     snomed_edition: str,
+    snomed_url: str,
     rules: Tuple[str],
     local_rules: str,
     local_rules_cache: bool,
@@ -265,6 +271,7 @@ def validate(
             DictionaryTypes.SNOMED.value: {
                 "edition": snomed_edition,
                 "version": snomed_version,
+                "base_url": snomed_url,
             },
         }
     )
@@ -528,6 +535,11 @@ def list_rules(
 @click.option("--snomed-version", help="Version of snomed to use.")
 @click.option("--snomed-edition", help="Edition of snomed to use.")
 @click.option(
+    "--snomed-url",
+    help="The Base URL of snomed to use. Defaults to snowstorm test instance",
+    default="https://snowstorm.snomedtools.org/snowstorm/snomed-ct/",
+)
+@click.option(
     "-vx",
     "--validate-xml",
     default="y",
@@ -553,6 +565,7 @@ def test(
     unii: str,
     snomed_version: str,
     snomed_edition: str,
+    snomed_url: str,
     validate_xml,
     define_xml_path: str,
 ):
@@ -594,6 +607,7 @@ def test(
             DictionaryTypes.SNOMED.value: {
                 "edition": snomed_edition,
                 "version": snomed_version,
+                "base_url": snomed_url,
             },
         }
     )
