@@ -13,6 +13,7 @@ from .whodrug import WhoDrugTermsFactory
 from .loinc import LoincTermsFactory
 from .medrt import MEDRTTermsFactory
 from .unii import UNIITermsFactory
+from .snomed import SNOMEDTermsFactory
 
 
 class AbstractTermsFactory(FactoryInterface):
@@ -22,6 +23,7 @@ class AbstractTermsFactory(FactoryInterface):
         DictionaryTypes.LOINC.value: LoincTermsFactory,
         DictionaryTypes.MEDRT.value: MEDRTTermsFactory,
         DictionaryTypes.UNII.value: UNIITermsFactory,
+        DictionaryTypes.SNOMED.value: SNOMEDTermsFactory,
     }
 
     def __init__(self, data_service: DataServiceInterface):
@@ -43,4 +45,4 @@ class AbstractTermsFactory(FactoryInterface):
                 f"given service name is {name}"
             )
         factory = self._registered_services_map.get(name)
-        return factory(data_service=self.data_service)
+        return factory(data_service=self.data_service, **kwargs)

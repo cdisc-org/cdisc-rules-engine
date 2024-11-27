@@ -2,6 +2,7 @@ import json
 import yaml
 
 from cdisc_rules_engine.interfaces import CacheServiceInterface
+from cdisc_rules_engine.models.dictionaries.dictionary_types import DictionaryTypes
 from cdisc_rules_engine.interfaces.data_service_interface import DataServiceInterface
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
@@ -100,9 +101,15 @@ def fill_cache_with_dictionaries(cache: CacheServiceInterface, args):
     ) in args.external_dictionaries.dictionary_path_mapping.items():
         if not dictionary_path:
             continue
+        if dictionary_type == DictionaryTypes.SNOMED.value:
+            versions_map[
+                dictionary_type
+            ] = f'MAIN/{dictionary_path.get("edition")}/{dictionary_path.get("version")}'
+            continue
         terms = extract_dictionary_terms(data_service, dictionary_type, dictionary_path)
         cache.add(dictionary_path, terms)
         versions_map[dictionary_type] = terms.version
+
     return versions_map
 
 
