@@ -23,7 +23,7 @@ class WhoDrugTermsFactory(TermsFactoryInterface):
     and contents and creates a term record for each line.
     """
 
-    def __init__(self, data_service: DataServiceInterface):
+    def __init__(self, data_service: DataServiceInterface, **kwargs):
         self.__data_service = data_service
         self.__file_name_model_map: dict = {
             WhodrugFileNames.DD_FILE_NAME.value: DrugDictionary,

@@ -22,6 +22,23 @@ from cdisc_rules_engine.models.library_metadata_container import (
 )
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from cdisc_rules_engine.services import logger
+from cdisc_rules_engine.exceptions.custom_exceptions import (
+    EngineError,
+    DatasetNotFoundError,
+    ReferentialIntegrityError,
+    MissingDataError,
+    RuleExecutionError,
+    RuleFormatError,
+    InvalidMatchKeyError,
+    InvalidOutputVariables,
+    VariableMetadataNotFoundError,
+    DomainNotFoundInDefineXMLError,
+    InvalidDatasetFormat,
+    NumberOfAttemptsExceeded,
+    InvalidDictionaryVariable,
+    UnsupportedDictionaryType,
+    FailedSchemaValidation,
+)
 
 
 class BaseOperation:
@@ -45,14 +62,39 @@ class BaseOperation:
         pass
 
     def execute(self) -> DatasetInterface:
+        """
+        Execute the operation with error handling.
+        Custom exceptions should be allowed to propagate up while other exceptions are logged.
+        """
         try:
             logger.info(f"Starting operation {self.params.operation_name}")
             result = self._execute_operation()
             logger.info(f"Operation {self.params.operation_name} completed.")
             return self._handle_operation_result(result)
+        except (
+            EngineError,
+            DatasetNotFoundError,
+            ReferentialIntegrityError,
+            MissingDataError,
+            RuleExecutionError,
+            RuleFormatError,
+            InvalidMatchKeyError,
+            InvalidOutputVariables,
+            VariableMetadataNotFoundError,
+            DomainNotFoundInDefineXMLError,
+            InvalidDatasetFormat,
+            NumberOfAttemptsExceeded,
+            InvalidDictionaryVariable,
+            UnsupportedDictionaryType,
+            FailedSchemaValidation,
+        ) as e:
+            logger.debug(f"error in operation {self.params.operation_name}: {str(e)}")
+            raise
         except Exception as e:
+            # Log unexpected errors
             logger.error(
-                f"Error executing operation {self.params.operation_name}: {str(e)}"
+                f"error in operation {self.params.operation_name}: {str(e)}",
+                exc_info=True,
             )
 
     def _handle_operation_result(self, result) -> DatasetInterface:

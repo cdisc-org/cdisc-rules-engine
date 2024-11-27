@@ -32,9 +32,6 @@ class CodelistTerms(BaseOperation):
                 "-- a valid define.xml file or -ct command is required to execute",
                 e,
             )
-        ct_package_data = next(
-            iter(self.library_metadata._ct_package_metadata.values())
-        )
         submission_lookup = ct_package_data["submission_lookup"]
         lookup_map = {k.lower(): k for k in submission_lookup.keys()}
         for codelist in codelists:
