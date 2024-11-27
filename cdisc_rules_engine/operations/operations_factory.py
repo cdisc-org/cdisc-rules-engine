@@ -89,7 +89,7 @@ class OperationsFactory(FactoryInterface):
         "codelist_extensible": CodelistExtensible,
         "codelist_terms": CodelistTerms,
         "dataset_names": DatasetNames,
-        "define_codelists": DefineCodelists,
+        "define_extensible_codelists": DefineCodelists,
         "distinct": Distinct,
         "dy": DayDataValidator,
         "extract_metadata": ExtractMetadata,

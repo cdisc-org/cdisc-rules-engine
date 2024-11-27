@@ -24,7 +24,7 @@
     {
       "properties": {
         "operator": {
-          "const": "define_codelists"
+          "const": "define_extensible_codelists"
         }
       },
       "required": ["id", "operator", "codelists"],
