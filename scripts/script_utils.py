@@ -30,12 +30,28 @@ from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import (
 )
 
 
-def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:
+def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:  # noqa
+    if args.define_xml_path:
+        define_xml_reader = DefineXMLReaderFactory.from_filename(args.define_xml_path)
+        define_version = define_xml_reader.class_define_xml_version()
+        if (
+            define_version.model_package == "define_2_1"
+            and len(args.controlled_terminology_package) > 0
+        ):
+            raise ValueError(
+                "Cannot use -ct controlled terminology package command with Define-XML2.1 submission"
+            )
+        elif (
+            define_version.model_package == "define_2_0"
+            and len(args.controlled_terminology_package) > 1
+        ):
+            raise ValueError(
+                "Cannot provide multiple controlled terminology packages with Define-XML2.0 submission"
+            )
     standards_file = os.path.join(args.cache, "standards_details.pkl")
     models_file = os.path.join(args.cache, "standards_models.pkl")
     variables_codelist_file = os.path.join(args.cache, "variable_codelist_maps.pkl")
     variables_metadata_file = os.path.join(args.cache, "variables_metadata.pkl")
-
     standard_details_cache_key = get_standard_details_cache_key(
         args.standard, args.version.replace(".", "-")
     )
@@ -77,34 +93,26 @@ def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:
             with open(os.path.join(args.cache, file_name), "rb") as f:
                 data = pickle.load(f)
                 ct_package_data[ct_version] = data
-    # TODO: need to discuss how to handle >1 CT package in 2.0
-    if args.define_xml_path:
-        define_xml_reader = DefineXMLReaderFactory.from_filename(args.define_xml_path)
-        define_version = define_xml_reader.class_define_xml_version()
-        if (
-            define_version.model_package == "define_2_1"
-            and len(args.controlled_terminology_package) > 0
-        ):
-            raise ValueError(
-                "Cannot use -ct controlled terminology package command with Define-XML2.1 submission"
+    if define_version.model_package == "define_2_1":
+        (
+            standards,
+            merged_CT_packages,
+            merged_flag,
+        ) = define_xml_reader.get_ct_standards_metadata()
+        for standard in standards:
+            pickle_filename = (
+                f"{standard.publishing_set.lower()}ct-{standard.version}.pkl"
             )
-        elif define_version.model_package == "define_2_1":
-            (
-                standards,
-                merged_CT_packages,
-                merged_flag,
-            ) = define_xml_reader.get_ct_standards_metadata()
-            for standard in standards:
-                pickle_filename = (
-                    f"{standard.publishing_set.lower()}ct-{standard.version}.pkl"
-                )
-                if pickle_filename in ct_files:
-                    with open(os.path.join(args.cache, pickle_filename), "rb") as f:
-                        data = pickle.load(f)
-                        ct_package_data[pickle_filename.split(".")[0]] = data
-            if merged_flag:
-                ct_package_data["define_XML_merged_CT"] = merged_CT_packages
-    # TODO: need to update args.controlled_terminology_package tuple to include ct packages for define for reporting
+            if pickle_filename in ct_files:
+                with open(os.path.join(args.cache, pickle_filename), "rb") as f:
+                    data = pickle.load(f)
+                    ct_package_data[pickle_filename.split(".")[0]] = data
+        if merged_flag:
+            ct_package_data["define_XML_merged_CT"] = merged_CT_packages
+    if args.define_xml_path:
+        extensible_terms = define_xml_reader.get_extensible_codelist_mappings()
+        ct_package_data["extensible"] = extensible_terms
+    # TODO: need to update library container to include extensible terms
     return LibraryMetadataContainer(
         standard_metadata=standard_metadata,
         model_metadata=model_details,

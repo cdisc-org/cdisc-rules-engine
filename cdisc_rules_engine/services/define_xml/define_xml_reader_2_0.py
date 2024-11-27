@@ -42,22 +42,18 @@ class DefineXMLReader20(BaseDefineXMLReader):
         metadata = self._odm_loader.MetaDataVersion()
         mappings = {}
         for codelist in metadata.CodeList:
-            codelist_nci = "N/A"
-            if hasattr(codelist, "Alias") and codelist.Alias:
-                codelist_nci = (
-                    codelist.Alias[0].Name if codelist.Alias[0].Name else "N/A"
-                )
-            mappings[codelist.Name] = {
-                "codelist_code": codelist_nci,
-                "term_code": "N/A",
-                "extended_values": [],
-            }
-            for item in codelist.CodeListItem + codelist.EnumeratedItem:
-                if getattr(item, "ExtendedValue", "No") == "Yes":
-                    # Extended values won't have an Alias in 2.0
-                    mappings[item.CodedValue] = {
-                        "codelist_code": codelist_nci,
-                        "term_code": "N/A",
-                        "extended_values": [],  # If needed, can still look up allowed values in ItemDef
-                    }
+            extended_values = []
+            items = codelist.CodeListItem + codelist.EnumeratedItem
+            for item in items:
+                if hasattr(item, "ExtendedValue") and item.ExtendedValue == "Yes":
+                    extended_values.append(item.CodedValue)
+            if (
+                extended_values
+                and hasattr(codelist, "Alias")
+                and codelist.Alias is not None
+            ):
+                mappings[codelist.Name] = {
+                    "codelist": codelist.Alias[0].Name,
+                    "extended_values": extended_values,
+                }
         return mappings

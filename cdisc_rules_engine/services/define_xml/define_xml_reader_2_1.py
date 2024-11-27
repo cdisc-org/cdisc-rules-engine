@@ -40,6 +40,19 @@ class DefineXMLReader21(BaseDefineXMLReader):
             "define_dataset_is_non_standard": str(metadata.IsNonStandard or ""),
         }
 
+    def get_ct_version(self):
+        metadata = self._odm_loader.MetaDataVersion()
+        standards = []
+        for standard in metadata.Standards.Standard:
+            if (
+                standard.Type == "CT"
+                and "define-xml" not in standard.PublishingSet.lower()
+            ):
+                standards.append(
+                    f"{standard.PublishingSet.lower()}ct-{standard.Version}"
+                )
+        return standards
+
     def get_ct_standards_metadata(self) -> List[StandardsCTMetadata]:
         """Extract standards metadata from Define-XML 2.1"""
         metadata = self._odm_loader.MetaDataVersion()
@@ -70,12 +83,12 @@ class DefineXMLReader21(BaseDefineXMLReader):
             return standards, {}, False
 
     def get_multiple_standards_ct_mappings(self, metadata, standards):
-        combined_CT_package = {"submission_lookup": {}, "no_code": {}}
+        combined_CT_package = {"submission_lookup": {}, "extensible": {}}
         standard_oids = {standard.oid: standard for standard in standards}
         for codelist in metadata.CodeList:
-            standard_oid = codelist.get("StandardOID", None)
+            standard_oid = codelist.StandardOID
             standard = standard_oids[standard_oid]
-            standard_key = f"{standard.name.lower()}ct-{standard.version}"
+            standard_key = f"{standard.publishing_set.lower()}ct-{standard.version}"
             if codelist.Alias:
                 codelist_code = codelist.Alias[0].Name
             codelist_value = codelist.get("Name", None)
@@ -111,86 +124,24 @@ class DefineXMLReader21(BaseDefineXMLReader):
                     }
         return combined_CT_package
 
-    def get_extensible_codelist_mappings(self):  # noqa
+    def get_extensible_codelist_mappings(self):
         metadata = self._odm_loader.MetaDataVersion()
-        submission_lookup = {}
-        extended_values = {}
+        mappings = {}
+
         for codelist in metadata.CodeList:
-            codelist_nci = "N/A"
-            if hasattr(codelist, "Alias") and codelist.Alias:
-                codelist_nci = (
-                    codelist.Alias[0].Name if codelist.Alias[0].Name else "N/A"
-                )
-            submission_lookup[codelist.Name] = {
-                "codelist_code": codelist_nci,
-                "term_code": "N/A",
-            }
-            # Check for extensible items
-            for item in codelist.CodeListItem + codelist.EnumeratedItem:
-                if item.ExtendedValue == "Yes":
-                    # Get term NCI code
-                    term_nci = "N/A"
-                    if hasattr(item, "Alias") and item.Alias:
-                        term_nci = item.Alias[0].Name if item.Alias[0].Name else "N/A"
+            extended_values = []
+            items = codelist.CodeListItem + codelist.EnumeratedItem
+            for item in items:
+                if hasattr(item, "ExtendedValue") and item.ExtendedValue == "Yes":
+                    extended_values.append(item.CodedValue)
+            if (
+                extended_values
+                and hasattr(codelist, "Alias")
+                and codelist.Alias is not None
+            ):
+                mappings[codelist.Name] = {
+                    "codelist": codelist.Alias[0].Name,
+                    "extended_values": extended_values,
+                }
 
-                    # Add term to submission lookup
-                    submission_lookup[item.CodedValue] = {
-                        "codelist_code": codelist_nci,
-                        "term_code": term_nci,
-                    }
-
-                    # Find extended values
-                    domain = codelist.OID.split(".")[1]
-                    valuelist = next(
-                        (
-                            vld
-                            for vld in metadata.ValueListDef
-                            if vld.OID == f"VL.SUPP{domain}"
-                        ),
-                        None,
-                    )
-
-                    if valuelist:
-                        for itemref in valuelist.ItemRef:
-                            itemdef = next(
-                                (
-                                    item
-                                    for item in metadata.ItemDef
-                                    if item.OID == itemref.ItemOID
-                                ),
-                                None,
-                            )
-                            if itemdef and hasattr(itemdef, "CodeListRef"):
-                                extended_cl = next(
-                                    (
-                                        cl
-                                        for cl in metadata.CodeList
-                                        if cl.OID == itemdef.CodeListRef.CodeListOID
-                                    ),
-                                    None,
-                                )
-                                if extended_cl:
-                                    ext_values = []
-                                    for ext_item in extended_cl.CodeListItem:
-                                        ext_nci = "N/A"
-                                        if (
-                                            hasattr(ext_item, "Alias")
-                                            and ext_item.Alias
-                                        ):
-                                            ext_nci = (
-                                                ext_item.Alias[0].Name
-                                                if ext_item.Alias[0].Name
-                                                else "N/A"
-                                            )
-                                        ext_values.append(
-                                            {
-                                                "coded_value": ext_item.CodedValue,
-                                                "nci_code": ext_nci,
-                                            }
-                                        )
-                                    extended_values[codelist_nci] = ext_values
-
-        return {
-            "submission_lookup": submission_lookup,
-            "extended_values": extended_values,
-        }
+        return mappings
