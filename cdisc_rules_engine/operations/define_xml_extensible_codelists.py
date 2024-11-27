@@ -1,11 +1,6 @@
 import pandas as pd
 from cdisc_rules_engine.operations.base_operation import BaseOperation
-
-# from cdisc_rules_engine.constants.define_xml_constants import DEFINE_XML_FILE_NAME
-# from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import (
-#     DefineXMLReaderFactory,
-# )
-# import os
+from cdisc_rules_engine.exceptions.custom_exceptions import MissingDataError
 
 
 class DefineCodelists(BaseOperation):
@@ -14,20 +9,27 @@ class DefineCodelists(BaseOperation):
         Returns a list of codelist values from the define.xml file.
         fxn to be be used when a codelist is extensible to acquire the additional values
         """
-        # TODO: extensible is populated, parse and return the list of terms
-        # optional codelist and returntype -- allow for sub val or ccode checks
-        # if self.params.codelists:
-        #     codelists = self.params.codelists
-        # if self.params.returntype:
-        #     check = self.params.returntype
-        ct_package_data = next(
-            iter(self.library_metadata._ct_package_metadata.values())
-        )
-        return ct_package_data
+        if not self.params.codelists:
+            raise MissingDataError("Codelists operation parameter not provided")
+        codelists = self.params.codelists
+        values = []
+        ct_package_data = self.library_metadata._ct_package_metadata.get("extensible")
+        if ct_package_data is None:
+            raise MissingDataError(
+                "Parsed Extensible terms not found in library CT metadata"
+            )
+        if len(codelists) == 1 and codelists[0] == "ALL":
+            return [
+                value
+                for data in ct_package_data.values()
+                for value in data["extended_values"]
+            ]
 
-        # define_contents = self.data_service.get_define_xml_contents(
-        #     dataset_name=os.path.join(self.params.directory_path, DEFINE_XML_FILE_NAME)
-        # )
-        # define_reader = DefineXMLReaderFactory.from_file_contents(define_contents)
-        # extensible_codelists = define_reader.get_extensible_codelist_mappings()
-        # return extensible_codelists
+        lookup_map = {name.lower(): name for name in ct_package_data.keys()}
+        for codelist in codelists:
+            original_key = lookup_map.get(codelist.lower())
+            if original_key is None:
+                raise MissingDataError(f"Codelist '{codelist}' not found in metadata")
+            codelist_data = ct_package_data[original_key]
+            values.extend(codelist_data["extended_values"])
+        return values

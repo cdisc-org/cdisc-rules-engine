@@ -19,9 +19,13 @@ class CodelistTerms(BaseOperation):
         check = self.params.returntype
         codes = []
         try:
-            ct_package_data = next(
-                iter(self.library_metadata._ct_package_metadata.values())
-            )
+            ct_packages = self.library_metadata._ct_package_metadata
+            if "define_XML_merged_CT" in ct_packages:
+                ct_package_data = ct_packages["define_XML_merged_CT"]
+            else:
+                ct_package_data = next(
+                    (pkg for name, pkg in ct_packages.items() if name != "extensible")
+                )
         except (AttributeError) as e:
             logger.warning(
                 "CT package data is not populated: %s "

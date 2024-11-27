@@ -24,6 +24,15 @@
     {
       "properties": {
         "operator": {
+          "const": "define_codelists"
+        }
+      },
+      "required": ["id", "operator", "codelists"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
           "const": "define_variable_metadata"
         }
       },

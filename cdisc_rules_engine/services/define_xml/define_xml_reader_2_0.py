@@ -43,7 +43,7 @@ class DefineXMLReader20(BaseDefineXMLReader):
         mappings = {}
         for codelist in metadata.CodeList:
             extended_values = []
-            items = codelist.CodeListItem + codelist.EnumeratedItem
+            items = codelist.CodeListItem
             for item in items:
                 if hasattr(item, "ExtendedValue") and item.ExtendedValue == "Yes":
                     extended_values.append(item.CodedValue)

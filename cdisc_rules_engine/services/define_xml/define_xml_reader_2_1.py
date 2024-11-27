@@ -77,25 +77,39 @@ class DefineXMLReader21(BaseDefineXMLReader):
             ps: count for ps, count in publishing_set_counts.items() if count > 1
         }
         if multiple_sets:
-            map = self.get_multiple_standards_ct_mappings(metadata, standards)
-            return standards, map, True
+            multi_ct, extensible = self.get_multiple_standards_ct_mappings(
+                metadata, standards
+            )
+            return standards, multi_ct, extensible, True
         else:
-            return standards, {}, False
+            return standards, {}, {}, False
 
     def get_multiple_standards_ct_mappings(self, metadata, standards):
-        combined_CT_package = {"submission_lookup": {}, "extensible": {}}
+        combined_CT_package = {"submission_lookup": {}}
         standard_oids = {standard.oid: standard for standard in standards}
+        extensible = {}
         for codelist in metadata.CodeList:
             standard_oid = codelist.StandardOID
             standard = standard_oids[standard_oid]
             standard_key = f"{standard.publishing_set.lower()}ct-{standard.version}"
-            if codelist.Alias:
-                codelist_code = codelist.Alias[0].Name
-            codelist_value = codelist.get("Name", None)
+            codelist_code = codelist.Alias[0].Name if codelist.Alias else None
+            codelist_value = codelist.Name if hasattr(codelist, "Name") else None
+
+            extended_values = []
+            items = codelist.CodeListItem
+            for item in items:
+                if hasattr(item, "ExtendedValue") and item.ExtendedValue == "Yes":
+                    extended_values.append(item.CodedValue)
+            if extended_values and codelist.Alias:
+                extensible[codelist_value] = {
+                    "codelist": codelist_code,
+                    "extended_values": extended_values,
+                }
             combined_CT_package["submission_lookup"][codelist_value] = {
                 "codelist": codelist_code,
                 "term": "N/A",
             }
+
             for item in codelist.CodeListItem:
                 nci_code = None
                 if hasattr(item, "Alias"):
@@ -114,15 +128,8 @@ class DefineXMLReader21(BaseDefineXMLReader):
                         "codelist": codelist_code,
                         "term": nci_code,
                     }
-                else:
-                    combined_CT_package["no_code"][item.CodedValue] = {
-                        "submissionValue": item.CodedValue,
-                        "extensible": item.ExtendedValue,
-                        "standard": standard_key,
-                        "codelist": codelist_code,
-                        "codelist_value": codelist_value,
-                    }
-        return combined_CT_package
+
+        return combined_CT_package, extensible
 
     def get_extensible_codelist_mappings(self):
         metadata = self._odm_loader.MetaDataVersion()
@@ -130,7 +137,7 @@ class DefineXMLReader21(BaseDefineXMLReader):
 
         for codelist in metadata.CodeList:
             extended_values = []
-            items = codelist.CodeListItem + codelist.EnumeratedItem
+            items = codelist.CodeListItem
             for item in items:
                 if hasattr(item, "ExtendedValue") and item.ExtendedValue == "Yes":
                     extended_values.append(item.CodedValue)

@@ -97,6 +97,7 @@ def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:  # noqa
         (
             standards,
             merged_CT_packages,
+            extensible,
             merged_flag,
         ) = define_xml_reader.get_ct_standards_metadata()
         for standard in standards:
@@ -109,10 +110,13 @@ def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:  # noqa
                     ct_package_data[pickle_filename.split(".")[0]] = data
         if merged_flag:
             ct_package_data["define_XML_merged_CT"] = merged_CT_packages
+            ct_package_data["extensible"] = extensible
+        else:
+            extensible_terms = define_xml_reader.get_extensible_codelist_mappings()
+            ct_package_data["extensible"] = extensible_terms
     if args.define_xml_path:
         extensible_terms = define_xml_reader.get_extensible_codelist_mappings()
         ct_package_data["extensible"] = extensible_terms
-    # TODO: need to update library container to include extensible terms
     return LibraryMetadataContainer(
         standard_metadata=standard_metadata,
         model_metadata=model_details,
