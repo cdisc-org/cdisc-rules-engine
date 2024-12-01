@@ -1,4 +1,4 @@
-black==24.3.0
+black==24.10.0
 business_rules_enhanced==1.4.5
 cdisc-library-client==0.1.5
 click==8.1.7
