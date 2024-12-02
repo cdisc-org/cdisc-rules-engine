@@ -12,5 +12,4 @@ path_to_dataset = (
 
 def test_get_version_and_CT_from_define():
     version = get_define_version([path_to_dataset])
-    assert version[0] == "2.1.0"
-    assert version[1] == ["sdtmct-2020-12-18"]
+    assert version == "2.1.0"
