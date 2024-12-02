@@ -83,7 +83,14 @@ class ExcelReport(BaseReport):
         # write standards details
         wb["Conformance Details"]["B7"] = standard.upper()
         wb["Conformance Details"]["B8"] = f"V{version}"
-        wb["Conformance Details"]["B9"] = ", ".join(cdiscCt)
+        if cdiscCt:
+            wb["conformance details"]["b9"] = (
+                ", ".join(cdiscCt)
+                if isinstance(cdiscCt, (list, tuple))
+                else str(cdiscCt)
+            )
+        else:
+            wb["conformance details"]["b9"] = ""
         wb["Conformance Details"]["B10"] = define_version
 
         # Populate external dictionary versions
