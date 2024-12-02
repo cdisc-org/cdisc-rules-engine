@@ -94,7 +94,7 @@ def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:  # noqa
             with open(os.path.join(args.cache, file_name), "rb") as f:
                 data = pickle.load(f)
                 ct_package_data[ct_version] = data
-    if define_version.model_package == "define_2_1":
+    if args.define_xml_path and define_version.model_package == "define_2_1":
         (
             standards,
             merged_CT_packages,
