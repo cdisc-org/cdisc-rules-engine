@@ -10,6 +10,6 @@ path_to_dataset = (
 )
 
 
-def test_get_version_and_CT_from_define():
+def test_get_version_from_define():
     version = get_define_version([path_to_dataset])
     assert version == "2.1.0"
