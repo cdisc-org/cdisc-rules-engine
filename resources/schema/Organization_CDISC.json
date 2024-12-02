@@ -254,7 +254,7 @@
                     "Rule Identifier": {
                       "properties": {
                         "Id": {
-                          "pattern": "^TIG\\d{4}$",
+                          "pattern": "^TIG\\d{4}[a-z]?$",
                           "type": "string"
                         }
                       },
