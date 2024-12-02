@@ -28,7 +28,7 @@ setuptools.setup(
         "odmlib==0.1.4",
         "xport==3.6.1",
         "redis==4.0.2",
-        "openpyxl==3.0.10",
+        "openpyxl==3.1.5",
         "importlib-metadata==8.5.0",
     ],
 )
