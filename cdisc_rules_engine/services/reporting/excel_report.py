@@ -84,7 +84,7 @@ class ExcelReport(BaseReport):
         wb["Conformance Details"]["B7"] = standard.upper()
         wb["Conformance Details"]["B8"] = f"V{version}"
         if cdiscCt:
-            wb["conformance details"]["b9"] = (
+            wb["Conformance Details"]["b9"] = (
                 ", ".join(cdiscCt)
                 if isinstance(cdiscCt, (list, tuple))
                 else str(cdiscCt)
