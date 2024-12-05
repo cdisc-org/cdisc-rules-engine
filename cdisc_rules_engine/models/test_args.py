@@ -9,6 +9,7 @@ TestArgs = namedtuple(
         "rule",
         "standard",
         "version",
+        "substandard",
         "external_dictionaries",
         "controlled_terminology_package",
         "define_version",

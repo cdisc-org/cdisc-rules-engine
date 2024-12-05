@@ -145,10 +145,17 @@ class CachePopulator:
         ]
         self.cache.add(PUBLISHED_CT_PACKAGES, available_packages)
 
-    async def load_standard(self, standard: str, version: str):
-        standards = [{"href": f"/mdr/{standard}/{version}"}]
-        variable_codelist_maps = await self._get_variable_codelist_maps(standards)
-        self.cache.add_batch(variable_codelist_maps, "name")
+    async def load_standard(
+        self, standard: str, version: str, standard_substandard: str = None
+    ):
+        if not standard_substandard:
+            standards = [{"href": f"/mdr/{standard}/{version}"}]
+            variable_codelist_maps = await self._get_variable_codelist_maps(standards)
+            self.cache.add_batch(variable_codelist_maps, "name")
+        else:
+            standards = [{"href": f"/mdr/{standard}/{version}/{standard_substandard}"}]
+            variable_codelist_maps = await self._get_variable_codelist_maps(standards)
+            self.cache.add_batch(variable_codelist_maps, "name")
         # save details of all standards to cache
         standards_details: List[dict] = await self._async_get_details_of_all_standards(
             standards

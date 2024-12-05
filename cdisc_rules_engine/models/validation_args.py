@@ -10,6 +10,7 @@ Validation_args = namedtuple(
         "report_template",
         "standard",
         "version",
+        "substandard",
         "controlled_terminology_package",
         "output",
         "output_format",

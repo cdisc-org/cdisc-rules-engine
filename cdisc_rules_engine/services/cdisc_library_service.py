@@ -296,7 +296,9 @@ class CDISCLibraryService:
         model_data["standard_type"] = standard_type
         return model_data
 
-    def _get_standard(self, standard_type: str, version: str) -> dict:
+    def _get_standard(
+        self, standard_type: str, version: str, substandard: str = None
+    ) -> dict:
         """
         Requests a standard definition from the library.
         Internal method, not for usage in the client code.
@@ -306,6 +308,7 @@ class CDISCLibraryService:
             "sendig": partial(self._client.get_sendig, version),
             "adam": partial(self._client.get_adam, version),
             "cdashig": partial(self._client.get_cdashig, version),
+            "tig": partial(self._client.get_tig, version, substandard),
         }
         function_to_call: Callable = standard_get_function_map.get(
             standard_type, self._client.get_sdtmig

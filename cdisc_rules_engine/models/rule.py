@@ -74,7 +74,11 @@ class Rule:
         for authority in authorities:
             for standard in authority.get("Standards", []):
                 standards.append(
-                    {"Name": standard.get("Name"), "Version": standard.get("Version")}
+                    {
+                        "Name": standard.get("Name"),
+                        "Version": standard.get("Version"),
+                        "Substandard": standard.get("Substandard", {}),
+                    }
                 )
         return standards
 
