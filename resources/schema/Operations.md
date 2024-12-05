@@ -1,6 +1,6 @@
 ## codelist_terms
 
-Returns a list of valid codelist/term values. Used for evaluating whether NCI code or submission values are valid based on controlled terminology. This operator requires the -ct flag to specify the controlled terminology package presently. Expects three parameters: `codelists` which is a list of the codelist submission value(s) to retrieve, `level` which is the level of data (either "codelist" or "term") at which to return data from, and `returntype` which is the type of values to return, either "code" for NCI Code(s) or "value" for submission value(s)
+Returns a list of valid codelist/term values. Used for evaluating whether NCI code or submission values are valid based on controlled terminology. Expects three parameters: `codelists` which is a list of the codelist submission value(s) to retrieve, `level` which is the level of data (either "codelist" or "term") at which to return data from, and `returntype` which is the type of values to return, either "code" for NCI Code(s) or "value" for submission value(s)
 
 ```yaml
 -   "Check": {
@@ -36,6 +36,18 @@ Returns a list of valid codelist/term values. Used for evaluating whether NCI co
 ## codelist_extensible
 
 Returns a Series indicating whether a specified `codelist` is extensible. Used in conjunction with `codelist_terms` to determine if values outside the codelist are acceptable. From the above example, `$extensible` will contain a bool if the codelist PKUDUG is extensible in all rows of the column.
+
+## define_extensible_codelists
+
+Returns a list of valid extensible codelist term's submission values. Used for evaluating whether submission values are valid based on controlled terminology. Expects the parameter `codelists` which is a list of the codelist submission value(s) to retrieve. If the codelist argument is `["All"]` will return all extensible terms for the CT in a list.
+
+```yaml
+    {
+      "id": "$ext_value",
+      "codelist": ["ALL"],
+      "operator": "define_extensible_codelists"
+    },
+```
 
 ## define_variable_metadata
 

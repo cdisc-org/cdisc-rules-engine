@@ -26,14 +26,33 @@ from cdisc_rules_engine.utilities.utils import (
     get_library_variables_metadata_cache_key,
     get_standard_codelist_cache_key,
 )
+from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import (
+    DefineXMLReaderFactory,
+)
 
 
-def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:
+def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:  # noqa
+    if args.define_xml_path:
+        define_xml_reader = DefineXMLReaderFactory.from_filename(args.define_xml_path)
+        define_version = define_xml_reader.class_define_xml_version()
+        if (
+            define_version.model_package == "define_2_1"
+            and len(args.controlled_terminology_package) > 0
+        ):
+            raise ValueError(
+                "Cannot use -ct controlled terminology package command with Define-XML2.1 submission"
+            )
+        elif (
+            define_version.model_package == "define_2_0"
+            and len(args.controlled_terminology_package) > 1
+        ):
+            raise ValueError(
+                "Cannot provide multiple controlled terminology packages with Define-XML2.0 submission"
+            )
     standards_file = os.path.join(args.cache, "standards_details.pkl")
     models_file = os.path.join(args.cache, "standards_models.pkl")
     variables_codelist_file = os.path.join(args.cache, "variable_codelist_maps.pkl")
     variables_metadata_file = os.path.join(args.cache, "variables_metadata.pkl")
-
     standard_details_cache_key = get_standard_details_cache_key(
         args.standard, args.version.replace(".", "-")
     )
@@ -72,11 +91,33 @@ def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:
             args.controlled_terminology_package
             and ct_version in args.controlled_terminology_package
         ):
-            # Only load ct package corresponding to the provided ct
             with open(os.path.join(args.cache, file_name), "rb") as f:
                 data = pickle.load(f)
                 ct_package_data[ct_version] = data
-
+    if args.define_xml_path and define_version.model_package == "define_2_1":
+        (
+            standards,
+            merged_CT_packages,
+            extensible,
+            merged_flag,
+        ) = define_xml_reader.get_ct_standards_metadata()
+        for standard in standards:
+            pickle_filename = (
+                f"{standard.publishing_set.lower()}ct-{standard.version}.pkl"
+            )
+            if pickle_filename in ct_files:
+                with open(os.path.join(args.cache, pickle_filename), "rb") as f:
+                    data = pickle.load(f)
+                    ct_package_data[pickle_filename.split(".")[0]] = data
+        if merged_flag:
+            ct_package_data["define_XML_merged_CT"] = merged_CT_packages
+            ct_package_data["extensible"] = extensible
+        else:
+            extensible_terms = define_xml_reader.get_extensible_codelist_mappings()
+            ct_package_data["extensible"] = extensible_terms
+    if args.define_xml_path:
+        extensible_terms = define_xml_reader.get_extensible_codelist_mappings()
+        ct_package_data["extensible"] = extensible_terms
     return LibraryMetadataContainer(
         standard_metadata=standard_metadata,
         model_metadata=model_details,

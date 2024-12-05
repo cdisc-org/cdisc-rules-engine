@@ -1,6 +1,7 @@
 import pandas as pd
 from cdisc_rules_engine.operations.base_operation import BaseOperation
 from cdisc_rules_engine.exceptions.custom_exceptions import MissingDataError
+from cdisc_rules_engine.services import logger
 
 
 class CodelistTerms(BaseOperation):
@@ -17,13 +18,27 @@ class CodelistTerms(BaseOperation):
         codelist_level = self.params.level
         check = self.params.returntype
         codes = []
-        ct_package_data = next(
-            iter(self.library_metadata._ct_package_metadata.values())
-        )
+        try:
+            ct_packages = self.library_metadata._ct_package_metadata
+            if "define_XML_merged_CT" in ct_packages:
+                ct_package_data = ct_packages["define_XML_merged_CT"]
+            else:
+                ct_package_data = next(
+                    (pkg for name, pkg in ct_packages.items() if name != "extensible")
+                )
+        except (AttributeError) as e:
+            logger.warning(
+                "CT package data is not populated: %s "
+                "-- a valid define.xml file or -ct command is required to execute",
+                e,
+            )
+        submission_lookup = ct_package_data["submission_lookup"]
+        lookup_map = {k.lower(): k for k in submission_lookup.keys()}
         for codelist in codelists:
-            code_obj = ct_package_data["submission_lookup"].get(codelist)
-            if code_obj is None:
+            original_key = lookup_map.get(codelist.lower())
+            if original_key is None:
                 raise MissingDataError(f"Codelist '{codelist}' not found in metadata")
+            code_obj = submission_lookup[original_key]
             codes.append(code_obj)
         values = []
 

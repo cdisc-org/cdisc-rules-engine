@@ -37,3 +37,23 @@ class DefineXMLReader20(BaseDefineXMLReader):
             # v2.0 does not support is_non_standard. Default to blank
             "define_dataset_is_non_standard": "",
         }
+
+    def get_extensible_codelist_mappings(self):
+        metadata = self._odm_loader.MetaDataVersion()
+        mappings = {}
+        for codelist in metadata.CodeList:
+            extended_values = []
+            items = codelist.CodeListItem
+            for item in items:
+                if hasattr(item, "ExtendedValue") and item.ExtendedValue == "Yes":
+                    extended_values.append(item.CodedValue)
+            if (
+                extended_values
+                and hasattr(codelist, "Alias")
+                and codelist.Alias is not None
+            ):
+                mappings[codelist.Name] = {
+                    "codelist": codelist.Alias[0].Name,
+                    "extended_values": extended_values,
+                }
+        return mappings
