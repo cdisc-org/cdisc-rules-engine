@@ -77,7 +77,6 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
         if standards_data or codelists:
             library_service = CDISCLibraryService(api_key, cache)
             cache_populator: CachePopulator = CachePopulator(cache, library_service)
-            # TODO: modify load standard call to accept substandard
             if standards_data:
                 asyncio.run(
                     cache_populator.load_standard(
