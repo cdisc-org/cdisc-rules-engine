@@ -1,10 +1,6 @@
 import pandas as pd
 from cdisc_rules_engine.operations.base_operation import BaseOperation
-from cdisc_rules_engine.constants.define_xml_constants import DEFINE_XML_FILE_NAME
-from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import (
-    DefineXMLReaderFactory,
-)
-import os
+from cdisc_rules_engine.exceptions.custom_exceptions import MissingDataError
 
 
 class DefineCodelists(BaseOperation):
@@ -13,23 +9,27 @@ class DefineCodelists(BaseOperation):
         Returns a list of codelist values from the define.xml file.
         fxn to be be used when a codelist is extensible to acquire the additional values
         """
-        define_contents = self.data_service.get_define_xml_contents(
-            dataset_name=os.path.join(self.params.directory_path, DEFINE_XML_FILE_NAME)
-        )
-        define_reader = DefineXMLReaderFactory.from_file_contents(define_contents)
-        variables_metadata = define_reader.extract_variables_metadata(
-            self.params.domain
-        )
-        variable_metadata = {
-            metadata["define_variable_name"]: metadata.get(
-                self.params.attribute_name, ""
+        if not self.params.codelists:
+            raise MissingDataError("Codelists operation parameter not provided")
+        codelists = self.params.codelists
+        values = []
+        ct_package_data = self.library_metadata._ct_package_metadata.get("extensible")
+        if ct_package_data is None:
+            raise MissingDataError(
+                "Parsed Extensible terms not found in library CT metadata"
             )
-            for metadata in variables_metadata
-        }
-        return (
-            variable_metadata.get(
-                self.params.target.replace("--", self.params.domain, 1), ""
-            )
-            if self.params.target
-            else variable_metadata
-        )
+        if len(codelists) == 1 and codelists[0] == "ALL":
+            return [
+                value
+                for data in ct_package_data.values()
+                for value in data["extended_values"]
+            ]
+
+        lookup_map = {name.lower(): name for name in ct_package_data.keys()}
+        for codelist in codelists:
+            original_key = lookup_map.get(codelist.lower())
+            if original_key is None:
+                raise MissingDataError(f"Codelist '{codelist}' not found in metadata")
+            codelist_data = ct_package_data[original_key]
+            values.extend(codelist_data["extended_values"])
+        return values

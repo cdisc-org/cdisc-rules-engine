@@ -102,6 +102,9 @@ Run `python core.py validate --help` to see the list of validation options.
   -ct, --controlled-terminology-package TEXT
                                   Controlled terminology package to validate
                                   against, can provide more than one
+                                  NOTE: if a defineXML is provided, if it is version 2.1
+                                  engine will use the CT laid out in the define.  If it is
+                                  version 2.0, -ct is expected to specify the CT package
   -o, --output TEXT               Report output file destination and name. Path will be
                                   relative to the validation execution directory
                                   and should end in the desired output filename

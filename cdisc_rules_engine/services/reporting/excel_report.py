@@ -17,6 +17,7 @@ from .excel_writer import (
 )
 from cdisc_rules_engine.utilities.reporting_utilities import (
     get_define_version,
+    get_define_ct,
 )
 from pathlib import Path
 
@@ -82,7 +83,14 @@ class ExcelReport(BaseReport):
         # write standards details
         wb["Conformance Details"]["B7"] = standard.upper()
         wb["Conformance Details"]["B8"] = f"V{version}"
-        wb["Conformance Details"]["B9"] = ", ".join(cdiscCt)
+        if cdiscCt:
+            wb["Conformance Details"]["B9"] = (
+                ", ".join(cdiscCt)
+                if isinstance(cdiscCt, (list, tuple))
+                else str(cdiscCt)
+            )
+        else:
+            wb["Conformance Details"]["B9"] = ""
         wb["Conformance Details"]["B10"] = define_version
 
         # Populate external dictionary versions
@@ -114,9 +122,19 @@ class ExcelReport(BaseReport):
                 define_version: str = self._args.define_version or get_define_version(
                     self._args.dataset_paths
                 )
+            controlled_terminology = self._args.controlled_terminology_package
+            if not controlled_terminology and define_version:
+                if define_xml_path and define_version:
+                    controlled_terminology = get_define_ct(
+                        [define_xml_path], define_version
+                    )
+                else:
+                    controlled_terminology = get_define_ct(
+                        self._args.dataset_paths, define_version
+                    )
             report_data = self.get_export(
                 define_version,
-                self._args.controlled_terminology_package,
+                controlled_terminology,
                 self._args.standard,
                 self._args.version.replace("-", "."),
                 dictionary_versions,
