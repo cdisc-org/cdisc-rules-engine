@@ -35,7 +35,7 @@ def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:
     variables_metadata_file = os.path.join(args.cache, "variables_metadata.pkl")
 
     standard_details_cache_key = get_standard_details_cache_key(
-        args.standard, args.version.replace(".", "-")
+        args.standard, args.version.replace(".", "-"), args.substandard
     )
     with open(standards_file, "rb") as f:
         data = pickle.load(f)

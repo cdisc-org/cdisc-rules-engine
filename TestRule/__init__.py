@@ -65,6 +65,7 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
         standards_data = json_data.get("standard", {})
         standard = standards_data.get("product")
         standard_version = standards_data.get("version")
+        standard_substandard = None
         if standard.lower() == "tig":
             standard_substandard = reduce(
                 getitem,
@@ -76,6 +77,7 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
         if standards_data or codelists:
             library_service = CDISCLibraryService(api_key, cache)
             cache_populator: CachePopulator = CachePopulator(cache, library_service)
+            # TODO: modify load standard call to accept substandard
             if standards_data:
                 asyncio.run(
                     cache_populator.load_standard(
@@ -92,7 +94,13 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
         validate_datasets_payload(datasets)
         define_xml = json_data.get("define_xml")
         tester = RuleTester(
-            datasets, define_xml, cache, standard, standard_version, codelists
+            datasets,
+            define_xml,
+            cache,
+            standard,
+            standard_version,
+            standard_substandard,
+            codelists,
         )
         result = tester.validate(rule)
         result_json = json.dumps(result)

@@ -30,13 +30,14 @@ class RuleTester:
         cache: InMemoryCacheService = None,
         standard: str = None,
         standard_version: str = "",
+        standard_substandard: str = "",
         codelists=[],
     ):
         self.datasets = [DummyDataset(dataset_data) for dataset_data in datasets]
         self.cache = cache or InMemoryCacheService()
 
         standard_details_cache_key = get_standard_details_cache_key(
-            standard, standard_version
+            standard, standard_version, standard_substandard
         )
         variable_details_cache_key = get_library_variables_metadata_cache_key(
             standard, standard_version
