@@ -77,7 +77,7 @@ class Rule:
                     {
                         "Name": standard.get("Name"),
                         "Version": standard.get("Version"),
-                        "Substandard": standard.get("Substandard", {}),
+                        "Substandard": standard.get("Substandard"),
                     }
                 )
         return standards

@@ -189,8 +189,8 @@ def test_parse_conditions_not_condition(yaml, output):
                 }
             ],
             [
-                {"Name": "SDTMIG", "Version": "3-4"},
-                {"Name": "SENDIG", "Version": "3-1"},
+                {"Name": "SDTMIG", "Version": "3-4", "Substandard": None},
+                {"Name": "SENDIG", "Version": "3-1", "Substandard": None},
             ],
         )
     ],

@@ -256,7 +256,7 @@ class CDISCLibraryService:
         )
 
     def get_standard_details(
-        self, standard_type: str, version: str, substandard: str
+        self, standard_type: str, version: str, substandard: str = None
     ) -> dict:
         """
         Accepts standard type and version and returns details of a standard like:
