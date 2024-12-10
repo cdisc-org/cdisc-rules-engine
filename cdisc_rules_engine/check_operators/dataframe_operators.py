@@ -949,6 +949,29 @@ class DataframeType(BaseType):
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
+    def is_consistent_across_study(self, other_value):
+        target = self.replace_prefix(other_value.get("target"))
+        comparator = other_value.get("comparator")
+        grouping_cols = []
+        if isinstance(comparator, str):
+            col_name = self.replace_prefix(comparator)
+            if col_name in self.value.columns:
+                grouping_cols.append(col_name)
+        else:
+            for col in comparator:
+                col_name = self.replace_prefix(col)
+                if col_name in self.value.columns:
+                    grouping_cols.append(col_name)
+        df_check = self.value[grouping_cols + [target]].copy()
+        df_check = df_check.fillna("_NaN_")
+        results = pd.Series(True, index=df_check.index)
+        for name, group in df_check.groupby(grouping_cols):
+            if group[target].nunique() == 1:
+                results[group.index] = False
+        return results
+
+    @log_operator_execution
+    @type_operator(FIELD_DATAFRAME)
     def is_unique_set(self, other_value):
         target = self.replace_prefix(other_value.get("target"))
         comparator = other_value.get("comparator")
@@ -966,6 +989,11 @@ class DataframeType(BaseType):
         counts = df_group.apply(tuple, axis=1).map(group_sizes)
         results = np.where(counts <= 1, True, False)
         return self.value.convert_to_series(results)
+
+    @log_operator_execution
+    @type_operator(FIELD_DATAFRAME)
+    def is_not_unique_set(self, other_value):
+        return ~self.is_unique_set(other_value)
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -1023,11 +1051,6 @@ class DataframeType(BaseType):
     @type_operator(FIELD_DATAFRAME)
     def is_unique_relationship(self, other_value):
         return ~self.is_not_unique_relationship(other_value)
-
-    @log_operator_execution
-    @type_operator(FIELD_DATAFRAME)
-    def is_not_unique_set(self, other_value):
-        return ~self.is_unique_set(other_value)
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
