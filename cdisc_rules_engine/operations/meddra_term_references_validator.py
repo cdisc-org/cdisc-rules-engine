@@ -29,7 +29,6 @@ class MedDRATermReferencesValidator(BaseOperation):
         valid_term_hierarchies = self.cache.get(cache_key)
         if not valid_term_hierarchies:
             terms: dict = self.cache.get(meddra_path)
-            print(terms)
             valid_term_hierarchies = MedDRATerm.get_term_hierarchies(terms)
             self.cache.add(cache_key, valid_term_hierarchies)
         column = str(uuid4()) + "_terms"
