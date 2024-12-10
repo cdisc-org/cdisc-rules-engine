@@ -77,11 +77,19 @@ from cdisc_rules_engine.operations.define_variable_metadata import (
 from cdisc_rules_engine.operations.valid_external_dictionary_value import (
     ValidExternalDictionaryValue,
 )
+from cdisc_rules_engine.operations.codelist_terms import CodelistTerms
+from cdisc_rules_engine.operations.codelist_extensible import CodelistExtensible
+from cdisc_rules_engine.operations.define_xml_extensible_codelists import (
+    DefineCodelists,
+)
 
 
 class OperationsFactory(FactoryInterface):
     _operations_map = {
+        "codelist_extensible": CodelistExtensible,
+        "codelist_terms": CodelistTerms,
         "dataset_names": DatasetNames,
+        "define_extensible_codelists": DefineCodelists,
         "distinct": Distinct,
         "dy": DayDataValidator,
         "extract_metadata": ExtractMetadata,

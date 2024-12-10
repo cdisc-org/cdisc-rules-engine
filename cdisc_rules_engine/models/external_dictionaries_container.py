@@ -4,6 +4,7 @@ from cdisc_rules_engine.models.dictionaries.meddra.meddra_validator import (
     MedDRAValidator,
 )
 from cdisc_rules_engine.models.dictionaries.medrt.validator import MEDRTValidator
+from cdisc_rules_engine.models.dictionaries.snomed.validator import SNOMEDValidator
 from cdisc_rules_engine.models.dictionaries.unii.validator import UNIIValidator
 from cdisc_rules_engine.models.dictionaries.whodrug.whodrug_validator import (
     WhoDrugValidator,
@@ -20,6 +21,7 @@ DICTIONARY_VALIDATORS = {
     DictionaryTypes.WHODRUG.value: WhoDrugValidator,
     DictionaryTypes.MEDRT.value: MEDRTValidator,
     DictionaryTypes.UNII.value: UNIIValidator,
+    DictionaryTypes.SNOMED.value: SNOMEDValidator,
 }
 
 

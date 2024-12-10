@@ -76,6 +76,7 @@
             "APRELSUB",
             "POOLDEF",
             "RELREC",
+            "RELREF",
             "RELSPEC",
             "RELSUB",
             "SUPP--"
@@ -118,6 +119,21 @@
         "$ref": "#/$defs/Dataset"
       },
       "type": "array"
+    },
+    "DomainStructure": {
+      "additionalProperties": false,
+      "properties": {
+        "Exclude": {
+          "$ref": "#/$defs/Domains"
+        },
+        "Include": {
+          "$ref": "#/$defs/Domains"
+        },
+        "include_split_datasets": {
+          "type": "boolean"
+        }
+      },
+      "type": "object"
     },
     "JoinType": {
       "enum": ["inner", "left"],
@@ -495,19 +511,13 @@
           "type": "object"
         },
         "Domains": {
-          "additionalProperties": false,
-          "properties": {
-            "Exclude": {
-              "$ref": "#/$defs/Domains"
-            },
-            "Include": {
-              "$ref": "#/$defs/Domains"
-            },
-            "include_split_datasets": {
-              "type": "boolean"
-            }
-          },
-          "type": "object"
+          "$ref": "#/$defs/DomainStructure"
+        },
+        "Dataset or Domain or Item Group": {
+          "$ref": "#/$defs/DomainStructure"
+        },
+        "Use Case": {
+          "type": "string"
         },
         "Entities": {
           "anyOf": [

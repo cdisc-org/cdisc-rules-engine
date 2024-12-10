@@ -21,6 +21,7 @@ class ValidExternalDictionaryCode(BaseOperation):
                 code=row[self.params.target],
                 term_type=self.params.dictionary_term_type,
                 variable=self.params.original_target,
+                codes=self.params.dataframe[self.params.target].unique(),
             ),
             axis=1,
         )

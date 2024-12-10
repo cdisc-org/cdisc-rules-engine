@@ -18,6 +18,7 @@ class TermsFactoryInterface(ABC):
     def install_terms(
         self,
         directory_path: str,
+        **kwargs,
     ):  # maps term type to a dictionary of term identifiers to term
         """
         Accepts file contents and saves it to the DB.
