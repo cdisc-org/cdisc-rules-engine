@@ -207,6 +207,7 @@ def test(args: TestArgs):
         os.path.join("resources", "templates", "report-template.xlsx"),
         args.standard,
         args.version,
+        args.substandard,
         args.controlled_terminology_package,
         output_file,
         ["XLSX"],

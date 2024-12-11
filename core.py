@@ -113,6 +113,12 @@ def cli():
     help="Standard version to validate against",
 )
 @click.option(
+    "-ss",
+    "--substandard",
+    default=None,
+    help="CDISC Substandard to validate against",
+)
+@click.option(
     "-ct",
     "--controlled-terminology-package",
     multiple=True,
@@ -220,6 +226,7 @@ def validate(
     report_template: str,
     standard: str,
     version: str,
+    substandard: str,
     controlled_terminology_package: Tuple[str],
     output: str,
     output_format: Tuple[str],
@@ -312,6 +319,7 @@ def validate(
             report_template,
             standard,
             version,
+            substandard,
             set(controlled_terminology_package),  # avoiding duplicates
             output,
             set(output_format),  # avoiding duplicates
@@ -513,6 +521,12 @@ def list_rules(
     "-v", "--version", required=False, help="Standard version to get rules for"
 )
 @click.option(
+    "-ss",
+    "--substandard",
+    default=None,
+    help="CDISC Substandard to validate against",
+)
+@click.option(
     "-ct",
     "--controlled-terminology-package",
     multiple=True,
@@ -556,6 +570,7 @@ def test(
     rule: str,
     standard: str,
     version: str,
+    substandard: str,
     controlled_terminology_package: Tuple[str],
     define_version: str,
     whodrug: str,
@@ -619,6 +634,7 @@ def test(
         rule,
         standard,
         version,
+        substandard,
         external_dictionaries,
         controlled_terminology_package,
         define_version,

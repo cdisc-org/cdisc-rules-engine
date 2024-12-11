@@ -1485,7 +1485,6 @@ def test_is_ordered_by(target, order, dataset_type, data, expected_result):
     result = DataframeType({"value": df}).is_ordered_by(
         {"target": target, "order": order}
     )
-    print(result)
     assert result.equals(df.convert_to_series(expected_result))
 
 

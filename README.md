@@ -97,6 +97,8 @@ Run `python core.py validate --help` to see the list of validation options.
                                   [required]
   -v, --version TEXT              Standard version to validate against
                                   [required]
+  -ss, --substandard TEXT         Substandard to validate against
+                                  [required for TIG]
   -ct, --controlled-terminology-package TEXT
                                   Controlled terminology package to validate
                                   against, can provide more than one
@@ -222,6 +224,8 @@ To obtain an api key, please follow the instructions found here: <https://wiki.c
                                   [required]
   -v, --version TEXT              Standard version to validate against
                                   [required]
+  -ss, --substandard TEXT         Substandard to validate against
+                                  [required for TIG]
   -ct, --controlled-terminology-package TEXT
                                   Controlled terminology package to validate
                                   against, can provide more than one

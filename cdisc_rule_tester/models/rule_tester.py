@@ -30,16 +30,17 @@ class RuleTester:
         cache: InMemoryCacheService = None,
         standard: str = None,
         standard_version: str = "",
+        standard_substandard: str = None,
         codelists=[],
     ):
         self.datasets = [DummyDataset(dataset_data) for dataset_data in datasets]
         self.cache = cache or InMemoryCacheService()
 
         standard_details_cache_key = get_standard_details_cache_key(
-            standard, standard_version
+            standard, standard_version, standard_substandard
         )
         variable_details_cache_key = get_library_variables_metadata_cache_key(
-            standard, standard_version
+            standard, standard_version, standard_substandard
         )
         standard_metadata = self.cache.get(standard_details_cache_key)
         if standard_metadata:
@@ -48,7 +49,7 @@ class RuleTester:
         else:
             model_metadata = {}
         variable_codelist_cache_key = get_variable_codelist_map_cache_key(
-            standard, standard_version
+            standard, standard_version, standard_substandard
         )
 
         ct_package_metadata = {}
