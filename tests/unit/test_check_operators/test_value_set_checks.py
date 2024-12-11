@@ -121,6 +121,32 @@ def test_is_consistent_across_study(target, comparator, dataset_type, expected_r
 @pytest.mark.parametrize(
     "target, comparator, dataset_type, expected_result",
     [
+        ("BGSTRESU", "USUBJID", DaskDataset, [False, False, True, True]),
+        ("STRESU", "TESTCD", DaskDataset, [True, True, True, False]),
+        ("STRESU", ["TESTCD", "METHOD"], DaskDataset, [False, False, False, False]),
+    ],
+)
+def test_is_consistent_across_study_dask(
+    target, comparator, dataset_type, expected_result
+):
+    data = {
+        "USUBJID": ["SUBJ1", "SUBJ1", "SUBJ2", "SUBJ2"],
+        "BGSTRESU": ["kg", "kg", "g", "mg"],
+        "TESTCD": ["TEST1", "TEST1", "TEST1", "TEST2"],
+        "METHOD": ["M1", "M1", "M2", "M2"],
+        "SPEC": ["S1", "S1", "S1", "S1"],
+        "STRESU": ["mg", "mg", "g", "kg"],
+    }
+    df = dataset_type.from_dict(data)
+    result = DataframeType(
+        {"value": df, "column_prefix_map": {"--": ""}}
+    ).is_consistent_across_study({"target": target, "comparator": comparator})
+    assert result.equals(df.convert_to_series(expected_result))
+
+
+@pytest.mark.parametrize(
+    "target, comparator, dataset_type, expected_result",
+    [
         ("BGSTRESU", "USUBJID", PandasDataset, [False, False, True, True]),
     ],
 )
