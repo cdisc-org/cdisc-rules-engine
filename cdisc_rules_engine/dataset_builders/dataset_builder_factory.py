@@ -60,7 +60,7 @@ class DatasetBuilderFactory(FactoryInterface):
         RuleTypes.VALUE_CHECK_AGAINST_DEFINE_XML_VLM.value: ContentsDefineVLMDatasetBuilder,
         RuleTypes.VARIABLE_METADATA_CHECK_AGAINST_LIBRARY.value: VariablesMetadataWithLibraryMetadataDatasetBuilder,
         RuleTypes.DEFINE_ITEM_METADATA_CHECK_AGAINST_LIBRARY.value: DefineVariablesWithLibraryMetadataDatasetBuilder,
-        RuleTypes.VARIABLE_METADATA_CHECK_AGAINST_DEFINE_XML_AND_LIBRARY: VariablesMetadataWithDefineAndLibraryDatasetBuilder,
+        RuleTypes.VARIABLE_METADATA_CHECK_AGAINST_DEFINE_XML_AND_LIBRARY.value: VariablesMetadataWithDefineAndLibraryDatasetBuilder,
     }
 
     @classmethod
