@@ -8,8 +8,6 @@ from cdisc_rules_engine.services.cache.cache_populator_service import CachePopul
 import json
 import os
 import asyncio
-from functools import reduce
-from operator import getitem
 
 
 class BadRequestError(Exception):
@@ -66,13 +64,12 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
         standard = standards_data.get("product")
         standard_version = standards_data.get("version")
         standard_substandard = None
-        print(standard)
         if standard.lower() == "tig":
-            standard_substandard = reduce(
-                getitem,
-                ["Authorities", "Organization", "Standards", "Substandard"],
-                rule,
-            )
+            standard_substandard = (
+                rule.get("Authorities", [])[0]
+                .get("Standards", [])[0]
+                .get("Substandard")
+            ).lower()
         codelists = json_data.get("codelists", [])
         cache = InMemoryCacheService()
         if standards_data or codelists:
