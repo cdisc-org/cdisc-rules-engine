@@ -66,6 +66,7 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
         standard = standards_data.get("product")
         standard_version = standards_data.get("version")
         standard_substandard = None
+        print(standard)
         if standard.lower() == "tig":
             standard_substandard = reduce(
                 getitem,
