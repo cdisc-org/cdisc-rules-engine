@@ -698,6 +698,31 @@ Complement of `contains_all`
     - "Unplanned Treatment"
 ```
 
+## is_consistent_across_study
+
+Checks if a variable maintains consistent values within groups defined by one or more grouping variables. Groups records by specified value(s) and validates that the target variable maintains the same value within each unique combination of grouping variables
+
+Single grouping variable:
+
+```yaml
+- name: "BGSTRESU"
+  operator: is_consistent_across_study
+  value: "USUBJID"
+```
+
+Multiple grouping variables:
+
+```yaml
+- name: "--STRESU"
+  operator: is_consistent_across_study
+  value:
+    - "--TESTCD"
+    - "--CAT"
+    - "--SCAT"
+    - "--SPEC"
+    - "--METHOD"
+```
+
 ## is_unique_set
 
 Relationship Integrity Check

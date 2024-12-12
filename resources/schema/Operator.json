@@ -456,6 +456,15 @@
     {
       "properties": {
         "operator": {
+          "const": "is_consistent_across_study"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
           "const": "is_unique_set"
         }
       },
