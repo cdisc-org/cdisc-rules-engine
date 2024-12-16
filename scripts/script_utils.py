@@ -54,7 +54,7 @@ def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:  # noqa
     variables_codelist_file = os.path.join(args.cache, "variable_codelist_maps.pkl")
     variables_metadata_file = os.path.join(args.cache, "variables_metadata.pkl")
     standard_details_cache_key = get_standard_details_cache_key(
-        args.standard, args.version.replace(".", "-")
+        args.standard, args.version.replace(".", "-"), args.substandard
     )
     with open(standards_file, "rb") as f:
         data = pickle.load(f)
@@ -76,7 +76,7 @@ def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:  # noqa
     with open(variables_metadata_file, "rb") as f:
         data = pickle.load(f)
         cache_key = get_library_variables_metadata_cache_key(
-            args.standard, args.version
+            args.standard, args.version, args.substandard
         )
         variables_metadata = data.get(cache_key)
 

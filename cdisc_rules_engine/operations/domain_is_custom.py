@@ -14,7 +14,9 @@ class DomainIsCustom(BaseOperation):
         if not standard_data:
             cdisc_library_service = CDISCLibraryService(config, self.cache)
             standard_data = cdisc_library_service.get_standard_details(
-                self.params.standard.lower(), self.params.standard_version
+                self.params.standard.lower(),
+                self.params.standard_version,
+                self.params.substandard,
             )
             self.library_metadata.standard_metadata = standard_data
         return self.params.domain not in standard_data.get("domains", {})
