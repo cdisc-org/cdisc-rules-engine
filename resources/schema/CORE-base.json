@@ -309,6 +309,9 @@
                 },
                 "Version": {
                   "type": "string"
+                },
+                "Substandard": {
+                  "type": "string"
                 }
               },
               "required": ["Name", "References", "Version"],
