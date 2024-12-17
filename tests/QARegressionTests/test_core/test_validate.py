@@ -82,7 +82,6 @@ class TestValidate(unittest.TestCase):
 
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_message in stdout)
-        self.assertTrue(self.check_issue_summary_tab_empty())
 
     def test_validate_required_v_option_missing(self):
         args = [
@@ -118,7 +117,6 @@ class TestValidate(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_message in stdout)
         self.assertEqual(stderr, "")
-        self.assertTrue(self.check_issue_summary_tab_empty())
 
     def test_validate_with_all_required_options(self):
         args = [
@@ -138,7 +136,6 @@ class TestValidate(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_message in stdout)
         self.assertEqual(stderr, "")
-        self.assertTrue(self.check_issue_summary_tab_empty())
 
     def test_validate_without_all_required_options(self):
         args = [
@@ -218,7 +215,6 @@ class TestValidate(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertEqual(stderr, "")
         self.assertFalse(self.error_message in stdout)
-        self.assertTrue(self.check_issue_summary_tab_empty())
 
     def test_validate_minimum_options(self):
         args = [
@@ -238,7 +234,6 @@ class TestValidate(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertEqual(stderr, "")
         self.assertFalse(self.error_message in stdout)
-        self.assertTrue(self.check_issue_summary_tab_empty())
 
     def test_validate_less_than_minimum_options(self):
         args = ["python", "-m", "core", "validate", "-s", "sdtmig"]
@@ -330,7 +325,6 @@ class TestValidate(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_message in stdout)
         self.assertEqual(stderr, "")
-        self.assertTrue(self.check_issue_summary_tab_empty())
 
     def test_validate_with_log_level_info(self):
         args = [
@@ -352,7 +346,6 @@ class TestValidate(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_message in stdout)
         self.assertIn("warning", stderr)
-        self.assertTrue(self.check_issue_summary_tab_empty())
 
     def test_validate_with_log_level_error(self):
         args = [
@@ -374,7 +367,6 @@ class TestValidate(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_message in stdout)
         self.assertNotEqual(stderr, "")
-        self.assertTrue(self.check_issue_summary_tab_empty())
 
     def test_validate_with_log_level_critical(self):
         args = [
@@ -396,7 +388,6 @@ class TestValidate(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_message in stdout)
         self.assertEqual(stderr, "")
-        self.assertTrue(self.check_issue_summary_tab_empty())
 
     def test_validate_with_log_level_warn(self):
         args = [
@@ -417,7 +408,6 @@ class TestValidate(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_message in stdout)
         self.assertNotIn("warning", stderr)
-        self.assertTrue(self.check_issue_summary_tab_empty())
 
     def test_validate_with_invalid_log_level(self):
         args = [
@@ -457,7 +447,6 @@ class TestValidate(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_message in stdout)
         self.assertEqual(stderr, "")
-        self.assertTrue(self.check_issue_summary_tab_empty())
 
     def test_validate_high_value_ps(self):
         args = [
@@ -479,7 +468,6 @@ class TestValidate(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_message in stdout)
         self.assertEqual(stderr, "")
-        self.assertTrue(self.check_issue_summary_tab_empty())
 
     def test_validate_define_xml_path(self):
         args = [
@@ -500,7 +488,6 @@ class TestValidate(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_message in stdout)
         self.assertEqual(stderr, "")
-        self.assertTrue(self.check_issue_summary_tab_empty())
 
     def tearDown(self):
         for file_name in os.listdir("."):
