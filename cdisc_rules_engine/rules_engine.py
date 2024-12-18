@@ -486,6 +486,10 @@ class RulesEngine:
                     "object is None",
                     "'NoneType'",
                     "None has no attribute",
+                    "unsupported operand type",
+                    "bad operand type",
+                    "object is not",
+                    "cannot be None",
                 ]
             )
             if is_column_access_error:

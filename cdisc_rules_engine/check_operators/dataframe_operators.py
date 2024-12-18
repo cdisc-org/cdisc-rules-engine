@@ -50,10 +50,13 @@ def log_operator_execution(func):
                 or any(
                     phrase in error_message
                     for phrase in [
+                        "NoneType",
+                        "object is None",
+                        "'NoneType'",
+                        "None has no attribute",
                         "unsupported operand type",
                         "bad operand type",
                         "object is not",
-                        "has no attribute",
                         "cannot be None",
                     ]
                 )
