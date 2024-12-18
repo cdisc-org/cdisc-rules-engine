@@ -482,14 +482,10 @@ class RulesEngine:
             is_column_access_error = any(
                 pattern in traceback_str
                 for pattern in [
-                    "DataFrame.get",
-                    "DataFrame.__getitem__",
-                    "Series.get",
-                    "Series.__getitem__",
-                    "pandas/core/frame.py",
-                    "pandas/core/series.py",
-                    "pandas/core/indexes/base.py",
-                    "_engine.get_loc",
+                    "NoneType",
+                    "object is None",
+                    "'NoneType'",
+                    "None has no attribute",
                 ]
             )
             if is_column_access_error:
