@@ -334,10 +334,12 @@ class RulesEngine:
         # Adding copy for now to avoid updating cached dataset
         dataset = deepcopy(dataset)
         # preprocess dataset
+        logger.log(f"\n\ST{time.time()}-Dataset Preprocessing Starts")
         dataset_preprocessor = DatasetPreprocessor(
             dataset, domain, dataset_path, self.data_service, self.cache
         )
         dataset = dataset_preprocessor.preprocess(rule_copy, datasets)
+        logger.log(f"\n\ST{time.time()}-Dataset Preprocessing Ends")
         dataset = self.rule_processor.perform_rule_operations(
             rule_copy,
             dataset,
