@@ -44,6 +44,7 @@ from cdisc_rules_engine.dataset_builders import builder_factory
 from cdisc_rules_engine.models.external_dictionaries_container import (
     ExternalDictionariesContainer,
 )
+import traceback
 
 
 class RulesEngine:
@@ -58,6 +59,7 @@ class RulesEngine:
         self.config = config_obj or default_config
         self.standard = kwargs.get("standard")
         self.standard_version = (kwargs.get("standard_version") or "").replace(".", "-")
+        self.standard_substandard = kwargs.get("standard_substandard") or None
         self.library_metadata = kwargs.get("library_metadata")
         self.max_dataset_size = kwargs.get("max_dataset_size")
         self.dataset_paths = kwargs.get("dataset_paths")
@@ -102,6 +104,7 @@ class RulesEngine:
             InMemoryCacheService.get_instance(),
             self.standard,
             self.standard_version,
+            self.standard_substandard,
             self.library_metadata,
         ).get_dummy_data_service(datasets)
         dataset_dicts = []
@@ -193,7 +196,12 @@ class RulesEngine:
             logger.trace(e, __name__)
             logger.error(
                 f"""Error occurred during validation.
-                Error: {e}. Error message: {str(e)}"""
+            Error: {e}
+            Error Type: {type(e)}
+            Error Message: {str(e)}
+            Full traceback:
+            {traceback.format_exc()}
+            """
             )
             error_obj: ValidationErrorContainer = self.handle_validation_exceptions(
                 e, dataset_path, dataset_path
@@ -218,6 +226,7 @@ class RulesEngine:
             define_xml_path=self.define_xml_path,
             standard=self.standard,
             standard_version=self.standard_version,
+            standard_substandard=self.standard_substandard,
             library_metadata=self.library_metadata,
             dataset_implementation=self.data_service.dataset_implementation,
         )
@@ -346,6 +355,7 @@ class RulesEngine:
             dataset_path,
             standard=self.standard,
             standard_version=self.standard_version,
+            standard_substandard=self.standard_substandard,
             external_dictionaries=self.external_dictionaries,
             ct_packages=ct_packages,
         )

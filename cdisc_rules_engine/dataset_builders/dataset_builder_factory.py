@@ -94,6 +94,7 @@ class DatasetBuilderFactory(FactoryInterface):
             kwargs.get("define_xml_path"),
             kwargs.get("standard"),
             kwargs.get("standard_version"),
+            kwargs.get("standard_substandard", None),
             kwargs.get("library_metadata"),
         )
         return builder

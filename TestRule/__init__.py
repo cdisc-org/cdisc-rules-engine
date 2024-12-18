@@ -98,6 +98,7 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
             standard_version,
             standard_substandard,
             codelists,
+            rule,
         )
         result = tester.validate(rule)
         result_json = json.dumps(result)
