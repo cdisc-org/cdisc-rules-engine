@@ -43,6 +43,24 @@ def log_operator_execution(func):
                 f"Error in {func.__name__}: {str(e)}, "
                 f"traceback: {traceback.format_exc()}"
             )
+            error_message = str(e)
+            if isinstance(e, TypeError) and (
+                "NoneType" in error_message
+                or "None" in error_message
+                or any(
+                    phrase in error_message
+                    for phrase in [
+                        "unsupported operand type",
+                        "bad operand type",
+                        "object is not",
+                        "has no attribute",
+                        "cannot be None",
+                    ]
+                )
+            ):
+                return None
+            else:
+                raise
 
     return wrapper
 

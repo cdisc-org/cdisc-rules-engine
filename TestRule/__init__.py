@@ -64,7 +64,7 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
         standard = standards_data.get("product")
         standard_version = standards_data.get("version")
         standard_substandard = None
-        if standard.lower() == "tig":
+        if standard and standard.lower() == "tig":
             standard_substandard = (
                 rule.get("Authorities", [])[0]
                 .get("Standards", [])[0]

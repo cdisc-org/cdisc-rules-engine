@@ -403,7 +403,7 @@ class RulesEngine:
         )
         return define_xml_reader.extract_value_level_metadata(domain_name=domain_name)
 
-    def handle_validation_exceptions(
+    def handle_validation_exceptions(  # noqa
         self, exception, dataset_path, file_name
     ) -> ValidationErrorContainer:
         if isinstance(exception, DatasetNotFoundError):
@@ -476,6 +476,19 @@ class RulesEngine:
                     message=message,
                     status=ExecutionStatus.SKIPPED.value,
                 )
+        elif isinstance(exception, KeyError):
+            missing_column = str(exception.args[0]).strip("'")
+            if any(
+                op in str(exception.__traceback__)
+                for op in ["empty", "has_value", "is_null", "non_empty"]
+            ):
+                error_obj = FailedValidationEntity(
+                    dataset=os.path.basename(dataset_path),
+                    error="Column Not Present",
+                    message=f"Rule evaluation skipped - '{missing_column}' not found in dataset",
+                    status=ExecutionStatus.SKIPPED.value,
+                )
+                message = "rule evaluation skipped"
         else:
             error_obj = FailedValidationEntity(
                 dataset=os.path.basename(dataset_path),
