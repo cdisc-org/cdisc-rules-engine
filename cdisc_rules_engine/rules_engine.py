@@ -478,10 +478,21 @@ class RulesEngine:
                 )
         elif isinstance(exception, KeyError):
             missing_column = str(exception.args[0]).strip("'")
-            if any(
-                op in str(exception.__traceback__)
-                for op in ["empty", "has_value", "is_null", "non_empty"]
-            ):
+            traceback_str = str(exception.__traceback__)
+            is_column_access_error = any(
+                pattern in traceback_str
+                for pattern in [
+                    "DataFrame.get",
+                    "DataFrame.__getitem__",
+                    "Series.get",
+                    "Series.__getitem__",
+                    "pandas/core/frame.py",
+                    "pandas/core/series.py",
+                    "pandas/core/indexes/base.py",
+                    "_engine.get_loc",
+                ]
+            )
+            if is_column_access_error:
                 error_obj = FailedValidationEntity(
                     dataset=os.path.basename(dataset_path),
                     error="Column Not Present",
