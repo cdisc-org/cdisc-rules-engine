@@ -63,7 +63,7 @@ class RuleTester:
             variable_codelist_map=self.cache.get(variable_codelist_cache_key),
             ct_package_metadata=ct_package_metadata,
         )
-        if not standard and not standard_version:
+        if not standard and not standard_version and rule:
             standard = (
                 rule.get("Authorities")[0].get("Standards")[0].get("Name").lower()
             )
