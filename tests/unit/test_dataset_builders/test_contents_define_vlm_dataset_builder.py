@@ -129,6 +129,7 @@ def test_contents_define_vlm_dataset_builder(
         define_xml_path=None,
         standard="sdtmig",
         standard_version="3-4",
+        standard_substandard=None,
         library_metadata=LibraryMetadataContainer(),
     ).build()
     expected_df = dataset_implementation.from_dict(expected)

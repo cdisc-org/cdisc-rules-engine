@@ -27,6 +27,30 @@ def test_rule_with_errors(mock_get_dataset_class):
             },
         }
     ]
+    rule_preprocessed = {
+        "core_id": "QC.CDISC.SDTMIG.CG0032",
+        "classes": {"Include": ["ALL"]},
+        "domains": {"Include": ["ALL"]},
+        "rule_type": "Range & Limit",
+        "sensitivity": "Value",
+        "severity": "error",
+        "Authorities": [{"Standards": [{"Name": "SDTMIG", "Version": "3.4"}]}],
+        "conditions": {
+            "all": [
+                {
+                    "name": "get_dataset",
+                    "operator": "less_than",
+                    "value": {"target": "LBSEQ", "comparator": 2},
+                }
+            ]
+        },
+        "actions": [
+            {
+                "name": "generate_dataset_error_objects",
+                "params": {"message": "LBSEQ less than 2"},
+            }
+        ],
+    }
     rule = {
         "core_id": "QC.CDISC.SDTMIG.CG0032",
         "classes": {"Include": ["ALL"]},
@@ -52,7 +76,7 @@ def test_rule_with_errors(mock_get_dataset_class):
         ],
     }
     mock_get_dataset_class.return_value = None
-    tester = RuleTester(datasets)
+    tester = RuleTester(datasets, rule=rule_preprocessed)
     data = tester.validate(rule)
     assert "LB" in data
     assert len(data["LB"]) == 1
@@ -84,6 +108,30 @@ def test_rule_without_errors(mock_get_dataset_class):
             },
         }
     ]
+    rule_preprocessed = {
+        "core_id": "QC.CDISC.SDTMIG.CG0032",
+        "classes": {"Include": ["ALL"]},
+        "domains": {"Include": ["ALL"]},
+        "rule_type": "Range & Limit",
+        "sensitivity": "Value",
+        "severity": "error",
+        "Authorities": [{"Standards": [{"Name": "SDTMIG", "Version": "3.4"}]}],
+        "conditions": {
+            "all": [
+                {
+                    "name": "get_dataset",
+                    "operator": "greater_than",
+                    "value": {"target": "LBSEQ", "comparator": 2},
+                }
+            ]
+        },
+        "actions": [
+            {
+                "name": "generate_dataset_error_objects",
+                "params": {"message": "LBSEQ less than 2"},
+            }
+        ],
+    }
     rule = {
         "core_id": "QC.CDISC.SDTMIG.CG0032",
         "classes": {"Include": ["ALL"]},
@@ -109,7 +157,7 @@ def test_rule_without_errors(mock_get_dataset_class):
         ],
     }
     mock_get_dataset_class.return_value = None
-    tester = RuleTester(datasets)
+    tester = RuleTester(datasets, rule=rule_preprocessed)
     data = tester.validate(rule)
     assert "LB" in data
     assert len(data["LB"]) == 1
@@ -135,6 +183,30 @@ def test_rule_skipped():
             },
         }
     ]
+    rule_preprocessed = {
+        "core_id": "QC.CDISC.SDTMIG.CG0032",
+        "classes": {"Include": ["ALL"]},
+        "domains": {"Include": ["ALL"]},
+        "rule_type": "Range & Limit",
+        "sensitivity": "Value",
+        "severity": "error",
+        "Authorities": [{"Standards": [{"Name": "SDTMIG", "Version": "3.4"}]}],
+        "conditions": {
+            "all": [
+                {
+                    "name": "get_dataset",
+                    "operator": "greater_than",
+                    "value": {"target": "LBSEQ", "comparator": 2},
+                }
+            ]
+        },
+        "actions": [
+            {
+                "name": "generate_dataset_error_objects",
+                "params": {"message": "LBSEQ less than 2"},
+            }
+        ],
+    }
     rule = {
         "core_id": "QC.CDISC.SDTMIG.CG0032",
         "classes": {"Include": ["ALL"]},
@@ -159,7 +231,7 @@ def test_rule_skipped():
             }
         ],
     }
-    tester = RuleTester(datasets)
+    tester = RuleTester(datasets, rule=rule_preprocessed)
     data = tester.validate(rule)
     assert "LB" in data
     assert len(data["LB"]) == 1

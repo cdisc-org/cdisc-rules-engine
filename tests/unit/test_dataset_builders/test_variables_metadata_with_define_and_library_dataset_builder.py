@@ -119,6 +119,7 @@ def test_build_combined_metadata(
         define_xml_path=str(test_define_file_path),
         standard="sdtmig",
         standard_version="3-4",
+        standard_substandard=None,
         library_metadata=library_metadata,
     )
 

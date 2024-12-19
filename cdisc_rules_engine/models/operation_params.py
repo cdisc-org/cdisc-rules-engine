@@ -26,6 +26,7 @@ class OperationParams:
     standard_version: str
 
     # Optional parameters with defaults
+    standard_substandard: str = None
     attribute_name: str = None
     case_sensitive: bool = True
     codelist: str = None
