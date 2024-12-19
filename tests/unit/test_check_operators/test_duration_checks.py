@@ -59,6 +59,7 @@ def test_invalid_duration_edge_cases():
             "PT1H2M3.4S5M",
             "P4W",
             "P1Y1W",
+            None,
         ]
     }
     df = PandasDataset.from_dict(data)
@@ -79,6 +80,7 @@ def test_invalid_duration_edge_cases():
         True,
         True,
         False,
+        True,
         True,
     ]
     assert result.equals(df.convert_to_series(expected))
