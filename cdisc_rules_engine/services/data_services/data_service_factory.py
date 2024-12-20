@@ -30,6 +30,7 @@ class DataServiceFactory(FactoryInterface):
         cache_service: CacheServiceInterface,
         standard: str = None,
         standard_version: str = None,
+        standard_substandard: str = None,
         library_metadata: LibraryMetadataContainer = None,
         max_dataset_size: int = 0,
     ):
@@ -43,6 +44,7 @@ class DataServiceFactory(FactoryInterface):
         self.cache_service = cache_service
         self.standard = standard
         self.standard_version = standard_version
+        self.standard_substandard = standard_substandard
         self.library_metadata = library_metadata
         self.max_dataset_size = max_dataset_size
         self.dataset_size_threshold = self.config.get_dataset_size_threshold()
@@ -56,6 +58,7 @@ class DataServiceFactory(FactoryInterface):
                 "usdm",
                 standard=self.standard,
                 standard_version=self.standard_version,
+                standard_substandard=self.standard_substandard,
                 library_metadata=self.library_metadata,
                 dataset_path=dataset_paths[0],
                 dataset_implementation=self.get_dataset_implementation(),
@@ -66,6 +69,7 @@ class DataServiceFactory(FactoryInterface):
                 "local",
                 standard=self.standard,
                 standard_version=self.standard_version,
+                standard_substandard=self.standard_substandard,
                 library_metadata=self.library_metadata,
                 dataset_paths=dataset_paths,
                 dataset_implementation=self.get_dataset_implementation(),
@@ -77,6 +81,7 @@ class DataServiceFactory(FactoryInterface):
             data=data,
             standard=self.standard,
             standard_version=self.standard_version,
+            standard_substandard=self.standard_substandard,
             library_metadata=self.library_metadata,
             dataset_implementation=self.get_dataset_implementation(),
         )

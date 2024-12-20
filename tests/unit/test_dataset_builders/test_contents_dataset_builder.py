@@ -319,6 +319,7 @@ def test_ContentDatasetBuilder_split_datasets(conditions):
         define_xml_path=None,
         standard="sdtmig",
         standard_version="3-4",
+        standard_substandard=None,
         library_metadata=LibraryMetadataContainer(),
     ).get_dataset()
     assert result.equals(expected)

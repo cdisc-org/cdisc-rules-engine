@@ -31,6 +31,7 @@ def test_define_variables_metadata_with_library_metadata_dataset_builder(
     cache = InMemoryCacheService()
     standard = "sdtmig"
     standard_version = "3-4"
+    standard_substandard = None
     standard_data = {
         "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
         "classes": [
@@ -92,6 +93,7 @@ def test_define_variables_metadata_with_library_metadata_dataset_builder(
         define_xml_path=test_define_file_path,
         standard=standard,
         standard_version=standard_version,
+        standard_substandard=standard_substandard,
         library_metadata=library_metadata,
     ).build()
 

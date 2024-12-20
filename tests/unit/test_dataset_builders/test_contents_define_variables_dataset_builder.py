@@ -107,6 +107,7 @@ def test_contents_define_variables_dataset_builder(
         define_xml_path=None,
         standard="sdtmig",
         standard_version="3-4",
+        standard_substandard=None,
         library_metadata=LibraryMetadataContainer(),
     ).build()
     expected_data = dataset_implementation.from_dict(expected)
