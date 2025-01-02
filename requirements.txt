@@ -22,7 +22,7 @@ requests~=2.32.3
 setuptools~=75.1.0
 cachetools==5.5.0
 Pympler==1.1
-psutil==6.0.0
+psutil==6.1.1
 dask[dataframe]==2024.2.0
 dask[array]==2024.2.0
 pyreadstat==1.2.7
