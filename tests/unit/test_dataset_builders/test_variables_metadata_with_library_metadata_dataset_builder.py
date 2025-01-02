@@ -43,6 +43,7 @@ def test_variable_metadata_with_library_metadata_dataset_builder(
     cache = InMemoryCacheService()
     standard = "sdtmig"
     standard_version = "3-4"
+    standard_substandard = None
     standard_data = {
         "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
         "classes": [
@@ -104,6 +105,7 @@ def test_variable_metadata_with_library_metadata_dataset_builder(
         define_xml_path=None,
         standard=standard,
         standard_version=standard_version,
+        standard_substandard=standard_substandard,
         library_metadata=library_metadata,
     ).build()
     assert result.columns.tolist() == [
@@ -160,6 +162,7 @@ def test_variable_metadata_with_library_metadata_dataset_builder_variable_only_i
     cache = InMemoryCacheService()
     standard = "sdtmig"
     standard_version = "3-4"
+    standard_substandard = None
     standard_data = {
         "_links": {"model": {"href": "/mdr/sdtm/2-0"}},
         "classes": [
@@ -282,6 +285,7 @@ def test_variable_metadata_with_library_metadata_dataset_builder_variable_only_i
         define_xml_path=None,
         standard=standard,
         standard_version=standard_version,
+        standard_substandard=standard_substandard,
         library_metadata=library_metadata,
     ).build()
     assert set(result.columns.tolist()) == set(
