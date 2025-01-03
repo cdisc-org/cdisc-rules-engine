@@ -1,0 +1,50 @@
+name: Build Binary
+
+on:
+  workflow_call:
+    inputs:
+      os:
+        required: true
+        type: string
+      name:
+        required: true
+        type: string
+jobs:
+  build:
+    runs-on: ${{ inputs.os }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        id: pysetup
+        with:
+          python-version: "3.9"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install setuptools wheel twine
+          pip install -r requirements.txt
+      - name: Build Binary
+        run: |
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            pyinstaller core.py --dist ./dist/output/${{ inputs.name }} --hidden-import=pyreadstat._readstat_writer --add-data="$env:pythonLocation\Lib\site-packages\xmlschema\schemas;xmlschema/schemas" --add-data="resources/cache;resources/cache" --add-data="resources/templates;resources/templates" --add-data="resources/schema;resources/schema"
+          else
+            pyinstaller core.py --dist ./dist/output/${{ inputs.name }} --hidden-import=pyreadstat._readstat_writer --add-data=$pythonLocation/lib/python3.9/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates --add-data=resources/schema:resources/schema
+          fi
+        shell: bash
+      - name: Test Binary
+        run: |
+          cd dist/output/${{ inputs.name }}/core
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            if ./core.exe --help; then echo "test passed"; else echo "test failed"; exit 1; fi
+          else
+            chmod +x core
+            if ./core --help; then echo "test passed"; else echo "test failed"; exit 1; fi
+          fi
+        shell: bash
+      - name: Archive Binary
+        id: archive
+        uses: vimtor/action-zip@v1
+        with:
+          files: dist/output/${{ inputs.name }}/core/
+          dest: ${{ inputs.name }}.zip
