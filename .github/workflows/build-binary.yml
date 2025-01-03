@@ -27,9 +27,9 @@ jobs:
       - name: Build Binary
         run: |
           if [ "${{ runner.os }}" = "Windows" ]; then
-            pyinstaller core.py --dist ./dist/output/${{ inputs.name }} --add-data="$env:pythonLocation\Lib\site-packages\xmlschema\schemas;xmlschema/schemas" --add-data="resources/cache;resources/cache" --add-data="resources/templates;resources/templates" --add-data="resources/schema;resources/schema"
+            pyinstaller core.py --dist ./dist/output/${{ inputs.name }} --hidden-import=pyreadstat._readstat_writer --add-data="$env:pythonLocation\Lib\site-packages\xmlschema\schemas;xmlschema/schemas" --add-data="resources/cache;resources/cache" --add-data="resources/templates;resources/templates" --add-data="resources/schema;resources/schema"
           else
-            pyinstaller core.py --dist ./dist/output/${{ inputs.name }}  --add-data=$pythonLocation/lib/python3.9/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates --add-data=resources/schema:resources/schema
+            pyinstaller core.py --dist ./dist/output/${{ inputs.name }} --hidden-import=pyreadstat._readstat_writer --add-data=$pythonLocation/lib/python3.9/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates --add-data=resources/schema:resources/schema
           fi
         shell: bash
       - name: Archive Binary
