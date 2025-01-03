@@ -28,7 +28,7 @@ from pandas.api.types import is_integer_dtype
 from cdisc_rules_engine.services import logger
 from functools import wraps
 import traceback
-
+import time
 
 def log_operator_execution(func):
     @wraps(func)
