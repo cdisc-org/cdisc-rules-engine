@@ -1,0 +1,22 @@
+name: Test CORE Rules Engine
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-binaries:
+    strategy:
+      matrix:
+        include:
+          - os: "ubuntu-latest"
+            name: "core-ubuntu-latest"
+          - os: "ubuntu-20.04"
+            name: "core-ubuntu-20-04"
+          - os: "macos-latest"
+            name: "core-mac"
+          - os: "windows-latest"
+            name: "core-windows"
+    uses: ./.github/workflows/build-binary.yml
+    with:
+      os: ${{ matrix.os }}
+      name: ${{ matrix.name }}
