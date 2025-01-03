@@ -30,6 +30,7 @@ from functools import wraps
 import traceback
 import time
 
+
 def log_operator_execution(func):
     @wraps(func)
     def wrapper(self, other_value, *args, **kwargs):
