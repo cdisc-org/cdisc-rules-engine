@@ -54,7 +54,7 @@ jobs:
             chmod +x core
             EXE="./core"
           fi
-          $EXE python -c '
+          $EXE py -c '
           import pyreadstat
           import tempfile
           import os
