@@ -224,6 +224,7 @@ class RuleProcessor:
         dataset_path: str,
         standard: str,
         standard_version: str,
+        standard_substandard: str,
         external_dictionaries: ExternalDictionariesContainer = ExternalDictionariesContainer(),
         **kwargs,
     ) -> DatasetInterface:
@@ -262,6 +263,7 @@ class RuleProcessor:
                 grouping=operation.get("group", []),
                 standard=standard,
                 standard_version=standard_version,
+                standard_substandard=standard_substandard,
                 external_dictionaries=external_dictionaries,
                 ct_version=operation.get("version"),
                 ct_attribute=operation.get("attribute"),

@@ -66,6 +66,7 @@ def validate_single_rule(
         cache=cache,
         standard=args.standard,
         standard_version=args.version.replace(".", "-"),
+        standard_substandard=args.substandard,
         external_dictionaries=args.external_dictionaries,
         ct_packages=args.controlled_terminology_package,
         define_xml_path=args.define_xml_path,
@@ -127,12 +128,14 @@ def run_validation(args: Validation_args):
     max_dataset_size = get_max_dataset_size(args.dataset_paths)
     standard = args.standard
     standard_version = args.version.replace(".", "-")
+    standard_substandard = args.substandard
     data_service = DataServiceFactory(
         config,
         shared_cache,
         max_dataset_size=max_dataset_size,
         standard=standard,
         standard_version=standard_version,
+        standard_substandard=standard_substandard,
         library_metadata=library_metadata,
     ).get_data_service(args.dataset_paths)
     large_dataset_validation: bool = (
