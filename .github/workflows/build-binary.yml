@@ -49,21 +49,8 @@ jobs:
         run: |
           cd dist/output/${{ inputs.name }}/core
           if [ "${{ runner.os }}" = "Windows" ]; then
-            EXE="./core.exe"
+            if ./core.exe --test-pyreadstat; then echo "test passed"; else echo "test failed"; exit 1; fi
           else
             chmod +x core
-            EXE="./core"
-          fi
-          $EXE py -c '
-          import pyreadstat
-          import tempfile
-          import os
-          print("PyReadstat version:", pyreadstat.__version__)
-          temp_path = tempfile.mktemp(suffix=".sas7bdat")
-          data = [[1, 2], [3, 4]]
-          var_names = ["var1", "var2"]
-          pyreadstat.write_sas7bdat(temp_path, data, var_names=var_names)
-          df, meta = pyreadstat.read_sas7bdat(temp_path)
-          os.unlink(temp_path)
-          '
+            if ./core --test-pyreadstat; then echo "test passed"; else echo "test failed"; exit 1; fi
         shell: bash

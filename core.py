@@ -3,6 +3,8 @@ import json
 import logging
 import os
 import pickle
+import pyreadstat
+import tempfile
 from datetime import datetime
 from multiprocessing import freeze_support
 from typing import Tuple
@@ -736,6 +738,30 @@ def list_ct(cache_path: str, subsets: Tuple[str]):
             print(os.path.splitext(file)[0])
 
 
+@click.command()
+@click.option(
+    "--test-pyreadstat",
+    help="Release Test for pyreadstat module",
+)
+def test_pyreadstat():
+    """Release Test for pyreadstat module."""
+    try:
+        print(f"PyReadstat version: {pyreadstat.__version__}")
+        # Create a temporary SAS file
+        temp_path = tempfile.mktemp(suffix=".sas7bdat")
+        data = [[1, 2], [3, 4]]
+        var_names = ["var1", "var2"]
+        pyreadstat.write_sas7bdat(temp_path, data, var_names=var_names)
+        df, meta = pyreadstat.read_sas7bdat(temp_path)
+        os.unlink(temp_path)
+        print("PyReadstat test passed successfully!")
+        return 0
+    except Exception as e:
+        print(f"PyReadstat test failed: {str(e)}")
+        return 1
+
+
+cli.add_command(test_pyreadstat)
 cli.add_command(validate)
 cli.add_command(update_cache)
 cli.add_command(list_rules)
