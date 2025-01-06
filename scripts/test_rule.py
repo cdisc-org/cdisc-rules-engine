@@ -63,6 +63,7 @@ def validate_single_rule(
         cache=cache,
         standard=args.standard,
         standard_version=args.version.replace(".", "-"),
+        standard_substandard=args.substandard,
         ct_packages=args.controlled_terminology_package,
         external_dictionaries=args.external_dictionaries,
         define_xml_path=args.define_xml_path,
@@ -133,7 +134,7 @@ def test(args: TestArgs):
     with open(args.rule, "r", encoding="utf-8") as f:
         rules = [Rule.from_cdisc_metadata(json.load(f))]
     data_service_factory = DataServiceFactory(
-        config, shared_cache, args.standard, args.version
+        config, shared_cache, args.standard, args.version, args.substandard
     )
     data_service = data_service_factory.get_data_service()
     datasets = []

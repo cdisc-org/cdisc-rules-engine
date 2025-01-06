@@ -33,6 +33,7 @@ class BaseDatasetBuilder:
         define_xml_path,
         standard,
         standard_version,
+        standard_substandard,
         library_metadata=LibraryMetadataContainer(),
     ):
         self.data_service = data_service
@@ -46,6 +47,7 @@ class BaseDatasetBuilder:
         self.define_xml_path = define_xml_path
         self.standard = standard
         self.standard_version = standard_version
+        self.standard_substandard = standard_substandard
         self.library_metadata = library_metadata
         self.dataset_implementation = self.data_service.dataset_implementation
 
