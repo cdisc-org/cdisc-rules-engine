@@ -20,3 +20,19 @@ jobs:
     with:
       os: ${{ matrix.os }}
       name: ${{ matrix.name }}
+  test-release-assets:
+    needs: build-binaries
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Create release assets
+        uses: vimtor/action-zip@v1
+        with:
+          files: artifacts/core-ubuntu-latest/ artifacts/core-ubuntu-20-04/ artifacts/core-mac/ artifacts/core-windows/
+          recursive: true
+          dest: release-assets/
+      - name: List created assets
+        run: ls -R release-assets/
