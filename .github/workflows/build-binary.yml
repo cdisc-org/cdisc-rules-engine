@@ -49,7 +49,7 @@ jobs:
         run: |
           cd dist/output/${{ inputs.name }}/core
           if [ "${{ runner.os }}" = "Windows" ]; then
-            if ./core.exe --test-pyreadstat; then echo "test passed"; else echo "test failed"; exit 1; fi
+            if ./core.exe test-pyreadstat; then echo "test passed"; else echo "test failed"; exit 1; fi
           else
             chmod +x core
             if ./core test-pyreadstat; then echo "test passed"; else echo "test failed"; exit 1; fi
