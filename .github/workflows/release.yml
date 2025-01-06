@@ -21,7 +21,6 @@ jobs:
     with:
       os: ${{ matrix.os }}
       name: ${{ matrix.name }}
-
   create-release-assets:
     needs: build-binaries
     runs-on: ubuntu-latest
@@ -30,12 +29,23 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: artifacts
-      - name: Create release assets
+      - name: Create individual release zip files
         uses: vimtor/action-zip@v1
         with:
-          files: artifacts/core-ubuntu-latest/ artifacts/core-ubuntu-20-04/ artifacts/core-mac/ artifacts/core-windows/
-          recursive: true
-          dest: release-assets/
+          files: artifacts/core-ubuntu-latest/
+          dest: core-ubuntu-latest.zip
+      - uses: vimtor/action-zip@v1
+        with:
+          files: artifacts/core-ubuntu-20-04/
+          dest: core-ubuntu-20-04.zip
+      - uses: vimtor/action-zip@v1
+        with:
+          files: artifacts/core-mac/
+          dest: core-mac.zip
+      - uses: vimtor/action-zip@v1
+        with:
+          files: artifacts/core-windows/
+          dest: core-windows.zip
 
       - name: Upload Ubuntu Latest Release Asset
         uses: actions/upload-release-asset@v1
@@ -43,37 +53,34 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./release-assets/core-ubuntu-latest.zip
+          asset_path: ./core-ubuntu-latest.zip
           asset_name: core-ubuntu-latest.zip
           asset_content_type: application/zip
-
       - name: Upload Ubuntu 20.04 Release Asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./release-assets/core-ubuntu-20-04.zip
+          asset_path: ./core-ubuntu-20-04.zip
           asset_name: core-ubuntu-20-04.zip
           asset_content_type: application/zip
-
       - name: Upload Mac Release Asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./release-assets/core-mac.zip
+          asset_path: ./core-mac.zip
           asset_name: core-mac.zip
           asset_content_type: application/zip
-
       - name: Upload Windows Release Asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./release-assets/core-windows.zip
+          asset_path: ./core-windows.zip
           asset_name: core-windows.zip
           asset_content_type: application/zip
   deploy-package:
@@ -91,7 +98,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install setuptools wheel twine
           pip install -r requirements.txt
-      - name: Build and publish to PyPI
+      - name: Publish to PyPI
         env:
           TWINE_USERNAME: ${{ vars.PYPI_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
