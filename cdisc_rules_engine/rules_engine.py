@@ -192,6 +192,21 @@ class RulesEngine:
                 )
                 error_obj.domain = dataset_domain
                 return [error_obj.to_representation()]
+        except TypeError as te:
+            if "Domain" in str(te) and "not found in dataset" in str(te):
+                error_obj = ValidationErrorContainer(
+                    dataset=os.path.basename(dataset_path),
+                    error="Domain Not Found",
+                    message=str(te),
+                    status=ExecutionStatus.SKIPPED,
+                )
+                return [error_obj.to_representation()]
+            else:
+                error_obj: ValidationErrorContainer = self.handle_validation_exceptions(
+                    te, dataset_path, dataset_path
+                )
+                error_obj.domain = dataset_domain
+                return [error_obj.to_representation()]
         except Exception as e:
             logger.trace(e, __name__)
             logger.error(
@@ -503,7 +518,7 @@ class RulesEngine:
                 ]
             )
             if is_column_access_error:
-                error_obj = FailedValidationEntity(
+                error_obj = ValidationErrorContainer(
                     dataset=os.path.basename(dataset_path),
                     error="Column Not Present",
                     message=f"Rule evaluation skipped - '{missing_column}' not found in dataset",

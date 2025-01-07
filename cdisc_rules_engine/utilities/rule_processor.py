@@ -332,6 +332,10 @@ class RuleProcessor:
                 operation_params.datasets,
                 lambda item: item.get("domain") == operation_params.domain,
             )
+            if domain_details is None:
+                raise TypeError(
+                    f"Domain {operation_params.domain} not found in dataset"
+                )
             filename = get_dataset_name_from_details(domain_details)
             file_path: str = os.path.join(
                 get_directory_path(operation_params.dataset_path),
