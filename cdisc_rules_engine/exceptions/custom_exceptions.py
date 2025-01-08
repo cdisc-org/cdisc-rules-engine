@@ -45,29 +45,36 @@ class VariableMetadataNotFoundError(EngineError):
     )
 
 
-class DomainNotFoundInDefineXMLError(Exception):
+class DomainNotFoundError(EngineError):
+    """Raised when a required domain is not found in the dataset"""
+
+    code = 404
+    description = "Domain Not Found"
+
+
+class DomainNotFoundInDefineXMLError(EngineError):
     code = 400
     description = "Domain is not found in Define XML file"
 
 
-class InvalidDatasetFormat(Exception):
+class InvalidDatasetFormat(EngineError):
     code = 400
     description = "Dataset data is malformed."
 
 
-class NumberOfAttemptsExceeded(Exception):
+class NumberOfAttemptsExceeded(EngineError):
     pass
 
 
-class InvalidDictionaryVariable(Exception):
+class InvalidDictionaryVariable(EngineError):
     description = (
         "Provided dictionary variable does not correspond to a dictionary term type"
     )
 
 
-class UnsupportedDictionaryType(Exception):
+class UnsupportedDictionaryType(EngineError):
     description = "Specified dictionary type is not supported by the rules engine."
 
 
-class FailedSchemaValidation(Exception):
+class FailedSchemaValidation(EngineError):
     description = "Error Occured in Schema Validation"
