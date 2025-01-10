@@ -17,6 +17,21 @@ hiddenimports.extend(collected[2])
 
 block_cipher = None
 
+# Get xmlschema path based on platform
+if os.name == 'nt':
+    xmlschema_path = os.path.join(os.environ.get('pythonLocation', ''), 'Lib\\site-packages\\xmlschema\\schemas')
+else:
+    xmlschema_path = os.path.join(os.environ.get('pythonLocation', ''), 'lib/python3.9/site-packages/xmlschema/schemas')
+
+
+# Add data files to numpy_datas
+numpy_datas.extend([
+    (xmlschema_path, 'xmlschema/schemas'),
+    ('resources/cache', 'resources/cache'),
+    ('resources/templates', 'resources/templates'),
+    ('resources/schema', 'resources/schema')
+])
+
 a = Analysis(
     ['core.py'],
     pathex=[],

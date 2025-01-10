@@ -28,29 +28,19 @@ jobs:
         if: runner.os != 'Windows'
         run: |
           READSTAT_PATH=$(python -c 'import pyreadstat, os; print(os.path.dirname(pyreadstat.__file__))')
-
           pyinstaller core.spec \
             --clean \
             --noconfirm \
-            --distpath ./dist/output/${{ inputs.name }} \
-            --add-data=$pythonLocation/lib/python3.9/site-packages/xmlschema/schemas:xmlschema/schemas \
-            --add-data=resources/cache:resources/cache \
-            --add-data=resources/templates:resources/templates \
-            --add-data=resources/schema:resources/schema
+            --distpath ./dist/output/${{ inputs.name }}
 
       - name: Build Binary (Windows)
         if: runner.os == 'Windows'
         run: |
           $READSTAT_PATH = python -c "import pyreadstat, os; print(os.path.dirname(pyreadstat.__file__))"
-
           pyinstaller core.spec `
             --clean `
             --noconfirm `
-            --distpath ./dist/output/${{ inputs.name }} `
-            --add-data="$env:pythonLocation\Lib\site-packages\xmlschema\schemas;xmlschema/schemas" `
-            --add-data="resources/cache;resources/cache" `
-            --add-data="resources/templates;resources/templates" `
-            --add-data="resources/schema;resources/schema"
+            --distpath ./dist/output/${{ inputs.name }}
       - name: Archive Binary
         uses: actions/upload-artifact@v4
         with:
