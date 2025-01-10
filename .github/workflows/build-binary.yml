@@ -27,38 +27,21 @@ jobs:
       - name: Build Binary (Linux/Mac)
         if: runner.os != 'Windows'
         run: |
-          pyinstaller core.spec \
-            --clean \
-            --noconfirm \
-            --distpath ./dist/output/${{ inputs.name }}
+          pyinstaller core.py \
+            --dist ./dist/output/${{ inputs.name }} \
+            --add-data=$pythonLocation/lib/python3.9/site-packages/xmlschema/schemas:xmlschema/schemas \
+            --add-data=resources/cache:resources/cache \
+            --add-data=resources/templates:resources/templates \
+            --add-data=resources/schema:resources/schema
       - name: Build Binary (Windows)
         if: runner.os == 'Windows'
         run: |
-          pyinstaller core.spec `
-            --clean `
-            --noconfirm `
-            --distpath ./dist/output/${{ inputs.name }}
-
-      - name: Flatten Directory Structure (Linux/Mac)
-        if: runner.os != 'Windows'
-        run: |
-          cd dist/output/${{ inputs.name }}/core
-          internal_dir=$(find . -maxdepth 1 -type d -name "*_internal" -print -quit)
-          if [ ! -z "$internal_dir" ]; then
-            mv "$internal_dir"/* .
-            rm -r "$internal_dir"
-          fi
-      - name: Flatten Directory Structure (Windows)
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          cd dist/output/${{ inputs.name }}/core
-          $internal_dir = Get-ChildItem -Directory -Filter "_internal" | Select-Object -First 1
-          if ($internal_dir) {
-            Move-Item -Path "$($internal_dir.FullName)\*" -Destination .
-            Remove-Item -Path $internal_dir.FullName -Recurse
-          }
-
+          pyinstaller core.py `
+            --dist ./dist/output/${{ inputs.name }} `
+            --add-data="$env:pythonLocation\Lib\site-packages\xmlschema\schemas;xmlschema/schemas" `
+            --add-data="resources/cache;resources/cache" `
+            --add-data="resources/templates;resources/templates" `
+            --add-data="resources/schema;resources/schema"
       - name: Archive Binary
         uses: actions/upload-artifact@v4
         with:
@@ -84,6 +67,11 @@ jobs:
             chmod -R 755 .
             chmod -R +r resources/
             ./core test-validate
+          fi
+          if [ $exit_code -eq 0 ]; then
+            echo "Test validate succeeded"
+          else
+            echo "Test validate failed with exit code $exit_code"
           fi
         shell: bash
       - name: Test pyreadstat
