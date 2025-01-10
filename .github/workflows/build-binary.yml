@@ -26,38 +26,10 @@ jobs:
 
       - name: Build Binary (Linux/Mac)
         if: runner.os != 'Windows'
-        run: |
-          pyinstaller core.py \
-            --dist ./dist/output/${{ inputs.name }} \
-            --add-data=$pythonLocation/lib/python3.9/site-packages/xmlschema/schemas:xmlschema/schemas \
-            --add-data=resources/cache:resources/cache \
-            --add-data=resources/templates:resources/templates \
-            --add-data=resources/schema:resources/schema \
-            --hidden-import=ipaddress \
-            --hidden-import=pathlib \
-            --hidden-import=urllib.parse \
-            --hidden-import=pyimod02_importers \
-            --collect-all xmlschema \
-            --recursive-copy-metadata xmlschema \
-            --recursive-copy-metadata pandas \
-            --recursive-copy-metadata numpy
+        run: pyinstaller core.py --dist ./dist/output/${{ inputs.name }} --add-data=$pythonLocation/lib/python3.9/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates --add-data=resources/schema:resources/schema
       - name: Build Binary (Windows)
         if: runner.os == 'Windows'
-        run: |
-          pyinstaller core.py `
-            --dist ./dist/output/${{ inputs.name }} `
-            --add-data="$env:pythonLocation\Lib\site-packages\xmlschema\schemas;xmlschema/schemas" `
-            --add-data="resources/cache;resources/cache" `
-            --add-data="resources/templates;resources/templates" `
-            --add-data="resources/schema;resources/schema" `
-            --hidden-import=ipaddress `
-            --hidden-import=pathlib `
-            --hidden-import=urllib.parse `
-            --hidden-import=pyimod02_importers `
-            --collect-all xmlschema `
-            --recursive-copy-metadata xmlschema `
-            --recursive-copy-metadata pandas `
-            --recursive-copy-metadata numpy
+        run: pyinstaller core.py --dist ./dist/output/${{ inputs.name }} --add-data="$env:pythonLocation\Lib\site-packages\xmlschema\schemas;xmlschema/schemas" --add-data="resources/cache;resources/cache" --add-data="resources/templates;resources/templates" --add-data="resources/schema;resources/schema"
       - name: Archive Binary
         uses: actions/upload-artifact@v4
         with:
