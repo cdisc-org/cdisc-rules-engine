@@ -59,6 +59,15 @@ exe = EXE(
     debug=False,
     strip=False,
     upx=True,
-    name='core',
     console=True,
+)
+
+COLLECT(
+    exe,
+    a.binaries,
+    a.zipfiles,
+    a.datas,
+    strip=False,
+    upx=True,
+    upx_exclude=[],
 )
