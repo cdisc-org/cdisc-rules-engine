@@ -23,6 +23,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install setuptools wheel twine
           pip install -r requirements.txt
+
       - name: Build Binary (Linux/Mac)
         if: runner.os != 'Windows'
         run: |
@@ -39,6 +40,27 @@ jobs:
             --clean `
             --noconfirm `
             --distpath ./dist/output/${{ inputs.name }}
+
+      - name: Flatten Directory Structure (Linux/Mac)
+        if: runner.os != 'Windows'
+        run: |
+          cd dist/output/${{ inputs.name }}/core
+          internal_dir=$(find . -maxdepth 1 -type d -name "*_internal" -print -quit)
+          if [ ! -z "$internal_dir" ]; then
+            mv "$internal_dir"/* .
+            rm -r "$internal_dir"
+          fi
+      - name: Flatten Directory Structure (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          cd dist/output/${{ inputs.name }}/core
+          $internal_dir = Get-ChildItem -Directory -Filter "_internal" | Select-Object -First 1
+          if ($internal_dir) {
+            Move-Item -Path "$($internal_dir.FullName)\*" -Destination .
+            Remove-Item -Path $internal_dir.FullName -Recurse
+          }
+
       - name: Archive Binary
         uses: actions/upload-artifact@v4
         with:
