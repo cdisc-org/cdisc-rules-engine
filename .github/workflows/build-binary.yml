@@ -27,7 +27,6 @@ jobs:
       - name: Build Binary (Linux/Mac)
         if: runner.os != 'Windows'
         run: |
-          READSTAT_PATH=$(python -c 'import pyreadstat, os; print(os.path.dirname(pyreadstat.__file__))')
           pyinstaller core.spec \
             --clean \
             --noconfirm \
@@ -35,7 +34,6 @@ jobs:
       - name: Build Binary (Windows)
         if: runner.os == 'Windows'
         run: |
-          $READSTAT_PATH = python -c "import pyreadstat, os; print(os.path.dirname(pyreadstat.__file__))"
           pyinstaller core.spec `
             --clean `
             --noconfirm `
@@ -68,7 +66,7 @@ jobs:
           path: dist/output/${{ inputs.name }}/
       - name: Test Binary help command
         run: |
-          cd dist/output/${{ inputs.name }}/core
+          cd dist/output/${{ inputs.name }}
           if [ "${{ runner.os }}" = "Windows" ]; then
             if ./core.exe --help; then echo "test passed"; else echo "test failed"; exit 1; fi
           else
@@ -78,29 +76,19 @@ jobs:
         shell: bash
       - name: Test Binary test-validate command
         run: |
-          cd dist/output/${{ inputs.name }}/core
+          cd dist/output/${{ inputs.name }}
           if [ "${{ runner.os }}" = "Windows" ]; then
             ./core.exe test-validate
-            exit_code=$?
           else
             chmod +x core
             chmod -R 755 .
             chmod -R +r resources/
             ./core test-validate
-            exit_code=$?
-          fi
-          if [ $exit_code -eq 0 ]; then
-            echo "Test validate succeeded"
-          else
-            echo "Test validate failed with exit code $exit_code"
-            echo "Contents of cache directory:"
-            ls -la resources/cache/
-            exit $exit_code
           fi
         shell: bash
       - name: Test pyreadstat
         run: |
-          cd dist/output/${{ inputs.name }}/core
+          cd dist/output/${{ inputs.name }}
           if [ "${{ runner.os }}" = "Windows" ]; then
             if ./core.exe test-pyreadstat; then echo "test passed"; else echo "test failed"; exit 1; fi
           else

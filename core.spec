@@ -16,22 +16,16 @@ numpy_bins.extend(collected[0])
 numpy_datas.extend(collected[1])
 hiddenimports.extend(collected[2])
 
-# Get xmlschema path based on platform
-if os.name == 'nt':  # Windows check
+if os.name == 'nt':
     xmlschema_path = os.path.join(os.environ.get('pythonLocation', ''), 'Lib\\site-packages\\xmlschema\\schemas')
 else:
     xmlschema_path = os.path.join(os.environ.get('pythonLocation', ''), 'lib/python3.9/site-packages/xmlschema/schemas')
-
-# Add our data files to numpy_datas
 numpy_datas.extend([
     (xmlschema_path, 'xmlschema/schemas'),
     ('resources/cache', 'resources/cache'),
     ('resources/templates', 'resources/templates'),
     ('resources/schema', 'resources/schema')
 ])
-
-block_cipher = None
-
 a = Analysis(
     ['core.py'],
     pathex=[],
@@ -53,15 +47,22 @@ pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 exe = EXE(
     pyz,
     a.scripts,
+    [],
     exclude_binaries=True,
+    name='core',
     debug=False,
+    bootloader_ignore_signals=False,
     strip=False,
     upx=True,
-    name='core', 
     console=True,
+    disable_windowed_traceback=False,
+    argv_emulation=False,
+    target_arch=None,
+    codesign_identity=None,
+    entitlements_file=None,
 )
 
-COLLECT(
+coll = COLLECT(
     exe,
     a.binaries,
     a.zipfiles,
@@ -69,5 +70,5 @@ COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='core' 
+    name='core',
 )
