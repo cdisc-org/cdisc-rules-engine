@@ -33,6 +33,14 @@ jobs:
             --add-data=resources/cache:resources/cache \
             --add-data=resources/templates:resources/templates \
             --add-data=resources/schema:resources/schema
+            --hidden-import=ipaddress \
+            --hidden-import=pathlib \
+            --hidden-import=urllib.parse \
+            --hidden-import=pyimod02_importers \
+            --collect-all xmlschema \
+            --recursive-copy-metadata xmlschema \
+            --recursive-copy-metadata pandas \
+            --recursive-copy-metadata numpy
       - name: Build Binary (Windows)
         if: runner.os == 'Windows'
         run: |
@@ -42,6 +50,14 @@ jobs:
             --add-data="resources/cache;resources/cache" `
             --add-data="resources/templates;resources/templates" `
             --add-data="resources/schema;resources/schema"
+            --hidden-import=ipaddress \
+            --hidden-import=pathlib \
+            --hidden-import=urllib.parse \
+            --hidden-import=pyimod02_importers \
+            --collect-all xmlschema \
+            --recursive-copy-metadata xmlschema \
+            --recursive-copy-metadata pandas \
+            --recursive-copy-metadata numpy
       - name: Archive Binary
         uses: actions/upload-artifact@v4
         with:
