@@ -24,12 +24,36 @@ jobs:
           python -m pip install --upgrade pip
           pip install setuptools wheel twine
           pip install -r requirements.txt
-      - name: Build Binary (Windows)
-        if: runner.os == 'Windows'
-        run: pyinstaller core.py --dist ./dist/output/${{ inputs.name }} --recursive-copy-metadata "*" --add-data="$env:pythonLocation\Lib\site-packages\xmlschema\schemas;xmlschema/schemas" --add-data="resources/cache;resources/cache" --add-data="resources/templates;resources/templates" --add-data="resources/schema;resources/schema"
       - name: Build Binary (Linux)
         if: runner.os != 'Windows'
-        run: pyinstaller core.py --dist ./dist/output/${{ inputs.name }} --recursive-copy-metadata "*" --add-data=$pythonLocation/lib/python3.9/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates --add-data=resources/schema:resources/schema
+        run: |
+          # Build the recursive-copy-metadata flags from requirements.txt
+          METADATA_FLAGS=$(pip list --format=freeze | cut -d'=' -f1 | sed 's/^/--recursive-copy-metadata /' | tr '\n' ' ')
+
+          # Run PyInstaller with the generated flags
+          pyinstaller core.py --dist ./dist/output/${{ inputs.name }} \
+            $METADATA_FLAGS \
+            --add-data=$pythonLocation/lib/python3.9/site-packages/xmlschema/schemas:xmlschema/schemas \
+            --add-data=resources/cache:resources/cache \
+            --add-data=resources/templates:resources/templates \
+            --add-data=resources/schema:resources/schema \
+            --noconfirm \
+            --clean
+      - name: Build Binary (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          # Build the recursive-copy-metadata flags from requirements.txt
+          $METADATA_FLAGS = (pip list --format=freeze | ForEach-Object { "--recursive-copy-metadata $($_ -split '=')[0]" }) -join ' '
+
+          # Run PyInstaller with the generated flags
+          pyinstaller core.py --dist ./dist/output/${{ inputs.name }} `
+            $METADATA_FLAGS `
+            --add-data="$env:pythonLocation\Lib\site-packages\xmlschema\schemas;xmlschema/schemas" `
+            --add-data="resources/cache;resources/cache" `
+            --add-data="resources/templates;resources/templates" `
+            --add-data="resources/schema;resources/schema" `
+            --noconfirm `
+            --clean
       - name: Archive Binary
         uses: actions/upload-artifact@v4
         with:
