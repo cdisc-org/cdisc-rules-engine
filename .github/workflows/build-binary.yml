@@ -46,28 +46,28 @@ jobs:
             --add-data=resources/schema:resources/schema \
             --noconfirm \
             --clean
-
       - name: Build Binary (Windows)
         if: runner.os == 'Windows'
-        run: |
-          $METADATA_FLAGS = (pip list --format=freeze | ForEach-Object { "--recursive-copy-metadata $($_ -split '=')[0]" }) -join ' '
+        run:
+          # Get clean package names without versions
+          $METADATA_FLAGS = (pip list --format=freeze | ForEach-Object { ($_ -split '==')[0].Trim() }) | ForEach-Object { "--recursive-copy-metadata $_" }
 
           $READSTAT_PATH = python -c "import pyreadstat, os; print(os.path.dirname(pyreadstat.__file__))"
 
           pyinstaller core.py --dist ./dist/output/${{ inputs.name }} `
-            $METADATA_FLAGS `
-            --hidden-import=pyreadstat._readstat_writer `
-            --hidden-import=pyreadstat.pyreadstat `
-            --collect-all pyreadstat `
-            --copy-metadata pyreadstat `
-            --add-binary="$READSTAT_PATH\_readstat_writer.pyd;pyreadstat" `
-            --add-binary="$READSTAT_PATH\pyreadstat.pyd;pyreadstat" `
-            --add-data="$env:pythonLocation\Lib\site-packages\xmlschema\schemas;xmlschema/schemas" `
-            --add-data="resources/cache;resources/cache" `
-            --add-data="resources/templates;resources/templates" `
-            --add-data="resources/schema;resources/schema" `
-            --noconfirm `
-            --clean
+          $METADATA_FLAGS `
+          --hidden-import=pyreadstat._readstat_writer `
+          --hidden-import=pyreadstat.pyreadstat `
+          --collect-all pyreadstat `
+          --copy-metadata pyreadstat `
+          --add-binary="$READSTAT_PATH\_readstat_writer.pyd;pyreadstat" `
+          --add-binary="$READSTAT_PATH\pyreadstat.pyd;pyreadstat" `
+          --add-data="$env:pythonLocation\Lib\site-packages\xmlschema\schemas;xmlschema/schemas" `
+          --add-data="resources/cache;resources/cache" `
+          --add-data="resources/templates;resources/templates" `
+          --add-data="resources/schema;resources/schema" `
+          --noconfirm `
+          --clean
       - name: Archive Binary
         uses: actions/upload-artifact@v4
         with:
