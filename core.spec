@@ -53,12 +53,11 @@ pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 exe = EXE(
     pyz,
     a.scripts,
-    a.binaries,
-    a.zipfiles,
-    a.datas,
+    exclude_binaries=True,
     debug=False,
     strip=False,
     upx=True,
+    name='core', 
     console=True,
 )
 
