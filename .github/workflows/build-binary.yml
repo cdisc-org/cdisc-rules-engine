@@ -65,7 +65,7 @@ jobs:
           else
             chmod +x core
             chmod -R 755 .
-            chmod -R +r resources/
+            chmod -R +r _internal/resources/
             ./core test-validate
             exit_code=$?
           fi
