@@ -760,6 +760,7 @@ def test_pyreadstat():
 def test_validate():
     """**Release Test** validate command for executable."""
     try:
+        import sys
         import pandas as pd
         import tempfile
         from cdisc_rules_engine.models.validation_args import Validation_args
@@ -833,11 +834,11 @@ def test_validate():
                 )
             )
         print("Validation test completed successfully!")
-        return 0
+        sys.exit(0)
 
     except Exception as e:
         print(f"Validation test failed: {str(e)}")
-        return 1
+        sys.exit(1)
 
 
 cli.add_command(test_validate)

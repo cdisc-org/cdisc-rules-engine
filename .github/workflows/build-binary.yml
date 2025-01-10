@@ -62,12 +62,19 @@ jobs:
           if [ "${{ runner.os }}" = "Windows" ]; then
             ./core.exe test-validate
             exit_code=$?
-            if [ $exit_code -eq 0 ]; then echo "test passed"; else echo "test failed"; exit $exit_code; fi
           else
             chmod +x core
             ./core test-validate
             exit_code=$?
-            if [ $exit_code -eq 0 ]; then echo "test passed"; else echo "test failed"; exit $exit_code; fi
+          fi
+
+          if [ $exit_code -eq 0 ]; then
+            echo "Test validate succeeded"
+          else
+            echo "Test validate failed with exit code $exit_code"
+            echo "Contents of cache directory:"
+            ls -la resources/cache/
+            exit $exit_code
           fi
         shell: bash
       - name: Test pyreadstat
