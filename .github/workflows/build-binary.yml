@@ -49,7 +49,7 @@ jobs:
           path: dist/output/${{ inputs.name }}/
       - name: Test Binary help command
         run: |
-          cd dist/output/${{ inputs.name }}
+          cd dist/output/${{ inputs.name }}/core
           if [ "${{ runner.os }}" = "Windows" ]; then
             if ./core.exe --help; then echo "test passed"; else echo "test failed"; exit 1; fi
           else
@@ -59,7 +59,7 @@ jobs:
         shell: bash
       - name: Test Binary test-validate command
         run: |
-          cd dist/output/${{ inputs.name }}
+          cd dist/output/${{ inputs.name }}/core
           if [ "${{ runner.os }}" = "Windows" ]; then
             ./core.exe test-validate
           else
@@ -76,7 +76,7 @@ jobs:
         shell: bash
       - name: Test pyreadstat
         run: |
-          cd dist/output/${{ inputs.name }}
+          cd dist/output/${{ inputs.name }}/core
           if [ "${{ runner.os }}" = "Windows" ]; then
             if ./core.exe test-pyreadstat; then echo "test passed"; else echo "test failed"; exit 1; fi
           else
