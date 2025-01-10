@@ -69,4 +69,5 @@ COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
+    name='core' 
 )
