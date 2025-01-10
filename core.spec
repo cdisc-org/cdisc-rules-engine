@@ -53,6 +53,7 @@ pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 exe = EXE(
     pyz,
     a.scripts,
+    [],
     exclude_binaries=True,
     debug=False,
     strip=False,
