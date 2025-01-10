@@ -740,7 +740,7 @@ def list_ct(cache_path: str, subsets: Tuple[str]):
 
 @click.command()
 def test_pyreadstat():
-    """Release Test for pyreadstat module."""
+    """**Release Test** for pyreadstat module."""
     try:
         import pandas as pd
 
@@ -756,6 +756,91 @@ def test_pyreadstat():
         return 1
 
 
+@click.command()
+def test_validate():
+    """**Release Test** validate command for executable."""
+    try:
+        import pandas as pd
+        import tempfile
+        from cdisc_rules_engine.models.validation_args import Validation_args
+        from cdisc_rules_engine.models.external_dictionaries_container import (
+            ExternalDictionariesContainer,
+        )
+        from cdisc_rules_engine.enums.report_types import ReportTypes
+        from cdisc_rules_engine.enums.progress_parameter_options import (
+            ProgressParameterOptions,
+        )
+        from cdisc_rules_engine.enums.default_file_paths import DefaultFilePaths
+
+        df = pd.DataFrame(
+            {
+                "STUDYID": ["STUDY1", "STUDY1"],
+                "DOMAIN": ["DM", "DM"],
+                "USUBJID": ["SUBJ-001", "SUBJ-002"],
+                "SEX": ["M", "F"],
+                "AGE": [25, 30],
+                "AGEU": ["YEARS", "YEARS"],
+            }
+        )
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            input_path = os.path.join(temp_dir, "test_data.JSON")
+            df.to_json(input_path, orient="records")
+
+            output_path = os.path.join(temp_dir, "temp_output")
+            cache_path = DefaultFilePaths.CACHE.value
+            pool_size = 10
+            dataset_paths = [input_path]
+            log_level = "disabled"
+            report_template = DefaultFilePaths.EXCEL_TEMPLATE_FILE.value
+            standard = "SDTMIG"
+            version = "3.4"
+            substandard = None
+            controlled_terminology_package = set()
+            output = output_path
+            output_format = {ReportTypes.XLSX.value}
+            raw_report = False
+            define_version = None
+            external_dictionaries = ExternalDictionariesContainer({})
+            rules = []
+            local_rules = None
+            local_rules_cache = False
+            local_rules_id = None
+            progress = ProgressParameterOptions.BAR.value
+            define_xml_path = None
+            run_validation(
+                Validation_args(
+                    cache_path,
+                    pool_size,
+                    dataset_paths,
+                    log_level,
+                    report_template,
+                    standard,
+                    version,
+                    substandard,
+                    controlled_terminology_package,
+                    output,
+                    output_format,
+                    raw_report,
+                    define_version,
+                    external_dictionaries,
+                    rules,
+                    local_rules,
+                    local_rules_cache,
+                    local_rules_id,
+                    progress,
+                    define_xml_path,
+                )
+            )
+        print("Validation test completed successfully!")
+        return 0
+
+    except Exception as e:
+        print(f"Validation test failed: {str(e)}")
+        return 1
+
+
+cli.add_command(test_validate)
 cli.add_command(test_pyreadstat)
 cli.add_command(validate)
 cli.add_command(update_cache)
