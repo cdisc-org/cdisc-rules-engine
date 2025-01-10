@@ -26,10 +26,10 @@ jobs:
           pip install -r requirements.txt
       - name: Build Binary (Windows)
         if: runner.os == 'Windows'
-        run: pyinstaller core.py --dist ./dist/output/${{ inputs.name }} --hidden-import=pyreadstat._readstat_writer --hidden-import=pyreadstat.pyreadstat --hidden-import=worker --collect-submodules=worker --collect-submodules=pyreadstat --add-data="$env:pythonLocation\Lib\site-packages\xmlschema\schemas;xmlschema/schemas" --add-data="resources/cache;resources/cache" --add-data="resources/templates;resources/templates" --add-data="resources/schema;resources/schema"
+        run: pyinstaller core.py --dist ./dist/output/${{ inputs.name }} --recursive-copy-metadata "*" --add-data="$env:pythonLocation\Lib\site-packages\xmlschema\schemas;xmlschema/schemas" --add-data="resources/cache;resources/cache" --add-data="resources/templates;resources/templates" --add-data="resources/schema;resources/schema"
       - name: Build Binary (Linux)
         if: runner.os != 'Windows'
-        run: pyinstaller core.py --dist ./dist/output/${{ inputs.name }} --hidden-import=pyreadstat._readstat_writer --hidden-import=pyreadstat.pyreadstat --hidden-import=worker --collect-submodules=worker --collect-submodules=pyreadstat --add-data=$pythonLocation/lib/python3.9/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates --add-data=resources/schema:resources/schema
+        run: pyinstaller core.py --dist ./dist/output/${{ inputs.name }} --recursive-copy-metadata "*" --add-data=$pythonLocation/lib/python3.9/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates --add-data=resources/schema:resources/schema
       - name: Archive Binary
         uses: actions/upload-artifact@v4
         with:
