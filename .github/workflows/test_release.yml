@@ -1,8 +1,7 @@
 name: Release CORE Rules Engine
 
 on:
-  release:
-    types: [created]
+  workflow_dispatch:
 
 jobs:
   build-ubuntu-latest:
