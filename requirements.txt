@@ -21,7 +21,7 @@ redis==4.0.2
 requests~=2.32.3
 setuptools~=63.2.0
 cachetools==5.5.0
-Pympler==1.1
+Pympler==1.0.1
 psutil==5.9.5
 dask[dataframe]==2024.2.0
 dask[array]==2024.2.0

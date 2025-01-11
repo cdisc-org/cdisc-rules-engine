@@ -1,0 +1,57 @@
+name: Test CORE Rules Engine
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-binaries:
+    strategy:
+      matrix:
+        include:
+          - os: "ubuntu-latest"
+            name: "core-ubuntu-latest"
+          - os: "ubuntu-20.04"
+            name: "core-ubuntu-20-04"
+          - os: "macos-latest"
+            name: "core-mac"
+          - os: "windows-latest"
+            name: "core-windows"
+    uses: ./.github/workflows/build-binary.yml
+    with:
+      os: ${{ matrix.os }}
+      name: ${{ matrix.name }}
+
+  create-release-assets:
+    needs: build-binaries
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Create individual release zip files
+        uses: vimtor/action-zip@v1
+        with:
+          files: artifacts/core-ubuntu-latest/
+          dest: core-ubuntu-latest.zip
+      - uses: vimtor/action-zip@v1
+        with:
+          files: artifacts/core-ubuntu-20-04/
+          dest: core-ubuntu-20-04.zip
+      - uses: vimtor/action-zip@v1
+        with:
+          files: artifacts/core-mac/
+          dest: core-mac.zip
+      - uses: vimtor/action-zip@v1
+        with:
+          files: artifacts/core-windows/
+          dest: core-windows.zip
+      - name: Upload Release Assets
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-artifacts
+          path: |
+            core-ubuntu-latest.zip
+            core-ubuntu-20-04.zip
+            core-mac.zip
+            core-windows.zip
