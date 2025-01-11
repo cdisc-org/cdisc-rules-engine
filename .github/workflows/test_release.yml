@@ -22,20 +22,14 @@ jobs:
         run: pyinstaller core.py --dist ./dist/output/ubuntu-latest --add-data=$pythonLocation/lib/python3.9/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates --add-data=resources/schema:resources/schema
       - name: Test Binary help command
         run: |
-          cd dist/output/${{ inputs.name }}/core
-          if [ "${{ runner.os }}" = "Windows" ]; then
-            if ./core.exe --help; then echo "test passed"; else echo "test failed"; exit 1; fi
-          else
+          cd dist/output/ubuntu-latest/core
             chmod +x core
             if ./core --help; then echo "test passed"; else echo "test failed"; exit 1; fi
           fi
         shell: bash
       - name: Test Binary test-validate command
         run: |
-          cd dist/output/${{ inputs.name }}/core
-          if [ "${{ runner.os }}" = "Windows" ]; then
-            ./core.exe test-validate
-          else
+          cd dist/output/ubuntu-latest/core
             chmod +x core
             chmod -R 755 .
             chmod -R +r resources/
@@ -49,10 +43,7 @@ jobs:
         shell: bash
       - name: Test pyreadstat
         run: |
-          cd dist/output/${{ inputs.name }}/core
-          if [ "${{ runner.os }}" = "Windows" ]; then
-            if ./core.exe test-pyreadstat; then echo "test passed"; else echo "test failed"; exit 1; fi
-          else
+          cd dist/output/ubuntu-latest/core
             chmod +x core
             if ./core test-pyreadstat; then echo "test passed"; else echo "test failed"; exit 1; fi
           fi
@@ -76,24 +67,18 @@ jobs:
         run: pyinstaller core.py --dist ./dist/output/ubuntu-20-04 --add-data=$pythonLocation/lib/python3.9/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates --add-data=resources/schema:resources/schema
       - name: Test Binary help command
         run: |
-          cd dist/output/${{ inputs.name }}/core
-          if [ "${{ runner.os }}" = "Windows" ]; then
-            if ./core.exe --help; then echo "test passed"; else echo "test failed"; exit 1; fi
-          else
-            chmod +x core
-            if ./core --help; then echo "test passed"; else echo "test failed"; exit 1; fi
+          cd dist/output/ubuntu-20-04/core
+          chmod +x core
+          if ./core --help; then echo "test passed"; else echo "test failed"; exit 1; fi
           fi
           shell: bash
       - name: Test Binary test-validate command
         run: |
-          cd dist/output/${{ inputs.name }}/core
-          if [ "${{ runner.os }}" = "Windows" ]; then
-            ./core.exe test-validate
-          else
-            chmod +x core
-            chmod -R 755 .
-            chmod -R +r resources/
-            ./core test-validate
+          cd dist/output/ubuntu-20-04/core
+          chmod +x core
+          chmod -R 755 .
+          chmod -R +r resources/
+          ./core test-validate
           fi
           if [ $exit_code -eq 0 ]; then
             echo "Test validate succeeded"
@@ -103,12 +88,9 @@ jobs:
         shell: bash
       - name: Test pyreadstat
         run: |
-          cd dist/output/${{ inputs.name }}/core
-          if [ "${{ runner.os }}" = "Windows" ]; then
-            if ./core.exe test-pyreadstat; then echo "test passed"; else echo "test failed"; exit 1; fi
-          else
-            chmod +x core
-            if ./core test-pyreadstat; then echo "test passed"; else echo "test failed"; exit 1; fi
+          cd dist/output/ubuntu-20-04/core
+          chmod +x core
+          if ./core test-pyreadstat; then echo "test passed"; else echo "test failed"; exit 1; fi
           fi
         shell: bash
   build-mac:
@@ -129,24 +111,18 @@ jobs:
         run: pyinstaller core.py --dist ./dist/output/mac --add-data=$pythonLocation/lib/python3.9/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates --add-data=resources/schema:resources/schema
       - name: Test Binary help command
         run: |
-          cd dist/output/${{ inputs.name }}/core
-          if [ "${{ runner.os }}" = "Windows" ]; then
-            if ./core.exe --help; then echo "test passed"; else echo "test failed"; exit 1; fi
-          else
-            chmod +x core
-            if ./core --help; then echo "test passed"; else echo "test failed"; exit 1; fi
+          cd dist/output/mac/core
+          chmod +x core
+          if ./core --help; then echo "test passed"; else echo "test failed"; exit 1; fi
           fi
         shell: bash
       - name: Test Binary test-validate command
         run: |
-          cd dist/output/${{ inputs.name }}/core
-          if [ "${{ runner.os }}" = "Windows" ]; then
-            ./core.exe test-validate
-          else
-            chmod +x core
-            chmod -R 755 .
-            chmod -R +r resources/
-            ./core test-validate
+          cd dist/output/mac/core
+          chmod +x core
+          chmod -R 755 .
+          chmod -R +r resources/
+          ./core test-validate
           fi
           if [ $exit_code -eq 0 ]; then
             echo "Test validate succeeded"
@@ -156,12 +132,9 @@ jobs:
         shell: bash
       - name: Test pyreadstat
         run: |
-          cd dist/output/${{ inputs.name }}/core
-          if [ "${{ runner.os }}" = "Windows" ]; then
-            if ./core.exe test-pyreadstat; then echo "test passed"; else echo "test failed"; exit 1; fi
-          else
-            chmod +x core
-            if ./core test-pyreadstat; then echo "test passed"; else echo "test failed"; exit 1; fi
+          cd dist/output/mac/core
+          chmod +x core
+          if ./core test-pyreadstat; then echo "test passed"; else echo "test failed"; exit 1; fi
           fi
         shell: bash
   build-windows:
@@ -182,24 +155,14 @@ jobs:
         run: pyinstaller core.py --dist ./dist/output/windows --add-data="$env:pythonLocation\Lib\site-packages\xmlschema\schemas;xmlschema/schemas" --add-data="resources/cache;resources/cache" --add-data="resources/templates;resources/templates" --add-data="resources/schema;resources/schema"
       - name: Test Binary help command
         run: |
-          cd dist/output/${{ inputs.name }}/core
-          if [ "${{ runner.os }}" = "Windows" ]; then
-            if ./core.exe --help; then echo "test passed"; else echo "test failed"; exit 1; fi
-          else
-            chmod +x core
-            if ./core --help; then echo "test passed"; else echo "test failed"; exit 1; fi
+          cd dist/output/windows/core
+          if ./core.exe --help; then echo "test passed"; else echo "test failed"; exit 1; fi
           fi
         shell: bash
       - name: Test Binary test-validate command
         run: |
-          cd dist/output/${{ inputs.name }}/core
-          if [ "${{ runner.os }}" = "Windows" ]; then
-            ./core.exe test-validate
-          else
-            chmod +x core
-            chmod -R 755 .
-            chmod -R +r resources/
-            ./core test-validate
+          cd dist/output/windows/core
+          ./core.exe test-validate
           fi
           if [ $exit_code -eq 0 ]; then
             echo "Test validate succeeded"
@@ -209,11 +172,7 @@ jobs:
         shell: bash
       - name: Test pyreadstat
         run: |
-          cd dist/output/${{ inputs.name }}/core
-          if [ "${{ runner.os }}" = "Windows" ]; then
-            if ./core.exe test-pyreadstat; then echo "test passed"; else echo "test failed"; exit 1; fi
-          else
-            chmod +x core
-            if ./core test-pyreadstat; then echo "test passed"; else echo "test failed"; exit 1; fi
+          cd dist/output/windows/core
+          if ./core.exe test-pyreadstat; then echo "test passed"; else echo "test failed"; exit 1; fi
           fi
         shell: bash
