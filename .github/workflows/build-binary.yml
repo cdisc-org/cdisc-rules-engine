@@ -27,11 +27,10 @@ jobs:
 
       - name: Build Binary (Linux/Mac)
         if: runner.os != 'Windows'
-        run: pyinstaller --onedir --contents-directory "." core.py --dist ./dist/output/${{ inputs.name }} --collect-submodules pyreadstat --add-data=$pythonLocation/lib/python3.9/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates --add-data=resources/schema:resources/schema --debug=all
+        run: pyinstaller --onedir --contents-directory "." core.py --dist ./dist/output/${{ inputs.name }} --collect-submodules pyreadstat --add-data=$pythonLocation/lib/python3.9/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates --add-data=resources/schema:resources/schema
       - name: Build Binary (Windows)
         if: runner.os == 'Windows'
-        run: pyinstaller --onedir --contents-directory "." core.py --dist ./dist/output/${{ inputs.name }} --collect-submodules pyreadstat --add-data="$env:pythonLocation\Lib\site-packages\xmlschema\schemas;xmlschema/schemas" --add-data="resources/cache;resources/cache" --add-data="resources/templates;resources/templates" --add-data="resources/schema;resources/schema" --debug=all
-      - name: Archive Binary
+        run: pyinstaller --onedir --contents-directory "." core.py --dist ./dist/output/${{ inputs.name }} --collect-submodules pyreadstat --add-data="$env:pythonLocation\Lib\site-packages\xmlschema\schemas;xmlschema/schemas" --add-data="resources/cache;resources/cache" --add-data="resources/templates;resources/templates" --add-data="resources/schema;resources/schema"
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.name }}
