@@ -60,8 +60,17 @@ jobs:
         run: |
           python -m pip install -r requirements.txt
           python -m pip install pyinstaller
-
-      - name: Build Binary (Linux/Mac)
+      - name: Build Binary (Mac)
+        if: runner.os == 'darwin'
+        run: |
+          PYTHON_SITE_PACKAGES="/opt/homebrew/lib/python3.9/site-packages"
+          pyinstaller --onedir --contents-directory "." core.py \
+            --dist ./dist/output/core-mac \
+            --add-data=$PYTHON_SITE_PACKAGES/xmlschema/schemas:xmlschema/schemas \
+            --add-data=resources/cache:resources/cache \
+            --add-data=resources/templates:resources/templates \
+            --add-data=resources/schema:resources/schema
+      - name: Build Binary (Linux)
         if: runner.os != 'Windows'
         run: pyinstaller --onedir --contents-directory "." core.py --dist ./dist/output/${{ inputs.name }}  --add-data=$pythonLocation/lib/python3.9/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates --add-data=resources/schema:resources/schema
       - name: Build Binary (Windows)
