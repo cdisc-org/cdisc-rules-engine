@@ -31,15 +31,6 @@ jobs:
       - name: Build Binary (Windows)
         if: runner.os == 'Windows'
         run: pyinstaller --onedir --contents-directory "." core.py --dist ./dist/output/${{ inputs.name }} --collect-submodules pyreadstat --collect-all numpy --add-data="$env:pythonLocation\Lib\site-packages\xmlschema\schemas;xmlschema/schemas" --hidden-import numpy --hidden-import numpy.core._methods --hidden-import numpy.lib.format --add-data="resources/cache;resources/cache" --add-data="resources/templates;resources/templates" --add-data="resources/schema;resources/schema"  --add-binary="$env:pythonLocation\Lib\site-packages\numpy\.libs\*.dll;."
-      - name: Sign Binary (Mac)
-        if: runner.os == 'macOS'
-        run: |
-          xattr -cr dist/output/${{ inputs.name }}/core/core
-          codesign --remove-signature dist/output/${{ inputs.name }}/core/core
-          find dist/output/${{ inputs.name }}/core -type f -name "*.dylib" -o -name "Python" | while read file; do
-            codesign --force --deep --sign - "$file"
-          done
-          codesign --force --deep --sign - dist/output/${{ inputs.name }}/core/core
       - name: Archive Binary
         uses: actions/upload-artifact@v4
         with:
