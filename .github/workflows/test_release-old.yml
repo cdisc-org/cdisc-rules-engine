@@ -1,0 +1,178 @@
+name: Release CORE Rules Engine
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-ubuntu-latest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        id: pysetup
+        with:
+          python-version: "3.9"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install setuptools wheel twine
+          pip install -r requirements.txt
+      - name: Build Binary
+        run: pyinstaller core.py --dist ./dist/output/ubuntu-latest --add-data=$pythonLocation/lib/python3.9/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates --add-data=resources/schema:resources/schema
+      - name: Test Binary help command
+        run: |
+          cd dist/output/ubuntu-latest/core
+            chmod +x core
+            if ./core --help; then echo "test passed"; else echo "test failed"; exit 1; fi
+          fi
+        shell: bash
+      - name: Test Binary test-validate command
+        run: |
+          cd dist/output/ubuntu-latest/core
+            chmod +x core
+            chmod -R 755 .
+            chmod -R +r resources/
+            ./core test-validate
+          fi
+          if [ $exit_code -eq 0 ]; then
+            echo "Test validate succeeded"
+          else
+            echo "Test validate failed with exit code $exit_code"
+          fi
+        shell: bash
+      - name: Test pyreadstat
+        run: |
+          cd dist/output/ubuntu-latest/core
+            chmod +x core
+            if ./core test-pyreadstat; then echo "test passed"; else echo "test failed"; exit 1; fi
+          fi
+        shell: bash
+
+  build-ubuntu-20-04:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        id: pysetup
+        with:
+          python-version: "3.9"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install setuptools wheel twine
+          pip install -r requirements.txt
+      - name: Build Binary
+        run: pyinstaller core.py --dist ./dist/output/ubuntu-20-04 --add-data=$pythonLocation/lib/python3.9/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates --add-data=resources/schema:resources/schema
+      - name: Test Binary help command
+        run: |
+          cd dist/output/ubuntu-20-04/core
+          chmod +x core
+          if ./core --help; then echo "test passed"; else echo "test failed"; exit 1; fi
+          fi
+          shell: bash
+      - name: Test Binary test-validate command
+        run: |
+          cd dist/output/ubuntu-20-04/core
+          chmod +x core
+          chmod -R 755 .
+          chmod -R +r resources/
+          ./core test-validate
+          fi
+          if [ $exit_code -eq 0 ]; then
+            echo "Test validate succeeded"
+          else
+            echo "Test validate failed with exit code $exit_code"
+          fi
+        shell: bash
+      - name: Test pyreadstat
+        run: |
+          cd dist/output/ubuntu-20-04/core
+          chmod +x core
+          if ./core test-pyreadstat; then echo "test passed"; else echo "test failed"; exit 1; fi
+          fi
+        shell: bash
+  build-mac:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        id: pysetup
+        with:
+          python-version: "3.9"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install setuptools wheel twine
+          pip install -r requirements.txt
+      - name: Build Binary
+        run: pyinstaller core.py --dist ./dist/output/mac --add-data=$pythonLocation/lib/python3.9/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates --add-data=resources/schema:resources/schema
+      - name: Test Binary help command
+        run: |
+          cd dist/output/mac/core
+          chmod +x core
+          if ./core --help; then echo "test passed"; else echo "test failed"; exit 1; fi
+          fi
+        shell: bash
+      - name: Test Binary test-validate command
+        run: |
+          cd dist/output/mac/core
+          chmod +x core
+          chmod -R 755 .
+          chmod -R +r resources/
+          ./core test-validate
+          fi
+          if [ $exit_code -eq 0 ]; then
+            echo "Test validate succeeded"
+          else
+            echo "Test validate failed with exit code $exit_code"
+          fi
+        shell: bash
+      - name: Test pyreadstat
+        run: |
+          cd dist/output/mac/core
+          chmod +x core
+          if ./core test-pyreadstat; then echo "test passed"; else echo "test failed"; exit 1; fi
+          fi
+        shell: bash
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        id: pysetup
+        with:
+          python-version: "3.9"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install setuptools wheel twine
+          pip install -r requirements.txt
+      - name: Build Binary
+        run: pyinstaller core.py --dist ./dist/output/windows --add-data="$env:pythonLocation\Lib\site-packages\xmlschema\schemas;xmlschema/schemas" --add-data="resources/cache;resources/cache" --add-data="resources/templates;resources/templates" --add-data="resources/schema;resources/schema"
+      - name: Test Binary help command
+        run: |
+          cd dist/output/windows/core
+          if ./core.exe --help; then echo "test passed"; else echo "test failed"; exit 1; fi
+          fi
+        shell: bash
+      - name: Test Binary test-validate command
+        run: |
+          cd dist/output/windows/core
+          ./core.exe test-validate
+          fi
+          if [ $exit_code -eq 0 ]; then
+            echo "Test validate succeeded"
+          else
+            echo "Test validate failed with exit code $exit_code"
+          fi
+        shell: bash
+      - name: Test pyreadstat
+        run: |
+          cd dist/output/windows/core
+          if ./core.exe test-pyreadstat; then echo "test passed"; else echo "test failed"; exit 1; fi
+          fi
+        shell: bash
