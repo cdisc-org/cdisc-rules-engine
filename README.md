@@ -38,6 +38,12 @@ Linux/Mac:
 # ex: ./core validate -s sdtmig -v 3-4 -d .\xpt\
 ```
 
+> **_NOTE:_** NOTE: For Linux users, you will likely need to run:
+>
+> ```bash
+> chmod +x ./core
+> ```
+
 ### **Code formatter**
 
 This project uses the `black` code formatter, `flake8` linter for python and `prettier` for JSON, YAML and MD.
