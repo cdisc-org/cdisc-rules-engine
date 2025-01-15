@@ -761,7 +761,6 @@ def test_validate():
     """**Release Test** validate command for executable."""
     try:
         import sys
-        import pandas as pd
         import tempfile
         from cdisc_rules_engine.models.validation_args import Validation_args
         from cdisc_rules_engine.models.external_dictionaries_container import (
@@ -773,32 +772,25 @@ def test_validate():
         )
         from cdisc_rules_engine.enums.default_file_paths import DefaultFilePaths
 
-        df = pd.DataFrame(
-            {
-                "STUDYID": ["STUDY1", "STUDY1"],
-                "DOMAIN": ["DM", "DM"],
-                "USUBJID": ["SUBJ-001", "SUBJ-002"],
-                "SEX": ["M", "F"],
-                "AGE": [25, 30],
-                "AGEU": ["YEARS", "YEARS"],
-            }
-        )
+        base_path = os.path.join("tests", "resources", "datasets")
+        ts_path = os.path.join(base_path, "TS.json")
+        ae_path = os.path.join(base_path, "ae.xpt")
+        if not all(os.path.exists(path) for path in [ts_path, ae_path]):
+            raise FileNotFoundError(
+                "Test datasets not found in tests/resources/datasets"
+            )
 
         with tempfile.TemporaryDirectory() as temp_dir:
-            input_path = os.path.join(temp_dir, "test_data.JSON")
-            df.to_json(input_path, orient="records")
-
-            output_path = os.path.join(temp_dir, "temp_output")
             cache_path = DefaultFilePaths.CACHE.value
             pool_size = 10
-            dataset_paths = [input_path]
+            dataset_paths = [ts_path, ae_path]
             log_level = "disabled"
             report_template = DefaultFilePaths.EXCEL_TEMPLATE_FILE.value
-            standard = "SDTMIG"
+            standard = "sdtmig"
             version = "3.4"
             substandard = None
             controlled_terminology_package = set()
-            output = output_path
+            output = os.path.join(temp_dir, "validation_test_output")
             output_format = {ReportTypes.XLSX.value}
             raw_report = False
             define_version = None
