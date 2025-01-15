@@ -3,6 +3,8 @@ import json
 import logging
 import os
 import pickle
+import pyreadstat
+import tempfile
 from datetime import datetime
 from multiprocessing import freeze_support
 from typing import Tuple
@@ -736,6 +738,131 @@ def list_ct(cache_path: str, subsets: Tuple[str]):
             print(os.path.splitext(file)[0])
 
 
+@click.command()
+def test_pyreadstat():
+    """**Release Test** for pyreadstat module."""
+    try:
+        import pandas as pd
+
+        df = pd.DataFrame([[1, 2], [3, 4]], columns=["var1", "var2"])
+        temp_path = tempfile.mktemp(suffix=".sav")
+        pyreadstat.write_sav(df, temp_path)
+        df, meta = pyreadstat.read_sav(temp_path)
+        os.unlink(temp_path)
+        print("PyReadstat test passed successfully!")
+        return 0
+    except Exception as e:
+        print(f"PyReadstat test failed: {str(e)}")
+        return 1
+
+
+@click.command()
+def test_validate():
+    """**Release Test** validate command for executable."""
+    try:
+        import sys
+        import os
+        import tempfile
+        from cdisc_rules_engine.models.validation_args import Validation_args
+        from cdisc_rules_engine.models.external_dictionaries_container import (
+            ExternalDictionariesContainer,
+        )
+        from cdisc_rules_engine.enums.report_types import ReportTypes
+        from cdisc_rules_engine.enums.progress_parameter_options import (
+            ProgressParameterOptions,
+        )
+        from cdisc_rules_engine.enums.default_file_paths import DefaultFilePaths
+
+        base_path = os.path.join("tests", "resources", "datasets")
+        ts_path = os.path.join(base_path, "TS.json")
+        ae_path = os.path.join(base_path, "ae.xpt")
+        if not all(os.path.exists(path) for path in [ts_path, ae_path]):
+            raise FileNotFoundError(
+                "Test datasets not found in tests/resources/datasets"
+            )
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            cache_path = DefaultFilePaths.CACHE.value
+            pool_size = 10
+            log_level = "disabled"
+            report_template = DefaultFilePaths.EXCEL_TEMPLATE_FILE.value
+            standard = "sdtmig"
+            version = "3.4"
+            substandard = None
+            controlled_terminology_package = set()
+            json_output = os.path.join(temp_dir, "json_validation_output")
+            xpt_output = os.path.join(temp_dir, "xpt_validation_output")
+            output_format = {ReportTypes.XLSX.value}
+            raw_report = False
+            define_version = None
+            external_dictionaries = ExternalDictionariesContainer({})
+            rules = []
+            local_rules = None
+            local_rules_cache = False
+            local_rules_id = None
+            progress = ProgressParameterOptions.BAR.value
+            define_xml_path = None
+            json_output = os.path.join(temp_dir, "json_validation_output")
+            run_validation(
+                Validation_args(
+                    cache_path,
+                    pool_size,
+                    [ts_path],
+                    log_level,
+                    report_template,
+                    standard,
+                    version,
+                    substandard,
+                    controlled_terminology_package,
+                    json_output,
+                    output_format,
+                    raw_report,
+                    define_version,
+                    external_dictionaries,
+                    rules,
+                    local_rules,
+                    local_rules_cache,
+                    local_rules_id,
+                    progress,
+                    define_xml_path,
+                )
+            )
+            print("JSON validation completed successfully!")
+            xpt_output = os.path.join(temp_dir, "xpt_validation_output")
+            run_validation(
+                Validation_args(
+                    cache_path,
+                    pool_size,
+                    [ae_path],
+                    log_level,
+                    report_template,
+                    standard,
+                    version,
+                    substandard,
+                    controlled_terminology_package,
+                    xpt_output,
+                    output_format,
+                    raw_report,
+                    define_version,
+                    external_dictionaries,
+                    rules,
+                    local_rules,
+                    local_rules_cache,
+                    local_rules_id,
+                    progress,
+                    define_xml_path,
+                )
+            )
+            print("XPT validation completed successfully!")
+        print("All validation tests completed successfully!")
+        sys.exit(0)
+    except Exception as e:
+        print(f"Validation test failed: {str(e)}")
+        sys.exit(1)
+
+
+cli.add_command(test_validate)
+cli.add_command(test_pyreadstat)
 cli.add_command(validate)
 cli.add_command(update_cache)
 cli.add_command(list_rules)

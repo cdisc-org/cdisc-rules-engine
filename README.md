@@ -38,6 +38,19 @@ Linux/Mac:
 # ex: ./core validate -s sdtmig -v 3-4 -d .\xpt\
 ```
 
+> **_NOTE:_** For Linux users, you will need to run this command from the executable root directory:
+>
+> ```bash
+> chmod +x ./core
+> ```
+>
+> For Mac users, you will need to remove the Apple signature quarantine in addition to making the app executable.
+>
+> ```bash
+> xattr -rd com.apple.quarantine /path/to/core/root/dir
+> chmod +x ./core
+> ```
+
 ### **Code formatter**
 
 This project uses the `black` code formatter, `flake8` linter for python and `prettier` for JSON, YAML and MD.
