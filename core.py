@@ -784,14 +784,14 @@ def test_validate():
         with tempfile.TemporaryDirectory() as temp_dir:
             cache_path = DefaultFilePaths.CACHE.value
             pool_size = 10
-            dataset_paths = [ts_path, ae_path]
             log_level = "disabled"
             report_template = DefaultFilePaths.EXCEL_TEMPLATE_FILE.value
             standard = "sdtmig"
             version = "3.4"
             substandard = None
             controlled_terminology_package = set()
-            output = os.path.join(temp_dir, "validation_test_output")
+            json_output = os.path.join(temp_dir, "json_validation_output")
+            xpt_output = os.path.join(temp_dir, "xpt_validation_output")
             output_format = {ReportTypes.XLSX.value}
             raw_report = False
             define_version = None
@@ -802,18 +802,19 @@ def test_validate():
             local_rules_id = None
             progress = ProgressParameterOptions.BAR.value
             define_xml_path = None
+            json_output = os.path.join(temp_dir, "json_validation_output")
             run_validation(
                 Validation_args(
                     cache_path,
                     pool_size,
-                    dataset_paths,
+                    [ts_path],
                     log_level,
                     report_template,
                     standard,
                     version,
                     substandard,
                     controlled_terminology_package,
-                    output,
+                    json_output,
                     output_format,
                     raw_report,
                     define_version,
@@ -826,9 +827,35 @@ def test_validate():
                     define_xml_path,
                 )
             )
-        print("Validation test completed successfully!")
+            print("JSON validation completed successfully!")
+            xpt_output = os.path.join(temp_dir, "xpt_validation_output")
+            run_validation(
+                Validation_args(
+                    cache_path,
+                    pool_size,
+                    [ae_path],
+                    log_level,
+                    report_template,
+                    standard,
+                    version,
+                    substandard,
+                    controlled_terminology_package,
+                    xpt_output,
+                    output_format,
+                    raw_report,
+                    define_version,
+                    external_dictionaries,
+                    rules,
+                    local_rules,
+                    local_rules_cache,
+                    local_rules_id,
+                    progress,
+                    define_xml_path,
+                )
+            )
+            print("XPT validation completed successfully!")
+        print("All validation tests completed successfully!")
         sys.exit(0)
-
     except Exception as e:
         print(f"Validation test failed: {str(e)}")
         sys.exit(1)
