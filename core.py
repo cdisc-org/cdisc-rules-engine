@@ -761,6 +761,7 @@ def test_validate():
     """**Release Test** validate command for executable."""
     try:
         import sys
+        import os
         import tempfile
         from cdisc_rules_engine.models.validation_args import Validation_args
         from cdisc_rules_engine.models.external_dictionaries_container import (
