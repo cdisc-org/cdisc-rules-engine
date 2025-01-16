@@ -91,11 +91,28 @@ class BaseOperation:
             logger.debug(f"error in operation {self.params.operation_name}: {str(e)}")
             raise
         except Exception as e:
+            error_message = str(e)
             # Log unexpected errors
             logger.error(
                 f"error in operation {self.params.operation_name}: {str(e)}",
                 exc_info=True,
             )
+            if isinstance(e, TypeError) and any(
+                phrase in error_message
+                for phrase in [
+                    "NoneType",
+                    "None",
+                    "object is None",
+                    "'NoneType'",
+                    "None has no attribute",
+                    "unsupported operand type",
+                    "bad operand type",
+                    "object is not",
+                    "cannot be None",
+                ]
+            ):
+                return None
+            raise
 
     def _handle_operation_result(self, result) -> DatasetInterface:
         if self.evaluation_dataset.is_series(result):

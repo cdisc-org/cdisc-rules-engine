@@ -33,6 +33,7 @@ from cdisc_rules_engine.utilities.utils import (
 from cdisc_rules_engine.models.external_dictionaries_container import (
     ExternalDictionariesContainer,
 )
+from cdisc_rules_engine.exceptions.custom_exceptions import DomainNotFoundError
 
 
 class RuleProcessor:
@@ -332,6 +333,11 @@ class RuleProcessor:
                 operation_params.datasets,
                 lambda item: item.get("domain") == operation_params.domain,
             )
+            if domain_details is None:
+                raise DomainNotFoundError(
+                    f"Operation {operation_params.operation_name} requires Domain "
+                    f"{operation_params.domain} but Domain not found in dataset"
+                )
             filename = get_dataset_name_from_details(domain_details)
             file_path: str = os.path.join(
                 get_directory_path(operation_params.dataset_path),
