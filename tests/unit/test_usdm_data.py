@@ -1,5 +1,6 @@
 from typing import List
 from unittest.mock import patch, MagicMock
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.rules_engine import RulesEngine
 import unittest
@@ -72,7 +73,7 @@ def test_get_raw_dataset_metadata():
     data = data_service.get_raw_dataset_metadata(
         dataset_name=os.path.join(dataset_path, "Code.json")
     )
-    assert data.records == 117
+    assert data.record_count == 117
 
 
 def test_validate_rule_single_dataset_check(dataset_rule_greater_than: dict):
@@ -93,7 +94,13 @@ def test_validate_rule_single_dataset_check(dataset_rule_greater_than: dict):
     ):
         validation_result: List[dict] = RulesEngine(
             standard="usdm", dataset_paths=[dataset_path]
-        ).validate_single_rule(dataset_rule_greater_than, dataset_path, [{}], "EC")
+        ).validate_single_rule(
+            dataset_rule_greater_than,
+            dataset_path,
+            [],
+            SDTMDatasetMetadata(domain="EC"),
+        )
+
         assert validation_result == [
             {
                 "executionStatus": "success",

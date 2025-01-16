@@ -1231,7 +1231,7 @@ def operation_params() -> OperationParams:
         domain="domain",
         dataset_path="dataset_path",
         directory_path="directory_path",
-        datasets=[{}],
+        datasets=[],
         standard="standard",
         standard_version="standard_version",
         external_dictionaries=ExternalDictionariesContainer(
@@ -1256,7 +1256,7 @@ def dataset_metadata() -> dict:
         "contents_metadata": {
             "dataset_label": "Adverse Events",
             "dataset_name": "AE",
-            "domain_name": "AE",
+            "domain": "AE",
             "dataset_modification_date": datetime.now().isoformat(),
             "dataset_length": 20,
         },

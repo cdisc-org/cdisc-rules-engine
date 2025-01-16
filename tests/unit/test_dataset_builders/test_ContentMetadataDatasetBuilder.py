@@ -285,7 +285,7 @@ def test_ContentMetadataDatasetBuilder_split_datasets(conditions):
         "dataset_name": "QSCG",
         "dataset_label": "Clinical Global Impressions",
         "filename": "qscg.xpt",
-        "length": 1,
+        "record_count": 1,
     }
     expected = PandasDataset(
         pd.DataFrame.from_dict([expected_output], orient="columns")
@@ -301,7 +301,7 @@ def test_ContentMetadataDatasetBuilder_split_datasets(conditions):
         data_processor=None,
         dataset_path=None,
         datasets=test_data.get("datasets", {}),
-        domain="QS",
+        dataset_metadata=test_data,
         define_xml_path=None,
         standard="sdtmig",
         standard_version="3-4",
@@ -312,7 +312,7 @@ def test_ContentMetadataDatasetBuilder_split_datasets(conditions):
         "dataset_name": "QSPG",
         "dataset_label": "Patient Global Impressions",
         "filename": "qspg.xpt",
-        "length": 1,
+        "record_count": 1,
     }
     expected2 = PandasDataset(
         pd.DataFrame.from_dict([expected_output2], orient="columns")
@@ -328,7 +328,7 @@ def test_ContentMetadataDatasetBuilder_split_datasets(conditions):
         data_processor=None,
         dataset_path=None,
         datasets=test_data.get("datasets", {}),
-        domain="QS",
+        dataset_metadata=test_data,
         define_xml_path=None,
         standard="sdtmig",
         standard_version="3-4",

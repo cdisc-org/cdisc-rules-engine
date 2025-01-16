@@ -5,7 +5,7 @@ from cdisc_rules_engine.utilities.utils import (
     is_supp_dataset,
     get_corresponding_datasets,
 )
-
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 
 mock_datasets = [
     {"filename": "SS11.xpt", "domain": "SS"},
@@ -19,7 +19,10 @@ mock_datasets = [
 )
 def test_is_split_dataset_from_file(mock_get_corresponding_datasets):
     domain = "SS"
-    result = is_split_dataset(mock_datasets, domain)
+    result = is_split_dataset(
+        [SDTMDatasetMetadata(**mock_dataset) for mock_dataset in mock_datasets],
+        SDTMDatasetMetadata(domain=domain),
+    )
     assert result
 
 
@@ -54,17 +57,20 @@ def test_is_supp_dataset(mock_get_corresponding_datasets, mock_datasets, expecte
 
 
 datasets = [
-    {"filename": "SS.xpt", "domain": "SS"},
-    {"filename": "SS12.xpt", "domain": "SS"},
-    {"filename": "AE.xpt", "domain": "AE"},
-    {"filename": "DD.xpt", "domain": "DD"},
-    {"filename": "EC.xpt", "domain": "EC"},
-    {"filename": "EX.xpt", "domain": "EX"},
-    {"filename": "FA.xpt", "domain": "FA"},
-    {"filename": "FT.xpt", "domain": "FT"},
-    {"filename": "RS.xpt", "domain": "RS"},
-    {"filename": "AB.xpt", "domain": "AB"},
-    {"filename": "AB12.xpt", "domain": "AB"},
+    SDTMDatasetMetadata(**dataset)
+    for dataset in [
+        {"filename": "SS.xpt", "domain": "SS"},
+        {"filename": "SS12.xpt", "domain": "SS"},
+        {"filename": "AE.xpt", "domain": "AE"},
+        {"filename": "DD.xpt", "domain": "DD"},
+        {"filename": "EC.xpt", "domain": "EC"},
+        {"filename": "EX.xpt", "domain": "EX"},
+        {"filename": "FA.xpt", "domain": "FA"},
+        {"filename": "FT.xpt", "domain": "FT"},
+        {"filename": "RS.xpt", "domain": "RS"},
+        {"filename": "AB.xpt", "domain": "AB"},
+        {"filename": "AB12.xpt", "domain": "AB"},
+    ]
 ]
 
 
@@ -96,7 +102,9 @@ domain_test_cases = [
 
 @pytest.mark.parametrize("domain, expected_datasets", domain_test_cases)
 def test_get_corresponding_datasets(domain, expected_datasets):
-    result_datasets = get_corresponding_datasets(datasets, domain)
-    assert (
-        result_datasets == expected_datasets
-    ), f"The function should return only datasets matching the '{domain}' domain"
+    result_datasets = get_corresponding_datasets(
+        datasets, SDTMDatasetMetadata(domain=domain)
+    )
+    assert result_datasets == [
+        SDTMDatasetMetadata(**dataset) for dataset in expected_datasets
+    ], f"The function should return only datasets matching the '{domain}' domain"

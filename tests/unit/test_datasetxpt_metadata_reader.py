@@ -1,6 +1,7 @@
 """
 This module contains unit tests for DatasetMetadataReader class.
 """
+
 import os
 from unittest.mock import patch
 from cdisc_rules_engine.services.datasetxpt_metadata_reader import (
@@ -21,9 +22,7 @@ def test_read_metadata():
     assert (
         metadata["dataset_name"] == "TEST_DATASET"
     ), "Wrong dataset name. Test file has been changed"
-    assert (
-        metadata["domain_name"] == "EX"
-    ), "Wrong domain name. Test file has been changed"
+    assert metadata["domain"] == "EX", "Wrong domain name. Test file has been changed"
     assert (
         metadata["dataset_label"] == "Exposure"
     ), "Wrong dataset label. Test file has been changed"
@@ -67,7 +66,7 @@ def test_read_metadata_with_estimate():
             metadata["dataset_name"] == "TEST_DATASET"
         ), "Wrong dataset name. Test file has been changed"
         assert (
-            metadata["domain_name"] == "EX"
+            metadata["domain"] == "EX"
         ), "Wrong domain name. Test file has been changed"
         assert (
             metadata["dataset_label"] == "Exposure"

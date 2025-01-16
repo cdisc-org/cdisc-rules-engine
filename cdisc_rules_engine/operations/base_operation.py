@@ -112,9 +112,11 @@ class BaseOperation:
             self.params.grouping
             if not self.params.grouping_aliases
             else [
-                self.params.grouping_aliases[i]
-                if 0 <= i < len(self.params.grouping_aliases)
-                else v
+                (
+                    self.params.grouping_aliases[i]
+                    if 0 <= i < len(self.params.grouping_aliases)
+                    else v
+                )
                 for i, v in enumerate(self.params.grouping)
             ]
         )

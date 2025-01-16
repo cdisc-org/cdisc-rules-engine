@@ -285,18 +285,7 @@ def get_datasets(
         return data_service.get_datasets()
     for dataset_path in dataset_paths:
         metadata = data_service.get_raw_dataset_metadata(dataset_name=dataset_path)
-        datasets.append(
-            {
-                "domain": metadata.domain_name,
-                "filename": metadata.filename,
-                "full_path": dataset_path,
-                "length": metadata.records,
-                "label": metadata.label,
-                "size": metadata.size,
-                "modification_date": metadata.modification_date,
-                "temp_filename": None,
-            }
-        )
+        datasets.append(metadata)
 
     return datasets
 

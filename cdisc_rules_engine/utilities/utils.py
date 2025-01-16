@@ -2,6 +2,7 @@
 This module contains utility functions
 that can be reused.
 """
+
 import copy
 import os
 import re
@@ -21,6 +22,7 @@ from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 from cdisc_rules_engine.interfaces import ConditionInterface
 from cdisc_rules_engine.models.base_validation_entity import BaseValidationEntity
 from business_rules.utils import is_valid_date
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 
 
 def convert_file_size(size_in_bytes: int, desired_unit: str) -> float:
@@ -203,36 +205,29 @@ def get_directory_path(dataset_path):
     return os.path.dirname(dataset_path)
 
 
-def get_corresponding_datasets(datasets: List[dict], domain: str) -> List[dict]:
-    return [dataset for dataset in datasets if dataset.get("domain") == domain]
-
-
-def is_split_dataset(datasets: List[dict], domain: str) -> bool:
-    corresponding_datasets = get_corresponding_datasets(datasets, domain)
-    if len(corresponding_datasets) < 2:
-        logger.info(f"Domain {domain} is not a split dataset")
-        return False
-
-    non_supp_datasets = [
-        dataset
-        for dataset in corresponding_datasets
-        if not dataset.get("filename", "").lower().startswith("supp")
+def get_corresponding_datasets(
+    datasets: List[SDTMDatasetMetadata], dataset_metadata: SDTMDatasetMetadata
+) -> List[SDTMDatasetMetadata]:
+    return [
+        other
+        for other in datasets
+        if (dataset_metadata.domain and dataset_metadata.domain == other.domain)
+        or (dataset_metadata.rdomain and dataset_metadata.rdomain == other.rdomain)
     ]
 
-    if len(non_supp_datasets) < 2:
-        logger.info(f"Domain {domain} does not have at least 2 split datasets")
+
+def is_split_dataset(
+    datasets: List[SDTMDatasetMetadata], dataset_metadata: SDTMDatasetMetadata
+) -> bool:
+    corresponding_datasets = get_corresponding_datasets(datasets, dataset_metadata)
+    if len(corresponding_datasets) < 2:
+        logger.info(f"Dataset {dataset_metadata.name} is not a split dataset")
         return False
 
-    result = all(
-        (
-            dataset.get("filename", "").split(".")[0].lower().startswith(domain.lower())
-            and len(dataset.get("filename", "").split(".")[0]) >= len(domain)
-        )
-        or dataset.get("filename", "").lower().startswith("supp")
-        for dataset in corresponding_datasets
+    logger.info(
+        f"{dataset_metadata.domain or dataset_metadata.rdomain} is a split dataset: {corresponding_datasets}"
     )
-    logger.info(f"{domain} is a split dataset: {result}")
-    return result
+    return True
 
 
 def is_supp_dataset(datasets: List[dict], domain: str) -> bool:
@@ -246,11 +241,11 @@ def is_supp_dataset(datasets: List[dict], domain: str) -> bool:
     return False
 
 
-def get_dataset_name_from_details(domain_details) -> str:
+def get_dataset_name_from_details(dataset_metadata: SDTMDatasetMetadata) -> str:
     return (
-        os.path.split(domain_details["full_path"])[-1]
-        if "full_path" in domain_details
-        else domain_details["filename"]
+        os.path.split(dataset_metadata.full_path)[-1]
+        if dataset_metadata.full_path
+        else dataset_metadata.filename
     )
 
 
@@ -335,13 +330,13 @@ def get_meddra_code_term_pairs_cache_key(meddra_path: str) -> str:
 
 
 def get_item_index_by_condition(
-    lit_of_dicts: List[dict], condition: Callable
+    list_of_dicts: List[dict], condition: Callable
 ) -> Optional[int]:
     """
     Uses linear search to return index of element
     in unsorted list which applies to the condition.
     """
-    for index, dictionary in enumerate(lit_of_dicts):
+    for index, dictionary in enumerate(list_of_dicts):
         if condition(dictionary):
             return index
 

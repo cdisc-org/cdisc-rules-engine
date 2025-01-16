@@ -25,7 +25,7 @@ def test_read_metadata():
     assert "variable_name_to_size_map" in metadata["contents_metadata"]
     assert "number_of_variables" in metadata["contents_metadata"]
     assert "dataset_label" in metadata["contents_metadata"]
-    assert "domain_name" in metadata["contents_metadata"]
+    assert "domain" in metadata["contents_metadata"]
     assert "dataset_modification_date" in metadata["contents_metadata"]
 
 

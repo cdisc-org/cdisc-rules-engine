@@ -3,6 +3,7 @@ from typing import List
 from cdisc_rules_engine.models.external_dictionaries_container import (
     ExternalDictionariesContainer,
 )
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 
 import pandas as pd
 
@@ -20,7 +21,7 @@ class OperationParams:
     domain: str
     dataset_path: str
     directory_path: str
-    datasets: List[dict]
+    datasets: List[SDTMDatasetMetadata]
     standard: str
     standard_version: str
     ct_package: list = None

@@ -60,7 +60,7 @@ def validate_single_rule(
     rule["conditions"] = ConditionCompositeFactory.get_condition_composite(
         rule["conditions"]
     )
-    max_dataset_size = max(datasets, key=lambda x: x["size"])["size"]
+    max_dataset_size = max(datasets, key=lambda x: x.size).size
     # call rule engine
     engine = RulesEngine(
         cache=cache,
@@ -79,12 +79,10 @@ def validate_single_rule(
         # Check if the domain has been validated before
         # This addresses the case where a domain is split
         # and appears multiple times within the list of datasets
-        if dataset["domain"] not in validated_domains:
-            validated_domains.add(dataset["domain"])
+        if dataset.domain not in validated_domains:
+            validated_domains.add(dataset.domain)
             results.append(
-                engine.validate_single_rule(
-                    rule, dataset["full_path"], datasets, dataset["domain"]
-                )
+                engine.validate_single_rule(rule, dataset.full_path, datasets, dataset)
             )
 
     results = list(itertools.chain(*results))
@@ -146,14 +144,14 @@ def run_validation(args: Validation_args):
             "Large datasets must use parquet format, converting all datasets to parquet"
         )
         for dataset in datasets:
-            file_path = dataset.get("full_path")
+            file_path = dataset.full_path
             if file_path.endswith(".parquet"):
                 continue
             num_rows, new_file = data_service.to_parquet(file_path)
             created_files.append(new_file)
-            dataset["full_path"] = new_file
-            dataset["length"] = num_rows
-            dataset["original_path"] = file_path
+            dataset.full_path = new_file
+            dataset.record_count = num_rows
+            dataset.original_path = file_path
     engine_logger.info(f"Running {len(rules)} rules against {len(datasets)} datasets")
     start = time.time()
     results = []

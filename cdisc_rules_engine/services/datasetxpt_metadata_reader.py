@@ -23,7 +23,7 @@ class DatasetXPTMetadataReader:
             self._estimate_dataset_length = False
             self.row_limit = 0
         self._metadata_container = {}
-        self._domain_name = None
+        self._domain = None
         self._dataset_name = file_name.split(".")[0].upper()
         self._file_path = file_path
 
@@ -34,7 +34,7 @@ class DatasetXPTMetadataReader:
         dataset, metadata = pyreadstat.read_xport(
             self._file_path, row_limit=self.row_limit
         )
-        self._domain_name = self._extract_domain_name(dataset)
+        self._domain = self._extract_domain_name(dataset)
         self._metadata_container = {
             "variable_labels": list(metadata.column_labels),
             "variable_names": list(metadata.column_names),
@@ -48,7 +48,7 @@ class DatasetXPTMetadataReader:
             "number_of_variables": metadata.number_columns,
             "dataset_label": metadata.file_label,
             "dataset_length": metadata.number_rows,
-            "domain_name": self._domain_name,
+            "domain": self._domain,
             "dataset_name": self._dataset_name,
             "dataset_modification_date": metadata.modification_time.isoformat(),
         }
@@ -57,7 +57,7 @@ class DatasetXPTMetadataReader:
             self._metadata_container[
                 "dataset_length"
             ] = self._calculate_dataset_length()
-        self._domain_name = self._extract_domain_name(dataset)
+        self._domain = self._extract_domain_name(dataset)
         self._convert_variable_types()
         self._metadata_container["adam_info"] = self._extract_adam_info(
             self._metadata_container["variable_names"]
@@ -69,11 +69,11 @@ class DatasetXPTMetadataReader:
         try:
             first_row = df.iloc[0]
             if "DOMAIN" in first_row:
-                domain_name = first_row["DOMAIN"]
-                if isinstance(domain_name, bytes):
-                    return domain_name.decode("utf-8")
+                domain = first_row["DOMAIN"]
+                if isinstance(domain, bytes):
+                    return domain.decode("utf-8")
                 else:
-                    return str(domain_name)
+                    return str(domain)
         except IndexError:
             pass
         return None
@@ -165,7 +165,7 @@ class DatasetXPTMetadataReader:
             "variable_name_to_size_map": self._metadata_container.variable_storage_width,  # noqa
             "number_of_variables": self._metadata_container.number_columns,
             "dataset_label": self._metadata_container.file_label,
-            "domain_name": self._domain_name,
+            "domain": self._domain,
             "dataset_name": self._dataset_name,
             "dataset_modification_date": self._metadata_container.dataset_modification_date,  # noqa
         }

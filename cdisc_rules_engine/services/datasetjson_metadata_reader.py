@@ -15,7 +15,7 @@ class DatasetJSONMetadataReader:
 
     def __init__(self, file_path: str, file_name: str):
         self._file_path = file_path
-        self._domain_name = None
+        self._domain = None
         self._dataset_name = file_name.split(".")[0].upper()
 
     def read(self) -> dict:
@@ -49,7 +49,7 @@ class DatasetJSONMetadataReader:
                 {},
             )
 
-            self._domain_name = self._extract_domain_name(items_data)
+            self._domain = self._extract_domain_name(items_data)
 
             self._metadata_container = {
                 "variable_labels": [
@@ -77,7 +77,7 @@ class DatasetJSONMetadataReader:
                 "number_of_variables": len(items_data.get("items", [])[1:]),
                 "dataset_label": items_data.get("label"),
                 "dataset_length": items_data.get("records"),
-                "domain_name": self._domain_name,
+                "domain": self._domain,
                 "dataset_name": items_data.get("name"),
                 "dataset_modification_date": datasetjson["creationDateTime"],
             }
@@ -106,7 +106,7 @@ class DatasetJSONMetadataReader:
                 "number_of_variables": 0,
                 "dataset_label": "",
                 "dataset_length": 0,
-                "domain_name": "",
+                "domain": "",
                 "dataset_name": "",
                 "dataset_modification_date": "",
             }
@@ -159,7 +159,7 @@ class DatasetJSONMetadataReader:
             "variable_name_to_size_map": self._metadata_container.variable_storage_width,  # noqa
             "number_of_variables": self._metadata_container.number_columns,
             "dataset_label": self._metadata_container.file_label,
-            "domain_name": self._domain_name,
+            "domain": self._domain,
             "dataset_name": self._dataset_name,
             "dataset_modification_date": self._metadata_container.dataset_modification_date,  # noqa
         }
