@@ -171,7 +171,7 @@ class LocalDataService(BaseDataService):
         )
 
     def read_metadata(
-        self, file_path: str, datasets: Optional[List[SDTMDatasetMetadata]] = None
+        self, file_path: str, datasets: Optional[Iterable[SDTMDatasetMetadata]] = None
     ) -> dict:
         file_size = os.path.getsize(file_path)
         file_name = extract_file_name_from_path_string(file_path)

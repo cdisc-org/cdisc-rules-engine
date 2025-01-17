@@ -1,7 +1,6 @@
 from datetime import datetime
 from io import IOBase
-from typing import List, Optional
-from dataclasses import asdict
+from typing import List, Optional, Iterable
 
 import os
 import pandas as pd
@@ -161,5 +160,5 @@ class DummyDataService(BaseDataService):
     def to_parquet(self, file_path: str) -> str:
         return ""
 
-    def get_datasets(self) -> List[dict]:
-        return [asdict(dataset) for dataset in self.data]
+    def get_datasets(self) -> Iterable[SDTMDatasetMetadata]:
+        return self.data

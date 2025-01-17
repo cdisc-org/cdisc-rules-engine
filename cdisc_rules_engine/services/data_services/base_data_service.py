@@ -153,7 +153,7 @@ class BaseDataService(DataServiceInterface, ABC):
         self,
         dataset: DatasetInterface,
         file_path: str,
-        datasets: List[SDTMDatasetMetadata],
+        datasets: Iterable[SDTMDatasetMetadata],
         dataset_metadata: SDTMDatasetMetadata,
     ) -> Optional[str]:
         if self.standard is None or self.version is None:
@@ -184,7 +184,7 @@ class BaseDataService(DataServiceInterface, ABC):
         dataset: DatasetInterface,
         dataset_metadata: SDTMDatasetMetadata,
         file_path: str,
-        datasets: List[SDTMDatasetMetadata],
+        datasets: Iterable[SDTMDatasetMetadata],
     ):
         if self._contains_topic_variable(dataset, dataset_metadata.domain, "TERM"):
             return EVENTS
@@ -209,7 +209,7 @@ class BaseDataService(DataServiceInterface, ABC):
         return "APID" in dataset
 
     def _get_associated_persons_inherit_class(
-        self, file_path, datasets: List[SDTMDatasetMetadata], domain: str
+        self, file_path, datasets: Iterable[SDTMDatasetMetadata], domain: str
     ):
         """
         Check with inherit class AP-- belongs to.

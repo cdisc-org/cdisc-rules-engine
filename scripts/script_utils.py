@@ -18,6 +18,7 @@ from cdisc_rules_engine.models.dictionaries.get_dictionary_terms import (
     extract_dictionary_terms,
 )
 from cdisc_rules_engine.models.rule import Rule
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.utilities.utils import (
     get_rules_cache_key,
     get_standard_details_cache_key,
@@ -279,7 +280,7 @@ def process_rule(rule, args, rule_data, rules, keys):
 
 def get_datasets(
     data_service: DataServiceInterface, dataset_paths: Iterable[str]
-) -> List[dict]:
+) -> List[SDTMDatasetMetadata]:
     datasets = []
     if data_service.standard == "usdm":
         return data_service.get_datasets()

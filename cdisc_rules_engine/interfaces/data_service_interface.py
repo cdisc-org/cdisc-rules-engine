@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from io import IOBase
-from typing import Callable, List, Optional
+from typing import Callable, Iterable, List, Optional
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from .cache_service_interface import CacheServiceInterface
@@ -25,7 +25,7 @@ class DataServiceInterface(ABC):
         """
 
     @abstractmethod
-    def get_datasets(self) -> List[dict]:
+    def get_datasets(self) -> List[SDTMDatasetMetadata]:
         """
         Gets a list of datasets.
         """
@@ -102,7 +102,7 @@ class DataServiceInterface(ABC):
         self,
         dataset: DatasetInterface,
         file_path: str,
-        datasets: List[SDTMDatasetMetadata],
+        datasets: Iterable[SDTMDatasetMetadata],
         dataset_metadata: SDTMDatasetMetadata,
     ) -> Optional[str]:
         """

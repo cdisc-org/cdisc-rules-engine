@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import Iterable, List, Union
 
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
@@ -48,7 +48,7 @@ class DatasetPreprocessor:
         self._rule_processor = RuleProcessor(self._data_service, cache_service)
 
     def preprocess(
-        self, rule: dict, datasets: List[SDTMDatasetMetadata]
+        self, rule: dict, datasets: Iterable[SDTMDatasetMetadata]
     ) -> DatasetInterface:
         """
         Preprocesses the dataset by merging it with the

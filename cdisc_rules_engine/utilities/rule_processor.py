@@ -1,5 +1,5 @@
 import re
-from typing import List, Optional, Set, Union, Tuple
+from typing import Iterable, List, Optional, Set, Union, Tuple
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
@@ -179,7 +179,7 @@ class RuleProcessor:
         self,
         rule,
         file_path,
-        datasets: List[SDTMDatasetMetadata],
+        datasets: Iterable[SDTMDatasetMetadata],
         dataset_metadata: SDTMDatasetMetadata,
     ):
         """
@@ -243,7 +243,7 @@ class RuleProcessor:
         rule: dict,
         dataset: DatasetInterface,
         domain: str,
-        datasets: List[SDTMDatasetMetadata],
+        datasets: Iterable[SDTMDatasetMetadata],
         dataset_path: str,
         standard: str,
         standard_version: str,
@@ -489,7 +489,7 @@ class RuleProcessor:
         dataset_metadata: SDTMDatasetMetadata,
         file_path: str,
         is_split_domain: bool,
-        datasets: List[SDTMDatasetMetadata],
+        datasets: Iterable[SDTMDatasetMetadata],
     ) -> bool:
         is_suitable: bool = (
             self.valid_rule_structure(rule)

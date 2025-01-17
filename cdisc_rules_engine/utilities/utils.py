@@ -7,7 +7,7 @@ import copy
 import os
 import re
 from datetime import datetime
-from typing import Callable, List, Optional, Set, Union
+from typing import Callable, Iterable, List, Optional, Union
 from uuid import UUID
 from cdisc_rules_engine.services import logger
 
@@ -36,14 +36,6 @@ def convert_file_size(size_in_bytes: int, desired_unit: str) -> float:
         "GB": 1024**3,
     }
     return size_in_bytes / unit_to_denominator_map[desired_unit]
-
-
-def is_domain_validated(domain: str, validated_domains: Set[str]) -> bool:
-    return domain in validated_domains
-
-
-def mark_domain_as_validated(domain: str, validated_domains: Set[str]):
-    validated_domains.add(domain)
 
 
 def get_execution_status(results):
@@ -206,7 +198,7 @@ def get_directory_path(dataset_path):
 
 
 def get_corresponding_datasets(
-    datasets: List[SDTMDatasetMetadata], dataset_metadata: SDTMDatasetMetadata
+    datasets: Iterable[SDTMDatasetMetadata], dataset_metadata: SDTMDatasetMetadata
 ) -> List[SDTMDatasetMetadata]:
     return [
         other
@@ -217,7 +209,7 @@ def get_corresponding_datasets(
 
 
 def is_split_dataset(
-    datasets: List[SDTMDatasetMetadata], dataset_metadata: SDTMDatasetMetadata
+    datasets: Iterable[SDTMDatasetMetadata], dataset_metadata: SDTMDatasetMetadata
 ) -> bool:
     corresponding_datasets = get_corresponding_datasets(datasets, dataset_metadata)
     if len(corresponding_datasets) < 2:

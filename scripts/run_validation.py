@@ -12,6 +12,7 @@ from cdisc_rules_engine.models.library_metadata_container import (
 )
 from cdisc_rules_engine.models.rule_conditions import ConditionCompositeFactory
 from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.models.validation_args import Validation_args
 from cdisc_rules_engine.rules_engine import RulesEngine
 from cdisc_rules_engine.services import logger as engine_logger
@@ -52,7 +53,7 @@ class CacheManager(SyncManager):
 
 def validate_single_rule(
     cache,
-    datasets,
+    datasets: Iterable[SDTMDatasetMetadata],
     args: Validation_args,
     library_metadata: LibraryMetadataContainer,
     rule: dict = None,
@@ -75,14 +76,16 @@ def validate_single_rule(
     )
     results = []
     validated_domains = set()
-    for dataset in datasets:
+    for dataset_metadata in datasets:
         # Check if the domain has been validated before
         # This addresses the case where a domain is split
         # and appears multiple times within the list of datasets
-        if dataset.domain not in validated_domains:
-            validated_domains.add(dataset.domain)
+        if dataset_metadata.unsplit_name() not in validated_domains:
+            validated_domains.add(dataset_metadata.unsplit_name())
             results.append(
-                engine.validate_single_rule(rule, dataset.full_path, datasets, dataset)
+                engine.validate_single_rule(
+                    rule, dataset_metadata.full_path, datasets, dataset_metadata
+                )
             )
 
     results = list(itertools.chain(*results))

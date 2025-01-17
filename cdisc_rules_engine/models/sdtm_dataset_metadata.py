@@ -18,3 +18,17 @@ class SDTMDatasetMetadata(DatasetMetadata):
         Returns true if domain name starts with SUPP or SQ
         """
         return self.name.startswith(SUPPLEMENTARY_DOMAINS)
+
+    def unsplit_name(self) -> str:
+        return (
+            self.name[:-2]
+            if (self.domain and self.name[:-2] == self.domain)
+            or (
+                self.is_supp()
+                and (
+                    self.name[:-2] == f"SUPP{self.rdomain}"
+                    or self.name[:-2] == f"SQ{self.rdomain}"
+                )
+            )
+            else self.name
+        )

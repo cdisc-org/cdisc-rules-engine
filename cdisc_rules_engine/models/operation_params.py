@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List
+from typing import Iterable, List
 from cdisc_rules_engine.models.external_dictionaries_container import (
     ExternalDictionariesContainer,
 )
@@ -21,7 +21,7 @@ class OperationParams:
     domain: str
     dataset_path: str
     directory_path: str
-    datasets: List[SDTMDatasetMetadata]
+    datasets: Iterable[SDTMDatasetMetadata]
     standard: str
     standard_version: str
     ct_package: list = None

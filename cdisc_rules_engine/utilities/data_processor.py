@@ -1,6 +1,6 @@
 from __future__ import annotations
 import asyncio
-from typing import List, Optional, Set, TYPE_CHECKING
+from typing import Iterable, List, Optional, Set, TYPE_CHECKING
 
 from cdisc_rules_engine.models.dataset import PandasDataset, DaskDataset
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
@@ -64,7 +64,7 @@ class DataProcessor:
         self,
         dataset_path: str,
         dataset: DatasetInterface,
-        dataset_metadata: List[SDTMDatasetMetadata],
+        dataset_metadata: Iterable[SDTMDatasetMetadata],
     ) -> dict:
         # Get unique RDOMAINS and corresponding ID Var
         reference_data = {}
@@ -99,7 +99,7 @@ class DataProcessor:
     def get_column_data(
         self,
         dataset_path: str,
-        dataset_metadata: List[SDTMDatasetMetadata],
+        dataset_metadata: Iterable[SDTMDatasetMetadata],
         columns: list,
         domain: str,
     ):
@@ -123,7 +123,7 @@ class DataProcessor:
     def async_get_reference_data(
         self,
         dataset_path,
-        dataset_metadata: List[SDTMDatasetMetadata],
+        dataset_metadata: Iterable[SDTMDatasetMetadata],
         columns,
         domains,
     ):

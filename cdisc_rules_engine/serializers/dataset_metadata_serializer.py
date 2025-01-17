@@ -1,4 +1,4 @@
-from typing import List
+from typing import Iterable, List
 
 from .base_serializer import BaseSerializer
 from cdisc_rules_engine.exceptions.custom_exceptions import InvalidDatasetFormat
@@ -6,7 +6,7 @@ from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 
 
 class DatasetMetadataSerializer(BaseSerializer):
-    def __init__(self, metadata: List[SDTMDatasetMetadata]):
+    def __init__(self, metadata: Iterable[SDTMDatasetMetadata]):
         self.__metadata = metadata
         if not self.is_valid:
             raise InvalidDatasetFormat(

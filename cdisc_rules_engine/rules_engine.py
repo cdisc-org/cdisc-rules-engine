@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import List, Union
+from typing import Iterable, List, Union
 
 from business_rules import export_rule_data
 from business_rules.engine import run
@@ -115,7 +115,7 @@ class RulesEngine:
         self,
         rules: List[dict],
         dataset_path: str,
-        datasets: List[dict],
+        datasets: Iterable[SDTMDatasetMetadata],
         dataset_domain: str,
     ) -> dict:
         """
@@ -141,7 +141,7 @@ class RulesEngine:
         self,
         rule: dict,
         dataset_path: str,
-        datasets: List[SDTMDatasetMetadata],
+        datasets: Iterable[SDTMDatasetMetadata],
         dataset_metadata: SDTMDatasetMetadata,
     ) -> List[Union[dict, str]]:
         """
@@ -207,7 +207,7 @@ class RulesEngine:
         self,
         rule: dict,
         dataset_path: str,
-        datasets: List[SDTMDatasetMetadata],
+        datasets: Iterable[SDTMDatasetMetadata],
         dataset_metadata: SDTMDatasetMetadata,
     ):
         return builder_factory.get_service(
@@ -231,7 +231,7 @@ class RulesEngine:
         self,
         rule: dict,
         dataset_path: str,
-        datasets: List[SDTMDatasetMetadata],
+        datasets: Iterable[SDTMDatasetMetadata],
         dataset_metadata: SDTMDatasetMetadata,
     ) -> List[Union[dict, str]]:
         """

@@ -18,7 +18,7 @@ from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
-from typing import Tuple, List, Optional
+from typing import Iterable, Tuple, List, Optional
 
 
 def get_class_and_domain_metadata(
@@ -302,7 +302,7 @@ def get_variables_metadata_from_standard_model(
     standard_version: str,
     domain: str,
     dataframe,
-    datasets: List[SDTMDatasetMetadata],
+    datasets: Iterable[SDTMDatasetMetadata],
     dataset_path: str,
     cache: CacheServiceInterface,
     data_service: DataServiceInterface,
