@@ -325,7 +325,7 @@ class RulesEngine:
         rule: dict,
         dataset: DatasetInterface,
         dataset_path: str,
-        datasets: List[dict],
+        datasets: Iterable[SDTMDatasetMetadata],
         dataset_metadata: SDTMDatasetMetadata,
         value_level_metadata: List[dict] = None,
         variable_codelist_map: dict = None,
