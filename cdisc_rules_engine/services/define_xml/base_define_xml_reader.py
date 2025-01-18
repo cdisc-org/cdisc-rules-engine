@@ -1,6 +1,6 @@
 from abc import abstractmethod, ABC
 from dataclasses import dataclass
-from typing import List, Optional, Union
+from typing import Dict, List, Optional, Union
 from functools import cache
 from heapq import heappush, heappop
 
@@ -28,6 +28,16 @@ class DefineXMLVersion:
     model_package: str
 
 
+@dataclass
+class StandardsCTMetadata:
+    name: str
+    version: str
+    oid: str
+
+    type: str = None
+    publishing_set: str = None
+
+
 class BaseDefineXMLReader(ABC):
     """
     This class is responsible for extracting
@@ -44,6 +54,10 @@ class BaseDefineXMLReader(ABC):
     @staticmethod
     @abstractmethod
     def _meta_data_schema() -> type:
+        pass
+
+    @abstractmethod
+    def get_extensible_codelist_mappings() -> Dict:
         pass
 
     def __init__(

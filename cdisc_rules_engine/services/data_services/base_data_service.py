@@ -97,6 +97,7 @@ class BaseDataService(DataServiceInterface, ABC):
         )
         self.standard = kwargs.get("standard")
         self.version = (kwargs.get("standard_version") or "").replace(".", "-")
+        self.standard_substandard = kwargs.get("standard_substandard")
         self.library_metadata = kwargs.get("library_metadata")
         self.dataset_implementation = kwargs.get(
             "dataset_implementation", PandasDataset
@@ -172,10 +173,11 @@ class BaseDataService(DataServiceInterface, ABC):
         )
 
     def _get_standard_data(self):
+
         return (
             self.library_metadata.standard_metadata
             or self.cdisc_library_service.get_standard_details(
-                self.standard, self.version
+                self.standard, self.version, self.standard_substandard
             )
         )
 

@@ -6,6 +6,33 @@
     {
       "properties": {
         "operator": {
+          "const": "codelist_extensible"
+        }
+      },
+      "required": ["id", "operator", "codelist"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "codelist_terms"
+        }
+      },
+      "required": ["id", "operator", "codelists", "level", "returntype"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "define_extensible_codelists"
+        }
+      },
+      "required": ["id", "operator", "codelists"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
           "const": "define_variable_metadata"
         }
       },

@@ -38,6 +38,19 @@ Linux/Mac:
 # ex: ./core validate -s sdtmig -v 3-4 -d .\xpt\
 ```
 
+> **_NOTE:_** For Linux users, you will need to run this command from the executable root directory:
+>
+> ```bash
+> chmod +x ./core
+> ```
+>
+> For Mac users, you will need to remove the Apple signature quarantine in addition to making the app executable.
+>
+> ```bash
+> xattr -rd com.apple.quarantine /path/to/core/root/dir
+> chmod +x ./core
+> ```
+
 ### **Code formatter**
 
 This project uses the `black` code formatter, `flake8` linter for python and `prettier` for JSON, YAML and MD.
@@ -97,9 +110,14 @@ Run `python core.py validate --help` to see the list of validation options.
                                   [required]
   -v, --version TEXT              Standard version to validate against
                                   [required]
+  -ss, --substandard TEXT         Substandard to validate against
+                                  [required for TIG]
   -ct, --controlled-terminology-package TEXT
                                   Controlled terminology package to validate
                                   against, can provide more than one
+                                  NOTE: if a defineXML is provided, if it is version 2.1
+                                  engine will use the CT laid out in the define.  If it is
+                                  version 2.0, -ct is expected to specify the CT package
   -o, --output TEXT               Report output file destination and name. Path will be
                                   relative to the validation execution directory
                                   and should end in the desired output filename
@@ -121,6 +139,11 @@ Run `python core.py validate --help` to see the list of validation options.
                                   files
   --medrt TEXT                  Path to directory with MEDRT dictionary
                                   files
+  --unii TEXT                  Path to directory with UNII dictionary
+                                  files
+  --snomed-version TEXT        Version of snomed to use. (ex. 2024-09-01)
+  --snomed-url TEXT            Base url of snomed api to use. (ex. https://snowstorm.snomedtools.org/snowstorm/snomed-ct)
+  --snomed-edition TEXT        Edition of snomed to use. (ex. SNOMEDCT-US)
   -r, --rules TEXT                Specify rule core ID ex. CORE-000001. Can be specified multiple times.
   -lr, --local_rules TEXT         Specify relative path to directory containing
                                   local rule yml and/or json rule files.
@@ -214,6 +237,8 @@ To obtain an api key, please follow the instructions found here: <https://wiki.c
                                   [required]
   -v, --version TEXT              Standard version to validate against
                                   [required]
+  -ss, --substandard TEXT         Substandard to validate against
+                                  [required for TIG]
   -ct, --controlled-terminology-package TEXT
                                   Controlled terminology package to validate
                                   against, can provide more than one

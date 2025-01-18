@@ -698,6 +698,31 @@ Complement of `contains_all`
     - "Unplanned Treatment"
 ```
 
+## is_consistent_across_dataset
+
+Checks if a variable maintains consistent values within groups defined by one or more grouping variables. Groups records by specified value(s) and validates that the target variable maintains the same value within each unique combination of grouping variables
+
+Single grouping variable:
+
+```yaml
+- name: "BGSTRESU"
+  operator: is_consistent_across_dataset
+  value: "USUBJID"
+```
+
+Multiple grouping variables:
+
+```yaml
+- name: "--STRESU"
+  operator: is_consistent_across_dataset
+  value:
+    - "--TESTCD"
+    - "--CAT"
+    - "--SCAT"
+    - "--SPEC"
+    - "--METHOD"
+```
+
 ## is_unique_set
 
 Relationship Integrity Check
@@ -1004,11 +1029,3 @@ True if the codelist named within `value` is a valid codelist for the variable n
 ## does_not_reference_correct_codelist
 
 Complement of `references_correct_codelist`
-
-## uses_valid_codelist_terms
-
-True if the value within `value` is a valid term within the codelist named within `name` in the define.xml
-
-## does_not_use_valid_codelist_terms
-
-Complement of `uses_valid_codelist_terms`

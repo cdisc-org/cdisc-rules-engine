@@ -171,7 +171,7 @@
           "const": "does_not_use_valid_codelist_terms"
         }
       },
-      "required": ["operator", "value"],
+      "required": ["operator", "value", "codelistlevel", "codelistcheck"],
       "type": "object"
     },
     {
@@ -448,6 +448,15 @@
       "properties": {
         "operator": {
           "const": "is_unique_relationship"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "is_consistent_across_dataset"
         }
       },
       "required": ["operator", "value"],
@@ -816,15 +825,6 @@
     {
       "properties": {
         "operator": {
-          "const": "uses_valid_codelist_terms"
-        }
-      },
-      "required": ["operator", "value"],
-      "type": "object"
-    },
-    {
-      "properties": {
-        "operator": {
           "const": "value_does_not_have_multiple_references"
         }
       },
@@ -905,6 +905,14 @@
     },
     "negative": {
       "type": "boolean"
+    },
+    "codelistcheck": {
+      "enum": ["code", "value"],
+      "type": "string"
+    },
+    "codelistlevel": {
+      "enum": ["term", "codelist"],
+      "type": "string"
     },
     "operator": {
       "type": "string"

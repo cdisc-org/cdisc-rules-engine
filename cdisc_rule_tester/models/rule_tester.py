@@ -30,16 +30,17 @@ class RuleTester:
         cache: InMemoryCacheService = None,
         standard: str = None,
         standard_version: str = "",
+        standard_substandard: str = None,
         codelists=[],
+        rule=None,
     ):
         self.datasets = [DummyDataset(dataset_data) for dataset_data in datasets]
         self.cache = cache or InMemoryCacheService()
-
         standard_details_cache_key = get_standard_details_cache_key(
-            standard, standard_version
+            standard, standard_version, standard_substandard
         )
         variable_details_cache_key = get_library_variables_metadata_cache_key(
-            standard, standard_version
+            standard, standard_version, standard_substandard
         )
         standard_metadata = self.cache.get(standard_details_cache_key)
         if standard_metadata:
@@ -48,7 +49,7 @@ class RuleTester:
         else:
             model_metadata = {}
         variable_codelist_cache_key = get_variable_codelist_map_cache_key(
-            standard, standard_version
+            standard, standard_version, standard_substandard
         )
 
         ct_package_metadata = {}
@@ -62,11 +63,24 @@ class RuleTester:
             variable_codelist_map=self.cache.get(variable_codelist_cache_key),
             ct_package_metadata=ct_package_metadata,
         )
+        if not standard and not standard_version and rule:
+            standard = (
+                rule.get("Authorities")[0].get("Standards")[0].get("Name").lower()
+            )
+            standard_substandard = (
+                rule.get("Authorities")[0].get("Standards")[0].get("Substandard", None)
+            )
+            if standard_substandard is not None:
+                standard_substandard = standard_substandard.lower()
+            standard_version = (
+                rule.get("Authorities")[0].get("Standards")[0].get("Version")
+            )
         self.data_service = DummyDataService.get_instance(
             self.cache,
             ConfigService(),
             standard=standard,
             standard_version=standard_version,
+            standard_substandard=standard_substandard,
             data=self.datasets,
             define_xml=define_xml,
             library_metadata=self.library_metadata,
@@ -76,6 +90,7 @@ class RuleTester:
             self.data_service,
             standard=standard,
             standard_version=standard_version,
+            standard_substandard=standard_substandard,
             library_metadata=self.library_metadata,
         )
         self.engine.rule_processor = RuleProcessor(

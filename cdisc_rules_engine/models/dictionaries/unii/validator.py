@@ -32,7 +32,9 @@ class UNIIValidator(BaseDictionaryValidator):
                     return True
             return False
 
-    def is_valid_code(self, code: str, term_type: str, variable: str, **kwargs) -> bool:
+    def is_valid_code(
+        self, code: str, term_type: str, variable: str, codes=[], **kwargs
+    ) -> bool:
         term_dictionary = self.get_term_dictionary()
         case_sensitive_check = kwargs.get("case_sensitive")
         if case_sensitive_check:
@@ -43,7 +45,7 @@ class UNIIValidator(BaseDictionaryValidator):
                     return True
             return False
 
-    def is_valid_code_term_pair(self, row, term_var, code_var) -> bool:
+    def is_valid_code_term_pair(self, row, term_var, code_var, codes=[]) -> bool:
         term_dictionary = self.get_term_dictionary()
         code = row[code_var]
         dictionary_term = term_dictionary.get(code)

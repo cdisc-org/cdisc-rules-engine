@@ -63,13 +63,24 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
         standards_data = json_data.get("standard", {})
         standard = standards_data.get("product")
         standard_version = standards_data.get("version")
+        standard_substandard = None
+        if standard and standard.lower() == "tig":
+            standard_substandard = (
+                rule.get("Authorities", [])[0]
+                .get("Standards", [])[0]
+                .get("Substandard")
+            ).lower()
         codelists = json_data.get("codelists", [])
         cache = InMemoryCacheService()
         if standards_data or codelists:
             library_service = CDISCLibraryService(api_key, cache)
             cache_populator: CachePopulator = CachePopulator(cache, library_service)
             if standards_data:
-                asyncio.run(cache_populator.load_standard(standard, standard_version))
+                asyncio.run(
+                    cache_populator.load_standard(
+                        standard, standard_version, standard_substandard
+                    )
+                )
                 asyncio.run(cache_populator.load_available_ct_packages())
             asyncio.run(cache_populator.load_codelists(codelists))
         if not rule:
@@ -80,7 +91,14 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
         validate_datasets_payload(datasets)
         define_xml = json_data.get("define_xml")
         tester = RuleTester(
-            datasets, define_xml, cache, standard, standard_version, codelists
+            datasets,
+            define_xml,
+            cache,
+            standard,
+            standard_version,
+            standard_substandard,
+            codelists,
+            rule,
         )
         result = tester.validate(rule)
         result_json = json.dumps(result)

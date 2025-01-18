@@ -305,6 +305,7 @@ def test_ContentMetadataDatasetBuilder_split_datasets(conditions):
         define_xml_path=None,
         standard="sdtmig",
         standard_version="3-4",
+        standard_substandard=None,
         library_metadata=LibraryMetadataContainer(),
     ).build_split_datasets("qscg.xpt")
     expected_output2 = {
@@ -332,6 +333,7 @@ def test_ContentMetadataDatasetBuilder_split_datasets(conditions):
         define_xml_path=None,
         standard="sdtmig",
         standard_version="3-4",
+        standard_substandard=None,
         library_metadata=LibraryMetadataContainer(),
     ).build_split_datasets("qspg.xpt")
     assert result.equals(expected)

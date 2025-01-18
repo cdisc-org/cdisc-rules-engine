@@ -234,6 +234,53 @@
           {
             "properties": {
               "Name": {
+                "const": "TIG"
+              },
+              "References": {
+                "items": {
+                  "properties": {
+                    "Criteria": {
+                      "properties": {
+                        "Type": {
+                          "const": "Success"
+                        }
+                      },
+                      "required": ["Type"],
+                      "type": "object"
+                    },
+                    "Origin": {
+                      "const": "TIG Conformance Rules"
+                    },
+                    "Rule Identifier": {
+                      "properties": {
+                        "Id": {
+                          "pattern": "^TIG\\d{4}[a-z]?$",
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "Version": {
+                      "enum": ["1.0"]
+                    }
+                  },
+                  "type": "object"
+                },
+                "minItems": 1,
+                "type": "array"
+              },
+              "Version": {
+                "enum": ["1.0"]
+              },
+              "Substandard": {
+                "enum": ["SDTM", "SEND", "ADaM", "CDASH"]
+              }
+            },
+            "type": "object"
+          },
+          {
+            "properties": {
+              "Name": {
                 "const": "USDM"
               },
               "References": {

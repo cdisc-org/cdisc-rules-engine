@@ -125,6 +125,7 @@ def test_dataset_metadata_define_dataset_builder(dataset_path):
         define_xml_path=None,
         standard="sdtmig",
         standard_version="3-4",
+        standard_substandard=None,
         library_metadata=LibraryMetadataContainer(),
     )
 

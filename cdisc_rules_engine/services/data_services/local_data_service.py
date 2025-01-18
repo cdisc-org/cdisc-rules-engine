@@ -191,7 +191,6 @@ class LocalDataService(BaseDataService):
                         "size": os.path.getsize(obj["original_path"]),
                     }
                     file_name = obj["filename"]
-                    print(file_name)
                     break
             # If we reach this line a parquet dataset was provided without a
             # corresponding xpt or json file. This should not happen

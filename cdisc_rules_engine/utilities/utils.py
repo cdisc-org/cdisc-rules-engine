@@ -147,13 +147,21 @@ def is_ap_domain(dataset_domain: str) -> bool:
 
 
 def get_library_variables_metadata_cache_key(
-    standard_type: str, standard_version: str
+    standard_type: str, standard_version: str, standard_substandard: str
 ) -> str:
-    return f"library_variables_metadata/{standard_type}/{standard_version}"
+    if not standard_substandard:
+        return f"library_variables_metadata/{standard_type}/{standard_version}"
+    else:
+        return f"library_variables_metadata/{standard_type}/{standard_version}/{standard_substandard}"
 
 
-def get_standard_details_cache_key(standard_type: str, standard_version: str) -> str:
-    return f"standards/{standard_type}/{standard_version}"
+def get_standard_details_cache_key(
+    standard_type: str, standard_version: str, standard_substandard: str = None
+) -> str:
+    if not standard_substandard:
+        return f"standards/{standard_type}/{standard_version}"
+    else:
+        return f"standards/{standard_type}/{standard_version}/{standard_substandard}"
 
 
 def get_model_details_cache_key(standard: str, model_version: str) -> str:
@@ -313,8 +321,11 @@ def get_metadata_cache_key(metadata_key: str):
     return f"library/metadata{metadata_key}"
 
 
-def get_variable_codelist_map_cache_key(standard: str, version: str) -> str:
-    return f"{standard}-{version}-codelists"
+def get_variable_codelist_map_cache_key(standard: str, version: str, subversion) -> str:
+    if subversion:
+        return f"{standard}-{version}-{subversion}-codelists"
+    else:
+        return f"{standard}-{version}-codelists"
 
 
 def get_meddra_code_term_pairs_cache_key(meddra_path: str) -> str:

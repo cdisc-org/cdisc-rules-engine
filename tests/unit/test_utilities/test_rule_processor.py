@@ -449,6 +449,7 @@ def test_perform_rule_operation(mock_data_service, dataset_implementation):
             "test/",
             standard="sdtmig",
             standard_version="3-1-2",
+            standard_substandard=None,
         )
         assert "$avg_aestdy" in result
         assert "$unique_aestdy" in result
@@ -538,6 +539,7 @@ def test_perform_rule_operation_with_grouping(
             "test/",
             standard="sdtmig",
             standard_version="3-1-2",
+            standard_substandard=None,
         )
         assert "$avg_aestdy" in data
         assert data["$avg_aestdy"].values.tolist() == [25, 35, 25, 35]
@@ -648,6 +650,7 @@ def test_perform_rule_operation_with_multi_key_grouping(
             "test/",
             standard="sdtmig",
             standard_version="3-1-2",
+            standard_substandard=None,
         )
         assert "$avg_aestdy" in data
         assert data["$avg_aestdy"].values.tolist() == [25, 35, 25, 35, 30, 112]
@@ -697,6 +700,7 @@ def test_perform_rule_operation_with_null_operations(
         "test/",
         standard="sdtmig",
         standard_version="3-1-2",
+        standard_substandard=None,
     )
     assert df.equals(new_data)
 
@@ -765,6 +769,7 @@ def test_perform_extract_metadata_operation(
         dataset_path="study/data_bundle/suppec.xpt",
         standard="sdtmig",
         standard_version="3-1-2",
+        standard_substandard=None,
     )
 
     # check result

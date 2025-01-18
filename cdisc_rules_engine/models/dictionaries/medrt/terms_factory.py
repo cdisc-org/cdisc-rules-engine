@@ -18,7 +18,7 @@ class MEDRTTermsFactory(TermsFactoryInterface):
     and contents and creates a term record for each line.
     """
 
-    def __init__(self, data_service: DataServiceInterface):
+    def __init__(self, data_service: DataServiceInterface, **kwargs):
         self.data_service = data_service
         self.term_file_regex = "Core_MEDRT_.*_DTS.xml"
 
