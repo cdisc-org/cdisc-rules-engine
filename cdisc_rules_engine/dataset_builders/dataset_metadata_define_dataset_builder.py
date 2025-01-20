@@ -95,7 +95,7 @@ class DatasetMetadataDefineDatasetBuilder(BaseDatasetBuilder):
                     )
                     ds_metadata.data["dataset_domain"] = dataset.domain
                 except Exception as e:
-                    logger.trace(e, __name__)
+                    logger.trace(e)
                     logger.error(f"Error: {e}. Error message: {str(e)}")
                 datasets.data = (
                     ds_metadata.data

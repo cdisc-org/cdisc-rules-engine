@@ -195,7 +195,7 @@ class RulesEngine:
                 )
                 return [error_obj.to_representation()]
         except Exception as e:
-            logger.trace(e, __name__)
+            logger.trace(e)
             logger.error(
                 f"""Error occurred during validation.
             Error: {e}
@@ -257,20 +257,20 @@ class RulesEngine:
         # SPECIAL CASES FOR RULE TYPES ###############################
         # TODO: Handle these special cases better.
         if self.library_metadata:
-            kwargs[
-                "variable_codelist_map"
-            ] = self.library_metadata.variable_codelist_map
-            kwargs[
-                "codelist_term_maps"
-            ] = self.library_metadata.get_all_ct_package_metadata()
+            kwargs["variable_codelist_map"] = (
+                self.library_metadata.variable_codelist_map
+            )
+            kwargs["codelist_term_maps"] = (
+                self.library_metadata.get_all_ct_package_metadata()
+            )
         if rule.get("rule_type") == RuleTypes.DEFINE_ITEM_METADATA_CHECK.value:
             if self.library_metadata:
-                kwargs[
-                    "variable_codelist_map"
-                ] = self.library_metadata.variable_codelist_map
-                kwargs[
-                    "codelist_term_maps"
-                ] = self.library_metadata.get_all_ct_package_metadata()
+                kwargs["variable_codelist_map"] = (
+                    self.library_metadata.variable_codelist_map
+                )
+                kwargs["codelist_term_maps"] = (
+                    self.library_metadata.get_all_ct_package_metadata()
+                )
         elif (
             rule.get("rule_type")
             == RuleTypes.VARIABLE_METADATA_CHECK_AGAINST_DEFINE.value
@@ -297,10 +297,10 @@ class RulesEngine:
                 dataset_metadata.domain, {}
             )
             define_metadata: List[dict] = builder.get_define_xml_variables_metadata()
-            targets: List[
-                str
-            ] = self.data_processor.filter_dataset_columns_by_metadata_and_rule(
-                dataset.columns.tolist(), define_metadata, library_metadata, rule
+            targets: List[str] = (
+                self.data_processor.filter_dataset_columns_by_metadata_and_rule(
+                    dataset.columns.tolist(), define_metadata, library_metadata, rule
+                )
             )
             rule_copy = deepcopy(rule)
             updated_conditions = RuleProcessor.duplicate_conditions_for_all_targets(
