@@ -349,6 +349,7 @@ Attach define xml metadata at variable level
 - `define_variable_has_comment`
 - `library_variable_name`
 - `library_variable_role`
+- `library_both_variable_role`
 - `library_variable_label`
 - `library_variable_core`
 - `library_variable_order_number`

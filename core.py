@@ -3,7 +3,6 @@ import json
 import logging
 import os
 import pickle
-import pyreadstat
 import tempfile
 from datetime import datetime
 from multiprocessing import freeze_support
@@ -739,30 +738,11 @@ def list_ct(cache_path: str, subsets: Tuple[str]):
 
 
 @click.command()
-def test_pyreadstat():
-    """**Release Test** for pyreadstat module."""
-    try:
-        import pandas as pd
-
-        df = pd.DataFrame([[1, 2], [3, 4]], columns=["var1", "var2"])
-        temp_path = tempfile.mktemp(suffix=".sav")
-        pyreadstat.write_sav(df, temp_path)
-        df, meta = pyreadstat.read_sav(temp_path)
-        os.unlink(temp_path)
-        print("PyReadstat test passed successfully!")
-        return 0
-    except Exception as e:
-        print(f"PyReadstat test failed: {str(e)}")
-        return 1
-
-
-@click.command()
 def test_validate():
     """**Release Test** validate command for executable."""
     try:
         import sys
         import os
-        import tempfile
         from cdisc_rules_engine.models.validation_args import Validation_args
         from cdisc_rules_engine.models.external_dictionaries_container import (
             ExternalDictionariesContainer,
@@ -862,7 +842,6 @@ def test_validate():
 
 
 cli.add_command(test_validate)
-cli.add_command(test_pyreadstat)
 cli.add_command(validate)
 cli.add_command(update_cache)
 cli.add_command(list_rules)
