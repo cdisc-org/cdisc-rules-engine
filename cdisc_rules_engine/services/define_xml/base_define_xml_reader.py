@@ -120,9 +120,9 @@ class BaseDefineXMLReader(ABC):
                 for item in dataset_metadata.ItemRef
                 if item.ItemOID in item_mapping
             ]
-            dataset_metadata_dict[
-                "define_dataset_key_sequence"
-            ] = self.get_dataset_key_sequence(dataset_name)
+            dataset_metadata_dict["define_dataset_key_sequence"] = (
+                self.get_dataset_key_sequence(dataset_name)
+            )
         except ValueError as e:
             raise FailedSchemaValidation(str(e))
         logger.info(f"Extracted domain metadata = {dataset_metadata_dict}")
@@ -148,9 +148,9 @@ class BaseDefineXMLReader(ABC):
                 for item in domain_metadata.ItemRef
                 if item.ItemOID in item_mapping
             ]
-            domain_metadata_dict[
-                "define_dataset_key_sequence"
-            ] = self.get_domain_key_sequence(domain_name)
+            domain_metadata_dict["define_dataset_key_sequence"] = (
+                self.get_domain_key_sequence(domain_name)
+            )
         except ValueError as e:
             raise FailedSchemaValidation(str(e))
         logger.info(f"Extracted domain metadata = {domain_metadata_dict}")

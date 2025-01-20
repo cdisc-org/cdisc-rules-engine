@@ -115,10 +115,10 @@ def test_filter_dataset_columns_by_metadata_and_rule():
         "variable_origin_type": "Collected",
         "variable_core_status": "Perm",
     }
-    filtered_columns: List[
-        str
-    ] = DataProcessor.filter_dataset_columns_by_metadata_and_rule(
-        columns, define_metadata, library_metadata, rule
+    filtered_columns: List[str] = (
+        DataProcessor.filter_dataset_columns_by_metadata_and_rule(
+            columns, define_metadata, library_metadata, rule
+        )
     )
     assert filtered_columns == [
         "AESEV",
