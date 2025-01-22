@@ -386,7 +386,9 @@ class RuleProcessor:
         return result
 
     def is_current_domain(self, dataset, target_domain):
-        if not self.is_relationship_dataset(target_domain):
+        if not target_domain:
+            return True
+        elif not self.is_relationship_dataset(target_domain):
             return "DOMAIN" in dataset and dataset["DOMAIN"].iloc[0] == target_domain
         else:
             # Always lookup relationship datasets when performing operations on them.
