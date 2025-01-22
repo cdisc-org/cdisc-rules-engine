@@ -168,7 +168,7 @@ class RuleProcessor:
         supp_ap_domains.update({f"{AP_DOMAIN}--", f"{APFA_DOMAIN}--"})
 
         return any(set(domains_to_check).intersection(supp_ap_domains)) and (
-            dataset_metadata.is_supp()
+            dataset_metadata.is_supp
             or is_ap_domain(
                 dataset_metadata.domain
                 or dataset_metadata.rdomain
@@ -354,7 +354,7 @@ class RuleProcessor:
             # download other domain
             domain_details: dict = search_in_list_of_dicts(
                 operation_params.datasets,
-                lambda item: item.unsplit_name() == operation_params.domain,
+                lambda item: item.unsplit_name == operation_params.domain,
             )
             if domain_details is None:
                 raise DomainNotFoundError(

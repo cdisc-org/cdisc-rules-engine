@@ -81,8 +81,8 @@ def validate_single_rule(
         # Check if the domain has been validated before
         # This addresses the case where a domain is split
         # and appears multiple times within the list of datasets
-        if dataset_metadata.unsplit_name() not in validated_domains:
-            validated_domains.add(dataset_metadata.unsplit_name())
+        if dataset_metadata.unsplit_name not in validated_domains:
+            validated_domains.add(dataset_metadata.unsplit_name)
             results.append(
                 engine.validate_single_rule(
                     rule, dataset_metadata.full_path, datasets, dataset_metadata

@@ -1257,6 +1257,7 @@ def dataset_metadata() -> dict:
             "dataset_label": "Adverse Events",
             "dataset_name": "AE",
             "domain": "AE",
+            "rdomain": None,
             "dataset_modification_date": datetime.now().isoformat(),
             "dataset_length": 20,
         },

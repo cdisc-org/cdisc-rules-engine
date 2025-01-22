@@ -75,7 +75,7 @@ class DatasetPreprocessor:
                     or item.name == domain_name
                     or (
                         domain_name == "SUPP--"
-                        and (not self._dataset_metadata.is_supp())
+                        and (not self._dataset_metadata.is_supp)
                         and item.rdomain == self._dataset_metadata.domain
                     )
                 )

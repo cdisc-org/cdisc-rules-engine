@@ -3,6 +3,7 @@ import pyreadstat
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.config import config
 from cdisc_rules_engine.services.adam_variable_reader import AdamVariableReader
+from cdisc_rules_engine.constants.domains import SUPPLEMENTARY_DOMAINS
 import os
 
 
@@ -34,7 +35,8 @@ class DatasetXPTMetadataReader:
         dataset, metadata = pyreadstat.read_xport(
             self._file_path, row_limit=self.row_limit
         )
-        self._domain = self._extract_domain_name(dataset)
+        self._domain = self._extract_first_value(dataset, "DOMAIN")
+        self._rdomain = self._extract_rdomain(dataset)
         self._metadata_container = {
             "variable_labels": list(metadata.column_labels),
             "variable_names": list(metadata.column_names),
@@ -49,6 +51,7 @@ class DatasetXPTMetadataReader:
             "dataset_label": metadata.file_label,
             "dataset_length": metadata.number_rows,
             "domain": self._domain,
+            "rdomain": self._rdomain,
             "dataset_name": self._dataset_name,
             "dataset_modification_date": metadata.modification_time.isoformat(),
         }
@@ -57,7 +60,6 @@ class DatasetXPTMetadataReader:
             self._metadata_container["dataset_length"] = (
                 self._calculate_dataset_length()
             )
-        self._domain = self._extract_domain_name(dataset)
         self._convert_variable_types()
         self._metadata_container["adam_info"] = self._extract_adam_info(
             self._metadata_container["variable_names"]
@@ -65,15 +67,19 @@ class DatasetXPTMetadataReader:
         logger.info(f"Extracted dataset metadata. metadata={self._metadata_container}")
         return self._metadata_container
 
-    def _extract_domain_name(self, df):
+    def _extract_rdomain(self, df):
+        if self._dataset_name.startswith(SUPPLEMENTARY_DOMAINS):
+            return self._extract_first_value(df, "RDOMAIN")
+
+    def _extract_first_value(self, df, column_name):
         try:
             first_row = df.iloc[0]
-            if "DOMAIN" in first_row:
-                domain = first_row["DOMAIN"]
-                if isinstance(domain, bytes):
-                    return domain.decode("utf-8")
+            if column_name in first_row:
+                first_value = first_row[column_name]
+                if isinstance(first_value, bytes):
+                    return first_value.decode("utf-8")
                 else:
-                    return str(domain)
+                    return str(first_value)
         except IndexError:
             pass
         return None
@@ -166,6 +172,7 @@ class DatasetXPTMetadataReader:
             "number_of_variables": self._metadata_container.number_columns,
             "dataset_label": self._metadata_container.file_label,
             "domain": self._domain,
+            "rdomain": self._rdomain,
             "dataset_name": self._dataset_name,
             "dataset_modification_date": self._metadata_container.dataset_modification_date,  # noqa
         }

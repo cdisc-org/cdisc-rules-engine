@@ -5,6 +5,7 @@ import jsonschema
 
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.services.adam_variable_reader import AdamVariableReader
+from cdisc_rules_engine.constants.domains import SUPPLEMENTARY_DOMAINS
 
 
 class DatasetJSONMetadataReader:
@@ -49,7 +50,8 @@ class DatasetJSONMetadataReader:
                 {},
             )
 
-            self._domain = self._extract_domain_name(items_data)
+            self._domain = self._extract_first_value(items_data, "DOMAIN")
+            self._rdomain = self._extract_rdomain(items_data)
 
             self._metadata_container = {
                 "variable_labels": [
@@ -78,6 +80,7 @@ class DatasetJSONMetadataReader:
                 "dataset_label": items_data.get("label"),
                 "dataset_length": items_data.get("records"),
                 "domain": self._domain,
+                "rdomain": self._rdomain,
                 "dataset_name": items_data.get("name"),
                 "dataset_modification_date": datasetjson["creationDateTime"],
             }
@@ -107,16 +110,21 @@ class DatasetJSONMetadataReader:
                 "dataset_label": "",
                 "dataset_length": 0,
                 "domain": "",
+                "rdomain": "",
                 "dataset_name": "",
                 "dataset_modification_date": "",
             }
 
-    def _extract_domain_name(self, data):
+    def _extract_rdomain(self, data):
+        if self._dataset_name.startswith(SUPPLEMENTARY_DOMAINS):
+            return self._extract_first_value(data, "RDOMAIN")
+
+    def _extract_first_value(self, data, column_name):
         index_domain = next(
             (
                 index
                 for index, item in enumerate(data["items"])
-                if item.get("name") == "DOMAIN"
+                if item.get("name") == column_name
             ),
             None,
         )
@@ -160,6 +168,7 @@ class DatasetJSONMetadataReader:
             "number_of_variables": self._metadata_container.number_columns,
             "dataset_label": self._metadata_container.file_label,
             "domain": self._domain,
+            "rdomain": self._rdomain,
             "dataset_name": self._dataset_name,
             "dataset_modification_date": self._metadata_container.dataset_modification_date,  # noqa
         }

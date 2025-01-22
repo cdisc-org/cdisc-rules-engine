@@ -72,6 +72,7 @@ def test_get_raw_dataset_metadata(
     expected_metadata = SDTMDatasetMetadata(
         name=dataset_metadata["contents_metadata"]["dataset_name"],
         domain=dataset_metadata["contents_metadata"]["domain"],
+        rdomain=dataset_metadata["contents_metadata"]["rdomain"],
         label=dataset_metadata["contents_metadata"]["dataset_label"],
         modification_date=dataset_metadata["contents_metadata"][
             "dataset_modification_date"

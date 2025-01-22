@@ -121,7 +121,8 @@ class LocalDataService(BaseDataService):
         )
         return SDTMDatasetMetadata(
             name=contents_metadata["dataset_name"],
-            domain=contents_metadata["domain"] or contents_metadata["dataset_name"],
+            domain=contents_metadata["domain"],
+            rdomain=contents_metadata["rdomain"],
             label=contents_metadata["dataset_label"],
             modification_date=contents_metadata["dataset_modification_date"],
             filename=file_metadata["name"],

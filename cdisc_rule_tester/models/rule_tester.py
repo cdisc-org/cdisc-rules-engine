@@ -103,16 +103,16 @@ class RuleTester:
         validated_domains = set()
         rule = Rule.from_cdisc_metadata(rule)
         for dataset_metadata in self.datasets:
-            if dataset_metadata.unsplit_name() in validated_domains:
+            if dataset_metadata.unsplit_name in validated_domains:
                 continue  # handling split datasets
             rule["conditions"] = ConditionCompositeFactory.get_condition_composite(
                 rule["conditions"]
             )
-            results[dataset_metadata.unsplit_name()] = self.engine.validate_single_rule(
+            results[dataset_metadata.unsplit_name] = self.engine.validate_single_rule(
                 rule,
                 f"/{dataset_metadata.filename}",
                 self.datasets,
                 dataset_metadata,
             )
-            validated_domains.add(dataset_metadata.unsplit_name())
+            validated_domains.add(dataset_metadata.unsplit_name)
         return results

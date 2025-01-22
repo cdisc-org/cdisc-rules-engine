@@ -20,7 +20,7 @@ class DummyDataset(SDTMDatasetMetadata):
         )
         self.rdomain = (
             next(iter(dataset_data.get("records", {}).get("RDOMAIN", [])), None)
-            if self.is_supp()
+            if self.is_supp
             else None
         )
         self.modification_date = datetime.now().isoformat()

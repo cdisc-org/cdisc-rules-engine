@@ -141,7 +141,7 @@ class COREActions(BaseActions):
             return ValidationErrorContainer(
                 domain=(
                     f"SUPP{self.dataset_metadata.rdomain}"
-                    if self.dataset_metadata.is_supp()
+                    if self.dataset_metadata.is_supp
                     else (self.dataset_metadata.domain or self.dataset_metadata.name)
                 ),
                 targets=sorted(targets),
@@ -161,7 +161,7 @@ class COREActions(BaseActions):
             **{
                 "domain": (
                     f"SUPP{self.dataset_metadata.rdomain}"
-                    if self.dataset_metadata.is_supp()
+                    if self.dataset_metadata.is_supp
                     else (self.dataset_metadata.domain or self.dataset_metadata.name)
                 ),
                 "targets": sorted(targets),
