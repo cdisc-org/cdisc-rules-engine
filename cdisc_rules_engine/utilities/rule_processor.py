@@ -341,6 +341,7 @@ class RuleProcessor:
             grouping=";".join(operation_params.grouping),
             target_variable=operation_params.target,
             dataset_path=operation_params.dataset_path,
+            operation_id=operation_params.operation_id,
         )
         if previous_operations:
             cache_key = f'{cache_key}-{";".join(previous_operations)}'

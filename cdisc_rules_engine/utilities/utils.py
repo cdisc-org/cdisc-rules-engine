@@ -184,6 +184,7 @@ def replace_pattern_in_list_of_strings(
 
 def get_operations_cache_key(
     directory_path: str,
+    operation_id: str,
     domain: str = None,
     operation_name: str = None,
     grouping: str = None,
@@ -193,7 +194,7 @@ def get_operations_cache_key(
     """
     Creates the cache key for operations.
     """
-    key = f"operations/{directory_path}"
+    key = f"operations/{directory_path}/{operation_id}"
     optional_items = [domain, operation_name, grouping, target_variable, dataset_path]
     for item in optional_items:
         if item:
