@@ -71,8 +71,9 @@ class DatasetPreprocessor:
                 item
                 for item in datasets
                 if (
-                    (item.domain or item.rdomain) == domain_name
+                    item.domain == domain_name
                     or item.name == domain_name
+                    or item.unsplit_name == domain_name
                     or (
                         domain_name == "SUPP--"
                         and (not self._dataset_metadata.is_supp)
