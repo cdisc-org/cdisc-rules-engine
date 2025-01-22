@@ -40,6 +40,8 @@ class TestValidate(unittest.TestCase):
             "validate",
             "-v",
             "3.4",
+            "-l",
+            "critical",
             "-dp",
             os.path.join("tests", "resources", "test_dataset.xpt"),
         ]
@@ -58,6 +60,8 @@ class TestValidate(unittest.TestCase):
             "sdtmig",
             "-v",
             "3.4",
+            "-l",
+            "critical",
             "-dp",
             os.path.join("tests", "resources", "test_dataset.xpt"),
         ]
@@ -74,6 +78,8 @@ class TestValidate(unittest.TestCase):
             "validate",
             "-s",
             "sdtmig",
+            "-l",
+            "critical",
             "-dp",
             os.path.join("tests", "resources", "test_dataset.xpt"),
         ]
@@ -92,6 +98,8 @@ class TestValidate(unittest.TestCase):
             "sdtmig",
             "-v",
             "3.4",
+            "-l",
+            "critical",
             "-dp",
             os.path.join("tests", "resources", "test_dataset.xpt"),
         ]
@@ -113,6 +121,8 @@ class TestValidate(unittest.TestCase):
             "sdtmig",
             "-v",
             "3.4",
+            "-l",
+            "critical",
         ]
         exit_code, stdout, stderr = run_command(args)
 
@@ -126,6 +136,8 @@ class TestValidate(unittest.TestCase):
             "-m",
             "core",
             "validate",
+            "-l",
+            "critical",
             "-d",
             os.path.join("tests", "resources", "report_test_data"),
         ]
@@ -209,6 +221,8 @@ class TestValidate(unittest.TestCase):
             "sdtmig",
             "-v",
             "3.4",
+            "-l",
+            "critical",
             "-dp",
             os.path.join("tests", "resources", "test_dataset.xpt"),
         ]
@@ -219,7 +233,7 @@ class TestValidate(unittest.TestCase):
         self.assertFalse(self.error_keyword in stdout)
 
     def test_validate_less_than_minimum_options(self):
-        args = ["python", "-m", "core", "validate", "-s", "sdtmig"]
+        args = ["python", "-m", "core", "validate", "-s", "sdtmig", "-l", "critical"]
         exit_code, stdout, stderr = run_command(args)
         self.assertNotEqual(exit_code, 0)
         self.assertIn("error: missing option", stderr)
@@ -238,6 +252,8 @@ class TestValidate(unittest.TestCase):
             os.path.join("tests", "resources", "test_dataset.xpt"),
             "-of",
             "json",
+            "-l",
+            "critical",
         ]
         exit_code, stdout, stderr = run_command(args)
 
@@ -259,6 +275,8 @@ class TestValidate(unittest.TestCase):
             os.path.join("tests", "resources", "test_dataset.xpt"),
             "-of",
             "xlsx",
+            "-l",
+            "critical",
         ]
         exit_code, stdout, stderr = run_command(args)
 
@@ -282,6 +300,8 @@ class TestValidate(unittest.TestCase):
             "output.json",
             "-of",
             "csv",
+            "-l",
+            "critical",
         ]
         exit_code, stdout, stderr = run_command(args)
 
@@ -445,6 +465,8 @@ class TestValidate(unittest.TestCase):
             os.path.join("tests", "resources", "test_dataset.xpt"),
             "-ps",
             "10",
+            "-l",
+            "critical",
         ]
         exit_code, stdout, stderr = run_command(args)
 
@@ -466,6 +488,8 @@ class TestValidate(unittest.TestCase):
             os.path.join("tests", "resources", "test_dataset.xpt"),
             "-dxp",
             os.path.join("tests", "resources", "define.xml"),
+            "-l",
+            "critical",
         ]
         exit_code, stdout, stderr = run_command(args)
         self.assertEqual(exit_code, 0)

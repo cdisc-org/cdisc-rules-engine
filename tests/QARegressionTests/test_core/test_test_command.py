@@ -141,6 +141,7 @@ class TestTestCommand(unittest.TestCase):
             f"-r {os.path.join('tests','resources','CoreIssue295','SEND4.json')} "
             f"-dp {os.path.join('tests','resources','CoreIssue295','dm.json')} "
             f"-vx no "
+            f"-l critical"
         )
         exit_code, stdout, stderr = run_command(command)
         self.assertNotIn("error", stdout)
@@ -153,7 +154,8 @@ class TestTestCommand(unittest.TestCase):
             f"-dv 2.1 "
             f"-r {os.path.join('tests','resources','CoreIssue295','SEND4.json')} "
             f"-dp {os.path.join('tests','resources','CoreIssue295','dm.json')} "
-            f"-vx y"
+            f"-vx y "
+            f"-l critical"
         )
         exit_code, stdout, stderr = run_command(command)
         self.assertEqual(exit_code, 0)
