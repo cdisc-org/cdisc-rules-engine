@@ -111,9 +111,7 @@ class DatasetPreprocessor:
         return result
 
     def _is_split_domain(self, domain: str) -> bool:
-        return domain == (
-            self._dataset_metadata.domain or self._dataset_metadata.rdomain
-        )
+        return domain == self._dataset_metadata.unsplit_name
 
     def _download_dataset(self, filename: str) -> DatasetInterface:
         return self._data_service.get_dataset(

@@ -179,7 +179,7 @@ def get_model_details_cache_key_from_ig(standard_metadata: dict) -> str:
 def replace_pattern_in_list_of_strings(
     list_of_strings: List[str], pattern: str, value: str
 ) -> List[str]:
-    return [string.replace(pattern, value) for string in list_of_strings]
+    return [string.replace(pattern, value or "") for string in list_of_strings]
 
 
 def get_operations_cache_key(

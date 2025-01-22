@@ -929,7 +929,9 @@ def test_validate_domain_presence(
     Unit test for RulesEngine.validate_domain_presence.
     """
     dataset_metadata = [
-        SDTMDatasetMetadata(domain=dataset, filename=f"{dataset.lower()}.xpt")
+        SDTMDatasetMetadata(
+            name=dataset, domain=dataset, filename=f"{dataset.lower()}.xpt"
+        )
         for dataset in datasets
     ]
     actual_validation_result = RulesEngine().validate_single_rule(
