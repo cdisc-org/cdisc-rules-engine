@@ -11,7 +11,7 @@ from cdisc_rules_engine.utilities.utils import (
     get_corresponding_datasets,
     get_dataset_name_from_details,
 )
-from typing import List
+from typing import List, Iterable
 from cdisc_rules_engine import config
 from cdisc_rules_engine.utilities import sdtm_utilities
 from cdisc_rules_engine.utilities.rule_processor import RuleProcessor
@@ -30,7 +30,7 @@ class BaseDatasetBuilder:
         rule_processor: RuleProcessor,
         data_processor,
         dataset_path,
-        datasets,
+        datasets: Iterable[SDTMDatasetMetadata],
         dataset_metadata,
         define_xml_path,
         standard,
