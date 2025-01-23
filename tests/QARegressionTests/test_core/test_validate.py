@@ -44,7 +44,7 @@ class TestValidate(unittest.TestCase):
             "-dp",
             os.path.join("tests", "resources", "test_dataset.xpt"),
         ]
-        exit_code, stdout, stderr = run_command(args)
+        exit_code, stdout, stderr = run_command(args, False)
 
         self.assertNotEqual(exit_code, 0)
         self.assertNotEqual(stderr, "", "Error Not raised for invalid command")
@@ -63,7 +63,7 @@ class TestValidate(unittest.TestCase):
             "-dp",
             os.path.join("tests", "resources", "test_dataset.xpt"),
         ]
-        exit_code, stdout, stderr = run_command(args)
+        exit_code, stdout, stderr = run_command(args, False)
 
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
@@ -80,7 +80,7 @@ class TestValidate(unittest.TestCase):
             "-dp",
             os.path.join("tests", "resources", "test_dataset.xpt"),
         ]
-        exit_code, stdout, stderr = run_command(args)
+        exit_code, stdout, stderr = run_command(args, False)
 
         self.assertNotEqual(exit_code, 0)
         self.assertNotEqual(stderr, "", "Error Not raised for invalid command")
@@ -99,7 +99,7 @@ class TestValidate(unittest.TestCase):
             "-dp",
             os.path.join("tests", "resources", "test_dataset.xpt"),
         ]
-        exit_code, stdout, stderr = run_command(args)
+        exit_code, stdout, stderr = run_command(args, False)
 
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
@@ -119,7 +119,7 @@ class TestValidate(unittest.TestCase):
             "-l",
             "critical",
         ]
-        exit_code, stdout, stderr = run_command(args)
+        exit_code, stdout, stderr = run_command(args, False)
 
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
@@ -135,7 +135,7 @@ class TestValidate(unittest.TestCase):
             "-d",
             os.path.join("tests", "resources", "report_test_data"),
         ]
-        exit_code, stdout, stderr = run_command(args)
+        exit_code, stdout, stderr = run_command(args, False)
 
         self.assertNotEqual(exit_code, 0)
         self.assertIn("error: missing option", stderr.lower())
@@ -179,7 +179,7 @@ class TestValidate(unittest.TestCase):
             "-p",
             "bar",
         ]
-        exit_code, stdout, stderr = run_command(args)
+        exit_code, stdout, stderr = run_command(args, False)
         self.assertNotEqual(stderr, "")
 
     def test_validate_local_rule(self):
@@ -198,7 +198,7 @@ class TestValidate(unittest.TestCase):
             "-r",
             "CORE-000473",
         ]
-        exit_code, stdout, stderr = run_command(args)
+        exit_code, stdout, stderr = run_command(args, False)
         self.assertEqual(exit_code, 0)
         self.assertEqual(stderr, "")
         self.assertFalse(self.error_keyword in stdout)
@@ -217,7 +217,7 @@ class TestValidate(unittest.TestCase):
             "-dp",
             os.path.join("tests", "resources", "test_dataset.xpt"),
         ]
-        exit_code, stdout, stderr = run_command(args)
+        exit_code, stdout, stderr = run_command(args, False)
 
         self.assertEqual(exit_code, 0)
         self.assertEqual(stderr, "")
@@ -225,7 +225,7 @@ class TestValidate(unittest.TestCase):
 
     def test_validate_less_than_minimum_options(self):
         args = ["python", "core.py", "validate", "-s", "sdtmig", "-l", "critical"]
-        exit_code, stdout, stderr = run_command(args)
+        exit_code, stdout, stderr = run_command(args, False)
         self.assertNotEqual(exit_code, 0)
         self.assertIn("error: missing option", stderr)
 
@@ -245,7 +245,7 @@ class TestValidate(unittest.TestCase):
             "-l",
             "critical",
         ]
-        exit_code, stdout, stderr = run_command(args)
+        exit_code, stdout, stderr = run_command(args, False)
 
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
@@ -267,7 +267,7 @@ class TestValidate(unittest.TestCase):
             "-l",
             "critical",
         ]
-        exit_code, stdout, stderr = run_command(args)
+        exit_code, stdout, stderr = run_command(args, False)
 
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
@@ -291,7 +291,7 @@ class TestValidate(unittest.TestCase):
             "-l",
             "critical",
         ]
-        exit_code, stdout, stderr = run_command(args)
+        exit_code, stdout, stderr = run_command(args, False)
 
         self.assertNotEqual(exit_code, 0)
         self.assertNotEqual(stderr, "")
@@ -310,7 +310,7 @@ class TestValidate(unittest.TestCase):
             "-l",
             "disabled",
         ]
-        exit_code, stdout, stderr = run_command(args)
+        exit_code, stdout, stderr = run_command(args, False)
 
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
@@ -330,7 +330,7 @@ class TestValidate(unittest.TestCase):
             "-l",
             "info",
         ]
-        exit_code, stdout, stderr = run_command(args)
+        exit_code, stdout, stderr = run_command(args, False)
 
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
@@ -350,7 +350,7 @@ class TestValidate(unittest.TestCase):
             "-l",
             "error",
         ]
-        exit_code, stdout, stderr = run_command(args)
+        exit_code, stdout, stderr = run_command(args, False)
 
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
@@ -370,7 +370,7 @@ class TestValidate(unittest.TestCase):
             "-l",
             "critical",
         ]
-        exit_code, stdout, stderr = run_command(args)
+        exit_code, stdout, stderr = run_command(args, False)
 
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
@@ -390,7 +390,7 @@ class TestValidate(unittest.TestCase):
             "-l",
             "warn",
         ]
-        exit_code, stdout, stderr = run_command(args)
+        exit_code, stdout, stderr = run_command(args, False)
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
         self.assertNotIn("warning", stderr)
@@ -409,7 +409,7 @@ class TestValidate(unittest.TestCase):
             "-l",
             "invalid",
         ]
-        exit_code, stdout, stderr = run_command(args)
+        exit_code, stdout, stderr = run_command(args, False)
 
         self.assertNotEqual(exit_code, 0)
         self.assertNotEqual(stderr, "")
@@ -426,7 +426,7 @@ class TestValidate(unittest.TestCase):
             "-dp",
             os.path.join("tests", "resources", "test_dataset.xpt"),
         ]
-        exit_code, stdout, stderr = run_command(args)
+        exit_code, stdout, stderr = run_command(args, False)
 
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
@@ -448,7 +448,7 @@ class TestValidate(unittest.TestCase):
             "-l",
             "critical",
         ]
-        exit_code, stdout, stderr = run_command(args)
+        exit_code, stdout, stderr = run_command(args, False)
 
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
@@ -470,7 +470,7 @@ class TestValidate(unittest.TestCase):
             "-l",
             "critical",
         ]
-        exit_code, stdout, stderr = run_command(args)
+        exit_code, stdout, stderr = run_command(args, False)
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
         self.assertEqual(stderr, "")
