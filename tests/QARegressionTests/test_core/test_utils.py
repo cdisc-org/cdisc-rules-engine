@@ -1,7 +1,8 @@
 import subprocess
+from platform import system
 
 
-def run_command(args):
+def run_command(args, shell):
     try:
         completed_process = subprocess.run(
             args,
@@ -9,7 +10,9 @@ def run_command(args):
             stderr=subprocess.PIPE,
             universal_newlines=True,
             check=True,
-            # shell=True,
+            # test_test_command and windows seem to be happy with shell=True
+            # test_validate on linux needs shell=False
+            shell=shell or system() == "Windows",
         )
         return (
             completed_process.returncode,

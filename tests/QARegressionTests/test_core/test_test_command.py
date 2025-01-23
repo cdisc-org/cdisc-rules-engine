@@ -23,7 +23,7 @@ class TestTestCommand(unittest.TestCase):
             f"-dxp {os.path.join('tests', 'resources','define.xml')} "
             f"-l error"
         )
-        exit_code, stdout, stderr = run_command(command)
+        exit_code, stdout, stderr = run_command(command, True)
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
         self.assertEqual(stderr, "", f"Error while executing command:\n{stderr}")
@@ -44,7 +44,7 @@ class TestTestCommand(unittest.TestCase):
             f"-dxp {os.path.join('tests', 'resources','define.xml')} "
             f"-l error"
         )
-        exit_code, stdout, stderr = run_command(command)
+        exit_code, stdout, stderr = run_command(command, True)
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
         self.assertFalse(self.error_keyword in stdout)
@@ -66,7 +66,7 @@ class TestTestCommand(unittest.TestCase):
             f"-c {os.path.join('resources', 'cache')} "
             f"-r {os.path.join('tests', 'resources', 'Rule-CG0027.json')}"
         )
-        exit_code, stdout, stderr = run_command(command)
+        exit_code, stdout, stderr = run_command(command, True)
         self.assertEqual(exit_code, 0)
         expected_pattern = (
             r"\[error \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3} - "
@@ -86,7 +86,7 @@ class TestTestCommand(unittest.TestCase):
             f"-c {os.path.join('resources', 'cache')} "
             f"-dp {os.path.join('tests', 'resources', 'CG0027-positive.json')}"
         )
-        exit_code, stdout, stderr = run_command(command)
+        exit_code, stdout, stderr = run_command(command, True)
         self.assertNotEqual(exit_code, 0)
         self.assertNotEqual(
             stderr, "", f"Error not raised while executing invalid command:\n{stderr}"
@@ -100,7 +100,7 @@ class TestTestCommand(unittest.TestCase):
             f"-dp {os.path.join('tests', 'resources', 'CG0027-positive.json')} "
             f"-r {os.path.join('tests', 'resources', 'Rule-CG0027.json')}"
         )
-        exit_code, stdout, stderr = run_command(command)
+        exit_code, stdout, stderr = run_command(command, True)
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
         self.assertEqual(stderr, "", f"Error while executing command:\n{stderr}")
@@ -114,7 +114,7 @@ class TestTestCommand(unittest.TestCase):
             f"-dp {os.path.join('tests', 'resources', 'CG0027-positive.json')} "
             f"-r {os.path.join('tests', 'resources', 'Rule-CG0027.json')}"
         )
-        exit_code, stdout, stderr = run_command(command)
+        exit_code, stdout, stderr = run_command(command, True)
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
         self.assertEqual(stderr, "", f"Error while executing command:\n{stderr}")
@@ -128,7 +128,7 @@ class TestTestCommand(unittest.TestCase):
             f"--whodrug invalid_path "
             f"--meddra invalid_path"
         )
-        exit_code, stdout, stderr = run_command(command)
+        exit_code, stdout, stderr = run_command(command, True)
         self.assertNotEqual(exit_code, 0)
         self.assertNotEqual(stderr, "", f"Error while executing command:\n{stderr}")
 
@@ -143,7 +143,7 @@ class TestTestCommand(unittest.TestCase):
             f"-vx no "
             f"-l critical"
         )
-        exit_code, stdout, stderr = run_command(command)
+        exit_code, stdout, stderr = run_command(command, True)
         self.assertNotIn("error", stdout)
 
     def test_test_command_with_vx_as_yes(self):
@@ -157,7 +157,7 @@ class TestTestCommand(unittest.TestCase):
             f"-vx y "
             f"-l critical"
         )
-        exit_code, stdout, stderr = run_command(command)
+        exit_code, stdout, stderr = run_command(command, True)
         self.assertEqual(exit_code, 0)
         self.assertTrue(stderr == "")
 
