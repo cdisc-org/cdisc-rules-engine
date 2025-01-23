@@ -13,6 +13,7 @@ from cdisc_rules_engine.services.cache import InMemoryCacheService
 from cdisc_rules_engine.services.data_services import LocalDataService
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 import pytest
+from unittest.mock import Mock
 
 
 @pytest.mark.parametrize("dataset_type", [(PandasDataset)])
@@ -109,10 +110,13 @@ def test_get_label_referenced_variable_metadata(
     library_metadata = LibraryMetadataContainer(
         standard_metadata=standard_metadata, model_metadata=model_metadata
     )
+    mock_dataset_class = Mock()
+    mock_dataset_class.name = "Events"
     # execute operation
     data_service = LocalDataService.get_instance(
         cache_service=cache, config=ConfigService()
     )
+    data_service.get_dataset_class = Mock(return_value=mock_dataset_class)
     operation = LabelReferencedVariableMetadata(
         operation_params,
         operation_params.dataframe,

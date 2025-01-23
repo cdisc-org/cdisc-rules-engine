@@ -17,7 +17,6 @@ class VariablesMetadataWithLibraryMetadataDatasetBuilder(BaseDatasetBuilder):
         library_variable_label,
         library_variable_data_type,
         library_variable_role,
-        library_variable_role_model,
         library_variable_core,
         library_variable_order_number
         """

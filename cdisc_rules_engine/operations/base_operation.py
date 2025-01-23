@@ -194,7 +194,6 @@ class BaseOperation:
             self.params.datasets,
             self.params.domain,
         )
-        self.evaluation_dataset
 
         return sdtm_utilities.get_variables_metadata_from_standard(
             self.params.standard,
