@@ -11,6 +11,7 @@ def run_command(args, shell):
             stderr=subprocess.PIPE,
             universal_newlines=True,
             check=True,
+            encoding="utf8",
             # test_test_command and windows seem to be happy with shell=True
             # test_validate on linux needs shell=False
             shell=shell or system() == "Windows",

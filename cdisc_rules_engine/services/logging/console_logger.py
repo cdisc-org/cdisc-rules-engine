@@ -60,7 +60,7 @@ class ConsoleLogger(LoggerInterface):
 
     def trace(self, exc: Exception):
         current_level = self._logger.getEffectiveLevel()
-        if current_level == logging.DEBUG:
+        if current_level == logging.DEBUG and not self.disabled:
             self.display_trace(exc, inspect.currentframe())
 
     def display_trace(self, e: Exception = None, f=None):
