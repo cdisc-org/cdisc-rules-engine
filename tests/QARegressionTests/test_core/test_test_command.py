@@ -9,7 +9,7 @@ class TestTestCommand(unittest.TestCase):
         self.error_keyword = "error"
 
     def test_test_command_with_all_options_one_data_source(self):
-        command = (
+        args = (
             f"python core.py test "
             f"-c {os.path.join('resources', 'cache')} "
             f"-dp {os.path.join('tests', 'resources', 'CoreIssue164', 'Positive_Dataset.json')} "
@@ -23,13 +23,13 @@ class TestTestCommand(unittest.TestCase):
             f"-dxp {os.path.join('tests', 'resources','define.xml')} "
             f"-l error"
         )
-        exit_code, stdout, stderr = run_command(command, True)
+        exit_code, stdout, stderr = run_command(args)
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
         self.assertEqual(stderr, "", f"Error while executing command:\n{stderr}")
 
     def test_test_command_with_all_options(self):
-        command = (
+        args = (
             f"python core.py test "
             f"-c {os.path.join('resources', 'cache')} "
             f"-dp {os.path.join('tests', 'resources', 'CG0027-positive.json')} "
@@ -44,7 +44,7 @@ class TestTestCommand(unittest.TestCase):
             f"-dxp {os.path.join('tests', 'resources','define.xml')} "
             f"-l error"
         )
-        exit_code, stdout, stderr = run_command(command, True)
+        exit_code, stdout, stderr = run_command(args)
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
         self.assertFalse(self.error_keyword in stdout)
@@ -61,12 +61,12 @@ class TestTestCommand(unittest.TestCase):
         self.assertTrue(re.match(expected_pattern, stderr), error_msg)
 
     def test_test_command_without_dataset_path(self):
-        command = (
+        args = (
             f"python core.py test "
             f"-c {os.path.join('resources', 'cache')} "
             f"-r {os.path.join('tests', 'resources', 'Rule-CG0027.json')}"
         )
-        exit_code, stdout, stderr = run_command(command, True)
+        exit_code, stdout, stderr = run_command(args)
         self.assertEqual(exit_code, 0)
         expected_pattern = (
             r"\[error \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3} - "
@@ -81,32 +81,32 @@ class TestTestCommand(unittest.TestCase):
         self.assertTrue(re.match(expected_pattern, stderr), error_msg)
 
     def test_test_command_without_rule(self):
-        command = (
+        args = (
             f"python core.py test "
             f"-c {os.path.join('resources', 'cache')} "
             f"-dp {os.path.join('tests', 'resources', 'CG0027-positive.json')}"
         )
-        exit_code, stdout, stderr = run_command(command, True)
+        exit_code, stdout, stderr = run_command(args)
         self.assertNotEqual(exit_code, 0)
         self.assertNotEqual(
             stderr, "", f"Error not raised while executing invalid command:\n{stderr}"
         )
 
     def test_test_command_with_default_cache_path(self):
-        command = (
+        args = (
             f"python core.py test "
             f"-s sdtmig "
             f"-v 3.4 "
             f"-dp {os.path.join('tests', 'resources', 'CG0027-positive.json')} "
             f"-r {os.path.join('tests', 'resources', 'Rule-CG0027.json')}"
         )
-        exit_code, stdout, stderr = run_command(command, True)
+        exit_code, stdout, stderr = run_command(args)
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
         self.assertEqual(stderr, "", f"Error while executing command:\n{stderr}")
 
     def test_test_command_without_whodrug_and_meddra(self):
-        command = (
+        args = (
             f"python core.py test "
             f"-s sdtmig "
             f"-v 3.4 "
@@ -114,13 +114,13 @@ class TestTestCommand(unittest.TestCase):
             f"-dp {os.path.join('tests', 'resources', 'CG0027-positive.json')} "
             f"-r {os.path.join('tests', 'resources', 'Rule-CG0027.json')}"
         )
-        exit_code, stdout, stderr = run_command(command, True)
+        exit_code, stdout, stderr = run_command(args)
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
         self.assertEqual(stderr, "", f"Error while executing command:\n{stderr}")
 
     def test_test_command_with_invalid_whodrug_and_meddra(self):
-        command = (
+        args = (
             f"python core.py test "
             f"-c {os.path.join('resources', 'cache')} "
             f"-dp {os.path.join('tests', 'resources', 'CG0027-positive.json')} "
@@ -128,12 +128,12 @@ class TestTestCommand(unittest.TestCase):
             f"--whodrug invalid_path "
             f"--meddra invalid_path"
         )
-        exit_code, stdout, stderr = run_command(command, True)
+        exit_code, stdout, stderr = run_command(args)
         self.assertNotEqual(exit_code, 0)
         self.assertNotEqual(stderr, "", f"Error while executing command:\n{stderr}")
 
     def test_test_command_with_vx_as_no(self):
-        command = (
+        args = (
             f"python core.py test "
             f"-s sendig "
             f"-v 3.1 "
@@ -143,11 +143,11 @@ class TestTestCommand(unittest.TestCase):
             f"-vx no "
             f"-l critical"
         )
-        exit_code, stdout, stderr = run_command(command, True)
+        exit_code, stdout, stderr = run_command(args)
         self.assertNotIn("error", stdout)
 
     def test_test_command_with_vx_as_yes(self):
-        command = (
+        args = (
             f"python core.py test "
             f"-s sendig "
             f"-v 3.1 "
@@ -157,7 +157,7 @@ class TestTestCommand(unittest.TestCase):
             f"-vx y "
             f"-l critical"
         )
-        exit_code, stdout, stderr = run_command(command, True)
+        exit_code, stdout, stderr = run_command(args)
         self.assertEqual(exit_code, 0)
         self.assertTrue(stderr == "")
 

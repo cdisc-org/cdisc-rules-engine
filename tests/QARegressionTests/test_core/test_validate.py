@@ -35,8 +35,7 @@ class TestValidate(unittest.TestCase):
     def test_validate_required_s_option_missing(self):
         args = [
             "python",
-            "-m",
-            "core",
+            "core.py",
             "validate",
             "-v",
             "3.4",
@@ -45,7 +44,7 @@ class TestValidate(unittest.TestCase):
             "-dp",
             os.path.join("tests", "resources", "test_dataset.xpt"),
         ]
-        exit_code, stdout, stderr = run_command(args, False)
+        exit_code, stdout, stderr = run_command(args)
 
         self.assertNotEqual(exit_code, 0)
         self.assertNotEqual(stderr, "", "Error Not raised for invalid command")
@@ -53,8 +52,7 @@ class TestValidate(unittest.TestCase):
     def test_validate_required_s_option_present(self):
         args = [
             "python",
-            "-m",
-            "core",
+            "core.py",
             "validate",
             "-s",
             "sdtmig",
@@ -65,7 +63,7 @@ class TestValidate(unittest.TestCase):
             "-dp",
             os.path.join("tests", "resources", "test_dataset.xpt"),
         ]
-        exit_code, stdout, stderr = run_command(args, False)
+        exit_code, stdout, stderr = run_command(args)
 
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
@@ -73,8 +71,7 @@ class TestValidate(unittest.TestCase):
     def test_validate_required_v_option_missing(self):
         args = [
             "python",
-            "-m",
-            "core",
+            "core.py",
             "validate",
             "-s",
             "sdtmig",
@@ -83,7 +80,7 @@ class TestValidate(unittest.TestCase):
             "-dp",
             os.path.join("tests", "resources", "test_dataset.xpt"),
         ]
-        exit_code, stdout, stderr = run_command(args, False)
+        exit_code, stdout, stderr = run_command(args)
 
         self.assertNotEqual(exit_code, 0)
         self.assertNotEqual(stderr, "", "Error Not raised for invalid command")
@@ -91,8 +88,7 @@ class TestValidate(unittest.TestCase):
     def test_validate_required_v_option_present(self):
         args = [
             "python",
-            "-m",
-            "core",
+            "core.py",
             "validate",
             "-s",
             "sdtmig",
@@ -103,7 +99,7 @@ class TestValidate(unittest.TestCase):
             "-dp",
             os.path.join("tests", "resources", "test_dataset.xpt"),
         ]
-        exit_code, stdout, stderr = run_command(args, False)
+        exit_code, stdout, stderr = run_command(args)
 
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
@@ -112,8 +108,7 @@ class TestValidate(unittest.TestCase):
     def test_validate_with_all_required_options(self):
         args = [
             "python",
-            "-m",
-            "core",
+            "core.py",
             "validate",
             "-dp",
             os.path.join("tests", "resources", "test_dataset.xpt"),
@@ -124,7 +119,7 @@ class TestValidate(unittest.TestCase):
             "-l",
             "critical",
         ]
-        exit_code, stdout, stderr = run_command(args, False)
+        exit_code, stdout, stderr = run_command(args)
 
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
@@ -133,15 +128,14 @@ class TestValidate(unittest.TestCase):
     def test_validate_without_all_required_options(self):
         args = [
             "python",
-            "-m",
-            "core",
+            "core.py",
             "validate",
             "-l",
             "critical",
             "-d",
             os.path.join("tests", "resources", "report_test_data"),
         ]
-        exit_code, stdout, stderr = run_command(args, False)
+        exit_code, stdout, stderr = run_command(args)
 
         self.assertNotEqual(exit_code, 0)
         self.assertIn("error: missing option", stderr.lower())
@@ -149,8 +143,7 @@ class TestValidate(unittest.TestCase):
     def test_validate_all_options(self):
         args = [
             "python",
-            "-m",
-            "core",
+            "core.py",
             "validate",
             "-ca",
             os.path.join("resources", "cache"),
@@ -186,14 +179,13 @@ class TestValidate(unittest.TestCase):
             "-p",
             "bar",
         ]
-        exit_code, stdout, stderr = run_command(args, False)
+        exit_code, stdout, stderr = run_command(args)
         self.assertNotEqual(stderr, "")
 
     def test_validate_local_rule(self):
         args = [
             "python",
-            "-m",
-            "core",
+            "core.py",
             "validate",
             "-s",
             "sdtmig",
@@ -206,7 +198,7 @@ class TestValidate(unittest.TestCase):
             "-r",
             "CORE-000473",
         ]
-        exit_code, stdout, stderr = run_command(args, False)
+        exit_code, stdout, stderr = run_command(args)
         self.assertEqual(exit_code, 0)
         self.assertEqual(stderr, "")
         self.assertFalse(self.error_keyword in stdout)
@@ -214,8 +206,7 @@ class TestValidate(unittest.TestCase):
     def test_validate_minimum_options(self):
         args = [
             "python",
-            "-m",
-            "core",
+            "core.py",
             "validate",
             "-s",
             "sdtmig",
@@ -226,23 +217,22 @@ class TestValidate(unittest.TestCase):
             "-dp",
             os.path.join("tests", "resources", "test_dataset.xpt"),
         ]
-        exit_code, stdout, stderr = run_command(args, False)
+        exit_code, stdout, stderr = run_command(args)
 
         self.assertEqual(exit_code, 0)
         self.assertEqual(stderr, "")
         self.assertFalse(self.error_keyword in stdout)
 
     def test_validate_less_than_minimum_options(self):
-        args = ["python", "-m", "core", "validate", "-s", "sdtmig", "-l", "critical"]
-        exit_code, stdout, stderr = run_command(args, False)
+        args = ["python", "core.py", "validate", "-s", "sdtmig", "-l", "critical"]
+        exit_code, stdout, stderr = run_command(args)
         self.assertNotEqual(exit_code, 0)
         self.assertIn("error: missing option", stderr)
 
     def test_validate_output_format_json(self):
         args = [
             "python",
-            "-m",
-            "core",
+            "core.py",
             "validate",
             "-s",
             "sdtmig",
@@ -255,7 +245,7 @@ class TestValidate(unittest.TestCase):
             "-l",
             "critical",
         ]
-        exit_code, stdout, stderr = run_command(args, False)
+        exit_code, stdout, stderr = run_command(args)
 
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
@@ -264,8 +254,7 @@ class TestValidate(unittest.TestCase):
     def test_validate_output_format_excel(self):
         args = [
             "python",
-            "-m",
-            "core",
+            "core.py",
             "validate",
             "-s",
             "sdtmig",
@@ -278,7 +267,7 @@ class TestValidate(unittest.TestCase):
             "-l",
             "critical",
         ]
-        exit_code, stdout, stderr = run_command(args, False)
+        exit_code, stdout, stderr = run_command(args)
 
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
@@ -287,8 +276,7 @@ class TestValidate(unittest.TestCase):
     def test_validate_with_invalid_output_format(self):
         args = [
             "python",
-            "-m",
-            "core",
+            "core.py",
             "validate",
             "-s",
             "sdtmig",
@@ -303,7 +291,7 @@ class TestValidate(unittest.TestCase):
             "-l",
             "critical",
         ]
-        exit_code, stdout, stderr = run_command(args, False)
+        exit_code, stdout, stderr = run_command(args)
 
         self.assertNotEqual(exit_code, 0)
         self.assertNotEqual(stderr, "")
@@ -311,8 +299,7 @@ class TestValidate(unittest.TestCase):
     def test_validate_with_log_level_disabled(self):
         args = [
             "python",
-            "-m",
-            "core",
+            "core.py",
             "validate",
             "-s",
             "sdtmig",
@@ -323,7 +310,7 @@ class TestValidate(unittest.TestCase):
             "-l",
             "disabled",
         ]
-        exit_code, stdout, stderr = run_command(args, False)
+        exit_code, stdout, stderr = run_command(args)
 
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
@@ -332,8 +319,7 @@ class TestValidate(unittest.TestCase):
     def test_validate_with_log_level_info(self):
         args = [
             "python",
-            "-m",
-            "core",
+            "core.py",
             "validate",
             "-s",
             "sdtmig",
@@ -344,7 +330,7 @@ class TestValidate(unittest.TestCase):
             "-l",
             "info",
         ]
-        exit_code, stdout, stderr = run_command(args, False)
+        exit_code, stdout, stderr = run_command(args)
 
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
@@ -353,8 +339,7 @@ class TestValidate(unittest.TestCase):
     def test_validate_with_log_level_error(self):
         args = [
             "python",
-            "-m",
-            "core",
+            "core.py",
             "validate",
             "-s",
             "sdtmig",
@@ -365,7 +350,7 @@ class TestValidate(unittest.TestCase):
             "-l",
             "error",
         ]
-        exit_code, stdout, stderr = run_command(args, False)
+        exit_code, stdout, stderr = run_command(args)
 
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
@@ -374,8 +359,7 @@ class TestValidate(unittest.TestCase):
     def test_validate_with_log_level_critical(self):
         args = [
             "python",
-            "-m",
-            "core",
+            "core.py",
             "validate",
             "-s",
             "sdtmig",
@@ -386,7 +370,7 @@ class TestValidate(unittest.TestCase):
             "-l",
             "critical",
         ]
-        exit_code, stdout, stderr = run_command(args, False)
+        exit_code, stdout, stderr = run_command(args)
 
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
@@ -395,8 +379,7 @@ class TestValidate(unittest.TestCase):
     def test_validate_with_log_level_warn(self):
         args = [
             "python",
-            "-m",
-            "core",
+            "core.py",
             "validate",
             "-s",
             "sdtmig",
@@ -407,7 +390,7 @@ class TestValidate(unittest.TestCase):
             "-l",
             "warn",
         ]
-        exit_code, stdout, stderr = run_command(args, False)
+        exit_code, stdout, stderr = run_command(args)
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
         self.assertNotIn("warning", stderr)
@@ -415,8 +398,7 @@ class TestValidate(unittest.TestCase):
     def test_validate_with_invalid_log_level(self):
         args = [
             "python",
-            "-m",
-            "core",
+            "core.py",
             "validate",
             "-s",
             "sdtmig",
@@ -427,7 +409,7 @@ class TestValidate(unittest.TestCase):
             "-l",
             "invalid",
         ]
-        exit_code, stdout, stderr = run_command(args, False)
+        exit_code, stdout, stderr = run_command(args)
 
         self.assertNotEqual(exit_code, 0)
         self.assertNotEqual(stderr, "")
@@ -435,8 +417,7 @@ class TestValidate(unittest.TestCase):
     def test_validate_with_no_log_level(self):
         args = [
             "python",
-            "-m",
-            "core",
+            "core.py",
             "validate",
             "-s",
             "sdtmig",
@@ -445,7 +426,7 @@ class TestValidate(unittest.TestCase):
             "-dp",
             os.path.join("tests", "resources", "test_dataset.xpt"),
         ]
-        exit_code, stdout, stderr = run_command(args, False)
+        exit_code, stdout, stderr = run_command(args)
 
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
@@ -454,8 +435,7 @@ class TestValidate(unittest.TestCase):
     def test_validate_high_value_ps(self):
         args = [
             "python",
-            "-m",
-            "core",
+            "core.py",
             "validate",
             "-s",
             "sdtmig",
@@ -468,7 +448,7 @@ class TestValidate(unittest.TestCase):
             "-l",
             "critical",
         ]
-        exit_code, stdout, stderr = run_command(args, False)
+        exit_code, stdout, stderr = run_command(args)
 
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
@@ -477,8 +457,7 @@ class TestValidate(unittest.TestCase):
     def test_validate_define_xml_path(self):
         args = [
             "python",
-            "-m",
-            "core",
+            "core.py",
             "validate",
             "-s",
             "sdtmig",
@@ -491,7 +470,7 @@ class TestValidate(unittest.TestCase):
             "-l",
             "critical",
         ]
-        exit_code, stdout, stderr = run_command(args, False)
+        exit_code, stdout, stderr = run_command(args)
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
         self.assertEqual(stderr, "")
