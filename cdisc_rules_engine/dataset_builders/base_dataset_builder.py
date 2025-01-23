@@ -161,10 +161,13 @@ class BaseDatasetBuilder:
 
     def get_library_variables_metadata(self) -> DatasetInterface:
         # TODO: Update to support other standard types
-        dataset = self.get_dataset_contents()
-        dataset_class = self.data_service.get_dataset_class(
-            dataset, self.dataset_path, self.datasets, self.domain
-        )
+        if self.datasets:
+            dataset = self.get_dataset_contents()
+            dataset_class = self.data_service.get_dataset_class(
+                dataset, self.dataset_path, self.datasets, self.domain
+            )
+        else:
+            dataset_class = None
         variables: List[dict] = sdtm_utilities.get_variables_metadata_from_standard(
             standard=self.standard,
             standard_version=self.standard_version,
