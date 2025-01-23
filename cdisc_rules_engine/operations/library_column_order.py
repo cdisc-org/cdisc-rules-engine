@@ -22,12 +22,13 @@ class LibraryColumnOrder(BaseOperation):
         variables_metadata: List[dict] = self._get_variables_metadata_from_standard()
 
         # sort variables_metadata by the "ordinal" key
-        sorted_metadata = sorted(
-            variables_metadata, key=lambda var: int(var["ordinal"])
-        )
+        if "ordinal" in variables_metadata[0]:
+            variables_metadata = sorted(
+                variables_metadata, key=lambda var: int(var["ordinal"])
+            )
 
         # create a list of variable names in accordance to the "ordinal" key
         variable_names_list = [
-            var["name"].replace("--", self.params.domain) for var in sorted_metadata
+            var["name"].replace("--", self.params.domain) for var in variables_metadata
         ]
         return list(OrderedDict.fromkeys(variable_names_list))
