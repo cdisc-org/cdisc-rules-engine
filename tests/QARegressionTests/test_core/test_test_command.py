@@ -2,6 +2,7 @@ import os
 import re
 import unittest
 from test_utils import run_command
+from test_utils import tearDown
 
 
 class TestTestCommand(unittest.TestCase):
@@ -162,11 +163,7 @@ class TestTestCommand(unittest.TestCase):
         self.assertTrue(stderr == "")
 
     def tearDown(self):
-        for file_name in os.listdir("."):
-            if file_name != "host.json" and (
-                file_name.endswith(".xlsx") or file_name.endswith(".json")
-            ):
-                os.remove(file_name)
+        tearDown()
 
 
 if __name__ == "__main__":

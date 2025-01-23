@@ -1,5 +1,6 @@
 import subprocess
 from platform import system
+from os import listdir, remove
 
 
 def run_command(args, shell):
@@ -21,3 +22,11 @@ def run_command(args, shell):
         )
     except subprocess.CalledProcessError as e:
         return e.returncode, e.stdout.lower(), e.stderr.lower()
+
+
+def tearDown():
+    for file_name in listdir("."):
+        if file_name not in ("host.json", "local.settings.json") and (
+            file_name.endswith(".xlsx") or file_name.endswith(".json")
+        ):
+            remove(file_name)
