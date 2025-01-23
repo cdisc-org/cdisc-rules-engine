@@ -188,6 +188,13 @@ class BaseOperation:
 
     def _get_variables_metadata_from_standard(self) -> List[dict]:
         # TODO: Update to handle other standard types: adam, cdash, etc.
+        dataset_class = self.data_service.get_dataset_class(
+            self.evaluation_dataset,
+            self.params.dataset_path,
+            self.params.datasets,
+            self.params.domain,
+        )
+        self.evaluation_dataset
 
         return sdtm_utilities.get_variables_metadata_from_standard(
             self.params.standard,
@@ -196,6 +203,7 @@ class BaseOperation:
             config,
             self.cache,
             self.library_metadata,
+            dataset_class,
         )
 
     def get_allowed_variable_permissibility(self, variable_metadata: dict):
