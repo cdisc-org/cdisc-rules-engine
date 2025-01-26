@@ -36,7 +36,9 @@ def log_operator_execution(func):
     def wrapper(self, other_value, *args, **kwargs):
         try:
             logger.info(f"Starting check operator: {func.__name__}")
+            logger.log(f"\n\OPRT{time.time()}-operator {func.__name__} starts")
             result = func(self, other_value)
+            logger.log(f"\n\OPRT{time.time()}-operator {func.__name__} ends")
             logger.info(f"Completed check operator: {func.__name__}")
             return result
         except Exception as e:
