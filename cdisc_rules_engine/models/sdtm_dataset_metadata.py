@@ -21,7 +21,7 @@ class SDTMDatasetMetadata(DatasetMetadata):
     @property
     def is_supp(self) -> bool:
         """
-        Returns true if domain name starts with SUPP or SQ
+        Returns true if name starts with SUPP or SQ
         """
         return self.name.startswith(SUPPLEMENTARY_DOMAINS)
 
