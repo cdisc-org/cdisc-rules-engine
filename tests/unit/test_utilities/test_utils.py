@@ -8,8 +8,8 @@ from cdisc_rules_engine.utilities.utils import (
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 
 mock_datasets = [
-    {"filename": "SS11.xpt", "domain": "SS"},
-    {"filename": "SS12.xpt", "domain": "SS"},
+    {"filename": "SS11.xpt", "first_record": {"DOMAIN": "SS"}},
+    {"filename": "SS12.xpt", "first_record": {"DOMAIN": "SS"}},
 ]
 
 
@@ -18,10 +18,9 @@ mock_datasets = [
     return_value=mock_datasets,
 )
 def test_is_split_dataset_from_file(mock_get_corresponding_datasets):
-    domain = "SS"
     result = is_split_dataset(
         [SDTMDatasetMetadata(**mock_dataset) for mock_dataset in mock_datasets],
-        SDTMDatasetMetadata(domain=domain),
+        SDTMDatasetMetadata(first_record={"DOMAIN": "SS"}),
     )
     assert result
 
@@ -29,19 +28,19 @@ def test_is_split_dataset_from_file(mock_get_corresponding_datasets):
 datasets_tests = [
     (
         [
-            {"filename": "suppSS.xpt", "domain": "SS"},
-            {"filename": "SS.xpt", "domain": "SS"},
+            {"filename": "suppSS.xpt", "first_record": {"DOMAIN": "SS"}},
+            {"filename": "SS.xpt", "first_record": {"DOMAIN": "SS"}},
         ],
         True,
     ),
     (
         [
-            {"filename": "SS.xpt", "domain": "SS"},
-            {"filename": "SS12.xpt", "domain": "SS"},
+            {"filename": "SS.xpt", "first_record": {"DOMAIN": "SS"}},
+            {"filename": "SS12.xpt", "first_record": {"DOMAIN": "SS"}},
         ],
         False,
     ),
-    ([{"filename": "suppSS.xpt", "domain": "SS"}], False),
+    ([{"filename": "suppSS.xpt", "first_record": {"DOMAIN": "SS"}}], False),
 ]
 
 
@@ -59,17 +58,17 @@ def test_is_supp_dataset(mock_get_corresponding_datasets, mock_datasets, expecte
 datasets = [
     SDTMDatasetMetadata(**dataset)
     for dataset in [
-        {"filename": "SS.xpt", "domain": "SS"},
-        {"filename": "SS12.xpt", "domain": "SS"},
-        {"filename": "AE.xpt", "domain": "AE"},
-        {"filename": "DD.xpt", "domain": "DD"},
-        {"filename": "EC.xpt", "domain": "EC"},
-        {"filename": "EX.xpt", "domain": "EX"},
-        {"filename": "FA.xpt", "domain": "FA"},
-        {"filename": "FT.xpt", "domain": "FT"},
-        {"filename": "RS.xpt", "domain": "RS"},
-        {"filename": "AB.xpt", "domain": "AB"},
-        {"filename": "AB12.xpt", "domain": "AB"},
+        {"filename": "SS.xpt", "first_record": {"DOMAIN": "SS"}},
+        {"filename": "SS12.xpt", "first_record": {"DOMAIN": "SS"}},
+        {"filename": "AE.xpt", "first_record": {"DOMAIN": "AE"}},
+        {"filename": "DD.xpt", "first_record": {"DOMAIN": "DD"}},
+        {"filename": "EC.xpt", "first_record": {"DOMAIN": "EC"}},
+        {"filename": "EX.xpt", "first_record": {"DOMAIN": "EX"}},
+        {"filename": "FA.xpt", "first_record": {"DOMAIN": "FA"}},
+        {"filename": "FT.xpt", "first_record": {"DOMAIN": "FT"}},
+        {"filename": "RS.xpt", "first_record": {"DOMAIN": "RS"}},
+        {"filename": "AB.xpt", "first_record": {"DOMAIN": "AB"}},
+        {"filename": "AB12.xpt", "first_record": {"DOMAIN": "AB"}},
     ]
 ]
 
@@ -79,31 +78,31 @@ domain_test_cases = [
     (
         "SS",
         [
-            {"filename": "SS.xpt", "domain": "SS"},
-            {"filename": "SS12.xpt", "domain": "SS"},
+            {"filename": "SS.xpt", "first_record": {"DOMAIN": "SS"}},
+            {"filename": "SS12.xpt", "first_record": {"DOMAIN": "SS"}},
         ],
     ),
     (
         "AB",
         [
-            {"filename": "AB.xpt", "domain": "AB"},
-            {"filename": "AB12.xpt", "domain": "AB"},
+            {"filename": "AB.xpt", "first_record": {"DOMAIN": "AB"}},
+            {"filename": "AB12.xpt", "first_record": {"DOMAIN": "AB"}},
         ],
     ),
-    ("AE", [{"filename": "AE.xpt", "domain": "AE"}]),
-    ("DD", [{"filename": "DD.xpt", "domain": "DD"}]),
-    ("EC", [{"filename": "EC.xpt", "domain": "EC"}]),
-    ("EX", [{"filename": "EX.xpt", "domain": "EX"}]),
-    ("FA", [{"filename": "FA.xpt", "domain": "FA"}]),
-    ("FT", [{"filename": "FT.xpt", "domain": "FT"}]),
-    ("RS", [{"filename": "RS.xpt", "domain": "RS"}]),
+    ("AE", [{"filename": "AE.xpt", "first_record": {"DOMAIN": "AE"}}]),
+    ("DD", [{"filename": "DD.xpt", "first_record": {"DOMAIN": "DD"}}]),
+    ("EC", [{"filename": "EC.xpt", "first_record": {"DOMAIN": "EC"}}]),
+    ("EX", [{"filename": "EX.xpt", "first_record": {"DOMAIN": "EX"}}]),
+    ("FA", [{"filename": "FA.xpt", "first_record": {"DOMAIN": "FA"}}]),
+    ("FT", [{"filename": "FT.xpt", "first_record": {"DOMAIN": "FT"}}]),
+    ("RS", [{"filename": "RS.xpt", "first_record": {"DOMAIN": "RS"}}]),
 ]
 
 
 @pytest.mark.parametrize("domain, expected_datasets", domain_test_cases)
 def test_get_corresponding_datasets(domain, expected_datasets):
     result_datasets = get_corresponding_datasets(
-        datasets, SDTMDatasetMetadata(domain=domain)
+        datasets, SDTMDatasetMetadata(first_record={"DOMAIN": domain})
     )
     assert result_datasets == [
         SDTMDatasetMetadata(**dataset) for dataset in expected_datasets

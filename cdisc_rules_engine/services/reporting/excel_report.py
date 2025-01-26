@@ -72,7 +72,7 @@ class ExcelReport(BaseReport):
                 dataset.label,
                 str(Path(dataset.full_path or "").parent),
                 dataset.modification_date,
-                (dataset.size or 0) / 1000,
+                (dataset.file_size or 0) / 1000,
                 dataset.record_count,
             ]
             for dataset in self._datasets

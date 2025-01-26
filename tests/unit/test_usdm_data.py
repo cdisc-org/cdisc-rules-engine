@@ -29,7 +29,7 @@ class TestListDatasetMetadata(unittest.TestCase):
         )
         expected_output = """[
     {
-        "domain": "",
+        "domain": null,
         "filename": "USDM_EliLilly_NCT03421379_Diabetes.json","""
         self.assertEqual(result.exit_code, 0)
         self.assertIn(expected_output, result.output)
@@ -98,7 +98,7 @@ def test_validate_rule_single_dataset_check(dataset_rule_greater_than: dict):
             dataset_rule_greater_than,
             dataset_path,
             [],
-            SDTMDatasetMetadata(domain="EC"),
+            SDTMDatasetMetadata(first_record={"DOMAIN": "EC"}),
         )
 
         assert validation_result == [

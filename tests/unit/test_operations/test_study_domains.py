@@ -19,10 +19,10 @@ def test_get_study_domains_with_duplicates(
     cache = CacheServiceFactory(config).get_cache_service()
     data_service = DataServiceFactory(config, cache).get_data_service()
     datasets = [
-        {"filename": "dm.xpt", "domain": "DM"},
-        {"filename": "dm1.xpt", "domain": "DM"},
-        {"filename": "ae.xpt", "domain": "AE"},
-        {"filename": "tv.xpt", "domain": "TV"},
+        {"filename": "dm.xpt", "first_record": {"DOMAIN": "DM"}},
+        {"filename": "dm1.xpt", "first_record": {"DOMAIN": "DM"}},
+        {"filename": "ae.xpt", "first_record": {"DOMAIN": "AE"}},
+        {"filename": "tv.xpt", "first_record": {"DOMAIN": "TV"}},
     ]
     operation_params.datasets = [SDTMDatasetMetadata(**dataset) for dataset in datasets]
     result = StudyDomains(
@@ -42,9 +42,9 @@ def test_get_study_domains_with_missing_domains(
     data_service = DataServiceFactory(config, cache).get_data_service()
     datasets = [
         {"filename": "dm.xpt"},
-        {"filename": "dm1.xpt", "domain": "DM"},
-        {"filename": "ae.xpt", "domain": "AE"},
-        {"filename": "tv.xpt", "domain": "TV"},
+        {"filename": "dm1.xpt", "first_record": {"DOMAIN": "DM"}},
+        {"filename": "ae.xpt", "first_record": {"DOMAIN": "AE"}},
+        {"filename": "tv.xpt", "first_record": {"DOMAIN": "TV"}},
     ]
     operation_params.datasets = [SDTMDatasetMetadata(**dataset) for dataset in datasets]
     result = StudyDomains(

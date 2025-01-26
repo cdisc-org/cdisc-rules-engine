@@ -11,7 +11,8 @@ class DatasetMetadata:
     name: str = ""
     label: str = ""
     filename: str = ""
-    size: Union[int, float] = 0
+    file_size: Union[int, float] = 0
     record_count: int = 0
     modification_date: str = ""
     full_path: Union[str, None] = None
+    first_record: Union[dict, None] = None

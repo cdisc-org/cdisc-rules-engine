@@ -102,7 +102,7 @@ class LocalDataService(BaseDataService):
             dataset_name, size_unit=size_unit, **params
         )
         metadata_to_return: dict = {
-            "dataset_size": [file_metadata["size"]],
+            "dataset_size": [file_metadata["file_size"]],
             "dataset_location": [file_metadata["name"]],
             "dataset_name": [contents_metadata["dataset_name"]],
             "dataset_label": [contents_metadata["dataset_label"]],
@@ -121,13 +121,12 @@ class LocalDataService(BaseDataService):
         )
         return SDTMDatasetMetadata(
             name=contents_metadata["dataset_name"],
-            domain=contents_metadata["domain"],
-            rdomain=contents_metadata["rdomain"],
+            first_record=contents_metadata["first_record"],
             label=contents_metadata["dataset_label"],
             modification_date=contents_metadata["dataset_modification_date"],
             filename=file_metadata["name"],
             full_path=file_metadata["path"],
-            size=file_metadata["size"],
+            file_size=file_metadata["file_size"],
             record_count=contents_metadata["dataset_length"],
         )
 
@@ -179,7 +178,7 @@ class LocalDataService(BaseDataService):
         file_metadata = {
             "path": file_path,
             "name": file_name,
-            "size": file_size,
+            "file_size": file_size,
         }
         if file_name.endswith(".parquet") and datasets:
             for obj in datasets:
@@ -189,7 +188,7 @@ class LocalDataService(BaseDataService):
                         "name": extract_file_name_from_path_string(
                             obj["original_path"]
                         ),
-                        "size": os.path.getsize(obj["original_path"]),
+                        "file_size": os.path.getsize(obj["original_path"]),
                     }
                     file_name = obj["filename"]
                     break
@@ -222,7 +221,9 @@ class LocalDataService(BaseDataService):
         file_metadata: dict = metadata["file_metadata"]
         size_unit: Optional[str] = kwargs.get("size_unit")
         if size_unit:  # convert file size from bytes to desired unit if needed
-            file_metadata["size"] = convert_file_size(file_metadata["size"], size_unit)
+            file_metadata["file_size"] = convert_file_size(
+                file_metadata["file_size"], size_unit
+            )
         return file_metadata, metadata["contents_metadata"]
 
     def to_parquet(self, file_path: str) -> str:
@@ -244,7 +245,7 @@ class LocalDataService(BaseDataService):
                     "full_path": dataset_path,
                     "length": metadata.record_count,
                     "label": metadata.label,
-                    "size": metadata.size,
+                    "file_size": metadata.file_size,
                     "modification_date": metadata.modification_date,
                 }
             )

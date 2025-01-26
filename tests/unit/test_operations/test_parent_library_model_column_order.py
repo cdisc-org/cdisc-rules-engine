@@ -116,7 +116,7 @@ def test_get_parent_column_order_from_library(
 ):
     datasets: List[SDTMDatasetMetadata] = [
         SDTMDatasetMetadata(
-            domain="AE",
+            first_record={"DOMAIN": "AE"},
             filename="ae.xpt",
         )
     ]
@@ -279,11 +279,11 @@ def test_get_parent_findings_class_column_order_from_library(
 ):
     datasets: List[dict] = [
         {
-            "domain": "AE",
+            "first_record": {"DOMAIN": "AE"},
             "filename": "ae.xpt",
         },
         {
-            "domain": "EC",
+            "first_record": {"DOMAIN": "EC"},
             "filename": "ec.xpt",
         },
     ]

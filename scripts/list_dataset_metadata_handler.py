@@ -15,7 +15,7 @@ def list_dataset_metadata_handler(dataset_paths: Tuple[str]) -> List[dict]:
           "domain":"AE",
           "filename":"ae.xpt",
           "full_path":"/Users/Aleksei_Furmenkov/PycharmProjects/cdisc-rules-engine/resources/data/ae.xpt",
-          "size":"38000",
+          "file_size":"38000",
           "label":"Adverse Events",
           "modification_date":"2020-08-21T09:14:26"
        },
@@ -23,7 +23,7 @@ def list_dataset_metadata_handler(dataset_paths: Tuple[str]) -> List[dict]:
           "domain":"EX",
           "filename":"ex.xpt",
           "full_path":"/Users/Aleksei_Furmenkov/PycharmProjects/cdisc-rules-engine/resources/data/ex.xpt",
-          "size":"78050",
+          "file_size":"78050",
           "label":"Exposure",
           "modification_date":"2021-09-17T09:23:22"
        },

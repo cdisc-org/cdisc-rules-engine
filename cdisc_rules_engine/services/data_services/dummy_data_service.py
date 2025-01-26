@@ -81,7 +81,7 @@ class DummyDataService(BaseDataService):
             label=dataset_metadata["dataset_label"][0],
             modification_date=datetime.now().isoformat(),
             filename=dataset_metadata["filename"][0],
-            size=dataset_metadata["dataset_size"][0],
+            file_size=dataset_metadata["dataset_size"][0],
             full_path=dataset_metadata["filename"][0],
             record_count=dataset_metadata["length"][0],
         )

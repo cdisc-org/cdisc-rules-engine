@@ -72,7 +72,11 @@ def test_day_data_calculation(
     }
     datasets = [
         SDTMDatasetMetadata(
-            **{"domain": "DM", "filename": "dm.xpt", "full_path": "/path/to/dm.xpt"}
+            **{
+                "first_record": {"DOMAIN": "DM"},
+                "filename": "dm.xpt",
+                "full_path": "/path/to/dm.xpt",
+            }
         )
     ]
     mock_data_service.get_dataset.side_effect = (

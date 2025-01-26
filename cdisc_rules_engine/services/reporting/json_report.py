@@ -80,7 +80,7 @@ class JsonReport(BaseReport):
                     "label": dataset.label,
                     "path": dataset.full_path,
                     "modification_date": dataset.modification_date,
-                    "size_kb": (dataset.size or 0) / 1000,
+                    "size_kb": (dataset.file_size or 0) / 1000,
                     "length": dataset.record_count,
                 }
                 for dataset in self._datasets

@@ -386,9 +386,21 @@ data_metadata = {
 }
 
 dataset_metadata = {
-    "ecaa.xpt": {"name": "ECAA", "domain": "EC", "filename": "ecaa.xpt"},
-    "ecbb.xpt": {"name": "ECBB", "domain": "EC", "filename": "ecbb.xpt"},
-    "suppec.xpt": {"name": "SUPPEC", "rdomain": "EC", "filename": "suppec.xpt"},
+    "ecaa.xpt": {
+        "name": "ECAA",
+        "first_record": {"DOMAIN": "EC"},
+        "filename": "ecaa.xpt",
+    },
+    "ecbb.xpt": {
+        "name": "ECBB",
+        "first_record": {"DOMAIN": "EC"},
+        "filename": "ecbb.xpt",
+    },
+    "suppec.xpt": {
+        "name": "SUPPEC",
+        "first_record": {"RDOMAIN": "EC"},
+        "filename": "suppec.xpt",
+    },
 }
 
 expected_results = {

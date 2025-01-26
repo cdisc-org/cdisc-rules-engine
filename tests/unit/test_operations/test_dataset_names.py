@@ -21,10 +21,10 @@ def test_get_study_domains_with_duplicates(
     datasets = [
         SDTMDatasetMetadata(**dataset)
         for dataset in [
-            {"name": "DM", "filename": "dm.xpt", "domain": "DM"},
-            {"name": "DM1", "filename": "dm1.xpt", "domain": "DM"},
-            {"name": "AE", "filename": "ae.xpt", "domain": "AE"},
-            {"name": "TV", "filename": "tv.xpt", "domain": "TV"},
+            {"name": "DM", "filename": "dm.xpt", "first_record": {"DOMAIN": "DM"}},
+            {"name": "DM1", "filename": "dm1.xpt", "first_record": {"DOMAIN": "DM"}},
+            {"name": "AE", "filename": "ae.xpt", "first_record": {"DOMAIN": "AE"}},
+            {"name": "TV", "filename": "tv.xpt", "first_record": {"DOMAIN": "TV"}},
         ]
     ]
     operation_params.datasets = datasets
@@ -46,10 +46,10 @@ def test_get_study_domains_with_missing_domains(
     datasets = [
         SDTMDatasetMetadata(**dataset)
         for dataset in [
-            {"domain": "TS"},
-            {"name": "DM1", "filename": "dm1.xpt", "domain": "DM"},
-            {"name": "AE", "filename": "AE.xpt", "domain": "AE"},
-            {"name": "TV", "filename": "tv.xpt", "domain": "TV"},
+            {"first_record": {"DOMAIN": "TS"}},
+            {"name": "DM1", "filename": "dm1.xpt", "first_record": {"DOMAIN": "DM"}},
+            {"name": "AE", "filename": "AE.xpt", "first_record": {"DOMAIN": "AE"}},
+            {"name": "TV", "filename": "tv.xpt", "first_record": {"DOMAIN": "TV"}},
         ]
     ]
     operation_params.datasets = datasets

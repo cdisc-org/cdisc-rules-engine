@@ -13,16 +13,12 @@ class DummyDataset(SDTMDatasetMetadata):
             or dataset_data.get("filename").split(".")[0].upper()
         )
         self.label = dataset_data.get("label")
-        self.size = dataset_data.get("filesize") or 0
+        self.file_size = dataset_data.get("filesize") or 0
         self.filename = dataset_data.get("filename")
-        self.domain = next(
-            iter(dataset_data.get("records", {}).get("DOMAIN", [])), None
-        )
-        self.rdomain = (
-            next(iter(dataset_data.get("records", {}).get("RDOMAIN", [])), None)
-            if self.is_supp
-            else None
-        )
+        self.first_record = {
+            name: next(iter(val), None)
+            for name, val in dataset_data.get("records", {}).items()
+        }
         self.modification_date = datetime.now().isoformat()
         self.variables = [
             DummyVariable(variable_data)
@@ -33,7 +29,7 @@ class DummyDataset(SDTMDatasetMetadata):
 
     def get_metadata(self):
         return {
-            "dataset_size": [self.size or 1000],
+            "dataset_size": [self.file_size or 1000],
             "dataset_name": [self.name or "test"],
             "dataset_label": [self.label or "test"],
             "filename": [self.filename],

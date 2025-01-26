@@ -43,7 +43,7 @@ def test_get_dataset_metadata(mock_read_metadata: MagicMock, dataset_metadata: d
     assert actual_metadata.equals(
         PandasDataset.from_dict(
             {
-                "dataset_size": [dataset_metadata["file_metadata"]["size"]],
+                "dataset_size": [dataset_metadata["file_metadata"]["file_size"]],
                 "dataset_location": [dataset_metadata["file_metadata"]["name"]],
                 "dataset_name": [dataset_metadata["contents_metadata"]["dataset_name"]],
                 "dataset_label": [
@@ -71,15 +71,14 @@ def test_get_raw_dataset_metadata(
     )
     expected_metadata = SDTMDatasetMetadata(
         name=dataset_metadata["contents_metadata"]["dataset_name"],
-        domain=dataset_metadata["contents_metadata"]["domain"],
-        rdomain=dataset_metadata["contents_metadata"]["rdomain"],
+        first_record=dataset_metadata["contents_metadata"]["first_record"],
         label=dataset_metadata["contents_metadata"]["dataset_label"],
         modification_date=dataset_metadata["contents_metadata"][
             "dataset_modification_date"
         ],
         filename=dataset_metadata["file_metadata"]["name"],
         full_path=dataset_metadata["file_metadata"]["path"],
-        size=dataset_metadata["file_metadata"]["size"],
+        file_size=dataset_metadata["file_metadata"]["file_size"],
         record_count=20,
     )
     assert actual_metadata == expected_metadata
@@ -89,27 +88,27 @@ def test_get_raw_dataset_metadata(
     "dataset_metadata, data, expected_class",
     [
         (
-            {"name": "AE", "domain": "AE", "filename": "ae.xpt"},
+            {"name": "AE", "first_record": {"DOMAIN": "AE"}, "filename": "ae.xpt"},
             {"DOMAIN": ["AE"], "AETERM": ["test"]},
             EVENTS,
         ),
         (
-            {"name": "CM", "domain": "CM", "filename": "cm.xpt"},
+            {"name": "CM", "first_record": {"DOMAIN": "CM"}, "filename": "cm.xpt"},
             {"DOMAIN": ["CM"], "CMTRT": ["test"]},
             INTERVENTIONS,
         ),
         (
-            {"name": "VS", "domain": "VS", "filename": "vs.xpt"},
+            {"name": "VS", "first_record": {"DOMAIN": "VS"}, "filename": "vs.xpt"},
             {"DOMAIN": ["VS"], "VSTESTCD": ["test"]},
             FINDINGS,
         ),
         (
-            {"name": "FA", "domain": "FA", "filename": "fa.xpt"},
+            {"name": "FA", "first_record": {"DOMAIN": "FA"}, "filename": "fa.xpt"},
             {"DOMAIN": ["FA"], "FATESTCD": ["test"], "FAOBJ": ["test"]},
             FINDINGS_ABOUT,
         ),
         (
-            {"name": "FAMH", "domain": "FA", "filename": "famh.xpt"},
+            {"name": "FAMH", "first_record": {"DOMAIN": "FA"}, "filename": "famh.xpt"},
             {"DOMAIN": ["FA"], "FATESTCD": ["test"], "FAOBJ": ["test"]},
             FINDINGS_ABOUT,
         ),
@@ -129,47 +128,47 @@ def test_get_raw_dataset_metadata(
             RELATIONSHIP,
         ),
         (
-            {"name": "OI", "domain": "OI", "filename": "oi.xpt"},
+            {"name": "OI", "first_record": {"DOMAIN": "OI"}, "filename": "oi.xpt"},
             {"DOMAIN": ["OI"], "OIPARMCD": ["test"], "OIPARM": ["test"]},
             STUDY_REFERENCE,
         ),
         (
-            {"name": "TS", "domain": "TS", "filename": "ts.xpt"},
+            {"name": "TS", "first_record": {"DOMAIN": "TS"}, "filename": "ts.xpt"},
             {"DOMAIN": ["TS"], "TSPARMCD": ["test"], "TSPARM": ["test"]},
             TRIAL_DESIGN,
         ),
         (
-            {"name": "XX", "domain": "XX", "filename": "xx.xpt"},
+            {"name": "XX", "first_record": {"DOMAIN": "XX"}, "filename": "xx.xpt"},
             {"DOMAIN": ["XX"], "XXOBJ": ["test"]},
             None,
         ),
         (
-            {"name": "XY", "domain": "XY", "filename": "xy.xpt"},
+            {"name": "XY", "first_record": {"DOMAIN": "XY"}, "filename": "xy.xpt"},
             {"UNKNOWN": ["test"]},
             None,
         ),
         (
-            {"name": "DM", "domain": "DM", "filename": "dm.xpt"},
+            {"name": "DM", "first_record": {"DOMAIN": "DM"}, "filename": "dm.xpt"},
             {"UNKNOWN": ["test"]},
             SPECIAL_PURPOSE,
         ),
         (
-            {"name": "XX", "domain": "XX", "filename": "xx.xpt"},
+            {"name": "XX", "first_record": {"DOMAIN": "XX"}, "filename": "xx.xpt"},
             {"DOMAIN": ["XX"], "XXTRT": ["test"]},
             INTERVENTIONS,
         ),
         (
-            {"name": "XX", "domain": "XX", "filename": "xx.xpt"},
+            {"name": "XX", "first_record": {"DOMAIN": "XX"}, "filename": "xx.xpt"},
             {"DOMAIN": ["XX"], "XXTESTCD": ["test"]},
             FINDINGS,
         ),
         (
-            {"name": "XX", "domain": "XX", "filename": "xx.xpt"},
+            {"name": "XX", "first_record": {"DOMAIN": "XX"}, "filename": "xx.xpt"},
             {"DOMAIN": ["XX"], "XXTERM": ["test"]},
             EVENTS,
         ),
         # (
-        #     {"name": "APDM", "domain": "APDM", "filename": "apdm.xpt"},
+        #     {"name": "APDM", "first_record": {"DOMAIN": "APDM"}, "filename": "apdm.xpt"},
         #     {"DOMAIN": ["APDM"], "APID": ["001"]},
         #     SPECIAL_PURPOSE,
         # ),
@@ -226,7 +225,9 @@ def test_get_dataset_class_without_standard_and_version():
         "classes": [{"name": "SPECIAL PURPOSE", "datasets": [{"name": "DM"}]}]
     }
     data_service = LocalDataService(mock_cache_service, MagicMock(), MagicMock())
-    dataset_metadata = SDTMDatasetMetadata(domain="DM", filename="dm.xpt")
+    dataset_metadata = SDTMDatasetMetadata(
+        first_record={"DOMAIN": "DM"}, filename="dm.xpt"
+    )
     with pytest.raises(Exception):
         data_service.get_dataset_class(
             df, "dm.xpt", [dataset_metadata], dataset_metadata
@@ -237,8 +238,8 @@ def test_get_dataset_class_associated_domains():
     datasets = [
         SDTMDatasetMetadata(**dataset)
         for dataset in [
-            {"domain": "APDM", "filename": "apdm.xpt"},
-            {"domain": "DM", "filename": "dm.xpt"},
+            {"first_record": {"DOMAIN": "APDM"}, "filename": "apdm.xpt"},
+            {"first_record": {"DOMAIN": "DM"}, "filename": "dm.xpt"},
         ]
     ]
     ap_dataset = PandasDataset.from_dict({"DOMAIN": ["APDM"], "APID": ["test"]})

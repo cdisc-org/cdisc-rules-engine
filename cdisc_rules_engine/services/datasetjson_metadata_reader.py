@@ -5,7 +5,6 @@ import jsonschema
 
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.services.adam_variable_reader import AdamVariableReader
-from cdisc_rules_engine.constants.domains import SUPPLEMENTARY_DOMAINS
 
 
 class DatasetJSONMetadataReader:
@@ -50,8 +49,7 @@ class DatasetJSONMetadataReader:
                 {},
             )
 
-            self._domain = self._extract_first_value(items_data, "DOMAIN")
-            self._rdomain = self._extract_rdomain(items_data)
+            self._first_record = self._extract_first_record(items_data)
 
             self._metadata_container = {
                 "variable_labels": [
@@ -79,8 +77,7 @@ class DatasetJSONMetadataReader:
                 "number_of_variables": len(items_data.get("items", [])[1:]),
                 "dataset_label": items_data.get("label"),
                 "dataset_length": items_data.get("records"),
-                "domain": self._domain,
-                "rdomain": self._rdomain,
+                "first_record": self._first_record,
                 "dataset_name": items_data.get("name"),
                 "dataset_modification_date": datasetjson["creationDateTime"],
             }
@@ -109,29 +106,17 @@ class DatasetJSONMetadataReader:
                 "number_of_variables": 0,
                 "dataset_label": "",
                 "dataset_length": 0,
-                "domain": "",
-                "rdomain": "",
+                "first_record": None,
                 "dataset_name": "",
                 "dataset_modification_date": "",
             }
 
-    def _extract_rdomain(self, data):
-        if self._dataset_name.startswith(SUPPLEMENTARY_DOMAINS):
-            return self._extract_first_value(data, "RDOMAIN")
-
-    def _extract_first_value(self, data, column_name):
-        index_domain = next(
-            (
-                index
-                for index, item in enumerate(data["items"])
-                if item.get("name") == column_name
-            ),
-            None,
-        )
-        if index_domain is not None:
-            return data["itemData"][0][index_domain]
-        else:
-            return " "
+    def _extract_first_record(self, data):
+        first_array = next(iter(data["itemData"]), None)
+        if first_array and len(first_array) == len(data["items"]):
+            return dict(
+                zip([item.get("name", "") for item in data["items"]], first_array)
+            )
 
     def _convert_variable_types(self):
         """
@@ -167,8 +152,7 @@ class DatasetJSONMetadataReader:
             "variable_name_to_size_map": self._metadata_container.variable_storage_width,  # noqa
             "number_of_variables": self._metadata_container.number_columns,
             "dataset_label": self._metadata_container.file_label,
-            "domain": self._domain,
-            "rdomain": self._rdomain,
+            "first_record": self._first_record,
             "dataset_name": self._dataset_name,
             "dataset_modification_date": self._metadata_container.dataset_modification_date,  # noqa
         }

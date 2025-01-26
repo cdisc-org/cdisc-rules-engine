@@ -113,14 +113,14 @@ class USDMDataService(BaseDataService):
         domain = self.__get_domain_from_dataset_name(dataset_name)
         return SDTMDatasetMetadata(
             name=dataset_name,
-            domain=domain,
+            first_record={"DOMAIN": domain},
             label=domain,
             modification_date=datetime.fromtimestamp(
                 os.path.getmtime(self.dataset_path)
             ).isoformat(),
             filename=extract_file_name_from_path_string(dataset_name),
             full_path=dataset_name,
-            size=0,
+            file_size=0,
             record_count=len(dataset),
         )
 
@@ -154,7 +154,7 @@ class USDMDataService(BaseDataService):
         file_metadata = {
             "path": self.dataset_path,
             "name": file_name,
-            "size": file_size,
+            "file_size": file_size,
         }
         dataset = self.__get_dataset(dataset_name)
         measurer = vectorize(len)
@@ -200,7 +200,7 @@ class USDMDataService(BaseDataService):
                     "full_path": metadata.full_path,
                     "length": metadata.record_count,
                     "label": metadata.label,
-                    "size": metadata.size,
+                    "file_size": metadata.file_size,
                     "modification_date": metadata.modification_date,
                 }
             )

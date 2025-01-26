@@ -45,9 +45,9 @@ def test_variable_count(
     datasets = [
         SDTMDatasetMetadata(**dataset)
         for dataset in [
-            {"name": "AE", "domain": "AE", "filename": "AE"},
-            {"name": "EX", "domain": "EX", "filename": "EX"},
-            {"name": "AEXX", "domain": "AE", "filename": "AEXX"},
+            {"name": "AE", "first_record": {"DOMAIN": "AE"}, "filename": "AE"},
+            {"name": "EX", "first_record": {"DOMAIN": "EX"}, "filename": "EX"},
+            {"name": "AEXX", "first_record": {"DOMAIN": "AE"}, "filename": "AEXX"},
         ]
     ]
     mock_data_service.get_dataset.side_effect = (

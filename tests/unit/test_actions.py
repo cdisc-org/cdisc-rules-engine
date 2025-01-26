@@ -71,7 +71,9 @@ def test_targeted_error_object_with_dataset_sensitivity():
     }
     df = pd.DataFrame.from_dict({"TEST": [1, 2, 3, 4]})
     variable = DatasetVariable(df)
-    action = COREActions([], variable, SDTMDatasetMetadata(domain="TV"), dummy_rule)
+    action = COREActions(
+        [], variable, SDTMDatasetMetadata(first_record={"DOMAIN": "TV"}), dummy_rule
+    )
     targets = set(dummy_rule["output_variables"])
     result = action.generate_targeted_error_object(targets, df, "TEST greater than 0")
     assert len(result.errors) == 1
@@ -97,7 +99,9 @@ def test_empty_sequential():
         {"TVSEQ": [2, 4, 6, None, "", 8], "TV": [1, 3, 5, 7, 9, "8"]}
     )
     variable = DatasetVariable(df)
-    action = COREActions([], variable, SDTMDatasetMetadata(domain="TV"), dummy_rule)
+    action = COREActions(
+        [], variable, SDTMDatasetMetadata(first_record={"DOMAIN": "TV"}), dummy_rule
+    )
     targets = set(dummy_rule["output_variables"])
     result = action.generate_targeted_error_object(targets, df, "TVSEQ greater than 2")
     assert [err.to_representation() for err in result.errors] == [
@@ -135,7 +139,9 @@ def test_json_serializable_value(data):
         }
     )
     variable = DatasetVariable(df)
-    action = COREActions([], variable, SDTMDatasetMetadata(domain="TV"), dummy_rule)
+    action = COREActions(
+        [], variable, SDTMDatasetMetadata(first_record={"DOMAIN": "TV"}), dummy_rule
+    )
     targets = set(dummy_rule["output_variables"])
     result = action.generate_targeted_error_object(targets, df, "TVSEQ greater than 2")
     # Ensure json dumps does not throw an error

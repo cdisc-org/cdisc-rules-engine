@@ -226,8 +226,10 @@ def test_rule_applies_to_domain_split_datasets(
         processor.rule_applies_to_domain(
             SDTMDatasetMetadata(
                 name=domain["name"],
-                domain=domain.get("domain"),
-                rdomain=domain.get("rdomain"),
+                first_record={
+                    "DOMAIN": domain.get("domain"),
+                    "RDOMAIN": domain.get("rdomain"),
+                },
             ),
             rule,
             domain["is_split"],
@@ -764,7 +766,9 @@ def test_perform_extract_metadata_operation(
         dataset=dataset,
         domain="SUPPEC",
         datasets=[
-            SDTMDatasetMetadata(name="SUPPEC", rdomain="EC", filename="suppec.xpt")
+            SDTMDatasetMetadata(
+                name="SUPPEC", first_record={"RDOMAIN": "EC"}, filename="suppec.xpt"
+            )
         ],
         dataset_path="study/data_bundle/suppec.xpt",
         standard="sdtmig",

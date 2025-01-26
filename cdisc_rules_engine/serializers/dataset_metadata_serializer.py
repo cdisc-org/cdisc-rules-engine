@@ -22,7 +22,7 @@ class DatasetMetadataSerializer(BaseSerializer):
                     "domain": metadata_obj.domain,
                     "filename": metadata_obj.filename,
                     "full_path": metadata_obj.full_path,
-                    "size": metadata_obj.size,
+                    "file_size": metadata_obj.file_size,
                     "label": metadata_obj.label,
                     "modification_date": metadata_obj.modification_date,
                 }
@@ -34,14 +34,14 @@ class DatasetMetadataSerializer(BaseSerializer):
         for metadata_obj in self.__metadata:
             if not (
                 isinstance(metadata_obj.name, str)
-                and isinstance(metadata_obj.domain, str)
+                and isinstance(metadata_obj.domain, (str, type(None)))
                 and isinstance(metadata_obj.label, str)
                 and isinstance(metadata_obj.modification_date, str)
                 and isinstance(metadata_obj.filename, str)
                 and isinstance(metadata_obj.full_path, str)
                 and (
-                    isinstance(metadata_obj.size, int)
-                    or isinstance(metadata_obj.size, float)
+                    isinstance(metadata_obj.file_size, int)
+                    or isinstance(metadata_obj.file_size, float)
                 )
                 and isinstance(metadata_obj.record_count, int)
             ):

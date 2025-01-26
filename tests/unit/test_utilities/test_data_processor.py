@@ -32,7 +32,9 @@ from cdisc_rules_engine.enums.join_types import JoinTypes
 def test_preprocess_relationship_dataset(data):
     dataset_metadata = [
         SDTMDatasetMetadata(
-            name=domain, domain=domain, filename=f"{domain.lower()}.xpt"
+            name=domain,
+            first_record={"DOMAIN": domain},
+            filename=f"{domain.lower()}.xpt",
         )
         for domain in ["AE", "EC", "SUPP", "DM"]
     ]

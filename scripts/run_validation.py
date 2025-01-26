@@ -61,7 +61,7 @@ def validate_single_rule(
     rule["conditions"] = ConditionCompositeFactory.get_condition_composite(
         rule["conditions"]
     )
-    max_dataset_size = max(datasets, key=lambda x: x.size).size
+    max_dataset_size = max(datasets, key=lambda x: x.file_size).file_size
     # call rule engine
     engine = RulesEngine(
         cache=cache,

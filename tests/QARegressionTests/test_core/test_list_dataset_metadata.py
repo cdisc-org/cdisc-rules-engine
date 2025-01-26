@@ -27,7 +27,7 @@ class TestListDatasetMetadata(unittest.TestCase):
         expected_output = """[
     {
         "domain": "EX",
-        "size": 823120,
+        "file_size": 823120,
         "label": "Exposure",
     """
         self.assertEqual(result.exit_code, 1)
