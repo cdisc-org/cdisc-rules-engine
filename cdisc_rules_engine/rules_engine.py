@@ -345,13 +345,13 @@ class RulesEngine:
         dataset = deepcopy(dataset)
         # preprocess dataset
 
-        logger.log(f"\n\ST{time.time()}-Dataset Preprocessing Starts")
+        logger.log(fr"\n\ST{time.time()}-Dataset Preprocessing Starts")
         dataset_preprocessor = DatasetPreprocessor(
             dataset, domain, dataset_path, self.data_service, self.cache
         )
         dataset = dataset_preprocessor.preprocess(rule_copy, datasets)
-        logger.log(f"\n\ST{time.time()}-Dataset Preprocessing Ends")
-        logger.log(f"\n\OPRNT{time.time()}-Operation Starts")
+        logger.log(fr"\n\ST{time.time()}-Dataset Preprocessing Ends")
+        logger.log(fr"\n\OPRNT{time.time()}-Operation Starts")
         dataset = self.rule_processor.perform_rule_operations(
             rule_copy,
             dataset,
@@ -364,7 +364,7 @@ class RulesEngine:
             external_dictionaries=self.external_dictionaries,
             ct_packages=ct_packages,
         )
-        logger.log(f"\n\OPRNT{time.time()}-Operation Ends")
+        logger.log(fr"\n\OPRNT{time.time()}-Operation Ends")
         relationship_data = {}
         if domain is not None and self.rule_processor.is_relationship_dataset(domain):
             relationship_data = self.data_processor.preprocess_relationship_dataset(
