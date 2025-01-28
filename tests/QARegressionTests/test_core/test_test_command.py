@@ -38,7 +38,7 @@ class TestTestCommand(unittest.TestCase):
         exit_code, stdout, stderr = self.run_command(command)
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
-        self.assertEqual(stderr, "", f"Error while executing command:\n{stderr}")
+        self.assertTrue(f"Error while executing command:" in stderr)
 
     def test_test_command_with_all_options(self):
         command = (

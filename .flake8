@@ -6,7 +6,7 @@ ignore = E203, W503
 exclude = .github,
     .pytest_cache,
     cdisc_rules_engine/resources,
-    tests/PerformanceTest.py
+    tests/PerformanceTest.py,
     venv,
     build,
     dist
