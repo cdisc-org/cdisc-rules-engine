@@ -17,6 +17,9 @@ from cdisc_rules_engine.services.datasetxpt_metadata_reader import (
 from cdisc_rules_engine.services.datasetjson_metadata_reader import (
     DatasetJSONMetadataReader,
 )
+from cdisc_rules_engine.services.datasetndjson_metadata_reader import (
+    DatasetNDJSONMetadataReader,
+)
 from cdisc_rules_engine.utilities.utils import (
     convert_file_size,
     extract_file_name_from_path_string,
@@ -197,6 +200,7 @@ class LocalDataService(BaseDataService):
         _metadata_reader_map = {
             DataFormatTypes.XPT.value: DatasetXPTMetadataReader,
             DataFormatTypes.JSON.value: DatasetJSONMetadataReader,
+            DataFormatTypes.NDJSON.value: DatasetNDJSONMetadataReader,
         }
         contents_metadata = _metadata_reader_map[file_name.split(".")[1].upper()](
             file_metadata["path"], file_name

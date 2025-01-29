@@ -6,6 +6,7 @@ from cdisc_rules_engine.interfaces import (
 )
 from cdisc_rules_engine.services.data_readers.xpt_reader import XPTReader
 from cdisc_rules_engine.services.data_readers.json_reader import DatasetJSONReader
+from cdisc_rules_engine.services.data_readers.ndjson_reader import DatasetNDJSONReader
 from cdisc_rules_engine.services.data_readers.parquet_reader import ParquetReader
 from cdisc_rules_engine.services.data_readers.usdm_json_reader import USDMJSONReader
 from cdisc_rules_engine.enums.dataformat_types import DataFormatTypes
@@ -17,6 +18,7 @@ class DataReaderFactory(FactoryInterface):
         DataFormatTypes.XPT.value: XPTReader,
         DataFormatTypes.PARQUET.value: ParquetReader,
         DataFormatTypes.JSON.value: DatasetJSONReader,
+        DataFormatTypes.NDJSON.value: DatasetNDJSONReader,
         DataFormatTypes.USDM.value: USDMJSONReader,
     }
 
