@@ -21,29 +21,10 @@ class DatasetJSONReader(DataReaderInterface):
             schema = schemajson.read()
         return json.loads(schema)
 
-    def get_data_key(self, dataset_json: dict) -> str:
-        if "clinicalData" in dataset_json:
-            return "clinicalData"
-        return "referenceData"
-
     def read_json_file(self, file_path: str) -> dict:
         with open(file_path, "r") as file:
             datasetjson = json.load(file)
         return datasetjson
-
-    def parse_items_data(self, dataset_json: dict, data_key: str) -> pd.DataFrame:
-        items_data = next(
-            (
-                d
-                for d in dataset_json[data_key]["itemGroupData"].values()
-                if "items" in d
-            ),
-            {},
-        )
-        return pd.DataFrame(
-            [item[1:] for item in items_data.get("itemData", [])],
-            columns=[item["name"] for item in items_data.get("items", [])[1:]],
-        )
 
     def _raw_dataset_from_file(self, file_path) -> pd.DataFrame:
         # Load Dataset-JSON Schema
@@ -51,8 +32,11 @@ class DatasetJSONReader(DataReaderInterface):
         datasetjson = self.read_json_file(file_path)
 
         jsonschema.validate(datasetjson, schema)
-        data_key = self.get_data_key(datasetjson)
-        df = self.parse_items_data(datasetjson, data_key)
+
+        df = pd.DataFrame(
+            [item for item in datasetjson.get("rows", [])],
+            columns=[item["name"] for item in datasetjson.get("columns", [])],
+        )
         return df.applymap(lambda x: round(x, 15) if isinstance(x, float) else x)
 
     def from_file(self, file_path):

@@ -35,52 +35,39 @@ class DatasetJSONMetadataReader:
         try:
             jsonschema.validate(datasetjson, schema)
 
-            if "clinicalData" in datasetjson:
-                data_key = "clinicalData"
-            elif "referenceData" in datasetjson:
-                data_key = "referenceData"
-
-            items_data = next(
-                (
-                    d
-                    for d in datasetjson[data_key]["itemGroupData"].values()
-                    if "items" in d
-                ),
-                {},
-            )
-
-            self._domain_name = self._extract_domain_name(items_data)
+            self._domain_name = self._extract_domain_name(datasetjson)
 
             self._metadata_container = {
                 "variable_labels": [
-                    item["label"] for item in items_data.get("items", [])[1:]
+                    item["label"] for item in datasetjson["columns"]
                 ],
                 "variable_names": [
-                    item["name"] for item in items_data.get("items", [])[1:]
+                    item["name"] for item in datasetjson["columns"]
                 ],
                 "variable_formats": [
                     item.get("displayFormat", "")
-                    for item in items_data.get("items", [])[1:]
+                    for item in datasetjson["columns"]
                 ],
                 "variable_name_to_label_map": {
                     item["name"]: item["label"]
-                    for item in items_data.get("items", [])[1:]
+                    for item in datasetjson["columns"]
                 },
                 "variable_name_to_data_type_map": {
-                    item["name"]: item["type"]
-                    for item in items_data.get("items", [])[1:]
+                    item["name"]: item["dataType"]
+                    for item in datasetjson["columns"]
                 },
                 "variable_name_to_size_map": {
                     item["name"]: item.get("length", None)
-                    for item in items_data.get("items", [])[1:]
+                    for item in datasetjson["columns"]
                 },
-                "number_of_variables": len(items_data.get("items", [])[1:]),
-                "dataset_label": items_data.get("label"),
-                "dataset_length": items_data.get("records"),
+                "number_of_variables": len(datasetjson["columns"]),
+                "dataset_label": datasetjson.get("label"),
+                "dataset_length": datasetjson.get("records"),
                 "domain_name": self._domain_name,
-                "dataset_name": items_data.get("name"),
-                "dataset_modification_date": datasetjson["creationDateTime"],
+                "dataset_name": datasetjson.get("name"),
+                "dataset_modification_date": datasetjson["datasetJSONCreationDateTime"],
             }
+
             self._convert_variable_types()
 
             self._metadata_container["adam_info"] = self._extract_adam_info(
@@ -115,13 +102,13 @@ class DatasetJSONMetadataReader:
         index_domain = next(
             (
                 index
-                for index, item in enumerate(data["items"])
+                for index, item in enumerate(data["columns"])
                 if item.get("name") == "DOMAIN"
             ),
             None,
         )
         if index_domain is not None:
-            return data["itemData"][0][index_domain]
+            return data["rows"][0][index_domain]
         else:
             return " "
 
