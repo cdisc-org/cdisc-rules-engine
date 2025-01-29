@@ -51,7 +51,7 @@ class DatasetJSONReader(DataReaderInterface):
         except jsonschema.exceptions.ValidationError:
             return PandasDataset(pd.DataFrame())
 
-    def to_parquet(self, file_path: str) -> (int, str):
+    def to_parquet(self, file_path: str) -> str:
         temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".parquet")
         df = self._raw_dataset_from_file(file_path)
         df.to_parquet(temp_file.name)
