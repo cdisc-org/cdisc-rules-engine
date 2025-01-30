@@ -127,7 +127,6 @@ def test_get_name_referenced_variable_metadata(
         "AELABEL",
         "$name_referenced_variable_name",
         "$name_referenced_variable_role",
-        "$name_referenced_variable_order_number",
         "$name_referenced_variable_ordinal",
         "$name_referenced_variable_label",
     ]

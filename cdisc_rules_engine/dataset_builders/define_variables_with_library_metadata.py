@@ -1,6 +1,8 @@
 from cdisc_rules_engine.dataset_builders.base_dataset_builder import BaseDatasetBuilder
 from typing import List
 from cdisc_rules_engine import config
+from cdisc_rules_engine.utilities import sdtm_utilities
+
 
 class DefineVariablesWithLibraryMetadataDatasetBuilder(BaseDatasetBuilder):
     def build(self):
@@ -35,8 +37,7 @@ class DefineVariablesWithLibraryMetadataDatasetBuilder(BaseDatasetBuilder):
         variable_metadata = self.dataset_implementation.from_records(
             self.get_define_xml_variables_metadata()
         )
-        # library_variables_metadata = self.get_library_variables_metadata()
-        variables: List[dict] = self.sdtm_utilities.get_variables_metadata_from_standard(
+        variables: List[dict] = sdtm_utilities.get_variables_metadata_from_standard(
             standard=self.standard,
             standard_version=self.standard_version,
             domain=self.domain,
@@ -54,8 +55,10 @@ class DefineVariablesWithLibraryMetadataDatasetBuilder(BaseDatasetBuilder):
             for key, new_key in column_name_mapping.items():
                 if key in var:
                     var[new_key] = var.pop(key)
-        library_variables_metadata  = self.dataset_implementation.from_records(variables)
-        library_variables_metadata.data = library_variables_metadata.data.add_prefix("library_variable_")
+        library_variables_metadata = self.dataset_implementation.from_records(variables)
+        library_variables_metadata.data = library_variables_metadata.data.add_prefix(
+            "library_variable_"
+        )
 
         data = variable_metadata.merge(
             library_variables_metadata.data,
