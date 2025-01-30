@@ -200,8 +200,7 @@ class RulesEngine:
             Error: {e}
             Error Type: {type(e)}
             Error Message: {str(e)}
-            Full traceback:
-            {traceback.format_exc()}
+            Full traceback: {traceback.format_exc()}
             """
             )
             error_obj: ValidationErrorContainer = self.handle_validation_exceptions(

@@ -97,7 +97,7 @@ class COREActions(BaseActions):
             errors_df = data
         if errors_df.empty:
             raise InvalidOutputVariables(
-                f"Output variables: {list(targets)} not found in dataset"
+                f"Output variables: {list(targets)} not in dataset"
             )
         if self.rule.get("sensitivity") == Sensitivity.DATASET.value:
             # Only generate one error for rules with dataset sensitivity
