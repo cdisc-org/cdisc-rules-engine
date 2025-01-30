@@ -1,31 +1,31 @@
 """
-This module contains unit tests for DatasetJSONMetadataReader class.
+This module contains unit tests for DatasetNDJSONMetadataReader class.
 """
 import os
 
-from cdisc_rules_engine.services.datasetjson_metadata_reader import (
-    DatasetJSONMetadataReader,
+from cdisc_rules_engine.services.datasetndjson_metadata_reader import (
+    DatasetNDJSONMetadataReader,
 )
 
 
 def test_read_metadata():
     """
     Unit test for function read.
-    Loads test .json file and extracts metadata.
+    Loads test .ndjson file and extracts metadata.
     """
     test_dataset_path: str = (
-        f"{os.path.dirname(__file__)}/../resources/test_dataset.json"
+        f"{os.path.dirname(__file__)}/../resources/test_dataset.ndjson"
     )
 
-    reader = DatasetJSONMetadataReader(test_dataset_path, file_name="test_dataset.json")
+    reader = DatasetNDJSONMetadataReader(test_dataset_path, file_name="test_dataset.ndjson")
     metadata: dict = reader.read()
 
     assert metadata["dataset_name"] == "EX", "Test file has been changed"
     assert metadata["domain_name"] == "EX", "Test file has been changed"
     assert metadata["dataset_label"] == "Exposure", "Test file has been changed"
-    assert metadata["number_of_variables"] == 18, "Test file has been changed"
+    assert metadata["number_of_variables"] == 17, "Test file has been changed"
     assert (
-        metadata["dataset_modification_date"] == "2025-01-28T22:06:12"
+        metadata["dataset_modification_date"] == "2024-11-11T15:09:16"
     ), "Test file has been changed"
     assert isinstance(metadata["variable_labels"], list)
     assert isinstance(metadata["variable_names"], list)
@@ -45,17 +45,16 @@ def test_read_metadata():
 def test_read_metadata_with_variable_formats():
     """
     Unit test for function read.
-    Loads test .json file and extracts metadata.
+    Loads test .ndjson file and extracts metadata.
     """
     test_dataset_path: str = (
-        f"{os.path.dirname(__file__)}/../resources/test_dataset.json"
+        f"{os.path.dirname(__file__)}/../resources/test_dataset.ndjson"
     )
 
-    reader = DatasetJSONMetadataReader(test_dataset_path, file_name="test_dataset.json")
+    reader = DatasetNDJSONMetadataReader(test_dataset_path, file_name="test_dataset.ndjson")
     metadata: dict = reader.read()
 
     assert metadata["variable_formats"] == [
-        "",
         "",
         "",
         "",
