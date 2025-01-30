@@ -37,7 +37,7 @@ class CodelistTerms(BaseOperation):
         for codelist in codelists:
             original_key = lookup_map.get(codelist.lower())
             if original_key is None:
-                raise MissingDataError(f"Codelist '{codelist}' not found in metadata")
+                raise MissingDataError(f"Codelist '{codelist}' not in metadata")
             code_obj = submission_lookup[original_key]
             codes.append(code_obj)
         values = []
