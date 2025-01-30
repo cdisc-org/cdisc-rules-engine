@@ -86,15 +86,15 @@ class CachePopulator:
             self.cache.add_batch(variable_codelist_maps, "name")
 
             # save details of all standards to cache
-            standards_details: List[dict] = (
-                await self._async_get_details_of_all_standards(standards)
-            )
+            standards_details: List[
+                dict
+            ] = await self._async_get_details_of_all_standards(standards)
             self.cache.add_batch(standards_details, "cache_key", pop_cache_key=True)
 
             # save details of all standard's models to cache
-            standards_models: Iterable[dict] = (
-                await self._async_get_details_of_all_standards_models(standards_details)
-            )
+            standards_models: Iterable[
+                dict
+            ] = await self._async_get_details_of_all_standards_models(standards_details)
             self.cache.add_batch(standards_models, "cache_key", pop_cache_key=True)
 
             # save variables metadata to cache
@@ -166,9 +166,9 @@ class CachePopulator:
         self.cache.add_batch(standards_details, "cache_key", pop_cache_key=True)
 
         # save details of all standard's models to cache
-        standards_models: Iterable[dict] = (
-            await self._async_get_details_of_all_standards_models(standards_details)
-        )
+        standards_models: Iterable[
+            dict
+        ] = await self._async_get_details_of_all_standards_models(standards_details)
         self.cache.add_batch(standards_models, "cache_key", pop_cache_key=True)
         # save variables metadata to cache
         variables_metadata: Iterable[dict] = await self._get_variables_metadata(

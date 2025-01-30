@@ -54,9 +54,9 @@ class DatasetXPTMetadataReader:
         }
 
         if self._estimate_dataset_length:
-            self._metadata_container["dataset_length"] = (
-                self._calculate_dataset_length()
-            )
+            self._metadata_container[
+                "dataset_length"
+            ] = self._calculate_dataset_length()
         self._domain_name = self._extract_domain_name(dataset)
         self._convert_variable_types()
         self._metadata_container["adam_info"] = self._extract_adam_info(
@@ -147,9 +147,9 @@ class DatasetXPTMetadataReader:
         for key, value in self._metadata_container[
             "variable_name_to_data_type_map"
         ].items():
-            self._metadata_container["variable_name_to_data_type_map"][key] = (
-                rule_author_type_map[value]
-            )
+            self._metadata_container["variable_name_to_data_type_map"][
+                key
+            ] = rule_author_type_map[value]
 
     def _to_dict(self) -> dict:
         """

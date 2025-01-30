@@ -129,9 +129,9 @@ class BaseOperation:
         else:
             # Handle single results
 
-            self.evaluation_dataset[self.params.operation_id] = (
-                self.evaluation_dataset.get_series_from_value(result)
-            )
+            self.evaluation_dataset[
+                self.params.operation_id
+            ] = self.evaluation_dataset.get_series_from_value(result)
             return self.evaluation_dataset
 
     def _handle_grouped_result(self, result):
@@ -228,9 +228,9 @@ class BaseOperation:
 
     def _get_variable_names_list(self, domain, dataframe):
         # get variables metadata from the standard model
-        variables_metadata: List[dict] = (
-            self._get_variables_metadata_from_standard_model(domain, dataframe)
-        )
+        variables_metadata: List[
+            dict
+        ] = self._get_variables_metadata_from_standard_model(domain, dataframe)
         # create a list of variable names in accordance to the "ordinal" key
         variable_names_list = self._replace_variable_wildcards(
             variables_metadata, domain
