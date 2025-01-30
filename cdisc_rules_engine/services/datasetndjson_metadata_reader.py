@@ -47,20 +47,15 @@ class DatasetNDJSONMetadataReader:
                 "variable_labels": [
                     item["label"] for item in metadatandjson["columns"]
                 ],
-                "variable_names": [
-                    item["name"] for item in metadatandjson["columns"]
-                ],
+                "variable_names": [item["name"] for item in metadatandjson["columns"]],
                 "variable_formats": [
-                    item.get("displayFormat", "")
-                    for item in metadatandjson["columns"]
+                    item.get("displayFormat", "") for item in metadatandjson["columns"]
                 ],
                 "variable_name_to_label_map": {
-                    item["name"]: item["label"]
-                    for item in metadatandjson["columns"]
+                    item["name"]: item["label"] for item in metadatandjson["columns"]
                 },
                 "variable_name_to_data_type_map": {
-                    item["name"]: item["dataType"]
-                    for item in metadatandjson["columns"]
+                    item["name"]: item["dataType"] for item in metadatandjson["columns"]
                 },
                 "variable_name_to_size_map": {
                     item["name"]: item.get("length", None)
@@ -71,7 +66,9 @@ class DatasetNDJSONMetadataReader:
                 "dataset_length": metadatandjson.get("records"),
                 "domain_name": self._domain_name,
                 "dataset_name": metadatandjson.get("name"),
-                "dataset_modification_date": metadatandjson["datasetJSONCreationDateTime"],
+                "dataset_modification_date": metadatandjson[
+                    "datasetJSONCreationDateTime"
+                ],
             }
 
             self._convert_variable_types()
@@ -133,14 +130,14 @@ class DatasetNDJSONMetadataReader:
             "datetime": "Char",
             "date": "Char",
             "time": "Char",
-            "URI": "Char"
+            "URI": "Char",
         }
         for key, value in self._metadata_container[
             "variable_name_to_data_type_map"
         ].items():
-            self._metadata_container["variable_name_to_data_type_map"][
-                key
-            ] = rule_author_type_map[value]
+            self._metadata_container["variable_name_to_data_type_map"][key] = (
+                rule_author_type_map[value]
+            )
 
     def _to_dict(self) -> dict:
         """

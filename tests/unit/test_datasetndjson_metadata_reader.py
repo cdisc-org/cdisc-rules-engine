@@ -1,6 +1,7 @@
 """
 This module contains unit tests for DatasetNDJSONMetadataReader class.
 """
+
 import os
 
 from cdisc_rules_engine.services.datasetndjson_metadata_reader import (
@@ -17,7 +18,9 @@ def test_read_metadata():
         f"{os.path.dirname(__file__)}/../resources/test_dataset.ndjson"
     )
 
-    reader = DatasetNDJSONMetadataReader(test_dataset_path, file_name="test_dataset.ndjson")
+    reader = DatasetNDJSONMetadataReader(
+        test_dataset_path, file_name="test_dataset.ndjson"
+    )
     metadata: dict = reader.read()
 
     assert metadata["dataset_name"] == "EX", "Test file has been changed"
@@ -51,7 +54,9 @@ def test_read_metadata_with_variable_formats():
         f"{os.path.dirname(__file__)}/../resources/test_dataset.ndjson"
     )
 
-    reader = DatasetNDJSONMetadataReader(test_dataset_path, file_name="test_dataset.ndjson")
+    reader = DatasetNDJSONMetadataReader(
+        test_dataset_path, file_name="test_dataset.ndjson"
+    )
     metadata: dict = reader.read()
 
     assert metadata["variable_formats"] == [

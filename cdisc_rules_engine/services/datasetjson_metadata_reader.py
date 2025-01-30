@@ -38,23 +38,16 @@ class DatasetJSONMetadataReader:
             self._domain_name = self._extract_domain_name(datasetjson)
 
             self._metadata_container = {
-                "variable_labels": [
-                    item["label"] for item in datasetjson["columns"]
-                ],
-                "variable_names": [
-                    item["name"] for item in datasetjson["columns"]
-                ],
+                "variable_labels": [item["label"] for item in datasetjson["columns"]],
+                "variable_names": [item["name"] for item in datasetjson["columns"]],
                 "variable_formats": [
-                    item.get("displayFormat", "")
-                    for item in datasetjson["columns"]
+                    item.get("displayFormat", "") for item in datasetjson["columns"]
                 ],
                 "variable_name_to_label_map": {
-                    item["name"]: item["label"]
-                    for item in datasetjson["columns"]
+                    item["name"]: item["label"] for item in datasetjson["columns"]
                 },
                 "variable_name_to_data_type_map": {
-                    item["name"]: item["dataType"]
-                    for item in datasetjson["columns"]
+                    item["name"]: item["dataType"] for item in datasetjson["columns"]
                 },
                 "variable_name_to_size_map": {
                     item["name"]: item.get("length", None)
@@ -127,14 +120,14 @@ class DatasetJSONMetadataReader:
             "datetime": "Char",
             "date": "Char",
             "time": "Char",
-            "URI": "Char"
+            "URI": "Char",
         }
         for key, value in self._metadata_container[
             "variable_name_to_data_type_map"
         ].items():
-            self._metadata_container["variable_name_to_data_type_map"][
-                key
-            ] = rule_author_type_map[value]
+            self._metadata_container["variable_name_to_data_type_map"][key] = (
+                rule_author_type_map[value]
+            )
 
     def _to_dict(self) -> dict:
         """
