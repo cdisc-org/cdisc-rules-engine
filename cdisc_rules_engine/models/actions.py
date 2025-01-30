@@ -97,7 +97,7 @@ class COREActions(BaseActions):
             errors_df = data
         if errors_df.empty:
             raise InvalidOutputVariables(
-                f"Output variables: {list(targets)} not found in dataset"
+                f"Output variables: {list(targets)} not in dataset"
             )
         if self.rule.get("sensitivity") == Sensitivity.DATASET.value:
             # Only generate one error for rules with dataset sensitivity
@@ -155,12 +155,14 @@ class COREActions(BaseActions):
         error_object = ValidationErrorEntity(
             row=int(df_row.name) + 1,  # record number should start at 1, not 0
             value=dict(df_row.to_dict()),
-            usubjid=str(usubjid[df_row.name])
-            if isinstance(usubjid, pd.Series)
-            else None,
-            sequence=int(sequence[df_row.name])
-            if self._sequence_exists(sequence, df_row.name)
-            else None,
+            usubjid=(
+                str(usubjid[df_row.name]) if isinstance(usubjid, pd.Series) else None
+            ),
+            sequence=(
+                int(sequence[df_row.name])
+                if self._sequence_exists(sequence, df_row.name)
+                else None
+            ),
         )
         return error_object
 

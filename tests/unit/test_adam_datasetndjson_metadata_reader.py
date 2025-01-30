@@ -4,22 +4,22 @@ This module contains unit tests for Adam DatasetJSONMetadataReader class.
 
 import os
 
-from cdisc_rules_engine.services.datasetjson_metadata_reader import (
-    DatasetJSONMetadataReader,
+from cdisc_rules_engine.services.datasetndjson_metadata_reader import (
+    DatasetNDJSONMetadataReader,
 )
 
 
 def test_read_metadata():
     """
     Unit test for function read.
-    Loads test .json file and extracts metadata.
+    Loads test .ndjson file and extracts metadata.
     """
     test_dataset_path: str = (
-        f"{os.path.dirname(__file__)}/../resources/test_adam_dataset.json"
+        f"{os.path.dirname(__file__)}/../resources/test_adam_dataset.ndjson"
     )
 
-    reader = DatasetJSONMetadataReader(
-        test_dataset_path, file_name="test_adam_dataset.json"
+    reader = DatasetNDJSONMetadataReader(
+        test_dataset_path, file_name="test_adam_dataset.ndjson"
     )
     metadata: dict = reader.read()
     assert metadata["adam_info"] == {

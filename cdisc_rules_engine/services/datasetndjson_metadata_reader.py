@@ -7,10 +7,10 @@ from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.services.adam_variable_reader import AdamVariableReader
 
 
-class DatasetJSONMetadataReader:
+class DatasetNDJSONMetadataReader:
     """
     Responsibility of the class is to read metadata
-    from .json file.
+    from .ndjson file.
     """
 
     def __init__(self, file_path: str, file_name: str):
@@ -20,45 +20,55 @@ class DatasetJSONMetadataReader:
 
     def read(self) -> dict:
         """
-        Extracts metadata from .json file.
+        Extracts metadata from .ndjson file.
         """
-        # Load Dataset-JSON Schema
+        # Load Dataset-NDJSON Schema
         with open(
-            os.path.join("resources", "schema", "dataset.schema.json")
-        ) as schemajson:
-            schema = schemajson.read()
+            os.path.join("resources", "schema", "dataset-ndjson-schema.json")
+        ) as schemandjson:
+            schema = schemandjson.read()
         schema = json.loads(schema)
 
+        # with open(self._file_path, "r", encoding="utf-8") as file:
         with open(self._file_path, "r") as file:
-            datasetjson = json.load(file)
+            lines = file.readlines()
+
+        metadatandjson = json.loads(lines[0])
+
+        datandjson = json.loads(lines[1]) if len(lines) > 1 else []
 
         try:
-            jsonschema.validate(datasetjson, schema)
 
-            self._domain_name = self._extract_domain_name(datasetjson)
+            jsonschema.validate(metadatandjson, schema)
+
+            self._domain_name = self._extract_domain_name(datandjson, metadatandjson)
 
             self._metadata_container = {
-                "variable_labels": [item["label"] for item in datasetjson["columns"]],
-                "variable_names": [item["name"] for item in datasetjson["columns"]],
+                "variable_labels": [
+                    item["label"] for item in metadatandjson["columns"]
+                ],
+                "variable_names": [item["name"] for item in metadatandjson["columns"]],
                 "variable_formats": [
-                    item.get("displayFormat", "") for item in datasetjson["columns"]
+                    item.get("displayFormat", "") for item in metadatandjson["columns"]
                 ],
                 "variable_name_to_label_map": {
-                    item["name"]: item["label"] for item in datasetjson["columns"]
+                    item["name"]: item["label"] for item in metadatandjson["columns"]
                 },
                 "variable_name_to_data_type_map": {
-                    item["name"]: item["dataType"] for item in datasetjson["columns"]
+                    item["name"]: item["dataType"] for item in metadatandjson["columns"]
                 },
                 "variable_name_to_size_map": {
                     item["name"]: item.get("length", None)
-                    for item in datasetjson["columns"]
+                    for item in metadatandjson["columns"]
                 },
-                "number_of_variables": len(datasetjson["columns"]),
-                "dataset_label": datasetjson.get("label"),
-                "dataset_length": datasetjson.get("records"),
+                "number_of_variables": len(metadatandjson["columns"]),
+                "dataset_label": metadatandjson.get("label"),
+                "dataset_length": metadatandjson.get("records"),
                 "domain_name": self._domain_name,
-                "dataset_name": datasetjson.get("name"),
-                "dataset_modification_date": datasetjson["datasetJSONCreationDateTime"],
+                "dataset_name": metadatandjson.get("name"),
+                "dataset_modification_date": metadatandjson[
+                    "datasetJSONCreationDateTime"
+                ],
             }
 
             self._convert_variable_types()
@@ -74,7 +84,7 @@ class DatasetJSONMetadataReader:
 
         except jsonschema.exceptions.ValidationError:
             logger.warning(
-                f"{str(self._file_path)} is not compliant with Dataset-JSON schema"
+                f"{str(self._file_path)} is not compliant with Dataset-NDJSON schema"
             )
             return {
                 "variable_labels": [],
@@ -91,17 +101,17 @@ class DatasetJSONMetadataReader:
                 "dataset_modification_date": "",
             }
 
-    def _extract_domain_name(self, data):
+    def _extract_domain_name(self, data, metadata):
         index_domain = next(
             (
                 index
-                for index, item in enumerate(data["columns"])
+                for index, item in enumerate(metadata["columns"])
                 if item.get("name") == "DOMAIN"
             ),
             None,
         )
         if index_domain is not None:
-            return data["rows"][0][index_domain]
+            return data[index_domain]
         else:
             return " "
 

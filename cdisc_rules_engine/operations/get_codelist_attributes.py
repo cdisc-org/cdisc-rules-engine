@@ -141,9 +141,12 @@ class CodeListAttributes(BaseOperation):
 
         # add CT_PACKAGE column
         df[ct_key] = df.data.apply(
-            lambda row: "sdtmct-" + row[ct_version]
-            if row[ct_target] is not None and row[ct_target] in ("CDISC", "CDISC CT")
-            else row[ct_target] + "-" + row[ct_version],
+            lambda row: (
+                "sdtmct-" + row[ct_version]
+                if row[ct_target] is not None
+                and row[ct_target] in ("CDISC", "CDISC CT")
+                else row[ct_target] + "-" + row[ct_version]
+            ),
             axis=1,
         )
 
