@@ -1,6 +1,7 @@
 """
 This module contains unit tests for DefineXMLReader class.
 """
+
 from pathlib import Path
 from typing import List
 

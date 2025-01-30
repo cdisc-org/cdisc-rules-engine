@@ -70,9 +70,11 @@ class BaseReport(ABC):
 
         return sorted(
             summary_data,
-            key=lambda x: (x[0], x[1])
-            if (self._item_type == "list")
-            else (x["dataset"], x["core_id"]),
+            key=lambda x: (
+                (x[0], x[1])
+                if (self._item_type == "list")
+                else (x["dataset"], x["core_id"])
+            ),
         )
 
     def get_detailed_data(self, excel=False) -> List[List]:
@@ -83,9 +85,11 @@ class BaseReport(ABC):
             )
         return sorted(
             detailed_data,
-            key=lambda x: (x[0], x[3])
-            if (self._item_type == "list")
-            else (x["core_id"], x["dataset"]),
+            key=lambda x: (
+                (x[0], x[3])
+                if (self._item_type == "list")
+                else (x["core_id"], x["dataset"])
+            ),
         )
 
     def _generate_error_details(
@@ -172,9 +176,12 @@ class BaseReport(ABC):
                 "cdisc_rule_id": validation_result.cdisc_rule_id,
                 "fda_rule_id": validation_result.fda_rule_id,
                 "message": validation_result.message,
-                "status": ExecutionStatus.SUCCESS.value.upper()
-                if validation_result.execution_status == ExecutionStatus.SUCCESS.value
-                else ExecutionStatus.SKIPPED.value.upper(),
+                "status": (
+                    ExecutionStatus.SUCCESS.value.upper()
+                    if validation_result.execution_status
+                    == ExecutionStatus.SUCCESS.value
+                    else ExecutionStatus.SKIPPED.value.upper()
+                ),
             }
             if self._item_type == "list":
                 rules_report.append([*rules_item.values()])
