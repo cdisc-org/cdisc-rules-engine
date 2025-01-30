@@ -8,6 +8,7 @@ from cdisc_rules_engine.services.cache.in_memory_cache_service import (
 )
 from cdisc_rules_engine.utilities.data_processor import DataProcessor
 from cdisc_rules_engine.models.dataset import PandasDataset, DaskDataset
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.enums.join_types import JoinTypes
 
 
@@ -29,23 +30,13 @@ from cdisc_rules_engine.enums.join_types import JoinTypes
     ],
 )
 def test_preprocess_relationship_dataset(data):
-    datasets: List[dict] = [
-        {
-            "domain": "AE",
-            "filename": "ae.xpt",
-        },
-        {
-            "domain": "EC",
-            "filename": "ec.xpt",
-        },
-        {
-            "domain": "SUPP",
-            "filename": "supp.xpt",
-        },
-        {
-            "domain": "DM",
-            "filename": "dm.xpt",
-        },
+    dataset_metadata = [
+        SDTMDatasetMetadata(
+            name=domain,
+            first_record={"DOMAIN": domain},
+            filename=f"{domain.lower()}.xpt",
+        )
+        for domain in ["AE", "EC", "SUPP", "DM"]
     ]
     ae = PandasDataset(
         pd.DataFrame.from_dict(
@@ -78,7 +69,7 @@ def test_preprocess_relationship_dataset(data):
     ):
         data_processor = DataProcessor(cache=InMemoryCacheService())
         reference_data = data_processor.preprocess_relationship_dataset(
-            "path", data, datasets
+            "path", data, dataset_metadata
         )
         if "IDVAR" in data:
             idvars = data["IDVAR"]
@@ -126,10 +117,10 @@ def test_filter_dataset_columns_by_metadata_and_rule():
         "variable_origin_type": "Collected",
         "variable_core_status": "Perm",
     }
-    filtered_columns: List[
-        str
-    ] = DataProcessor.filter_dataset_columns_by_metadata_and_rule(
-        columns, define_metadata, library_metadata, rule
+    filtered_columns: List[str] = (
+        DataProcessor.filter_dataset_columns_by_metadata_and_rule(
+            columns, define_metadata, library_metadata, rule
+        )
     )
     assert filtered_columns == [
         "AESEV",

@@ -79,3 +79,9 @@ class LoggerInterface(ABC):
         """
         Logs msg with severity log level 100
         """
+
+    @abstractmethod
+    def trace(self, exc: Exception):
+        """
+        Logs exception trace
+        """

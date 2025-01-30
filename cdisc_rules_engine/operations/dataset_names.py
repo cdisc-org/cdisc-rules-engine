@@ -6,9 +6,4 @@ class DatasetNames(BaseOperation):
         """
         Returns a list of the dataset names in the study
         """
-        return list(
-            {
-                dataset.get("filename", "").split(".")[0].upper()
-                for dataset in self.params.datasets
-            }
-        )
+        return list({dataset.name for dataset in self.params.datasets})

@@ -4,6 +4,7 @@ from cdisc_rules_engine.enums.report_types import ReportTypes
 from cdisc_rules_engine.interfaces import DataServiceInterface
 from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
 from cdisc_rules_engine.models.validation_args import Validation_args
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 
 from .base_report import BaseReport
 from .excel_report import ExcelReport
@@ -25,14 +26,14 @@ class ReportFactory:
 
     def __init__(
         self,
-        datasets: Iterable[dict],
+        datasets: Iterable[SDTMDatasetMetadata],
         results: List[RuleValidationResult],
         elapsed_time: float,
         args: Validation_args,
         data_service: DataServiceInterface,
     ):
         self._datasets = datasets
-        self._dataset_paths = [dataset.get("full_path") for dataset in datasets]
+        self._dataset_paths = [dataset.full_path for dataset in datasets]
         self._results = results
         self._elapsed_time = elapsed_time
         self._args = args

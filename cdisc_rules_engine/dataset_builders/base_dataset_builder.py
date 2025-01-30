@@ -9,13 +9,15 @@ from cdisc_rules_engine.utilities.utils import (
     get_directory_path,
     is_split_dataset,
     get_corresponding_datasets,
-    is_supp_dataset,
     get_dataset_name_from_details,
 )
-from typing import List
+from typing import List, Iterable
 from cdisc_rules_engine import config
 from cdisc_rules_engine.utilities import sdtm_utilities
+from cdisc_rules_engine.utilities.rule_processor import RuleProcessor
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
+from cdisc_rules_engine.interfaces.data_service_interface import DataServiceInterface
 import os
 
 
@@ -23,13 +25,13 @@ class BaseDatasetBuilder:
     def __init__(
         self,
         rule,
-        data_service,
+        data_service: DataServiceInterface,
         cache_service,
-        rule_processor,
+        rule_processor: RuleProcessor,
         data_processor,
         dataset_path,
-        datasets,
-        domain,
+        datasets: Iterable[SDTMDatasetMetadata],
+        dataset_metadata,
         define_xml_path,
         standard,
         standard_version,
@@ -42,7 +44,7 @@ class BaseDatasetBuilder:
         self.rule_processor = rule_processor
         self.dataset_path = dataset_path
         self.datasets = datasets
-        self.domain = domain
+        self.dataset_metadata = dataset_metadata
         self.rule = rule
         self.define_xml_path = define_xml_path
         self.standard = standard
@@ -67,22 +69,11 @@ class BaseDatasetBuilder:
 
     def get_dataset(self, **kwargs):
         # If validating dataset content, ensure split datasets are handled.
-        if is_split_dataset(self.datasets, self.domain):
+        if is_split_dataset(self.datasets, self.dataset_metadata):
             # Handle split datasets for content checks.
             # A content check is any check that is not in the list of rule types
             dataset: DatasetInterface = self.data_service.concat_split_datasets(
                 func_to_call=self.build_split_datasets,
-                dataset_names=self.get_corresponding_datasets_names(),
-                **kwargs,
-            )
-        elif (
-            is_supp_dataset(self.datasets, self.domain)
-            and self.rule.get("core_id") == "CDISC.SDTMIG.CG0019"
-        ):
-            # TODO: the filter above will need to be changed to CG0019, CG0320 was used in testing
-            # it will need to be changed again when it is published and gets a new core_id
-            dataset: DatasetInterface = self.data_service.merge_supp_dataset(
-                func_to_call=self.build,
                 dataset_names=self.get_corresponding_datasets_names(),
                 **kwargs,
             )
@@ -93,7 +84,7 @@ class BaseDatasetBuilder:
 
     def get_dataset_contents(self, **kwargs):
         # If validating dataset content, ensure split datasets are handled.
-        if is_split_dataset(self.datasets, self.domain):
+        if is_split_dataset(self.datasets, self.dataset_metadata):
             # Handle split datasets for content checks.
             # A content check is any check that is not in the list of rule types
             dataset: DatasetInterface = self.data_service.concat_split_datasets(
@@ -109,11 +100,17 @@ class BaseDatasetBuilder:
     def get_corresponding_datasets_names(self) -> List[str]:
         directory_path = get_directory_path(self.dataset_path)
         return [
-            os.path.join(directory_path, get_dataset_name_from_details(dataset))
-            for dataset in get_corresponding_datasets(self.datasets, self.domain)
+            os.path.join(
+                directory_path, get_dataset_name_from_details(dataset_metadata)
+            )
+            for dataset_metadata in get_corresponding_datasets(
+                self.datasets, self.dataset_metadata
+            )
         ]
 
-    def get_define_xml_item_group_metadata(self, domain: str) -> List[dict]:
+    def get_define_xml_item_group_metadata_for_dataset(
+        self, dataset_metadata: SDTMDatasetMetadata
+    ) -> List[dict]:
         """
         Gets Define XML item group metadata
         returns a list of dictionaries containing the following keys:
@@ -124,6 +121,28 @@ class BaseDatasetBuilder:
             "define_dataset_structure"
             "define_dataset_is_non_standard"
             "define_dataset_variables"
+            "define_dataset_key_sequence"
+        """
+
+        define_xml_reader = DefineXMLReaderFactory.get_define_xml_reader(
+            self.dataset_path, self.define_xml_path, self.data_service, self.cache
+        )
+        return define_xml_reader.extract_dataset_metadata(
+            dataset_metadata["dataset_name"]
+        )
+
+    def get_define_xml_item_group_metadata_for_domain(self, domain: str) -> List[dict]:
+        """
+        Gets Define XML item group metadata
+        returns a list of dictionaries containing the following keys:
+            "define_dataset_name"
+            "define_dataset_label"
+            "define_dataset_location"
+            "define_dataset_class"
+            "define_dataset_structure"
+            "define_dataset_is_non_standard"
+            "define_dataset_variables"
+            "define_dataset_key_sequence"
         """
 
         define_xml_reader = DefineXMLReaderFactory.get_define_xml_reader(
@@ -138,7 +157,9 @@ class BaseDatasetBuilder:
         define_xml_reader = DefineXMLReaderFactory.get_define_xml_reader(
             self.dataset_path, self.define_xml_path, self.data_service, self.cache
         )
-        return define_xml_reader.extract_variables_metadata(domain_name=self.domain)
+        return define_xml_reader.extract_variables_metadata(
+            domain_name=self.dataset_metadata.domain
+        )
 
     def get_define_xml_value_level_metadata(self) -> List[dict]:
         """
@@ -147,7 +168,9 @@ class BaseDatasetBuilder:
         define_xml_reader = DefineXMLReaderFactory.get_define_xml_reader(
             self.dataset_path, self.define_xml_path, self.data_service, self.cache
         )
-        return define_xml_reader.extract_value_level_metadata(domain_name=self.domain)
+        return define_xml_reader.extract_value_level_metadata(
+            domain_name=self.dataset_metadata.domain
+        )
 
     @staticmethod
     def add_row_number(dataframe: DatasetInterface) -> None:
@@ -164,7 +187,7 @@ class BaseDatasetBuilder:
         variables: List[dict] = sdtm_utilities.get_variables_metadata_from_standard(
             standard=self.standard,
             standard_version=self.standard_version,
-            domain=self.domain,
+            domain=self.dataset_metadata.domain,
             config=config,
             cache=self.cache,
             library_metadata=self.library_metadata,
@@ -177,7 +200,7 @@ class BaseDatasetBuilder:
         }
 
         for var in variables:
-            var["name"] = var["name"].replace("--", self.domain)
+            var["name"] = var["name"].replace("--", self.dataset_metadata.domain)
             for key, new_key in column_name_mapping.items():
                 if key in var:
                     var[new_key] = var.pop(key)

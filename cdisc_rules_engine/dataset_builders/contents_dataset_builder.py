@@ -22,7 +22,7 @@ class ContentsDatasetBuilder(BaseDatasetBuilder):
 
     def get_dataset(self, **kwargs):
         # If validating dataset content, ensure split datasets are handled.
-        if is_split_dataset(self.datasets, self.domain):
+        if is_split_dataset(self.datasets, self.dataset_metadata):
             # Handle split datasets for content checks.
             # A content check is any check that is not in the list of rule types
             dataset = self.data_service.concat_split_datasets(
@@ -35,8 +35,10 @@ class ContentsDatasetBuilder(BaseDatasetBuilder):
             dataset = self.build(**kwargs)
         length = sum(
             [
-                dataset.get("length", 0)
-                for dataset in get_corresponding_datasets(self.datasets, self.domain)
+                dataset.record_count
+                for dataset in get_corresponding_datasets(
+                    self.datasets, self.dataset_metadata
+                )
             ]
         )
         dataset.length = length

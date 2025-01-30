@@ -7,6 +7,10 @@
       "title": "Content data at record level, define xml metadata at variable level, and library metadata at variable level"
     },
     {
+      "const": "Dataset Contents Check against Define XML",
+      "title": "Content data at record level, dataset metadata at dataset level, and define xml metadata at dataset level"
+    },
+    {
       "const": "Dataset Metadata Check",
       "title": "Content metadata at dataset level"
     },

@@ -1,5 +1,5 @@
 import re
-from typing import List, Optional, Set, Union, Tuple
+from typing import Iterable, List, Optional, Set, Union, Tuple
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
@@ -26,19 +26,23 @@ from cdisc_rules_engine.utilities.utils import (
     get_directory_path,
     get_operations_cache_key,
     is_ap_domain,
-    is_supp_domain,
     search_in_list_of_dicts,
     get_dataset_name_from_details,
 )
 from cdisc_rules_engine.models.external_dictionaries_container import (
     ExternalDictionariesContainer,
 )
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
+from cdisc_rules_engine.interfaces.data_service_interface import DataServiceInterface
 from cdisc_rules_engine.exceptions.custom_exceptions import DomainNotFoundError
 
 
 class RuleProcessor:
     def __init__(
-        self, data_service, cache, library_metadata: LibraryMetadataContainer = None
+        self,
+        data_service: DataServiceInterface,
+        cache,
+        library_metadata: LibraryMetadataContainer = None,
     ):
         self.data_service = data_service
         self.cache = cache
@@ -46,7 +50,7 @@ class RuleProcessor:
 
     @classmethod
     def rule_applies_to_domain(
-        cls, dataset_domain: str, rule: dict, is_split_domain: bool
+        cls, dataset_metadata: SDTMDatasetMetadata, rule: dict, is_split_domain: bool
     ) -> bool:
         """
         Check that rule is applicable to dataset domain
@@ -58,9 +62,9 @@ class RuleProcessor:
         excluded_domains = domains.get("Exclude", [])
 
         is_included = cls._is_domain_name_included(
-            dataset_domain, included_domains, include_split_datasets, is_split_domain
+            dataset_metadata, included_domains, include_split_datasets, is_split_domain
         )
-        is_excluded = cls._is_domain_name_excluded(dataset_domain, excluded_domains)
+        is_excluded = cls._is_domain_name_excluded(dataset_metadata, excluded_domains)
 
         # additional check for split domains based on the flag
         is_excluded, is_included = cls._handle_split_domains(
@@ -72,7 +76,7 @@ class RuleProcessor:
     @classmethod
     def _is_domain_name_included(
         cls,
-        dataset_domain: str,
+        dataset_metadata: SDTMDatasetMetadata,
         included_domains: List[str],
         include_split_datasets: bool,
         is_split_domain: bool,
@@ -93,15 +97,19 @@ class RuleProcessor:
                 return False
             return True
 
-        if dataset_domain in included_domains or ALL_KEYWORD in included_domains:
+        if (
+            dataset_metadata.domain in included_domains
+            or dataset_metadata.name in included_domains
+            or ALL_KEYWORD in included_domains
+        ):
             return True
-        if cls._domain_matched_ap_or_supp(dataset_domain, included_domains):
+        if cls._domain_matched_ap_or_supp(dataset_metadata, included_domains):
             return True
         return False
 
     @classmethod
     def _is_domain_name_excluded(
-        cls, dataset_domain: str, excluded_domains: List[str]
+        cls, dataset_metadata: SDTMDatasetMetadata, excluded_domains: List[str]
     ) -> bool:
         """
         If excluded domains are specified,
@@ -114,9 +122,13 @@ class RuleProcessor:
         if not excluded_domains:
             return False
 
-        if dataset_domain in excluded_domains or ALL_KEYWORD in excluded_domains:
+        if (
+            dataset_metadata.domain in excluded_domains
+            or dataset_metadata.name in excluded_domains
+            or ALL_KEYWORD in excluded_domains
+        ):
             return True
-        if cls._domain_matched_ap_or_supp(dataset_domain, excluded_domains):
+        if cls._domain_matched_ap_or_supp(dataset_metadata, excluded_domains):
             return True
         return False
 
@@ -146,7 +158,7 @@ class RuleProcessor:
 
     @classmethod
     def _domain_matched_ap_or_supp(
-        cls, dataset_domain: str, domains_to_check: List[str]
+        cls, dataset_metadata: SDTMDatasetMetadata, domains_to_check: List[str]
     ) -> bool:
         """
         Check that domain name match with only
@@ -156,10 +168,21 @@ class RuleProcessor:
         supp_ap_domains.update({f"{AP_DOMAIN}--", f"{APFA_DOMAIN}--"})
 
         return any(set(domains_to_check).intersection(supp_ap_domains)) and (
-            is_supp_domain(dataset_domain) or is_ap_domain(dataset_domain)
+            dataset_metadata.is_supp
+            or is_ap_domain(
+                dataset_metadata.domain
+                or dataset_metadata.rdomain
+                or dataset_metadata.name
+            )
         )
 
-    def rule_applies_to_class(self, rule, file_path, datasets: List[dict], domain: str):
+    def rule_applies_to_class(
+        self,
+        rule,
+        file_path,
+        datasets: Iterable[SDTMDatasetMetadata],
+        dataset_metadata: SDTMDatasetMetadata,
+    ):
         """
         If included classes are specified and the class
         is not in the list of included classes return false.
@@ -188,7 +211,7 @@ class RuleProcessor:
                 dataset_name=file_path, datasets=datasets
             ).data.variable_name
             class_name = self.data_service.get_dataset_class(
-                variables, file_path, datasets, domain
+                variables, file_path, datasets, dataset_metadata
             )
             if (class_name not in included_classes) and not (
                 class_name == FINDINGS_ABOUT and FINDINGS in included_classes
@@ -200,7 +223,7 @@ class RuleProcessor:
                 dataset_name=file_path, datasets=datasets
             ).data.variable_name
             class_name = self.data_service.get_dataset_class(
-                variables, file_path, datasets, domain
+                variables, file_path, datasets, dataset_metadata
             )
             if class_name and (
                 (class_name in excluded_classes)
@@ -221,7 +244,7 @@ class RuleProcessor:
         rule: dict,
         dataset: DatasetInterface,
         domain: str,
-        datasets: List[dict],
+        datasets: Iterable[SDTMDatasetMetadata],
         dataset_path: str,
         standard: str,
         standard_version: str,
@@ -318,6 +341,7 @@ class RuleProcessor:
             grouping=";".join(operation_params.grouping),
             target_variable=operation_params.target,
             dataset_path=operation_params.dataset_path,
+            operation_id=operation_params.operation_id,
         )
         if previous_operations:
             cache_key = f'{cache_key}-{";".join(previous_operations)}'
@@ -331,7 +355,7 @@ class RuleProcessor:
             # download other domain
             domain_details: dict = search_in_list_of_dicts(
                 operation_params.datasets,
-                lambda item: item.get("domain") == operation_params.domain,
+                lambda item: item.unsplit_name == operation_params.domain,
             )
             if domain_details is None:
                 raise DomainNotFoundError(
@@ -362,22 +386,27 @@ class RuleProcessor:
         return result
 
     def is_current_domain(self, dataset, target_domain):
-        if not self.is_relationship_dataset(target_domain):
+        if not target_domain:
+            return True
+        elif not self.is_relationship_dataset(target_domain):
             return "DOMAIN" in dataset and dataset["DOMAIN"].iloc[0] == target_domain
         else:
             # Always lookup relationship datasets when performing operations on them.
             return False
 
-    def is_relationship_dataset(self, domain: str) -> bool:
-        if domain in ["RELREC", "RELSUB", "CO"]:
+    def is_relationship_dataset(self, dataset_name: str) -> bool:
+        # TODO: this should come from the library and from the dataset metadata
+        if dataset_name in ["RELREC", "RELSUB", "CO"]:
             result = True
-        elif domain.startswith("SUPP"):
+        elif dataset_name.startswith("SUPP"):
             result = True
-        elif domain.startswith("SQ"):
+        elif dataset_name.startswith("SQ"):
             result = True
         else:
             result = False
-        logger.info(f"is_relationship_dataset. domain={domain}, result={result}")
+        logger.info(
+            f"is_relationship_dataset. dataset_name={dataset_name}, result={result}"
+        )
         return result
 
     def get_size_unit_from_rule(self, rule: dict) -> Optional[str]:
@@ -472,19 +501,28 @@ class RuleProcessor:
     def is_suitable_for_validation(
         self,
         rule: dict,
-        dataset_domain: str,
+        dataset_metadata: SDTMDatasetMetadata,
         file_path: str,
         is_split_domain: bool,
-        datasets: List[dict],
+        datasets: Iterable[SDTMDatasetMetadata],
     ) -> bool:
         is_suitable: bool = (
             self.valid_rule_structure(rule)
-            and self.rule_applies_to_domain(dataset_domain, rule, is_split_domain)
-            and self.rule_applies_to_class(rule, file_path, datasets, dataset_domain)
+            and self.rule_applies_to_domain(
+                dataset_metadata,
+                rule,
+                is_split_domain,
+            )
+            and self.rule_applies_to_class(
+                rule,
+                file_path,
+                datasets,
+                dataset_metadata,
+            )
         )
         logger.info(
             f"is_suitable_for_validation. rule id={rule.get('core_id')}, "
-            f"domain={dataset_domain}, result={is_suitable}"
+            f"dataset={dataset_metadata.name}, result={is_suitable}"
         )
         return is_suitable
 
@@ -509,7 +547,7 @@ class RuleProcessor:
         output_variables: List[str] = rule.get("output_variables", [])
         if output_variables:
             target_names: List[str] = [
-                var.replace("--", domain, 1) for var in output_variables
+                var.replace("--", domain or "", 1) for var in output_variables
             ]
         else:
             target_names: List[str] = []

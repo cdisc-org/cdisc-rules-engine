@@ -3,6 +3,7 @@ from cdisc_rules_engine.models.dataset.dask_dataset import DaskDataset
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.operations.variable_count import VariableCount
 from cdisc_rules_engine.models.operation_params import OperationParams
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 import pandas as pd
 from cdisc_rules_engine.services.cache.cache_service_factory import CacheServiceFactory
 import pytest
@@ -35,16 +36,19 @@ def test_variable_count(
                 "SPECIALVAR": ["A", "B", "C"],
             }
         ),
-        "AE2": dataset_type.from_dict(
+        "AEXX": dataset_type.from_dict(
             {"STUDYID": [4, 7, 9], "AESEQ": [1, 2, 3], "DOMAIN": [12, 6, 1]}
         ),
         "RELREC": dataset_type.from_dict({"LNKGRP": ["DOMAIN", "EXSEQ", "AESEQ"]}),
     }
 
     datasets = [
-        {"domain": "AE", "filename": "AE"},
-        {"domain": "EX", "filename": "EX"},
-        {"domain": "AE", "filename": "AE2"},
+        SDTMDatasetMetadata(**dataset)
+        for dataset in [
+            {"name": "AE", "first_record": {"DOMAIN": "AE"}, "filename": "AE"},
+            {"name": "EX", "first_record": {"DOMAIN": "EX"}, "filename": "EX"},
+            {"name": "AEXX", "first_record": {"DOMAIN": "AE"}, "filename": "AEXX"},
+        ]
     ]
     mock_data_service.get_dataset.side_effect = (
         lambda *args, **kwargs: datasets_map.get(

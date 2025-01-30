@@ -5,6 +5,7 @@ import pandas as pd
 import pytest
 from conftest import mock_data_service
 
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.models.rule_conditions import ConditionCompositeFactory
 from cdisc_rules_engine.models.rule_conditions.condition_composite import (
     ConditionComposite,
@@ -25,7 +26,7 @@ from cdisc_rules_engine.models.dataset import PandasDataset, DaskDataset
 
 
 @pytest.mark.parametrize(
-    "domain, rule_metadata, outcome",
+    "name, rule_metadata, outcome",
     [
         ("SQAE", {"domains": {"Exclude": ["SUPP--"]}}, False),
         ("SQAE", {"domains": {"Exclude": ["SUPP--", "SQ--"]}}, False),
@@ -56,9 +57,14 @@ from cdisc_rules_engine.models.dataset import PandasDataset, DaskDataset
         ("APFASU", {"domains": {"Include": [ALL_KEYWORD]}}, True),
     ],
 )
-def test_rule_applies_to_domain(mock_data_service, domain, rule_metadata, outcome):
+def test_rule_applies_to_domain(mock_data_service, name, rule_metadata, outcome):
     processor = RuleProcessor(mock_data_service, InMemoryCacheService())
-    assert processor.rule_applies_to_domain(domain, rule_metadata, False) == outcome
+    assert (
+        processor.rule_applies_to_domain(
+            SDTMDatasetMetadata(name=name), rule_metadata, False
+        )
+        == outcome
+    )
 
 
 @pytest.mark.parametrize(
@@ -204,16 +210,30 @@ def test_rule_applies_to_domain_split_datasets(
 ):
     rule = {"domains": rule_domains}
     domains: List[dict] = [
-        {"domain": "AE", "is_split": False},
-        {"domain": "EC", "is_split": False},
-        {"domain": "QS", "is_split": True},  # Two datasets with QS domain
-        {"domain": "QS", "is_split": True},
-        {"domain": "SUPPQS", "is_split": True},  # Two datasets with SUPPQS domain
-        {"domain": "SUPPQS", "is_split": True},
+        {"name": "AE", "domain": "AE", "is_split": False},
+        {"name": "EC", "domain": "EC", "is_split": False},
+        {"name": "QS", "domain": "QS", "is_split": True},  # Two datasets with QS domain
+        {"name": "QS", "domain": "QS", "is_split": True},
+        {
+            "name": "SUPPQS",
+            "rdomain": "QS",
+            "is_split": True,
+        },  # Two datasets with SUPPQS name
+        {"name": "SUPPQS", "rdomain": "QS", "is_split": True},
     ]
     processor = RuleProcessor(mock_data_service, InMemoryCacheService())
     results = [
-        processor.rule_applies_to_domain(domain["domain"], rule, domain["is_split"])
+        processor.rule_applies_to_domain(
+            SDTMDatasetMetadata(
+                name=domain["name"],
+                first_record={
+                    "DOMAIN": domain.get("domain"),
+                    "RDOMAIN": domain.get("rdomain"),
+                },
+            ),
+            rule,
+            domain["is_split"],
+        )
         for domain in domains
     ]
     assert results == expected_results
@@ -745,7 +765,11 @@ def test_perform_extract_metadata_operation(
         rule=rule_equal_to_with_extract_metadata_operation,
         dataset=dataset,
         domain="SUPPEC",
-        datasets=[{"domain": "SUPPEC", "filename": "suppec.xpt"}],
+        datasets=[
+            SDTMDatasetMetadata(
+                name="SUPPEC", first_record={"RDOMAIN": "EC"}, filename="suppec.xpt"
+            )
+        ],
         dataset_path="study/data_bundle/suppec.xpt",
         standard="sdtmig",
         standard_version="3-1-2",

@@ -19,6 +19,7 @@ from cdisc_rules_engine.utilities.reporting_utilities import (
     get_define_version,
     get_define_ct,
 )
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from pathlib import Path
 
 
@@ -29,7 +30,7 @@ class ExcelReport(BaseReport):
 
     def __init__(
         self,
-        datasets: Iterable[dict],
+        datasets: Iterable[SDTMDatasetMetadata],
         dataset_paths: Iterable[str],
         validation_results: List[RuleValidationResult],
         elapsed_time: float,
@@ -67,12 +68,12 @@ class ExcelReport(BaseReport):
         # write dataset metadata
         datasets_data = [
             [
-                dataset.get("filename"),
-                dataset.get("label"),
-                str(Path(dataset.get("full_path", "")).parent),
-                dataset.get("modification_date"),
-                dataset.get("size", 0) / 1000,
-                dataset.get("length"),
+                dataset.filename,
+                dataset.label,
+                str(Path(dataset.full_path or "").parent),
+                dataset.modification_date,
+                (dataset.file_size or 0) / 1000,
+                dataset.record_count,
             ]
             for dataset in self._datasets
         ]

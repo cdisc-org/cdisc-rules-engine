@@ -5,6 +5,7 @@ class RuleTypes(BaseEnum):
     DATASET_CONTENTS_CHECK_AGAINST_DEFINE_AND_LIBRARY = (
         "Dataset Contents Check against Define XML and Library Metadata"
     )
+    DATASET_CONTENTS_CHECK_AGAINST_DEFINE = "Dataset Contents Check against Define XML"
     DATASET_METADATA_CHECK = "Dataset Metadata Check"
     DATASET_METADATA_CHECK_AGAINST_DEFINE = "Dataset Metadata Check against Define XML"
     DEFINE_ITEM_GROUP_METADATA_CHECK = "Define Item Group Metadata Check"

@@ -3,6 +3,7 @@ import unittest
 from click.testing import CliRunner
 
 from core import list_dataset_metadata
+from test_utils import tearDown
 
 
 class TestListDatasetMetadata(unittest.TestCase):
@@ -26,7 +27,7 @@ class TestListDatasetMetadata(unittest.TestCase):
         expected_output = """[
     {
         "domain": "EX",
-        "size": 823120,
+        "file_size": 823120,
         "label": "Exposure",
     """
         self.assertEqual(result.exit_code, 1)
@@ -39,11 +40,7 @@ class TestListDatasetMetadata(unittest.TestCase):
         self.assertIn(expected_output, result.output)
 
     def tearDown(self):
-        for file_name in os.listdir("."):
-            if file_name != "host.json" and (
-                file_name.endswith(".xlsx") or file_name.endswith(".json")
-            ):
-                os.remove(file_name)
+        tearDown()
 
 
 if __name__ == "__main__":

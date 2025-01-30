@@ -5,6 +5,9 @@ from cdisc_rules_engine.interfaces import FactoryInterface
 from cdisc_rules_engine.dataset_builders.contents_dataset_builder import (
     ContentsDatasetBuilder,
 )
+from cdisc_rules_engine.dataset_builders.contents_define_dataset_builder import (
+    ContentsDefineDatasetBuilder,
+)
 from cdisc_rules_engine.dataset_builders.content_metadata_dataset_builder import (
     ContentMetadataDatasetBuilder,
 )
@@ -26,8 +29,8 @@ from cdisc_rules_engine.dataset_builders.define_item_group_dataset_builder impor
 from cdisc_rules_engine.dataset_builders.contents_define_variables_dataset_builder import (
     ContentsDefineVariablesDatasetBuilder,
 )
-from cdisc_rules_engine.dataset_builders.contents_define_dataset_builder import (
-    ContentsDefineDatasetBuilder,
+from cdisc_rules_engine.dataset_builders.dataset_metadata_define_dataset_builder import (
+    DatasetMetadataDefineDatasetBuilder,
 )
 from cdisc_rules_engine.dataset_builders.contents_define_vlm_dataset_builder import (
     ContentsDefineVLMDatasetBuilder,
@@ -47,8 +50,9 @@ from cdisc_rules_engine.enums.rule_types import RuleTypes
 
 class DatasetBuilderFactory(FactoryInterface):
     _builders_map = {
+        RuleTypes.DATASET_CONTENTS_CHECK_AGAINST_DEFINE.value: ContentsDefineDatasetBuilder,
         RuleTypes.DATASET_METADATA_CHECK.value: ContentMetadataDatasetBuilder,
-        RuleTypes.DATASET_METADATA_CHECK_AGAINST_DEFINE.value: ContentsDefineDatasetBuilder,
+        RuleTypes.DATASET_METADATA_CHECK_AGAINST_DEFINE.value: DatasetMetadataDefineDatasetBuilder,
         RuleTypes.VARIABLE_METADATA_CHECK.value: VariablesMetadataDatasetBuilder,
         RuleTypes.DOMAIN_PRESENCE_CHECK.value: DomainListDatasetBuilder,
         RuleTypes.DEFINE_ITEM_METADATA_CHECK.value: DefineVariablesDatasetBuilder,
@@ -90,7 +94,7 @@ class DatasetBuilderFactory(FactoryInterface):
             kwargs.get("data_processor"),
             kwargs.get("dataset_path"),
             kwargs.get("datasets"),
-            kwargs.get("domain", ""),
+            kwargs.get("dataset_metadata", ""),
             kwargs.get("define_xml_path"),
             kwargs.get("standard"),
             kwargs.get("standard_version"),

@@ -5,6 +5,7 @@ from cdisc_rules_engine.operations.day_data_validator import DayDataValidator
 from cdisc_rules_engine.models.operation_params import OperationParams
 import pytest
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 
 from cdisc_rules_engine.services.cache.cache_service_factory import CacheServiceFactory
 
@@ -70,7 +71,13 @@ def test_day_data_calculation(
         )
     }
     datasets = [
-        {"domain": "DM", "filename": "dm.xpt", "full_path": "/path/to/dm.xpt"},
+        SDTMDatasetMetadata(
+            **{
+                "first_record": {"DOMAIN": "DM"},
+                "filename": "dm.xpt",
+                "full_path": "/path/to/dm.xpt",
+            }
+        )
     ]
     mock_data_service.get_dataset.side_effect = (
         lambda *args, **kwargs: datasets_map.get(

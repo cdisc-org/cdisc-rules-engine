@@ -25,6 +25,27 @@ Attach define xml metadata at variable level and library metadata at variable le
   value: 6
 ```
 
+## Dataset Contents Check against Define XML
+
+#### Columns
+
+Columns are the columns within the original dataset along with the following columns:
+
+- `dataset_label`
+- `dataset_location`
+- `dataset_name`
+- `dataset_size`
+- `dataset_domain`
+- `define_dataset_class`
+- `define_dataset_domain`
+- `define_dataset_is_non_standard`
+- `define_dataset_key_sequence`
+- `define_dataset_label`
+- `define_dataset_location`
+- `define_dataset_name`
+- `define_dataset_structure`
+- `define_dataset_variables`
+
 ## Dataset Metadata Check against Define XML
 
 #### Columns
@@ -42,6 +63,7 @@ Attach define xml metadata at variable level and library metadata at variable le
 - `define_dataset_structure`
 - `define_dataset_is_non_standard`
 - `define_dataset_variables`
+- `define_dataset_key_sequence`
 
 #### Rule Macro
 
@@ -77,6 +99,7 @@ any:
 - `define_dataset_structure`
 - `define_dataset_is_non_standard`
 - `define_dataset_variables`
+- `define_dataset_key_sequence`
 
 ## Define Item Metadata Check
 

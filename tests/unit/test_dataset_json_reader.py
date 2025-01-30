@@ -1,6 +1,8 @@
 import os
 
-from cdisc_rules_engine.services.data_readers.json_reader import DatasetJSONReader
+from cdisc_rules_engine.services.data_readers.dataset_json_reader import (
+    DatasetJSONReader,
+)
 
 
 def test_from_file():

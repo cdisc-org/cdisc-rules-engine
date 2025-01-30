@@ -1,121 +1,51 @@
-from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.dataset_builders.base_dataset_builder import BaseDatasetBuilder
-import os
-import numpy as np
 
 
 class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
     def build(self):
         """
-        Returns a long dataset where each value in each row of the original dataset is
-        a row in the new dataset.
-        The define xml variable metadata corresponding to each row's variable is
-        attached to each row.
-        Columns available in the dataset are:
+        Returns the original dataset along with additional columns
+        for dataset metadata and the define xml dataset metadata.
+        Columns available in the dataset are
+        the columns in the original dataset along with
+        the following columns from Define XML:
 
-        dataset_size - File size
+        dataset_label - Label for the dataset
         dataset_location - Path to file
         dataset_name - Name of the dataset
-        dataset_label - Label for the dataset
+        dataset_size - File size
         dataset_domain - Domain of the dataset
-
-        Columns from Define XML:
-        define_dataset_name - dataset name from define_xml
+        define_dataset_class - dataset class
+        define_dataset_domain - dataset domain from define
+        define_dataset_is_non_standard - whether a dataset is a standard
+        define_dataset_key_sequence - ordered list of key sequence variables in the dataset (and supp)
         define_dataset_label - dataset label from define
         define_dataset_location - dataset location from define
-        define_dataset_domain - dataset domain from define
-        define_dataset_class - dataset class
+        define_dataset_name - dataset name from define_xml
         define_dataset_structure - dataset structure
-        define_dataset_is_non_standard - whether a dataset is a standard
+        define_dataset_variables - list of variables in the dataset
 
         ...,
         """
-        # 1. Build define xml dataframe
-        define_df = self._get_define_xml_dataframe()
-        # )
-        # 2. Build dataset dataframe
-        dataset_df = self._get_dataset_dataframe()
-        if define_df.empty or dataset_df.empty:
-            raise ValueError(
-                "ContentsDefineDatasetBuilder: Define or Dataset metadata is empty."
-            )
-        # 3. Merge the two data frames
-        merged = dataset_df.merge(
-            define_df.data,
-            left_on=["dataset_name", "dataset_location"],
-            right_on=["define_dataset_name", "define_dataset_location"],
-            how="outer",
+        return self.build_split_datasets(self.dataset_metadata.filename)
+
+    def build_split_datasets(self, dataset_name, **kwargs):
+        """
+        Returns the contents of a file as a dataframe for evaluation.
+        """
+        data_contents_df = self.data_service.get_dataset(
+            dataset_name=dataset_name, datasets=self.datasets
         )
-        # 4. Remove NaN
-        merged._data = merged._data.astype(object).replace({np.nan: None})
-        # 5. remove unused rows, replace rows with target row
-        merged_cleaned = merged.dropna(subset=["dataset_name"])
-        dataset_filename = (
-            os.path.basename(self.dataset_path).lower() if self.dataset_path else None
+        # Build dataset metadata dataframe
+        size_unit: str = self.rule_processor.get_size_unit_from_rule(self.rule)
+        dataset_metadata = self.data_service.get_dataset_metadata(
+            dataset_name=dataset_name, size_unit=size_unit, datasets=self.datasets
+        ).to_dict(orient="records")[0]
+        # Build define xml dataframe
+        define = self.get_define_xml_item_group_metadata_for_dataset(dataset_metadata)
+        # Horizontally concat the data frames
+        filled = self.dataset_implementation.from_records(
+            [dataset_metadata | define] * data_contents_df.length
         )
-        matching_row = merged_cleaned[
-            merged_cleaned["dataset_location"].str.lower() == dataset_filename
-        ]
-        for column in merged.columns:
-            merged[column] = matching_row[column].iloc[0]
-        return merged
-
-    def _get_define_xml_dataframe(self):
-        define_col_order = [
-            "define_dataset_name",
-            "define_dataset_label",
-            "define_dataset_location",
-            "define_dataset_domain",
-            "define_dataset_class",
-            "define_dataset_structure",
-            "define_dataset_is_non_standard",
-        ]
-        define_metadata = self.get_define_metadata()
-        if not define_metadata:
-            logger.info(f"No define_metadata is provided for {__name__}.")
-            return self.dataset_implementation(columns=define_col_order)
-        return self.dataset_implementation.from_records(define_metadata)
-
-    def _get_dataset_dataframe(self):
-        dataset_col_order = [
-            "dataset_size",
-            "dataset_location",
-            "dataset_name",
-            "dataset_label",
-            "dataset_domain",
-        ]
-
-        if len(self.datasets) == 0:
-            dataset_df = self.dataset_implementation(columns=dataset_col_order)
-            logger.info(f"No datasets metadata is provided in {__name__}.")
-        else:
-            datasets = self.dataset_implementation()
-            for dataset in self.datasets:
-                try:
-                    ds_metadata = self.data_service.get_dataset_metadata(
-                        dataset["filename"]
-                    )
-                    ds_metadata.data["dataset_domain"] = dataset.get("domain", None)
-                except Exception as e:
-                    logger.trace(e, __name__)
-                    logger.error(f"Error: {e}. Error message: {str(e)}")
-                datasets.data = (
-                    ds_metadata.data
-                    if datasets.data.empty
-                    else datasets.data.append(ds_metadata.data)
-                )
-
-            if datasets.data.empty or len(datasets.data) == 0:
-                dataset_df = self.dataset_implementation(columns=dataset_col_order)
-                logger.info(f"No datasets metadata is provided for {__name__}.")
-            else:
-                data_col_mapping = {
-                    "filename": "dataset_location",
-                    "label": "dataset_label",
-                    "domain": "dataset_name",
-                }
-                dataset_df = datasets.rename(columns=data_col_mapping)
-                if "dataset_size" not in dataset_df.columns:
-                    dataset_df["dataset_size"] = None
-                dataset_df = self.dataset_implementation(dataset_df[dataset_col_order])
-        return dataset_df
+        concat = data_contents_df.concat(filled, axis=1)
+        return concat

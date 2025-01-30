@@ -36,7 +36,7 @@ class ParentLibraryModelColumnOrder(LibraryModelColumnOrder):
     def _get_domain_to_datasets(self):
         domain_to_datasets = defaultdict(list)
         for dataset in self.params.datasets:
-            domain_to_datasets[dataset["domain"]].append(dataset)
+            domain_to_datasets[dataset.domain].append(dataset)
         return domain_to_datasets
 
     def _get_parent_variable_names_list(self, domain_to_datasets: dict, rdomain: str):
@@ -44,6 +44,6 @@ class ParentLibraryModelColumnOrder(LibraryModelColumnOrder):
         if len(parent_datasets) < 1:
             return []
         parent_dataframe = self.data_service.get_dataset(
-            dataset_name=parent_datasets[0]["filename"]
+            dataset_name=parent_datasets[0].filename
         )
         return self._get_variable_names_list(rdomain, parent_dataframe)

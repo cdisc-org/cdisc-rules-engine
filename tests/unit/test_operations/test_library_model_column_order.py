@@ -5,6 +5,7 @@ from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 
 import pandas as pd
 import pytest
@@ -259,6 +260,7 @@ def test_get_findings_class_column_order_from_library(
     operation_params.domain = "AE"
     operation_params.standard = "sdtmig"
     operation_params.standard_version = "3-4"
+    operation_params.datasets = [SDTMDatasetMetadata(name="AE")]
 
     # save model metadata to cache
     cache = InMemoryCacheService.get_instance()

@@ -1,7 +1,9 @@
 from __future__ import annotations
 import asyncio
-from typing import List, Optional, Set, TYPE_CHECKING
+from typing import Iterable, List, Optional, Set, TYPE_CHECKING
 
+from cdisc_rules_engine.models.dataset import PandasDataset, DaskDataset
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 import pandas as pd
 
@@ -59,7 +61,10 @@ class DataProcessor:
         return dataframe.iloc[0]
 
     def preprocess_relationship_dataset(
-        self, dataset_path: str, dataset: DatasetInterface, datasets: List[dict]
+        self,
+        dataset_path: str,
+        dataset: DatasetInterface,
+        dataset_metadata: Iterable[SDTMDatasetMetadata],
     ) -> dict:
         # Get unique RDOMAINS and corresponding ID Var
         reference_data = {}
@@ -67,12 +72,12 @@ class DataProcessor:
             rdomains = dataset["RDOMAIN"].unique()
             idvar_column_values = self.get_column_values(dataset, "IDVAR").unique()
             reference_data = self.async_get_reference_data(
-                dataset_path, datasets, idvar_column_values, rdomains
+                dataset_path, dataset_metadata, idvar_column_values, rdomains
             )
         elif "RSUBJID" in dataset:
             # get USUBJID from column in DM dataset
             reference_data = self.get_column_data(
-                dataset_path, datasets, ["USUBJID"], "DM"
+                dataset_path, dataset_metadata, ["USUBJID"], "DM"
             )
             if "USUBJID" in reference_data.get("DM", {}):
                 reference_data["DM"]["RSUBJID"] = reference_data["DM"]["USUBJID"]
@@ -92,11 +97,15 @@ class DataProcessor:
         return column_data
 
     def get_column_data(
-        self, dataset_path: str, datasets: List[dict], columns: list, domain: str
+        self,
+        dataset_path: str,
+        dataset_metadata: Iterable[SDTMDatasetMetadata],
+        columns: list,
+        domain: str,
     ):
         reference_data = {}
-        domain_details: dict = search_in_list_of_dicts(
-            datasets, lambda item: item.get("domain") == domain
+        domain_details: SDTMDatasetMetadata = search_in_list_of_dicts(
+            dataset_metadata, lambda item: item.domain == domain
         )
         if domain_details:
             filename = get_dataset_name_from_details(domain_details)
@@ -112,10 +121,14 @@ class DataProcessor:
         )
 
     def async_get_reference_data(
-        self, dataset_path, datasets: List[dict], columns, domains
+        self,
+        dataset_path,
+        dataset_metadata: Iterable[SDTMDatasetMetadata],
+        columns,
+        domains,
     ):
         coroutines = [
-            self.async_get_column_data(dataset_path, datasets, columns, domain)
+            self.async_get_column_data(dataset_path, dataset_metadata, columns, domain)
             for domain in domains
         ]
         loop = asyncio.new_event_loop()
@@ -328,13 +341,13 @@ class DataProcessor:
         model_metadata = (
             dataset_preprocessor._data_service.library_metadata.model_metadata
         )
-        file_info: dict = search_in_list_of_dicts(
-            datasets, lambda item: item.get("domain") == relrec_row["RDOMAIN_RIGHT"]
+        file_info: SDTMDatasetMetadata = search_in_list_of_dicts(
+            datasets, lambda item: item.domain == relrec_row["RDOMAIN_RIGHT"]
         )
         if not file_info:
             return DatasetInterface()
         right_dataset: DatasetInterface = dataset_preprocessor._download_dataset(
-            file_info["filename"]
+            file_info.filename
         )
         left_subset = left_dataset
         right_subset = right_dataset
@@ -433,10 +446,65 @@ class DataProcessor:
             left_dataset_match_keys=left_dataset_match_keys,
             right_dataset=right_dataset,
             right_dataset_match_keys=right_dataset_match_keys,
-            right_dataset_domain_name=right_dataset_domain.get("domain_name"),
+            right_dataset_domain_name=right_dataset_domain.get("domain"),
             **right_dataset_domain["relationship_columns"],
         )
         return result
+
+    @staticmethod
+    def merge_pivot_supp_dataset(
+        dataset_implementation: DatasetInterface,
+        left_dataset: DatasetInterface,
+        right_dataset: DatasetInterface,
+    ):
+
+        static_keys = ["STUDYID", "USUBJID", "APID", "POOLID", "SPDEVID"]
+        qnam_list = right_dataset["QNAM"].unique()
+        right_dataset = DataProcessor.process_supp(right_dataset)
+        dynamic_key = right_dataset["IDVAR"].iloc[0]
+
+        # Determine the common keys present in both datasets
+        common_keys = [
+            key
+            for key in static_keys
+            if key in left_dataset.columns and key in right_dataset.columns
+        ]
+        common_keys.append(dynamic_key)
+        current_supp = right_dataset.rename(columns={"IDVARVAL": dynamic_key})
+        current_supp = current_supp.drop(columns=["IDVAR"])
+        left_dataset[dynamic_key] = left_dataset[dynamic_key].astype(str)
+        current_supp[dynamic_key] = current_supp[dynamic_key].astype(str)
+        left_dataset = PandasDataset(
+            pd.merge(
+                left_dataset.data,
+                current_supp.data,
+                how="left",
+                on=common_keys,
+                suffixes=("", "_supp"),
+            )
+        )
+        for qnam in qnam_list:
+            qnam_check = left_dataset.data.dropna(subset=[qnam])
+            grouped = qnam_check.groupby(common_keys).size()
+            if (grouped > 1).any():
+                raise ValueError(
+                    f"Multiple records with the same QNAM '{qnam}' match a single parent record"
+                )
+        if dataset_implementation == DaskDataset:
+            left_dataset = DaskDataset(left_dataset.data)
+        return left_dataset
+
+    @staticmethod
+    def process_supp(supp_dataset):
+        # TODO: QLABEL is not added to the new columns.  This functionality is not supported directly in pandas.
+        # initialize new columns for each unique QNAM in the dataset with NaN
+        for qnam in supp_dataset["QNAM"].unique():
+            supp_dataset.data[qnam] = pd.NA
+        # Set the value of the new columns only in their respective rows
+        for index, row in supp_dataset.iterrows():
+            supp_dataset.at[index, row["QNAM"]] = row["QVAL"]
+        supp_dataset.drop(labels=["QNAM", "QVAL", "QLABEL"], axis=1)
+        return supp_dataset
 
     @staticmethod
     def merge_sdtm_datasets(

@@ -274,3 +274,6 @@ class PandasDataset(DatasetInterface):
             return None
         else:
             return self.__class__(result)
+
+    def to_dict(self, **kwargs) -> dict:
+        return self._data.to_dict(**kwargs)

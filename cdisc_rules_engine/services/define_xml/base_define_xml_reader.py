@@ -1,6 +1,6 @@
 from abc import abstractmethod, ABC
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import Dict, List, Optional, Union
 from functools import cache
 from heapq import heappush, heappop
 
@@ -19,7 +19,7 @@ from cdisc_rules_engine.exceptions.custom_exceptions import (
 from cdisc_rules_engine.models.define import ValueLevelMetadata
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.utilities.decorators import cached
-from typing import Dict
+from cdisc_rules_engine.utilities.utils import is_supp_domain
 
 
 @dataclass
@@ -100,6 +100,34 @@ class BaseDefineXMLReader(ABC):
         except Exception as e:
             raise FailedSchemaValidation(str(e))
 
+    @cached("define-dataset-metadata")
+    def extract_dataset_metadata(self, dataset_name: Union[str, None] = None) -> dict:
+        """
+        Reads Define XML metadata and filters by dataset name.
+        """
+        logger.info(
+            f"Extracting dataset metadata from Define-XML. dataset_name={dataset_name}"
+        )
+        try:
+            metadata = self._odm_loader.MetaDataVersion()
+            item_mapping = {item.OID: item for item in metadata.ItemDef}
+            dataset_metadata = self._get_dataset_metadata(metadata, dataset_name)
+            dataset_metadata_dict: dict = self._get_metadata_representation(
+                dataset_metadata
+            )
+            dataset_metadata_dict["define_dataset_variables"] = [
+                item_mapping.get(item.ItemOID).Name
+                for item in dataset_metadata.ItemRef
+                if item.ItemOID in item_mapping
+            ]
+            dataset_metadata_dict["define_dataset_key_sequence"] = (
+                self.get_dataset_key_sequence(dataset_name)
+            )
+        except ValueError as e:
+            raise FailedSchemaValidation(str(e))
+        logger.info(f"Extracted domain metadata = {dataset_metadata_dict}")
+        return dataset_metadata_dict
+
     @cached("define-domain-metadata")
     def extract_domain_metadata(self, domain_name: str = None) -> dict:
         """
@@ -120,6 +148,9 @@ class BaseDefineXMLReader(ABC):
                 for item in domain_metadata.ItemRef
                 if item.ItemOID in item_mapping
             ]
+            domain_metadata_dict["define_dataset_key_sequence"] = (
+                self.get_domain_key_sequence(domain_name)
+            )
         except ValueError as e:
             raise FailedSchemaValidation(str(e))
         logger.info(f"Extracted domain metadata = {domain_metadata_dict}")
@@ -225,6 +256,17 @@ class BaseDefineXMLReader(ABC):
         logger.info(f"Extracted value level metadata = {value_level_metadata}")
         return value_level_metadata
 
+    def _get_dataset_metadata(self, metadata, dataset_name):
+        try:
+            dataset_metadata = next(
+                item for item in metadata.ItemGroupDef if item.Name == dataset_name
+            )
+            return dataset_metadata
+        except StopIteration:
+            raise DomainNotFoundInDefineXMLError(
+                f"Dataset {dataset_name} is not found in Define XML"
+            )
+
     def _get_domain_metadata(self, metadata, domain_name):
         try:
             domain_metadata = next(
@@ -235,6 +277,30 @@ class BaseDefineXMLReader(ABC):
             raise DomainNotFoundInDefineXMLError(
                 f"Domain {domain_name} is not found in Define XML"
             )
+
+    def _get_all_dataset_and_supp_metadata(self, metadata, dataset_name):
+        # Returns all itemgroupdefs such that one of the following conditions is met:
+        # - dataset_name matches itemgroupdef name
+        # - dataset's domain matches itemgroupdef domain and itemgroupdef is a supp
+        # This will include SUPP-- datasets but NOT split datasets
+        domain = next(
+            (
+                item.Domain
+                for item in metadata.ItemGroupDef
+                if item.Name == dataset_name
+            ),
+            None,
+        )
+        return [
+            item
+            for item in metadata.ItemGroupDef
+            if item.Name == dataset_name
+            or (
+                (not is_supp_domain(dataset_name))
+                and item.Domain == domain
+                and is_supp_domain(item.Name)
+            )
+        ]
 
     def _get_all_domain_metadata(self, metadata, domain_name):
         # Returns all itemgroupdefs with domain = domain name.
@@ -368,6 +434,57 @@ class BaseDefineXMLReader(ABC):
                 return val
         return None
 
+    def get_dataset_key_sequence(self, dataset_name: str) -> List[str]:
+        """Given a dataset name, this function returns the key sequence variable names specific to that dataset
+
+        Key Sequence variable names are returned in order of KeySequence
+
+        In the case that Supplemental qualifiers apply to a domain:
+
+        1. If the dataset is not a supp dataset: add the VLM key variables to the list
+        2. Otherwise handle the supp dataset as a normal dataset.
+
+        Args:
+            dataset_name: Name of the target dataset
+
+        Returns:
+            list: List of key variables ordered by key sequence attribute
+        """
+        try:
+            heap = []
+            existing_key_variables = set()
+            metadata = self._odm_loader.MetaDataVersion()
+            item_mapping = self.get_item_def_map()
+            value_list_mapping = self.get_value_list_def_map()
+            datasets = self._get_all_dataset_and_supp_metadata(metadata, dataset_name)
+            for dataset_metadata in datasets:
+                if (
+                    is_supp_domain(dataset_metadata.Name)
+                    and dataset_name != dataset_metadata.Name
+                ):
+                    # handle supp vlm
+                    key_variables = self._get_key_variables_for_supp_dataset(
+                        dataset_metadata, item_mapping, value_list_mapping
+                    )
+                    [
+                        heappush(heap, key_variable)
+                        for key_variable in key_variables
+                        if key_variable[1] not in existing_key_variables
+                    ]
+                else:
+                    key_variables = self._get_key_variables_for_domain(
+                        dataset_metadata, item_mapping
+                    )
+                    [
+                        heappush(heap, key_variable)
+                        for key_variable in key_variables
+                        if key_variable[1] not in existing_key_variables
+                    ]
+        except ValueError as e:
+            raise FailedSchemaValidation(str(e))
+
+        return [heappop(heap)[1] for _ in range(len(heap))]
+
     def get_domain_key_sequence(self, domain_name: str) -> List[str]:
         """Given a domain name, this function returns the key sequence variable names.
 
@@ -393,7 +510,7 @@ class BaseDefineXMLReader(ABC):
             datasets = self._get_all_domain_metadata(metadata, domain_name)
             for domain_metadata in datasets:
                 if (
-                    domain_metadata.Name.startswith("SUPP")
+                    is_supp_domain(domain_metadata.Name)
                     and domain_name != domain_metadata.Name
                 ):
                     # handle supp vlm

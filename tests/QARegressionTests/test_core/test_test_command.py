@@ -1,27 +1,16 @@
 import os
 import re
-import subprocess
 import unittest
+from test_utils import run_command
+from test_utils import tearDown
 
 
 class TestTestCommand(unittest.TestCase):
     def setUp(self):
         self.error_keyword = "error"
 
-    def run_command(self, command):
-        process = subprocess.Popen(
-            command,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            shell=True,
-            text=True,
-        )
-        stdout, stderr = process.communicate()
-        exit_code = process.returncode
-        return exit_code, stdout.lower(), stderr.lower()
-
     def test_test_command_with_all_options_one_data_source(self):
-        command = (
+        args = (
             f"python core.py test "
             f"-c {os.path.join('resources', 'cache')} "
             f"-dp {os.path.join('tests', 'resources', 'CoreIssue164', 'Positive_Dataset.json')} "
@@ -35,13 +24,13 @@ class TestTestCommand(unittest.TestCase):
             f"-dxp {os.path.join('tests', 'resources','define.xml')} "
             f"-l error"
         )
-        exit_code, stdout, stderr = self.run_command(command)
+        exit_code, stdout, stderr = run_command(args, True)
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
         self.assertEqual(stderr, "", f"Error while executing command:\n{stderr}")
 
     def test_test_command_with_all_options(self):
-        command = (
+        args = (
             f"python core.py test "
             f"-c {os.path.join('resources', 'cache')} "
             f"-dp {os.path.join('tests', 'resources', 'CG0027-positive.json')} "
@@ -56,7 +45,7 @@ class TestTestCommand(unittest.TestCase):
             f"-dxp {os.path.join('tests', 'resources','define.xml')} "
             f"-l error"
         )
-        exit_code, stdout, stderr = self.run_command(command)
+        exit_code, stdout, stderr = run_command(args, True)
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
         self.assertFalse(self.error_keyword in stdout)
@@ -73,12 +62,12 @@ class TestTestCommand(unittest.TestCase):
         self.assertTrue(re.match(expected_pattern, stderr), error_msg)
 
     def test_test_command_without_dataset_path(self):
-        command = (
+        args = (
             f"python core.py test "
             f"-c {os.path.join('resources', 'cache')} "
             f"-r {os.path.join('tests', 'resources', 'Rule-CG0027.json')}"
         )
-        exit_code, stdout, stderr = self.run_command(command)
+        exit_code, stdout, stderr = run_command(args, True)
         self.assertEqual(exit_code, 0)
         expected_pattern = (
             r"\[error \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3} - "
@@ -93,32 +82,32 @@ class TestTestCommand(unittest.TestCase):
         self.assertTrue(re.match(expected_pattern, stderr), error_msg)
 
     def test_test_command_without_rule(self):
-        command = (
+        args = (
             f"python core.py test "
             f"-c {os.path.join('resources', 'cache')} "
             f"-dp {os.path.join('tests', 'resources', 'CG0027-positive.json')}"
         )
-        exit_code, stdout, stderr = self.run_command(command)
+        exit_code, stdout, stderr = run_command(args, True)
         self.assertNotEqual(exit_code, 0)
         self.assertNotEqual(
             stderr, "", f"Error not raised while executing invalid command:\n{stderr}"
         )
 
     def test_test_command_with_default_cache_path(self):
-        command = (
+        args = (
             f"python core.py test "
             f"-s sdtmig "
             f"-v 3.4 "
             f"-dp {os.path.join('tests', 'resources', 'CG0027-positive.json')} "
             f"-r {os.path.join('tests', 'resources', 'Rule-CG0027.json')}"
         )
-        exit_code, stdout, stderr = self.run_command(command)
+        exit_code, stdout, stderr = run_command(args, True)
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
         self.assertEqual(stderr, "", f"Error while executing command:\n{stderr}")
 
     def test_test_command_without_whodrug_and_meddra(self):
-        command = (
+        args = (
             f"python core.py test "
             f"-s sdtmig "
             f"-v 3.4 "
@@ -126,13 +115,13 @@ class TestTestCommand(unittest.TestCase):
             f"-dp {os.path.join('tests', 'resources', 'CG0027-positive.json')} "
             f"-r {os.path.join('tests', 'resources', 'Rule-CG0027.json')}"
         )
-        exit_code, stdout, stderr = self.run_command(command)
+        exit_code, stdout, stderr = run_command(args, True)
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
         self.assertEqual(stderr, "", f"Error while executing command:\n{stderr}")
 
     def test_test_command_with_invalid_whodrug_and_meddra(self):
-        command = (
+        args = (
             f"python core.py test "
             f"-c {os.path.join('resources', 'cache')} "
             f"-dp {os.path.join('tests', 'resources', 'CG0027-positive.json')} "
@@ -140,25 +129,25 @@ class TestTestCommand(unittest.TestCase):
             f"--whodrug invalid_path "
             f"--meddra invalid_path"
         )
-        exit_code, stdout, stderr = self.run_command(command)
+        exit_code, stdout, stderr = run_command(args, True)
         self.assertNotEqual(exit_code, 0)
         self.assertNotEqual(stderr, "", f"Error while executing command:\n{stderr}")
 
     def test_test_command_with_vx_as_no(self):
-        command = (
+        args = (
             f"python core.py test "
             f"-s sendig "
             f"-v 3.1 "
             f"-dv 2.1 "
             f"-r {os.path.join('tests','resources','CoreIssue295','SEND4.json')} "
             f"-dp {os.path.join('tests','resources','CoreIssue295','dm.json')} "
-            f"-vx no "
+            f"-vx no"
         )
-        exit_code, stdout, stderr = self.run_command(command)
+        exit_code, stdout, stderr = run_command(args, True)
         self.assertNotIn("error", stdout)
 
     def test_test_command_with_vx_as_yes(self):
-        command = (
+        args = (
             f"python core.py test "
             f"-s sendig "
             f"-v 3.1 "
@@ -167,16 +156,12 @@ class TestTestCommand(unittest.TestCase):
             f"-dp {os.path.join('tests','resources','CoreIssue295','dm.json')} "
             f"-vx y"
         )
-        exit_code, stdout, stderr = self.run_command(command)
+        exit_code, stdout, stderr = run_command(args, True)
         self.assertEqual(exit_code, 0)
         self.assertTrue(stderr == "")
 
     def tearDown(self):
-        for file_name in os.listdir("."):
-            if file_name != "host.json" and (
-                file_name.endswith(".xlsx") or file_name.endswith(".json")
-            ):
-                os.remove(file_name)
+        tearDown()
 
 
 if __name__ == "__main__":

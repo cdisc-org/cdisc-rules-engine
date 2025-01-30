@@ -12,7 +12,7 @@ import re
 from cdisc_rules_engine.interfaces import CacheServiceInterface, ConfigInterface
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
-from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.models.dataset_types import DatasetTypes
 from cdisc_rules_engine.models.variable_metadata_container import (
     VariableMetadataContainer,
@@ -103,23 +103,25 @@ class USDMDataService(BaseDataService):
         return self._reader_factory.dataset_implementation.from_dict(metadata_to_return)
 
     @cached_dataset(DatasetTypes.RAW_METADATA.value)
-    def get_raw_dataset_metadata(self, dataset_name: str, **kwargs) -> DatasetMetadata:
+    def get_raw_dataset_metadata(
+        self, dataset_name: str, **kwargs
+    ) -> SDTMDatasetMetadata:
         """
         Returns dataset metadata as DatasetMetadata instance.
         """
         dataset = self.get_dataset(dataset_name=dataset_name)
-        domain_name = self.__get_domain_from_dataset_name(dataset_name)
-        return DatasetMetadata(
+        domain = self.__get_domain_from_dataset_name(dataset_name)
+        return SDTMDatasetMetadata(
             name=dataset_name,
-            domain_name=domain_name,
-            label=domain_name,
+            first_record={"DOMAIN": domain},
+            label=domain,
             modification_date=datetime.fromtimestamp(
                 os.path.getmtime(self.dataset_path)
             ).isoformat(),
             filename=extract_file_name_from_path_string(dataset_name),
             full_path=dataset_name,
-            size=0,
-            records=len(dataset),
+            file_size=0,
+            record_count=len(dataset),
         )
 
     @cached_dataset(DatasetTypes.VARIABLES_METADATA.value)
@@ -152,7 +154,7 @@ class USDMDataService(BaseDataService):
         file_metadata = {
             "path": self.dataset_path,
             "name": file_name,
-            "size": file_size,
+            "file_size": file_size,
         }
         dataset = self.__get_dataset(dataset_name)
         measurer = vectorize(len)
@@ -170,7 +172,7 @@ class USDMDataService(BaseDataService):
             "number_of_variables": len(dataset.columns.values.tolist()),
             "dataset_label": dataset_name,
             "dataset_length": len(dataset),
-            "domain_name": dataset_name,
+            "domain": dataset_name,
             "dataset_name": dataset_name,
             "dataset_modification_date": datetime.fromtimestamp(
                 os.path.getmtime(self.dataset_path)
@@ -188,17 +190,17 @@ class USDMDataService(BaseDataService):
     def get_datasets(self) -> List[dict]:
         datasets = []
         for dataset in self.dataset_content_index:
-            metadata = self.get_raw_dataset_metadata(
+            metadata: SDTMDatasetMetadata = self.get_raw_dataset_metadata(
                 dataset_name=dataset["dataset_name"]
             )
             datasets.append(
                 {
-                    "domain": metadata.domain_name,
+                    "domain": metadata.domain,
                     "filename": metadata.filename,
                     "full_path": metadata.full_path,
-                    "length": metadata.records,
+                    "length": metadata.record_count,
                     "label": metadata.label,
-                    "size": metadata.size,
+                    "file_size": metadata.file_size,
                     "modification_date": metadata.modification_date,
                 }
             )

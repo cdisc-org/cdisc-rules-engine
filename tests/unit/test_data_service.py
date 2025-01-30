@@ -1,4 +1,3 @@
-from typing import List
 from unittest.mock import Mock, patch, MagicMock
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.models.library_metadata_container import (
@@ -7,7 +6,7 @@ from cdisc_rules_engine.models.library_metadata_container import (
 
 import pytest
 import os
-from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.models.dataset_types import DatasetTypes
 from cdisc_rules_engine.services.data_services import cached_dataset, LocalDataService
 from cdisc_rules_engine.utilities.utils import get_dataset_cache_key_from_path
@@ -18,6 +17,7 @@ from cdisc_rules_engine.constants.classes import (
     EVENTS,
     RELATIONSHIP,
     TRIAL_DESIGN,
+    SPECIAL_PURPOSE,
     STUDY_REFERENCE,
 )
 
@@ -43,7 +43,7 @@ def test_get_dataset_metadata(mock_read_metadata: MagicMock, dataset_metadata: d
     assert actual_metadata.equals(
         PandasDataset.from_dict(
             {
-                "dataset_size": [dataset_metadata["file_metadata"]["size"]],
+                "dataset_size": [dataset_metadata["file_metadata"]["file_size"]],
                 "dataset_location": [dataset_metadata["file_metadata"]["name"]],
                 "dataset_name": [dataset_metadata["contents_metadata"]["dataset_name"]],
                 "dataset_label": [
@@ -66,103 +66,115 @@ def test_get_raw_dataset_metadata(
     cache_mock.get_dataset = lambda cache_key: None
 
     data_service = LocalDataService(cache_mock, MagicMock(), MagicMock())
-    actual_metadata: DatasetMetadata = data_service.get_raw_dataset_metadata(
+    actual_metadata: SDTMDatasetMetadata = data_service.get_raw_dataset_metadata(
         dataset_name="dataset_name"
     )
-    expected_metadata = DatasetMetadata(
+    expected_metadata = SDTMDatasetMetadata(
         name=dataset_metadata["contents_metadata"]["dataset_name"],
-        domain_name=dataset_metadata["contents_metadata"]["domain_name"],
+        first_record=dataset_metadata["contents_metadata"]["first_record"],
         label=dataset_metadata["contents_metadata"]["dataset_label"],
         modification_date=dataset_metadata["contents_metadata"][
             "dataset_modification_date"
         ],
         filename=dataset_metadata["file_metadata"]["name"],
         full_path=dataset_metadata["file_metadata"]["path"],
-        size=dataset_metadata["file_metadata"]["size"],
-        records=20,
+        file_size=dataset_metadata["file_metadata"]["file_size"],
+        record_count=20,
     )
     assert actual_metadata == expected_metadata
 
 
 @pytest.mark.parametrize(
-    "datasets, data, expected_class, filename",
+    "dataset_metadata, data, expected_class",
     [
         (
-            [{"domain": "AE", "filename": "ae.xpt"}],
+            {"name": "AE", "first_record": {"DOMAIN": "AE"}, "filename": "ae.xpt"},
             {"DOMAIN": ["AE"], "AETERM": ["test"]},
             EVENTS,
-            "ae.xpt",
         ),
         (
-            [{"domain": "CM", "filename": "cm.xpt"}],
+            {"name": "CM", "first_record": {"DOMAIN": "CM"}, "filename": "cm.xpt"},
             {"DOMAIN": ["CM"], "CMTRT": ["test"]},
             INTERVENTIONS,
-            "cm.xpt",
         ),
         (
-            [{"domain": "VS", "filename": "vs.xpt"}],
+            {"name": "VS", "first_record": {"DOMAIN": "VS"}, "filename": "vs.xpt"},
             {"DOMAIN": ["VS"], "VSTESTCD": ["test"]},
             FINDINGS,
-            "vs.xpt",
         ),
         (
-            [{"domain": "FA", "filename": "fa.xpt"}],
+            {"name": "FA", "first_record": {"DOMAIN": "FA"}, "filename": "fa.xpt"},
             {"DOMAIN": ["FA"], "FATESTCD": ["test"], "FAOBJ": ["test"]},
             FINDINGS_ABOUT,
-            "fa.xpt",
         ),
         (
-            [{"domain": "FA", "filename": "famh.xpt"}],
+            {"name": "FAMH", "first_record": {"DOMAIN": "FA"}, "filename": "famh.xpt"},
             {"DOMAIN": ["FA"], "FATESTCD": ["test"], "FAOBJ": ["test"]},
             FINDINGS_ABOUT,
-            "famh.xpt",
         ),
         (
-            [{"domain": "RELREC", "filename": "relrec.xpt"}],
+            {"name": "RELREC", "filename": "relrec.xpt"},
             {"RDOMAIN": ["AE"], "IDVAR": ["test"], "POOLID": ["test"]},
             RELATIONSHIP,
-            "relrec.xpt",
         ),
         (
-            [{"domain": "SUPPAE", "filename": "suppae.xpt"}],
+            {"name": "SUPPAE", "filename": "suppae.xpt"},
             {"RDOMAIN": ["AE"], "IDVAR": ["test"], "QNAM": ["test"]},
             RELATIONSHIP,
-            "suppae.xpt",
         ),
         (
-            [{"domain": "SQAPFAMH", "filename": "sqapfamh.xpt"}],
+            {"name": "SQAPFAMH", "filename": "sqapfamh.xpt"},
             {"RDOMAIN": ["APFAMH"], "IDVAR": ["test"], "QNAM": ["test"]},
             RELATIONSHIP,
-            "sqapfamh.xpt",
         ),
         (
-            [{"domain": "OI", "filename": "oi.xpt"}],
+            {"name": "OI", "first_record": {"DOMAIN": "OI"}, "filename": "oi.xpt"},
             {"DOMAIN": ["OI"], "OIPARMCD": ["test"], "OIPARM": ["test"]},
             STUDY_REFERENCE,
-            "oi.xpt",
         ),
         (
-            [{"domain": "TS", "filename": "ts.xpt"}],
+            {"name": "TS", "first_record": {"DOMAIN": "TS"}, "filename": "ts.xpt"},
             {"DOMAIN": ["TS"], "TSPARMCD": ["test"], "TSPARM": ["test"]},
             TRIAL_DESIGN,
-            "ts.xpt",
         ),
         (
-            [{"domain": "XX", "filename": "xx.xpt"}],
+            {"name": "XX", "first_record": {"DOMAIN": "XX"}, "filename": "xx.xpt"},
             {"DOMAIN": ["XX"], "XXOBJ": ["test"]},
             None,
-            "xx.xpt",
         ),
-        ([{"domain": "XY", "filename": "xy.xpt"}], {"UNKNOWN": ["test"]}, None, "None"),
         (
-            [{"domain": "DM", "filename": "dm.xpt"}],
+            {"name": "XY", "first_record": {"DOMAIN": "XY"}, "filename": "xy.xpt"},
             {"UNKNOWN": ["test"]},
-            "SPECIAL PURPOSE",
-            "dm.xpt",
+            None,
         ),
+        (
+            {"name": "DM", "first_record": {"DOMAIN": "DM"}, "filename": "dm.xpt"},
+            {"UNKNOWN": ["test"]},
+            SPECIAL_PURPOSE,
+        ),
+        (
+            {"name": "XX", "first_record": {"DOMAIN": "XX"}, "filename": "xx.xpt"},
+            {"DOMAIN": ["XX"], "XXTRT": ["test"]},
+            INTERVENTIONS,
+        ),
+        (
+            {"name": "XX", "first_record": {"DOMAIN": "XX"}, "filename": "xx.xpt"},
+            {"DOMAIN": ["XX"], "XXTESTCD": ["test"]},
+            FINDINGS,
+        ),
+        (
+            {"name": "XX", "first_record": {"DOMAIN": "XX"}, "filename": "xx.xpt"},
+            {"DOMAIN": ["XX"], "XXTERM": ["test"]},
+            EVENTS,
+        ),
+        # (
+        #     {"name": "APDM", "first_record": {"DOMAIN": "APDM"}, "filename": "apdm.xpt"},
+        #     {"DOMAIN": ["APDM"], "APID": ["001"]},
+        #     SPECIAL_PURPOSE,
+        # ),
     ],
 )
-def test_get_dataset_class(datasets, data, expected_class, filename):
+def test_get_dataset_class(dataset_metadata, data, expected_class):
     df = PandasDataset.from_dict(data)
     mock_cache_service = MagicMock()
     library_metadata: LibraryMetadataContainer = get_library_metadata_from_cache(
@@ -198,7 +210,10 @@ def test_get_dataset_class(datasets, data, expected_class, filename):
         library_metadata=library_metadata,
     )
     class_name = data_service.get_dataset_class(
-        df, filename, datasets, datasets[0].get("domain")
+        df,
+        dataset_metadata.get("filename"),
+        [SDTMDatasetMetadata(**dataset_metadata)],
+        SDTMDatasetMetadata(**dataset_metadata),
     )
     assert class_name == expected_class
 
@@ -210,23 +225,29 @@ def test_get_dataset_class_without_standard_and_version():
         "classes": [{"name": "SPECIAL PURPOSE", "datasets": [{"name": "DM"}]}]
     }
     data_service = LocalDataService(mock_cache_service, MagicMock(), MagicMock())
+    dataset_metadata = SDTMDatasetMetadata(
+        first_record={"DOMAIN": "DM"}, filename="dm.xpt"
+    )
     with pytest.raises(Exception):
         data_service.get_dataset_class(
-            df, "dm.xpt", [{"domain": "DM", "filename": "dm.xpt"}], "DM"
+            df, "dm.xpt", [dataset_metadata], dataset_metadata
         )
 
 
 def test_get_dataset_class_associated_domains():
-    datasets: List[dict] = [
-        {"domain": "APCE", "filename": "ap.xpt"},
-        {"domain": "CE", "filename": "ce.xpt"},
+    datasets = [
+        SDTMDatasetMetadata(**dataset)
+        for dataset in [
+            {"first_record": {"DOMAIN": "APDM"}, "filename": "apdm.xpt"},
+            {"first_record": {"DOMAIN": "DM"}, "filename": "dm.xpt"},
+        ]
     ]
-    ap_dataset = PandasDataset.from_dict({"DOMAIN": ["APCE"]})
-    ce_dataset = PandasDataset.from_dict({"DOMAIN": ["CE"], "CETERM": ["test"]})
+    ap_dataset = PandasDataset.from_dict({"DOMAIN": ["APDM"], "APID": ["test"]})
+    ce_dataset = PandasDataset.from_dict({"DOMAIN": ["DM"]})
     data_bundle_path = "cdisc/databundle"
     path_to_dataset_map: dict = {
-        os.path.join(data_bundle_path, "ap.xpt"): ap_dataset,
-        os.path.join(data_bundle_path, "ce.xpt"): ce_dataset,
+        os.path.join(data_bundle_path, "apdm.xpt"): ap_dataset,
+        os.path.join(data_bundle_path, "dm.xpt"): ce_dataset,
     }
     with patch(
         "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
@@ -265,11 +286,14 @@ def test_get_dataset_class_associated_domains():
             standard_version="3-4",
             library_metadata=library_metadata,
         )
-        filepath = f"{data_bundle_path}/ce.xpt"
+        filepath = f"{data_bundle_path}/apdm.xpt"
         class_name = data_service.get_dataset_class(
-            ap_dataset, filepath, datasets, "CE"
+            ap_dataset,
+            filepath,
+            datasets,
+            datasets[0],
         )
-        assert class_name == EVENTS
+        assert class_name == SPECIAL_PURPOSE
 
 
 def test_cached_data_cache_exists():

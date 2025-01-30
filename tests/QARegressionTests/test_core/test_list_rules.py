@@ -1,6 +1,7 @@
 import json
 import os
 from core import list_rules
+from test_utils import tearDown
 
 import unittest
 from click.testing import CliRunner
@@ -50,11 +51,7 @@ class TestListRules(unittest.TestCase):
         self.assertTrue(all(isinstance(rule, dict) for rule in output))
 
     def tearDown(self):
-        for file_name in os.listdir("."):
-            if file_name != "host.json" and (
-                file_name.endswith(".xlsx") or file_name.endswith(".json")
-            ):
-                os.remove(file_name)
+        tearDown()
 
 
 if __name__ == "__main__":

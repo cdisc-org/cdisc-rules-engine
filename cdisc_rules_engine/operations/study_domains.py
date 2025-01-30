@@ -6,4 +6,4 @@ class StudyDomains(BaseOperation):
         """
         Returns a list of the domains in the study
         """
-        return list({dataset.get("domain", "") for dataset in self.params.datasets})
+        return list({(dataset.domain or "") for dataset in self.params.datasets})

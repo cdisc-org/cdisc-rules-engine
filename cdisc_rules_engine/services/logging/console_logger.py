@@ -1,4 +1,5 @@
 import logging
+from logging import Logger
 from cdisc_rules_engine.interfaces import ConfigInterface, LoggerInterface
 import traceback
 import inspect
@@ -10,7 +11,7 @@ class ConsoleLogger(LoggerInterface):
         logger = logging.getLogger()
         return cls(logger, config)
 
-    def __init__(self, logger, config: ConfigInterface):
+    def __init__(self, logger: Logger, config: ConfigInterface):
         self._logger = logger
         self._config = config
         self._exception = Exception()
@@ -57,9 +58,9 @@ class ConsoleLogger(LoggerInterface):
     def log(self, msg: str, *args, **kwargs):
         self._logger.log(logging.CRITICAL + 1, msg, *args, **kwargs)
 
-    def trace(self, exc: Exception, msg: str, *args, **kwargs):
+    def trace(self, exc: Exception):
         current_level = self._logger.getEffectiveLevel()
-        if current_level > 50:
+        if current_level == logging.DEBUG and not self.disabled:
             self.display_trace(exc, inspect.currentframe())
 
     def display_trace(self, e: Exception = None, f=None):

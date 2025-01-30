@@ -103,7 +103,7 @@ def test_contents_define_variables_dataset_builder(
         data_processor=None,
         dataset_path=None,
         datasets=None,
-        domain=None,
+        dataset_metadata=None,
         define_xml_path=None,
         standard="sdtmig",
         standard_version="3-4",
