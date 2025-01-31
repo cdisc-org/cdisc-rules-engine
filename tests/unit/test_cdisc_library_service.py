@@ -2,6 +2,7 @@
 This module contains unit tests for CDISCLibraryService class.
 The tests do not send real requests to CDISC Library, the requests are mocked.
 """
+
 import json
 import os
 from unittest.mock import MagicMock, patch
