@@ -171,7 +171,7 @@ def test_missing_codelist(operation_params):
         library_metadata,
     )
 
-    with pytest.raises(MissingDataError, match="Codelist 'CL3' not found in metadata"):
+    with pytest.raises(MissingDataError, match="Codelist 'CL3' not in metadata"):
         operation._execute_operation()
 
 
