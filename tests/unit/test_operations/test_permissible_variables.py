@@ -7,7 +7,6 @@ from cdisc_rules_engine.models.library_metadata_container import (
 
 import pandas as pd
 import pytest
-
 from cdisc_rules_engine.constants.classes import GENERAL_OBSERVATIONS_CLASS
 from cdisc_rules_engine.enums.variable_roles import VariableRoles
 from cdisc_rules_engine.models.operation_params import OperationParams

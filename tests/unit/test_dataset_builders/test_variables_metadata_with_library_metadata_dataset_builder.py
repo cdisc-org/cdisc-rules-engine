@@ -25,11 +25,11 @@ def test_variable_metadata_with_library_metadata_dataset_builder(
 ):
     mock_get_variables_metadata.return_value = pd.DataFrame.from_dict(
         {
-            "variable_name": ["STUDYID", "USUBJID", "AETERM"],
-            "variable_label": ["A", "B", "C"],
-            "variable_size": [16, 16, 8],
-            "variable_order_number": [1, 2, 9],
-            "variable_data_type": ["Char", "Char", "Char"],
+            "variable_name": ["STUDYID", "USUBJID", "AETERM", "AESEQ"],
+            "variable_label": ["A", "B", "C", "D"],
+            "variable_size": [16, 16, 8, 8],
+            "variable_order_number": [1, 2, 9, 8],
+            "variable_data_type": ["Char", "Char", "Char", "Num"],
         }
     )
 
@@ -38,6 +38,7 @@ def test_variable_metadata_with_library_metadata_dataset_builder(
             "STUDYID": ["A", "B", "C"],
             "USUBJID": ["", "A", "B"],
             "AETERM": ["", "C", "A"],
+            "AESEQ": [1, 2, 3],
         }
     )
     cache = InMemoryCacheService()
@@ -46,6 +47,7 @@ def test_variable_metadata_with_library_metadata_dataset_builder(
     standard_substandard = None
     standard_data = {
         "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
+        "domains": ["AE", "DM", "VS"],
         "classes": [
             {
                 "name": "Events",
@@ -128,8 +130,8 @@ def test_variable_metadata_with_library_metadata_dataset_builder(
         "AETERM",
         "AESEQ",
     ]
-    assert result["variable_name"].tolist() == ["STUDYID", "USUBJID", "AETERM", ""]
-    assert result["variable_has_empty_values"].tolist() == [False, True, True, True]
+    assert result["variable_name"].tolist() == ["STUDYID", "USUBJID", "AETERM", "AESEQ"]
+    assert result["variable_has_empty_values"].tolist() == [False, True, True, False]
 
 
 @patch(
@@ -165,6 +167,7 @@ def test_variable_metadata_with_library_metadata_dataset_builder_variable_only_i
     standard_substandard = None
     standard_data = {
         "_links": {"model": {"href": "/mdr/sdtm/2-0"}},
+        "domains": ["AE", "DM", "VS"],
         "classes": [
             {
                 "name": "Events",
@@ -309,25 +312,16 @@ def test_variable_metadata_with_library_metadata_dataset_builder_variable_only_i
         "USUBJID",
         "AETERM",
         "AEMODELVAR",
-        "DOMAIN",
-        "AESEQ",
-        "TIMING_VAR",
     ]
     assert result["variable_name"].tolist() == [
         "STUDYID",
         "USUBJID",
         "AETERM",
         "AEMODELVAR",
-        "",
-        "",
-        "",
     ]
     assert result["variable_has_empty_values"].tolist() == [
         False,
         True,
         True,
         False,
-        True,
-        True,
-        True,
     ]
