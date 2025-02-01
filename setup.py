@@ -27,7 +27,7 @@ setuptools.setup(
         "cdisc-library-client==0.1.6",
         "odmlib==0.1.4",
         "xport==3.6.1",
-        "redis==4.0.2",
+        "redis==5.2.1",
         "openpyxl==3.1.5",
         "importlib-metadata==8.5.0",
     ],
