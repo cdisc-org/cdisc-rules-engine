@@ -5,27 +5,49 @@ on:
     types: [created]
 
 jobs:
-  build-ubuntu-latest:
+  build-binaries:
+    strategy:
+      matrix:
+        include:
+          - os: "ubuntu-latest"
+            name: "core-ubuntu-latest"
+          - os: "ubuntu-20.04"
+            name: "core-ubuntu-20-04"
+          - os: "macos-latest"
+            name: "core-mac"
+          - os: "windows-latest"
+            name: "core-windows"
+    uses: ./.github/workflows/build-binary.yml
+    with:
+      os: ${{ matrix.os }}
+      name: ${{ matrix.name }}
+
+  create-release-assets:
+    needs: build-binaries
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        id: pysetup
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
         with:
-          python-version: "3.9"
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install setuptools wheel twine
-          pip install -r requirements.txt
-      - name: Build Binary
-        run: pyinstaller core.py --dist ./dist/output/ubuntu-latest --add-data=$pythonLocation/lib/python3.9/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates --add-data=resources/schema:resources/schema
-      - name: Archive Artifacts
+          path: artifacts
+      - name: Create release zip files
         uses: vimtor/action-zip@v1
         with:
-          files: dist/output/ubuntu-latest/core/
+          files: artifacts/core-ubuntu-latest/
           dest: core-ubuntu-latest.zip
+      - uses: vimtor/action-zip@v1
+        with:
+          files: artifacts/core-ubuntu-20-04/
+          dest: core-ubuntu-20-04.zip
+      - uses: vimtor/action-zip@v1
+        with:
+          files: artifacts/core-mac/
+          dest: core-mac.zip
+      - uses: vimtor/action-zip@v1
+        with:
+          files: artifacts/core-windows/
+          dest: core-windows.zip
+
       - name: Upload Ubuntu Latest Release Asset
         uses: actions/upload-release-asset@v1
         env:
@@ -35,27 +57,6 @@ jobs:
           asset_path: ./core-ubuntu-latest.zip
           asset_name: core-ubuntu-latest.zip
           asset_content_type: application/zip
-  build-ubuntu-20-04:
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        id: pysetup
-        with:
-          python-version: "3.9"
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install setuptools wheel twine
-          pip install -r requirements.txt
-      - name: Build Binary
-        run: pyinstaller core.py --dist ./dist/output/ubuntu-20-04 --add-data=$pythonLocation/lib/python3.9/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates --add-data=resources/schema:resources/schema
-      - name: Archive Artifacts
-        uses: vimtor/action-zip@v1
-        with:
-          files: dist/output/ubuntu-20-04/core/
-          dest: core-ubuntu-20-04.zip
       - name: Upload Ubuntu 20.04 Release Asset
         uses: actions/upload-release-asset@v1
         env:
@@ -65,27 +66,6 @@ jobs:
           asset_path: ./core-ubuntu-20-04.zip
           asset_name: core-ubuntu-20-04.zip
           asset_content_type: application/zip
-  build-mac:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        id: pysetup
-        with:
-          python-version: "3.9"
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install setuptools wheel twine
-          pip install -r requirements.txt
-      - name: Build Binary
-        run: pyinstaller core.py --dist ./dist/output/mac --add-data=$pythonLocation/lib/python3.9/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates --add-data=resources/schema:resources/schema
-      - name: Archive Artifacts
-        uses: vimtor/action-zip@v1
-        with:
-          files: dist/output/mac/core/
-          dest: core-mac.zip
       - name: Upload Mac Release Asset
         uses: actions/upload-release-asset@v1
         env:
@@ -95,27 +75,6 @@ jobs:
           asset_path: ./core-mac.zip
           asset_name: core-mac.zip
           asset_content_type: application/zip
-  build-windows:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        id: pysetup
-        with:
-          python-version: "3.9"
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install setuptools wheel twine
-          pip install -r requirements.txt
-      - name: Build Binary
-        run: pyinstaller core.py --dist ./dist/output/windows --add-data="$env:pythonLocation\Lib\site-packages\xmlschema\schemas;xmlschema/schemas" --add-data="resources/cache;resources/cache" --add-data="resources/templates;resources/templates" --add-data="resources/schema;resources/schema"
-      - name: Archive Windows Artifacts
-        uses: vimtor/action-zip@v1
-        with:
-          files: dist/output/windows/core/
-          dest: core-windows.zip
       - name: Upload Windows Release Asset
         uses: actions/upload-release-asset@v1
         env:
@@ -125,6 +84,7 @@ jobs:
           asset_path: ./core-windows.zip
           asset_name: core-windows.zip
           asset_content_type: application/zip
+
   deploy-package:
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')

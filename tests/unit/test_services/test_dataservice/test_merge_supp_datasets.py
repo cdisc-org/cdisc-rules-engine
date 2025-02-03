@@ -4,6 +4,7 @@ from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.services.data_services.local_data_service import (
     LocalDataService,
 )
+from cdisc_rules_engine.utilities.data_processor import DataProcessor
 import pandas as pd
 import pandas.testing as pdt
 
@@ -13,7 +14,7 @@ def data_service():
     return LocalDataService(MagicMock(), MagicMock(), MagicMock())
 
 
-def test_process_supp(data_service):
+def test_process_supp():
     # Create a supplementary dataset with 'QNAM' and 'QVAL' for processing.
     supp_dataset = PandasDataset(
         pd.DataFrame(
@@ -29,7 +30,7 @@ def test_process_supp(data_service):
             }
         )
     )
-    processed_dataset = data_service.process_supp(supp_dataset)
+    processed_dataset = DataProcessor.process_supp(supp_dataset)
     assert all(
         column in processed_dataset.data.columns for column in ["X", "Y", "Z"]
     ), "New "
@@ -56,7 +57,9 @@ def test_process_supp(data_service):
 
 @patch.object(LocalDataService, "check_filepath", return_value=False)
 @patch.object(LocalDataService, "_async_get_datasets")
-def test_merge_supp_dataset(mock_async_get_datasets, mock_check_filepath, data_service):
+def test_merge_pivot_supp_dataset(
+    mock_async_get_datasets, mock_check_filepath, data_service
+):
     # Setup example datasets
     parent_dataset = PandasDataset(
         pd.DataFrame(
@@ -97,8 +100,8 @@ def test_merge_supp_dataset(mock_async_get_datasets, mock_check_filepath, data_s
         elif dataset_name == "supp_dataset":
             return supp_dataset
 
-    merged_dataset = data_service.merge_supp_dataset(
-        func_to_call=dummy_func, dataset_names=["parent_dataset", "supp_dataset"]
+    merged_dataset = DataProcessor.merge_pivot_supp_dataset(
+        data_service.dataset_implementation, parent_dataset, supp_dataset
     )
     expected_dataset = PandasDataset(
         pd.DataFrame(

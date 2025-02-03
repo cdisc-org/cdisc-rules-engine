@@ -244,3 +244,9 @@ class DatasetInterface(ABC):
         Returns a dataframe containing the sizes of each group in
         the dataframe.
         """
+
+    @abstractmethod
+    def to_dict(self, **kwargs) -> dict:
+        """
+        Convert the dataset to a dictionary.
+        """

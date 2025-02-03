@@ -91,11 +91,28 @@ class BaseOperation:
             logger.debug(f"error in operation {self.params.operation_name}: {str(e)}")
             raise
         except Exception as e:
+            error_message = str(e)
             # Log unexpected errors
             logger.error(
                 f"error in operation {self.params.operation_name}: {str(e)}",
                 exc_info=True,
             )
+            if isinstance(e, TypeError) and any(
+                phrase in error_message
+                for phrase in [
+                    "NoneType",
+                    "None",
+                    "object is None",
+                    "'NoneType'",
+                    "None has no attribute",
+                    "unsupported operand type",
+                    "bad operand type",
+                    "object is not",
+                    "cannot be None",
+                ]
+            ):
+                return None
+            raise
 
     def _handle_operation_result(self, result) -> DatasetInterface:
         if self.evaluation_dataset.is_series(result):
@@ -112,9 +129,9 @@ class BaseOperation:
         else:
             # Handle single results
 
-            self.evaluation_dataset[
-                self.params.operation_id
-            ] = self.evaluation_dataset.get_series_from_value(result)
+            self.evaluation_dataset[self.params.operation_id] = (
+                self.evaluation_dataset.get_series_from_value(result)
+            )
             return self.evaluation_dataset
 
     def _handle_grouped_result(self, result):
@@ -162,9 +179,11 @@ class BaseOperation:
             self.params.grouping
             if not self.params.grouping_aliases
             else [
-                self.params.grouping_aliases[i]
-                if 0 <= i < len(self.params.grouping_aliases)
-                else v
+                (
+                    self.params.grouping_aliases[i]
+                    if 0 <= i < len(self.params.grouping_aliases)
+                    else v
+                )
                 for i, v in enumerate(self.params.grouping)
             ]
         )
@@ -209,9 +228,9 @@ class BaseOperation:
 
     def _get_variable_names_list(self, domain, dataframe):
         # get variables metadata from the standard model
-        variables_metadata: List[
-            dict
-        ] = self._get_variables_metadata_from_standard_model(domain, dataframe)
+        variables_metadata: List[dict] = (
+            self._get_variables_metadata_from_standard_model(domain, dataframe)
+        )
         # create a list of variable names in accordance to the "ordinal" key
         variable_names_list = self._replace_variable_wildcards(
             variables_metadata, domain

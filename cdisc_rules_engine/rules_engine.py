@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import List, Union
+from typing import Iterable, List, Union
 
 from business_rules import export_rule_data
 from business_rules.engine import run
@@ -14,6 +14,7 @@ from cdisc_rules_engine.exceptions.custom_exceptions import (
     RuleFormatError,
     VariableMetadataNotFoundError,
     FailedSchemaValidation,
+    DomainNotFoundError,
 )
 from cdisc_rules_engine.interfaces import (
     CacheServiceInterface,
@@ -44,6 +45,7 @@ from cdisc_rules_engine.dataset_builders import builder_factory
 from cdisc_rules_engine.models.external_dictionaries_container import (
     ExternalDictionariesContainer,
 )
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 import traceback
 import time
 
@@ -98,7 +100,7 @@ class RulesEngine:
         rule: dict,
         dataset_path: str,
         datasets: List[DummyDataset],
-        dataset_domain: str,
+        dataset_metadata: SDTMDatasetMetadata,
     ):
         self.data_service = DataServiceFactory(
             self.config,
@@ -108,22 +110,17 @@ class RulesEngine:
             self.standard_substandard,
             self.library_metadata,
         ).get_dummy_data_service(datasets)
-        dataset_dicts = []
-        for domain in datasets:
-            dataset_dicts.append({"domain": domain.domain, "filename": domain.filename})
         self.rule_processor = RuleProcessor(
             self.data_service, self.cache, self.library_metadata
         )
         self.data_processor = DataProcessor(self.data_service, self.cache)
-        return self.validate_single_rule(
-            rule, f"{dataset_path}", dataset_dicts, dataset_domain
-        )
+        return self.validate_single_rule(rule, dataset_path, datasets, dataset_metadata)
 
     def validate(
         self,
         rules: List[dict],
         dataset_path: str,
-        datasets: List[dict],
+        datasets: Iterable[SDTMDatasetMetadata],
         dataset_domain: str,
     ) -> dict:
         """
@@ -149,30 +146,32 @@ class RulesEngine:
         self,
         rule: dict,
         dataset_path: str,
-        datasets: List[dict],
-        dataset_domain: str,
+        datasets: Iterable[SDTMDatasetMetadata],
+        dataset_metadata: SDTMDatasetMetadata,
     ) -> List[Union[dict, str]]:
         """
         This function is an entrypoint to validation process.
         It validates a given rule against datasets.
         """
         logger.info(
-            f"Validating domain {dataset_domain}. "
+            f"Validating {dataset_metadata.name}. "
             f"rule={rule}. dataset_path={dataset_path}. datasets={datasets}."
         )
 
         try:
             if self.rule_processor.is_suitable_for_validation(
                 rule,
-                dataset_domain,
+                dataset_metadata,
                 dataset_path,
-                is_split_dataset(datasets, dataset_domain),
+                is_split_dataset(datasets, dataset_metadata),
                 datasets,
             ):
                 result: List[Union[dict, str]] = self.validate_rule(
-                    rule, dataset_path, datasets, dataset_domain
+                    rule, dataset_path, datasets, dataset_metadata
                 )
-                logger.info(f"Validated domain {dataset_domain}. Result = {result}")
+                logger.info(
+                    f"Validated dataset {dataset_metadata.name}. Result = {result}"
+                )
                 if result:
                     return result
                 else:
@@ -181,20 +180,23 @@ class RulesEngine:
                         ValidationErrorContainer(
                             **{
                                 "dataset": os.path.basename(dataset_path),
-                                "domain": dataset_domain,
+                                "domain": dataset_metadata.domain
+                                or dataset_metadata.rdomain,
                                 "errors": [],
                             }
                         ).to_representation()
                     ]
             else:
-                logger.info(f"Skipped domain {dataset_domain}.")
+                logger.info(f"Skipped dataset {dataset_metadata.name}.")
                 error_obj: ValidationErrorContainer = ValidationErrorContainer(
                     status=ExecutionStatus.SKIPPED.value
                 )
-                error_obj.domain = dataset_domain
+                error_obj.domain = (
+                    dataset_metadata.domain or dataset_metadata.rdomain or ""
+                )
                 return [error_obj.to_representation()]
         except Exception as e:
-            logger.trace(e, __name__)
+            logger.trace(e)
             logger.error(
                 f"""Error occurred during validation.
             Error: {e}
@@ -207,12 +209,16 @@ class RulesEngine:
             error_obj: ValidationErrorContainer = self.handle_validation_exceptions(
                 e, dataset_path, dataset_path
             )
-            error_obj.domain = dataset_domain
+            error_obj.domain = dataset_metadata.domain or dataset_metadata.rdomain or ""
             # this wrapping into a list is necessary to keep return type consistent
             return [error_obj.to_representation()]
 
     def get_dataset_builder(
-        self, rule: dict, dataset_path: str, datasets: List[dict], domain: str
+        self,
+        rule: dict,
+        dataset_path: str,
+        datasets: Iterable[SDTMDatasetMetadata],
+        dataset_metadata: SDTMDatasetMetadata,
     ):
         return builder_factory.get_service(
             rule.get("rule_type"),
@@ -221,7 +227,7 @@ class RulesEngine:
             cache_service=self.cache,
             data_processor=self.data_processor,
             rule_processor=self.rule_processor,
-            domain=domain,
+            dataset_metadata=dataset_metadata,
             datasets=datasets,
             dataset_path=dataset_path,
             define_xml_path=self.define_xml_path,
@@ -236,15 +242,17 @@ class RulesEngine:
         self,
         rule: dict,
         dataset_path: str,
-        datasets: List[dict],
-        domain: str,
+        datasets: Iterable[SDTMDatasetMetadata],
+        dataset_metadata: SDTMDatasetMetadata,
     ) -> List[Union[dict, str]]:
         """
          This function is an entrypoint for rule validation.
         It defines a rule validator based on its type and calls it.
         """
         kwargs = {}
-        builder = self.get_dataset_builder(rule, dataset_path, datasets, domain)
+        builder = self.get_dataset_builder(
+            rule, dataset_path, datasets, dataset_metadata
+        )
         dataset = builder.get_dataset()
         # Update rule for certain rule types
         # SPECIAL CASES FOR RULE TYPES ###############################
@@ -278,7 +286,7 @@ class RulesEngine:
             == RuleTypes.VALUE_LEVEL_METADATA_CHECK_AGAINST_DEFINE.value
         ):
             value_level_metadata: List[dict] = self.get_define_xml_value_level_metadata(
-                dataset_path, domain
+                dataset_path, dataset_metadata
             )
             kwargs["value_level_metadata"] = value_level_metadata
 
@@ -287,7 +295,7 @@ class RulesEngine:
             == RuleTypes.DATASET_CONTENTS_CHECK_AGAINST_DEFINE_AND_LIBRARY.value
         ):
             library_metadata: dict = self.library_metadata.variables_metadata.get(
-                domain, {}
+                dataset_metadata.domain, {}
             )
             define_metadata: List[dict] = builder.get_define_xml_variables_metadata()
             targets: List[str] = (
@@ -303,14 +311,14 @@ class RulesEngine:
             # When duplicating conditions,
             # rule should be copied to prevent updates to concurrent rule executions
             return self.execute_rule(
-                rule_copy, dataset, dataset_path, datasets, domain, **kwargs
+                rule_copy, dataset, dataset_path, datasets, dataset_metadata, **kwargs
             )
 
         kwargs["ct_packages"] = list(self.ct_packages)
 
         logger.info(f"Using dataset build by: {builder.__class__}")
         return self.execute_rule(
-            rule, dataset, dataset_path, datasets, domain, **kwargs
+            rule, dataset, dataset_path, datasets, dataset_metadata, **kwargs
         )
 
     def execute_rule(
@@ -318,8 +326,8 @@ class RulesEngine:
         rule: dict,
         dataset: DatasetInterface,
         dataset_path: str,
-        datasets: List[dict],
-        domain: str,
+        datasets: Iterable[SDTMDatasetMetadata],
+        dataset_metadata: SDTMDatasetMetadata,
         value_level_metadata: List[dict] = None,
         variable_codelist_map: dict = None,
         codelist_term_maps: list = None,
@@ -347,7 +355,7 @@ class RulesEngine:
 
         logger.log(rf"\n\ST{time.time()}-Dataset Preprocessing Starts")
         dataset_preprocessor = DatasetPreprocessor(
-            dataset, domain, dataset_path, self.data_service, self.cache
+            dataset, dataset_metadata, dataset_path, self.data_service, self.cache
         )
         dataset = dataset_preprocessor.preprocess(rule_copy, datasets)
         logger.log(rf"\n\ST{time.time()}-Dataset Preprocessing Ends")
@@ -355,7 +363,7 @@ class RulesEngine:
         dataset = self.rule_processor.perform_rule_operations(
             rule_copy,
             dataset,
-            domain,
+            dataset_metadata.domain,
             datasets,
             dataset_path,
             standard=self.standard,
@@ -366,13 +374,16 @@ class RulesEngine:
         )
         logger.log(rf"\n\OPRNT{time.time()}-Operation Ends")
         relationship_data = {}
-        if domain is not None and self.rule_processor.is_relationship_dataset(domain):
+        if (
+            dataset_metadata is not None
+            and self.rule_processor.is_relationship_dataset(dataset_metadata.name)
+        ):
             relationship_data = self.data_processor.preprocess_relationship_dataset(
                 os.path.dirname(dataset_path), dataset, datasets
             )
         dataset_variable = DatasetVariable(
             dataset,
-            column_prefix_map={"--": domain},
+            column_prefix_map={"--": dataset_metadata.domain},
             relationship_data=relationship_data,
             value_level_metadata=value_level_metadata,
             column_codelist_map=variable_codelist_map,
@@ -385,7 +396,7 @@ class RulesEngine:
             defined_actions=COREActions(
                 results,
                 variable=dataset_variable,
-                domain=domain,
+                dataset_metadata=dataset_metadata,
                 rule=rule,
                 value_level_metadata=value_level_metadata,
             ),
@@ -395,18 +406,6 @@ class RulesEngine:
             for result in results:
                 result["dataset"] = dataset
         return results
-
-    def get_define_xml_metadata_for_domain(
-        self, dataset_path: str, domain_name: str
-    ) -> dict:
-        """
-        Gets Define XML metadata and returns it as dict.
-        """
-        define_xml_reader = DefineXMLReaderFactory.get_define_xml_reader(
-            dataset_path, self.define_xml_path, self.data_service, self.cache
-        )
-
-        return define_xml_reader.extract_domain_metadata(domain_name=domain_name)
 
     def get_define_xml_value_level_metadata(
         self, dataset_path: str, domain_name: str
@@ -492,30 +491,20 @@ class RulesEngine:
                     message=message,
                     status=ExecutionStatus.SKIPPED.value,
                 )
-        elif isinstance(exception, KeyError):
-            missing_column = str(exception.args[0]).strip("'")
-            traceback_str = str(exception.__traceback__)
-            is_column_access_error = any(
-                pattern in traceback_str
-                for pattern in [
-                    "NoneType",
-                    "object is None",
-                    "'NoneType'",
-                    "None has no attribute",
-                    "unsupported operand type",
-                    "bad operand type",
-                    "object is not",
-                    "cannot be None",
-                ]
+        elif isinstance(exception, DomainNotFoundError):
+            error_obj = ValidationErrorContainer(
+                dataset=os.path.basename(dataset_path),
+                message=str(exception),
+                status=ExecutionStatus.SKIPPED.value,
             )
-            if is_column_access_error:
-                error_obj = FailedValidationEntity(
-                    dataset=os.path.basename(dataset_path),
-                    error="Column Not Present",
-                    message=f"Rule evaluation skipped - '{missing_column}' not found in dataset",
-                    status=ExecutionStatus.SKIPPED.value,
-                )
-                message = "rule evaluation skipped"
+            message = "rule evaluation skipped - operation domain not found"
+            errors = [error_obj]
+            return ValidationErrorContainer(
+                dataset=os.path.basename(dataset_path),
+                errors=errors,
+                message=message,
+                status=ExecutionStatus.SKIPPED.value,
+            )
         else:
             error_obj = FailedValidationEntity(
                 dataset=os.path.basename(dataset_path),

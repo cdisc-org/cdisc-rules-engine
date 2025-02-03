@@ -332,3 +332,6 @@ class DaskDataset(PandasDataset):
             return None
         else:
             return self.__class__(result)
+
+    def to_dict(self, **kwargs) -> dict:
+        return list(self._data.map_partitions(lambda x: x.to_dict(orient="records")))

@@ -51,9 +51,9 @@ def test_get_variable_metadata_for_given_standard(
     }
 
     datasets = [
-        {"domain": "DM", "filename": "DM"},
-        {"domain": "EX", "filename": "EX"},
-        {"domain": "DM", "filename": "DM2"},
+        {"first_record": {"DOMAIN": "DM"}, "filename": "DM"},
+        {"first_record": {"DOMAIN": "EX"}, "filename": "EX"},
+        {"first_record": {"DOMAIN": "DM"}, "filename": "DM2"},
     ]
     mock_data_service.get_dataset.side_effect = lambda name: datasets_map.get(
         name.split("/")[-1]

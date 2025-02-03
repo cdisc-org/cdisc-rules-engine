@@ -15,7 +15,7 @@ class DatasetJSONMetadataReader:
 
     def __init__(self, file_path: str, file_name: str):
         self._file_path = file_path
-        self._domain_name = None
+        self._domain = None
         self._dataset_name = file_name.split(".")[0].upper()
 
     def read(self) -> dict:
@@ -49,7 +49,7 @@ class DatasetJSONMetadataReader:
                 {},
             )
 
-            self._domain_name = self._extract_domain_name(items_data)
+            self._first_record = self._extract_first_record(items_data)
 
             self._metadata_container = {
                 "variable_labels": [
@@ -77,7 +77,7 @@ class DatasetJSONMetadataReader:
                 "number_of_variables": len(items_data.get("items", [])[1:]),
                 "dataset_label": items_data.get("label"),
                 "dataset_length": items_data.get("records"),
-                "domain_name": self._domain_name,
+                "first_record": self._first_record,
                 "dataset_name": items_data.get("name"),
                 "dataset_modification_date": datasetjson["creationDateTime"],
             }
@@ -106,24 +106,17 @@ class DatasetJSONMetadataReader:
                 "number_of_variables": 0,
                 "dataset_label": "",
                 "dataset_length": 0,
-                "domain_name": "",
+                "first_record": None,
                 "dataset_name": "",
                 "dataset_modification_date": "",
             }
 
-    def _extract_domain_name(self, data):
-        index_domain = next(
-            (
-                index
-                for index, item in enumerate(data["items"])
-                if item.get("name") == "DOMAIN"
-            ),
-            None,
-        )
-        if index_domain is not None:
-            return data["itemData"][0][index_domain]
-        else:
-            return " "
+    def _extract_first_record(self, data):
+        first_array = next(iter(data["itemData"]), None)
+        if first_array and len(first_array) == len(data["items"]):
+            return dict(
+                zip([item.get("name", "") for item in data["items"]], first_array)
+            )
 
     def _convert_variable_types(self):
         """
@@ -141,9 +134,9 @@ class DatasetJSONMetadataReader:
         for key, value in self._metadata_container[
             "variable_name_to_data_type_map"
         ].items():
-            self._metadata_container["variable_name_to_data_type_map"][
-                key
-            ] = rule_author_type_map[value]
+            self._metadata_container["variable_name_to_data_type_map"][key] = (
+                rule_author_type_map[value]
+            )
 
     def _to_dict(self) -> dict:
         """
@@ -159,7 +152,7 @@ class DatasetJSONMetadataReader:
             "variable_name_to_size_map": self._metadata_container.variable_storage_width,  # noqa
             "number_of_variables": self._metadata_container.number_columns,
             "dataset_label": self._metadata_container.file_label,
-            "domain_name": self._domain_name,
+            "first_record": self._first_record,
             "dataset_name": self._dataset_name,
             "dataset_modification_date": self._metadata_container.dataset_modification_date,  # noqa
         }

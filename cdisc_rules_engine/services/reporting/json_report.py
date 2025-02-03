@@ -11,7 +11,6 @@ from cdisc_rules_engine.utilities.reporting_utilities import (
 )
 from .base_report import BaseReport
 from version import __version__
-from pathlib import Path
 from cdisc_rules_engine.models.external_dictionaries_container import DictionaryTypes
 
 
@@ -77,12 +76,12 @@ class JsonReport(BaseReport):
             "Conformance_Details": conformance_details,
             "Dataset_Details": [
                 {
-                    "filename": dataset.get("filename"),
-                    "label": dataset.get("label"),
-                    "path": str(Path(dataset.get("full_path", "")).parent),
-                    "modification_date": dataset.get("modification_date"),
-                    "size_kb": dataset.get("size", 0) / 1000,
-                    "length": dataset.get("length"),
+                    "filename": dataset.filename,
+                    "label": dataset.label,
+                    "path": dataset.full_path,
+                    "modification_date": dataset.modification_date,
+                    "size_kb": (dataset.file_size or 0) / 1000,
+                    "length": dataset.record_count,
                 }
                 for dataset in self._datasets
             ],

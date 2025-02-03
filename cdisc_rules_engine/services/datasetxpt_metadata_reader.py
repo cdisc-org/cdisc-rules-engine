@@ -23,7 +23,7 @@ class DatasetXPTMetadataReader:
             self._estimate_dataset_length = False
             self.row_limit = 0
         self._metadata_container = {}
-        self._domain_name = None
+        self._first_record = None
         self._dataset_name = file_name.split(".")[0].upper()
         self._file_path = file_path
 
@@ -34,7 +34,7 @@ class DatasetXPTMetadataReader:
         dataset, metadata = pyreadstat.read_xport(
             self._file_path, row_limit=self.row_limit
         )
-        self._domain_name = self._extract_domain_name(dataset)
+        self._first_record = self._extract_first_record(dataset)
         self._metadata_container = {
             "variable_labels": list(metadata.column_labels),
             "variable_names": list(metadata.column_names),
@@ -48,16 +48,15 @@ class DatasetXPTMetadataReader:
             "number_of_variables": metadata.number_columns,
             "dataset_label": metadata.file_label,
             "dataset_length": metadata.number_rows,
-            "domain_name": self._domain_name,
+            "first_record": self._first_record,
             "dataset_name": self._dataset_name,
             "dataset_modification_date": metadata.modification_time.isoformat(),
         }
 
         if self._estimate_dataset_length:
-            self._metadata_container[
-                "dataset_length"
-            ] = self._calculate_dataset_length()
-        self._domain_name = self._extract_domain_name(dataset)
+            self._metadata_container["dataset_length"] = (
+                self._calculate_dataset_length()
+            )
         self._convert_variable_types()
         self._metadata_container["adam_info"] = self._extract_adam_info(
             self._metadata_container["variable_names"]
@@ -65,15 +64,12 @@ class DatasetXPTMetadataReader:
         logger.info(f"Extracted dataset metadata. metadata={self._metadata_container}")
         return self._metadata_container
 
-    def _extract_domain_name(self, df):
+    def _extract_first_record(self, df):
         try:
-            first_row = df.iloc[0]
-            if "DOMAIN" in first_row:
-                domain_name = first_row["DOMAIN"]
-                if isinstance(domain_name, bytes):
-                    return domain_name.decode("utf-8")
-                else:
-                    return str(domain_name)
+            return {
+                name: value.decode("utf-8") if isinstance(value, bytes) else str(value)
+                for name, value in df.iloc[0].items()
+            }
         except IndexError:
             pass
         return None
@@ -147,9 +143,9 @@ class DatasetXPTMetadataReader:
         for key, value in self._metadata_container[
             "variable_name_to_data_type_map"
         ].items():
-            self._metadata_container["variable_name_to_data_type_map"][
-                key
-            ] = rule_author_type_map[value]
+            self._metadata_container["variable_name_to_data_type_map"][key] = (
+                rule_author_type_map[value]
+            )
 
     def _to_dict(self) -> dict:
         """
@@ -165,7 +161,7 @@ class DatasetXPTMetadataReader:
             "variable_name_to_size_map": self._metadata_container.variable_storage_width,  # noqa
             "number_of_variables": self._metadata_container.number_columns,
             "dataset_label": self._metadata_container.file_label,
-            "domain_name": self._domain_name,
+            "first_record": self._first_record,
             "dataset_name": self._dataset_name,
             "dataset_modification_date": self._metadata_container.dataset_modification_date,  # noqa
         }

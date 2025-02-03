@@ -81,8 +81,8 @@ def cached(cache_key: str):  # noqa: C901
                 else kwargs.get("study_id")
             )
             domain_name = (
-                instance.domain_name
-                if hasattr(instance, "domain_name")
+                instance.domain
+                if hasattr(instance, "domain")
                 else kwargs.get("domain_name")
             )
             if (

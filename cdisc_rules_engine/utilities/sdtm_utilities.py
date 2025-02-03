@@ -17,7 +17,8 @@ from cdisc_rules_engine.services.cdisc_library_service import CDISCLibraryServic
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
-from typing import Tuple, List, Optional
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
+from typing import Iterable, Tuple, List, Optional
 
 
 def get_class_and_domain_metadata(
@@ -301,7 +302,7 @@ def get_variables_metadata_from_standard_model(
     standard_version: str,
     domain: str,
     dataframe,
-    datasets: List[dict],
+    datasets: Iterable[SDTMDatasetMetadata],
     dataset_path: str,
     cache: CacheServiceInterface,
     data_service: DataServiceInterface,
@@ -360,8 +361,12 @@ def get_variables_metadata_from_standard_model(
             variables_metadata.sort(key=lambda item: item[sort_key])
     else:
         # Domain not found in the model. Detect class name from data
+        domain_details = search_in_list_of_dicts(
+            datasets,
+            lambda item: domain == (item.domain or item.name),
+        )
         class_name = data_service.get_dataset_class(
-            dataframe, dataset_path, datasets, domain
+            dataframe, dataset_path, datasets, domain_details
         )
         class_name = convert_library_class_name_to_ct_class(class_name)
         class_details = get_class_metadata(model_details, class_name)
@@ -408,9 +413,11 @@ def add_variable_wildcards(
 ):
     all_model_wildcard_variables = get_all_model_wildcard_variables(model_details)
     return {
-        variable: variable.replace(domain, wildcard, 1)
-        if variable.startswith(domain)
-        and variable.replace(domain, "--", 1) in all_model_wildcard_variables
-        else variable
+        variable: (
+            variable.replace(domain, wildcard, 1)
+            if variable.startswith(domain)
+            and variable.replace(domain, "--", 1) in all_model_wildcard_variables
+            else variable
+        )
         for variable in variables
     }
