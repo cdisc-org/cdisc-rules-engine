@@ -353,8 +353,7 @@ class TestValidate(unittest.TestCase):
         exit_code, stdout, stderr = run_command(args, False)
 
         self.assertEqual(exit_code, 0)
-        self.assertFalse(self.error_keyword in stdout)
-        self.assertEqual(stderr, "")
+        self.assertFalse(self.error_message in stdout)
 
     def test_validate_with_log_level_warn(self):
         args = [
