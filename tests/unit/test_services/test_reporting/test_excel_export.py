@@ -4,6 +4,7 @@ from unittest.mock import MagicMock
 from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
 from cdisc_rules_engine.services.reporting.excel_report import ExcelReport
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from pathlib import Path
 from version import __version__
 
@@ -235,14 +236,16 @@ def test_get_export():
         mock_args.meddra = "test"
         mock_args.whodrug = "test"
         datasets = [
-            {
-                "filename": "test.xpt",
-                "label": "Test Data",
-                "full_path": str(Path("tests/unit/text.xpt")),
-                "modification_date": "2022-04-19T16:17:45",
-                "size": 20000,
-                "length": 700,
-            }
+            SDTMDatasetMetadata(
+                **{
+                    "filename": "test.xpt",
+                    "label": "Test Data",
+                    "full_path": str(Path("tests/unit/text.xpt")),
+                    "modification_date": "2022-04-19T16:17:45",
+                    "file_size": 20000,
+                    "record_count": 700,
+                }
+            )
         ]
         report: ExcelReport = ExcelReport(
             datasets, ["test"], mock_validation_results, 10.1, mock_args, f

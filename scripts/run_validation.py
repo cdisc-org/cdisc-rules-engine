@@ -12,6 +12,7 @@ from cdisc_rules_engine.models.library_metadata_container import (
 )
 from cdisc_rules_engine.models.rule_conditions import ConditionCompositeFactory
 from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.models.validation_args import Validation_args
 from cdisc_rules_engine.rules_engine import RulesEngine
 from cdisc_rules_engine.services import logger as engine_logger
@@ -52,7 +53,7 @@ class CacheManager(SyncManager):
 
 def validate_single_rule(
     cache,
-    datasets,
+    datasets: Iterable[SDTMDatasetMetadata],
     args: Validation_args,
     library_metadata: LibraryMetadataContainer,
     rule: dict = None,
@@ -60,7 +61,7 @@ def validate_single_rule(
     rule["conditions"] = ConditionCompositeFactory.get_condition_composite(
         rule["conditions"]
     )
-    max_dataset_size = max(datasets, key=lambda x: x["size"])["size"]
+    max_dataset_size = max(datasets, key=lambda x: x.file_size).file_size
     # call rule engine
     engine = RulesEngine(
         cache=cache,
@@ -76,15 +77,15 @@ def validate_single_rule(
     )
     results = []
     validated_domains = set()
-    for dataset in datasets:
+    for dataset_metadata in datasets:
         # Check if the domain has been validated before
         # This addresses the case where a domain is split
         # and appears multiple times within the list of datasets
-        if dataset["domain"] not in validated_domains:
-            validated_domains.add(dataset["domain"])
+        if dataset_metadata.unsplit_name not in validated_domains:
+            validated_domains.add(dataset_metadata.unsplit_name)
             results.append(
                 engine.validate_single_rule(
-                    rule, dataset["full_path"], datasets, dataset["domain"]
+                    rule, dataset_metadata.full_path, datasets, dataset_metadata
                 )
             )
 
@@ -149,14 +150,14 @@ def run_validation(args: Validation_args):
             "Large datasets must use parquet format, converting all datasets to parquet"
         )
         for dataset in datasets:
-            file_path = dataset.get("full_path")
+            file_path = dataset.full_path
             if file_path.endswith(".parquet"):
                 continue
             num_rows, new_file = data_service.to_parquet(file_path)
             created_files.append(new_file)
-            dataset["full_path"] = new_file
-            dataset["length"] = num_rows
-            dataset["original_path"] = file_path
+            dataset.full_path = new_file
+            dataset.record_count = num_rows
+            dataset.original_path = file_path
     engine_logger.info(f"Running {len(rules)} rules against {len(datasets)} datasets")
     start = time.time()
     results = []

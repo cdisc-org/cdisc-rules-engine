@@ -20,6 +20,7 @@ from cdisc_rules_engine.services.cache import InMemoryCacheService
 from cdisc_rules_engine.services.data_services import LocalDataService
 from cdisc_rules_engine.config import ConfigService
 from cdisc_rules_engine.services.data_readers import DataReaderFactory
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 
 test_set1 = (
     {
@@ -145,6 +146,7 @@ test_set1 = (
             "test",
         ],
     },
+    {"name": "AE"},
     "Timing",
     ["VISITNUM", "VISIT", "TIMING_VAR"],
 )
@@ -263,6 +265,7 @@ test_set2 = (
             "test",
         ],
     },
+    {"name": "AE"},
     "Identifier",
     ["STUDYID", "DOMAIN", "USUBJID", "AETERM"],
 )
@@ -382,6 +385,7 @@ test_set3 = (
         ],
         "AETESTCD": ["test", "test", "test"],
     },
+    {"name": "AE"},
     "Timing",
     ["TIMING_VAR1", "TIMING_VAR2"],
 )
@@ -501,13 +505,14 @@ test_set4 = (
         ],
         "AETESTCD": ["test", "test", "test"],
     },
+    {"name": "AE"},
     "Identifier",
     ["STUDYID", "DOMAIN", "IDVAR1"],
 )
 
 
 @pytest.mark.parametrize(
-    "model_metadata, standard_metadata, study_data, key_val, var_list",
+    "model_metadata, standard_metadata, study_data, dataset_metadata, key_val, var_list",
     [test_set1, test_set2, test_set3, test_set4],
 )
 def test_get_model_filtered_variables(
@@ -515,6 +520,7 @@ def test_get_model_filtered_variables(
     model_metadata: dict,
     standard_metadata: dict,
     study_data: dict,
+    dataset_metadata: dict,
     key_val: str,
     var_list: List[str],
 ):
@@ -530,6 +536,7 @@ def test_get_model_filtered_variables(
     operation_params.standard_version = "3-4"
     operation_params.key_name = "role"
     operation_params.key_value = key_val
+    operation_params.datasets = [SDTMDatasetMetadata(**dataset_metadata)]
 
     # save model metadata to cache
     cache = InMemoryCacheService.get_instance()
