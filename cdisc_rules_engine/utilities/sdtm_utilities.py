@@ -408,9 +408,11 @@ def add_variable_wildcards(
 ):
     all_model_wildcard_variables = get_all_model_wildcard_variables(model_details)
     return {
-        variable: variable.replace(domain, wildcard, 1)
-        if variable.startswith(domain)
-        and variable.replace(domain, "--", 1) in all_model_wildcard_variables
-        else variable
+        variable: (
+            variable.replace(domain, wildcard, 1)
+            if variable.startswith(domain)
+            and variable.replace(domain, "--", 1) in all_model_wildcard_variables
+            else variable
+        )
         for variable in variables
     }
