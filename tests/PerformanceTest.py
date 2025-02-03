@@ -444,15 +444,15 @@ def delete_run_report_files(pattern, directory=None):
 
 
 @click.command()
-@click.option("-dd", type=str)
-@click.option("-rd", type=str)
+@click.option("-d", type=str)
+@click.option("-lr", type=str)
 @click.option("-total_calls", type=int)
 @click.option(
     "-od",
     default=os.getcwd(),
     help="Directory to save the output file (default is current directory)",
 )
-def main(dd, rd, total_calls, od):
+def main(d, lr, total_calls, od):
     total_time_start = time.time()
 
     (
@@ -460,7 +460,7 @@ def main(dd, rd, total_calls, od):
         individual_rule_result,
         collective_dataset_result,
         individual_dataset_result,
-    ) = TimeTestFunction(dd, rd, total_calls)
+    ) = TimeTestFunction(d, lr, total_calls)
 
     total_time = time.time() - total_time_start
 
