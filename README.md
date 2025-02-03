@@ -77,19 +77,20 @@ From the root of the project run the following command (this will run both the u
 
 This repository includes a performance testing script located in the `tests` folder under the filename `PerformanceTest.py`. The script is designed to evaluate the execution time of rules against datasets by running multiple test iterations.
 
-### Running the Performance Test
-
-To execute the performance test, navigate to the root directory of the project and run the following command:
-
-```sh
-python tests/PerformanceTest.py -dd <DATASET_DIRECTORY> -rd <RULES_DIRECTORY> -total_calls <NUMBER_OF_CALLS> -od <OUTPUT_DIRECTORY>
+  #### Running the Performance Test
+  
+  To execute the performance test, navigate to the root directory of the project and run the following command:
+  
+  ```sh
+  python tests/PerformanceTest.py -d <DATASET_DIRECTORY> -lr <RULES_DIRECTORY> -total_calls <NUMBER_OF_CALLS> -od <OUTPUT_DIRECTORY>
+  ```
+  #### Performance Test Command-Line Flags
+  ```
+  -d TEXT                  The directory containing the dataset files in `.json` or `.xpt` format.
+  -lr TEXT                 The directory containing rule files.
+  -total_calls INTEGER     The number of times each rule should be executed for performance analysis.
+  -od TEXT                 The directory where the output report (`rule_execution_report.xlsx`) will be saved. By default, the report is saved in the current working directory.
 ```
-### Performance Test Command-Line Flags
-
-- **`-dd` (Dataset Directory)**: The directory containing the dataset files in `.json` or `.xpt` format.
-- **`-rd` (Rules Directory)**: The directory containing rule files.
-- **`-total_calls` (Total Calls)**: The number of times each rule should be executed for performance analysis.
-- **`-od` (Output Directory, Optional)**: The directory where the output report (`rule_execution_report.xlsx`) will be saved. By default, the report is saved in the current working directory.
 
 ### **Running a validation**
 
