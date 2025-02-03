@@ -26,7 +26,7 @@ class CodelistTerms(BaseOperation):
                 ct_package_data = next(
                     (pkg for name, pkg in ct_packages.items() if name != "extensible")
                 )
-        except (AttributeError) as e:
+        except AttributeError as e:
             logger.warning(
                 "CT package data is not populated: %s "
                 "-- a valid define.xml file or -ct command is required to execute",
@@ -37,7 +37,7 @@ class CodelistTerms(BaseOperation):
         for codelist in codelists:
             original_key = lookup_map.get(codelist.lower())
             if original_key is None:
-                raise MissingDataError(f"Codelist '{codelist}' not found in metadata")
+                raise MissingDataError(f"Codelist '{codelist}' not in metadata")
             code_obj = submission_lookup[original_key]
             codes.append(code_obj)
         values = []
