@@ -1,41 +1,109 @@
 {
+  "Authorities": [
+    {
+      "Organization": "CDISC",
+      "Standards": [
+        {
+          "Name": "SDTMIG",
+          "References": [
+            {
+              "Citations": [
+                {
+                  "Document": "IG v3.2",
+                  "Section": "4.1.1.5",
+                  "Cited_Guidance": "The sponsor does not have the discretion to exclude permissible variables when they contain data."
+                }
+              ],
+              "Origin": "SDTM and SDTMIG Conformance Rules",
+              "Version": "2.0",
+              "Rule_Identifier": {
+                "Id": "CG0015",
+                "Version": "1"
+              }
+            }
+          ],
+          "Version": "3.2"
+        },
+        {
+          "Name": "SDTMIG",
+          "References": [
+            {
+              "Citations": [
+                {
+                  "Document": "IG v3.3",
+                  "Section": "4.1.5",
+                  "Cited_Guidance": "The sponsor does not have the discretion to exclude permissible variables when they contain data."
+                }
+              ],
+              "Origin": "SDTM and SDTMIG Conformance Rules",
+              "Version": "2.0",
+              "Rule_Identifier": {
+                "Id": "CG0015",
+                "Version": "1"
+              }
+            }
+          ],
+          "Version": "3.3"
+        },
+        {
+          "Name": "SDTMIG",
+          "References": [
+            {
+              "Citations": [
+                {
+                  "Document": "IG v3.4",
+                  "Section": "4.1.5",
+                  "Cited_Guidance": "If a study includes a data item that would be represented in a Permissible variable, then that variable must be included in the SDTM dataset, even if null. "
+                }
+              ],
+              "Origin": "SDTM and SDTMIG Conformance Rules",
+              "Version": "2.0",
+              "Rule_Identifier": {
+                "Id": "CG0015",
+                "Version": "1"
+              }
+            }
+          ],
+          "Version": "3.4"
+        }
+      ]
+    }
+  ],
   "Check": {
     "all": [
       {
-        "name": "define_variable_has_no_data",
-        "operator": "equal_to",
-        "value": "Yes"
+        "name": "variable_name",
+        "operator": "not_contains_all",
+        "value": [
+          "$permissible_variables"
+        ]
       },
       {
-        "name": "$variable_is_null",
-        "operator": "equal_to",
-        "value": false
+        "name": "variable_name",
+        "operator": "variable_metadata_equal_to"
       }
     ]
   },
+  "Core": {
+    "Id": "CDISC.SDTMIG.CG0015",
+    "Status": "Draft",
+    "Version": "1"
+  },
+  "Description": "",
+  "Executability": "Fully Executable",
   "Operations": [
     {
-      "id": "$variable_is_null",
-      "name": "define_variable_name",
-      "operator": "variable_is_null"
+      "id": "$permissible_variables",
+      "operator": "permissible_variables"
+    },
+    {
+      "id": "$dataset_variables",
+      "operator": "get_column_order_from_dataset"
     }
   ],
-  "Core": {
-    "Id": "DEFINE ",
-    "Version": "1",
-    "Status": "Draft"
-  },
-  "Description": "Raise an error if define variable has no data is equal to Yes and the variable is not null",
   "Outcome": {
-    "Message": "Raise an error if define variable has no data is equal to Yes and the variable is not null",
-    "Output_Variables": [
-      "define_variable_has_no_data",
-      "define_variable_name",
-      "$variable_is_null"
-    ]
+    "Message": ""
   },
-  "Sensitivity": "Record",
-  "Executability": "Fully Executable",
   "Scope": {
     "Classes": {
       "Include": [
@@ -48,5 +116,6 @@
       ]
     }
   },
-  "Rule_Type": "Define Item Metadata Check"
+  "Sensitivity": "Record",
+  "Rule_Type": "Record Data"
 }
