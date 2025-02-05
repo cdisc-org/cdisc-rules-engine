@@ -25,6 +25,8 @@ class TestCoreIssue287(unittest.TestCase):
             os.path.join(
                 "tests", "resources", "CoreIssue287", "dur_is_null_dataset.json"
             ),
+            "-dxp",
+            os.path.join("tests", "resources", "CoreIssue287", "define.xml"),
         ]
         subprocess.run(command, check=True)
 
