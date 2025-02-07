@@ -202,8 +202,8 @@ def test_get_column_order_from_library(
     result = operation.execute()
     variables: List[str] = [
         "STUDYID",
-        "DOMAIN",
         "AETEST",
+        "DOMAIN",
         "AENEW",
         "TIMING_VAR",
     ]

@@ -2354,8 +2354,8 @@ def test_validate_variables_order_against_library_metadata(
                     "value": {
                         "$column_order_from_library": [
                             "STUDYID",
-                            "DOMAIN",
                             "AETERM",
+                            "DOMAIN",
                             "AESEQ",
                             "TIMING_VAR",
                         ],
