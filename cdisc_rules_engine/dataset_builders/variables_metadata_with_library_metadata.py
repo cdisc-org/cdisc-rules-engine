@@ -33,7 +33,7 @@ class VariablesMetadataWithLibraryMetadataDatasetBuilder(BaseDatasetBuilder):
 
         data = content_variables_metadata.merge(
             library_variables_metadata.data,
-            how="outer",
+            how="left",
             left_on="variable_name",
             right_on="library_variable_name",
         ).fillna("")
