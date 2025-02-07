@@ -1,6 +1,7 @@
 import json
 import yaml
 
+from cdisc_rules_engine.enums.default_file_paths import DefaultFilePaths
 from cdisc_rules_engine.interfaces import CacheServiceInterface
 from cdisc_rules_engine.models.dictionaries.dictionary_types import DictionaryTypes
 from cdisc_rules_engine.interfaces.data_service_interface import DataServiceInterface
@@ -19,6 +20,7 @@ from cdisc_rules_engine.models.dictionaries.get_dictionary_terms import (
     extract_dictionary_terms,
 )
 from cdisc_rules_engine.models.rule import Rule
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.utilities.utils import (
     get_rules_cache_key,
     get_standard_details_cache_key,
@@ -143,9 +145,9 @@ def fill_cache_with_dictionaries(cache: CacheServiceInterface, args):
         if not dictionary_path:
             continue
         if dictionary_type == DictionaryTypes.SNOMED.value:
-            versions_map[
-                dictionary_type
-            ] = f'MAIN/{dictionary_path.get("edition")}/{dictionary_path.get("version")}'
+            versions_map[dictionary_type] = (
+                f'MAIN/{dictionary_path.get("edition")}/{dictionary_path.get("version")}'
+            )
             continue
         terms = extract_dictionary_terms(data_service, dictionary_type, dictionary_path)
         cache.add(dictionary_path, terms)
@@ -172,9 +174,9 @@ def get_rules(args) -> List[dict]:
 
 def rule_cache_file(args) -> str:
     if args.local_rules_cache:
-        return os.path.join(args.cache, "local_rules.pkl")
+        return os.path.join(args.cache, DefaultFilePaths.LOCAL_RULES_CACHE_FILE.value)
     else:
-        return os.path.join(args.cache, "rules.pkl")
+        return os.path.join(args.cache, DefaultFilePaths.RULES_CACHE_FILE.value)
 
 
 def load_rules_from_cache(args) -> List[dict]:
@@ -327,24 +329,13 @@ def process_rule(rule, args, rule_data, rules, keys):
 
 def get_datasets(
     data_service: DataServiceInterface, dataset_paths: Iterable[str]
-) -> List[dict]:
+) -> List[SDTMDatasetMetadata]:
     datasets = []
     if data_service.standard == "usdm":
         return data_service.get_datasets()
     for dataset_path in dataset_paths:
         metadata = data_service.get_raw_dataset_metadata(dataset_name=dataset_path)
-        datasets.append(
-            {
-                "domain": metadata.domain_name,
-                "filename": metadata.filename,
-                "full_path": dataset_path,
-                "length": metadata.records,
-                "label": metadata.label,
-                "size": metadata.size,
-                "modification_date": metadata.modification_date,
-                "temp_filename": None,
-            }
-        )
+        datasets.append(metadata)
 
     return datasets
 

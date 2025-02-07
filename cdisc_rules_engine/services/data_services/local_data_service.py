@@ -3,7 +3,7 @@ from io import IOBase
 from typing import Iterable, List, Optional, Tuple
 
 from cdisc_rules_engine.interfaces import CacheServiceInterface, ConfigInterface
-from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.models.dataset_types import DatasetTypes
 from cdisc_rules_engine.models.variable_metadata_container import (
     VariableMetadataContainer,
@@ -102,7 +102,7 @@ class LocalDataService(BaseDataService):
             dataset_name, size_unit=size_unit, **params
         )
         metadata_to_return: dict = {
-            "dataset_size": [file_metadata["size"]],
+            "dataset_size": [file_metadata["file_size"]],
             "dataset_location": [file_metadata["name"]],
             "dataset_name": [contents_metadata["dataset_name"]],
             "dataset_label": [contents_metadata["dataset_label"]],
@@ -110,23 +110,24 @@ class LocalDataService(BaseDataService):
         return self.dataset_implementation.from_dict(metadata_to_return)
 
     @cached_dataset(DatasetTypes.RAW_METADATA.value)
-    def get_raw_dataset_metadata(self, dataset_name: str, **kwargs) -> DatasetMetadata:
+    def get_raw_dataset_metadata(
+        self, dataset_name: str, **kwargs
+    ) -> SDTMDatasetMetadata:
         """
         Returns dataset metadata as DatasetMetadata instance.
         """
         file_metadata, contents_metadata = self.__get_dataset_metadata(
             dataset_name, **kwargs
         )
-        return DatasetMetadata(
+        return SDTMDatasetMetadata(
             name=contents_metadata["dataset_name"],
-            domain_name=contents_metadata["domain_name"]
-            or contents_metadata["dataset_name"],
+            first_record=contents_metadata["first_record"],
             label=contents_metadata["dataset_label"],
             modification_date=contents_metadata["dataset_modification_date"],
             filename=file_metadata["name"],
             full_path=file_metadata["path"],
-            size=file_metadata["size"],
-            records=contents_metadata["dataset_length"],
+            file_size=file_metadata["file_size"],
+            record_count=contents_metadata["dataset_length"],
         )
 
     @cached_dataset(DatasetTypes.VARIABLES_METADATA.value)
@@ -169,13 +170,15 @@ class LocalDataService(BaseDataService):
             dataset_name=dataset_name, **params
         )
 
-    def read_metadata(self, file_path: str, datasets: Optional[List] = None) -> dict:
+    def read_metadata(
+        self, file_path: str, datasets: Optional[Iterable[SDTMDatasetMetadata]] = None
+    ) -> dict:
         file_size = os.path.getsize(file_path)
         file_name = extract_file_name_from_path_string(file_path)
         file_metadata = {
             "path": file_path,
             "name": file_name,
-            "size": file_size,
+            "file_size": file_size,
         }
         if file_name.endswith(".parquet") and datasets:
             for obj in datasets:
@@ -185,7 +188,7 @@ class LocalDataService(BaseDataService):
                         "name": extract_file_name_from_path_string(
                             obj["original_path"]
                         ),
-                        "size": os.path.getsize(obj["original_path"]),
+                        "file_size": os.path.getsize(obj["original_path"]),
                     }
                     file_name = obj["filename"]
                     break
@@ -218,7 +221,9 @@ class LocalDataService(BaseDataService):
         file_metadata: dict = metadata["file_metadata"]
         size_unit: Optional[str] = kwargs.get("size_unit")
         if size_unit:  # convert file size from bytes to desired unit if needed
-            file_metadata["size"] = convert_file_size(file_metadata["size"], size_unit)
+            file_metadata["file_size"] = convert_file_size(
+                file_metadata["file_size"], size_unit
+            )
         return file_metadata, metadata["contents_metadata"]
 
     def to_parquet(self, file_path: str) -> str:
@@ -230,15 +235,17 @@ class LocalDataService(BaseDataService):
     def get_datasets(self) -> List[dict]:
         datasets = []
         for dataset_path in self.dataset_paths:
-            metadata = self.get_raw_dataset_metadata(dataset_name=dataset_path)
+            metadata: SDTMDatasetMetadata = self.get_raw_dataset_metadata(
+                dataset_name=dataset_path
+            )
             datasets.append(
                 {
-                    "domain": metadata.domain_name,
+                    "domain": metadata.domain,
                     "filename": metadata.filename,
                     "full_path": dataset_path,
-                    "length": metadata.records,
+                    "length": metadata.record_count,
                     "label": metadata.label,
-                    "size": metadata.size,
+                    "file_size": metadata.file_size,
                     "modification_date": metadata.modification_date,
                 }
             )

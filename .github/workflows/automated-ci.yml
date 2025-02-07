@@ -16,7 +16,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: "3.9"
 
@@ -56,10 +56,16 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: "0"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
+
       - name: Install linters
         run: |
           pip install flake8==5.0.4
-          pip install black==22.6.0
+          pip install black==24.10.0
 
       - name: Run flake8
         run: |
