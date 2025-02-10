@@ -1,6 +1,7 @@
 import json
 import yaml
 
+from cdisc_rules_engine.enums.default_file_paths import DefaultFilePaths
 from cdisc_rules_engine.interfaces import CacheServiceInterface
 from cdisc_rules_engine.models.dictionaries.dictionary_types import DictionaryTypes
 from cdisc_rules_engine.interfaces.data_service_interface import DataServiceInterface
@@ -173,9 +174,9 @@ def get_rules(args) -> List[dict]:
 
 def rule_cache_file(args) -> str:
     if args.local_rules_cache:
-        return os.path.join(args.cache, "local_rules.pkl")
+        return os.path.join(args.cache, DefaultFilePaths.LOCAL_RULES_CACHE_FILE.value)
     else:
-        return os.path.join(args.cache, "rules.pkl")
+        return os.path.join(args.cache, DefaultFilePaths.RULES_CACHE_FILE.value)
 
 
 def load_rules_from_cache(args) -> List[dict]:

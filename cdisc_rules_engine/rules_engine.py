@@ -67,12 +67,13 @@ class RulesEngine:
         self.dataset_paths = kwargs.get("dataset_paths")
         self.cache = cache or CacheServiceFactory(self.config).get_cache_service()
         data_service_factory = DataServiceFactory(
-            self.config,
-            self.cache,
-            self.standard,
-            self.standard_version,
-            self.library_metadata,
-            self.max_dataset_size,
+            config=self.config,
+            cache_service=self.cache,
+            standard=self.standard,
+            standard_version=self.standard_version,
+            standard_substandard=self.standard_substandard,
+            library_metadata=self.library_metadata,
+            max_dataset_size=self.max_dataset_size,
         )
         self.dataset_implementation = data_service_factory.get_dataset_implementation()
         kwargs["dataset_implementation"] = self.dataset_implementation
@@ -102,12 +103,12 @@ class RulesEngine:
         dataset_metadata: SDTMDatasetMetadata,
     ):
         self.data_service = DataServiceFactory(
-            self.config,
-            InMemoryCacheService.get_instance(),
-            self.standard,
-            self.standard_version,
-            self.standard_substandard,
-            self.library_metadata,
+            config=self.config,
+            cache_service=InMemoryCacheService.get_instance(),
+            standard=self.standard,
+            standard_version=self.standard_version,
+            standard_substandard=self.standard_substandard,
+            library_metadata=self.library_metadata,
         ).get_dummy_data_service(datasets)
         self.rule_processor = RuleProcessor(
             self.data_service, self.cache, self.library_metadata
