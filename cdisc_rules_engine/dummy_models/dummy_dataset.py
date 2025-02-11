@@ -28,6 +28,7 @@ class DummyDataset(SDTMDatasetMetadata):
             for variable_data in dataset_data.get("variables", [])
         ]
         self.data = pd.DataFrame.from_dict(dataset_data.get("records", {}))
+
         self.record_count = len(self.data.index)
 
     def get_metadata(self):
