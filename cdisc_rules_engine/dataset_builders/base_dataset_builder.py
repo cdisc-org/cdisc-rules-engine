@@ -187,7 +187,7 @@ class BaseDatasetBuilder:
         if self.datasets:
             dataset = self.get_dataset_contents()
             dataset_class = self.data_service.get_dataset_class(
-                dataset, self.dataset_path, self.datasets, self.domain
+                dataset, self.dataset_path, self.datasets, self.dataset_metadata
             )
         else:
             dataset_class = None

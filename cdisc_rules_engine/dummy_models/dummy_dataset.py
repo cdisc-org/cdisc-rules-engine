@@ -15,10 +15,13 @@ class DummyDataset(SDTMDatasetMetadata):
         self.label = dataset_data.get("label")
         self.file_size = dataset_data.get("file_size") or 0
         self.filename = dataset_data.get("filename")
-        self.first_record = {
-            name: next(iter(val), None)
-            for name, val in dataset_data.get("records", {}).items()
-        }
+        if hasattr(dataset_data, "first_record"):
+            self.first_record = dataset_data.first_record
+        else:
+            self.first_record = {
+                name: next(iter(val), None)
+                for name, val in dataset_data.get("records", {}).items()
+            }
         self.modification_date = datetime.now().isoformat()
         self.variables = [
             DummyVariable(variable_data)
