@@ -536,6 +536,7 @@ def test_get_model_filtered_variables(
     operation_params.standard_version = "3-4"
     operation_params.key_name = "role"
     operation_params.key_value = key_val
+    operation_params.dataset_path = "path.AE.xpt"
     operation_params.datasets = [SDTMDatasetMetadata(**dataset_metadata)]
 
     # save model metadata to cache

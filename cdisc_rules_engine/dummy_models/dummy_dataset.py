@@ -13,7 +13,7 @@ class DummyDataset(SDTMDatasetMetadata):
             or dataset_data.get("filename").split(".")[0].upper()
         )
         self.label = dataset_data.get("label")
-        self.file_size = dataset_data.get("filesize") or 0
+        self.file_size = dataset_data.get("file_size") or 0
         self.filename = dataset_data.get("filename")
         self.first_record = {
             name: next(iter(val), None)

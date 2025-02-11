@@ -194,7 +194,9 @@ class BaseOperation:
             self.evaluation_dataset,
             self.params.dataset_path,
             self.params.datasets,
-            self.params.domain,
+            self.data_service.get_raw_dataset_metadata(
+                self.params.dataset_path, self.params.datasets
+            ),
         )
 
         return sdtm_utilities.get_variables_metadata_from_standard(

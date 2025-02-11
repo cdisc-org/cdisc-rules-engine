@@ -10,6 +10,9 @@ class SDTMDatasetMetadata(DatasetMetadata):
     This class is a container for SDTM dataset metadata
     """
 
+    def get(self, key: str, default=None):
+        return getattr(self, key, default)
+
     @property
     def domain(self) -> Union[str, None]:
         return (self.first_record or {}).get("DOMAIN", None)
