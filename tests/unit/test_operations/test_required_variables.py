@@ -4,9 +4,11 @@ from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
+from cdisc_rules_engine.config.config import ConfigService
 
 import pandas as pd
 import pytest
+from unittest.mock import Mock, patch
 
 from cdisc_rules_engine.constants.classes import GENERAL_OBSERVATIONS_CLASS
 from cdisc_rules_engine.enums.variable_roles import VariableRoles
@@ -115,8 +117,13 @@ def test_get_required_variables(operation_params: OperationParams, dataset_type)
     library_metadata = LibraryMetadataContainer(
         standard_metadata=standard_metadata, model_metadata=model_metadata
     )
+    mock_dataset_class = Mock()
+    mock_dataset_class.name = "Events"
     # execute operation
-    data_service = LocalDataService.get_instance(cache_service=cache)
+    data_service = LocalDataService.get_instance(
+        cache_service=cache, config=ConfigService()
+    )
+    data_service.get_dataset_class = Mock(return_value=mock_dataset_class)
     operation = RequiredVariables(
         operation_params,
         operation_params.dataframe,
@@ -124,7 +131,15 @@ def test_get_required_variables(operation_params: OperationParams, dataset_type)
         data_service,
         library_metadata,
     )
-    result: pd.DataFrame = operation.execute()
+
+    def mock_cached_method(*args, **kwargs):
+        return operation_params.dataframe
+
+    with patch(
+        "cdisc_rules_engine.services.data_services.LocalDataService.get_raw_dataset_metadata",
+        side_effect=mock_cached_method,
+    ):
+        result: pd.DataFrame = operation.execute()
     variables: List[str] = sorted(["STUDYID", "DOMAIN", "AESEQ", "AETEST"])
     for result_array in result[operation_params.operation_id]:
         assert sorted(result_array) == variables

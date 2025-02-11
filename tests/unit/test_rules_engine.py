@@ -8,7 +8,6 @@ from cdisc_rules_engine.models.library_metadata_container import (
 import pandas as pd
 import pytest
 from conftest import get_matches_regex_pattern_rule
-
 from cdisc_rules_engine.constants.classes import GENERAL_OBSERVATIONS_CLASS
 from cdisc_rules_engine.constants.rule_constants import ALL_KEYWORD
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
@@ -2265,7 +2264,6 @@ def test_validate_variables_order_against_library_metadata(
     )
 
     mock_get_dataset_class.return_value = "EVENTS"
-
     # fill cache
     cache = InMemoryCacheService.get_instance()
     cache_data: dict = {
@@ -2327,12 +2325,20 @@ def test_validate_variables_order_against_library_metadata(
         standard_version=standard_version,
         library_metadata=library_metadata,
     )
-    result: List[dict] = engine.validate_single_rule(
-        rule_validate_columns_order_against_library_metadata,
-        "dataset_path",
-        [dataset_metadata],
-        dataset_metadata,
-    )
+
+    def mock_cached_method(*args, **kwargs):
+        return mock_get_dataset.return_value
+
+    with patch(
+        "cdisc_rules_engine.services.data_services.LocalDataService.get_raw_dataset_metadata",
+        side_effect=mock_cached_method,
+    ):
+        result: List[dict] = engine.validate_single_rule(
+            rule_validate_columns_order_against_library_metadata,
+            "dataset_path",
+            [dataset_metadata],
+            dataset_metadata,
+        )
     assert result == [
         {
             "executionStatus": "success",

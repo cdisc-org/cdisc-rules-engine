@@ -13,7 +13,7 @@ from cdisc_rules_engine.services.cache import InMemoryCacheService
 from cdisc_rules_engine.services.data_services import LocalDataService
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 import pytest
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 
 @pytest.mark.parametrize("dataset_type", [(PandasDataset)])
@@ -124,7 +124,15 @@ def test_get_label_referenced_variable_metadata(
         data_service,
         library_metadata,
     )
-    result: pd.DataFrame = operation.execute()
+
+    def mock_cached_method(*args, **kwargs):
+        return operation_params.dataframe
+
+    with patch(
+        "cdisc_rules_engine.services.data_services.LocalDataService.get_raw_dataset_metadata",
+        side_effect=mock_cached_method,
+    ):
+        result: pd.DataFrame = operation.execute()
     expected_columns = [
         "STUDYID",
         "AETERM",

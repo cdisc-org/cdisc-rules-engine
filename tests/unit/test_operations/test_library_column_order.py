@@ -8,7 +8,7 @@ from cdisc_rules_engine.models.library_metadata_container import (
 
 import pandas as pd
 import pytest
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 from cdisc_rules_engine.constants.classes import GENERAL_OBSERVATIONS_CLASS
 from cdisc_rules_engine.enums.variable_roles import VariableRoles
 from cdisc_rules_engine.models.operation_params import OperationParams
@@ -203,7 +203,15 @@ def test_get_column_order_from_library(
         data_service,
         library_metadata,
     )
-    result = operation.execute()
+
+    def mock_cached_method(*args, **kwargs):
+        return operation_params.dataframe
+
+    with patch(
+        "cdisc_rules_engine.services.data_services.LocalDataService.get_raw_dataset_metadata",
+        side_effect=mock_cached_method,
+    ):
+        result = operation.execute()
     variables: List[str] = [
         "STUDYID",
         "DOMAIN",
