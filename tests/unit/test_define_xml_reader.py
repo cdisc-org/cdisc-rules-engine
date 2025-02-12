@@ -109,6 +109,7 @@ def test_extract_domain_metadata(filename):
                 "TSVCDREF",
                 "TSVCDVER",
             ],
+            "define_dataset_key_sequence": ["STUDYID", "TSPARMCD", "TSVAL", "TSSEQ"],
         }
 
 

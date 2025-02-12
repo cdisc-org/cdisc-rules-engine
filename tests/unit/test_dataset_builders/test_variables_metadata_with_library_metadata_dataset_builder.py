@@ -2,6 +2,7 @@ from unittest.mock import MagicMock, patch
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
+from cdisc_rules_engine.dummy_models.dummy_dataset import DummyDataset
 from cdisc_rules_engine.services.cache.in_memory_cache_service import (
     InMemoryCacheService,
 )
@@ -101,7 +102,21 @@ def test_variable_metadata_with_library_metadata_dataset_builder(
         data_processor=None,
         dataset_path=None,
         datasets=[],
-        domain="AE",
+        dataset_metadata=DummyDataset(
+            {
+                "filename": "ae.xpt",
+                "label": "Adverse Events",
+                "variables": [
+                    {
+                        "name": "DOMAIN",
+                        "label": "Domain Abbreviation",
+                        "type": "Char",
+                        "length": 4,
+                    },
+                ],
+                "records": {"DOMAIN": ["AE"]},
+            }
+        ),
         define_xml_path=None,
         standard=standard,
         standard_version=standard_version,
@@ -281,7 +296,21 @@ def test_variable_metadata_with_library_metadata_dataset_builder_variable_only_i
         data_processor=None,
         dataset_path=None,
         datasets=[],
-        domain="AE",
+        dataset_metadata=DummyDataset(
+            {
+                "filename": "ae.xpt",
+                "label": "Adverse Events",
+                "variables": [
+                    {
+                        "name": "DOMAIN",
+                        "label": "Domain Abbreviation",
+                        "type": "Char",
+                        "length": 4,
+                    },
+                ],
+                "records": {"DOMAIN": ["AE"]},
+            }
+        ),
         define_xml_path=None,
         standard=standard,
         standard_version=standard_version,

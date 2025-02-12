@@ -23,7 +23,7 @@ def test_read_metadata():
         metadata["dataset_name"] == "TEST_DATASET"
     ), "Wrong dataset name. Test file has been changed"
     assert (
-        metadata["domain_name"] == "EX"
+        metadata["first_record"]["DOMAIN"] == "EX"
     ), "Wrong domain name. Test file has been changed"
     assert (
         metadata["dataset_label"] == "Exposure"
@@ -68,7 +68,7 @@ def test_read_metadata_with_estimate():
             metadata["dataset_name"] == "TEST_DATASET"
         ), "Wrong dataset name. Test file has been changed"
         assert (
-            metadata["domain_name"] == "EX"
+            metadata["first_record"]["DOMAIN"] == "EX"
         ), "Wrong domain name. Test file has been changed"
         assert (
             metadata["dataset_label"] == "Exposure"

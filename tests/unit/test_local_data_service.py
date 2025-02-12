@@ -17,7 +17,7 @@ def test_read_metadata():
     metadata = data_service.read_metadata(dataset_path)
     assert "file_metadata" in metadata
     assert metadata["file_metadata"].get("name") == "test_dataset.xpt"
-    assert metadata["file_metadata"].get("size") == 823120
+    assert metadata["file_metadata"].get("file_size") == 823120
     assert "contents_metadata" in metadata
     assert "variable_labels" in metadata["contents_metadata"]
     assert "variable_formats" in metadata["contents_metadata"]
@@ -25,7 +25,7 @@ def test_read_metadata():
     assert "variable_name_to_size_map" in metadata["contents_metadata"]
     assert "number_of_variables" in metadata["contents_metadata"]
     assert "dataset_label" in metadata["contents_metadata"]
-    assert "domain_name" in metadata["contents_metadata"]
+    assert "DOMAIN" in metadata["contents_metadata"]["first_record"]
     assert "dataset_modification_date" in metadata["contents_metadata"]
 
 

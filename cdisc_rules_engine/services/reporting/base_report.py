@@ -7,6 +7,7 @@ from openpyxl import Workbook
 from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
 from cdisc_rules_engine.models.validation_args import Validation_args
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 
 
 class BaseReport(ABC):
@@ -16,7 +17,7 @@ class BaseReport(ABC):
 
     def __init__(
         self,
-        datasets: Iterable[dict],
+        datasets: Iterable[SDTMDatasetMetadata],
         dataset_paths: Iterable[str],
         validation_results: List[RuleValidationResult],
         elapsed_time: float,

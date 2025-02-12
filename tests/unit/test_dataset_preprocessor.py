@@ -1,4 +1,3 @@
-from typing import List
 from unittest.mock import MagicMock, patch
 import os
 import pandas as pd
@@ -11,6 +10,7 @@ from cdisc_rules_engine.services.data_services import LocalDataService
 from cdisc_rules_engine.utilities.dataset_preprocessor import DatasetPreprocessor
 from cdisc_rules_engine.constants.rule_constants import ALL_KEYWORD
 from cdisc_rules_engine.models.rule_conditions import ConditionCompositeFactory
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.utilities import sdtm_utilities
 from cdisc_rules_engine.config import ConfigService
 from cdisc_rules_engine.models.library_metadata_container import (
@@ -38,10 +38,14 @@ def test_preprocess_no_datasets_in_rule(dataset_rule_equal_to_error_objects: dic
             }
         )
     )
-    datasets: List[dict] = [{"domain": "AE", "filename": "ae.xpt"}]
+    datasets = [SDTMDatasetMetadata(name="AE")]
     data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
     preprocessor = DatasetPreprocessor(
-        dataset, "AE", "path", data_service, InMemoryCacheService()
+        dataset,
+        SDTMDatasetMetadata(name="AE"),
+        "path",
+        data_service,
+        InMemoryCacheService(),
     )
     preprocessed_dataset: PandasDataset = preprocessor.preprocess(
         dataset_rule_equal_to_error_objects, datasets
@@ -352,21 +356,20 @@ def test_preprocess(
         for ds in dataset_rule_equal_to["datasets"]:
             ds["join_type"] = join_type
 
-    datasets: List[dict] = [
-        {"domain": "AE", "filename": "ae.xpt"},
-        {"domain": "TS", "filename": "ts.xpt"},
-    ]
-
     data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
     preprocessor = DatasetPreprocessor(
         ec_dataset,
-        "EC",
+        SDTMDatasetMetadata(first_record={"DOMAIN": "EC"}),
         os.path.join("path", "ec.xpt"),
         data_service,
         InMemoryCacheService(),
     )
     preprocessed_dataset: pd.DataFrame = preprocessor.preprocess(
-        dataset_rule_equal_to, datasets
+        dataset_rule_equal_to,
+        [
+            SDTMDatasetMetadata(first_record={"DOMAIN": "AE"}, filename="ae.xpt"),
+            SDTMDatasetMetadata(first_record={"DOMAIN": "TS"}, filename="ts.xpt"),
+        ],
     )
     assert preprocessed_dataset.data.equals(expected_dataset.data)
 
@@ -452,27 +455,22 @@ def test_preprocess_relationship_dataset(
     ]
 
     # call preprocessor
-    datasets: List[dict] = [
-        {
-            "domain": "EC",
-            "filename": "ec.xpt",
-        },
-        {
-            "domain": "SUPPEC",
-            "filename": "suppec.xpt",
-        },
-    ]
-
     data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
     preprocessor = DatasetPreprocessor(
         ec_dataset,
-        "EC",
+        SDTMDatasetMetadata(first_record={"DOMAIN": "EC"}),
         os.path.join("path", "ec.xpt"),
         data_service,
         InMemoryCacheService(),
     )
     preprocessed_dataset: pd.DataFrame = preprocessor.preprocess(
-        dataset_rule_record_in_parent_domain_equal_to, datasets
+        dataset_rule_record_in_parent_domain_equal_to,
+        [
+            SDTMDatasetMetadata(first_record={"DOMAIN": "EC"}, filename="ec.xpt"),
+            SDTMDatasetMetadata(
+                name="SUPPEC", first_record={"RDOMAIN": "EC"}, filename="suppec.xpt"
+            ),
+        ],
     )
     expected_dataset = PandasDataset(
         pd.DataFrame.from_dict(
@@ -661,11 +659,6 @@ def test_preprocess_relrec_dataset(mock_get_dataset: MagicMock):
     ]
 
     # call preprocessor
-    datasets: List[dict] = [
-        {"domain": "AE", "filename": "ae.xpt"},
-        {"domain": "RELREC", "filename": "relrec.xpt"},
-    ]
-
     # save model metadata to cache
     cache = InMemoryCacheService.get_instance()
     sdtm_utilities.get_all_model_wildcard_variables = MagicMock(
@@ -680,12 +673,18 @@ def test_preprocess_relrec_dataset(mock_get_dataset: MagicMock):
 
     preprocessor = DatasetPreprocessor(
         ec_dataset,
-        "EC",
+        SDTMDatasetMetadata(first_record={"DOMAIN": "EC"}),
         os.path.join("path", "ec.xpt"),
         data_service,
         InMemoryCacheService(),
     )
-    preprocessed_dataset: pd.DataFrame = preprocessor.preprocess(relrec_rule, datasets)
+    preprocessed_dataset: pd.DataFrame = preprocessor.preprocess(
+        relrec_rule,
+        [
+            SDTMDatasetMetadata(first_record={"DOMAIN": "AE"}, filename="ae.xpt"),
+            SDTMDatasetMetadata(name="RELREC", filename="relrec.xpt"),
+        ],
+    )
     expected_dataset = PandasDataset(
         pd.DataFrame.from_dict(
             {
@@ -767,7 +766,7 @@ def test_preprocess_with_merge_comparison(
     data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
     preprocessor = DatasetPreprocessor(
         target_dataset,
-        "EC",
+        SDTMDatasetMetadata(first_record={"DOMAIN": "EC"}),
         os.path.join("study_id", "data_bundle_id", "ec.xpt"),
         data_service,
         InMemoryCacheService(),
@@ -775,14 +774,8 @@ def test_preprocess_with_merge_comparison(
     result: pd.DataFrame = preprocessor.preprocess(
         rule=dataset_rule_equal_to_compare_same_value,
         datasets=[
-            {
-                "domain": "AE",
-                "filename": "ae.xpt",
-            },
-            {
-                "domain": "EC",
-                "filename": "ec.xpt",
-            },
+            SDTMDatasetMetadata(first_record={"DOMAIN": "AE"}, filename="ae.xpt"),
+            SDTMDatasetMetadata(first_record={"DOMAIN": "EC"}, filename="ec.xpt"),
         ],
     )
     assert "NOTVISIT" in result
@@ -817,7 +810,11 @@ def test_preprocess_supp_with_blank_idvar_idvarval(mock_get_dataset):
     mock_get_dataset.return_value = supp_dataset
     data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
     preprocessor = DatasetPreprocessor(
-        main_dataset, "AE", "path", data_service, InMemoryCacheService()
+        main_dataset,
+        SDTMDatasetMetadata(first_record={"DOMAIN": "AE"}),
+        "path",
+        data_service,
+        InMemoryCacheService(),
     )
     rule = {
         "core_id": "MockRule",
@@ -843,7 +840,11 @@ def test_preprocess_supp_with_blank_idvar_idvarval(mock_get_dataset):
             }
         ),
     }
-    datasets = [{"domain": "SUPPAE", "filename": "suppae.xpt"}]
+    datasets = [
+        SDTMDatasetMetadata(
+            name="SUPPAE", first_record={"RDOMAIN": "AE"}, filename="suppae.xpt"
+        )
+    ]
     result = preprocessor.preprocess(rule, datasets)
     assert len(result.data) == 2
     assert "QNAM" in result.data.columns
