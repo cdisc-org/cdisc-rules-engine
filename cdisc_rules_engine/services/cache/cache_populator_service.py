@@ -38,7 +38,6 @@ class CachePopulator:
         self.remove_local_rules = remove_local_rules
         self.cache_path = cache_path
 
-
     async def update_cache(self):
         coroutines = (
             self.save_ct_packages_locally(),
