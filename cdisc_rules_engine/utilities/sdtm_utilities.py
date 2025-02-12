@@ -224,13 +224,6 @@ def get_allowed_class_variables(
         gen_obs_class_metadata["classVariables"]
     )
 
-    def standardize_order_number(var):
-        if "ordinal" in var:
-            var["order_number"] = var.pop("ordinal")
-        return var
-
-    # identifiers_metadata = list(map(standardize_order_number, identifiers_metadata))
-    # timing_metadata = list(map(standardize_order_number, timing_metadata))
     # Identifiers are added to the beginning and Timing to the end
     identifiers_metadata.sort(key=lambda item: item["ordinal"])
     timing_metadata.sort(key=lambda item: item["ordinal"])

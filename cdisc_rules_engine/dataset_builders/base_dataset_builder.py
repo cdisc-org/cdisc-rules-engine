@@ -172,7 +172,6 @@ class BaseDatasetBuilder:
 
         # Rename columns:
         column_name_mapping = {
-            # "ordinal": "order_number",
             "simpleDatatype": "data_type",
         }
 
