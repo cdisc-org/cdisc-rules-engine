@@ -9,6 +9,12 @@ import re
 from datetime import datetime
 from typing import Callable, Iterable, List, Optional, Union
 from uuid import UUID
+from cdisc_rules_engine.constants.metadata_columns import (
+    SOURCE_FILENAME,
+    SOURCE_ROW_NUMBER,
+)
+from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
+from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
 from cdisc_rules_engine.services import logger
 
 from cdisc_rules_engine.constants.domains import (
@@ -204,6 +210,18 @@ def get_operations_cache_key(
 
 def get_directory_path(dataset_path):
     return os.path.dirname(dataset_path)
+
+
+def tag_source(
+    dataset: DatasetInterface, dataset_metadata: DatasetMetadata
+) -> DatasetInterface:
+    """
+    For sdtm split datasets,
+    Adds source filename and row number to dataset
+    """
+    dataset[SOURCE_FILENAME] = dataset_metadata.filename
+    dataset[SOURCE_ROW_NUMBER] = list(range(1, dataset.len() + 1))
+    return dataset
 
 
 def get_corresponding_datasets(

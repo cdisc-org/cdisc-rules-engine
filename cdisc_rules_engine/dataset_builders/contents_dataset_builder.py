@@ -2,6 +2,7 @@ from cdisc_rules_engine.dataset_builders.base_dataset_builder import BaseDataset
 from cdisc_rules_engine.utilities.utils import (
     is_split_dataset,
     get_corresponding_datasets,
+    tag_source,
 )
 
 
@@ -27,12 +28,15 @@ class ContentsDatasetBuilder(BaseDatasetBuilder):
             # A content check is any check that is not in the list of rule types
             dataset = self.data_service.concat_split_datasets(
                 func_to_call=self.build_split_dataset,
-                dataset_names=self.get_corresponding_datasets_names(),
+                datasets_metadata=get_corresponding_datasets(
+                    self.datasets, self.dataset_metadata
+                ),
                 **kwargs,
             )
         else:
             # single dataset. the most common case
             dataset = self.build(**kwargs)
+            dataset = tag_source(dataset, self.dataset_metadata)
         length = sum(
             [
                 dataset.record_count

@@ -1,4 +1,5 @@
 from unittest.mock import MagicMock, patch
+from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
@@ -34,12 +35,14 @@ def test_variable_metadata_with_library_metadata_dataset_builder(
         }
     )
 
-    mock_get_dataset.return_value = pd.DataFrame.from_dict(
-        {
-            "STUDYID": ["A", "B", "C"],
-            "USUBJID": ["", "A", "B"],
-            "AETERM": ["", "C", "A"],
-        }
+    mock_get_dataset.return_value = PandasDataset(
+        pd.DataFrame.from_dict(
+            {
+                "STUDYID": ["A", "B", "C"],
+                "USUBJID": ["", "A", "B"],
+                "AETERM": ["", "C", "A"],
+            }
+        )
     )
     cache = InMemoryCacheService()
     standard = "sdtmig"
@@ -166,13 +169,15 @@ def test_variable_metadata_with_library_metadata_dataset_builder_variable_only_i
         }
     )
 
-    mock_get_dataset.return_value = pd.DataFrame.from_dict(
-        {
-            "STUDYID": ["A", "B", "C"],
-            "USUBJID": ["", "A", "B"],
-            "AETERM": ["", "C", "A"],
-            "AEMODELVAR": ["C", "D", "A"],
-        }
+    mock_get_dataset.return_value = PandasDataset(
+        pd.DataFrame.from_dict(
+            {
+                "STUDYID": ["A", "B", "C"],
+                "USUBJID": ["", "A", "B"],
+                "AETERM": ["", "C", "A"],
+                "AEMODELVAR": ["C", "D", "A"],
+            }
+        )
     )
     cache = InMemoryCacheService()
     standard = "sdtmig"

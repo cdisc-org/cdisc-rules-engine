@@ -92,7 +92,7 @@ def test_validate_rule_invalid_suffix(
             mock_ae_record_rule_equal_to_suffix,
             "study/bundle",
             [],
-            SDTMDatasetMetadata(first_record={"DOMAIN": "AE"}),
+            SDTMDatasetMetadata(first_record={"DOMAIN": "AE"}, filename="study/bundle"),
         )
         assert validation_result == [
             {
@@ -101,7 +101,9 @@ def test_validate_rule_invalid_suffix(
                 "domain": "AE",
                 "variables": ["AESTDY"],
                 "message": "Suffix of AESTDY is equal to test.",
-                "errors": [{"value": {"AESTDY": "valid-test"}, "row": 1}],
+                "errors": [
+                    {"value": {"AESTDY": "valid-test"}, "dataset": "bundle", "row": 1}
+                ],
             }
         ]
 
@@ -132,7 +134,7 @@ def test_validate_rule_invalid_prefix(
             mock_record_rule_equal_to_string_prefix,
             "study/bundle",
             [],
-            SDTMDatasetMetadata(first_record={"DOMAIN": "AE"}),
+            SDTMDatasetMetadata(first_record={"DOMAIN": "AE"}, filename="bundle"),
         )
         assert validation_result == [
             {
@@ -141,7 +143,9 @@ def test_validate_rule_invalid_prefix(
                 "domain": "AE",
                 "variables": ["AESTDY"],
                 "message": "Prefix of AESTDY is equal to test.",
-                "errors": [{"value": {"AESTDY": "test-valid"}, "row": 1}],
+                "errors": [
+                    {"value": {"AESTDY": "test-valid"}, "dataset": "bundle", "row": 1}
+                ],
             }
         ]
 
@@ -245,12 +249,14 @@ def test_validate_rule_cross_dataset_check(
                 "message": "Value of ECSTDY is equal to AESTDY.",
                 "errors": [
                     {
+                        "dataset": "ec.xpt",
                         "row": 1,
                         "value": {"ECSTDY": 4.0},
                         "USUBJID": "CDISC001",
                         "SEQ": 1,
                     },
                     {
+                        "dataset": "ec.xpt",
                         "row": 2,
                         "value": {"ECSTDY": 5.0},
                         "USUBJID": "CDISC001",
@@ -336,9 +342,9 @@ def test_validate_one_to_one_rel_across_datasets(dataset_rule_one_to_one_related
                 "variables": ["VISITNUM"],
                 "message": "VISITNUM is not one-to-one related to VISIT",
                 "errors": [
-                    {"value": {"VISITNUM": 1}, "row": 1},
-                    {"value": {"VISITNUM": 1}, "row": 3},
-                    {"value": {"VISITNUM": 3}, "row": 4},
+                    {"value": {"VISITNUM": 1}, "dataset": "ec.xpt", "row": 1},
+                    {"value": {"VISITNUM": 1}, "dataset": "ec.xpt", "row": 3},
+                    {"value": {"VISITNUM": 3}, "dataset": "ec.xpt", "row": 4},
                 ],
             }
         ]
@@ -366,7 +372,7 @@ def test_validate_rule_single_dataset_check(dataset_rule_greater_than: dict):
             dataset_rule_greater_than,
             "study/bundle",
             [],
-            SDTMDatasetMetadata(first_record={"DOMAIN": "EC"}),
+            SDTMDatasetMetadata(first_record={"DOMAIN": "EC"}, filename="bundle"),
         )
         assert validation_result == [
             {
@@ -376,8 +382,8 @@ def test_validate_rule_single_dataset_check(dataset_rule_greater_than: dict):
                 "variables": ["ECCOOLVAR"],
                 "message": "Value for ECCOOLVAR greater than 30.",
                 "errors": [
-                    {"value": {"ECCOOLVAR": 100}, "row": 2},
-                    {"value": {"ECCOOLVAR": 34}, "row": 4},
+                    {"value": {"ECCOOLVAR": 100}, "dataset": "bundle", "row": 2},
+                    {"value": {"ECCOOLVAR": 34}, "dataset": "bundle", "row": 4},
                 ],
             }
         ]
@@ -406,7 +412,7 @@ def test_validate_rule_equal_length(dataset_rule_has_equal_length: dict):
             dataset_rule_has_equal_length,
             "study/bundle",
             [],
-            SDTMDatasetMetadata(first_record={"DOMAIN": "EC"}),
+            SDTMDatasetMetadata(first_record={"DOMAIN": "EC"}, filename="bundle"),
         )
         assert validation_result == [
             {
@@ -415,7 +421,9 @@ def test_validate_rule_equal_length(dataset_rule_has_equal_length: dict):
                 "dataset": "bundle",
                 "variables": ["ECCOOLVAR"],
                 "message": "Length of ECCOOLVAR is equal to 5.",
-                "errors": [{"value": {"ECCOOLVAR": "equal"}, "row": 2}],
+                "errors": [
+                    {"value": {"ECCOOLVAR": "equal"}, "dataset": "bundle", "row": 2}
+                ],
             }
         ]
 
@@ -456,7 +464,7 @@ def test_validate_is_contained_by_distinct(mock_rule_distinct_operation: dict):
                 "domain": "AE",
                 "variables": ["AESTDY"],
                 "message": "Value for AESTDY not in DM.USUBJID",
-                "errors": [{"value": {"AESTDY": 5000}, "row": 4}],
+                "errors": [{"value": {"AESTDY": 5000}, "dataset": "ae.xpt", "row": 4}],
             }
         ]
 
@@ -484,7 +492,7 @@ def test_validate_rule_not_equal_length(dataset_rule_has_not_equal_length: dict)
             dataset_rule_has_not_equal_length,
             "study/bundle",
             [],
-            SDTMDatasetMetadata(first_record={"DOMAIN": "EC"}),
+            SDTMDatasetMetadata(first_record={"DOMAIN": "EC"}, filename="bundle"),
         )
         assert validation_result == [
             {
@@ -493,7 +501,13 @@ def test_validate_rule_not_equal_length(dataset_rule_has_not_equal_length: dict)
                 "dataset": "bundle",
                 "variables": ["ECCOOLVAR"],
                 "message": "Length of ECCOOLVAR is not equal to 5.",
-                "errors": [{"value": {"ECCOOLVAR": "first_string"}, "row": 1}],
+                "errors": [
+                    {
+                        "value": {"ECCOOLVAR": "first_string"},
+                        "dataset": "bundle",
+                        "row": 1,
+                    }
+                ],
             }
         ]
 
@@ -515,7 +529,7 @@ def test_validate_rule_multiple_conditions(dataset_rule_multiple_conditions: dic
             dataset_rule_multiple_conditions,
             "study/bundle",
             [],
-            SDTMDatasetMetadata(first_record={"DOMAIN": "EC"}),
+            SDTMDatasetMetadata(first_record={"DOMAIN": "EC"}, filename="bundle"),
         )
         assert validation_result == [
             {
@@ -527,8 +541,8 @@ def test_validate_rule_multiple_conditions(dataset_rule_multiple_conditions: dic
                     "Length of ECCOOLVAR is not equal to 5 or ECCOOLVAR == cool."
                 ),
                 "errors": [
-                    {"value": {"ECCOOLVAR": "valid"}, "row": 2},
-                    {"value": {"ECCOOLVAR": "cool"}, "row": 3},
+                    {"value": {"ECCOOLVAR": "valid"}, "dataset": "bundle", "row": 2},
+                    {"value": {"ECCOOLVAR": "cool"}, "dataset": "bundle", "row": 3},
                 ],
             }
         ]
@@ -548,7 +562,10 @@ def test_validate_record_rule_numbers_separated_by_dash_pattern():
         return_value=dataset_mock,
     ):
         validation_result: List[dict] = RulesEngine().validate_single_rule(
-            rule, "study/bundle", [], SDTMDatasetMetadata(first_record={"DOMAIN": "AE"})
+            rule,
+            "study/bundle",
+            [],
+            SDTMDatasetMetadata(first_record={"DOMAIN": "AE"}, filename="bundle"),
         )
         assert validation_result == [
             {
@@ -558,8 +575,8 @@ def test_validate_record_rule_numbers_separated_by_dash_pattern():
                 "variables": ["AESTDY"],
                 "message": "Records have the following pattern: ^\\d+\\-\\d+$",
                 "errors": [
-                    {"value": {"AESTDY": "5-5"}, "row": 1},
-                    {"value": {"AESTDY": "10-10"}, "row": 2},
+                    {"value": {"AESTDY": "5-5"}, "dataset": "bundle", "row": 1},
+                    {"value": {"AESTDY": "10-10"}, "dataset": "bundle", "row": 2},
                 ],
             }
         ]
@@ -579,7 +596,10 @@ def test_validate_record_rule_semi_colon_delimited_pattern():
         return_value=dataset_mock,
     ):
         validation_result: List[dict] = RulesEngine().validate_single_rule(
-            rule, "study/bundle", [], SDTMDatasetMetadata(first_record={"DOMAIN": "AE"})
+            rule,
+            "study/bundle",
+            [],
+            SDTMDatasetMetadata(first_record={"DOMAIN": "AE"}, filename="bundle"),
         )
         assert validation_result == [
             {
@@ -589,8 +609,8 @@ def test_validate_record_rule_semi_colon_delimited_pattern():
                 "variables": ["AESTDY"],
                 "message": "Records have the following pattern: [^,]*;[^,]*",
                 "errors": [
-                    {"value": {"AESTDY": "5;5"}, "row": 1},
-                    {"value": {"AESTDY": "alex;alex"}, "row": 2},
+                    {"value": {"AESTDY": "5;5"}, "dataset": "bundle", "row": 1},
+                    {"value": {"AESTDY": "alex;alex"}, "dataset": "bundle", "row": 2},
                 ],
             }
         ]
@@ -612,7 +632,10 @@ def test_validate_record_rule_no_letters_numbers_underscores():
         return_value=dataset_mock,
     ):
         validation_result: List[dict] = RulesEngine().validate_single_rule(
-            rule, "study/bundle", [], SDTMDatasetMetadata(first_record={"DOMAIN": "AE"})
+            rule,
+            "study/bundle",
+            [],
+            SDTMDatasetMetadata(first_record={"DOMAIN": "AE"}, filename="bundle"),
         )
         assert validation_result == [
             {
@@ -622,8 +645,8 @@ def test_validate_record_rule_no_letters_numbers_underscores():
                 "variables": ["AESTDY"],
                 "message": "Records have the following pattern: ^((?![a-zA-Z0-9_]).)*$",
                 "errors": [
-                    {"value": {"AESTDY": "[.*)]#@"}, "row": 1},
-                    {"value": {"AESTDY": "|>.§!"}, "row": 3},
+                    {"value": {"AESTDY": "[.*)]#@"}, "dataset": "bundle", "row": 1},
+                    {"value": {"AESTDY": "|>.§!"}, "dataset": "bundle", "row": 3},
                 ],
             }
         ]
@@ -659,7 +682,7 @@ def test_validate_dataset_metadata(
         dataset_metadata_not_equal_to_rule,
         "study/bundle",
         [],
-        SDTMDatasetMetadata(first_record={"DOMAIN": "EC"}),
+        SDTMDatasetMetadata(first_record={"DOMAIN": "EC"}, filename="bundle"),
     )
     assert validation_result == [
         {
@@ -705,7 +728,7 @@ def test_validate_dataset_metadata_wrong_metadata(
         dataset_metadata_not_equal_to_rule,
         "study/bundle",
         [],
-        SDTMDatasetMetadata(first_record={"DOMAIN": "EC"}),
+        SDTMDatasetMetadata(first_record={"DOMAIN": "EC"}, filename="bundle"),
     )
     assert validation_result == [
         {
@@ -715,6 +738,7 @@ def test_validate_dataset_metadata_wrong_metadata(
             "variables": ["dataset_label", "dataset_name", "dataset_size"],
             "errors": [
                 {
+                    "dataset": "bundle",
                     "row": 1,
                     "value": {
                         "dataset_name": "AD",
@@ -813,7 +837,7 @@ def test_validate_variable_metadata_wrong_metadata(
         variables_metadata_rule,
         "study/bundle",
         [],
-        SDTMDatasetMetadata(first_record={"DOMAIN": "EC"}),
+        SDTMDatasetMetadata(first_record={"DOMAIN": "EC"}, filename="bundle"),
     )
     assert validation_result == [
         {
@@ -823,6 +847,7 @@ def test_validate_variable_metadata_wrong_metadata(
             "executionStatus": ExecutionStatus.SUCCESS.value,
             "errors": [
                 {
+                    "dataset": "bundle",
                     "row": 1,
                     "value": {
                         "variable_name": "longer than eight",
@@ -831,6 +856,7 @@ def test_validate_variable_metadata_wrong_metadata(
                     },
                 },
                 {
+                    "dataset": "bundle",
                     "row": 2,
                     "value": {
                         "variable_name": "longer than eight as well",
@@ -879,7 +905,9 @@ def test_rule_with_domain_prefix_replacement(mock_get_dataset: MagicMock):
     }
     df = PandasDataset(pd.DataFrame.from_dict({"AESTDY": [11, 12, 40, 59, 59]}))
     mock_get_dataset.return_value = df
-    dataset_metadata = SDTMDatasetMetadata(first_record={"DOMAIN": "AE"})
+    dataset_metadata = SDTMDatasetMetadata(
+        first_record={"DOMAIN": "AE"}, filename="bundle"
+    )
     validation_result: List[str] = RulesEngine().validate_single_rule(
         rule, "study/bundle", [dataset_metadata], dataset_metadata
     )
@@ -891,11 +919,11 @@ def test_rule_with_domain_prefix_replacement(mock_get_dataset: MagicMock):
             "variables": ["AESTDY"],
             "message": "Invalid AESTDY value",
             "errors": [
-                {"row": 1, "value": {"AESTDY": 11}},
-                {"row": 2, "value": {"AESTDY": 12}},
-                {"row": 3, "value": {"AESTDY": 40}},
-                {"row": 4, "value": {"AESTDY": 59}},
-                {"row": 5, "value": {"AESTDY": 59}},
+                {"dataset": "bundle", "row": 1, "value": {"AESTDY": 11}},
+                {"dataset": "bundle", "row": 2, "value": {"AESTDY": 12}},
+                {"dataset": "bundle", "row": 3, "value": {"AESTDY": 40}},
+                {"dataset": "bundle", "row": 4, "value": {"AESTDY": 59}},
+                {"dataset": "bundle", "row": 5, "value": {"AESTDY": 59}},
             ],
         }
     ]
@@ -916,7 +944,9 @@ def test_rule_with_domain_prefix_replacement(mock_get_dataset: MagicMock):
                     "domain": "AE",
                     "variables": ["AE"],
                     "message": "Domain AE exists",
-                    "errors": [{"value": {"AE": "ae.xpt"}, "row": 1}],
+                    "errors": [
+                        {"value": {"AE": "ae.xpt"}, "dataset": "bundle", "row": 1}
+                    ],
                 }
             ],
         ),
@@ -953,7 +983,7 @@ def test_validate_domain_presence(
         domain_presence_rule,
         "study/bundle",
         dataset_metadata,
-        SDTMDatasetMetadata(first_record={"DOMAIN": "AE"}),
+        SDTMDatasetMetadata(first_record={"DOMAIN": "AE"}, filename="bundle"),
     )
     assert actual_validation_result == expected_validation_result
 
@@ -987,7 +1017,9 @@ def test_validate_single_rule(dataset_rule_equal_to_error_objects: dict):
         "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
         return_value=df,
     ):
-        datasets = [SDTMDatasetMetadata(first_record={"DOMAIN": "AE"})]
+        datasets = [
+            SDTMDatasetMetadata(first_record={"DOMAIN": "AE"}, filename="bundle")
+        ]
         validation_result: List[dict] = RulesEngine().validate_single_rule(
             dataset_rule_equal_to_error_objects,
             "study/bundle",
@@ -1002,6 +1034,7 @@ def test_validate_single_rule(dataset_rule_equal_to_error_objects: dict):
                 "variables": ["AESTDY"],
                 "errors": [
                     {
+                        "dataset": "bundle",
                         "row": 1,
                         "value": {
                             "AESTDY": "test",
@@ -1010,6 +1043,7 @@ def test_validate_single_rule(dataset_rule_equal_to_error_objects: dict):
                         "SEQ": 1,
                     },
                     {
+                        "dataset": "bundle",
                         "row": 4,
                         "value": {
                             "AESTDY": "test",
@@ -1018,6 +1052,7 @@ def test_validate_single_rule(dataset_rule_equal_to_error_objects: dict):
                         "SEQ": 4,
                     },
                     {
+                        "dataset": "bundle",
                         "row": 5,
                         "value": {
                             "AESTDY": "test",
@@ -1064,7 +1099,9 @@ def test_validate_single_rule_not_equal_to(
         "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
         return_value=df,
     ):
-        dataset_metadata = SDTMDatasetMetadata(first_record={"DOMAIN": "AE"})
+        dataset_metadata = SDTMDatasetMetadata(
+            first_record={"DOMAIN": "AE"}, filename="data_bundle"
+        )
         validation_result: List[dict] = RulesEngine().validate_single_rule(
             dataset_rule_not_equal_to_error_objects,
             "study/data_bundle",
@@ -1079,6 +1116,7 @@ def test_validate_single_rule_not_equal_to(
                 "variables": ["AESTDY"],
                 "errors": [
                     {
+                        "dataset": "data_bundle",
                         "row": 2,
                         "value": {
                             "AESTDY": "alex",
@@ -1087,6 +1125,7 @@ def test_validate_single_rule_not_equal_to(
                         "SEQ": 2,
                     },
                     {
+                        "dataset": "data_bundle",
                         "row": 3,
                         "value": {
                             "AESTDY": "alex",
@@ -1249,7 +1288,9 @@ def test_validate_dataset_metadata_against_define_xml(
                     "dataset": "test",
                     "executionStatus": ExecutionStatus.SUCCESS.value,
                     "variables": ["variable_size"],
-                    "errors": [{"row": 1, "value": {"variable_size": 30}}],
+                    "errors": [
+                        {"dataset": "test", "row": 1, "value": {"variable_size": 30}}
+                    ],
                     "message": (
                         "Variable metadata variable_size "
                         "does not match define variable size"
@@ -1290,7 +1331,9 @@ def test_validate_dataset_metadata_against_define_xml(
                     "dataset": "test",
                     "executionStatus": ExecutionStatus.SUCCESS.value,
                     "variables": ["variable_size"],
-                    "errors": [{"row": 1, "value": {"variable_size": 30}}],
+                    "errors": [
+                        {"dataset": "test", "row": 1, "value": {"variable_size": 30}}
+                    ],
                     "message": (
                         "Variable metadata variable_size "
                         "does not match define variable size"
@@ -1321,7 +1364,9 @@ def test_validate_variable_metadata_against_define_xml(
     """
     mock_get_define_xml_variables_metadata.return_value = variable_metadata
     mock_get_variables_metadata.return_value = dataset_mock
-    dataset_metadata = SDTMDatasetMetadata(first_record={"DOMAIN": "AE"})
+    dataset_metadata = SDTMDatasetMetadata(
+        first_record={"DOMAIN": "AE"}, filename="test"
+    )
     validation_result: List[dict] = RulesEngine().validate_single_rule(
         dataset_metadata=dataset_metadata,
         dataset_path="CDISC01/test",
@@ -1375,7 +1420,9 @@ def test_validate_value_level_metadata_against_define_xml(
         "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
         return_value=df,
     ):
-        dataset_metadata = SDTMDatasetMetadata(first_record={"DOMAIN": "AE"})
+        dataset_metadata = SDTMDatasetMetadata(
+            first_record={"DOMAIN": "AE"}, filename="test"
+        )
         validation_result: List[dict] = RulesEngine().validate_single_rule(
             dataset_metadata=dataset_metadata,
             dataset_path="CDISC01/test",
@@ -1392,12 +1439,14 @@ def test_validate_value_level_metadata_against_define_xml(
                 ],
                 "errors": [
                     {
+                        "dataset": "test",
                         "row": 2,
                         "value": {"AETERM": "A" * 200},
                         "USUBJID": "5",
                         "SEQ": 2,
                     },
                     {
+                        "dataset": "test",
                         "row": 4,
                         "value": {"AETERM": "A" * 15},
                         "USUBJID": "5",
@@ -1435,13 +1484,28 @@ def test_validate_value_level_metadata_against_define_xml(
             [
                 {
                     "domain": "AE",
-                    "dataset": "ae.xpt",
+                    "dataset": "ae_1.xpt, ae_2.xpt",
                     "executionStatus": ExecutionStatus.SUCCESS.value,
                     "variables": ["AESTDY"],
                     "errors": [
-                        {"row": 1, "value": {"AESTDY": "test"}, "USUBJID": "1"},
-                        {"row": 4, "value": {"AESTDY": "test"}, "USUBJID": "1"},
-                        {"row": 8, "value": {"AESTDY": "test"}, "USUBJID": "2"},
+                        {
+                            "dataset": "ae_2.xpt",
+                            "row": 1,
+                            "value": {"AESTDY": "test"},
+                            "USUBJID": "1",
+                        },
+                        {
+                            "dataset": "ae_2.xpt",
+                            "row": 4,
+                            "value": {"AESTDY": "test"},
+                            "USUBJID": "1",
+                        },
+                        {
+                            "dataset": "ae_1.xpt",
+                            "row": 4,
+                            "value": {"AESTDY": "test"},
+                            "USUBJID": "2",
+                        },
                     ],
                     "message": "Value of AESTDY is equal to test.",
                 }
@@ -1537,8 +1601,13 @@ def test_validate_split_dataset_contents(
 @patch(
     "cdisc_rules_engine.services.data_services.LocalDataService._async_get_datasets",
 )
+@patch(
+    "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset_metadata",
+)
 def test_validate_split_dataset_metadata(
-    mock_async_get_datasets: MagicMock, dataset_metadata_not_equal_to_rule: dict
+    mock_get_dataset_metadata: MagicMock,
+    mock_async_get_datasets: MagicMock,
+    dataset_metadata_not_equal_to_rule: dict,
 ):
     """
     Unit test for validating metadata of a split dataset.
@@ -1583,13 +1652,14 @@ def test_validate_split_dataset_metadata(
 
     # mock blob storage call and execute the validation
     mock_async_get_datasets.return_value = [first_dataset_part, second_dataset_part]
+    mock_get_dataset_metadata.return_value = second_dataset_part
     datasets = [
         SDTMDatasetMetadata(first_record={"DOMAIN": "EC"}, filename="ec_2.xpt"),
         SDTMDatasetMetadata(first_record={"DOMAIN": "EC"}, filename="ec_1.xpt"),
     ]
     validation_result: List[dict] = RulesEngine().validate_single_rule(
-        dataset_metadata=datasets[0],
-        dataset_path="CDISC01/test/ec.xpt",
+        dataset_metadata=datasets[1],
+        dataset_path="ec_1.xpt",
         rule=dataset_metadata_not_equal_to_rule,
         datasets=datasets,
     )
@@ -1598,11 +1668,12 @@ def test_validate_split_dataset_metadata(
     assert validation_result == [
         {
             "domain": "EC",
-            "dataset": "ec.xpt",
+            "dataset": "ec_1.xpt",
             "executionStatus": ExecutionStatus.SUCCESS.value,
             "errors": [
                 {
-                    "row": 2,
+                    "dataset": "ec_1.xpt",
+                    "row": 1,
                     "value": {
                         "dataset_label": "EC Label",
                         "dataset_name": "EC",
@@ -1664,11 +1735,12 @@ def test_validate_split_dataset_variables_metadata(
     assert validation_result == [
         {
             "domain": "EC",
-            "dataset": "ec.xpt",
+            "dataset": "ec_2.xpt",
             "executionStatus": ExecutionStatus.SUCCESS.value,
             "variables": ["variable_data_type", "variable_label", "variable_name"],
             "errors": [
                 {
+                    "dataset": "ec_2.xpt",
                     "row": 1,
                     "value": {
                         "variable_label": (
@@ -1785,7 +1857,8 @@ def test_validate_record_in_parent_domain(
                 "message": "Dataset contents is wrong.",
                 "errors": [
                     {
-                        "row": 1,
+                        "dataset": "ec.xpt",
+                        "row": 4,
                         "value": {"ECPRESP": "Y", "QNAM": "ECREASOC"},
                         "USUBJID": "CDISC005",
                         "SEQ": 4,
@@ -1828,7 +1901,9 @@ def test_validate_additional_columns(
         "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
         return_value=dataset,
     ):
-        datset_metadata = SDTMDatasetMetadata(first_record={"DOMAIN": "TS"})
+        datset_metadata = SDTMDatasetMetadata(
+            first_record={"DOMAIN": "TS"}, filename="ts.xpt"
+        )
         validation_result: List[dict] = RulesEngine(
             standard="sdtmig", standard_version="3-4"
         ).validate_single_rule(
@@ -1845,8 +1920,18 @@ def test_validate_additional_columns(
                 "variables": ["TSVAL"],
                 "message": "Inconsistencies found in enumerated TSVAL columns.",
                 "errors": [
-                    {"value": {"TSVAL": None}, "row": 2, "USUBJID": "1"},
-                    {"value": {"TSVAL": None}, "row": 4, "USUBJID": "1"},
+                    {
+                        "value": {"TSVAL": None},
+                        "dataset": "ts.xpt",
+                        "row": 2,
+                        "USUBJID": "1",
+                    },
+                    {
+                        "value": {"TSVAL": None},
+                        "dataset": "ts.xpt",
+                        "row": 4,
+                        "USUBJID": "1",
+                    },
                 ],
             }
         ]
@@ -1926,7 +2011,9 @@ def test_validate_dataset_contents_against_define_and_library_variable_metadata(
         standard_version=standard_version,
         library_metadata=library_metadata,
     )
-    datset_metadata = SDTMDatasetMetadata(first_record={"DOMAIN": "AE"})
+    datset_metadata = SDTMDatasetMetadata(
+        first_record={"DOMAIN": "AE"}, filename="filename"
+    )
     validation_result: List[dict] = rules_engine.validate_single_rule(
         rule=rule_check_dataset_against_library_and_define,
         dataset_path="study_id/data_bundle_id/filename",
@@ -1946,9 +2033,21 @@ def test_validate_dataset_contents_against_define_and_library_variable_metadata(
                 rule_check_dataset_against_library_and_define
             ),
             "errors": [
-                {"row": 1, "value": {"AESEV": None, "AESER": "1"}},
-                {"row": 2, "value": {"AESEV": None, "AESER": "2"}},
-                {"row": 3, "value": {"AESEV": "test", "AESER": None}},
+                {
+                    "dataset": "filename",
+                    "row": 1,
+                    "value": {"AESEV": None, "AESER": "1"},
+                },
+                {
+                    "dataset": "filename",
+                    "row": 2,
+                    "value": {"AESEV": None, "AESER": "2"},
+                },
+                {
+                    "dataset": "filename",
+                    "row": 3,
+                    "value": {"AESEV": "test", "AESER": None},
+                },
             ],
         }
     ]
@@ -2114,18 +2213,21 @@ def test_validate_extract_metadata_operation(
             ),
             "errors": [
                 {
+                    "dataset": "suppec.xpt",
                     "row": 1,
                     "value": {
                         "RDOMAIN": "EC",
                     },
                 },
                 {
+                    "dataset": "suppec.xpt",
                     "row": 2,
                     "value": {
                         "RDOMAIN": "EC",
                     },
                 },
                 {
+                    "dataset": "suppec.xpt",
                     "row": 3,
                     "value": {
                         "RDOMAIN": "EC",
@@ -2167,7 +2269,9 @@ def test_dataset_references_invalid_whodrug_terms(
         "standards/sdtmig/3-4",
         {"classes": [{"name": "EVENTS", "datasets": [{"name": "AE"}]}]},
     )
-    dataset_metadata = SDTMDatasetMetadata(first_record={"DOMAIN": "AE"})
+    dataset_metadata = SDTMDatasetMetadata(
+        first_record={"DOMAIN": "AE"}, filename="dataset_path"
+    )
 
     # run validation
     engine = RulesEngine(
@@ -2202,12 +2306,14 @@ def test_dataset_references_invalid_whodrug_terms(
             ),
             "errors": [
                 {
+                    "dataset": "dataset_path",
                     "row": 3,
                     "value": {
                         "AEINA": "A01AC",
                     },
                 },
                 {
+                    "dataset": "dataset_path",
                     "row": 4,
                     "value": {
                         "AEINA": "A01AD",
@@ -2319,7 +2425,9 @@ def test_validate_variables_order_against_library_metadata(
     library_metadata = LibraryMetadataContainer(
         model_metadata=cache_data, standard_metadata=standard_data
     )
-    dataset_metadata = SDTMDatasetMetadata(first_record={"DOMAIN": "AE"})
+    dataset_metadata = SDTMDatasetMetadata(
+        first_record={"DOMAIN": "AE"}, filename="dataset_path"
+    )
     # run validation
     engine = RulesEngine(
         cache=cache,
@@ -2369,7 +2477,8 @@ def test_validate_variables_order_against_library_metadata(
                         "AETERM": "test",
                         "DOMAIN": "AE",
                         "STUDYID": "TEST_STUDY",
-                    }
+                    },
+                    "dataset": "dataset_path",
                 }
             ],
         }
