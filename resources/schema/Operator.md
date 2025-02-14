@@ -727,8 +727,6 @@ Multiple grouping variables:
 
 Relationship Integrity Check
 
-`name` can be a variable containing a list of columns and `value` does not need to be present
-
 > --SEQ is unique within DOMAIN, USUBJID, and --TESTCD
 
 ```yaml
@@ -740,11 +738,19 @@ Relationship Integrity Check
     - "--TESTCD"
 ```
 
+> `name` can be a variable containing a list of columns and `value` does not need to be present
+
+```yaml
+Rule Type: Dataset Contents Check against Define XML
+Check:
+  all:
+    - name: define_dataset_key_sequence # contains list of dataset key columns
+      operator: is_unique_set
+```
+
 ## is_not_unique_set
 
 Complement of `is_unique_set`
-
-`name` can be a variable containing a list of columns and `value` does not need to be present
 
 > --SEQ is not unique within DOMAIN, USUBJID, and --TESTCD
 
@@ -755,6 +761,16 @@ Complement of `is_unique_set`
     - "DOMAIN"
     - "USUBJID"
     - "--TESTCD"
+```
+
+> `name` can be a variable containing a list of columns and `value` does not need to be present
+
+```yaml
+Rule Type: Dataset Contents Check against Define XML
+Check:
+  all:
+    - name: define_dataset_key_sequence # contains list of dataset key columns
+      operator: is_not_unique_set
 ```
 
 ## present_on_multiple_rows_within
