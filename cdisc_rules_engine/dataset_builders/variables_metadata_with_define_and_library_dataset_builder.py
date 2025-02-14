@@ -62,9 +62,11 @@ class VariablesMetadataWithDefineAndLibraryDatasetBuilder(BaseDatasetBuilder):
 
         final_dataframe["variable_has_empty_values"] = final_dataframe.apply(
             lambda row: self.variable_has_null_values(
-                row["variable_name"]
-                if row["variable_name"] != ""
-                else row["library_variable_name"],
+                (
+                    row["variable_name"]
+                    if row["variable_name"] != ""
+                    else row["library_variable_name"]
+                ),
                 dataset_contents,
             ),
             axis=1,

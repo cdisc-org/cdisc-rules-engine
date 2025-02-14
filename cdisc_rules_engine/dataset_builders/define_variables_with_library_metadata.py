@@ -35,7 +35,6 @@ class DefineVariablesWithLibraryMetadataDatasetBuilder(BaseDatasetBuilder):
             self.get_define_xml_variables_metadata()
         )
         library_variables_metadata = self.get_library_variables_metadata()
-
         data = variable_metadata.merge(
             library_variables_metadata.data,
             how="left",
