@@ -171,9 +171,11 @@ class Rule:
             join_data = {
                 "domain_name": data.get("Name"),
                 "match_key": [
-                    key
-                    if isinstance(key, str)
-                    else {k.lower(): v for k, v in key.items()}
+                    (
+                        key
+                        if isinstance(key, str)
+                        else {k.lower(): v for k, v in key.items()}
+                    )
                     for key in data.get("Keys", [])
                 ],
                 "wildcard": data.get("Wildcard", "**"),

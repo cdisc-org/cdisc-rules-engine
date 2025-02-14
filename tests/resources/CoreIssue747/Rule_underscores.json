@@ -1,0 +1,118 @@
+{
+    "Authorities": [
+        {
+            "Organization": "CDISC",
+            "Standards": [
+                {
+                    "Name": "SDTMIG",
+                    "References": [
+                        {
+                            "Citations": [
+                                {
+                                    "Document": "IG v3.4",
+                                    "Section": "Table 3.2.1",
+                                    "Cited_Guidance": "Note that the key variables shown in this table are examples only. A sponsor's actual key structure may be different."
+                                },
+                                {
+                                    "Document": "IG v3.4",
+                                    "Section": "3.2.1.1",
+                                    "Cited_Guidance": "Since the purpose of this column is to aid reviewers in understanding the structure of a dataset, sponsors should list all of the natural keys (see definition below) for the dataset. These keys should define uniqueness for records within a dataset, and may define a record sort order. The identified keys for each dataset should be consistent with the description of the dataset structure as described in the Define-XML document."
+                                }
+                            ],
+                            "Origin": "SDTM and SDTMIG Conformance Rules",
+                            "Version": "2.0",
+                            "Rule_Identifier": {
+                                "Id": "CG0019",
+                                "Version": "1"
+                            }
+                        }
+                    ],
+                    "Version": "3.4"
+                },
+                {
+                    "Name": "SDTMIG",
+                    "References": [
+                        {
+                            "Citations": [
+                                {
+                                    "Document": "IG v3.2",
+                                    "Section": "Table 3.2.1|3.2.1.1",
+                                    "Cited_Guidance": "Table 3.2.1[Note that the key variables shown in this table are examples only. A sponsor's actual key structure may be different.]|3.2.1.1[Since the purpose of this column is to aid reviewers in understanding the structure of a dataset, sponsors should list all of the natural keys (see definition below) for the dataset. These keys should define uniqueness for records within a dataset, and may define a record sort order.]"
+                                }
+                            ],
+                            "Origin": "SDTM and SDTMIG Conformance Rules",
+                            "Version": "2.0",
+                            "Rule_Identifier": {
+                                "Id": "CG0019",
+                                "Version": "1"
+                            }
+                        }
+                    ],
+                    "Version": "3.2"
+                },
+                {
+                    "Name": "SDTMIG",
+                    "References": [
+                        {
+                            "Citations": [
+                                {
+                                    "Document": "IG v3.3",
+                                    "Section": "Table 3.2.1|3.2.1.1",
+                                    "Cited_Guidance": "Table 3.2.1[Note that the key variables shown in this table are examples only. A sponsor's actual key structure may be different.]||3.2.1.1[Since the purpose of this column is to aid reviewers in understanding the structure of a dataset, sponsors should list all of the natural keys (see definition below) for the dataset. These keys should define uniqueness for records within a dataset, and may define a record sort order.]"
+                                }
+                            ],
+                            "Origin": "SDTM and SDTMIG Conformance Rules",
+                            "Version": "2.0",
+                            "Rule_Identifier": {
+                                "Id": "CG0019",
+                                "Version": "1"
+                            }
+                        }
+                    ],
+                    "Version": "3.3"
+                }
+            ]
+        }
+    ],
+    "Check": {
+        "all": [
+            {
+                "name": "define_dataset_key_sequence",
+                "operator": "is_not_unique_set"
+            }
+        ]
+    },
+    "Core": {
+        "Id": "CDISC.SDTMIG.CG0019",
+        "Status": "Draft",
+        "Version": "1"
+    },
+    "Description": "Trigger error if records are not unique as per sponsor defined key variables as documented in the define.xml",
+    "Executability": "Fully Executable",
+    "Outcome": {
+        "Message": "Records are not unique as per sponsor defined key variables as documented in the define.xml"
+    },
+    "Scope": {
+        "Classes": {
+            "Include": [
+                "ALL"
+            ]
+        },
+        "Domains": {
+            "Include": [
+                "ALL"
+            ]
+        }
+    },
+    "Sensitivity": "Record",
+    "Match_Datasets": [
+        {
+            "Keys": [
+                "USUBJID"
+            ],
+            "Name": "SUPP--",
+            "Is_Relationship": true
+        }
+    ],
+    "Rule_Type": "Dataset Contents Check against Define XML"
+}
