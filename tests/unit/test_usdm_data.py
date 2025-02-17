@@ -98,7 +98,10 @@ def test_validate_rule_single_dataset_check(dataset_rule_greater_than: dict):
             dataset_rule_greater_than,
             dataset_path,
             [],
-            SDTMDatasetMetadata(first_record={"DOMAIN": "EC"}),
+            SDTMDatasetMetadata(
+                first_record={"DOMAIN": "EC"},
+                filename="USDM_EliLilly_NCT03421379_Diabetes.json",
+            ),
         )
 
         assert validation_result == [
@@ -109,8 +112,16 @@ def test_validate_rule_single_dataset_check(dataset_rule_greater_than: dict):
                 "variables": ["ECCOOLVAR"],
                 "message": "Value for ECCOOLVAR greater than 30.",
                 "errors": [
-                    {"value": {"ECCOOLVAR": 100}, "row": 2},
-                    {"value": {"ECCOOLVAR": 34}, "row": 4},
+                    {
+                        "value": {"ECCOOLVAR": 100},
+                        "dataset": "USDM_EliLilly_NCT03421379_Diabetes.json",
+                        "row": 2,
+                    },
+                    {
+                        "value": {"ECCOOLVAR": 34},
+                        "dataset": "USDM_EliLilly_NCT03421379_Diabetes.json",
+                        "row": 4,
+                    },
                 ],
             }
         ]
