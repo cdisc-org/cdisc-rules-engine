@@ -395,6 +395,15 @@
     "case_sensitive": {
       "type": "boolean"
     },
+    "codelist": {
+      "type": "string"
+    },
+    "codelists": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
     "ct_attribute": {
       "type": "string"
     },
@@ -455,6 +464,14 @@
     },
     "key_value": {
       "type": "string"
+    },
+    "level": {
+      "type": "string",
+      "enum": ["codelist", "term"]
+    },
+    "returntype": {
+      "type": "string",
+      "enum": ["code", "value"]
     },
     "name": {
       "type": "string"
