@@ -2,6 +2,7 @@ import os
 from core import list_rule_sets
 import unittest
 from click.testing import CliRunner
+from test_utils import tearDown
 
 
 class TestListRuleSets(unittest.TestCase):
@@ -31,11 +32,7 @@ class TestListRuleSets(unittest.TestCase):
         self.assertIn("SENDIG, 3-1", result.output)
 
     def tearDown(self):
-        for file_name in os.listdir("."):
-            if file_name != "host.json" and (
-                file_name.endswith(".xlsx") or file_name.endswith(".json")
-            ):
-                os.remove(file_name)
+        tearDown()
 
 
 if __name__ == "__main__":

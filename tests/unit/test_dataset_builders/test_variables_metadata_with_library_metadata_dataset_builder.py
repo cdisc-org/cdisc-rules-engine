@@ -1,7 +1,9 @@
 from unittest.mock import MagicMock, patch
+from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
+from cdisc_rules_engine.dummy_models.dummy_dataset import DummyDataset
 from cdisc_rules_engine.services.cache.in_memory_cache_service import (
     InMemoryCacheService,
 )
@@ -25,20 +27,22 @@ def test_variable_metadata_with_library_metadata_dataset_builder(
 ):
     mock_get_variables_metadata.return_value = pd.DataFrame.from_dict(
         {
-            "variable_name": ["STUDYID", "USUBJID", "AETERM"],
-            "variable_label": ["A", "B", "C"],
-            "variable_size": [16, 16, 8],
-            "variable_order_number": [1, 2, 9],
-            "variable_data_type": ["Char", "Char", "Char"],
+            "variable_name": ["STUDYID", "USUBJID", "AETERM", "AESEQ"],
+            "variable_label": ["A", "B", "C", "D"],
+            "variable_size": [16, 16, 8, 8],
+            "variable_order_number": [1, 2, 9, 8],
+            "variable_data_type": ["Char", "Char", "Char", "Num"],
         }
     )
-
-    mock_get_dataset.return_value = pd.DataFrame.from_dict(
-        {
-            "STUDYID": ["A", "B", "C"],
-            "USUBJID": ["", "A", "B"],
-            "AETERM": ["", "C", "A"],
-        }
+    mock_get_dataset.return_value = PandasDataset(
+        pd.DataFrame.from_dict(
+            {
+                "STUDYID": ["A", "B", "C"],
+                "USUBJID": ["", "A", "B"],
+                "AETERM": ["", "C", "A"],
+                "AESEQ": [1, 2, 3],
+            }
+        )
     )
     cache = InMemoryCacheService()
     standard = "sdtmig"
@@ -46,6 +50,7 @@ def test_variable_metadata_with_library_metadata_dataset_builder(
     standard_substandard = None
     standard_data = {
         "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
+        "domains": ["AE", "DM", "VS"],
         "classes": [
             {
                 "name": "Events",
@@ -101,7 +106,21 @@ def test_variable_metadata_with_library_metadata_dataset_builder(
         data_processor=None,
         dataset_path=None,
         datasets=[],
-        domain="AE",
+        dataset_metadata=DummyDataset(
+            {
+                "filename": "ae.xpt",
+                "label": "Adverse Events",
+                "variables": [
+                    {
+                        "name": "DOMAIN",
+                        "label": "Domain Abbreviation",
+                        "type": "Char",
+                        "length": 4,
+                    },
+                ],
+                "records": {"DOMAIN": ["AE"]},
+            }
+        ),
         define_xml_path=None,
         standard=standard,
         standard_version=standard_version,
@@ -128,8 +147,8 @@ def test_variable_metadata_with_library_metadata_dataset_builder(
         "AETERM",
         "AESEQ",
     ]
-    assert result["variable_name"].tolist() == ["STUDYID", "USUBJID", "AETERM", ""]
-    assert result["variable_has_empty_values"].tolist() == [False, True, True, True]
+    assert result["variable_name"].tolist() == ["STUDYID", "USUBJID", "AETERM", "AESEQ"]
+    assert result["variable_has_empty_values"].tolist() == [False, True, True, False]
 
 
 @patch(
@@ -151,13 +170,15 @@ def test_variable_metadata_with_library_metadata_dataset_builder_variable_only_i
         }
     )
 
-    mock_get_dataset.return_value = pd.DataFrame.from_dict(
-        {
-            "STUDYID": ["A", "B", "C"],
-            "USUBJID": ["", "A", "B"],
-            "AETERM": ["", "C", "A"],
-            "AEMODELVAR": ["C", "D", "A"],
-        }
+    mock_get_dataset.return_value = PandasDataset(
+        pd.DataFrame.from_dict(
+            {
+                "STUDYID": ["A", "B", "C"],
+                "USUBJID": ["", "A", "B"],
+                "AETERM": ["", "C", "A"],
+                "AEMODELVAR": ["C", "D", "A"],
+            }
+        )
     )
     cache = InMemoryCacheService()
     standard = "sdtmig"
@@ -165,6 +186,7 @@ def test_variable_metadata_with_library_metadata_dataset_builder_variable_only_i
     standard_substandard = None
     standard_data = {
         "_links": {"model": {"href": "/mdr/sdtm/2-0"}},
+        "domains": ["AE", "DM", "VS"],
         "classes": [
             {
                 "name": "Events",
@@ -281,7 +303,21 @@ def test_variable_metadata_with_library_metadata_dataset_builder_variable_only_i
         data_processor=None,
         dataset_path=None,
         datasets=[],
-        domain="AE",
+        dataset_metadata=DummyDataset(
+            {
+                "filename": "ae.xpt",
+                "label": "Adverse Events",
+                "variables": [
+                    {
+                        "name": "DOMAIN",
+                        "label": "Domain Abbreviation",
+                        "type": "Char",
+                        "length": 4,
+                    },
+                ],
+                "records": {"DOMAIN": ["AE"]},
+            }
+        ),
         define_xml_path=None,
         standard=standard,
         standard_version=standard_version,
@@ -309,25 +345,16 @@ def test_variable_metadata_with_library_metadata_dataset_builder_variable_only_i
         "USUBJID",
         "AETERM",
         "AEMODELVAR",
-        "DOMAIN",
-        "AESEQ",
-        "TIMING_VAR",
     ]
     assert result["variable_name"].tolist() == [
         "STUDYID",
         "USUBJID",
         "AETERM",
         "AEMODELVAR",
-        "",
-        "",
-        "",
     ]
     assert result["variable_has_empty_values"].tolist() == [
         False,
         True,
         True,
         False,
-        True,
-        True,
-        True,
     ]

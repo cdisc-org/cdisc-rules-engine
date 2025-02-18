@@ -1231,7 +1231,7 @@ def operation_params() -> OperationParams:
         domain="domain",
         dataset_path="dataset_path",
         directory_path="directory_path",
-        datasets=[{}],
+        datasets=[],
         standard="standard",
         standard_version="standard_version",
         external_dictionaries=ExternalDictionariesContainer(
@@ -1251,12 +1251,12 @@ def dataset_metadata() -> dict:
         "file_metadata": {
             "path": "CDISC01/test/ae.xpt",
             "name": "ae.xpt",
-            "size": 38000,
+            "file_size": 38000,
         },
         "contents_metadata": {
             "dataset_label": "Adverse Events",
             "dataset_name": "AE",
-            "domain_name": "AE",
+            "first_record": {"DOMAIN": "AE"},
             "dataset_modification_date": datetime.now().isoformat(),
             "dataset_length": 20,
         },

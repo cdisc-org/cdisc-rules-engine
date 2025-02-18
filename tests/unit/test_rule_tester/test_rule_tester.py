@@ -13,16 +13,22 @@ def test_rule_with_errors(mock_get_dataset_class):
         {
             "filename": "lb.xpt",
             "label": "Laboratory Test Results",
-            "domain": "LB",
             "variables": [
+                {
+                    "name": "DOMAIN",
+                    "label": "Domain Abbreviation",
+                    "type": "Char",
+                    "length": 4,
+                },
                 {
                     "name": "LBSEQ",
                     "label": "Sequence Number",
                     "type": "Num",
                     "length": 8,
-                }
+                },
             ],
             "records": {
+                "DOMAIN": ["LB", "LB"],
                 "LBSEQ": [1, 2],
             },
         }
@@ -94,16 +100,22 @@ def test_rule_without_errors(mock_get_dataset_class):
         {
             "filename": "lb.xpt",
             "label": "Laboratory Test Results",
-            "domain": "LB",
             "variables": [
+                {
+                    "name": "DOMAIN",
+                    "label": "Domain Abbreviation",
+                    "type": "Char",
+                    "length": 4,
+                },
                 {
                     "name": "LBSEQ",
                     "label": "Sequence Number",
                     "type": "Num",
                     "length": 8,
-                }
+                },
             ],
             "records": {
+                "DOMAIN": ["LB", "LB"],
                 "LBSEQ": [1, 2],
             },
         }
@@ -169,16 +181,22 @@ def test_rule_skipped():
         {
             "filename": "lb.xpt",
             "label": "Laboratory Test Results",
-            "domain": "LB",
             "variables": [
+                {
+                    "name": "DOMAIN",
+                    "label": "Domain Abbreviation",
+                    "type": "Char",
+                    "length": 4,
+                },
                 {
                     "name": "LBSEQ",
                     "label": "Sequence Number",
                     "type": "Num",
                     "length": 8,
-                }
+                },
             ],
             "records": {
+                "DOMAIN": ["LB", "LB"],
                 "LBSEQ": [1, 2],
             },
         }
@@ -242,9 +260,14 @@ def test_rule_skipped():
 def test_rule_with_define_xml(define_xml_variable_validation_rule: dict):
     datasets = [
         {
-            "domain": "AE",
             "filename": "ae.xpt",
             "variables": [
+                {
+                    "name": "DOMAIN",
+                    "label": "Domain Abbreviation",
+                    "type": "Char",
+                    "length": 4,
+                },
                 {
                     "name": "USUBJID",
                     "label": "Unique Subject Id",
@@ -265,6 +288,7 @@ def test_rule_with_define_xml(define_xml_variable_validation_rule: dict):
                 },
             ],
             "records": {
+                "DOMAIN": ["AE", "AE", "AE", "AE", "AE"],
                 "USUBJID": [
                     1,
                     2,
@@ -294,6 +318,6 @@ def test_rule_with_define_xml(define_xml_variable_validation_rule: dict):
         assert "AE" in data
         assert len(data["AE"]) == 1
         assert len(data["AE"][0]["errors"]) > 0
-        error = data["AE"][0]["errors"][0]
-        assert error["row"] == 2
+        error = data["AE"][0]["errors"][1]
+        assert error["row"] == 3
         assert error["value"] == {"variable_size": 8}

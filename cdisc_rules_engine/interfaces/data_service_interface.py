@@ -1,8 +1,9 @@
 from abc import ABC, abstractmethod
 from io import IOBase
-from typing import Callable, List, Optional
+from typing import Callable, Iterable, List, Optional
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from .cache_service_interface import CacheServiceInterface
 
 
@@ -12,6 +13,8 @@ class DataServiceInterface(ABC):
     that must be implemented by all services
     that download datasets from a certain storage.
     """
+
+    dataset_implementation: DatasetInterface
 
     @classmethod
     @abstractmethod
@@ -23,7 +26,7 @@ class DataServiceInterface(ABC):
         """
 
     @abstractmethod
-    def get_datasets(self) -> List[dict]:
+    def get_datasets(self) -> List[SDTMDatasetMetadata]:
         """
         Gets a list of datasets.
         """
@@ -41,7 +44,9 @@ class DataServiceInterface(ABC):
         """
 
     @abstractmethod
-    def get_raw_dataset_metadata(self, dataset_name: str, **kwargs) -> DatasetMetadata:
+    def get_raw_dataset_metadata(
+        self, dataset_name: str, **kwargs
+    ) -> SDTMDatasetMetadata:
         """
         Gets dataset metadata and returns it as DatasetMetadata instance.
         """
@@ -62,7 +67,12 @@ class DataServiceInterface(ABC):
         """
 
     @abstractmethod
-    def concat_split_datasets(self, func_to_call: Callable, dataset_names, **kwargs):
+    def concat_split_datasets(
+        self,
+        func_to_call: Callable,
+        datasets_metadata: Iterable[DatasetMetadata],
+        **kwargs
+    ):
         """
         Accepts a list of split dataset filenames,
         downloads all of them and merges into a single DataFrame.
@@ -98,8 +108,8 @@ class DataServiceInterface(ABC):
         self,
         dataset: DatasetInterface,
         file_path: str,
-        datasets: List[dict],
-        domain: str,
+        datasets: Iterable[SDTMDatasetMetadata],
+        dataset_metadata: SDTMDatasetMetadata,
     ) -> Optional[str]:
         """
         Returns dataset class based on its contents

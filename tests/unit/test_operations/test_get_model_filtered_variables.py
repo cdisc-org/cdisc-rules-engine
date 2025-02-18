@@ -5,11 +5,13 @@ from cdisc_rules_engine.models.library_metadata_container import (
 import pytest
 import pandas as pd
 from typing import List
+from unittest.mock import patch
 
 from cdisc_rules_engine.constants.classes import (
     GENERAL_OBSERVATIONS_CLASS,
     FINDINGS,
     FINDINGS_ABOUT,
+    EVENTS,
 )
 from cdisc_rules_engine.enums.variable_roles import VariableRoles
 from cdisc_rules_engine.models.operation_params import OperationParams
@@ -20,6 +22,7 @@ from cdisc_rules_engine.services.cache import InMemoryCacheService
 from cdisc_rules_engine.services.data_services import LocalDataService
 from cdisc_rules_engine.config import ConfigService
 from cdisc_rules_engine.services.data_readers import DataReaderFactory
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 
 test_set1 = (
     {
@@ -145,6 +148,7 @@ test_set1 = (
             "test",
         ],
     },
+    {"name": "AE"},
     "Timing",
     ["VISITNUM", "VISIT", "TIMING_VAR"],
 )
@@ -263,6 +267,7 @@ test_set2 = (
             "test",
         ],
     },
+    {"name": "AE"},
     "Identifier",
     ["STUDYID", "DOMAIN", "USUBJID", "AETERM"],
 )
@@ -382,6 +387,7 @@ test_set3 = (
         ],
         "AETESTCD": ["test", "test", "test"],
     },
+    {"name": "AE"},
     "Timing",
     ["TIMING_VAR1", "TIMING_VAR2"],
 )
@@ -501,13 +507,14 @@ test_set4 = (
         ],
         "AETESTCD": ["test", "test", "test"],
     },
+    {"name": "AE"},
     "Identifier",
     ["STUDYID", "DOMAIN", "IDVAR1"],
 )
 
 
 @pytest.mark.parametrize(
-    "model_metadata, standard_metadata, study_data, key_val, var_list",
+    "model_metadata, standard_metadata, study_data, dataset_metadata, key_val, var_list",
     [test_set1, test_set2, test_set3, test_set4],
 )
 def test_get_model_filtered_variables(
@@ -515,6 +522,7 @@ def test_get_model_filtered_variables(
     model_metadata: dict,
     standard_metadata: dict,
     study_data: dict,
+    dataset_metadata: dict,
     key_val: str,
     var_list: List[str],
 ):
@@ -530,6 +538,7 @@ def test_get_model_filtered_variables(
     operation_params.standard_version = "3-4"
     operation_params.key_name = "role"
     operation_params.key_value = key_val
+    operation_params.datasets = [SDTMDatasetMetadata(**dataset_metadata)]
 
     # save model metadata to cache
     cache = InMemoryCacheService.get_instance()
@@ -545,6 +554,33 @@ def test_get_model_filtered_variables(
         standard_version="3-4",
         library_metadata=library_metadata,
     )
+
+    expected_class = (
+        EVENTS
+        if model_metadata["datasets"][0]["_links"]["parentClass"]["title"] == "Events"
+        else FINDINGS_ABOUT
+    )
+
+    """
+    this fuction replaces get_raw_dataset_metadata in LocalDataService to
+    prevent filtering into the decorator that checks cache
+    """
+
+    def mock_get_raw_metadata(*args, **kwargs):
+        return SDTMDatasetMetadata(**dataset_metadata)
+
+    data_service.get_raw_dataset_metadata = mock_get_raw_metadata
+
+    with patch.object(
+        LocalDataService, "get_dataset_class", return_value=expected_class
+    ):
+        operation = LibraryModelVariablesFilter(
+            operation_params,
+            operation_params.dataframe,
+            cache,
+            data_service,
+            library_metadata,
+        )
 
     operation = LibraryModelVariablesFilter(
         operation_params,

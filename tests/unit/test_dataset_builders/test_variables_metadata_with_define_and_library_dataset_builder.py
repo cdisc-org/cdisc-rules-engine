@@ -1,7 +1,9 @@
 from unittest.mock import MagicMock, patch
+from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.services.cache.in_memory_cache_service import (
     InMemoryCacheService,
 )
@@ -47,12 +49,14 @@ def test_build_combined_metadata(
     )
 
     # Setup dataset contents
-    mock_get_dataset.return_value = pd.DataFrame.from_dict(
-        {
-            "STUDYID": ["STUDY1", "STUDY1", "STUDY1"],
-            "USUBJID": ["SUBJ1", "", "SUBJ3"],
-            "AETERM": ["Headache", "Nausea", ""],
-        }
+    mock_get_dataset.return_value = PandasDataset(
+        pd.DataFrame.from_dict(
+            {
+                "STUDYID": ["STUDY1", "STUDY1", "STUDY1"],
+                "USUBJID": ["SUBJ1", "", "SUBJ3"],
+                "AETERM": ["Headache", "Nausea", ""],
+            }
+        )
     )
 
     # Setup library metadata
@@ -115,7 +119,7 @@ def test_build_combined_metadata(
         data_processor=None,
         dataset_path=str(test_define_file_path),
         datasets=[],
-        domain="AE",
+        dataset_metadata=SDTMDatasetMetadata(first_record={"DOMAIN": "AE"}),
         define_xml_path=str(test_define_file_path),
         standard="sdtmig",
         standard_version="3-4",

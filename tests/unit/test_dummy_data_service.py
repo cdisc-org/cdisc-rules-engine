@@ -87,7 +87,7 @@ def test_get_dataset():
 def test_get_dataset_metadata():
     dataset_data = [
         {
-            "filesize": 2000,
+            "filesize": 1000,
             "filename": "ae.xpt",
             "label": "ADVERSE EVENTS",
             "domain": "AE",
@@ -101,7 +101,7 @@ def test_get_dataset_metadata():
     metadata = data_service.get_dataset_metadata("ae.xpt")
     assert metadata["dataset_label"].iloc[0] == "ADVERSE EVENTS"
     assert metadata["dataset_name"].iloc[0] == "AE"
-    assert metadata["dataset_size"].iloc[0] == 2000
+    assert metadata["dataset_size"].iloc[0] == 1000
 
 
 def test_get_variables_metadata():

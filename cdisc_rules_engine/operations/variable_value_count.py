@@ -1,4 +1,5 @@
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.operations.base_operation import BaseOperation
 import asyncio
 import os
@@ -7,6 +8,7 @@ from typing import List
 from cdisc_rules_engine.utilities.utils import (
     get_corresponding_datasets,
     is_split_dataset,
+    tag_source,
 )
 
 
@@ -22,7 +24,7 @@ class VariableValueCount(BaseOperation):
         of times that value appears in the study.
         """
         datasets_with_unique_domains = list(
-            {dataset["domain"]: dataset for dataset in self.params.datasets}.values()
+            {dataset.domain: dataset for dataset in self.params.datasets}.values()
         )
         coroutines = [
             self._get_dataset_variable_value_count(dataset)
@@ -31,23 +33,26 @@ class VariableValueCount(BaseOperation):
         dataset_variable_value_counts: List[Counter] = await asyncio.gather(*coroutines)
         return dict(sum(dataset_variable_value_counts, Counter()))
 
-    async def _get_dataset_variable_value_count(self, dataset: dict) -> Counter:
-        domain = dataset.get("domain")
-        if is_split_dataset(self.params.datasets, domain):
-            files = [
-                os.path.join(self.params.directory_path, dataset.get("filename"))
-                for dataset in get_corresponding_datasets(self.params.datasets, domain)
-            ]
+    async def _get_dataset_variable_value_count(
+        self, dataset_metadata: SDTMDatasetMetadata
+    ) -> Counter:
+        if is_split_dataset(self.params.datasets, dataset_metadata):
+            corresponding_datasets = get_corresponding_datasets(
+                self.params.datasets, dataset_metadata
+            )
             data: DatasetInterface = self.data_service.concat_split_datasets(
-                self.data_service.get_dataset, files
+                self.data_service.get_dataset, corresponding_datasets
             )
         else:
             data: DatasetInterface = self.data_service.get_dataset(
                 dataset_name=os.path.join(
-                    self.params.directory_path, dataset.get("filename")
+                    self.params.directory_path, dataset_metadata.filename
                 )
             )
-        target_variable = self.params.original_target.replace("--", domain, 1)
+            data = tag_source(data, dataset_metadata)
+        target_variable = self.params.original_target.replace(
+            "--", dataset_metadata.domain, 1
+        )
         if target_variable in data:
             return Counter(data[target_variable].unique())
         else:

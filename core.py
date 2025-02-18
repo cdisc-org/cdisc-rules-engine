@@ -391,39 +391,17 @@ def update_cache(
     cache_populator = CachePopulator(
         cache, library_service, local_rules, local_rules_id, remove_rules, cache_path
     )
-    cache = asyncio.run(cache_populator.load_cache_data())
     if remove_rules:
-        cache_populator.save_removed_rules_locally(
-            os.path.join(cache_path, DefaultFilePaths.LOCAL_RULES_CACHE_FILE.value),
-            remove_rules,
-        )
+        cache_populator.save_removed_rules_locally()
         print("Local rules removed from cache")
     elif local_rules and local_rules_id:
-        cache_populator.save_local_rules_locally(
-            os.path.join(cache_path, DefaultFilePaths.LOCAL_RULES_CACHE_FILE.value),
-            local_rules_id,
-        )
+        cache_populator.save_local_rules_locally()
         print("Local rules saved to cache")
+    elif not local_rules and not remove_rules:
+        asyncio.run(cache_populator.update_cache())
     else:
-        cache_populator.save_rules_locally(
-            os.path.join(cache_path, DefaultFilePaths.RULES_CACHE_FILE.value)
-        )
-        cache_populator.save_ct_packages_locally(f"{cache_path}")
-        cache_populator.save_standards_metadata_locally(
-            os.path.join(cache_path, DefaultFilePaths.STANDARD_DETAILS_CACHE_FILE.value)
-        )
-        cache_populator.save_standards_models_locally(
-            os.path.join(cache_path, DefaultFilePaths.STANDARD_MODELS_CACHE_FILE.value)
-        )
-        cache_populator.save_variable_codelist_maps_locally(
-            os.path.join(
-                cache_path, DefaultFilePaths.VARIABLE_CODELIST_CACHE_FILE.value
-            )
-        )
-        cache_populator.save_variables_metadata_locally(
-            os.path.join(
-                cache_path, DefaultFilePaths.VARIABLE_METADATA_CACHE_FILE.value
-            )
+        raise ValueError(
+            "Must Specify either local_rules_path and local_rules_id, remove_local_rules, or neither"
         )
     print("Cache updated successfully")
 
@@ -687,7 +665,7 @@ def list_dataset_metadata(ctx: click.Context, dataset_path: Tuple[str]):
               "domain":"AE",
               "filename":"ae.xpt",
               "full_path":"/Users/Aleksei_Furmenkov/PycharmProjects/cdisc-rules-engine/resources/data/ae.xpt",
-              "size":"38000",
+              "file_size":"38000",
               "label":"Adverse Events",
               "modification_date":"2020-08-21T09:14:26"
            },
@@ -695,7 +673,7 @@ def list_dataset_metadata(ctx: click.Context, dataset_path: Tuple[str]):
               "domain":"EX",
               "filename":"ex.xpt",
               "full_path":"/Users/Aleksei_Furmenkov/PycharmProjects/cdisc-rules-engine/resources/data/ex.xpt",
-              "size":"78050",
+              "file_size":"78050",
               "label":"Exposure",
               "modification_date":"2021-09-17T09:23:22"
            },

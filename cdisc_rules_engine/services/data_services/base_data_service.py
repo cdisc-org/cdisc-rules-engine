@@ -5,9 +5,7 @@ from typing import Callable, List, Optional, Iterable, Iterator
 from concurrent.futures import ThreadPoolExecutor
 import os
 import numpy as np
-import pandas as pd
 
-from cdisc_rules_engine.constants.domains import AP_DOMAIN_LENGTH
 from cdisc_rules_engine.interfaces import (
     CacheServiceInterface,
     ConfigInterface,
@@ -20,6 +18,7 @@ from cdisc_rules_engine.constants.classes import (
     INTERVENTIONS,
     RELATIONSHIP,
 )
+from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
 from cdisc_rules_engine.models.dataset_types import DatasetTypes
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.services.cdisc_library_service import CDISCLibraryService
@@ -29,10 +28,12 @@ from cdisc_rules_engine.utilities.utils import (
     get_dataset_cache_key_from_path,
     get_directory_path,
     search_in_list_of_dicts,
+    tag_source,
 )
 from cdisc_rules_engine.utilities.sdtm_utilities import get_class_and_domain_metadata
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
-from cdisc_rules_engine.models.dataset import PandasDataset, DaskDataset
+from cdisc_rules_engine.models.dataset import PandasDataset
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 
 
 def cached_dataset(dataset_type: str):
@@ -121,7 +122,10 @@ class BaseDataService(DataServiceInterface, ABC):
         )
 
     def concat_split_datasets(
-        self, func_to_call: Callable, dataset_names: List[str], **kwargs
+        self,
+        func_to_call: Callable,
+        datasets_metadata: Iterable[DatasetMetadata],
+        **kwargs,
     ) -> DatasetInterface:
         """
         Accepts a list of split dataset filenames, asynchronously downloads
@@ -135,11 +139,14 @@ class BaseDataService(DataServiceInterface, ABC):
 
         # download datasets asynchronously
         datasets: Iterator[DatasetInterface] = self._async_get_datasets(
-            func_to_call, dataset_names=dataset_names, **kwargs
+            func_to_call,
+            dataset_names=[dataset.filename for dataset in datasets_metadata],
+            **kwargs,
         )
         full_dataset = self.dataset_implementation()
-        for dataset in datasets:
-            full_dataset = full_dataset.concat(dataset, ignore_index=True)
+        for dataset, dataset_metadata in zip(datasets, datasets_metadata):
+            tagged_dataset = tag_source(dataset, dataset_metadata)
+            full_dataset = full_dataset.concat(tagged_dataset, ignore_index=True)
 
         if drop_duplicates:
             full_dataset = full_dataset.drop_duplicates()
@@ -151,81 +158,27 @@ class BaseDataService(DataServiceInterface, ABC):
         """
         return any(not os.path.exists(name) for name in dataset_names)
 
-    def merge_supp_dataset(self, func_to_call, dataset_names, **kwargs):
-        if self.check_filepath(dataset_names):
-            datasets = []
-            for dataset in dataset_names:
-                datasets.append(self.get_dataset(dataset))
-        else:
-            datasets: List[DatasetInterface] = list(
-                self._async_get_datasets(func_to_call, dataset_names, **kwargs)
-            )
-        parent_dataset = datasets.pop(0)
-        static_keys = ["STUDYID", "USUBJID", "APID", "POOLID", "SPDEVID"]
-        for supp_dataset in datasets:
-            qnam_list = supp_dataset["QNAM"].unique()
-            supp_dataset = self.process_supp(supp_dataset)
-            dynamic_key = supp_dataset["IDVAR"].iloc[0]
-
-            # Determine the common keys present in both datasets
-            common_keys = [
-                key
-                for key in static_keys
-                if key in parent_dataset.columns and key in supp_dataset.columns
-            ]
-            common_keys.append(dynamic_key)
-            current_supp = supp_dataset.rename(columns={"IDVARVAL": dynamic_key})
-            current_supp = current_supp.drop(columns=["IDVAR"])
-            parent_dataset[dynamic_key] = parent_dataset[dynamic_key].astype(str)
-            current_supp[dynamic_key] = current_supp[dynamic_key].astype(str)
-            parent_dataset = PandasDataset(
-                pd.merge(
-                    parent_dataset.data,
-                    current_supp.data,
-                    how="left",
-                    on=common_keys,
-                    suffixes=("", "_supp"),
-                )
-            )
-            for qnam in qnam_list:
-                qnam_check = parent_dataset.data.dropna(subset=[qnam])
-                grouped = qnam_check.groupby(common_keys).size()
-                if (grouped > 1).any():
-                    raise ValueError(
-                        f"Multiple records with the same QNAM '{qnam}' match a single parent record"
-                    )
-        if self.dataset_implementation == DaskDataset:
-            parent_dataset = DaskDataset(parent_dataset.data)
-        return parent_dataset
-
-    def process_supp(self, supp_dataset):
-        # TODO: QLABEL is not added to the new columns.  This functionality is not supported directly in pandas.
-        # initialize new columns for each unique QNAM in the dataset with NaN
-        for qnam in supp_dataset["QNAM"].unique():
-            supp_dataset.data[qnam] = pd.NA
-        # Set the value of the new columns only in their respective rows
-        for index, row in supp_dataset.iterrows():
-            supp_dataset.at[index, row["QNAM"]] = row["QVAL"]
-        supp_dataset.drop(labels=["QNAM", "QVAL", "QLABEL"], axis=1)
-        return supp_dataset
-
     def get_dataset_class(
         self,
         dataset: DatasetInterface,
         file_path: str,
-        datasets: List[dict],
-        domain: str,
+        datasets: Iterable[SDTMDatasetMetadata],
+        dataset_metadata: SDTMDatasetMetadata,
     ) -> Optional[str]:
         if self.standard is None or self.version is None:
             raise Exception("Missing standard and version data")
 
         standard_data = self._get_standard_data()
 
-        class_data, _ = get_class_and_domain_metadata(standard_data, domain)
+        class_data, _ = get_class_and_domain_metadata(
+            standard_data, dataset_metadata.domain or dataset_metadata.name
+        )
         name = class_data.get("name")
         if name:
             return convert_library_class_name_to_ct_class(name)
-        return self._handle_special_cases(dataset, domain, file_path, datasets)
+        return self._handle_special_cases(
+            dataset, dataset_metadata, file_path, datasets
+        )
 
     def _get_standard_data(self):
 
@@ -236,35 +189,37 @@ class BaseDataService(DataServiceInterface, ABC):
             )
         )
 
-    def _handle_special_cases(self, dataset, domain, file_path, datasets):
-        if self._contains_topic_variable(dataset, domain, "TERM"):
+    def _handle_special_cases(
+        self,
+        dataset: DatasetInterface,
+        dataset_metadata: SDTMDatasetMetadata,
+        file_path: str,
+        datasets: Iterable[SDTMDatasetMetadata],
+    ):
+        if self._contains_topic_variable(dataset, dataset_metadata.domain, "TERM"):
             return EVENTS
-        if self._contains_topic_variable(dataset, domain, "TRT"):
+        if self._contains_topic_variable(dataset, dataset_metadata.domain, "TRT"):
             return INTERVENTIONS
-        if self._contains_topic_variable(dataset, domain, "QNAM"):
+        if self._contains_topic_variable(dataset, dataset_metadata.domain, "QNAM"):
             return RELATIONSHIP
-        if self._contains_topic_variable(dataset, domain, "TESTCD"):
-            if self._contains_topic_variable(dataset, domain, "OBJ"):
+        if self._contains_topic_variable(dataset, dataset_metadata.domain, "TESTCD"):
+            if self._contains_topic_variable(dataset, dataset_metadata.domain, "OBJ"):
                 return FINDINGS_ABOUT
             return FINDINGS
-        if self._is_associated_persons(dataset, domain):
+        if self._is_associated_persons(dataset):
             return self._get_associated_persons_inherit_class(
-                dataset, file_path, datasets, domain
+                file_path, datasets, dataset_metadata.domain
             )
         return None
 
-    def _is_associated_persons(self, dataset, domain) -> bool:
+    def _is_associated_persons(self, dataset) -> bool:
         """
         Check if AP-- domain.
         """
-        return (
-            "DOMAIN" in dataset
-            and self._domain_starts_with(domain, "AP")
-            and len(domain) == AP_DOMAIN_LENGTH
-        )
+        return "APID" in dataset
 
     def _get_associated_persons_inherit_class(
-        self, dataset, file_path, datasets: List[dict], domain: str
+        self, file_path, datasets: Iterable[SDTMDatasetMetadata], domain: str
     ):
         """
         Check with inherit class AP-- belongs to.
@@ -272,11 +227,11 @@ class BaseDataService(DataServiceInterface, ABC):
         ap_suffix = domain[2:]
         directory_path = get_directory_path(file_path)
         if len(datasets) > 1:
-            domain_details: dict = search_in_list_of_dicts(
-                datasets, lambda item: item.get("domain") == ap_suffix
+            domain_details: SDTMDatasetMetadata = search_in_list_of_dicts(
+                datasets, lambda item: item.domain == ap_suffix
             )
             if domain_details:
-                file_name = domain_details["filename"]
+                file_name = domain_details.filename
                 new_file_path = os.path.join(directory_path, file_name)
                 new_domain_dataset = self.get_dataset(dataset_name=new_file_path)
             else:
@@ -287,12 +242,17 @@ class BaseDataService(DataServiceInterface, ABC):
                 new_domain_dataset,
                 new_file_path,
                 datasets,
-                domain_details["domain"],
+                domain_details,
             )
         else:
             return None
 
-    def _contains_topic_variable(self, dataset, domain, variable):
+    def _contains_topic_variable(
+        self,
+        dataset: DatasetInterface,
+        domain: str,
+        variable: str,
+    ):
         """
         Checks if the given dataset-class string ends with a particular variable string.
         Returns True/False

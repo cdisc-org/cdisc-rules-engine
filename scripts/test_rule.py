@@ -50,7 +50,7 @@ def validate_single_rule(
     cache,
     path,
     args,
-    datasets,
+    datasets: List[DummyDataset],
     library_metadata: LibraryMetadataContainer,
     rule: dict = None,
 ):
@@ -86,20 +86,20 @@ def validate_single_rule(
         )
         engine_logger.info("Done validating the rule for the study.")
     else:
-        for dataset in datasets:
+        for dataset_metadata in datasets:
             # Check if the domain has been validated before
             # This addresses the case where a domain is split
             # and appears multiple times within the list of datasets
-            if dataset.domain not in validated_domains:
-                validated_domains.add(dataset.domain)
+            if dataset_metadata.unsplit_name not in validated_domains:
+                validated_domains.add(dataset_metadata.unsplit_name)
                 validated_result = engine.test_validation(
                     rule,
-                    os.path.join(directory, dataset.filename),
+                    os.path.join(directory, dataset_metadata.filename),
                     datasets,
-                    dataset.domain,
+                    dataset_metadata,
                 )
                 results.append(validated_result)
-                engine_logger.info(f"Done validating {dataset.domain}")
+                engine_logger.info(f"Done validating {dataset_metadata.name}")
     results = list(itertools.chain(*results))
     return RuleValidationResult(rule, results)
 
@@ -153,7 +153,16 @@ def test(args: TestArgs):
         )
         try:
             datasets = [
-                DummyDataset(dataset)
+                DummyDataset(
+                    dataset
+                    if hasattr(dataset, "records")
+                    else setattr(
+                        dataset,
+                        "records",
+                        data_service.get_dataset(dataset_name=dataset.full_path).data,
+                    )
+                    or dataset
+                )
                 for dataset in get_datasets(data_service, args.dataset_paths)
             ]
             for dataset_path in args.dataset_paths:

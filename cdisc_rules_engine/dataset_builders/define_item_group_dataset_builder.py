@@ -15,8 +15,11 @@ class DefineItemGroupDatasetBuilder(BaseDatasetBuilder):
             "define_dataset_structure"
             "define_dataset_is_non_standard"
             "define_dataset_variables"
+            "define_dataset_key_sequence"
         """
-        item_group_metadata: List[dict] = self.get_define_xml_item_group_metadata(
-            self.domain,
+        item_group_metadata: List[dict] = (
+            self.get_define_xml_item_group_metadata_for_domain(
+                self.dataset_metadata.domain or self.dataset_metadata.name,
+            )
         )
-        return self.dataset_implementation([item_group_metadata])
+        return self.dataset_implementation.from_records([item_group_metadata])
