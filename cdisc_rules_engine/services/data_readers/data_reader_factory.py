@@ -5,8 +5,12 @@ from cdisc_rules_engine.interfaces import (
     FactoryInterface,
 )
 from cdisc_rules_engine.services.data_readers.xpt_reader import XPTReader
-from cdisc_rules_engine.services.data_readers.json_reader import DatasetJSONReader
-from cdisc_rules_engine.services.data_readers.ndjson_reader import DatasetNDJSONReader
+from cdisc_rules_engine.services.data_readers.dataset_json_reader import (
+    DatasetJSONReader,
+)
+from cdisc_rules_engine.services.data_readers.dataset_ndjson_reader import (
+    DatasetNDJSONReader,
+)
 from cdisc_rules_engine.services.data_readers.parquet_reader import ParquetReader
 from cdisc_rules_engine.services.data_readers.usdm_json_reader import USDMJSONReader
 from cdisc_rules_engine.enums.dataformat_types import DataFormatTypes
