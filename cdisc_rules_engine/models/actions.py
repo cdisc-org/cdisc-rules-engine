@@ -201,7 +201,11 @@ class COREActions(BaseActions):
         sequence: Optional[pd.Series] = data.get(
             f"{self.dataset_metadata.domain or ''}SEQ"
         )
-        source_row_number: Optional[pd.Series] = data.get(SOURCE_ROW_NUMBER)
+        source_row_number = (
+            int(data.get(SOURCE_ROW_NUMBER).iloc[df_row.name])
+            if data.get(SOURCE_ROW_NUMBER) is not None
+            else None
+        )
         source_filename: Optional[pd.Series] = data.get(SOURCE_FILENAME)
         error_object = ValidationErrorEntity(
             dataset=(
