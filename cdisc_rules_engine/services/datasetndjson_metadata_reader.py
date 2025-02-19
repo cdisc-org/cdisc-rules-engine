@@ -1,6 +1,7 @@
 import os
 import json
 import jsonschema
+import pandas as pd
 
 
 from cdisc_rules_engine.services import logger
@@ -14,8 +15,9 @@ class DatasetNDJSONMetadataReader:
     """
 
     def __init__(self, file_path: str, file_name: str):
+        self._metadata_container = {}
         self._file_path = file_path
-        self._domain_name = None
+        self._first_record = None
         self._dataset_name = file_name.split(".")[0].upper()
 
     def read(self) -> dict:
@@ -29,7 +31,6 @@ class DatasetNDJSONMetadataReader:
             schema = schemandjson.read()
         schema = json.loads(schema)
 
-        # with open(self._file_path, "r", encoding="utf-8") as file:
         with open(self._file_path, "r") as file:
             lines = file.readlines()
 
@@ -41,8 +42,7 @@ class DatasetNDJSONMetadataReader:
 
             jsonschema.validate(metadatandjson, schema)
 
-            self._domain_name = self._extract_domain_name(datandjson, metadatandjson)
-
+            self._first_record = self._extract_first_record(metadatandjson, datandjson)
             self._metadata_container = {
                 "variable_labels": [
                     item["label"] for item in metadatandjson["columns"]
@@ -64,7 +64,7 @@ class DatasetNDJSONMetadataReader:
                 "number_of_variables": len(metadatandjson["columns"]),
                 "dataset_label": metadatandjson.get("label"),
                 "dataset_length": metadatandjson.get("records"),
-                "domain_name": self._domain_name,
+                "first_record": self._first_record,
                 "dataset_name": metadatandjson.get("name"),
                 "dataset_modification_date": metadatandjson[
                     "datasetJSONCreationDateTime"
@@ -96,24 +96,22 @@ class DatasetNDJSONMetadataReader:
                 "number_of_variables": 0,
                 "dataset_label": "",
                 "dataset_length": 0,
-                "domain_name": "",
+                "first_record": {},
                 "dataset_name": "",
                 "dataset_modification_date": "",
             }
 
-    def _extract_domain_name(self, data, metadata):
-        index_domain = next(
-            (
-                index
-                for index, item in enumerate(metadata["columns"])
-                if item.get("name") == "DOMAIN"
-            ),
-            None,
-        )
-        if index_domain is not None:
-            return data[index_domain]
-        else:
-            return " "
+    def _extract_first_record(self, metadatandjson, datandjson):
+        try:
+            return {
+                name: value.decode("utf-8") if isinstance(value, bytes) else str(value)
+                    for name, value in pd.DataFrame(
+                        [dict(zip([col["name"] for col in metadatandjson.get("columns", [])], datandjson))]
+                    ).iloc[0].items()
+            }
+        except IndexError:
+            pass
+        return None
 
     def _convert_variable_types(self):
         """
@@ -153,7 +151,7 @@ class DatasetNDJSONMetadataReader:
             "variable_name_to_size_map": self._metadata_container.variable_storage_width,  # noqa
             "number_of_variables": self._metadata_container.number_columns,
             "dataset_label": self._metadata_container.file_label,
-            "domain_name": self._domain_name,
+            "first_record": self._first_record,
             "dataset_name": self._dataset_name,
             "dataset_modification_date": self._metadata_container.dataset_modification_date,  # noqa
         }
