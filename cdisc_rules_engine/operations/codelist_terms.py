@@ -26,7 +26,7 @@ class CodelistTerms(BaseOperation):
                 ct_package_data = next(
                     (pkg for name, pkg in ct_packages.items() if name != "extensible")
                 )
-        except (AttributeError) as e:
+        except AttributeError as e:
             logger.warning(
                 "CT package data is not populated: %s "
                 "-- a valid define.xml file or -ct command is required to execute",

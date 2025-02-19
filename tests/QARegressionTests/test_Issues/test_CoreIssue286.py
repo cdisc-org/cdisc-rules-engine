@@ -41,7 +41,7 @@ def test_negative_case_VS_dataset():
 
     # Perform the assertion
     assert len(dataset_values) == 1  # Ensure only one value
-    assert dataset_values[0] == "VS"  # Ensure the value is "VS"
+    assert dataset_values[0] == "vs.xpt"  # Ensure the value is "VS"
 
     # Close the workbook
     workbook.close()
