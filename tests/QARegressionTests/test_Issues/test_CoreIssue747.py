@@ -63,6 +63,7 @@ def test_CG0019():
     ]
 
     # Perform the assertion
+    assert process.returncode == 0, f"Process failed with error: {stderr.decode()}"
     assert dataset_values[0] == "ecaa.xpt"
     assert dataset_values[1] == "ecbb.xpt"
     assert dataset_values[2] == "suppec.xpt"
