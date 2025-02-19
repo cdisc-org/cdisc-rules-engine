@@ -98,8 +98,10 @@ class DatasetJSONMetadataReader:
                 name: value.decode("utf-8") if isinstance(value, bytes) else str(value)
                 for name, value in pd.DataFrame(
                     [datasetjson.get("rows", [])[0]] if datasetjson.get("rows") else [],
-                    columns=[col["name"] for col in datasetjson.get("columns", [])]
-                ).iloc[0].items()
+                    columns=[col["name"] for col in datasetjson.get("columns", [])],
+                )
+                .iloc[0]
+                .items()
             }
         except IndexError:
             pass

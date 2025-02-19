@@ -106,8 +106,20 @@ class DatasetNDJSONMetadataReader:
             return {
                 name: value.decode("utf-8") if isinstance(value, bytes) else str(value)
                 for name, value in pd.DataFrame(
-                    [dict(zip([col["name"] for col in metadatandjson.get("columns", [])], datandjson))]
-                ).iloc[0].items()
+                    [
+                        dict(
+                            zip(
+                                [
+                                    col["name"]
+                                    for col in metadatandjson.get("columns", [])
+                                ],
+                                datandjson,
+                            )
+                        )
+                    ]
+                )
+                .iloc[0]
+                .items()
             }
         except IndexError:
             pass
