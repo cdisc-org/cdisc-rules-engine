@@ -1,0 +1,270 @@
+{
+    "$defs": {
+      "DatasetMetadata": {
+        "additionalProperties": false,
+        "description": "",
+        "properties": {
+          "columns": {
+            "description": "Basic information about variables",
+            "items": {
+              "Column": {
+                "additionalProperties": false,
+                "description": "Column-level metadata",
+                "properties": {
+                  "dataType": {
+                    "$ref": "#/$defs/DatasetMetadata/properties/columns/items/DataTypesEnum",
+                    "description": "Physical type of the variable. Allowed values: \"string\", \"integer\", \"decimal\", \"float\", \"double\", \"boolean\". See ODM types for details."
+                  },
+                  "displayFormat": {
+                    "description": "Display format supports data visualization of numeric float and date values.",
+                    "type": "string"
+                  },
+                  "itemOID": {
+                    "description": "OID of a variable (must correspond to the variable OID in the Define-XML file)",
+                    "type": "string"
+                  },
+                  "keySequence": {
+                    "description": "Indicates that this item is a key variable in the dataset structure. It also provides an ordering for the keys.",
+                    "minimum": 1,
+                    "type": "integer"
+                  },
+                  "label": {
+                    "description": "Variable description",
+                    "type": "string"
+                  },
+                  "length": {
+                    "description": "Variable length",
+                    "minimum": 1,
+                    "type": "integer"
+                  },
+                  "name": {
+                    "description": "Variable name",
+                    "type": "string"
+                  },
+                  "targetDataType": {
+                    "$ref": "#/$defs/TargetDataTypesEnum",
+                    "description": "Logical type of the variable if different from physical dataType i.e. \"datetime\""
+                  }
+                },
+                "required": [
+                  "itemOID",
+                  "name",
+                  "label",
+                  "dataType"
+                ],
+                "title": "Column",
+                "type": "object"
+              },
+              "DataTypesEnum": {
+                "description": "",
+                "enum": [
+                  "string",
+                  "integer",
+                  "decimal",
+                  "float",
+                  "double",
+                  "boolean",
+                  "datetime",
+                  "date",
+                  "time",
+                  "URI"
+                ],
+                "title": "DataTypesEnum",
+                "type": "string"
+              }
+            },
+            "type": "array"
+          },
+          "datasetJSONCreationDateTime": {
+            "description": "The date/time the Dataset-JSON file was created.",
+            "pattern": "^([0-9][0-9][0-9][0-9])(-(([0][1-9])|([1][0-2])))(-(([0][1-9])|([1-2][0-9])|([3][0-1])))T(([0-1][0-9])|([2][0-3])):([0-5][0-9])(:([0-5][0-9]))((\\.[0-9]+))?((((\\+|-)(([0-1][0-9])|([2][0-3])):[0-5][0-9])|(Z)))?$",
+            "type": "string"
+          },
+          "datasetJSONVersion": {
+            "description": "Version of Dataset-JSON standard",
+            "pattern": "^1.1(.(0|([1-9][0-9]*)))?$",
+            "type": "string"
+          },
+          "dbLastModifiedDateTime": {
+            "description": "The date/time the source database was last modified.",
+            "pattern": "^([0-9][0-9][0-9][0-9])(-(([0][1-9])|([1][0-2])))(-(([0][1-9])|([1-2][0-9])|([3][0-1])))T(([0-1][0-9])|([2][0-3])):([0-5][0-9])(:([0-5][0-9]))((\\.[0-9]+))?((((\\+|-)(([0-1][0-9])|([2][0-3])):[0-5][0-9])|(Z)))?$",
+            "type": "string"
+          },
+          "fileOID": {
+            "description": "A unique identifier for this file.",
+            "type": "string"
+          },
+          "itemGroupOID": {
+            "description": "Foreign key to ItemGroupDef.OID in Define / MDR",
+            "type": "string"
+          },
+          "label": {
+            "description": "Dataset description",
+            "type": "string"
+          },
+          "metaDataRef": {
+            "description": "URL for a metadata file the describing the data.",
+            "type": "string"
+          },
+          "metaDataVersionOID": {
+            "description": "See ODM definition for metadata version OID (ODM/Study/MetaDataVersion/@OID).",
+            "type": "string"
+          },
+          "name": {
+            "description": "Dataset name",
+            "type": "string"
+          },
+          "originator": {
+            "description": "The organization that generated the Dataset-JSON file.",
+            "type": "string"
+          },
+          "records": {
+            "description": "The total number of records in a dataset",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "sourceSystem": {
+            "SourceSystem": {
+              "additionalProperties": false,
+              "description": "The information system from which the content of this dataset was sourced",
+              "properties": {
+                "name": {
+                  "description": "The name of the sourceSystem",
+                  "type": "string"
+                },
+                "version": {
+                  "description": "The version of the sourceSystem",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "name",
+                "version"
+              ],
+              "title": "SourceSystem",
+              "type": "object"
+            },
+            "description": "The computer system or database management system that is the source of the information in this file."
+          },
+          "studyOID": {
+            "description": "See ODM definition for study OID (ODM/Study/@OID).",
+            "type": "string"
+          }
+        },
+        "required": [
+          "datasetJSONCreationDateTime",
+          "datasetJSONVersion",
+          "itemGroupOID",
+          "records",
+          "name",
+          "label",
+          "columns"
+        ],
+        "title": "DatasetMetadata",
+        "type": "object"
+      },
+      "RowData": {
+        "additionalProperties": false,
+        "description": "Data content list of lists.",
+        "properties": {
+          "rows": {
+            "items": {},
+            "type": "array"
+          }
+        },
+        "title": "RowData",
+        "type": "object"
+      },
+      "TargetDataTypesEnum": {
+        "description": "",
+        "enum": [
+          "integer",
+          "decimal"
+        ],
+        "title": "TargetDataTypesEnum",
+        "type": "string"
+      }
+    },
+    "$id": "https://cdisc.org/dataset-json/model",
+    "$schema": "https://json-schema.org/draft/2019-09/schema",
+    "additionalProperties": true,
+    "description": "",
+    "metamodel_version": "1.7.0",
+    "properties": {
+      "columns": {
+        "description": "Basic information about variables",
+        "items": {
+           "$ref": "#/$defs/DatasetMetadata/properties/columns/items/Column"
+        },
+        "type": "array"
+      },
+      "datasetJSONCreationDateTime": {
+        "description": "The date/time the Dataset-JSON file was created.",
+        "pattern": "^([0-9][0-9][0-9][0-9])(-(([0][1-9])|([1][0-2])))(-(([0][1-9])|([1-2][0-9])|([3][0-1])))T(([0-1][0-9])|([2][0-3])):([0-5][0-9])(:([0-5][0-9]))((\\.[0-9]+))?((((\\+|-)(([0-1][0-9])|([2][0-3])):[0-5][0-9])|(Z)))?$",
+        "type": "string"
+      },
+      "datasetJSONVersion": {
+        "description": "Version of Dataset-JSON standard",
+        "pattern": "^1.1(.(0|([1-9][0-9]*)))?$",
+        "type": "string"
+      },
+      "dbLastModifiedDateTime": {
+        "description": "The date/time the source database was last modified.",
+        "pattern": "^([0-9][0-9][0-9][0-9])(-(([0][1-9])|([1][0-2])))(-(([0][1-9])|([1-2][0-9])|([3][0-1])))T(([0-1][0-9])|([2][0-3])):([0-5][0-9])(:([0-5][0-9]))((\\.[0-9]+))?((((\\+|-)(([0-1][0-9])|([2][0-3])):[0-5][0-9])|(Z)))?$",
+        "type": "string"
+      },
+      "fileOID": {
+        "description": "A unique identifier for this file.",
+        "type": "string"
+      },
+      "itemGroupOID": {
+        "description": "Foreign key to ItemGroupDef.OID in Define / MDR",
+        "type": "string"
+      },
+      "label": {
+        "description": "Dataset description",
+        "type": "string"
+      },
+      "metaDataRef": {
+        "description": "URL for a metadata file the describing the data.",
+        "type": "string"
+      },
+      "metaDataVersionOID": {
+        "description": "See ODM definition for metadata version OID (ODM/Study/MetaDataVersion/@OID).",
+        "type": "string"
+      },
+      "name": {
+        "description": "Dataset name",
+        "type": "string"
+      },
+      "originator": {
+        "description": "The organization that generated the Dataset-JSON file.",
+        "type": "string"
+      },
+      "records": {
+        "description": "The total number of records in a dataset",
+        "minimum": 0,
+        "type": "integer"
+      },
+      "sourceSystem": {
+        "$ref": "#/$defs/DatasetMetadata/properties/sourceSystem/SourceSystem",
+        "description": "The computer system or database management system that is the source of the information in this file."
+      },
+      "studyOID": {
+        "description": "See ODM definition for study OID (ODM/Study/@OID).",
+        "type": "string"
+      }
+    },
+    "required": [
+      "datasetJSONCreationDateTime",
+      "datasetJSONVersion",
+      "itemGroupOID",
+      "records",
+      "name",
+      "label",
+      "columns"
+    ],
+    "title": "dataset-json",
+    "type": "object",
+    "version": null
+  }
