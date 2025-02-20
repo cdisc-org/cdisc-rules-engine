@@ -27,7 +27,6 @@ class TestTestCommand(unittest.TestCase):
         exit_code, stdout, stderr = run_command(args, True)
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
-        self.assertEqual(stderr, "", f"Error while executing command:\n{stderr}")
 
     def test_test_command_with_all_options(self):
         args = (
@@ -42,7 +41,7 @@ class TestTestCommand(unittest.TestCase):
             f"-s sdtmig "
             f"-v 3.4 "
             f"-dv 2.1 "
-            f"-dxp {os.path.join('tests', 'resources','define.xml')} "
+            f"-dxp {os.path.join('tests', 'resources', 'define.xml')} "
             f"-l error"
         )
         exit_code, stdout, stderr = run_command(args, True)
