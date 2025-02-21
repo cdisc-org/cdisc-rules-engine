@@ -31,6 +31,13 @@ class VariablesMetadataWithLibraryMetadataDatasetBuilder(BaseDatasetBuilder):
         dataset_contents = self.get_dataset_contents()
         library_variables_metadata = self.get_library_variables_metadata()
 
+        column_name_mapping = {
+            "library_variable_simpleDatatype": "library_variable_data_type",
+            "library_variable_ordinal": "library_variable_order_number",
+        }
+        library_variables_metadata.data.rename(
+            columns=column_name_mapping, inplace=True
+        )
         data = content_variables_metadata.merge(
             library_variables_metadata.data,
             how="left",

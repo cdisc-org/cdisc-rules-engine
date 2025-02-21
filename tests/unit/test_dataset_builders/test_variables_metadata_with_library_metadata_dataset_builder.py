@@ -134,11 +134,11 @@ def test_variable_metadata_with_library_metadata_dataset_builder(
         "variable_order_number",
         "variable_data_type",
         "library_variable_name",
-        "library_variable_ordinal",
+        "library_variable_order_number",
         "library_variable_role",
         "library_variable_label",
-        "library_variable_core",
         "library_variable_data_type",
+        "library_variable_core",
         "variable_has_empty_values",
     ]
     assert result["library_variable_name"].tolist() == [
@@ -333,7 +333,7 @@ def test_variable_metadata_with_library_metadata_dataset_builder_variable_only_i
             "variable_data_type",
             "library_variable_name",
             "library_variable_role",
-            "library_variable_ordinal",
+            "library_variable_order_number",
             "library_variable_label",
             "library_variable_core",
             "library_variable_data_type",

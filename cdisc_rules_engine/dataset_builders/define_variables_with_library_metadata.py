@@ -35,6 +35,15 @@ class DefineVariablesWithLibraryMetadataDatasetBuilder(BaseDatasetBuilder):
             self.get_define_xml_variables_metadata()
         )
         library_variables_metadata = self.get_library_variables_metadata()
+        # Rename columns:
+        column_name_mapping = {
+            "library_variable_simpleDatatype": "library_variable_data_type",
+            "library_variable_ordinal": "library_variable_order_number",
+        }
+
+        library_variables_metadata.data.rename(
+            columns=column_name_mapping, inplace=True
+        )
         data = variable_metadata.merge(
             library_variables_metadata.data,
             how="left",
