@@ -13,29 +13,29 @@ from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 import tempfile
 
 
-class DatasetJSONReader(DataReaderInterface):
+class DatasetNDJSONReader(DataReaderInterface):
     def get_schema(self) -> dict:
         with open(
-            os.path.join("resources", "schema", "dataset.schema.json")
-        ) as schemajson:
-            schema = schemajson.read()
+            os.path.join("resources", "schema", "dataset-ndjson-schema.json")
+        ) as schemandjson:
+            schema = schemandjson.read()
         return json.loads(schema)
 
     def read_json_file(self, file_path: str) -> dict:
         with open(file_path, "r") as file:
-            datasetjson = json.load(file)
-        return datasetjson
+            lines = file.readlines()
+        return json.loads(lines[0]), [json.loads(line) for line in lines[1:]]
 
     def _raw_dataset_from_file(self, file_path) -> pd.DataFrame:
         # Load Dataset-JSON Schema
         schema = self.get_schema()
-        datasetjson = self.read_json_file(file_path)
+        metadatandjson, datandjson = self.read_json_file(file_path)
 
-        jsonschema.validate(datasetjson, schema)
+        jsonschema.validate(metadatandjson, schema)
 
         df = pd.DataFrame(
-            [item for item in datasetjson.get("rows", [])],
-            columns=[item["name"] for item in datasetjson.get("columns", [])],
+            [item for item in datandjson],
+            columns=[item["name"] for item in metadatandjson.get("columns", [])],
         )
         return df.applymap(lambda x: round(x, 15) if isinstance(x, float) else x)
 

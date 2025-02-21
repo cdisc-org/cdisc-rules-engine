@@ -83,7 +83,7 @@ class DummyDataService(BaseDataService):
             filename=dataset_metadata["filename"][0],
             file_size=dataset_metadata["dataset_size"][0],
             full_path=dataset_metadata["filename"][0],
-            record_count=dataset_metadata["length"][0],
+            record_count=dataset_metadata["record_count"][0],
         )
 
     def get_variables_metadata(self, dataset_name: str, **params) -> PandasDataset:

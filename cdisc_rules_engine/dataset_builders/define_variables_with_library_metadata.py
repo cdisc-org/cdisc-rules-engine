@@ -37,7 +37,7 @@ class DefineVariablesWithLibraryMetadataDatasetBuilder(BaseDatasetBuilder):
         library_variables_metadata = self.get_library_variables_metadata()
         data = variable_metadata.merge(
             library_variables_metadata.data,
-            how="outer",
+            how="left",
             left_on="define_variable_name",
             right_on="library_variable_name",
         ).data.fillna("")

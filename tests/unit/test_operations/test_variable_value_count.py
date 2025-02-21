@@ -65,7 +65,7 @@ def test_variable_value_count(
     ]
     mock_data_service.get_dataset.side_effect = (
         lambda *args, **kwargs: datasets_map.get(
-            os.path.split(args[0] if args else kwargs.get("dataset_name", ""))[-1]
+            os.path.split(args[0].filename if args else kwargs["dataset_name"])[-1]
         )
     )
     mock_data_service.concat_split_datasets.side_effect = (
