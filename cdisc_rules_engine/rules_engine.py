@@ -396,10 +396,6 @@ class RulesEngine:
                 value_level_metadata=value_level_metadata,
             ),
         )
-        if results:
-            dataset = os.path.basename(dataset_path)
-            for result in results:
-                result["dataset"] = dataset
         return results
 
     def get_define_xml_value_level_metadata(

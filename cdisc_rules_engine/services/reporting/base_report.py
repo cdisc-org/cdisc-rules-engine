@@ -122,7 +122,7 @@ class BaseReport(ABC):
                         "core_id": validation_result.id,
                         "message": result.get("message"),
                         "executability": validation_result.executability,
-                        "dataset": result.get("dataset"),
+                        "dataset": error.get("dataset"),
                         "domain": result.get("domain"),
                         "USUBJID": error.get("USUBJID", ""),
                         "row": error.get("row", ""),

@@ -153,7 +153,16 @@ def test(args: TestArgs):
         )
         try:
             datasets = [
-                DummyDataset(dataset)
+                DummyDataset(
+                    dataset
+                    if hasattr(dataset, "records")
+                    else setattr(
+                        dataset,
+                        "records",
+                        data_service.get_dataset(dataset_name=dataset.full_path).data,
+                    )
+                    or dataset
+                )
                 for dataset in get_datasets(data_service, args.dataset_paths)
             ]
             for dataset_path in args.dataset_paths:
