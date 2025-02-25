@@ -1,9 +1,14 @@
 from typing import List, Optional, Set, Hashable
 
+from os import path
 import pandas as pd
 from business_rules.actions import BaseActions, rule_action
 from business_rules.fields import FIELD_TEXT
 
+from cdisc_rules_engine.constants.metadata_columns import (
+    SOURCE_FILENAME,
+    SOURCE_ROW_NUMBER,
+)
 from cdisc_rules_engine.enums.sensitivity import Sensitivity
 from cdisc_rules_engine.exceptions.custom_exceptions import InvalidOutputVariables
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
@@ -80,22 +85,26 @@ class COREActions(BaseActions):
         Generates a targeted error object.
         Return example:
         {
+            "dataset": "ae.xpt",
             "domain": "AE",
             "variables": ["AESTDY", "DOMAIN"],
             "errors": [
                 {
+                  "dataset": "ae.xpt",
                   "row": 0,
                   "value": {"STUDYID": "Not in dataset"},
                   "uSubjId": "2",
                   "seq": 1,
                 },
                 {
+                  "dataset": "ae.xpt",
                   "row": 1,
                   "value": {"AESTDY": "test", "DOMAIN": "test"},
                   "uSubjId": 7,
                   "seq": 2,
                 },
                 {
+                  "dataset": "ae.xpt",
                   "row": 9,
                   "value": {"AESTDY": "test", "DOMAIN": "test"},
                   "uSubjId": 12,
@@ -120,6 +129,7 @@ class COREActions(BaseActions):
             errors_list = [
                 ValidationErrorEntity(
                     value=dict(errors_df.iloc[0].to_dict()),
+                    dataset=self._get_dataset_name(data),
                 )
             ]
         elif self.rule.get("sensitivity") == Sensitivity.RECORD.value:
@@ -132,6 +142,7 @@ class COREActions(BaseActions):
         ):  # rule sensitivity is incorrectly defined
             error_entity = ValidationErrorEntity(
                 {
+                    "dataset": "N/A",
                     "row": 0,
                     "value": {"ERROR": "Invalid or undefined sensitivity in the rule"},
                     "uSubjId": "N/A",
@@ -164,11 +175,24 @@ class COREActions(BaseActions):
                     if self.dataset_metadata.is_supp
                     else (self.dataset_metadata.domain or self.dataset_metadata.name)
                 ),
+                "dataset": ", ".join(
+                    sorted(set(error._dataset or "" for error in errors_list))
+                ),
                 "targets": sorted(targets),
                 "errors": errors_list,
                 "message": message.replace("--", self.dataset_metadata.domain or ""),
             }
         )
+
+    def _get_dataset_name(self, data: pd.DataFrame) -> str:
+        source_pathnames = data.get(SOURCE_FILENAME, [])
+        source_filenames = [
+            path.basename(source_pathname) for source_pathname in source_pathnames
+        ]
+        source_filename_str = ", ".join(
+            sorted(set(source_filename or "" for source_filename in source_filenames))
+        )
+        return source_filename_str
 
     def _create_error_object(
         self, df_row: pd.Series, data: pd.DataFrame
@@ -177,9 +201,19 @@ class COREActions(BaseActions):
         sequence: Optional[pd.Series] = data.get(
             f"{self.dataset_metadata.domain or ''}SEQ"
         )
-
+        source_row_number: Optional[pd.Series] = data.get(SOURCE_ROW_NUMBER)
+        source_filename: Optional[pd.Series] = data.get(SOURCE_FILENAME)
         error_object = ValidationErrorEntity(
-            row=int(df_row.name) + 1,  # record number should start at 1, not 0
+            dataset=(
+                path.basename(source_filename[df_row.name])
+                if isinstance(source_filename, pd.Series)
+                else ""
+            ),
+            row=(
+                int(source_row_number[df_row.name])
+                if isinstance(source_row_number, pd.Series)
+                else (int(df_row.name) + 1)
+            ),  # record number should start at 1, not 0
             value=dict(df_row.to_dict()),
             usubjid=(
                 str(usubjid[df_row.name]) if isinstance(usubjid, pd.Series) else None

@@ -18,6 +18,7 @@ from cdisc_rules_engine.constants.classes import (
     INTERVENTIONS,
     RELATIONSHIP,
 )
+from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
 from cdisc_rules_engine.models.dataset_types import DatasetTypes
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.services.cdisc_library_service import CDISCLibraryService
@@ -27,6 +28,7 @@ from cdisc_rules_engine.utilities.utils import (
     get_dataset_cache_key_from_path,
     get_directory_path,
     search_in_list_of_dicts,
+    tag_source,
 )
 from cdisc_rules_engine.utilities.sdtm_utilities import get_class_and_domain_metadata
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
@@ -120,7 +122,10 @@ class BaseDataService(DataServiceInterface, ABC):
         )
 
     def concat_split_datasets(
-        self, func_to_call: Callable, dataset_names: List[str], **kwargs
+        self,
+        func_to_call: Callable,
+        datasets_metadata: Iterable[DatasetMetadata],
+        **kwargs,
     ) -> DatasetInterface:
         """
         Accepts a list of split dataset filenames, asynchronously downloads
@@ -134,11 +139,14 @@ class BaseDataService(DataServiceInterface, ABC):
 
         # download datasets asynchronously
         datasets: Iterator[DatasetInterface] = self._async_get_datasets(
-            func_to_call, dataset_names=dataset_names, **kwargs
+            func_to_call,
+            dataset_names=[dataset.filename for dataset in datasets_metadata],
+            **kwargs,
         )
         full_dataset = self.dataset_implementation()
-        for dataset in datasets:
-            full_dataset = full_dataset.concat(dataset, ignore_index=True)
+        for dataset, dataset_metadata in zip(datasets, datasets_metadata):
+            tagged_dataset = tag_source(dataset, dataset_metadata)
+            full_dataset = full_dataset.concat(tagged_dataset, ignore_index=True)
 
         if drop_duplicates:
             full_dataset = full_dataset.drop_duplicates()

@@ -8,10 +8,10 @@ from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.services.adam_variable_reader import AdamVariableReader
 
 
-class DatasetJSONMetadataReader:
+class DatasetNDJSONMetadataReader:
     """
     Responsibility of the class is to read metadata
-    from .json file.
+    from .ndjson file.
     """
 
     def __init__(self, file_path: str, file_name: str):
@@ -22,44 +22,53 @@ class DatasetJSONMetadataReader:
 
     def read(self) -> dict:
         """
-        Extracts metadata from .json file.
+        Extracts metadata from .ndjson file.
         """
-        # Load Dataset-JSON Schema
+        # Load Dataset-NDJSON Schema
         with open(
-            os.path.join("resources", "schema", "dataset.schema.json")
-        ) as schemajson:
-            schema = schemajson.read()
+            os.path.join("resources", "schema", "dataset-ndjson-schema.json")
+        ) as schemandjson:
+            schema = schemandjson.read()
         schema = json.loads(schema)
 
         with open(self._file_path, "r") as file:
-            datasetjson = json.load(file)
+            lines = file.readlines()
+
+        metadatandjson = json.loads(lines[0])
+
+        datandjson = json.loads(lines[1]) if len(lines) > 1 else []
 
         try:
-            jsonschema.validate(datasetjson, schema)
 
-            self._first_record = self._extract_first_record(datasetjson)
+            jsonschema.validate(metadatandjson, schema)
+
+            self._first_record = self._extract_first_record(metadatandjson, datandjson)
             self._metadata_container = {
-                "variable_labels": [item["label"] for item in datasetjson["columns"]],
-                "variable_names": [item["name"] for item in datasetjson["columns"]],
+                "variable_labels": [
+                    item["label"] for item in metadatandjson["columns"]
+                ],
+                "variable_names": [item["name"] for item in metadatandjson["columns"]],
                 "variable_formats": [
-                    item.get("displayFormat", "") for item in datasetjson["columns"]
+                    item.get("displayFormat", "") for item in metadatandjson["columns"]
                 ],
                 "variable_name_to_label_map": {
-                    item["name"]: item["label"] for item in datasetjson["columns"]
+                    item["name"]: item["label"] for item in metadatandjson["columns"]
                 },
                 "variable_name_to_data_type_map": {
-                    item["name"]: item["dataType"] for item in datasetjson["columns"]
+                    item["name"]: item["dataType"] for item in metadatandjson["columns"]
                 },
                 "variable_name_to_size_map": {
                     item["name"]: item.get("length", None)
-                    for item in datasetjson["columns"]
+                    for item in metadatandjson["columns"]
                 },
-                "number_of_variables": len(datasetjson["columns"]),
-                "dataset_label": datasetjson.get("label"),
-                "dataset_length": datasetjson.get("records"),
+                "number_of_variables": len(metadatandjson["columns"]),
+                "dataset_label": metadatandjson.get("label"),
+                "dataset_length": metadatandjson.get("records"),
                 "first_record": self._first_record,
-                "dataset_name": datasetjson.get("name"),
-                "dataset_modification_date": datasetjson["datasetJSONCreationDateTime"],
+                "dataset_name": metadatandjson.get("name"),
+                "dataset_modification_date": metadatandjson[
+                    "datasetJSONCreationDateTime"
+                ],
             }
 
             self._convert_variable_types()
@@ -75,7 +84,7 @@ class DatasetJSONMetadataReader:
 
         except jsonschema.exceptions.ValidationError:
             logger.warning(
-                f"{str(self._file_path)} is not compliant with Dataset-JSON schema"
+                f"{str(self._file_path)} is not compliant with Dataset-NDJSON schema"
             )
             return {
                 "variable_labels": [],
@@ -92,13 +101,22 @@ class DatasetJSONMetadataReader:
                 "dataset_modification_date": "",
             }
 
-    def _extract_first_record(self, datasetjson):
+    def _extract_first_record(self, metadatandjson, datandjson):
         try:
             return {
                 name: value.decode("utf-8") if isinstance(value, bytes) else str(value)
                 for name, value in pd.DataFrame(
-                    [datasetjson.get("rows", [])[0]] if datasetjson.get("rows") else [],
-                    columns=[col["name"] for col in datasetjson.get("columns", [])],
+                    [
+                        dict(
+                            zip(
+                                [
+                                    col["name"]
+                                    for col in metadatandjson.get("columns", [])
+                                ],
+                                datandjson,
+                            )
+                        )
+                    ]
                 )
                 .iloc[0]
                 .items()

@@ -10,8 +10,14 @@ class ValidationErrorEntity(BaseValidationEntity):
     """
 
     def __init__(
-        self, value: dict, row: int = None, usubjid: str = None, sequence: int = None
+        self,
+        value: dict,
+        dataset: str = None,
+        row: int = None,
+        usubjid: str = None,
+        sequence: int = None,
     ):
+        self._dataset: str = dataset
         self._row: int = row
         self.value: dict = value
         self._usubjid: str = usubjid
@@ -36,6 +42,8 @@ class ValidationErrorEntity(BaseValidationEntity):
         representation: dict = {
             "value": self._format_values(),
         }
+        if self._dataset is not None:
+            representation["dataset"] = self._dataset
         if self._row is not None:
             representation["row"] = self._row
         if self._usubjid:
