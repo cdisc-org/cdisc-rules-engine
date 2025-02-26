@@ -106,10 +106,10 @@ def get_variables_metadata_from_standard(  # noqa
     model_type, model_version = get_tabulation_model_type_and_version(model)
     model_details = library_metadata.model_metadata
     is_custom = domain not in standard_details.get("domains", {})
+    variables_metadata = []
     if dataset_class:
         # both custom and non-custom domains pull from model
         class_details = {"name": dataset_class}
-        variables_metadata = []
         (
             identifiers_metadata,
             class_variables_metadata,
