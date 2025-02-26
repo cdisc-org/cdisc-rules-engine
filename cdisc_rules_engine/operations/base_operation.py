@@ -195,7 +195,7 @@ class BaseOperation:
             self.params.dataset_path,
             self.params.datasets,
             self.data_service.get_raw_dataset_metadata(
-                self.params.dataset_path, self.params.datasets
+                dataset_name=self.params.dataset_path, datasets=self.params.datasets
             ),
         )
 
