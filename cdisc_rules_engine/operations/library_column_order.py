@@ -18,7 +18,7 @@ class LibraryColumnOrder(BaseOperation):
         in accordance to "ordinal" key of library metadata.
         """
 
-        # get variables metadata from the standard model
+        # get variables metadata , for custom domains from model; for non-custom from IG and model
         variables_metadata: List[dict] = self._get_variables_metadata_from_standard()
 
         # create a list of variable names in accordance to the "ordinal" key
