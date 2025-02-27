@@ -7,7 +7,6 @@ env:
   DATASET_SIZE_THRESHOLD: 1000000000
   PANDAS_DIFF: False
   DASK_DIFF: False
-  CDISC_LIBRARY_API_KEY: ${{ secrets.CDISC_LIBRARY_API_KEY }}
 
 jobs:
   validate:
@@ -32,6 +31,8 @@ jobs:
         run: |
           pip install -r requirements.txt
       - name: Update rules cache
+        env:
+          CDISC_LIBRARY_API_KEY: ${{ secrets.CDISC_LIBRARY_API_KEY }}
         run: |
           python core.py update-cache
       - name: Parse rule list and run validation
