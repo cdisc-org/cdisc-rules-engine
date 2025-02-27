@@ -185,15 +185,13 @@ class LocalDataService(BaseDataService):
         }
         if file_name.endswith(".parquet") and datasets:
             for obj in datasets:
-                if obj["full_path"] == file_path:
+                if obj.full_path == file_path:
                     file_metadata = {
-                        "path": obj["original_path"],
-                        "name": extract_file_name_from_path_string(
-                            obj["original_path"]
-                        ),
-                        "file_size": os.path.getsize(obj["original_path"]),
+                        "path": obj.original_path,
+                        "name": extract_file_name_from_path_string(obj.original_path),
+                        "file_size": os.path.getsize(obj.original_path),
                     }
-                    file_name = obj["filename"]
+                    file_name = obj.filename
                     break
             # If we reach this line a parquet dataset was provided without a
             # corresponding xpt or json file. This should not happen
