@@ -8,9 +8,6 @@ from cdisc_rules_engine.interfaces.data_service_interface import DataServiceInte
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
-from cdisc_rules_engine.services.data_services import (
-    DataServiceFactory,
-)
 from typing import List, Iterable
 from cdisc_rules_engine.config import config
 from cdisc_rules_engine.services import logger as engine_logger
@@ -130,18 +127,13 @@ def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:  # noqa
     )
 
 
-def fill_cache_with_dictionaries(cache: CacheServiceInterface, args):
+def fill_cache_with_dictionaries(
+    cache: CacheServiceInterface, args, data_service: DataServiceInterface
+) -> dict:
     """
     Extracts file contents from provided dictionaries files
     and saves to cache (inmemory or redis).
     """
-    data_service = DataServiceFactory(
-        config=config,
-        cache_service=cache,
-        standard=args.standard,
-        standard_version=args.version,
-        standard_substandard=args.substandard,
-    ).get_data_service()
     versions_map = {}
 
     for (
