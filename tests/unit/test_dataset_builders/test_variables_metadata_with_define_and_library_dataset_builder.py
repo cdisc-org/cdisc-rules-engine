@@ -26,7 +26,12 @@ test_define_file_path: Path = resources_path.joinpath("test_defineV22-SDTM.xml")
 @patch(
     "cdisc_rules_engine.services.data_services.LocalDataService.get_define_xml_contents"
 )
+@patch(
+    "cdisc_rules_engine.dataset_builders.variables_metadata_with_define_and_library_dataset_builder"
+    ".VariablesMetadataWithDefineAndLibraryDatasetBuilder.get_library_variables_metadata"
+)
 def test_build_combined_metadata(
+    mock_get_library_variables_metadata,
     mock_get_define_xml,
     mock_get_variables_metadata,
     mock_get_dataset,
@@ -59,7 +64,24 @@ def test_build_combined_metadata(
         )
     )
 
-    # Setup library metadata
+    # Create mock library variables metadata
+    library_vars_data = pd.DataFrame(
+        {
+            "library_variable_name": ["STUDYID", "USUBJID", "AETERM", "AESEQ"],
+            "library_variable_role": ["Identifier", "Identifier", "Topic", "Topic"],
+            "library_variable_label": [
+                "Study Identifier",
+                "Unique Subject Identifier",
+                "Reported Term for the Adverse Event",
+                "Sequence Number",
+            ],
+            "library_variable_core": ["Req", "Req", "Req", "Req"],
+            "library_variable_order_number": ["1", "2", "9", "8"],
+            "library_variable_data_type": ["Char", "Char", "Char", "Num"],
+        }
+    )
+    mock_get_library_variables_metadata.return_value = PandasDataset(library_vars_data)
+
     standard_data = {
         "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
         "classes": [
