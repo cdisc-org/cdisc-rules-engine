@@ -181,13 +181,11 @@ class BaseDataService(DataServiceInterface, ABC):
         )
 
     def _get_standard_data(self):
-
-        return (
-            self.library_metadata.standard_metadata
-            or self.cdisc_library_service.get_standard_details(
+        if not self.library_metadata:
+            self.library_metadata = self.cdisc_library_service.get_standard_details(
                 self.standard, self.version, self.standard_substandard
             )
-        )
+        return self.library_metadata.standard_metadata
 
     def _handle_special_cases(
         self,
