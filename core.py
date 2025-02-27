@@ -734,11 +734,12 @@ def test_validate():
         base_path = os.path.join("tests", "resources", "datasets")
         ts_path = os.path.join(base_path, "TS.json")
         ae_path = os.path.join(base_path, "ae.xpt")
+        utf_path = os.path.join(base_path, "ubr")
+        utf = [str(Path(utf_path).joinpath(fn)) for fn in os.listdir(utf_path)]
         if not all(os.path.exists(path) for path in [ts_path, ae_path]):
             raise FileNotFoundError(
                 "Test datasets not found in tests/resources/datasets"
             )
-
         with tempfile.TemporaryDirectory() as temp_dir:
             cache_path = DefaultFilePaths.CACHE.value
             pool_size = 10
@@ -760,6 +761,32 @@ def test_validate():
             local_rules_id = None
             progress = ProgressParameterOptions.BAR.value
             define_xml_path = None
+            utf_output = os.path.join(temp_dir, "ubr_validation_output")
+            run_validation(
+                Validation_args(
+                    cache_path,
+                    pool_size,
+                    utf,
+                    log_level,
+                    report_template,
+                    standard,
+                    version,
+                    substandard,
+                    controlled_terminology_package,
+                    utf_output,
+                    output_format,
+                    raw_report,
+                    define_version,
+                    external_dictionaries,
+                    rules,
+                    local_rules,
+                    local_rules_cache,
+                    local_rules_id,
+                    progress,
+                    define_xml_path,
+                )
+            )
+            print("UTF validation completed successfully!")
             json_output = os.path.join(temp_dir, "json_validation_output")
             run_validation(
                 Validation_args(
