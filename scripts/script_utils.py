@@ -135,7 +135,13 @@ def fill_cache_with_dictionaries(cache: CacheServiceInterface, args):
     Extracts file contents from provided dictionaries files
     and saves to cache (inmemory or redis).
     """
-    data_service = DataServiceFactory(config, cache).get_data_service()
+    data_service = DataServiceFactory(
+        config=config,
+        cache_service=cache,
+        standard=args.standard,
+        standard_version=args.version,
+        standard_substandard=args.substandard,
+    ).get_data_service()
     versions_map = {}
 
     for (
