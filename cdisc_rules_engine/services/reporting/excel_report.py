@@ -95,21 +95,25 @@ class ExcelReport(BaseReport):
         wb["Conformance Details"]["B10"] = define_version
 
         # Populate external dictionary versions
-        wb["Conformance Details"]["B11"] = dictionary_versions.get(
-            DictionaryTypes.UNII.value
-        )
-        wb["Conformance Details"]["B12"] = dictionary_versions.get(
-            DictionaryTypes.MEDRT.value
-        )
-        wb["Conformance Details"]["B13"] = dictionary_versions.get(
-            DictionaryTypes.MEDDRA.value
-        )
-        wb["Conformance Details"]["B14"] = dictionary_versions.get(
-            DictionaryTypes.WHODRUG.value
-        )
-        wb["Conformance Details"]["B15"] = dictionary_versions.get(
-            DictionaryTypes.SNOMED.value
-        )
+        unii_version = dictionary_versions.get(DictionaryTypes.UNII.value)
+        if unii_version is not None:
+            wb["Conformance Details"]["B11"] = unii_version
+
+        medrt_version = dictionary_versions.get(DictionaryTypes.MEDRT.value)
+        if medrt_version is not None:
+            wb["Conformance Details"]["B12"] = medrt_version
+
+        meddra_version = dictionary_versions.get(DictionaryTypes.MEDDRA.value)
+        if meddra_version is not None:
+            wb["Conformance Details"]["B13"] = meddra_version
+
+        whodrug_version = dictionary_versions.get(DictionaryTypes.WHODRUG.value)
+        if whodrug_version is not None:
+            wb["Conformance Details"]["B14"] = whodrug_version
+
+        snomed_version = dictionary_versions.get(DictionaryTypes.SNOMED.value)
+        if snomed_version is not None:
+            wb["Conformance Details"]["B15"] = snomed_version
         return wb
 
     def write_report(self, **kwargs):
