@@ -53,18 +53,18 @@ class LocalDataService(BaseDataService):
         config: ConfigInterface = None,
         **kwargs,
     ):
-        if cls._instance is None:
-            service = cls(
-                cache_service=cache_service,
-                reader_factory=DataReaderFactory(
-                    dataset_implementation=kwargs.get(
-                        "dataset_implementation", PandasDataset
-                    )
-                ),
-                config=config,
-                **kwargs,
-            )
-            cls._instance = service
+        # if cls._instance is None:
+        service = cls(
+            cache_service=cache_service,
+            reader_factory=DataReaderFactory(
+                dataset_implementation=kwargs.get(
+                    "dataset_implementation", PandasDataset
+                )
+            ),
+            config=config,
+            **kwargs,
+        )
+        cls._instance = service
         return cls._instance
 
     def has_all_files(self, prefix: str, file_names: List[str]) -> bool:
