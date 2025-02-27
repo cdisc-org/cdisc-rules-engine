@@ -120,9 +120,7 @@ class ExcelReport(BaseReport):
             if define_xml_path:
                 define_version = get_define_version([define_xml_path])
             else:
-                define_version: str = self._args.define_version or get_define_version(
-                    self._args.dataset_paths
-                )
+                define_version: str = self._args.define_version
             controlled_terminology = self._args.controlled_terminology_package
             if not controlled_terminology and define_version:
                 if define_xml_path and define_version:
