@@ -16,3 +16,4 @@ class DatasetMetadata:
     modification_date: str = ""
     full_path: Union[str, None] = None
     first_record: Union[dict, None] = None
+    original_path: Union[str, None] = None

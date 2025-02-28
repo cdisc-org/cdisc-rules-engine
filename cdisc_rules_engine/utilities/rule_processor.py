@@ -558,7 +558,7 @@ class RuleProcessor:
                 target: str = condition["value"].get("target")
                 if target is None:
                     continue
-                target = target.replace("--", domain)
+                target = target.replace("--", domain or "")
                 op_related_pattern: str = RuleProcessor.get_operator_related_pattern(
                     condition.get("operator"), target
                 )

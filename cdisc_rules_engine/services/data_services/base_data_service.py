@@ -167,26 +167,15 @@ class BaseDataService(DataServiceInterface, ABC):
     ) -> Optional[str]:
         if self.standard is None or self.version is None:
             raise Exception("Missing standard and version data")
-
-        standard_data = self._get_standard_data()
-
         class_data, _ = get_class_and_domain_metadata(
-            standard_data, dataset_metadata.domain or dataset_metadata.name
+            self.library_metadata.standard_metadata,
+            dataset_metadata.domain or dataset_metadata.name,
         )
         name = class_data.get("name")
         if name:
             return convert_library_class_name_to_ct_class(name)
         return self._handle_special_cases(
             dataset, dataset_metadata, file_path, datasets
-        )
-
-    def _get_standard_data(self):
-
-        return (
-            self.library_metadata.standard_metadata
-            or self.cdisc_library_service.get_standard_details(
-                self.standard, self.version, self.standard_substandard
-            )
         )
 
     def _handle_special_cases(

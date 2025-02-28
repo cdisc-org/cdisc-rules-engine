@@ -80,10 +80,10 @@ class DatasetXPTMetadataReader:
         total_size = os.path.getsize(self._file_path)
         start = self._read_header(self._file_path)
         remainder = (total_size - start) % row_size
-        estimated_rows = (total_size - start - remainder) / row_size
+        estimated_rows = (total_size - start - remainder) // row_size
         if row_size < 80:
             padding = self._count_trailing_padding(self._file_path, row_size)
-            return (total_size - start - padding) / row_size
+            return (total_size - start - padding) // row_size
         return estimated_rows
 
     def _count_trailing_padding(self, file_path, row_size):
