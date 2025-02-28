@@ -1,7 +1,7 @@
 name: CORE Test Suite Validation
 on:
+  workflow_call:
   workflow_dispatch:
-  pull_request:
 
 env:
   DATASET_SIZE_THRESHOLD: 1000000000
