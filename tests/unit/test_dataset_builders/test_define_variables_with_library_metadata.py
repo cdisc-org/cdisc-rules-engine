@@ -11,7 +11,8 @@ from cdisc_rules_engine.dataset_builders.define_variables_with_library_metadata 
     DefineVariablesWithLibraryMetadataDatasetBuilder,
 )
 from cdisc_rules_engine.services.data_services import LocalDataService
-
+import pandas as pd
+from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 
 resources_path: Path = Path(__file__).parent.parent.parent.joinpath("resources")
 test_define_file_path: Path = resources_path.joinpath("test_defineV22-SDTM.xml")
@@ -21,13 +22,42 @@ test_define_file_path: Path = resources_path.joinpath("test_defineV22-SDTM.xml")
     "cdisc_rules_engine.services.data_services.LocalDataService"
     + ".get_define_xml_contents",
 )
+@patch(
+    "cdisc_rules_engine.dataset_builders.define_variables_with_library_metadata"
+    ".DefineVariablesWithLibraryMetadataDatasetBuilder.get_dataset_contents"
+)
+@patch(
+    "cdisc_rules_engine.dataset_builders.define_variables_with_library_metadata"
+    ".DefineVariablesWithLibraryMetadataDatasetBuilder.get_library_variables_metadata"
+)
 def test_define_variables_metadata_with_library_metadata_dataset_builder(
+    mock_get_library_variables_metadata: MagicMock,
+    mock_get_dataset_contents: MagicMock,
     mock_get_define_xml_contents: MagicMock,
 ):
     with open(test_define_file_path, "rb") as f:
         define_data = f.read()
 
     mock_get_define_xml_contents.return_value = define_data
+    mock_dataset = MagicMock()
+    mock_get_dataset_contents.return_value = mock_dataset
+
+    library_vars_data = pd.DataFrame(
+        {
+            "library_variable_name": ["STUDYID", "USUBJID", "AESEQ", "AETERM"],
+            "library_variable_role": ["Identifier", "Identifier", "Topic", "Topic"],
+            "library_variable_label": [
+                "Study Identifier",
+                "Unique Subject Identifier",
+                "Sequence Number",
+                "Reported Term for the adverse event",
+            ],
+            "library_variable_core": ["Req", "Req", "Req", "Req"],
+            "library_variable_order_number": ["1", "2", "8", "9"],
+            "library_variable_data_type": ["Char", "Char", "Num", "Char"],
+        }
+    )
+    mock_get_library_variables_metadata.return_value = PandasDataset(library_vars_data)
 
     cache = InMemoryCacheService()
     standard = "sdtmig"
@@ -35,6 +65,71 @@ def test_define_variables_metadata_with_library_metadata_dataset_builder(
     standard_substandard = None
     standard_data = {
         "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
+        "domains": {
+            "HO",
+            "CO",
+            "SU",
+            "PP",
+            "TM",
+            "TD",
+            "SS",
+            "TR",
+            "CV",
+            "EX",
+            "RELSPEC",
+            "FA",
+            "SR",
+            "SV",
+            "TI",
+            "CM",
+            "RE",
+            "TU",
+            "ML",
+            "RELSUB",
+            "SUPPQUAL",
+            "TA",
+            "UR",
+            "RS",
+            "VS",
+            "EC",
+            "IS",
+            "DV",
+            "RELREC",
+            "PR",
+            "SM",
+            "EG",
+            "MK",
+            "TS",
+            "DS",
+            "PE",
+            "DM",
+            "MH",
+            "GF",
+            "BE",
+            "OE",
+            "CE",
+            "CP",
+            "MS",
+            "DD",
+            "TV",
+            "MI",
+            "FT",
+            "PC",
+            "RP",
+            "IE",
+            "TE",
+            "LB",
+            "BS",
+            "QS",
+            "SC",
+            "AG",
+            "DA",
+            "SE",
+            "AE",
+            "OI",
+            "MB",
+            "NV",
+        },
         "classes": [
             {
                 "name": "Events",

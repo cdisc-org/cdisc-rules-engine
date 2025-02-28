@@ -22,11 +22,9 @@ class ExpectedVariables(BaseOperation):
         variables_metadata: List[dict] = self._get_variables_metadata_from_standard()
 
         return list(
-            set(
-                [
-                    var["name"].replace("--", self.params.domain)
-                    for var in variables_metadata
-                    if self.get_allowed_variable_permissibility(var) == EXPECTED
-                ]
-            )
+            {
+                var["name"].replace("--", self.params.domain): None
+                for var in variables_metadata
+                if self.get_allowed_variable_permissibility(var) == EXPECTED
+            }.keys()
         )

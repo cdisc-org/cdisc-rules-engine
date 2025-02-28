@@ -196,7 +196,8 @@ Match Datasets:
 
 ## expected_variables
 
-Returns the expected variables for the domain in the current standard.
+Returns the expected ("Core" = Exp ) variables for the domain in the current standard
+Variable Metadata for custom domains will pull from the model while non-custom domains will be from the IG and Model.
 
 - Input:
 
@@ -551,7 +552,8 @@ Generates a dataframe where each record in the dataframe is the library ig varia
 
 ## permissible_variables
 
-Returns the permissible variables for a given domain and standard
+Returns the permissible variables ("Core" = Perm ) for a given domain and standard
+Variable Metadata for custom domains will pull from the model while non-custom domains will be from the IG and Model.
 
 - Input:
 
@@ -633,7 +635,8 @@ Example: return the number of records grouped by USUBJID and IDVARVAL where QNAM
 
 ## required_variables
 
-Returns the required variables for a given domain and standard
+Returns the required variables ( "Core" = Req ) for a given domain and standard
+Variable Metadata for custom domains will pull from the model while non-custom domains will be from the IG and Model.
 
 - Input:
 

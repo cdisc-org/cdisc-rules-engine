@@ -1,0 +1,523 @@
+{
+    "datasets": [
+        {
+            "filename": "ecaa.xpt",
+            "label": "Exposure as Collected AA",
+            "domain": "EC",
+            "variables": [
+                {
+                    "name": "STUDYID",
+                    "label": "Study Identifier",
+                    "type": "char",
+                    "length": 12
+                },
+                {
+                    "name": "DOMAIN",
+                    "label": "Domain Abbreviation",
+                    "type": "char",
+                    "length": 2
+                },
+                {
+                    "name": "USUBJID",
+                    "label": "Unique Subject Identifier",
+                    "type": "char",
+                    "length": 8
+                },
+                {
+                    "name": "SPDEVID",
+                    "label": "Sponsor Device Identifier",
+                    "type": "char",
+                    "length": 200
+                },
+                {
+                    "name": "ECSEQ",
+                    "label": "Sequence Number",
+                    "type": "num",
+                    "length": 8
+                },
+                {
+                    "name": "ECTRT",
+                    "label": "Name of Treatment",
+                    "type": "char",
+                    "length": 10
+                },
+                {
+                    "name": "ECDOSE",
+                    "label": "Dose",
+                    "type": "num",
+                    "length": 8
+                },
+                {
+                    "name": "ECSTDTC",
+                    "label": "Start Date/Time of Treatment",
+                    "type": "char",
+                    "length": 10
+                },
+                {
+                    "name": "ECENDTC",
+                    "label": "End Date/Time of Treatment",
+                    "type": "char",
+                    "length": 10
+                },
+                {
+                    "name": "ECSTDY",
+                    "label": "Study Day of Start of Treatment",
+                    "type": "num",
+                    "length": 8
+                },
+                {
+                    "name": "ECENDY",
+                    "label": "Study Day of End of Treatment",
+                    "type": "num",
+                    "length": 8
+                }
+            ],
+            "records": {
+                "STUDYID": [
+                    "CDISCPILOT01",
+                    "CDISCPILOT01",
+                    "CDISCPILOT01",
+                    "CDISCPILOT01",
+                    "CDISCPILOT01",
+                    "CDISCPILOT01",
+                    "CDISCPILOT01",
+                    "CDISCPILOT01"
+                ],
+                "DOMAIN": [
+                    "EC",
+                    "EC",
+                    "EC",
+                    "EC",
+                    "EC",
+                    "EC",
+                    "EC",
+                    "EC"
+                ],
+                "USUBJID": [
+                    "CDISC001",
+                    "CDISC001",
+                    "CDISC001",
+                    "CDISC001",
+                    "CDISC001",
+                    "CDISC001",
+                    "CDISC001",
+                    "CDISC001"
+                ],
+                "SPDEVID": [
+                    "Different",
+                    "Different",
+                    "Same as split, different supp",
+                    "Same as split, same supp",
+                    "Same as next row, different supp",
+                    "Same as prev row, different supp",
+                    "Same as next row, same supp",
+                    "Same as prev row, same supp"
+                ],
+                "ECSEQ": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6,
+                    7,
+                    8
+                ],
+                "ECTRT": [
+                    "ZANOMALINE",
+                    "ZANOMALINE",
+                    "ZANOMALINE",
+                    "ZANOMALINE",
+                    "ZANOMALINE",
+                    "ZANOMALINE",
+                    "ZANOMALINE",
+                    "ZANOMALINE"
+                ],
+                "ECDOSE": [
+                    5,
+                    5,
+                    5,
+                    5,
+                    5,
+                    5,
+                    5,
+                    5
+                ],
+                "ECSTDTC": [
+                    "2012-11-30",
+                    "2012-12-01",
+                    "2012-12-02",
+                    "2012-12-03",
+                    "2012-12-04",
+                    "2012-12-04",
+                    "2012-12-05",
+                    "2012-12-05"
+                ],
+                "ECENDTC": [
+                    "2012-11-30",
+                    "2012-12-01",
+                    "2012-12-02",
+                    "2012-12-03",
+                    "2012-12-04",
+                    "2012-12-05",
+                    "2012-12-06",
+                    "2012-12-07"
+                ],
+                "ECSTDY": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6,
+                    7,
+                    8
+                ],
+                "ECENDY": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6,
+                    7,
+                    8
+                ]
+            }
+        },
+        {
+            "filename": "ecbb.xpt",
+            "label": "Exposure as Collected BB",
+            "domain": "EC",
+            "variables": [
+                {
+                    "name": "STUDYID",
+                    "label": "Study Identifier",
+                    "type": "char",
+                    "length": 12
+                },
+                {
+                    "name": "DOMAIN",
+                    "label": "Domain Abbreviation",
+                    "type": "char",
+                    "length": 2
+                },
+                {
+                    "name": "USUBJID",
+                    "label": "Unique Subject Identifier",
+                    "type": "char",
+                    "length": 8
+                },
+                {
+                    "name": "SPDEVID",
+                    "label": "Sponsor Device Identifier",
+                    "type": "char",
+                    "length": 200
+                },
+                {
+                    "name": "ECSEQ",
+                    "label": "Sequence Number",
+                    "type": "num",
+                    "length": 8
+                },
+                {
+                    "name": "ECTRT",
+                    "label": "Name of Treatment",
+                    "type": "char",
+                    "length": 10
+                },
+                {
+                    "name": "ECDOSE",
+                    "label": "Dose",
+                    "type": "num",
+                    "length": 8
+                },
+                {
+                    "name": "ECSTDTC",
+                    "label": "Start Date/Time of Treatment",
+                    "type": "char",
+                    "length": 10
+                },
+                {
+                    "name": "ECENDTC",
+                    "label": "End Date/Time of Treatment",
+                    "type": "char",
+                    "length": 10
+                },
+                {
+                    "name": "ECSTDY",
+                    "label": "Study Day of Start of Treatment",
+                    "type": "num",
+                    "length": 8
+                },
+                {
+                    "name": "ECENDY",
+                    "label": "Study Day of End of Treatment",
+                    "type": "num",
+                    "length": 8
+                }
+            ],
+            "records": {
+                "STUDYID": [
+                    "CDISCPILOT01",
+                    "CDISCPILOT01",
+                    "CDISCPILOT01"
+                ],
+                "DOMAIN": [
+                    "EC",
+                    "EC",
+                    "EC"
+                ],
+                "USUBJID": [
+                    "CDISC001",
+                    "CDISC001",
+                    "CDISC001"
+                ],
+                "SPDEVID": [
+                    "Different",
+                    "Same as split, different supp",
+                    "Same as split, same supp"
+                ],
+                "ECSEQ": [
+                    11,
+                    13,
+                    14
+                ],
+                "ECTRT": [
+                    "ZANOMALINE",
+                    "ZANOMALINE",
+                    "ZANOMALINE"
+                ],
+                "ECDOSE": [
+                    5,
+                    5,
+                    5
+                ],
+                "ECSTDTC": [
+                    "2013-12-01",
+                    "2012-12-02",
+                    "2012-12-03"
+                ],
+                "ECENDTC": [
+                    "2012-12-02",
+                    "2012-12-02",
+                    "2012-12-03"
+                ],
+                "ECSTDY": [
+                    3,
+                    3,
+                    4
+                ],
+                "ECENDY": [
+                    3,
+                    3,
+                    4
+                ]
+            }
+        },
+        {
+            "filename": "suppec.xpt",
+            "label": "Supplemental Qualifiers for EC",
+            "domain": "EC",
+            "variables": [
+                {
+                    "name": "STUDYID",
+                    "label": "Study Identifier",
+                    "type": "char",
+                    "length": 12
+                },
+                {
+                    "name": "RDOMAIN",
+                    "label": "Related Domain Abbreviation",
+                    "type": "char",
+                    "length": 6
+                },
+                {
+                    "name": "USUBJID",
+                    "label": "Unique Subject Identifier",
+                    "type": "char",
+                    "length": 8
+                },
+                {
+                    "name": "IDVAR",
+                    "label": "Identifying Variable",
+                    "type": "char",
+                    "length": 200
+                },
+                {
+                    "name": "IDVARVAL",
+                    "label": "Identifying Variable Value",
+                    "type": "char",
+                    "length": 200
+                },
+                {
+                    "name": "QNAM",
+                    "label": "Qualifier Variable Name",
+                    "type": "char",
+                    "length": 8
+                },
+                {
+                    "name": "QLABEL",
+                    "label": "Qualifier Variable Label",
+                    "type": "char",
+                    "length": 40
+                },
+                {
+                    "name": "QVAL",
+                    "label": "Data Value",
+                    "type": "char",
+                    "length": 200
+                },
+                {
+                    "name": "QORIG",
+                    "label": "Origin",
+                    "type": "char",
+                    "length": 13
+                },
+                {
+                    "name": "QEVAL",
+                    "label": "Evaluator",
+                    "type": "char",
+                    "length": 200
+                }
+            ],
+            "records": {
+                "STUDYID": [
+                    "CDISCPILOT01",
+                    "CDISCPILOT01",
+                    "CDISCPILOT01",
+                    "CDISCPILOT01",
+                    "CDISCPILOT01",
+                    "CDISCPILOT01",
+                    "CDISCPILOT01",
+                    "CDISCPILOT01",
+                    "CDISCPILOT01",
+                    "CDISCPILOT01",
+                    "CDISCPILOT01"
+                ],
+                "RDOMAIN": [
+                    "EC",
+                    "EC",
+                    "EC",
+                    "EC",
+                    "EC",
+                    "EC",
+                    "EC",
+                    "EC",
+                    "EC",
+                    "EC",
+                    "EC"
+                ],
+                "USUBJID": [
+                    "CDISC001",
+                    "CDISC001",
+                    "CDISC001",
+                    "CDISC001",
+                    "CDISC001",
+                    "CDISC001",
+                    "CDISC001",
+                    "CDISC001",
+                    "CDISC001",
+                    "CDISC001",
+                    "CDISC001"
+                ],
+                "IDVAR": [
+                    "ECSEQ",
+                    "ECSEQ",
+                    "ECSEQ",
+                    "ECSEQ",
+                    "ECSEQ",
+                    "ECSEQ",
+                    "ECSEQ",
+                    "ECSEQ",
+                    "ECSEQ",
+                    "ECSEQ",
+                    "ECSEQ"
+                ],
+                "IDVARVAL": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6,
+                    7,
+                    8,
+                    11,
+                    13,
+                    14
+                ],
+                "QNAM": [
+                    "ECREASOC",
+                    "ECREASOC",
+                    "ECREASOC",
+                    "ECREASOC",
+                    "ECREASOC",
+                    "ECREASOC",
+                    "ECREASOC",
+                    "ECREASOC",
+                    "ECREASOC",
+                    "ECREASOC",
+                    "ECREASOC"
+                ],
+                "QLABEL": [
+                    "Reason for Occur Value",
+                    "Reason for Occur Value",
+                    "Reason for Occur Value",
+                    "Reason for Occur Value",
+                    "Reason for Occur Value",
+                    "Reason for Occur Value",
+                    "Reason for Occur Value",
+                    "Reason for Occur Value",
+                    "Reason for Occur Value",
+                    "Reason for Occur Value",
+                    "Reason for Occur Value"
+                ],
+                "QVAL": [
+                    "SAME",
+                    "SAME",
+                    "DIFF3",
+                    "SAME",
+                    "DIFF5",
+                    "DIFF6",
+                    "SAME",
+                    "SAME",
+                    "SAME",
+                    "DIFF13",
+                    "SAME"
+                ],
+                "QORIG": [
+                    "COLLECTED",
+                    "COLLECTED",
+                    "COLLECTED",
+                    "COLLECTED",
+                    "COLLECTED",
+                    "COLLECTED",
+                    "COLLECTED",
+                    "COLLECTED",
+                    "COLLECTED",
+                    "COLLECTED",
+                    "COLLECTED"
+                ],
+                "QEVAL": [
+                    "INVESTIGATOR",
+                    "INVESTIGATOR",
+                    "INVESTIGATOR",
+                    "INVESTIGATOR",
+                    "INVESTIGATOR",
+                    "INVESTIGATOR",
+                    "INVESTIGATOR",
+                    "INVESTIGATOR",
+                    "INVESTIGATOR",
+                    "INVESTIGATOR",
+                    "INVESTIGATOR"
+                ]
+            }
+        }
+    ],
+    "standard": {
+        "product": "sdtmig",
+        "version": "3-4"
+    },
+    "codelists": []
+}

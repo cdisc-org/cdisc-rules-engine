@@ -22,8 +22,14 @@ from cdisc_rules_engine.enums.variable_roles import VariableRoles
 @patch(
     "cdisc_rules_engine.services.data_services.LocalDataService.get_variables_metadata",
 )
+@patch(
+    "cdisc_rules_engine.dataset_builders.variables_metadata_with_library_metadata"
+    ".VariablesMetadataWithLibraryMetadataDatasetBuilder.get_library_variables_metadata"
+)
 def test_variable_metadata_with_library_metadata_dataset_builder(
-    mock_get_variables_metadata: MagicMock, mock_get_dataset: MagicMock
+    mock_get_library_variables_metadata: MagicMock,
+    mock_get_variables_metadata: MagicMock,
+    mock_get_dataset: MagicMock,
 ):
     mock_get_variables_metadata.return_value = pd.DataFrame.from_dict(
         {
@@ -34,6 +40,24 @@ def test_variable_metadata_with_library_metadata_dataset_builder(
             "variable_data_type": ["Char", "Char", "Char", "Num"],
         }
     )
+
+    library_vars_data = pd.DataFrame(
+        {
+            "library_variable_name": ["STUDYID", "USUBJID", "AETERM", "AESEQ"],
+            "library_variable_role": ["Identifier", "Identifier", "Topic", "Topic"],
+            "library_variable_label": [
+                "Study Identifier",
+                "Unique Subject Identifier",
+                "Reported Term for the adverse event",
+                "Sequence Number",
+            ],
+            "library_variable_core": ["Req", "Req", "Req", "Req"],
+            "library_variable_order_number": ["1", "2", "9", "8"],
+            "library_variable_data_type": ["Char", "Char", "Char", "Num"],
+        }
+    )
+    mock_get_library_variables_metadata.return_value = PandasDataset(library_vars_data)
+
     mock_get_dataset.return_value = PandasDataset(
         pd.DataFrame.from_dict(
             {
@@ -157,8 +181,14 @@ def test_variable_metadata_with_library_metadata_dataset_builder(
 @patch(
     "cdisc_rules_engine.services.data_services.LocalDataService.get_variables_metadata",
 )
+@patch(
+    "cdisc_rules_engine.dataset_builders.variables_metadata_with_library_metadata"
+    ".VariablesMetadataWithLibraryMetadataDatasetBuilder.get_library_variables_metadata"
+)
 def test_variable_metadata_with_library_metadata_dataset_builder_variable_only_in_model(
-    mock_get_variables_metadata: MagicMock, mock_get_dataset: MagicMock
+    mock_get_library_variables_metadata: MagicMock,
+    mock_get_variables_metadata: MagicMock,
+    mock_get_dataset: MagicMock,
 ):
     mock_get_variables_metadata.return_value = pd.DataFrame.from_dict(
         {
@@ -169,7 +199,22 @@ def test_variable_metadata_with_library_metadata_dataset_builder_variable_only_i
             "variable_data_type": ["Char", "Char", "Char", "Num"],
         }
     )
-
+    library_vars_data = pd.DataFrame(
+        {
+            "library_variable_name": ["STUDYID", "USUBJID", "AETERM", "AEMODELVAR"],
+            "library_variable_role": ["Identifier", "Identifier", "Topic", "Timing"],
+            "library_variable_label": [
+                "Study Identifier",
+                "Unique Subject Identifier",
+                "Reported Term for the adverse event",
+                "Model Variable",
+            ],
+            "library_variable_core": ["Req", "Req", "Req", "Perm"],
+            "library_variable_order_number": ["1", "2", "9", "2000"],
+            "library_variable_data_type": ["Char", "Char", "Char", "Num"],
+        }
+    )
+    mock_get_library_variables_metadata.return_value = PandasDataset(library_vars_data)
     mock_get_dataset.return_value = PandasDataset(
         pd.DataFrame.from_dict(
             {

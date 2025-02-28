@@ -190,13 +190,16 @@ class BaseOperation:
 
     def _get_variables_metadata_from_standard(self) -> List[dict]:
         # TODO: Update to handle other standard types: adam, cdash, etc.
+        target_metadata = None
+        for ds in self.params.datasets:
+            if ds.name == self.params.domain:
+                target_metadata = ds
+                break
         dataset_class = self.data_service.get_dataset_class(
             self.evaluation_dataset,
             self.params.dataset_path,
             self.params.datasets,
-            self.data_service.get_raw_dataset_metadata(
-                self.params.dataset_path, self.params.datasets
-            ),
+            target_metadata,
         )
 
         return sdtm_utilities.get_variables_metadata_from_standard(
