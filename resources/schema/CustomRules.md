@@ -79,9 +79,10 @@ Use: `@Authorities.@Standards.Name`
 
 ## Rules
 
-1. The `@` symbol must come directly before the array name
-2. Array notation must be used to access array elements
-3. The path must reflect the exact structure of your data
+1. The path is **case-sensitive**
+2. The `@` symbol must come directly before the array name
+3. Array notation must be used to access array elements
+4. The path must reflect the exact structure of your data
 
 #Custom Rule Schema
 
