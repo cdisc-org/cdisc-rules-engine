@@ -327,6 +327,9 @@
           },
           {
             "$ref": "Organization_FDA.json"
+          },
+          {
+            "$ref": "Organization_Custom.json"
           }
         ],
         "required": ["Organization", "Standards"],
