@@ -230,8 +230,7 @@ def get_corresponding_datasets(
     return [
         other
         for other in datasets
-        if (dataset_metadata.domain and dataset_metadata.domain == other.domain)
-        or (dataset_metadata.rdomain and dataset_metadata.rdomain == other.rdomain)
+        if dataset_metadata.unsplit_name == other.unsplit_name
     ]
 
 
