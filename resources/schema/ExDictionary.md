@@ -35,6 +35,7 @@ External dictionaries provide standardized terminology and coding systems for me
                     Version file:
                         - meddra_release.asc containing version number followed by language and additional fields
                             Example: 27.0$English$$$$
+```
 
 #### SNOMED CT
 
@@ -88,7 +89,7 @@ Note: Version is extracted from filename (e.g., "UNII_Records_2024.txt" → vers
 --loinc TEXT Path to directory containing LOINC dictionary files
 Directory must contain the `Loinc.csv` with capital 'L'
 
-````
+```
 
 ## Operations & Rule Editor
 
@@ -102,7 +103,7 @@ Validates dictionary versions against define.xml specifications.
 - operation: valid_define_external_dictionary_version
   id: $is_valid_loinc_version
   external_dictionary_type: loinc
-````
+```
 
 ### Value and Code Validation
 
