@@ -33,16 +33,17 @@ External dictionaries provide standardized terminology and coding systems for me
                         - hlgt_hlt.asc
                         - hlt_pt.asc
                     Version file:
-                        - version.txt containing version number followed by $ delimiter
-                            Example: 24.1$
-```
+                        - meddra_release.asc containing version number followed by language and additional fields
+                            Example: 27.0$English$$$$
 
 #### SNOMED CT
 
 ```
---snomed-version TEXT    Version of SNOMED to use (e.g., 2024-09-01)
---snomed-url TEXT        Base URL of SNOMED API (e.g., https://snowstorm.snomedtools.org/snowstorm/snomed-ct)
---snomed-edition TEXT    Edition of SNOMED to use (e.g., SNOMEDCT-US)
+
+--snomed-version TEXT Version of SNOMED to use (e.g., 2024-09-01)
+--snomed-url TEXT Base URL of SNOMED API (e.g., https://snowstorm.snomedtools.org/snowstorm/snomed-ct)
+--snomed-edition TEXT Edition of SNOMED to use (e.g., SNOMEDCT-US)
+
 ```
 
 For SNOMED CT:
@@ -56,39 +57,38 @@ For SNOMED CT:
 #### WHODrug
 
 ```
---whodrug TEXT     Path to directory containing WHODrug dictionary files
-                    Required files:
-                      - DD.txt (Drug Dictionary)
-                      - DDA.txt (ATC Classification)
-                      - INA.txt (ATC Text)
-                      - version.txt (Contains Vault Safety label format, e.g., "GLOBALC3Mar24")
+
+--whodrug TEXT Path to directory containing WHODrug dictionary files
+Required files: - DD.txt (Drug Dictionary) - DDA.txt (ATC Classification) - INA.txt (ATC Text) - version.txt (Contains Vault Safety label format, e.g., "GLOBALC3Mar24")
 
                     Supported formats:
                       - B3: Substance Name field is 45 characters
                       - C3: Substance Name field is 110-250 characters (expanded after March 2022)
+
 ```
 
 #### Other Drug Dictionaries
 
 ```
---medrt TEXT       Path to directory containing MEDRT dictionary files
-                    Dictionary file must be named `Core_MEDRT_*_DTS.xml`
 
---unii TEXT        Path to directory containing UNII dictionary files
-                    Required files:
-                        - UNII_Records_*.* (tab-delimited file containing UNII codes and terms)
-                            Format: Tab-delimited file with following columns:
-                                1. UNII code
-                                2. UNII term
-                            Note: Version is extracted from filename (e.g., "UNII_Records_2024.txt" → version "2024")
+--medrt TEXT Path to directory containing MEDRT dictionary files
+Dictionary file must be named `Core_MEDRT_*_DTS.xml`
+
+--unii TEXT Path to directory containing UNII dictionary files
+Required files: - UNII*Records*_._ (tab-delimited file containing UNII codes and terms)
+Format: Tab-delimited file with following columns: 1. UNII code 2. UNII term
+Note: Version is extracted from filename (e.g., "UNII_Records_2024.txt" → version "2024")
+
 ```
 
 ### Laboratory Dictionaries
 
 ```
---loinc TEXT       Path to directory containing LOINC dictionary files
-                    Directory must contain the `Loinc.csv` with capital 'L'
-```
+
+--loinc TEXT Path to directory containing LOINC dictionary files
+Directory must contain the `Loinc.csv` with capital 'L'
+
+````
 
 ## Operations & Rule Editor
 
@@ -102,7 +102,7 @@ Validates dictionary versions against define.xml specifications.
 - operation: valid_define_external_dictionary_version
   id: $is_valid_loinc_version
   external_dictionary_type: loinc
-```
+````
 
 ### Value and Code Validation
 
