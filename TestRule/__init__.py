@@ -55,7 +55,7 @@ def handle_exception(e: Exception):
         )
 
 
-def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
+def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:  # noqa
     try:
         json_data = req.get_json()
         api_key = os.environ.get("CDISC_LIBRARY_API_KEY")
@@ -65,11 +65,11 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
         standard_version = standards_data.get("version")
         standard_substandard = None
         if standard and standard.lower() == "tig":
-            standard_substandard = (
-                rule.get("Authorities", [])[0]
-                .get("Standards", [])[0]
-                .get("Substandard")
-            ).lower()
+            for std in rule.get("Authorities", [])[0].get("Standards", []):
+                if std.get("Name", "").lower() == "tig":
+                    if std.get("Substandard") is not None:
+                        standard_substandard = std.get("Substandard").lower()
+                    break
         codelists = json_data.get("codelists", [])
         cache = InMemoryCacheService()
         if standards_data or codelists:
