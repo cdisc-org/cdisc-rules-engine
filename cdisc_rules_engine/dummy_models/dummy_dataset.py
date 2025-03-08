@@ -28,6 +28,7 @@ class DummyDataset(SDTMDatasetMetadata):
             self.label = dataset_data.get("label")
             self.file_size = dataset_data.get("file_size") or 0
             self.filename = dataset_data.get("filename")
+            self.full_path = dataset_data.get("filename")
             if hasattr(dataset_data, "first_record"):
                 self.first_record = dataset_data.first_record
             else:

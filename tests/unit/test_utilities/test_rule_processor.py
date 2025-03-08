@@ -60,9 +60,7 @@ from cdisc_rules_engine.models.dataset import PandasDataset, DaskDataset
 def test_rule_applies_to_domain(mock_data_service, name, rule_metadata, outcome):
     processor = RuleProcessor(mock_data_service, InMemoryCacheService())
     assert (
-        processor.rule_applies_to_domain(
-            SDTMDatasetMetadata(name=name), rule_metadata, False
-        )
+        processor.rule_applies_to_domain(SDTMDatasetMetadata(name=name), rule_metadata)
         == outcome
     )
 
@@ -210,16 +208,15 @@ def test_rule_applies_to_domain_split_datasets(
 ):
     rule = {"domains": rule_domains}
     domains: List[dict] = [
-        {"name": "AE", "domain": "AE", "is_split": False},
-        {"name": "EC", "domain": "EC", "is_split": False},
-        {"name": "QS", "domain": "QS", "is_split": True},  # Two datasets with QS domain
-        {"name": "QS", "domain": "QS", "is_split": True},
+        {"name": "AE", "domain": "AE"},
+        {"name": "EC", "domain": "EC"},
+        {"name": "QS1", "domain": "QS"},  # Two datasets with QS domain
+        {"name": "QS2", "domain": "QS"},
         {
-            "name": "SUPPQS",
+            "name": "SUPPQS1",
             "rdomain": "QS",
-            "is_split": True,
         },  # Two datasets with SUPPQS name
-        {"name": "SUPPQS", "rdomain": "QS", "is_split": True},
+        {"name": "SUPPQS2", "rdomain": "QS"},
     ]
     processor = RuleProcessor(mock_data_service, InMemoryCacheService())
     results = [
@@ -232,7 +229,6 @@ def test_rule_applies_to_domain_split_datasets(
                 },
             ),
             rule,
-            domain["is_split"],
         )
         for domain in domains
     ]

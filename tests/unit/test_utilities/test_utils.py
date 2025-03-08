@@ -1,15 +1,12 @@
 import pytest
 from unittest.mock import patch
 from cdisc_rules_engine.utilities.utils import (
-    is_split_dataset,
-    is_supp_dataset,
     get_corresponding_datasets,
 )
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 
 mock_datasets = [
     {"filename": "SS11.xpt", "first_record": {"DOMAIN": "SS"}},
-    {"filename": "SS12.xpt", "first_record": {"DOMAIN": "SS"}},
 ]
 
 
@@ -18,38 +15,31 @@ mock_datasets = [
     return_value=mock_datasets,
 )
 def test_is_split_dataset_from_file(mock_get_corresponding_datasets):
-    result = is_split_dataset(
-        [SDTMDatasetMetadata(**mock_dataset) for mock_dataset in mock_datasets],
-        SDTMDatasetMetadata(first_record={"DOMAIN": "SS"}),
+    result = (
+        SDTMDatasetMetadata(
+            filename="SS11.xpt", first_record={"DOMAIN": "SS"}
+        ).is_split,
     )
     assert result
 
 
 datasets_tests = [
     (
-        [
-            {"filename": "suppSS.xpt", "first_record": {"DOMAIN": "SS"}},
-            {"filename": "SS.xpt", "first_record": {"DOMAIN": "SS"}},
-        ],
-        True,
-    ),
-    (
-        [
-            {"filename": "SS.xpt", "first_record": {"DOMAIN": "SS"}},
-            {"filename": "SS12.xpt", "first_record": {"DOMAIN": "SS"}},
-        ],
+        {"name": "SS", "first_record": {"RDOMAIN": "SS"}},
         False,
     ),
-    ([{"filename": "suppSS.xpt", "first_record": {"DOMAIN": "SS"}}], False),
+    (
+        {"name": "SUPPSS", "first_record": {"RDOMAIN": "SS"}},
+        True,
+    ),
+    ({"name": "SUPPSS1", "first_record": {"RDOMAIN": "SS"}}, True),
+    ({"name": "SQAPSSS1", "first_record": {"RDOMAIN": "APSS"}}, True),
 ]
 
 
-@pytest.mark.parametrize("mock_datasets, expected", datasets_tests)
-@patch("cdisc_rules_engine.utilities.utils.get_corresponding_datasets")
-def test_is_supp_dataset(mock_get_corresponding_datasets, mock_datasets, expected):
-    domain = "SS"
-    mock_get_corresponding_datasets.return_value = mock_datasets
-    result = is_supp_dataset(mock_datasets, domain)
+@pytest.mark.parametrize("mock_dataset, expected", datasets_tests)
+def test_is_supp_dataset(mock_dataset, expected):
+    result = SDTMDatasetMetadata(**mock_dataset).is_supp
     assert (
         result == expected
     ), f"Expected {expected} but got {result} for datasets {mock_datasets}"
