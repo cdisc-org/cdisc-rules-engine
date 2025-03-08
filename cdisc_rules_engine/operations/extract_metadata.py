@@ -6,7 +6,7 @@ class ExtractMetadata(BaseOperation):
     def _execute_operation(self):
         # get metadata
         metadata: pd.DataFrame = self.data_service.get_dataset_metadata(
-            dataset_name=self.params.dataset_path
+            dataset_name=self.params.dataset_path, datasets=self.params.datasets
         )
 
         # extract target value. Metadata df always has one row

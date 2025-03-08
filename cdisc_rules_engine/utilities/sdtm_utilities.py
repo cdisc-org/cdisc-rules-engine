@@ -249,25 +249,26 @@ def get_allowed_class_variables(
                     + findings_class_variables[test_index + 1 :]
                 )
                 break
+    if class_name in DETECTABLE_CLASSES:
+        gen_obs_class_metadata: dict = get_class_metadata(
+            model_details, GENERAL_OBSERVATIONS_CLASS
+        )
+        identifiers_metadata, timing_metadata = group_class_variables_by_role(
+            gen_obs_class_metadata["classVariables"]
+        )
 
-    gen_obs_class_metadata: dict = get_class_metadata(
-        model_details, GENERAL_OBSERVATIONS_CLASS
-    )
-    identifiers_metadata, timing_metadata = group_class_variables_by_role(
-        gen_obs_class_metadata["classVariables"]
-    )
+        def standardize_order_number(var):
+            if "ordinal" in var:
+                var["order_number"] = var.pop("ordinal")
+            return var
 
-    def standardize_order_number(var):
-        if "ordinal" in var:
-            var["order_number"] = var.pop("ordinal")
-        return var
-
-    identifiers_metadata = list(map(standardize_order_number, identifiers_metadata))
-    timing_metadata = list(map(standardize_order_number, timing_metadata))
-    # Identifiers are added to the beginning and Timing to the end
-    identifiers_metadata.sort(key=lambda item: item["order_number"])
-    timing_metadata.sort(key=lambda item: item["order_number"])
-    return identifiers_metadata, variables_metadata, timing_metadata
+        identifiers_metadata = list(map(standardize_order_number, identifiers_metadata))
+        timing_metadata = list(map(standardize_order_number, timing_metadata))
+        # Identifiers are added to the beginning and Timing to the end
+        identifiers_metadata.sort(key=lambda item: item["order_number"])
+        timing_metadata.sort(key=lambda item: item["order_number"])
+        return identifiers_metadata, variables_metadata, timing_metadata
+    return [], variables_metadata, []
 
 
 def get_class_metadata(
