@@ -353,7 +353,8 @@ Check:
       type: "existence_check"
       variable_name: "STUDYID"
 Core:
-  Status: "Draft"
+  Id: custom_001
+  Status: Draft
   Version: "1"
 Description: "Custom rule to verify STUDYID exists in datasets"
 Outcome:
