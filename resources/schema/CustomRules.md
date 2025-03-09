@@ -132,127 +132,242 @@ You can extend the schema by adding:
 
 - **Custom root-level properties** - Add new properties for categorization and filtering
 - **Custom organization** - Define rules under your own organization name
-- **Custom fields object** - Add flexible metadata within the CustomFields property
+- **Custom Category object** - Add metadata within the Category property in the Authorities section
+- **Custom attributes** - Define your own properties within the Category object
 
 ## Custom Attributes
 
-You can add custom attributes to custom rules. Some Example of properties added are:
+### Predefined Category Properties
 
-| Attribute         | Type             | Description                                                     |
-| ----------------- | ---------------- | --------------------------------------------------------------- |
-| `Sponsor`         | String           | The sponsor organization for the rule                           |
-| `Vendors`         | Array of strings | Vendors associated with the rule                                |
-| `TherapeuticArea` | String or Array  | Therapeutic area(s) the rule applies to                         |
-| `Trial`           | String or Array  | Specific trial(s) where the rule applies                        |
-| `Purpose`         | String           | The business purpose of the rule                                |
-| `Keywords`        | Array of strings | Custom keywords for filtering and searching                     |
-| `Categories`      | Array of strings | Categorize rules (e.g., "Data Structure", "Required Variables") |
-| `CustomFields`    | Object           | Flexible key-value pairs for additional metadata                |
+The Category object in the custom organization schema includes these predefined properties (which can be removed at your discretion):
 
-### Example of Custom Attributes
+| Attribute            | Type             | Description                                        |
+| -------------------- | ---------------- | -------------------------------------------------- |
+| `Sponsors`           | Array of strings | The sponsor organizations for the rule             |
+| `Vendors`            | Array of strings | Vendors associated with the rule                   |
+| `TherapeuticAreas`   | Array of strings | Therapeutic area(s) the rule applies to            |
+| `Trials`             | Array of strings | Specific trial(s) where the rule applies           |
+| `Purpose`            | String           | The business purpose of the rule                   |
+| `CompanyRuleLibrary` | Boolean          | Whether the rule is part of a company rule library |
+| `OutputType`         | String           | Output type (Check/Listing)                        |
+| `Keywords`           | Array of strings | Custom keywords for filtering and searching        |
+
+### Adding Your Own Custom Properties
+
+#### Extending the Category Object in YAML Files
+
+You can extend the Category object with your own custom properties in your rule YAML files. The schema uses `additionalProperties: true` to allow any additional properties you need:
+
+1. **Simple Properties**: Add any string, number, boolean, or array property:
+
+```yaml
+Category:
+  MyCustomProperty: "Custom value"
+  PriorityLevel: 1
+  IsRequired: true
+```
+
+2. **Complex Properties**: Add nested objects as needed:
+
+```yaml
+Category:
+  ReviewInfo:
+    LastReviewer: "John Doe"
+    ReviewDate: "2025-02-15"
+    Comments: "Approved with minor changes"
+```
+
+3. **Arrays of Complex Objects**: For more structured data:
+
+```yaml
+Category:
+  ValidationHistory:
+    - Date: "2024-12-01"
+      System: "Test Environment"
+      Result: "Pass"
+    - Date: "2025-01-15"
+      System: "Production"
+      Result: "Pass"
+```
+
+#### Modifying the Schema to Support Custom Properties
+
+If you want to formally define custom properties in your schema (recommended for validation and documentation purposes), follow these steps:
+
+1. **Extend the Organization_Custom.json Schema**:
 
 ```json
 {
-  "Sponsor": "Pharma Company XYZ",
-  "Vendors": ["CRO Alpha", "Data Management Beta"],
-  "TherapeuticArea": ["Oncology", "Immunology"],
-  "Trial": ["ABC-123", "DEF-456"],
-  "Purpose": "Ensure compliance with internal data standards",
-  "Keywords": ["STUDYID", "required", "core", "identification"],
-  "Categories": [
-    "Data Structure",
-    "Required Variables",
-    "Study Identification"
+  "$id": "Organization_Custom.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "properties": {
+    "Organization": {
+      "type": "string",
+      "description": "Name of your custom organization"
+    },
+    "Standards": {
+      // existing standards definitions...
+    },
+    "Category": {
+      "type": "object",
+      "description": "Custom categorization for rule governance",
+      "properties": {
+        // Standard properties
+        "Sponsors": {
+          "type": "array",
+          "description": "List of sponsors the rule applies to",
+          "items": {
+            "type": "string"
+          }
+        },
+        // ... other standard Category properties ...
+
+        // Your custom properties - add formal definitions here
+        "Department": {
+          "type": "string",
+          "description": "Department responsible for the rule",
+          "enum": ["Clinical", "Data Management", "Biostatistics", "Regulatory"]
+        },
+        "ReviewCycle": {
+          "type": "string",
+          "description": "Frequency of rule review",
+          "enum": ["Monthly", "Quarterly", "Biannually", "Annually"]
+        },
+        "BusinessImpact": {
+          "type": "string",
+          "description": "Business impact of rule failures",
+          "enum": ["Low", "Medium", "High", "Critical"]
+        },
+        "ValidationHistory": {
+          "type": "array",
+          "description": "History of validation events",
+          "items": {
+            "type": "object",
+            "properties": {
+              "Date": { "type": "string", "format": "date" },
+              "Validator": { "type": "string" },
+              "Status": {
+                "type": "string",
+                "enum": ["Pending", "In Review", "Approved", "Rejected"]
+              }
+            },
+            "required": ["Date", "Status"]
+          }
+        }
+      },
+      // Still allow additional properties beyond those defined
+      "additionalProperties": true
+    }
+  },
+  "required": ["Organization", "Standards"],
+  "type": "object"
+}
+```
+
+2. **Version Control Your Schema Extensions**:
+   - Document changes to the schema in a changelog within the schema file itself
+   - Use semantic versioning for your custom schema extensions (MAJOR.MINOR.PATCH)
+   - Include a metadata section with versioning information:
+
+```json
+"metadata": {
+  "schemaVersion": "1.0.0",
+  "releaseDate": "2025-03-09",
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2025-03-09",
+      "description": "Initial release of Custom Organization Schema",
+      "changes": [
+        "Added Category object structure with standard properties",
+        "Implemented support for Sponsors, Vendors, TherapeuticAreas arrays",
+        "Added support for CompanyRuleLibrary boolean and OutputType enum",
+        "Enabled extensibility with additionalProperties: true"
+      ]
+    }
   ],
-  "CustomFields": {
-    "TeamResponsible": "Data Standards Team",
-    "LastReviewDate": "2025-02-01",
-    "JiraTicket": "ID-245"
+  "maintainer": {
+    "name": "Your Organization Name",
+    "email": "standards@yourorganization.com"
   }
 }
 ```
 
+- Ensure backwards compatibility when possible
+
+3. **Create Schema Documentation**:
+   - Document your custom properties with descriptions and examples
+   - Provide validation rules or constraints for each property
+   - Share the documentation with all teams that will be using the rules
+
+### Accessing Custom Properties
+
+To access your custom properties in the editor using custom columns:
+
+- Simple property: `@Authorities.Category.MyCustomProperty`
+- Nested property: `@Authorities.Category.ReviewInfo.LastReviewer`
+- Array property: `@Authorities.Category.@ValidationHistory.Result`
+
 ## Example Rule with Custom Attributes
 
-Here's a complete example of a rule with custom attributes:
+Here's a complete example of a rule with custom attributes in the Category section:
 
-```json
-{
-  "Authorities": [
-    {
-      "Organization": "Pharma XYZ",
-      "Standards": [
-        {
-          "Name": "Internal Standard",
-          "Version": "2.1",
-          "References": [
-            {
-              "Origin": "Internal Conformance Rules",
-              "Rule Identifier": {
-                "Id": "INT001",
-                "Version": "1"
-              },
-              "Version": "1.0",
-              "Criteria": {
-                "Type": "Success",
-                "Plain Language Expression": "Dataset must include a variable named STUDYID"
-              }
-            }
-          ]
-        }
-      ]
-    }
-  ],
-  "Check": {
-    "all": [
-      {
-        "name": "checkStudyId",
-        "type": "existence_check",
-        "variable_name": "STUDYID"
-      }
-    ]
-  },
-  "Core": {
-    "Status": "Draft",
-    "Version": "1"
-  },
-  "Description": "Custom rule to verify STUDYID exists in datasets",
-  "Outcome": {
-    "Message": "Dataset must include STUDYID variable"
-  },
-  "Executability": "Fully Executable",
-  "Rule Type": {
-    "Authority": "Non-Regulatory",
-    "Category": "Metadata",
-    "Subcategory": "Variable Presence"
-  },
-  "Scope": {
-    "Classes": {
-      "Include": ["ALL"]
-    },
-    "Domains": {
-      "Include": ["ALL"]
-    }
-  },
-  "Sensitivity": {
-    "Severity": "Error"
-  },
-
-  // Custom attributes
-  "Sponsor": "Pharma XYZ",
-  "Vendors": ["CRO Alpha", "Data Management Beta"],
-  "TherapeuticArea": ["Oncology"],
-  "Trial": ["ONC-2025-01", "ONC-2025-02"],
-  "Purpose": "Ensure study identification is consistent across datasets",
-  "Keywords": ["core", "identification", "required", "STUDYID"],
-  "Categories": ["Data Structure", "Required Variables"],
-  "CustomFields": {
-    "TeamResponsible": "Data Standards Team",
-    "LastReviewDate": "2025-02-01",
-    "ReviewCycle": "Annual",
-    "ApplicablePhases": ["Phase 1", "Phase 2", "Phase 3", "Phase 4"]
-  }
-}
+```yaml
+Authorities:
+  - Organization: "MyCompany"
+    Standards:
+      - Name: "Internal Standard"
+        Version: "2.1"
+        References:
+          - Origin: "Internal Conformance Rules"
+            Rule Identifier:
+              Id: "INT001"
+              Version: "1"
+            Version: "1.0"
+            Criteria:
+              Type: "Success"
+              Plain Language Expression: "Dataset must include a variable named STUDYID"
+    Category:
+      Sponsors:
+        - "Sponsor A"
+        - "Sponsor B"
+      Vendors:
+        - "CRO A"
+        - "Data Management B"
+      TherapeuticAreas:
+        - "Oncology"
+        - "Immunology"
+      Trials:
+        - "ONC-2025-01"
+        - "ONC-2025-02"
+      Purpose: "RAW data validation"
+      CompanyRuleLibrary: true
+      OutputType: "Check"
+      Keywords:
+        - "word1"
+        - "word2"
+      CustomAttribute: "This is a custom property"
+Check:
+  all:
+    - name: "checkStudyId"
+      type: "existence_check"
+      variable_name: "STUDYID"
+Core:
+  Status: "Draft"
+  Version: "1"
+Description: "Custom rule to verify STUDYID exists in datasets"
+Outcome:
+  Message: "Your data is weak."
+Scope:
+  Classes:
+    Include:
+      - "ALL"
+  Domains:
+    Include:
+      - "ALL"
+Sensitivity: Record
+Executability: Fully Executable
+Rule Type: Record Data
 ```
 
 ## Filtering Rules with Custom Columns
@@ -269,14 +384,14 @@ The custom columns editor syntax allows you to create powerful filters based on 
 
 | To Filter By           | Custom Column Path                                       | Filter Value Example  |
 | ---------------------- | -------------------------------------------------------- | --------------------- |
-| Sponsor                | `Sponsor`                                                | "Pharma XYZ"          |
-| Specific vendor        | `@Vendors`                                               | "CRO Alpha"           |
-| Therapeutic area       | `@TherapeuticArea`                                       | "Oncology"            |
-| Trial                  | `@Trial`                                                 | "ONC-2025-01"         |
-| Category               | `@Categories`                                            | "Required Variables"  |
-| Keyword                | `@Keywords`                                              | "STUDYID"             |
-| Team responsible       | `CustomFields.TeamResponsible`                           | "Data Standards Team" |
-| Authority organization | `@Authorities.Organization`                              | "Pharma XYZ"          |
+| Sponsor                | `@Authorities.Category.@Sponsors`                        | "Sponsor A"           |
+| Specific vendor        | `@Authorities.Category.@Vendors`                         | "CRO B"               |
+| Therapeutic area       | `@Authorities.Category.@TherapeuticAreas`                | "Oncology"            |
+| Trial                  | `@Authorities.Category.@Trials`                          | "ONC-2025-01"         |
+| Purpose                | `@Authorities.Category.Purpose`                          | "RAW data validation" |
+| Keyword                | `@Authorities.Category.@Keywords`                        | "mykeyword"           |
+| Custom property        | `@Authorities.Category.Department`                       | "Clinical Data Mgmt"  |
+| Authority organization | `@Authorities.Organization`                              | "MyCompany"           |
 | Standard name          | `@Authorities.@Standards.Name`                           | "Internal Standard"   |
 | Rule ID                | `@Authorities.@Standards.@References.Rule_Identifier.Id` | "INT001"              |
 
@@ -284,19 +399,9 @@ The custom columns editor syntax allows you to create powerful filters based on 
 
 Combine multiple custom columns to create complex filters:
 
-1. Add column for `@TherapeuticArea` and filter for "Oncology"
-2. Add column for `@Categories` and filter for "Data Structure"
-3. Add column for `Sponsor` and filter for "Pharma XYZ"
-
-This will show all oncology data structure rules from the specific sponsor.
-
-## Validation
-
-The schema validation system has been updated to accept these custom attributes. To validate your rules:
-
-1. Use the schema endpoint to get the latest schema: `/api/schema`
-2. Validate your rules against the returned schema
-3. Make sure all required core fields are still present
+1. Add column for `@Authorities.Category.@TherapeuticAreas` and filter for "Oncology"
+2. Add column for `@Authorities.Category.Purpose` and filter for "RAW data validation"
+3. Add column for `@Authorities.Organization` and filter for "MyCompany"
 
 ## Best Practices
 
@@ -304,7 +409,7 @@ When adding custom attributes to rules:
 
 1. **Be consistent** - Use the same attribute names and values across rules
 2. **Document conventions** - Create internal documentation for your custom attributes
-3. **Use controlled vocabularies** - For fields like TherapeuticArea, maintain a list of standard terms
+3. **Use controlled vocabularies** - For fields like TherapeuticAreas, maintain a list of standard terms
 4. **Consider hierarchies** - Categorize using hierarchical structures when appropriate
 5. **Avoid redundancy** - Don't duplicate information already in core CDISC properties
 6. **Path naming** - When adding custom columns, use clear names that indicate the data being displayed
@@ -313,15 +418,29 @@ When adding custom attributes to rules:
 
 ### Will custom attributes affect rule execution?
 
-No, custom attributes are purely for organizational purposes and do not affect rule execution or validation results.
+It depends on which attributes:
+
+- **Organization, Standards, Custom Rule IDs, and Version**: These values may impact rule execution.
+- **Category properties**: The properties within the Category object (Sponsors, Vendors, TherapeuticAreas, etc.) are purely for organizational and filtering purposes and do not affect rule execution or validation logic.
+
+### How do I execute custom rules?
+
+Currently, custom rules can be executed using the local rules option (`-lr`) when running the validation engine. However:
+
+- The engine currently disregards the `-s` (standard) and `-v` (version) options when executing local rules
+- All rules in the local folder will be executed regardless of standard/version
+- Rules need a Core: Id property for execution.
+- We are working on further support for custom rule properties and execution.
+- This will allow for more targeted execution of custom rules based on specified criteria
 
 ### Can I use custom attributes with standard CDISC/FDA rules?
 
-Yes, you can add custom attributes to any rule, including standard CDISC and FDA rules.
+Yes, but only within your internal systems. You can add custom attributes to standard CDISC and FDA rules in your local rule repository for internal categorization and filtering. However:
 
-### How do I access arrays of values in the custom columns?
-
-Use the `@` symbol before the array property name, e.g., `@Vendors` or `@TherapeuticArea`.
+- CDISC will maintain their official rules free of these custom attributes
+- Custom attributes should not be included when contributing rules back to CDISC
+- When importing updated rules from CDISC, you'll need to re-apply your custom attributes
+- Your internal rule management system should handle the separation between official CDISC/FDA rule content and your organization's custom attributes
 
 ### Can I modify the core structure of a CDISC rule?
 
@@ -329,12 +448,12 @@ No, the core structure and required fields of CDISC rules must be preserved. You
 
 ### What if I need to track additional information not listed in the examples?
 
-Use the `CustomFields` object for any organization-specific metadata that doesn't fit into the predefined custom attributes. Access these fields with dot notation, e.g., `CustomFields.YourCustomProperty`.
+Add or remove any property you need or don't need directly to the Category object. The schema is designed to allow additional properties beyond the predefined ones.
 
-### How should I handle rule versioning with custom attributes?
+### How do I add a new property to the schema itself?
 
-Custom attributes should follow the same versioning strategy as the rule itself. When a rule is updated, ensure all custom attributes are also reviewed and updated.
+Edit your Organization_Custom.json file to add the property definition under the Category object's properties section. Define the property type, description, and any constraints (like enum values). Keep the `additionalProperties: true` to maintain flexibility or don't.
 
-### Can I search for multiple values within an array property?
+### Do I need to update the schema every time I add a custom property to a rule?
 
-Yes, when filtering in the editor you can search for any value that appears in the array. For example, filtering for "Oncology" in `@TherapeuticArea` will find all rules that include Oncology in their therapeutic areas.
+No. The schema with `additionalProperties: true` allows any property to be added to rule YAML files without updating the schema. However, formally defining properties in the schema provides better documentation.

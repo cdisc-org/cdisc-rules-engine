@@ -1,6 +1,10 @@
 {
   "$id": "Organization_Custom.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Custom Organization Schema",
+  "description": "Schema for defining custom organizations and their rule categorization structure",
+  "version": "1.0.0",
+  "lastUpdated": "2025-03-09",
   "properties": {
     "Organization": {
       "type": "string",
@@ -145,13 +149,8 @@
             "type": "string"
           }
         },
-        "Keywords": {
-          "type": "array",
-          "description": "Custom keywords for further categorization",
-          "items": {
-            "type": "string"
-          }
-        }
+        "additionalProperties": true,
+        "description": "Additional custom properties can be added here"
       }
     },
     "CustomScopePatterns": {
@@ -161,5 +160,24 @@
     }
   },
   "required": ["Organization", "Standards"],
-  "type": "object"
+  "type": "object",
+  "metadata": {
+    "schemaVersion": "1.0.0",
+    "releaseDate": "2025-03-07",
+    "changelog": [
+      {
+        "version": "1.0.0",
+        "date": "2025-03-09",
+        "description": "Initial release of Custom Organization Schema",
+        "changes": [
+          "Initial Schema Release",
+          "Added Initial Predefined Properties Battery"
+        ]
+      }
+    ],
+    "maintainer": {
+      "name": "Your Organization Name",
+      "email": "standards@yourorganization.com"
+    }
+  }
 }
