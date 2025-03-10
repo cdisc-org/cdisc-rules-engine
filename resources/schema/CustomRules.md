@@ -207,57 +207,57 @@ If you want to formally define custom properties in your schema (recommended for
     },
     "Standards": {
       // existing standards definitions...
-    },
-    "Category": {
-      "type": "object",
-      "description": "Custom categorization for rule governance",
-      "properties": {
-        // Standard properties
-        "Sponsors": {
-          "type": "array",
-          "description": "List of sponsors the rule applies to",
-          "items": {
-            "type": "string"
-          }
-        },
-        // ... other standard Category properties ...
-
-        // Your custom properties - add formal definitions here
-        "Department": {
-          "type": "string",
-          "description": "Department responsible for the rule",
-          "enum": ["Clinical", "Data Management", "Biostatistics", "Regulatory"]
-        },
-        "ReviewCycle": {
-          "type": "string",
-          "description": "Frequency of rule review",
-          "enum": ["Monthly", "Quarterly", "Biannually", "Annually"]
-        },
-        "BusinessImpact": {
-          "type": "string",
-          "description": "Business impact of rule failures",
-          "enum": ["Low", "Medium", "High", "Critical"]
-        },
-        "ValidationHistory": {
-          "type": "array",
-          "description": "History of validation events",
-          "items": {
-            "type": "object",
-            "properties": {
-              "Date": { "type": "string", "format": "date" },
-              "Validator": { "type": "string" },
-              "Status": {
-                "type": "string",
-                "enum": ["Pending", "In Review", "Approved", "Rejected"]
-              }
-            },
-            "required": ["Date", "Status"]
-          }
+    }
+  },
+  "Category": {
+    "type": "object",
+    "description": "Custom categorization for rule governance",
+    "properties": {
+      // Standard properties
+      "Sponsors": {
+        "type": "array",
+        "description": "List of sponsors the rule applies to",
+        "items": {
+          "type": "string"
         }
       },
-      // Still allow additional properties beyond those defined
-      "additionalProperties": true
-    }
+      // ... other standard Category properties ...
+
+      // Your custom properties - add formal definitions here
+      "Department": {
+        "type": "string",
+        "description": "Department responsible for the rule",
+        "enum": ["Clinical", "Data Management", "Biostatistics", "Regulatory"]
+      },
+      "ReviewCycle": {
+        "type": "string",
+        "description": "Frequency of rule review",
+        "enum": ["Monthly", "Quarterly", "Biannually", "Annually"]
+      },
+      "BusinessImpact": {
+        "type": "string",
+        "description": "Business impact of rule failures",
+        "enum": ["Low", "Medium", "High", "Critical"]
+      },
+      "ValidationHistory": {
+        "type": "array",
+        "description": "History of validation events",
+        "items": {
+          "type": "object",
+          "properties": {
+            "Date": { "type": "string", "format": "date" },
+            "Validator": { "type": "string" },
+            "Status": {
+              "type": "string",
+              "enum": ["Pending", "In Review", "Approved", "Rejected"]
+            }
+          },
+          "required": ["Date", "Status"]
+        }
+      }
+    },
+    // Still allow additional properties beyond those defined
+    "additionalProperties": true
   },
   "required": ["Organization", "Standards"],
   "type": "object"
@@ -304,9 +304,9 @@ If you want to formally define custom properties in your schema (recommended for
 
 To access your custom properties in the editor using custom columns:
 
-- Simple property: `@Authorities.Category.MyCustomProperty`
-- Nested property: `@Authorities.Category.ReviewInfo.LastReviewer`
-- Array property: `@Authorities.Category.@ValidationHistory.Result`
+- Simple property: `Category.MyCustomProperty`
+- Nested property: `Category.ReviewInfo.LastReviewer`
+- Array property: `Category.@ValidationHistory.Result`
 
 ## Example Rule with Custom Attributes
 
@@ -317,48 +317,33 @@ Authorities:
   - Organization: "MyCompany"
     Standards:
       - Name: "Internal Standard"
-        Version: "2.1"
         References:
-          - Origin: "Internal Conformance Rules"
+          - Criteria:
+              Plain Language Expression: "Dataset must include a variable named STUDYID"
+              Type: "Success"
+            Origin: "Internal Conformance Rules"
             Rule Identifier:
               Id: "INT001"
               Version: "1"
             Version: "1.0"
-            Criteria:
-              Type: "Success"
-              Plain Language Expression: "Dataset must include a variable named STUDYID"
-    Category:
-      Sponsors:
-        - "Sponsor A"
-        - "Sponsor B"
-      Vendors:
-        - "CRO A"
-        - "Data Management B"
-      TherapeuticAreas:
-        - "Oncology"
-        - "Immunology"
-      Trials:
-        - "ONC-2025-01"
-        - "ONC-2025-02"
-      Purpose: "RAW data validation"
-      CompanyRuleLibrary: true
-      OutputType: "Check"
-      Keywords:
-        - "word1"
-        - "word2"
-      CustomAttribute: "This is a custom property"
+        Version: "2.1"
 Check:
   all:
-    - name: "checkStudyId"
-      type: "existence_check"
-      variable_name: "STUDYID"
+    - name: $records_in_dataset
+      operator: equal_to
+      value: 0
 Core:
-  Id: custom_001
+  Id: custom_rule001
   Status: Draft
   Version: "1"
 Description: "Custom rule to verify STUDYID exists in datasets"
+Executability: Fully Executable
+Operations:
+  - id: $records_in_dataset
+    operator: record_count
 Outcome:
   Message: "Your data is weak."
+Rule Type: Record Data
 Scope:
   Classes:
     Include:
@@ -367,8 +352,26 @@ Scope:
     Include:
       - "ALL"
 Sensitivity: Record
-Executability: Fully Executable
-Rule Type: Record Data
+Category:
+  CompanyRuleLibrary: true
+  CustomAttribute: "This is a custom property"
+  Keywords:
+    - "word1"
+    - "word2"
+  OutputType: "Check"
+  Purpose: "RAW data validation"
+  Sponsors:
+    - "Sponsor A"
+    - "Sponsor B"
+  TherapeuticAreas:
+    - "Oncology"
+    - "Immunology"
+  Trials:
+    - "ONC-2025-01"
+    - "ONC-2025-02"
+  Vendors:
+    - "CRO A"
+    - "Data Management B"
 ```
 
 ## Filtering Rules with Custom Columns
@@ -385,23 +388,23 @@ The custom columns editor syntax allows you to create powerful filters based on 
 
 | To Filter By           | Custom Column Path                                       | Filter Value Example  |
 | ---------------------- | -------------------------------------------------------- | --------------------- |
-| Sponsor                | `@Authorities.Category.@Sponsors`                        | "Sponsor A"           |
-| Specific vendor        | `@Authorities.Category.@Vendors`                         | "CRO B"               |
-| Therapeutic area       | `@Authorities.Category.@TherapeuticAreas`                | "Oncology"            |
-| Trial                  | `@Authorities.Category.@Trials`                          | "ONC-2025-01"         |
-| Purpose                | `@Authorities.Category.Purpose`                          | "RAW data validation" |
-| Keyword                | `@Authorities.Category.@Keywords`                        | "mykeyword"           |
-| Custom property        | `@Authorities.Category.Department`                       | "Clinical Data Mgmt"  |
-| Authority organization | `@Authorities.Organization`                              | "MyCompany"           |
-| Standard name          | `@Authorities.@Standards.Name`                           | "Internal Standard"   |
+| Sponsor                | `Category.@Sponsors`                                     | "Sponsor A"           |
+| Specific vendor        | `Category.@Vendors`                                      | "CRO B"               |
+| Therapeutic area       | `Category.@TherapeuticAreas`                             | "Oncology"            |
+| Trial                  | `Category.@Trials`                                       | "ONC-2025-01"         |
+| Purpose                | `Category.Purpose`                                       | "RAW data validation" |
+| Keyword                | `Category.@Keywords`                                     | "mykeyword"           |
+| Custom property        | `Category.Department`                                    | "Clinical Data Mgmt"  |
+| Authority organization | `@Athorities.Organization`                               | "MyCompany"           |
+| Standard name          | `@Auhorities.@Standards.Name`                            | "Internal Standard"   |
 | Rule ID                | `@Authorities.@Standards.@References.Rule_Identifier.Id` | "INT001"              |
 
 ### Complex Filtering
 
 Combine multiple custom columns to create complex filters:
 
-1. Add column for `@Authorities.Category.@TherapeuticAreas` and filter for "Oncology"
-2. Add column for `@Authorities.Category.Purpose` and filter for "RAW data validation"
+1. Add column for `Category.@TherapeuticAreas` and filter for "Oncology"
+2. Add column for `Category.Purpose` and filter for "RAW data validation"
 3. Add column for `@Authorities.Organization` and filter for "MyCompany"
 
 ## Best Practices
