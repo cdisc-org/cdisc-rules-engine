@@ -141,7 +141,7 @@ def test_build_combined_metadata(
         data_processor=None,
         dataset_path=str(test_define_file_path),
         datasets=[],
-        dataset_metadata=SDTMDatasetMetadata(first_record={"DOMAIN": "AE"}),
+        dataset_metadata=SDTMDatasetMetadata(name="AE", first_record={"DOMAIN": "AE"}),
         define_xml_path=str(test_define_file_path),
         standard="sdtmig",
         standard_version="3-4",
