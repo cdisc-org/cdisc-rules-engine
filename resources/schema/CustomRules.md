@@ -358,7 +358,6 @@ Category:
   Keywords:
     - "word1"
     - "word2"
-  OutputType: "Check"
   Purpose: "RAW data validation"
   Sponsors:
     - "Sponsor A"
