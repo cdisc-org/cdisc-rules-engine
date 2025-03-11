@@ -147,4 +147,4 @@ resources/cache/local_rules.pkl
 #ignore vim .swp files
 *.swp
 
-# Organization_Custom.json
+Organization_Custom.json

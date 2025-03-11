@@ -3,8 +3,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Custom Organization Schema",
   "description": "Schema for defining custom organizations and their rule categorization structure",
-  "version": "1.0.0",
-  "lastUpdated": "2025-03-09",
+  "$comment": "Version: 1.0.0, Last Updated: 2025-03-09",
   "properties": {
     "Organization": {
       "type": "string",
@@ -158,23 +157,36 @@
   },
   "required": ["Organization", "Standards", "Category"],
   "type": "object",
-  "metadata": {
-    "schemaVersion": "1.0.0",
-    "releaseDate": "2025-03-07",
-    "changelog": [
-      {
-        "version": "1.0.0",
-        "date": "2025-03-09",
-        "description": "Initial release of Custom Organization Schema",
-        "changes": [
-          "Initial Schema Release",
-          "Added Initial Predefined Properties Battery"
-        ]
+  "$defs": {
+    "metadata": {
+      "title": "Metadata for the schema",
+      "type": "object",
+      "properties": {
+        "schemaVersion": { "type": "string" },
+        "releaseDate": { "type": "string" },
+        "changelog": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "version": { "type": "string" },
+              "date": { "type": "string" },
+              "description": { "type": "string" },
+              "changes": {
+                "type": "array",
+                "items": { "type": "string" }
+              }
+            }
+          }
+        },
+        "maintainer": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string" },
+            "email": { "type": "string" }
+          }
+        }
       }
-    ],
-    "maintainer": {
-      "name": "Your Organization Name",
-      "email": "standards@yourorganization.com"
     }
   }
 }
