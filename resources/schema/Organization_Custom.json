@@ -96,65 +96,64 @@
       },
       "minItems": 1,
       "type": "array"
+    },
+    "Category": {
+      "type": "object",
+      "description": "Custom categorization for rule governance",
+      "properties": {
+        "Sponsors": {
+          "type": "array",
+          "description": "List of sponsors the rule applies to",
+          "items": {
+            "type": "string"
+          }
+        },
+        "Vendors": {
+          "type": "array",
+          "description": "List of vendors the rule applies to",
+          "items": {
+            "type": "string"
+          }
+        },
+        "TherapeuticAreas": {
+          "type": "array",
+          "description": "List of therapeutic areas the rule applies to",
+          "items": {
+            "type": "string"
+          }
+        },
+        "Trials": {
+          "type": "array",
+          "description": "List of trials the rule applies to",
+          "items": {
+            "type": "string"
+          }
+        },
+        "Purpose": {
+          "type": "string",
+          "description": "Specific purpose of the rule, e.g., 'RAW data validation', 'External data validation'"
+        },
+        "CompanyRuleLibrary": {
+          "type": "boolean",
+          "description": "Whether the rule is part of a company rule library"
+        },
+        "OutputType": {
+          "type": "string",
+          "enum": ["Check", "Listing"],
+          "description": "Output type of the rule validation result"
+        },
+        "Keywords": {
+          "type": "array",
+          "description": "Custom keywords for further categorization",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": true
     }
   },
-  "Category": {
-    "type": "object",
-    "description": "Custom categorization for rule governance",
-    "properties": {
-      "Sponsors": {
-        "type": "array",
-        "description": "List of sponsors the rule applies to",
-        "items": {
-          "type": "string"
-        }
-      },
-      "Vendors": {
-        "type": "array",
-        "description": "List of vendors the rule applies to",
-        "items": {
-          "type": "string"
-        }
-      },
-      "TherapeuticAreas": {
-        "type": "array",
-        "description": "List of therapeutic areas the rule applies to",
-        "items": {
-          "type": "string"
-        }
-      },
-      "Trials": {
-        "type": "array",
-        "description": "List of trials the rule applies to",
-        "items": {
-          "type": "string"
-        }
-      },
-      "Purpose": {
-        "type": "string",
-        "description": "Specific purpose of the rule, e.g., 'RAW data validation', 'External data validation'"
-      },
-      "CompanyRuleLibrary": {
-        "type": "boolean",
-        "description": "Whether the rule is part of a company rule library"
-      },
-      "OutputType": {
-        "type": "string",
-        "enum": ["Check", "Listing"],
-        "description": "Output type of the rule validation result"
-      },
-      "Keywords": {
-        "type": "array",
-        "description": "Custom keywords for further categorization",
-        "items": {
-          "type": "string"
-        }
-      },
-      "additionalProperties": true,
-      "description": "Additional custom properties can be added here"
-    }
-  },
-  "required": ["Organization", "Standards"],
+  "required": ["Organization", "Standards", "Category"],
   "type": "object",
   "metadata": {
     "schemaVersion": "1.0.0",
