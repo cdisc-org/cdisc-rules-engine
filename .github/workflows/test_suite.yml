@@ -54,7 +54,7 @@ jobs:
       - name: Dask comparison script
         run: |
           cd CORE_Test_Suite
-          result=$(python comparison.py dask-results.xlsx DASK-Report.xlsx dask_comparison.xlsx)
+          result=$(python comparison.py dask-results.xlsx CORE-Report.xlsx dask_comparison.xlsx)
           echo "DASK_DIFF=$result" >> $GITHUB_ENV
           echo "Dask comparison result: $result"
           cd ..
