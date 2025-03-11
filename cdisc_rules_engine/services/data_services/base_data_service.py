@@ -273,7 +273,7 @@ class BaseDataService(DataServiceInterface, ABC):
         Replaces NaN in numeric columns with None.
         """
         numeric_columns = dataset.data.select_dtypes(include=np.number).columns
-        dataset[numeric_columns] = dataset.data[numeric_columns].replace(np.nan, None)
+        dataset[numeric_columns] = dataset.data[numeric_columns].replace({np.nan: None})
 
     @staticmethod
     def _replace_nans_in_specified_cols_with_none(
