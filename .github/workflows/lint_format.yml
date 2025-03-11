@@ -16,7 +16,7 @@ jobs:
       - name: Get changed files
         id: changes
         run: |
-          echo "::set-output name=py::$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} | grep .py$ | xargs)"
+          echo "py=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} | grep .py$ | xargs)" >> $GITHUB_OUTPUT
 
   lint:
     runs-on: ubuntu-latest
