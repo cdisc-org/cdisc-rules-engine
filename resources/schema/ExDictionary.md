@@ -100,9 +100,10 @@ Directory must contain the `Loinc.csv` with capital 'L'
 Validates dictionary versions against define.xml specifications.
 
 ```yaml
-- operation: valid_define_external_dictionary_version
-  id: $is_valid_loinc_version
-  external_dictionary_type: loinc
+Operation:
+  - operator: valid_define_external_dictionary_version
+    id: $is_valid_loinc_version
+    external_dictionary_type: loinc
 ```
 
 ### Value and Code Validation
@@ -112,12 +113,13 @@ Validates dictionary versions against define.xml specifications.
 Validates dictionary values with optional case sensitivity.
 
 ```yaml
-- operation: valid_external_dictionary_value
-  name: --DECOD
-  id: $is_valid_decod_value
-  external_dictionary_type: meddra
-  dictionary_term_type: PT
-  case_sensitive: false
+Operation:
+  - operator: valid_external_dictionary_value
+    name: --DECOD
+    id: $is_valid_decod_value
+    external_dictionary_type: meddra
+    dictionary_term_type: PT
+    case_sensitive: false
 ```
 
 #### valid_external_dictionary_code
@@ -125,11 +127,12 @@ Validates dictionary values with optional case sensitivity.
 Validates dictionary codes.
 
 ```yaml
-- operation: valid_external_dictionary_code
-  name: --COD
-  id: $is_valid_cod_code
-  external_dictionary_type: meddra
-  dictionary_term_type: PT
+Operation:
+  - operator: valid_external_dictionary_code
+    name: --COD
+    id: $is_valid_cod_code
+    external_dictionary_type: meddra
+    dictionary_term_type: PT
 ```
 
 #### valid_external_dictionary_code_term_pair
@@ -137,11 +140,12 @@ Validates dictionary codes.
 Validates matching of code-term pairs.
 
 ```yaml
-- operation: valid_external_dictionary_code_term_pair
-  name: --COD
-  id: $is_valid_loinc_code_term_pair
-  external_dictionary_type: loinc
-  external_dictionary_term_variable: --DECOD
+Operation:
+  - operator: valid_external_dictionary_code_term_pair
+    name: --COD
+    id: $is_valid_loinc_code_term_pair
+    external_dictionary_type: loinc
+    external_dictionary_term_variable: --DECOD
 ```
 
 ### MedDRA-Specific Operations
@@ -159,25 +163,27 @@ Validates MedDRA codes across all levels:
 Example:
 
 ```yaml
-- operation: valid_meddra_code_references
-  id: $meddra_codes_valid
+Operation:
+  - id: $is_valid_meddra_codes
+    operator: valid_meddra_code_references
 ```
 
 #### valid_meddra_code_term_pairs
 
 Validates corresponding code-term pairs:
 
-- `--SOCCD` with `--SOC`
-- `--HLGTCD` with `--HLGT`
-- `--HLTCD` with `--HLT`
-- `--PTCD` with `--DECOD`
-- `--LLTCD` with `--LLT`
+- `--SOCCD`, `--SOC` (System Organ Class Code and Term)
+- `--HLGTCD`, `--HLGT` (High Level Group Term Code and Term)
+- `--HLTCD`, `--HLT` (High Level Term Code and Term)
+- `--PTCD`, `--DECOD` (Preferred Term Code and Dictionary-Derived Term)
+- `--LLTCD`, `--LLT` (Lowest Level Term Code and Term)
 
 Example:
 
 ```yaml
-- operation: valid_meddra_code_term_pairs
-  id: $meddra_pairs_valid
+Operations:
+  - id: $is_valid_meddra_pairs
+    operator: valid_meddra_code_term_pairs
 ```
 
 #### valid_meddra_term_references
@@ -193,8 +199,9 @@ Validates terms at each MedDRA level:
 Example:
 
 ```yaml
-- operation: valid_meddra_term_references
-  id: $meddra_terms_valid
+Operations:
+  - id: $is_valid_meddra_terms
+    operator: valid_meddra_term_references
 ```
 
 ### WHODrug-Specific Operations
@@ -206,8 +213,9 @@ Validates WHODrug terms against the ATC Text (INA) file.
 Example:
 
 ```yaml
-- operation: valid_whodrug_references
-  id: $whodrug_refs_valid
+Operations:
+  - id: $whodrug_refs_valid
+    operator: valid_whodrug_references
 ```
 
 #### valid_whodrug_code_hierarchy
@@ -221,6 +229,7 @@ Validates hierarchical relationships between:
 Example:
 
 ```yaml
-- operation: valid_whodrug_code_hierarchy
-  id: $whodrug_hierarchy_valid
+Operations:
+  - id: $valid_whodrug_codes
+    operator: whodrug_code_hierarchy
 ```
