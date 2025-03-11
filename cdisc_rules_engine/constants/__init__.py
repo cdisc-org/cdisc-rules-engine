@@ -1,3 +1,5 @@
+import numpy as np
+
 # a message like: [INFO 2021-12-29 17:10:26,575 - module.py:44] - Log Message
 LOG_FORMAT: str = "[%(levelname)s %(asctime)s - %(filename)s:%(lineno)s] - %(message)s"
 XPT_LABEL_PATTERN: str = (
@@ -13,3 +15,5 @@ XPT_MODIFIED_DATE_PATTERN: str = (
 )
 
 REPORT_TEMPLATE_PATH = "/templates/report-template.xlsx"
+
+NULL_FLAVORS = ["", None, np.nan, {None}, [], {}]

@@ -57,12 +57,16 @@ def test_get_dataset():
         3,
         4,
     ]
-    assert dataset["AEDY"].to_list() == [
-        1,
-        None,
-        None,
-        None,
-    ]
+    assert np.array_equal(
+        dataset["AEDY"].to_list(),
+        [
+            1.0,
+            np.nan,
+            np.nan,
+            np.nan,
+        ],
+        equal_nan=True,
+    )
     assert dataset["AENUM"].to_list() == [
         1.0,
         2.0,

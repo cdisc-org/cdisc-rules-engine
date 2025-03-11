@@ -91,7 +91,6 @@ class LocalDataService(BaseDataService):
             extract_file_name_from_path_string(dataset_name).split(".")[1].upper()
         )
         df = reader.from_file(dataset_name)
-        self._replace_nans_in_numeric_cols_with_none(df)
         return df
 
     @cached_dataset(DatasetTypes.METADATA.value)
