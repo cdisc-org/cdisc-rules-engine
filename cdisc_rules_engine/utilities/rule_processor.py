@@ -1,5 +1,6 @@
 import re
 from typing import Iterable, List, Optional, Set, Union, Tuple
+from cdisc_rules_engine.interfaces.cache_service_interface import CacheServiceInterface
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
@@ -41,7 +42,7 @@ class RuleProcessor:
     def __init__(
         self,
         data_service: DataServiceInterface,
-        cache,
+        cache: CacheServiceInterface,
         library_metadata: LibraryMetadataContainer = None,
     ):
         self.data_service = data_service
@@ -382,6 +383,7 @@ class RuleProcessor:
         )
         result = operation.execute()
         if not DataProcessor.is_dummy_data(self.data_service):
+            logger.info(f"ADDING CACHE_KEY: {cache_key}")
             self.cache.add(cache_key, result)
         return result
 
