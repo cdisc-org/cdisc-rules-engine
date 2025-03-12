@@ -319,6 +319,11 @@
             },
             "minItems": 1,
             "type": "array"
+          },
+          "Category": {
+            "type": "object",
+            "description": "Custom categorization for rule governance defined in Organization_Custom.json",
+            "additionalProperties": true
           }
         },
         "oneOf": [
@@ -337,11 +342,6 @@
       },
       "minItems": 1,
       "type": "array"
-    },
-    "Category": {
-      "type": "object",
-      "description": "Custom categorization for rule governance defined in Organization_Custom.json",
-      "additionalProperties": true
     },
     "Check": {
       "$ref": "#/$defs/Boolean"
