@@ -169,7 +169,7 @@ class BaseDataService(DataServiceInterface, ABC):
             raise Exception("Missing standard and version data")
         class_data, _ = get_class_and_domain_metadata(
             self.library_metadata.standard_metadata,
-            dataset_metadata.domain or dataset_metadata.name,
+            dataset_metadata.unsplit_name,
         )
         name = class_data.get("name")
         if name:
