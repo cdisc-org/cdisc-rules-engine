@@ -52,6 +52,7 @@ class JsonReport(BaseReport):
             "Total_Runtime": f"{round(self._elapsed_time, 2)} seconds",
             "Standard": standard.upper(),
             "Version": f"V{version}",
+            "Substandard": kwargs.get("substandard"),
             "CT_Version": ", ".join(cdiscCt),
             "Define_XML_Version": define_version,
         }
