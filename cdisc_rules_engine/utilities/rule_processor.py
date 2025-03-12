@@ -383,7 +383,6 @@ class RuleProcessor:
         )
         result = operation.execute()
         if not DataProcessor.is_dummy_data(self.data_service):
-            logger.info(f"ADDING CACHE_KEY: {cache_key}")
             self.cache.add(cache_key, result)
         return result
 
