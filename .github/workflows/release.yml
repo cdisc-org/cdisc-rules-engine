@@ -85,12 +85,23 @@ jobs:
           asset_name: core-windows.zip
           asset_content_type: application/zip
 
+      # Upload zips as artifact for the PyPI job
+      - name: Upload Release Assets for PyPI
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-artifacts
+          path: |
+            core-ubuntu-latest.zip
+            core-ubuntu-20-04.zip
+            core-mac.zip
+            core-windows.zip
+
   deploy-to-pypi:
     needs: create-release-assets
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write
+      id-token: write # For trusted publishing
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -130,8 +141,12 @@ jobs:
           # Update version in version.py
           echo "__version__ = \"$VERSION\"" > version.py
 
-          # Display the updated version.py for verification
+          # Update version in pyproject.toml
+          sed -i "s/version = \".*\"/version = \"$VERSION\"/" pyproject.toml
+
+          # Display the updated files for verification
           cat version.py
+          cat pyproject.toml | grep version
 
       - name: Verify package resources
         run: |

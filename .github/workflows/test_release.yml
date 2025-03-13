@@ -104,6 +104,13 @@ jobs:
           # Update version in version.py
           echo "__version__ = \"$TEST_VERSION\"" > version.py
 
+          # Update version in pyproject.toml
+          sed -i "s/version = \".*\"/version = \"$TEST_VERSION\"/" pyproject.toml
+
+          # Display the updated files for verification
+          cat version.py
+          cat pyproject.toml | grep version
+
       - name: Verify package resources
         run: |
           # Check that required directories exist
