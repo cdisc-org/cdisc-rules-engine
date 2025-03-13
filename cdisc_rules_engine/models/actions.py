@@ -71,11 +71,12 @@ class COREActions(BaseActions):
     def _get_target_names_from_list_values(self, target_names, rows_with_error):
         expanded_target_names = set(target_names)
         for target in target_names:
-            for candidate_list in rows_with_error[target]:
-                if isinstance(candidate_list, list):
-                    for value in candidate_list:
-                        if value in self.variable.dataset.columns:
-                            expanded_target_names.add(value)
+            if target in rows_with_error:
+                for candidate_list in rows_with_error[target]:
+                    if isinstance(candidate_list, list):
+                        for value in candidate_list:
+                            if value in self.variable.dataset.columns:
+                                expanded_target_names.add(value)
         return expanded_target_names
 
     def generate_targeted_error_object(
