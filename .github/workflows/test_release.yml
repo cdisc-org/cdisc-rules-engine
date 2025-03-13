@@ -135,14 +135,23 @@ jobs:
           repository-url: https://test.pypi.org/legacy/
           skip-existing: true
 
+      - name: Extract version from pyproject.toml
+        run: |
+          # Extract version from pyproject.toml using grep and cut
+          VERSION=$(grep 'version =' pyproject.toml | head -1 | cut -d '"' -f 2)
+          echo "Package version: $VERSION"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
       - name: Verify installation from TestPyPI
         run: |
           # Wait for TestPyPI to process the upload
           echo "Waiting for TestPyPI to process the package..."
           sleep 30
 
+          echo "Attempting to install cdisc-rules-engine version $VERSION from TestPyPI..."
+
           # Try to install from TestPyPI
-          pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ "cdisc-rules-engine==$TEST_VERSION" || echo "Installation verification skipped - package might not be available yet"
+          pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ "cdisc-rules-engine==$VERSION" || echo "Installation verification skipped - package might not be available yet"
 
           # Verify it installed correctly if possible
           if pip list | grep "cdisc-rules-engine"; then
