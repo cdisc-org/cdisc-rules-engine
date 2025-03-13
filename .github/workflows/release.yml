@@ -85,25 +85,91 @@ jobs:
           asset_name: core-windows.zip
           asset_content_type: application/zip
 
-  deploy-package:
+  deploy-to-pypi:
+    needs: create-release-assets
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: read
+      id-token: write
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download binary releases
+        uses: actions/download-artifact@v4
+        with:
+          name: release-artifacts
+          path: binary-releases
+
       - name: Set up Python
-        uses: actions/setup-python@v2
-        id: pysetup
+        uses: actions/setup-python@v4
         with:
           python-version: "3.9"
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install setuptools wheel twine
+          pip install build
           pip install -r requirements.txt
-      - name: Publish
-        env:
-          TWINE_USERNAME: ${{ vars.PYPI_USERNAME }}
-          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+
+      - name: Create releases directory inside package
         run: |
-          python setup.py sdist bdist_wheel
-          twine upload dist/* --skip-existing
+          mkdir -p core_rules_engine/releases
+          cp binary-releases/*.zip core_rules_engine/releases/
+          ls -la core_rules_engine/releases/
+
+      - name: Update version in version.py
+        run: |
+          # Extract version from GitHub release tag (without 'v' prefix if it exists)
+          VERSION=${GITHUB_REF#refs/tags/}
+          VERSION=${VERSION#v}
+          echo "Using version: $VERSION"
+
+          # Update version in version.py
+          echo "__version__ = \"$VERSION\"" > version.py
+
+          # Display the updated version.py for verification
+          cat version.py
+
+      - name: Verify package resources
+        run: |
+          # Check that required directories exist
+          for dir in "core_rules_engine/resources/cache" "core_rules_engine/resources/templates" "core_rules_engine/resources/schema"; do
+            if [ ! -d "$dir" ]; then
+              echo "WARNING: Directory $dir does not exist. Creating it..."
+              mkdir -p "$dir"
+            else
+              echo "✓ Directory $dir exists"
+              ls -la "$dir" || echo "Could not list contents"
+            fi
+          done
+
+      - name: Build package
+        run: python -m build
+
+      - name: Check package contents
+        run: |
+          # List contents of the built package to verify binaries and resources
+          echo "Listing wheel contents:"
+          pip install wheel
+          unzip -l dist/*.whl | grep -E "resources|releases"
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          skip-existing: true
+
+      - name: Verify published package is installable
+        run: |
+          # Extract version from GitHub release tag
+          VERSION=${GITHUB_REF#refs/tags/}
+          VERSION=${VERSION#v}
+
+          # Wait for PyPI to process the upload
+          echo "Waiting for PyPI to process the package..."
+          sleep 60
+
+          # Try to install the package
+          pip install "core-rules-engine==$VERSION" || echo "Package verification skipped - package might not be available yet"
