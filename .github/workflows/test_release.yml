@@ -147,10 +147,10 @@ jobs:
           sleep 30
 
           # Try to install from TestPyPI
-          pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ "core-rules-engine==$TEST_VERSION" || echo "Installation verification skipped - package might not be available yet"
+          pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ "cdisc-rules-engine==$TEST_VERSION" || echo "Installation verification skipped - package might not be available yet"
 
           # Verify it installed correctly if possible
-          if pip list | grep "core-rules-engine"; then
+          if pip list | grep "cdisc-rules-engine"; then
             echo "Package installed successfully!"
             # Try importing it
             python -c "import core_rules_engine; print('Import successful')" || echo "Import failed but package was installed"

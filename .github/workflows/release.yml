@@ -187,4 +187,4 @@ jobs:
           sleep 60
 
           # Try to install the package
-          pip install "core-rules-engine==$VERSION" || echo "Package verification skipped - package might not be available yet"
+          pip install "cdisc-rules-engine==$VERSION" || echo "Package verification skipped - package might not be available yet"
