@@ -60,6 +60,7 @@ jobs:
     needs: create-release-assets
     runs-on: ubuntu-latest
     permissions:
+      contents: write
       id-token: write
     steps:
       - name: Checkout code
@@ -90,49 +91,43 @@ jobs:
           cp binary-releases/*.zip core_rules_engine/releases/
           ls -la core_rules_engine/releases/
 
-      - name: Generate test version number
+      - name: Set up resources structure
         run: |
-          # Get current date in YYYYMMDD format
-          DATE=$(date +%Y%m%d)
-          # Get current time in HHMM format
-          TIME=$(date +%H%M)
-          # Generate version for test: 0.0.dev{date}.{time}
-          TEST_VERSION="0.0.dev${DATE}.${TIME}"
-          echo "Generated test version: $TEST_VERSION"
-          echo "TEST_VERSION=$TEST_VERSION" >> $GITHUB_ENV
+          # Create top-level resources directory structure (where code is looking)
+          mkdir -p resources/cache resources/templates resources/schema tests/resources/datasets
 
-          # Update version in version.py
-          echo "__version__ = \"$TEST_VERSION\"" > version.py
+          # Copy any existing resource files
+          cp -r core_rules_engine/resources/cache/* resources/cache/ || true
+          cp -r core_rules_engine/resources/templates/* resources/templates/ || true
+          cp -r core_rules_engine/resources/schema/* resources/schema/ || true
 
-          # Update version in pyproject.toml
-          sed -i "s/version = \".*\"/version = \"$TEST_VERSION\"/" pyproject.toml
+          # Verify the resources directories are set up
+          echo "Resources directory structure:"
+          find resources -type d | sort
 
-          # Display the updated files for verification
-          cat version.py
-          cat pyproject.toml | grep version
-
-      - name: Verify package resources
+      - name: Verify all resources exist
         run: |
-          # Check that required directories exist
-          for dir in "core_rules_engine/resources/cache" "core_rules_engine/resources/templates" "core_rules_engine/resources/schema"; do
-            if [ ! -d "$dir" ]; then
-              echo "WARNING: Directory $dir does not exist. Creating it..."
-              mkdir -p "$dir"
-            else
-              echo "✓ Directory $dir exists"
-              ls -la "$dir" || echo "Could not list contents"
-            fi
-          done
+          echo "Checking all required resources..."
+          test -d resources/cache || (echo "Missing resources/cache directory" && exit 1)
+          test -d resources/templates || (echo "Missing resources/templates directory" && exit 1)
+          test -d resources/schema || (echo "Missing resources/schema directory" && exit 1)
+          test -d tests/resources/datasets || (echo "Missing tests/resources/datasets directory"
 
       - name: Build package
         run: python -m build
 
-      - name: Check package contents
+      - name: Check package contents thoroughly
         run: |
-          # List contents of the built package to verify binaries and resources
           echo "Listing wheel contents:"
           pip install wheel
-          unzip -l dist/*.whl | grep -E "resources|releases"
+          mkdir -p wheel-extract
+          unzip -d wheel-extract dist/*.whl
+
+          echo "Looking for resources directories:"
+          find wheel-extract -name "resources" -type d
+
+          echo "Resource files included:"
+          find wheel-extract -path "*/resources/*" | sort
 
       - name: Publish to TestPyPI
         uses: pypa/gh-action-pypi-publish@release/v1

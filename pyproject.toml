@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cdisc-rules-engine"
-version = "0.9.2"
+version = "0.9.2.4"
 description = "CDISC Rules Engine"
 readme = "README.md"
 requires-python = ">=3.9, <3.11"
@@ -30,7 +30,9 @@ dependencies = [
     "Pympler==1.1",
     "psutil==6.1.1",
     "pyreadstat==1.2.7",
-    "fastparquet==2024.2.0"
+    "fastparquet==2024.2.0",
+    "click==8.1.7",
+    "dask[dataframe,array]==2024.2.0"
 ]
 
 [project.urls]
@@ -41,17 +43,13 @@ dependencies = [
 core = "core:cli"
 
 [tool.setuptools]
-packages = ["cdisc_rules_engine"]
+packages = { find = { namespaces = true } }
+py-modules = ["core", "version", "scripts.run_validation", "scripts.test_rule", "scripts.list_dataset_metadata_handler"]
 include-package-data = true
 
 [tool.setuptools.package-data]
-"cdisc_rules_engine.releases" = ["*.zip"]
-"cdisc_rules_engine.resources" = [
-    "cache/*",
-    "templates/*",
-    "schema/*"
-]
-"cdisc_rules_engine.tests.resources" = ["datasets/*"]
+"" = ["resources/cache/*", "resources/templates/*", "resources/schema/*", "tests/resources/datasets/*"]
+"core_rules_engine.releases" = ["*.zip"]
 
 [tool.setuptools.package-dir]
 "" = "."

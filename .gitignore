@@ -148,3 +148,5 @@ resources/cache/local_rules.pkl
 *.swp
 
 Organization_Custom.json
+
+MANIFEST.in
