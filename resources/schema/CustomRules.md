@@ -130,7 +130,6 @@ The following core components of the CDISC schema **must be preserved**:
 
 You can extend the schema by adding:
 
-- **Custom root-level properties** - Add new properties for categorization and filtering
 - **Custom organization** - Define rules under your own organization name
 - **Custom Category object** - Add metadata within the Category property in the Authorities section
 - **Custom attributes** - Define your own properties within the Category object
