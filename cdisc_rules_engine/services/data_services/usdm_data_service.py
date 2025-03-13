@@ -190,20 +190,10 @@ class USDMDataService(BaseDataService):
     def get_datasets(self) -> List[dict]:
         datasets = []
         for dataset in self.dataset_content_index:
-            metadata: SDTMDatasetMetadata = self.get_raw_dataset_metadata(
+            dataset_metadata: SDTMDatasetMetadata = self.get_raw_dataset_metadata(
                 dataset_name=dataset["dataset_name"]
             )
-            datasets.append(
-                {
-                    "domain": metadata.domain,
-                    "filename": metadata.filename,
-                    "full_path": metadata.full_path,
-                    "length": metadata.record_count,
-                    "label": metadata.label,
-                    "file_size": metadata.file_size,
-                    "modification_date": metadata.modification_date,
-                }
-            )
+            datasets.append(dataset_metadata)
         return datasets
 
     def to_parquet(self, file_path: str) -> str:
