@@ -261,9 +261,10 @@ def test_get_export():
         assert wb["Conformance Details"]["B3"].value == "10.1 seconds"
         assert wb["Conformance Details"]["B4"].value == __version__
         assert wb["Conformance Details"]["B7"].value == "SDTMIG"
-        assert wb["Conformance Details"]["B8"].value == "V3.4"
-        assert wb["Conformance Details"]["B9"].value == ", ".join(cdiscCt)
-        assert wb["Conformance Details"]["B10"].value == "2.1"
+        assert wb["Conformance Details"]["B8"].value == "NAP"
+        assert wb["Conformance Details"]["B9"].value == "V3.4"
+        assert wb["Conformance Details"]["B10"].value == ", ".join(cdiscCt)
+        assert wb["Conformance Details"]["B11"].value == "2.1"
 
         # Check dataset details tab
         assert wb["Dataset Details"]["A2"].value == "test.xpt"  # filename

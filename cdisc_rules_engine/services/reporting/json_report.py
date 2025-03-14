@@ -52,6 +52,7 @@ class JsonReport(BaseReport):
             "Total_Runtime": f"{round(self._elapsed_time, 2)} seconds",
             "Standard": standard.upper(),
             "Version": f"V{version}",
+            "Substandard": kwargs.get("substandard"),
             "CT_Version": ", ".join(cdiscCt),
             "Define_XML_Version": define_version,
         }
@@ -118,11 +119,14 @@ class JsonReport(BaseReport):
                 )
         report_data = self.get_export(
             define_version,
-            list(controlled_terminology),
+            list(controlled_terminology) if controlled_terminology is not None else [],
             self._args.standard,
             self._args.version.replace("-", "."),
             raw_report=self._args.raw_report,
             dictionary_versions=dictionary_versions,
+            substandard=(
+                self._args.substandard if hasattr(self._args, "substandard") else None
+            ),
         )
         with open(self._output_name, "w") as f:
             json.dump(report_data, f)
