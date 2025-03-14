@@ -129,14 +129,14 @@ def test(args: TestArgs):
     shared_cache = get_cache_service(manager)
     engine_logger.info(f"Populating cache, cache path: {args.cache}")
     library_metadata: LibraryMetadataContainer = get_library_metadata_from_cache(args)
-    # install dictionaries if needed
-    dictionary_versions = fill_cache_with_dictionaries(shared_cache, args)
     with open(args.rule, "r", encoding="utf-8") as f:
         rules = [Rule.from_cdisc_metadata(json.load(f))]
     data_service_factory = DataServiceFactory(
         config, shared_cache, args.standard, args.version, args.substandard
     )
     data_service = data_service_factory.get_data_service()
+    # install dictionaries if needed
+    dictionary_versions = fill_cache_with_dictionaries(shared_cache, args, data_service)
     datasets = []
     for dataset_path in args.dataset_paths:
         try:

@@ -1,6 +1,5 @@
 ### Supported python versions
 
-[![Python 3.9](https://img.shields.io/badge/python-3.9-green.svg)](https://www.python.org/downloads/release/python-390)
 [![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/downloads/release/python-3100)
 
 ### Windows Command Compatibility
@@ -468,7 +467,7 @@ If there were errors, they will have been appended to the results array passed i
 
 **Linux**
 
-`pyinstaller core.py --add-data=venv/lib/python3.9/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates`
+`pyinstaller core.py --add-data=venv/lib/python3.10/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates`
 
 **Windows**
 

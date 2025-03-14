@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, patch
 from cdisc_rules_engine.dataset_builders.dataset_metadata_define_dataset_builder import (
     DatasetMetadataDefineDatasetBuilder,
 )
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.services.data_services import DummyDataService
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
@@ -121,7 +122,7 @@ def test_dataset_metadata_define_dataset_builder(dataset_path):
         data_processor=None,
         dataset_path=dataset_path,
         datasets=[data_metadata],
-        dataset_metadata=None,
+        dataset_metadata=SDTMDatasetMetadata(full_path=dataset_path),
         define_xml_path=None,
         standard="sdtmig",
         standard_version="3-4",

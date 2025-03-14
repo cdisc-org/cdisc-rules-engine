@@ -1,5 +1,6 @@
 import re
 from typing import Iterable, List, Optional, Set, Union, Tuple
+from cdisc_rules_engine.interfaces.cache_service_interface import CacheServiceInterface
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
@@ -41,7 +42,7 @@ class RuleProcessor:
     def __init__(
         self,
         data_service: DataServiceInterface,
-        cache,
+        cache: CacheServiceInterface,
         library_metadata: LibraryMetadataContainer = None,
     ):
         self.data_service = data_service
@@ -50,7 +51,7 @@ class RuleProcessor:
 
     @classmethod
     def rule_applies_to_domain(
-        cls, dataset_metadata: SDTMDatasetMetadata, rule: dict, is_split_domain: bool
+        cls, dataset_metadata: SDTMDatasetMetadata, rule: dict
     ) -> bool:
         """
         Check that rule is applicable to dataset domain
@@ -62,13 +63,13 @@ class RuleProcessor:
         excluded_domains = domains.get("Exclude", [])
 
         is_included = cls._is_domain_name_included(
-            dataset_metadata, included_domains, include_split_datasets, is_split_domain
+            dataset_metadata, included_domains, include_split_datasets
         )
         is_excluded = cls._is_domain_name_excluded(dataset_metadata, excluded_domains)
 
         # additional check for split domains based on the flag
         is_excluded, is_included = cls._handle_split_domains(
-            is_split_domain, include_split_datasets, is_excluded, is_included
+            dataset_metadata.is_split, include_split_datasets, is_excluded, is_included
         )
 
         return is_included and not is_excluded
@@ -79,7 +80,6 @@ class RuleProcessor:
         dataset_metadata: SDTMDatasetMetadata,
         included_domains: List[str],
         include_split_datasets: bool,
-        is_split_domain: bool,
     ) -> bool:
         """
         If included domains aren't specified
@@ -93,7 +93,7 @@ class RuleProcessor:
         In other cases domain is included
         """
         if not included_domains:
-            if include_split_datasets is True and not is_split_domain:
+            if include_split_datasets is True and not dataset_metadata.is_split:
                 return False
             return True
 
@@ -125,6 +125,7 @@ class RuleProcessor:
         if (
             dataset_metadata.domain in excluded_domains
             or dataset_metadata.name in excluded_domains
+            or dataset_metadata.unsplit_name in excluded_domains
             or ALL_KEYWORD in excluded_domains
         ):
             return True
@@ -503,7 +504,6 @@ class RuleProcessor:
         rule: dict,
         dataset_metadata: SDTMDatasetMetadata,
         file_path: str,
-        is_split_domain: bool,
         datasets: Iterable[SDTMDatasetMetadata],
     ) -> bool:
         is_suitable: bool = (
@@ -511,7 +511,6 @@ class RuleProcessor:
             and self.rule_applies_to_domain(
                 dataset_metadata,
                 rule,
-                is_split_domain,
             )
             and self.rule_applies_to_class(
                 rule,
@@ -558,7 +557,7 @@ class RuleProcessor:
                 target: str = condition["value"].get("target")
                 if target is None:
                     continue
-                target = target.replace("--", domain)
+                target = target.replace("--", domain or "")
                 op_related_pattern: str = RuleProcessor.get_operator_related_pattern(
                     condition.get("operator"), target
                 )

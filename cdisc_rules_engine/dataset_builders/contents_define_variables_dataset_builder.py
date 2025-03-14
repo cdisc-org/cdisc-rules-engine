@@ -35,7 +35,4 @@ class ContentsDefineVariablesDatasetBuilder(ValuesDatasetBuilder):
             left_on="variable_name",
             right_on="define_variable_name",
         )
-        # outer join, so some data contents may be missing or some define metadata may
-        # be missing. Replace nans with None
-        self.data_service._replace_nans_in_numeric_cols_with_none(merged)
         return merged

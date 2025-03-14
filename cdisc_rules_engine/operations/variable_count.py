@@ -1,5 +1,4 @@
 import pandas as pd
-import os
 from cdisc_rules_engine.operations.base_operation import BaseOperation
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 import asyncio
@@ -37,7 +36,7 @@ class VariableCount(BaseOperation):
         self, dataset: SDTMDatasetMetadata
     ) -> Counter:
         data: pd.DataFrame = self.data_service.get_dataset(
-            dataset_name=os.path.join(self.params.directory_path, dataset.filename)
+            dataset_name=dataset.full_path
         )
         target_variable = (
             self.params.original_target.replace("--", dataset.domain, 1)

@@ -15,7 +15,6 @@ from cdisc_rules_engine.constants.metadata_columns import (
 )
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
-from cdisc_rules_engine.services import logger
 
 from cdisc_rules_engine.constants.domains import (
     AP_DOMAIN,
@@ -230,34 +229,8 @@ def get_corresponding_datasets(
     return [
         other
         for other in datasets
-        if (dataset_metadata.domain and dataset_metadata.domain == other.domain)
-        or (dataset_metadata.rdomain and dataset_metadata.rdomain == other.rdomain)
+        if dataset_metadata.unsplit_name == other.unsplit_name
     ]
-
-
-def is_split_dataset(
-    datasets: Iterable[SDTMDatasetMetadata], dataset_metadata: SDTMDatasetMetadata
-) -> bool:
-    corresponding_datasets = get_corresponding_datasets(datasets, dataset_metadata)
-    if len(corresponding_datasets) < 2:
-        logger.info(f"Dataset {dataset_metadata.name} is not a split dataset")
-        return False
-
-    logger.info(
-        f"{dataset_metadata.domain or dataset_metadata.rdomain} is a split dataset: {corresponding_datasets}"
-    )
-    return True
-
-
-def is_supp_dataset(datasets: List[dict], domain: str) -> bool:
-    corresponding_datasets = get_corresponding_datasets(datasets, domain)
-    # Check if there are multiple datasets for the domain and if their names match the supp naming convention
-    if len(corresponding_datasets) > 1:
-        return any(
-            dataset.get("filename", "").split(".")[0].lower().startswith("supp")
-            for dataset in corresponding_datasets
-        )
-    return False
 
 
 def get_dataset_name_from_details(dataset_metadata: SDTMDatasetMetadata) -> str:

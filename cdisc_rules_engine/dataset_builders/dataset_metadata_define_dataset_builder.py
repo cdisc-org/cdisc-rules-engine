@@ -49,7 +49,9 @@ class DatasetMetadataDefineDatasetBuilder(BaseDatasetBuilder):
         # 5. remove unused rows, replace rows with target row
         merged_cleaned = merged.dropna(subset=["dataset_name"])
         dataset_filename = (
-            os.path.basename(self.dataset_path).lower() if self.dataset_path else None
+            os.path.basename(self.dataset_metadata.full_path).lower()
+            if self.dataset_metadata.full_path
+            else None
         )
         matching_row = merged_cleaned[
             merged_cleaned["dataset_location"].str.lower() == dataset_filename

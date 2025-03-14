@@ -124,8 +124,6 @@ def run_validation(args: Validation_args):
     engine_logger.info(f"Populating cache, cache path: {args.cache}")
     rules = get_rules(args)
     library_metadata: LibraryMetadataContainer = get_library_metadata_from_cache(args)
-    # install dictionaries if needed
-    dictionary_versions = fill_cache_with_dictionaries(shared_cache, args)
     max_dataset_size = get_max_dataset_size(args.dataset_paths)
     standard = args.standard
     standard_version = args.version.replace(".", "-")
@@ -139,6 +137,8 @@ def run_validation(args: Validation_args):
         standard_substandard=standard_substandard,
         library_metadata=library_metadata,
     ).get_data_service(args.dataset_paths)
+    # install dictionaries if needed
+    dictionary_versions = fill_cache_with_dictionaries(shared_cache, args, data_service)
     large_dataset_validation: bool = (
         data_service.dataset_implementation != PandasDataset
     )
