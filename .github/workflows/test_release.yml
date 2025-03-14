@@ -62,11 +62,12 @@ jobs:
     permissions:
       contents: write
       id-token: write
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/p/cdisc-rules-engine
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Download binary releases
         uses: actions/download-artifact@v4
@@ -122,23 +123,23 @@ jobs:
       - name: Build package
         run: python -m build
 
-      - name: Check package contents thoroughly
+      - name: Check package contents
         run: |
+          # List contents of the built package to verify binaries and resources
           echo "Listing wheel contents:"
           pip install wheel
-          mkdir -p wheel-extract
-          unzip -d wheel-extract dist/*.whl
+          unzip -l dist/*.whl | grep -E "resources|releases"
 
-          echo "Looking for resources directories:"
-          find wheel-extract -name "resources" -type d
-
-          echo "Resource files included:"
-          find wheel-extract -path "*/resources/*" | sort
+      - name: Check package metadata
+        run: |
+          python -m twine check dist/*
 
       - name: Publish to TestPyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           repository-url: https://test.pypi.org/legacy/
+          verbose: true
+          skip-existing: true
 
       - name: Extract version from pyproject.toml
         run: |
@@ -147,22 +148,14 @@ jobs:
           echo "Package version: $VERSION"
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
-      - name: Verify installation from TestPyPI
+      - name: Verify published package is installable
         run: |
+          # Extract the version we just published
+          VERSION=$(grep 'version =' pyproject.toml | head -1 | cut -d '"' -f 2)
+
           # Wait for TestPyPI to process the upload
           echo "Waiting for TestPyPI to process the package..."
-          sleep 30
+          sleep 60
 
-          echo "Attempting to install cdisc-rules-engine version $VERSION from TestPyPI..."
-
-          # Try to install from TestPyPI
-          pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ "cdisc-rules-engine==$VERSION" || echo "Installation verification skipped - package might not be available yet"
-
-          # Verify it installed correctly if possible
-          if pip list | grep "cdisc-rules-engine"; then
-            echo "Package installed successfully!"
-            # Try importing it
-            python -c "import core_rules_engine; print('Import successful')" || echo "Import failed but package was installed"
-          else
-            echo "Package installation couldn't be verified."
-          fi
+          # Try to install the package
+          pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ "cdisc-rules-engine==$VERSION" || echo "Package verification skipped - package might not be available yet"
