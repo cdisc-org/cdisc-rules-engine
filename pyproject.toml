@@ -47,11 +47,6 @@ packages = { find = { namespaces = true } }
 py-modules = ["core", "version", "scripts.run_validation", "scripts.test_rule", "scripts.list_dataset_metadata_handler"]
 include-package-data = true
 
-[tool.setuptools]
-packages = { find = { namespaces = true } }
-py-modules = ["core", "version", "scripts.run_validation", "scripts.test_rule", "scripts.list_dataset_metadata_handler"]
-include-package-data = true
-
 [tool.setuptools.package-data]
 "*" = [
     "resources/templates/*", 
