@@ -48,7 +48,8 @@ py-modules = ["core", "version", "scripts.run_validation", "scripts.test_rule", 
 include-package-data = true
 
 [tool.setuptools.package-data]
-"*" = ["resources/cache/*", "resources/templates/*", "resources/schema/*", "tests/resources/datasets/*"]
+"" = ["resources/cache/.keep", "resources/templates/*", "resources/schema/*", "tests/resources/datasets/.keep"]
+"core_rules_engine.resources" = [".keep"]
 "core_rules_engine.releases" = ["*.zip"]
 
 [tool.setuptools.package-dir]
