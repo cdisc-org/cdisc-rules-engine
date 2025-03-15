@@ -47,14 +47,19 @@ packages = { find = { namespaces = true } }
 py-modules = ["core", "version", "scripts.run_validation", "scripts.test_rule", "scripts.list_dataset_metadata_handler"]
 include-package-data = true
 
-[tool.setuptools.package-data]
-"" = ["resources/templates/*", "resources/schema/*", "tests/resources/datasets/.keep"]
-"resources.cache" = [".keep"]
-"core_rules_engine.resources.templates" = ["*"]
-"core_rules_engine.resources.schema" = ["*"]
-"core_rules_engine.resources.cache" = [".keep"]
-"core_rules_engine.releases" = ["*.zip"]
+[tool.setuptools]
+packages = { find = { namespaces = true } }
+py-modules = ["core", "version", "scripts.run_validation", "scripts.test_rule", "scripts.list_dataset_metadata_handler"]
+include-package-data = true
 
-[tool.setuptools.exclude-package-data]
-"resources.cache" = ["*"]
-"core_rules_engine.resources.cache" = ["*"]
+[tool.setuptools.package-data]
+"*" = [
+    "resources/templates/*", 
+    "resources/schema/*", 
+    "resources/cache/.keep",
+    "tests/resources/datasets/.keep",
+    "core_rules_engine/resources/templates/*",
+    "core_rules_engine/resources/schema/*",
+    "core_rules_engine/resources/cache/.keep",
+    "core_rules_engine/releases/*.zip"
+]
