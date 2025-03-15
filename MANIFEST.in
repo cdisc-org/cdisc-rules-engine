@@ -1,0 +1,10 @@
+include resources/cache/.keep
+include resources/templates/*
+include resources/schema/*
+include tests/resources/datasets/.keep
+recursive-include core_rules_engine/resources/templates *
+recursive-include core_rules_engine/resources/schema *
+recursive-include core_rules_engine/releases *.zip
+prune resources/cache/
+prune core_rules_engine/resources/cache/
+global-include */cache/.keep

@@ -94,21 +94,25 @@ jobs:
 
       - name: Set up resources structure
         run: |
-          # Create all required directory structures
           mkdir -p resources/cache resources/templates resources/schema tests/resources/datasets
           mkdir -p core_rules_engine/resources/cache core_rules_engine/resources/templates core_rules_engine/resources/schema
 
-          # Create placeholder files to ensure directories aren't empty
+          rm -rf resources/cache/*
+          rm -rf core_rules_engine/resources/cache/*
+
           touch resources/cache/.keep resources/templates/.keep resources/schema/.keep
           touch core_rules_engine/resources/cache/.keep core_rules_engine/resources/templates/.keep core_rules_engine/resources/schema/.keep
           touch tests/resources/datasets/.keep
 
-          # Verify the resources directories are set up
           echo "Resources directory structure:"
           find resources -type d | sort
 
           echo "Core rules engine resources structure:"
           find core_rules_engine/resources -type d | sort
+
+          echo "Cache directory contents:"
+          ls -la resources/cache/
+          ls -la core_rules_engine/resources/cache/
 
       - name: Verify all resources exist
         run: |
@@ -129,6 +133,10 @@ jobs:
           echo "Listing wheel contents:"
           pip install wheel
           unzip -l dist/*.whl | grep -E "resources|releases"
+
+          # Check specifically for cache directories and .keep files
+          echo "Checking for cache directories and .keep files:"
+          unzip -l dist/*.whl | grep -E "cache|\.keep"
 
       - name: Check package metadata
         run: |
@@ -159,3 +167,9 @@ jobs:
 
           # Try to install the package
           pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ "cdisc-rules-engine==$VERSION" || echo "Package verification skipped - package might not be available yet"
+
+          # Check installed package structure
+          if pip show cdisc-rules-engine > /dev/null; then
+            echo "Package installed successfully. Checking structure..."
+            python -c "import importlib.resources as pkg_resources; from cdisc_rules_engine import resources; print('Resources directory exists in package:',pkg_resources.is_resource(resources, 'cache'))"
+          fi
