@@ -265,6 +265,7 @@ If you want to formally define custom properties in your schema (recommended for
 
 2. **Version Control Your Schema Extensions**:
    - Document changes to the schema in a changelog within the schema file itself
+   - Metadata object withing `$def` object can be updated to user's specifications
    - Use semantic versioning for your custom schema extensions (MAJOR.MINOR.PATCH)
    - Include a metadata section with versioning information:
 
