@@ -43,6 +43,7 @@ dependencies = [
 [tool.setuptools]
 packages = { find = { exclude = ["scripts", "tests"] } }
 include-package-data = true
+py-modules = ["version"]
 
 [tool.setuptools.dynamic]
 version = {attr = "version.__version__"}
