@@ -55,34 +55,25 @@ jobs:
             core-ubuntu-20-04.zip
             core-mac.zip
             core-windows.zip
-  deploy-ubuntu-to-testpypi:
+  deploy-PyPi:
     needs: create-release-assets
     runs-on: ubuntu-latest
     permissions:
       contents: write
       id-token: write
-    environment:
-      name: testpypi
-      url: https://test.pypi.org/p/cdisc-rules-engine-ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download binary releases
-        uses: actions/download-artifact@v4
-        with:
-          name: release-artifacts
-          path: binary-releases
-
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.9"
+          python-version: "3.10"
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install build twine
+          pip install build setuptools wheel twine
           pip install -r requirements.txt
 
       - name: Set up resources structure
@@ -100,164 +91,26 @@ jobs:
           touch core_rules_engine/resources/cache/.keep core_rules_engine/resources/templates/.keep core_rules_engine/resources/schema/.keep
           touch tests/resources/datasets/.keep
 
-      - name: Create Ubuntu binary package structure
+      - name: Build package
         run: |
-          mkdir -p core_rules_engine/releases/core-ubuntu-latest
-          unzip binary-releases/core-ubuntu-latest.zip -d core_rules_engine/releases/core-ubuntu-latest
-
-      - name: Use Ubuntu pyproject.toml
-        run: |
-          cp pyproject-ubuntu.toml pyproject.toml
-
-      - name: Build Ubuntu package
-        run: python -m build
+          python -m build
 
       - name: Check package size
         run: |
-          echo "Ubuntu package size:"
+          echo "Package size:"
           ls -lh dist/*.whl
 
-      - name: Publish Ubuntu package to TestPyPI
+      # Publish to TestPyPI first
+      - name: Publish to TestPyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           repository-url: https://test.pypi.org/legacy/
           verbose: true
           skip-existing: true
 
-  deploy-mac-to-testpypi:
-    needs: create-release-assets
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      id-token: write
-    environment:
-      name: testpypi
-      url: https://test.pypi.org/p/cdisc-rules-engine-mac
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Download binary releases
-        uses: actions/download-artifact@v4
-        with:
-          name: release-artifacts
-          path: binary-releases
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.9"
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install build twine
-          pip install -r requirements.txt
-
-      - name: Set up resources structure
-        run: |
-          # Create all required directory structures
-          mkdir -p resources/cache resources/templates resources/schema tests/resources/datasets
-          mkdir -p core_rules_engine/resources/cache core_rules_engine/resources/templates core_rules_engine/resources/schema
-
-          # Clean cache directories to ensure they're empty (except for .keep files)
-          rm -rf resources/cache/*
-          rm -rf core_rules_engine/resources/cache/*
-
-          # Create placeholder files to ensure directories aren't empty
-          touch resources/cache/.keep resources/templates/.keep resources/schema/.keep
-          touch core_rules_engine/resources/cache/.keep core_rules_engine/resources/templates/.keep core_rules_engine/resources/schema/.keep
-          touch tests/resources/datasets/.keep
-
-      - name: Create Mac binary package structure
-        run: |
-          mkdir -p core_rules_engine/releases/core-mac
-          unzip binary-releases/core-mac.zip -d core_rules_engine/releases/core-mac
-
-      - name: Use Mac pyproject.toml
-        run: |
-          cp pyproject-mac.toml pyproject.toml
-
-      - name: Build Mac package
-        run: python -m build
-
-      - name: Check package size
-        run: |
-          echo "Mac package size:"
-          ls -lh dist/*.whl
-
-      - name: Publish Mac package to TestPyPI
+      # Publish to PyPI
+      - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          repository-url: https://test.pypi.org/legacy/
-          verbose: true
-          skip-existing: true
-
-  deploy-windows-to-testpypi:
-    needs: create-release-assets
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      id-token: write
-    environment:
-      name: testpypi
-      url: https://test.pypi.org/p/cdisc-rules-engine-windows
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Download binary releases
-        uses: actions/download-artifact@v4
-        with:
-          name: release-artifacts
-          path: binary-releases
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.9"
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install build twine
-          pip install -r requirements.txt
-
-      - name: Set up resources structure
-        run: |
-          # Create all required directory structures
-          mkdir -p resources/cache resources/templates resources/schema tests/resources/datasets
-          mkdir -p core_rules_engine/resources/cache core_rules_engine/resources/templates core_rules_engine/resources/schema
-
-          # Clean cache directories to ensure they're empty (except for .keep files)
-          rm -rf resources/cache/*
-          rm -rf core_rules_engine/resources/cache/*
-
-          # Create placeholder files to ensure directories aren't empty
-          touch resources/cache/.keep resources/templates/.keep resources/schema/.keep
-          touch core_rules_engine/resources/cache/.keep core_rules_engine/resources/templates/.keep core_rules_engine/resources/schema/.keep
-          touch tests/resources/datasets/.keep
-
-      - name: Create Windows binary package structure
-        run: |
-          mkdir -p core_rules_engine/releases/core-windows
-          unzip binary-releases/core-windows.zip -d core_rules_engine/releases/core-windows
-
-      - name: Use Windows pyproject.toml
-        run: |
-          cp pyproject-windows.toml pyproject.toml
-
-      - name: Build Windows package
-        run: python -m build
-
-      - name: Check package size
-        run: |
-          echo "Windows package size:"
-          ls -lh dist/*.whl
-
-      - name: Publish Windows package to TestPyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          repository-url: https://test.pypi.org/legacy/
           verbose: true
           skip-existing: true

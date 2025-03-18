@@ -3,18 +3,19 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "cdisc-rules-engine-windows"
-version = "0.9.2.5"
-description = "CDISC Rules Engine - Complete Package with Windows Binary"
+name = "cdisc-rules-engine"
+dynamic = ["version"]
+description = "Open source offering of the cdisc rules engine"
 readme = "README.md"
 requires-python = ">=3.9, <3.11"
 license = {text = "MIT"}
 authors = [
-    {name = "CDISC Data Science Team", email = "info@cdisc.org"}
+    {name = "cdisc-org", email = "info@cdisc.org"}
 ]
 dependencies = [
     "business_rules_enhanced==1.4.6",
     "cdisc-library-client==0.1.6",
+    "click==8.1.7",
     "importlib-metadata==8.5.0",
     "jsonpath-ng==1.6.1",
     "jsonschema==4.18.5",
@@ -31,30 +32,17 @@ dependencies = [
     "psutil==6.1.1",
     "pyreadstat==1.2.7",
     "fastparquet==2024.2.0",
-    "click==8.1.7",
-    "dask[dataframe,array]==2024.2.0"
+    "dask[dataframe]==2024.2.0",
+    "dask[array]==2024.2.0",
 ]
 
 [project.urls]
 "Homepage" = "https://github.com/cdisc-org/cdisc-rules-engine"
 "Bug Tracker" = "https://github.com/cdisc-org/cdisc-rules-engine/issues"
 
-[project.scripts]
-core = "core:cli"
-
 [tool.setuptools]
-packages = { find = { namespaces = true } }
-py-modules = ["core", "version", "scripts.run_validation", "scripts.test_rule", "scripts.list_dataset_metadata_handler"]
+packages = { find = { exclude = ["scripts", "tests"] } }
 include-package-data = true
 
-[tool.setuptools.package-data]
-"*" = [
-    "resources/templates/*", 
-    "resources/schema/*", 
-    "resources/cache/.keep",
-    "tests/resources/datasets/.keep",
-    "core_rules_engine/resources/templates/*",
-    "core_rules_engine/resources/schema/*",
-    "core_rules_engine/resources/cache/.keep",
-    "core_rules_engine/releases/core-windows/*"
-]
+[tool.setuptools.dynamic]
+version = {attr = "version.__version__"}
