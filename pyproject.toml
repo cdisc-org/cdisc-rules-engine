@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "cdisc-rules-engine"
 dynamic = ["version"]
 description = "Open source offering of the cdisc rules engine"
-readme = "README.md"
+readme = "PYPI.md"
 requires-python = ">=3.9, <3.11"
 license = {text = "MIT"}
 authors = [
@@ -15,7 +15,6 @@ authors = [
 dependencies = [
     "business_rules_enhanced==1.4.6",
     "cdisc-library-client==0.1.6",
-    "click==8.1.7",
     "importlib-metadata==8.5.0",
     "jsonpath-ng==1.6.1",
     "jsonschema==4.18.5",
@@ -41,7 +40,7 @@ dependencies = [
 "Bug Tracker" = "https://github.com/cdisc-org/cdisc-rules-engine/issues"
 
 [tool.setuptools]
-packages = { find = { exclude = ["scripts", "tests"] } }
+packages = { find = { exclude = ["tests", "TestRule", "cdisc_rule_tester"] } }
 include-package-data = true
 py-modules = ["version"]
 

@@ -76,21 +76,6 @@ jobs:
           pip install build setuptools wheel twine
           pip install -r requirements.txt
 
-      - name: Set up resources structure
-        run: |
-          # Create all required directory structures
-          mkdir -p resources/cache resources/templates resources/schema tests/resources/datasets
-          mkdir -p core_rules_engine/resources/cache core_rules_engine/resources/templates core_rules_engine/resources/schema
-
-          # Clean cache directories to ensure they're empty (except for .keep files)
-          rm -rf resources/cache/*
-          rm -rf core_rules_engine/resources/cache/*
-
-          # Create placeholder files to ensure directories aren't empty
-          touch resources/cache/.keep resources/templates/.keep resources/schema/.keep
-          touch core_rules_engine/resources/cache/.keep core_rules_engine/resources/templates/.keep core_rules_engine/resources/schema/.keep
-          touch tests/resources/datasets/.keep
-
       - name: Build package
         run: |
           python -m build
@@ -100,17 +85,9 @@ jobs:
           echo "Package size:"
           ls -lh dist/*.whl
 
-      # Publish to TestPyPI first
       - name: Publish to TestPyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           repository-url: https://test.pypi.org/legacy/
-          verbose: true
-          skip-existing: true
-
-      # Publish to PyPI
-      - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
           verbose: true
           skip-existing: true
