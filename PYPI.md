@@ -1,3 +1,7 @@
+### Supported python versions
+
+[![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/downloads/release/python-3100)
+
 #### **PyPI Quickstart: Validate data within python**
 
 An alternative to running the validation from the command line is to instead import the rules engine library in python and run rules against data directly (without needing your data to be in `.xpt` format).

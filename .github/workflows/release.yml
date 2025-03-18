@@ -95,101 +95,32 @@ jobs:
             core-ubuntu-20-04.zip
             core-mac.zip
             core-windows.zip
-
-  deploy-to-pypi:
+  deploy-PyPi:
     needs: create-release-assets
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      id-token: write # For trusted publishing
+      contents: write
+      id-token: write
     steps:
-      - uses: actions/checkout@v4
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Download binary releases
-        uses: actions/download-artifact@v4
-        with:
-          name: release-artifacts
-          path: binary-releases
-
       - name: Set up Python
-        uses: actions/setup-python@v5
-        id: pysetup
+        uses: actions/setup-python@v4
         with:
           python-version: "3.10"
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install build
+          pip install build setuptools wheel twine
           pip install -r requirements.txt
-
-      - name: Create releases directory inside package
-        run: |
-          mkdir -p core_rules_engine/releases
-          cp binary-releases/*.zip core_rules_engine/releases/
-          ls -la core_rules_engine/releases/
-
-      - name: Set up resources structure
-        run: |
-          # Create all required directory structures
-          mkdir -p resources/cache resources/templates resources/schema tests/resources/datasets
-          mkdir -p core_rules_engine/resources/cache core_rules_engine/resources/templates core_rules_engine/resources/schema
-
-          # Create placeholder files to ensure directories aren't empty
-          touch resources/cache/.keep resources/templates/.keep resources/schema/.keep
-          touch core_rules_engine/resources/cache/.keep core_rules_engine/resources/templates/.keep core_rules_engine/resources/schema/.keep
-          touch tests/resources/datasets/.keep
-
-          # Verify the resources directories are set up
-          echo "Resources directory structure:"
-          find resources -type d | sort
-
-          echo "Core rules engine resources structure:"
-          find core_rules_engine/resources -type d | sort
-
-      - name: Verify all resources exist
-        run: |
-          echo "Checking all required resources..."
-          test -d resources/cache || (echo "Missing resources/cache directory" && exit 1)
-          test -d resources/templates || (echo "Missing resources/templates directory" && exit 1)
-          test -d resources/schema || (echo "Missing resources/schema directory" && exit 1)
-          test -d tests/resources/datasets || (echo "Missing tests/resources/datasets directory" && exit 1)
-
-          echo "Resource directories verified."
-
       - name: Build package
-        run: python -m build
-
-      - name: Check package contents thoroughly
         run: |
-          echo "Listing wheel contents:"
-          pip install wheel
-          mkdir -p wheel-extract
-          unzip -d wheel-extract dist/*.whl
-
-          echo "Looking for resources directories:"
-          find wheel-extract -name "resources" -type d
-
-          echo "Resource files included:"
-          find wheel-extract -path "*/resources/*" | sort
-
+          python -m build
+      - name: Check package size
+        run: |
+          echo "Package size:"
+          ls -lh dist/*.whl
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          skip-existing: true
-
-      - name: Verify published package is installable
-        run: |
-          # Extract version from GitHub release tag
-          VERSION=${GITHUB_REF#refs/tags/}
-          VERSION=${VERSION#v}
-
-          # Wait for PyPI to process the upload
-          echo "Waiting for PyPI to process the package..."
-          sleep 60
-
-          # Try to install the package
-          pip install "cdisc-rules-engine==$VERSION" || echo "Package verification skipped - package might not be available yet"
+          verbose: true
