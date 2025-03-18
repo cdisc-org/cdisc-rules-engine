@@ -159,33 +159,24 @@
   "type": "object",
   "$defs": {
     "metadata": {
-      "title": "Metadata for the schema",
-      "type": "object",
-      "properties": {
-        "schemaVersion": { "type": "string" },
-        "releaseDate": { "type": "string" },
-        "changelog": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "version": { "type": "string" },
-              "date": { "type": "string" },
-              "description": { "type": "string" },
-              "changes": {
-                "type": "array",
-                "items": { "type": "string" }
-              }
-            }
-          }
-        },
-        "maintainer": {
-          "type": "object",
-          "properties": {
-            "name": { "type": "string" },
-            "email": { "type": "string" }
-          }
+      "schemaVersion": "1.0.0",
+      "releaseDate": "2025-03-09",
+      "changelog": [
+        {
+          "version": "1.0.0",
+          "date": "2025-03-09",
+          "description": "Initial release of Custom Organization Schema",
+          "changes": [
+            "Added Category object structure with standard properties",
+            "Implemented support for Sponsors, Vendors, TherapeuticAreas arrays",
+            "Added support for X, Y  and Z enum",
+            "Enabled extensibility with additionalProperties: true"
+          ]
         }
+      ],
+      "maintainer": {
+        "name": "Your Organization Name",
+        "email": "standards@yourorganization.com"
       }
     }
   }
