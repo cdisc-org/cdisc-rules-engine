@@ -38,7 +38,6 @@ from cdisc_rules_engine.utilities.data_processor import DataProcessor
 from cdisc_rules_engine.utilities.dataset_preprocessor import DatasetPreprocessor
 from cdisc_rules_engine.utilities.rule_processor import RuleProcessor
 from cdisc_rules_engine.utilities.utils import (
-    is_split_dataset,
     serialize_rule,
 )
 from cdisc_rules_engine.dataset_builders import builder_factory
@@ -163,7 +162,6 @@ class RulesEngine:
                 rule,
                 dataset_metadata,
                 dataset_path,
-                is_split_dataset(datasets, dataset_metadata),
                 datasets,
             ):
                 result: List[Union[dict, str]] = self.validate_rule(
@@ -216,7 +214,6 @@ class RulesEngine:
     def get_dataset_builder(
         self,
         rule: dict,
-        dataset_path: str,
         datasets: Iterable[SDTMDatasetMetadata],
         dataset_metadata: SDTMDatasetMetadata,
     ):
@@ -229,7 +226,7 @@ class RulesEngine:
             rule_processor=self.rule_processor,
             dataset_metadata=dataset_metadata,
             datasets=datasets,
-            dataset_path=dataset_path,
+            dataset_path=dataset_metadata.full_path,
             define_xml_path=self.define_xml_path,
             standard=self.standard,
             standard_version=self.standard_version,
@@ -250,9 +247,7 @@ class RulesEngine:
         It defines a rule validator based on its type and calls it.
         """
         kwargs = {}
-        builder = self.get_dataset_builder(
-            rule, dataset_path, datasets, dataset_metadata
-        )
+        builder = self.get_dataset_builder(rule, datasets, dataset_metadata)
         dataset = builder.get_dataset()
         # Update rule for certain rule types
         # SPECIAL CASES FOR RULE TYPES ###############################
@@ -359,7 +354,7 @@ class RulesEngine:
         dataset = self.rule_processor.perform_rule_operations(
             rule_copy,
             dataset,
-            dataset_metadata.domain,
+            dataset_metadata.unsplit_name,
             datasets,
             dataset_path,
             standard=self.standard,

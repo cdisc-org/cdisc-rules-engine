@@ -57,12 +57,16 @@ def test_get_dataset():
         3,
         4,
     ]
-    assert dataset["AEDY"].to_list() == [
-        1,
-        None,
-        None,
-        None,
-    ]
+    assert np.array_equal(
+        dataset["AEDY"].to_list(),
+        [
+            1.0,
+            np.nan,
+            np.nan,
+            np.nan,
+        ],
+        equal_nan=True,
+    )
     assert dataset["AENUM"].to_list() == [
         1.0,
         2.0,
@@ -87,7 +91,7 @@ def test_get_dataset():
 def test_get_dataset_metadata():
     dataset_data = [
         {
-            "filesize": 1000,
+            "file_size": 2000,
             "filename": "ae.xpt",
             "label": "ADVERSE EVENTS",
             "domain": "AE",
@@ -101,7 +105,7 @@ def test_get_dataset_metadata():
     metadata = data_service.get_dataset_metadata("ae.xpt")
     assert metadata["dataset_label"].iloc[0] == "ADVERSE EVENTS"
     assert metadata["dataset_name"].iloc[0] == "AE"
-    assert metadata["dataset_size"].iloc[0] == 1000
+    assert metadata["dataset_size"].iloc[0] == 2000
 
 
 def test_get_variables_metadata():
@@ -109,7 +113,7 @@ def test_get_variables_metadata():
         {
             "name": "AE",
             "filename": "ae.xpt",
-            "filesize": 2000,
+            "file_size": 2000,
             "label": "ADVERSE EVENTS",
             "domain": "AE",
             "variables": [

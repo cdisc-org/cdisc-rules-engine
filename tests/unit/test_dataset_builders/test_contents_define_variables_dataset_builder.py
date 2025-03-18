@@ -25,7 +25,7 @@ from cdisc_rules_engine.models.dataset import PandasDataset
                 "define_variable_role": ["VAR1 ROLE", "VAR3 ROLE"],
             },
             {
-                "row_number": [1, 2, 3, 1, 2, 3, None],
+                "row_number": [1, 2, 3, 1, 2, 3, np.nan],
                 "variable_name": [
                     "VAR1",
                     "VAR1",
@@ -111,5 +111,4 @@ def test_contents_define_variables_dataset_builder(
         library_metadata=LibraryMetadataContainer(),
     ).build()
     expected_data = dataset_implementation.from_dict(expected)
-    expected_data.data = expected_data.data.replace(np.nan, None)
     assert result.equals(expected_data)

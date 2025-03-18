@@ -62,7 +62,6 @@ class DummyDataService(BaseDataService):
             df: pd.DataFrame = dataset.data
             df = df.applymap(lambda x: x.decode("utf-8") if isinstance(x, bytes) else x)
             result = PandasDataset(df)
-            self._replace_nans_in_numeric_cols_with_none(result)
             return result
         else:
             return PandasDataset.from_dict({})

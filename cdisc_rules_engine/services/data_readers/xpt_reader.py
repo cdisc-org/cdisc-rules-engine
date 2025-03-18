@@ -25,7 +25,7 @@ class XPTReader(DataReaderInterface):
         created = False
         num_rows = 0
         for chunk in dataset:
-            self._format_floats(chunk)
+            chunk = self._format_floats(chunk)
             num_rows += len(chunk)
             if not created:
                 chunk.to_parquet(temp_file.name, engine="fastparquet")

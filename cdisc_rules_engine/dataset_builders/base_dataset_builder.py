@@ -6,7 +6,6 @@ from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import (
     DefineXMLReaderFactory,
 )
 from cdisc_rules_engine.utilities.utils import (
-    is_split_dataset,
     get_corresponding_datasets,
     tag_source,
 )
@@ -29,7 +28,7 @@ class BaseDatasetBuilder:
         data_processor,
         dataset_path,
         datasets: Iterable[SDTMDatasetMetadata],
-        dataset_metadata,
+        dataset_metadata: SDTMDatasetMetadata,
         define_xml_path,
         standard,
         standard_version,
@@ -67,7 +66,7 @@ class BaseDatasetBuilder:
 
     def get_dataset(self, **kwargs):
         # If validating dataset content, ensure split datasets are handled.
-        if is_split_dataset(self.datasets, self.dataset_metadata):
+        if self.dataset_metadata.is_split:
             # Handle split datasets for content checks.
             # A content check is any check that is not in the list of rule types
             dataset: DatasetInterface = self.data_service.concat_split_datasets(
@@ -85,7 +84,7 @@ class BaseDatasetBuilder:
 
     def get_dataset_contents(self, **kwargs):
         # If validating dataset content, ensure split datasets are handled.
-        if is_split_dataset(self.datasets, self.dataset_metadata):
+        if self.dataset_metadata.is_split:
             # Handle split datasets for content checks.
             # A content check is any check that is not in the list of rule types
             dataset: DatasetInterface = self.data_service.concat_split_datasets(

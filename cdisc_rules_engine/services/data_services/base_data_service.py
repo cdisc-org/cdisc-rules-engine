@@ -140,7 +140,7 @@ class BaseDataService(DataServiceInterface, ABC):
         # download datasets asynchronously
         datasets: Iterator[DatasetInterface] = self._async_get_datasets(
             func_to_call,
-            dataset_names=[dataset.filename for dataset in datasets_metadata],
+            dataset_names=[dataset.full_path for dataset in datasets_metadata],
             **kwargs,
         )
         full_dataset = self.dataset_implementation()
@@ -167,26 +167,15 @@ class BaseDataService(DataServiceInterface, ABC):
     ) -> Optional[str]:
         if self.standard is None or self.version is None:
             raise Exception("Missing standard and version data")
-
-        standard_data = self._get_standard_data()
-
         class_data, _ = get_class_and_domain_metadata(
-            standard_data, dataset_metadata.domain or dataset_metadata.name
+            self.library_metadata.standard_metadata,
+            dataset_metadata.unsplit_name,
         )
         name = class_data.get("name")
         if name:
             return convert_library_class_name_to_ct_class(name)
         return self._handle_special_cases(
             dataset, dataset_metadata, file_path, datasets
-        )
-
-    def _get_standard_data(self):
-
-        return (
-            self.library_metadata.standard_metadata
-            or self.cdisc_library_service.get_standard_details(
-                self.standard, self.version, self.standard_substandard
-            )
         )
 
     def _handle_special_cases(
@@ -284,7 +273,7 @@ class BaseDataService(DataServiceInterface, ABC):
         Replaces NaN in numeric columns with None.
         """
         numeric_columns = dataset.data.select_dtypes(include=np.number).columns
-        dataset[numeric_columns] = dataset.data[numeric_columns].replace(np.nan, None)
+        dataset[numeric_columns] = dataset.data[numeric_columns].replace({np.nan: None})
 
     @staticmethod
     def _replace_nans_in_specified_cols_with_none(
