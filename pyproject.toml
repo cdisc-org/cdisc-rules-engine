@@ -40,7 +40,7 @@ dependencies = [
 "Bug Tracker" = "https://github.com/cdisc-org/cdisc-rules-engine/issues"
 
 [tool.setuptools]
-packages = { find = { exclude = ["tests", "TestRule", "cdisc_rule_tester"] } }
+packages = { find = { exclude = ["tests", "scripts", "TestRule", "cdisc_rule_tester"] } }
 include-package-data = true
 py-modules = ["version"]
 
