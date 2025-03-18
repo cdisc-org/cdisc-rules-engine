@@ -12,7 +12,8 @@ An alternative to running the validation from the command line is to instead imp
 pip install cdisc-rules-engine
 ```
 
-In addition to installing the library, you'll also want to download the rules cache (found in the `resources/cache` folder of this repository) and store them somewhere in your project. Notably, when pip install is run, it will install the USDM and dataset-JSON schemas should you decide to use the implement the dataset reader classes in `cdisc_rules_engine/services/data_readers`
+In addition to installing the library, you'll also want to download the rules cache (found in the `resources/cache` folder of this repository) and store them somewhere in your project.
+Notably, when pip install is run, it will install the USDM and dataset-JSON dataset schemas should you decide to implement the dataset reader classes in `cdisc_rules_engine/services/data_readers` or the metadata_readers in `cdisc_rules_engine/services`
 
 ##### Step 1: Load the Rules
 
