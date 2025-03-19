@@ -51,14 +51,12 @@ class BaseReport(ABC):
             if validation_result.execution_status == "success":
                 for result in validation_result.results or []:
                     dataset = result.get("dataset")
-                    domain = result.get("domain")
                     if (
                         result.get("errors")
                         and result.get("executionStatus") == "success"
                     ):
                         summary_item = {
                             "dataset": dataset,
-                            "domain": domain,
                             "core_id": validation_result.id,
                             "message": result.get("message"),
                             "issues": len(result.get("errors")),

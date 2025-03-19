@@ -208,14 +208,12 @@ def test_get_summary_data():
         errors = [
             [
                 None,
-                "AE",
                 mock_validation_results[0].id,
                 "AESTDY and DOMAIN are equal to test",
                 2,
             ],
             [
                 None,
-                "TT",
                 mock_validation_results[1].id,
                 "TTVARs are wrong",
                 1,

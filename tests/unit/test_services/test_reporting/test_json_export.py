@@ -198,14 +198,12 @@ def test_get_summary_data():
     errors = [
         {
             "dataset": None,
-            "domain": "AE",
             "core_id": mock_validation_results[0].id,
             "message": "AESTDY and DOMAIN are equal to test",
             "issues": 2,
         },
         {
             "dataset": None,
-            "domain": "TT",
             "core_id": mock_validation_results[1].id,
             "message": "TTVARs are wrong",
             "issues": 1,
