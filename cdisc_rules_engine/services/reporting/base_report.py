@@ -105,7 +105,6 @@ class BaseReport(ABC):
             "Message",
             "Executability",
             "Dataset Name"
-            "Dataset Domain",
             "USUBJID",
             "Record",
             "Sequence",
@@ -123,7 +122,6 @@ class BaseReport(ABC):
                         "message": result.get("message"),
                         "executability": validation_result.executability,
                         "dataset": error.get("dataset"),
-                        "domain": result.get("domain"),
                         "USUBJID": error.get("USUBJID", ""),
                         "row": error.get("row", ""),
                         "SEQ": error.get("SEQ", ""),
