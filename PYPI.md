@@ -1,12 +1,14 @@
-### Supported python versions
+# CDISC Rules Engine - User Guide
+
+## Supported Python Versions
 
 [![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/downloads/release/python-3100)
 
-#### **PyPI Quickstart: Validate data within python**
+## PyPI Quickstart: Validate Data within Python
 
-An alternative to running the validation from the command line is to instead import the rules engine library in python and run rules against data directly (without needing your data to be in `.xpt` format).
+An alternative to running the validation from the command line is to import the rules engine library in Python and run rules against data directly (without needing your data to be in `.xpt` format).
 
-##### Step 0: Install the library
+### Step 0: Install the Library
 
 ```
 pip install cdisc-rules-engine
@@ -15,13 +17,14 @@ pip install cdisc-rules-engine
 In addition to installing the library, you'll also want to download the rules cache (found in the `resources/cache` folder of this repository) and store them somewhere in your project.
 Notably, when pip install is run, it will install the USDM and dataset-JSON dataset schemas should you decide to implement the dataset reader classes in `cdisc_rules_engine/services/data_readers` or the metadata_readers in `cdisc_rules_engine/services`
 
-##### Step 1: Load the Rules
+### Step 1: Load the Rules
 
 The rules can be loaded into an in-memory cache by doing the following:
 
 ```python
 import os
 import pathlib
+import pickle
 
 from multiprocessing.managers import SyncManager
 from cdisc_rules_engine.services.cache import InMemoryCacheService
@@ -35,18 +38,18 @@ CacheManager.register("InMemoryCacheService", InMemoryCacheService)
 
 
 def load_rules_cache(path_to_rules_cache):
-  cache_path = pathlib.Path(path_to_rules_cache)
-  manager = CacheManager()
-  manager.start()
-  cache = manager.InMemoryCacheService()
+    cache_path = pathlib.Path(path_to_rules_cache)
+    manager = CacheManager()
+    manager.start()
+    cache = manager.InMemoryCacheService()
 
-  files = next(os.walk(cache_path), (None, None, []))[2]
+    files = next(os.walk(cache_path), (None, None, []))[2]
 
-  for fname in files:
-      with open(cache_path / fname, "rb") as f:
-          cache.add_all(pickle.load(f))
+    for fname in files:
+        with open(cache_path / fname, "rb") as f:
+            cache.add_all(pickle.load(f))
 
-  return cache
+    return cache
 ```
 
 Rules in this cache can be accessed by standard and version using the `get_rules_cache_key` function.
@@ -60,12 +63,10 @@ cache_key_prefix = get_rules_cache_key("sdtmig", "3-4")
 rules = cache.get_all_by_prefix(cache_key_prefix)
 ```
 
-`rules` will now be a list of dictionaries the following keys
+`rules` will now be a list of dictionaries with the following keys:
 
-- `core_id`
-  - e.g. "CORE-000252"
-- `domains`
-  - e.g. `{'Include': ['DM'], 'Exclude': []}` or `{'Include': ['ALL']}`
+- `core_id` (e.g. "CORE-000252")
+- `domains` (e.g. `{'Include': ['DM'], 'Exclude': []}` or `{'Include': ['ALL']}`)
 - `author`
 - `reference`
 - `sensitivity`
@@ -80,7 +81,7 @@ rules = cache.get_all_by_prefix(cache_key_prefix)
 - `datasets`
 - `output_variables`
 
-##### Step 2: Prepare your data
+### Step 2: Prepare Your Data
 
 In order to pass your data through the rules engine, it must be a pandas dataframe of an SDTM dataset. For example:
 
@@ -92,15 +93,32 @@ STUDYID DOMAIN USUBJID  AESEQ AESER    AETERM    ... AESDTH AESLIFE AESHOSP
 [1 rows x 19 columns]
 ```
 
-Before passing this into the rules engine, we need to wrap it in a DatasetVariable.
+Before passing this into the rules engine, we need to wrap it in a DatasetVariable, which requires first wrapping it in a PandasDataset:
 
 ```python
+import pandas as pd
+from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.models.dataset_variable import DatasetVariable
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 
-dataset = DatasetVariable(data)
+# First, create a PandasDataset from your DataFrame
+pandas_dataset = PandasDataset(data=data)
+
+# Create dataset metadata (needed for column_prefix_map)
+dataset_metadata = SDTMDatasetMetadata(
+    name="AE",
+    label="Adverse Events",
+    first_record=data.iloc[0].to_dict() if not data.empty else None
+)
+
+# Then create the DatasetVariable
+dataset_variable = DatasetVariable(
+    pandas_dataset,
+    column_prefix_map={"--": dataset_metadata.domain},
+)
 ```
 
-##### Step 3: Run the (relevant) rules
+### Step 3: Run the (Relevant) Rules
 
 Next, we need to actually run the rules. We can select which rules we want to run based on the domain of the data we're checking and the `"Include"` and `"Exclude"` domains of the rule.
 
@@ -108,8 +126,8 @@ Next, we need to actually run the rules. We can select which rules we want to ru
 # Get the rules for the domain AE
 # (Note: we're ignoring ALL domain rules here)
 ae_rules = [
-  rule for rule in rules
-  if "AE" in rule["domains"].get("Include", [])
+    rule for rule in rules
+    if "AE" in rule["domains"].get("Include", [])
 ]
 ```
 
@@ -128,10 +146,10 @@ from cdisc_rules_engine.models.actions import COREActions
 rule = ae_rules[0]
 results = []
 core_actions = COREActions(
-  results,
-  variable=dataset,
-  domain="AE",
-  rule=rule
+    results,
+    variable=dataset_variable,
+    domain="AE",
+    rule=rule
 )
 ```
 
@@ -141,13 +159,13 @@ All that's left is to run the rule!
 from business_rules.engine import run
 
 was_triggered = run(
-  rule=rule,
-  defined_variables=dataset_variable,
-  defined_actions=core_actions,
+    rule=rule,
+    defined_variables=dataset_variable,
+    defined_actions=core_actions,
 )
 ```
 
-##### Step 5: Interpret the results
+### Step 4: Interpret the Results
 
 The return value of run will tell us if the rule was triggered.
 
@@ -158,12 +176,291 @@ If there were errors, they will have been appended to the results array passed i
 
 ```python
 {
-  'executionStatus': 'success',
-  'domain': 'AE',
-  'variables': ['AESLIFE'],
-  'message': 'AESLIFE is completed, but not equal to "N" or "Y"',
-  'errors': [
-    {'value': {'AESLIFE': 'Maybe'}, 'row': 1}
-  ]
+    'executionStatus': 'success',
+    'domain': 'AE',
+    'variables': ['AESLIFE'],
+    'message': 'AESLIFE is completed, but not equal to "N" or "Y"',
+    'errors': [
+        {'value': {'AESLIFE': 'Maybe'}, 'row': 1}
+    ]
 }
 ```
+
+## Understanding Dataset Abstraction
+
+The CDISC Rules Engine uses an abstraction layer for datasets, which allows for flexibility but requires properly initializing your data before validation. Here's how to work with the `PandasDataset` class:
+
+### Using PandasDataset
+
+To use your pandas DataFrame with the CDISC Rules Engine:
+
+```python
+from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
+import pandas as pd
+
+# Create or load your DataFrame
+my_dataframe = pd.DataFrame({
+    'STUDYID': ['STUDY1', 'STUDY1'],
+    'USUBJID': ['001', '002'],
+    'DOMAIN': ['DM', 'DM'],
+    # Add other columns as needed
+})
+
+# Create a PandasDataset instance
+dataset = PandasDataset(data=my_dataframe)
+
+# Now 'dataset' can be used with the CDISC Rules Engine components
+# For example, with DatasetVariable:
+dataset_variable = DatasetVariable(
+    dataset,
+    column_prefix_map={"--": dataset_metadata.domain},
+    relationship_data=relationship_data,
+    value_level_metadata=value_level_metadata,
+    column_codelist_map=variable_codelist_map,
+    codelist_term_maps=codelist_term_maps,
+)
+```
+
+### Creating an Empty Dataset with Predefined Columns
+
+You can also create an empty dataset with a predefined column structure:
+
+```python
+# Define columns
+columns = ['STUDYID', 'USUBJID', 'DOMAIN', 'AGE', 'SEX']
+
+# Create empty PandasDataset with columns
+empty_dataset = PandasDataset(columns=columns)
+
+# You can later populate this dataset if needed
+empty_dataset._data = pd.DataFrame({
+    'STUDYID': ['STUDY1', 'STUDY1'],
+    'USUBJID': ['001', '002'],
+    'DOMAIN': ['DM', 'DM'],
+    'AGE': [25, 30],
+    'SEX': ['M', 'F']
+})
+```
+
+### Accessing the Underlying DataFrame
+
+If you need to access or modify the underlying pandas DataFrame directly:
+
+```python
+# Get the DataFrame
+df = dataset._data
+
+# Perform operations on the DataFrame
+filtered_df = df[df['AGE'] > 30]
+
+# Update the dataset with the modified DataFrame
+dataset._data = filtered_df
+dataset.length = len(filtered_df)  # Update the length attribute
+```
+
+## Understanding DatasetMetadata and column_prefix_map
+
+The `column_prefix_map` is often dynamically set using the domain information from `SDTMDatasetMetadata`. Here's how these components work together:
+
+### SDTMDatasetMetadata
+
+The `SDTMDatasetMetadata` class provides essential information about SDTM datasets:
+
+```python
+from dataclasses import dataclass
+from typing import Union
+from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
+from cdisc_rules_engine.constants.domains import SUPPLEMENTARY_DOMAINS
+
+@dataclass
+class SDTMDatasetMetadata(DatasetMetadata):
+    """
+    This class is a container for SDTM dataset metadata
+    """
+    @property
+    def domain(self) -> Union[str, None]:
+        return (self.first_record or {}).get("DOMAIN", None)
+
+    @property
+    def rdomain(self) -> Union[str, None]:
+        return (self.first_record or {}).get("RDOMAIN", None) if self.is_supp else None
+
+    @property
+    def is_supp(self) -> bool:
+        """
+        Returns true if name starts with SUPP or SQ
+        """
+        return self.name.startswith(SUPPLEMENTARY_DOMAINS)
+
+    @property
+    def unsplit_name(self) -> str:
+        if self.domain:
+            return self.domain
+        if self.name.startswith("SUPP"):
+            return f"SUPP{self.rdomain}"
+        if self.name.startswith("SQ"):
+            return f"SQ{self.rdomain}"
+        return self.name
+
+    @property
+    def is_split(self) -> bool:
+        return self.name != self.unsplit_name
+```
+
+### How column_prefix_map Uses domain Information
+
+In the rule execution flow, the `column_prefix_map` is typically set using the domain from the dataset metadata:
+
+```python
+dataset_variable = DatasetVariable(
+    dataset,
+    column_prefix_map={"--": dataset_metadata.domain},
+    relationship_data=relationship_data,
+    value_level_metadata=value_level_metadata,
+    column_codelist_map=variable_codelist_map,
+    codelist_term_maps=codelist_term_maps,
+)
+```
+
+This dynamic mapping allows the engine to correctly interpret variable names based on their domain context.
+
+### Creating Dataset Metadata Manually
+
+If you need to manually create dataset metadata for testing or non-standard workflows:
+
+```python
+from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
+from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
+
+# Create your DataFrame
+ae_data = pd.DataFrame({
+    'STUDYID': ['STUDY1'],
+    'USUBJID': ['SUBJ-001'],
+    'DOMAIN': ['AE'],  # Important for domain detection
+    'AETERM': ['Headache'],
+    # ... other columns
+})
+
+# Create PandasDataset
+dataset = PandasDataset(data=ae_data)
+
+# Create dataset metadata
+dataset_metadata = SDTMDatasetMetadata(
+    name="AE",
+    label="Adverse Events",
+    filename="ae.xpt",
+    record_count=len(ae_data),
+    first_record=ae_data.iloc[0].to_dict() if not ae_data.empty else None
+)
+
+# Now when you use this metadata, column_prefix_map will correctly map to 'AE'
+dataset_variable = DatasetVariable(
+    dataset,
+    column_prefix_map={"--": dataset_metadata.domain},  # This becomes {"--": "AE"}
+    # ... other parameters
+)
+```
+
+## Complete End-to-End Example
+
+Here's a comprehensive example showing how to set up your environment with dataset metadata and execute a rule:
+
+```python
+import pandas as pd
+import os
+from copy import deepcopy
+from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
+from cdisc_rules_engine.models.dataset_variable import DatasetVariable
+from cdisc_rules_engine.models.rule import Rule
+from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
+from cdisc_rules_engine.services.rule_processor import RuleProcessor
+from cdisc_rules_engine.constants.rule_constants import RuleConstants
+from cdisc_rules_engine.services.dataset_preprocessor import DatasetPreprocessor
+from business_rules import run
+from business_rules.actions import BaseActions as COREActions
+
+# 1. Create your DataFrame
+ae_data = pd.DataFrame({
+    'STUDYID': ['STUDY1', 'STUDY1', 'STUDY1'],
+    'USUBJID': ['SUBJ-001', 'SUBJ-002', 'SUBJ-003'],
+    'DOMAIN': ['AE', 'AE', 'AE'],
+    'AETERM': ['Headache', 'Nausea', 'Fever'],
+    'AESEV': ['MILD', 'MODERATE', 'SEVERE'],
+    # ... other columns
+})
+
+# 2. Create PandasDataset
+dataset = PandasDataset(data=ae_data)
+
+# 3. Create SDTMDatasetMetadata
+# Note how first_record is set with the first row of data, which includes DOMAIN='AE'
+dataset_metadata = SDTMDatasetMetadata(
+    name="AE",
+    label="Adverse Events",
+    filename="ae.xpt",
+    record_count=len(ae_data),
+    first_record=ae_data.iloc[0].to_dict() if not ae_data.empty else None
+)
+
+# 4. Prepare other parameters
+relationship_data = {}
+value_level_metadata = []
+variable_codelist_map = {
+    'name': 'sdtmig-3-4-codelists',
+    'AESEV': [
+        {'coded_value': 'MILD', 'decode': 'Mild'},
+        {'coded_value': 'MODERATE', 'decode': 'Moderate'},
+        {'coded_value': 'SEVERE', 'decode': 'Severe'}
+    ],
+}
+codelist_term_maps = []
+
+# 5. Create dataset variable
+# Note how column_prefix_map uses dataset_metadata.domain which will resolve to "AE"
+dataset_variable = DatasetVariable(
+    dataset,
+    column_prefix_map={"--": dataset_metadata.domain},  # This becomes {"--": "AE"}
+    relationship_data=relationship_data,
+    value_level_metadata=value_level_metadata,
+    column_codelist_map=variable_codelist_map,
+    codelist_term_maps=codelist_term_maps,
+)
+
+# 6. Create a rule
+rule = Rule(
+    rule_id="CG0001",
+    rule_category="SDTM",
+    standards=["SDTMIG 3.4"],
+    severity=RuleConstants.SEVERITY_ERROR,
+    domain="AE",
+    datasets_targeted=["AE"],
+    expression="not is_missing(AETERM)",
+    human_description="AETERM cannot be missing",
+    machine_description="AETERM variable cannot be null or empty"
+)
+
+# 7. Process the rule
+rule_processor = RuleProcessor()
+results = rule_processor.process_rule(rule, dataset_variable)
+
+# 8. Display results
+for result in results:
+    print(f"Rule {result.rule_id} - Violation: {result.violation}")
+    if result.violations_data:
+        for violation in result.violations_data:
+            print(f"  Row: {violation.get('row_number')}, {violation}")
+```
+
+This example demonstrates how the domain information flows from your data through the SDTMDatasetMetadata to eventually form the column_prefix_map in DatasetVariable.
+
+## Troubleshooting
+
+If you're seeing errors related to the dataset integration, check that:
+
+1. Your DataFrame contains all the required columns for the validation rules
+2. The `column_prefix_map` correctly maps variable prefixes to domains (e.g., {"--": "AE"} for Adverse Events)
+3. Your `column_codelist_map` includes all the necessary codelists for variables that have controlled terminology
+4. Any metadata passed to the DatasetVariable constructor is correctly formatted
+5. The dataset object is an instance of `PandasDataset`, not a raw pandas DataFrame
+6. All required parameters are provided to the DatasetVariable constructor
