@@ -130,6 +130,7 @@ Run `python core.py validate --help` to see the list of validation options.
                                   --output-format JSON.
   -dv, --define-version TEXT      Define-XML version used for validation
   -dxp, --define-xml-path         Path to define-xml file.
+  -vx, --validate-xml             Enable XML validation (default 'y' to enable, otherwise disable)
   --whodrug TEXT                  Path to directory with WHODrug dictionary
                                   files
   --meddra TEXT                   Path to directory with MedDRA dictionary
@@ -173,7 +174,35 @@ Run `python core.py validate --help` to see the list of validation options.
 
 To validate a folder using rules for SDTM-IG version 3.4 use the following command:
 
-    `python core.py validate -s sdtmig -v 3-4 -d path/to/datasets`
+`python core.py validate -s sdtmig -v 3-4 -d path/to/datasets`
+
+##### **Validate single rule**
+
+`python core.py validate -s sdtmig -v 3-4 -dp <path to dataset json file> -r <path to rule json file> --meddra ./meddra/ --whodrug ./whodrug/`
+Note: JSON dataset should match the format provided by the rule editor:
+
+```json
+{
+  "datasets": [
+    {
+      "filename": "cm.xpt",
+      "label": "Concomitant/Concurrent medications",
+      "domain": "CM",
+      "variables": [
+        {
+          "name": "STUDYID",
+          "label": "Study Identifier",
+          "type": "Char",
+          "length": 10
+        }
+      ],
+      "records": {
+        "STUDYID": ["CDISC-TEST", "CDISC-TEST", "CDISC-TEST", "CDISC-TEST"]
+      }
+    }
+  ]
+}
+```
 
 ##### **Understanding the Rules Report**
 
@@ -221,67 +250,6 @@ To obtain an api key, please follow the instructions found here: <https://wiki.c
 
 **- list-rule-sets** - lists all standards and versions for which rules are available:
 `python core.py list-rule-sets`
-
-**- test** - Test authored rule given dataset in json format
-
-```
-  -ca, --cache TEXT               Relative path to cache files containing pre
-                                  loaded metadata and rules
-  -dp, --dataset-path TEXT        Absolute path to dataset file
-  -d, --data TEXT                 Path to directory containing data files
-  -l, --log-level [info|debug|error|critical|disabled|warn]
-                                  Sets log level for engine logs, logs are
-                                  disabled by default
-  -s, --standard TEXT             CDISC standard to validate against
-                                  [required]
-  -v, --version TEXT              Standard version to validate against
-                                  [required]
-  -ss, --substandard TEXT         Substandard to validate against
-                                  [required for TIG]
-  -ct, --controlled-terminology-package TEXT
-                                  Controlled terminology package to validate
-                                  against, can provide more than one
-  -dv, --define-version TEXT      Define-XML version used for validation
-  --whodrug TEXT                  Path to directory with WHODrug dictionary
-                                  files
-  --meddra TEXT                   Path to directory with MedDRA dictionary
-                                  files
-  --loinc TEXT                    Path to directory with LOINC dictionary
-                                  files
-  -r, --rule TEXT                 Path to rule json file.
-  -dxp                            Path to define-xml file.
-  --help                          Show this message and exit.
-```
-
-EX: `python core.py test -s sdtmig -v 3-4 -dp <path to dataset json file> -r <path to rule json file> --meddra ./meddra/ --whodrug ./whodrug/`
-Note: JSON dataset should match the format provided by the rule editor:
-
-```
-{
-    "datasets": [{
-      "filename": "cm.xpt",
-      "label": "Concomitant/Concurrent medications",
-      "domain": "CM",
-      "variables": [
-        {
-          "name": "STUDYID",
-          "label": "Study Identifier",
-          "type": "Char",
-          "length": 10
-        }
-      ],
-      "records": {
-        "STUDYID": [
-          "CDISC-TEST",
-          "CDISC-TEST",
-          "CDISC-TEST",
-          "CDISC-TEST"
-        ],
-      }
-    }
-  ]
-}
-```
 
 **- list-ct** - list ct packages available in the cache
 

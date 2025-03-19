@@ -29,7 +29,6 @@ from scripts.script_utils import (
     get_cache_service,
     get_library_metadata_from_cache,
     get_rules,
-    get_datasets,
     get_max_dataset_size,
 )
 from cdisc_rules_engine.services.reporting import BaseReport, ReportFactory
@@ -74,6 +73,7 @@ def validate_single_rule(
         library_metadata=library_metadata,
         max_dataset_size=max_dataset_size,
         dataset_paths=args.dataset_paths,
+        validate_xml=args.validate_xml,
     )
     results = []
     validated_domains = set()
@@ -142,7 +142,7 @@ def run_validation(args: Validation_args):
     large_dataset_validation: bool = (
         data_service.dataset_implementation != PandasDataset
     )
-    datasets = get_datasets(data_service, args.dataset_paths)
+    datasets = data_service.get_datasets()
     created_files = []
     if large_dataset_validation and data_service.standard != "usdm":
         # convert all files to parquet temp files

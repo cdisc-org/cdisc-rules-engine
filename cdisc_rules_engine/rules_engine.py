@@ -5,7 +5,6 @@ from business_rules import export_rule_data
 from business_rules.engine import run
 import os
 from cdisc_rules_engine.config import config as default_config
-from cdisc_rules_engine.dummy_models.dummy_dataset import DummyDataset
 from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 from cdisc_rules_engine.enums.rule_types import RuleTypes
 from cdisc_rules_engine.exceptions.custom_exceptions import (
@@ -29,7 +28,7 @@ from cdisc_rules_engine.models.validation_error_container import (
     ValidationErrorContainer,
 )
 from cdisc_rules_engine.services import logger
-from cdisc_rules_engine.services.cache import CacheServiceFactory, InMemoryCacheService
+from cdisc_rules_engine.services.cache import CacheServiceFactory
 from cdisc_rules_engine.services.data_services import DataServiceFactory
 from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import (
     DefineXMLReaderFactory,
@@ -93,27 +92,6 @@ class RulesEngine:
 
     def get_schema(self):
         return export_rule_data(DatasetVariable, COREActions)
-
-    def test_validation(
-        self,
-        rule: dict,
-        dataset_path: str,
-        datasets: List[DummyDataset],
-        dataset_metadata: SDTMDatasetMetadata,
-    ):
-        self.data_service = DataServiceFactory(
-            config=self.config,
-            cache_service=InMemoryCacheService.get_instance(),
-            standard=self.standard,
-            standard_version=self.standard_version,
-            standard_substandard=self.standard_substandard,
-            library_metadata=self.library_metadata,
-        ).get_dummy_data_service(datasets)
-        self.rule_processor = RuleProcessor(
-            self.data_service, self.cache, self.library_metadata
-        )
-        self.data_processor = DataProcessor(self.data_service, self.cache)
-        return self.validate_single_rule(rule, dataset_path, datasets, dataset_metadata)
 
     def validate(
         self,
