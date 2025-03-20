@@ -24,6 +24,9 @@ from cdisc_rules_engine.models.actions import COREActions
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from cdisc_rules_engine.models.dataset_variable import DatasetVariable
 from cdisc_rules_engine.models.failed_validation_entity import FailedValidationEntity
+from cdisc_rules_engine.models.rule_conditions.condition_composite_factory import (
+    ConditionCompositeFactory,
+)
 from cdisc_rules_engine.models.validation_error_container import (
     ValidationErrorContainer,
 )
@@ -93,33 +96,23 @@ class RulesEngine:
     def get_schema(self):
         return export_rule_data(DatasetVariable, COREActions)
 
-    def validate(
-        self,
-        rules: List[dict],
-        dataset_path: str,
-        datasets: Iterable[SDTMDatasetMetadata],
-        dataset_domain: str,
-    ) -> dict:
-        """
-        This function is an entrypoint to validation process.
-        It is a wrapper over validate_single_rule that allows
-        to validate a list of rules.
-        """
-        logger.info(
-            f"Validating domain {dataset_domain}. "
-            f"dataset_path={dataset_path}. datasets={datasets}."
+    def validate_single_rule(self, rule: dict, datasets: Iterable[SDTMDatasetMetadata]):
+        results = {}
+        rule["conditions"] = ConditionCompositeFactory.get_condition_composite(
+            rule["conditions"]
         )
-        output = {}
-        for rule in rules:
-            result = self.validate_single_rule(
-                rule, dataset_path, datasets, dataset_domain
+        for dataset_metadata in datasets:
+            if dataset_metadata.unsplit_name in results:
+                continue  # handling split datasets
+            results[dataset_metadata.unsplit_name] = self.validate_single_dataset(
+                rule,
+                dataset_metadata.full_path,
+                datasets,
+                dataset_metadata,
             )
-            # result may be None if a rule is not suitable for validation
-            if result is not None:
-                output[rule.get("core_id")] = result
-        return output
+        return results
 
-    def validate_single_rule(
+    def validate_single_dataset(
         self,
         rule: dict,
         dataset_path: str,
