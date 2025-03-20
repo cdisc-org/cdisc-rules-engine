@@ -165,15 +165,14 @@ class BaseDataService(DataServiceInterface, ABC):
         datasets: Iterable[SDTMDatasetMetadata],
         dataset_metadata: SDTMDatasetMetadata,
     ) -> Optional[str]:
-        if self.standard is None or self.version is None:
-            raise Exception("Missing standard and version data")
-        class_data, _ = get_class_and_domain_metadata(
-            self.library_metadata.standard_metadata,
-            dataset_metadata.unsplit_name,
-        )
-        name = class_data.get("name")
-        if name:
-            return convert_library_class_name_to_ct_class(name)
+        if self.library_metadata.standard_metadata:
+            class_data, _ = get_class_and_domain_metadata(
+                self.library_metadata.standard_metadata,
+                dataset_metadata.unsplit_name,
+            )
+            name = class_data.get("name")
+            if name:
+                return convert_library_class_name_to_ct_class(name)
         return self._handle_special_cases(
             dataset, dataset_metadata, file_path, datasets
         )
