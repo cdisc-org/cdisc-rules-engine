@@ -165,7 +165,7 @@ class BaseDataService(DataServiceInterface, ABC):
         datasets: Iterable[SDTMDatasetMetadata],
         dataset_metadata: SDTMDatasetMetadata,
     ) -> Optional[str]:
-        if self.library_metadat.standard_metadata:
+        if self.library_metadata.standard_metadata:
             class_data, _ = get_class_and_domain_metadata(
                 self.library_metadata.standard_metadata,
                 dataset_metadata.unsplit_name,
