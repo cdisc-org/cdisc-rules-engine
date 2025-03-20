@@ -155,7 +155,6 @@ def test_get_detailed_data():
             "message": "AESTDY and DOMAIN are equal to test",
             "executability": "Fully Executable",
             "dataset": None,
-            "domain": "AE",
             "USUBJID": "CDISC002",
             "row": 1,
             "SEQ": 2,
@@ -167,7 +166,6 @@ def test_get_detailed_data():
             "message": "AESTDY and DOMAIN are equal to test",
             "executability": "Fully Executable",
             "dataset": None,
-            "domain": "AE",
             "USUBJID": "CDISC003",
             "row": 9,
             "SEQ": 10,
@@ -179,7 +177,6 @@ def test_get_detailed_data():
             "message": "TTVARs are wrong",
             "executability": "Partially Executable",
             "dataset": None,
-            "domain": "TT",
             "USUBJID": "CDISC002",
             "row": 1,
             "SEQ": 2,
@@ -201,14 +198,12 @@ def test_get_summary_data():
     errors = [
         {
             "dataset": None,
-            "domain": "AE",
             "core_id": mock_validation_results[0].id,
             "message": "AESTDY and DOMAIN are equal to test",
             "issues": 2,
         },
         {
             "dataset": None,
-            "domain": "TT",
             "core_id": mock_validation_results[1].id,
             "message": "TTVARs are wrong",
             "issues": 1,
