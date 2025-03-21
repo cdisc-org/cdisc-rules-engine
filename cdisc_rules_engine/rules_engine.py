@@ -156,14 +156,14 @@ class RulesEngine:
             f"Validating {dataset_metadata.name}. "
             f"rule={rule}. dataset_path={dataset_path}. datasets={datasets}."
         )
-
         try:
-            if self.rule_processor.is_suitable_for_validation(
+            is_suitable, reason = self.rule_processor.is_suitable_for_validation(
                 rule,
                 dataset_metadata,
                 dataset_path,
                 datasets,
-            ):
+            )
+            if is_suitable:
                 result: List[Union[dict, str]] = self.validate_rule(
                     rule, dataset_path, datasets, dataset_metadata
                 )
@@ -185,12 +185,14 @@ class RulesEngine:
                         ).to_representation()
                     ]
             else:
-                logger.info(f"Skipped dataset {dataset_metadata.name}.")
-                error_obj: ValidationErrorContainer = ValidationErrorContainer(
-                    status=ExecutionStatus.SKIPPED.value
+                logger.info(
+                    f"Skipped dataset {dataset_metadata.name}. Reason: {reason}"
                 )
-                error_obj.domain = (
-                    dataset_metadata.domain or dataset_metadata.rdomain or ""
+                error_obj: ValidationErrorContainer = ValidationErrorContainer(
+                    status=ExecutionStatus.SKIPPED.value,
+                    message=reason,
+                    dataset=os.path.basename(dataset_path),
+                    domain=dataset_metadata.domain or dataset_metadata.rdomain or "",
                 )
                 return [error_obj.to_representation()]
         except Exception as e:

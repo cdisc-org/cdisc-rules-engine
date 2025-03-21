@@ -505,25 +505,33 @@ class RuleProcessor:
         dataset_metadata: SDTMDatasetMetadata,
         file_path: str,
         datasets: Iterable[SDTMDatasetMetadata],
-    ) -> bool:
-        is_suitable: bool = (
-            self.valid_rule_structure(rule)
-            and self.rule_applies_to_domain(
-                dataset_metadata,
-                rule,
+    ) -> Tuple[bool, str]:
+        """Check if rule is suitable and return reason if not"""
+        rule_id = rule.get("core_id", "unknown")
+        dataset_name = dataset_metadata.name
+        if not self.valid_rule_structure(rule):
+            reason = f"Rule skipped - invalid rule structure for rule id={rule_id}"
+            logger.info(f"is_suitable_for_validation. {reason}, result=False")
+            return False, reason
+        if not self.rule_applies_to_domain(dataset_metadata, rule):
+            reason = (
+                f"Rule skipped - doesn't apply to domain for "
+                f"rule id={rule_id}, dataset={dataset_name}"
             )
-            and self.rule_applies_to_class(
-                rule,
-                file_path,
-                datasets,
-                dataset_metadata,
+            logger.info(f"is_suitable_for_validation. {reason}, result=False")
+            return False, reason
+        if not self.rule_applies_to_class(rule, file_path, datasets, dataset_metadata):
+            reason = (
+                f"Rule skipped - doesn't apply to class for "
+                f"rule id={rule_id}, dataset={dataset_name}"
             )
-        )
+            logger.info(f"is_suitable_for_validation. {reason}, result=False")
+            return False, reason
         logger.info(
-            f"is_suitable_for_validation. rule id={rule.get('core_id')}, "
-            f"dataset={dataset_metadata.name}, result={is_suitable}"
+            f"is_suitable_for_validation. rule id={rule_id}, "
+            f"dataset={dataset_name}, result=True"
         )
-        return is_suitable
+        return True, ""
 
     @staticmethod
     def extract_target_names_from_rule(
