@@ -305,7 +305,7 @@ from cdisc_rules_engine.models.dataset_variable import DatasetVariable
 from cdisc_rules_engine.models.rule import Rule
 from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
-from cdisc_rules_engine.services.rule_processor import RuleProcessor
+from cdisc_rules_engine.utilities.rule_processor import RuleProcessor
 from cdisc_rules_engine.constants.rule_constants import RuleConstants
 from cdisc_rules_engine.services.dataset_preprocessor import DatasetPreprocessor
 from business_rules import run
