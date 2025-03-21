@@ -64,12 +64,12 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:  # 
         standard = standards_data.get("product")
         standard_version = standards_data.get("version")
         standard_substandard = None
-        if standard and standard.lower() == "tig":
-            for std in rule.get("Authorities", [])[0].get("Standards", []):
-                if std.get("Name", "").lower() == "tig":
-                    if std.get("Substandard") is not None:
-                        standard_substandard = std.get("Substandard").lower()
-                    break
+        # if standard and standard.lower() == "tig":
+        # for std in rule.get("Authorities", [])[0].get("Standards", []):
+        #     if std.get("Name", "").lower() == "tig":
+        #         if std.get("Substandard") is not None:
+        #             standard_substandard = std.get("Substandard").lower()
+        #         break
         codelists = json_data.get("codelists", [])
         cache = InMemoryCacheService()
         if standards_data or codelists:
