@@ -55,3 +55,39 @@ jobs:
             core-ubuntu-20-04.zip
             core-mac.zip
             core-windows.zip
+  deploy-PyPi:
+    needs: create-release-assets
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install build setuptools wheel twine
+          pip install -r requirements.txt
+
+      - name: Build package
+        run: |
+          python -m build
+
+      - name: Check package size
+        run: |
+          echo "Package size:"
+          ls -lh dist/*.whl
+
+      - name: Publish to TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          verbose: true
+          skip-existing: true
