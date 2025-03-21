@@ -96,12 +96,12 @@ def test_validate_rule_single_dataset_check(dataset_rule_greater_than: dict):
             standard="usdm", dataset_paths=[dataset_path]
         ).validate_single_dataset(
             dataset_rule_greater_than,
-            dataset_path,
             [],
             SDTMDatasetMetadata(
                 name="EC",
                 first_record={"DOMAIN": "EC"},
                 filename="USDM_EliLilly_NCT03421379_Diabetes.json",
+                full_path=dataset_path,
             ),
         )
 

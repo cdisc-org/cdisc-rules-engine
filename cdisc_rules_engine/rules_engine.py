@@ -106,7 +106,6 @@ class RulesEngine:
                 continue  # handling split datasets
             results[dataset_metadata.unsplit_name] = self.validate_single_dataset(
                 rule,
-                dataset_metadata.full_path,
                 datasets,
                 dataset_metadata,
             )
@@ -115,7 +114,6 @@ class RulesEngine:
     def validate_single_dataset(
         self,
         rule: dict,
-        dataset_path: str,
         datasets: Iterable[SDTMDatasetMetadata],
         dataset_metadata: SDTMDatasetMetadata,
     ) -> List[Union[dict, str]]:
@@ -125,18 +123,17 @@ class RulesEngine:
         """
         logger.info(
             f"Validating {dataset_metadata.name}. "
-            f"rule={rule}. dataset_path={dataset_path}. datasets={datasets}."
+            f"rule={rule}. dataset_path={dataset_metadata.full_path}. datasets={datasets}."
         )
 
         try:
             if self.rule_processor.is_suitable_for_validation(
                 rule,
                 dataset_metadata,
-                dataset_path,
                 datasets,
             ):
                 result: List[Union[dict, str]] = self.validate_rule(
-                    rule, dataset_path, datasets, dataset_metadata
+                    rule, datasets, dataset_metadata
                 )
                 logger.info(
                     f"Validated dataset {dataset_metadata.name}. Result = {result}"
@@ -148,7 +145,7 @@ class RulesEngine:
                     return [
                         ValidationErrorContainer(
                             **{
-                                "dataset": os.path.basename(dataset_path),
+                                "dataset": dataset_metadata.filename,
                                 "domain": dataset_metadata.domain
                                 or dataset_metadata.rdomain,
                                 "errors": [],
@@ -176,7 +173,7 @@ class RulesEngine:
             """
             )
             error_obj: ValidationErrorContainer = self.handle_validation_exceptions(
-                e, dataset_path, dataset_path
+                e, dataset_metadata.full_path, dataset_metadata.full_path
             )
             error_obj.domain = dataset_metadata.domain or dataset_metadata.rdomain or ""
             # this wrapping into a list is necessary to keep return type consistent
@@ -209,7 +206,6 @@ class RulesEngine:
     def validate_rule(
         self,
         rule: dict,
-        dataset_path: str,
         datasets: Iterable[SDTMDatasetMetadata],
         dataset_metadata: SDTMDatasetMetadata,
     ) -> List[Union[dict, str]]:
@@ -252,7 +248,7 @@ class RulesEngine:
             == RuleTypes.VALUE_LEVEL_METADATA_CHECK_AGAINST_DEFINE.value
         ):
             value_level_metadata: List[dict] = self.get_define_xml_value_level_metadata(
-                dataset_path, dataset_metadata
+                dataset_metadata.full_path, dataset_metadata.unsplit_name
             )
             kwargs["value_level_metadata"] = value_level_metadata
 
@@ -277,21 +273,18 @@ class RulesEngine:
             # When duplicating conditions,
             # rule should be copied to prevent updates to concurrent rule executions
             return self.execute_rule(
-                rule_copy, dataset, dataset_path, datasets, dataset_metadata, **kwargs
+                rule_copy, dataset, datasets, dataset_metadata, **kwargs
             )
 
         kwargs["ct_packages"] = list(self.ct_packages)
 
         logger.info(f"Using dataset build by: {builder.__class__}")
-        return self.execute_rule(
-            rule, dataset, dataset_path, datasets, dataset_metadata, **kwargs
-        )
+        return self.execute_rule(rule, dataset, datasets, dataset_metadata, **kwargs)
 
     def execute_rule(
         self,
         rule: dict,
         dataset: DatasetInterface,
-        dataset_path: str,
         datasets: Iterable[SDTMDatasetMetadata],
         dataset_metadata: SDTMDatasetMetadata,
         value_level_metadata: List[dict] = None,
@@ -319,7 +312,7 @@ class RulesEngine:
         dataset = deepcopy(dataset)
         # preprocess dataset
         dataset_preprocessor = DatasetPreprocessor(
-            dataset, dataset_metadata, dataset_path, self.data_service, self.cache
+            dataset, dataset_metadata, self.data_service, self.cache
         )
         dataset = dataset_preprocessor.preprocess(rule_copy, datasets)
         dataset = self.rule_processor.perform_rule_operations(
@@ -327,7 +320,7 @@ class RulesEngine:
             dataset,
             dataset_metadata.unsplit_name,
             datasets,
-            dataset_path,
+            dataset_metadata.full_path,
             standard=self.standard,
             standard_version=self.standard_version,
             standard_substandard=self.standard_substandard,
@@ -340,7 +333,7 @@ class RulesEngine:
             and self.rule_processor.is_relationship_dataset(dataset_metadata.name)
         ):
             relationship_data = self.data_processor.preprocess_relationship_dataset(
-                os.path.dirname(dataset_path), dataset, datasets
+                os.path.dirname(dataset_metadata.full_path), dataset, datasets
             )
         dataset_variable = DatasetVariable(
             dataset,
