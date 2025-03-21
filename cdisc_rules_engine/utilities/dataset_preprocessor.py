@@ -37,13 +37,11 @@ class DatasetPreprocessor:
         self,
         dataset: DatasetInterface,
         dataset_metadata: SDTMDatasetMetadata,
-        dataset_path: str,
         data_service: DataServiceInterface,
         cache_service: CacheServiceInterface,
     ):
         self._dataset: DatasetInterface = dataset
         self._dataset_metadata: SDTMDatasetMetadata = dataset_metadata
-        self._dataset_path: str = dataset_path
         self._data_service = data_service
         self._rule_processor = RuleProcessor(self._data_service, cache_service)
 
@@ -115,7 +113,9 @@ class DatasetPreprocessor:
 
     def _download_dataset(self, filename: str) -> DatasetInterface:
         return self._data_service.get_dataset(
-            dataset_name=os.path.join(os.path.dirname(self._dataset_path), filename)
+            dataset_name=os.path.join(
+                os.path.dirname(self._dataset_metadata.full_path), filename
+            )
         )
 
     def _merge_datasets(

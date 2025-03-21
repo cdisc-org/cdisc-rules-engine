@@ -42,8 +42,7 @@ def test_preprocess_no_datasets_in_rule(dataset_rule_equal_to_error_objects: dic
     data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
     preprocessor = DatasetPreprocessor(
         dataset,
-        SDTMDatasetMetadata(name="AE"),
-        "path",
+        SDTMDatasetMetadata(name="AE", full_path="path"),
         data_service,
         InMemoryCacheService(),
     )
@@ -359,8 +358,9 @@ def test_preprocess(
     data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
     preprocessor = DatasetPreprocessor(
         ec_dataset,
-        SDTMDatasetMetadata(first_record={"DOMAIN": "EC"}),
-        os.path.join("path", "ec.xpt"),
+        SDTMDatasetMetadata(
+            first_record={"DOMAIN": "EC"}, full_path=os.path.join("path", "ec.xpt")
+        ),
         data_service,
         InMemoryCacheService(),
     )
@@ -458,8 +458,9 @@ def test_preprocess_relationship_dataset(
     data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
     preprocessor = DatasetPreprocessor(
         ec_dataset,
-        SDTMDatasetMetadata(first_record={"DOMAIN": "EC"}),
-        os.path.join("path", "ec.xpt"),
+        SDTMDatasetMetadata(
+            first_record={"DOMAIN": "EC"}, full_path=os.path.join("path", "ec.xpt")
+        ),
         data_service,
         InMemoryCacheService(),
     )
@@ -673,8 +674,10 @@ def test_preprocess_relrec_dataset(mock_get_dataset: MagicMock):
 
     preprocessor = DatasetPreprocessor(
         ec_dataset,
-        SDTMDatasetMetadata(first_record={"DOMAIN": "EC"}),
-        os.path.join("path", "ec.xpt"),
+        SDTMDatasetMetadata(
+            first_record={"DOMAIN": "EC"},
+            full_path=os.path.join("path", "ec.xpt"),
+        ),
         data_service,
         InMemoryCacheService(),
     )
@@ -766,8 +769,10 @@ def test_preprocess_with_merge_comparison(
     data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
     preprocessor = DatasetPreprocessor(
         target_dataset,
-        SDTMDatasetMetadata(first_record={"DOMAIN": "EC"}),
-        os.path.join("study_id", "data_bundle_id", "ec.xpt"),
+        SDTMDatasetMetadata(
+            first_record={"DOMAIN": "EC"},
+            full_path=os.path.join("study_id", "data_bundle_id", "ec.xpt"),
+        ),
         data_service,
         InMemoryCacheService(),
     )
@@ -811,8 +816,7 @@ def test_preprocess_supp_with_blank_idvar_idvarval(mock_get_dataset):
     data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
     preprocessor = DatasetPreprocessor(
         main_dataset,
-        SDTMDatasetMetadata(first_record={"DOMAIN": "AE"}),
-        "path",
+        SDTMDatasetMetadata(first_record={"DOMAIN": "AE"}, full_path="path"),
         data_service,
         InMemoryCacheService(),
     )

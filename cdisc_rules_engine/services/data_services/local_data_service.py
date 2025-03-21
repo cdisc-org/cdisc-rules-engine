@@ -234,21 +234,15 @@ class LocalDataService(BaseDataService):
         return reader.to_parquet(file_path)
 
     def get_datasets(self) -> List[dict]:
-        datasets = []
-        for dataset_path in self.dataset_paths:
-            metadata: SDTMDatasetMetadata = self.get_raw_dataset_metadata(
-                dataset_name=dataset_path
-            )
-            datasets.append(
-                {
-                    "domain": metadata.domain,
-                    "filename": metadata.filename,
-                    "full_path": dataset_path,
-                    "length": metadata.record_count,
-                    "label": metadata.label,
-                    "file_size": metadata.file_size,
-                    "modification_date": metadata.modification_date,
-                }
-            )
-
+        datasets = [
+            self.get_raw_dataset_metadata(dataset_name=dataset_path)
+            for dataset_path in self.dataset_paths
+        ]
         return datasets
+
+    @staticmethod
+    def is_valid_data(dataset_paths: List[str]) -> bool:
+        for dataset_path in dataset_paths:
+            if not os.path.exists(dataset_path):
+                return False
+        return len(dataset_paths) > 0

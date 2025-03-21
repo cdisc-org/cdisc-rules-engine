@@ -23,5 +23,6 @@ Validation_args = namedtuple(
         "local_rules_id",
         "progress",
         "define_xml_path",
+        "validate_xml",
     ],
 )

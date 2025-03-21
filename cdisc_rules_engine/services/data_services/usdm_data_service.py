@@ -1,6 +1,6 @@
 import os
 from io import IOBase
-from typing import Iterable, List
+from typing import List, Sequence
 from json import load
 from jsonpath_ng import DatumInContext
 from jsonpath_ng.ext import parse
@@ -377,7 +377,7 @@ class USDMDataService(BaseDataService):
         return extract_file_name_from_path_string(dataset_name).split(".")[0]
 
     @staticmethod
-    def is_USDM_data(dataset_paths: Iterable[str]):
+    def is_valid_data(dataset_paths: Sequence[str]):
         if (
             dataset_paths
             and len(dataset_paths) == 1
