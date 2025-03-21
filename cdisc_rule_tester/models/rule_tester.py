@@ -63,18 +63,6 @@ class RuleTester:
             variable_codelist_map=self.cache.get(variable_codelist_cache_key),
             ct_package_metadata=ct_package_metadata,
         )
-        # if not standard and not standard_version and rule:
-        #     standard = (
-        #         rule.get("Authorities")[0].get("Standards")[0].get("Name").lower()
-        #     )
-        #     standard_substandard = (
-        #         rule.get("Authorities")[0].get("Standards")[0].get("Substandard", None)
-        #     )
-        #     if standard_substandard is not None:
-        #         standard_substandard = standard_substandard.lower()
-        #     standard_version = (
-        #         rule.get("Authorities")[0].get("Standards")[0].get("Version")
-        #     )
         self.data_service = DummyDataService.get_instance(
             self.cache,
             ConfigService(),
