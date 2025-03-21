@@ -1532,10 +1532,10 @@ def test_validate_value_level_metadata_against_define_xml(
             [
                 {
                     "domain": "AE",
-                    "dataset": None,
+                    "dataset": "ae.xpt",
                     "executionStatus": ExecutionStatus.SKIPPED.value,
                     "variables": [],
-                    "message": None,
+                    "message": "Rule skipped - doesn't apply to domain for rule id=MockRule, dataset=",
                     "errors": [],
                 }
             ],
