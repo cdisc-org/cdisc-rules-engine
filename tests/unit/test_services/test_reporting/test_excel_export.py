@@ -164,7 +164,6 @@ def test_get_detailed_data(excel=True):
                 "AESTDY and DOMAIN are equal to test",
                 "Partially Executable",
                 None,
-                "AE",
                 "CDISC002",
                 1,
                 2,
@@ -176,7 +175,6 @@ def test_get_detailed_data(excel=True):
                 "AESTDY and DOMAIN are equal to test",
                 "Partially Executable",
                 None,
-                "AE",
                 "CDISC003",
                 9,
                 10,
@@ -188,7 +186,6 @@ def test_get_detailed_data(excel=True):
                 "TTVARs are wrong",
                 "Fully Executable",
                 None,
-                "TT",
                 "CDISC002",
                 1,
                 2,
@@ -211,14 +208,12 @@ def test_get_summary_data():
         errors = [
             [
                 None,
-                "AE",
                 mock_validation_results[0].id,
                 "AESTDY and DOMAIN are equal to test",
                 2,
             ],
             [
                 None,
-                "TT",
                 mock_validation_results[1].id,
                 "TTVARs are wrong",
                 1,
@@ -261,9 +256,10 @@ def test_get_export():
         assert wb["Conformance Details"]["B3"].value == "10.1 seconds"
         assert wb["Conformance Details"]["B4"].value == __version__
         assert wb["Conformance Details"]["B7"].value == "SDTMIG"
-        assert wb["Conformance Details"]["B8"].value == "V3.4"
-        assert wb["Conformance Details"]["B9"].value == ", ".join(cdiscCt)
-        assert wb["Conformance Details"]["B10"].value == "2.1"
+        assert wb["Conformance Details"]["B8"].value == "NAP"
+        assert wb["Conformance Details"]["B9"].value == "V3.4"
+        assert wb["Conformance Details"]["B10"].value == ", ".join(cdiscCt)
+        assert wb["Conformance Details"]["B11"].value == "2.1"
 
         # Check dataset details tab
         assert wb["Dataset Details"]["A2"].value == "test.xpt"  # filename
