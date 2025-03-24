@@ -792,6 +792,7 @@ def define_xml_variable_validation_rule() -> dict:
     return {
         "core_id": "TEST1",
         "severity": "Error",
+        "Authorities": [{"Standards": [{"Name": "SDTMIG", "Version": "3.4"}]}],
         "standards": [],
         "domains": {"Include": [ALL_KEYWORD]},
         "output_variables": ["variable_size"],

@@ -52,7 +52,7 @@ class DataServiceFactory(FactoryInterface):
     def get_data_service(
         self, dataset_paths: Iterable[str] = []
     ) -> DataServiceInterface:
-        if USDMDataService.is_USDM_data(dataset_paths):
+        if USDMDataService.is_valid_data(dataset_paths):
             """Get json file tree to dataset data service"""
             return self.get_service(
                 "usdm",
@@ -62,6 +62,11 @@ class DataServiceFactory(FactoryInterface):
                 library_metadata=self.library_metadata,
                 dataset_path=dataset_paths[0],
                 dataset_implementation=self.get_dataset_implementation(),
+            )
+        elif DummyDataService.is_valid_data(dataset_paths):
+            """Get dummy data service"""
+            return self.get_dummy_data_service(
+                data=DummyDataService.get_data(dataset_paths)
             )
         else:
             """Get local Directory data service"""

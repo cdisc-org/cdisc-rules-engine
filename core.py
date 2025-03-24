@@ -14,12 +14,9 @@ from cdisc_rules_engine.config import config
 from cdisc_rules_engine.enums.default_file_paths import DefaultFilePaths
 from cdisc_rules_engine.enums.progress_parameter_options import ProgressParameterOptions
 from cdisc_rules_engine.enums.report_types import ReportTypes
-from cdisc_rules_engine.enums.dataformat_test_types import TestDataFormatTypes
 from cdisc_rules_engine.enums.dataformat_types import DataFormatTypes
 from cdisc_rules_engine.models.validation_args import Validation_args
-from cdisc_rules_engine.models.test_args import TestArgs
 from scripts.run_validation import run_validation
-from scripts.test_rule import test as test_rule
 from cdisc_rules_engine.services.cache.cache_populator_service import CachePopulator
 from cdisc_rules_engine.services.cache.cache_service_factory import CacheServiceFactory
 from cdisc_rules_engine.services.cdisc_library_service import CDISCLibraryService
@@ -36,11 +33,8 @@ from scripts.list_dataset_metadata_handler import list_dataset_metadata_handler
 from version import __version__
 
 
-def valid_data_file(data_path: list, test: bool = False) -> Tuple[list, set]:
-    if test:
-        allowed_formats = [format.value for format in TestDataFormatTypes]
-    else:
-        allowed_formats = [format.value for format in DataFormatTypes]
+def valid_data_file(data_path: list) -> Tuple[list, set]:
+    allowed_formats = [format.value for format in DataFormatTypes]
     found_formats = set()
     file_list = []
     for file in data_path:
@@ -216,6 +210,12 @@ def cli():
     ),
 )
 @click.option("-dxp", "--define-xml-path", required=False, help="Path to Define-XML")
+@click.option(
+    "-vx",
+    "--validate-xml",
+    default="y",
+    help="Enable XML validation (default 'y' to enable, otherwise disable)",
+)
 @click.pass_context
 def validate(
     ctx,
@@ -247,6 +247,7 @@ def validate(
     local_rules_id: str,
     progress: str,
     define_xml_path: str,
+    validate_xml: str,
 ):
     """
     Validate data using CDISC Rules Engine
@@ -310,7 +311,7 @@ def validate(
         )
         # no need to define dataset_paths here, the program execution will stop
         ctx.exit()
-
+    validate_xml_bool = True if validate_xml.lower() in ("y", "yes") else False
     run_validation(
         Validation_args(
             cache_path,
@@ -333,6 +334,7 @@ def validate(
             local_rules_id,
             progress,
             define_xml_path,
+            validate_xml_bool,
         )
     )
 
@@ -459,168 +461,6 @@ def list_rules(
         # Print all rules
         rules = list(rules_data.values())
     print(json.dumps(rules, indent=4))
-
-
-@click.command()
-@click.option(
-    "-c",
-    "--cache_path",
-    default=DefaultFilePaths.CACHE.value,
-    help="Relative path to cache files containing pre loaded metadata and rules",
-)
-@click.option(
-    "-dp",
-    "--dataset-path",
-    required=False,
-    help="Absolute path to dataset file",
-)
-@click.option(
-    "-d",
-    "--data",
-    required=False,
-    help="Path to directory containing data files",
-)
-@click.option(
-    "-l",
-    "--log-level",
-    default="disabled",
-    type=click.Choice(["info", "debug", "error", "critical", "disabled", "warn"]),
-    help="Sets log level for engine logs, logs are disabled by default",
-)
-@click.option(
-    "-r",
-    "--rule",
-    required=True,
-    help="Absolute path to rule file",
-)
-@click.option(
-    "-s", "--standard", required=False, help="CDISC standard to get rules for"
-)
-@click.option(
-    "-v", "--version", required=False, help="Standard version to get rules for"
-)
-@click.option(
-    "-ss",
-    "--substandard",
-    default=None,
-    help="CDISC Substandard to validate against",
-)
-@click.option(
-    "-ct",
-    "--controlled-terminology-package",
-    multiple=True,
-    help=(
-        "Controlled terminology package to validate against, "
-        "can provide more than one"
-    ),
-)
-@click.option(
-    "-dv",
-    "--define-version",
-    type=click.Choice(["2-1", "2-0", "2.0", "2.1"]),
-    help="Define-XML version used for validation",
-)
-@click.option("--whodrug", help="Path to directory with WHODrug dictionary files")
-@click.option("--meddra", help="Path to directory with MedDRA dictionary files")
-@click.option("--loinc", help="Path to directory with LOINC dictionary files")
-@click.option("--medrt", help="Path to directory with MEDRT dictionary files")
-@click.option("--unii", help="Path to directory with UNII dictionary files")
-@click.option("--snomed-version", help="Version of snomed to use.")
-@click.option("--snomed-edition", help="Edition of snomed to use.")
-@click.option(
-    "--snomed-url",
-    help="The Base URL of snomed to use. Defaults to snowstorm test instance",
-    default="https://snowstorm.snomedtools.org/snowstorm/snomed-ct/",
-)
-@click.option(
-    "-vx",
-    "--validate-xml",
-    default="y",
-    help="Enable XML validation (default: 'y' to enable, otherwise disable)",
-)
-@click.option("-dxp", "--define-xml-path", required=False, help="Path to Define-XML")
-@click.pass_context
-def test(
-    ctx,
-    cache_path: str,
-    dataset_path: Tuple[str],
-    data: str,
-    log_level: str,
-    rule: str,
-    standard: str,
-    version: str,
-    substandard: str,
-    controlled_terminology_package: Tuple[str],
-    define_version: str,
-    whodrug: str,
-    meddra: str,
-    loinc: str,
-    medrt: str,
-    unii: str,
-    snomed_version: str,
-    snomed_edition: str,
-    snomed_url: str,
-    validate_xml,
-    define_xml_path: str,
-):
-    logger = logging.getLogger("tester")
-    if data:
-        if dataset_path:
-            logger.error(
-                "Argument --dataset-path cannot be used together with argument --data"
-            )
-            ctx.exit()
-        dataset_paths, found_formats = valid_data_file(
-            [str(Path(data).joinpath(fn)) for fn in os.listdir(data)]
-        )
-        if len(found_formats) > 1:
-            logger.error(
-                f"Argument --data contains more than one allowed file format ({', '.join(found_formats)})."  # noqa: E501
-            )
-            ctx.exit()
-    elif dataset_path:
-        dataset_paths, found_formats = valid_data_file([dataset_path])
-        if len(found_formats) > 1:
-            logger.error(
-                f"Argument --dataset_path contains more than one allowed file format ({', '.join(found_formats)})."  # noqa: E501
-            )
-            ctx.exit()
-    else:
-        logger.error(
-            "You must pass one of the following arguments: --dataset-path, --data"
-        )
-        # no need to define dataset_paths here, the program execution will stop
-        ctx.exit()
-    external_dictionaries = ExternalDictionariesContainer(
-        {
-            DictionaryTypes.MEDDRA.value: meddra,
-            DictionaryTypes.MEDRT.value: medrt,
-            DictionaryTypes.WHODRUG.value: whodrug,
-            DictionaryTypes.LOINC.value: loinc,
-            DictionaryTypes.UNII.value: unii,
-            DictionaryTypes.SNOMED.value: {
-                "edition": snomed_edition,
-                "version": snomed_version,
-                "base_url": snomed_url,
-            },
-        }
-    )
-    validate_xml = True if validate_xml.lower() in ("y", "yes") else False
-    args = TestArgs(
-        cache_path,
-        dataset_paths,
-        log_level,
-        rule,
-        standard,
-        version,
-        substandard,
-        external_dictionaries,
-        controlled_terminology_package,
-        define_version,
-        define_xml_path,
-        validate_xml,
-    )
-    test_rule(args)
 
 
 @click.command()
@@ -760,6 +600,7 @@ def test_validate():
             local_rules_id = None
             progress = ProgressParameterOptions.BAR.value
             define_xml_path = None
+            validate_xml = False
             json_output = os.path.join(temp_dir, "json_validation_output")
             run_validation(
                 Validation_args(
@@ -783,6 +624,7 @@ def test_validate():
                     local_rules_id,
                     progress,
                     define_xml_path,
+                    validate_xml,
                 )
             )
             print("JSON validation completed successfully!")
@@ -809,6 +651,7 @@ def test_validate():
                     local_rules_id,
                     progress,
                     define_xml_path,
+                    validate_xml,
                 )
             )
             print("XPT validation completed successfully!")
@@ -825,7 +668,6 @@ cli.add_command(update_cache)
 cli.add_command(list_rules)
 cli.add_command(list_rule_sets)
 cli.add_command(list_dataset_metadata)
-cli.add_command(test)
 cli.add_command(version)
 cli.add_command(list_ct)
 

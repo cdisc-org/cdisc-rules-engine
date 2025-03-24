@@ -1,10 +1,10 @@
 import azure.functions as func
-from cdisc_rule_tester.models.rule_tester import RuleTester
 from cdisc_rules_engine.services.cache.in_memory_cache_service import (
     InMemoryCacheService,
 )
 from cdisc_rules_engine.services.cdisc_library_service import CDISCLibraryService
 from cdisc_rules_engine.services.cache.cache_populator_service import CachePopulator
+from scripts.run_validation import run_single_rule_validation
 import json
 import os
 import asyncio
@@ -84,17 +84,16 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:  # 
             raise KeyError("'datasets' required in request")
         validate_datasets_payload(datasets)
         define_xml = json_data.get("define_xml")
-        tester = RuleTester(
+        result = run_single_rule_validation(
             datasets,
+            rule,
             define_xml,
             cache,
             standard,
             standard_version,
             standard_substandard,
             codelists,
-            rule,
         )
-        result = tester.validate(rule)
         result_json = json.dumps(result)
         return func.HttpResponse(result_json)
     except Exception as e:

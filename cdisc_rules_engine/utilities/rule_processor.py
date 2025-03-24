@@ -180,7 +180,6 @@ class RuleProcessor:
     def rule_applies_to_class(
         self,
         rule,
-        file_path,
         datasets: Iterable[SDTMDatasetMetadata],
         dataset_metadata: SDTMDatasetMetadata,
     ):
@@ -209,10 +208,10 @@ class RuleProcessor:
             if ALL_KEYWORD in included_classes:
                 return True
             variables = self.data_service.get_variables_metadata(
-                dataset_name=file_path, datasets=datasets
+                dataset_name=dataset_metadata.full_path, datasets=datasets
             ).data.variable_name
             class_name = self.data_service.get_dataset_class(
-                variables, file_path, datasets, dataset_metadata
+                variables, dataset_metadata.full_path, datasets, dataset_metadata
             )
             if (class_name not in included_classes) and not (
                 class_name == FINDINGS_ABOUT and FINDINGS in included_classes
@@ -221,10 +220,10 @@ class RuleProcessor:
 
         if excluded_classes:
             variables = self.data_service.get_variables_metadata(
-                dataset_name=file_path, datasets=datasets
+                dataset_name=dataset_metadata.full_path, datasets=datasets
             ).data.variable_name
             class_name = self.data_service.get_dataset_class(
-                variables, file_path, datasets, dataset_metadata
+                variables, dataset_metadata.full_path, datasets, dataset_metadata
             )
             if class_name and (
                 (class_name in excluded_classes)
@@ -503,7 +502,6 @@ class RuleProcessor:
         self,
         rule: dict,
         dataset_metadata: SDTMDatasetMetadata,
-        file_path: str,
         datasets: Iterable[SDTMDatasetMetadata],
     ) -> Tuple[bool, str]:
         """Check if rule is suitable and return reason if not"""
@@ -520,7 +518,7 @@ class RuleProcessor:
             )
             logger.info(f"is_suitable_for_validation. {reason}, result=False")
             return False, reason
-        if not self.rule_applies_to_class(rule, file_path, datasets, dataset_metadata):
+        if not self.rule_applies_to_class(rule, datasets, dataset_metadata):
             reason = (
                 f"Rule skipped - doesn't apply to class for "
                 f"rule id={rule_id}, dataset={dataset_name}"
