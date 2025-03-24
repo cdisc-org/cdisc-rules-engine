@@ -85,25 +85,42 @@ jobs:
           asset_name: core-windows.zip
           asset_content_type: application/zip
 
-  deploy-package:
+      # Upload zips as artifact for the PyPI job
+      - name: Upload Release Assets for PyPI
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-artifacts
+          path: |
+            core-ubuntu-latest.zip
+            core-ubuntu-20-04.zip
+            core-mac.zip
+            core-windows.zip
+  deploy-PyPi:
+    needs: create-release-assets
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
+      id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
       - name: Set up Python
-        uses: actions/setup-python@v5
-        id: pysetup
+        uses: actions/setup-python@v4
         with:
           python-version: "3.10"
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install setuptools wheel twine
+          pip install build setuptools wheel twine
           pip install -r requirements.txt
-      - name: Publish
-        env:
-          TWINE_USERNAME: ${{ vars.PYPI_USERNAME }}
-          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+      - name: Build package
         run: |
-          python setup.py sdist bdist_wheel
-          twine upload dist/* --skip-existing
+          python -m build
+      - name: Check package size
+        run: |
+          echo "Package size:"
+          ls -lh dist/*.whl
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          verbose: true
