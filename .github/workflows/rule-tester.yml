@@ -1,6 +1,5 @@
 # To run manually from a non-main branch, install gh cli locally and run:
 # gh workflow run "Deploy Azure Rule Tester Endpoint" --ref <branch-name>
-# Note: the 'AZURE_SP' secret is required to be added into GitHub Secrets. See this blog post for details: https://samlearnsazure.blog/2019/12/13/github-actions/
 name: Deploy Azure Rule Tester Endpoint
 on:
   push:
@@ -8,7 +7,7 @@ on:
       - main
   workflow_dispatch:
 env:
-  ResourceGroup: cdisc-library-shared
+  creds: '{"clientId":"${{ vars.AZURE_CLIENT_ID }}","clientSecret":"${{ secrets.AZURE_CLIENT_SECRET }}","subscriptionId":"${{ vars.AZURE_SUBSCRIPTION_ID }}","tenantId":"${{ vars.AZURE_TENANT_ID }}"}'
   functionAppName: cdisc-library-conformance-rules-generator
 jobs:
   Build_Stage_Build:
@@ -48,7 +47,7 @@ jobs:
       - name: Azure Login
         uses: azure/login@v1
         with:
-          creds: ${{ secrets.AZURE_SP }}
+          creds: ${{ env.creds }}
       - name: Azure functions app deploy
         uses: Azure/webapps-deploy@v2
         with:
