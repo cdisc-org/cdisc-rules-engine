@@ -145,7 +145,7 @@ Run `python core.py validate --help` to see the list of validation options.
   --snomed-url TEXT            Base url of snomed api to use. (ex. https://snowstorm.snomedtools.org/snowstorm/snomed-ct)
   --snomed-edition TEXT        Edition of snomed to use. (ex. SNOMEDCT-US)
   -r, --rules TEXT                Specify rule core ID ex. CORE-000001. Can be specified multiple times.
-  -lr, --local_rules TEXT         Specify relative path to directory containing
+  -lr, --local_rules TEXT         Specify relative path to directory or file containing
                                   local rule yml and/or json rule files.
   -lrc, --local_rules_cache       Adding this flag tells engine to use local rules
                                   uploaded to the cache instead of published rules
