@@ -10,7 +10,6 @@ from cdisc_rules_engine.constants.metadata_columns import (
     SOURCE_ROW_NUMBER,
 )
 from cdisc_rules_engine.enums.sensitivity import Sensitivity
-from cdisc_rules_engine.exceptions.custom_exceptions import InvalidOutputVariables
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.models.dataset_variable import DatasetVariable
 from cdisc_rules_engine.models.validation_error_container import (
@@ -124,8 +123,23 @@ class COREActions(BaseActions):
         if not targets:
             errors_df = data
         if errors_df.empty:
-            raise InvalidOutputVariables(
-                f"Output variables: {list(targets)} not found in dataset"
+            error_entity = ValidationErrorEntity(
+                dataset=self._get_dataset_name(data),
+                row=0,
+                value={target: "Not in dataset" for target in targets_not_in_dataset},
+                uSubjId="N/A",
+                seq=0,
+            )
+            return ValidationErrorContainer(
+                domain=(
+                    f"SUPP{self.dataset_metadata.rdomain}"
+                    if self.dataset_metadata.is_supp
+                    else (self.dataset_metadata.domain or self.dataset_metadata.name)
+                ),
+                dataset=self._get_dataset_name(data),
+                targets=sorted(targets),
+                errors=[error_entity],
+                message=message.replace("--", self.dataset_metadata.domain or ""),
             )
         if self.rule.get("sensitivity") == Sensitivity.DATASET.value:
             # Only generate one error for rules with dataset sensitivity
