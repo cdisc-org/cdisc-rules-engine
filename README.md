@@ -178,7 +178,7 @@ To validate a folder using rules for SDTM-IG version 3.4 use the following comma
 
 ##### **Validate single rule**
 
-`python core.py validate -s sdtmig -v 3-4 -dp <path to dataset json file> -r <path to rule json file> --meddra ./meddra/ --whodrug ./whodrug/`
+`python core.py validate -s sdtmig -v 3-4 -dp <path to dataset json file> -lr <path to rule json file> --meddra ./meddra/ --whodrug ./whodrug/`
 Note: JSON dataset should match the format provided by the rule editor:
 
 ```json
