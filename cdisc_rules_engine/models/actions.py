@@ -126,7 +126,11 @@ class COREActions(BaseActions):
             error_entity = ValidationErrorEntity(
                 dataset=self._get_dataset_name(data),
                 row=0,
-                value={target: "Not in dataset" for target in targets_not_in_dataset},
+                value={
+                    "Missing Output Variables": ", ".join(
+                        sorted(targets_not_in_dataset)
+                    )
+                },
                 uSubjId="N/A",
                 seq=0,
             )
