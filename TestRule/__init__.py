@@ -63,7 +63,7 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:  # 
         standards_data = json_data.get("standard", {})
         standard = standards_data.get("product")
         standard_version = standards_data.get("version")
-        standard_substandard = None
+        standard_substandard = standards_data.get("substandard")
         codelists = json_data.get("codelists", [])
         cache = InMemoryCacheService()
         if standards_data or codelists:
