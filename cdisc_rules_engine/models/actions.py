@@ -206,6 +206,11 @@ class COREActions(BaseActions):
         )
         source_row_number: Optional[pd.Series] = data.get(SOURCE_ROW_NUMBER)
         source_filename: Optional[pd.Series] = data.get(SOURCE_FILENAME)
+        row_dict = df_row.to_dict()
+        filtered_dict = {
+            key: ("null" if pd.isna(value) else value)
+            for key, value in row_dict.items()
+        }
         error_object = ValidationErrorEntity(
             dataset=(
                 path.basename(source_filename[df_row.name])
@@ -217,7 +222,7 @@ class COREActions(BaseActions):
                 if isinstance(source_row_number, pd.Series)
                 else (int(df_row.name) + 1)
             ),  # record number should start at 1, not 0
-            value=dict(df_row.to_dict()),
+            value=filtered_dict,
             usubjid=(
                 str(usubjid[df_row.name]) if isinstance(usubjid, pd.Series) else None
             ),
