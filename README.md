@@ -2,6 +2,32 @@
 
 [![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/downloads/release/python-3100)
 
+## Table of Contents
+
+- [Windows Command Compatibility](#windows-command-compatibility)
+- [cdisc-rules-engine Overview](#cdisc-rules-engine)
+- [Quick Start](#quick-start)
+- [Development Setup](#development-setup)
+  - [Code Formatter](#code-formatter)
+  - [Installing Dependencies](#installing-dependencies)
+  - [Running Tests](#running-the-tests)
+- [Running a Validation](#running-a-validation)
+  - [Command Line Options](#from-the-command-line)
+  - [Log Levels](#available-log-levels)
+  - [Validate Folder](#validate-folder)
+  - [Validate Single Rule](#validate-single-rule)
+  - [Understanding the Rules Report](#understanding-the-rules-report)
+- [Additional Core Commands](#additional-core-commands)
+  - [Update Cache](#update-cache)
+  - [List Rules](#list-rules)
+  - [List Rule Sets](#list-rule-sets)
+  - [List CT](#list-ct)
+- [PyPI Integration](#pypi-integration)
+- [Building](#creating-an-executable-version)
+  - [Creating an Executable](#creating-an-executable-version)
+  - [Creating a Wheel File](#creating-whl-file)
+- [Submit an Issue](#submit-an-issue)
+
 ### Windows Command Compatibility
 
 Note: The Windows commands provided in this README are written for PowerShell. While most commands are compatible with both PowerShell and Command Prompt, some adjustments may be necessary when using Command Prompt. If you encounter any issues running these commands in Command Prompt, try using PowerShell or consult the Command Prompt documentation for equivalent commands.
@@ -325,3 +351,16 @@ To upload built distributive to pypi
 
 `py -m pip install --upgrade twine`
 `py -m twine upload --repository {repository_name} dist/*`
+
+## Submit an Issue
+
+If you encounter any bugs, have feature requests, or need assistance, please submit an issue on our GitHub repository:
+
+[https://github.com/cdisc-org/cdisc-rules-engine/issues](https://github.com/cdisc-org/cdisc-rules-engine/issues)
+
+When submitting an issue, please include:
+
+- A clear description of the problem or request
+- Steps to reproduce the issue (for bugs)
+- Your operating system and environment details
+- Any relevant logs or error messages
