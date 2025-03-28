@@ -239,7 +239,7 @@ The possible rule run statuses are:
 
 ##### Additional Core Commands
 
-**- update-cache** - update locally stored cache data (Requires an environment variable - `CDISC_LIBRARY_API_KEY`)
+**- update-cache** - update locally stored cache data (Requires an environment variable - `CDISC_LIBRARY_API_KEY`) This is stored in the .env folder in the root directory, the API key does not need quotations around it.
 
     `python core.py update-cache`
 
