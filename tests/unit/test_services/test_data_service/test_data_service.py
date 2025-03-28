@@ -179,7 +179,7 @@ def test_get_dataset_class(dataset_metadata, data, expected_class):
     mock_cache_service = MagicMock()
     library_metadata: LibraryMetadataContainer = get_library_metadata_from_cache(
         Validation_args(
-            f"{os.path.dirname(__file__)}/../../resources/cache",
+            f"{os.path.dirname(__file__)}/../../../../resources/cache",
             10,
             [],
             "",
@@ -257,7 +257,7 @@ def test_get_dataset_class_associated_domains():
     ):
         library_metadata: LibraryMetadataContainer = get_library_metadata_from_cache(
             Validation_args(
-                f"{os.path.dirname(__file__)}/../../resources/cache",
+                f"{os.path.dirname(__file__)}/../../../../resources/cache",
                 10,
                 [],
                 "",
