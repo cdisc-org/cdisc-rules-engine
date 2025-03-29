@@ -50,6 +50,25 @@ Linux/Mac:
 > chmod +x ./core
 > ```
 
+### **Command-line Interface**
+
+### **Getting Started**
+
+In the terminal, navigate to the directory you intend to install CORE rules engine in
+
+1. Clone the repository:
+
+   ```
+   git clone https://github.com/cdisc-org/cdisc-rules-engine
+   ```
+
+2. Ensure you have Python 3.10 installed:
+   You can check your Python version with:
+   ```
+   python --version
+   ```
+   If you don't have Python 3.10, please download and install it from [python.org](https://www.python.org/downloads/) or using your system's package manager.
+
 ### **Code formatter**
 
 This project uses the `black` code formatter, `flake8` linter for python and `prettier` for JSON, YAML and MD.
@@ -69,7 +88,12 @@ This installs `pre-commit` in your `.git/hooks` directory.
 These steps should be run before running any tests or core commands using the non compiled version.
 
 - Create a virtual environment:
+
   `python -m venv <virtual_environment_name>`
+
+NOTE: if you have multiple versions of python on your machine, you can call python 3.10 for the virtual environment's creation instead of the above command:
+`python3.10 -m venv <virtual_environment_name>`
+
 - Activate the virtual environment:
 
 `./<virtual_environment_name>/bin/activate` -- on linux/mac </br>
@@ -215,7 +239,7 @@ The possible rule run statuses are:
 
 ##### Additional Core Commands
 
-**- update-cache** - update locally stored cache data (Requires an environment variable - `CDISC_LIBRARY_API_KEY`)
+**- update-cache** - update locally stored cache data (Requires an environment variable - `CDISC_LIBRARY_API_KEY`) This is stored in the .env folder in the root directory, the API key does not need quotations around it.
 
     `python core.py update-cache`
 
@@ -325,3 +349,16 @@ To upload built distributive to pypi
 
 `py -m pip install --upgrade twine`
 `py -m twine upload --repository {repository_name} dist/*`
+
+## Submit an Issue
+
+If you encounter any bugs, have feature requests, or need assistance, please submit an issue on our GitHub repository:
+
+[https://github.com/cdisc-org/cdisc-rules-engine/issues](https://github.com/cdisc-org/cdisc-rules-engine/issues)
+
+When submitting an issue, please include:
+
+- A clear description of the problem or request
+- Steps to reproduce the issue (for bugs)
+- Your operating system and environment details
+- Any relevant logs or error messages

@@ -1,0 +1,56 @@
+name: CORE Test Suite JSON
+on:
+  workflow_call:
+  workflow_dispatch:
+
+env:
+  DATASET_SIZE_THRESHOLD: 1000000000
+  PANDAS_DIFF: False
+  DASK_DIFF: False
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get Engine Changes
+        uses: actions/checkout@v4
+
+      - name: Get Test Suite Repository
+        uses: actions/checkout@v4
+        with:
+          repository: cdisc-org/CORE_Test_Suite
+          path: CORE_Test_Suite
+          token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+      - name: Update rules cache
+        env:
+          CDISC_LIBRARY_API_KEY: ${{ secrets.CDISC_LIBRARY_API_KEY }}
+        run: |
+          python core.py update-cache
+      - name: Parse rule list and run validation
+        run: |
+          rules=$(cat CORE_Test_Suite/rulelist/testrulelist.txt | sed 's/^/-r /' | tr '\n' ' ')
+          python core.py validate -s sdtmig -v 3-3 $rules -d CORE_Test_Suite/data -ct sdtmct-2020-03-27 -o CORE_Test_Suite/pandas-results -l debug -of JSON
+      - name: Run validation with Dask
+        env:
+          DATASET_SIZE_THRESHOLD: 0
+        run: |
+          rules=$(cat CORE_Test_Suite/rulelist/testrulelist.txt | sed 's/^/-r /' | tr '\n' ' ')
+          python core.py validate -s sdtmig -v 3-3 $rules -d CORE_Test_Suite/data -ct sdtmct-2020-03-27 -o CORE_Test_Suite/dask-results -l debug -of JSON
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: comparison-results
+          path: |
+            CORE_Test_Suite/pandas-results.json
+            CORE_Test_Suite/dask-results.json
+          if-no-files-found: warn
