@@ -77,7 +77,7 @@ class DummyDataService(BaseDataService):
         dataset_metadata: dict = self.__get_dataset_metadata(dataset_name, **kwargs)
         return SDTMDatasetMetadata(
             name=dataset_metadata["dataset_name"][0],
-            domain=dataset_metadata["dataset_name"][0],
+            first_record={"DOMAIN": dataset_metadata["dataset_name"][0]},
             label=dataset_metadata["dataset_label"][0],
             modification_date=datetime.now().isoformat(),
             filename=dataset_metadata["filename"][0],

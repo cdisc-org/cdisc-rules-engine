@@ -12,7 +12,7 @@ def test_read_metadata():
     """
     Unit test for read_data method.
     """
-    dataset_path = f"{os.path.dirname(__file__)}/../resources/test_dataset.xpt"
+    dataset_path = f"{os.path.dirname(__file__)}/../../../resources/test_dataset.xpt"
     data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
     metadata = data_service.read_metadata(dataset_path)
     assert "file_metadata" in metadata
@@ -37,7 +37,7 @@ def test_read_metadata():
     ],
 )
 def test_has_all_files(files, expected_result):
-    directory = f"{os.path.dirname(__file__)}/../resources"
+    directory = f"{os.path.dirname(__file__)}/../../../resources"
     data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
     assert data_service.has_all_files(directory, files) == expected_result
 
@@ -47,7 +47,7 @@ def test_has_all_files(files, expected_result):
     [PandasDataset],
 )
 def test_get_dataset(dataset_implementation):
-    dataset_path = f"{os.path.dirname(__file__)}/../resources/test_dataset.xpt"
+    dataset_path = f"{os.path.dirname(__file__)}/../../../resources/test_dataset.xpt"
     mock_cache = MagicMock()
     mock_cache.get_dataset.return_value = None
     data_service = LocalDataService.get_instance(
@@ -64,7 +64,9 @@ def test_get_dataset(dataset_implementation):
     [PandasDataset],
 )
 def test_get_variables_metdata(dataset_implementation):
-    dataset_path = f"{os.path.dirname(__file__)}/../resources/test_adam_dataset.xpt"
+    dataset_path = (
+        f"{os.path.dirname(__file__)}/../../../resources/test_adam_dataset.xpt"
+    )
     mock_cache = MagicMock()
     mock_cache.get_dataset.return_value = None
     data_service = LocalDataService.get_instance(
