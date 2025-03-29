@@ -33,11 +33,6 @@ class InvalidMatchKeyError(EngineError):
     description = "Invalid match key provided"
 
 
-class InvalidOutputVariables(EngineError):
-    code = 400
-    description = "Invalid output variables"
-
-
 class VariableMetadataNotFoundError(EngineError):
     code = 400
     description = (
