@@ -131,8 +131,8 @@ class COREActions(BaseActions):
                         sorted(targets_not_in_dataset)
                     )
                 },
-                uSubjId="N/A",
-                seq=0,
+                usubjid="N/A",
+                sequence=0,
             )
             return ValidationErrorContainer(
                 domain=(
