@@ -119,45 +119,36 @@ class COREActions(BaseActions):
         df_columns: set = set(data)
         targets_in_dataset = targets.intersection(df_columns)
         targets_not_in_dataset = targets.difference(df_columns)
-        errors_df = data[list(targets_in_dataset)]
+        all_targets_missing = (
+            len(targets_in_dataset) == 0 and len(targets_not_in_dataset) > 0
+        )
+        if targets_in_dataset:
+            errors_df = data[list(targets_in_dataset)]
+        else:
+            errors_df = data
         if not targets:
             errors_df = data
-        if errors_df.empty:
-            error_entity = ValidationErrorEntity(
-                dataset=self._get_dataset_name(data),
-                row=0,
-                value={
-                    "Missing Output Variables": ", ".join(
-                        sorted(targets_not_in_dataset)
-                    )
-                },
-                usubjid="N/A",
-                sequence=0,
-            )
-            return ValidationErrorContainer(
-                domain=(
-                    f"SUPP{self.dataset_metadata.rdomain}"
-                    if self.dataset_metadata.is_supp
-                    else (self.dataset_metadata.domain or self.dataset_metadata.name)
-                ),
-                dataset=self._get_dataset_name(data),
-                targets=sorted(targets),
-                errors=[error_entity],
-                message=message.replace("--", self.dataset_metadata.domain or ""),
-            )
+
         if self.rule.get("sensitivity") == Sensitivity.DATASET.value:
             # Only generate one error for rules with dataset sensitivity
             errors_list = [
                 ValidationErrorEntity(
-                    value=dict(errors_df.iloc[0].to_dict()),
+                    value=(
+                        {
+                            "Targets not in dataset": ", ".join(
+                                sorted(targets_not_in_dataset)
+                            )
+                        }
+                        if all_targets_missing
+                        else dict(data.iloc[0].to_dict())
+                    ),
                     dataset=self._get_dataset_name(data),
                 )
             ]
         elif self.rule.get("sensitivity") == Sensitivity.RECORD.value:
-            errors_series: pd.Series = errors_df.apply(
-                lambda df_row: self._create_error_object(df_row, data), axis=1
+            errors_list = self._generate_errors_by_target_presence(
+                data, targets_not_in_dataset, all_targets_missing, errors_df
             )
-            errors_list: List[ValidationErrorEntity] = errors_series.tolist()
         elif (
             self.rule.get("sensitivity") is not None
         ):  # rule sensitivity is incorrectly defined
@@ -181,14 +172,9 @@ class COREActions(BaseActions):
                 errors=[error_entity],
             )
         else:  # rule sensitivity is undefined
-            errors_series: pd.Series = errors_df.apply(
-                lambda df_row: self._create_error_object(df_row, data), axis=1
+            errors_list = self._generate_errors_by_target_presence(
+                data, targets_not_in_dataset, all_targets_missing, errors_df
             )
-            errors_list: List[ValidationErrorEntity] = errors_series.tolist()
-        missing_vars = {target: "Not in dataset" for target in targets_not_in_dataset}
-        if missing_vars:
-            for error in errors_list:
-                error.value = {**error.value, **missing_vars}
         return ValidationErrorContainer(
             **{
                 "domain": (
@@ -204,6 +190,69 @@ class COREActions(BaseActions):
                 "message": message.replace("--", self.dataset_metadata.domain or ""),
             }
         )
+
+    def _generate_errors_by_target_presence(
+        self,
+        data: pd.DataFrame,
+        targets_not_in_dataset: Set[str],
+        all_targets_missing: bool,
+        errors_df: pd.DataFrame,
+    ) -> List[ValidationErrorEntity]:
+        """
+        Generate error list based on presence of target variables in the dataset.
+        Handles two cases: (1) when all targets are missing, or (2) when some targets are present.
+
+        Args:
+            data: The original dataframe
+            targets_not_in_dataset: Set of target variables not found in the dataset
+            all_targets_missing: Boolean indicating if all targets are missing
+            errors_df: DataFrame subset with only the target variables (if any exist)
+
+        Returns:
+            List of ValidationErrorEntity objects
+        """
+        missing_vars = {target: "Not in dataset" for target in targets_not_in_dataset}
+        if all_targets_missing:
+            errors_list = []
+            for idx, row in data.iterrows():
+                error = ValidationErrorEntity(
+                    value={
+                        target: "Not in dataset" for target in targets_not_in_dataset
+                    },
+                    dataset=self._get_dataset_name(pd.DataFrame([row])),
+                    row=int(row.get(SOURCE_ROW_NUMBER, idx + 1)),
+                    usubjid=(
+                        str(row.get("USUBJID"))
+                        if "USUBJID" in row and not pd.isna(row["USUBJID"])
+                        else None
+                    ),
+                    sequence=(
+                        int(row.get(f"{self.dataset_metadata.domain or ''}SEQ"))
+                        if f"{self.dataset_metadata.domain or ''}SEQ" in row
+                        and self._sequence_exists(
+                            pd.Series(
+                                {
+                                    idx: row.get(
+                                        f"{self.dataset_metadata.domain or ''}SEQ"
+                                    )
+                                }
+                            ),
+                            idx,
+                        )
+                        else None
+                    ),
+                )
+                errors_list.append(error)
+        else:
+            errors_series: pd.Series = errors_df.apply(
+                lambda df_row: self._create_error_object(df_row, data), axis=1
+            )
+            errors_list: List[ValidationErrorEntity] = errors_series.tolist()
+            # Add missing variable information to errors when some targets exist
+            if missing_vars:
+                for error in errors_list:
+                    error.value = {**error.value, **missing_vars}
+        return errors_list
 
     def _get_dataset_name(self, data: pd.DataFrame) -> str:
         source_pathnames = data.get(SOURCE_FILENAME, [])
