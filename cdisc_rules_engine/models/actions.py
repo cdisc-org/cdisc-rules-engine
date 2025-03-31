@@ -131,17 +131,22 @@ class COREActions(BaseActions):
 
         if self.rule.get("sensitivity") == Sensitivity.DATASET.value:
             # Only generate one error for rules with dataset sensitivity
+            missing_vars = {
+                target: "Not in dataset" for target in targets_not_in_dataset
+            }
+
+            # Create the initial error
+            error_value = (
+                dict(errors_df.iloc[0].to_dict()) if not all_targets_missing else {}
+            )
+
+            # Add missing variables to the error value
+            if missing_vars:
+                error_value = {**error_value, **missing_vars}
+
             errors_list = [
                 ValidationErrorEntity(
-                    value=(
-                        {
-                            "Targets not in dataset": ", ".join(
-                                sorted(targets_not_in_dataset)
-                            )
-                        }
-                        if all_targets_missing
-                        else dict(data.iloc[0].to_dict())
-                    ),
+                    value=error_value,
                     dataset=self._get_dataset_name(data),
                 )
             ]
@@ -212,6 +217,7 @@ class COREActions(BaseActions):
             List of ValidationErrorEntity objects
         """
         missing_vars = {target: "Not in dataset" for target in targets_not_in_dataset}
+
         if all_targets_missing:
             errors_list = []
             for idx, row in data.iterrows():
@@ -248,7 +254,6 @@ class COREActions(BaseActions):
                 lambda df_row: self._create_error_object(df_row, data), axis=1
             )
             errors_list: List[ValidationErrorEntity] = errors_series.tolist()
-            # Add missing variable information to errors when some targets exist
             if missing_vars:
                 for error in errors_list:
                     error.value = {**error.value, **missing_vars}
