@@ -49,6 +49,9 @@ def test_get_dataset_metadata(mock_read_metadata: MagicMock, dataset_metadata: d
                 "dataset_label": [
                     dataset_metadata["contents_metadata"]["dataset_label"]
                 ],
+                "record_count": [
+                    dataset_metadata["contents_metadata"]["dataset_length"]
+                ],
             }
         )
     )

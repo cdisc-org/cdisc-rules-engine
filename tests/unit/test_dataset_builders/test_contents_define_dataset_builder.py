@@ -479,7 +479,7 @@ expected_results = {
             "Exposure as Collected AA",
             "Exposure as Collected AA",
         ],
-        "filename": [
+        "dataset_location": [
             "ecaa.xpt",
             "ecaa.xpt",
             "ecaa.xpt",
@@ -562,7 +562,7 @@ expected_results = {
             "Exposure as Collected BB",
             "Exposure as Collected BB",
         ],
-        "filename": ["ecbb.xpt", "ecbb.xpt", "ecbb.xpt"],
+        "dataset_location": ["ecbb.xpt", "ecbb.xpt", "ecbb.xpt"],
         "record_count": [3, 3, 3],
         "define_dataset_name": ["ECBB", "ECBB", "ECBB"],
         "define_dataset_label": ["ECBB label", "ECBB label", "ECBB label"],
@@ -721,7 +721,7 @@ expected_results = {
             "Supplemental Qualifiers for EC",
             "Supplemental Qualifiers for EC",
         ],
-        "filename": [
+        "dataset_location": [
             "suppec.xpt",
             "suppec.xpt",
             "suppec.xpt",

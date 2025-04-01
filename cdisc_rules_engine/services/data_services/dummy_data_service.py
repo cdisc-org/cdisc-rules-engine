@@ -67,10 +67,6 @@ class DummyDataService(BaseDataService):
         else:
             return PandasDataset.from_dict({})
 
-    def get_dataset_metadata(self, dataset_name: str, **kwargs):
-        dataset_metadata: dict = self.__get_dataset_metadata(dataset_name, **kwargs)
-        return PandasDataset.from_dict(dataset_metadata)
-
     def get_raw_dataset_metadata(
         self, dataset_name: str, **kwargs
     ) -> SDTMDatasetMetadata:

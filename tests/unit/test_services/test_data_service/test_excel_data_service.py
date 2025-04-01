@@ -27,6 +27,49 @@ def test_get_dataset(dataset_name):
 
 
 @pytest.mark.parametrize(
+    "expected_result",
+    (
+        {
+            "dataset_location": "ecaa.xpt",
+            "dataset_label": "Exposure as Collected AA",
+            "dataset_name": "ECAA",
+            "dataset_size": 0,
+            "record_count": 8,
+        },
+        {
+            "dataset_location": "ecbb.xpt",
+            "dataset_label": "Exposure as Collected BB",
+            "dataset_name": "ECBB",
+            "dataset_size": 0,
+            "record_count": 3,
+        },
+        {
+            "dataset_location": "suppec.xpt",
+            "dataset_label": "Supplemental Qualifiers for EC",
+            "dataset_name": "SUPPEC",
+            "dataset_size": 0,
+            "record_count": 11,
+        },
+    ),
+)
+def test_get_dataset_metadata(expected_result):
+    dataset_path = f"{os.path.dirname(__file__)}/../../../resources/test_datasets.xlsx"
+    cache_mock = MagicMock()
+    cache_mock.get_dataset.return_value = None
+    data_service = ExcelDataService(
+        cache_mock, MagicMock(), MagicMock(), dataset_path=dataset_path
+    )
+    metadata = data_service.get_dataset_metadata(
+        dataset_name=expected_result["dataset_location"]
+    )
+    assert metadata["dataset_label"][0] == expected_result["dataset_label"]
+    assert metadata["dataset_name"][0] == expected_result["dataset_name"]
+    assert metadata["dataset_size"][0] == expected_result["dataset_size"]
+    assert metadata["dataset_location"][0] == expected_result["dataset_location"]
+    assert metadata["record_count"][0] == expected_result["record_count"]
+
+
+@pytest.mark.parametrize(
     "dataset_name",
     ("ecaa.xpt", "ecbb.xpt", "suppec.xpt"),
 )
