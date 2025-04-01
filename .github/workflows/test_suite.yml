@@ -38,11 +38,11 @@ jobs:
       - name: Parse rule list and run validation
         run: |
           rules=$(cat CORE_Test_Suite/rulelist/testrulelist.txt | sed 's/^/-r /' | tr '\n' ' ')
-          python core.py validate -s sdtmig -v 3-3 $rules -d CORE_Test_Suite/data -ct sdtmct-2020-03-27 -o CORE_Test_Suite/pandas-results -l debug
+          python core.py validate -s sdtmig -v 3-3 $rules -d CORE_Test_Suite/data -ct sdtmct-2020-03-27 -of JSON -o CORE_Test_Suite/pandas-results -l debug
       - name: Pandas comparison script
         run: |
           cd CORE_Test_Suite
-          result=$(python comparison.py pandas-results.xlsx CORE-Report.xlsx pandas_comparison.xlsx)
+          result=$(python comparison.py pandas-results.json CORE-Report.json pandas_comparison.xlsx)
           echo "PANDAS_DIFF=$result" >> $GITHUB_ENV
           echo "Pandas comparison result: $result"
       - name: Run validation with Dask
@@ -50,11 +50,11 @@ jobs:
           DATASET_SIZE_THRESHOLD: 0
         run: |
           rules=$(cat CORE_Test_Suite/rulelist/testrulelist.txt | sed 's/^/-r /' | tr '\n' ' ')
-          python core.py validate -s sdtmig -v 3-3 $rules -d CORE_Test_Suite/data -ct sdtmct-2020-03-27 -o CORE_Test_Suite/dask-results -l debug
+          python core.py validate -s sdtmig -v 3-3 $rules -d CORE_Test_Suite/data -ct sdtmct-2020-03-27 -of JSON -o CORE_Test_Suite/dask-results -l debug
       - name: Dask comparison script
         run: |
           cd CORE_Test_Suite
-          result=$(python comparison.py dask-results.xlsx CORE-Report.xlsx dask_comparison.xlsx)
+          result=$(python comparison.py dask-results.json CORE-Report.json dask_comparison.xlsx)
           echo "DASK_DIFF=$result" >> $GITHUB_ENV
           echo "Dask comparison result: $result"
           cd ..
@@ -65,9 +65,10 @@ jobs:
           name: comparison-results
           path: |
             CORE_Test_Suite/pandas_comparison.xlsx
-            CORE_Test_Suite/pandas-results.xlsx
+            CORE_Test_Suite/pandas-results.json
             CORE_Test_Suite/dask_comparison.xlsx
-            CORE_Test_Suite/dask-results.xlsx
+            CORE_Test_Suite/dask-results.json
+            CORE_Test_Suite/CORE-Report.json
           if-no-files-found: warn
       - name: Check for differences
         if: always()
