@@ -814,12 +814,14 @@ expected_results = {
     ],
 )
 def test_contents_define_dataset_builder(dataset_path):
+    cache_mock = MagicMock()
+    cache_mock.get_dataset.return_value = None
     builder = ContentsDefineDatasetBuilder(
         rule={
             "conditions": ConditionCompositeFactory.get_condition_composite({}),
         },
         data_service=DummyDataService(
-            MagicMock(),
+            cache_mock,
             MagicMock(),
             MagicMock(),
             data=[DummyDataset(dataset) for dataset in datasets],
