@@ -1225,6 +1225,7 @@ def installed_meddra_dictionaries(request) -> dict:
 @pytest.fixture(scope="function")
 def operation_params() -> OperationParams:
     return OperationParams(
+        core_id="test_id",
         operation_id="operation_id",
         operation_name="operation_name",
         dataframe=PandasDataset.from_dict({}),

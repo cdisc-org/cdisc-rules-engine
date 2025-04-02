@@ -1,6 +1,5 @@
 import pytest
 from unittest.mock import MagicMock
-from cdisc_rules_engine.models.operation_params import OperationParams
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.operations.define_xml_extensible_codelists import (
     DefineCodelists,
@@ -19,21 +18,6 @@ def mock_metadata():
             "CODELIST2": {"extended_values": ["EXT4", "EXT5"]},
         }
     }
-
-
-@pytest.fixture
-def operation_params():
-    return OperationParams(
-        dataframe=PandasDataset.from_dict({}),
-        dataset_path="test_path",
-        datasets={"TEST": PandasDataset.from_dict({})},
-        domain="TEST",
-        directory_path="test_dir",
-        operation_id="test_op",
-        operation_name="test_operation",
-        standard="SDTM",
-        standard_version="1.0",
-    )
 
 
 def test_single_codelist_values(operation_params, mock_metadata):
