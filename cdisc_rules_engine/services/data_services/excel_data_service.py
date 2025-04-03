@@ -13,11 +13,11 @@ from cdisc_rules_engine.models.dataset_types import DatasetTypes
 from cdisc_rules_engine.models.variable_metadata_container import (
     VariableMetadataContainer,
 )
+from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.services.data_readers.data_reader_factory import (
     DataReaderFactory,
 )
 from .base_data_service import BaseDataService, cached_dataset
-
 
 DATASETS_SHEET_NAME = "Datasets"
 DATASET_FILENAME_COLUMN = "Filename"
@@ -151,7 +151,16 @@ class ExcelDataService(BaseDataService):
         return open(file_path, "rb")
 
     def get_datasets(self) -> List[dict]:
-        worksheet = pd.read_excel(self.dataset_path, sheet_name=DATASETS_SHEET_NAME)
+        try:
+            worksheet = pd.read_excel(self.dataset_path, sheet_name=DATASETS_SHEET_NAME)
+        except TypeError as e:
+            logger.error(
+                f"Failed to read datasets from the Excel file at {self.dataset_path}. "
+                f"Ensure the file is in the correct format. "
+                f"Try opening and saving the file in Microsoft Excel. "
+                f"Error: {str(e)}"
+            )
+            raise
         datasets = [
             self.get_raw_dataset_metadata(dataset_name=dataset_filename)
             for dataset_filename in worksheet[DATASET_FILENAME_COLUMN]
