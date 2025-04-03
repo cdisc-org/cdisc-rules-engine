@@ -11,8 +11,6 @@ jobs:
         include:
           - os: "ubuntu-latest"
             name: "core-ubuntu-latest"
-          - os: "ubuntu-20.04"
-            name: "core-ubuntu-20-04"
           - os: "macos-latest"
             name: "core-mac"
           - os: "windows-latest"
@@ -37,10 +35,6 @@ jobs:
           dest: core-ubuntu-latest.zip
       - uses: vimtor/action-zip@v1
         with:
-          files: artifacts/core-ubuntu-20-04/
-          dest: core-ubuntu-20-04.zip
-      - uses: vimtor/action-zip@v1
-        with:
           files: artifacts/core-mac/
           dest: core-mac.zip
       - uses: vimtor/action-zip@v1
@@ -56,15 +50,6 @@ jobs:
           upload_url: ${{ github.event.release.upload_url }}
           asset_path: ./core-ubuntu-latest.zip
           asset_name: core-ubuntu-latest.zip
-          asset_content_type: application/zip
-      - name: Upload Ubuntu 20.04 Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./core-ubuntu-20-04.zip
-          asset_name: core-ubuntu-20-04.zip
           asset_content_type: application/zip
       - name: Upload Mac Release Asset
         uses: actions/upload-release-asset@v1
@@ -92,7 +77,6 @@ jobs:
           name: release-artifacts
           path: |
             core-ubuntu-latest.zip
-            core-ubuntu-20-04.zip
             core-mac.zip
             core-windows.zip
   deploy-PyPi:
