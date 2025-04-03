@@ -1,6 +1,9 @@
 from cdisc_rules_engine.config.config import ConfigService
 from cdisc_rules_engine.models.dataset.dask_dataset import DaskDataset
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
+from cdisc_rules_engine.models.library_metadata_container import (
+    LibraryMetadataContainer,
+)
 from cdisc_rules_engine.operations.variable_library_metadata import (
     VariableLibraryMetadata,
 )
@@ -9,9 +12,6 @@ import pandas as pd
 import pytest
 
 from cdisc_rules_engine.services.cache.cache_service_factory import CacheServiceFactory
-from unittest.mock import MagicMock, patch
-import os
-import json
 
 
 @pytest.mark.parametrize(
@@ -21,11 +21,7 @@ import json
         ("core", "sdtmig", "3-1-2", {"STUDYID": "Req", "DOMAIN": "Req"}, DaskDataset),
     ],
 )
-@patch(
-    "cdisc_rules_engine.services.cdisc_library_service.CDISCLibraryClient.get_sdtmig"
-)
 def test_get_variable_metadata_for_given_standard(
-    mock_get_sdtmig: MagicMock,
     target,
     standard,
     standard_version,
@@ -36,13 +32,14 @@ def test_get_variable_metadata_for_given_standard(
 ):
     config = ConfigService()
     cache = CacheServiceFactory(config).get_cache_service()
-    file_path: str = (
-        f"{os.path.dirname(__file__)}/../../resources/"
-        f"mock_library_responses/get_sdtmig_response.json"
+    library_metadata = LibraryMetadataContainer(
+        variables_metadata={
+            "DM": {
+                "STUDYID": {"core": "Req", "ordinal": 1},
+                "DOMAIN": {"core": "Req", "ordinal": 2},
+            }
+        },
     )
-    with open(file_path) as file:
-        mock_sdtmig_details: dict = json.loads(file.read())
-    mock_get_sdtmig.return_value = mock_sdtmig_details
     dataset_path = "study/bundle/blah"
     datasets_map = {
         "DM": dataset_type.from_dict({"STUDYID": [4, 7, 9], "DOMAIN": [12, 6, 1]}),
@@ -68,7 +65,11 @@ def test_get_variable_metadata_for_given_standard(
     operation_params.standard_version = standard_version
     operation_params.domain = "DM"
     result = VariableLibraryMetadata(
-        operation_params, datasets_map["DM"], cache, data_service=mock_data_service
+        operation_params,
+        datasets_map["DM"],
+        cache,
+        data_service=mock_data_service,
+        library_metadata=library_metadata,
     ).execute()
     assert operation_params.operation_id in result
     for val in result[operation_params.operation_id]:

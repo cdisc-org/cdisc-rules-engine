@@ -1,8 +1,5 @@
 import pandas as pd
-import logging
-from cdisc_rules_engine.config.config import ConfigService
 from cdisc_rules_engine.operations.base_operation import BaseOperation
-from cdisc_rules_engine.services.cdisc_library_service import CDISCLibraryService
 
 
 class CodeListAttributes(BaseOperation):
@@ -89,28 +86,6 @@ class CodeListAttributes(BaseOperation):
         # convert codelist to dataframe
         ct_result = {ct_key: [], ct_val: []}
         ct_result = self._add_codelist(ct_key, ct_val, ct_term_maps, ct_result)
-
-        is_contained = set(ct_packages).issubset(set(ct_result[ct_key]))
-        # if all the CT packages exist in Cache, we return the result
-        if is_contained:
-            return pd.DataFrame(ct_result)
-
-        # if not, we need to get them from library
-        config = ConfigService()
-        logger = logging.getLogger()
-        api_key = config.getValue("CDISC_LIBRARY_API_KEY")
-        ct_diff = list(set(ct_packages) - set(set(ct_result[ct_key])))
-
-        cls = CDISCLibraryService(api_key, self.cache)
-        ct_pkgs = cls.get_all_ct_packages()
-        ct_names = [item["href"].split("/")[-1] for item in ct_pkgs]
-
-        for ct in ct_diff:
-            if ct not in ct_names:
-                logger.info(f"Requested package {ct} not in CT library.")
-                continue
-            ct_code = cls.get_codelist_terms_map(ct)
-            ct_result = self._add_codelist(ct_key, ct_val, ct_code, ct_result)
         return pd.DataFrame(ct_result)
 
     def _get_ct_from_dataset(self, ct_key: str, ct_val: str):

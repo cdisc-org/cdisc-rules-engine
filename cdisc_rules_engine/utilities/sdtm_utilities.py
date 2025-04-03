@@ -1,5 +1,3 @@
-from cdisc_rules_engine.interfaces.cache_service_interface import CacheServiceInterface
-from cdisc_rules_engine.interfaces.config_interface import ConfigInterface
 from cdisc_rules_engine.interfaces.data_service_interface import DataServiceInterface
 from cdisc_rules_engine.utilities.utils import (
     search_in_list_of_dicts,
@@ -13,7 +11,6 @@ from cdisc_rules_engine.constants.classes import (
     FINDINGS_TEST_VARIABLE,
 )
 from cdisc_rules_engine.enums.variable_roles import VariableRoles
-from cdisc_rules_engine.services.cdisc_library_service import CDISCLibraryService
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
@@ -56,11 +53,7 @@ def get_tabulation_model_type_and_version(model_link: dict) -> Tuple:
 
 
 def get_variables_metadata_from_standard(  # noqa
-    standard: str,
-    standard_version: str,
     domain: str,
-    config: ConfigInterface,
-    cache: CacheServiceInterface,
     library_metadata: LibraryMetadataContainer,
     dataset_class: str = None,
     include_model_variables: bool = True,
@@ -97,11 +90,7 @@ def get_variables_metadata_from_standard(  # noqa
     ]
     """
     # get model details from cache
-    if not standard or not standard_version:
-        raise Exception("Please provide standard and version")
-    standard_details: dict = retrieve_standard_metadata(
-        standard, standard_version, cache, config, library_metadata
-    )
+    standard_details: dict = library_metadata.standard_metadata
     model = standard_details.get("_links", {}).get("model")
     model_type, model_version = get_tabulation_model_type_and_version(model)
     model_details = library_metadata.model_metadata
@@ -174,37 +163,6 @@ def get_variables_metadata_from_standard(  # noqa
                     ]
                     variables_metadata = variables_metadata + new_timing_vars
     return variables_metadata
-
-
-def retrieve_standard_metadata(
-    standard: str,
-    standard_version: str,
-    cache: CacheServiceInterface,
-    config: ConfigInterface,
-    library_metadata: LibraryMetadataContainer,
-) -> dict:
-    """
-    Gets library metadata from LibraryMetadataContainer.
-    If the metadata is not found in the LibraryMetadataContainer,
-    query the library for the required data.
-
-    Args:
-        standard: Standard to validate against
-        standard_version: Version of the standard to validate against
-        cache: Cache service for retrieving previously cached library data
-        config: Config used to create a cdisc library client.
-
-    Returns:
-        The CDISC library response for the provided standard and version.
-    """
-    standard_data: dict = library_metadata.standard_metadata
-    if not standard_data:
-        cdisc_library_service = CDISCLibraryService(config, cache)
-        standard_data = cdisc_library_service.get_standard_details(
-            standard.lower(), standard_version
-        )
-        library_metadata.standard_metadata = standard_data
-    return standard_data
 
 
 def get_allowed_class_variables(
@@ -331,13 +289,10 @@ def group_class_variables_by_role(
 
 
 def get_variables_metadata_from_standard_model(
-    standard: str,
-    standard_version: str,
     domain: str,
     dataframe,
     datasets: Iterable[SDTMDatasetMetadata],
     dataset_path: str,
-    cache: CacheServiceInterface,
     data_service: DataServiceInterface,
     library_metadata: LibraryMetadataContainer,
 ) -> List[dict]:
