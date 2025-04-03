@@ -68,13 +68,15 @@ def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:  # noqa
 
     with open(variables_codelist_file, "rb") as f:
         data = pickle.load(f)
-        cache_key = get_standard_codelist_cache_key(args.standard, args.version)
+        cache_key = get_standard_codelist_cache_key(
+            args.standard, args.version.replace(".", "-")
+        )
         variable_codelist_maps = data.get(cache_key)
 
     with open(variables_metadata_file, "rb") as f:
         data = pickle.load(f)
         cache_key = get_library_variables_metadata_cache_key(
-            args.standard, args.version, args.substandard
+            args.standard, args.version.replace(".", "-"), args.substandard
         )
         variables_metadata = data.get(cache_key)
 
@@ -184,16 +186,13 @@ def load_rules_with_local_rules_id(rules_data, local_rules_id):
 
 
 def load_specified_rules(rules_data, rule_ids, standard, version):
-    keys = [
-        get_rules_cache_key(standard, version.replace(".", "-"), rule)
-        for rule in rule_ids
-    ]
+    keys = [get_rules_cache_key(standard, version, rule) for rule in rule_ids]
     rules = [rules_data.get(key) for key in keys]
     missing_rules = [rule for rule, data in zip(rule_ids, rules) if data is None]
     for missing_rule in missing_rules:
         engine_logger.error(
             f"The rule specified '{missing_rule}' is not"
-            " in the standard {args.standard} and version {args.version}"
+            " in the standard {standard} and version {version}"
         )
     rules = [rule for rule in rules if rule is not None]
     if not rules:
@@ -212,9 +211,7 @@ def load_all_rules_for_standard(rules_data, standard, version):
     )
     for key, rule in rules_data.items():
         core_id = rule.get("core_id")
-        rule_identifier = get_rules_cache_key(
-            standard, version.replace(".", "-"), core_id
-        )
+        rule_identifier = get_rules_cache_key(standard, version, core_id)
         if core_id not in core_ids and key == rule_identifier:
             rules.append(rule)
             core_ids.add(core_id)
@@ -251,9 +248,13 @@ def load_rules_from_cache(args) -> List[dict]:
     if args.local_rules_id:
         return load_rules_with_local_rules_id(rules_data, args.local_rules_id)
     elif args.rules:
-        return load_specified_rules(rules_data, args.rules, args.standard, args.version)
+        return load_specified_rules(
+            rules_data, args.rules, args.standard, args.version.replace(".", "-")
+        )
     elif args.standard and args.version:
-        return load_all_rules_for_standard(rules_data, args.standard, args.version)
+        return load_all_rules_for_standard(
+            rules_data, args.standard, args.version.replace(".", "-")
+        )
     else:
         return load_all_rules(rules_data)
 

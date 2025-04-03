@@ -9,7 +9,7 @@ class DomainLabel(BaseOperation):
         """
         Return the domain label for the currently executing domain
         """
-        standard_data = self._retrieve_standards_metadata()
+        standard_data = self.library_metadata.standard_metadata
         domain_details = None
         for c in standard_data.get("classes", []):
             domain_details = search_in_list_of_dicts(

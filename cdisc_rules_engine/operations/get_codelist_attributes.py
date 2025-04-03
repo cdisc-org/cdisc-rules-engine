@@ -1,6 +1,6 @@
 import pandas as pd
 import logging
-from cdisc_rules_engine.config.config import ConfigService
+from cdisc_rules_engine.config import config
 from cdisc_rules_engine.operations.base_operation import BaseOperation
 from cdisc_rules_engine.services.cdisc_library_service import CDISCLibraryService
 
@@ -96,7 +96,6 @@ class CodeListAttributes(BaseOperation):
             return pd.DataFrame(ct_result)
 
         # if not, we need to get them from library
-        config = ConfigService()
         logger = logging.getLogger()
         api_key = config.getValue("CDISC_LIBRARY_API_KEY")
         ct_diff = list(set(ct_packages) - set(set(ct_result[ct_key])))
