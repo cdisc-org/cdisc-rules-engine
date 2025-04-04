@@ -4,6 +4,7 @@ from typing import List, Sequence
 from datetime import datetime
 import re
 import pandas as pd
+from numpy import nan
 
 from cdisc_rules_engine.interfaces import CacheServiceInterface, ConfigInterface
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
@@ -73,12 +74,33 @@ class ExcelDataService(BaseDataService):
                 return f
         return None
 
-    @cached_dataset(DatasetTypes.CONTENTS.value)
-    def get_dataset(self, dataset_name: str, **params) -> DatasetInterface:
-        dataframe = pd.read_excel(self.dataset_path, sheet_name=dataset_name)[3:]
-        dataframe.reset_index(drop=True, inplace=True)
+    def _get_dataset(self, dataset_name: str, nrows: int | None = None):
+        dtype_mapping = {
+            "Char": str,
+            "Num": float,
+            "Boolean": bool,
+            "Number": float,
+            "String": str,
+        }
+        header = pd.read_excel(
+            self.dataset_path, sheet_name=dataset_name, header=None, nrows=3
+        )
+        dtypes = dict(zip(header.iloc[0].tolist(), header.iloc[2].tolist()))
+        dtypes = {key: dtype_mapping.get(value, str) for key, value in dtypes.items()}
+        dataframe = pd.read_excel(
+            self.dataset_path,
+            sheet_name=dataset_name,
+            dtype=dtypes,
+            skiprows=(1, 2, 3),
+            nrows=nrows,
+        )
+        dataframe = dataframe.replace({nan: None})
         dataset = PandasDataset(dataframe)
         return dataset
+
+    @cached_dataset(DatasetTypes.CONTENTS.value)
+    def get_dataset(self, dataset_name: str, **params) -> DatasetInterface:
+        return self._get_dataset(dataset_name=dataset_name)
 
     @cached_dataset(DatasetTypes.RAW_METADATA.value)
     def get_raw_dataset_metadata(
@@ -93,7 +115,7 @@ class ExcelDataService(BaseDataService):
         metadata = datasets_worksheet[
             datasets_worksheet[DATASET_FILENAME_COLUMN] == dataset_name
         ]
-        dataset = self.get_dataset(dataset_name=dataset_name)
+        dataset = self._get_dataset(dataset_name=dataset_name, nrows=1)
         return SDTMDatasetMetadata(
             name=dataset_name.split(".")[0].upper(),
             first_record=(dataset.data.iloc[0].to_dict() if not dataset.empty else {}),
@@ -113,7 +135,7 @@ class ExcelDataService(BaseDataService):
         Gets dataset from blob storage and returns metadata of a certain variable.
         """
         dataframe = pd.read_excel(
-            self.dataset_path, sheet_name=dataset_name, header=None
+            self.dataset_path, sheet_name=dataset_name, header=None, nrows=4
         )
         metadata_to_return: VariableMetadataContainer = VariableMetadataContainer(
             {
