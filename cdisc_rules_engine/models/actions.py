@@ -5,6 +5,7 @@ import pandas as pd
 from business_rules.actions import BaseActions, rule_action
 from business_rules.fields import FIELD_TEXT
 
+from cdisc_rules_engine.constants import NULL_FLAVORS
 from cdisc_rules_engine.constants.metadata_columns import (
     SOURCE_FILENAME,
     SOURCE_ROW_NUMBER,
@@ -280,7 +281,7 @@ class COREActions(BaseActions):
         source_filename: Optional[pd.Series] = data.get(SOURCE_FILENAME)
         row_dict = df_row.to_dict()
         filtered_dict = {
-            key: ("null" if pd.isna(value) else value)
+            key: ("null" if value in NULL_FLAVORS else value)
             for key, value in row_dict.items()
         }
         error_object = ValidationErrorEntity(

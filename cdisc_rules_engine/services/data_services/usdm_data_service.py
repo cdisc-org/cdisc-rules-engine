@@ -90,18 +90,6 @@ class USDMDataService(BaseDataService):
     def get_dataset(self, dataset_name: str, **params) -> DatasetInterface:
         return self.__get_dataset(dataset_name)
 
-    @cached_dataset(DatasetTypes.METADATA.value)
-    def get_dataset_metadata(
-        self, dataset_name: str, size_unit: str = None, **params
-    ) -> DatasetInterface:
-        """
-        Gets metadata of a dataset and returns it as a DataFrame.
-        """
-        metadata_to_return: dict = {
-            "dataset_name": [dataset_name],
-        }
-        return self._reader_factory.dataset_implementation.from_dict(metadata_to_return)
-
     @cached_dataset(DatasetTypes.RAW_METADATA.value)
     def get_raw_dataset_metadata(
         self, dataset_name: str, **kwargs
