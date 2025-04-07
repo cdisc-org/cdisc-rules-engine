@@ -74,7 +74,8 @@ class ExcelDataService(BaseDataService):
                 return f
         return None
 
-    def _get_dataset(self, dataset_name: str, nrows: int | None = None):
+    @cached_dataset(DatasetTypes.CONTENTS.value)
+    def get_dataset(self, dataset_name: str, **params) -> DatasetInterface:
         dtype_mapping = {
             "Char": str,
             "Num": float,
@@ -92,15 +93,10 @@ class ExcelDataService(BaseDataService):
             sheet_name=dataset_name,
             dtype=dtypes,
             skiprows=(1, 2, 3),
-            nrows=nrows,
         )
         dataframe = dataframe.replace({nan: None})
         dataset = PandasDataset(dataframe)
         return dataset
-
-    @cached_dataset(DatasetTypes.CONTENTS.value)
-    def get_dataset(self, dataset_name: str, **params) -> DatasetInterface:
-        return self._get_dataset(dataset_name=dataset_name)
 
     @cached_dataset(DatasetTypes.RAW_METADATA.value)
     def get_raw_dataset_metadata(
@@ -115,7 +111,7 @@ class ExcelDataService(BaseDataService):
         metadata = datasets_worksheet[
             datasets_worksheet[DATASET_FILENAME_COLUMN] == dataset_name
         ]
-        dataset = self._get_dataset(dataset_name=dataset_name, nrows=1)
+        dataset = self.get_dataset(dataset_name=dataset_name)
         return SDTMDatasetMetadata(
             name=dataset_name.split(".")[0].upper(),
             first_record=(dataset.data.iloc[0].to_dict() if not dataset.empty else {}),
