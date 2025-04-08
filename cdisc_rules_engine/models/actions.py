@@ -281,7 +281,7 @@ class COREActions(BaseActions):
         source_filename: Optional[pd.Series] = data.get(SOURCE_FILENAME)
         row_dict = df_row.to_dict()
         filtered_dict = {
-            key: ("null" if value in NULL_FLAVORS else value)
+            key: ("null" if value in NULL_FLAVORS or pd.isna(value) else value)
             for key, value in row_dict.items()
         }
         error_object = ValidationErrorEntity(
