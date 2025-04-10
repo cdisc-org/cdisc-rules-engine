@@ -184,7 +184,9 @@ class BaseDataService(DataServiceInterface, ABC):
         """
         Gets metadata of a dataset and returns it as a DataFrame.
         """
-        dataset_metadata = self.get_raw_dataset_metadata(dataset_name=dataset_name)
+        dataset_metadata = self.get_raw_dataset_metadata(
+            dataset_name=dataset_name, **params
+        )
         metadata_to_return: dict = {
             "dataset_size": [dataset_metadata.file_size],
             "dataset_location": [dataset_metadata.filename],
