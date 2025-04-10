@@ -824,7 +824,11 @@ class DataframeType(BaseType):
     @type_operator(FIELD_DATAFRAME)
     def empty(self, other_value: dict):
         target = self.replace_prefix(other_value.get("target"))
-        results = np.where(self.value[target].isin(NULL_FLAVORS), True, False)
+        results = np.where(
+            self.value[target].isin(NULL_FLAVORS) | pd.isna(self.value[target]),
+            True,
+            False,
+        )
         return self.value.convert_to_series(results)
 
     @log_operator_execution
@@ -841,7 +845,11 @@ class DataframeType(BaseType):
         grouped_target = ordered_df.groupby(comparator)[target]
         # validate all targets except the last one
         results = grouped_target.apply(lambda x: x[:-1]).apply(
-            lambda x: x in NULL_FLAVORS
+            lambda x: (
+                pd.isna(x).all()
+                if isinstance(x, (pd.Series, list))
+                else (x in NULL_FLAVORS or pd.isna(x))
+            )
         )
         if isinstance(self.value, DaskDataset) and self.value.is_series(results):
             return results.compute()
@@ -867,7 +875,11 @@ class DataframeType(BaseType):
         grouped_target = ordered_df.groupby(comparator)[target]
         # validate all targets except the last one
         results = ~grouped_target.apply(lambda x: x[:-1]).apply(
-            lambda x: x in NULL_FLAVORS
+            lambda x: (
+                pd.isna(x).all()
+                if isinstance(x, (pd.Series, list))
+                else (x in NULL_FLAVORS or pd.isna(x))
+            )
         )
         if isinstance(self.value, DaskDataset) and self.value.is_series(results):
             return results.compute()
@@ -1316,9 +1328,13 @@ class DataframeType(BaseType):
 
     def next_column_exists_and_previous_is_null(self, row) -> bool:
         row.reset_index(drop=True, inplace=True)
-        for index in row[row.isin(NULL_FLAVORS)].index:  # leaving null values only
+        for index in row[
+            row.isin(NULL_FLAVORS) | pd.isna(row)
+        ].index:  # leaving null values only
             next_position: int = index + 1
-            if next_position < len(row) and row[next_position] is not None:
+            if next_position < len(row) and not (
+                pd.isna(row[next_position]) or row[next_position] in NULL_FLAVORS
+            ):
                 return True
         return False
 
