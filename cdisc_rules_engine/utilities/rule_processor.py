@@ -275,6 +275,7 @@ class RuleProcessor:
 
             # get necessary operation
             operation_params = OperationParams(
+                core_id=rule.get("core_id"),
                 operation_id=operation.get("id"),
                 operation_name=operation.get("operator"),
                 dataframe=dataset_copy,
@@ -335,6 +336,7 @@ class RuleProcessor:
         """
         # check cache
         cache_key = get_operations_cache_key(
+            core_id=operation_params.core_id,
             directory_path=operation_params.directory_path,
             operation_name=operation_params.operation_name,
             domain=operation_params.domain,

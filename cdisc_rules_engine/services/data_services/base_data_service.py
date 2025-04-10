@@ -177,6 +177,25 @@ class BaseDataService(DataServiceInterface, ABC):
             dataset, dataset_metadata, file_path, datasets
         )
 
+    @cached_dataset(DatasetTypes.METADATA.value)
+    def get_dataset_metadata(
+        self, dataset_name: str, size_unit: str = None, **params
+    ) -> DatasetInterface:
+        """
+        Gets metadata of a dataset and returns it as a DataFrame.
+        """
+        dataset_metadata = self.get_raw_dataset_metadata(
+            dataset_name=dataset_name, **params
+        )
+        metadata_to_return: dict = {
+            "dataset_size": [dataset_metadata.file_size],
+            "dataset_location": [dataset_metadata.filename],
+            "dataset_name": [dataset_metadata.name],
+            "dataset_label": [dataset_metadata.label],
+            "record_count": [dataset_metadata.record_count],
+        }
+        return self.dataset_implementation.from_dict(metadata_to_return)
+
     def _handle_special_cases(
         self,
         dataset: DatasetInterface,
