@@ -40,7 +40,7 @@ jobs:
         id: pandas_run
         continue-on-error: true
         run: |
-          python core.py validate -s sdtmig -v 3-3 $rules -d CORE_Test_Suite/data -ct sdtmct-2020-03-27 -of json -o pandas-results -l debug || true
+          python core.py validate -s sdtmig -v 3-3 ${{ env.RULE_LIST }} -d CORE_Test_Suite/data -ct sdtmct-2020-03-27 -of json -o pandas-results -l debug || true
 
           if [ -f "pandas-results.json" ]; then
             cp pandas-results.json artifacts/pandas-results.json
@@ -68,7 +68,7 @@ jobs:
             echo "Pandas comparison found differences"
           fi
       - name: Generate pandas comparison summary
-        if: steps.check_pandas.outputs.file_exists == 'true'
+        if: steps.pandas_run.outputs.pandas_success == 'true'
         run: |
           python CORE_Test_Suite/scripts/compare_implementations.py artifacts/pandas-results.json CORE_Test_Suite/CORE-Report.json artifacts/pandas_comparison.json --github-step-summary $GITHUB_STEP_SUMMARY
       - name: Run validation with Dask
@@ -76,7 +76,7 @@ jobs:
         continue-on-error: true
         run: |
           echo "DATASET_SIZE_THRESHOLD=0" > .env
-          python core.py validate -s sdtmig -v 3-3 $rules -d CORE_Test_Suite/data -ct sdtmct-2020-03-27 -of json -o dask-results -l debug || true
+          python core.py validate -s sdtmig -v 3-3 ${{ env.RULE_LIST }} -d CORE_Test_Suite/data -ct sdtmct-2020-03-27 -of json -o dask-results -l debug || true
 
           if [ -f "dask-results.json" ]; then
             cp dask-results.json artifacts/dask-results.json
