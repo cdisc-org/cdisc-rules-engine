@@ -1,6 +1,5 @@
 from unittest.mock import MagicMock
 import pytest
-from cdisc_rules_engine.models.operation_params import OperationParams
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.operations.codelist_extensible import CodelistExtensible
 from cdisc_rules_engine.models.library_metadata_container import (
@@ -37,21 +36,6 @@ def mock_metadata():
             "C3": {"submissionValue": "Codelist3", "terms": []},
         }
     }
-
-
-@pytest.fixture
-def operation_params():
-    return OperationParams(
-        dataframe=PandasDataset.from_dict({}),
-        dataset_path="test_path",
-        datasets={"TEST": PandasDataset.from_dict({})},
-        domain="TEST",
-        directory_path="test_dir",
-        operation_id="test_op",
-        operation_name="test_operation",
-        standard="SDTM",
-        standard_version="1.0",
-    )
 
 
 def test_extensible_codelist(operation_params, mock_metadata):
