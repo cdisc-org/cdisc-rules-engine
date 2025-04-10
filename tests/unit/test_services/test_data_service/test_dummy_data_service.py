@@ -99,13 +99,13 @@ def test_get_dataset_metadata():
         }
     ]
     datasets = [DummyDataset(dataset) for dataset in dataset_data]
-    data_service = DummyDataService(
-        MagicMock(), MagicMock(), MagicMock(), data=datasets
-    )
-    metadata = data_service.get_dataset_metadata("ae.xpt")
-    assert metadata["dataset_label"].iloc[0] == "ADVERSE EVENTS"
-    assert metadata["dataset_name"].iloc[0] == "AE"
-    assert metadata["dataset_size"].iloc[0] == 2000
+    cache_mock = MagicMock()
+    cache_mock.get_dataset.return_value = None
+    data_service = DummyDataService(cache_mock, MagicMock(), MagicMock(), data=datasets)
+    metadata = data_service.get_dataset_metadata(dataset_name="ae.xpt")
+    assert metadata["dataset_label"][0] == "ADVERSE EVENTS"
+    assert metadata["dataset_name"][0] == "AE"
+    assert metadata["dataset_size"][0] == 2000
 
 
 def test_get_variables_metadata():

@@ -87,7 +87,7 @@ class DataProcessor:
     def get_column_values(self, dataset, column):
         if column in dataset:
             return dataset[column]
-        return []
+        return pd.Series([])
 
     def get_columns(self, dataset, columns):
         column_data = {}
