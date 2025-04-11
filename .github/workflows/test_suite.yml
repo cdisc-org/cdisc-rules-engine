@@ -39,7 +39,7 @@ jobs:
         run: |
           python core.py validate -s sdtmig -v 3-3 ${{ env.RULE_LIST }} -d CORE_Test_Suite/data -ct sdtmct-2020-03-27 -of json -o CORE_Test_Suite/pandas-results -l debug || true
 
-          if [ -f "pandas-results.json" ]; then
+          if [ -f "CORE_Test_Suite/pandas-results.json" ]; then
             echo "pandas_success=true" >> $GITHUB_OUTPUT
             echo "## Pandas Validation" >> $GITHUB_STEP_SUMMARY
             echo "✅ **Success**: Validation completed successfully" >> $GITHUB_STEP_SUMMARY
@@ -74,7 +74,7 @@ jobs:
           echo "DATASET_SIZE_THRESHOLD=0" > .env
           python core.py validate -s sdtmig -v 3-3 ${{ env.RULE_LIST }} -d CORE_Test_Suite/data -ct sdtmct-2020-03-27 -of json -o CORE_Test_Suite/dask-results -l debug || true
 
-          if [ -f "dask-results.json" ]; then
+          if [ -f "CORE_Test_Suite/dask-results.json" ]; then
             echo "dask_success=true" >> $GITHUB_OUTPUT
             echo "## Dask Validation" >> $GITHUB_STEP_SUMMARY
             echo "✅ **Success**: Validation completed successfully" >> $GITHUB_STEP_SUMMARY
