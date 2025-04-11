@@ -281,9 +281,9 @@ def test_ContentMetadataDatasetBuilder_split_datasets(conditions):
     datasets = [DummyDataset(data) for data in data_metadata.get("datasets", [])]
     expected_output = {
         "dataset_size": 1000,
+        "dataset_location": "qscg.xpt",
         "dataset_name": "QSCG",
         "dataset_label": "Clinical Global Impressions",
-        "filename": "qscg.xpt",
         "record_count": 1,
     }
     expected = PandasDataset(
@@ -308,9 +308,9 @@ def test_ContentMetadataDatasetBuilder_split_datasets(conditions):
     ).build()
     expected_output2 = {
         "dataset_size": 1000,
+        "dataset_location": "qspg.xpt",
         "dataset_name": "QSPG",
         "dataset_label": "Patient Global Impressions",
-        "filename": "qspg.xpt",
         "record_count": 1,
     }
     expected2 = PandasDataset(

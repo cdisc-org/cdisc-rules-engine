@@ -93,24 +93,6 @@ class LocalDataService(BaseDataService):
         df = reader.from_file(dataset_name)
         return df
 
-    @cached_dataset(DatasetTypes.METADATA.value)
-    def get_dataset_metadata(
-        self, dataset_name: str, size_unit: str = None, **params
-    ) -> DatasetInterface:
-        """
-        Gets metadata of a dataset and returns it as a DataFrame.
-        """
-        file_metadata, contents_metadata = self.__get_dataset_metadata(
-            dataset_name, size_unit=size_unit, **params
-        )
-        metadata_to_return: dict = {
-            "dataset_size": [file_metadata["file_size"]],
-            "dataset_location": [file_metadata["name"]],
-            "dataset_name": [contents_metadata["dataset_name"]],
-            "dataset_label": [contents_metadata["dataset_label"]],
-        }
-        return self.dataset_implementation.from_dict(metadata_to_return)
-
     @cached_dataset(DatasetTypes.RAW_METADATA.value)
     def get_raw_dataset_metadata(
         self, dataset_name: str, **kwargs

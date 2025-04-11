@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
@@ -9,6 +10,10 @@ import json
 import pytest
 
 from cdisc_rules_engine.utilities.utils import tag_source
+from cdisc_rules_engine.constants.metadata_columns import (
+    SOURCE_FILENAME,
+    SOURCE_ROW_NUMBER,
+)
 
 
 def test_targeted_error_object_with_partial_missing_targets():
@@ -157,3 +162,73 @@ def test_json_serializable_value(data):
     result = action.generate_targeted_error_object(targets, df, "TVSEQ greater than 2")
     # Ensure json dumps does not throw an error
     json.dumps(result.to_representation())
+
+
+def test_nan_handling_in_error_object():
+    dummy_rule = {
+        "core_id": "NaNTest",
+        "actions": [
+            {
+                "name": "generate_dataset_error_objects",
+                "params": {
+                    "message": "Testing NaN handling",
+                },
+            }
+        ],
+        "output_variables": ["TEST", "NAN_VAL", "NAN_LIST"],
+    }
+    df = pd.DataFrame(
+        {
+            "TEST": ["Value1", "Value2", "Value3", "Value4"],
+            "NAN_VAL": [1.0, np.nan, 3.0, np.nan],
+            "NAN_LIST": [
+                [1.0, 2.0, 3.0],
+                [4.0, np.nan, 6.0],
+                ["a", "b", "c"],
+                [7.0, 8.0, np.nan],
+            ],
+            "USUBJID": ["SUBJ-001", "SUBJ-002", "SUBJ-003", "SUBJ-004"],
+            "TVSEQ": [1, 2, 3, 4],
+        }
+    )
+    df[SOURCE_FILENAME] = "test.xpt"
+    df[SOURCE_ROW_NUMBER] = [1, 2, 3, 4]
+
+    # create expected DataFrame with NaN values replaced by 'null'
+    expected_df = df.copy()
+    expected_df["NAN_VAL"] = expected_df["NAN_VAL"].apply(
+        lambda x: "null" if pd.isna(x) else x
+    )
+    expected_df["NAN_LIST"] = expected_df["NAN_LIST"].apply(
+        lambda x: (
+            "null" if isinstance(x, list) and any(pd.isna(val) for val in x) else x
+        )
+    )
+    variable = DatasetVariable(df)
+    dataset_metadata = SDTMDatasetMetadata(
+        first_record={"DOMAIN": "TV"}, filename="test.xpt"
+    )
+    action = COREActions([], variable, dataset_metadata, dummy_rule)
+
+    for i in range(len(df)):
+        row = df.iloc[i]
+        result = action._create_error_object(row, df)
+        expected_val = expected_df["NAN_VAL"].iloc[i]
+        expected_list = expected_df["NAN_LIST"].iloc[i]
+        assert (
+            result.value["NAN_VAL"] == expected_val
+        ), f"Row {i}: NAN_VAL does not match expected"
+        assert (
+            result.value["NAN_LIST"] == expected_list
+        ), f"Row {i}: NAN_LIST does not match expected"
+
+    all_results = action.generate_targeted_error_object(
+        set(dummy_rule["output_variables"]), df, "Testing NaN handling"
+    )
+    json_output = json.dumps(all_results.to_representation())
+    assert (
+        '"NAN_VAL": "null"' in json_output
+    ), "Missing null value for NAN_VAL in output"
+    assert (
+        '"NAN_LIST": "null"' in json_output
+    ), "Missing null value for NAN_LIST in output"
