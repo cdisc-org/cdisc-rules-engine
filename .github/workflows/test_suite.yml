@@ -43,7 +43,7 @@ jobs:
             echo "pandas_success=true" >> $GITHUB_OUTPUT
             echo "## Pandas Validation" >> $GITHUB_STEP_SUMMARY
             echo "✅ **Success**: Validation completed successfully" >> $GITHUB_STEP_SUMMARY
-            python CORE_Test_Suite/scripts/validation_summary.py pandas-results.json >> $GITHUB_STEP_SUMMARY
+            python CORE_Test_Suite/scripts/validation_summary.py CORE_Test_Suite/pandas-results.json >> $GITHUB_STEP_SUMMARY
           else
             echo "Failed to generate pandas-results.json"
             echo "pandas_success=false" >> $GITHUB_OUTPUT
