@@ -85,8 +85,6 @@ class RulesEngine:
             self.data_service, self.cache, self.library_metadata
         )
         self.data_processor = DataProcessor(self.data_service, self.cache)
-        self.standard = kwargs.get("standard")
-        self.standard_version = kwargs.get("standard_version")
         self.ct_packages = kwargs.get("ct_packages", [])
         self.ct_package = kwargs.get("ct_package")
         self.external_dictionaries = external_dictionaries
