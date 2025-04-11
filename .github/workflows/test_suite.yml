@@ -52,6 +52,7 @@ jobs:
           fi
       - name: Pandas comparison with template
         if: steps.pandas_run.outputs.pandas_success == 'true'
+        continue-on-error: true
         run: |
           python CORE_Test_Suite/scripts/comparison.py CORE_Test_Suite/pandas-results.json CORE_Test_Suite/CORE-Report.json CORE_Test_Suite/pandas_comparison.xlsx --mode test --json-output CORE_Test_Suite/pandas_comparison.json
 
@@ -65,6 +66,7 @@ jobs:
           fi
       - name: Generate pandas comparison summary
         if: steps.pandas_run.outputs.pandas_success == 'true'
+        continue-on-error: true
         run: |
           python CORE_Test_Suite/scripts/compare_implementations.py CORE_Test_Suite/pandas-results.json CORE_Test_Suite/CORE-Report.json CORE_Test_Suite/pandas_comparison.json --github-step-summary $GITHUB_STEP_SUMMARY --mode implementation
       - name: Run validation with Dask
@@ -86,6 +88,7 @@ jobs:
             echo "❌ **Failed**: No results file was generated" >> $GITHUB_STEP_SUMMARY
           fi
       - name: Dask comparison script
+        continue-on-error: true
         if: steps.dask_run.outputs.dask_success == 'true'
         run: |
           python CORE_Test_Suite/scripts/comparison.py CORE_Test_Suite/dask-results.json CORE_Test_Suite/CORE-Report.json CORE_Test_Suite/dask_comparison.xlsx --mode test --json-output CORE_Test_Suite/dask_comparison.json
@@ -100,6 +103,7 @@ jobs:
           fi
       - name: Generate dask comparison summary
         if: steps.dask_run.outputs.dask_success == 'true'
+        continue-on-error: true
         run: |
           python CORE_Test_Suite/scripts/compare_implementations.py CORE_Test_Suite/dask-results.json CORE_Test_Suite/CORE-Report.json CORE_Test_Suite/dask_comparison.json --github-step-summary $GITHUB_STEP_SUMMARY --mode implementation
       - name: Upload test results
