@@ -10,7 +10,6 @@ from cdisc_rules_engine.utilities.utils import (
     tag_source,
 )
 from typing import List, Iterable
-from cdisc_rules_engine import config
 from cdisc_rules_engine.utilities import sdtm_utilities
 from cdisc_rules_engine.utilities.rule_processor import RuleProcessor
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
@@ -187,11 +186,7 @@ class BaseDatasetBuilder:
         else:
             dataset_class = None
         variables: List[dict] = sdtm_utilities.get_variables_metadata_from_standard(
-            standard=self.standard,
-            standard_version=self.standard_version,
             domain=self.dataset_metadata.domain,
-            config=config,
-            cache=self.cache,
             library_metadata=self.library_metadata,
             dataset_class=dataset_class,
         )
