@@ -12,25 +12,38 @@ jobs:
     steps:
       - name: Get current release tag
         id: get_version
-        run: echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          else
+            echo "version=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
+            echo "Running on branch instead of tag"
+          fi
 
       # Check if the current tag is the latest release tag
       - name: Check if this is the latest release
         id: check_latest
         run: |
           latest_tag=$(
-          curl -L \
+            curl -L \
               -H "Accept: application/vnd.github+json" \
               https://api.github.com/repos/cdisc-org/cdisc-rules-engine/releases/latest \
               | jq -r '.tag_name'
           )
-          current_tag="${GITHUB_REF#refs/tags/}"
-          if [[ "$latest_tag" == "$current_tag" ]]; then
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            current_tag="${GITHUB_REF#refs/tags/}"
+            if [[ "$latest_tag" == "$current_tag" ]]; then
               echo "is_latest=true" >> $GITHUB_OUTPUT
               echo "This is the latest release: $latest_tag"
-          else
+            else
               echo "is_latest=false" >> $GITHUB_OUTPUT
               echo "This is NOT the latest release. Latest is: $latest_tag, current is: $current_tag"
+            fi
+          else
+            # Running on a branch, not a tag
+            current_tag="${GITHUB_REF#refs/heads/}"
+            echo "is_latest=false" >> $GITHUB_OUTPUT
+            echo "This is NOT a release. Running on branch: $current_tag, latest release is: $latest_tag"
           fi
 
   build-and-push:
