@@ -29,3 +29,5 @@ class RuleTypes(BaseEnum):
     DEFINE_ITEM_METADATA_CHECK_AGAINST_LIBRARY = (
         "Define Item Metadata Check against Library Metadata"
     )
+    VALUE_CHECK_WITH_DATASET_METADATA = "Value Check with Dataset Metadata"
+    VALUE_CHECK_WITH_VARIABLE_METADATA = "Value Check with Variable Metadata"
