@@ -34,7 +34,7 @@ print(os.listdir("logs"))
 print(os.listdir(os.path.join("logs", "Build and Deploy Preview")))
 
 target_file_path = os.path.join(
-    "logs", "Build and Deploy Preview", "5_Build and Deploy Preview.txt"
+    "logs", "Build and Deploy Preview", "5_Build And Deploy Preview.txt"
 )
 
 if not os.path.exists(target_file_path):
