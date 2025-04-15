@@ -30,6 +30,8 @@ logs_response.raise_for_status()
 with zipfile.ZipFile(io.BytesIO(logs_response.content)) as zip_file:
     zip_file.extractall("logs")
 
+print(os.listdir("logs"))
+print(os.listdir(os.path.join("logs", "Build and Deploy Preview")))
 
 target_file_path = os.path.join(
     "logs", "Build and Deploy Preview", "5_Build and Deploy Preview.txt"
