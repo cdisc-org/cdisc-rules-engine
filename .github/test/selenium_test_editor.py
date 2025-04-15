@@ -74,7 +74,7 @@ try:
         )
     )
 
-    file_path = os.path.abspath("tests/unit-test-coreid-CG0002-negative.xlsx")
+    file_path = os.path.abspath(".github/test/unit-test-coreid-CG0002-negative.xlsx")
     print(f"Uploading file: {file_path}")
     file_input.send_keys(file_path)
 
