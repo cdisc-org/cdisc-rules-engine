@@ -26,4 +26,4 @@ jobs:
         run: python .github/test/extract_deploy_link.py
 
       - name: Run tests using preview URL
-        run: python .github/test/run_tests.py
+        run: python .github/test/selenium_test_editor.py
