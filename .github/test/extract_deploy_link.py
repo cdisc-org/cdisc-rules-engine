@@ -5,8 +5,12 @@ import io
 import re
 
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")
+if GITHUB_TOKEN is None:
+    raise ValueError("GITHUB_TOKEN environment variable not set")
 
-WORKFLOW_RUNS_URL = "https://api.github.com/repos/cdisc-org/conformance-rules-editor/actions/runs"
+WORKFLOW_RUNS_URL = (
+    "https://api.github.com/repos/cdisc-org/conformance-rules-editor/actions/runs"
+)
 
 
 headers = {"Authorization": f"token {GITHUB_TOKEN}"}
@@ -28,9 +32,7 @@ with zipfile.ZipFile(io.BytesIO(logs_response.content)) as zip_file:
 
 
 target_file_path = os.path.join(
-    "logs",
-    "Build and Deploy Preview",
-    "5_Build and Deploy Preview.txt"
+    "logs", "Build and Deploy Preview", "5_Build and Deploy Preview.txt"
 )
 
 if not os.path.exists(target_file_path):
@@ -47,7 +49,7 @@ if match:
     print("ICYFLOWER Deploy Link Found:")
     print(preview_url)
     # Save it to GitHub Actions environment
-    with open(os.environ['GITHUB_ENV'], "a") as env_file:
+    with open(os.environ["GITHUB_ENV"], "a") as env_file:
         env_file.write(f"RULE_EDITOR_URL={preview_url}\n")
 else:
     print("No ICYFLOWER deploy link found in the logs.")
