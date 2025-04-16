@@ -27,10 +27,7 @@ class ValueCheckDatasetMetadataDatasetBuilder(ValuesDatasetBuilder):
             datasets=self.datasets,
         )
 
-        # Get dataset contents and convert it from wide to long
-        data_contents_long_df = super().build(self)
-
-        # Add dataset metadata columns to each row
+        data_contents_long_df = super().build()
         for key, value in dataset_metadata.items():
             data_contents_long_df[key] = value
         return data_contents_long_df
