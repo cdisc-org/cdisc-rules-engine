@@ -66,6 +66,14 @@
     {
       "const": "Variable Metadata Check against Define XML and Library Metadata",
       "title": "Combines metadata at the variable level with corresponding define-xml metadata at variable level and corresponding library variable metadata"
+    },
+    {
+      "const": "Value Check with Dataset Metadata",
+      "title": "Content data at value level and dataset metadata at dataset level"
+    },
+    {
+      "const": "Value Check with Variable Metadata",
+      "title": "Content data at value level and variable metadata at variable level"
     }
   ],
   "markdownDescription": "Determines how the primary dataset should be built before the rule is applied"
