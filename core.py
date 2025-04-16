@@ -28,6 +28,7 @@ from cdisc_rules_engine.utilities.utils import (
     generate_report_filename,
     get_rules_cache_key,
     get_local_cache_key,
+    filter_rules_by_substandard,
 )
 from scripts.list_dataset_metadata_handler import list_dataset_metadata_handler
 from version import __version__
@@ -422,6 +423,13 @@ def update_cache(
     "-v", "--version", required=False, help="Standard version to get rules for"
 )
 @click.option(
+    "-ss",
+    "--substandard",
+    required=False,
+    default=None,
+    help="CDISC substandard to get rules for. Any of SDTM, SEND, ADaM, CDASH",
+)
+@click.option(
     "-lr",
     "--local_rules",
     is_flag=True,
@@ -441,6 +449,7 @@ def list_rules(
     cache_path: str,
     standard: str,
     version: str,
+    substandard: str,
     local_rules: bool,
     local_rules_id: str,
 ):
@@ -454,6 +463,7 @@ def list_rules(
     if not local_rules and (standard and version):
         key_prefix = get_rules_cache_key(standard, version.replace(".", "-"))
         rules = [rule for key, rule in rules_data.items() if key.startswith(key_prefix)]
+        rules = filter_rules_by_substandard(rules, standard, version, substandard)
     elif local_rules and local_rules_id:
         key_prefix = get_local_cache_key(local_rules_id)
         rules = [rule for key, rule in rules_data.items() if key.startswith(key_prefix)]
