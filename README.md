@@ -302,7 +302,7 @@ The CDISC Rules Engine is available as a Python package through PyPI. This allow
 pip install cdisc-rules-engine
 ```
 
-For implementation instructions, see [PyPI.md](PyPI.md).
+For implementation instructions, see [PYPI.md](PYPI.md).
 
 ### **Creating an executable version**
 
