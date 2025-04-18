@@ -100,8 +100,10 @@ class RulesEngine:
             rule["conditions"]
         )
         for dataset_metadata in datasets:
-            if dataset_metadata.unsplit_name in results:
-                continue  # handling split datasets
+            if dataset_metadata.unsplit_name in results and "domains" in rule:
+                include_split = rule["domains"].get("include_split_datasets", False)
+                if not include_split:
+                    continue  # handling split datasets
             results[dataset_metadata.unsplit_name] = self.validate_single_dataset(
                 rule,
                 datasets,
