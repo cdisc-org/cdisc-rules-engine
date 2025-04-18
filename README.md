@@ -264,6 +264,10 @@ To obtain an api key, please follow the instructions found here: <https://wiki.c
 
       `python core.py list-rules -s sdtmig -v 3-4`
 
+- list rules for integrated standard (substandard: "SDTM", "SEND", "ADaM", "CDASH"):
+
+      `python core.py list-rules -s tig -v 1-0 -ss SDTM`
+
 -list all local rules:
 
       `python core.py list-rules -lr`

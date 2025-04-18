@@ -23,6 +23,7 @@ from cdisc_rules_engine.utilities.utils import (
     get_model_details_cache_key_from_ig,
     get_library_variables_metadata_cache_key,
     get_standard_codelist_cache_key,
+    filter_rules_by_substandard,
 )
 from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import (
     DefineXMLReaderFactory,
@@ -202,19 +203,26 @@ def load_specified_rules(rules_data, rule_ids, standard, version):
     return rules
 
 
-def load_all_rules_for_standard(rules_data, standard, version):
+def load_all_rules_for_standard(rules_data, standard, version, substandard):
     rules = []
     core_ids = set()
-    engine_logger.info(
-        f"No rules specified. Running all local rules for {standard}"
-        + f" version {version}"
+    log_message = (
+        f"No rules specified. Running all local rules for {standard} version {version}"
     )
+    if substandard:
+        log_message += f" with substandard {substandard}"
+    engine_logger.info(log_message)
+
     for key, rule in rules_data.items():
         core_id = rule.get("core_id")
         rule_identifier = get_rules_cache_key(standard, version, core_id)
         if core_id not in core_ids and key == rule_identifier:
             rules.append(rule)
             core_ids.add(core_id)
+    if substandard:
+        rules = filter_rules_by_substandard(
+            rules, standard, version.replace("-", "."), substandard
+        )
     return rules
 
 
@@ -253,7 +261,7 @@ def load_rules_from_cache(args) -> List[dict]:
         )
     elif args.standard and args.version:
         return load_all_rules_for_standard(
-            rules_data, args.standard, args.version.replace(".", "-")
+            rules_data, args.standard, args.version.replace(".", "-"), args.substandard
         )
     else:
         return load_all_rules(rules_data)
