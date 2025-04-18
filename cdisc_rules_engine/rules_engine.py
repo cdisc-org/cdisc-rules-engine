@@ -125,7 +125,11 @@ class RulesEngine:
         )
         try:
             is_suitable, reason = self.rule_processor.is_suitable_for_validation(
-                rule, dataset_metadata, datasets, self.standard
+                rule,
+                dataset_metadata,
+                datasets,
+                self.standard,
+                self.standard_substandard,
             )
             if is_suitable:
                 result: List[Union[dict, str]] = self.validate_rule(
