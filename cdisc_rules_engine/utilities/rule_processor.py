@@ -17,6 +17,7 @@ from cdisc_rules_engine.constants.domains import (
     SUPPLEMENTARY_DOMAINS,
 )
 from cdisc_rules_engine.constants.rule_constants import ALL_KEYWORD
+from cdisc_rules_engine.constants.use_cases import USE_CASE_DOMAINS
 from cdisc_rules_engine.interfaces import ConditionInterface
 from cdisc_rules_engine.models.operation_params import OperationParams
 from cdisc_rules_engine.models.rule_conditions import AllowedConditionsKeys
@@ -231,6 +232,31 @@ class RuleProcessor:
             ):
                 is_excluded = True
         return is_included and not is_excluded
+
+    def rule_applies_to_use_case(
+        self, dataset_metadata: SDTMDatasetMetadata, rule: dict, standard: str
+    ) -> bool:
+        if standard.lower() != "tig":
+            return True
+        use_cases = rule.get("use_cases") or []
+
+        # If no use cases specified, the rule applies to all use cases
+        if not use_cases:
+            return True
+        domain = dataset_metadata.domain
+        if not domain:
+            return False
+
+        # Check if domain is included in any of the specified use cases
+        for use_case in use_cases:
+            if use_case == ALL_KEYWORD:
+                return True
+            if use_case in USE_CASE_DOMAINS and domain in USE_CASE_DOMAINS[use_case]:
+                logger.info(
+                    f"rule_applies_to_use_case. domain={domain} is allowed in use_case={use_case}"
+                )
+                return True
+        return False
 
     def valid_rule_structure(self, rule) -> bool:
         required_keys = ["standards", "core_id"]
@@ -505,12 +531,20 @@ class RuleProcessor:
         rule: dict,
         dataset_metadata: SDTMDatasetMetadata,
         datasets: Iterable[SDTMDatasetMetadata],
+        standard,
     ) -> Tuple[bool, str]:
         """Check if rule is suitable and return reason if not"""
         rule_id = rule.get("core_id", "unknown")
         dataset_name = dataset_metadata.name
         if not self.valid_rule_structure(rule):
             reason = f"Rule skipped - invalid rule structure for rule id={rule_id}"
+            logger.info(f"is_suitable_for_validation. {reason}, result=False")
+            return False, reason
+        if not self.rule_applies_to_use_case(dataset_metadata, rule, standard):
+            reason = (
+                f"Rule skipped - doesn't apply to use case for "
+                f"rule id={rule_id}, dataset={dataset_name}"
+            )
             logger.info(f"is_suitable_for_validation. {reason}, result=False")
             return False, reason
         if not self.rule_applies_to_domain(dataset_metadata, rule):
