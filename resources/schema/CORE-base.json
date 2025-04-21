@@ -130,7 +130,7 @@
           "$ref": "#/$defs/Domains"
         },
         "include_split_datasets": {
-          "type": "boolean"
+          "enum": [true]
         }
       },
       "type": "object"
