@@ -385,6 +385,9 @@ class RuleProcessor:
         result = operation.execute()
         if not DataProcessor.is_dummy_data(self.data_service):
             try:
+                from time import sleep
+
+                sleep(5)
                 self.cache.add(cache_key, result)
             except Exception as e:
                 logger.trace(e)
