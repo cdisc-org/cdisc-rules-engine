@@ -7,6 +7,7 @@ from cdisc_rules_engine.interfaces import (
 from cdisc_rules_engine.models.dataset import DatasetInterface
 from cachetools import LRUCache
 import psutil
+from cdisc_rules_engine.services import logger
 
 
 def get_data_size(dataset):
@@ -36,7 +37,19 @@ class InMemoryCacheService(CacheServiceInterface):
     def add(self, cache_key, data):
         if get_data_size(data) > self.max_size:
             return
-        self.cache[cache_key] = data
+        try:
+            self.cache[cache_key] = data
+        except KeyError as e:
+            logger.trace(e)
+            logger.error(
+                f"""Error occurred during validation.
+            Error: {e}
+            Error Type: {type(e)}
+            Error Message: {str(e)}
+            Cache Key: {cache_key}
+            """
+            )
+            raise
 
     def add_dataset(self, cache_key, data):
         self.dataset_cache[cache_key] = data
