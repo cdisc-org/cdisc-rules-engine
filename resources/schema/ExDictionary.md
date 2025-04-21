@@ -79,7 +79,7 @@ Required files: - DD.txt (Drug Dictionary) - DDA.txt (ATC Classification) - INA.
 
                   Term elements must include:
                   - <code>: Unique term code (required)
-                  - <id>: Term identifier (required)
+                  - <id>: ConceptID identifier (required)
                   - <status>: Term status (optional)
                   - <name>: Term name (optional)
 
