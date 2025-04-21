@@ -384,7 +384,22 @@ class RuleProcessor:
         )
         result = operation.execute()
         if not DataProcessor.is_dummy_data(self.data_service):
-            self.cache.add(cache_key, result)
+            try:
+                self.cache.add(cache_key, result)
+            except Exception as e:
+                logger.trace(e)
+                logger.error(
+                    f"""Error occurred during validation.
+                Error: {e}
+                Error Type: {type(e)}
+                Error Message: {str(e)}
+                Cache Key: {cache_key}
+                Rule: {operation_params.core_id}
+                Dataset: {operation_params.dataset_path}
+                Operation: {operation_params.operation_name}
+                """
+                )
+                raise e
         return result
 
     def is_current_domain(self, dataset, target_domain):
