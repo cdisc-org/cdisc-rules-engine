@@ -399,7 +399,7 @@ class RuleProcessor:
                 Operation: {operation_params.operation_name}
                 """
                 )
-                raise e
+                raise
         return result
 
     def is_current_domain(self, dataset, target_domain):
