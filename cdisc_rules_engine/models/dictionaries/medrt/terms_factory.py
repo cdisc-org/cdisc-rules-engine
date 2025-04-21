@@ -48,7 +48,11 @@ class MEDRTTermsFactory(TermsFactoryInterface):
 
     def _parse_term(self, term_xml: ElementTree) -> MEDRTTerm:
         code = term_xml.find("code").text
+        if code is None:
+            raise ValueError(f"Missing 'code' element in term XML: {term_xml}")
         id = term_xml.find("id").text
+        if id is None:
+            raise ValueError(f"Missing 'id' element in term XML: {term_xml}")
         return MEDRTTerm(
             code=code,
             id=id,
