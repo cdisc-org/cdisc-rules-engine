@@ -71,9 +71,41 @@ Required files: - DD.txt (Drug Dictionary) - DDA.txt (ATC Classification) - INA.
 #### Other Drug Dictionaries
 
 ```
+--medrt TEXT      Path to directory containing MEDRT dictionary files
+                  Dictionary file must be named `Core_MEDRT_*_DTS.xml`
 
---medrt TEXT Path to directory containing MEDRT dictionary files
-Dictionary file must be named `Core_MEDRT_*_DTS.xml`
+                  XML Structure Requirements:
+                  - The XML should contain both term and concept elements
+
+                  Term elements must include:
+                  - <code>: Unique term code (required)
+                  - <id>: ConceptID identifier (required)
+                  - <status>: Term status (optional)
+                  - <name>: Term name (optional)
+
+                  Concept elements must include:
+                  - <name>: Concept name (optional)
+                  - <code>: Concept code (optional)
+                  - <status>: Concept status (optional)
+
+                  Example structure:
+                  <root>
+                    <terms>
+                      <term>
+                        <code>TERM_CODE_VALUE</code>
+                        <id>TERM_ID_VALUE</id>
+                        <status>TERM_STATUS_VALUE</status>
+                        <name>TERM_NAME_VALUE</name>
+                      </term>
+                    </terms>
+                    <concepts>
+                      <concept>
+                        <name>CONCEPT_NAME_VALUE</name>
+                        <code>CONCEPT_CODE_VALUE</code>
+                        <status>CONCEPT_STATUS_VALUE</status>
+                      </concept>
+                    </concepts>
+                  </root>
 
 --unii TEXT Path to directory containing UNII dictionary files
 Required files: - UNII*Records*_._ (tab-delimited file containing UNII codes and terms)
