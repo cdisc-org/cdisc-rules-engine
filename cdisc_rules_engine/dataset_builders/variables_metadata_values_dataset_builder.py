@@ -34,21 +34,3 @@ class ValueCheckVariableMetadataDatasetBuilder(ValuesDatasetBuilder):
             axis=1,
         )
         return merged_df
-
-    def build_split_datasets(self, dataset_name, **kwargs):
-        """Handle split datasets by applying the same logic to each subset."""
-        data_contents_long_df = super().build_split_datasets(dataset_name, **kwargs)
-        variable_metadata = self.data_service.get_variables_metadata(
-            dataset_name=dataset_name, datasets=self.datasets, drop_duplicates=True
-        )
-        merged_df = data_contents_long_df.merge(
-            variable_metadata, how="left", on="variable_name"
-        )
-        merged_df["variable_value_length"] = merged_df.apply(
-            lambda row: super().calculate_variable_value_length(
-                row["variable_value"], row["variable_data_type"]
-            ),
-            axis=1,
-        )
-
-        return merged_df
