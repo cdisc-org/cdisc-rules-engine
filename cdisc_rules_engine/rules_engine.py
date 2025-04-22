@@ -130,6 +130,8 @@ class RulesEngine:
                 rule,
                 dataset_metadata,
                 datasets,
+                self.standard,
+                self.standard_substandard,
             )
             if is_suitable:
                 result: List[Union[dict, str]] = self.validate_rule(
