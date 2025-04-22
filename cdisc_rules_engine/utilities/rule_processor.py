@@ -242,21 +242,27 @@ class RuleProcessor:
     ) -> bool:
         if standard.lower() != "tig":
             return True
-
-        use_cases = rule.get("use_cases") or []
+        use_cases = rule.get("use_case") or []
         if not use_cases:
             return True
-
-        domain = dataset_metadata.domain
+        use_cases = [uc.strip() for uc in use_cases.split(",")]
         substandard = standard_substandard.upper()
         if substandard not in USE_CASE_DOMAINS:
             return False
+
+        domain_to_check = dataset_metadata.domain
+        if dataset_metadata.is_supp and dataset_metadata.rdomain:
+            domain_to_check = dataset_metadata.rdomain
+
+        # Handle ADaM datasets with AD prefix
+        if substandard == "ADAM" and domain_to_check.startswith("AD"):
+            return "ANALYSIS" in use_cases
 
         allowed_domains = set()
         for use_case in use_cases:
             if use_case in USE_CASE_DOMAINS[substandard]:
                 allowed_domains.update(USE_CASE_DOMAINS[substandard][use_case])
-        if domain in allowed_domains:
+        if domain_to_check in allowed_domains:
             return True
         return False
 
