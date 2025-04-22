@@ -14,7 +14,7 @@ ANALYSIS = "ANALYSIS"
 
 # NOTE: this may need to be expanded after the pilot re: custom domains, other applicable domains, etc.  The
 USE_CASE_DOMAINS = {
-    SDTM: {  # only prod and analysis are allowed for sdtm
+    SDTM: {  # only prod and individual health are allowed for sdtm
         INDH: [
             "AE",
             "CO",
