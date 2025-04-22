@@ -72,6 +72,15 @@ class ContentsDefineVLMDatasetBuilder(ValuesDatasetBuilder):
         )
         return data_contents_with_vlm
 
+    def build_split_datasets(self, dataset_name, **kwargs):
+        original_path = self.dataset_path
+        try:
+            self.dataset_path = dataset_name
+            result = self.build()
+            return result
+        finally:
+            self.dataset_path = original_path
+
     @staticmethod
     def apply_filters(
         vlm_row: dict, data_contents_df: DatasetInterface

@@ -53,3 +53,6 @@ class VariablesMetadataWithLibraryMetadataDatasetBuilder(BaseDatasetBuilder):
             return True
         series = content[variable]
         return series.mask(series == "").isnull().any()
+
+
+# TODO: needs a build split datasets method to handle split datasets

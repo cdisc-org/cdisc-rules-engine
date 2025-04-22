@@ -44,3 +44,6 @@ class VariablesMetadataWithDefineDatasetBuilder(BaseDatasetBuilder):
             right_on="define_variable_name",
             how="left",
         )
+
+
+# TODO: needs a build split datasets method to handle split datasets
