@@ -27,12 +27,3 @@ class DefineVariablesDatasetBuilder(BaseDatasetBuilder):
         # get Define XML metadata for domain and use it as a rule comparator
         variable_metadata: List[dict] = self.get_define_xml_variables_metadata()
         return self.dataset_implementation(variable_metadata)
-
-    def build_split_datasets(self, dataset_name, **kwargs):
-        original_path = self.dataset_path
-        try:
-            self.dataset_path = dataset_name
-            result = self.build()
-            return result
-        finally:
-            self.dataset_path = original_path

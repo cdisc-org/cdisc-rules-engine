@@ -24,15 +24,6 @@ class ValuesDatasetBuilder(BaseDatasetBuilder):
         )
         return values_df
 
-    def build_split_datasets(self, dataset_name, **kwargs):
-        original_path = self.dataset_path
-        try:
-            self.dataset_path = dataset_name
-            result = self.build()
-            return result
-        finally:
-            self.dataset_path = original_path
-
     @staticmethod
     def calculate_variable_value_length(variable_value, variable_data_type: str) -> int:
         if variable_data_type == "integer":

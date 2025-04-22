@@ -43,12 +43,3 @@ class DefineVariablesWithLibraryMetadataDatasetBuilder(BaseDatasetBuilder):
             right_on="library_variable_name",
         ).data.fillna("")
         return self.dataset_implementation(data)
-
-    def build_split_datasets(self, dataset_name, **kwargs):
-        original_path = self.dataset_path
-        try:
-            self.dataset_path = dataset_name
-            result = self.build()
-            return result
-        finally:
-            self.dataset_path = original_path

@@ -53,12 +53,3 @@ class VariablesMetadataWithLibraryMetadataDatasetBuilder(BaseDatasetBuilder):
             return True
         series = content[variable]
         return series.mask(series == "").isnull().any()
-
-    def build_split_datasets(self, dataset_name, **kwargs):
-        original_path = self.dataset_path
-        try:
-            self.dataset_path = dataset_name
-            result = self.build()
-            return result
-        finally:
-            self.dataset_path = original_path

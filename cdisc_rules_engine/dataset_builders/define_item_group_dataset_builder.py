@@ -23,12 +23,3 @@ class DefineItemGroupDatasetBuilder(BaseDatasetBuilder):
             )
         )
         return self.dataset_implementation.from_records([item_group_metadata])
-
-    def build_split_datasets(self, dataset_name, **kwargs):
-        original_path = self.dataset_path
-        try:
-            self.dataset_path = dataset_name
-            result = self.build()
-            return result
-        finally:
-            self.dataset_path = original_path

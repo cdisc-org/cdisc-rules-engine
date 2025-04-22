@@ -60,15 +60,6 @@ class DatasetMetadataDefineDatasetBuilder(BaseDatasetBuilder):
             merged[column] = matching_row[column].iloc[0]
         return merged
 
-    def build_split_datasets(self, dataset_name, **kwargs):
-        original_path = self.dataset_path
-        try:
-            self.dataset_path = dataset_name
-            result = self.build()
-            return result
-        finally:
-            self.dataset_path = original_path
-
     def _get_define_xml_dataframe(self):
         define_col_order = [
             "define_dataset_name",
