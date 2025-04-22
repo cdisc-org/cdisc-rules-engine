@@ -90,7 +90,7 @@ USE_CASE_DOMAINS = {
             "TX",
             "TS",
             "VS",
-        ],  # NOTE: this may need to be expanded after the pilot re: custom domains, other applicable domains, etc.
+        ],
         ANALYSIS: [],
     },
     ADAM: {  # only analysis allowed for adam, ADAM AD-- prefix check is done elsewhere.  This is here for completeness.
