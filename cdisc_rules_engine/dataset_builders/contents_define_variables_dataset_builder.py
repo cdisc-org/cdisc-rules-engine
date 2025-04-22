@@ -37,7 +37,7 @@ class ContentsDefineVariablesDatasetBuilder(ValuesDatasetBuilder):
         )
         return merged
 
-    def build_split_datasets(self, dataset_name, **kwargs):
+    def build_split_datasets(self, dataset_name):
         original_path = self.dataset_path
         try:
             self.dataset_path = dataset_name
