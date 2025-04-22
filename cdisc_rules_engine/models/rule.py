@@ -51,6 +51,7 @@ class Rule:
                 "rule_type": rule_metadata.get("Rule_Type"),
                 "conditions": cls.parse_conditions(rule_metadata.get("Check")),
                 "actions": cls.parse_actions(rule_metadata.get("Outcome")),
+                "use_case": rule_metadata.get("Scope", {}).get("Use_Case"),
             }
 
             if "Operations" in rule_metadata:
