@@ -16,3 +16,6 @@ class DomainListDatasetBuilder(BaseDatasetBuilder):
         return self.dataset_implementation.from_records(
             {ds.unsplit_name: ds.filename for ds in self.datasets}, index=[0]
         )
+
+    def build_split_datasets(self, dataset_name, **kwargs):
+        return self.build()

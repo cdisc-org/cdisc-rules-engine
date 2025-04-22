@@ -19,7 +19,7 @@ class ValueCheckDatasetMetadataDatasetBuilder(ValuesDatasetBuilder):
         """
         return self.build_split_datasets(self.dataset_path)
 
-    def build_split_datasets(self, dataset_name):
+    def build_split_datasets(self, dataset_name, **kwargs):
         size_unit: str = self.rule_processor.get_size_unit_from_rule(self.rule)
         dataset_metadata = self.data_service.get_dataset_metadata(
             dataset_name=dataset_name,
