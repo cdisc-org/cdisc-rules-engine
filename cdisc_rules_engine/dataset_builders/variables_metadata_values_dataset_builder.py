@@ -28,7 +28,7 @@ class ValueCheckVariableMetadataDatasetBuilder(ValuesDatasetBuilder):
             variable_metadata, how="left", on="variable_name"
         )
         merged_df["variable_value_length"] = merged_df.apply(
-            lambda row: super().calculate_variable_value_length(
+            lambda row: ValuesDatasetBuilder.calculate_variable_value_length(
                 row["variable_value"], row["variable_data_type"]
             ),
             axis=1,

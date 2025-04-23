@@ -19,7 +19,7 @@ class ValueCheckDatasetMetadataDatasetBuilder(ValuesDatasetBuilder):
         """
         size_unit: str = self.rule_processor.get_size_unit_from_rule(self.rule)
         dataset_metadata = self.data_service.get_dataset_metadata(
-            dataset_name=self.dataset_name,
+            dataset_name=self.dataset_path,
             size_unit=size_unit,
             datasets=self.datasets,
         )
