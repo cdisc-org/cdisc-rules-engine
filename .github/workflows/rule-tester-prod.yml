@@ -1,0 +1,10 @@
+name: Deploy Rule Tester Endpoint to Prod
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+jobs:
+  deploy:
+    uses: ./.github/workflows/rule-tester.yml
+    secrets: inherit
