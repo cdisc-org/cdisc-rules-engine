@@ -77,7 +77,9 @@ try:
     file_path = os.path.abspath(".github/test/unit-test-coreid-CG0002-negative.xlsx")
     print(f"Uploading file: {file_path}")
     file_input.send_keys(file_path)
-
+    print("Error result shows up")
+    error_result = wait.until(EC.visibility_of_element_located((By.XPATH, '//*[@id="tabpanel-1"]/div[6]/div[1]/div[1]/span/div/span')))
+    error_result.click()
     print("Test Passed! Everything worked as expected.")
 
 except Exception as e:
