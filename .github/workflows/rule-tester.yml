@@ -1,10 +1,14 @@
 name: Deploy Rule Tester Endpoint
 on:
-  workflow_call:
+  workflow_dispatch:
     inputs:
-      AZURE_WEBAPP_SLOT:
-        required: false
-        type: string
+      environment:
+        required: true
+        default: DEV
+        type: environment
+  push:
+    branches:
+      - main
 env:
   creds: '{"clientId":"${{ vars.AZURE_CLIENT_ID }}","clientSecret":"${{ secrets.AZURE_CLIENT_SECRET }}","subscriptionId":"${{ vars.AZURE_SUBSCRIPTION_ID }}","tenantId":"${{ vars.AZURE_TENANT_ID }}"}'
   functionAppName: cdisc-library-conformance-rules-generator-dev
@@ -12,6 +16,7 @@ env:
 jobs:
   deploy_rule_tester:
     runs-on: ubuntu-latest
+    environment: ${{ inputs.environment || 'PROD' }}
     steps:
       - uses: actions/checkout@v4
       - uses: azure/login@v2
@@ -23,9 +28,9 @@ jobs:
           mask-inputs: false
           app-settings-json: '{"WEBSITE_ENABLE_SYNC_UPDATE_SITE": "1"}' # wait for this step to complete before the webapps-deploy step
           general-settings-json: '{"linuxFxVersion": "PYTHON|${{ env.PYTHON_VERSION }}"}'
-          slot-name: ${{ inputs.AZURE_WEBAPP_SLOT }}
+          slot-name: ${{ vars.AZURE_WEBAPP_SLOT }}
       - name: Azure functions app deploy
         uses: Azure/webapps-deploy@v2
         with:
           app-name: ${{ env.functionAppName }}
-          slot-name: ${{ inputs.AZURE_WEBAPP_SLOT }}
+          slot-name: ${{ vars.AZURE_WEBAPP_SLOT }}

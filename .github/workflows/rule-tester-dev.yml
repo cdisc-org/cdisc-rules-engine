@@ -1,9 +1,0 @@
-name: Deploy Rule Tester Endpoint to Prod
-on:
-  workflow_dispatch:
-jobs:
-  deploy:
-    uses: ./.github/workflows/rule-tester.yml
-    secrets: inherit
-    with:
-      AZURE_WEBAPP_SLOT: dev
