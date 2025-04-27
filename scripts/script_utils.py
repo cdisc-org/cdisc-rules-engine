@@ -1,14 +1,12 @@
 import json
 import yaml
 
+from cdisc_rules_engine.enums.default_file_paths import DefaultFilePaths
 from cdisc_rules_engine.interfaces import CacheServiceInterface
 from cdisc_rules_engine.models.dictionaries.dictionary_types import DictionaryTypes
 from cdisc_rules_engine.interfaces.data_service_interface import DataServiceInterface
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
-)
-from cdisc_rules_engine.services.data_services import (
-    DataServiceFactory,
 )
 from typing import List, Iterable
 from cdisc_rules_engine.config import config
@@ -19,13 +17,13 @@ from cdisc_rules_engine.models.dictionaries.get_dictionary_terms import (
     extract_dictionary_terms,
 )
 from cdisc_rules_engine.models.rule import Rule
-from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.utilities.utils import (
     get_rules_cache_key,
     get_standard_details_cache_key,
     get_model_details_cache_key_from_ig,
     get_library_variables_metadata_cache_key,
     get_standard_codelist_cache_key,
+    filter_rules_by_substandard,
 )
 from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import (
     DefineXMLReaderFactory,
@@ -71,13 +69,15 @@ def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:  # noqa
 
     with open(variables_codelist_file, "rb") as f:
         data = pickle.load(f)
-        cache_key = get_standard_codelist_cache_key(args.standard, args.version)
+        cache_key = get_standard_codelist_cache_key(
+            args.standard, args.version.replace(".", "-")
+        )
         variable_codelist_maps = data.get(cache_key)
 
     with open(variables_metadata_file, "rb") as f:
         data = pickle.load(f)
         cache_key = get_library_variables_metadata_cache_key(
-            args.standard, args.version, args.substandard
+            args.standard, args.version.replace(".", "-"), args.substandard
         )
         variables_metadata = data.get(cache_key)
 
@@ -129,12 +129,13 @@ def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:  # noqa
     )
 
 
-def fill_cache_with_dictionaries(cache: CacheServiceInterface, args):
+def fill_cache_with_dictionaries(
+    cache: CacheServiceInterface, args, data_service: DataServiceInterface
+) -> dict:
     """
     Extracts file contents from provided dictionaries files
     and saves to cache (inmemory or redis).
     """
-    data_service = DataServiceFactory(config, cache).get_data_service()
     versions_map = {}
 
     for (
@@ -144,9 +145,10 @@ def fill_cache_with_dictionaries(cache: CacheServiceInterface, args):
         if not dictionary_path:
             continue
         if dictionary_type == DictionaryTypes.SNOMED.value:
-            versions_map[dictionary_type] = (
-                f'MAIN/{dictionary_path.get("edition")}/{dictionary_path.get("version")}'
-            )
+            if dictionary_path.get("edition") and dictionary_path.get("version"):
+                versions_map[dictionary_type] = (
+                    f'MAIN/{dictionary_path.get("edition")}/{dictionary_path.get("version")}'
+                )
             continue
         terms = extract_dictionary_terms(data_service, dictionary_type, dictionary_path)
         cache.add(dictionary_path, terms)
@@ -173,15 +175,73 @@ def get_rules(args) -> List[dict]:
 
 def rule_cache_file(args) -> str:
     if args.local_rules_cache:
-        return os.path.join(args.cache, "local_rules.pkl")
+        return os.path.join(args.cache, DefaultFilePaths.LOCAL_RULES_CACHE_FILE.value)
     else:
-        return os.path.join(args.cache, "rules.pkl")
+        return os.path.join(args.cache, DefaultFilePaths.RULES_CACHE_FILE.value)
+
+
+def load_rules_with_local_rules_id(rules_data, local_rules_id):
+    local_prefix = f"local/{local_rules_id}/"
+    rules = {k: v for k, v in rules_data.items() if k.startswith(local_prefix)}
+    return list(rules.values())
+
+
+def load_specified_rules(rules_data, rule_ids, standard, version):
+    keys = [get_rules_cache_key(standard, version, rule) for rule in rule_ids]
+    rules = [rules_data.get(key) for key in keys]
+    missing_rules = [rule for rule, data in zip(rule_ids, rules) if data is None]
+    for missing_rule in missing_rules:
+        engine_logger.error(
+            f"The rule specified '{missing_rule}' is not"
+            " in the standard {standard} and version {version}"
+        )
+    rules = [rule for rule in rules if rule is not None]
+    if not rules:
+        raise ValueError(
+            "All specified rules were excluded because they are not in the standard and version specified."
+        )
+    return rules
+
+
+def load_all_rules_for_standard(rules_data, standard, version, substandard):
+    rules = []
+    core_ids = set()
+    log_message = (
+        f"No rules specified. Running all local rules for {standard} version {version}"
+    )
+    if substandard:
+        log_message += f" with substandard {substandard}"
+    engine_logger.info(log_message)
+
+    for key, rule in rules_data.items():
+        core_id = rule.get("core_id")
+        rule_identifier = get_rules_cache_key(standard, version, core_id)
+        if core_id not in core_ids and key == rule_identifier:
+            rules.append(rule)
+            core_ids.add(core_id)
+    if substandard:
+        rules = filter_rules_by_substandard(
+            rules, standard, version.replace("-", "."), substandard
+        )
+    return rules
+
+
+def load_all_rules(rules_data):
+    rules = []
+    core_ids = set()
+    engine_logger.info(
+        "No rules, standard, or version specified. Running all local rules."
+    )
+    for rule in rules_data.values():
+        core_id = rule.get("core_id")
+        if core_id not in core_ids:
+            rules.append(rule)
+            core_ids.add(core_id)
+    return rules
 
 
 def load_rules_from_cache(args) -> List[dict]:
-    core_ids = set()
     rules_file = rule_cache_file(args)
-    rules = []
     rules_data = {}
     try:
         with open(rules_file, "rb") as f:
@@ -194,47 +254,26 @@ def load_rules_from_cache(args) -> List[dict]:
         return []
 
     if args.local_rules_id:
-        local_prefix = f"local/{args.local_rules_id}/"
-        rules = {k: v for k, v in rules_data.items() if k.startswith(local_prefix)}
-        rules = list(rules.values())
+        return load_rules_with_local_rules_id(rules_data, args.local_rules_id)
     elif args.rules:
-        keys = [
-            get_rules_cache_key(args.standard, args.version.replace(".", "-"), rule)
-            for rule in args.rules
-        ]
-        rules = [rules_data.get(key) for key in keys]
-        missing_rules = [rule for rule, data in zip(args.rules, rules) if data is None]
-        for missing_rule in missing_rules:
-            engine_logger.error(
-                f"The rule specified '{missing_rule}' is not"
-                " in the standard {args.standard} and version {args.version}"
-            )
-        rules = [rule for rule in rules if rule is not None]
-        if not rules:
-            raise ValueError(
-                "All specified rules were excluded because they are not in the standard and version specified."
-            )
-    else:
-        engine_logger.info(
-            f"No rules specified. Running all local rules for {args.standard}"
-            + f" version {args.version}"
+        return load_specified_rules(
+            rules_data, args.rules, args.standard, args.version.replace(".", "-")
         )
-        for key, rule in rules_data.items():
-            core_id = rule.get("core_id")
-            rule_identifier = get_rules_cache_key(
-                args.standard, args.version.replace(".", "-"), core_id
-            )
-            if core_id not in core_ids and key == rule_identifier:
-                rules.append(rule)
-                core_ids.add(core_id)
-    return rules
+    elif args.standard and args.version:
+        return load_all_rules_for_standard(
+            rules_data, args.standard, args.version.replace(".", "-"), args.substandard
+        )
+    else:
+        return load_all_rules(rules_data)
 
 
 def load_rules_from_local(args) -> List[dict]:
     rules = []
-    rule_files = [
-        os.path.join(args.local_rules, file) for file in os.listdir(args.local_rules)
-    ]
+    rule_files = (
+        [os.path.join(args.local_rules, file) for file in os.listdir(args.local_rules)]
+        if os.path.isdir(args.local_rules)
+        else [args.local_rules]
+    )
     rule_data = {}
 
     if args.rules:
@@ -306,37 +345,56 @@ def load_and_parse_local_rule(rule_file: str) -> dict:
         return None
 
 
+def rule_matches_standard_version(rule, standard, version, substandard=None):
+    normalized_version = version.replace("-", ".")
+    for standard_info in rule["standards"]:
+        std_name = standard_info.get("Name", "")
+        std_version = standard_info.get("Version", "")
+        std_substandard = standard_info.get("Substandard")
+
+        if std_name.lower() == standard.lower() and std_version == normalized_version:
+            if substandard:
+                if std_substandard and std_substandard.lower() == substandard.lower():
+                    return True
+            else:
+                return True
+    return False
+
+
 def process_rule(rule, args, rule_data, rules, keys):
+    """Process a rule and add it to the rules list if applicable."""
+    core_id = rule.get("core_id")
+    if not core_id:
+        engine_logger.error("Rule missing core_id. Skipping...")
+        return
+
     rule_identifier = get_rules_cache_key(
-        args.standard, args.version.replace(".", "-"), rule.get("core_id")
+        args.standard, args.version.replace(".", "-"), core_id
     )
     if rule_identifier in rule_data:
-        engine_logger.error(
-            f"Duplicate rule {rule.get('core_id')} in local directory. Skipping..."
-        )
+        engine_logger.error(f"Duplicate rule {core_id} in local directory. Skipping...")
         return
+
+    if args.standard and args.version:
+        if not rule_matches_standard_version(
+            rule, args.standard, args.version, args.substandard
+        ):
+            substandard_msg = (
+                f" with substandard '{args.substandard}'" if args.substandard else ""
+            )
+            engine_logger.info(
+                f"Rule {core_id} does not apply to standard '{args.standard}' "
+                f"version '{args.version}'{substandard_msg}. Skipping..."
+            )
+            return
     if keys is None or rule_identifier in keys:
         rule_data[rule_identifier] = rule
         rules.append(rule)
     else:
         engine_logger.info(
-            f"Rule {rule.get('core_id')} not specified with "
-            "-r rule flag and in local directory.  Skipping..."
+            f"Rule {core_id} not specified with "
+            "-r rule flag and in local directory. Skipping..."
         )
-    return
-
-
-def get_datasets(
-    data_service: DataServiceInterface, dataset_paths: Iterable[str]
-) -> List[SDTMDatasetMetadata]:
-    datasets = []
-    if data_service.standard == "usdm":
-        return data_service.get_datasets()
-    for dataset_path in dataset_paths:
-        metadata = data_service.get_raw_dataset_metadata(dataset_name=dataset_path)
-        datasets.append(metadata)
-
-    return datasets
 
 
 def get_max_dataset_size(dataset_paths: Iterable[str]):

@@ -9,7 +9,12 @@ import re
 from datetime import datetime
 from typing import Callable, Iterable, List, Optional, Union
 from uuid import UUID
-from cdisc_rules_engine.services import logger
+from cdisc_rules_engine.constants.metadata_columns import (
+    SOURCE_FILENAME,
+    SOURCE_ROW_NUMBER,
+)
+from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
+from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
 
 from cdisc_rules_engine.constants.domains import (
     AP_DOMAIN,
@@ -183,6 +188,7 @@ def replace_pattern_in_list_of_strings(
 
 
 def get_operations_cache_key(
+    core_id: str,
     directory_path: str,
     operation_id: str,
     domain: str = None,
@@ -194,7 +200,7 @@ def get_operations_cache_key(
     """
     Creates the cache key for operations.
     """
-    key = f"operations/{directory_path}/{operation_id}"
+    key = f"operations/{core_id}/{directory_path}/{operation_id}"
     optional_items = [domain, operation_name, grouping, target_variable, dataset_path]
     for item in optional_items:
         if item:
@@ -206,40 +212,26 @@ def get_directory_path(dataset_path):
     return os.path.dirname(dataset_path)
 
 
+def tag_source(
+    dataset: DatasetInterface, dataset_metadata: DatasetMetadata
+) -> DatasetInterface:
+    """
+    For sdtm split datasets,
+    Adds source filename and row number to dataset
+    """
+    dataset[SOURCE_FILENAME] = dataset_metadata.filename
+    dataset[SOURCE_ROW_NUMBER] = list(range(1, dataset.len() + 1))
+    return dataset
+
+
 def get_corresponding_datasets(
     datasets: Iterable[SDTMDatasetMetadata], dataset_metadata: SDTMDatasetMetadata
 ) -> List[SDTMDatasetMetadata]:
     return [
         other
         for other in datasets
-        if (dataset_metadata.domain and dataset_metadata.domain == other.domain)
-        or (dataset_metadata.rdomain and dataset_metadata.rdomain == other.rdomain)
+        if dataset_metadata.unsplit_name == other.unsplit_name
     ]
-
-
-def is_split_dataset(
-    datasets: Iterable[SDTMDatasetMetadata], dataset_metadata: SDTMDatasetMetadata
-) -> bool:
-    corresponding_datasets = get_corresponding_datasets(datasets, dataset_metadata)
-    if len(corresponding_datasets) < 2:
-        logger.info(f"Dataset {dataset_metadata.name} is not a split dataset")
-        return False
-
-    logger.info(
-        f"{dataset_metadata.domain or dataset_metadata.rdomain} is a split dataset: {corresponding_datasets}"
-    )
-    return True
-
-
-def is_supp_dataset(datasets: List[dict], domain: str) -> bool:
-    corresponding_datasets = get_corresponding_datasets(datasets, domain)
-    # Check if there are multiple datasets for the domain and if their names match the supp naming convention
-    if len(corresponding_datasets) > 1:
-        return any(
-            dataset.get("filename", "").split(".")[0].lower().startswith("supp")
-            for dataset in corresponding_datasets
-        )
-    return False
 
 
 def get_dataset_name_from_details(dataset_metadata: SDTMDatasetMetadata) -> str:
@@ -408,3 +400,30 @@ def dates_overlap(date1_str, precision1, date2_str, precision2):
     more_precise = date2_str if precision1 < precision2 else date1_str
 
     return more_precise.startswith(less_precise), less_precise
+
+
+def filter_rules_by_substandard(rules, standard, version, substandard):
+    """
+    Filter a list of rules to include only those that match the specified substandard.
+    """
+    if not substandard:
+        return rules
+
+    # Ensure version format and case-insensitivity
+    version = version.replace("-", ".")
+    standard_lower = standard.lower()
+    substandard_lower = substandard.lower()
+    filtered_rules = []
+    for rule in rules:
+        for std in rule.get("standards", []):
+            std_substandard = std.get("Substandard", "")
+            if std_substandard:
+                std_substandard = std_substandard.lower()
+            if (
+                std.get("Name", "").lower() == standard_lower
+                and std.get("Version") == version
+                and std_substandard == substandard_lower
+            ):
+                filtered_rules.append(rule)
+                break
+    return filtered_rules

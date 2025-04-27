@@ -1,5 +1,6 @@
 import re
 from typing import Iterable, List, Optional, Set, Union, Tuple
+from cdisc_rules_engine.interfaces.cache_service_interface import CacheServiceInterface
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
@@ -16,6 +17,7 @@ from cdisc_rules_engine.constants.domains import (
     SUPPLEMENTARY_DOMAINS,
 )
 from cdisc_rules_engine.constants.rule_constants import ALL_KEYWORD
+from cdisc_rules_engine.constants.use_cases import USE_CASE_DOMAINS
 from cdisc_rules_engine.interfaces import ConditionInterface
 from cdisc_rules_engine.models.operation_params import OperationParams
 from cdisc_rules_engine.models.rule_conditions import AllowedConditionsKeys
@@ -41,7 +43,7 @@ class RuleProcessor:
     def __init__(
         self,
         data_service: DataServiceInterface,
-        cache,
+        cache: CacheServiceInterface,
         library_metadata: LibraryMetadataContainer = None,
     ):
         self.data_service = data_service
@@ -50,7 +52,7 @@ class RuleProcessor:
 
     @classmethod
     def rule_applies_to_domain(
-        cls, dataset_metadata: SDTMDatasetMetadata, rule: dict, is_split_domain: bool
+        cls, dataset_metadata: SDTMDatasetMetadata, rule: dict
     ) -> bool:
         """
         Check that rule is applicable to dataset domain
@@ -62,13 +64,13 @@ class RuleProcessor:
         excluded_domains = domains.get("Exclude", [])
 
         is_included = cls._is_domain_name_included(
-            dataset_metadata, included_domains, include_split_datasets, is_split_domain
+            dataset_metadata, included_domains, include_split_datasets
         )
         is_excluded = cls._is_domain_name_excluded(dataset_metadata, excluded_domains)
 
         # additional check for split domains based on the flag
         is_excluded, is_included = cls._handle_split_domains(
-            is_split_domain, include_split_datasets, is_excluded, is_included
+            dataset_metadata.is_split, include_split_datasets, is_excluded, is_included
         )
 
         return is_included and not is_excluded
@@ -79,7 +81,6 @@ class RuleProcessor:
         dataset_metadata: SDTMDatasetMetadata,
         included_domains: List[str],
         include_split_datasets: bool,
-        is_split_domain: bool,
     ) -> bool:
         """
         If included domains aren't specified
@@ -93,7 +94,7 @@ class RuleProcessor:
         In other cases domain is included
         """
         if not included_domains:
-            if include_split_datasets is True and not is_split_domain:
+            if include_split_datasets is True and not dataset_metadata.is_split:
                 return False
             return True
 
@@ -125,6 +126,7 @@ class RuleProcessor:
         if (
             dataset_metadata.domain in excluded_domains
             or dataset_metadata.name in excluded_domains
+            or dataset_metadata.unsplit_name in excluded_domains
             or ALL_KEYWORD in excluded_domains
         ):
             return True
@@ -179,7 +181,6 @@ class RuleProcessor:
     def rule_applies_to_class(
         self,
         rule,
-        file_path,
         datasets: Iterable[SDTMDatasetMetadata],
         dataset_metadata: SDTMDatasetMetadata,
     ):
@@ -208,10 +209,10 @@ class RuleProcessor:
             if ALL_KEYWORD in included_classes:
                 return True
             variables = self.data_service.get_variables_metadata(
-                dataset_name=file_path, datasets=datasets
+                dataset_name=dataset_metadata.full_path, datasets=datasets
             ).data.variable_name
             class_name = self.data_service.get_dataset_class(
-                variables, file_path, datasets, dataset_metadata
+                variables, dataset_metadata.full_path, datasets, dataset_metadata
             )
             if (class_name not in included_classes) and not (
                 class_name == FINDINGS_ABOUT and FINDINGS in included_classes
@@ -220,10 +221,10 @@ class RuleProcessor:
 
         if excluded_classes:
             variables = self.data_service.get_variables_metadata(
-                dataset_name=file_path, datasets=datasets
+                dataset_name=dataset_metadata.full_path, datasets=datasets
             ).data.variable_name
             class_name = self.data_service.get_dataset_class(
-                variables, file_path, datasets, dataset_metadata
+                variables, dataset_metadata.full_path, datasets, dataset_metadata
             )
             if class_name and (
                 (class_name in excluded_classes)
@@ -231,6 +232,39 @@ class RuleProcessor:
             ):
                 is_excluded = True
         return is_included and not is_excluded
+
+    def rule_applies_to_use_case(
+        self,
+        dataset_metadata: SDTMDatasetMetadata,
+        rule: dict,
+        standard: str,
+        standard_substandard: str,
+    ) -> bool:
+        if standard.lower() != "tig":
+            return True
+        use_cases = rule.get("use_case") or []
+        if not use_cases:
+            return True
+        use_cases = [uc.strip() for uc in use_cases.split(",")]
+        substandard = standard_substandard.upper()
+        if substandard not in USE_CASE_DOMAINS:
+            return False
+
+        domain_to_check = dataset_metadata.domain
+        if dataset_metadata.is_supp and dataset_metadata.rdomain:
+            domain_to_check = dataset_metadata.rdomain
+
+        # Handle ADaM datasets with AD prefix
+        if substandard == "ADAM" and domain_to_check.startswith("AD"):
+            return "ANALYSIS" in use_cases
+
+        allowed_domains = set()
+        for use_case in use_cases:
+            if use_case in USE_CASE_DOMAINS[substandard]:
+                allowed_domains.update(USE_CASE_DOMAINS[substandard][use_case])
+        if domain_to_check in allowed_domains:
+            return True
+        return False
 
     def valid_rule_structure(self, rule) -> bool:
         required_keys = ["standards", "core_id"]
@@ -275,6 +309,7 @@ class RuleProcessor:
 
             # get necessary operation
             operation_params = OperationParams(
+                core_id=rule.get("core_id"),
                 operation_id=operation.get("id"),
                 operation_name=operation.get("operator"),
                 dataframe=dataset_copy,
@@ -335,6 +370,7 @@ class RuleProcessor:
         """
         # check cache
         cache_key = get_operations_cache_key(
+            core_id=operation_params.core_id,
             directory_path=operation_params.directory_path,
             operation_name=operation_params.operation_name,
             domain=operation_params.domain,
@@ -502,29 +538,45 @@ class RuleProcessor:
         self,
         rule: dict,
         dataset_metadata: SDTMDatasetMetadata,
-        file_path: str,
-        is_split_domain: bool,
         datasets: Iterable[SDTMDatasetMetadata],
-    ) -> bool:
-        is_suitable: bool = (
-            self.valid_rule_structure(rule)
-            and self.rule_applies_to_domain(
-                dataset_metadata,
-                rule,
-                is_split_domain,
+        standard,
+        standard_substandard: str,
+    ) -> Tuple[bool, str]:
+        """Check if rule is suitable and return reason if not"""
+        rule_id = rule.get("core_id", "unknown")
+        dataset_name = dataset_metadata.name
+        if not self.valid_rule_structure(rule):
+            reason = f"Rule skipped - invalid rule structure for rule id={rule_id}"
+            logger.info(f"is_suitable_for_validation. {reason}, result=False")
+            return False, reason
+        if not self.rule_applies_to_use_case(
+            dataset_metadata, rule, standard, standard_substandard
+        ):
+            reason = (
+                f"Rule skipped - doesn't apply to use case for "
+                f"rule id={rule_id}, dataset={dataset_name}"
             )
-            and self.rule_applies_to_class(
-                rule,
-                file_path,
-                datasets,
-                dataset_metadata,
+            logger.info(f"is_suitable_for_validation. {reason}, result=False")
+            return False, reason
+        if not self.rule_applies_to_domain(dataset_metadata, rule):
+            reason = (
+                f"Rule skipped - doesn't apply to domain for "
+                f"rule id={rule_id}, dataset={dataset_name}"
             )
-        )
+            logger.info(f"is_suitable_for_validation. {reason}, result=False")
+            return False, reason
+        if not self.rule_applies_to_class(rule, datasets, dataset_metadata):
+            reason = (
+                f"Rule skipped - doesn't apply to class for "
+                f"rule id={rule_id}, dataset={dataset_name}"
+            )
+            logger.info(f"is_suitable_for_validation. {reason}, result=False")
+            return False, reason
         logger.info(
-            f"is_suitable_for_validation. rule id={rule.get('core_id')}, "
-            f"dataset={dataset_metadata.name}, result={is_suitable}"
+            f"is_suitable_for_validation. rule id={rule_id}, "
+            f"dataset={dataset_name}, result=True"
         )
-        return is_suitable
+        return True, ""
 
     @staticmethod
     def extract_target_names_from_rule(
@@ -558,7 +610,7 @@ class RuleProcessor:
                 target: str = condition["value"].get("target")
                 if target is None:
                     continue
-                target = target.replace("--", domain)
+                target = target.replace("--", domain or "")
                 op_related_pattern: str = RuleProcessor.get_operator_related_pattern(
                     condition.get("operator"), target
                 )

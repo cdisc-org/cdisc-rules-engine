@@ -26,7 +26,7 @@ def test_read_metadata():
     assert metadata["dataset_label"] == "Exposure", "Test file has been changed"
     assert metadata["number_of_variables"] == 18, "Test file has been changed"
     assert (
-        metadata["dataset_modification_date"] == "2023-07-31T14:44:09"
+        metadata["dataset_modification_date"] == "2025-01-28T22:06:12"
     ), "Test file has been changed"
     assert isinstance(metadata["variable_labels"], list)
     assert isinstance(metadata["variable_names"], list)

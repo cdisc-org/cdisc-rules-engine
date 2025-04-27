@@ -8,6 +8,9 @@ from cdisc_rules_engine.interfaces import (
     FactoryInterface,
 )
 from cdisc_rules_engine.models.dataset import DaskDataset, PandasDataset
+from cdisc_rules_engine.services.data_services.excel_data_service import (
+    ExcelDataService,
+)
 
 
 from . import DummyDataService, LocalDataService, USDMDataService
@@ -22,6 +25,7 @@ class DataServiceFactory(FactoryInterface):
         "local": LocalDataService,
         "dummy": DummyDataService,
         "usdm": USDMDataService,
+        "excel": ExcelDataService,
     }
 
     def __init__(
@@ -52,10 +56,26 @@ class DataServiceFactory(FactoryInterface):
     def get_data_service(
         self, dataset_paths: Iterable[str] = []
     ) -> DataServiceInterface:
-        if USDMDataService.is_USDM_data(dataset_paths):
+        if USDMDataService.is_valid_data(dataset_paths):
             """Get json file tree to dataset data service"""
             return self.get_service(
                 "usdm",
+                standard=self.standard,
+                standard_version=self.standard_version,
+                standard_substandard=self.standard_substandard,
+                library_metadata=self.library_metadata,
+                dataset_path=dataset_paths[0],
+                dataset_implementation=self.get_dataset_implementation(),
+            )
+        elif DummyDataService.is_valid_data(dataset_paths):
+            """Get dummy data service"""
+            return self.get_dummy_data_service(
+                data=DummyDataService.get_data(dataset_paths)
+            )
+        elif ExcelDataService.is_valid_data(dataset_paths):
+            """Get Excel file to dataset data service"""
+            return self.get_service(
+                "excel",
                 standard=self.standard,
                 standard_version=self.standard_version,
                 standard_substandard=self.standard_substandard,

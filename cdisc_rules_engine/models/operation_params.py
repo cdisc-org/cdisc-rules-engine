@@ -16,6 +16,7 @@ class OperationParams:
     """
 
     # Required parameters (no defaults) first
+    core_id: str
     dataframe: pd.DataFrame
     dataset_path: str
     datasets: Iterable[SDTMDatasetMetadata]

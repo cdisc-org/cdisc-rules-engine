@@ -1,4 +1,5 @@
 from unittest.mock import MagicMock, patch
+from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
@@ -25,7 +26,12 @@ test_define_file_path: Path = resources_path.joinpath("test_defineV22-SDTM.xml")
 @patch(
     "cdisc_rules_engine.services.data_services.LocalDataService.get_define_xml_contents"
 )
+@patch(
+    "cdisc_rules_engine.dataset_builders.variables_metadata_with_define_and_library_dataset_builder"
+    ".VariablesMetadataWithDefineAndLibraryDatasetBuilder.get_library_variables_metadata"
+)
 def test_build_combined_metadata(
+    mock_get_library_variables_metadata,
     mock_get_define_xml,
     mock_get_variables_metadata,
     mock_get_dataset,
@@ -48,15 +54,34 @@ def test_build_combined_metadata(
     )
 
     # Setup dataset contents
-    mock_get_dataset.return_value = pd.DataFrame.from_dict(
-        {
-            "STUDYID": ["STUDY1", "STUDY1", "STUDY1"],
-            "USUBJID": ["SUBJ1", "", "SUBJ3"],
-            "AETERM": ["Headache", "Nausea", ""],
-        }
+    mock_get_dataset.return_value = PandasDataset(
+        pd.DataFrame.from_dict(
+            {
+                "STUDYID": ["STUDY1", "STUDY1", "STUDY1"],
+                "USUBJID": ["SUBJ1", "", "SUBJ3"],
+                "AETERM": ["Headache", "Nausea", ""],
+            }
+        )
     )
 
-    # Setup library metadata
+    # Create mock library variables metadata
+    library_vars_data = pd.DataFrame(
+        {
+            "library_variable_name": ["STUDYID", "USUBJID", "AETERM", "AESEQ"],
+            "library_variable_role": ["Identifier", "Identifier", "Topic", "Topic"],
+            "library_variable_label": [
+                "Study Identifier",
+                "Unique Subject Identifier",
+                "Reported Term for the Adverse Event",
+                "Sequence Number",
+            ],
+            "library_variable_core": ["Req", "Req", "Req", "Req"],
+            "library_variable_order_number": ["1", "2", "9", "8"],
+            "library_variable_data_type": ["Char", "Char", "Char", "Num"],
+        }
+    )
+    mock_get_library_variables_metadata.return_value = PandasDataset(library_vars_data)
+
     standard_data = {
         "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
         "classes": [
@@ -116,7 +141,7 @@ def test_build_combined_metadata(
         data_processor=None,
         dataset_path=str(test_define_file_path),
         datasets=[],
-        dataset_metadata=SDTMDatasetMetadata(first_record={"DOMAIN": "AE"}),
+        dataset_metadata=SDTMDatasetMetadata(name="AE", first_record={"DOMAIN": "AE"}),
         define_xml_path=str(test_define_file_path),
         standard="sdtmig",
         standard_version="3-4",

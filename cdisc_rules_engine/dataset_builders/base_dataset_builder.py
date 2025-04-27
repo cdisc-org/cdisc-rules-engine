@@ -6,19 +6,15 @@ from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import (
     DefineXMLReaderFactory,
 )
 from cdisc_rules_engine.utilities.utils import (
-    get_directory_path,
-    is_split_dataset,
     get_corresponding_datasets,
-    get_dataset_name_from_details,
+    tag_source,
 )
 from typing import List, Iterable
-from cdisc_rules_engine import config
 from cdisc_rules_engine.utilities import sdtm_utilities
 from cdisc_rules_engine.utilities.rule_processor import RuleProcessor
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.interfaces.data_service_interface import DataServiceInterface
-import os
 
 
 class BaseDatasetBuilder:
@@ -31,7 +27,7 @@ class BaseDatasetBuilder:
         data_processor,
         dataset_path,
         datasets: Iterable[SDTMDatasetMetadata],
-        dataset_metadata,
+        dataset_metadata: SDTMDatasetMetadata,
         define_xml_path,
         standard,
         standard_version,
@@ -69,44 +65,39 @@ class BaseDatasetBuilder:
 
     def get_dataset(self, **kwargs):
         # If validating dataset content, ensure split datasets are handled.
-        if is_split_dataset(self.datasets, self.dataset_metadata):
+        if self.dataset_metadata.is_split:
             # Handle split datasets for content checks.
             # A content check is any check that is not in the list of rule types
             dataset: DatasetInterface = self.data_service.concat_split_datasets(
                 func_to_call=self.build_split_datasets,
-                dataset_names=self.get_corresponding_datasets_names(),
+                datasets_metadata=get_corresponding_datasets(
+                    self.datasets, self.dataset_metadata
+                ),
                 **kwargs,
             )
         else:
             # single dataset. the most common case
             dataset: DatasetInterface = self.build()
+            dataset = tag_source(dataset, self.dataset_metadata)
         return dataset
 
     def get_dataset_contents(self, **kwargs):
         # If validating dataset content, ensure split datasets are handled.
-        if is_split_dataset(self.datasets, self.dataset_metadata):
+        if self.dataset_metadata.is_split:
             # Handle split datasets for content checks.
             # A content check is any check that is not in the list of rule types
             dataset: DatasetInterface = self.data_service.concat_split_datasets(
                 func_to_call=self.data_service.get_dataset,
-                dataset_names=self.get_corresponding_datasets_names(),
+                datasets_metadata=get_corresponding_datasets(
+                    self.datasets, self.dataset_metadata
+                ),
                 **kwargs,
             )
         else:
             # single dataset. the most common case
             dataset: DatasetInterface = self.data_service.get_dataset(self.dataset_path)
+            dataset = tag_source(dataset, self.dataset_metadata)
         return dataset
-
-    def get_corresponding_datasets_names(self) -> List[str]:
-        directory_path = get_directory_path(self.dataset_path)
-        return [
-            os.path.join(
-                directory_path, get_dataset_name_from_details(dataset_metadata)
-            )
-            for dataset_metadata in get_corresponding_datasets(
-                self.datasets, self.dataset_metadata
-            )
-        ]
 
     def get_define_xml_item_group_metadata_for_dataset(
         self, dataset_metadata: SDTMDatasetMetadata
@@ -184,13 +175,20 @@ class BaseDatasetBuilder:
 
     def get_library_variables_metadata(self) -> DatasetInterface:
         # TODO: Update to support other standard types
+        if self.datasets:
+            dataset = self.get_dataset_contents()
+            dataset_class = self.data_service.get_dataset_class(
+                dataset,
+                self.dataset_path,
+                self.datasets,
+                getattr(self, "domain", self.dataset_metadata),
+            )
+        else:
+            dataset_class = None
         variables: List[dict] = sdtm_utilities.get_variables_metadata_from_standard(
-            standard=self.standard,
-            standard_version=self.standard_version,
             domain=self.dataset_metadata.domain,
-            config=config,
-            cache=self.cache,
             library_metadata=self.library_metadata,
+            dataset_class=dataset_class,
         )
 
         # Rename columns:

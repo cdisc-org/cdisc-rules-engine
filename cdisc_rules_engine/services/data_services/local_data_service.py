@@ -17,6 +17,9 @@ from cdisc_rules_engine.services.datasetxpt_metadata_reader import (
 from cdisc_rules_engine.services.datasetjson_metadata_reader import (
     DatasetJSONMetadataReader,
 )
+from cdisc_rules_engine.services.datasetndjson_metadata_reader import (
+    DatasetNDJSONMetadataReader,
+)
 from cdisc_rules_engine.utilities.utils import (
     convert_file_size,
     extract_file_name_from_path_string,
@@ -88,26 +91,7 @@ class LocalDataService(BaseDataService):
             extract_file_name_from_path_string(dataset_name).split(".")[1].upper()
         )
         df = reader.from_file(dataset_name)
-        self._replace_nans_in_numeric_cols_with_none(df)
         return df
-
-    @cached_dataset(DatasetTypes.METADATA.value)
-    def get_dataset_metadata(
-        self, dataset_name: str, size_unit: str = None, **params
-    ) -> DatasetInterface:
-        """
-        Gets metadata of a dataset and returns it as a DataFrame.
-        """
-        file_metadata, contents_metadata = self.__get_dataset_metadata(
-            dataset_name, size_unit=size_unit, **params
-        )
-        metadata_to_return: dict = {
-            "dataset_size": [file_metadata["file_size"]],
-            "dataset_location": [file_metadata["name"]],
-            "dataset_name": [contents_metadata["dataset_name"]],
-            "dataset_label": [contents_metadata["dataset_label"]],
-        }
-        return self.dataset_implementation.from_dict(metadata_to_return)
 
     @cached_dataset(DatasetTypes.RAW_METADATA.value)
     def get_raw_dataset_metadata(
@@ -182,15 +166,13 @@ class LocalDataService(BaseDataService):
         }
         if file_name.endswith(".parquet") and datasets:
             for obj in datasets:
-                if obj["full_path"] == file_path:
+                if obj.full_path == file_path:
                     file_metadata = {
-                        "path": obj["original_path"],
-                        "name": extract_file_name_from_path_string(
-                            obj["original_path"]
-                        ),
-                        "file_size": os.path.getsize(obj["original_path"]),
+                        "path": obj.original_path,
+                        "name": extract_file_name_from_path_string(obj.original_path),
+                        "file_size": os.path.getsize(obj.original_path),
                     }
-                    file_name = obj["filename"]
+                    file_name = obj.filename
                     break
             # If we reach this line a parquet dataset was provided without a
             # corresponding xpt or json file. This should not happen
@@ -200,6 +182,7 @@ class LocalDataService(BaseDataService):
         _metadata_reader_map = {
             DataFormatTypes.XPT.value: DatasetXPTMetadataReader,
             DataFormatTypes.JSON.value: DatasetJSONMetadataReader,
+            DataFormatTypes.NDJSON.value: DatasetNDJSONMetadataReader,
         }
         contents_metadata = _metadata_reader_map[file_name.split(".")[1].upper()](
             file_metadata["path"], file_name
@@ -233,21 +216,15 @@ class LocalDataService(BaseDataService):
         return reader.to_parquet(file_path)
 
     def get_datasets(self) -> List[dict]:
-        datasets = []
-        for dataset_path in self.dataset_paths:
-            metadata: SDTMDatasetMetadata = self.get_raw_dataset_metadata(
-                dataset_name=dataset_path
-            )
-            datasets.append(
-                {
-                    "domain": metadata.domain,
-                    "filename": metadata.filename,
-                    "full_path": dataset_path,
-                    "length": metadata.record_count,
-                    "label": metadata.label,
-                    "file_size": metadata.file_size,
-                    "modification_date": metadata.modification_date,
-                }
-            )
-
+        datasets = [
+            self.get_raw_dataset_metadata(dataset_name=dataset_path)
+            for dataset_path in self.dataset_paths
+        ]
         return datasets
+
+    @staticmethod
+    def is_valid_data(dataset_paths: List[str]) -> bool:
+        for dataset_path in dataset_paths:
+            if not os.path.exists(dataset_path):
+                return False
+        return len(dataset_paths) > 0

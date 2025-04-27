@@ -5,11 +5,13 @@ from cdisc_rules_engine.models.library_metadata_container import (
 import pytest
 import pandas as pd
 from typing import List
+from unittest.mock import patch
 
 from cdisc_rules_engine.constants.classes import (
     GENERAL_OBSERVATIONS_CLASS,
     FINDINGS,
     FINDINGS_ABOUT,
+    EVENTS,
 )
 from cdisc_rules_engine.enums.variable_roles import VariableRoles
 from cdisc_rules_engine.models.operation_params import OperationParams
@@ -552,6 +554,33 @@ def test_get_model_filtered_variables(
         standard_version="3-4",
         library_metadata=library_metadata,
     )
+
+    expected_class = (
+        EVENTS
+        if model_metadata["datasets"][0]["_links"]["parentClass"]["title"] == "Events"
+        else FINDINGS_ABOUT
+    )
+
+    """
+    this fuction replaces get_raw_dataset_metadata in LocalDataService to
+    prevent filtering into the decorator that checks cache
+    """
+
+    def mock_get_raw_metadata(*args, **kwargs):
+        return SDTMDatasetMetadata(**dataset_metadata)
+
+    data_service.get_raw_dataset_metadata = mock_get_raw_metadata
+
+    with patch.object(
+        LocalDataService, "get_dataset_class", return_value=expected_class
+    ):
+        operation = LibraryModelVariablesFilter(
+            operation_params,
+            operation_params.dataframe,
+            cache,
+            data_service,
+            library_metadata,
+        )
 
     operation = LibraryModelVariablesFilter(
         operation_params,

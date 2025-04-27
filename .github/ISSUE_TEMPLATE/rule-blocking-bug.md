@@ -2,7 +2,7 @@
 name: Rule-Blocking Bug
 about: For bug reports that block a rule
 title: 'Rule blocked: CORERULES-###'
-labels: bug
+type: Bug
 assignees: ''
 
 ---

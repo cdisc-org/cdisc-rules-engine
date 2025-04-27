@@ -60,9 +60,7 @@ from cdisc_rules_engine.models.dataset import PandasDataset, DaskDataset
 def test_rule_applies_to_domain(mock_data_service, name, rule_metadata, outcome):
     processor = RuleProcessor(mock_data_service, InMemoryCacheService())
     assert (
-        processor.rule_applies_to_domain(
-            SDTMDatasetMetadata(name=name), rule_metadata, False
-        )
+        processor.rule_applies_to_domain(SDTMDatasetMetadata(name=name), rule_metadata)
         == outcome
     )
 
@@ -210,16 +208,15 @@ def test_rule_applies_to_domain_split_datasets(
 ):
     rule = {"domains": rule_domains}
     domains: List[dict] = [
-        {"name": "AE", "domain": "AE", "is_split": False},
-        {"name": "EC", "domain": "EC", "is_split": False},
-        {"name": "QS", "domain": "QS", "is_split": True},  # Two datasets with QS domain
-        {"name": "QS", "domain": "QS", "is_split": True},
+        {"name": "AE", "domain": "AE"},
+        {"name": "EC", "domain": "EC"},
+        {"name": "QS1", "domain": "QS"},  # Two datasets with QS domain
+        {"name": "QS2", "domain": "QS"},
         {
-            "name": "SUPPQS",
+            "name": "SUPPQS1",
             "rdomain": "QS",
-            "is_split": True,
         },  # Two datasets with SUPPQS name
-        {"name": "SUPPQS", "rdomain": "QS", "is_split": True},
+        {"name": "SUPPQS2", "rdomain": "QS"},
     ]
     processor = RuleProcessor(mock_data_service, InMemoryCacheService())
     results = [
@@ -232,7 +229,6 @@ def test_rule_applies_to_domain_split_datasets(
                 },
             ),
             rule,
-            domain["is_split"],
         )
         for domain in domains
     ]
@@ -240,123 +236,108 @@ def test_rule_applies_to_domain_split_datasets(
 
 
 @pytest.mark.parametrize(
-    "datasets, domain, rule_metadata, data, class_name, outcome",
+    "datasets, rule_metadata, data, class_name, outcome",
     [
         (
-            [{"domain": "AE", "filename": "ae.xpt"}],
-            "AE",
+            [{"domain": "AE", "filename": "ae.xpt", "full_path": "ae.xpt"}],
             {"classes": {"Exclude": [EVENTS]}},
             {"AETERM": [10, 20]},
             EVENTS,
             False,
         ),
         (
-            [{"domain": "AE", "filename": "ae.xpt"}],
-            "AE",
+            [{"domain": "AE", "filename": "ae.xpt", "full_path": "ae.xpt"}],
             {"classes": {"Exclude": [INTERVENTIONS]}},
             {"AETRT": [10, 20]},
             INTERVENTIONS,
             False,
         ),
         (
-            [{"domain": "AE", "filename": "ae.xpt"}],
-            "AE",
+            [{"domain": "AE", "filename": "ae.xpt", "full_path": "ae.xpt"}],
             {"classes": {"Exclude": [FINDINGS]}},
             {"AETESTCD": [10, 20]},
             FINDINGS,
             False,
         ),
         (
-            [{"domain": "APTE", "filename": "ap.xpt"}],
-            {"DOMAIN": "APTE"},
+            [{"domain": "APTE", "filename": "ap.xpt", "full_path": "ap.xpt"}],
             {"classes": {"Exclude": ["ASSOCIATED PERSONS"]}},
             {"APTE": [10, 20]},
             "ASSOCIATED PERSONS",
             False,
         ),
         (
-            [{"domain": "AE", "filename": "ae.xpt"}],
-            "AE",
+            [{"domain": "AE", "filename": "ae.xpt", "full_path": "ae.xpt"}],
             {"classes": {"Exclude": [FINDINGS, INTERVENTIONS]}},
             {"AETERM": [10, 20]},
             EVENTS,
             True,
         ),
         (
-            [{"domain": "AE", "filename": "ae.xpt"}],
-            "AE",
+            [{"domain": "AE", "filename": "ae.xpt", "full_path": "ae.xpt"}],
             {"classes": {"Exclude": [EVENTS, FINDINGS]}},
             {"AETRT": [10, 20]},
             INTERVENTIONS,
             True,
         ),
         (
-            [{"domain": "AE", "filename": "ae.xpt"}],
-            "AE",
+            [{"domain": "AE", "filename": "ae.xpt", "full_path": "ae.xpt"}],
             {"classes": {"Exclude": [EVENTS, INTERVENTIONS]}},
             {"AETESTCD": [10, 20]},
             FINDINGS,
             True,
         ),
         (
-            [{"domain": "APTE", "filename": "ap.xpt"}],
-            {"DOMAIN": "APTE"},
+            [{"domain": "APTE", "filename": "ap.xpt", "full_path": "ap.xpt"}],
             {"classes": {"Exclude": [EVENTS, INTERVENTIONS]}},
             {"APTE": [10, 20]},
             "ASSOCIATED PERSONS",
             True,
         ),
         (
-            [{"domain": "APTE", "filename": "ap.xpt"}],
-            {"DOMAIN": "APTE"},
+            [{"domain": "APTE", "filename": "ap.xpt", "full_path": "ap.xpt"}],
             {"classes": {"Exclude": [INTERVENTIONS, FINDINGS]}},
             {"APTE": [10, 20]},
             "ASSOCIATED PERSONS",
             True,
         ),
         (
-            [{"domain": "APTE", "filename": "ap.xpt"}],
-            {"DOMAIN": "APTE"},
+            [{"domain": "APTE", "filename": "ap.xpt", "full_path": "ap.xpt"}],
             {"classes": {"Exclude": [EVENTS, FINDINGS]}},
             {"APTE": [10, 20]},
             "ASSOCIATED PERSONS",
             True,
         ),
         (
-            [{"domain": "APTE", "filename": "ap.xpt"}],
-            {"DOMAIN": "APTE"},
+            [{"domain": "APTE", "filename": "ap.xpt", "full_path": "ap.xpt"}],
             {"classes": {"Exclude": [EVENTS, INTERVENTIONS, FINDINGS]}},
             {"APTE": [10, 20]},
             "ASSOCIATED PERSONS",
             True,
         ),
         (
-            [{"domain": "AE", "filename": "ae.xpt"}],
-            "AE",
+            [{"domain": "AE", "filename": "ae.xpt", "full_path": "ae.xpt"}],
             {"classes": {"Include": [FINDINGS]}},
             {"AETESTCD": [10, 20]},
             FINDINGS_ABOUT,
             True,
         ),
         (
-            [{"domain": "AE", "filename": "ae.xpt"}],
-            "AE",
+            [{"domain": "AE", "filename": "ae.xpt", "full_path": "ae.xpt"}],
             {"classes": {"Exclude": [FINDINGS]}},
             {"AETESTCD": [10, 20]},
             FINDINGS_ABOUT,
             False,
         ),
         (
-            [{"domain": "AE", "filename": "ae.xpt"}],
-            "AE",
+            [{"domain": "AE", "filename": "ae.xpt", "full_path": "ae.xpt"}],
             {"classes": {"Exclude": [FINDINGS_ABOUT]}},
             {"AETESTCD": [10, 20]},
             FINDINGS_ABOUT,
             False,
         ),
         (
-            [{"domain": "AE", "filename": "ae.xpt"}],
-            "AE",
+            [{"domain": "AE", "filename": "ae.xpt", "full_path": "ae.xpt"}],
             {"classes": {"Include": [FINDINGS_ABOUT]}},
             {"AETESTCD": [10, 20]},
             FINDINGS_ABOUT,
@@ -367,7 +348,6 @@ def test_rule_applies_to_domain_split_datasets(
 def test_rule_applies_to_class(
     mock_data_service,
     datasets,
-    domain,
     rule_metadata,
     data,
     class_name,
@@ -381,9 +361,70 @@ def test_rule_applies_to_class(
         return_value=dataset_mock,
     ):
         assert (
-            processor.rule_applies_to_class(rule_metadata, domain, datasets, domain)
+            processor.rule_applies_to_class(
+                rule_metadata,
+                datasets,
+                SDTMDatasetMetadata(*datasets[0]),
+            )
             == outcome
         )
+
+
+@pytest.mark.parametrize(
+    "dataset_name, domain, rdomain, rule_use_case, standard, standard_substandard, outcome",
+    [
+        # Basic use case tests with string format "INDH, PROD"
+        ("AE", "AE", None, "INDH, PROD", "tig", "SDTM", True),
+        ("CM", "CM", None, "INDH", "tig", "SDTM", True),
+        ("TS", "TS", None, "INDH", "tig", "SDTM", True),
+        ("ES", "ES", None, "PROD", "tig", "SDTM", True),
+        ("ES", "ES", None, "INDH", "tig", "SDTM", False),
+        ("BW", "BW", None, "NONCLIN", "tig", "SEND", True),
+        ("BW", "BW", None, "INDH", "tig", "SEND", False),
+        # Tests for ADaM datasets
+        ("ADSL", "ADSL", None, "ANALYSIS", "tig", "ADAM", True),
+        ("ADAE", "ADAE", None, "ANALYSIS", "tig", "ADAM", True),
+        ("ADAE", "ADAE", None, "INDH", "tig", "ADAM", False),
+        # Tests for supplementary datasets
+        ("SUPPAE", None, "AE", "INDH", "tig", "SDTM", True),
+        ("SUPPQS", None, "QS", "INDH", "tig", "SDTM", True),
+        ("SUPPEC", None, "EC", "INDH", "tig", "SDTM", True),
+        ("SUPP--", None, "AE", "INDH", "tig", "SDTM", True),
+        ("SUPPPT", None, "PT", "PROD", "tig", "SDTM", True),
+        # Tests for empty/None use cases (should always return True)
+        ("AE", "AE", None, "", "tig", "SDTM", True),
+        ("AE", "AE", None, None, "tig", "SDTM", True),
+        # Tests for non-TIG standard (should always return True)
+        ("AE", "AE", None, "INDH", "sdtmig", "SDTM", True),
+        ("BW", "BW", None, "NONCLIN", "sendct", "SEND", True),
+        # Tests for substandards not in USE_CASE_DOMAINS
+        ("AE", "AE", None, "INDH", "tig", "UNKNOWN", False),
+    ],
+)
+def test_rule_applies_to_use_case(
+    mock_data_service,
+    dataset_name,
+    domain,
+    rdomain,
+    rule_use_case,
+    standard,
+    standard_substandard,
+    outcome,
+):
+    processor = RuleProcessor(mock_data_service, InMemoryCacheService())
+    rule = {"use_case": rule_use_case}
+    dataset_metadata = SDTMDatasetMetadata(
+        name=dataset_name,
+        first_record=(
+            {"DOMAIN": domain, "RDOMAIN": rdomain} if domain or rdomain else {}
+        ),
+    )
+    assert (
+        processor.rule_applies_to_use_case(
+            dataset_metadata, rule, standard, standard_substandard
+        )
+        == outcome
+    )
 
 
 @pytest.mark.parametrize("dataset_implementation", [PandasDataset, DaskDataset])

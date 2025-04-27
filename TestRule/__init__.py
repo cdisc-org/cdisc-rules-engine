@@ -1,10 +1,10 @@
 import azure.functions as func
-from cdisc_rule_tester.models.rule_tester import RuleTester
 from cdisc_rules_engine.services.cache.in_memory_cache_service import (
     InMemoryCacheService,
 )
 from cdisc_rules_engine.services.cdisc_library_service import CDISCLibraryService
 from cdisc_rules_engine.services.cache.cache_populator_service import CachePopulator
+from scripts.run_validation import run_single_rule_validation
 import json
 import os
 import asyncio
@@ -55,7 +55,7 @@ def handle_exception(e: Exception):
         )
 
 
-def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
+def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:  # noqa
     try:
         json_data = req.get_json()
         api_key = os.environ.get("CDISC_LIBRARY_API_KEY")
@@ -63,13 +63,7 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
         standards_data = json_data.get("standard", {})
         standard = standards_data.get("product")
         standard_version = standards_data.get("version")
-        standard_substandard = None
-        if standard and standard.lower() == "tig":
-            standard_substandard = (
-                rule.get("Authorities", [])[0]
-                .get("Standards", [])[0]
-                .get("Substandard")
-            ).lower()
+        standard_substandard = standards_data.get("substandard")
         codelists = json_data.get("codelists", [])
         cache = InMemoryCacheService()
         if standards_data or codelists:
@@ -90,17 +84,16 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
             raise KeyError("'datasets' required in request")
         validate_datasets_payload(datasets)
         define_xml = json_data.get("define_xml")
-        tester = RuleTester(
+        result = run_single_rule_validation(
             datasets,
+            rule,
             define_xml,
             cache,
             standard,
             standard_version,
             standard_substandard,
             codelists,
-            rule,
         )
-        result = tester.validate(rule)
         result_json = json.dumps(result)
         return func.HttpResponse(result_json)
     except Exception as e:

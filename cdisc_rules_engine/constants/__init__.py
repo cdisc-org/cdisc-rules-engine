@@ -13,3 +13,5 @@ XPT_MODIFIED_DATE_PATTERN: str = (
 )
 
 REPORT_TEMPLATE_PATH = "/templates/report-template.xlsx"
+
+NULL_FLAVORS = ["", None, {None}, [], {}]

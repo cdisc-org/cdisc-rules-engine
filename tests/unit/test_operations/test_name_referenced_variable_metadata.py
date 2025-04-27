@@ -12,6 +12,7 @@ from cdisc_rules_engine.operations.name_referenced_variable_metadata import (
 from cdisc_rules_engine.services.cache import InMemoryCacheService
 from cdisc_rules_engine.services.data_services import LocalDataService
 import pytest
+from unittest.mock import Mock, patch
 
 
 @pytest.mark.parametrize("dataset_type", [(PandasDataset)])
@@ -66,6 +67,71 @@ def test_get_name_referenced_variable_metadata(
     }
     standard_metadata = {
         "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
+        "domains": {
+            "HO",
+            "CO",
+            "SU",
+            "PP",
+            "TM",
+            "TD",
+            "SS",
+            "TR",
+            "CV",
+            "EX",
+            "RELSPEC",
+            "FA",
+            "SR",
+            "SV",
+            "TI",
+            "CM",
+            "RE",
+            "TU",
+            "ML",
+            "RELSUB",
+            "SUPPQUAL",
+            "TA",
+            "UR",
+            "RS",
+            "VS",
+            "EC",
+            "IS",
+            "DV",
+            "RELREC",
+            "PR",
+            "SM",
+            "EG",
+            "MK",
+            "TS",
+            "DS",
+            "PE",
+            "DM",
+            "MH",
+            "GF",
+            "BE",
+            "OE",
+            "CE",
+            "CP",
+            "MS",
+            "DD",
+            "TV",
+            "MI",
+            "FT",
+            "PC",
+            "RP",
+            "IE",
+            "TE",
+            "LB",
+            "BS",
+            "QS",
+            "SC",
+            "AG",
+            "DA",
+            "SE",
+            "AE",
+            "OI",
+            "MB",
+            "NV",
+        },
         "classes": [
             {
                 "name": "Events",
@@ -108,10 +174,13 @@ def test_get_name_referenced_variable_metadata(
     library_metadata = LibraryMetadataContainer(
         standard_metadata=standard_metadata, model_metadata=model_metadata
     )
+    mock_dataset_class = Mock()
+    mock_dataset_class.name = "Events"
     # execute operation
     data_service = LocalDataService.get_instance(
         cache_service=cache, config=ConfigService()
     )
+    data_service.get_dataset_class = Mock(return_value=mock_dataset_class)
     operation = NameReferencedVariableMetadata(
         operation_params,
         operation_params.dataframe,
@@ -119,7 +188,15 @@ def test_get_name_referenced_variable_metadata(
         data_service,
         library_metadata,
     )
-    result = operation.execute()
+
+    def mock_cached_method(*args, **kwargs):
+        return operation_params.dataframe
+
+    with patch(
+        "cdisc_rules_engine.services.data_services.LocalDataService.get_raw_dataset_metadata",
+        side_effect=mock_cached_method,
+    ):
+        result = operation.execute()
     expected_columns = [
         "STUDYID",
         "AETERM",
@@ -128,7 +205,6 @@ def test_get_name_referenced_variable_metadata(
         "$name_referenced_variable_name",
         "$name_referenced_variable_role",
         "$name_referenced_variable_order_number",
-        "$name_referenced_variable_ordinal",
         "$name_referenced_variable_label",
     ]
 

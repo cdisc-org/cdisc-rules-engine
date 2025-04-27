@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
 from io import IOBase
-from typing import Callable, Iterable, List, Optional
+from typing import Callable, Iterable, List, Optional, Sequence
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
+from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from .cache_service_interface import CacheServiceInterface
 
@@ -66,7 +67,12 @@ class DataServiceInterface(ABC):
         """
 
     @abstractmethod
-    def concat_split_datasets(self, func_to_call: Callable, dataset_names, **kwargs):
+    def concat_split_datasets(
+        self,
+        func_to_call: Callable,
+        datasets_metadata: Iterable[DatasetMetadata],
+        **kwargs
+    ):
         """
         Accepts a list of split dataset filenames,
         downloads all of them and merges into a single DataFrame.
@@ -113,4 +119,11 @@ class DataServiceInterface(ABC):
     def to_parquet(self, file_path: str) -> str:
         """
         Converts a given file_path to parquet. Returns path to new file
+        """
+
+    @staticmethod
+    @abstractmethod
+    def is_valid_data(dataset_paths: Sequence[str]) -> bool:
+        """
+        Checks if the data within the given dataset paths belong in this data service
         """

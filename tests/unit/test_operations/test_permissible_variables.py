@@ -7,13 +7,14 @@ from cdisc_rules_engine.models.library_metadata_container import (
 
 import pandas as pd
 import pytest
-
+from unittest.mock import Mock, patch
 from cdisc_rules_engine.constants.classes import GENERAL_OBSERVATIONS_CLASS
 from cdisc_rules_engine.enums.variable_roles import VariableRoles
 from cdisc_rules_engine.models.operation_params import OperationParams
 from cdisc_rules_engine.operations.permissible_variables import PermissibleVariables
 from cdisc_rules_engine.services.cache import InMemoryCacheService
 from cdisc_rules_engine.services.data_services import LocalDataService
+from cdisc_rules_engine.config.config import ConfigService
 
 
 @pytest.mark.parametrize(
@@ -68,6 +69,71 @@ from cdisc_rules_engine.services.data_services import LocalDataService
             },
             {
                 "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
+                "domains": {
+                    "HO",
+                    "CO",
+                    "SU",
+                    "PP",
+                    "TM",
+                    "TD",
+                    "SS",
+                    "TR",
+                    "CV",
+                    "EX",
+                    "RELSPEC",
+                    "FA",
+                    "SR",
+                    "SV",
+                    "TI",
+                    "CM",
+                    "RE",
+                    "TU",
+                    "ML",
+                    "RELSUB",
+                    "SUPPQUAL",
+                    "TA",
+                    "UR",
+                    "RS",
+                    "VS",
+                    "EC",
+                    "IS",
+                    "DV",
+                    "RELREC",
+                    "PR",
+                    "SM",
+                    "EG",
+                    "MK",
+                    "TS",
+                    "DS",
+                    "PE",
+                    "DM",
+                    "MH",
+                    "GF",
+                    "BE",
+                    "OE",
+                    "CE",
+                    "CP",
+                    "MS",
+                    "DD",
+                    "TV",
+                    "MI",
+                    "FT",
+                    "PC",
+                    "RP",
+                    "IE",
+                    "TE",
+                    "LB",
+                    "BS",
+                    "QS",
+                    "SC",
+                    "AG",
+                    "DA",
+                    "SE",
+                    "AE",
+                    "OI",
+                    "MB",
+                    "NV",
+                },
                 "classes": [
                     {
                         "name": "Events",
@@ -136,6 +202,71 @@ from cdisc_rules_engine.services.data_services import LocalDataService
             },
             {
                 "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
+                "domains": {
+                    "HO",
+                    "CO",
+                    "SU",
+                    "PP",
+                    "TM",
+                    "TD",
+                    "SS",
+                    "TR",
+                    "CV",
+                    "EX",
+                    "RELSPEC",
+                    "FA",
+                    "SR",
+                    "SV",
+                    "TI",
+                    "CM",
+                    "RE",
+                    "TU",
+                    "ML",
+                    "RELSUB",
+                    "SUPPQUAL",
+                    "TA",
+                    "UR",
+                    "RS",
+                    "VS",
+                    "EC",
+                    "IS",
+                    "DV",
+                    "RELREC",
+                    "PR",
+                    "SM",
+                    "EG",
+                    "MK",
+                    "TS",
+                    "DS",
+                    "PE",
+                    "DM",
+                    "MH",
+                    "GF",
+                    "BE",
+                    "OE",
+                    "CE",
+                    "CP",
+                    "MS",
+                    "DD",
+                    "TV",
+                    "MI",
+                    "FT",
+                    "PC",
+                    "RP",
+                    "IE",
+                    "TE",
+                    "LB",
+                    "BS",
+                    "QS",
+                    "SC",
+                    "AG",
+                    "DA",
+                    "SE",
+                    "AE",
+                    "OI",
+                    "MB",
+                    "NV",
+                },
                 "classes": [
                     {
                         "name": "Events",
@@ -180,14 +311,16 @@ def test_get_permissible_variables(
     operation_params.domain = "AE"
     operation_params.standard = "sdtmig"
     operation_params.standard_version = "3-4"
-
+    cache = InMemoryCacheService
     library_metadata = LibraryMetadataContainer(
         standard_metadata=standard_metadata, model_metadata=model_metadata
     )
-    # save model metadata to cache
-    cache = InMemoryCacheService.get_instance()
-    # execute operation
-    data_service = LocalDataService.get_instance(cache_service=cache)
+    mock_dataset_class = Mock()
+    mock_dataset_class.name = "Events"
+    data_service = LocalDataService.get_instance(
+        cache_service=cache, config=ConfigService()
+    )
+    data_service.get_dataset_class = Mock(return_value=mock_dataset_class)
     operation = PermissibleVariables(
         operation_params,
         operation_params.dataframe,
@@ -195,7 +328,15 @@ def test_get_permissible_variables(
         data_service,
         library_metadata,
     )
-    result: pd.DataFrame = operation.execute()
+
+    def mock_cached_method(*args, **kwargs):
+        return operation_params.dataframe
+
+    with patch(
+        "cdisc_rules_engine.services.data_services.LocalDataService.get_raw_dataset_metadata",
+        side_effect=mock_cached_method,
+    ):
+        result: pd.DataFrame = operation.execute()
     variables: List[str] = ["AEPERM", "TIMING_VAR"]
     for result_array in result[operation_params.operation_id]:
         assert sorted(result_array) == variables

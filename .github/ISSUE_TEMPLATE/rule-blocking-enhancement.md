@@ -2,7 +2,7 @@
 name: Rule-Blocking Enhancement
 about: For feature requests that block a rule
 title: 'Rule blocked: CORERULES-###'
-labels: enhancement
+type: Feature
 assignees: ''
 
 ---

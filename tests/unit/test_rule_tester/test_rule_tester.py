@@ -1,6 +1,7 @@
-from cdisc_rule_tester.models.rule_tester import RuleTester
 from os import path
 from unittest.mock import patch
+
+from scripts.run_validation import run_single_rule_validation
 
 test_define_file_path: str = (
     f"{path.dirname(__file__)}/../../resources/test_defineV22-SDTM.xml"
@@ -33,30 +34,6 @@ def test_rule_with_errors(mock_get_dataset_class):
             },
         }
     ]
-    rule_preprocessed = {
-        "core_id": "QC.CDISC.SDTMIG.CG0032",
-        "classes": {"Include": ["ALL"]},
-        "domains": {"Include": ["ALL"]},
-        "rule_type": "Range & Limit",
-        "sensitivity": "Value",
-        "severity": "error",
-        "Authorities": [{"Standards": [{"Name": "SDTMIG", "Version": "3.4"}]}],
-        "conditions": {
-            "all": [
-                {
-                    "name": "get_dataset",
-                    "operator": "less_than",
-                    "value": {"target": "LBSEQ", "comparator": 2},
-                }
-            ]
-        },
-        "actions": [
-            {
-                "name": "generate_dataset_error_objects",
-                "params": {"message": "LBSEQ less than 2"},
-            }
-        ],
-    }
     rule = {
         "core_id": "QC.CDISC.SDTMIG.CG0032",
         "classes": {"Include": ["ALL"]},
@@ -64,6 +41,7 @@ def test_rule_with_errors(mock_get_dataset_class):
         "rule_type": "Range & Limit",
         "sensitivity": "Value",
         "severity": "error",
+        "Authorities": [{"Standards": [{"Name": "SDTMIG", "Version": "3.4"}]}],
         "standards": [{"Name": "SDTMIG", "Version": "3.4"}],
         "conditions": {
             "all": [
@@ -82,8 +60,7 @@ def test_rule_with_errors(mock_get_dataset_class):
         ],
     }
     mock_get_dataset_class.return_value = None
-    tester = RuleTester(datasets, rule=rule_preprocessed)
-    data = tester.validate(rule)
+    data = run_single_rule_validation(datasets, rule)
     assert "LB" in data
     assert len(data["LB"]) == 1
     assert len(data["LB"][0]["errors"]) == 1
@@ -120,30 +97,6 @@ def test_rule_without_errors(mock_get_dataset_class):
             },
         }
     ]
-    rule_preprocessed = {
-        "core_id": "QC.CDISC.SDTMIG.CG0032",
-        "classes": {"Include": ["ALL"]},
-        "domains": {"Include": ["ALL"]},
-        "rule_type": "Range & Limit",
-        "sensitivity": "Value",
-        "severity": "error",
-        "Authorities": [{"Standards": [{"Name": "SDTMIG", "Version": "3.4"}]}],
-        "conditions": {
-            "all": [
-                {
-                    "name": "get_dataset",
-                    "operator": "greater_than",
-                    "value": {"target": "LBSEQ", "comparator": 2},
-                }
-            ]
-        },
-        "actions": [
-            {
-                "name": "generate_dataset_error_objects",
-                "params": {"message": "LBSEQ less than 2"},
-            }
-        ],
-    }
     rule = {
         "core_id": "QC.CDISC.SDTMIG.CG0032",
         "classes": {"Include": ["ALL"]},
@@ -151,6 +104,7 @@ def test_rule_without_errors(mock_get_dataset_class):
         "rule_type": "Range & Limit",
         "sensitivity": "Value",
         "severity": "error",
+        "Authorities": [{"Standards": [{"Name": "SDTMIG", "Version": "3.4"}]}],
         "standards": [{"Name": "SDTMIG", "Version": "3.4"}],
         "conditions": {
             "all": [
@@ -169,8 +123,7 @@ def test_rule_without_errors(mock_get_dataset_class):
         ],
     }
     mock_get_dataset_class.return_value = None
-    tester = RuleTester(datasets, rule=rule_preprocessed)
-    data = tester.validate(rule)
+    data = run_single_rule_validation(datasets, rule)
     assert "LB" in data
     assert len(data["LB"]) == 1
     assert len(data["LB"][0]["errors"]) == 0
@@ -201,30 +154,6 @@ def test_rule_skipped():
             },
         }
     ]
-    rule_preprocessed = {
-        "core_id": "QC.CDISC.SDTMIG.CG0032",
-        "classes": {"Include": ["ALL"]},
-        "domains": {"Include": ["ALL"]},
-        "rule_type": "Range & Limit",
-        "sensitivity": "Value",
-        "severity": "error",
-        "Authorities": [{"Standards": [{"Name": "SDTMIG", "Version": "3.4"}]}],
-        "conditions": {
-            "all": [
-                {
-                    "name": "get_dataset",
-                    "operator": "greater_than",
-                    "value": {"target": "LBSEQ", "comparator": 2},
-                }
-            ]
-        },
-        "actions": [
-            {
-                "name": "generate_dataset_error_objects",
-                "params": {"message": "LBSEQ less than 2"},
-            }
-        ],
-    }
     rule = {
         "core_id": "QC.CDISC.SDTMIG.CG0032",
         "classes": {"Include": ["ALL"]},
@@ -232,6 +161,7 @@ def test_rule_skipped():
         "rule_type": "Range & Limit",
         "sensitivity": "Value",
         "severity": "error",
+        "Authorities": [{"Standards": [{"Name": "SDTMIG", "Version": "3.4"}]}],
         "standards": [{"Name": "SDTMIG", "Version": "3.4"}],
         "conditions": {
             "all": [
@@ -249,8 +179,7 @@ def test_rule_skipped():
             }
         ],
     }
-    tester = RuleTester(datasets, rule=rule_preprocessed)
-    data = tester.validate(rule)
+    data = run_single_rule_validation(datasets, rule)
     assert "LB" in data
     assert len(data["LB"]) == 1
     assert len(data["LB"][0]["errors"]) == 0
@@ -310,11 +239,9 @@ def test_rule_with_define_xml(define_xml_variable_validation_rule: dict):
 
     with open(test_define_file_path, "r") as file:
         contents: str = file.read()
-        tester = RuleTester(
-            datasets,
-            contents,
+        data = run_single_rule_validation(
+            datasets, rule=define_xml_variable_validation_rule, define_xml=contents
         )
-        data = tester.validate(define_xml_variable_validation_rule)
         assert "AE" in data
         assert len(data["AE"]) == 1
         assert len(data["AE"][0]["errors"]) > 0

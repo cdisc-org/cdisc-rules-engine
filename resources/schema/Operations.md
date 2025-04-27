@@ -196,7 +196,8 @@ Match Datasets:
 
 ## expected_variables
 
-Returns the expected variables for the domain in the current standard.
+Returns the expected ("Core" = Exp ) variables for the domain in the current standard
+Variable Metadata for custom domains will pull from the model while non-custom domains will be from the IG and Model.
 
 - Input:
 
@@ -551,7 +552,8 @@ Generates a dataframe where each record in the dataframe is the library ig varia
 
 ## permissible_variables
 
-Returns the permissible variables for a given domain and standard
+Returns the permissible variables ("Core" = Perm ) for a given domain and standard
+Variable Metadata for custom domains will pull from the model while non-custom domains will be from the IG and Model.
 
 - Input:
 
@@ -633,7 +635,8 @@ Example: return the number of records grouped by USUBJID and IDVARVAL where QNAM
 
 ## required_variables
 
-Returns the required variables for a given domain and standard
+Returns the required variables ( "Core" = Req ) for a given domain and standard
+Variable Metadata for custom domains will pull from the model while non-custom domains will be from the IG and Model.
 
 - Input:
 
@@ -681,6 +684,21 @@ the operation will return
 ["2023-10-26", "2023-12-13"]
 ```
 
+# External Dictionary Validation Operations
+
+## Supported External Dictionary Types
+
+```
+MEDDRA = "meddra"
+WHODRUG = "whodrug"
+LOINC = "loinc"
+MEDRT = "medrt"
+UNII = "unii"
+SNOMED = "snomed"
+```
+
+## Generic External Dictionary Operations
+
 ## valid_define_external_dictionary_version
 
 Returns true if the version of an external dictionary provided in the define.xml file matches
@@ -689,9 +707,10 @@ the version parsed from the dictionary files.
 Input:
 
 ```yaml
-- operation: valid_define_external_dictionary_version
-  id: $is_valid_loinc_version
-  external_dictionary_type: loinc
+Operation:
+  - operator: valid_define_external_dictionary_version
+    id: $is_valid_loinc_version
+    external_dictionary_type: loinc
 ```
 
 Output:
@@ -709,12 +728,13 @@ Can be case insensitive by setting `case_sensitive` attribute to false. It is tr
 Input:
 
 ```yaml
-- operation: valid_external_dictionary_value
-  name: --DECOD
-  id: $is_valid_decod_value
-  external_dictionary_type: meddra
-  dictionary_term_type: PT
-  case_sensitive: false
+Operation:
+  - operator: valid_external_dictionary_value
+    name: --DECOD
+    id: $is_valid_decod_value
+    external_dictionary_type: meddra
+    dictionary_term_type: PT
+    case_sensitive: false
 ```
 
 Output:
@@ -730,11 +750,12 @@ Returns true if the target variable contains a valid external dictionary code, o
 Input:
 
 ```yaml
-- operation: valid_external_dictionary_code
-  name: --COD
-  id: $is_valid_cod_code
-  external_dictionary_type: meddra
-  dictionary_term_type: PT
+Operation:
+  - operator: valid_external_dictionary_code
+    name: --COD
+    id: $is_valid_cod_code
+    external_dictionary_type: meddra
+    dictionary_term_type: PT
 ```
 
 Output:
@@ -752,11 +773,12 @@ external_dictionary_term_variable parameter should contain the name of the varia
 Input:
 
 ```yaml
-- operation: valid_external_dictionary_code_term_pair
-  name: --COD
-  id: $is_valid_loinc_code_term_pair
-  external_dictionary_type: loinc
-  external_dictionary_term_variable: --DECOD
+Operation:
+  - operator: valid_external_dictionary_code_term_pair
+    name: --COD
+    id: $is_valid_loinc_code_term_pair
+    external_dictionary_type: loinc
+    external_dictionary_term_variable: --DECOD
 ```
 
 Output:
@@ -765,39 +787,115 @@ Output:
 [true, false, false, true]
 ```
 
+## MedDRA-Specific Operations
+
 ## valid_meddra_code_references
 
 Determines whether the values are valid in the following variables:
 
-- `--SOCCD`
-- `--HLGTCD`
-- `--HLTCD`
-- `--PTCD`
-- `--LLTCD`
+- `--SOCCD` (System Organ Class Code)
+- `--HLGTCD` (High Level Group Term Code)
+- `--HLTCD` (High Level Term Code)
+- `--PTCD` (Preferred Term Code)
+- `--LLTCD` (Lowest Level Term Code)
+
+**Input:**
+
+```yaml
+Operation:
+  - id: $is_valid_meddra_codes
+    operation: valid_meddra_code_references
+```
+
+**Output:**
+
+```json
+[true, false, true, true]
+```
 
 ## valid_meddra_code_term_pairs
 
 Determines whether the values are valid in the following variable pairs:
 
-- `--SOCCD`, `--SOC`
-- `--HLGTCD`, `--HLGT`
-- `--HLTCD`, `--HLT`
-- `--PTCD`, `--DECOD`
-- `--LLTCD`, `--LLT`
+- `--SOCCD`, `--SOC` (System Organ Class Code and Term)
+- `--HLGTCD`, `--HLGT` (High Level Group Term Code and Term)
+- `--HLTCD`, `--HLT` (High Level Term Code and Term)
+- `--PTCD`, `--DECOD` (Preferred Term Code and Dictionary-Derived Term)
+- `--LLTCD`, `--LLT` (Lowest Level Term Code and Term)
+
+**Input:**
+
+```yaml
+Operations:
+  - id: $is_valid_meddra_pairs
+    operation: valid_meddra_code_term_pairs
+```
+
+**Output:**
+
+```json
+[true, true, false, true, true]
+```
 
 ## valid_meddra_term_references
 
 Determines whether the values are valid in the following variables:
 
-- `--SOC`
-- `--HLGT`
-- `--HLT`
-- `--DECOD`
-- `--LLT`
+- `--SOC` (System Organ Class)
+- `--HLGT` (High Level Group Term)
+- `--HLT` (High Level Term)
+- `--DECOD` (Dictionary-Derived Term)
+- `--LLT` (Lowest Level Term)
+
+**Input:**
+
+```yaml
+Operations:
+  - id: $is_valid_meddra_terms
+    operation: valid_meddra_term_references
+```
+
+**Output:**
+
+```json
+[true, true, false, true, true]
+```
+
+## WHODrug-Specific Operations
 
 ## valid_whodrug_references
 
 Checks if a reference to whodrug term in `name` points to the existing code in Atc Text (INA) file.
+
+**Input:**
+
+```yaml
+Operations:
+  - id: $whodrug_refs_valid
+    operation: valid_whodrug_references
+```
+
+**Output:**
+
+```json
+[true, false, true, true]
+```
+
+### `whodrug_code_hierarchy`
+
+Determines whether the values are valid and in the correct hierarchical structure in the following variables:
+
+- `--DECOD`
+- `--CLAS`
+- `--CLASCD`
+
+**Input:**
+
+```yaml
+Operations:
+  - id: $valid_whodrug_codes
+    operator: whodrug_code_hierarchy
+```
 
 ## variable_count
 
@@ -890,11 +988,3 @@ Operations:
 ## variable_value_count
 
 Given a variable `name`, returns a mapping of variable values to the number of times that value appears in the variable within all datasets in the study.
-
-## whodrug_code_hierarchy
-
-Determines whether the values are valid in the following variables:
-
-- `--DECOD`
-- `--CLAS`
-- `--CLASCD`

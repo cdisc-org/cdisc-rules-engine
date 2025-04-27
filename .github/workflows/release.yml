@@ -11,8 +11,6 @@ jobs:
         include:
           - os: "ubuntu-latest"
             name: "core-ubuntu-latest"
-          - os: "ubuntu-20.04"
-            name: "core-ubuntu-20-04"
           - os: "macos-latest"
             name: "core-mac"
           - os: "windows-latest"
@@ -37,10 +35,6 @@ jobs:
           dest: core-ubuntu-latest.zip
       - uses: vimtor/action-zip@v1
         with:
-          files: artifacts/core-ubuntu-20-04/
-          dest: core-ubuntu-20-04.zip
-      - uses: vimtor/action-zip@v1
-        with:
           files: artifacts/core-mac/
           dest: core-mac.zip
       - uses: vimtor/action-zip@v1
@@ -56,15 +50,6 @@ jobs:
           upload_url: ${{ github.event.release.upload_url }}
           asset_path: ./core-ubuntu-latest.zip
           asset_name: core-ubuntu-latest.zip
-          asset_content_type: application/zip
-      - name: Upload Ubuntu 20.04 Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./core-ubuntu-20-04.zip
-          asset_name: core-ubuntu-20-04.zip
           asset_content_type: application/zip
       - name: Upload Mac Release Asset
         uses: actions/upload-release-asset@v1
@@ -85,25 +70,41 @@ jobs:
           asset_name: core-windows.zip
           asset_content_type: application/zip
 
-  deploy-package:
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        id: pysetup
+      # Upload zips as artifact for the PyPI job
+      - name: Upload Release Assets for PyPI
+        uses: actions/upload-artifact@v4
         with:
-          python-version: "3.9"
+          name: release-artifacts
+          path: |
+            core-ubuntu-latest.zip
+            core-mac.zip
+            core-windows.zip
+  deploy-PyPi:
+    needs: create-release-assets
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install setuptools wheel twine
+          pip install build setuptools wheel twine
           pip install -r requirements.txt
-      - name: Publish
-        env:
-          TWINE_USERNAME: ${{ vars.PYPI_USERNAME }}
-          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+      - name: Build package
         run: |
-          python setup.py sdist bdist_wheel
-          twine upload dist/* --skip-existing
+          python -m build
+      - name: Check package size
+        run: |
+          echo "Package size:"
+          ls -lh dist/*.whl
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          verbose: true

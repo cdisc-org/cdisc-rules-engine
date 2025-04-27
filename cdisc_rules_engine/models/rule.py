@@ -51,6 +51,7 @@ class Rule:
                 "rule_type": rule_metadata.get("Rule_Type"),
                 "conditions": cls.parse_conditions(rule_metadata.get("Check")),
                 "actions": cls.parse_actions(rule_metadata.get("Outcome")),
+                "use_case": rule_metadata.get("Scope", {}).get("Use_Case"),
             }
 
             if "Operations" in rule_metadata:
@@ -171,9 +172,11 @@ class Rule:
             join_data = {
                 "domain_name": data.get("Name"),
                 "match_key": [
-                    key
-                    if isinstance(key, str)
-                    else {k.lower(): v for k, v in key.items()}
+                    (
+                        key
+                        if isinstance(key, str)
+                        else {k.lower(): v for k, v in key.items()}
+                    )
                     for key in data.get("Keys", [])
                 ],
                 "wildcard": data.get("Wildcard", "**"),

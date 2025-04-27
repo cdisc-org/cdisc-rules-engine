@@ -273,7 +273,6 @@ test_data = {
     ],
 )
 def test_ContentMetadataDatasetBuilder_split_datasets(conditions):
-
     rule: dict = {
         "conditions": ConditionCompositeFactory.get_condition_composite(conditions),
     }
@@ -282,15 +281,14 @@ def test_ContentMetadataDatasetBuilder_split_datasets(conditions):
     datasets = [DummyDataset(data) for data in data_metadata.get("datasets", [])]
     expected_output = {
         "dataset_size": 1000,
+        "dataset_location": "qscg.xpt",
         "dataset_name": "QSCG",
         "dataset_label": "Clinical Global Impressions",
-        "filename": "qscg.xpt",
         "record_count": 1,
     }
     expected = PandasDataset(
         pd.DataFrame.from_dict([expected_output], orient="columns")
     )
-
     result = ContentMetadataDatasetBuilder(
         rule=rule,
         data_service=DummyDataService(
@@ -299,26 +297,25 @@ def test_ContentMetadataDatasetBuilder_split_datasets(conditions):
         cache_service=None,
         rule_processor=processor,
         data_processor=None,
-        dataset_path=None,
+        dataset_path=test_data["datasets"][0]["filename"],
         datasets=test_data.get("datasets", {}),
-        dataset_metadata=test_data,
+        dataset_metadata=test_data["datasets"][0],
         define_xml_path=None,
         standard="sdtmig",
         standard_version="3-4",
         standard_substandard=None,
         library_metadata=LibraryMetadataContainer(),
-    ).build_split_datasets("qscg.xpt")
+    ).build()
     expected_output2 = {
         "dataset_size": 1000,
+        "dataset_location": "qspg.xpt",
         "dataset_name": "QSPG",
         "dataset_label": "Patient Global Impressions",
-        "filename": "qspg.xpt",
         "record_count": 1,
     }
     expected2 = PandasDataset(
         pd.DataFrame.from_dict([expected_output2], orient="columns")
     )
-
     result2 = ContentMetadataDatasetBuilder(
         rule=rule,
         data_service=DummyDataService(
@@ -327,14 +324,14 @@ def test_ContentMetadataDatasetBuilder_split_datasets(conditions):
         cache_service=None,
         rule_processor=processor,
         data_processor=None,
-        dataset_path=None,
+        dataset_path=test_data["datasets"][1]["filename"],
         datasets=test_data.get("datasets", {}),
-        dataset_metadata=test_data,
+        dataset_metadata=test_data["datasets"][1],
         define_xml_path=None,
         standard="sdtmig",
         standard_version="3-4",
         standard_substandard=None,
         library_metadata=LibraryMetadataContainer(),
-    ).build_split_datasets("qspg.xpt")
+    ).build()
     assert result.equals(expected)
     assert result2.equals(expected2)

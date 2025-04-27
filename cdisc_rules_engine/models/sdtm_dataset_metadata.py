@@ -10,6 +10,25 @@ class SDTMDatasetMetadata(DatasetMetadata):
     This class is a container for SDTM dataset metadata
     """
 
+    """
+    Examples
+    | name     | unsplit_name | is_supp | domain | rdomain |
+    | -------- | ------------ | ------- | ------ | ------- |
+    | QS       | QS           | False   | QS     | None    |
+    | QSX      | QS           | False   | QS     | None    |
+    | QSXX     | QS           | False   | QS     | None    |
+    | SUPPQS   | SUPPQS       | True    | None   | QS      |
+    | SUPPQSX  | SUPPQS       | True    | None   | QS      |
+    | SUPPQSXX | SUPPQS       | True    | None   | QS      |
+    | APQS     | APQS         | False   | APQS   | None    |
+    | APQSX    | APQS         | False   | APQS   | None    |
+    | APQSXX   | APQS         | False   | APQS   | None    |
+    | SQAPQS   | SQAPQS       | True    | None   | APQS    |
+    | SQAPQSX  | SQAPQS       | True    | None   | APQS    |
+    | SQAPQSXX | SQAPQS       | True    | None   | APQS    |
+    | RELREC   | RELREC       | False   | None   | None    |
+    """
+
     @property
     def domain(self) -> Union[str, None]:
         return (self.first_record or {}).get("DOMAIN", None)
@@ -27,15 +46,14 @@ class SDTMDatasetMetadata(DatasetMetadata):
 
     @property
     def unsplit_name(self) -> str:
-        return (
-            self.name[:-2]
-            if (self.domain and self.name[:-2] == self.domain)
-            or (
-                self.is_supp
-                and (
-                    self.name[:-2] == f"SUPP{self.rdomain}"
-                    or self.name[:-2] == f"SQ{self.rdomain}"
-                )
-            )
-            else self.name
-        )
+        if self.domain:
+            return self.domain
+        if self.name.startswith("SUPP"):
+            return f"SUPP{self.rdomain}"
+        if self.name.startswith("SQ"):
+            return f"SQ{self.rdomain}"
+        return self.name
+
+    @property
+    def is_split(self) -> bool:
+        return self.name != self.unsplit_name

@@ -33,16 +33,18 @@ External dictionaries provide standardized terminology and coding systems for me
                         - hlgt_hlt.asc
                         - hlt_pt.asc
                     Version file:
-                        - version.txt containing version number followed by $ delimiter
-                            Example: 24.1$
+                        - meddra_release.asc containing version number followed by language and additional fields
+                            Example: 27.0$English$$$$
 ```
 
 #### SNOMED CT
 
 ```
---snomed-version TEXT    Version of SNOMED to use (e.g., 2024-09-01)
---snomed-url TEXT        Base URL of SNOMED API (e.g., https://snowstorm.snomedtools.org/snowstorm/snomed-ct)
---snomed-edition TEXT    Edition of SNOMED to use (e.g., SNOMEDCT-US)
+
+--snomed-version TEXT Version of SNOMED to use (e.g., 2024-09-01)
+--snomed-url TEXT Base URL of SNOMED API (e.g., https://snowstorm.snomedtools.org/snowstorm/snomed-ct)
+--snomed-edition TEXT Edition of SNOMED to use (e.g., SNOMEDCT-US)
+
 ```
 
 For SNOMED CT:
@@ -56,38 +58,69 @@ For SNOMED CT:
 #### WHODrug
 
 ```
---whodrug TEXT     Path to directory containing WHODrug dictionary files
-                    Required files:
-                      - DD.txt (Drug Dictionary)
-                      - DDA.txt (ATC Classification)
-                      - INA.txt (ATC Text)
-                      - version.txt (Contains Vault Safety label format, e.g., "GLOBALC3Mar24")
+
+--whodrug TEXT Path to directory containing WHODrug dictionary files
+Required files: - DD.txt (Drug Dictionary) - DDA.txt (ATC Classification) - INA.txt (ATC Text) - version.txt (Contains Vault Safety label format, e.g., "GLOBALC3Mar24")
 
                     Supported formats:
                       - B3: Substance Name field is 45 characters
                       - C3: Substance Name field is 110-250 characters (expanded after March 2022)
+
 ```
 
 #### Other Drug Dictionaries
 
 ```
---medrt TEXT       Path to directory containing MEDRT dictionary files
-                    Dictionary file must be named `Core_MEDRT_*_DTS.xml`
+--medrt TEXT      Path to directory containing MEDRT dictionary files
+                  Dictionary file must be named `Core_MEDRT_*_DTS.xml`
 
---unii TEXT        Path to directory containing UNII dictionary files
-                    Required files:
-                        - UNII_Records_*.* (tab-delimited file containing UNII codes and terms)
-                            Format: Tab-delimited file with following columns:
-                                1. UNII code
-                                2. UNII term
-                            Note: Version is extracted from filename (e.g., "UNII_Records_2024.txt" → version "2024")
+                  XML Structure Requirements:
+                  - The XML should contain both term and concept elements
+
+                  Term elements must include:
+                  - <code>: Unique term code (required)
+                  - <id>: ConceptID identifier (required)
+                  - <status>: Term status (optional)
+                  - <name>: Term name (optional)
+
+                  Concept elements must include:
+                  - <name>: Concept name (optional)
+                  - <code>: Concept code (optional)
+                  - <status>: Concept status (optional)
+
+                  Example structure:
+                  <root>
+                    <terms>
+                      <term>
+                        <code>TERM_CODE_VALUE</code>
+                        <id>TERM_ID_VALUE</id>
+                        <status>TERM_STATUS_VALUE</status>
+                        <name>TERM_NAME_VALUE</name>
+                      </term>
+                    </terms>
+                    <concepts>
+                      <concept>
+                        <name>CONCEPT_NAME_VALUE</name>
+                        <code>CONCEPT_CODE_VALUE</code>
+                        <status>CONCEPT_STATUS_VALUE</status>
+                      </concept>
+                    </concepts>
+                  </root>
+
+--unii TEXT Path to directory containing UNII dictionary files
+Required files: - UNII*Records*_._ (tab-delimited file containing UNII codes and terms)
+Format: Tab-delimited file with following columns: 1. UNII code 2. UNII term
+Note: Version is extracted from filename (e.g., "UNII_Records_2024.txt" → version "2024")
+
 ```
 
 ### Laboratory Dictionaries
 
 ```
---loinc TEXT       Path to directory containing LOINC dictionary files
-                    Directory must contain the `Loinc.csv` with capital 'L'
+
+--loinc TEXT Path to directory containing LOINC dictionary files
+Directory must contain the `Loinc.csv` with capital 'L'
+
 ```
 
 ## Operations & Rule Editor
@@ -99,9 +132,10 @@ For SNOMED CT:
 Validates dictionary versions against define.xml specifications.
 
 ```yaml
-- operation: valid_define_external_dictionary_version
-  id: $is_valid_loinc_version
-  external_dictionary_type: loinc
+Operation:
+  - operator: valid_define_external_dictionary_version
+    id: $is_valid_loinc_version
+    external_dictionary_type: loinc
 ```
 
 ### Value and Code Validation
@@ -111,12 +145,13 @@ Validates dictionary versions against define.xml specifications.
 Validates dictionary values with optional case sensitivity.
 
 ```yaml
-- operation: valid_external_dictionary_value
-  name: --DECOD
-  id: $is_valid_decod_value
-  external_dictionary_type: meddra
-  dictionary_term_type: PT
-  case_sensitive: false
+Operation:
+  - operator: valid_external_dictionary_value
+    name: --DECOD
+    id: $is_valid_decod_value
+    external_dictionary_type: meddra
+    dictionary_term_type: PT
+    case_sensitive: false
 ```
 
 #### valid_external_dictionary_code
@@ -124,11 +159,12 @@ Validates dictionary values with optional case sensitivity.
 Validates dictionary codes.
 
 ```yaml
-- operation: valid_external_dictionary_code
-  name: --COD
-  id: $is_valid_cod_code
-  external_dictionary_type: meddra
-  dictionary_term_type: PT
+Operation:
+  - operator: valid_external_dictionary_code
+    name: --COD
+    id: $is_valid_cod_code
+    external_dictionary_type: meddra
+    dictionary_term_type: PT
 ```
 
 #### valid_external_dictionary_code_term_pair
@@ -136,11 +172,12 @@ Validates dictionary codes.
 Validates matching of code-term pairs.
 
 ```yaml
-- operation: valid_external_dictionary_code_term_pair
-  name: --COD
-  id: $is_valid_loinc_code_term_pair
-  external_dictionary_type: loinc
-  external_dictionary_term_variable: --DECOD
+Operation:
+  - operator: valid_external_dictionary_code_term_pair
+    name: --COD
+    id: $is_valid_loinc_code_term_pair
+    external_dictionary_type: loinc
+    external_dictionary_term_variable: --DECOD
 ```
 
 ### MedDRA-Specific Operations
@@ -158,25 +195,27 @@ Validates MedDRA codes across all levels:
 Example:
 
 ```yaml
-- operation: valid_meddra_code_references
-  id: $meddra_codes_valid
+Operation:
+  - id: $is_valid_meddra_codes
+    operator: valid_meddra_code_references
 ```
 
 #### valid_meddra_code_term_pairs
 
 Validates corresponding code-term pairs:
 
-- `--SOCCD` with `--SOC`
-- `--HLGTCD` with `--HLGT`
-- `--HLTCD` with `--HLT`
-- `--PTCD` with `--DECOD`
-- `--LLTCD` with `--LLT`
+- `--SOCCD`, `--SOC` (System Organ Class Code and Term)
+- `--HLGTCD`, `--HLGT` (High Level Group Term Code and Term)
+- `--HLTCD`, `--HLT` (High Level Term Code and Term)
+- `--PTCD`, `--DECOD` (Preferred Term Code and Dictionary-Derived Term)
+- `--LLTCD`, `--LLT` (Lowest Level Term Code and Term)
 
 Example:
 
 ```yaml
-- operation: valid_meddra_code_term_pairs
-  id: $meddra_pairs_valid
+Operations:
+  - id: $is_valid_meddra_pairs
+    operator: valid_meddra_code_term_pairs
 ```
 
 #### valid_meddra_term_references
@@ -192,8 +231,9 @@ Validates terms at each MedDRA level:
 Example:
 
 ```yaml
-- operation: valid_meddra_term_references
-  id: $meddra_terms_valid
+Operations:
+  - id: $is_valid_meddra_terms
+    operator: valid_meddra_term_references
 ```
 
 ### WHODrug-Specific Operations
@@ -205,8 +245,9 @@ Validates WHODrug terms against the ATC Text (INA) file.
 Example:
 
 ```yaml
-- operation: valid_whodrug_references
-  id: $whodrug_refs_valid
+Operations:
+  - id: $whodrug_refs_valid
+    operator: valid_whodrug_references
 ```
 
 #### valid_whodrug_code_hierarchy
@@ -220,6 +261,7 @@ Validates hierarchical relationships between:
 Example:
 
 ```yaml
-- operation: valid_whodrug_code_hierarchy
-  id: $whodrug_hierarchy_valid
+Operations:
+  - id: $valid_whodrug_codes
+    operator: whodrug_code_hierarchy
 ```

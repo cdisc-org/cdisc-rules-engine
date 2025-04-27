@@ -1,6 +1,7 @@
 from datetime import datetime
 from io import IOBase
-from typing import List, Optional, Iterable
+from json import load
+from typing import List, Optional, Iterable, Sequence
 
 import os
 import pandas as pd
@@ -62,14 +63,9 @@ class DummyDataService(BaseDataService):
             df: pd.DataFrame = dataset.data
             df = df.applymap(lambda x: x.decode("utf-8") if isinstance(x, bytes) else x)
             result = PandasDataset(df)
-            self._replace_nans_in_numeric_cols_with_none(result)
             return result
         else:
             return PandasDataset.from_dict({})
-
-    def get_dataset_metadata(self, dataset_name: str, **kwargs):
-        dataset_metadata: dict = self.__get_dataset_metadata(dataset_name, **kwargs)
-        return PandasDataset.from_dict(dataset_metadata)
 
     def get_raw_dataset_metadata(
         self, dataset_name: str, **kwargs
@@ -77,13 +73,13 @@ class DummyDataService(BaseDataService):
         dataset_metadata: dict = self.__get_dataset_metadata(dataset_name, **kwargs)
         return SDTMDatasetMetadata(
             name=dataset_metadata["dataset_name"][0],
-            domain=dataset_metadata["dataset_name"][0],
+            first_record={"DOMAIN": dataset_metadata["dataset_name"][0]},
             label=dataset_metadata["dataset_label"][0],
             modification_date=datetime.now().isoformat(),
             filename=dataset_metadata["filename"][0],
             file_size=dataset_metadata["dataset_size"][0],
             full_path=dataset_metadata["filename"][0],
-            record_count=dataset_metadata["length"][0],
+            record_count=dataset_metadata["record_count"][0],
         )
 
     def get_variables_metadata(self, dataset_name: str, **params) -> PandasDataset:
@@ -162,3 +158,21 @@ class DummyDataService(BaseDataService):
 
     def get_datasets(self) -> Iterable[SDTMDatasetMetadata]:
         return self.data
+
+    @staticmethod
+    def get_data(dataset_paths: Sequence[str]):
+        with open(dataset_paths[0]) as fp:
+            json = load(fp)
+            return [DummyDataset(data) for data in json.get("datasets", [])]
+
+    @staticmethod
+    def is_valid_data(dataset_paths: Sequence[str]):
+        if (
+            dataset_paths
+            and len(dataset_paths) == 1
+            and dataset_paths[0].lower().endswith(".json")
+        ):
+            with open(dataset_paths[0]) as fp:
+                json = load(fp)
+                return "datasets" in json
+        return False

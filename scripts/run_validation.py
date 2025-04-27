@@ -6,10 +6,13 @@ from multiprocessing.managers import SyncManager
 from typing import List, Iterable, Callable
 
 from cdisc_rules_engine.config import config
+from cdisc_rules_engine.config.config import ConfigService
+from cdisc_rules_engine.dummy_models.dummy_dataset import DummyDataset
 from cdisc_rules_engine.enums.progress_parameter_options import ProgressParameterOptions
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
+from cdisc_rules_engine.models.rule import Rule
 from cdisc_rules_engine.models.rule_conditions import ConditionCompositeFactory
 from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
@@ -24,12 +27,22 @@ from cdisc_rules_engine.services.data_services import (
     DataServiceFactory,
 )
 from cdisc_rules_engine.models.dataset import PandasDataset
+from cdisc_rules_engine.services.data_services.dummy_data_service import (
+    DummyDataService,
+)
+from cdisc_rules_engine.utilities.data_processor import DataProcessor
+from cdisc_rules_engine.utilities.rule_processor import RuleProcessor
+from cdisc_rules_engine.utilities.utils import (
+    get_library_variables_metadata_cache_key,
+    get_model_details_cache_key_from_ig,
+    get_standard_details_cache_key,
+    get_variable_codelist_map_cache_key,
+)
 from scripts.script_utils import (
     fill_cache_with_dictionaries,
     get_cache_service,
     get_library_metadata_from_cache,
     get_rules,
-    get_datasets,
     get_max_dataset_size,
 )
 from cdisc_rules_engine.services.reporting import BaseReport, ReportFactory
@@ -74,22 +87,10 @@ def validate_single_rule(
         library_metadata=library_metadata,
         max_dataset_size=max_dataset_size,
         dataset_paths=args.dataset_paths,
+        validate_xml=args.validate_xml,
     )
-    results = []
-    validated_domains = set()
-    for dataset_metadata in datasets:
-        # Check if the domain has been validated before
-        # This addresses the case where a domain is split
-        # and appears multiple times within the list of datasets
-        if dataset_metadata.unsplit_name not in validated_domains:
-            validated_domains.add(dataset_metadata.unsplit_name)
-            results.append(
-                engine.validate_single_rule(
-                    rule, dataset_metadata.full_path, datasets, dataset_metadata
-                )
-            )
-
-    results = list(itertools.chain(*results))
+    results = engine.validate_single_rule(rule, datasets)
+    results = list(itertools.chain(*results.values()))
     if args.progress == ProgressParameterOptions.VERBOSE_OUTPUT.value:
         engine_logger.log(f"{rule['core_id']} validation complete")
     return RuleValidationResult(rule, results)
@@ -124,8 +125,6 @@ def run_validation(args: Validation_args):
     engine_logger.info(f"Populating cache, cache path: {args.cache}")
     rules = get_rules(args)
     library_metadata: LibraryMetadataContainer = get_library_metadata_from_cache(args)
-    # install dictionaries if needed
-    dictionary_versions = fill_cache_with_dictionaries(shared_cache, args)
     max_dataset_size = get_max_dataset_size(args.dataset_paths)
     standard = args.standard
     standard_version = args.version.replace(".", "-")
@@ -139,10 +138,12 @@ def run_validation(args: Validation_args):
         standard_substandard=standard_substandard,
         library_metadata=library_metadata,
     ).get_data_service(args.dataset_paths)
+    # install dictionaries if needed
+    dictionary_versions = fill_cache_with_dictionaries(shared_cache, args, data_service)
     large_dataset_validation: bool = (
         data_service.dataset_implementation != PandasDataset
     )
-    datasets = get_datasets(data_service, args.dataset_paths)
+    datasets = data_service.get_datasets()
     created_files = []
     if large_dataset_validation and data_service.standard != "usdm":
         # convert all files to parquet temp files
@@ -193,3 +194,75 @@ def run_validation(args: Validation_args):
     for file in created_files:
         engine_logger.info(f"Deleting file {file}")
         os.remove(file)
+
+
+def run_single_rule_validation(
+    datasets,
+    rule,
+    define_xml: str = None,
+    cache: InMemoryCacheService = None,
+    standard: str = None,
+    standard_version: str = "",
+    standard_substandard: str = None,
+    codelists=[],
+) -> dict:
+    datasets = [DummyDataset(dataset_data) for dataset_data in datasets]
+    cache = cache or InMemoryCacheService()
+    standard_details_cache_key = get_standard_details_cache_key(
+        standard, standard_version, standard_substandard
+    )
+    variable_details_cache_key = get_library_variables_metadata_cache_key(
+        standard, standard_version, standard_substandard
+    )
+    standard_metadata = cache.get(standard_details_cache_key)
+    if standard_metadata:
+        model_cache_key = get_model_details_cache_key_from_ig(standard_metadata)
+        model_metadata = cache.get(model_cache_key)
+    else:
+        model_metadata = {}
+    variable_codelist_cache_key = get_variable_codelist_map_cache_key(
+        standard, standard_version, standard_substandard
+    )
+
+    ct_package_metadata = {}
+    for codelist in codelists:
+        ct_package_metadata[codelist] = cache.get(codelist)
+
+    library_metadata = LibraryMetadataContainer(
+        standard_metadata=standard_metadata,
+        model_metadata=model_metadata,
+        variables_metadata=cache.get(variable_details_cache_key),
+        variable_codelist_map=cache.get(variable_codelist_cache_key),
+        ct_package_metadata=ct_package_metadata,
+    )
+    if not standard and not standard_version and rule:
+        standard = rule.get("Authorities")[0].get("Standards")[0].get("Name").lower()
+        standard_substandard = (
+            rule.get("Authorities")[0].get("Standards")[0].get("Substandard", None)
+        )
+        if standard_substandard is not None:
+            standard_substandard = standard_substandard.lower()
+        standard_version = rule.get("Authorities")[0].get("Standards")[0].get("Version")
+    data_service = DummyDataService.get_instance(
+        cache,
+        ConfigService(),
+        standard=standard,
+        standard_version=standard_version,
+        standard_substandard=standard_substandard,
+        data=datasets,
+        define_xml=define_xml,
+        library_metadata=library_metadata,
+    )
+    engine = RulesEngine(
+        cache,
+        data_service,
+        standard=standard,
+        standard_version=standard_version,
+        standard_substandard=standard_substandard,
+        library_metadata=library_metadata,
+    )
+    engine.rule_processor = RuleProcessor(data_service, cache, library_metadata)
+    engine.data_processor = DataProcessor(data_service, cache)
+    rule = Rule.from_cdisc_metadata(rule)
+    results = engine.validate_single_rule(rule, datasets)
+    return results

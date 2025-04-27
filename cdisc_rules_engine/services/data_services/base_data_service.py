@@ -18,6 +18,7 @@ from cdisc_rules_engine.constants.classes import (
     INTERVENTIONS,
     RELATIONSHIP,
 )
+from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
 from cdisc_rules_engine.models.dataset_types import DatasetTypes
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.services.cdisc_library_service import CDISCLibraryService
@@ -27,6 +28,7 @@ from cdisc_rules_engine.utilities.utils import (
     get_dataset_cache_key_from_path,
     get_directory_path,
     search_in_list_of_dicts,
+    tag_source,
 )
 from cdisc_rules_engine.utilities.sdtm_utilities import get_class_and_domain_metadata
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
@@ -120,7 +122,10 @@ class BaseDataService(DataServiceInterface, ABC):
         )
 
     def concat_split_datasets(
-        self, func_to_call: Callable, dataset_names: List[str], **kwargs
+        self,
+        func_to_call: Callable,
+        datasets_metadata: Iterable[DatasetMetadata],
+        **kwargs,
     ) -> DatasetInterface:
         """
         Accepts a list of split dataset filenames, asynchronously downloads
@@ -134,11 +139,14 @@ class BaseDataService(DataServiceInterface, ABC):
 
         # download datasets asynchronously
         datasets: Iterator[DatasetInterface] = self._async_get_datasets(
-            func_to_call, dataset_names=dataset_names, **kwargs
+            func_to_call,
+            dataset_names=[dataset.full_path for dataset in datasets_metadata],
+            **kwargs,
         )
         full_dataset = self.dataset_implementation()
-        for dataset in datasets:
-            full_dataset = full_dataset.concat(dataset, ignore_index=True)
+        for dataset, dataset_metadata in zip(datasets, datasets_metadata):
+            tagged_dataset = tag_source(dataset, dataset_metadata)
+            full_dataset = full_dataset.concat(tagged_dataset, ignore_index=True)
 
         if drop_duplicates:
             full_dataset = full_dataset.drop_duplicates()
@@ -157,29 +165,36 @@ class BaseDataService(DataServiceInterface, ABC):
         datasets: Iterable[SDTMDatasetMetadata],
         dataset_metadata: SDTMDatasetMetadata,
     ) -> Optional[str]:
-        if self.standard is None or self.version is None:
-            raise Exception("Missing standard and version data")
-
-        standard_data = self._get_standard_data()
-
-        class_data, _ = get_class_and_domain_metadata(
-            standard_data, dataset_metadata.domain or dataset_metadata.name
-        )
-        name = class_data.get("name")
-        if name:
-            return convert_library_class_name_to_ct_class(name)
+        if self.library_metadata.standard_metadata:
+            class_data, _ = get_class_and_domain_metadata(
+                self.library_metadata.standard_metadata,
+                dataset_metadata.unsplit_name,
+            )
+            name = class_data.get("name")
+            if name:
+                return convert_library_class_name_to_ct_class(name)
         return self._handle_special_cases(
             dataset, dataset_metadata, file_path, datasets
         )
 
-    def _get_standard_data(self):
-
-        return (
-            self.library_metadata.standard_metadata
-            or self.cdisc_library_service.get_standard_details(
-                self.standard, self.version, self.standard_substandard
-            )
+    @cached_dataset(DatasetTypes.METADATA.value)
+    def get_dataset_metadata(
+        self, dataset_name: str, size_unit: str = None, **params
+    ) -> DatasetInterface:
+        """
+        Gets metadata of a dataset and returns it as a DataFrame.
+        """
+        dataset_metadata = self.get_raw_dataset_metadata(
+            dataset_name=dataset_name, **params
         )
+        metadata_to_return: dict = {
+            "dataset_size": [dataset_metadata.file_size],
+            "dataset_location": [dataset_metadata.filename],
+            "dataset_name": [dataset_metadata.name],
+            "dataset_label": [dataset_metadata.label],
+            "record_count": [dataset_metadata.record_count],
+        }
+        return self.dataset_implementation.from_dict(metadata_to_return)
 
     def _handle_special_cases(
         self,
@@ -276,7 +291,7 @@ class BaseDataService(DataServiceInterface, ABC):
         Replaces NaN in numeric columns with None.
         """
         numeric_columns = dataset.data.select_dtypes(include=np.number).columns
-        dataset[numeric_columns] = dataset.data[numeric_columns].replace(np.nan, None)
+        dataset[numeric_columns] = dataset.data[numeric_columns].replace({np.nan: None})
 
     @staticmethod
     def _replace_nans_in_specified_cols_with_none(

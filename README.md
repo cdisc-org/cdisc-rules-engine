@@ -1,6 +1,5 @@
 ### Supported python versions
 
-[![Python 3.9](https://img.shields.io/badge/python-3.9-green.svg)](https://www.python.org/downloads/release/python-390)
 [![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/downloads/release/python-3100)
 
 ### Windows Command Compatibility
@@ -51,6 +50,25 @@ Linux/Mac:
 > chmod +x ./core
 > ```
 
+### **Command-line Interface**
+
+### **Getting Started**
+
+In the terminal, navigate to the directory you intend to install CORE rules engine in
+
+1. Clone the repository:
+
+   ```
+   git clone https://github.com/cdisc-org/cdisc-rules-engine
+   ```
+
+2. Ensure you have Python 3.10 installed:
+   You can check your Python version with:
+   ```
+   python --version
+   ```
+   If you don't have Python 3.10, please download and install it from [python.org](https://www.python.org/downloads/) or using your system's package manager.
+
 ### **Code formatter**
 
 This project uses the `black` code formatter, `flake8` linter for python and `prettier` for JSON, YAML and MD.
@@ -70,7 +88,12 @@ This installs `pre-commit` in your `.git/hooks` directory.
 These steps should be run before running any tests or core commands using the non compiled version.
 
 - Create a virtual environment:
+
   `python -m venv <virtual_environment_name>`
+
+NOTE: if you have multiple versions of python on your machine, you can call python 3.10 for the virtual environment's creation instead of the above command:
+`python3.10 -m venv <virtual_environment_name>`
+
 - Activate the virtual environment:
 
 `./<virtual_environment_name>/bin/activate` -- on linux/mac </br>
@@ -150,6 +173,7 @@ Run `python core.py validate --help` to see the list of validation options.
                                   --output-format JSON.
   -dv, --define-version TEXT      Define-XML version used for validation
   -dxp, --define-xml-path         Path to define-xml file.
+  -vx, --validate-xml             Enable XML validation (default 'y' to enable, otherwise disable)
   --whodrug TEXT                  Path to directory with WHODrug dictionary
                                   files
   --meddra TEXT                   Path to directory with MedDRA dictionary
@@ -164,7 +188,7 @@ Run `python core.py validate --help` to see the list of validation options.
   --snomed-url TEXT            Base url of snomed api to use. (ex. https://snowstorm.snomedtools.org/snowstorm/snomed-ct)
   --snomed-edition TEXT        Edition of snomed to use. (ex. SNOMEDCT-US)
   -r, --rules TEXT                Specify rule core ID ex. CORE-000001. Can be specified multiple times.
-  -lr, --local_rules TEXT         Specify relative path to directory containing
+  -lr, --local_rules TEXT         Specify relative path to directory or file containing
                                   local rule yml and/or json rule files.
   -lrc, --local_rules_cache       Adding this flag tells engine to use local rules
                                   uploaded to the cache instead of published rules
@@ -193,7 +217,35 @@ Run `python core.py validate --help` to see the list of validation options.
 
 To validate a folder using rules for SDTM-IG version 3.4 use the following command:
 
-    `python core.py validate -s sdtmig -v 3-4 -d path/to/datasets`
+`python core.py validate -s sdtmig -v 3-4 -d path/to/datasets`
+
+##### **Validate single rule**
+
+`python core.py validate -s sdtmig -v 3-4 -dp <path to dataset json file> -lr <path to rule json file> --meddra ./meddra/ --whodrug ./whodrug/`
+Note: JSON dataset should match the format provided by the rule editor:
+
+```json
+{
+  "datasets": [
+    {
+      "filename": "cm.xpt",
+      "label": "Concomitant/Concurrent medications",
+      "domain": "CM",
+      "variables": [
+        {
+          "name": "STUDYID",
+          "label": "Study Identifier",
+          "type": "Char",
+          "length": 10
+        }
+      ],
+      "records": {
+        "STUDYID": ["CDISC-TEST", "CDISC-TEST", "CDISC-TEST", "CDISC-TEST"]
+      }
+    }
+  ]
+}
+```
 
 ##### **Understanding the Rules Report**
 
@@ -206,7 +258,7 @@ The possible rule run statuses are:
 
 ##### Additional Core Commands
 
-**- update-cache** - update locally stored cache data (Requires an environment variable - `CDISC_LIBRARY_API_KEY`)
+**- update-cache** - update locally stored cache data (Requires an environment variable - `CDISC_LIBRARY_API_KEY`) This is stored in the .env folder in the root directory, the API key does not need quotations around it.
 
     `python core.py update-cache`
 
@@ -231,6 +283,10 @@ To obtain an api key, please follow the instructions found here: <https://wiki.c
 
       `python core.py list-rules -s sdtmig -v 3-4`
 
+- list rules for integrated standard (substandard: "SDTM", "SEND", "ADaM", "CDASH"):
+
+      `python core.py list-rules -s tig -v 1-0 -ss SDTM`
+
 -list all local rules:
 
       `python core.py list-rules -lr`
@@ -241,67 +297,6 @@ To obtain an api key, please follow the instructions found here: <https://wiki.c
 
 **- list-rule-sets** - lists all standards and versions for which rules are available:
 `python core.py list-rule-sets`
-
-**- test** - Test authored rule given dataset in json format
-
-```
-  -ca, --cache TEXT               Relative path to cache files containing pre
-                                  loaded metadata and rules
-  -dp, --dataset-path TEXT        Absolute path to dataset file
-  -d, --data TEXT                 Path to directory containing data files
-  -l, --log-level [info|debug|error|critical|disabled|warn]
-                                  Sets log level for engine logs, logs are
-                                  disabled by default
-  -s, --standard TEXT             CDISC standard to validate against
-                                  [required]
-  -v, --version TEXT              Standard version to validate against
-                                  [required]
-  -ss, --substandard TEXT         Substandard to validate against
-                                  [required for TIG]
-  -ct, --controlled-terminology-package TEXT
-                                  Controlled terminology package to validate
-                                  against, can provide more than one
-  -dv, --define-version TEXT      Define-XML version used for validation
-  --whodrug TEXT                  Path to directory with WHODrug dictionary
-                                  files
-  --meddra TEXT                   Path to directory with MedDRA dictionary
-                                  files
-  --loinc TEXT                    Path to directory with LOINC dictionary
-                                  files
-  -r, --rule TEXT                 Path to rule json file.
-  -dxp                            Path to define-xml file.
-  --help                          Show this message and exit.
-```
-
-EX: `python core.py test -s sdtmig -v 3-4 -dp <path to dataset json file> -r <path to rule json file> --meddra ./meddra/ --whodrug ./whodrug/`
-Note: JSON dataset should match the format provided by the rule editor:
-
-```
-{
-    "datasets": [{
-      "filename": "cm.xpt",
-      "label": "Concomitant/Concurrent medications",
-      "domain": "CM",
-      "variables": [
-        {
-          "name": "STUDYID",
-          "label": "Study Identifier",
-          "type": "Char",
-          "length": 10
-        }
-      ],
-      "records": {
-        "STUDYID": [
-          "CDISC-TEST",
-          "CDISC-TEST",
-          "CDISC-TEST",
-          "CDISC-TEST"
-        ],
-      }
-    }
-  ]
-}
-```
 
 **- list-ct** - list ct packages available in the cache
 
@@ -318,176 +313,25 @@ Options:
   --help                 Show this message and exit.
 ```
 
-#### **PyPI Quickstart: Validate data within python**
+## PyPI Integration
 
-An alternative to running the validation from the command line is to instead import the rules engine library in python and run rules against data directly (without needing your data to be in `.xpt` format).
+The CDISC Rules Engine is available as a Python package through PyPI. This allows you to:
 
-##### Step 0: Install the library
+- Import the rules engine library directly into your Python projects
+- Validate data without requiring .xpt format files
+- Integrate rules validation into your existing data pipelines
 
-```
+```python
 pip install cdisc-rules-engine
 ```
 
-In addition to installing the library, you'll also want to download the rules cache (found in the `resources/cache` folder of this repository) and store them somewhere in your project.
-
-##### Step 1: Load the Rules
-
-The rules can be loaded into an in-memory cache by doing the following:
-
-```python
-import os
-import pathlib
-
-from multiprocessing.managers import SyncManager
-from cdisc_rules_engine.services.cache import InMemoryCacheService
-
-class CacheManager(SyncManager):
-    pass
-
-# If you're working from a terminal you may need to
-# use SyncManager directly rather than define CacheManager
-CacheManager.register("InMemoryCacheService", InMemoryCacheService)
-
-
-def load_rules_cache(path_to_rules_cache):
-  cache_path = pathlib.Path(path_to_rules_cache)
-  manager = CacheManager()
-  manager.start()
-  cache = manager.InMemoryCacheService()
-
-  files = next(os.walk(cache_path), (None, None, []))[2]
-
-  for fname in files:
-      with open(cache_path / fname, "rb") as f:
-          cache.add_all(pickle.load(f))
-
-  return cache
-```
-
-Rules in this cache can be accessed by standard and version using the `get_rules_cache_key` function.
-
-```python
-from cdisc_rules_engine.utilities.utils import get_rules_cache_key
-
-cache = load_rules_cache()
-# Note that the standard version is separated by a dash, not a period
-cache_key_prefix = get_rules_cache_key("sdtmig", "3-4")
-rules = cache.get_all_by_prefix(cache_key_prefix)
-```
-
-`rules` will now be a list of dictionaries the following keys
-
-- `core_id`
-  - e.g. "CORE-000252"
-- `domains`
-  - e.g. `{'Include': ['DM'], 'Exclude': []}` or `{'Include': ['ALL']}`
-- `author`
-- `reference`
-- `sensitivity`
-- `executability`
-- `description`
-- `authorities`
-- `standards`
-- `classes`
-- `rule_type`
-- `conditions`
-- `actions`
-- `datasets`
-- `output_variables`
-
-##### Step 2: Prepare your data
-
-In order to pass your data through the rules engine, it must be a pandas dataframe of an SDTM dataset. For example:
-
-```
->>> data
-STUDYID DOMAIN USUBJID  AESEQ AESER    AETERM    ... AESDTH AESLIFE AESHOSP
-0          AE      001     0     Y     Headache  ...     N       N       N
-
-[1 rows x 19 columns]
-```
-
-Before passing this into the rules engine, we need to wrap it in a DatasetVariable.
-
-```python
-from cdisc_rules_engine.models.dataset_variable import DatasetVariable
-
-dataset = DatasetVariable(data)
-```
-
-##### Step 3: Run the (relevant) rules
-
-Next, we need to actually run the rules. We can select which rules we want to run based on the domain of the data we're checking and the `"Include"` and `"Exclude"` domains of the rule.
-
-```python
-# Get the rules for the domain AE
-# (Note: we're ignoring ALL domain rules here)
-ae_rules = [
-  rule for rule in rules
-  if "AE" in rule["domains"].get("Include", [])
-]
-```
-
-There's one last thing we need before we can actually run the rule, and that's a `COREActions` object. This object will handle generating error messages should the rule fail.
-
-To instantiate a `COREActions` object, we need to pass in the following:
-
-- `results`: An array to which errors will be appended
-- `variable`: Our DatasetVariable
-- `domain`: e.g. "AE"
-- `rule`: Our rule
-
-```python
-from cdisc_rules_engine.models.actions import COREActions
-
-rule = ae_rules[0]
-results = []
-core_actions = COREActions(
-  results,
-  variable=dataset,
-  domain="AE",
-  rule=rule
-)
-```
-
-All that's left is to run the rule!
-
-```python
-from business_rules.engine import run
-
-was_triggered = run(
-  rule=rule,
-  defined_variables=dataset_variable,
-  defined_actions=core_actions,
-)
-```
-
-##### Step 5: Interpret the results
-
-The return value of run will tell us if the rule was triggered.
-
-- A `False` value means that there were no errors
-- A `True` value means that there were errors
-
-If there were errors, they will have been appended to the results array passed into your `COREActions` instance. Here's an example error:
-
-```python
-{
-  'executionStatus': 'success',
-  'domain': 'AE',
-  'variables': ['AESLIFE'],
-  'message': 'AESLIFE is completed, but not equal to "N" or "Y"',
-  'errors': [
-    {'value': {'AESLIFE': 'Maybe'}, 'row': 1}
-  ]
-}
-```
+For implementation instructions, see [PYPI.md](PYPI.md).
 
 ### **Creating an executable version**
 
 **Linux**
 
-`pyinstaller core.py --add-data=venv/lib/python3.9/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates`
+`pyinstaller core.py --add-data=venv/lib/python3.10/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates`
 
 **Windows**
 
@@ -528,3 +372,16 @@ To upload built distributive to pypi
 
 `py -m pip install --upgrade twine`
 `py -m twine upload --repository {repository_name} dist/*`
+
+## Submit an Issue
+
+If you encounter any bugs, have feature requests, or need assistance, please submit an issue on our GitHub repository:
+
+[https://github.com/cdisc-org/cdisc-rules-engine/issues](https://github.com/cdisc-org/cdisc-rules-engine/issues)
+
+When submitting an issue, please include:
+
+- A clear description of the problem or request
+- Steps to reproduce the issue (for bugs)
+- Your operating system and environment details
+- Any relevant logs or error messages

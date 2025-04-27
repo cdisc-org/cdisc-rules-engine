@@ -7,7 +7,7 @@ from collections import Counter
 from typing import List
 from cdisc_rules_engine.utilities.utils import (
     get_corresponding_datasets,
-    is_split_dataset,
+    tag_source,
 )
 
 
@@ -35,15 +35,12 @@ class VariableValueCount(BaseOperation):
     async def _get_dataset_variable_value_count(
         self, dataset_metadata: SDTMDatasetMetadata
     ) -> Counter:
-        if is_split_dataset(self.params.datasets, dataset_metadata):
-            files = [
-                os.path.join(self.params.directory_path, dataset.filename)
-                for dataset in get_corresponding_datasets(
-                    self.params.datasets, dataset_metadata
-                )
-            ]
+        if dataset_metadata.is_split:
+            corresponding_datasets = get_corresponding_datasets(
+                self.params.datasets, dataset_metadata
+            )
             data: DatasetInterface = self.data_service.concat_split_datasets(
-                self.data_service.get_dataset, files
+                self.data_service.get_dataset, corresponding_datasets
             )
         else:
             data: DatasetInterface = self.data_service.get_dataset(
@@ -51,6 +48,7 @@ class VariableValueCount(BaseOperation):
                     self.params.directory_path, dataset_metadata.filename
                 )
             )
+            data = tag_source(data, dataset_metadata)
         target_variable = self.params.original_target.replace(
             "--", dataset_metadata.domain, 1
         )

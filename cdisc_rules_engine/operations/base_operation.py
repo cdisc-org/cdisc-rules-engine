@@ -15,7 +15,6 @@ from cdisc_rules_engine.interfaces import (
 )
 
 import cdisc_rules_engine.utilities.sdtm_utilities as sdtm_utilities
-from cdisc_rules_engine import config
 from collections import OrderedDict
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
@@ -30,7 +29,6 @@ from cdisc_rules_engine.exceptions.custom_exceptions import (
     RuleExecutionError,
     RuleFormatError,
     InvalidMatchKeyError,
-    InvalidOutputVariables,
     VariableMetadataNotFoundError,
     DomainNotFoundInDefineXMLError,
     InvalidDatasetFormat,
@@ -79,7 +77,6 @@ class BaseOperation:
             RuleExecutionError,
             RuleFormatError,
             InvalidMatchKeyError,
-            InvalidOutputVariables,
             VariableMetadataNotFoundError,
             DomainNotFoundInDefineXMLError,
             InvalidDatasetFormat,
@@ -190,14 +187,22 @@ class BaseOperation:
 
     def _get_variables_metadata_from_standard(self) -> List[dict]:
         # TODO: Update to handle other standard types: adam, cdash, etc.
+        target_metadata = None
+        for ds in self.params.datasets:
+            if ds.unsplit_name == self.params.domain:
+                target_metadata = ds
+                break
+        dataset_class = self.data_service.get_dataset_class(
+            self.evaluation_dataset,
+            self.params.dataset_path,
+            self.params.datasets,
+            target_metadata,
+        )
 
         return sdtm_utilities.get_variables_metadata_from_standard(
-            self.params.standard,
-            self.params.standard_version,
             self.params.domain,
-            config,
-            self.cache,
             self.library_metadata,
+            dataset_class,
         )
 
     def get_allowed_variable_permissibility(self, variable_metadata: dict):
@@ -215,16 +220,6 @@ class BaseOperation:
             return REQUIRED
 
         return PERMISSIBLE
-
-    def _retrieve_standards_metadata(self):
-
-        return sdtm_utilities.retrieve_standard_metadata(
-            standard=self.params.standard,
-            standard_version=self.params.standard_version,
-            cache=self.cache,
-            config=config,
-            library_metadata=self.library_metadata,
-        )
 
     def _get_variable_names_list(self, domain, dataframe):
         # get variables metadata from the standard model
@@ -266,13 +261,10 @@ class BaseOperation:
         # TODO: Update to handle multiple standard types.
 
         return sdtm_utilities.get_variables_metadata_from_standard_model(
-            standard=self.params.standard,
-            standard_version=self.params.standard_version,
             domain=domain,
             dataframe=dataframe,
             datasets=self.params.datasets,
             dataset_path=self.params.dataset_path,
-            cache=self.cache,
             data_service=self.data_service,
             library_metadata=self.library_metadata,
         )

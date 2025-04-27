@@ -1,31 +1,25 @@
 name: CORE Test Suite Validation
 on:
+  workflow_call:
   workflow_dispatch:
-
 env:
   DATASET_SIZE_THRESHOLD: 1000000000
-  PANDAS_DIFF: False
-  DASK_DIFF: False
-
 jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
       - name: Get Engine Changes
-        uses: actions/checkout@v3
-
+        uses: actions/checkout@v4
       - name: Get Test Suite Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: cdisc-org/CORE_Test_Suite
           path: CORE_Test_Suite
           token: ${{ secrets.ACCESS_TOKEN }}
-
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.10"
-
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
@@ -37,26 +31,81 @@ jobs:
       - name: Parse rule list and run validation
         run: |
           rules=$(cat CORE_Test_Suite/rulelist/testrulelist.txt | sed 's/^/-r /' | tr '\n' ' ')
-          python core.py validate -s sdtmig -v 3-3 $rules -d CORE_Test_Suite/data -ct sdtmct-2020-03-27 -o CORE_Test_Suite/pandas-results
-      - name: Pandas comparison script
+          echo "RULE_LIST=$rules" >> $GITHUB_ENV
+          echo "rules to be used: $rules"
+      - name: Run validation with pandas
+        id: pandas_run
+        continue-on-error: true
         run: |
-          cd CORE_Test_Suite
-          result=$(python comparison.py pandas-results.xlsx CORE-Report.xlsx pandas_comparison.xlsx)
-          echo "PANDAS_DIFF=$result" >> $GITHUB_ENV
-          echo "Pandas comparison result: $result"
+          python core.py validate -s sdtmig -v 3-3 ${{ env.RULE_LIST }} -d CORE_Test_Suite/data -ct sdtmct-2020-03-27 -of json -o CORE_Test_Suite/pandas-results -l error || true
+
+          if [ -f "CORE_Test_Suite/pandas-results.json" ]; then
+            echo "pandas_success=true" >> $GITHUB_OUTPUT
+            echo "## Pandas Validation" >> $GITHUB_STEP_SUMMARY
+            echo "✅ **Success**: Validation completed successfully" >> $GITHUB_STEP_SUMMARY
+            python CORE_Test_Suite/scripts/validation_summary.py CORE_Test_Suite/pandas-results.json >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Failed to generate pandas-results.json"
+            echo "pandas_success=false" >> $GITHUB_OUTPUT
+            echo "## Pandas Validation" >> $GITHUB_STEP_SUMMARY
+            echo "❌ **Failed**: No results file was generated" >> $GITHUB_STEP_SUMMARY
+          fi
+      - name: Pandas comparison with template
+        if: steps.pandas_run.outputs.pandas_success == 'true'
+        continue-on-error: true
+        run: |
+          python CORE_Test_Suite/scripts/comparison.py CORE_Test_Suite/pandas-results.json CORE_Test_Suite/CORE-Report.json CORE_Test_Suite/pandas_comparison.xlsx --mode test --json-output CORE_Test_Suite/pandas_comparison.json
+
+          PANDAS_EXIT_CODE=$?
+          echo "pandas_diff=$PANDAS_EXIT_CODE" >> $GITHUB_ENV
+
+          if [ $PANDAS_EXIT_CODE -eq 0 ]; then
+            echo "Pandas comparison completed successfully (no differences)"
+          else
+            echo "Pandas comparison found differences"
+          fi
+      - name: Generate pandas comparison summary
+        if: steps.pandas_run.outputs.pandas_success == 'true'
+        continue-on-error: true
+        run: |
+          python CORE_Test_Suite/scripts/compare_implementations.py CORE_Test_Suite/pandas-results.json CORE_Test_Suite/CORE-Report.json CORE_Test_Suite/pandas_comparison.json --github-step-summary $GITHUB_STEP_SUMMARY --mode test
       - name: Run validation with Dask
-        env:
-          DATASET_SIZE_THRESHOLD: 0
+        id: dask_run
+        continue-on-error: true
         run: |
-          rules=$(cat CORE_Test_Suite/rulelist/testrulelist.txt | sed 's/^/-r /' | tr '\n' ' ')
-          python core.py validate -s sdtmig -v 3-3 $rules -d CORE_Test_Suite/data -ct sdtmct-2020-03-27 -o CORE_Test_Suite/dask-results
+          echo "DATASET_SIZE_THRESHOLD=0" > .env
+          python core.py validate -s sdtmig -v 3-3 ${{ env.RULE_LIST }} -d CORE_Test_Suite/data -ct sdtmct-2020-03-27 -of json -o CORE_Test_Suite/dask-results -l error || true
+
+          if [ -f "CORE_Test_Suite/dask-results.json" ]; then
+            echo "dask_success=true" >> $GITHUB_OUTPUT
+            echo "## Dask Validation" >> $GITHUB_STEP_SUMMARY
+            echo "✅ **Success**: Validation completed successfully" >> $GITHUB_STEP_SUMMARY
+            python CORE_Test_Suite/scripts/validation_summary.py dask-results.json >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Failed to generate dask-results.json"
+            echo "dask_success=false" >> $GITHUB_OUTPUT
+            echo "## Dask Validation" >> $GITHUB_STEP_SUMMARY
+            echo "❌ **Failed**: No results file was generated" >> $GITHUB_STEP_SUMMARY
+          fi
       - name: Dask comparison script
+        continue-on-error: true
+        if: steps.dask_run.outputs.dask_success == 'true'
         run: |
-          cd CORE_Test_Suite
-          result=$(python comparison.py dask-results.xlsx DASK-Report.xlsx dask_comparison.xlsx)
-          echo "DASK_DIFF=$result" >> $GITHUB_ENV
-          echo "Dask comparison result: $result"
-          cd ..
+          python CORE_Test_Suite/scripts/comparison.py CORE_Test_Suite/dask-results.json CORE_Test_Suite/CORE-Report.json CORE_Test_Suite/dask_comparison.xlsx --mode test --json-output CORE_Test_Suite/dask_comparison.json
+
+          DASK_EXIT_CODE=$?
+          echo "dask_diff=$DASK_EXIT_CODE" >> $GITHUB_ENV
+
+          if [ $DASK_EXIT_CODE -eq 0 ]; then
+            echo "Dask comparison completed successfully (no differences)"
+          else
+            echo "Dask comparison found differences"
+          fi
+      - name: Generate dask comparison summary
+        if: steps.dask_run.outputs.dask_success == 'true'
+        continue-on-error: true
+        run: |
+          python CORE_Test_Suite/scripts/compare_implementations.py CORE_Test_Suite/dask-results.json CORE_Test_Suite/CORE-Report.json CORE_Test_Suite/dask_comparison.json --github-step-summary $GITHUB_STEP_SUMMARY --mode test
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
@@ -64,17 +113,23 @@ jobs:
           name: comparison-results
           path: |
             CORE_Test_Suite/pandas_comparison.xlsx
-            CORE_Test_Suite/pandas-results.xlsx
+            CORE_Test_Suite/pandas-results.json
+            CORE_Test_Suite/pandas_comparison.json
             CORE_Test_Suite/dask_comparison.xlsx
-            CORE_Test_Suite/dask-results.xlsx
+            CORE_Test_Suite/dask-results.json
+            CORE_Test_Suite/dask_comparison.json
+            CORE_Test_Suite/CORE-Report.json
           if-no-files-found: warn
       - name: Check for differences
         if: always()
         run: |
-          if [[ "${{ env.PANDAS_DIFF }}" == "true" || "${{ env.DASK_DIFF }}" == "true" ]]; then
+          PANDAS_DIFF="${{ env.pandas_diff }}"
+          DASK_DIFF="${{ env.dask_diff }}"
+
+          if [[ "$PANDAS_DIFF" == "1" || "$DASK_DIFF" == "1" ]]; then
             echo "Differences found in either Pandas or Dask comparison"
             exit 1
-          elif [[ "${{ env.PANDAS_DIFF }}" == "false" && "${{ env.DASK_DIFF }}" == "false" ]]; then
+          elif [[ "$PANDAS_DIFF" == "0" && "$DASK_DIFF" == "0" ]]; then
             echo "No differences found in either comparison"
             exit 0
           else

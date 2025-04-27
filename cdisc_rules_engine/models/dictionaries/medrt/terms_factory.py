@@ -47,8 +47,18 @@ class MEDRTTermsFactory(TermsFactoryInterface):
         return ExternalDictionary(data, version=version)
 
     def _parse_term(self, term_xml: ElementTree) -> MEDRTTerm:
-        code = term_xml.find("code").text
-        id = term_xml.find("id").text
+        code_element = term_xml.find("code")
+        if code_element is None:
+            raise ValueError(f"Missing 'code' element in term XML: {term_xml}")
+        code = code_element.text
+        if code is None:
+            raise ValueError(f"Empty 'code' element in term XML: {term_xml}")
+        id_element = term_xml.find("id")
+        if id_element is None:
+            raise ValueError(f"Missing 'id' element in term XML: {term_xml}")
+        id = id_element.text
+        if id is None:
+            raise ValueError(f"Empty 'id' element in term XML: {term_xml}")
         return MEDRTTerm(
             code=code,
             id=id,

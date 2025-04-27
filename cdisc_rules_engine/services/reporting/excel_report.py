@@ -83,33 +83,39 @@ class ExcelReport(BaseReport):
 
         # write standards details
         wb["Conformance Details"]["B7"] = standard.upper()
-        wb["Conformance Details"]["B8"] = f"V{version}"
+        if "substandard" in kwargs and kwargs["substandard"] is not None:
+            wb["Conformance Details"]["B8"] = kwargs["substandard"]
+        wb["Conformance Details"]["B9"] = f"V{version}"
         if cdiscCt:
-            wb["Conformance Details"]["B9"] = (
+            wb["Conformance Details"]["B10"] = (
                 ", ".join(cdiscCt)
-                if isinstance(cdiscCt, (list, tuple))
+                if isinstance(cdiscCt, (list, tuple, set))
                 else str(cdiscCt)
             )
         else:
-            wb["Conformance Details"]["B9"] = ""
-        wb["Conformance Details"]["B10"] = define_version
+            wb["Conformance Details"]["B10"] = ""
+        wb["Conformance Details"]["B11"] = define_version
 
         # Populate external dictionary versions
-        wb["Conformance Details"]["B11"] = dictionary_versions.get(
-            DictionaryTypes.UNII.value
-        )
-        wb["Conformance Details"]["B12"] = dictionary_versions.get(
-            DictionaryTypes.MEDRT.value
-        )
-        wb["Conformance Details"]["B13"] = dictionary_versions.get(
-            DictionaryTypes.MEDDRA.value
-        )
-        wb["Conformance Details"]["B14"] = dictionary_versions.get(
-            DictionaryTypes.WHODRUG.value
-        )
-        wb["Conformance Details"]["B15"] = dictionary_versions.get(
-            DictionaryTypes.SNOMED.value
-        )
+        unii_version = dictionary_versions.get(DictionaryTypes.UNII.value)
+        if unii_version is not None:
+            wb["Conformance Details"]["B12"] = unii_version
+
+        medrt_version = dictionary_versions.get(DictionaryTypes.MEDRT.value)
+        if medrt_version is not None:
+            wb["Conformance Details"]["B13"] = medrt_version
+
+        meddra_version = dictionary_versions.get(DictionaryTypes.MEDDRA.value)
+        if meddra_version is not None:
+            wb["Conformance Details"]["B14"] = meddra_version
+
+        whodrug_version = dictionary_versions.get(DictionaryTypes.WHODRUG.value)
+        if whodrug_version is not None:
+            wb["Conformance Details"]["B15"] = whodrug_version
+
+        snomed_version = dictionary_versions.get(DictionaryTypes.SNOMED.value)
+        if snomed_version is not None:
+            wb["Conformance Details"]["B16"] = snomed_version
         return wb
 
     def write_report(self, **kwargs):
@@ -120,9 +126,7 @@ class ExcelReport(BaseReport):
             if define_xml_path:
                 define_version = get_define_version([define_xml_path])
             else:
-                define_version: str = self._args.define_version or get_define_version(
-                    self._args.dataset_paths
-                )
+                define_version: str = self._args.define_version
             controlled_terminology = self._args.controlled_terminology_package
             if not controlled_terminology and define_version:
                 if define_xml_path and define_version:
@@ -139,6 +143,11 @@ class ExcelReport(BaseReport):
                 self._args.standard,
                 self._args.version.replace("-", "."),
                 dictionary_versions,
+                substandard=(
+                    self._args.substandard
+                    if hasattr(self._args, "substandard")
+                    else None
+                ),
             )
             with open(self._output_name, "wb") as f:
                 f.write(excel_workbook_to_stream(report_data))

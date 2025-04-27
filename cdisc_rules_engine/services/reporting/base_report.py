@@ -51,14 +51,12 @@ class BaseReport(ABC):
             if validation_result.execution_status == "success":
                 for result in validation_result.results or []:
                     dataset = result.get("dataset")
-                    domain = result.get("domain")
                     if (
                         result.get("errors")
                         and result.get("executionStatus") == "success"
                     ):
                         summary_item = {
                             "dataset": dataset,
-                            "domain": domain,
                             "core_id": validation_result.id,
                             "message": result.get("message"),
                             "issues": len(result.get("errors")),
@@ -105,7 +103,6 @@ class BaseReport(ABC):
             "Message",
             "Executability",
             "Dataset Name"
-            "Dataset Domain",
             "USUBJID",
             "Record",
             "Sequence",
@@ -122,8 +119,7 @@ class BaseReport(ABC):
                         "core_id": validation_result.id,
                         "message": result.get("message"),
                         "executability": validation_result.executability,
-                        "dataset": result.get("dataset"),
-                        "domain": result.get("domain"),
+                        "dataset": error.get("dataset"),
                         "USUBJID": error.get("USUBJID", ""),
                         "row": error.get("row", ""),
                         "SEQ": error.get("SEQ", ""),
@@ -149,7 +145,7 @@ class BaseReport(ABC):
         processed_values = []
         for value in values:
             value = value.strip()
-            if value == "" or value.lower() == "none":
+            if value == "" or value.lower() == "none" or value.lower() == "nan":
                 processed_values.append("null")
             else:
                 processed_values.append(value)
