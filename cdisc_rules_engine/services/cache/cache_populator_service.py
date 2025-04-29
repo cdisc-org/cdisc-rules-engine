@@ -116,19 +116,102 @@ class CachePopulator:
 
     async def save_rules_locally(self):
         """
-        Store cached rules in rules.pkl in cache path directory
+        Creates rules_directory, a map from standard/version/substandard to rule IDs
+        and rules.pkl, a flat dictionary with core_ids as keys and rule objects, in cache path directory
         """
+        rules_data = await self._get_rules_from_cdisc_library()
+        rules_lists = rules_data.get("rules", [])
+        catalogs = rules_data["catalogs"]
 
-        rules_lists: List[dict] = await self._get_rules_from_cdisc_library()
-        rules_data = {
-            f"{rules.get('key_prefix')}{rule['core_id']}": rule
-            for rules in rules_lists
-            for rule in rules.get("rules", [])
-        }
+        rules_directory = {}
+        rules_by_core_id = {}
+
+        rules_directory = self.process_catalogs(catalogs, rules_directory)
+        rules_directory, rules_by_core_id = self.process_rules_lists(
+            rules_directory, rules_by_core_id, rules_lists
+        )
+
         with open(
             os.path.join(self.cache_path, DefaultFilePaths.RULES_CACHE_FILE.value), "wb"
         ) as f:
-            pickle.dump(rules_data, f)
+            pickle.dump(rules_by_core_id, f)
+
+        with open(
+            os.path.join(self.cache_path, DefaultFilePaths.RULES_DICTIONARY.value), "wb"
+        ) as f:
+            pickle.dump(rules_directory, f)
+
+    def process_catalogs(self, catalogs, rules_directory):
+        """
+        Process catalogs to initialize the rules_directory structure
+        """
+        for catalog in catalogs:
+            href = catalog.get("href", "")
+            href_parts = href.split("/")
+            # ADAMIG is nested differently than other standards "/mdr/rules/adam/adamig-1-0"
+            if "adam" in href:
+                adamig_parts = href_parts[-1].split("-")
+                if len(adamig_parts) >= 3:
+                    standard = adamig_parts[0]
+                    version = f"{adamig_parts[1]}-{adamig_parts[2]}"
+                else:
+                    standard = href_parts[-2]
+                    version = href_parts[-1]
+            else:
+                standard = href_parts[-2]
+                version = href_parts[-1]
+            key = f"{standard}/{version}"
+            if key not in rules_directory:
+                rules_directory[key] = []
+        return rules_directory
+
+    # def process_rules_lists(self, rules_directory, rules_by_core_id, rules_lists):
+    #     """
+    #     Process rules lists to populate rules_directory and rules_by_core_id
+    #     """
+    #     # Flatten the list of rule lists
+    #     all_rules = []
+    #     for rules in rules_lists:
+    #         all_rules.extend(rules)
+
+    #     # Process each individual rule
+    #     for rule in all_rules:
+    #         core_id = rule.get("Core", {}).get("Id", "")
+    #         if not core_id:
+    #             continue
+
+    #         # Find all standards/versions this rule applies to
+    #         if "Authorities" in rule:
+    #             for authority in rule.get("Authorities", []):
+    #                 for std in authority.get("Standards", []):
+    #                     std_name = std.get("Name", "")
+    #                     std_version = std.get("Version", "")
+    #                     std_substandard = std.get("Substandard")
+
+    #                     # Handle standard/version keys
+    #                     if std_name and std_version:
+    #                         # Normal case - standard and version
+    #                         key = f"{std_name.lower()}/{std_version}"
+
+    #                         # Update rules_directory if this key exists
+    #                         if (
+    #                             key in rules_directory
+    #                             and core_id not in rules_directory[key]
+    #                         ):
+    #                             rules_directory[key].append(core_id)
+
+    #                         # If there's a substandard, handle that too
+    #                         if std_substandard:
+    #                             sub_key = f"{key}/{std_substandard.lower()}"
+    #                             if sub_key not in rules_directory:
+    #                                 rules_directory[sub_key] = []
+    #                             if core_id not in rules_directory[sub_key]:
+    #                                 rules_directory[sub_key].append(core_id)
+
+    #         # Store the rule itself by core_id
+    #         rules_by_core_id[core_id] = rule
+
+    #     return rules_directory, rules_by_core_id
 
     def save_removed_rules_locally(self):
         """
@@ -290,7 +373,7 @@ class CachePopulator:
             for catalog in catalogs
         ]
         rules = await asyncio.gather(*coroutines)
-        return rules
+        return {"rules": rules, "catalogs": catalogs}
 
     async def _async_get_rules_by_catalog(self, catalog_link: str):
         loop = asyncio.get_event_loop()

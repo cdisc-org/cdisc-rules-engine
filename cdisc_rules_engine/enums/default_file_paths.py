@@ -5,6 +5,7 @@ class DefaultFilePaths(BaseEnum):
     CACHE = "resources/cache"
     EXCEL_TEMPLATE_FILE = "resources/templates/report-template.xlsx"
     RULES_CACHE_FILE = "rules.pkl"
+    RULES_DICTIONARY = "rules_dictionary.pkl"
     STANDARD_DETAILS_CACHE_FILE = "standards_details.pkl"
     STANDARD_MODELS_CACHE_FILE = "standards_models.pkl"
     VARIABLE_METADATA_CACHE_FILE = "variables_metadata.pkl"
