@@ -338,6 +338,10 @@ To obtain an api key, please follow the instructions found here: <https://wiki.c
 
       `python core.py list-rules -s tig -v 1-0 -ss SDTM`
 
+- list rules by ID:
+
+      `python core.py list-rules -r CORE-000351 -r CORE-000591`
+
 - List all custom rules:
 
   ```bash

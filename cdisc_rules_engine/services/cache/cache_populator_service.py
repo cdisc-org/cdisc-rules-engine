@@ -593,18 +593,15 @@ class CachePopulator:
                 else:
                     print(f"Rule {rule_id} not found in cache. Skipping.")
 
-        # Save updated rules back to cache
         if removed_rules:
             with open(custom_rules_file, "wb") as f:
                 pickle.dump(existing_rules, f)
-
         return removed_rules
 
     def add_custom_standard_to_cache(self):
         """Add or update a custom standard to the cache."""
-        if not self.custom_standards or not os.path.isfile(self.custom_standards):
+        if not os.path.isfile(self.custom_standards):
             raise ValueError(f"Invalid standard file: {self.custom_standards}")
-
         with open(self.custom_standards, "r") as f:
             new_standard = json.load(f)
 

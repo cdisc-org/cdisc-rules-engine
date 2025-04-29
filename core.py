@@ -457,6 +457,13 @@ def update_cache(
     required=False,
     help="flag to list custom rules in the cache",
 )
+@click.option(
+    "-r",
+    "--rule_id",
+    required=False,
+    help="Rule ID to get rule for.",
+    multiple=True,
+)
 @click.pass_context
 def list_rules(
     ctx: click.Context,
@@ -465,6 +472,7 @@ def list_rules(
     version: str,
     substandard: str,
     custom_rules: bool,
+    rule_id: str,
 ):
     # Load all rules
     if custom_rules:
@@ -477,14 +485,20 @@ def list_rules(
         rules_data = pickle.load(f)
     with open(os.path.join(cache_path, dict_file), "rb") as f:
         rules_dict = pickle.load(f)
-    key_prefix = get_rules_cache_key(standard, version.replace(".", "-"), substandard)
-    rule_ids = []
-    if key_prefix in rules_dict:
-        rule_ids = rules_dict[key_prefix]
     rules = []
-    for rule_id in rule_ids:
-        if rule_id in rules_data:
-            rules.append(rules_data[rule_id])
+    if rule_id:
+        for id in rule_id:
+            if id in rules_data:
+                rules.append(rules_data[id])
+    elif standard and version:
+        key_prefix = get_rules_cache_key(
+            standard, version.replace(".", "-"), substandard
+        )
+        if key_prefix in rules_dict:
+            rule_ids = rules_dict[key_prefix]
+            for rid in rule_ids:
+                if rid in rules_data:
+                    rules.append(rules_data[rid])
     else:
         # Print all rules
         rules = list(rules_data.values())
