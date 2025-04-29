@@ -352,6 +352,7 @@ def validate(
 @click.option(
     "-cr",
     "--custom_rule",
+    multiple=True,
     help=(
         "Relative path to rule file in yaml or JSON formats"
         "to be added to the cache. "

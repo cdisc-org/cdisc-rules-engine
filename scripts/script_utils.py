@@ -174,8 +174,8 @@ def get_rules(args) -> List[dict]:
 
 
 def rule_cache_file(args) -> str:
-    if args.local_rules_cache:
-        return os.path.join(args.cache, DefaultFilePaths.LOCAL_RULES_CACHE_FILE.value)
+    if args.custom_standard:
+        return os.path.join(args.cache, DefaultFilePaths.CUSTOM_RULES_CACHE_FILE.value)
     else:
         return os.path.join(args.cache, DefaultFilePaths.RULES_CACHE_FILE.value)
 

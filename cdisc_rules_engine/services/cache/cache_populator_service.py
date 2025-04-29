@@ -474,7 +474,7 @@ class CachePopulator:
             **variables_metadata,
         }
 
-    def add_custom_rules(self):
+    def add_custom_rules(self):  # noqa
         """Process and save the rule(s) from the specified directory or file path."""
         rule_files = []
         if self.custom_rules_directory and os.path.isdir(self.custom_rules_directory):
@@ -485,8 +485,12 @@ class CachePopulator:
                 raise ValueError(
                     f"No rule files found in {self.custom_rules_directory}"
                 )
-        elif self.custom_rule_path and os.path.isfile(self.custom_rule_path):
-            rule_files = [self.custom_rule_path]
+        elif self.custom_rule_path:
+            for path in self.custom_rule:
+                if os.path.isfile(path) and path.endswith((".json", ".yml", ".yaml")):
+                    rule_files.append(path)
+            else:
+                print(f"Warning: {path} is not a valid file. Skipping.")
         else:
             raise ValueError("Invalid directory or path specified")
         custom_rules_file = os.path.join(
