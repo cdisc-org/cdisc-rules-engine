@@ -1,5 +1,6 @@
 import asyncio
 import pickle
+import json
 from functools import partial
 from typing import Iterable, List, Optional
 import os
@@ -17,6 +18,7 @@ from cdisc_rules_engine.utilities.utils import (
     get_standard_details_cache_key,
     get_model_details_cache_key,
 )
+from cdisc_rules_engine.models.rule import Rule
 from scripts.script_utils import load_and_parse_local_rule
 from cdisc_rules_engine.constants.cache_constants import PUBLISHED_CT_PACKAGES
 
@@ -26,16 +28,22 @@ class CachePopulator:
         self,
         cache: CacheServiceInterface,
         library_service: CDISCLibraryService = None,
-        local_rules_path=None,
-        local_rules_id=None,
-        remove_local_rules=None,
+        custom_rules_directory=None,
+        custom_rule_path=None,
+        remove_custom_rules=None,
+        update_custom_rule=None,
+        custom_standards=None,
+        remove_custom_standards=None,
         cache_path="",
     ):
         self.cache = cache
         self.library_service = library_service
-        self.local_rules_path = local_rules_path
-        self.local_rules_id = local_rules_id
-        self.remove_local_rules = remove_local_rules
+        self.custom_rules_directory = custom_rules_directory
+        self.custom_rule_path = custom_rule_path
+        self.remove_custom_rules = remove_custom_rules
+        self.update_custom_rule = update_custom_rule
+        self.custom_standards = custom_standards
+        self.remove_custom_standards = remove_custom_standards
         self.cache_path = cache_path
 
     async def update_cache(self):
@@ -45,30 +53,6 @@ class CachePopulator:
             self.save_standards_metadata_locally(),
         )
         await asyncio.gather(*coroutines)
-
-    def _get_local_rules(self, local_rules_path: str) -> List[dict]:
-        """
-        Retrieve local rules from the file system.
-        """
-        rules = []
-        custom_ids = set()
-        # Ensure the directory exists
-        if not os.path.isdir(local_rules_path):
-            raise FileNotFoundError(f"The directory {local_rules_path} does not exist")
-        rule_files = [
-            os.path.join(local_rules_path, file)
-            for file in os.listdir(local_rules_path)
-            if file.endswith((".json", ".yml", ".yaml"))
-        ]
-        # Iterate through all files in the directory provided
-        for rule_file in rule_files:
-            rule = load_and_parse_local_rule(rule_file)
-            if rule and rule["custom_id"] not in custom_ids:
-                rules.append(rule)
-                custom_ids.add(rule["custom_id"])
-            else:
-                print(f"Skipping rule with duplicate custom_id: {rule['custom_id']}")
-        return rules
 
     async def load_codelists(self, packages: List[str]):
         coroutines = [
@@ -119,14 +103,12 @@ class CachePopulator:
         Creates rules_directory, a map from standard/version/substandard to rule IDs
         and rules.pkl, a flat dictionary with core_ids as keys and rule objects, in cache path directory
         """
-        rules_data = await self._get_rules_from_cdisc_library()
-        rules_lists = rules_data.get("rules", [])
-        catalogs = rules_data["catalogs"]
+        rules_lists = await self._get_rules_from_cdisc_library()
 
         rules_directory = {}
         rules_by_core_id = {}
 
-        rules_directory = self.process_catalogs(catalogs, rules_directory)
+        rules_directory = self.process_catalogs(rules_lists, rules_directory)
         rules_directory, rules_by_core_id = self.process_rules_lists(
             rules_directory, rules_by_core_id, rules_lists
         )
@@ -141,148 +123,55 @@ class CachePopulator:
         ) as f:
             pickle.dump(rules_directory, f)
 
-    def process_catalogs(self, catalogs, rules_directory):
+    def process_catalogs(self, rules_lists, rules_directory):
         """
-        Process catalogs to initialize the rules_directory structure
+        Process key_prefixes from rules_lists to initialize the rules_directory structure
         """
-        for catalog in catalogs:
-            href = catalog.get("href", "")
-            href_parts = href.split("/")
-            # ADAMIG is nested differently than other standards "/mdr/rules/adam/adamig-1-0"
-            if "adam" in href:
-                adamig_parts = href_parts[-1].split("-")
-                if len(adamig_parts) >= 3:
-                    standard = adamig_parts[0]
-                    version = f"{adamig_parts[1]}-{adamig_parts[2]}"
-                else:
-                    standard = href_parts[-2]
-                    version = href_parts[-1]
-            else:
-                standard = href_parts[-2]
-                version = href_parts[-1]
-            key = f"{standard}/{version}"
-            if key not in rules_directory:
-                rules_directory[key] = []
+        for catalog_rules in rules_lists:
+            key = catalog_rules.get("key_prefix", "")
+            parts = key.split("/")
+            standard = parts[0]
+            version = parts[1]
+            # need special handling for adam, as it has a different structure "adam/adamig-1-1"
+            if standard.lower() == "adam":
+                version_parts = version.split("-")
+                new_standard = version_parts[0]
+                new_version = "-".join(version_parts[1:])
+                key = f"{new_standard}/{new_version}"
+            rules_directory[key] = []
+
         return rules_directory
 
-    # def process_rules_lists(self, rules_directory, rules_by_core_id, rules_lists):
-    #     """
-    #     Process rules lists to populate rules_directory and rules_by_core_id
-    #     """
-    #     # Flatten the list of rule lists
-    #     all_rules = []
-    #     for rules in rules_lists:
-    #         all_rules.extend(rules)
-
-    #     # Process each individual rule
-    #     for rule in all_rules:
-    #         core_id = rule.get("Core", {}).get("Id", "")
-    #         if not core_id:
-    #             continue
-
-    #         # Find all standards/versions this rule applies to
-    #         if "Authorities" in rule:
-    #             for authority in rule.get("Authorities", []):
-    #                 for std in authority.get("Standards", []):
-    #                     std_name = std.get("Name", "")
-    #                     std_version = std.get("Version", "")
-    #                     std_substandard = std.get("Substandard")
-
-    #                     # Handle standard/version keys
-    #                     if std_name and std_version:
-    #                         # Normal case - standard and version
-    #                         key = f"{std_name.lower()}/{std_version}"
-
-    #                         # Update rules_directory if this key exists
-    #                         if (
-    #                             key in rules_directory
-    #                             and core_id not in rules_directory[key]
-    #                         ):
-    #                             rules_directory[key].append(core_id)
-
-    #                         # If there's a substandard, handle that too
-    #                         if std_substandard:
-    #                             sub_key = f"{key}/{std_substandard.lower()}"
-    #                             if sub_key not in rules_directory:
-    #                                 rules_directory[sub_key] = []
-    #                             if core_id not in rules_directory[sub_key]:
-    #                                 rules_directory[sub_key].append(core_id)
-
-    #         # Store the rule itself by core_id
-    #         rules_by_core_id[core_id] = rule
-
-    #     return rules_directory, rules_by_core_id
-
-    def save_removed_rules_locally(self):
+    def process_rules_lists(self, rules_directory, rules_by_core_id, rules_lists):
         """
-        Store rules remaining after removal in cache path directory
+        Process rules lists to populate rules_directory and rules_by_core_id
         """
-        if self.remove_local_rules == "ALL":
-            print("Clearing all local rules")
-            remaining_rules = {}
-        else:
-            prefix_to_remove = f"local/{self.remove_local_rules}/"
-            print(f"Clearing rules with prefix: {prefix_to_remove}")
-            pickle_file = os.path.join(
-                self.cache_path, DefaultFilePaths.LOCAL_RULES_CACHE_FILE.value
-            )
-            if os.path.exists(pickle_file):
-                try:
-                    with open(pickle_file, "rb") as f:
-                        existing_rules = pickle.load(f)
-                    print(f"Loaded {len(existing_rules)} rules from {pickle_file}")
-                    remaining_rules = {
-                        key: value
-                        for key, value in existing_rules.items()
-                        if not key.startswith(prefix_to_remove)
-                    }
-                except Exception as e:
-                    print(f"Error loading rules from {pickle_file}: {e}")
-            else:
-                print(f"No existing rules file found at {pickle_file}")
-        print(f"Remaining local rules after removal: {len(remaining_rules)}")
-        file_path = os.path.join(
-            self.cache_path, DefaultFilePaths.LOCAL_RULES_CACHE_FILE.value
-        )
-        try:
-            with open(file_path, "wb") as f:
-                pickle.dump(remaining_rules, f)
-            print(f"Successfully saved remaining rules to {file_path}")
-        except Exception as e:
-            print(f"Error occurred while writing remaining rules to file: {e}")
+        for catalog_rules in rules_lists:
+            rules = catalog_rules.get("rules", [])
+            for rule in rules:
+                core_id = rule.get("core_id", "")
+                standards = rule.get("standards", [])
+                for standard in standards:
+                    std_name = standard.get("Name", "").lower()
+                    std_version = standard.get("Version", "").replace(".", "-")
+                    std_substandard = standard.get("Substandard", None)
 
-    def save_local_rules_locally(self):
-        """
-        Store cached local rules in local_rules.pkl in cache path directory
-        """
-        current_prefix = f"local/{self.local_rules_id}/"
-        local_rules: List[dict] = self._get_local_rules(self.local_rules_path)
-        current_rules = {
-            f"{current_prefix}{local_rule['custom_id']}": local_rule
-            for local_rule in local_rules
-        }
-        file_path = os.path.join(
-            self.cache_path, DefaultFilePaths.LOCAL_RULES_CACHE_FILE.value
-        )
-        existing_rules = {}
-        if os.path.exists(file_path):
-            try:
-                with open(file_path, "rb") as f:
-                    existing_rules = pickle.load(f)
-            except Exception as e:
-                print(f"Error loading existing rules: {e}")
-        if any(rule.startswith(current_prefix) for rule in existing_rules):
-            raise ValueError(
-                f"Rules with prefix '{current_prefix}' already exist in the cache."
-            )
-        all_rules = existing_rules | current_rules
-        # Save updated rules
-        try:
-            with open(file_path, "wb") as f:
-                pickle.dump(all_rules, f)
-            print(f"Successfully saved updated local rules to {file_path}")
-        except Exception as e:
-            print(f"Error occurred while writing to file: {e}")
+                    if std_name and std_version:
+                        key = f"{std_name}/{std_version}"
+                        if (
+                            key in rules_directory
+                            and core_id not in rules_directory[key]
+                        ):
+                            rules_directory[key].append(core_id)
+                        if std_substandard:
+                            sub_key = f"{key}/{std_substandard.lower()}"
+                            if sub_key not in rules_directory:
+                                rules_directory[sub_key] = []
+                            if core_id not in rules_directory[sub_key]:
+                                rules_directory[sub_key].append(core_id)
+
+                rules_by_core_id[core_id] = rule
+        return rules_directory, rules_by_core_id
 
     async def save_ct_packages_locally(self):
         """
@@ -373,7 +262,7 @@ class CachePopulator:
             for catalog in catalogs
         ]
         rules = await asyncio.gather(*coroutines)
-        return {"rules": rules, "catalogs": catalogs}
+        return rules
 
     async def _async_get_rules_by_catalog(self, catalog_link: str):
         loop = asyncio.get_event_loop()
@@ -584,3 +473,303 @@ class CachePopulator:
             ),
             **variables_metadata,
         }
+
+    def add_custom_rules(self):
+        """Process and save the rule(s) from the specified directory or file path."""
+        rule_files = []
+        if self.custom_rules_directory and os.path.isdir(self.custom_rules_directory):
+            for file in os.listdir(self.custom_rules_directory):
+                if file.endswith((".json", ".yml", ".yaml")):
+                    rule_files.append(os.path.join(self.custom_rules_directory, file))
+            if not rule_files:
+                raise ValueError(
+                    f"No rule files found in {self.custom_rules_directory}"
+                )
+        elif self.custom_rule_path and os.path.isfile(self.custom_rule_path):
+            rule_files = [self.custom_rule_path]
+        else:
+            raise ValueError("Invalid directory or path specified")
+        custom_rules_file = os.path.join(
+            self.cache_path, DefaultFilePaths.CUSTOM_RULES_CACHE_FILE.value
+        )
+        existing_rules = {}
+
+        if os.path.exists(custom_rules_file):
+            with open(custom_rules_file, "rb") as f:
+                existing_rules = pickle.load(f)
+        skipped, added = self.parse_and_save_custom_rules(
+            rule_files, existing_rules, custom_rules_file
+        )
+        if added:
+            print(f"Added {len(added)} rules: {', '.join(added)}")
+        else:
+            print("No rules added")
+        if skipped:
+            print(f"Skipped {len(skipped)} rules: {', '.join(skipped)}")
+
+    def parse_and_save_custom_rules(
+        self,
+        rule_files: List[str],
+        existing_rules: dict,
+        custom_rules_file: str,
+        allow_updates=False,
+    ):
+        skipped_rules = []
+        added_rules = []
+        for rule_file in rule_files:
+            try:
+                rule_metadata = load_and_parse_local_rule(rule_file)
+                rule_dict = Rule.from_cdisc_metadata(rule_metadata)
+                core_id = rule_dict["core_id"]
+                if core_id in existing_rules and not allow_updates:
+                    print(
+                        f"Rule {core_id} already exists. Use update_custom_rule to update it."
+                    )
+                    skipped_rules.append(core_id)
+                    continue
+                existing_rules[core_id] = rule_dict
+                added_rules.append(core_id)
+            except Exception as e:
+                print(f"Error processing rule file {rule_file}: {e}")
+        if len(added_rules) > 0:
+            with open(custom_rules_file, "wb") as f:
+                pickle.dump(existing_rules, f)
+        else:
+            print("No rules were added as all currently exist in the cache.")
+        return skipped_rules, added_rules
+
+    def update_custom_rule_in_cache(self):
+        """Update an existing custom rule in the cache."""
+        rule_files = []
+        if self.update_custom_rules and os.path.isfile(self.update_custom_rules):
+            rule_files = [self.update_custom_rules]
+        else:
+            raise ValueError(f"{self.update_custom_rules} is an invalid file")
+        custom_rules_file = os.path.join(
+            self.cache_path, DefaultFilePaths.CUSTOM_RULES_CACHE_FILE.value
+        )
+        existing_rules = {}
+        if os.path.exists(custom_rules_file):
+            with open(custom_rules_file, "rb") as f:
+                existing_rules = pickle.load(f)
+        skipped_rules, updated_rules = self.parse_and_save_custom_rules(
+            rule_files, existing_rules, custom_rules_file, allow_updates=True
+        )
+        if updated_rules:
+            print(f"Updated rule: {''.join(updated_rules)}")
+        else:
+            print("Failed to update rule")
+
+    def remove_custom_rules_from_cache(self):
+        """
+        Remove specified custom rules from the cache.
+        """
+        if not self.remove_custom_rules:
+            raise ValueError("No rules specified for removal")
+        custom_rules_file = os.path.join(
+            self.cache_path, DefaultFilePaths.CUSTOM_RULES_CACHE_FILE.value
+        )
+        if not os.path.exists(custom_rules_file):
+            raise ValueError("No custom rules cache found. Nothing to remove.")
+
+        with open(custom_rules_file, "rb") as f:
+            existing_rules = pickle.load(f)
+        removed_rules = []
+        if self.remove_custom_rules.upper() == "ALL":
+            removed_rules = list(existing_rules.keys())
+            existing_rules = {}
+        else:
+            rule_ids_to_remove = [
+                rule_id.strip() for rule_id in self.remove_custom_rules.split(",")
+            ]
+            for rule_id in rule_ids_to_remove:
+                if rule_id in existing_rules:
+                    del existing_rules[rule_id]
+                    removed_rules.append(rule_id)
+                else:
+                    print(f"Rule {rule_id} not found in cache. Skipping.")
+
+        # Save updated rules back to cache
+        if removed_rules:
+            with open(custom_rules_file, "wb") as f:
+                pickle.dump(existing_rules, f)
+
+        return removed_rules
+
+    def add_custom_standard_to_cache(self):
+        """Add or update a custom standard to the cache."""
+        if not self.custom_standards or not os.path.isfile(self.custom_standards):
+            raise ValueError(f"Invalid standard file: {self.custom_standards}")
+
+        with open(self.custom_standards, "r") as f:
+            new_standard = json.load(f)
+
+        # Validate the input format
+        if not isinstance(new_standard, dict):
+            raise ValueError("Custom standard must be a dictionary")
+
+        # Load existing standards if available
+        custom_standards_file = os.path.join(
+            self.cache_path, "custom_rules_dictionary.pkl"
+        )
+        custom_rules_dictionary = {}
+
+        if os.path.exists(custom_standards_file):
+            with open(custom_standards_file, "rb") as f:
+                custom_rules_dictionary = pickle.load(f)
+            print(
+                f"Loaded existing custom standards dictionary with {len(custom_rules_dictionary)} entries"
+            )
+
+        # Update the dictionary with new standard(s)
+        updated_count = 0
+        new_count = 0
+        for standard_key, rule_ids in new_standard.items():
+            if standard_key in custom_rules_dictionary:
+                custom_rules_dictionary[standard_key] = rule_ids
+                updated_count += 1
+            else:
+                custom_rules_dictionary[standard_key] = rule_ids
+                new_count += 1
+
+        # Save the updated dictionary
+        with open(custom_standards_file, "wb") as f:
+            pickle.dump(custom_rules_dictionary, f)
+
+        if updated_count > 0 and new_count > 0:
+            print(
+                f"Updated {updated_count} existing standards and added {new_count} new standards"
+            )
+        elif updated_count > 0:
+            print(f"Updated {updated_count} existing standards")
+        else:
+            print(f"Added {new_count} new standards")
+
+    def remove_custom_standards_from_cache(self):
+        """Remove custom standards from the cache."""
+        if not self.remove_custom_standards:
+            return
+
+        # Load the existing dictionary
+        custom_standards_file = os.path.join(
+            self.cache_path, "custom_rules_dictionary.pkl"
+        )
+        if not os.path.exists(custom_standards_file):
+            print(f"No custom standards file found at {custom_standards_file}")
+            return
+
+        with open(custom_standards_file, "rb") as f:
+            custom_rules_dictionary = pickle.load(f)
+
+        # Remove each specified standard
+        removed_count = 0
+        for standard_key in self.remove_custom_standards:
+            if standard_key in custom_rules_dictionary:
+                del custom_rules_dictionary[standard_key]
+                removed_count += 1
+                print(f"Removed standard '{standard_key}'")
+            else:
+                print(f"Standard '{standard_key}' not found")
+
+        # Save the updated dictionary
+        with open(custom_standards_file, "wb") as f:
+            pickle.dump(custom_rules_dictionary, f)
+
+        print(
+            f"Removed {removed_count} standards. Remaining standards: {len(custom_rules_dictionary)}"
+        )
+
+    # def save_removed_rules_locally(self):
+    #     """
+    #     Store rules remaining after removal in cache path directory
+    #     """
+    #     if self.remove_local_rules == "ALL":
+    #         print("Clearing all local rules")
+    #         remaining_rules = {}
+    #     else:
+    #         prefix_to_remove = f"local/{self.remove_local_rules}/"
+    #         print(f"Clearing rules with prefix: {prefix_to_remove}")
+    #         pickle_file = os.path.join(
+    #             self.cache_path, DefaultFilePaths.LOCAL_RULES_CACHE_FILE.value
+    #         )
+    #         if os.path.exists(pickle_file):
+    #             try:
+    #                 with open(pickle_file, "rb") as f:
+    #                     existing_rules = pickle.load(f)
+    #                 print(f"Loaded {len(existing_rules)} rules from {pickle_file}")
+    #                 remaining_rules = {
+    #                     key: value
+    #                     for key, value in existing_rules.items()
+    #                     if not key.startswith(prefix_to_remove)
+    #                 }
+    #             except Exception as e:
+    #                 print(f"Error loading rules from {pickle_file}: {e}")
+    #         else:
+    #             print(f"No existing rules file found at {pickle_file}")
+    #     print(f"Remaining local rules after removal: {len(remaining_rules)}")
+    #     file_path = os.path.join(
+    #         self.cache_path, DefaultFilePaths.LOCAL_RULES_CACHE_FILE.value
+    #     )
+    #     try:
+    #         with open(file_path, "wb") as f:
+    #             pickle.dump(remaining_rules, f)
+    #         print(f"Successfully saved remaining rules to {file_path}")
+    #     except Exception as e:
+    #         print(f"Error occurred while writing remaining rules to file: {e}")
+
+    # def save_local_rules_locally(self):
+    #     """
+    #     Store cached local rules in local_rules.pkl in cache path directory
+    #     """
+    #     current_prefix = f"local/{self.local_rules_id}/"
+    #     local_rules: List[dict] = self._get_local_rules(self.local_rules_path)
+    #     current_rules = {
+    #         f"{current_prefix}{local_rule['custom_id']}": local_rule
+    #         for local_rule in local_rules
+    #     }
+    #     file_path = os.path.join(
+    #         self.cache_path, DefaultFilePaths.LOCAL_RULES_CACHE_FILE.value
+    #     )
+    #     existing_rules = {}
+    #     if os.path.exists(file_path):
+    #         try:
+    #             with open(file_path, "rb") as f:
+    #                 existing_rules = pickle.load(f)
+    #         except Exception as e:
+    #             print(f"Error loading existing rules: {e}")
+    #     if any(rule.startswith(current_prefix) for rule in existing_rules):
+    #         raise ValueError(
+    #             f"Rules with prefix '{current_prefix}' already exist in the cache."
+    #         )
+    #     all_rules = existing_rules | current_rules
+    #     # Save updated rules
+    #     try:
+    #         with open(file_path, "wb") as f:
+    #             pickle.dump(all_rules, f)
+    #         print(f"Successfully saved updated local rules to {file_path}")
+    #     except Exception as e:
+    #         print(f"Error occurred while writing to file: {e}")
+
+    # def _get_local_rules(self, local_rules_path: str) -> List[dict]:
+    #     """
+    #     Retrieve local rules from the file system.
+    #     """
+    #     rules = []
+    #     custom_ids = set()
+    #     # Ensure the directory exists
+    #     if not os.path.isdir(local_rules_path):
+    #         raise FileNotFoundError(f"The directory {local_rules_path} does not exist")
+    #     rule_files = [
+    #         os.path.join(local_rules_path, file)
+    #         for file in os.listdir(local_rules_path)
+    #         if file.endswith((".json", ".yml", ".yaml"))
+    #     ]
+    #     # Iterate through all files in the directory provided
+    #     for rule_file in rule_files:
+    #         rule = load_and_parse_local_rule(rule_file)
+    #         if rule and rule["custom_id"] not in custom_ids:
+    #             rules.append(rule)
+    #             custom_ids.add(rule["custom_id"])
+    #         else:
+    #             print(f"Skipping rule with duplicate custom_id: {rule['custom_id']}")
+    #     return rules
