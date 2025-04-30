@@ -30,6 +30,18 @@ from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import (
 
 
 def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:  # noqa
+    if args.custom_standard:
+        check = check_custom_standard(args)
+        # custom standard not requiring library metadata
+        if not check:
+            return LibraryMetadataContainer(
+                standard_metadata={},
+                model_metadata={},
+                variable_codelist_map={},
+                variables_metadata={},
+                ct_package_metadata={},
+                published_ct_packages=[],
+            )
     if args.define_xml_path:
         define_xml_reader = DefineXMLReaderFactory.from_filename(args.define_xml_path)
         define_version = define_xml_reader.class_define_xml_version()
@@ -126,6 +138,26 @@ def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:  # noqa
         ct_package_metadata=ct_package_data,
         published_ct_packages=published_ct_packages,
     )
+
+
+def check_custom_standard(args):
+    standards_path = os.path.join(args.cache, DefaultFilePaths.RULES_DICTIONARY.value)
+    try:
+        with open(standards_path, "rb") as f:
+            standards_dict = pickle.load(f)
+    except FileNotFoundError:
+        engine_logger.error(f"Rules file not found: check {standards_path}")
+        return False
+    except Exception as e:
+        engine_logger.error(f"Error checking standards in library service: {e}")
+        return False
+    key = get_rules_cache_key(
+        args.standard, args.version.replace(".", "-"), args.substandard
+    )
+    check = standards_dict.get(key, {})
+    if check:
+        return True
+    return False
 
 
 def fill_cache_with_dictionaries(
