@@ -340,7 +340,6 @@ def load_rules_from_cache(args) -> List[dict]:
     elif args.standard and args.version:
         return load_all_rules_for_standard(
             rules_data,
-            standard_dict,
             args.standard,
             args.version.replace(".", "-"),
             args.substandard,
