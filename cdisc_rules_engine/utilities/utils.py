@@ -394,30 +394,3 @@ def dates_overlap(date1_str, precision1, date2_str, precision2):
     more_precise = date2_str if precision1 < precision2 else date1_str
 
     return more_precise.startswith(less_precise), less_precise
-
-
-def filter_rules_by_substandard(rules, standard, version, substandard):
-    """
-    Filter a list of rules to include only those that match the specified substandard.
-    """
-    if not substandard:
-        return rules
-
-    # Ensure version format and case-insensitivity
-    version = version.replace("-", ".")
-    standard_lower = standard.lower()
-    substandard_lower = substandard.lower()
-    filtered_rules = []
-    for rule in rules:
-        for std in rule.get("standards", []):
-            std_substandard = std.get("Substandard", "")
-            if std_substandard:
-                std_substandard = std_substandard.lower()
-            if (
-                std.get("Name", "").lower() == standard_lower
-                and std.get("Version") == version
-                and std_substandard == substandard_lower
-            ):
-                filtered_rules.append(rule)
-                break
-    return filtered_rules

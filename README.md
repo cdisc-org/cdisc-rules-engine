@@ -294,7 +294,15 @@ To obtain an api key, please follow the instructions found here: <https://wiki.c
   python core.py update-cache --remove_custom_standard 'mycustom/1-0'
   ```
 
-- When executing validation against a custom standard, the system will use the standard as a lookup to determine which rules to apply from the rule cache.
+- When executing validation against a custom standard, the system will use the standard as a lookup to determine which rules to apply from the rule cache. Custom standards which match CDISC standard names and versions can be used to get library metadata for the standard while still utilizing custom rules. If a custom name does not match a CDISC standard, library metadata will not be populated.
+
+  ```json
+  {
+    "sdtmig/3-4": ["CUSTOM-000123", "CUSTOM-000456", "CUSTOM-001", "CUSTOM-002"]
+  }
+  ```
+
+  This rule will get metadata from SDTMIG version 3.4 but utilize the custom rules listed in the custom standard that need this library metadata.
 
 ## Relationship Between Custom Rules and Standards
 
