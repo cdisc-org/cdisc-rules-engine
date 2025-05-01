@@ -121,7 +121,7 @@ class DaskDataset(PandasDataset):
         if isinstance(other, pd.Series):
             new_data = self._data.merge(
                 dd.from_pandas(other.reset_index(), npartitions=self._data.npartitions),
-                **kwargs
+                **kwargs,
             )
         else:
             new_data = self._data.merge(other, **kwargs)
@@ -335,3 +335,21 @@ class DaskDataset(PandasDataset):
 
     def to_dict(self, **kwargs) -> dict:
         return list(self._data.map_partitions(lambda x: x.to_dict(orient="records")))
+
+    def items(self, **kwargs):
+        computed_df = self._data.compute()
+        return computed_df.to_dict(**kwargs).items()
+
+    def keys(self, **kwargs):
+        """
+        Returns a object containing the keys in the dataset dictionary.
+        """
+        computed_df = self._data.compute()
+        return computed_df.to_dict(**kwargs).keys()
+
+    def values(self, **kwargs):
+        """
+        Returns a object containing the values in the dataset dictionary.
+        """
+        computed_df = self._data.compute()
+        return computed_df.to_dict(**kwargs).values()
