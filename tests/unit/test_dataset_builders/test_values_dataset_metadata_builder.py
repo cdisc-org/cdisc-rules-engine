@@ -36,14 +36,20 @@ def test_build_with_dataset_metadata(mock_build):
 
     data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
     original_get_metadata = data_service.get_dataset_metadata
-    data_service.get_dataset_metadata = MagicMock(
-        return_value={
-            "dataset_name": "AE",
-            "dataset_label": "Adverse Events",
-            "dataset_location": "/path/to/ae.xpt",
-            "dataset_size": "1024 KB",
-        }
+
+    metadata_df = pd.DataFrame(
+        [
+            {
+                "dataset_name": "AE",
+                "dataset_label": "Adverse Events",
+                "dataset_location": "/path/to/ae.xpt",
+                "dataset_size": "1024 KB",
+            }
+        ]
     )
+
+    data_service.get_dataset_metadata = MagicMock(return_value=metadata_df)
+
     rule_mock = MagicMock()
     rule_processor_mock = MagicMock()
     rule_processor_mock.get_size_unit_from_rule.return_value = "KB"
@@ -104,14 +110,20 @@ def test_build_split_datasets(mock_build):
     mock_build.return_value = long_df
     data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
     original_get_metadata = data_service.get_dataset_metadata
-    data_service.get_dataset_metadata = MagicMock(
-        return_value={
-            "dataset_name": "DM",
-            "dataset_label": "Demographics",
-            "dataset_location": "/path/to/dm.xpt",
-            "dataset_size": "512 KB",
-        }
+
+    metadata_df = pd.DataFrame(
+        [
+            {
+                "dataset_name": "DM",
+                "dataset_label": "Demographics",
+                "dataset_location": "/path/to/dm.xpt",
+                "dataset_size": "512 KB",
+            }
+        ]
     )
+
+    data_service.get_dataset_metadata = MagicMock(return_value=metadata_df)
+
     rule_mock = MagicMock()
     rule_processor_mock = MagicMock()
     rule_processor_mock.get_size_unit_from_rule.return_value = "KB"
