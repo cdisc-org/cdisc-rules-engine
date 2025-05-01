@@ -599,7 +599,7 @@ class CachePopulator:
     def add_custom_standard_to_cache(self):
         """Add or update a custom standard to the cache."""
         if not os.path.isfile(self.custom_standards):
-            raise ValueError(f"Invalid standard file: {self.custom_standards}")
+            raise ValueError("Invalid standard filepath")
         with open(self.custom_standards, "r") as f:
             new_standard = json.load(f)
 
