@@ -307,7 +307,7 @@ def load_rules_from_cache(args) -> List[dict]:
         with open(rules_file, "rb") as f:
             rules_data = pickle.load(f)
         if cdisc_file:
-            with open(rules_file, "rb") as f:
+            with open(cdisc_file, "rb") as f:
                 cdisc_data = pickle.load(f)
         with open(standard_dict, "rb") as f:
             standard_dict = pickle.load(f)

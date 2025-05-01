@@ -171,11 +171,8 @@ Run `python core.py validate --help` to see the list of validation options.
   -r, --rules TEXT                Specify rule core ID ex. CORE-000001. Can be specified multiple times.
   -lr, --local_rules TEXT         Specify relative path to directory or file containing
                                   local rule yml and/or json rule files.
-  -lrc, --local_rules_cache       Adding this flag tells engine to use local rules
-                                  uploaded to the cache instead of published rules
-                                  in the cache for the validation run.
-  -lri, --local_rule_id TEXT      Specify ID for custom, local rules in the cache
-                                  you wish to run a validation with.
+  -cs, --custom_standard       Adding this flag tells engine to use a custom standard specified with -s and -v
+                                  that has been uploaded to the cache using update-cache
   -vo, --verbose-output           Specify this option to print rules as they
                                   are completed
   -p, --progress [verbose_output|disabled|percents|bar]
