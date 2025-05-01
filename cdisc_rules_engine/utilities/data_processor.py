@@ -301,7 +301,22 @@ class DataProcessor:
         If a filter value is provided, filter the dataframe on that value.
         Otherwise, return the whole dataframe.
         """
-        return df[df[col] == filter_value] if filter_value else df
+        try:
+            filter_value = float(filter_value)
+        except TypeError:
+            pass
+        except ValueError:
+            pass
+        return (
+            df.from_dict(
+                df[
+                    df[col].astype(float, errors="ignore").astype(str)
+                    == str(filter_value)
+                ].to_dict()
+            )
+            if filter_value
+            else df
+        )
 
     @staticmethod
     def filter_relrec_for_domain(
@@ -349,20 +364,6 @@ class DataProcessor:
         right_dataset: DatasetInterface = dataset_preprocessor._download_dataset(
             file_info.filename
         )
-        left_subset = left_dataset
-        right_subset = right_dataset
-        left_subset = DataProcessor.filter_if_present(
-            left_subset, "USUBJID", relrec_row["USUBJID"]
-        )
-        right_subset = DataProcessor.filter_if_present(
-            right_subset, "USUBJID", relrec_row["USUBJID"]
-        )
-        left_subset = DataProcessor.filter_if_present(
-            left_subset, "IDVAR_LEFT", relrec_row["IDVARVAL_LEFT"]
-        )
-        right_subset = DataProcessor.filter_if_present(
-            right_subset, "IDVAR_RIGHT", relrec_row["IDVARVAL_RIGHT"]
-        )
         variables_with_wildcards = {
             source: f"RELREC.{target}"
             for (source, target) in add_variable_wildcards(
@@ -372,16 +373,40 @@ class DataProcessor:
                 wildcard,
             ).items()
         }
-        right_subset = right_subset.rename(columns=variables_with_wildcards)
-        return left_subset.merge(
-            other=right_subset.data,
-            left_on=["STUDYID", "USUBJID", relrec_row["IDVAR_LEFT"]],
-            right_on=[
+        left_subset = left_dataset
+        right_subset = right_dataset
+        left_subset = DataProcessor.filter_if_present(
+            left_subset, "USUBJID", relrec_row["USUBJID"]
+        )
+        right_subset = DataProcessor.filter_if_present(
+            right_subset, "USUBJID", relrec_row["USUBJID"]
+        )
+        if relrec_row["IDVARVAL_LEFT"] and relrec_row["IDVARVAL_RIGHT"]:
+            left_subset = DataProcessor.filter_if_present(
+                left_subset, relrec_row["IDVAR_LEFT"], relrec_row["IDVARVAL_LEFT"]
+            )
+            right_subset = DataProcessor.filter_if_present(
+                right_subset, relrec_row["IDVAR_RIGHT"], relrec_row["IDVARVAL_RIGHT"]
+            )
+            left_on = ["STUDYID", "USUBJID"]
+            right_on = [
+                variables_with_wildcards["STUDYID"],
+                variables_with_wildcards["USUBJID"],
+            ]
+        else:
+            left_on = ["STUDYID", "USUBJID", relrec_row["IDVAR_LEFT"]]
+            right_on = [
                 variables_with_wildcards["STUDYID"],
                 variables_with_wildcards["USUBJID"],
                 variables_with_wildcards[relrec_row["IDVAR_RIGHT"]],
-            ],
+            ]
+        right_subset = right_subset.rename(columns=variables_with_wildcards)
+        result = left_subset.merge(
+            other=right_subset.data,
+            left_on=left_on,
+            right_on=right_on,
         )
+        return result
 
     @staticmethod
     def merge_relrec_datasets(
@@ -416,7 +441,7 @@ class DataProcessor:
             )
             for _, relrec_row in relrec_for_domain.iterrows()
         ]
-        result = objs[0].concat(objs[1:])
+        result = objs[0].concat(objs[1:], ignore_index=True)
         return result
 
     @staticmethod
