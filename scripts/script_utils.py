@@ -345,24 +345,56 @@ def load_and_parse_local_rule(rule_file: str) -> dict:
         return None
 
 
+def rule_matches_standard_version(rule, standard, version, substandard=None):
+    normalized_version = version.replace("-", ".")
+    for standard_info in rule["standards"]:
+        std_name = standard_info.get("Name", "")
+        std_version = standard_info.get("Version", "")
+        std_substandard = standard_info.get("Substandard")
+
+        if std_name.lower() == standard.lower() and std_version == normalized_version:
+            if substandard:
+                if std_substandard and std_substandard.lower() == substandard.lower():
+                    return True
+            else:
+                return True
+    return False
+
+
 def process_rule(rule, args, rule_data, rules, keys):
+    """Process a rule and add it to the rules list if applicable."""
+    core_id = rule.get("core_id")
+    if not core_id:
+        engine_logger.error("Rule missing core_id. Skipping...")
+        return
+
     rule_identifier = get_rules_cache_key(
-        args.standard, args.version.replace(".", "-"), rule.get("core_id")
+        args.standard, args.version.replace(".", "-"), core_id
     )
     if rule_identifier in rule_data:
-        engine_logger.error(
-            f"Duplicate rule {rule.get('core_id')} in local directory. Skipping..."
-        )
+        engine_logger.error(f"Duplicate rule {core_id} in local directory. Skipping...")
         return
+
+    if args.standard and args.version:
+        if not rule_matches_standard_version(
+            rule, args.standard, args.version, args.substandard
+        ):
+            substandard_msg = (
+                f" with substandard '{args.substandard}'" if args.substandard else ""
+            )
+            engine_logger.info(
+                f"Rule {core_id} does not apply to standard '{args.standard}' "
+                f"version '{args.version}'{substandard_msg}. Skipping..."
+            )
+            return
     if keys is None or rule_identifier in keys:
         rule_data[rule_identifier] = rule
         rules.append(rule)
     else:
         engine_logger.info(
-            f"Rule {rule.get('core_id')} not specified with "
-            "-r rule flag and in local directory.  Skipping..."
+            f"Rule {core_id} not specified with "
+            "-r rule flag and in local directory. Skipping..."
         )
-    return
 
 
 def get_max_dataset_size(dataset_paths: Iterable[str]):
