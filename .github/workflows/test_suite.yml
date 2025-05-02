@@ -81,7 +81,41 @@ jobs:
         continue-on-error: true
         run: |
           python CORE_Test_Suite/scripts/compare_implementations.py CORE_Test_Suite/pandas-results.json CORE_Test_Suite/CORE-Report.json CORE_Test_Suite/pandas_comparison.json --github-step-summary $GITHUB_STEP_SUMMARY --mode test
+      - name: Run validation with Dask
+        id: dask_run
+        run: |
+          echo "DATASET_SIZE_THRESHOLD=0" > .env
+          python core.py validate -s sdtmig -v 3-3 ${{ env.RULE_LIST }} -d CORE_Test_Suite/data -ct sdtmct-2020-03-27 -of json -o CORE_Test_Suite/dask-results -l error || true
 
+          if [ -f "CORE_Test_Suite/dask-results.json" ]; then
+            echo "dask_success=true" >> $GITHUB_OUTPUT
+            echo "## Dask Validation" >> $GITHUB_STEP_SUMMARY
+            echo "✅ **Success**: Validation completed successfully" >> $GITHUB_STEP_SUMMARY
+            python CORE_Test_Suite/scripts/validation_summary.py dask-results.json >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Failed to generate dask-results.json"
+            echo "dask_success=false" >> $GITHUB_OUTPUT
+            echo "## Dask Validation" >> $GITHUB_STEP_SUMMARY
+            echo "❌ **Failed**: No results file was generated" >> $GITHUB_STEP_SUMMARY  
+          fi
+      - name: Dask comparison script
+        continue-on-error: true
+        if: steps.dask_run.outputs.dask_success == 'true'
+        run: |
+          python CORE_Test_Suite/scripts/comparison.py CORE_Test_Suite/dask-results.json CORE_Test_Suite/CORE-Report.json CORE_Test_Suite/dask_comparison.xlsx --mode test --json-output CORE_Test_Suite/dask_comparison.json
+          DASK_EXIT_CODE=$?
+          echo "dask_diff=$DASK_EXIT_CODE" >> $GITHUB_ENV
+          if [ $DASK_EXIT_CODE -eq 0 ]; then
+            echo "Dask comparison completed successfully (no differences)"
+          else
+            echo "Dask comparison found differences"
+            
+      - name: Generate dask comparison summary
+        if: steps.dask_run.outputs.dask_success == 'true'
+        continue-on-error: true
+        run: |
+          python CORE_Test_Suite/scripts/compare_implementations.py CORE_Test_Suite/dask-results.json CORE_Test_Suite/CORE-Report.json CORE_Test_Suite/dask_comparison.json --github-step-summary $GITHUB_STEP_SUMMARY --mode test
+      
       #################################
       # USDM TEST SUITE VALIDATION
       #################################
