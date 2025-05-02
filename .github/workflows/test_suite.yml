@@ -55,18 +55,28 @@ jobs:
             echo "✅ **Success**: Validation completed successfully" >> $GITHUB_STEP_SUMMARY
             python CORE_Test_Suite/scripts/validation_summary.py CORE_Test_Suite/pandas-results.json >> $GITHUB_STEP_SUMMARY
           else
+            echo "Failed to generate pandas-results.json"
             echo "pandas_success=false" >> $GITHUB_OUTPUT
+            echo "## Pandas Validation" >> $GITHUB_STEP_SUMMARY
             echo "❌ **Failed**: No results file was generated" >> $GITHUB_STEP_SUMMARY
           fi
 
-      - name: Compare CORE pandas results
+      - name:  Pandas CORE comparison with template
         if: steps.pandas_run.outputs.pandas_success == 'true'
         continue-on-error: true
         run: |
           python CORE_Test_Suite/scripts/comparison.py CORE_Test_Suite/pandas-results.json CORE_Test_Suite/CORE-Report.json CORE_Test_Suite/pandas_comparison.xlsx --mode test --json-output CORE_Test_Suite/pandas_comparison.json
           echo "pandas_diff=$?" >> $GITHUB_ENV
 
-      - name: CORE pandas comparison summary
+          PANDAS_EXIT_CODE=$?
+          echo "pandas_diff=$PANDAS_EXIT_CODE" >> $GITHUB_ENV
+          if [ $PANDAS_EXIT_CODE -eq 0 ]; then
+            echo "Pandas comparison completed successfully (no differences)"
+          else
+            echo "Pandas comparison found differences"
+          fi
+
+      - name: Generate pandas CORE comparison summary
         if: steps.pandas_run.outputs.pandas_success == 'true'
         continue-on-error: true
         run: |
