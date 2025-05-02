@@ -1126,24 +1126,22 @@ class DataframeType(BaseType):
         value_column = self.replace_prefix(other_value.get("comparator"))
         context = self.replace_prefix(other_value.get("context"))
         within_column = self.replace_prefix(other_value.get("within"))
-
-        if within_column and within_column in self.value.columns:
-            results = pd.Series(False, index=self.value.index)
-
-            for name, group in self.value.groupby(within_column):
-                group_results = group.apply(
-                    lambda row: self.detect_reference(
-                        row, value_column, target, context
-                    ),
-                    axis=1,
-                )
-                results.loc[group.index] = group_results
-            return results
-        else:
+        if not within_column or within_column not in self.value.columns:
             return self.value.apply(
                 lambda row: self.detect_reference(row, value_column, target, context),
                 axis=1,
             )
+        results = pd.Series(False, index=self.value.index)
+        unique_within_values = self.value[within_column].drop_duplicates().tolist()
+        for within_value in unique_within_values:
+            filter = self.value[within_column] == within_value
+            filtered_indices = self.value[filter].index
+            filtered_results = self.value[filter].apply(
+                lambda row: self.detect_reference(row, value_column, target, context),
+                axis=1,
+            )
+            results.loc[filtered_indices] = filtered_results.values
+        return results
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
