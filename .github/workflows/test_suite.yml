@@ -78,7 +78,7 @@ jobs:
 
       - name: Parse USDM rule list
         run: |
-          usdm_rules=$(cat CORE_Test_Suite/rulelist/USDM_Test_Suite_Rules.txt | sed 's/^/-r /' | tr '\n' ' ')
+          usdm_rules=$(cat CORE_Test_Suite/rulelist/USDM_Test_Suite_Rules.txt | sed 's/\r$//' | sed 's/^/-r /' | tr '\n' ' ')
           echo "USDM_RULE_LIST=$usdm_rules" >> $GITHUB_ENV
           echo "USDM rules: $usdm_rules"
 
