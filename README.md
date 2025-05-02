@@ -314,10 +314,10 @@ To obtain an api key, please follow the instructions found here: <https://wiki.c
   python core.py update-cache --custom_rules_directory 'path/to/directory'
   python core.py update-cache --custom_rule 'path/to/rule.json' --custom_rule 'path/to/rule.yaml'
   ```
-- **Update a custom rule**: Use the `--update_custom_rules` or `-ucr` flag to update an existing rule in the cache:
+- **Update a custom rule**: Use the `--update_custom_rule` or `-ucr` flag to update an existing rule in the cache:
 
   ```bash
-  python core.py update-cache --update_custom_rules 'path/to/updated_rule.yaml'
+  python core.py update-cache --update_custom_rule 'path/to/updated_rule.yaml'
   ```
 
 - **Remove custom rules**: Use the `--remove_custom_rules` or `-rcr` flag to remove rules from the cache. Can be a single rule ID, a comma-separated list of IDs, or 'ALL' to remove all custom rules:

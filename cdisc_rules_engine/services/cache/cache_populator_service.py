@@ -543,10 +543,10 @@ class CachePopulator:
     def update_custom_rule_in_cache(self):
         """Update an existing custom rule in the cache."""
         rule_files = []
-        if self.update_custom_rules and os.path.isfile(self.update_custom_rules):
-            rule_files = [self.update_custom_rules]
+        if self.update_custom_rule and os.path.isfile(self.update_custom_rule):
+            rule_files = [self.update_custom_rule]
         else:
-            raise ValueError(f"{self.update_custom_rules} is an invalid file")
+            raise ValueError(f"{self.update_custom_rule} is an invalid file")
         custom_rules_file = os.path.join(
             self.cache_path, DefaultFilePaths.CUSTOM_RULES_CACHE_FILE.value
         )
