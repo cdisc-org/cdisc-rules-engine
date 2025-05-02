@@ -1126,21 +1126,19 @@ class DataframeType(BaseType):
         value_column = self.replace_prefix(other_value.get("comparator"))
         context = self.replace_prefix(other_value.get("context"))
         within_column = self.replace_prefix(other_value.get("within"))
+
         if within_column and within_column in self.value.columns:
-            grouped_results = self.value.groupby(within_column).apply(
-                lambda group: group.apply(
+            results = pd.Series(False, index=self.value.index)
+
+            for name, group in self.value.groupby(within_column):
+                group_results = group.apply(
                     lambda row: self.detect_reference(
                         row, value_column, target, context
                     ),
                     axis=1,
                 )
-            )
-            if hasattr(grouped_results, "reset_index"):
-                if isinstance(self.value, DaskDataset):
-                    return grouped_results.reset_index(drop=True)
-                else:
-                    return grouped_results.reset_index(level=0, drop=True)
-            return grouped_results
+                results.loc[group.index] = group_results
+            return results
         else:
             return self.value.apply(
                 lambda row: self.detect_reference(row, value_column, target, context),
