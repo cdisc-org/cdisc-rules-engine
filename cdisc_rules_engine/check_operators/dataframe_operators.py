@@ -1127,23 +1127,14 @@ class DataframeType(BaseType):
         context = self.replace_prefix(other_value.get("context"))
         within_column = self.replace_prefix(other_value.get("within"))
 
+        def check_relationship(row):
+            return self.detect_reference(row, value_column, target, context)
+
         if within_column and within_column in self.value.columns:
-            results = pd.Series(False, index=self.value.index)
-            for name, group in self.value.groupby(within_column):
-                group_results = group.apply(
-                    lambda row: self.detect_reference(
-                        row, value_column, target, context
-                    ),
-                    axis=1,
-                )
-                results[group.index] = group_results
+            results = self.value.apply(check_relationship, axis=1)
             return results
         else:
-            results = self.value.apply(
-                lambda row: self.detect_reference(row, value_column, target, context),
-                axis=1,
-            )
-            return results
+            return self.value.apply(check_relationship, axis=1)
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
