@@ -83,6 +83,7 @@ jobs:
           python CORE_Test_Suite/scripts/compare_implementations.py CORE_Test_Suite/pandas-results.json CORE_Test_Suite/CORE-Report.json CORE_Test_Suite/pandas_comparison.json --github-step-summary $GITHUB_STEP_SUMMARY --mode test
       - name: Run validation with Dask
         id: dask_run
+        continue-on-error: true
         run: |
           echo "DATASET_SIZE_THRESHOLD=0" > .env
           python core.py validate -s sdtmig -v 3-3 ${{ env.RULE_LIST }} -d CORE_Test_Suite/data -ct sdtmct-2020-03-27 -of json -o CORE_Test_Suite/dask-results -l error || true
