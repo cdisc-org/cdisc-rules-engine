@@ -142,7 +142,8 @@ logs
 ~$CORE-*.xlsx
 
 # Ignore local rules
-resources/cache/local_rules.pkl
+resources/cache/custom_rules_dictionary.pkl
+resources/cache/custom_rules.pkl
 
 #ignore vim .swp files
 *.swp
