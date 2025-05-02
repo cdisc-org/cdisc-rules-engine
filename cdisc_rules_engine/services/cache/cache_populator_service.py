@@ -485,7 +485,7 @@ class CachePopulator:
                     f"No rule files found in {self.custom_rules_directory}"
                 )
         elif self.custom_rule_path:
-            for path in self.custom_rule:
+            for path in self.custom_rule_path:
                 if os.path.isfile(path) and path.endswith((".json", ".yml", ".yaml")):
                     rule_files.append(path)
             else:
