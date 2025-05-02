@@ -140,6 +140,16 @@ class DataProcessor:
         return reference_data
 
     @staticmethod
+    def convert_float_merge_keys(series: pd.Series) -> pd.Series:
+        """
+        Converts all values of the given series to float and then to string.
+        This is needed to avoid merging errors when merging datasets
+        with numeric columns that have different data types.
+        For example, merging "2" with 2.0
+        """
+        return series.astype(float, errors="ignore").astype(str)
+
+    @staticmethod
     def filter_dataset_by_match_keys_of_other_dataset(
         dataset: DatasetInterface,
         dataset_match_keys: List[str],
@@ -237,11 +247,11 @@ class DataProcessor:
         grouped = other_dataset.groupby(column_with_names, group_keys=False)
 
         def filter_dataset_by_group_values(group) -> DatasetInterface:
-            decimal_group_values: pd.Series = (
-                group[column_with_values].astype(float).astype(str)
+            decimal_group_values: pd.Series = DataProcessor.convert_float_merge_keys(
+                group[column_with_values]
             )
-            decimal_dataset_values: pd.Series = (
-                dataset[group.name].astype(float).astype(str)
+            decimal_dataset_values: pd.Series = DataProcessor.convert_float_merge_keys(
+                dataset[group.name]
             )
             condition: pd.Series = decimal_dataset_values.isin(decimal_group_values)
             return dataset[condition]
@@ -310,8 +320,7 @@ class DataProcessor:
         return (
             df.from_dict(
                 df[
-                    df[col].astype(float, errors="ignore").astype(str)
-                    == str(filter_value)
+                    DataProcessor.convert_float_merge_keys(df[col]) == str(filter_value)
                 ].to_dict()
             )
             if filter_value
