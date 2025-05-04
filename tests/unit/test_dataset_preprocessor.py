@@ -515,8 +515,105 @@ def test_preprocess_relationship_dataset(
     assert preprocessed_dataset.data.equals(expected_dataset.data)
 
 
+@pytest.mark.parametrize(
+    "relrec, expected",
+    [
+        (
+            {
+                "RDOMAIN": [
+                    "EC",
+                    "AE",
+                ],
+                "IDVAR": [
+                    "ECSEQ",
+                    "AESEQ",
+                ],
+                "IDVARVAL": [
+                    "",
+                    "",
+                ],
+                "RELID": [
+                    "ECAE",
+                    "ECAE",
+                ],
+                "STUDYID": [
+                    "1",
+                    "1",
+                ],
+                "USUBJID": [
+                    "",
+                    "",
+                ],
+            },
+            {
+                "ECSEQ": ["1", "2", "3", "4"],
+                "ECSTDY": [4, 5, 6, 7],
+                "STUDYID": ["1", "2", "1", "2"],
+                "USUBJID": [
+                    "CDISC001",
+                    "CDISC001",
+                    "CDISC002",
+                    "CDISC002",
+                ],
+                "RELREC.__SEQ": ["1", "2", "3", "4"],
+                "RELREC.__STDY": [4, 5, 16, 17],
+                "RELREC.STUDYID": ["1", "2", "1", "2"],
+                "RELREC.USUBJID": [
+                    "CDISC001",
+                    "CDISC001",
+                    "CDISC002",
+                    "CDISC002",
+                ],
+            },
+        ),
+        (
+            {
+                "RDOMAIN": [
+                    "EC",
+                    "AE",
+                ],
+                "IDVAR": [
+                    "ECSEQ",
+                    "AESEQ",
+                ],
+                "IDVARVAL": [
+                    "1",
+                    "1",
+                ],
+                "RELID": [
+                    "ECAE",
+                    "ECAE",
+                ],
+                "STUDYID": [
+                    "1",
+                    "1",
+                ],
+                "USUBJID": [
+                    "",
+                    "",
+                ],
+            },
+            {
+                "ECSEQ": ["1"],
+                "ECSTDY": [4],
+                "STUDYID": ["1"],
+                "USUBJID": [
+                    "CDISC001",
+                ],
+                "RELREC.__SEQ": ["1"],
+                "RELREC.__STDY": [4],
+                "RELREC.STUDYID": ["1"],
+                "RELREC.USUBJID": [
+                    "CDISC001",
+                ],
+            },
+        ),
+    ],
+)
 @patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset")
-def test_preprocess_relrec_dataset(mock_get_dataset: MagicMock):
+def test_preprocess_relrec_dataset(
+    mock_get_dataset: MagicMock, relrec: dict, expected: dict
+):
     """
     Unit test for preprocess method. Checks the case when
     we are merging datasets using relrec.
@@ -619,36 +716,7 @@ def test_preprocess_relrec_dataset(mock_get_dataset: MagicMock):
             }
         )
     )
-    relrec_dataset = PandasDataset(
-        pd.DataFrame.from_dict(
-            {
-                "RDOMAIN": [
-                    "EC",
-                    "AE",
-                ],
-                "IDVAR": [
-                    "ECSEQ",
-                    "AESEQ",
-                ],
-                "IDVARVAL": [
-                    "",
-                    "",
-                ],
-                "RELID": [
-                    "ECAE",
-                    "ECAE",
-                ],
-                "STUDYID": [
-                    "1",
-                    "1",
-                ],
-                "USUBJID": [
-                    "",
-                    "",
-                ],
-            }
-        )
-    )
+    relrec_dataset = PandasDataset(pd.DataFrame.from_dict(relrec))
 
     # mock blob storage call
     path_to_dataset_map: dict = {
@@ -688,30 +756,7 @@ def test_preprocess_relrec_dataset(mock_get_dataset: MagicMock):
             SDTMDatasetMetadata(name="RELREC", filename="relrec.xpt"),
         ],
     )
-    expected_dataset = PandasDataset(
-        pd.DataFrame.from_dict(
-            {
-                "ECSEQ": ["1", "2", "3", "4"],
-                "ECSTDY": [4, 5, 6, 7],
-                "STUDYID": ["1", "2", "1", "2"],
-                "USUBJID": [
-                    "CDISC001",
-                    "CDISC001",
-                    "CDISC002",
-                    "CDISC002",
-                ],
-                "RELREC.__SEQ": ["1", "2", "3", "4"],
-                "RELREC.__STDY": [4, 5, 16, 17],
-                "RELREC.STUDYID": ["1", "2", "1", "2"],
-                "RELREC.USUBJID": [
-                    "CDISC001",
-                    "CDISC001",
-                    "CDISC002",
-                    "CDISC002",
-                ],
-            }
-        )
-    )
+    expected_dataset = PandasDataset(pd.DataFrame.from_dict(expected))
     assert preprocessed_dataset.data.equals(expected_dataset.data)
 
 
