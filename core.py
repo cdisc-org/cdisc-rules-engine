@@ -651,8 +651,7 @@ def test_validate():
             external_dictionaries = ExternalDictionariesContainer({})
             rules = []
             local_rules = None
-            local_rules_cache = False
-            local_rules_id = None
+            custom_standard = False
             progress = ProgressParameterOptions.BAR.value
             define_xml_path = None
             validate_xml = False
@@ -675,8 +674,7 @@ def test_validate():
                     external_dictionaries,
                     rules,
                     local_rules,
-                    local_rules_cache,
-                    local_rules_id,
+                    custom_standard,
                     progress,
                     define_xml_path,
                     validate_xml,
@@ -702,8 +700,7 @@ def test_validate():
                     external_dictionaries,
                     rules,
                     local_rules,
-                    local_rules_cache,
-                    local_rules_id,
+                    custom_standard,
                     progress,
                     define_xml_path,
                     validate_xml,
