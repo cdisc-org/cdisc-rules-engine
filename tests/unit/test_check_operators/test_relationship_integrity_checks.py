@@ -311,6 +311,186 @@ def test_is_not_valid_relationship(
 
 
 @pytest.mark.parametrize(
+    "data,comparator,context,within,dataset_type,expected_result",
+    [
+        (
+            {
+                "USUBJID": ["SUBJ01", "SUBJ01", "SUBJ02", "SUBJ02"],
+                "RDOMAIN": ["LB", "AE", "LB", "AE"],
+                "target": ["TEST", "AETERM", "TEST", "AETERM"],
+                "IDVARVAL": [4, 31, 5, 35],
+            },
+            "IDVARVAL",
+            "RDOMAIN",
+            "USUBJID",
+            PandasDataset,
+            [True, True, True, False],
+        ),
+        (
+            {
+                "USUBJID": ["SUBJ01", "SUBJ01", "SUBJ02", "SUBJ02"],
+                "RDOMAIN": ["LB", "AE", "LB", "AE"],
+                "target": ["TEST", "AETERM", "TEST", "AETERM"],
+                "IDVARVAL": [4, 31, 5, 35],
+            },
+            "IDVARVAL",
+            "RDOMAIN",
+            "USUBJID",
+            DaskDataset,
+            [True, True, True, False],
+        ),
+        (
+            {
+                "USUBJID": ["SUBJ03", "SUBJ03", "SUBJ03", "SUBJ04", "SUBJ04"],
+                "RDOMAIN": ["LB", "LB", "AE", "LB", "AE"],
+                "target": ["TEST", "DATA", "AETERM", "TEST", "AETERM"],
+                "IDVARVAL": [4, 1, 31, 6, 33],
+            },
+            "IDVARVAL",
+            "RDOMAIN",
+            "USUBJID",
+            PandasDataset,
+            [True, True, True, True, True],
+        ),
+    ],
+)
+def test_valid_relationship_with_within(
+    data, comparator, context, within, dataset_type, expected_result
+):
+    reference_data = {
+        "SUBJ01": {
+            "LB": {
+                "TEST": pd.Series([4, 5, 6]).values,
+                "DATA": pd.Series([1, 2, 3]).values,
+            },
+            "AE": {"AETERM": pd.Series([31, 323, 33]).values},
+        },
+        "SUBJ02": {
+            "LB": {
+                "TEST": pd.Series([4, 5, 6]).values,
+                "DATA": pd.Series([1, 2, 3]).values,
+            },
+            "AE": {"AETERM": pd.Series([31, 323, 33]).values},
+        },
+        "SUBJ03": {
+            "LB": {
+                "TEST": pd.Series([4, 5, 6]).values,
+                "DATA": pd.Series([1, 2, 3]).values,
+            },
+            "AE": {"AETERM": pd.Series([31, 323, 33]).values},
+        },
+        "SUBJ04": {
+            "LB": {
+                "TEST": pd.Series([4, 5, 6]).values,
+                "DATA": pd.Series([1, 2, 3]).values,
+            },
+            "AE": {"AETERM": pd.Series([31, 323, 33]).values},
+        },
+    }
+    df = dataset_type.from_dict(data)
+    dataframe_type = DataframeType({"value": df, "relationship_data": reference_data})
+    result = dataframe_type.is_valid_relationship(
+        {
+            "target": "target",
+            "comparator": comparator,
+            "context": context,
+            "within": within,
+        }
+    )
+    assert result.equals(df.convert_to_series(expected_result))
+
+
+@pytest.mark.parametrize(
+    "data,comparator,context,within,dataset_type,expected_result",
+    [
+        (
+            {
+                "USUBJID": ["SUBJ01", "SUBJ01", "SUBJ02", "SUBJ02"],
+                "RDOMAIN": ["LB", "AE", "LB", "AE"],
+                "target": ["TEST", "AETERM", "TEST", "AETERM"],
+                "IDVARVAL": [4, 31, 5, 35],
+            },
+            "IDVARVAL",
+            "RDOMAIN",
+            "USUBJID",
+            PandasDataset,
+            [False, False, False, True],
+        ),
+        (
+            {
+                "USUBJID": ["SUBJ01", "SUBJ01", "SUBJ02", "SUBJ02"],
+                "RDOMAIN": ["LB", "AE", "LB", "AE"],
+                "target": ["TEST", "AETERM", "TEST", "AETERM"],
+                "IDVARVAL": [4, 31, 5, 35],
+            },
+            "IDVARVAL",
+            "RDOMAIN",
+            "USUBJID",
+            DaskDataset,
+            [False, False, False, True],
+        ),
+        (
+            {
+                "USUBJID": ["SUBJ03", "SUBJ03", "SUBJ04", "SUBJ04"],
+                "RDOMAIN": ["LB", "AE", "LB", "AE"],
+                "target": ["TEST", "AETERM", "DATA", "AETERM"],
+                "IDVARVAL": [99, 99, 99, 99],  # All invalid values
+            },
+            "IDVARVAL",
+            "RDOMAIN",
+            "USUBJID",
+            PandasDataset,
+            [True, True, True, True],
+        ),
+    ],
+)
+def test_is_not_valid_relationship_with_within(
+    data, comparator, context, within, dataset_type, expected_result
+):
+    reference_data = {
+        "SUBJ01": {
+            "LB": {
+                "TEST": pd.Series([4, 5, 6]).values,
+                "DATA": pd.Series([1, 2, 3]).values,
+            },
+            "AE": {"AETERM": pd.Series([31, 323, 33]).values},
+        },
+        "SUBJ02": {
+            "LB": {
+                "TEST": pd.Series([4, 5, 6]).values,
+                "DATA": pd.Series([1, 2, 3]).values,
+            },
+            "AE": {"AETERM": pd.Series([31, 323, 33]).values},
+        },
+        "SUBJ03": {
+            "LB": {
+                "TEST": pd.Series([4, 5, 6]).values,
+                "DATA": pd.Series([1, 2, 3]).values,
+            },
+            "AE": {"AETERM": pd.Series([31, 323, 33]).values},
+        },
+        "SUBJ04": {
+            "LB": {
+                "TEST": pd.Series([4, 5, 6]).values,
+                "DATA": pd.Series([1, 2, 3]).values,
+            },
+            "AE": {"AETERM": pd.Series([31, 323, 33]).values},
+        },
+    }
+    df = dataset_type.from_dict(data)
+    dataframe_type = DataframeType({"value": df, "relationship_data": reference_data})
+    result = dataframe_type.is_not_valid_relationship(
+        {
+            "target": "target",
+            "comparator": comparator,
+            "context": context,
+            "within": within,
+        }
+    )
+    assert result.equals(df.convert_to_series(expected_result))
+
+
+@pytest.mark.parametrize(
     "data,context,dataset_type,expected_result",
     [
         (
