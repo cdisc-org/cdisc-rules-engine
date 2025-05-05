@@ -358,11 +358,34 @@ def test_valid_relationship_with_within(
     data, comparator, context, within, dataset_type, expected_result
 ):
     reference_data = {
-        "LB": {
-            "TEST": pd.Series([4, 5, 6]).values,
-            "DATA": pd.Series([1, 2, 3]).values,
+        "SUBJ01": {
+            "LB": {
+                "TEST": pd.Series([4, 5, 6]).values,
+                "DATA": pd.Series([1, 2, 3]).values,
+            },
+            "AE": {"AETERM": pd.Series([31, 323, 33]).values},
         },
-        "AE": {"AETERM": pd.Series([31, 323, 33]).values},
+        "SUBJ02": {
+            "LB": {
+                "TEST": pd.Series([4, 5, 6]).values,
+                "DATA": pd.Series([1, 2, 3]).values,
+            },
+            "AE": {"AETERM": pd.Series([31, 323, 33]).values},
+        },
+        "SUBJ03": {
+            "LB": {
+                "TEST": pd.Series([4, 5, 6]).values,
+                "DATA": pd.Series([1, 2, 3]).values,
+            },
+            "AE": {"AETERM": pd.Series([31, 323, 33]).values},
+        },
+        "SUBJ04": {
+            "LB": {
+                "TEST": pd.Series([4, 5, 6]).values,
+                "DATA": pd.Series([1, 2, 3]).values,
+            },
+            "AE": {"AETERM": pd.Series([31, 323, 33]).values},
+        },
     }
     df = dataset_type.from_dict(data)
     dataframe_type = DataframeType({"value": df, "relationship_data": reference_data})
@@ -425,11 +448,34 @@ def test_is_not_valid_relationship_with_within(
     data, comparator, context, within, dataset_type, expected_result
 ):
     reference_data = {
-        "LB": {
-            "TEST": pd.Series([4, 5, 6]).values,
-            "DATA": pd.Series([1, 2, 3]).values,
+        "SUBJ01": {
+            "LB": {
+                "TEST": pd.Series([4, 5, 6]).values,
+                "DATA": pd.Series([1, 2, 3]).values,
+            },
+            "AE": {"AETERM": pd.Series([31, 323, 33]).values},
         },
-        "AE": {"AETERM": pd.Series([31, 323, 33]).values},
+        "SUBJ02": {
+            "LB": {
+                "TEST": pd.Series([4, 5, 6]).values,
+                "DATA": pd.Series([1, 2, 3]).values,
+            },
+            "AE": {"AETERM": pd.Series([31, 323, 33]).values},
+        },
+        "SUBJ03": {
+            "LB": {
+                "TEST": pd.Series([4, 5, 6]).values,
+                "DATA": pd.Series([1, 2, 3]).values,
+            },
+            "AE": {"AETERM": pd.Series([31, 323, 33]).values},
+        },
+        "SUBJ04": {
+            "LB": {
+                "TEST": pd.Series([4, 5, 6]).values,
+                "DATA": pd.Series([1, 2, 3]).values,
+            },
+            "AE": {"AETERM": pd.Series([31, 323, 33]).values},
+        },
     }
     df = dataset_type.from_dict(data)
     dataframe_type = DataframeType({"value": df, "relationship_data": reference_data})
