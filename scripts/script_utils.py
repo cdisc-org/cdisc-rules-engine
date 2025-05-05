@@ -23,7 +23,6 @@ from cdisc_rules_engine.utilities.utils import (
     get_model_details_cache_key_from_ig,
     get_library_variables_metadata_cache_key,
     get_standard_codelist_cache_key,
-    filter_rules_by_substandard,
 )
 from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import (
     DefineXMLReaderFactory,
@@ -31,6 +30,18 @@ from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import (
 
 
 def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:  # noqa
+    if args.custom_standard:
+        check = check_custom_standard(args)
+        # custom standard not requiring library metadata
+        if not check:
+            return LibraryMetadataContainer(
+                standard_metadata={},
+                model_metadata={},
+                variable_codelist_map={},
+                variables_metadata={},
+                ct_package_metadata={},
+                published_ct_packages=[],
+            )
     if args.define_xml_path:
         define_xml_reader = DefineXMLReaderFactory.from_filename(args.define_xml_path)
         define_version = define_xml_reader.class_define_xml_version()
@@ -129,6 +140,26 @@ def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:  # noqa
     )
 
 
+def check_custom_standard(args):
+    standards_path = os.path.join(args.cache, DefaultFilePaths.RULES_DICTIONARY.value)
+    try:
+        with open(standards_path, "rb") as f:
+            standards_dict = pickle.load(f)
+    except FileNotFoundError:
+        engine_logger.error(f"Rules file not found: check {standards_path}")
+        return False
+    except Exception as e:
+        engine_logger.error(f"Error checking standards in library service: {e}")
+        return False
+    key = get_rules_cache_key(
+        args.standard, args.version.replace(".", "-"), args.substandard
+    )
+    check = standards_dict.get(key, {})
+    if check:
+        return True
+    return False
+
+
 def fill_cache_with_dictionaries(
     cache: CacheServiceInterface, args, data_service: DataServiceInterface
 ) -> dict:
@@ -174,55 +205,84 @@ def get_rules(args) -> List[dict]:
 
 
 def rule_cache_file(args) -> str:
-    if args.local_rules_cache:
-        return os.path.join(args.cache, DefaultFilePaths.LOCAL_RULES_CACHE_FILE.value)
-    else:
-        return os.path.join(args.cache, DefaultFilePaths.RULES_CACHE_FILE.value)
-
-
-def load_rules_with_local_rules_id(rules_data, local_rules_id):
-    local_prefix = f"local/{local_rules_id}/"
-    rules = {k: v for k, v in rules_data.items() if k.startswith(local_prefix)}
-    return list(rules.values())
-
-
-def load_specified_rules(rules_data, rule_ids, standard, version):
-    keys = [get_rules_cache_key(standard, version, rule) for rule in rule_ids]
-    rules = [rules_data.get(key) for key in keys]
-    missing_rules = [rule for rule, data in zip(rule_ids, rules) if data is None]
-    for missing_rule in missing_rules:
-        engine_logger.error(
-            f"The rule specified '{missing_rule}' is not"
-            " in the standard {standard} and version {version}"
+    if args.custom_standard:
+        return (
+            os.path.join(args.cache, DefaultFilePaths.CUSTOM_RULES_CACHE_FILE.value),
+            os.path.join(args.cache, DefaultFilePaths.RULES_CACHE_FILE.value),
+            os.path.join(args.cache, DefaultFilePaths.CUSTOM_RULES_DICTIONARY.value),
         )
-    rules = [rule for rule in rules if rule is not None]
+    else:
+        return (
+            os.path.join(args.cache, DefaultFilePaths.RULES_CACHE_FILE.value),
+            None,
+            os.path.join(args.cache, DefaultFilePaths.RULES_DICTIONARY.value),
+        )
+
+
+def load_custom_rules(custom_data, cdisc_data, standard, version, rules, standard_dict):
+    key = f"{standard}/{version}"
+    standard_rules = standard_dict.get(key, {})
+    rules_dict = {}
+    ids = set()
+    if rules:
+        for rule in rules:
+            if rule not in standard_rules:
+                engine_logger.error(
+                    f"The rule specified '{rule}' is not in the standard {standard} and version {version}"
+                )
+            else:
+                ids.add(rule)
+    else:
+        for rule in standard_rules:
+            ids.add(rule)
+    for rule in ids:
+        if rule.startswith("CORE-"):
+            rules_dict[rule] = cdisc_data[rule]
+        else:
+            rules_dict[rule] = custom_data[rule]
+    return list(rules_dict.values())
+
+
+def load_specified_rules(
+    rules_data, rule_ids, standard, version, standard_dict, substandard
+):
+    key = get_rules_cache_key(standard, version, substandard)
+    standard_rules = standard_dict.get(key, {})
+    valid_rule_ids = set()
+    for rule in rule_ids:
+        if rule in standard_rules:
+            valid_rule_ids.add(rule)
+        else:
+            engine_logger.error(
+                f"The rule specified '{rule}' is not in the standard {standard} and version {version}"
+            )
+    rules = []
+    for rule_id in valid_rule_ids:
+        rule_data = rules_data.get(rule_id)
+        rules.append(rule_data)
+    # If no valid rules were found, raise an error
     if not rules:
         raise ValueError(
-            "All specified rules were excluded because they are not in the standard and version specified."
+            f"All specified rules were excluded because they are not in the standard {standard} and version {version}"
         )
     return rules
 
 
-def load_all_rules_for_standard(rules_data, standard, version, substandard):
+def load_all_rules_for_standard(
+    rules_data, standard, version, substandard, standard_dict
+):
     rules = []
-    core_ids = set()
     log_message = (
-        f"No rules specified. Running all local rules for {standard} version {version}"
+        f"No rules specified. Running all rules for {standard} version {version}"
     )
     if substandard:
         log_message += f" with substandard {substandard}"
     engine_logger.info(log_message)
 
-    for key, rule in rules_data.items():
-        core_id = rule.get("core_id")
-        rule_identifier = get_rules_cache_key(standard, version, core_id)
-        if core_id not in core_ids and key == rule_identifier:
-            rules.append(rule)
-            core_ids.add(core_id)
-    if substandard:
-        rules = filter_rules_by_substandard(
-            rules, standard, version.replace("-", "."), substandard
-        )
+    key = get_rules_cache_key(standard, version, substandard)
+    standard_rules = standard_dict.get(key, {})
+    for rule in standard_rules:
+        rules.append(rules_data[rule])
     return rules
 
 
@@ -241,27 +301,49 @@ def load_all_rules(rules_data):
 
 
 def load_rules_from_cache(args) -> List[dict]:
-    rules_file = rule_cache_file(args)
+    rules_file, cdisc_file, standard_dict = rule_cache_file(args)
     rules_data = {}
     try:
         with open(rules_file, "rb") as f:
             rules_data = pickle.load(f)
+        if cdisc_file:
+            with open(cdisc_file, "rb") as f:
+                cdisc_data = pickle.load(f)
+        with open(standard_dict, "rb") as f:
+            standard_dict = pickle.load(f)
     except FileNotFoundError:
-        engine_logger.error(f"Rules file not found: {rules_file}")
+        engine_logger.error(
+            f"Rules file or dictionary not found: check {rules_file}, {cdisc_file}, {standard_dict}"
+        )
         return []
     except Exception as e:
         engine_logger.error(f"Error loading rules file: {e}")
         return []
-
-    if args.local_rules_id:
-        return load_rules_with_local_rules_id(rules_data, args.local_rules_id)
+    if args.custom_standard:
+        return load_custom_rules(
+            rules_data,
+            cdisc_data,
+            args.standard,
+            args.version.replace(".", "-"),
+            args.rules,
+            standard_dict,
+        )
     elif args.rules:
         return load_specified_rules(
-            rules_data, args.rules, args.standard, args.version.replace(".", "-")
+            rules_data,
+            args.rules,
+            args.standard,
+            args.version.replace(".", "-"),
+            standard_dict,
+            args.substandard,
         )
     elif args.standard and args.version:
         return load_all_rules_for_standard(
-            rules_data, args.standard, args.version.replace(".", "-"), args.substandard
+            rules_data,
+            args.standard,
+            args.version.replace(".", "-"),
+            args.substandard,
+            standard_dict,
         )
     else:
         return load_all_rules(rules_data)
@@ -326,23 +408,6 @@ def replace_rule_keys(rule):
     if "Check" in rule:
         rule["conditions"] = rule.pop("Check")
         return rule
-
-
-def load_and_parse_local_rule(rule_file: str) -> dict:
-    _, file_extension = os.path.splitext(rule_file)
-    try:
-        with open(rule_file, "r", encoding="utf-8") as file:
-            if file_extension in [".yml", ".yaml"]:
-                loaded_data = yaml.safe_load(file)
-                loaded_data = replace_yml_spaces(loaded_data)
-            elif file_extension == ".json":
-                loaded_data = json.load(file)
-            else:
-                raise ValueError(f"Unsupported file type: {file_extension}")
-            return replace_rule_keys(loaded_data)
-    except Exception as e:
-        print(f"Error while loading {rule_file}: {e}")
-        return None
 
 
 def rule_matches_standard_version(rule, standard, version, substandard=None):
