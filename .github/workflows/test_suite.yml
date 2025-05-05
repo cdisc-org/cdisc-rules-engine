@@ -163,13 +163,13 @@ jobs:
         if: steps.usdm_neg.outputs.usdm_neg_success == 'true'
         continue-on-error: true
         run: |
-          python CORE_Test_Suite/scripts/comparison.py CORE_Test_Suite/usdm_negative_report.json CORE_Test_Suite/USDM_negative_result.json CORE_Test_Suite/usdm_negative_comparison.xlsx --mode test --json-output CORE_Test_Suite0/usdm_negative_comparison.json
+          python CORE_Test_Suite/scripts/comparison.py CORE_Test_Suite/usdm_negative_report.json CORE_Test_Suite/USDM_Negative_Result.json CORE_Test_Suite/usdm_negative_comparison.xlsx --mode test --json-output CORE_Test_Suite0/usdm_negative_comparison.json
 
       - name: Compare USDM positive result
         if: steps.usdm_pos.outputs.usdm_pos_success == 'true'
         continue-on-error: true
         run: |
-          python CORE_Test_Suite/scripts/comparison.py CORE_Test_Suite/usdm_positive_report.json CORE_Test_Suite/USDM_positive_result.json CORE_Test_Suite/usdm_positive_comparison.xlsx --mode test --json-output CORE_Test_Suite/usdm_positive_comparison.json
+          python CORE_Test_Suite/scripts/comparison.py CORE_Test_Suite/usdm_positive_report.json CORE_Test_Suite/USDM_Positive_Result.json CORE_Test_Suite/usdm_positive_comparison.xlsx --mode test --json-output CORE_Test_Suite/usdm_positive_comparison.json
 
       #######################
       # UPLOAD ALL RESULTS
