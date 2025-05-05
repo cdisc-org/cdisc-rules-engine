@@ -147,7 +147,7 @@ jobs:
         id: usdm_pos
         continue-on-error: true
         run: |
-          python core.py validate -s usdm -v 3-0 ${{ env.USDM_RULE_LIST }} -dp CORE_Test_Suite/data/USDM_Test_Suite_positive.json -of json -o CORE_Test_Suite/usdm_positive_report -l error || true
+          python core.py validate -s usdm -v 3-0 ${{ env.USDM_RULE_LIST }} -dp CORE_Test_Suite/usdm_data/USDM_Test_Suite_positive.json -of json -o CORE_Test_Suite/usdm_positive_report -l error || true
 
           if [ -f "CORE_Test_Suite/usdm_positive_report.json" ]; then
             echo "usdm_pos_success=true" >> $GITHUB_OUTPUT
