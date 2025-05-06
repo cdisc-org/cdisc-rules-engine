@@ -56,12 +56,18 @@ class BaseDatasetBuilder:
         """
         pass
 
-    @abstractmethod
-    def build_split_datasets(self, dataset_name) -> DatasetInterface:
+    def build_split_datasets(self, dataset_name, **kwargs) -> DatasetInterface:
         """
-        Returns correct dataframe to operate on
+        Returns correct dataframe to operate on.
+        Default implementation that temporarily sets dataset_path to dataset_name and calls build().
         """
-        pass
+        original_path = self.dataset_path
+        try:
+            self.dataset_path = dataset_name
+            result = self.build(**kwargs)
+            return result
+        finally:
+            self.dataset_path = original_path
 
     def get_dataset(self, **kwargs):
         # If validating dataset content, ensure split datasets are handled.
