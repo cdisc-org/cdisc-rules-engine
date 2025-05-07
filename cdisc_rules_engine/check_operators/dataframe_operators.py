@@ -1627,6 +1627,7 @@ class DataframeType(BaseType):
     def is_ordered_subset_of(self, other_value: dict):
         target = self.replace_prefix(other_value.get("target"))
         comparator = self.replace_prefix(other_value.get("comparator"))
+        missing_columns = set()
 
         def check_order(row):
             target_list = row[target]
@@ -1637,18 +1638,20 @@ class DataframeType(BaseType):
                 if col in comparator_positions:
                     positions.append(comparator_positions[col])
                 else:
-                    logger.info(
-                        f"Column {col} not found in comparator list {comparator}"
-                    )
+                    missing_columns.add(col)
                     return False
             return positions == sorted(positions)
 
         if isinstance(self.value, DaskDataset):
             results = self.value.apply(check_order, axis=1, meta=("check_order", bool))
-            return self.value.convert_to_series(results)
+            results = self.value.convert_to_series(results)
         else:
             results = self.value.apply(check_order, axis=1)
-            return results
+        if missing_columns:
+            logger.info(
+                f"Columns not found in comparator list {comparator}: {', '.join(sorted(missing_columns))}"
+            )
+        return results
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
