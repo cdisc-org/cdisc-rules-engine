@@ -827,6 +827,22 @@ Check:
       value: "IDVARVAL"
 ```
 
+Both is_valid_relationship and is_not_valid relationship can use an optional 'within' argument
+
+```yaml
+Scopes:
+  Domains:
+    - RELREC
+Check:
+  all:
+    - name: "IDVAR"
+      operator: is_valid_relationship
+      context: "RDOMAIN"
+      value: "IDVARVAL"
+```
+
+> Records found in the domain referenced by RDOMAIN, where variable in IDVAR = value in IDVARVAL, scoped within the same USUBJID
+
 ## is_not_valid_relationship
 
 Complement of `is_valid_relationship`
