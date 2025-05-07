@@ -1600,3 +1600,36 @@ class DataframeType(BaseType):
             return len(target_set.intersection(comparator_set)) == 0
 
         return self.value.apply(check_no_shared_elements, axis=1).all()
+
+    @log_operator_execution
+    @type_operator(FIELD_DATAFRAME)
+    def is_ordered_subset_of(self, other_value: dict):
+        target = self.replace_prefix(other_value.get("target"))
+        comparator = self.replace_prefix(other_value.get("comparator"))
+
+        def check_order(row):
+            target_list = row[target]
+            comparator_list = row[comparator]
+            comparator_positions = {col: idx for idx, col in enumerate(comparator_list)}
+            positions = []
+            for col in target_list:
+                if col in comparator_positions:
+                    positions.append(comparator_positions[col])
+                else:
+                    logger.info(
+                        f"Column {col} not found in comparator list {comparator}"
+                    )
+                    return False
+            return positions == sorted(positions)
+
+        if isinstance(self.value, DaskDataset):
+            results = self.value.apply(check_order, axis=1, meta=("check_order", bool))
+            return self.value.convert_to_series(results)
+        else:
+            results = self.value.apply(check_order, axis=1)
+            return results
+
+    @log_operator_execution
+    @type_operator(FIELD_DATAFRAME)
+    def is_not_ordered_subset_of(self, other_value: dict):
+        return ~self.is_ordered_subset_of(other_value)

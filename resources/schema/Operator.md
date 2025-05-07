@@ -926,10 +926,6 @@ Check:
       value: USUBJID
 ```
 
-## is_not_ordered_set
-
-Complement of `is_ordered_set`
-
 ## is_ordered_by
 
 True if the dataset rows are ordered by the values within `name`, given the ordering specified by `order`
@@ -1020,6 +1016,21 @@ True if the value in `name` has more than one count in the dictionary defined in
 
 Complement of `value_has_multiple_references`
 
+## is_ordered_subset_of
+
+Checks if elements in the target list appear in the same relative order in the comparator list.
+
+> Check if dataset column order is a correctly ordered subset of library column order
+
+```yaml
+- name: $column_order_from_dataset
+  operator: is_ordered_subset_of
+  value: $column_order_from_library
+
+## is_not_ordered_subset_of
+
+Complement of `is_ordered_subset_of`
+
 # Define.XML
 
 ## conformant_value_data_type
@@ -1049,3 +1060,4 @@ True if the codelist named within `value` is a valid codelist for the variable n
 ## does_not_reference_correct_codelist
 
 Complement of `references_correct_codelist`
+```

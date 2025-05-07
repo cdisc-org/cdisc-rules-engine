@@ -1681,3 +1681,557 @@ def test_value_does_not_have_multiple_references(dataset_type):
         {"target": "LNKGRP", "comparator": "$VALUE_COUNTS"}
     )
     assert result.equals(df.convert_to_series([False, True, False, False, False]))
+
+
+@pytest.mark.parametrize(
+    "data, dataset_type, expected_result",
+    [
+        (
+            {
+                "$column_order_from_dataset": [
+                    ["STUDYID", "DOMAIN", "USUBJID", "VSSEQ", "VSTEST"],
+                    ["STUDYID", "DOMAIN", "USUBJID", "VSSEQ", "VSTEST"],
+                ],
+                "$column_order_from_library": [
+                    [
+                        "STUDYID",
+                        "DOMAIN",
+                        "USUBJID",
+                        "VSSEQ",
+                        "VSTEST",
+                        "VSPOS",
+                        "VSORRES",
+                    ],
+                    [
+                        "STUDYID",
+                        "DOMAIN",
+                        "USUBJID",
+                        "VSSEQ",
+                        "VSTEST",
+                        "VSPOS",
+                        "VSORRES",
+                    ],
+                ],
+            },
+            PandasDataset,
+            [True, True],
+        ),
+        (
+            {
+                "$column_order_from_dataset": [
+                    ["STUDYID", "DOMAIN", "USUBJID", "VSSEQ", "VSTEST"],
+                    ["STUDYID", "DOMAIN", "USUBJID", "VSSEQ", "VSTEST"],
+                ],
+                "$column_order_from_library": [
+                    [
+                        "STUDYID",
+                        "DOMAIN",
+                        "USUBJID",
+                        "VSSEQ",
+                        "VSTEST",
+                        "VSPOS",
+                        "VSORRES",
+                    ],
+                    [
+                        "STUDYID",
+                        "DOMAIN",
+                        "USUBJID",
+                        "VSSEQ",
+                        "VSTEST",
+                        "VSPOS",
+                        "VSORRES",
+                    ],
+                ],
+            },
+            DaskDataset,
+            [True, True],
+        ),
+        (
+            {
+                "$column_order_from_dataset": [
+                    ["STUDYID", "USUBJID", "DOMAIN", "VSSEQ", "VSTEST"],
+                    ["STUDYID", "USUBJID", "DOMAIN", "VSSEQ", "VSTEST"],
+                ],
+                "$column_order_from_library": [
+                    [
+                        "STUDYID",
+                        "DOMAIN",
+                        "USUBJID",
+                        "VSSEQ",
+                        "VSTEST",
+                        "VSPOS",
+                        "VSORRES",
+                    ],
+                    [
+                        "STUDYID",
+                        "DOMAIN",
+                        "USUBJID",
+                        "VSSEQ",
+                        "VSTEST",
+                        "VSPOS",
+                        "VSORRES",
+                    ],
+                ],
+            },
+            PandasDataset,
+            [False, False],
+        ),
+        (
+            {
+                "$column_order_from_dataset": [
+                    ["STUDYID", "USUBJID", "DOMAIN", "VSSEQ", "VSTEST"],
+                    ["STUDYID", "USUBJID", "DOMAIN", "VSSEQ", "VSTEST"],
+                ],
+                "$column_order_from_library": [
+                    [
+                        "STUDYID",
+                        "DOMAIN",
+                        "USUBJID",
+                        "VSSEQ",
+                        "VSTEST",
+                        "VSPOS",
+                        "VSORRES",
+                    ],
+                    [
+                        "STUDYID",
+                        "DOMAIN",
+                        "USUBJID",
+                        "VSSEQ",
+                        "VSTEST",
+                        "VSPOS",
+                        "VSORRES",
+                    ],
+                ],
+            },
+            DaskDataset,
+            [False, False],
+        ),
+        (
+            {
+                "$column_order_from_dataset": [
+                    ["STUDYID", "DOMAIN", "USUBJID", "VSSEQ", "VSTEST"],
+                    ["STUDYID", "USUBJID", "DOMAIN", "VSSEQ", "VSTEST"],
+                ],
+                "$column_order_from_library": [
+                    [
+                        "STUDYID",
+                        "DOMAIN",
+                        "USUBJID",
+                        "VSSEQ",
+                        "VSTEST",
+                        "VSPOS",
+                        "VSORRES",
+                    ],
+                    [
+                        "STUDYID",
+                        "DOMAIN",
+                        "USUBJID",
+                        "VSSEQ",
+                        "VSTEST",
+                        "VSPOS",
+                        "VSORRES",
+                    ],
+                ],
+            },
+            PandasDataset,
+            [True, False],
+        ),
+        (
+            {
+                "$column_order_from_dataset": [
+                    ["STUDYID", "DOMAIN", "USUBJID", "VSSEQ", "VSTEST"],
+                    ["STUDYID", "USUBJID", "DOMAIN", "VSSEQ", "VSTEST"],
+                ],
+                "$column_order_from_library": [
+                    [
+                        "STUDYID",
+                        "DOMAIN",
+                        "USUBJID",
+                        "VSSEQ",
+                        "VSTEST",
+                        "VSPOS",
+                        "VSORRES",
+                    ],
+                    [
+                        "STUDYID",
+                        "DOMAIN",
+                        "USUBJID",
+                        "VSSEQ",
+                        "VSTEST",
+                        "VSPOS",
+                        "VSORRES",
+                    ],
+                ],
+            },
+            DaskDataset,
+            [True, False],
+        ),
+        (
+            {
+                "$column_order_from_dataset": [
+                    ["STUDYID", "DOMAIN", "USUBJID", "VSSEQ", "NOTINLIBRARY"],
+                ],
+                "$column_order_from_library": [
+                    [
+                        "STUDYID",
+                        "DOMAIN",
+                        "USUBJID",
+                        "VSSEQ",
+                        "VSTEST",
+                        "VSPOS",
+                        "VSORRES",
+                    ],
+                ],
+            },
+            PandasDataset,
+            [False],
+        ),
+        (
+            {
+                "$column_order_from_dataset": [
+                    ["STUDYID", "DOMAIN", "USUBJID", "VSSEQ", "NOTINLIBRARY"],
+                ],
+                "$column_order_from_library": [
+                    [
+                        "STUDYID",
+                        "DOMAIN",
+                        "USUBJID",
+                        "VSSEQ",
+                        "VSTEST",
+                        "VSPOS",
+                        "VSORRES",
+                    ],
+                ],
+            },
+            DaskDataset,
+            [False],
+        ),
+        (
+            {
+                "$column_order_from_dataset": [
+                    [],
+                ],
+                "$column_order_from_library": [
+                    [
+                        "STUDYID",
+                        "DOMAIN",
+                        "USUBJID",
+                        "VSSEQ",
+                        "VSTEST",
+                        "VSPOS",
+                        "VSORRES",
+                    ],
+                ],
+            },
+            PandasDataset,
+            [True],
+        ),
+        (
+            {
+                "$column_order_from_dataset": [
+                    [],
+                ],
+                "$column_order_from_library": [
+                    [
+                        "STUDYID",
+                        "DOMAIN",
+                        "USUBJID",
+                        "VSSEQ",
+                        "VSTEST",
+                        "VSPOS",
+                        "VSORRES",
+                    ],
+                ],
+            },
+            DaskDataset,
+            [True],
+        ),
+    ],
+)
+def test_is_ordered_subset_of(data, dataset_type, expected_result):
+    df = dataset_type.from_dict(data)
+    dataframe_type = DataframeType({"value": df})
+    result = dataframe_type.is_ordered_subset_of(
+        {
+            "target": "$column_order_from_dataset",
+            "comparator": "$column_order_from_library",
+        }
+    )
+    assert result.equals(df.convert_to_series(expected_result))
+
+
+@pytest.mark.parametrize(
+    "data, dataset_type, expected_result",
+    [
+        (
+            {
+                "$column_order_from_dataset": [
+                    ["STUDYID", "DOMAIN", "USUBJID", "VSSEQ", "VSTEST"],
+                    ["STUDYID", "DOMAIN", "USUBJID", "VSSEQ", "VSTEST"],
+                ],
+                "$column_order_from_library": [
+                    [
+                        "STUDYID",
+                        "DOMAIN",
+                        "USUBJID",
+                        "VSSEQ",
+                        "VSTEST",
+                        "VSPOS",
+                        "VSORRES",
+                    ],
+                    [
+                        "STUDYID",
+                        "DOMAIN",
+                        "USUBJID",
+                        "VSSEQ",
+                        "VSTEST",
+                        "VSPOS",
+                        "VSORRES",
+                    ],
+                ],
+            },
+            PandasDataset,
+            [False, False],
+        ),
+        (
+            {
+                "$column_order_from_dataset": [
+                    ["STUDYID", "DOMAIN", "USUBJID", "VSSEQ", "VSTEST"],
+                    ["STUDYID", "DOMAIN", "USUBJID", "VSSEQ", "VSTEST"],
+                ],
+                "$column_order_from_library": [
+                    [
+                        "STUDYID",
+                        "DOMAIN",
+                        "USUBJID",
+                        "VSSEQ",
+                        "VSTEST",
+                        "VSPOS",
+                        "VSORRES",
+                    ],
+                    [
+                        "STUDYID",
+                        "DOMAIN",
+                        "USUBJID",
+                        "VSSEQ",
+                        "VSTEST",
+                        "VSPOS",
+                        "VSORRES",
+                    ],
+                ],
+            },
+            DaskDataset,
+            [False, False],
+        ),
+        (
+            {
+                "$column_order_from_dataset": [
+                    ["STUDYID", "USUBJID", "DOMAIN", "VSSEQ", "VSTEST"],
+                    ["STUDYID", "USUBJID", "DOMAIN", "VSSEQ", "VSTEST"],
+                ],
+                "$column_order_from_library": [
+                    [
+                        "STUDYID",
+                        "DOMAIN",
+                        "USUBJID",
+                        "VSSEQ",
+                        "VSTEST",
+                        "VSPOS",
+                        "VSORRES",
+                    ],
+                    [
+                        "STUDYID",
+                        "DOMAIN",
+                        "USUBJID",
+                        "VSSEQ",
+                        "VSTEST",
+                        "VSPOS",
+                        "VSORRES",
+                    ],
+                ],
+            },
+            PandasDataset,
+            [True, True],
+        ),
+        (
+            {
+                "$column_order_from_dataset": [
+                    ["STUDYID", "USUBJID", "DOMAIN", "VSSEQ", "VSTEST"],
+                    ["STUDYID", "USUBJID", "DOMAIN", "VSSEQ", "VSTEST"],
+                ],
+                "$column_order_from_library": [
+                    [
+                        "STUDYID",
+                        "DOMAIN",
+                        "USUBJID",
+                        "VSSEQ",
+                        "VSTEST",
+                        "VSPOS",
+                        "VSORRES",
+                    ],
+                    [
+                        "STUDYID",
+                        "DOMAIN",
+                        "USUBJID",
+                        "VSSEQ",
+                        "VSTEST",
+                        "VSPOS",
+                        "VSORRES",
+                    ],
+                ],
+            },
+            DaskDataset,
+            [True, True],
+        ),
+        (
+            {
+                "$column_order_from_dataset": [
+                    ["STUDYID", "DOMAIN", "USUBJID", "VSSEQ", "VSTEST"],
+                    ["STUDYID", "USUBJID", "DOMAIN", "VSSEQ", "VSTEST"],
+                ],
+                "$column_order_from_library": [
+                    [
+                        "STUDYID",
+                        "DOMAIN",
+                        "USUBJID",
+                        "VSSEQ",
+                        "VSTEST",
+                        "VSPOS",
+                        "VSORRES",
+                    ],
+                    [
+                        "STUDYID",
+                        "DOMAIN",
+                        "USUBJID",
+                        "VSSEQ",
+                        "VSTEST",
+                        "VSPOS",
+                        "VSORRES",
+                    ],
+                ],
+            },
+            PandasDataset,
+            [False, True],
+        ),
+        (
+            {
+                "$column_order_from_dataset": [
+                    ["STUDYID", "DOMAIN", "USUBJID", "VSSEQ", "VSTEST"],
+                    ["STUDYID", "USUBJID", "DOMAIN", "VSSEQ", "VSTEST"],
+                ],
+                "$column_order_from_library": [
+                    [
+                        "STUDYID",
+                        "DOMAIN",
+                        "USUBJID",
+                        "VSSEQ",
+                        "VSTEST",
+                        "VSPOS",
+                        "VSORRES",
+                    ],
+                    [
+                        "STUDYID",
+                        "DOMAIN",
+                        "USUBJID",
+                        "VSSEQ",
+                        "VSTEST",
+                        "VSPOS",
+                        "VSORRES",
+                    ],
+                ],
+            },
+            DaskDataset,
+            [False, True],
+        ),
+        (
+            {
+                "$column_order_from_dataset": [
+                    ["STUDYID", "DOMAIN", "USUBJID", "VSSEQ", "NOTINLIBRARY"],
+                ],
+                "$column_order_from_library": [
+                    [
+                        "STUDYID",
+                        "DOMAIN",
+                        "USUBJID",
+                        "VSSEQ",
+                        "VSTEST",
+                        "VSPOS",
+                        "VSORRES",
+                    ],
+                ],
+            },
+            PandasDataset,
+            [True],
+        ),
+        (
+            {
+                "$column_order_from_dataset": [
+                    ["STUDYID", "DOMAIN", "USUBJID", "VSSEQ", "NOTINLIBRARY"],
+                ],
+                "$column_order_from_library": [
+                    [
+                        "STUDYID",
+                        "DOMAIN",
+                        "USUBJID",
+                        "VSSEQ",
+                        "VSTEST",
+                        "VSPOS",
+                        "VSORRES",
+                    ],
+                ],
+            },
+            DaskDataset,
+            [True],
+        ),
+        (
+            {
+                "$column_order_from_dataset": [
+                    [],
+                ],
+                "$column_order_from_library": [
+                    [
+                        "STUDYID",
+                        "DOMAIN",
+                        "USUBJID",
+                        "VSSEQ",
+                        "VSTEST",
+                        "VSPOS",
+                        "VSORRES",
+                    ],
+                ],
+            },
+            PandasDataset,
+            [False],
+        ),
+        (
+            {
+                "$column_order_from_dataset": [
+                    [],
+                ],
+                "$column_order_from_library": [
+                    [
+                        "STUDYID",
+                        "DOMAIN",
+                        "USUBJID",
+                        "VSSEQ",
+                        "VSTEST",
+                        "VSPOS",
+                        "VSORRES",
+                    ],
+                ],
+            },
+            DaskDataset,
+            [False],
+        ),
+    ],
+)
+def test_is_not_ordered_subset_of(data, dataset_type, expected_result):
+    df = dataset_type.from_dict(data)
+    dataframe_type = DataframeType({"value": df})
+    result = dataframe_type.is_not_ordered_subset_of(
+        {
+            "target": "$column_order_from_dataset",
+            "comparator": "$column_order_from_library",
+        }
+    )
+    assert result.equals(df.convert_to_series(expected_result))
