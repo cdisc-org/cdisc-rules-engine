@@ -1128,10 +1128,20 @@ class DataframeType(BaseType):
         target = self.replace_prefix(other_value.get("target"))
         value_column = self.replace_prefix(other_value.get("comparator"))
         context = self.replace_prefix(other_value.get("context"))
+        within_column = self.replace_prefix(other_value.get("within"))
+        if not within_column or within_column not in self.value.columns:
+            return self.value.apply(
+                lambda row: self.detect_reference(row, value_column, target, context),
+                axis=1,
+            )
+        results = pd.Series(False, index=self.value.index)
         results = self.value.apply(
-            lambda row: self.detect_reference(row, value_column, target, context),
+            lambda row: self.detect_reference(
+                row, value_column, target, context, row[within_column]
+            ),
             axis=1,
         )
+
         return results
 
     @log_operator_execution
@@ -1262,21 +1272,32 @@ class DataframeType(BaseType):
     def not_present_on_multiple_rows_within(self, other_value: dict):
         return ~self.present_on_multiple_rows_within(other_value)
 
-    def detect_reference(self, row, value_column, target_column, context=None):
-        if context:
-            target_data = self.relationship_data.get(row[context], {}).get(
-                row[target_column], pd.Series([]).values
-            )
+    def detect_reference(
+        self, row, value_column, target_column, context=None, within_value=None
+    ):
+        if within_value is not None:
+            if context:
+                target_data = (
+                    self.relationship_data.get(within_value, {})
+                    .get(row[context], {})
+                    .get(row[target_column], pd.Series([]).values)
+                )
+            else:
+                target_data = self.relationship_data.get(within_value, {}).get(
+                    row[target_column], pd.Series([]).values
+                )
         else:
-            target_data = self.relationship_data.get(
-                row[target_column], pd.Series([]).values
-            )
-        value = row[value_column]
-        return (
-            (value in target_data)
-            or (value in target_data.astype(int).astype(str))
-            or (value in target_data.astype(str))
-        )
+            if context:
+                target_data = self.relationship_data.get(row[context], {}).get(
+                    row[target_column], pd.Series([]).values
+                )
+            else:
+                target_data = self.relationship_data.get(
+                    row[target_column], pd.Series([]).values
+                )
+        value = str(row[value_column])
+        target_data_str = [str(x) for x in target_data]
+        return value in target_data_str
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -1603,3 +1624,39 @@ class DataframeType(BaseType):
             return len(target_set.intersection(comparator_set)) == 0
 
         return self.value.apply(check_no_shared_elements, axis=1).all()
+
+    @log_operator_execution
+    @type_operator(FIELD_DATAFRAME)
+    def is_ordered_subset_of(self, other_value: dict):
+        target = self.replace_prefix(other_value.get("target"))
+        comparator = self.replace_prefix(other_value.get("comparator"))
+        missing_columns = set()
+
+        def check_order(row):
+            target_list = row[target]
+            comparator_list = row[comparator]
+            comparator_positions = {col: idx for idx, col in enumerate(comparator_list)}
+            positions = []
+            for col in target_list:
+                if col in comparator_positions:
+                    positions.append(comparator_positions[col])
+                else:
+                    missing_columns.add(col)
+                    return False
+            return positions == sorted(positions)
+
+        if isinstance(self.value, DaskDataset):
+            results = self.value.apply(check_order, axis=1, meta=("check_order", bool))
+            results = self.value.convert_to_series(results)
+        else:
+            results = self.value.apply(check_order, axis=1)
+        if missing_columns:
+            logger.info(
+                f"Columns not found in comparator list {comparator}: {', '.join(sorted(missing_columns))}"
+            )
+        return results
+
+    @log_operator_execution
+    @type_operator(FIELD_DATAFRAME)
+    def is_not_ordered_subset_of(self, other_value: dict):
+        return ~self.is_ordered_subset_of(other_value)

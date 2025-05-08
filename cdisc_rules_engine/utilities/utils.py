@@ -296,17 +296,11 @@ def generate_report_filename(generation_time: str) -> str:
     return f"CORE-Report-{timestamp}"
 
 
-def get_rules_cache_key(standard: str, version: str, rule_id: str = None) -> str:
-    key = f"rules/{standard}/{version}/"
-    if rule_id:
-        key = f"{key}{rule_id}"
-    return key
-
-
-def get_local_cache_key(local_rule_id: str, rule_id: str = None) -> str:
-    key = f"local/{local_rule_id}/"
-    if rule_id:
-        key = f"{key}{rule_id}"
+def get_rules_cache_key(standard: str, version: str, substandard: str = None) -> str:
+    if substandard:
+        key = f"{standard.lower()}/{version}/{substandard.lower()}"
+    else:
+        key = f"{standard.lower()}/{version}"
     return key
 
 
@@ -400,30 +394,3 @@ def dates_overlap(date1_str, precision1, date2_str, precision2):
     more_precise = date2_str if precision1 < precision2 else date1_str
 
     return more_precise.startswith(less_precise), less_precise
-
-
-def filter_rules_by_substandard(rules, standard, version, substandard):
-    """
-    Filter a list of rules to include only those that match the specified substandard.
-    """
-    if not substandard:
-        return rules
-
-    # Ensure version format and case-insensitivity
-    version = version.replace("-", ".")
-    standard_lower = standard.lower()
-    substandard_lower = substandard.lower()
-    filtered_rules = []
-    for rule in rules:
-        for std in rule.get("standards", []):
-            std_substandard = std.get("Substandard", "")
-            if std_substandard:
-                std_substandard = std_substandard.lower()
-            if (
-                std.get("Name", "").lower() == standard_lower
-                and std.get("Version") == version
-                and std_substandard == substandard_lower
-            ):
-                filtered_rules.append(rule)
-                break
-    return filtered_rules
