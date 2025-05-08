@@ -75,8 +75,8 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:  # 
                         standard, standard_version, standard_substandard
                     )
                 )
-                asyncio.run(cache_populator.load_available_ct_packages())
             asyncio.run(cache_populator.load_codelists(codelists))
+        asyncio.run(cache_populator.load_available_ct_packages())
         if not rule:
             raise KeyError("'rule' required in request")
         datasets = json_data.get("datasets")

@@ -1,7 +1,11 @@
 import re
 from typing import Iterable, List, Optional, Set, Union, Tuple
-from cdisc_rules_engine.interfaces.cache_service_interface import CacheServiceInterface
-from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
+from cdisc_rules_engine.interfaces.cache_service_interface import (
+    CacheServiceInterface,
+)
+from cdisc_rules_engine.models.dataset.dataset_interface import (
+    DatasetInterface,
+)
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
@@ -35,7 +39,9 @@ from cdisc_rules_engine.models.external_dictionaries_container import (
     ExternalDictionariesContainer,
 )
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
-from cdisc_rules_engine.interfaces.data_service_interface import DataServiceInterface
+from cdisc_rules_engine.interfaces.data_service_interface import (
+    DataServiceInterface,
+)
 from cdisc_rules_engine.exceptions.custom_exceptions import DomainNotFoundError
 
 
@@ -70,7 +76,10 @@ class RuleProcessor:
 
         # additional check for split domains based on the flag
         is_excluded, is_included = cls._handle_split_domains(
-            dataset_metadata.is_split, include_split_datasets, is_excluded, is_included
+            dataset_metadata.is_split,
+            include_split_datasets,
+            is_excluded,
+            is_included,
         )
 
         return is_included and not is_excluded
@@ -212,7 +221,10 @@ class RuleProcessor:
                 dataset_name=dataset_metadata.full_path, datasets=datasets
             ).data.variable_name
             class_name = self.data_service.get_dataset_class(
-                variables, dataset_metadata.full_path, datasets, dataset_metadata
+                variables,
+                dataset_metadata.full_path,
+                datasets,
+                dataset_metadata,
             )
             if (class_name not in included_classes) and not (
                 class_name == FINDINGS_ABOUT and FINDINGS in included_classes
@@ -224,7 +236,10 @@ class RuleProcessor:
                 dataset_name=dataset_metadata.full_path, datasets=datasets
             ).data.variable_name
             class_name = self.data_service.get_dataset_class(
-                variables, dataset_metadata.full_path, datasets, dataset_metadata
+                variables,
+                dataset_metadata.full_path,
+                datasets,
+                dataset_metadata,
             )
             if class_name and (
                 (class_name in excluded_classes)
@@ -326,6 +341,7 @@ class RuleProcessor:
                 external_dictionaries=external_dictionaries,
                 ct_version=operation.get("version"),
                 ct_attribute=operation.get("attribute"),
+                ct_package_types=operation.get("ct_package_types"),
                 ct_packages=kwargs.get("ct_packages"),
                 ct_package=kwargs.get("codelist_term_maps"),
                 attribute_name=operation.get("attribute_name", ""),

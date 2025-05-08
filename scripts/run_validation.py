@@ -49,6 +49,7 @@ from cdisc_rules_engine.services.reporting import BaseReport, ReportFactory
 from cdisc_rules_engine.utilities.progress_displayers import get_progress_displayer
 from warnings import simplefilter
 import os
+from cdisc_rules_engine.constants.cache_constants import PUBLISHED_CT_PACKAGES
 
 simplefilter(
     action="ignore", category=FutureWarning
@@ -234,6 +235,7 @@ def run_single_rule_validation(
         variables_metadata=cache.get(variable_details_cache_key),
         variable_codelist_map=cache.get(variable_codelist_cache_key),
         ct_package_metadata=ct_package_metadata,
+        published_ct_packages=cache.get(PUBLISHED_CT_PACKAGES),
     )
     if not standard and not standard_version and rule:
         standard = rule.get("Authorities")[0].get("Standards")[0].get("Name").lower()

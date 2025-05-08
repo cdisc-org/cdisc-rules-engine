@@ -34,6 +34,7 @@ class OperationParams:
     codelist: str = None
     codelists: list = None
     ct_attribute: str = None
+    ct_package_types: List[str] = None
     ct_package: list = None
     ct_packages: list = None
     ct_version: str = None
