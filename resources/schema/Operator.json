@@ -866,6 +866,24 @@
       },
       "required": ["operator", "name"],
       "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "is_ordered_subset_of"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "is_not_ordered_subset_of"
+        }
+      },
+      "required": ["operator", "value"],
+      "type": "object"
     }
   ],
   "properties": {

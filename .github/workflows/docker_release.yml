@@ -1,8 +1,11 @@
 name: Build and Push Docker Image
 on:
-  release:
-    types: [published]
-  workflow_dispatch:
+  workflow_run:
+    workflows: ["Release CORE Rules Engine"]
+    types:
+      - completed
+    branches:
+      - main
 jobs:
   check-if-latest:
     runs-on: ubuntu-latest
