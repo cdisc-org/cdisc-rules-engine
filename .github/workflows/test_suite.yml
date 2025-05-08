@@ -142,6 +142,12 @@ jobs:
             echo "usdm_neg_success=false" >> $GITHUB_OUTPUT
             echo "**Failed**: No results for negative test" >> $GITHUB_STEP_SUMMARY
           fi
+      - name: Compare USDM negative result
+        if: steps.usdm_neg.outputs.usdm_neg_success == 'true'
+        continue-on-error: true
+        run: |
+          python CORE_Test_Suite/scripts/comparison.py CORE_Test_Suite/usdm_negative_report.json CORE_Test_Suite/USDM_Negative_Result.json CORE_Test_Suite/usdm_negative_comparison.xlsx --mode test --json-output CORE_Test_Suite/usdm_negative_comparison.json
+
 
       - name: Run USDM validation (Positive)
         id: usdm_pos
@@ -158,12 +164,6 @@ jobs:
             echo "usdm_pos_success=false" >> $GITHUB_OUTPUT
             echo "**Failed**: No results for positive test" >> $GITHUB_STEP_SUMMARY
           fi
-
-      - name: Compare USDM negative result
-        if: steps.usdm_neg.outputs.usdm_neg_success == 'true'
-        continue-on-error: true
-        run: |
-          python CORE_Test_Suite/scripts/comparison.py CORE_Test_Suite/usdm_negative_report.json CORE_Test_Suite/USDM_Negative_Result.json CORE_Test_Suite/usdm_negative_comparison.xlsx --mode test --json-output CORE_Test_Suite/usdm_negative_comparison.json
 
       - name: Compare USDM positive result
         if: steps.usdm_pos.outputs.usdm_pos_success == 'true'
