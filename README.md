@@ -1,6 +1,6 @@
 ### Supported python versions
 
-[![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/downloads/release/python-3100)
+[![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3120)
 
 ### Windows Command Compatibility
 
@@ -62,12 +62,12 @@ In the terminal, navigate to the directory you intend to install CORE rules engi
    git clone https://github.com/cdisc-org/cdisc-rules-engine
    ```
 
-2. Ensure you have Python 3.10 installed:
+2. Ensure you have Python 3.12 installed:
    You can check your Python version with:
    ```
    python --version
    ```
-   If you don't have Python 3.10, please download and install it from [python.org](https://www.python.org/downloads/) or using your system's package manager.
+   If you don't have Python 3.12, please download and install it from [python.org](https://www.python.org/downloads/) or using your system's package manager.
 
 ### **Code formatter**
 
