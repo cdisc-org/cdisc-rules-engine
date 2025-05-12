@@ -91,8 +91,8 @@ These steps should be run before running any tests or core commands using the no
 
   `python -m venv <virtual_environment_name>`
 
-NOTE: if you have multiple versions of python on your machine, you can call python 3.10 for the virtual environment's creation instead of the above command:
-`python3.10 -m venv <virtual_environment_name>`
+NOTE: if you have multiple versions of python on your machine, you can call python 3.12 for the virtual environment's creation instead of the above command:
+`python3.12 -m venv <virtual_environment_name>`
 
 - Activate the virtual environment:
 

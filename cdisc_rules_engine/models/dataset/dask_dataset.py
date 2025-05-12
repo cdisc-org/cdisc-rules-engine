@@ -41,7 +41,8 @@ class DaskDataset(PandasDataset):
         self._data = data
 
     def __getitem__(self, item):
-        return self._data[item].compute().reset_index(drop=True)
+        computed_data = self._data[item].compute().reset_index(drop=True)
+        return self._parse_list_strings(computed_data)
 
     def is_column_sorted_within(self, group, column):
         return (
@@ -111,8 +112,23 @@ class DaskDataset(PandasDataset):
                     return default
             return self._data[target].compute()
         elif target in self._data:
-            return self._data[target].compute()
+            computed_data = self._data[target].compute()
+            return self._parse_list_strings(computed_data)
         return default
+
+    def _parse_list_strings(self, series):
+        if not hasattr(series, "apply") or len(series) == 0:
+            return series
+        first_val = series.iloc[0]
+        if not (
+            isinstance(first_val, str)
+            and first_val.startswith("[")
+            and first_val.endswith("]")
+        ):
+            return series
+        return series.apply(
+            lambda x: eval(x) if isinstance(x, str) and x.startswith("[") else x
+        )
 
     def apply(self, func, **kwargs):
         return self._data.apply(func, **kwargs).compute()
@@ -121,7 +137,7 @@ class DaskDataset(PandasDataset):
         if isinstance(other, pd.Series):
             new_data = self._data.merge(
                 dd.from_pandas(other.reset_index(), npartitions=self._data.npartitions),
-                **kwargs
+                **kwargs,
             )
         else:
             new_data = self._data.merge(other, **kwargs)
@@ -308,11 +324,14 @@ class DaskDataset(PandasDataset):
         self._data = self._data.reset_index(drop=drop, **kwargs)
         return self
 
-    def iloc(self, row, column):
+    def iloc(self, n=None, column=None):
         """
         Purely integer-location based indexing for selection by position.
         """
-        return self.data.iloc[row, column].compute()
+        if column is None:
+            return self._data.iloc[n].compute()
+        else:
+            return self._data.iloc[n, column].compute()
 
     def fillna(
         self,
