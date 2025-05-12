@@ -10,12 +10,14 @@ jobs:
     steps:
       - name: Get Engine Changes
         uses: actions/checkout@v4
+
       - name: Get Test Suite Repository
         uses: actions/checkout@v4
         with:
           repository: cdisc-org/CORE_Test_Suite
           path: CORE_Test_Suite
           token: ${{ secrets.ACCESS_TOKEN }}
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -23,17 +25,24 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
+
       - name: Update rules cache
         env:
           CDISC_LIBRARY_API_KEY: ${{ secrets.CDISC_LIBRARY_API_KEY }}
         run: |
           python core.py update-cache
-      - name: Parse rule list and run validation
+
+      #############################
+      # CORE TEST SUITE VALIDATION
+      #############################
+
+      - name: Parse CORE rule list
         run: |
           rules=$(cat CORE_Test_Suite/rulelist/testrulelist.txt | sed 's/^/-r /' | tr '\n' ' ')
           echo "RULE_LIST=$rules" >> $GITHUB_ENV
           echo "rules to be used: $rules"
-      - name: Run validation with pandas
+
+      - name: Run validation with pandas (CORE)
         id: pandas_run
         continue-on-error: true
         run: |
@@ -50,21 +59,23 @@ jobs:
             echo "## Pandas Validation" >> $GITHUB_STEP_SUMMARY
             echo "❌ **Failed**: No results file was generated" >> $GITHUB_STEP_SUMMARY
           fi
-      - name: Pandas comparison with template
+
+      - name: Pandas CORE comparison with template
         if: steps.pandas_run.outputs.pandas_success == 'true'
         continue-on-error: true
         run: |
           python CORE_Test_Suite/scripts/comparison.py CORE_Test_Suite/pandas-results.json CORE_Test_Suite/CORE-Report.json CORE_Test_Suite/pandas_comparison.xlsx --mode test --json-output CORE_Test_Suite/pandas_comparison.json
+          echo "pandas_diff=$?" >> $GITHUB_ENV
 
           PANDAS_EXIT_CODE=$?
           echo "pandas_diff=$PANDAS_EXIT_CODE" >> $GITHUB_ENV
-
           if [ $PANDAS_EXIT_CODE -eq 0 ]; then
             echo "Pandas comparison completed successfully (no differences)"
           else
             echo "Pandas comparison found differences"
           fi
-      - name: Generate pandas comparison summary
+
+      - name: Generate pandas CORE comparison summary
         if: steps.pandas_run.outputs.pandas_success == 'true'
         continue-on-error: true
         run: |
@@ -85,27 +96,82 @@ jobs:
             echo "Failed to generate dask-results.json"
             echo "dask_success=false" >> $GITHUB_OUTPUT
             echo "## Dask Validation" >> $GITHUB_STEP_SUMMARY
-            echo "❌ **Failed**: No results file was generated" >> $GITHUB_STEP_SUMMARY
+            echo "❌ **Failed**: No results file was generated" >> $GITHUB_STEP_SUMMARY  
           fi
       - name: Dask comparison script
         continue-on-error: true
         if: steps.dask_run.outputs.dask_success == 'true'
         run: |
           python CORE_Test_Suite/scripts/comparison.py CORE_Test_Suite/dask-results.json CORE_Test_Suite/CORE-Report.json CORE_Test_Suite/dask_comparison.xlsx --mode test --json-output CORE_Test_Suite/dask_comparison.json
-
           DASK_EXIT_CODE=$?
           echo "dask_diff=$DASK_EXIT_CODE" >> $GITHUB_ENV
-
           if [ $DASK_EXIT_CODE -eq 0 ]; then
             echo "Dask comparison completed successfully (no differences)"
           else
             echo "Dask comparison found differences"
-          fi
+
       - name: Generate dask comparison summary
         if: steps.dask_run.outputs.dask_success == 'true'
         continue-on-error: true
         run: |
           python CORE_Test_Suite/scripts/compare_implementations.py CORE_Test_Suite/dask-results.json CORE_Test_Suite/CORE-Report.json CORE_Test_Suite/dask_comparison.json --github-step-summary $GITHUB_STEP_SUMMARY --mode test
+
+      #################################
+      # USDM TEST SUITE VALIDATION
+      #################################
+
+      - name: Parse USDM rule list
+        run: |
+          usdm_rules=$(cat CORE_Test_Suite/rulelist/USDM_Test_Suite_Rules.txt | sed 's/\r$//' | sed 's/^/-r /' | tr '\n' ' ')
+          echo "USDM_RULE_LIST=$usdm_rules" >> $GITHUB_ENV
+          echo "USDM rules: $usdm_rules"
+
+      - name: Run USDM validation (Negative)
+        id: usdm_neg
+        continue-on-error: true
+        run: |
+          python core.py validate -s usdm -v 3-0 ${{ env.USDM_RULE_LIST }} -dp CORE_Test_Suite/usdm_data/USDM_Test_Suite_negative.json -of json -o CORE_Test_Suite/usdm_negative_report -l error || true
+
+          if [ -f "CORE_Test_Suite/usdm_negative_report.json" ]; then
+            echo "usdm_neg_success=true" >> $GITHUB_OUTPUT
+            echo "## USDM Negative" >> $GITHUB_STEP_SUMMARY
+            echo "**Success**: Negative test passed" >> $GITHUB_STEP_SUMMARY
+            python CORE_Test_Suite/scripts/validation_summary.py CORE_Test_Suite/usdm_negative_report.json >> $GITHUB_STEP_SUMMARY
+          else
+            echo "usdm_neg_success=false" >> $GITHUB_OUTPUT
+            echo "**Failed**: No results for negative test" >> $GITHUB_STEP_SUMMARY
+          fi
+      - name: Compare USDM negative result
+        if: steps.usdm_neg.outputs.usdm_neg_success == 'true'
+        continue-on-error: true
+        run: |
+          python CORE_Test_Suite/scripts/comparison.py CORE_Test_Suite/usdm_negative_report.json CORE_Test_Suite/USDM_Negative_Result.json CORE_Test_Suite/usdm_negative_comparison.xlsx --mode test --json-output CORE_Test_Suite/usdm_negative_comparison.json
+
+      - name: Run USDM validation (Positive)
+        id: usdm_pos
+        continue-on-error: true
+        run: |
+          python core.py validate -s usdm -v 3-0 ${{ env.USDM_RULE_LIST }} -dp CORE_Test_Suite/usdm_data/USDM_Test_Suite_positive.json -of json -o CORE_Test_Suite/usdm_positive_report -l error || true
+
+          if [ -f "CORE_Test_Suite/usdm_positive_report.json" ]; then
+            echo "usdm_pos_success=true" >> $GITHUB_OUTPUT
+            echo "## USDM Positive" >> $GITHUB_STEP_SUMMARY
+            echo "**Success**: Positive test passed" >> $GITHUB_STEP_SUMMARY
+            python CORE_Test_Suite/scripts/validation_summary.py CORE_Test_Suite/usdm_positive_report.json >> $GITHUB_STEP_SUMMARY
+          else
+            echo "usdm_pos_success=false" >> $GITHUB_OUTPUT
+            echo "**Failed**: No results for positive test" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Compare USDM positive result
+        if: steps.usdm_pos.outputs.usdm_pos_success == 'true'
+        continue-on-error: true
+        run: |
+          python CORE_Test_Suite/scripts/comparison.py CORE_Test_Suite/usdm_positive_report.json CORE_Test_Suite/USDM_Positive_Result.json CORE_Test_Suite/usdm_positive_comparison.xlsx --mode test --json-output CORE_Test_Suite/usdm_positive_comparison.json
+
+      #######################
+      # UPLOAD ALL RESULTS
+      #######################
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
@@ -119,7 +185,17 @@ jobs:
             CORE_Test_Suite/dask-results.json
             CORE_Test_Suite/dask_comparison.json
             CORE_Test_Suite/CORE-Report.json
+            CORE_Test_Suite/usdm_negative_report.json
+            CORE_Test_Suite/usdm_positive_report.json
+            CORE_Test_Suite/usdm_negative_comparison.xlsx
+            CORE_Test_Suite/usdm_positive_comparison.xlsx
+            CORE_Test_Suite/usdm_negative_comparison.json
+            CORE_Test_Suite/usdm_positive_comparison.json
           if-no-files-found: warn
+
+      ###########################
+      # FINAL DIFF CHECK RESULT
+      ###########################
       - name: Check for differences
         if: always()
         run: |
