@@ -1,508 +1,303 @@
 import os
+import sys
 import time
 import pandas as pd
 import subprocess
-from statistics import median
 import re
 import click
+from statistics import median
 
 
-# Function to extract preprocessing time from logs
-def extract_preprocessing_time_from_logs(output_lines):
-    start_time = None
-    end_time = None
-
-    for line in output_lines:
-        if "Dataset Preprocessing Starts" in line:
-            match = re.search(r"\\ST(\d+\.\d+)", line)
-            if match:
-                start_time = float(match.group(1))
-                print(f"Extracted start time: {start_time}")
-        elif "Dataset Preprocessing Ends" in line:
-            match = re.search(r"\\ST(\d+\.\d+)", line)
-            if match:
-                end_time = float(match.group(1))
-                print(f"Extracted end time: {end_time}")
-
-    if start_time is not None and end_time is not None:
-        return end_time - start_time
-
-    return 0
+def parse_preprocessing_times(log_lines):
+    start, end = None, None
+    for entry in log_lines:
+        if "Dataset Preprocessing Starts" in entry:
+            m = re.search(r"\\ST(\d+\.\d+)", entry)
+            if m:
+                start = float(m.group(1))
+        elif "Dataset Preprocessing Ends" in entry:
+            m = re.search(r"\\ST(\d+\.\d+)", entry)
+            if m:
+                end = float(m.group(1))
+    return end - start if (start is not None and end is not None) else 0
 
 
-# Function to extract operator times from logs
-def extract_operator_times(output_lines):
-    operator_times = {}
-    start_times = {}
-
-    for line in output_lines:
-        match_start = re.search(r"\\OPRT(\d+\.\d+)-operator (\w+) starts", line)
+def parse_operator_durations(log_lines):
+    ops_start, ops_duration = {}, {}
+    for entry in log_lines:
+        match_start = re.search(r"\\OPRT(\d+\.\d+)-operator (\w+) starts", entry)
         if match_start:
-            timestamp, operation_name = float(match_start.group(1)), match_start.group(
-                2
-            )
-            start_times[operation_name] = timestamp
-
-        match_end = re.search(r"\\OPRT(\d+\.\d+)-operator (\w+) ends", line)
+            ts, op_name = float(match_start.group(1)), match_start.group(2)
+            ops_start[op_name] = ts
+        match_end = re.search(r"\\OPRT(\d+\.\d+)-operator (\w+) ends", entry)
         if match_end:
-            timestamp, operation_name = float(match_end.group(1)), match_end.group(2)
-            if operation_name in start_times:
-                duration = timestamp - start_times.pop(operation_name, 0)
-                if operation_name in operator_times:
-                    operator_times[operation_name].append(duration)
-                else:
-                    operator_times[operation_name] = [duration]
-
-    return operator_times
+            ts, op_name = float(match_end.group(1)), match_end.group(2)
+            if op_name in ops_start:
+                duration = ts - ops_start.pop(op_name)
+                ops_duration.setdefault(op_name, []).append(duration)
+    return ops_duration
 
 
-# Function to extract operation times from terminal logs
-def extract_operation_times_from_logs(output_lines):
-    operation_times = []
-
-    for line in output_lines:
-        match_start = re.search(r"\\OPRNT(\d+\.\d+)-Operation Starts", line)
-        if match_start:
-            timestamp = float(match_start.group(1))
-            start_time = time.time()
-
-        match_end = re.search(r"\\OPRNT(\d+\.\d+)-Operation Ends", line)
-        if match_end:
-            timestamp = float(match_end.group(1))
-            operation_times.append(time.time() - start_time)
-
-    return operation_times
+def parse_operation_times(log_lines):
+    operation_durations = []
+    start_marker = None
+    for entry in log_lines:
+        if "\\OPRNT" in entry and "Operation Starts" in entry:
+            start_marker = time.time()
+        elif "\\OPRNT" in entry and "Operation Ends" in entry and start_marker:
+            operation_durations.append(time.time() - start_marker)
+    return operation_durations
 
 
-def all_rules_against_each_dataset(dataset_dir, rule_dir, total_calls):
-
-    results = []  # To store the final report
-    rule_results = {}  # To store rule-specific results for Excel sheet creation
-
-    dataset_files = [
-        os.path.join(dataset_dir, file)
-        for file in os.listdir(dataset_dir)
-        if file.endswith((".json", ".xpt"))
-    ]
-    rules = [
-        file
-        for file in os.listdir(rule_dir)
-        if os.path.isfile(os.path.join(rule_dir, file))
-    ]
-
-    # For
-    for dataset_path in dataset_files:
-        dataset_name = os.path.basename(dataset_path)
-
-        # Initialize variables to collect times for the dataset across all rules
-        all_time_taken = []
-        all_preprocessing_times = []
-        all_operator_times = {}
-        all_operation_times = []
-
-        for rule in rules:
-            rule_name = os.path.basename(rule)
-            time_taken = []  # Time for individual rule
-            preprocessing_times = []  # Preprocessing times for individual rule
-            operator_times = {}  # Operator times for individual rule
-            operation_times = []  # Operation times for individual rule
-            rule_executions = (
-                0  # Count how many times the rule was executed for this dataset
-            )
-
-            for num_call in range(total_calls):
-                rule_path = os.path.join(rule_dir, rule)
-                command = [
-                    "python",
-                    "core.py",
-                    "test",
-                    "-s",
-                    "sdtmig",
-                    "-v",
-                    "3.4",
-                    "-r",
-                    rule_path,
-                    "-dp",
-                    dataset_path,
-                    "-l",
-                    "critical",
-                ]
-                print(f"Executing: {' '.join(command)} for call {num_call + 1}")
-
-                try:
-                    start_time = time.time()
-                    process = subprocess.Popen(
-                        command,
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE,
-                        text=True,
-                    )
-                    stdout, stderr = process.communicate()
-                    end_time = time.time()
-
-                    output_lines = stderr.splitlines()
-
-                    # Extract preprocessing time, operator times, and operation times
-                    preprocessing_time = extract_preprocessing_time_from_logs(
-                        output_lines
-                    )
-                    rule_operator_times = extract_operator_times(output_lines)
-                    rule_operation_times = extract_operation_times_from_logs(
-                        output_lines
-                    )
-
-                    if process.returncode == 0:
-                        time_taken.append(end_time - start_time)
-                        preprocessing_times.append(preprocessing_time)
-                        rule_executions += 1  # Increment rule execution count
-
-                        # Aggregate operator times and operation times
-                        for op, durations in rule_operator_times.items():
-                            all_operator_times.setdefault(op, []).extend(durations)
-                        all_operation_times.extend(rule_operation_times)
-                    else:
-                        raise subprocess.CalledProcessError(
-                            process.returncode, command, stderr
-                        )
-
-                except subprocess.CalledProcessError as e:
-                    results.append(
-                        {
-                            "function type": "TimeTestFunction",
-                            "rule name": rule_name,
-                            "dataset": dataset_name,
-                            "status": "Failed",
-                            "Number of Calls": num_call + 1,
-                            "Mean Time": None,
-                            "Median Time": None,
-                            "Min Time": None,
-                            "Max Time": None,
-                            "Preprocessing Time": None,
-                            "Operator Times": None,
-                            "Operation Times": None,
-                            "Error": e.stderr,
-                        }
-                    )
-                    break
-
-            # After all calls for a rule, summarize and add the times to the dataset-level collection
-            if time_taken:
-                all_time_taken.extend(time_taken)
-                all_preprocessing_times.extend(preprocessing_times)
-
-                # Store rule-specific results for creating separate sheets in Excel
-                if rule_name not in rule_results:
-                    rule_results[rule_name] = []
-                rule_results[rule_name].append(
-                    {
-                        "Dataset": dataset_name,
-                        "Number of Calls": rule_executions,
-                        "Mean Time": sum(time_taken) / len(time_taken),
-                        "Median Time": median(time_taken),
-                        "Min Time": min(time_taken),
-                        "Max Time": max(time_taken),
-                        "Preprocessing Time": ", ".join(map(str, preprocessing_times)),
-                        "Operator Times": ", ".join(
-                            [
-                                f"{op}: {durations}"
-                                for op, durations in rule_operator_times.items()
-                            ]
-                        ),
-                        "Operation Times": ", ".join(map(str, all_operation_times)),
-                    }
-                )
-
-        # After all rules have been processed for a dataset, calculate the overall stats
-        if all_time_taken:
-            results.append(
-                {
-                    "function type": "TimeTestFunction",
-                    "rule name": "All Rules Combined",
-                    "dataset": dataset_name,
-                    "status": "Successful",
-                    "Number of Calls for each rule": total_calls,
-                    "Mean Time": sum(all_time_taken) / len(all_time_taken),
-                    "Median Time": median(all_time_taken),
-                    "Min Time": min(all_time_taken),
-                    "Max Time": max(all_time_taken),
-                    "Preprocessing Time": ", ".join(map(str, all_preprocessing_times)),
-                    "Operator Times": all_operator_times,
-                    "Operation Times": ", ".join(map(str, all_operation_times)),
-                    "Error": None,
-                }
-            )
-
-    return results, rule_results
-
-
-def all_datset_against_each_rule(dataset_dir, rule_dir, total_calls):
-    results = []  # To store the final report
-    dataset_results = {}  # To store dataset-specific results for Excel sheet creation
-
-    dataset_files = [
-        os.path.join(dataset_dir, file)
-        for file in os.listdir(dataset_dir)
-        if file.endswith((".json", ".xpt"))
-    ]
-    rules = [
-        file
-        for file in os.listdir(rule_dir)
-        if os.path.isfile(os.path.join(rule_dir, file))
-    ]
+def execute_rules_on_datasets(dataset_dir, rule_dir, total_calls, standard, version, define_xml_path):
+    final_results = []
+    per_rule_summaries = {}
+    datasets = [os.path.join(dataset_dir, f) for f in os.listdir(dataset_dir) if f.endswith(('.json', '.xpt'))]
+    rules = [f for f in os.listdir(rule_dir) if os.path.isfile(os.path.join(rule_dir, f))]
 
     for rule in rules:
         rule_name = os.path.basename(rule)
+        all_timings, all_preproc_times, all_operator_metrics, all_oprnt_metrics = [], [], {}, []
 
-        # Initialize variables to collect times for the dataset across all rules
-        all_time_taken = []
-        all_preprocessing_times = []
-        all_operator_times = {}
-        all_operation_times = []
-
-        rule_names = []
-        for dataset_path in dataset_files:
+        for dataset_path in datasets:
             dataset_name = os.path.basename(dataset_path)
-            time_taken = []  # Time for individual rule
-            preprocessing_times = []  # Preprocessing times for individual rule
-            operator_times = {}  # Operator times for individual rule
-            operation_times = []  # Operation times for individual rule
-            rule_executions = (
-                0  # Count how many times the rule was executed for this dataset
-            )
+            timings, preproc_list, operator_data, oprnt_data = [], [], {}, []
+            exec_count = 0
 
-            for num_call in range(total_calls):
-                rule_path = os.path.join(rule_dir, rule)
-                command = [
-                    "python",
-                    "core.py",
-                    "test",
-                    "-s",
-                    "sdtmig",
-                    "-v",
-                    "3.4",
-                    "-r",
-                    rule_path,
-                    "-dp",
-                    dataset_path,
-                    "-l",
-                    "critical",
+            for call_idx in range(total_calls):
+                cmd = [
+                    sys.executable, "core.py", "validate",
+                    "-s", standard,
+                    "-v", version,
+                    "-lr", os.path.join(rule_dir, rule),
+                    "-dp", dataset_path,
+                    "-l", "critical"
                 ]
-                print(f"Executing: {' '.join(command)} for call {num_call + 1}")
+                if define_xml_path:
+                    cmd += ["-dxp", define_xml_path]
+
+                print(f"Running: {' '.join(cmd)} [call {call_idx + 1}]")
 
                 try:
-                    start_time = time.time()
-                    process = subprocess.Popen(
-                        command,
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE,
-                        text=True,
-                    )
-                    stdout, stderr = process.communicate()
-                    end_time = time.time()
+                    t0 = time.time()
+                    process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                    out, err = process.communicate()
+                    t1 = time.time()
 
-                    output_lines = stderr.splitlines()
-
-                    # Extract preprocessing time, operator times, and operation times
-                    preprocessing_time = extract_preprocessing_time_from_logs(
-                        output_lines
-                    )
-                    rule_operator_times = extract_operator_times(output_lines)
-                    rule_operation_times = extract_operation_times_from_logs(
-                        output_lines
-                    )
+                    log_lines = err.splitlines()
+                    preproc_time = parse_preprocessing_times(log_lines)
+                    operator_times = parse_operator_durations(log_lines)
+                    oprnt_times = parse_operation_times(log_lines)
 
                     if process.returncode == 0:
-                        time_taken.append(end_time - start_time)
-                        preprocessing_times.append(preprocessing_time)
-                        rule_executions += 1  # Increment rule execution count
+                        timings.append(t1 - t0)
+                        preproc_list.append(preproc_time)
+                        exec_count += 1
 
-                        # Aggregate operator times and operation times
-                        for op, durations in rule_operator_times.items():
-                            all_operator_times.setdefault(op, []).extend(durations)
-                        all_operation_times.extend(rule_operation_times)
+                        for op, durations in operator_times.items():
+                            all_operator_metrics.setdefault(op, []).extend(durations)
+
+                        all_oprnt_metrics.extend(oprnt_times)
                     else:
-                        raise subprocess.CalledProcessError(
-                            process.returncode, command, stderr
-                        )
+                        raise subprocess.CalledProcessError(process.returncode, cmd, err)
 
-                except subprocess.CalledProcessError as e:
-                    results.append(
-                        {
-                            "function type": "TimeTestFunction",
-                            "rule name": rule_name,
-                            "dataset": dataset_name,
-                            "status": "Failed",
-                            "Number of Calls": num_call + 1,
-                            "Mean Time": None,
-                            "Median Time": None,
-                            "Min Time": None,
-                            "Max Time": None,
-                            "Preprocessing Time": None,
-                            "Operator Times": None,
-                            "Operation Times": None,
-                            "Error": e.stderr,
-                        }
-                    )
+                except subprocess.CalledProcessError as exc:
+                    final_results.append({
+                        "function type": "TimeTestFunction",
+                        "rule name": rule_name,
+                        "dataset": dataset_name,
+                        "status": "Failed",
+                        "Number of Calls": call_idx + 1,
+                        "Mean Time": None, "Median Time": None,
+                        "Min Time": None, "Max Time": None,
+                        "Preprocessing Time": None,
+                        "Operator Times": None,
+                        "Operation Times": None,
+                        "Error": exc.stderr
+                    })
                     break
 
-            # After all calls for a rule, summarize and add the times to the dataset-level collection
-            if time_taken:
-                all_time_taken.extend(time_taken)
-                all_preprocessing_times.extend(preprocessing_times)
+            if timings:
+                all_timings.extend(timings)
+                all_preproc_times.extend(preproc_list)
+                per_rule_summaries.setdefault(rule_name, []).append({
+                    "Dataset": dataset_name,
+                    "Number of Calls": exec_count,
+                    "Mean Time": sum(timings) / len(timings),
+                    "Median Time": median(timings),
+                    "Min Time": min(timings),
+                    "Max Time": max(timings),
+                    "Preprocessing Time": ", ".join(map(str, preproc_list)),
+                    "Operator Times": ", ".join(f"{k}: {v}" for k, v in operator_times.items()),
+                    "Operation Times": ", ".join(map(str, oprnt_times)),
+                })
 
-                # Append dataset-specific results for creating the grouped sheet
-                if dataset_name not in dataset_results:
-                    dataset_results[dataset_name] = []
-                dataset_results[dataset_name].append(
-                    {
-                        "Dataset": dataset_name,
-                        "Rule Name": rule_name,
-                        "Number of Calls": rule_executions,
-                        "Mean Time": sum(time_taken) / len(time_taken),
-                        "Median Time": median(time_taken),
-                        "Min Time": min(time_taken),
-                        "Max Time": max(time_taken),
-                        "Preprocessing Time": ", ".join(map(str, preprocessing_times)),
-                        "Operator Times": ", ".join(
-                            [
-                                f"{op}: {durations}"
-                                for op, durations in operator_times.items()
-                            ]
-                        ),
-                        "Operation Times": ", ".join(map(str, operation_times)),
-                    }
-                )
+        if all_timings:
+            final_results.append({
+                "function type": "TimeTestFunction",
+                "rule name": "All Rules Combined",
+                "dataset": dataset_name,
+                "status": "Successful",
+                "Number of Calls for each rule": total_calls,
+                "Mean Time": sum(all_timings) / len(all_timings),
+                "Median Time": median(all_timings),
+                "Min Time": min(all_timings),
+                "Max Time": max(all_timings),
+                "Preprocessing Time": ", ".join(map(str, all_preproc_times)),
+                "Operator Times": all_operator_metrics,
+                "Operation Times": ", ".join(map(str, all_oprnt_metrics)),
+                "Error": None,
+            })
 
-        if all_time_taken:
-            results.append(
-                {
-                    "function type": "TimeTestFunction",
-                    "rule name": rule_name,
-                    "dataset": "All datasets combined",
-                    "status": "Successful",
-                    "Number of Calls for each rule": total_calls,
-                    "Mean Time": sum(all_time_taken) / len(all_time_taken),
-                    "Median Time": median(all_time_taken),
-                    "Min Time": min(all_time_taken),
-                    "Max Time": max(all_time_taken),
-                    "Preprocessing Time": ", ".join(map(str, all_preprocessing_times)),
-                    "Operator Times": all_operator_times,
-                    "Operation Times": ", ".join(map(str, all_operation_times)),
-                    "Error": None,
-                }
-            )
-
-    return results, dataset_results
+    return final_results, per_rule_summaries
 
 
-def TimeTestFunction(dataset_dir, rule_dir, total_calls):
-    print("Running for Grouped by rule and individual rule report creation")
-    collective_rule_result, individual_rule_result = all_rules_against_each_dataset(
-        dataset_dir, rule_dir, total_calls
-    )
-    print("\n\nRunning for Group by dataset report\n")
-    collective_dataset_result, individual_dataset_result = all_datset_against_each_rule(
-        dataset_dir, rule_dir, total_calls
-    )
+def execute_datasets_on_rules(dataset_dir, rule_dir, total_calls, standard, version, define_xml_path):
+    final_results = []
+    per_dataset_summaries = {}
+    datasets = [os.path.join(dataset_dir, f) for f in os.listdir(dataset_dir) if f.endswith(('.json', '.xpt'))]
+    rules = [f for f in os.listdir(rule_dir) if os.path.isfile(os.path.join(rule_dir, f))]
 
-    return (
-        collective_rule_result,
-        individual_rule_result,
-        collective_dataset_result,
-        individual_dataset_result,
-    )
+    for dataset_path in datasets:
+        dataset_name = os.path.basename(dataset_path)
+        cumulative_times, cumulative_preproc, cumulative_ops, cumulative_oprnt = [], [], {}, []
+
+        for rule in rules:
+            rule_name = os.path.basename(rule)
+            timings, preproc_list, operator_data, oprnt_data = [], [], {}, []
+            exec_count = 0
+
+            for call_idx in range(total_calls):
+                cmd = [
+                    sys.executable, "core.py", "validate",
+                    "-s", standard,
+                    "-v", version,
+                    "-lr", os.path.join(rule_dir, rule),
+                    "-dp", dataset_path,
+                    "-l", "critical"
+                ]
+                if define_xml_path:
+                    cmd += ["-dxp", define_xml_path]
+
+                print(f"Running: {' '.join(cmd)} [call {call_idx + 1}]")
+
+                try:
+                    t0 = time.time()
+                    process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                    out, err = process.communicate()
+                    t1 = time.time()
+
+                    log_lines = err.splitlines()
+                    preproc_time = parse_preprocessing_times(log_lines)
+                    operator_times = parse_operator_durations(log_lines)
+                    oprnt_times = parse_operation_times(log_lines)
+
+                    if process.returncode == 0:
+                        timings.append(t1 - t0)
+                        preproc_list.append(preproc_time)
+                        exec_count += 1
+
+                        for op, durations in operator_times.items():
+                            cumulative_ops.setdefault(op, []).extend(durations)
+
+                        cumulative_oprnt.extend(oprnt_times)
+                    else:
+                        raise subprocess.CalledProcessError(process.returncode, cmd, err)
+
+                except subprocess.CalledProcessError as exc:
+                    final_results.append({
+                        "function type": "TimeTestFunction",
+                        "rule name": rule_name,
+                        "dataset": dataset_name,
+                        "status": "Failed",
+                        "Number of Calls": call_idx + 1,
+                        "Mean Time": None, "Median Time": None,
+                        "Min Time": None, "Max Time": None,
+                        "Preprocessing Time": None,
+                        "Operator Times": None,
+                        "Operation Times": None,
+                        "Error": exc.stderr
+                    })
+                    break
+
+            if timings:
+                cumulative_times.extend(timings)
+                cumulative_preproc.extend(preproc_list)
+                per_dataset_summaries.setdefault(dataset_name, []).append({
+                    "Dataset": dataset_name,
+                    "Rule Name": rule_name,
+                    "Number of Calls": exec_count,
+                    "Mean Time": sum(timings) / len(timings),
+                    "Median Time": median(timings),
+                    "Min Time": min(timings),
+                    "Max Time": max(timings),
+                    "Preprocessing Time": ", ".join(map(str, preproc_list)),
+                    "Operator Times": ", ".join(f"{k}: {v}" for k, v in operator_times.items()),
+                    "Operation Times": ", ".join(map(str, oprnt_times)),
+                })
+
+        if cumulative_times:
+            final_results.append({
+                "function type": "TimeTestFunction",
+                "rule name": rule_name,
+                "dataset": "All datasets combined",
+                "status": "Successful",
+                "Number of Calls for each rule": total_calls,
+                "Mean Time": sum(cumulative_times) / len(cumulative_times),
+                "Median Time": median(cumulative_times),
+                "Min Time": min(cumulative_times),
+                "Max Time": max(cumulative_times),
+                "Preprocessing Time": ", ".join(map(str, cumulative_preproc)),
+                "Operator Times": cumulative_ops,
+                "Operation Times": ", ".join(map(str, cumulative_oprnt)),
+                "Error": None,
+            })
+
+    return final_results, per_dataset_summaries
 
 
-def delete_run_report_files(pattern, directory=None):
-    """
-    Deletes files in the specified or current directory that match a given pattern.
+def TimeTestFunction(dataset_dir, rule_dir, total_calls, standard, version, define_xml_path):
+    print("Running grouped by rule...")
+    rule_level_results, rule_breakdown = execute_rules_on_datasets(dataset_dir, rule_dir, total_calls, standard, version, define_xml_path)
+    print("\nRunning grouped by dataset...")
+    dataset_level_results, dataset_breakdown = execute_datasets_on_rules(dataset_dir, rule_dir, total_calls, standard, version, define_xml_path)
+    return rule_level_results, rule_breakdown, dataset_level_results, dataset_breakdown
 
-    Args:
-        pattern (str): The regex pattern to match file names.
-        directory (str, optional): The directory to search for files. Defaults to the current working directory.
+def save_results_to_excel(rule_results, rule_breakdown, dataset_results, dataset_breakdown, output_dir):
+    report_path = os.path.join(output_dir, "performance_report.xlsx")
+    with pd.ExcelWriter(report_path, engine='xlsxwriter') as writer:
+        # Sheet 1: Rule-level results
+        df_rules = pd.DataFrame(rule_results)
+        df_rules.to_excel(writer, sheet_name="Rule Level Results", index=False)
 
-    Returns:
-        list: A list of deleted file names.
-    """
-    if directory is None:
-        directory = (
-            os.getcwd()
-        )  # Use the current working directory if none is specified
+        # Each dataset gets its own sheet
+        for dataset_name, summaries in dataset_breakdown.items():
+            df_dataset = pd.DataFrame(summaries)
+            # Clean sheet name (Excel limits to 31 characters)
+            safe_name = dataset_name[:31].replace("/", "_").replace("\\", "_")
+            df_dataset.to_excel(writer, sheet_name=safe_name, index=False)
 
-    deleted_files = []
-    regex = re.compile(pattern)
+        # Optionally, you could add an overview of dataset-level summary
+        df_dataset_summary = pd.DataFrame(dataset_results)
+        df_dataset_summary.to_excel(writer, sheet_name="Dataset Summary", index=False)
 
-    for filename in os.listdir(directory):
-        if regex.match(filename):
-            file_path = os.path.join(directory, filename)
-            try:
-                os.remove(file_path)
-                deleted_files.append(filename)
-                print(f"Deleted: {filename}")
-            except Exception as e:
-                print(f"Error deleting {filename}: {e}")
+    print(f"\nResults saved to: {report_path}")
 
 
 @click.command()
-@click.option("-d", type=str)
-@click.option("-lr", type=str)
-@click.option("-total_calls", type=int)
-@click.option(
-    "-od",
-    default=os.getcwd(),
-    help="Directory to save the output file (default is current directory)",
-)
-def main(d, lr, total_calls, od):
-    total_time_start = time.time()
+@click.option("-d", type=str, required=True)
+@click.option("-lr", type=str, required=True)
+@click.option("-total_calls", type=int, required=True)
+@click.option("-od", default=os.getcwd(), help="Output directory for report files")
+@click.option("-s", "standard", type=str, required=True, help="Standard name (e.g., 'sdtmig')")
+@click.option("-v", "version", type=str, required=True, help="Standard version (e.g., '3.4')")
+@click.option("-dxp", "define_xml_path", type=str, required=False, help="Path to Define-XML file")
+def main(d, lr, total_calls, od, standard, version, define_xml_path):
+    rule_results, rule_breakdown, dataset_results, dataset_breakdown = TimeTestFunction(
+    d, lr, total_calls, standard, version, define_xml_path
+    )
+    save_results_to_excel(rule_results, rule_breakdown, dataset_results, dataset_breakdown, od)
 
-    (
-        collective_rule_result,
-        individual_rule_result,
-        collective_dataset_result,
-        individual_dataset_result,
-    ) = TimeTestFunction(d, lr, total_calls)
-
-    total_time = time.time() - total_time_start
-
-    # Create an Excel writer and save the results to multiple sheets
-    output_path = os.path.join(od, "rule_execution_report.xlsx")
-    with pd.ExcelWriter(output_path) as writer:
-        # Overall collective rule results
-        collective_rule_df = pd.DataFrame(collective_rule_result)
-        collective_rule_df.to_excel(
-            writer, sheet_name="Collective Rule Result", index=False
-        )
-
-        # Individual rule results
-        for rule_name, rule_data in individual_rule_result.items():
-            sanitized_rule_name = re.sub(
-                r"[\\/*?:[\]]", "_", rule_name
-            )  # Replace invalid characters with '_'
-            rule_df = pd.DataFrame(rule_data)
-            rule_df.to_excel(
-                writer, sheet_name=f"Rule_{sanitized_rule_name[:28]}", index=False
-            )  # Truncate to 31 chars
-
-        # Overall collective dataset results
-        collective_dataset_df = pd.DataFrame(collective_dataset_result)
-        collective_dataset_df.to_excel(
-            writer, sheet_name="Collective Dataset Result", index=False
-        )
-
-        # Individual dataset results
-        for dataset_name, dataset_data in individual_dataset_result.items():
-            sanitized_dataset_name = re.sub(
-                r"[\\/*?:[\]]", "_", dataset_name
-            )  # Replace invalid characters with '_'
-            dataset_df = pd.DataFrame(dataset_data)
-            dataset_df.to_excel(
-                writer, sheet_name=f"Dataset_{sanitized_dataset_name[:28]}", index=False
-            )  # Truncate to 31 chars
-
-    print(f"\nExecution results saved to '{output_path}'")
-    file_pattern = r"CORE-Report-\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}\.xlsx"
-
-    delete_run_report_files(file_pattern)
 
 
 if __name__ == "__main__":

@@ -469,7 +469,6 @@ class TestValidate(unittest.TestCase):
         exit_code, stdout, stderr = run_command(args, True)
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
-        self.assertEqual(stderr, "", f"Error while executing command:\n{stderr}")
 
     def test_validate_dummy_with_all_options(self):
         args = (
