@@ -121,7 +121,7 @@ class DaskDataset(PandasDataset):
         if isinstance(other, pd.Series):
             new_data = self._data.merge(
                 dd.from_pandas(other.reset_index(), npartitions=self._data.npartitions),
-                **kwargs
+                **kwargs,
             )
         else:
             new_data = self._data.merge(other, **kwargs)
