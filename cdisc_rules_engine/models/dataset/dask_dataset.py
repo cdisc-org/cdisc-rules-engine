@@ -116,6 +116,18 @@ class DaskDataset(PandasDataset):
             return self._parse_list_strings(computed_data)
         return default
 
+    def convert_to_series(self, result):
+        if self.is_series(result):
+            if isinstance(result, dd.Series):
+                result = result.compute()
+            if pd.api.types.is_bool_dtype(result.dtype):
+                return result.astype("bool")
+            return result
+        series = pd.Series(result)
+        if pd.api.types.is_bool_dtype(series.dtype):
+            return series.astype("bool")
+        return series
+
     def _parse_list_strings(self, series):
         if not hasattr(series, "apply") or len(series) == 0:
             return series
@@ -239,7 +251,7 @@ class DaskDataset(PandasDataset):
                 return False
             is_equal = (
                 is_equal
-                & self[column]
+                and self[column]
                 .reset_index(drop=True)
                 .eq(other_dataset[column].reset_index(drop=True))
                 .all()

@@ -399,7 +399,7 @@ class DataframeType(BaseType):
                 f"Invalid part to validate: {part_to_validate}. \
                     Valid values are: suffix, prefix"
             )
-
+        series_to_validate = series_to_validate.mask(pd.isna(self.value[target]))
         return series_to_validate
 
     def _value_is_contained_by(self, series, comparison_data):
@@ -422,7 +422,7 @@ class DataframeType(BaseType):
         series_to_validate = self._get_string_part_series(
             part_to_validate, length, target
         )
-        return series_to_validate.eq(comparison_data)
+        return series_to_validate.eq(comparison_data).astype(bool)
 
     def _where_less_than(self, target, comparison):
         return np.where(target < comparison, True, False)
@@ -769,11 +769,16 @@ class DataframeType(BaseType):
         comparison_data = self.get_comparator_data(comparator, value_is_literal)
         if self.value.is_series(comparison_data):
             if is_integer_dtype(comparison_data):
-                results = self.value[target].str.len().eq(comparison_data)
+                results = self.value[target].str.len().eq(comparison_data).astype(bool)
             else:
-                results = self.value[target].str.len().eq(comparison_data.str.len())
+                results = (
+                    self.value[target]
+                    .str.len()
+                    .eq(comparison_data.str.len())
+                    .astype(bool)
+                )
         else:
-            results = self.value[target].str.len().eq(comparator)
+            results = self.value[target].str.len().eq(comparator).astype(bool)
         return results
 
     @log_operator_execution
@@ -1409,8 +1414,14 @@ class DataframeType(BaseType):
         if sort_order not in ["asc", "dsc"]:
             raise ValueError("invalid sorting order")
         sort_order_bool: bool = sort_order == "asc"
-        return self.value[target].eq(
-            self.value[target].sort_values(ascending=sort_order_bool, ignore_index=True)
+        return (
+            self.value[target]
+            .eq(
+                self.value[target].sort_values(
+                    ascending=sort_order_bool, ignore_index=True
+                )
+            )
+            .astype(bool)
         )
 
     @log_operator_execution
