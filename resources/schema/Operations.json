@@ -407,6 +407,27 @@
     "ct_attribute": {
       "type": "string"
     },
+    "ct_package_types": {
+      "items": {
+        "type": "string",
+        "enum": [
+          "ADAM",
+          "CDASH",
+          "COA",
+          "DDF",
+          "DEFINE-XML",
+          "GLOSSARY",
+          "MRCT",
+          "PROTOCOL",
+          "QRS",
+          "QS-FT",
+          "SDTM",
+          "SEND",
+          "TMF"
+        ]
+      },
+      "type": "array"
+    },
     "ct_packages": {
       "items": {
         "type": "string"
