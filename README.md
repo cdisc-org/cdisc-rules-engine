@@ -397,7 +397,7 @@ For implementation instructions, see [PYPI.md](PYPI.md).
 
 **Linux**
 
-`pyinstaller core.py --add-data=venv/lib/python3.10/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates`
+`pyinstaller core.py --add-data=venv/lib/python3.12/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates`
 
 **Windows**
 
