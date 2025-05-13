@@ -1042,6 +1042,7 @@ Checks if elements in the target list appear in the same relative order in the c
 - name: $column_order_from_dataset
   operator: is_ordered_subset_of
   value: $column_order_from_library
+```
 
 ## is_not_ordered_subset_of
 
@@ -1076,4 +1077,7 @@ True if the codelist named within `value` is a valid codelist for the variable n
 ## does_not_reference_correct_codelist
 
 Complement of `references_correct_codelist`
+
+```
+
 ```

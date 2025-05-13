@@ -4,9 +4,11 @@ import dask.array as da
 import pandas as pd
 import numpy as np
 import re
+import dask
 from typing import List, Union
 
 DEFAULT_NUM_PARTITIONS = 4
+dask.config.set({"dataframe.convert-string": False})
 
 
 class DaskDataset(PandasDataset):
@@ -41,8 +43,9 @@ class DaskDataset(PandasDataset):
         self._data = data
 
     def __getitem__(self, item):
-        computed_data = self._data[item].compute().reset_index(drop=True)
-        return self._parse_list_strings(computed_data)
+        return self._data[item].compute().reset_index(drop=True)
+        # computed_data = self._data[item].compute().reset_index(drop=True)
+        # return self._parse_list_strings(computed_data)
 
     def is_column_sorted_within(self, group, column):
         return (
@@ -112,8 +115,11 @@ class DaskDataset(PandasDataset):
                     return default
             return self._data[target].compute()
         elif target in self._data:
-            computed_data = self._data[target].compute()
-            return self._parse_list_strings(computed_data)
+            return self._data[target].compute()
+        #     computed_data = self._data[target].compute()
+        #     parsed_data = self._parse_list_strings(computed_data)
+        #     parsed_data = self._parse_dict_strings(parsed_data)
+        # return parsed_data
         return default
 
     def convert_to_series(self, result):
@@ -128,19 +134,33 @@ class DaskDataset(PandasDataset):
             return series.astype("bool")
         return series
 
-    def _parse_list_strings(self, series):
-        if not hasattr(series, "apply") or len(series) == 0:
-            return series
-        first_val = series.iloc[0]
-        if not (
-            isinstance(first_val, str)
-            and first_val.startswith("[")
-            and first_val.endswith("]")
-        ):
-            return series
-        return series.apply(
-            lambda x: eval(x) if isinstance(x, str) and x.startswith("[") else x
-        )
+    # def _parse_list_strings(self, series):
+    #     if not hasattr(series, "apply") or len(series) == 0:
+    #         return series
+    #     first_val = series.iloc[0]
+    #     if not (
+    #         isinstance(first_val, str)
+    #         and first_val.startswith("[")
+    #         and first_val.endswith("]")
+    #     ):
+    #         return series
+    #     return series.apply(
+    #         lambda x: eval(x) if isinstance(x, str) and x.startswith("[") else x
+    #     )
+
+    # def _parse_dict_strings(self, series):
+    #     if not hasattr(series, "apply") or len(series) == 0:
+    #         return series
+    #     first_val = series.iloc[0]
+    #     if not (
+    #         isinstance(first_val, str)
+    #         and first_val.startswith("{")
+    #         and first_val.endswith("}")
+    #     ):
+    #         return series
+    #     return series.apply(
+    #         lambda x: ast.literal_eval(x) if isinstance(x, str) and x.startswith("{") else x
+    #     )
 
     def apply(self, func, **kwargs):
         return self._data.apply(func, **kwargs).compute()

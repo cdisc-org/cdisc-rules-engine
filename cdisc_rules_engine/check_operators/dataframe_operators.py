@@ -129,13 +129,32 @@ class DataframeType(BaseType):
         target_column = self.replace_prefix(other_value.get("target"))
 
         def check_row(row):
-            return any(target_column in item for item in row if isinstance(item, list))
+            for item in row:
+                if isinstance(item, list):
+                    if target_column in item:
+                        return True
+                # Dask does a string representation of a list
+                elif (
+                    isinstance(item, str)
+                    and item.startswith("[")
+                    and item.endswith("]")
+                ):
+                    list_item = eval(item)
+                    if isinstance(list_item, list) and target_column in list_item:
+                        print(f"Found {target_column} in evaluated list: {list_item}")
+                        return True
+            return False
 
         column_exists = target_column in self.value.columns
         if column_exists:
             return self.value.convert_to_series([True] * len(self.value))
         else:
-            exists_in_nested = self.value.apply(check_row, axis=1).any()
+            is_dask = hasattr(self.value.data, "compute")
+            if is_dask:
+                result = self.value.apply(check_row, axis=1, meta=("result", "bool"))
+                exists_in_nested = result.any()
+            else:
+                exists_in_nested = self.value.apply(check_row, axis=1).any()
             return self.value.convert_to_series([exists_in_nested] * len(self.value))
 
     @log_operator_execution
@@ -1202,8 +1221,10 @@ class DataframeType(BaseType):
         results = False
         for vlm in self.value_level_metadata:
             results |= self.value.apply(
-                lambda row: vlm["filter"](row) and vlm["type_check"](row), axis=1
-            )
+                lambda row: vlm["filter"](row) and vlm["type_check"](row),
+                axis=1,
+                meta=pd.Series([True, False], dtype=bool),
+            ).fillna(False)
         return self.value.convert_to_series(results)
 
     @log_operator_execution
