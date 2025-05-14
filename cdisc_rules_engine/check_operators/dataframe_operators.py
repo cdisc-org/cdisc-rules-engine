@@ -903,7 +903,7 @@ class DataframeType(BaseType):
             )
         )
         if isinstance(self.value, DaskDataset) and self.value.is_series(results):
-            return results.compute()
+            results = results.compute()
         # return values with corresponding indexes from results
         return pd.Series(results.reset_index(level=0, drop=True))
 

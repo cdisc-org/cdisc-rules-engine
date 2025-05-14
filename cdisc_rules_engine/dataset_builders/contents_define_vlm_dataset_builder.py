@@ -79,9 +79,11 @@ class ContentsDefineVLMDatasetBuilder(ValuesDatasetBuilder):
         filter_results = data_contents_df.apply(
             lambda data_contents_row: vlm_row["filter"](data_contents_row), axis=1
         )
-
-        lut_subset: DatasetInterface = data_contents_df.__class__.cartesian_product(
-            data_contents_df.data[filter_results]["row_number"].to_frame(),
+        row_numbers = data_contents_df.data["row_number"].copy()
+        rows = row_numbers.where(filter_results)
+        filtered_df = rows.dropna().to_frame()
+        lut_subset = data_contents_df.__class__.cartesian_product(
+            filtered_df,
             vlm_row.to_frame().T[["define_variable_name", "define_vlm_name"]],
         )
         return lut_subset

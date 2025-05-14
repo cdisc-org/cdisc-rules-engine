@@ -43,9 +43,15 @@ class DaskDataset(PandasDataset):
         self._data = data
 
     def __getitem__(self, item):
-        return self._data[item].compute().reset_index(drop=True)
-        # computed_data = self._data[item].compute().reset_index(drop=True)
-        # return self._parse_list_strings(computed_data)
+        try:
+            return self._data[item].compute().reset_index(drop=True)
+        except ValueError as e:
+            # Handle boolean indexing length mismatch which occurs when filtering
+            # empty DataFrames or when metadata doesn't match actual data dimensions
+            if "Item wrong length" in str(e):
+                empty_df = pd.DataFrame(columns=self._data.columns)
+                return empty_df
+            raise
 
     def is_column_sorted_within(self, group, column):
         return (
@@ -116,10 +122,6 @@ class DaskDataset(PandasDataset):
             return self._data[target].compute()
         elif target in self._data:
             return self._data[target].compute()
-        #     computed_data = self._data[target].compute()
-        #     parsed_data = self._parse_list_strings(computed_data)
-        #     parsed_data = self._parse_dict_strings(parsed_data)
-        # return parsed_data
         return default
 
     def convert_to_series(self, result):
@@ -133,34 +135,6 @@ class DaskDataset(PandasDataset):
         if pd.api.types.is_bool_dtype(series.dtype):
             return series.astype("bool")
         return series
-
-    # def _parse_list_strings(self, series):
-    #     if not hasattr(series, "apply") or len(series) == 0:
-    #         return series
-    #     first_val = series.iloc[0]
-    #     if not (
-    #         isinstance(first_val, str)
-    #         and first_val.startswith("[")
-    #         and first_val.endswith("]")
-    #     ):
-    #         return series
-    #     return series.apply(
-    #         lambda x: eval(x) if isinstance(x, str) and x.startswith("[") else x
-    #     )
-
-    # def _parse_dict_strings(self, series):
-    #     if not hasattr(series, "apply") or len(series) == 0:
-    #         return series
-    #     first_val = series.iloc[0]
-    #     if not (
-    #         isinstance(first_val, str)
-    #         and first_val.startswith("{")
-    #         and first_val.endswith("}")
-    #     ):
-    #         return series
-    #     return series.apply(
-    #         lambda x: ast.literal_eval(x) if isinstance(x, str) and x.startswith("{") else x
-    #     )
 
     def apply(self, func, **kwargs):
         return self._data.apply(func, **kwargs).compute()
@@ -386,3 +360,18 @@ class DaskDataset(PandasDataset):
 
     def to_dict(self, **kwargs) -> dict:
         return list(self._data.map_partitions(lambda x: x.to_dict(orient="records")))
+
+    def isin(self, values):
+        values_set = set(values)
+
+        def partition_isin(partition):
+            return partition.isin(values_set)
+
+        result = self._data.map_partitions(partition_isin)
+        return result
+
+    def filter_by_value(self, column, values):
+        computed_data = self._data.compute()
+        mask = computed_data[column].isin(values)
+        filtered_df = computed_data[mask]
+        return filtered_df
