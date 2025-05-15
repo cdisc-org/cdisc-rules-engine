@@ -663,9 +663,9 @@ Returns a list of the domains in the study
 
 ## valid_codelist_dates
 
-Returns the valid codelist dates for a given standard
+Returns the valid terminology package dates for a given standard.
 
-Given a list of codelists:
+Given a list of terminology packages:
 
 ```json
 [
@@ -678,10 +678,27 @@ Given a list of codelists:
 
 and standard: `sdtmig`
 
-the operation will return
+the operation will return:
 
 ```json
 ["2023-10-26", "2023-12-13"]
+```
+
+By default, the standard is as specified when running validation - as the validation runtime parameter and/or as specified in the rule header - and the list of terminology packages is obtained from the current cache. If required, the default standard may be overridden using the optional `ct_package_types` parameter. For example, given the same list of terminology packages, the following operation:
+
+```yaml
+Operation:
+  - operator: valid_codelist_dates
+    id: $valid_dates
+    ct_package_types:
+      - SDTM
+      - CDASH
+```
+
+will return:
+
+```json
+["2023-05-19", "2023-10-26", "2023-12-13"]
 ```
 
 # External Dictionary Validation Operations
