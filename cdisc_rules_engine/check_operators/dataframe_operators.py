@@ -76,7 +76,6 @@ class DataframeType(BaseType):
     def __init__(self, data):
         self.value: DatasetInterface = data["value"]
         self.column_prefix_map = data.get("column_prefix_map", {})
-        self.relationship_data = data.get("relationship_data", {})
         self.value_level_metadata = data.get("value_level_metadata", [])
         self.column_codelist_map = data.get("column_codelist_map", {})
         self.codelist_term_maps = data.get("codelist_term_maps", [])
@@ -1133,52 +1132,6 @@ class DataframeType(BaseType):
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
-    def is_valid_reference(self, other_value):
-        target = self.replace_prefix(other_value.get("target"))
-        context = self.replace_prefix(other_value.get("context"))
-        if context:
-            results = self.value.apply(
-                lambda row: row[target] in self.relationship_data.get(row[context], {}),
-                axis=1,
-            )
-        else:
-            results = self.value[target].isin(self.relationship_data)
-        return results
-
-    @log_operator_execution
-    @type_operator(FIELD_DATAFRAME)
-    def is_not_valid_reference(self, other_value):
-        return ~self.is_valid_reference(other_value)
-
-    @log_operator_execution
-    @type_operator(FIELD_DATAFRAME)
-    def is_valid_relationship(self, other_value):
-        target = self.replace_prefix(other_value.get("target"))
-        value_column = self.replace_prefix(other_value.get("comparator"))
-        context = self.replace_prefix(other_value.get("context"))
-        within_column = self.replace_prefix(other_value.get("within"))
-        if not within_column or within_column not in self.value.columns:
-            return self.value.apply(
-                lambda row: self.detect_reference(row, value_column, target, context),
-                axis=1,
-            )
-        results = pd.Series(False, index=self.value.index)
-        results = self.value.apply(
-            lambda row: self.detect_reference(
-                row, value_column, target, context, row[within_column]
-            ),
-            axis=1,
-        )
-
-        return results
-
-    @log_operator_execution
-    @type_operator(FIELD_DATAFRAME)
-    def is_not_valid_relationship(self, other_value):
-        return ~self.is_valid_relationship(other_value)
-
-    @log_operator_execution
-    @type_operator(FIELD_DATAFRAME)
     def non_conformant_value_data_type(self, other_value):
         results = False
         for vlm in self.value_level_metadata:
@@ -1301,33 +1254,6 @@ class DataframeType(BaseType):
     @type_operator(FIELD_DATAFRAME)
     def not_present_on_multiple_rows_within(self, other_value: dict):
         return ~self.present_on_multiple_rows_within(other_value)
-
-    def detect_reference(
-        self, row, value_column, target_column, context=None, within_value=None
-    ):
-        if within_value is not None:
-            if context:
-                target_data = (
-                    self.relationship_data.get(within_value, {})
-                    .get(row[context], {})
-                    .get(row[target_column], pd.Series([]).values)
-                )
-            else:
-                target_data = self.relationship_data.get(within_value, {}).get(
-                    row[target_column], pd.Series([]).values
-                )
-        else:
-            if context:
-                target_data = self.relationship_data.get(row[context], {}).get(
-                    row[target_column], pd.Series([]).values
-                )
-            else:
-                target_data = self.relationship_data.get(
-                    row[target_column], pd.Series([]).values
-                )
-        value = str(row[value_column])
-        target_data_str = [str(x) for x in target_data]
-        return value in target_data_str
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)

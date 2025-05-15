@@ -411,24 +411,6 @@
     {
       "properties": {
         "operator": {
-          "const": "is_not_valid_reference"
-        }
-      },
-      "required": ["operator", "context"],
-      "type": "object"
-    },
-    {
-      "properties": {
-        "operator": {
-          "const": "is_not_valid_relationship"
-        }
-      },
-      "required": ["operator", "context", "value"],
-      "type": "object"
-    },
-    {
-      "properties": {
-        "operator": {
           "const": "is_ordered_by"
         }
       },
@@ -469,24 +451,6 @@
         }
       },
       "required": ["operator"],
-      "type": "object"
-    },
-    {
-      "properties": {
-        "operator": {
-          "const": "is_valid_reference"
-        }
-      },
-      "required": ["operator", "context"],
-      "type": "object"
-    },
-    {
-      "properties": {
-        "operator": {
-          "const": "is_valid_relationship"
-        }
-      },
-      "required": ["operator", "context", "value"],
       "type": "object"
     },
     {
