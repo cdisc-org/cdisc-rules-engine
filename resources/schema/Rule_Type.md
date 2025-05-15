@@ -192,6 +192,56 @@ all:
     value: --CAT
 ```
 
+## Value Check with Dataset Metadata
+
+#### Columns
+
+- `row_number`
+- `variable_name`
+- `variable_value`
+- `dataset_label`
+- `dataset_location`
+- `dataset_name`
+- `dataset_size`
+
+#### Example
+
+```yaml
+all:
+  - name: variable_name
+    operator: starts_with
+    value: "DM"
+  - name: dataset_name
+    operator: not_equal_to
+    value: "DM"
+```
+
+## Value Check with Variable Metadata
+
+#### Columns
+
+- `row_number`
+- `variable_name`
+- `variable_value`
+- `variable_order_number`
+- `variable_label`
+- `variable_size`
+- `variable_data_type`
+- `variable_format`
+- `variable_value_length`
+
+#### Example
+
+```yaml
+all:
+  - name: variable_data_type
+    operator: equal_to
+    value: char
+  - name: variable_value
+    operator: longer_than
+    value: 200
+```
+
 ## Value Check against Define XML Variable
 
 #### Columns

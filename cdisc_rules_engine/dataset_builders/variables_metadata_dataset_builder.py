@@ -16,8 +16,3 @@ class VariablesMetadataDatasetBuilder(BaseDatasetBuilder):
         return self.data_service.get_variables_metadata(
             dataset_name=self.dataset_path, datasets=self.datasets, drop_duplicates=True
         )
-
-    def build_split_datasets(self, dataset_name, **kwargs):
-        return self.data_service.get_variables_metadata(
-            dataset_name=dataset_name, datasets=self.datasets, drop_duplicates=True
-        )
