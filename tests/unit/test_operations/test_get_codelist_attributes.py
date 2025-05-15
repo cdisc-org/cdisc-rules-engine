@@ -75,13 +75,75 @@ test_set2 = (
             "C141663": {"extensible": False, "allowed_terms": []},
         },
     ],
+    PandasDataset,
+    {"C141656", "C141663", "C141657"},
+)
+test_set3 = (
+    ["sdtmct-2020-03-27"],
+    {
+        "STUDYID": ["CDISC001", "CDISC001", "CDISC001", "CDISC001", "CDISC001"],
+        "DOMAIN": ["TS", "TS", "TS", "TS", "TS"],
+        "TSSEQ": [1, 1, 1, 1, 2],
+        "TSVALCD": ["C49487x", "C49487", "C25473x", "", ""],
+        "TSVCDREF": ["CDISC CT", "CDISC CT", "CDISC CT", "SNOMED", "ISO 8601"],
+        "TSVCDVER": ["2020-03-27", "2020-03-27", "2020-03-27", "", ""],
+    },
+    [
+        {
+            "package": "sdtmct-2020-03-27",
+            "C49487": {"extensible": False, "allowed_terms": ["A", "B", "C"]},
+            "C25473": {"extensible": False, "allowed_terms": ["X", "Y", "Z"]},
+            "C141663": {"extensible": False, "allowed_terms": []},
+        },
+        {
+            "package": "sdtmct-2022-12-16",
+            "C141657": {"extensible": False, "allowed_terms": ["A", "B", "C"]},
+            "C141656": {"extensible": False, "allowed_terms": ["X", "Y", "Z"]},
+            "C141663": {"extensible": False, "allowed_terms": []},
+        },
+    ],
+    DaskDataset,
+    {"C141663", "C25473", "C49487"},
+)
+
+test_set4 = (
+    ["sdtmct-2022-12-16"],
+    {
+        "STUDYID": ["CDISC001", "CDISC001", "CDISC001", "CDISC001", "CDISC001"],
+        "DOMAIN": ["TS", "TS", "TS", "TS", "TS"],
+        "TSSEQ": [1, 1, 1, 1, 2],
+        "TSVALCD": ["C49487", "C49487", "C25473", "C141657", "C141663"],
+        "TSVCDREF": ["CDISC", "CDISC", "CDISC CT", "CDISC CT", "CDISC CT"],
+        "TSVCDVER": [
+            "2020-03-27",
+            "2020-03-27",
+            "2020-03-27",
+            "2022-12-16",
+            "2022-12-16",
+        ],
+    },
+    [
+        {
+            "package": "sdtmct-2020-03-27",
+            "C49487": {"extensible": False, "allowed_terms": ["A", "B", "C"]},
+            "C25473": {"extensible": False, "allowed_terms": ["X", "Y", "Z"]},
+            "C141663": {"extensible": False, "allowed_terms": []},
+        },
+        {
+            "package": "sdtmct-2022-12-16",
+            "C141657": {"extensible": False, "allowed_terms": ["A", "B", "C"]},
+            "C141656": {"extensible": False, "allowed_terms": ["X", "Y", "Z"]},
+            "C141663": {"extensible": False, "allowed_terms": []},
+        },
+    ],
     DaskDataset,
     {"C141656", "C141663", "C141657"},
 )
 
 
 @pytest.mark.parametrize(
-    "ct_packages, ts_data, ct_data, dataset_type, ct_list", [test_set1, test_set2]
+    "ct_packages, ts_data, ct_data, dataset_type, ct_list",
+    [test_set1, test_set2, test_set3, test_set4],
 )
 def test_get_codelist_attributes(
     operation_params: OperationParams,

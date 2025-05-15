@@ -17,6 +17,18 @@ from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
         (
             {"target": ["A", "B", "C"], "VAR2": ["A", "B", "C"]},
             "B",
+            PandasDataset,
+            [False, True, False],
+        ),
+        (
+            {"target": ["A", "B", "C"], "VAR2": ["A", "B", "C"]},
+            "VAR2",
+            DaskDataset,
+            [True, True, True],
+        ),
+        (
+            {"target": ["A", "B", "C"], "VAR2": ["A", "B", "C"]},
+            "B",
             DaskDataset,
             [False, True, False],
         ),
