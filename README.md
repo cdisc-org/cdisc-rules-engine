@@ -1,6 +1,6 @@
 ### Supported python versions
 
-[![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/downloads/release/python-3100)
+[![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3120)
 
 ### Windows Command Compatibility
 
@@ -62,12 +62,12 @@ In the terminal, navigate to the directory you intend to install CORE rules engi
    git clone https://github.com/cdisc-org/cdisc-rules-engine
    ```
 
-2. Ensure you have Python 3.10 installed:
+2. Ensure you have Python 3.12 installed:
    You can check your Python version with:
    ```
    python --version
    ```
-   If you don't have Python 3.10, please download and install it from [python.org](https://www.python.org/downloads/) or using your system's package manager.
+   If you don't have Python 3.12, please download and install it from [python.org](https://www.python.org/downloads/) or using your system's package manager.
 
 ### **Code formatter**
 
@@ -91,8 +91,8 @@ These steps should be run before running any tests or core commands using the no
 
   `python -m venv <virtual_environment_name>`
 
-NOTE: if you have multiple versions of python on your machine, you can call python 3.10 for the virtual environment's creation instead of the above command:
-`python3.10 -m venv <virtual_environment_name>`
+NOTE: if you have multiple versions of python on your machine, you can call python 3.12 for the virtual environment's creation instead of the above command:
+`python3.12 -m venv <virtual_environment_name>`
 
 - Activate the virtual environment:
 
@@ -171,11 +171,8 @@ Run `python core.py validate --help` to see the list of validation options.
   -r, --rules TEXT                Specify rule core ID ex. CORE-000001. Can be specified multiple times.
   -lr, --local_rules TEXT         Specify relative path to directory or file containing
                                   local rule yml and/or json rule files.
-  -lrc, --local_rules_cache       Adding this flag tells engine to use local rules
-                                  uploaded to the cache instead of published rules
-                                  in the cache for the validation run.
-  -lri, --local_rule_id TEXT      Specify ID for custom, local rules in the cache
-                                  you wish to run a validation with.
+  -cs, --custom_standard       Adding this flag tells engine to use a custom standard specified with -s and -v
+                                  that has been uploaded to the cache using update-cache
   -vo, --verbose-output           Specify this option to print rules as they
                                   are completed
   -p, --progress [verbose_output|disabled|percents|bar]
@@ -199,6 +196,8 @@ Run `python core.py validate --help` to see the list of validation options.
 To validate a folder using rules for SDTM-IG version 3.4 use the following command:
 
 `python core.py validate -s sdtmig -v 3-4 -d path/to/datasets`
+
+**_NOTE:_** Before running a validation in the CLI, you must first populate the cache with rules to validate against. See the update-cache command below.
 
 ##### **Validate single rule**
 
@@ -237,22 +236,98 @@ The possible rule run statuses are:
 - `SUCCESS` - The rule ran and data was validated against the rule. May or may not produce results
 - `SKIPPED` - The rule was unable to be run. Usually due to missing required data, but could also be cause by rule execution errors.
 
-##### Additional Core Commands
+# Additional Core Commands
 
 **- update-cache** - update locally stored cache data (Requires an environment variable - `CDISC_LIBRARY_API_KEY`) This is stored in the .env folder in the root directory, the API key does not need quotations around it.
 
-    `python core.py update-cache`
+```bash
+  python core.py update-cache
+```
+
+**NOTE:** When running a validation, CORE uses rules in the cache unless -lr is specified. Running the above command populates the cache with controlled terminology, rules, metadata, etc.
 
 To obtain an api key, please follow the instructions found here: <https://wiki.cdisc.org/display/LIBSUPRT/Getting+Started%3A+Access+to+CDISC+Library+API+using+API+Key+Authentication>. Please note it can take up to an hour after sign up to have an api key issued
 
-- an additional local rule `-lr` flag can be added to the update-cache command that points to a directory of local rules. This adds the rules contained in the directory to the cache. It will not update the cache from library when `-lr` is specified. A `-lri` local rules ID must be given when -lr is used to ID your rules in the cache.
-  **NOTE:** local rules must contain a 'custom_id' key to be added to the cache. This should replace the Core ID field in the rule.
+# Custom Standards and Rules
 
-            `python core.py update-cache -lr 'path/to/directory' -lri 'CUSTOM123'`
+## Custom Rules Management
 
-- to remove local rules from to the cache, remove rules `-rlr` is added to update-cache to remove local rules from the cache. A previously used local_rules_id can be specified to remove all local rules with that ID from the cache or the keyword 'ALL' is reserved to remove all local rules from the cache.
+- **Custom rules** are stored in a flat file in the cache, indexed by their core ID (e.g., 'COMPANY-000123' or 'CUSTOM-000123').
+- Each rule is stored independently in this file, allowing for efficient lookup and management.
 
-          `python core.py update-cache -rlr 'CUSTOM123'`
+## Custom Standards Management
+
+- **Custom standards** act as a lookup mechanism that maps a standard identifier to a list of applicable rule IDs.
+- When adding a custom standard, you need to provide a JSON file with the following structure:
+
+  ```json
+  {
+    "standard_id/version": ["RULE_ID1", "RULE_ID2", "RULE_ID3", ...]
+  }
+  ```
+
+  For example:
+
+  ```json
+  {
+    "cust_standard/1-0": [
+      "CUSTOM-000123",
+      "CUSTOM-000456",
+      "CUSTOM-001",
+      "CUSTOM-002"
+    ]
+  }
+  ```
+
+- To add or update a custom standard, use:
+
+  ```bash
+  python core.py update-cache --custom_standard 'path/to/standard.json'
+  ```
+
+- To remove custom standards, use the `--remove_custom_standard` or `-rcs` flag:
+
+  ```bash
+  python core.py update-cache --remove_custom_standard 'mycustom/1-0'
+  ```
+
+- When executing validation against a custom standard, the system will use the standard as a lookup to determine which rules to apply from the rule cache. Custom standards which match CDISC standard names and versions can be used to get library metadata for the standard while still utilizing custom rules. If a custom name does not match a CDISC standard, library metadata will not be populated.
+
+  ```json
+  {
+    "sdtmig/3-4": ["CUSTOM-000123", "CUSTOM-000456", "CUSTOM-001", "CUSTOM-002"]
+  }
+  ```
+
+  This rule will get metadata from SDTMIG version 3.4 but utilize the custom rules listed in the custom standard that need this library metadata.
+
+## Relationship Between Custom Rules and Standards
+
+- You should first add your custom rules to the cache, then create a custom standard that references those rules.
+- Custom standards can reference both core CDISC rules and your own custom rules in the same standard definition.
+- This two-level architecture allows for flexible rule reuse across multiple standards.
+
+## Custom Rules Management
+
+- **Add custom rules**: Use the `--custom_rules_directory` or `-crd` flag to specify a directory containing local rules, or `--custom_rule` or `-cr` flag to specify a single rule file:
+  ```bash
+  python core.py update-cache --custom_rules_directory 'path/to/directory'
+  python core.py update-cache --custom_rule 'path/to/rule.json' --custom_rule 'path/to/rule.yaml'
+  ```
+- **Update a custom rule**: Use the `--update_custom_rule` or `-ucr` flag to update an existing rule in the cache:
+
+  ```bash
+  python core.py update-cache --update_custom_rule 'path/to/updated_rule.yaml'
+  ```
+
+- **Remove custom rules**: Use the `--remove_custom_rules` or `-rcr` flag to remove rules from the cache. Can be a single rule ID, a comma-separated list of IDs, or 'ALL' to remove all custom rules:
+  ```bash
+  python core.py update-cache --remove_custom_rules 'RULE_ID'
+  python core.py update-cache --remove_custom_rules 'RULE_ID1,RULE_ID2,RULE_ID3'
+  python core.py update-cache --remove_custom_rules 'ALL'
+  ```
+
+## List Rules
 
 **- list-rules** - list published rules available in the cache
 
@@ -264,16 +339,30 @@ To obtain an api key, please follow the instructions found here: <https://wiki.c
 
       `python core.py list-rules -s sdtmig -v 3-4`
 
--list all local rules:
+- list rules for integrated standard (substandard: "SDTM", "SEND", "ADaM", "CDASH"):
 
-      `python core.py list-rules -lr`
+      `python core.py list-rules -s tig -v 1-0 -ss SDTM`
 
--list local rules with a specific local rules id:
+- list rules by ID:
 
-      `python core.py list-rules -lr -lri 'CUSTOM1'`
+      `python core.py list-rules -r CORE-000351 -r CORE-000591`
+
+- List all custom rules:
+
+  ```bash
+  python core.py list-rules --custom_rules
+  ```
+
+- List custom rules with a specific ID:
+  ```bash
+  python core.py list-rules --custom_rules -s custom_standard -v 1-0
+  ```
 
 **- list-rule-sets** - lists all standards and versions for which rules are available:
-`python core.py list-rule-sets`
+
+```bash
+python core.py list-rule-sets
+```
 
 **- list-ct** - list ct packages available in the cache
 
@@ -308,7 +397,7 @@ For implementation instructions, see [PYPI.md](PYPI.md).
 
 **Linux**
 
-`pyinstaller core.py --add-data=venv/lib/python3.10/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates`
+`pyinstaller core.py --add-data=venv/lib/python3.12/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates`
 
 **Windows**
 

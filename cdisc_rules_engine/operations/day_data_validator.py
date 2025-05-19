@@ -53,5 +53,7 @@ class DayDataValidator(BaseOperation):
             return None
 
     def get_day_difference(self, delta: datetime) -> int:
+        if delta is None or (isinstance(delta, float) and np.isnan(delta)):
+            return ""
         # Return 1 if the --DTC value is the same as the DY
         return delta.days if delta.days < 0 else delta.days + 1

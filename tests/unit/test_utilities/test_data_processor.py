@@ -10,6 +10,7 @@ from cdisc_rules_engine.utilities.data_processor import DataProcessor
 from cdisc_rules_engine.models.dataset import PandasDataset, DaskDataset
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.enums.join_types import JoinTypes
+import numpy as np
 
 
 @pytest.mark.parametrize(
@@ -78,7 +79,7 @@ def test_preprocess_relationship_dataset(data):
                 assert idvar in reference_data[domains[i]]
         elif "RSUBJID" in data:
             assert "RSUBJID" in reference_data["DM"]
-            assert pd.np.array_equal(reference_data["DM"]["RSUBJID"], dm["USUBJID"])
+            assert np.array_equal(reference_data["DM"]["RSUBJID"], dm["USUBJID"])
 
 
 def test_filter_dataset_columns_by_metadata_and_rule():

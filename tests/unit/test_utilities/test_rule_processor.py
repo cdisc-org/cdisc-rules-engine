@@ -370,6 +370,63 @@ def test_rule_applies_to_class(
         )
 
 
+@pytest.mark.parametrize(
+    "dataset_name, domain, rdomain, rule_use_case, standard, standard_substandard, outcome",
+    [
+        # Basic use case tests with string format "INDH, PROD"
+        ("AE", "AE", None, "INDH, PROD", "tig", "SDTM", True),
+        ("CM", "CM", None, "INDH", "tig", "SDTM", True),
+        ("TS", "TS", None, "INDH", "tig", "SDTM", True),
+        ("ES", "ES", None, "PROD", "tig", "SDTM", True),
+        ("ES", "ES", None, "INDH", "tig", "SDTM", False),
+        ("BW", "BW", None, "NONCLIN", "tig", "SEND", True),
+        ("BW", "BW", None, "INDH", "tig", "SEND", False),
+        # Tests for ADaM datasets
+        ("ADSL", "ADSL", None, "ANALYSIS", "tig", "ADAM", True),
+        ("ADAE", "ADAE", None, "ANALYSIS", "tig", "ADAM", True),
+        ("ADAE", "ADAE", None, "INDH", "tig", "ADAM", False),
+        # Tests for supplementary datasets
+        ("SUPPAE", None, "AE", "INDH", "tig", "SDTM", True),
+        ("SUPPQS", None, "QS", "INDH", "tig", "SDTM", True),
+        ("SUPPEC", None, "EC", "INDH", "tig", "SDTM", True),
+        ("SUPP--", None, "AE", "INDH", "tig", "SDTM", True),
+        ("SUPPPT", None, "PT", "PROD", "tig", "SDTM", True),
+        # Tests for empty/None use cases (should always return True)
+        ("AE", "AE", None, "", "tig", "SDTM", True),
+        ("AE", "AE", None, None, "tig", "SDTM", True),
+        # Tests for non-TIG standard (should always return True)
+        ("AE", "AE", None, "INDH", "sdtmig", "SDTM", True),
+        ("BW", "BW", None, "NONCLIN", "sendct", "SEND", True),
+        # Tests for substandards not in USE_CASE_DOMAINS
+        ("AE", "AE", None, "INDH", "tig", "UNKNOWN", False),
+    ],
+)
+def test_rule_applies_to_use_case(
+    mock_data_service,
+    dataset_name,
+    domain,
+    rdomain,
+    rule_use_case,
+    standard,
+    standard_substandard,
+    outcome,
+):
+    processor = RuleProcessor(mock_data_service, InMemoryCacheService())
+    rule = {"use_case": rule_use_case}
+    dataset_metadata = SDTMDatasetMetadata(
+        name=dataset_name,
+        first_record=(
+            {"DOMAIN": domain, "RDOMAIN": rdomain} if domain or rdomain else {}
+        ),
+    )
+    assert (
+        processor.rule_applies_to_use_case(
+            dataset_metadata, rule, standard, standard_substandard
+        )
+        == outcome
+    )
+
+
 @pytest.mark.parametrize("dataset_implementation", [PandasDataset, DaskDataset])
 def test_perform_rule_operation(mock_data_service, dataset_implementation):
     conditions = {

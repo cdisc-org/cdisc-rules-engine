@@ -27,7 +27,6 @@ from cdisc_rules_engine.models.external_dictionaries_container import (
 from cdisc_rules_engine.utilities.utils import (
     generate_report_filename,
     get_rules_cache_key,
-    get_local_cache_key,
 )
 from scripts.list_dataset_metadata_handler import list_dataset_metadata_handler
 from version import __version__
@@ -179,24 +178,12 @@ def cli():
     help="path to directory containing local rules.",
 )
 @click.option(
-    "--local_rules_cache",
-    "-lrc",
+    "--custom_standard",
+    "-cs",
     required=False,
     is_flag=True,
     default=False,
-    help=(
-        "flag to run a validation using the local rules in the cache"
-        "must be provided with a local rules id -lri to specify the local rules to use"
-    ),
-)
-@click.option(
-    "--local_rules_id",
-    "-lri",
-    required=False,
-    help=(
-        "local rule ID of rules to use from the local rules cache"
-        "for the validation run. Must be provided with the -lrc flag"
-    ),
+    help=("flag to run a validation using a custom_standard from the cache"),
 )
 @click.option(
     "-p",
@@ -243,8 +230,7 @@ def validate(
     snomed_url: str,
     rules: Tuple[str],
     local_rules: str,
-    local_rules_cache: bool,
-    local_rules_id: str,
+    custom_standard: bool,
     progress: str,
     define_xml_path: str,
     validate_xml: str,
@@ -330,8 +316,7 @@ def validate(
             external_dictionaries,
             rules,
             local_rules,
-            local_rules_cache,
-            local_rules_id,
+            custom_standard,
             progress,
             define_xml_path,
             validate_xml_bool,
@@ -357,54 +342,90 @@ def validate(
     required=True,
 )
 @click.option(
-    "-lr",
-    "--local_rules",
+    "-crd",
+    "--custom_rules_directory",
     help=(
-        "Relative path to folder containing local rules in yaml or JSON formats"
-        "to be added to the cache.  Must be provided in conjunction with -lri"
+        "Relative path to directory containing local rules in yaml or JSON formats"
+        "to be added to the cache. "
     ),
 )
 @click.option(
-    "-lri",
-    "--local_rules_id",
+    "-cr",
+    "--custom_rule",
+    multiple=True,
     help=(
-        "Custom ID attached to local rules added to the cache"
-        "used for granular control of local rules when removing"
-        "and validating from the cache.  Must be given when adding"
-        "local rules to the cache."
+        "Relative path to rule file in yaml or JSON formats"
+        "to be added to the cache. "
     ),
 )
 @click.option(
-    "-rlr",
-    "--remove_rules",
-    help="removes all local rules from the cache",
+    "-rcr",
+    "--remove_custom_rules",
+    help=(
+        "Remove rules from the cache. Can be a single rule ID, a comma-separated list of IDs, "
+        "or 'ALL' to remove all custom rules."
+    ),
+)
+@click.option(
+    "-ucr",
+    "--update_custom_rule",
+    help=(
+        "Relative path to rule file in yaml or JSON formats"
+        "Rule will be updated in cache with this file. "
+    ),
+)
+@click.option(
+    "-cs",
+    "--custom_standard",
+    help=(
+        "Relative path to JSON file containing custom standard details."
+        "Will update the standard if it already exists."
+    ),
+)
+@click.option(
+    "-rcs",
+    "--remove_custom_standard",
+    help=("removes a custom standard and version from the cache. "),
+    multiple=True,
 )
 @click.pass_context
 def update_cache(
     ctx: click.Context,
     cache_path: str,
     apikey: str,
-    local_rules: str,
-    local_rules_id: str,
-    remove_rules: str,
+    custom_rules_directory: str,
+    custom_rule: str,
+    remove_custom_rules: str,
+    update_custom_rule: str,
+    custom_standard: str,
+    remove_custom_standard: str,
 ):
     cache = CacheServiceFactory(config).get_cache_service()
     library_service = CDISCLibraryService(apikey, cache)
     cache_populator = CachePopulator(
-        cache, library_service, local_rules, local_rules_id, remove_rules, cache_path
+        cache,
+        library_service,
+        custom_rules_directory,
+        custom_rule,
+        remove_custom_rules,
+        update_custom_rule,
+        custom_standard,
+        remove_custom_standard,
+        cache_path,
     )
-    if remove_rules:
-        cache_populator.save_removed_rules_locally()
-        print("Local rules removed from cache")
-    elif local_rules and local_rules_id:
-        cache_populator.save_local_rules_locally()
-        print("Local rules saved to cache")
-    elif not local_rules and not remove_rules:
-        asyncio.run(cache_populator.update_cache())
+    if custom_rule or custom_rules_directory:
+        cache_populator.add_custom_rules()
+    elif remove_custom_rules:
+        cache_populator.remove_custom_rules_from_cache()
+    elif update_custom_rule:
+        cache_populator.update_custom_rule_in_cache()
+    elif custom_standard:
+        cache_populator.add_custom_standard_to_cache()
+    elif remove_custom_standard:
+        cache_populator.remove_custom_standards_from_cache()
     else:
-        raise ValueError(
-            "Must Specify either local_rules_path and local_rules_id, remove_local_rules, or neither"
-        )
+        asyncio.run(cache_populator.update_cache())
+
     print("Cache updated successfully")
 
 
@@ -422,18 +443,26 @@ def update_cache(
     "-v", "--version", required=False, help="Standard version to get rules for"
 )
 @click.option(
-    "-lr",
-    "--local_rules",
+    "-ss",
+    "--substandard",
+    required=False,
+    default=None,
+    help="CDISC substandard to get rules for. Any of SDTM, SEND, ADaM, CDASH",
+)
+@click.option(
+    "-cr",
+    "--custom_rules",
     is_flag=True,
     default=False,
     required=False,
-    help="flag to list local rules in the cache",
+    help="flag to list custom rules in the cache",
 )
 @click.option(
-    "-lri",
-    "--local_rules_id",
+    "-r",
+    "--rule_id",
     required=False,
-    help="local rule id to list from the local rules cache",
+    help="Rule ID to get rule for.",
+    multiple=True,
 )
 @click.pass_context
 def list_rules(
@@ -441,22 +470,35 @@ def list_rules(
     cache_path: str,
     standard: str,
     version: str,
-    local_rules: bool,
-    local_rules_id: str,
+    substandard: str,
+    custom_rules: bool,
+    rule_id: str,
 ):
     # Load all rules
-    if local_rules:
-        rules_file = DefaultFilePaths.LOCAL_RULES_CACHE_FILE.value
+    if custom_rules:
+        rules_file = DefaultFilePaths.CUSTOM_RULES_CACHE_FILE.value
+        dict_file = DefaultFilePaths.CUSTOM_RULES_DICTIONARY.value
     else:
         rules_file = DefaultFilePaths.RULES_CACHE_FILE.value
+        dict_file = DefaultFilePaths.RULES_DICTIONARY.value
     with open(os.path.join(cache_path, rules_file), "rb") as f:
         rules_data = pickle.load(f)
-    if not local_rules and (standard and version):
-        key_prefix = get_rules_cache_key(standard, version.replace(".", "-"))
-        rules = [rule for key, rule in rules_data.items() if key.startswith(key_prefix)]
-    elif local_rules and local_rules_id:
-        key_prefix = get_local_cache_key(local_rules_id)
-        rules = [rule for key, rule in rules_data.items() if key.startswith(key_prefix)]
+    with open(os.path.join(cache_path, dict_file), "rb") as f:
+        rules_dict = pickle.load(f)
+    rules = []
+    if rule_id:
+        for id in rule_id:
+            if id in rules_data:
+                rules.append(rules_data[id])
+    elif standard and version:
+        key_prefix = get_rules_cache_key(
+            standard, version.replace(".", "-"), substandard
+        )
+        if key_prefix in rules_dict:
+            rule_ids = rules_dict[key_prefix]
+            for rid in rule_ids:
+                if rid in rules_data:
+                    rules.append(rules_data[rid])
     else:
         # Print all rules
         rules = list(rules_data.values())
@@ -472,17 +514,30 @@ def list_rules(
 )
 @click.pass_context
 def list_rule_sets(ctx: click.Context, cache_path: str):
-    # Load all rules
-    rules_file = DefaultFilePaths.RULES_CACHE_FILE.value
+    """Lists all standards and versions for which rules are available."""
+    rules_file = DefaultFilePaths.RULES_DICTIONARY.value
     with open(os.path.join(cache_path, rules_file), "rb") as f:
         rules_data = pickle.load(f)
-    rule_sets = set()
-    for rule in rules_data.keys():
-        standard, version = rule.split("/")[1:3]
-        rule_set = f"{standard.upper()}, {version}"
-        if rule_set not in rule_sets:
-            print(rule_set)
-            rule_sets.add(rule_set)
+
+    rule_sets = {}
+    for key in rules_data.keys():
+        if "/" in key:
+            parts = key.split("/")
+            standard = parts[0]
+            version = parts[1]
+            substandard = parts[2] if len(parts) > 2 else None
+            if substandard:
+                version_key = f"{version}/{substandard}"
+            else:
+                version_key = version
+            if standard not in rule_sets:
+                rule_sets[standard] = set()
+            rule_sets[standard].add(version_key)
+
+    for standard in sorted(rule_sets.keys()):
+        versions = sorted(rule_sets[standard])
+        for version in versions:
+            print(f"{standard.upper()}, {version}")
 
 
 @click.command()
@@ -596,8 +651,7 @@ def test_validate():
             external_dictionaries = ExternalDictionariesContainer({})
             rules = []
             local_rules = None
-            local_rules_cache = False
-            local_rules_id = None
+            custom_standard = False
             progress = ProgressParameterOptions.BAR.value
             define_xml_path = None
             validate_xml = False
@@ -620,8 +674,7 @@ def test_validate():
                     external_dictionaries,
                     rules,
                     local_rules,
-                    local_rules_cache,
-                    local_rules_id,
+                    custom_standard,
                     progress,
                     define_xml_path,
                     validate_xml,
@@ -647,8 +700,7 @@ def test_validate():
                     external_dictionaries,
                     rules,
                     local_rules,
-                    local_rules_cache,
-                    local_rules_id,
+                    custom_standard,
                     progress,
                     define_xml_path,
                     validate_xml,

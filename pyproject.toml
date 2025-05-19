@@ -7,7 +7,7 @@ name = "cdisc-rules-engine"
 dynamic = ["version"]
 description = "Open source offering of the cdisc rules engine"
 readme = "PYPI.md"
-requires-python = ">=3.10, <3.11"
+requires-python = ">=3.12, <3.13"
 license = {text = "MIT"}
 authors = [
     {name = "cdisc-org", email = "info@cdisc.org"}

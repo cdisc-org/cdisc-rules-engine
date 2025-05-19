@@ -345,7 +345,7 @@ class CDISCLibraryService:
         }
         # default to sdtmig if no function is found
         return standard_get_function_map.get(
-            standard_type, lambda: self._client.get_sdtmig()
+            standard_type, lambda: self._client.get_sdtmig(version)
         )()
 
     def _get_model(self, standard_type: str, model_version: str) -> dict:

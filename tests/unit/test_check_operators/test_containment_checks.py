@@ -171,6 +171,12 @@ def test_not_contains_all(data, comparator, dataset_type, expected_result):
             [True, False, True],
         ),
         (
+            {"target": ["Ctt", "Btt", "A"], "VAR2": ["A", "btt", "lll"]},
+            ["Ctt", "B", "A"],
+            DaskDataset,
+            [True, False, True],
+        ),
+        (
             {"target": ["A", "B", "C"]},
             ["C", "Z", "A"],
             DaskDataset,
