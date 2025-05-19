@@ -4,9 +4,11 @@ import dask.array as da
 import pandas as pd
 import numpy as np
 import re
+import dask
 from typing import List, Union
 
 DEFAULT_NUM_PARTITIONS = 4
+dask.config.set({"dataframe.convert-string": False})
 
 
 class DaskDataset(PandasDataset):
@@ -41,7 +43,15 @@ class DaskDataset(PandasDataset):
         self._data = data
 
     def __getitem__(self, item):
-        return self._data[item].compute().reset_index(drop=True)
+        try:
+            return self._data[item].compute().reset_index(drop=True)
+        except ValueError as e:
+            # Handle boolean indexing length mismatch which occurs when filtering
+            # empty DataFrames or when metadata doesn't match actual data dimensions
+            if "Item wrong length" in str(e):
+                empty_df = pd.DataFrame(columns=self._data.columns)
+                return empty_df
+            raise
 
     def is_column_sorted_within(self, group, column):
         return (
@@ -113,6 +123,18 @@ class DaskDataset(PandasDataset):
         elif target in self._data:
             return self._data[target].compute()
         return default
+
+    def convert_to_series(self, result):
+        if self.is_series(result):
+            if isinstance(result, dd.Series):
+                result = result.compute()
+            if pd.api.types.is_bool_dtype(result.dtype):
+                return result.astype("bool")
+            return result
+        series = pd.Series(result)
+        if pd.api.types.is_bool_dtype(series.dtype):
+            return series.astype("bool")
+        return series
 
     def apply(self, func, **kwargs):
         return self._data.apply(func, **kwargs).compute()
@@ -223,7 +245,7 @@ class DaskDataset(PandasDataset):
                 return False
             is_equal = (
                 is_equal
-                & self[column]
+                and self[column]
                 .reset_index(drop=True)
                 .eq(other_dataset[column].reset_index(drop=True))
                 .all()
@@ -308,11 +330,14 @@ class DaskDataset(PandasDataset):
         self._data = self._data.reset_index(drop=drop, **kwargs)
         return self
 
-    def iloc(self, row, column):
+    def iloc(self, n=None, column=None):
         """
         Purely integer-location based indexing for selection by position.
         """
-        return self.data.iloc[row, column].compute()
+        if column is None:
+            return self._data.iloc[n].compute()
+        else:
+            return self._data.iloc[n, column].compute()
 
     def fillna(
         self,
@@ -353,3 +378,18 @@ class DaskDataset(PandasDataset):
         """
         computed_df = self._data.compute()
         return computed_df.to_dict(**kwargs).values()
+
+    def isin(self, values):
+        values_set = set(values)
+
+        def partition_isin(partition):
+            return partition.isin(values_set)
+
+        result = self._data.map_partitions(partition_isin)
+        return result
+
+    def filter_by_value(self, column, values):
+        computed_data = self._data.compute()
+        mask = computed_data[column].isin(values)
+        filtered_df = computed_data[mask]
+        return filtered_df

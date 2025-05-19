@@ -33,7 +33,7 @@ def test_conformant_value_data_type(dataset_type):
         return row["IDVAR1"] == "TEST"
 
     def type_check(row):
-        return isinstance(row["IDVAR2"], str)
+        return isinstance(row["IDVAR1"], str)
 
     data = {
         "RDOMAIN": ["LB", "LB", "AE"],
@@ -46,7 +46,7 @@ def test_conformant_value_data_type(dataset_type):
     result = DataframeType(
         {"value": df, "value_level_metadata": vlm}
     ).conformant_value_data_type({})
-    assert result.equals(df.convert_to_series([True, False, False]))
+    assert result.equals(df.convert_to_series([True, True, False]))
 
 
 @pytest.mark.parametrize("dataset_type", [PandasDataset, DaskDataset])

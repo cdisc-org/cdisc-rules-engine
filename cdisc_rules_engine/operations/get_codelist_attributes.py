@@ -1,5 +1,6 @@
 import pandas as pd
 from cdisc_rules_engine.operations.base_operation import BaseOperation
+from cdisc_rules_engine.models.dataset import DaskDataset
 
 
 class CodeListAttributes(BaseOperation):
@@ -126,12 +127,14 @@ class CodeListAttributes(BaseOperation):
         )
 
         # select records
-        df_sel = df[(df[ct_key].isin(ct_packages))].loc[:, sel_cols]
-
+        if isinstance(df, DaskDataset):
+            filtered_df = df.filter_by_value(ct_key, ct_packages)
+            df_sel = filtered_df.loc[:, sel_cols]
+        else:
+            df_sel = df[(df[ct_key].isin(ct_packages))].loc[:, sel_cols]
         # group the records
         result = df_sel.groupby(ct_key)[ct_attribute].unique().reset_index()
-        result.rename(columns={ct_attribute: ct_val})
-
+        result = result.rename(columns={ct_attribute: ct_val})
         return result
 
     def _add_codelist(self, ct_key, ct_val, ct_term_maps, ct_result):

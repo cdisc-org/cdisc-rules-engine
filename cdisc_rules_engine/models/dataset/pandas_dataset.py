@@ -46,6 +46,10 @@ class PandasDataset(DatasetInterface):
     def at(self):
         return self._data.at
 
+    @property
+    def iloc(self):
+        return self._data.iloc
+
     @classmethod
     def from_dict(cls, data: dict, **kwargs):
         dataframe = pd.DataFrame.from_dict(data, **kwargs)

@@ -163,10 +163,14 @@ class DataframeType(BaseType):
         comparison_data = (
             comparator if comparator not in row or value_is_literal else row[comparator]
         )
-        both_null = (comparison_data == "" or comparison_data is None) & (
-            row[target] == "" or row[target] is None
-        )
-        if both_null:
+        target_values = row[target]
+        target_is_empty = pd.isna(target_values)
+        if not target_is_empty and isinstance(row[target], str):
+            target_is_empty = row[target] == ""
+        comp_is_empty = pd.isna(comparison_data)
+        if not comp_is_empty and isinstance(comparison_data, str):
+            comp_is_empty = comparison_data == ""
+        if target_is_empty or comp_is_empty:
             return False
         if case_insensitive:
             target_val = row[target].lower() if row[target] else None
@@ -194,11 +198,32 @@ class DataframeType(BaseType):
         comparison_data = (
             comparator if comparator not in row or value_is_literal else row[comparator]
         )
-        both_null = (comparison_data == "" or comparison_data is None) & (
-            row[target] == "" or row[target] is None
+        target_is_empty = pd.isna(row[target])
+        if isinstance(row[target], str) and (
+            not target_is_empty.any()
+            if hasattr(target_is_empty, "any")
+            else not target_is_empty
+        ):
+            target_is_empty = row[target] == ""
+        comp_is_empty = pd.isna(comparison_data)
+        if isinstance(comparison_data, str) and (
+            not comp_is_empty.any()
+            if hasattr(comp_is_empty, "any")
+            else not comp_is_empty
+        ):
+            comp_is_empty = comparison_data == ""
+        target_is_empty_scalar = (
+            target_is_empty.any()
+            if hasattr(target_is_empty, "any")
+            else target_is_empty
         )
-        if both_null:
+        comp_is_empty_scalar = (
+            comp_is_empty.any() if hasattr(comp_is_empty, "any") else comp_is_empty
+        )
+        if target_is_empty_scalar and comp_is_empty_scalar:
             return False
+        if target_is_empty_scalar or comp_is_empty_scalar:
+            return True
         if case_insensitive:
             target_val = row[target].lower() if row[target] else None
             comparison_val = comparison_data.lower() if comparison_data else None
@@ -391,7 +416,7 @@ class DataframeType(BaseType):
                 f"Invalid part to validate: {part_to_validate}. \
                     Valid values are: suffix, prefix"
             )
-
+        series_to_validate = series_to_validate.mask(pd.isna(self.value[target]))
         return series_to_validate
 
     def _value_is_contained_by(self, series, comparison_data):
@@ -414,7 +439,7 @@ class DataframeType(BaseType):
         series_to_validate = self._get_string_part_series(
             part_to_validate, length, target
         )
-        return series_to_validate.eq(comparison_data)
+        return series_to_validate.eq(comparison_data).astype(bool)
 
     def _where_less_than(self, target, comparison):
         return np.where(target < comparison, True, False)
@@ -761,11 +786,16 @@ class DataframeType(BaseType):
         comparison_data = self.get_comparator_data(comparator, value_is_literal)
         if self.value.is_series(comparison_data):
             if is_integer_dtype(comparison_data):
-                results = self.value[target].str.len().eq(comparison_data)
+                results = self.value[target].str.len().eq(comparison_data).astype(bool)
             else:
-                results = self.value[target].str.len().eq(comparison_data.str.len())
+                results = (
+                    self.value[target]
+                    .str.len()
+                    .eq(comparison_data.str.len())
+                    .astype(bool)
+                )
         else:
-            results = self.value[target].str.len().eq(comparator)
+            results = self.value[target].str.len().eq(comparator).astype(bool)
         return results
 
     @log_operator_execution
@@ -852,7 +882,7 @@ class DataframeType(BaseType):
             )
         )
         if isinstance(self.value, DaskDataset) and self.value.is_series(results):
-            return results.compute()
+            results = results.compute()
         # return values with corresponding indexes from results
         return pd.Series(results.reset_index(level=0, drop=True))
 
@@ -882,7 +912,8 @@ class DataframeType(BaseType):
             )
         )
         if isinstance(self.value, DaskDataset) and self.value.is_series(results):
-            return results.compute()
+            computed_results = results.compute()
+            return computed_results.reset_index(level=0, drop=True)
 
         # return values with corresponding indexes from results
         return pd.Series(results.reset_index(level=0, drop=True))
@@ -1125,10 +1156,20 @@ class DataframeType(BaseType):
         target = self.replace_prefix(other_value.get("target"))
         value_column = self.replace_prefix(other_value.get("comparator"))
         context = self.replace_prefix(other_value.get("context"))
+        within_column = self.replace_prefix(other_value.get("within"))
+        if not within_column or within_column not in self.value.columns:
+            return self.value.apply(
+                lambda row: self.detect_reference(row, value_column, target, context),
+                axis=1,
+            )
+        results = pd.Series(False, index=self.value.index)
         results = self.value.apply(
-            lambda row: self.detect_reference(row, value_column, target, context),
+            lambda row: self.detect_reference(
+                row, value_column, target, context, row[within_column]
+            ),
             axis=1,
         )
+
         return results
 
     @log_operator_execution
@@ -1162,8 +1203,10 @@ class DataframeType(BaseType):
         results = False
         for vlm in self.value_level_metadata:
             results |= self.value.apply(
-                lambda row: vlm["filter"](row) and vlm["type_check"](row), axis=1
-            )
+                lambda row: vlm["filter"](row) and vlm["type_check"](row),
+                axis=1,
+                meta=pd.Series([True, False], dtype=bool),
+            ).fillna(False)
         return self.value.convert_to_series(results)
 
     @log_operator_execution
@@ -1259,21 +1302,32 @@ class DataframeType(BaseType):
     def not_present_on_multiple_rows_within(self, other_value: dict):
         return ~self.present_on_multiple_rows_within(other_value)
 
-    def detect_reference(self, row, value_column, target_column, context=None):
-        if context:
-            target_data = self.relationship_data.get(row[context], {}).get(
-                row[target_column], pd.Series([]).values
-            )
+    def detect_reference(
+        self, row, value_column, target_column, context=None, within_value=None
+    ):
+        if within_value is not None:
+            if context:
+                target_data = (
+                    self.relationship_data.get(within_value, {})
+                    .get(row[context], {})
+                    .get(row[target_column], pd.Series([]).values)
+                )
+            else:
+                target_data = self.relationship_data.get(within_value, {}).get(
+                    row[target_column], pd.Series([]).values
+                )
         else:
-            target_data = self.relationship_data.get(
-                row[target_column], pd.Series([]).values
-            )
-        value = row[value_column]
-        return (
-            (value in target_data)
-            or (value in target_data.astype(int).astype(str))
-            or (value in target_data.astype(str))
-        )
+            if context:
+                target_data = self.relationship_data.get(row[context], {}).get(
+                    row[target_column], pd.Series([]).values
+                )
+            else:
+                target_data = self.relationship_data.get(
+                    row[target_column], pd.Series([]).values
+                )
+        value = str(row[value_column])
+        target_data_str = [str(x) for x in target_data]
+        return value in target_data_str
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -1380,8 +1434,14 @@ class DataframeType(BaseType):
         if sort_order not in ["asc", "dsc"]:
             raise ValueError("invalid sorting order")
         sort_order_bool: bool = sort_order == "asc"
-        return self.value[target].eq(
-            self.value[target].sort_values(ascending=sort_order_bool, ignore_index=True)
+        return (
+            self.value[target]
+            .eq(
+                self.value[target].sort_values(
+                    ascending=sort_order_bool, ignore_index=True
+                )
+            )
+            .astype(bool)
         )
 
     @log_operator_execution
@@ -1600,3 +1660,39 @@ class DataframeType(BaseType):
             return len(target_set.intersection(comparator_set)) == 0
 
         return self.value.apply(check_no_shared_elements, axis=1).all()
+
+    @log_operator_execution
+    @type_operator(FIELD_DATAFRAME)
+    def is_ordered_subset_of(self, other_value: dict):
+        target = self.replace_prefix(other_value.get("target"))
+        comparator = self.replace_prefix(other_value.get("comparator"))
+        missing_columns = set()
+
+        def check_order(row):
+            target_list = row[target]
+            comparator_list = row[comparator]
+            comparator_positions = {col: idx for idx, col in enumerate(comparator_list)}
+            positions = []
+            for col in target_list:
+                if col in comparator_positions:
+                    positions.append(comparator_positions[col])
+                else:
+                    missing_columns.add(col)
+                    return False
+            return positions == sorted(positions)
+
+        if isinstance(self.value, DaskDataset):
+            results = self.value.apply(check_order, axis=1, meta=("check_order", bool))
+            results = self.value.convert_to_series(results)
+        else:
+            results = self.value.apply(check_order, axis=1)
+        if missing_columns:
+            logger.info(
+                f"Columns not found in comparator list {comparator}: {', '.join(sorted(missing_columns))}"
+            )
+        return results
+
+    @log_operator_execution
+    @type_operator(FIELD_DATAFRAME)
+    def is_not_ordered_subset_of(self, other_value: dict):
+        return ~self.is_ordered_subset_of(other_value)
