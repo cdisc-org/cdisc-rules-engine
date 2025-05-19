@@ -185,5 +185,7 @@ class Rule:
                 join_data["relationship_columns"] = relationship_columns
             if "Join_Type" in data:
                 join_data["join_type"] = data.get("Join_Type")
+            if "Match_Direction" in data:
+                join_data["match_direction"] = data.get("Match_Direction")
             datasets.append(join_data)
         return datasets
