@@ -35,7 +35,7 @@ print(os.listdir("logs"))
 print(os.listdir(os.path.join("logs", "Build and Deploy Preview")))
 
 log_dir = os.path.join("logs")
-matching_files = glob.glob(os.path.join(log_dir, "[0-9]_Build And Deploy Preview.txt"))
+matching_files = glob.glob(os.path.join(log_dir, "[0-9]_Build and Deploy Preview.txt"))
 
 target_file_path = matching_files[0]
 if not os.path.exists(target_file_path):
