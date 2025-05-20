@@ -270,12 +270,10 @@ class DaskDataset(PandasDataset):
         """
         Return the cartesian product of two dataframes
         """
-        return cls(
-            dd.from_pandas(
-                left.compute().merge(right, how="cross"),
-                npartitions=DEFAULT_NUM_PARTITIONS,
-            )
-        )
+        left_df = left._data if hasattr(left, "_data") else left
+        right_df = right._data if hasattr(right, "_data") else right
+        result = left_df.merge(right_df, how="cross")
+        return cls(result)
 
     def dropna(self, inplace=False, **kwargs):
         result = self._data.dropna(**kwargs)
@@ -371,7 +369,9 @@ class DaskDataset(PandasDataset):
         return result
 
     def filter_by_value(self, column, values):
-        computed_data = self._data.compute()
-        mask = computed_data[column].isin(values)
-        filtered_df = computed_data[mask]
-        return filtered_df
+        mask = self._data[column].isin(values)
+        return self.__class__(self._data[mask])
+
+    def max(self, *args, **kwargs):
+        result = self._data.max(*args, **kwargs)
+        return self.__class__(result)

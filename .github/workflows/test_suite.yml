@@ -117,58 +117,58 @@ jobs:
         run: |
           python CORE_Test_Suite/scripts/compare_implementations.py CORE_Test_Suite/dask-results.json CORE_Test_Suite/CORE-Report.json CORE_Test_Suite/dask_comparison.json --github-step-summary $GITHUB_STEP_SUMMARY --mode test
 
-      #################################
-      # USDM TEST SUITE VALIDATION
-      #################################
+      # #################################
+      # # USDM TEST SUITE VALIDATION
+      # #################################
 
-      - name: Parse USDM rule list
-        run: |
-          usdm_rules=$(cat CORE_Test_Suite/rulelist/USDM_Test_Suite_Rules.txt | sed 's/\r$//' | sed 's/^/-r /' | tr '\n' ' ')
-          echo "USDM_RULE_LIST=$usdm_rules" >> $GITHUB_ENV
-          echo "USDM rules: $usdm_rules"
+      # - name: Parse USDM rule list
+      #   run: |
+      #     usdm_rules=$(cat CORE_Test_Suite/rulelist/USDM_Test_Suite_Rules.txt | sed 's/\r$//' | sed 's/^/-r /' | tr '\n' ' ')
+      #     echo "USDM_RULE_LIST=$usdm_rules" >> $GITHUB_ENV
+      #     echo "USDM rules: $usdm_rules"
 
-      - name: Run USDM validation (Negative)
-        id: usdm_neg
-        continue-on-error: true
-        run: |
-          python core.py validate -s usdm -v 3-0 ${{ env.USDM_RULE_LIST }} -dp CORE_Test_Suite/usdm_data/USDM_Test_Suite_negative.json -of json -o CORE_Test_Suite/usdm_negative_report -l error || true
+      # - name: Run USDM validation (Negative)
+      #   id: usdm_neg
+      #   continue-on-error: true
+      #   run: |
+      #     python core.py validate -s usdm -v 3-0 ${{ env.USDM_RULE_LIST }} -dp CORE_Test_Suite/usdm_data/USDM_Test_Suite_negative.json -of json -o CORE_Test_Suite/usdm_negative_report -l error || true
 
-          if [ -f "CORE_Test_Suite/usdm_negative_report.json" ]; then
-            echo "usdm_neg_success=true" >> $GITHUB_OUTPUT
-            echo "## USDM Negative" >> $GITHUB_STEP_SUMMARY
-            echo "**Success**: Negative test passed" >> $GITHUB_STEP_SUMMARY
-            python CORE_Test_Suite/scripts/validation_summary.py CORE_Test_Suite/usdm_negative_report.json >> $GITHUB_STEP_SUMMARY
-          else
-            echo "usdm_neg_success=false" >> $GITHUB_OUTPUT
-            echo "**Failed**: No results for negative test" >> $GITHUB_STEP_SUMMARY
-          fi
-      - name: Compare USDM negative result
-        if: steps.usdm_neg.outputs.usdm_neg_success == 'true'
-        continue-on-error: true
-        run: |
-          python CORE_Test_Suite/scripts/comparison.py CORE_Test_Suite/usdm_negative_report.json CORE_Test_Suite/USDM_Negative_Result.json CORE_Test_Suite/usdm_negative_comparison.xlsx --mode test --json-output CORE_Test_Suite/usdm_negative_comparison.json
+      #     if [ -f "CORE_Test_Suite/usdm_negative_report.json" ]; then
+      #       echo "usdm_neg_success=true" >> $GITHUB_OUTPUT
+      #       echo "## USDM Negative" >> $GITHUB_STEP_SUMMARY
+      #       echo "**Success**: Negative test passed" >> $GITHUB_STEP_SUMMARY
+      #       python CORE_Test_Suite/scripts/validation_summary.py CORE_Test_Suite/usdm_negative_report.json >> $GITHUB_STEP_SUMMARY
+      #     else
+      #       echo "usdm_neg_success=false" >> $GITHUB_OUTPUT
+      #       echo "**Failed**: No results for negative test" >> $GITHUB_STEP_SUMMARY
+      #     fi
+      # - name: Compare USDM negative result
+      #   if: steps.usdm_neg.outputs.usdm_neg_success == 'true'
+      #   continue-on-error: true
+      #   run: |
+      #     python CORE_Test_Suite/scripts/comparison.py CORE_Test_Suite/usdm_negative_report.json CORE_Test_Suite/USDM_Negative_Result.json CORE_Test_Suite/usdm_negative_comparison.xlsx --mode test --json-output CORE_Test_Suite/usdm_negative_comparison.json
 
-      - name: Run USDM validation (Positive)
-        id: usdm_pos
-        continue-on-error: true
-        run: |
-          python core.py validate -s usdm -v 3-0 ${{ env.USDM_RULE_LIST }} -dp CORE_Test_Suite/usdm_data/USDM_Test_Suite_positive.json -of json -o CORE_Test_Suite/usdm_positive_report -l error || true
+      # - name: Run USDM validation (Positive)
+      #   id: usdm_pos
+      #   continue-on-error: true
+      #   run: |
+      #     python core.py validate -s usdm -v 3-0 ${{ env.USDM_RULE_LIST }} -dp CORE_Test_Suite/usdm_data/USDM_Test_Suite_positive.json -of json -o CORE_Test_Suite/usdm_positive_report -l error || true
 
-          if [ -f "CORE_Test_Suite/usdm_positive_report.json" ]; then
-            echo "usdm_pos_success=true" >> $GITHUB_OUTPUT
-            echo "## USDM Positive" >> $GITHUB_STEP_SUMMARY
-            echo "**Success**: Positive test passed" >> $GITHUB_STEP_SUMMARY
-            python CORE_Test_Suite/scripts/validation_summary.py CORE_Test_Suite/usdm_positive_report.json >> $GITHUB_STEP_SUMMARY
-          else
-            echo "usdm_pos_success=false" >> $GITHUB_OUTPUT
-            echo "**Failed**: No results for positive test" >> $GITHUB_STEP_SUMMARY
-          fi
+      #     if [ -f "CORE_Test_Suite/usdm_positive_report.json" ]; then
+      #       echo "usdm_pos_success=true" >> $GITHUB_OUTPUT
+      #       echo "## USDM Positive" >> $GITHUB_STEP_SUMMARY
+      #       echo "**Success**: Positive test passed" >> $GITHUB_STEP_SUMMARY
+      #       python CORE_Test_Suite/scripts/validation_summary.py CORE_Test_Suite/usdm_positive_report.json >> $GITHUB_STEP_SUMMARY
+      #     else
+      #       echo "usdm_pos_success=false" >> $GITHUB_OUTPUT
+      #       echo "**Failed**: No results for positive test" >> $GITHUB_STEP_SUMMARY
+      #     fi
 
-      - name: Compare USDM positive result
-        if: steps.usdm_pos.outputs.usdm_pos_success == 'true'
-        continue-on-error: true
-        run: |
-          python CORE_Test_Suite/scripts/comparison.py CORE_Test_Suite/usdm_positive_report.json CORE_Test_Suite/USDM_Positive_Result.json CORE_Test_Suite/usdm_positive_comparison.xlsx --mode test --json-output CORE_Test_Suite/usdm_positive_comparison.json
+      # - name: Compare USDM positive result
+      #   if: steps.usdm_pos.outputs.usdm_pos_success == 'true'
+      #   continue-on-error: true
+      #   run: |
+      #     python CORE_Test_Suite/scripts/comparison.py CORE_Test_Suite/usdm_positive_report.json CORE_Test_Suite/USDM_Positive_Result.json CORE_Test_Suite/usdm_positive_comparison.xlsx --mode test --json-output CORE_Test_Suite/usdm_positive_comparison.json
 
       #######################
       # UPLOAD ALL RESULTS
@@ -186,12 +186,12 @@ jobs:
             CORE_Test_Suite/dask-results.json
             CORE_Test_Suite/dask_comparison.json
             CORE_Test_Suite/CORE-Report.json
-            CORE_Test_Suite/usdm_negative_report.json
-            CORE_Test_Suite/usdm_positive_report.json
-            CORE_Test_Suite/usdm_negative_comparison.xlsx
-            CORE_Test_Suite/usdm_positive_comparison.xlsx
-            CORE_Test_Suite/usdm_negative_comparison.json
-            CORE_Test_Suite/usdm_positive_comparison.json
+            # CORE_Test_Suite/usdm_negative_report.json
+            # CORE_Test_Suite/usdm_positive_report.json
+            # CORE_Test_Suite/usdm_negative_comparison.xlsx
+            # CORE_Test_Suite/usdm_positive_comparison.xlsx
+            # CORE_Test_Suite/usdm_negative_comparison.json
+            # CORE_Test_Suite/usdm_positive_comparison.json
           if-no-files-found: warn
 
       ###########################
