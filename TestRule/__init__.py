@@ -66,9 +66,10 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:  # 
         standard_substandard = standards_data.get("substandard")
         codelists = json_data.get("codelists", [])
         cache = InMemoryCacheService()
+        library_service = CDISCLibraryService(api_key, cache)
+        cache_populator: CachePopulator = CachePopulator(cache, library_service)
+        asyncio.run(cache_populator.load_available_ct_packages())
         if standards_data or codelists:
-            library_service = CDISCLibraryService(api_key, cache)
-            cache_populator: CachePopulator = CachePopulator(cache, library_service)
             if standards_data:
                 asyncio.run(
                     cache_populator.load_standard(
@@ -76,7 +77,6 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:  # 
                     )
                 )
             asyncio.run(cache_populator.load_codelists(codelists))
-        asyncio.run(cache_populator.load_available_ct_packages())
         if not rule:
             raise KeyError("'rule' required in request")
         datasets = json_data.get("datasets")
