@@ -3,6 +3,7 @@ import requests
 import zipfile
 import io
 import re
+import glob
 
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")
 if GITHUB_TOKEN is None:
@@ -33,10 +34,10 @@ with zipfile.ZipFile(io.BytesIO(logs_response.content)) as zip_file:
 print(os.listdir("logs"))
 print(os.listdir(os.path.join("logs", "Build and Deploy Preview")))
 
-target_file_path = os.path.join(
-    "logs", "Build and Deploy Preview", "5_Build And Deploy Preview.txt"
-)
+log_dir = os.path.join("logs")
+matching_files = glob.glob(os.path.join(log_dir, "[0-9]_Build And Deploy Preview.txt"))
 
+target_file_path = matching_files[0]
 if not os.path.exists(target_file_path):
     raise FileNotFoundError(f"{target_file_path} not found")
 
