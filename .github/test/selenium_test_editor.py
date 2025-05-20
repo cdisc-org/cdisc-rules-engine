@@ -12,7 +12,7 @@ import pyperclip
 import json
  
 # Get the Preview Deployment URL
-RULE_EDITOR_URL =  "https://icy-flower-095494b10-259.centralus.azurestaticapps.net" #os.getenv("RULE_EDITOR_URL")
+RULE_EDITOR_URL = os.getenv("RULE_EDITOR_URL")
 if not RULE_EDITOR_URL:
     print("RULE_EDITOR_URL is not set! Test failed.")
     sys.exit(1)
@@ -24,7 +24,7 @@ chrome_options = Options()
 chrome_options.add_argument("--ignore-certificate-errors")
 chrome_options.add_argument("--window-size=1920,1080")
 chrome_options.add_argument("--disable-blink-features=AutomationControlled")
-# chrome_options.add_argument("--headless=new")  # Enable headless mode
+chrome_options.add_argument("--headless=new")  # Enable headless mode
 
 # Initialize ChromeDriver
 service = Service(ChromeDriverManager().install())
