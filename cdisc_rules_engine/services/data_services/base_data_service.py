@@ -268,7 +268,10 @@ class BaseDataService(DataServiceInterface, ABC):
         """
 
         def check_presence(key):
-            in_dataset = key in dataset
+            columns = dataset.columns
+            if hasattr(columns, "tolist"):
+                columns = columns.tolist()
+            in_dataset = key in columns
             in_values = key in self.dataset_implementation.get_series_values(dataset)
             return in_dataset or in_values
 
