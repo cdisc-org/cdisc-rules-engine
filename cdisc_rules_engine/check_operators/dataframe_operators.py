@@ -221,7 +221,8 @@ class DataframeType(BaseType):
         return self.value.apply(
             lambda row: self._check_equality(row, target, comparator, value_is_literal),
             axis=1,
-        ).astype(bool)
+            meta=(None, "bool"),
+        ).reset_index(drop=True)
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
