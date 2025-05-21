@@ -93,6 +93,14 @@ class DaskDataset(PandasDataset):
 
         return self.length
 
+    def __deepcopy__(self, memo):
+        pandas_df = self._data.compute()
+        fresh_dask_df = dd.from_pandas(pandas_df, npartitions=DEFAULT_NUM_PARTITIONS)
+        new_instance = self.__class__(fresh_dask_df)
+        new_instance.length = self.length
+        memo[id(self)] = new_instance
+        return new_instance
+
     @classmethod
     def from_dict(cls, data: dict, **kwargs):
         dataframe = dd.from_dict(data, npartitions=DEFAULT_NUM_PARTITIONS, **kwargs)
