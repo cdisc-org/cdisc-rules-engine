@@ -268,11 +268,22 @@ class BaseDataService(DataServiceInterface, ABC):
         """
 
         def check_presence(key):
-            columns = dataset.columns
-            if hasattr(columns, "tolist"):
-                columns = columns.tolist()
-            in_dataset = key in columns
-            in_values = key in self.dataset_implementation.get_series_values(dataset)
+            if hasattr(dataset, "columns"):
+                columns = dataset.columns
+                if hasattr(columns, "tolist"):
+                    columns = columns.tolist()
+                in_dataset = key in columns
+                in_values = key in self.dataset_implementation.get_series_values(
+                    dataset
+                )
+            else:
+                series_values = dataset.values
+                if hasattr(series_values, "tolist"):
+                    series_values = series_values.tolist()
+                in_dataset = key in series_values
+                in_values = key in self.dataset_implementation.get_series_values(
+                    dataset
+                )
             return in_dataset or in_values
 
         if not check_presence("DOMAIN") and not check_presence("RDOMAIN"):
