@@ -197,32 +197,11 @@ class DataframeType(BaseType):
         comparison_data = (
             comparator if comparator not in row or value_is_literal else row[comparator]
         )
-        target_is_empty = pd.isna(row[target])
-        if isinstance(row[target], str) and (
-            not target_is_empty.any()
-            if hasattr(target_is_empty, "any")
-            else not target_is_empty
-        ):
-            target_is_empty = row[target] == ""
-        comp_is_empty = pd.isna(comparison_data)
-        if isinstance(comparison_data, str) and (
-            not comp_is_empty.any()
-            if hasattr(comp_is_empty, "any")
-            else not comp_is_empty
-        ):
-            comp_is_empty = comparison_data == ""
-        target_is_empty_scalar = (
-            target_is_empty.any()
-            if hasattr(target_is_empty, "any")
-            else target_is_empty
+        both_null = (comparison_data == "" or comparison_data is None) & (
+            row[target] == "" or row[target] is None
         )
-        comp_is_empty_scalar = (
-            comp_is_empty.any() if hasattr(comp_is_empty, "any") else comp_is_empty
-        )
-        if target_is_empty_scalar and comp_is_empty_scalar:
+        if both_null:
             return False
-        if target_is_empty_scalar or comp_is_empty_scalar:
-            return True
         if case_insensitive:
             target_val = row[target].lower() if row[target] else None
             comparison_val = comparison_data.lower() if comparison_data else None
@@ -293,7 +272,8 @@ class DataframeType(BaseType):
                 row, target, comparator, value_is_literal
             ),
             axis=1,
-        )
+            meta=(None, "bool"),
+        ).reset_index(drop=True)
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
