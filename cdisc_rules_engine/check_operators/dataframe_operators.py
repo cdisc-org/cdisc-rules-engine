@@ -839,9 +839,7 @@ class DataframeType(BaseType):
     def empty(self, other_value: dict):
         target = self.replace_prefix(other_value.get("target"))
         results = np.where(
-            self.value[target].isin(NULL_FLAVORS)
-            | pd.isna(self.value[target])
-            | self.value[target].isna(),
+            self.value[target].isin(NULL_FLAVORS) | pd.isna(self.value[target]),
             True,
             False,
         )
