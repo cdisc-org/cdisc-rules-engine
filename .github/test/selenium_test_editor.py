@@ -70,7 +70,10 @@ try:
     print("Uploading dataset file...")
     file_input = wait.until(
         EC.presence_of_element_located(
-            (By.XPATH, '//*[@id="tabpanel-1"]/div[5]/div[2]/div/div/div/div/label/input')
+            (
+                By.XPATH,
+                '//*[@id="tabpanel-1"]/div[5]/div[2]/div/div/div/div/label/input',
+            )
         )
     )
     file_path = os.path.abspath(".github/test/unit-test-coreid-CG0006-negative 1.xlsx")
@@ -94,7 +97,7 @@ try:
             if request.response:
                 try:
                     raw_body = request.response.body
-                    decompressed = brotli.decompress(raw_body).decode('utf-8')
+                    decompressed = brotli.decompress(raw_body).decode("utf-8")
                     rule_exec_response = json.loads(decompressed)
                     print("Captured and decoded response from /api/rules/execute")
                     break
@@ -103,71 +106,71 @@ try:
 
     # Expected content
     expected_json = {
-  "DM": [
-    {
-      "executionStatus": "execution_error",
-      "dataset": "dm.xpt",
-      "domain": "DM",
-      "variables": [],
-      "message": "rule execution error",
-      "errors": [
-        {
-          "dataset": "dm.xpt",
-          "error": "Rule format error",
-          "message": "Rule contains invalid operator"
-        }
-      ]
+        "DM": [
+            {
+                "executionStatus": "execution_error",
+                "dataset": "dm.xpt",
+                "domain": "DM",
+                "variables": [],
+                "message": "rule execution error",
+                "errors": [
+                    {
+                        "dataset": "dm.xpt",
+                        "error": "Rule format error",
+                        "message": "Rule contains invalid operator",
+                    }
+                ],
+            }
+        ],
+        "FA": [
+            {
+                "executionStatus": "execution_error",
+                "dataset": "fa.xpt",
+                "domain": "FA",
+                "variables": [],
+                "message": "rule execution error",
+                "errors": [
+                    {
+                        "dataset": "fa.xpt",
+                        "error": "Rule format error",
+                        "message": "Rule contains invalid operator",
+                    }
+                ],
+            }
+        ],
+        "IE": [
+            {
+                "executionStatus": "execution_error",
+                "dataset": "ie.xpt",
+                "domain": "IE",
+                "variables": [],
+                "message": "rule execution error",
+                "errors": [
+                    {
+                        "dataset": "ie.xpt",
+                        "error": "Rule format error",
+                        "message": "Rule contains invalid operator",
+                    }
+                ],
+            }
+        ],
+        "LB": [
+            {
+                "executionStatus": "execution_error",
+                "dataset": "lb.xpt",
+                "domain": "LB",
+                "variables": [],
+                "message": "rule execution error",
+                "errors": [
+                    {
+                        "dataset": "lb.xpt",
+                        "error": "Rule format error",
+                        "message": "Rule contains invalid operator",
+                    }
+                ],
+            }
+        ],
     }
-  ],
-  "FA": [
-    {
-      "executionStatus": "execution_error",
-      "dataset": "fa.xpt",
-      "domain": "FA",
-      "variables": [],
-      "message": "rule execution error",
-      "errors": [
-        {
-          "dataset": "fa.xpt",
-          "error": "Rule format error",
-          "message": "Rule contains invalid operator"
-        }
-      ]
-    }
-  ],
-  "IE": [
-    {
-      "executionStatus": "execution_error",
-      "dataset": "ie.xpt",
-      "domain": "IE",
-      "variables": [],
-      "message": "rule execution error",
-      "errors": [
-        {
-          "dataset": "ie.xpt",
-          "error": "Rule format error",
-          "message": "Rule contains invalid operator"
-        }
-      ]
-    }
-  ],
-  "LB": [
-    {
-      "executionStatus": "execution_error",
-      "dataset": "lb.xpt",
-      "domain": "LB",
-      "variables": [],
-      "message": "rule execution error",
-      "errors": [
-        {
-          "dataset": "lb.xpt",
-          "error": "Rule format error",
-          "message": "Rule contains invalid operator"
-        }
-      ]
-    }
-  ]
-}
     # Compare result
     if rule_exec_response == expected_json:
         print("Test Passed: API response matches expected JSON.")
