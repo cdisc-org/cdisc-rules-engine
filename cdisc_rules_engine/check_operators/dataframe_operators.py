@@ -162,14 +162,18 @@ class DataframeType(BaseType):
         comparison_data = (
             comparator if comparator not in row or value_is_literal else row[comparator]
         )
-        target_values = row[target]
-        target_is_empty = pd.isna(target_values)
-        if not target_is_empty and isinstance(row[target], str):
-            target_is_empty = row[target] == ""
-        comp_is_empty = pd.isna(comparison_data)
-        if not comp_is_empty and isinstance(comparison_data, str):
-            comp_is_empty = comparison_data == ""
-        if target_is_empty or comp_is_empty:
+        # target_values = row[target]
+        # target_is_empty = pd.isna(target_values)
+        # if not target_is_empty and isinstance(row[target], str):
+        #     target_is_empty = row[target] == ""
+        # comp_is_empty = pd.isna(comparison_data)
+        # if not comp_is_empty and isinstance(comparison_data, str):
+        #     comp_is_empty = comparison_data == ""
+        # if target_is_empty or comp_is_empty:
+        both_null = (comparison_data == "" or comparison_data is None) & (
+            row[target] == "" or row[target] is None
+        )
+        if both_null:
             return False
         if case_insensitive:
             target_val = row[target].lower() if row[target] else None
@@ -834,6 +838,25 @@ class DataframeType(BaseType):
     @type_operator(FIELD_DATAFRAME)
     def empty(self, other_value: dict):
         target = self.replace_prefix(other_value.get("target"))
+        if isinstance(self.value, DaskDataset):
+            # series with NaN check
+            is_na = self.value[target].isna()
+            # convert NaN in second series to string & check for empty string
+            filled_series = self.value[target].fillna("NULL")
+            is_empty_string = filled_series == ""
+            # empty object check
+            if self.value[target].dtype == "object":
+                str_series = filled_series.astype(str)
+                is_empty_collection = (
+                    (str_series == "[]")
+                    | (str_series == "{}")
+                    | (str_series == "{None}")
+                    | (str_series == "set()")
+                )
+                results = is_na | is_empty_string | is_empty_collection
+            else:
+                results = is_na | is_empty_string
+            return results.reset_index(drop=True)
         results = np.where(
             self.value[target].isin(NULL_FLAVORS) | pd.isna(self.value[target]),
             True,
