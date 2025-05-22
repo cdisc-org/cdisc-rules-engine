@@ -102,7 +102,7 @@ def test_is_not_ordered_set(target, comparator, dataset_type, expected_result):
         ("STRESU", ["TESTCD", "METHOD"], PandasDataset, [False, False, False, False]),
     ],
 )
-def test_is_consistent_across_dataset(
+def test_is_inconsistent_across_dataset(
     target, comparator, dataset_type, expected_result
 ):
     data = {
@@ -128,7 +128,7 @@ def test_is_consistent_across_dataset(
         ("STRESU", ["TESTCD", "METHOD"], DaskDataset, [False, False, False, False]),
     ],
 )
-def test_is_consistent_across_dataset_dask(
+def test_is_inconsistent_across_dataset_dask(
     target, comparator, dataset_type, expected_result
 ):
     data = {
@@ -152,7 +152,7 @@ def test_is_consistent_across_dataset_dask(
         ("BGSTRESU", "USUBJID", PandasDataset, [False, False, True, True]),
     ],
 )
-def test_is_consistent_across_dataset_with_nulls(
+def test_is_inconsistent_across_dataset_with_nulls(
     target, comparator, dataset_type, expected_result
 ):
     data = {
@@ -166,7 +166,7 @@ def test_is_consistent_across_dataset_with_nulls(
     assert result.equals(df.convert_to_series(expected_result))
 
 
-def test_is_consistent_across_dataset_empty_dataset():
+def test_is_inconsistent_across_dataset_empty_dataset():
     data = {"USUBJID": [], "BGSTRESU": []}
     df = PandasDataset.from_dict(data)
     result = DataframeType(
