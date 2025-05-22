@@ -838,27 +838,10 @@ class DataframeType(BaseType):
     @type_operator(FIELD_DATAFRAME)
     def empty(self, other_value: dict):
         target = self.replace_prefix(other_value.get("target"))
-        if isinstance(self.value, DaskDataset):
-            # series with NaN check
-            is_na = self.value[target].isna()
-            # convert NaN in second series to string & check for empty string
-            filled_series = self.value[target].fillna("NULL")
-            is_empty_string = filled_series == ""
-            # empty object check
-            if self.value[target].dtype == "object":
-                str_series = filled_series.astype(str)
-                is_empty_collection = (
-                    (str_series == "[]")
-                    | (str_series == "{}")
-                    | (str_series == "{None}")
-                    | (str_series == "set()")
-                )
-                results = is_na | is_empty_string | is_empty_collection
-            else:
-                results = is_na | is_empty_string
-            return results.reset_index(drop=True)
         results = np.where(
-            self.value[target].isin(NULL_FLAVORS) | pd.isna(self.value[target]),
+            self.value[target].isin(NULL_FLAVORS)
+            | pd.isna(self.value[target])
+            | self.value[target].isna(),
             True,
             False,
         )
