@@ -162,6 +162,7 @@ class DataframeType(BaseType):
         comparison_data = (
             comparator if comparator not in row or value_is_literal else row[comparator]
         )
+        # PYTHON PR LOGIC
         # target_values = row[target]
         # target_is_empty = pd.isna(target_values)
         # if not target_is_empty and isinstance(row[target], str):
@@ -170,6 +171,7 @@ class DataframeType(BaseType):
         # if not comp_is_empty and isinstance(comparison_data, str):
         #     comp_is_empty = comparison_data == ""
         # if target_is_empty or comp_is_empty:
+        # ORIGINAL LOGIC
         both_null = (comparison_data == "" or comparison_data is None) & (
             row[target] == "" or row[target] is None
         )
