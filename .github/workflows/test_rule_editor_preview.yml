@@ -18,7 +18,7 @@ jobs:
           python-version: 3.9
 
       - name: Install dependencies
-        run: pip install requests selenium webdriver-manager pyperclip==1.9.0 selenium-wire 
+        run: pip install requests selenium webdriver-manager pyperclip==1.9.0 selenium-wire blinker==1.4
 
       - name: Extract Deploy Preview URL
         env:
