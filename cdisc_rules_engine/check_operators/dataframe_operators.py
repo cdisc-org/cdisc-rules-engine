@@ -1270,7 +1270,9 @@ class DataframeType(BaseType):
             lambda x: self.validate_series_length(x, target, min_count), meta=meta
         )
         uuid = str(uuid4())
-        return self.value.merge(results.rename(uuid), on=target)[uuid]
+        return self.value.merge(
+            results.rename(uuid).reset_index(), on=[group_by_column, target]
+        )[uuid]
 
     def validate_series_length(
         self, data: DatasetInterface, target: str, min_length: int
