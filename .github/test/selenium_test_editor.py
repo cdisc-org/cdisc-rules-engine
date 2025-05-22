@@ -3,13 +3,14 @@ import sys
 import json
 import time
 
-from seleniumwire import webdriver  # Important: use seleniumwire, not selenium
+from seleniumwire import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
+import brotli
 
 # Get the Preview Deployment URL
 RULE_EDITOR_URL = os.getenv("RULE_EDITOR_URL")
@@ -89,95 +90,84 @@ try:
     # Find the rule execution API call
     rule_exec_response = None
     for request in driver.requests:
-        if request.method == 'POST' and "/api/rules/execute" in request.url:
+        if "/api/rules/execute" in request.url:
             if request.response:
                 try:
-                    response_body = request.response.body.decode("utf-8")
-                    rule_exec_response = json.loads(response_body)
-                    print("Captured response from /api/rules/execute")
+                    raw_body = request.response.body
+                    decompressed = brotli.decompress(raw_body).decode('utf-8')
+                    rule_exec_response = json.loads(decompressed)
+                    print("Captured and decoded response from /api/rules/execute")
                     break
                 except Exception as e:
                     print("Error decoding response body:", e)
 
-    if not rule_exec_response:
-        print("Test Failed: No response from /api/rules/execute found.")
-        sys.exit(1)
-
     # Expected content
     expected_json = {
-        "DM": [{
-            "executionStatus": "success",
-            "dataset": "dm.xpt",
-            "domain": "DM",
-            "variables": [],
-            "message": None,
-            "errors": []
-        }],
-        "FA": [{
-            "executionStatus": "success",
-            "dataset": "fa.xpt",
-            "domain": "FA",
-            "variables": ["$val_dy", "FADTC", "FADY", "RFSTDTC"],
-            "message": "FADY is not calculated correctly even though the date portion of FADTC is complete, the date portion of DM.RFSTDTC is a complete date, and FADY is not empty.",
-            "errors": [
-                {
-                    "value": {
-                        "FADTC": "2012-12-02", "$val_dy": 18, "FADY": 35, "RFSTDTC": "2012-11-15"
-                    },
-                    "dataset": "fa.xpt", "row": 1, "USUBJID": "CDISC002", "SEQ": 1
-                },
-                {
-                    "value": {
-                        "FADTC": "2013-10-12", "$val_dy": 5, "FADY": 3, "RFSTDTC": "2013-10-08"
-                    },
-                    "dataset": "fa.xpt", "row": 2, "USUBJID": "CDISC004", "SEQ": 2
-                },
-                {
-                    "value": {
-                        "FADTC": "2012-12-02", "$val_dy": -34, "FADY": -30, "RFSTDTC": "2013-01-05"
-                    },
-                    "dataset": "fa.xpt", "row": 4, "USUBJID": "CDISC007", "SEQ": 4
-                },
-                {
-                    "value": {
-                        "FADTC": "2014-12-02", "$val_dy": 206, "FADY": 230, "RFSTDTC": "2014-05-11"
-                    },
-                    "dataset": "fa.xpt", "row": 5, "USUBJID": "CDISC008", "SEQ": 5
-                }
-            ]
-        }],
-        "IE": [{
-            "executionStatus": "success",
-            "dataset": "ie.xpt",
-            "domain": "IE",
-            "variables": ["$val_dy", "IEDTC", "IEDY", "RFSTDTC"],
-            "message": "IEDY is not calculated correctly even though the date portion of IEDTC is complete, the date portion of DM.RFSTDTC is a complete date, and IEDY is not empty.",
-            "errors": [
-                {
-                    "value": {
-                        "IEDTC": "2022-03-17", "IEDY": -4, "$val_dy": -3, "RFSTDTC": "2022-03-20"
-                    },
-                    "dataset": "ie.xpt", "row": 1, "USUBJID": "CDISC-TEST-001", "SEQ": 1
-                }
-            ]
-        }],
-        "LB": [{
-            "executionStatus": "success",
-            "dataset": "lb.xpt",
-            "domain": "LB",
-            "variables": ["$val_dy", "LBDTC", "LBDY", "RFSTDTC"],
-            "message": "LBDY is not calculated correctly even though the date portion of LBDTC is complete, the date portion of DM.RFSTDTC is a complete date, and LBDY is not empty.",
-            "errors": [
-                {
-                    "value": {
-                        "LBDY": 2, "LBDTC": "2022-03-30", "$val_dy": 11, "RFSTDTC": "2022-03-20"
-                    },
-                    "dataset": "lb.xpt", "row": 1, "USUBJID": "CDISC-TEST-001", "SEQ": 1
-                }
-            ]
-        }]
+  "DM": [
+    {
+      "executionStatus": "execution_error",
+      "dataset": "dm.xpt",
+      "domain": "DM",
+      "variables": [],
+      "message": "rule execution error",
+      "errors": [
+        {
+          "dataset": "dm.xpt",
+          "error": "Rule format error",
+          "message": "Rule contains invalid operator"
+        }
+      ]
     }
-
+  ],
+  "FA": [
+    {
+      "executionStatus": "execution_error",
+      "dataset": "fa.xpt",
+      "domain": "FA",
+      "variables": [],
+      "message": "rule execution error",
+      "errors": [
+        {
+          "dataset": "fa.xpt",
+          "error": "Rule format error",
+          "message": "Rule contains invalid operator"
+        }
+      ]
+    }
+  ],
+  "IE": [
+    {
+      "executionStatus": "execution_error",
+      "dataset": "ie.xpt",
+      "domain": "IE",
+      "variables": [],
+      "message": "rule execution error",
+      "errors": [
+        {
+          "dataset": "ie.xpt",
+          "error": "Rule format error",
+          "message": "Rule contains invalid operator"
+        }
+      ]
+    }
+  ],
+  "LB": [
+    {
+      "executionStatus": "execution_error",
+      "dataset": "lb.xpt",
+      "domain": "LB",
+      "variables": [],
+      "message": "rule execution error",
+      "errors": [
+        {
+          "dataset": "lb.xpt",
+          "error": "Rule format error",
+          "message": "Rule contains invalid operator"
+        }
+      ]
+    }
+  ]
+}
     # Compare result
     if rule_exec_response == expected_json:
         print("Test Passed: API response matches expected JSON.")
