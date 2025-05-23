@@ -130,10 +130,13 @@ def test_dataset_metadata_define_dataset_builder(dataset_path):
         library_metadata=LibraryMetadataContainer(),
     )
 
-    with patch.object(
-        builder, "_get_define_xml_dataframe", return_value=PandasDataset(define_df)
-    ), patch.object(
-        builder, "_get_dataset_dataframe", return_value=PandasDataset(dataset_df)
+    with (
+        patch.object(
+            builder, "_get_define_xml_dataframe", return_value=PandasDataset(define_df)
+        ),
+        patch.object(
+            builder, "_get_dataset_dataframe", return_value=PandasDataset(dataset_df)
+        ),
     ):
 
         result = builder.build()
