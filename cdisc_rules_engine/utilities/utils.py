@@ -6,6 +6,7 @@ that can be reused.
 import copy
 import os
 import re
+import pandas as pd
 from datetime import datetime
 from typing import Callable, Iterable, List, Optional, Union
 from uuid import UUID
@@ -394,3 +395,12 @@ def dates_overlap(date1_str, precision1, date2_str, precision2):
     more_precise = date2_str if precision1 < precision2 else date1_str
 
     return more_precise.startswith(less_precise), less_precise
+
+
+def replace_nan_values_in_df(df, columns):
+    for col in columns:
+        if col in df.columns:
+            mask = pd.isna(df[col])
+            if mask.any():
+                df.loc[mask, col] = None
+    return df

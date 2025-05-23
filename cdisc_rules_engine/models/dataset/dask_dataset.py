@@ -93,6 +93,14 @@ class DaskDataset(PandasDataset):
 
         return self.length
 
+    def __deepcopy__(self, memo):
+        pandas_df = self._data.compute()
+        fresh_dask_df = dd.from_pandas(pandas_df, npartitions=DEFAULT_NUM_PARTITIONS)
+        new_instance = self.__class__(fresh_dask_df)
+        new_instance.length = self.length
+        memo[id(self)] = new_instance
+        return new_instance
+
     @classmethod
     def from_dict(cls, data: dict, **kwargs):
         dataframe = dd.from_dict(data, npartitions=DEFAULT_NUM_PARTITIONS, **kwargs)
@@ -270,12 +278,10 @@ class DaskDataset(PandasDataset):
         """
         Return the cartesian product of two dataframes
         """
-        return cls(
-            dd.from_pandas(
-                left.compute().merge(right, how="cross"),
-                npartitions=DEFAULT_NUM_PARTITIONS,
-            )
-        )
+        left_df = left._data if hasattr(left, "_data") else left
+        right_df = right._data if hasattr(right, "_data") else right
+        result = left_df.merge(right_df, how="cross")
+        return cls(result)
 
     def dropna(self, inplace=False, **kwargs):
         result = self._data.dropna(**kwargs)
@@ -371,7 +377,9 @@ class DaskDataset(PandasDataset):
         return result
 
     def filter_by_value(self, column, values):
-        computed_data = self._data.compute()
-        mask = computed_data[column].isin(values)
-        filtered_df = computed_data[mask]
-        return filtered_df
+        mask = self._data[column].isin(values)
+        return self.__class__(self._data[mask])
+
+    def max(self, *args, **kwargs):
+        result = self._data.max(*args, **kwargs)
+        return self.__class__(result)
