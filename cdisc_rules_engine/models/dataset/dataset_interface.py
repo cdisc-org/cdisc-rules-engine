@@ -250,3 +250,22 @@ class DatasetInterface(ABC):
         """
         Convert the dataset to a dictionary.
         """
+
+    @abstractmethod
+    def items(self, **kwargs):
+        """
+        Convert the dataset to dictionary items.
+        Returns a view object displaying a list of (key, value) tuple pairs.
+        """
+
+    @abstractmethod
+    def keys(self, **kwargs):
+        """
+        Returns a view object containing the keys in the dataset dictionary.
+        """
+
+    @abstractmethod
+    def values(self, **kwargs):
+        """
+        Returns a view object containing the values in the dataset dictionary.
+        """
