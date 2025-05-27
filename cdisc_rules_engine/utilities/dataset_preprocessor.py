@@ -39,11 +39,14 @@ class DatasetPreprocessor:
         dataset_metadata: SDTMDatasetMetadata,
         data_service: DataServiceInterface,
         cache_service: CacheServiceInterface,
+        cache_path: str,
     ):
         self._dataset: DatasetInterface = dataset
         self._dataset_metadata: SDTMDatasetMetadata = dataset_metadata
         self._data_service = data_service
-        self._rule_processor = RuleProcessor(self._data_service, cache_service)
+        self._rule_processor = RuleProcessor(
+            self._data_service, cache_service, cache_path
+        )
 
     def preprocess(
         self, rule: dict, datasets: Iterable[SDTMDatasetMetadata]

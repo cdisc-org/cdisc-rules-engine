@@ -14,6 +14,7 @@ from cdisc_rules_engine.operations.library_column_order import LibraryColumnOrde
 from cdisc_rules_engine.operations.library_model_column_order import (
     LibraryModelColumnOrder,
 )
+from cdisc_rules_engine.operations.map import Map
 from cdisc_rules_engine.operations.parent_library_model_column_order import (
     ParentLibraryModelColumnOrder,
 )
@@ -99,6 +100,7 @@ class OperationsFactory(FactoryInterface):
         "get_model_column_order": LibraryModelColumnOrder,
         "get_model_filtered_variables": LibraryModelVariablesFilter,
         "get_parent_model_column_order": ParentLibraryModelColumnOrder,
+        "map": Map,
         "max": Maximum,
         "max_date": MaxDate,
         "mean": Mean,
@@ -154,6 +156,7 @@ class OperationsFactory(FactoryInterface):
             "original_dataset",
             "cache",
             "data_service",
+            "cache_path",
             "library_metadata",
         }
         if not required_args.issubset(kwargs.keys()):
@@ -167,6 +170,7 @@ class OperationsFactory(FactoryInterface):
                 kwargs.get("original_dataset"),
                 kwargs.get("cache"),
                 kwargs.get("data_service"),
+                kwargs.get("cache_path"),
                 kwargs.get("library_metadata"),
             )
         raise ValueError(

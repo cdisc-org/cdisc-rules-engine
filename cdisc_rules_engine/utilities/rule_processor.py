@@ -50,10 +50,12 @@ class RuleProcessor:
         self,
         data_service: DataServiceInterface,
         cache: CacheServiceInterface,
+        cache_path: str,
         library_metadata: LibraryMetadataContainer = None,
     ):
         self.data_service = data_service
         self.cache = cache
+        self.cache_path = cache_path
         self.library_metadata = library_metadata
 
     @classmethod
@@ -340,6 +342,7 @@ class RuleProcessor:
                 standard_substandard=standard_substandard,
                 external_dictionaries=external_dictionaries,
                 ct_version=operation.get("version"),
+                package=operation.get("package"),
                 ct_attribute=operation.get("attribute"),
                 ct_package_types=operation.get("ct_package_types"),
                 ct_packages=kwargs.get("ct_packages"),
@@ -359,6 +362,10 @@ class RuleProcessor:
                 returntype=operation.get("returntype"),
                 codelists=operation.get("codelists"),
                 codelist=operation.get("codelist"),
+                codelist_code=operation.get("codelist_code"),
+                map=operation.get("map"),
+                term_code=operation.get("term_code"),
+                term_value=operation.get("term_value"),
             )
 
             # execute operation
@@ -430,6 +437,7 @@ class RuleProcessor:
             original_dataset=dataset,
             cache=self.cache,
             data_service=self.data_service,
+            cache_path=self.cache_path,
             library_metadata=self.library_metadata,
         )
         result = operation.execute()

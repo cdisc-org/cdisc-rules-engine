@@ -46,12 +46,14 @@ class BaseOperation:
         original_dataset: DatasetInterface,
         cache_service: CacheServiceInterface,
         data_service: DataServiceInterface,
+        cache_path: str,
         library_metadata: LibraryMetadataContainer = LibraryMetadataContainer(),
     ):
         self.params = params
         self.cache = cache_service
         self.data_service = data_service
         self.evaluation_dataset = original_dataset
+        self.cache_path = cache_path
         self.library_metadata = library_metadata
 
     @abstractmethod

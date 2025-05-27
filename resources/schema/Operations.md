@@ -56,7 +56,7 @@ If a target variable `name` is specified, returns the specified metadata in the 
 - Input
 
   ```yaml
-  - operation: define_variable_metadata
+  - operator: define_variable_metadata
     attribute_name: define_variable_label
     name: LBTESTCD
     id: $LBTESTCD_VARIABLE_LABEL
@@ -71,7 +71,7 @@ If no target variable `name` specified, returns a dictionary containing the spec
 - Input
 
   ```yaml
-  - operation: define_variable_metadata`
+  - operator: define_variable_metadata`
     attribute_name: define_variable_label`
     id: $VARIABLE_LABEL`
   ```
@@ -208,7 +208,7 @@ Variable Metadata for custom domains will pull from the model while non-custom d
   Version: `3-4`
 
   ```yaml
-  - operation: expected_variables`
+  - operator: expected_variables`
     id: $expected_variables`
   ```
 
@@ -250,7 +250,7 @@ Fetches attribute values for a codelist specified in a dataset (like TS)
 ```yaml
 - id: $TERM_CCODES
   name: TSVCDREF
-  operation: get_codelist_attributes
+  operator: get_codelist_attributes
   ct_attribute: Term CCODE
   ct_version: TSVCDVER
   ct_packages:
@@ -321,7 +321,7 @@ Example
   Version: `3-4`
 
   ```yaml
-  - operation: get_model_filtered_variables`
+  - operator: get_model_filtered_variables`
     id: $model_filtered_variables`
     key_name: "role"
     key_value: "Timing"
@@ -372,7 +372,7 @@ Generates a dataframe where each record in the dataframe is the library ig varia
   Rule:
 
   ```yaml
-  - operation: label_referenced_variable_metadata
+  - operator: label_referenced_variable_metadata
     id: $label_referenced_variable_metadata
     name: "QLABEL"
   ```
@@ -527,7 +527,7 @@ Generates a dataframe where each record in the dataframe is the library ig varia
   Rule:
 
   ```yaml
-  - operation: name_referenced_variable_metadata`
+  - operator: name_referenced_variable_metadata`
     id: $name_referenced_variable_metadata`
     name: "QNAM"
   ```
@@ -564,7 +564,7 @@ Variable Metadata for custom domains will pull from the model while non-custom d
   Version: `3-4`
 
   ```yaml
-  - operation: permissible_variables`
+  - operator: permissible_variables`
     id: $permissible_variables`
   ```
 
@@ -583,14 +583,14 @@ If `group` is provided, `group_aliases` may also be provided to assign new group
 Example: return the number of records in a dataset.
 
 ```yaml
-- operation: record_count
+- operator: record_count
   id: $records_in_dataset
 ```
 
 Example: return the number of records where STUDYID = "CDISC01" and FLAGVAR = "Y".
 
 ```yaml
-- operation: record_count
+- operator: record_count
   id: $flagged_cdisc01_records_in_dataset
   filter:
     STUDYID: "CDISC01"
@@ -600,7 +600,7 @@ Example: return the number of records where STUDYID = "CDISC01" and FLAGVAR = "Y
 Example: return the number of records grouped by USUBJID.
 
 ```yaml
-- operation: record_count
+- operator: record_count
   id: $records_per_usubjid
   group:
     - USUBJID
@@ -609,7 +609,7 @@ Example: return the number of records grouped by USUBJID.
 Example: return the number of records grouped by USUBJID where FLAGVAR = "Y".
 
 ```yaml
-- operation: record_count
+- operator: record_count
   id: $flagged_records_per_usubjid
   group:
     - USUBJID
@@ -620,7 +620,7 @@ Example: return the number of records grouped by USUBJID where FLAGVAR = "Y".
 Example: return the number of records grouped by USUBJID and IDVARVAL where QNAM = "TEST1" and IDVAR = "GROUPID", renaming the IDVARVAL column to GROUPID for subsequent merging.
 
 ```yaml
-- operation: record_count
+- operator: record_count
   id: $test1_records_per_usubjid_groupid
   group:
     - USUBJID
@@ -647,7 +647,7 @@ Variable Metadata for custom domains will pull from the model while non-custom d
   Version: `3-4`
 
   ```yaml
-  - operation: required_variables
+  - operator: required_variables
     id: $required_variables
   ```
 
@@ -687,7 +687,7 @@ the operation will return:
 By default, the standard is as specified when running validation - as the validation runtime parameter and/or as specified in the rule header - and the list of terminology packages is obtained from the current cache. If required, the default standard may be overridden using the optional `ct_package_types` parameter. For example, given the same list of terminology packages, the following operation:
 
 ```yaml
-Operation:
+Operations:
   - operator: valid_codelist_dates
     id: $valid_dates
     ct_package_types:
@@ -724,7 +724,7 @@ the version parsed from the dictionary files.
 Input:
 
 ```yaml
-Operation:
+Operations:
   - operator: valid_define_external_dictionary_version
     id: $is_valid_loinc_version
     external_dictionary_type: loinc
@@ -745,7 +745,7 @@ Can be case insensitive by setting `case_sensitive` attribute to false. It is tr
 Input:
 
 ```yaml
-Operation:
+Operations:
   - operator: valid_external_dictionary_value
     name: --DECOD
     id: $is_valid_decod_value
@@ -767,7 +767,7 @@ Returns true if the target variable contains a valid external dictionary code, o
 Input:
 
 ```yaml
-Operation:
+Operations:
   - operator: valid_external_dictionary_code
     name: --COD
     id: $is_valid_cod_code
@@ -790,7 +790,7 @@ external_dictionary_term_variable parameter should contain the name of the varia
 Input:
 
 ```yaml
-Operation:
+Operations:
   - operator: valid_external_dictionary_code_term_pair
     name: --COD
     id: $is_valid_loinc_code_term_pair
@@ -819,9 +819,9 @@ Determines whether the values are valid in the following variables:
 **Input:**
 
 ```yaml
-Operation:
+Operations:
   - id: $is_valid_meddra_codes
-    operation: valid_meddra_code_references
+    operator: valid_meddra_code_references
 ```
 
 **Output:**
@@ -845,7 +845,7 @@ Determines whether the values are valid in the following variable pairs:
 ```yaml
 Operations:
   - id: $is_valid_meddra_pairs
-    operation: valid_meddra_code_term_pairs
+    operator: valid_meddra_code_term_pairs
 ```
 
 **Output:**
@@ -869,7 +869,7 @@ Determines whether the values are valid in the following variables:
 ```yaml
 Operations:
   - id: $is_valid_meddra_terms
-    operation: valid_meddra_term_references
+    operator: valid_meddra_term_references
 ```
 
 **Output:**
@@ -889,7 +889,7 @@ Checks if a reference to whodrug term in `name` points to the existing code in A
 ```yaml
 Operations:
   - id: $whodrug_refs_valid
-    operation: valid_whodrug_references
+    operator: valid_whodrug_references
 ```
 
 **Output:**
