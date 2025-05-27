@@ -48,6 +48,7 @@ from cdisc_rules_engine.models.external_dictionaries_container import (
 )
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 import traceback
+import time
 
 
 class RulesEngine:
@@ -315,10 +316,14 @@ class RulesEngine:
         # Adding copy for now to avoid updating cached dataset
         dataset = deepcopy(dataset)
         # preprocess dataset
+
+        logger.log(rf"\n\ST{time.time()}-Dataset Preprocessing Starts")
         dataset_preprocessor = DatasetPreprocessor(
             dataset, dataset_metadata, self.data_service, self.cache
         )
         dataset = dataset_preprocessor.preprocess(rule_copy, datasets)
+        logger.log(rf"\n\ST{time.time()}-Dataset Preprocessing Ends")
+        logger.log(rf"\n\OPRNT{time.time()}-Operation Starts")
         dataset = self.rule_processor.perform_rule_operations(
             rule_copy,
             dataset,
@@ -331,6 +336,7 @@ class RulesEngine:
             external_dictionaries=self.external_dictionaries,
             ct_packages=ct_packages,
         )
+        logger.log(rf"\n\OPRNT{time.time()}-Operation Ends")
         relationship_data = {}
         if (
             dataset_metadata is not None
