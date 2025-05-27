@@ -123,7 +123,10 @@ try:
                 "dataset": "fa.xpt",
                 "domain": "FA",
                 "variables": ["$val_dy", "FADTC", "FADY", "RFSTDTC"],
-                "message": "FADY is not calculated correctly even though the date portion of FADTC is complete, the date portion of DM.RFSTDTC is a complete date, and FADY is not empty.",
+                "message": (
+                    "FADY is not calculated correctly even though the date portion of FADTC is complete, "
+                    "the date portion of DM.RFSTDTC is a complete date, and FADY is not empty."
+                ),
                 "errors": [
                     {
                         "value": {
@@ -182,7 +185,10 @@ try:
                 "dataset": "ie.xpt",
                 "domain": "IE",
                 "variables": ["$val_dy", "IEDTC", "IEDY", "RFSTDTC"],
-                "message": "IEDY is not calculated correctly even though the date portion of IEDTC is complete, the date portion of DM.RFSTDTC is a complete date, and IEDY is not empty.",
+                "message": (
+                    "IEDY is not calculated correctly even though the date portion of IEDTC is complete, "
+                    "the date portion of DM.RFSTDTC is a complete date, and IEDY is not empty."
+                ),
                 "errors": [
                     {
                         "value": {
@@ -205,7 +211,10 @@ try:
                 "dataset": "lb.xpt",
                 "domain": "LB",
                 "variables": ["$val_dy", "LBDTC", "LBDY", "RFSTDTC"],
-                "message": "LBDY is not calculated correctly even though the date portion of LBDTC is complete, the date portion of DM.RFSTDTC is a complete date, and LBDY is not empty.",
+                "message": (
+                    "LBDY is not calculated correctly even though the date portion of LBDTC is complete, "
+                    "the date portion of DM.RFSTDTC is a complete date, and LBDY is not empty."
+                ),
                 "errors": [
                     {
                         "value": {
@@ -223,6 +232,7 @@ try:
             }
         ],
     }
+
     # Compare result
     if rule_exec_response == expected_json:
         print("Test Passed: API response matches expected JSON.")
