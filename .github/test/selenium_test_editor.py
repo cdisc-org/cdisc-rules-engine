@@ -106,71 +106,137 @@ try:
 
     # Expected content
     expected_json = {
-        "DM": [
-            {
-                "executionStatus": "execution_error",
-                "dataset": "dm.xpt",
-                "domain": "DM",
-                "variables": [],
-                "message": "rule execution error",
-                "errors": [
-                    {
-                        "dataset": "dm.xpt",
-                        "error": "Rule format error",
-                        "message": "Rule contains invalid operator",
-                    }
-                ],
-            }
-        ],
-        "FA": [
-            {
-                "executionStatus": "execution_error",
-                "dataset": "fa.xpt",
-                "domain": "FA",
-                "variables": [],
-                "message": "rule execution error",
-                "errors": [
-                    {
-                        "dataset": "fa.xpt",
-                        "error": "Rule format error",
-                        "message": "Rule contains invalid operator",
-                    }
-                ],
-            }
-        ],
-        "IE": [
-            {
-                "executionStatus": "execution_error",
-                "dataset": "ie.xpt",
-                "domain": "IE",
-                "variables": [],
-                "message": "rule execution error",
-                "errors": [
-                    {
-                        "dataset": "ie.xpt",
-                        "error": "Rule format error",
-                        "message": "Rule contains invalid operator",
-                    }
-                ],
-            }
-        ],
-        "LB": [
-            {
-                "executionStatus": "execution_error",
-                "dataset": "lb.xpt",
-                "domain": "LB",
-                "variables": [],
-                "message": "rule execution error",
-                "errors": [
-                    {
-                        "dataset": "lb.xpt",
-                        "error": "Rule format error",
-                        "message": "Rule contains invalid operator",
-                    }
-                ],
-            }
-        ],
+  "DM": [
+    {
+      "executionStatus": "success",
+      "dataset": "dm.xpt",
+      "domain": "DM",
+      "variables": [],
+      "message": null,
+      "errors": []
     }
+  ],
+  "FA": [
+    {
+      "executionStatus": "success",
+      "dataset": "fa.xpt",
+      "domain": "FA",
+      "variables": [
+        "$val_dy",
+        "FADTC",
+        "FADY",
+        "RFSTDTC"
+      ],
+      "message": "FADY is not calculated correctly even though the date portion of FADTC is complete, the date portion of DM.RFSTDTC is a complete date, and FADY is not empty.",
+      "errors": [
+        {
+          "value": {
+            "FADY": 35,
+            "RFSTDTC": "2012-11-15",
+            "FADTC": "2012-12-02",
+            "$val_dy": 18
+          },
+          "dataset": "fa.xpt",
+          "row": 1,
+          "USUBJID": "CDISC002",
+          "SEQ": 1
+        },
+        {
+          "value": {
+            "FADY": 3,
+            "RFSTDTC": "2013-10-08",
+            "FADTC": "2013-10-12",
+            "$val_dy": 5
+          },
+          "dataset": "fa.xpt",
+          "row": 2,
+          "USUBJID": "CDISC004",
+          "SEQ": 2
+        },
+        {
+          "value": {
+            "FADY": -30,
+            "RFSTDTC": "2013-01-05",
+            "FADTC": "2012-12-02",
+            "$val_dy": -34
+          },
+          "dataset": "fa.xpt",
+          "row": 4,
+          "USUBJID": "CDISC007",
+          "SEQ": 4
+        },
+        {
+          "value": {
+            "FADY": 230,
+            "RFSTDTC": "2014-05-11",
+            "FADTC": "2014-12-02",
+            "$val_dy": 206
+          },
+          "dataset": "fa.xpt",
+          "row": 5,
+          "USUBJID": "CDISC008",
+          "SEQ": 5
+        }
+      ]
+    }
+  ],
+  "IE": [
+    {
+      "executionStatus": "success",
+      "dataset": "ie.xpt",
+      "domain": "IE",
+      "variables": [
+        "$val_dy",
+        "IEDTC",
+        "IEDY",
+        "RFSTDTC"
+      ],
+      "message": "IEDY is not calculated correctly even though the date portion of IEDTC is complete, the date portion of DM.RFSTDTC is a complete date, and IEDY is not empty.",
+      "errors": [
+        {
+          "value": {
+            "RFSTDTC": "2022-03-20",
+            "IEDTC": "2022-03-17",
+            "$val_dy": -3,
+            "IEDY": -4
+          },
+          "dataset": "ie.xpt",
+          "row": 1,
+          "USUBJID": "CDISC-TEST-001",
+          "SEQ": 1
+        }
+      ]
+    }
+  ],
+  "LB": [
+    {
+      "executionStatus": "success",
+      "dataset": "lb.xpt",
+      "domain": "LB",
+      "variables": [
+        "$val_dy",
+        "LBDTC",
+        "LBDY",
+        "RFSTDTC"
+      ],
+      "message": "LBDY is not calculated correctly even though the date portion of LBDTC is complete, the date portion of DM.RFSTDTC is a complete date, and LBDY is not empty.",
+      "errors": [
+        {
+          "value": {
+            "RFSTDTC": "2022-03-20",
+            "LBDY": 2,
+            "LBDTC": "2022-03-30",
+            "$val_dy": 11
+          },
+          "dataset": "lb.xpt",
+          "row": 1,
+          "USUBJID": "CDISC-TEST-001",
+          "SEQ": 1
+        }
+      ]
+    }
+  ]
+}
     # Compare result
     if rule_exec_response == expected_json:
         print("Test Passed: API response matches expected JSON.")
