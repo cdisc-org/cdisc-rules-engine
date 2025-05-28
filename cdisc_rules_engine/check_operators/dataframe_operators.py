@@ -76,6 +76,7 @@ class DataframeType(BaseType):
     def __init__(self, data):
         self.value: DatasetInterface = data["value"]
         self.column_prefix_map = data.get("column_prefix_map", {})
+        self.relationship_data = data.get("relationship_data", {})
         self.value_level_metadata = data.get("value_level_metadata", [])
         self.column_codelist_map = data.get("column_codelist_map", {})
         self.codelist_term_maps = data.get("codelist_term_maps", [])
