@@ -171,6 +171,13 @@ class DatasetInterface(ABC):
         """
 
     @abstractmethod
+    def assign(self, **kwargs):
+        """
+        Assign new columns to the dataset.
+        This method should return a new instance of the dataset with the new columns added.
+        """
+
+    @abstractmethod
     def copy(self) -> "DatasetInterface":
         """
         Return a new instance of the dataset with the same data
@@ -192,12 +199,6 @@ class DatasetInterface(ABC):
     def where(cond, other, **kwargs):
         """
         Wrapper for dataframe where function
-        """
-
-    @abstractmethod
-    def cartesian_product(cls, left, right):
-        """
-        Return the cartesian product of two dataframes
         """
 
     @abstractmethod

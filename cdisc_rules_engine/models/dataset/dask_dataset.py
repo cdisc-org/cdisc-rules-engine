@@ -240,7 +240,7 @@ class DaskDataset(PandasDataset):
         return self.__class__(new_data)
 
     def assign(self, **kwargs):
-        return self.data.assign(**kwargs)
+        return self.__class__(self.data.assign(**kwargs))
 
     def copy(self):
         new_data = self._data.copy()
@@ -272,16 +272,6 @@ class DaskDataset(PandasDataset):
         return data_with_results[data_with_results["results"]].head(
             1000, npartitions=-1
         )
-
-    @classmethod
-    def cartesian_product(cls, left, right):
-        """
-        Return the cartesian product of two dataframes
-        """
-        left_df = left._data if hasattr(left, "_data") else left
-        right_df = right._data if hasattr(right, "_data") else right
-        result = left_df.merge(right_df, how="cross")
-        return cls(result)
 
     def dropna(self, inplace=False, **kwargs):
         result = self._data.dropna(**kwargs)
