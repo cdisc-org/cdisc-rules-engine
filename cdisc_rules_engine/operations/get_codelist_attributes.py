@@ -55,7 +55,7 @@ class CodeListAttributes(BaseOperation):
 
         # 4.0 merge the two datasets by CC
         # -------------------------------------------------------------------
-        cc_key = ct_data[ct_name].to_list()
+        cc_key = ct_data[ct_name]
         ct_list = ct_cache[(ct_cache[ct_name].isin(cc_key))]
         ds_len = self.params.dataframe.len()
         result = pd.Series([ct_list[ct_attribute].values[0] for _ in range(ds_len)])
