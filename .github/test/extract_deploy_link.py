@@ -57,6 +57,7 @@ with open(deploy_file_path, "r", encoding="utf-8", errors="ignore") as f:
 
 with open(commit_file_path, "r", encoding="utf-8", errors="ignore") as f:
     commit_content = f.read()
+    print(commit_content)
 
 # Find preview URL
 preview_match = re.search(
@@ -73,7 +74,7 @@ else:
     print("No ICYFLOWER deploy link found in the logs.")
 
 # Find and print commit SHA
-commit_match = re.search(r"Commit SHA:\s*([a-f0-9]{40})", commit_content)
+commit_match = re.search(r"Commit SHA:.*", commit_content)
 if commit_match:
     commit_sha = commit_match.group(1)
     print("Editor Commit SHA Found:")
