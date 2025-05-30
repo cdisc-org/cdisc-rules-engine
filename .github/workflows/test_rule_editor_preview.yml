@@ -26,7 +26,8 @@ jobs:
         run: python .github/test/extract_deploy_link.py
 
       - name: Print commit SHA
-        run: echo "Commit ID: $GITHUB_SHA"
+        run: |
+          echo "Commit ID: ${GITHUB_SHA}"
       - name: Run tests using preview URL
       
         run: python .github/test/selenium_test_editor.py
