@@ -33,20 +33,35 @@ print(os.listdir("logs"))
 print(os.listdir(os.path.join("logs", "Build and Deploy Preview")))
 
 log_dir = os.path.join("logs")
-matching_files = glob.glob(os.path.join(log_dir, "[0-9]_Build and Deploy Preview.txt"))
+deploy_files = glob.glob(os.path.join(log_dir, "[0-9]_Build and Deploy Preview.txt"))
+commit_files = glob.glob(
+    os.path.join(log_dir, "Build and Deploy Preview", "[0-9]_Print commit SHA.txt")
+)
 
-if not matching_files:
+if not deploy_files:
     raise FileNotFoundError("No matching Build and Deploy Preview log file found")
 
-target_file_path = matching_files[0]
-if not os.path.exists(target_file_path):
-    raise FileNotFoundError(f"{target_file_path} not found")
+if not commit_files:
+    print("No matching SHA Commit log file found")
 
-with open(target_file_path, "r", encoding="utf-8", errors="ignore") as f:
+deploy_file_path = deploy_files[0]
+if not os.path.exists(deploy_file_path):
+    raise FileNotFoundError(f"{deploy_file_path} not found")
+
+commit_file_path = commit_files[0]
+if not os.path.exists(commit_file_path):
+    raise FileNotFoundError(f"{commit_file_path} not found")
+
+with open(deploy_file_path, "r", encoding="utf-8", errors="ignore") as f:
     log_content = f.read()
 
+with open(commit_file_path, "r", encoding="utf-8", errors="ignore") as f:
+    commit_content = f.read()
+
 # Find preview URL
-preview_match = re.search(r"https:\/\/[a-z0-9-]+\.centralus\.azurestaticapps\.net", log_content)
+preview_match = re.search(
+    r"https:\/\/[a-z0-9-]+\.centralus\.azurestaticapps\.net", log_content
+)
 if preview_match:
     preview_url = preview_match.group(0)
     print("ICYFLOWER Deploy Link Found:")
@@ -58,7 +73,7 @@ else:
     print("No ICYFLOWER deploy link found in the logs.")
 
 # Find and print commit SHA
-commit_match = re.search(r"Commit SHA:\s*([a-f0-9]{40})", log_content)
+commit_match = re.search(r"Commit SHA:\s*([a-f0-9]{40})", commit_content)
 if commit_match:
     commit_sha = commit_match.group(1)
     print("Editor Commit SHA Found:")
