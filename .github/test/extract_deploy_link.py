@@ -13,7 +13,6 @@ WORKFLOW_RUNS_URL = (
     "https://api.github.com/repos/cdisc-org/conformance-rules-editor/actions/runs"
 )
 
-
 headers = {"Authorization": f"token {GITHUB_TOKEN}"}
 response = requests.get(WORKFLOW_RUNS_URL, headers=headers)
 response.raise_for_status()
@@ -23,7 +22,6 @@ first_run_id = workflow_data["workflow_runs"][0]["id"]
 print(f"First workflow run ID: {first_run_id}")
 
 logs_url = f"https://api.github.com/repos/cdisc-org/conformance-rules-editor/actions/runs/{first_run_id}/logs"
-
 
 logs_response = requests.get(logs_url, headers=headers)
 logs_response.raise_for_status()
@@ -37,18 +35,20 @@ print(os.listdir(os.path.join("logs", "Build and Deploy Preview")))
 log_dir = os.path.join("logs")
 matching_files = glob.glob(os.path.join(log_dir, "[0-9]_Build and Deploy Preview.txt"))
 
+if not matching_files:
+    raise FileNotFoundError("No matching Build and Deploy Preview log file found")
+
 target_file_path = matching_files[0]
 if not os.path.exists(target_file_path):
     raise FileNotFoundError(f"{target_file_path} not found")
 
-
 with open(target_file_path, "r", encoding="utf-8", errors="ignore") as f:
     log_content = f.read()
 
-# Regex for icyflower link (adjust if format changes)
-match = re.search(r"https:\/\/[a-z0-9-]+\.centralus\.azurestaticapps\.net", log_content)
-if match:
-    preview_url = match.group(0)
+# Find preview URL
+preview_match = re.search(r"https:\/\/[a-z0-9-]+\.centralus\.azurestaticapps\.net", log_content)
+if preview_match:
+    preview_url = preview_match.group(0)
     print("ICYFLOWER Deploy Link Found:")
     print(preview_url)
     # Save it to GitHub Actions environment
@@ -56,3 +56,13 @@ if match:
         env_file.write(f"RULE_EDITOR_URL={preview_url}\n")
 else:
     print("No ICYFLOWER deploy link found in the logs.")
+
+# Find and print commit SHA
+commit_match = re.search(r"Commit SHA:\s*([a-f0-9]{40})", log_content)
+if commit_match:
+    commit_sha = commit_match.group(1)
+    print("Editor Commit SHA Found:")
+    print(commit_sha)
+
+else:
+    print("No commit SHA found in the logs.")
