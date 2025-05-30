@@ -72,13 +72,3 @@ if preview_match:
         env_file.write(f"RULE_EDITOR_URL={preview_url}\n")
 else:
     print("No ICYFLOWER deploy link found in the logs.")
-
-# Find and print commit SHA
-commit_match = re.search(r"Commit SHA:.*", commit_content)
-if commit_match:
-    commit_sha = commit_match.group(1)
-    print("Editor Commit SHA Found:")
-    print(commit_sha)
-
-else:
-    print("No commit SHA found in the logs.")
