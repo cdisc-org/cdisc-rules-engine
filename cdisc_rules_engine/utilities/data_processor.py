@@ -549,7 +549,7 @@ class DataProcessor:
         right_dataset_domain_name: str,
         join_type: JoinTypes,
     ) -> DatasetInterface:
-        result = left_dataset.reset_index().merge(
+        result = left_dataset.merge(
             right_dataset.data,
             how=join_type.value,
             left_on=left_dataset_match_keys,
@@ -561,6 +561,7 @@ class DataProcessor:
                 else f"_merge_{right_dataset_domain_name}"
             ),
         )
+        result["index"] = [i for i in range(len(result))]
         result.data = result.data.set_index("index")
         if join_type is JoinTypes.LEFT:
             if "left_only" in result[f"_merge_{right_dataset_domain_name}"].values:
