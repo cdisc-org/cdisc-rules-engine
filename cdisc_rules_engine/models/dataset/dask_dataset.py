@@ -44,6 +44,9 @@ class DaskDataset(PandasDataset):
 
     def __getitem__(self, item):
         try:
+            if hasattr(item, "dtype") and pd.api.types.is_bool_dtype(item.dtype):
+                # Handle boolean indexing
+                return self._data.compute()[item]
             return self._data[item].compute().reset_index(drop=True)
         except ValueError as e:
             # Handle boolean indexing length mismatch which occurs when filtering
