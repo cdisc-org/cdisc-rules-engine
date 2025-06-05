@@ -173,6 +173,7 @@ def test_multi_filter_record_count(data, expected, operation_params: OperationPa
             PandasDataset.from_dict(
                 {
                     "STUDYID": ["CDISC01", "CDISC01", "CDISC02"],
+                    "STUDYID2": ["CDISC01", "CDISC02", "CDISC03"],
                     "DOMAIN": ["AE", "AE", "AE"],
                     "EQ": [1, 2, 2],
                     "USUBJID": ["TEST1", "TEST1", "TEST2"],
@@ -180,11 +181,12 @@ def test_multi_filter_record_count(data, expected, operation_params: OperationPa
             ),
             PandasDataset.from_dict(
                 {
-                    "STUDYID2": ["CDISC01", "CDISC01", "CDISC02"],
+                    "STUDYID": ["CDISC01", "CDISC01", "CDISC02"],
+                    "STUDYID2": ["CDISC01", "CDISC02", "CDISC03"],
                     "DOMAIN": ["AE", "AE", "AE"],
                     "EQ": [1, 2, 2],
                     "USUBJID": ["TEST1", "TEST1", "TEST2"],
-                    "operation_id": [2, 2, 1],
+                    "operation_id": [2, 1, None],
                 }
             ),
             ["STUDYID2"],
@@ -238,6 +240,7 @@ def test_grouped_record_count(
             PandasDataset.from_dict(
                 {
                     "STUDYID": ["CDISC01", "CDISC01", "CDISC02"],
+                    "STUDYID2": ["CDISC01", "CDISC02", "CDISC03"],
                     "DOMAIN": ["AE", "AE", "AE"],
                     "EQ": [1, 2, 2],
                     "USUBJID": ["TEST1", "TEST1", "TEST2"],
@@ -245,11 +248,12 @@ def test_grouped_record_count(
             ),
             PandasDataset.from_dict(
                 {
-                    "STUDYID2": ["CDISC01", "CDISC01", "CDISC02"],
+                    "STUDYID": ["CDISC01", "CDISC01", "CDISC02"],
+                    "STUDYID2": ["CDISC01", "CDISC02", "CDISC03"],
                     "DOMAIN": ["AE", "AE", "AE"],
                     "EQ": [1, 2, 2],
                     "USUBJID": ["TEST1", "TEST1", "TEST2"],
-                    "operation_id": [2, 2, 1],
+                    "operation_id": [2, 1, None],
                 }
             ),
             ["STUDYID2", "DOMAIN"],
@@ -258,6 +262,7 @@ def test_grouped_record_count(
             PandasDataset.from_dict(
                 {
                     "STUDYID": ["CDISC01", "CDISC01", "CDISC02"],
+                    "STUDYID2": ["CDISC01", "CDISC02", "CDISC03"],
                     "DOMAIN": ["AE", "AE", "AE"],
                     "EQ": [1, 2, 2],
                     "USUBJID": ["TEST1", "TEST1", "TEST2"],
@@ -265,11 +270,12 @@ def test_grouped_record_count(
             ),
             PandasDataset.from_dict(
                 {
-                    "STUDYID2": ["CDISC01", "CDISC01", "CDISC02"],
+                    "STUDYID": ["CDISC01", "CDISC01", "CDISC02"],
+                    "STUDYID2": ["CDISC01", "CDISC02", "CDISC03"],
                     "DOMAIN": ["AE", "AE", "AE"],
                     "EQ": [1, 2, 2],
                     "USUBJID": ["TEST1", "TEST1", "TEST2"],
-                    "operation_id": [2, 2, 1],
+                    "operation_id": [2, 1, None],
                 }
             ),
             ["STUDYID2"],
@@ -278,6 +284,7 @@ def test_grouped_record_count(
             PandasDataset.from_dict(
                 {
                     "STUDYID": ["CDISC01", "CDISC01", "CDISC02"],
+                    "STUDYID2": ["CDISC01", "CDISC02", "CDISC03"],
                     "DOMAIN": ["AE", "AE", "AE"],
                     "EQ": [1, 2, 2],
                     "USUBJID": ["TEST1", "TEST1", "TEST2"],
@@ -285,11 +292,12 @@ def test_grouped_record_count(
             ),
             PandasDataset.from_dict(
                 {
-                    "STUDYID2": ["CDISC01", "CDISC01", "CDISC02"],
+                    "STUDYID": ["CDISC01", "CDISC01", "CDISC02"],
+                    "STUDYID2": ["CDISC01", "CDISC02", "CDISC03"],
                     "DOMAIN": ["AE", "AE", "AE"],
                     "EQ": [1, 2, 2],
                     "USUBJID": ["TEST1", "TEST1", "TEST2"],
-                    "operation_id": [2, 2, 1],
+                    "operation_id": [2, 1, None],
                 }
             ),
             ["STUDYID2", "DOMAIN", "EXTRACOL"],
@@ -307,7 +315,10 @@ def test_multi_group_record_count(
     operation_params.grouping_aliases = grouping_aliases
     record_count = RecordCount(operation_params, data, cache, data_service)
     result = record_count.execute()
+    grouping_columns = record_count._get_grouping_columns()
     assert operation_params.operation_id in result
+    for grouping_column in grouping_columns:
+        assert grouping_column in result
     assert result.data.equals(expected.data)
 
 
@@ -341,6 +352,7 @@ def test_multi_group_record_count(
                     "DOMAIN": ["AE", "AE", "AE", "AE"],
                     "EQ": [1, 2, 3, 4],
                     "USUBJID": ["TEST2", "TEST1", "TEST2", "TEST3"],
+                    "USUBJID2": ["TEST2", "TEST1", "TEST3", "TEST4"],
                 }
             ),
             PandasDataset.from_dict(
@@ -348,8 +360,9 @@ def test_multi_group_record_count(
                     "STUDYID": ["CDISC01", "CDISC01", "CDISC02", "CDISC02"],
                     "DOMAIN": ["AE", "AE", "AE", "AE"],
                     "EQ": [1, 2, 3, 4],
-                    "USUBJID2": ["TEST2", "TEST1", "TEST2", "TEST3"],
-                    "operation_id": [1, 1, 1, 0],
+                    "USUBJID": ["TEST2", "TEST1", "TEST2", "TEST3"],
+                    "USUBJID2": ["TEST2", "TEST1", "TEST3", "TEST4"],
+                    "operation_id": [1, 1, 0, None],
                 }
             ),
             ["USUBJID2"],

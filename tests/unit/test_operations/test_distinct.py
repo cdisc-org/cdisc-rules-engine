@@ -59,6 +59,7 @@ def test_distinct(data, expected, operation_params: OperationParams):
                 {
                     "values": [11, 12, 12, 5, 18, 9],
                     "patient": [1, 2, 2, 1, 2, 1],
+                    "subject": [1, 2, 2, 1, 2, 3],
                 }
             ),
             {1: {5, 9, 11}, 2: {12, 18}, 3: None},
@@ -69,6 +70,7 @@ def test_distinct(data, expected, operation_params: OperationParams):
                 {
                     "values": [11, 12, 12, 5, 18, 9],
                     "patient": [1, 2, 2, 1, 2, 1],
+                    "subject": [1, 2, 2, 1, 2, 3],
                 }
             ),
             {1: {5, 9, 11}, 2: {12, 18}, 3: None},
