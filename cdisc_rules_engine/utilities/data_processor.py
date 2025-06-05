@@ -561,8 +561,7 @@ class DataProcessor:
                 else f"_merge_{right_dataset_domain_name}"
             ),
         )
-        result["index"] = [i for i in range(len(result))]
-        result.data = result.data.set_index("index")
+        result.data.index = pd.RangeIndex(len(result))
         if join_type is JoinTypes.LEFT:
             if "left_only" in result[f"_merge_{right_dataset_domain_name}"].values:
                 DummyDataService._replace_nans_in_numeric_cols_with_none(result)
