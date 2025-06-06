@@ -1,3 +1,8 @@
+from os.path import join
+from pickle import load
+from typing import Iterable
+
+
 class LibraryMetadataContainer:
     def __init__(
         self,
@@ -59,3 +64,59 @@ class LibraryMetadataContainer:
 
     def set_ct_package_metadata(self, key, value):
         self._ct_package_metadata[key] = value
+
+    def _load_ct_package_data(self, package: str, version: str, cache_path: str):
+        ct_package_version = f"{package}-{version}"
+        ct_package_data = self.get_ct_package_metadata(ct_package_version)
+        if ct_package_data is None:
+            file_name = f"{ct_package_version}.pkl"
+            with open(join(cache_path, file_name), "rb") as f:
+                ct_package_data = load(f)
+                self.set_ct_package_metadata(ct_package_version, ct_package_data)
+        return ct_package_data
+
+    def build_ct_lists(
+        self, package: str, versions: str | Iterable[str], cache_path: str
+    ):
+        if isinstance(versions, str):
+            versions = {versions}
+        ct_lists = []
+        for version in {*versions}:
+            ct_package_data = self._load_ct_package_data(package, version, cache_path)
+            ct_lists.extend(
+                [
+                    {
+                        "package": package,
+                        "version": version,
+                        "codelist_code": key,
+                        "extensible": value.get("extensible"),
+                    }
+                    for key, value in ct_package_data.items()
+                    if "terms" in value
+                ]
+            )
+        return ct_lists
+
+    def build_ct_terms(
+        self, package: str, versions: str | Iterable[str], cache_path: str
+    ):
+        if isinstance(versions, str):
+            versions = {versions}
+        ct_terms = []
+        for version in {*versions}:
+            ct_package_data = self._load_ct_package_data(package, version, cache_path)
+            ct_terms.extend(
+                [
+                    {
+                        "package": package,
+                        "version": version,
+                        "codelist_code": codelist_code,
+                        "term_code": term["conceptId"],
+                        "term_value": term["submissionValue"],
+                    }
+                    for codelist_code, codelist in ct_package_data.items()
+                    if "terms" in codelist
+                    for term in codelist["terms"]
+                ]
+            )
+        return ct_terms

@@ -1,5 +1,3 @@
-from os.path import join
-from pickle import load
 import pandas as pd
 from cdisc_rules_engine.operations.base_operation import BaseOperation
 from cdisc_rules_engine.exceptions.custom_exceptions import MissingDataError
@@ -23,33 +21,12 @@ class CodelistExtensible(BaseOperation):
     def _handle_multiple_versions(self) -> pd.Series:
         ct_versions = self.evaluation_dataset[self.params.ct_version]
         unique_ct_versions = ct_versions.unique()
-        ct_data = None
-        for ct_version in unique_ct_versions:
-            ct_package_version = f"{self.params.package}-{ct_version}"
-            ct_package_data = self.library_metadata.get_ct_package_metadata(
-                ct_package_version
-            )
-            if ct_package_data is None:
-                file_name = f"{ct_package_version}.pkl"
-                with open(join(self.cache_path, file_name), "rb") as f:
-                    ct_package_data = load(f)
-                    self.library_metadata.set_ct_package_metadata(
-                        ct_package_version, ct_package_data
-                    )
-            ct_lists = [
-                {
-                    "package": self.params.package,
-                    "version": ct_version,
-                    "codelist_code": key,
-                    "extensible": value["extensible"],
-                }
-                for key, value in ct_package_data.items()
-                if "extensible" in value
-            ]
-            ct_df = self.evaluation_dataset.__class__.from_records(ct_lists)
-            ct_data = ct_data.concat(ct_df) if ct_data else ct_df
+        ct_data = self.library_metadata.build_ct_lists(
+            self.params.package, unique_ct_versions, self.cache_path
+        )
+        ct_df = self.evaluation_dataset.__class__.from_records(ct_data)
         is_extensible = self.evaluation_dataset.merge(
-            ct_data.data,
+            ct_df.data,
             left_on=(self.params.ct_version, self.params.codelist_code),
             right_on=("version", "codelist_code"),
             how="left",
