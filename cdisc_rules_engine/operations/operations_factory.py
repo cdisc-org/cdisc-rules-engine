@@ -156,7 +156,6 @@ class OperationsFactory(FactoryInterface):
             "original_dataset",
             "cache",
             "data_service",
-            "cache_path",
             "library_metadata",
         }
         if not required_args.issubset(kwargs.keys()):
@@ -170,7 +169,6 @@ class OperationsFactory(FactoryInterface):
                 kwargs.get("original_dataset"),
                 kwargs.get("cache"),
                 kwargs.get("data_service"),
-                kwargs.get("cache_path"),
                 kwargs.get("library_metadata"),
             )
         raise ValueError(

@@ -67,7 +67,6 @@ class RulesEngine:
         self.max_dataset_size = kwargs.get("max_dataset_size")
         self.dataset_paths = kwargs.get("dataset_paths")
         self.cache = cache or CacheServiceFactory(self.config).get_cache_service()
-        self.cache_path = kwargs.get("cache_path")
         data_service_factory = DataServiceFactory(
             config=self.config,
             cache_service=self.cache,
@@ -85,7 +84,6 @@ class RulesEngine:
         self.rule_processor = RuleProcessor(
             self.data_service,
             self.cache,
-            self.cache_path,
             self.library_metadata,
         )
         self.data_processor = DataProcessor(self.data_service, self.cache)
@@ -320,7 +318,7 @@ class RulesEngine:
         dataset = deepcopy(dataset)
         # preprocess dataset
         dataset_preprocessor = DatasetPreprocessor(
-            dataset, dataset_metadata, self.data_service, self.cache, self.cache_path
+            dataset, dataset_metadata, self.data_service, self.cache
         )
         dataset = dataset_preprocessor.preprocess(rule_copy, datasets)
         dataset = self.rule_processor.perform_rule_operations(

@@ -50,12 +50,10 @@ class RuleProcessor:
         self,
         data_service: DataServiceInterface,
         cache: CacheServiceInterface,
-        cache_path: str,
         library_metadata: LibraryMetadataContainer = None,
     ):
         self.data_service = data_service
         self.cache = cache
-        self.cache_path = cache_path
         self.library_metadata = library_metadata
 
     @classmethod
@@ -437,7 +435,6 @@ class RuleProcessor:
             original_dataset=dataset,
             cache=self.cache,
             data_service=self.data_service,
-            cache_path=self.cache_path,
             library_metadata=self.library_metadata,
         )
         result = operation.execute()

@@ -22,7 +22,7 @@ class CodelistExtensible(BaseOperation):
         ct_versions = self.evaluation_dataset[self.params.ct_version]
         unique_ct_versions = ct_versions.unique()
         ct_data = self.library_metadata.build_ct_lists(
-            self.params.package, unique_ct_versions, self.cache_path
+            self.params.package, unique_ct_versions
         )
         ct_df = self.evaluation_dataset.__class__.from_records(ct_data)
         is_extensible = self.evaluation_dataset.merge(

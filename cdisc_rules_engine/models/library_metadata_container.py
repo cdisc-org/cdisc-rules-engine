@@ -12,6 +12,7 @@ class LibraryMetadataContainer:
         variable_codelist_map={},
         variables_metadata={},
         published_ct_packages=[],
+        cache_path: str = "",
     ):
         self._standard_metadata = standard_metadata
         self._model_metadata = model_metadata
@@ -19,6 +20,7 @@ class LibraryMetadataContainer:
         self._variable_codelist_map = variable_codelist_map
         self._variables_metadata = variables_metadata
         self._published_ct_packages = published_ct_packages
+        self._cache_path = cache_path
 
     @property
     def standard_metadata(self):
@@ -65,24 +67,22 @@ class LibraryMetadataContainer:
     def set_ct_package_metadata(self, key, value):
         self._ct_package_metadata[key] = value
 
-    def _load_ct_package_data(self, package: str, version: str, cache_path: str):
+    def _load_ct_package_data(self, package: str, version: str):
         ct_package_version = f"{package}-{version}"
         ct_package_data = self.get_ct_package_metadata(ct_package_version)
         if ct_package_data is None:
             file_name = f"{ct_package_version}.pkl"
-            with open(join(cache_path, file_name), "rb") as f:
+            with open(join(self._cache_path, file_name), "rb") as f:
                 ct_package_data = load(f)
                 self.set_ct_package_metadata(ct_package_version, ct_package_data)
         return ct_package_data
 
-    def build_ct_lists(
-        self, package: str, versions: str | Iterable[str], cache_path: str
-    ):
+    def build_ct_lists(self, package: str, versions: str | Iterable[str]):
         if isinstance(versions, str):
             versions = {versions}
         ct_lists = []
         for version in {*versions}:
-            ct_package_data = self._load_ct_package_data(package, version, cache_path)
+            ct_package_data = self._load_ct_package_data(package, version)
             ct_lists.extend(
                 [
                     {
@@ -97,14 +97,12 @@ class LibraryMetadataContainer:
             )
         return ct_lists
 
-    def build_ct_terms(
-        self, package: str, versions: str | Iterable[str], cache_path: str
-    ):
+    def build_ct_terms(self, package: str, versions: str | Iterable[str]):
         if isinstance(versions, str):
             versions = {versions}
         ct_terms = []
         for version in {*versions}:
-            ct_package_data = self._load_ct_package_data(package, version, cache_path)
+            ct_package_data = self._load_ct_package_data(package, version)
             ct_terms.extend(
                 [
                     {
