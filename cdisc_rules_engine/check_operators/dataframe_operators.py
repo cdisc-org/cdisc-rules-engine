@@ -1013,7 +1013,7 @@ class DataframeType(BaseType):
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
-    def is_consistent_across_dataset(self, other_value):
+    def is_inconsistent_across_dataset(self, other_value):
         target = self.replace_prefix(other_value.get("target"))
         comparator = other_value.get("comparator")
         grouping_cols = []
