@@ -62,7 +62,7 @@ else:
 
 
 if not os.path.exists(use_file_path):
-    raise FileNotFoundError(f"{use_file_path } not found")
+    raise FileNotFoundError(f"{use_file_path} not found")
 
 
 with open(use_file_path, "r", encoding="utf-8", errors="ignore") as f:
