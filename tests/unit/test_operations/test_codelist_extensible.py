@@ -1,4 +1,5 @@
 from unittest.mock import MagicMock
+import pandas as pd
 import pytest
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.operations.codelist_extensible import CodelistExtensible
@@ -123,3 +124,30 @@ def test_empty_metadata(operation_params):
     )
     with pytest.raises(StopIteration):
         operation._execute_operation()
+
+
+def test_multiple_versions(operation_params, mock_metadata):
+    operation_params.package = "mock_package"
+    operation_params.ct_version = "version"
+    operation_params.codelist_code = "codelist_code"
+    versions = ["v1", "v2", "v3"]
+
+    library_metadata = LibraryMetadataContainer()
+    for version in versions:
+        mock_metadata[f"mock_package-{version}"] = mock_metadata["mock_package"]
+    library_metadata._ct_package_metadata = mock_metadata
+
+    evaluation_dataset = PandasDataset.from_dict(
+        {"version": versions, "codelist_code": ["C1", "C2", "C3"]}
+    )
+
+    operation = CodelistExtensible(
+        operation_params,
+        evaluation_dataset,
+        MagicMock(),
+        MagicMock(),
+        library_metadata,
+    )
+
+    result = operation._execute_operation()
+    assert result.equals(pd.Series([True, False, None]))
