@@ -33,31 +33,40 @@ print(os.listdir("logs"))
 print(os.listdir(os.path.join("logs", "Build and Deploy Preview")))
 
 log_dir = os.path.join("logs")
-deploy_files = glob.glob(os.path.join(log_dir, "[0-9]_Build and Deploy Preview.txt"))
+# List all .txt files in the directory
+file_path = None
+for filename in os.listdir(log_dir):
+    if filename.endswith(".txt") and "Build and Deploy Preview" in filename:
+        file_path = os.path.join(log_dir, filename)
+        print(f"Found log file: {file_path}")
+
 commit_files = glob.glob(
-    os.path.join(log_dir, "Build and Deploy Preview", "[0-9]_Print commit SHA.txt")
+    os.path.join(
+        log_dir, "Build and Deploy Preview", "[0-9]_Build and Deploy Preview.txt"
+    )
 )
 
-if not deploy_files:
-    raise FileNotFoundError("No matching Build and Deploy Preview log file found")
+if not file_path:
+    print("No matching Build and Deploy Preview log file found")
 
 if not commit_files:
     print("No matching SHA Commit log file found")
 
-deploy_file_path = deploy_files[0]
-if not os.path.exists(deploy_file_path):
-    raise FileNotFoundError(f"{deploy_file_path} not found")
+use_file_path = None
+if file_path:
+    use_file_path = file_path
+elif commit_files:
+    use_file_path = commit_files[0]
+else:
+    raise FileNotFoundError("No log file found")
 
-commit_file_path = commit_files[0]
-if not os.path.exists(commit_file_path):
-    raise FileNotFoundError(f"{commit_file_path} not found")
 
-with open(deploy_file_path, "r", encoding="utf-8", errors="ignore") as f:
+if not os.path.exists(use_file_path):
+    raise FileNotFoundError(f"{use_file_path } not found")
+
+
+with open(use_file_path, "r", encoding="utf-8", errors="ignore") as f:
     log_content = f.read()
-
-with open(commit_file_path, "r", encoding="utf-8", errors="ignore") as f:
-    commit_content = f.read()
-    print(commit_content)
 
 # Find preview URL
 preview_match = re.search(
