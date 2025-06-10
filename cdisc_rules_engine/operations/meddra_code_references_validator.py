@@ -14,7 +14,7 @@ class MedDRACodeReferencesValidator(BaseOperation):
             DictionaryTypes.MEDDRA.value
         )
         if not meddra_path:
-            raise ValueError("Can't execute the operation, no whodrug path provided")
+            raise ValueError("Can't execute the operation, no meddra path provided")
         code_variables = [
             MedDRAVariables.SOCCD.value,
             MedDRAVariables.HLGTCD.value,

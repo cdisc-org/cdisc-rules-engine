@@ -456,7 +456,7 @@
     {
       "properties": {
         "operator": {
-          "const": "is_consistent_across_dataset"
+          "const": "is_inconsistent_across_dataset"
         }
       },
       "required": ["operator", "value"],
