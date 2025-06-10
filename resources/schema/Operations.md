@@ -633,6 +633,29 @@ Example: return the number of records grouped by USUBJID and IDVARVAL where QNAM
     - GROUPID
 ```
 
+Example: Group the `StudyIdentifier` dataset by `parent_id` and merge the result back to the context dataset `StudyVersion` using `StudyVersion.id == StudyIdentifier.parent_id`
+
+```yaml
+Scope:
+  Entities:
+    Include:
+      - StudyVersion
+Operations:
+  - domain: StudyIdentifier
+    filter:
+      parent_entity: "StudyVersion"
+      parent_rel: "studyIdentifiers"
+      rel_type: "definition"
+      studyIdentifierScope.organizationType.code: "C70793"
+      studyIdentifierScope.organizationType.codeSystem: "http://www.cdisc.org"
+    group:
+      - parent_id
+    group_aliases:
+      - id
+    id: $num_sponsor_ids
+    operator: record_count
+```
+
 ## required_variables
 
 Returns the required variables ( "Core" = Req ) for a given domain and standard
@@ -898,7 +921,7 @@ Operations:
 [true, false, true, true]
 ```
 
-### `whodrug_code_hierarchy`
+## whodrug_code_hierarchy
 
 Determines whether the values are valid and in the correct hierarchical structure in the following variables:
 

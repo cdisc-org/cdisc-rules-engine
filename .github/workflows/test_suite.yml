@@ -83,8 +83,9 @@ jobs:
       - name: Run validation with Dask
         id: dask_run
         continue-on-error: true
+        env:
+          DATASET_SIZE_THRESHOLD: 0
         run: |
-          echo "DATASET_SIZE_THRESHOLD=0" > .env
           python core.py validate -s sdtmig -v 3-3 ${{ env.RULE_LIST }} -d CORE_Test_Suite/data -ct sdtmct-2020-03-27 -of json -o CORE_Test_Suite/dask-results -l info || true
 
           if [ -f "CORE_Test_Suite/dask-results.json" ]; then

@@ -187,6 +187,9 @@ class PandasDataset(DatasetInterface):
     def size(self) -> int:
         return self._data.memory_usage().sum()
 
+    def assign(self, **kwargs):
+        return self.__class__(self.data.assign(**kwargs))
+
     def copy(self):
         new_data = self._data.copy()
         return self.__class__(new_data)
@@ -205,13 +208,6 @@ class PandasDataset(DatasetInterface):
         """
         new_data = self._data.where(cond, other, **kwargs)
         return self.__class__(new_data)
-
-    @classmethod
-    def cartesian_product(cls, left, right):
-        """
-        Return the cartesian product of two dataframes
-        """
-        return cls(left.merge(right, how="cross"))
 
     def sort_values(self, by: Union[str, list[str]], **kwargs) -> "pd.Dataframe":
         """
@@ -246,6 +242,9 @@ class PandasDataset(DatasetInterface):
 
     def min(self, *args, **kwargs):
         return self.__class__(self._data.min(*args, **kwargs))
+
+    def max(self, *args, **kwargs):
+        return self.__class__(self._data.max(*args, **kwargs))
 
     def reset_index(self, drop=False, **kwargs):
         """
