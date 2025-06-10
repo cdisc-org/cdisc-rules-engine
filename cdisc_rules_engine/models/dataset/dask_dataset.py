@@ -360,6 +360,24 @@ class DaskDataset(PandasDataset):
     def to_dict(self, **kwargs) -> dict:
         return list(self._data.map_partitions(lambda x: x.to_dict(orient="records")))
 
+    def items(self, **kwargs):
+        computed_df = self._data.compute()
+        return computed_df.to_dict(**kwargs).items()
+
+    def keys(self, **kwargs):
+        """
+        Returns a object containing the keys in the dataset dictionary.
+        """
+        computed_df = self._data.compute()
+        return computed_df.to_dict(**kwargs).keys()
+
+    def values(self, **kwargs):
+        """
+        Returns a object containing the values in the dataset dictionary.
+        """
+        computed_df = self._data.compute()
+        return computed_df.to_dict(**kwargs).values()
+
     def isin(self, values):
         values_set = set(values)
 

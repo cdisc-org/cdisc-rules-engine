@@ -280,3 +280,18 @@ class PandasDataset(DatasetInterface):
 
     def to_dict(self, **kwargs) -> dict:
         return self._data.to_dict(**kwargs)
+
+    def items(self):
+        """
+        Return a dict_items view object with a list of (key, value) pairs.
+        This makes PandasDataset behave more like a dictionary.
+        """
+        return self.to_dict().items()
+
+    def keys(self):
+        """Return a dict_keys view object."""
+        return self.to_dict().keys()
+
+    def values(self):
+        """Return a dict_values view object."""
+        return self.to_dict().values()
