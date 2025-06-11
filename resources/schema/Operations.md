@@ -33,9 +33,85 @@ Returns a list of valid codelist/term values. Used for evaluating whether NCI co
     ],
 ```
 
+If `package`, `version`, and `codelist_code` parameters are provided, it will instead attach a new column containing the term for each combination provided in the source dataset. If `term_code` is provided, it will find term values using the term codes. If `term_value` is provided, it will find term codes using the term values.Only one of `term_code` or `term_value` can be provided.
+
+For example, given the current dataset:
+
+| id  | codeSystemVersion | $codelist_code | code    | decode     |
+| --- | ----------------- | -------------- | ------- | ---------- |
+| 1   | 2024-09-27        | C201264        | C201356 | After      |
+| 2   | 2024-09-27        | C201265        | C201352 | End to End |
+| 3   | 2023-03-29        | C127262        | C51282  | CLINIC     |
+
+and the following operation:
+
+```yaml
+- id: $found_term_value
+  operator: codelist_terms
+  package: ddfct
+  version: codeSystemVersion
+  codelist_code: $codelist_code
+  term_code: code
+```
+
+This will result in the following dataset:
+
+| id  | codeSystemVersion | $codelist_code | code    | decode     | $found_term_value |
+| --- | ----------------- | -------------- | ------- | ---------- | ----------------- |
+| 1   | 2024-09-27        | C201264        | C201356 | After      | After             |
+| 2   | 2024-09-27        | C201265        | C201352 | End to End | End to End        |
+| 3   | 2023-03-29        | C127262        | C51282  | CLINIC     | CLINIC            |
+
+Conversely, if given the same dataset, and the following operation:
+
+```yaml
+- id: $found_term_code
+  operator: codelist_terms
+  package: ddfct
+  version: codeSystemVersion
+  codelist_code: $codelist_code
+  term_value: decode
+```
+
+This will result in the following dataset:
+
+| id  | codeSystemVersion | $codelist_code | code    | decode     | $found_term_code |
+| --- | ----------------- | -------------- | ------- | ---------- | ---------------- |
+| 1   | 2024-09-27        | C201264        | C201356 | After      | C201356          |
+| 2   | 2024-09-27        | C201265        | C201352 | End to End | C201352          |
+| 3   | 2023-03-29        | C127262        | C51282  | CLINIC     | C51282           |
+
 ## codelist_extensible
 
 Returns a Series indicating whether a specified `codelist` is extensible. Used in conjunction with `codelist_terms` to determine if values outside the codelist are acceptable. From the above example, `$extensible` will contain a bool if the codelist PKUDUG is extensible in all rows of the column.
+
+If `package`, `version`, and `codelist_code` parameters are provided, it will instead attach a new column containing the extensible value for each combination provided in the source dataset.
+
+For example, given the current dataset:
+
+| id  | codeSystemVersion | $codelist_code |
+| --- | ----------------- | -------------- |
+| 1   | 2024-09-27        | C201264        |
+| 2   | 2024-09-27        | C201265        |
+| 3   | 2023-03-29        | C127262        |
+
+and the following operation:
+
+```yaml
+- id: $codelist_extensible
+  operator: codelist_extensible
+  package: ddfct
+  version: codeSystemVersion
+  codelist_code: $codelist_code
+```
+
+This will result in the following dataset:
+
+| id  | codeSystemVersion | $codelist_code | $codelist_extensible |
+| --- | ----------------- | -------------- | -------------------- |
+| 1   | 2024-09-27        | C201264        | false                |
+| 2   | 2024-09-27        | C201265        | false                |
+| 3   | 2023-03-29        | C127262        | true                 |
 
 ## define_extensible_codelists
 
@@ -394,6 +470,41 @@ Generates a dataframe where each record in the dataframe is the library ig varia
     "$label_referenced_variable_label": ["Toxicity", null, "Analysis Method"]
   }
   ```
+
+## map
+
+Allows the creation of a lookup table to take the values from multiple input columns and map them to values in an output column. The `map` parameter contains a list of objects. Each dictionary contains column names as properties that match the column names in the source dataset and an `output` property that will be returned as a result.
+
+For example, given the following current dataset:
+
+| id  | parent_entity | parent_rel     |
+| --- | ------------- | -------------- |
+| 1   | Timing        | relativeToFrom |
+| 2   | Something     | relativeToFrom |
+| 3   | Timing        | type           |
+
+and the following operation:
+
+```yaml
+Operations:
+  - id: $codelist_code
+    operator: map
+    map:
+      - parent_entity: Timing
+        parent_rel: type
+        output: C201264
+      - parent_entity: Timing
+        parent_rel: relativeToFrom
+        output: C201265
+```
+
+This will result in the following result dataset:
+
+| id  | parent_entity | parent_rel     | $codelist_code |
+| --- | ------------- | -------------- | -------------- |
+| 1   | Timing        | relativeToFrom | C201265        |
+| 2   | Something     | relativeToFrom | None           |
+| 3   | Timing        | type           | C201264        |
 
 ## max
 
