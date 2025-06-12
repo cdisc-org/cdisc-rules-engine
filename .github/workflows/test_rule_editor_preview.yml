@@ -1,0 +1,33 @@
+name: Run Tests on Preview Deployment
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  extract_and_test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+
+      - name: Install dependencies
+        run: pip install requests selenium webdriver-manager pyperclip==1.9.0 selenium-wire blinker==1.4 brotli
+
+      - name: Extract Deploy Preview URL
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python .github/test/extract_deploy_link.py
+
+      - name: Print commit SHA
+        run: |
+          echo "Commit ID: ${GITHUB_SHA}"
+      - name: Run tests using preview URL
+      
+        run: python .github/test/selenium_test_editor.py

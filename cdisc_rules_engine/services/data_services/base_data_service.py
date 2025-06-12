@@ -5,6 +5,7 @@ from typing import Callable, List, Optional, Iterable, Iterator
 from concurrent.futures import ThreadPoolExecutor
 import os
 import numpy as np
+import dask.dataframe as dd
 
 from cdisc_rules_engine.interfaces import (
     CacheServiceInterface,
@@ -29,6 +30,7 @@ from cdisc_rules_engine.utilities.utils import (
     get_directory_path,
     search_in_list_of_dicts,
     tag_source,
+    replace_nan_values_in_df,
 )
 from cdisc_rules_engine.utilities.sdtm_utilities import get_class_and_domain_metadata
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
@@ -266,8 +268,22 @@ class BaseDataService(DataServiceInterface, ABC):
         """
 
         def check_presence(key):
-            in_dataset = key in dataset
-            in_values = key in self.dataset_implementation.get_series_values(dataset)
+            if hasattr(dataset, "columns"):
+                columns = dataset.columns
+                if hasattr(columns, "tolist"):
+                    columns = columns.tolist()
+                in_dataset = key in columns
+                in_values = key in self.dataset_implementation.get_series_values(
+                    dataset
+                )
+            else:
+                series_values = dataset.values
+                if hasattr(series_values, "tolist"):
+                    series_values = series_values.tolist()
+                in_dataset = key in series_values
+                in_values = key in self.dataset_implementation.get_series_values(
+                    dataset
+                )
             return in_dataset or in_values
 
         if not check_presence("DOMAIN") and not check_presence("RDOMAIN"):
@@ -300,9 +316,16 @@ class BaseDataService(DataServiceInterface, ABC):
         """
         Replaces NaN in specified columns with None.
         """
-        if isinstance(column_names, List):
-            column_names = dataset.data[column_names].columns
-        dataset.data = dataset.data.replace(np.nan, {col: None for col in column_names})
+        valid_columns = [col for col in column_names if col in dataset.data.columns]
+        if not valid_columns:
+            return dataset
+        if isinstance(dataset.data, dd.DataFrame):
+            dataset.data = dataset.data.map_partitions(
+                replace_nan_values_in_df, valid_columns
+            )
+        else:
+            dataset.data = replace_nan_values_in_df(dataset.data, valid_columns)
+        return dataset
 
     async def _async_get_dataset(
         self, function_to_call: Callable, dataset_name: str, **kwargs

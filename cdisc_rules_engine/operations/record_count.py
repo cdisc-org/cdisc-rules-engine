@@ -1,4 +1,5 @@
 import pandas as pd
+from numpy import int64
 
 from cdisc_rules_engine.operations.base_operation import BaseOperation
 
@@ -33,6 +34,7 @@ class RecordCount(BaseOperation):
                         how="left",
                     )
                     .fillna(0)
+                    .astype({self.params.target: int64})
                 )
             return group_df
         return result

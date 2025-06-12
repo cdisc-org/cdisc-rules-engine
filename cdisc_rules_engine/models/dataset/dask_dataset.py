@@ -44,6 +44,9 @@ class DaskDataset(PandasDataset):
 
     def __getitem__(self, item):
         try:
+            if hasattr(item, "dtype") and pd.api.types.is_bool_dtype(item.dtype):
+                # Handle boolean indexing
+                return self._data.compute()[item]
             return self._data[item].compute().reset_index(drop=True)
         except ValueError as e:
             # Handle boolean indexing length mismatch which occurs when filtering
@@ -92,6 +95,14 @@ class DaskDataset(PandasDataset):
             self.length = length
 
         return self.length
+
+    def __deepcopy__(self, memo):
+        pandas_df = self._data.compute()
+        fresh_dask_df = dd.from_pandas(pandas_df, npartitions=DEFAULT_NUM_PARTITIONS)
+        new_instance = self.__class__(fresh_dask_df)
+        new_instance.length = self.length
+        memo[id(self)] = new_instance
+        return new_instance
 
     @classmethod
     def from_dict(cls, data: dict, **kwargs):
@@ -232,7 +243,7 @@ class DaskDataset(PandasDataset):
         return self.__class__(new_data)
 
     def assign(self, **kwargs):
-        return self.data.assign(**kwargs)
+        return self.__class__(self.data.assign(**kwargs))
 
     def copy(self):
         new_data = self._data.copy()
@@ -263,18 +274,6 @@ class DaskDataset(PandasDataset):
         data_with_results = data_with_results.fillna(value={"results": False})
         return data_with_results[data_with_results["results"]].head(
             1000, npartitions=-1
-        )
-
-    @classmethod
-    def cartesian_product(cls, left, right):
-        """
-        Return the cartesian product of two dataframes
-        """
-        return cls(
-            dd.from_pandas(
-                left.compute().merge(right, how="cross"),
-                npartitions=DEFAULT_NUM_PARTITIONS,
-            )
         )
 
     def dropna(self, inplace=False, **kwargs):
@@ -361,6 +360,24 @@ class DaskDataset(PandasDataset):
     def to_dict(self, **kwargs) -> dict:
         return list(self._data.map_partitions(lambda x: x.to_dict(orient="records")))
 
+    def items(self, **kwargs):
+        computed_df = self._data.compute()
+        return computed_df.to_dict(**kwargs).items()
+
+    def keys(self, **kwargs):
+        """
+        Returns a object containing the keys in the dataset dictionary.
+        """
+        computed_df = self._data.compute()
+        return computed_df.to_dict(**kwargs).keys()
+
+    def values(self, **kwargs):
+        """
+        Returns a object containing the values in the dataset dictionary.
+        """
+        computed_df = self._data.compute()
+        return computed_df.to_dict(**kwargs).values()
+
     def isin(self, values):
         values_set = set(values)
 
@@ -371,7 +388,9 @@ class DaskDataset(PandasDataset):
         return result
 
     def filter_by_value(self, column, values):
-        computed_data = self._data.compute()
-        mask = computed_data[column].isin(values)
-        filtered_df = computed_data[mask]
-        return filtered_df
+        mask = self._data[column].isin(values)
+        return self.__class__(self._data[mask])
+
+    def max(self, *args, **kwargs):
+        result = self._data.max(*args, **kwargs)
+        return self.__class__(result)
