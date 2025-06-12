@@ -59,11 +59,13 @@ class DatasetPreprocessor:
         rule_targets = self._rule_processor.extract_referenced_variables_from_rule(rule)
         # Get all targets that reference the merge domain.
         result: DatasetInterface = self._dataset.copy()
+        merged_domains = set()
         for domain_details in rule_datasets:
             domain_name: str = domain_details.get("domain_name")
             is_child = bool(domain_details.get("child"))
             # download other datasets from blob storage and merge
             if is_child:
+                file_infos = []
                 # find parent of SUPP or SQAP dataset
                 if (
                     (domain_name[:4] == "SUPP" or domain_name[:4] == "SQAP")
@@ -76,10 +78,13 @@ class DatasetPreprocessor:
                         if (item.domain == self._dataset_metadata.rdomain)
                     ]
                 # find parent of other datasets
-                if domain_name == self._dataset_metadata.domain:
-                    file_infos: list[SDTMDatasetMetadata] = [
-                        self._find_parent_dataset(datasets, domain_details)
-                    ]
+                elif (
+                    domain_name == self._dataset_metadata.domain
+                    or domain_name == self._dataset_metadata.name
+                ):
+                    file_infos: list[SDTMDatasetMetadata] = self._find_parent_dataset(
+                        datasets, domain_details
+                    )
             else:
                 if self._is_split_domain(domain_name):
                     continue
@@ -98,6 +103,8 @@ class DatasetPreprocessor:
                     )
                 ]
             for file_info in file_infos:
+                if file_info.domain in merged_domains:
+                    continue
                 filename = get_dataset_name_from_details(file_info)
                 other_dataset: DatasetInterface = self._download_dataset(filename)
                 referenced_targets = set(
@@ -116,13 +123,22 @@ class DatasetPreprocessor:
                     )
                     for column in other_dataset.columns
                 ]
-                result = self._merge_datasets(
-                    left_dataset=result,
-                    left_dataset_domain_name=self._dataset_metadata.domain,
-                    right_dataset=other_dataset,
-                    right_dataset_domain_details=domain_details,
-                    datasets=datasets,
-                )
+                if is_child:
+                    result = self._child_merge_datasets(
+                        left_dataset=result,
+                        left_dataset_domain_name=self._dataset_metadata.domain,
+                        right_dataset=other_dataset,
+                        right_dataset_domain_name=file_info.domain,
+                        match_keys=domain_details.get("match_key"),
+                    )
+                    merged_domains.add(file_info.domain)
+                else:
+                    result = self._merge_datasets(
+                        left_dataset=result,
+                        left_dataset_domain_name=self._dataset_metadata.domain,
+                        right_dataset=other_dataset,
+                        right_dataset_domain_details=domain_details,
+                    )
         logger.info(f"Dataset after preprocessing = {result}")
         return result
 
@@ -159,6 +175,37 @@ class DatasetPreprocessor:
                 os.path.dirname(self._dataset_metadata.full_path), filename
             )
         )
+
+    def _child_merge_datasets(
+        self,
+        left_dataset: DatasetInterface,
+        left_dataset_domain_name: str,
+        right_dataset: DatasetInterface,
+        right_dataset_domain_name: str,
+        match_keys,
+    ) -> DatasetInterface:
+        """
+        Merges child to parent datasets on their match keys.
+        Identifies dataset type and merges based on it.
+        """
+        left_dataset_match_keys = replace_pattern_in_list_of_strings(
+            get_sided_match_keys(match_keys=match_keys, side="left"),
+            "--",
+            left_dataset_domain_name,
+        )
+        right_dataset_match_keys = replace_pattern_in_list_of_strings(
+            get_sided_match_keys(match_keys=match_keys, side="right"),
+            "--",
+            right_dataset_domain_name,
+        )
+        result = left_dataset.merge(
+            right_dataset.data,
+            how="left",
+            left_on=left_dataset_match_keys,
+            right_on=right_dataset_match_keys,
+            suffixes=("", f".{right_dataset_domain_name}"),
+        )
+        return result
 
     def _merge_datasets(
         self,
