@@ -10,8 +10,8 @@ RUN apt-get update && apt-get install -y \
     && add-apt-repository ppa:deadsnakes/ppa \
     && apt-get update \
     && apt-get install -y \
-    python3.10 \
-    python3.10-distutils \
+    python3.12 \
+    python3.12-distutils \
     && rm -rf /var/lib/apt/lists/*
 # Download the latest release
 RUN LATEST_RELEASE_URL=$(curl -s https://api.github.com/repos/cdisc-org/cdisc-rules-engine/releases/latest | jq -r '.assets[] | select(.name == "core-ubuntu-latest.zip") | .browser_download_url') \

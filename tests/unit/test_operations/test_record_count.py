@@ -11,7 +11,6 @@ from cdisc_rules_engine.services.cache.cache_service_factory import CacheService
 from cdisc_rules_engine.services.data_services.data_service_factory import (
     DataServiceFactory,
 )
-import numpy as np
 
 
 @pytest.mark.parametrize("dataset_type", [(PandasDataset), (DaskDataset)])
@@ -207,10 +206,9 @@ def test_grouped_record_count(
     grouping_column = "".join(
         operation_params.grouping_aliases or operation_params.grouping
     )
-    expected = expected.data.replace(np.nan, None)
     assert operation_params.operation_id in result
     assert grouping_column in result
-    assert result.data.equals(expected)
+    assert result.data.equals(expected.data)
 
 
 @pytest.mark.parametrize(
@@ -318,11 +316,10 @@ def test_multi_group_record_count(
     record_count = RecordCount(operation_params, data, cache, data_service)
     result = record_count.execute()
     grouping_columns = record_count._get_grouping_columns()
-    expected = expected.data.replace(np.nan, None)
     assert operation_params.operation_id in result
     for grouping_column in grouping_columns:
         assert grouping_column in result
-    assert result.data.equals(expected)
+    assert result.data.equals(expected.data)
 
 
 @pytest.mark.parametrize(
@@ -386,7 +383,6 @@ def test_filtered_grouped_record_count(
     grouping_column = "".join(
         operation_params.grouping_aliases or operation_params.grouping
     )
-    expected = expected.data.replace(np.nan, None)
     assert operation_params.operation_id in result
     assert grouping_column in result
-    assert result.data.equals(expected)
+    assert result.data.equals(expected.data)

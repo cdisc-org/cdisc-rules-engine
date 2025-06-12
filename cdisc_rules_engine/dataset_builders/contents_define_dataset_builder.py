@@ -27,19 +27,13 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
 
         ...,
         """
-        return self.build_split_datasets(self.dataset_metadata.filename)
-
-    def build_split_datasets(self, dataset_name, **kwargs):
-        """
-        Returns the contents of a file as a dataframe for evaluation.
-        """
         data_contents_df = self.data_service.get_dataset(
-            dataset_name=dataset_name, datasets=self.datasets
+            dataset_name=self.dataset_path, datasets=self.datasets
         )
         # Build dataset metadata dataframe
         size_unit: str = self.rule_processor.get_size_unit_from_rule(self.rule)
         dataset_metadata = self.data_service.get_dataset_metadata(
-            dataset_name=dataset_name, size_unit=size_unit, datasets=self.datasets
+            dataset_name=self.dataset_path, size_unit=size_unit, datasets=self.datasets
         ).to_dict(orient="records")[0]
         # Build define xml dataframe
         define = self.get_define_xml_item_group_metadata_for_dataset(dataset_metadata)

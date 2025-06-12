@@ -1,6 +1,6 @@
 ### Supported python versions
 
-[![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/downloads/release/python-3100)
+[![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3120)
 
 ### Windows Command Compatibility
 
@@ -62,12 +62,12 @@ In the terminal, navigate to the directory you intend to install CORE rules engi
    git clone https://github.com/cdisc-org/cdisc-rules-engine
    ```
 
-2. Ensure you have Python 3.10 installed:
+2. Ensure you have Python 3.12 installed:
    You can check your Python version with:
    ```
    python --version
    ```
-   If you don't have Python 3.10, please download and install it from [python.org](https://www.python.org/downloads/) or using your system's package manager.
+   If you don't have Python 3.12, please download and install it from [python.org](https://www.python.org/downloads/) or using your system's package manager.
 
 ### **Code formatter**
 
@@ -91,8 +91,8 @@ These steps should be run before running any tests or core commands using the no
 
   `python -m venv <virtual_environment_name>`
 
-NOTE: if you have multiple versions of python on your machine, you can call python 3.10 for the virtual environment's creation instead of the above command:
-`python3.10 -m venv <virtual_environment_name>`
+NOTE: if you have multiple versions of python on your machine, you can call python 3.12 for the virtual environment's creation instead of the above command:
+`python3.12 -m venv <virtual_environment_name>`
 
 - Activate the virtual environment:
 
@@ -397,7 +397,7 @@ For implementation instructions, see [PYPI.md](PYPI.md).
 
 **Linux**
 
-`pyinstaller core.py --add-data=venv/lib/python3.10/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates`
+`pyinstaller core.py --add-data=venv/lib/python3.12/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates`
 
 **Windows**
 

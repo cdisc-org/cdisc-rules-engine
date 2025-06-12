@@ -1,3 +1,4 @@
+from pandas import Series
 from cdisc_rules_engine.dataset_builders.values_dataset_builder import (
     ValuesDatasetBuilder,
 )
@@ -74,14 +75,14 @@ class ContentsDefineVLMDatasetBuilder(ValuesDatasetBuilder):
 
     @staticmethod
     def apply_filters(
-        vlm_row: dict, data_contents_df: DatasetInterface
+        vlm_row: Series, data_contents_df: DatasetInterface
     ) -> DatasetInterface:
         filter_results = data_contents_df.apply(
             lambda data_contents_row: vlm_row["filter"](data_contents_row), axis=1
         )
-
-        lut_subset: DatasetInterface = data_contents_df.__class__.cartesian_product(
-            data_contents_df.data[filter_results]["row_number"].to_frame(),
-            vlm_row.to_frame().T[["define_variable_name", "define_vlm_name"]],
-        )
+        row_numbers = data_contents_df.data["row_number"].copy()
+        rows = row_numbers.where(filter_results)
+        filtered_df = data_contents_df.__class__(rows.dropna().to_frame())
+        vlm_row_df = vlm_row.to_frame().T[["define_variable_name", "define_vlm_name"]]
+        lut_subset = filtered_df.assign(**vlm_row_df.iloc[0])
         return lut_subset

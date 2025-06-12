@@ -21,8 +21,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
-
+          python-version: "3.12"
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
@@ -47,7 +46,7 @@ jobs:
         id: pandas_run
         continue-on-error: true
         run: |
-          python core.py validate -s sdtmig -v 3-3 ${{ env.RULE_LIST }} -d CORE_Test_Suite/data -ct sdtmct-2020-03-27 -of json -o CORE_Test_Suite/pandas-results -l error || true
+          python core.py validate -s sdtmig -v 3-3 ${{ env.RULE_LIST }} -d CORE_Test_Suite/data -ct sdtmct-2020-03-27 -of json -o CORE_Test_Suite/pandas-results -l info || true
 
           if [ -f "CORE_Test_Suite/pandas-results.json" ]; then
             echo "pandas_success=true" >> $GITHUB_OUTPUT
@@ -61,7 +60,7 @@ jobs:
             echo "❌ **Failed**: No results file was generated" >> $GITHUB_STEP_SUMMARY
           fi
 
-      - name:  Pandas CORE comparison with template
+      - name: Pandas CORE comparison with template
         if: steps.pandas_run.outputs.pandas_success == 'true'
         continue-on-error: true
         run: |
@@ -84,9 +83,10 @@ jobs:
       - name: Run validation with Dask
         id: dask_run
         continue-on-error: true
+        env:
+          DATASET_SIZE_THRESHOLD: 0
         run: |
-          echo "DATASET_SIZE_THRESHOLD=0" > .env
-          python core.py validate -s sdtmig -v 3-3 ${{ env.RULE_LIST }} -d CORE_Test_Suite/data -ct sdtmct-2020-03-27 -of json -o CORE_Test_Suite/dask-results -l error || true
+          python core.py validate -s sdtmig -v 3-3 ${{ env.RULE_LIST }} -d CORE_Test_Suite/data -ct sdtmct-2020-03-27 -of json -o CORE_Test_Suite/dask-results -l info || true
 
           if [ -f "CORE_Test_Suite/dask-results.json" ]; then
             echo "dask_success=true" >> $GITHUB_OUTPUT
@@ -110,13 +110,13 @@ jobs:
             echo "Dask comparison completed successfully (no differences)"
           else
             echo "Dask comparison found differences"
-            
+
       - name: Generate dask comparison summary
         if: steps.dask_run.outputs.dask_success == 'true'
         continue-on-error: true
         run: |
           python CORE_Test_Suite/scripts/compare_implementations.py CORE_Test_Suite/dask-results.json CORE_Test_Suite/CORE-Report.json CORE_Test_Suite/dask_comparison.json --github-step-summary $GITHUB_STEP_SUMMARY --mode test
-      
+
       #################################
       # USDM TEST SUITE VALIDATION
       #################################
@@ -147,7 +147,6 @@ jobs:
         continue-on-error: true
         run: |
           python CORE_Test_Suite/scripts/comparison.py CORE_Test_Suite/usdm_negative_report.json CORE_Test_Suite/USDM_Negative_Result.json CORE_Test_Suite/usdm_negative_comparison.xlsx --mode test --json-output CORE_Test_Suite/usdm_negative_comparison.json
-
 
       - name: Run USDM validation (Positive)
         id: usdm_pos

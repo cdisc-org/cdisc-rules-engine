@@ -46,6 +46,10 @@ class PandasDataset(DatasetInterface):
     def at(self):
         return self._data.at
 
+    @property
+    def iloc(self):
+        return self._data.iloc
+
     @classmethod
     def from_dict(cls, data: dict, **kwargs):
         dataframe = pd.DataFrame.from_dict(data, **kwargs)
@@ -183,6 +187,9 @@ class PandasDataset(DatasetInterface):
     def size(self) -> int:
         return self._data.memory_usage().sum()
 
+    def assign(self, **kwargs):
+        return self.__class__(self.data.assign(**kwargs))
+
     def copy(self):
         new_data = self._data.copy()
         return self.__class__(new_data)
@@ -201,13 +208,6 @@ class PandasDataset(DatasetInterface):
         """
         new_data = self._data.where(cond, other, **kwargs)
         return self.__class__(new_data)
-
-    @classmethod
-    def cartesian_product(cls, left, right):
-        """
-        Return the cartesian product of two dataframes
-        """
-        return cls(left.merge(right, how="cross"))
 
     def sort_values(self, by: Union[str, list[str]], **kwargs) -> "pd.Dataframe":
         """
@@ -243,6 +243,9 @@ class PandasDataset(DatasetInterface):
     def min(self, *args, **kwargs):
         return self.__class__(self._data.min(*args, **kwargs))
 
+    def max(self, *args, **kwargs):
+        return self.__class__(self._data.max(*args, **kwargs))
+
     def reset_index(self, drop=False, **kwargs):
         """
         Reset the index of the dataset.
@@ -277,3 +280,18 @@ class PandasDataset(DatasetInterface):
 
     def to_dict(self, **kwargs) -> dict:
         return self._data.to_dict(**kwargs)
+
+    def items(self):
+        """
+        Return a dict_items view object with a list of (key, value) pairs.
+        This makes PandasDataset behave more like a dictionary.
+        """
+        return self.to_dict().items()
+
+    def keys(self):
+        """Return a dict_keys view object."""
+        return self.to_dict().keys()
+
+    def values(self):
+        """Return a dict_values view object."""
+        return self.to_dict().values()
