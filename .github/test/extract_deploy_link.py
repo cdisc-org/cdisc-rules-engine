@@ -40,9 +40,17 @@ with zipfile.ZipFile(io.BytesIO(logs_response.content)) as zip_file:
     zip_file.extractall("logs")
 
 print(os.listdir("logs"))
-print(os.listdir(os.path.join("logs", "Build and Deploy Preview")))
-
 log_dir = os.path.join("logs")
+if os.path.exists(os.path.join("logs", "Build and Deploy Preview")):
+    print(os.listdir(os.path.join("logs", "Build and Deploy Preview")))
+    commit_files = glob.glob(
+        os.path.join(
+            log_dir, "Build and Deploy Preview", "[0-9]_Build and Deploy Preview.txt"
+        )
+    )
+else:
+    commit_files = None
+
 # List all .txt files in the directory
 file_path = None
 for filename in os.listdir(log_dir):
@@ -50,11 +58,6 @@ for filename in os.listdir(log_dir):
         file_path = os.path.join(log_dir, filename)
         print(f"Found log file: {file_path}")
 
-commit_files = glob.glob(
-    os.path.join(
-        log_dir, "Build and Deploy Preview", "[0-9]_Build and Deploy Preview.txt"
-    )
-)
 
 if not file_path:
     print("No matching Build and Deploy Preview log file found")
