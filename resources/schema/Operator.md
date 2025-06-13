@@ -2,7 +2,7 @@
 
 ## equal_to
 
-Value comparison. Works for both string and number.
+Value comparison. Works for both string and number. Has optional parameter 'value is reference' when true, the value parameter specifies a column name whose content determines which column to compare against dynamically.
 
 > --OCCUR = N
 
@@ -10,6 +10,15 @@ Value comparison. Works for both string and number.
 - name: --OCCUR
   operator: equal_to
   value: "N"
+```
+
+> IDVARVAL = the column specified in the IDVAR column for each row.
+
+```yaml
+- name: IDVARVAL
+  operator: equal_to
+  value: "IDVAR"
+  value is reference: true
 ```
 
 > EXDOSE EQ 0
