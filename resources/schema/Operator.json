@@ -952,6 +952,9 @@
     "value_is_literal": {
       "const": true
     },
+    "value_is_reference": {
+      "const": true
+    },
     "within": {
       "$ref": "CORE-base.json#/$defs/VariableName"
     },

@@ -179,6 +179,7 @@ class DataframeType(BaseType):
         target,
         comparator,
         value_is_literal: bool = False,
+        value_is_reference: bool = False,
         case_insensitive: bool = False,
     ) -> bool:
         """
@@ -190,9 +191,19 @@ class DataframeType(BaseType):
         not_equal_to   Populated   "" or null  True
         not_equal_to   Populated   Populated   A != B
         """
-        comparison_data = (
-            comparator if comparator not in row or value_is_literal else row[comparator]
-        )
+        if value_is_reference:
+            dynamic_column_name = row[comparator] if comparator in row else None
+            if dynamic_column_name is None or dynamic_column_name == "":
+                return False
+            comparison_data = (
+                row[dynamic_column_name] if dynamic_column_name in row else None
+            )
+        else:
+            comparison_data = (
+                comparator
+                if comparator not in row or value_is_literal
+                else row[comparator]
+            )
         both_null = (comparison_data == "" or comparison_data is None) & (
             row[target] == "" or row[target] is None
         )
@@ -209,13 +220,16 @@ class DataframeType(BaseType):
     def equal_to(self, other_value):
         target = self.replace_prefix(other_value.get("target"))
         value_is_literal = other_value.get("value_is_literal", False)
+        value_is_reference = other_value.get("value_is_reference", False)
         comparator = (
             self.replace_prefix(other_value.get("comparator"))
             if not value_is_literal
             else other_value.get("comparator")
         )
         return self.value.apply(
-            lambda row: self._check_equality(row, target, comparator, value_is_literal),
+            lambda row: self._check_equality(
+                row, target, comparator, value_is_literal, value_is_reference
+            ),
             axis=1,
             meta=(None, "bool"),
         ).reset_index(drop=True)
