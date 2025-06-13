@@ -20,7 +20,7 @@ workflow_data = response.json()
 
 # Find the first workflow run with event == "push"
 first_push_run = next(
-    (run for run in workflow_data["workflow_runs"] if run["event"] == "push"),
+    (run for run in workflow_data["workflow_runs"] if run["event"] == "pull_request"),
     None,
 )
 
