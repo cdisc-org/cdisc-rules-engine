@@ -18,68 +18,76 @@ response = requests.get(WORKFLOW_RUNS_URL, headers=headers)
 response.raise_for_status()
 workflow_data = response.json()
 
-print(workflow_data)
+# Find the first workflow run with event == "push"
+first_push_run = next(
+    (run for run in workflow_data["workflow_runs"] if run["event"] == "push"),
+    None,
+)
 
-# first_run_id = workflow_data["workflow_runs"][0]["id"]
-# print(f"First workflow run ID: {first_run_id}")
+if not first_push_run:
+    raise ValueError("No workflow run with event 'push' found")
 
-# logs_url = f"https://api.github.com/repos/cdisc-org/conformance-rules-editor/actions/runs/{first_run_id}/logs"
+first_run_id = first_push_run["id"]
+print(f"First workflow run ID with 'push' event: {first_run_id}")
+print(f"First workflow run ID: {first_run_id}")
 
-# logs_response = requests.get(logs_url, headers=headers)
-# logs_response.raise_for_status()
+logs_url = f"https://api.github.com/repos/cdisc-org/conformance-rules-editor/actions/runs/{first_run_id}/logs"
 
-# with zipfile.ZipFile(io.BytesIO(logs_response.content)) as zip_file:
-#     zip_file.extractall("logs")
+logs_response = requests.get(logs_url, headers=headers)
+logs_response.raise_for_status()
 
-# print(os.listdir("logs"))
-# print(os.listdir(os.path.join("logs", "Build and Deploy Preview")))
+with zipfile.ZipFile(io.BytesIO(logs_response.content)) as zip_file:
+    zip_file.extractall("logs")
 
-# log_dir = os.path.join("logs")
-# # List all .txt files in the directory
-# file_path = None
-# for filename in os.listdir(log_dir):
-#     if filename.endswith(".txt") and "Build and Deploy Preview" in filename:
-#         file_path = os.path.join(log_dir, filename)
-#         print(f"Found log file: {file_path}")
+print(os.listdir("logs"))
+print(os.listdir(os.path.join("logs", "Build and Deploy Preview")))
 
-# commit_files = glob.glob(
-#     os.path.join(
-#         log_dir, "Build and Deploy Preview", "[0-9]_Build and Deploy Preview.txt"
-#     )
-# )
+log_dir = os.path.join("logs")
+# List all .txt files in the directory
+file_path = None
+for filename in os.listdir(log_dir):
+    if filename.endswith(".txt") and "Build and Deploy Preview" in filename:
+        file_path = os.path.join(log_dir, filename)
+        print(f"Found log file: {file_path}")
 
-# if not file_path:
-#     print("No matching Build and Deploy Preview log file found")
+commit_files = glob.glob(
+    os.path.join(
+        log_dir, "Build and Deploy Preview", "[0-9]_Build and Deploy Preview.txt"
+    )
+)
 
-# if not commit_files:
-#     print("No matching SHA Commit log file found")
+if not file_path:
+    print("No matching Build and Deploy Preview log file found")
 
-# use_file_path = None
-# if file_path:
-#     use_file_path = file_path
-# elif commit_files:
-#     use_file_path = commit_files[0]
-# else:
-#     raise FileNotFoundError("No log file found")
+if not commit_files:
+    print("No matching SHA Commit log file found")
 
-
-# if not os.path.exists(use_file_path):
-#     raise FileNotFoundError(f"{use_file_path} not found")
+use_file_path = None
+if file_path:
+    use_file_path = file_path
+elif commit_files:
+    use_file_path = commit_files[0]
+else:
+    raise FileNotFoundError("No log file found")
 
 
-# with open(use_file_path, "r", encoding="utf-8", errors="ignore") as f:
-#     log_content = f.read()
+if not os.path.exists(use_file_path):
+    raise FileNotFoundError(f"{use_file_path} not found")
 
-# # Find preview URL
-# preview_match = re.search(
-#     r"https:\/\/[a-z0-9-]+\.centralus\.azurestaticapps\.net", log_content
-# )
-# if preview_match:
-#     preview_url = preview_match.group(0)
-#     print("ICYFLOWER Deploy Link Found:")
-#     print(preview_url)
-#     # Save it to GitHub Actions environment
-#     with open(os.environ["GITHUB_ENV"], "a") as env_file:
-#         env_file.write(f"RULE_EDITOR_URL={preview_url}\n")
-# else:
-#     print("No ICYFLOWER deploy link found in the logs.")
+
+with open(use_file_path, "r", encoding="utf-8", errors="ignore") as f:
+    log_content = f.read()
+
+# Find preview URL
+preview_match = re.search(
+    r"https:\/\/[a-z0-9-]+\.centralus\.azurestaticapps\.net", log_content
+)
+if preview_match:
+    preview_url = preview_match.group(0)
+    print("ICYFLOWER Deploy Link Found:")
+    print(preview_url)
+    # Save it to GitHub Actions environment
+    with open(os.environ["GITHUB_ENV"], "a") as env_file:
+        env_file.write(f"RULE_EDITOR_URL={preview_url}\n")
+else:
+    print("No ICYFLOWER deploy link found in the logs.")
