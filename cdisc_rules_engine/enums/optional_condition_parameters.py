@@ -12,3 +12,4 @@ class OptionalConditionParameters(BaseEnum):
     ORDER = "order"
     METADATA = "metadata"
     VALUE_IS_REFERENCE = "value_is_reference"
+    TYPE_INSENSITIVE = "type_insensitive"

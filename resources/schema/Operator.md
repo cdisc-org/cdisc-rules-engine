@@ -2,7 +2,11 @@
 
 ## equal_to
 
-Value comparison. Works for both string and number. Has optional parameter 'value is reference' when true, the value parameter specifies a column name whose content determines which column to compare against dynamically.
+Value comparison. Works for both string and number.
+Has optional parameter:
+
+- 'value_is_reference' when true, the value parameter specifies a column name whose content determines which column to compare against dynamically.
+- 'type_insensitive' when true, both values are converted to strings before comparison to handle type mismatches between string and numeric data.
 
 > --OCCUR = N
 
@@ -12,13 +16,14 @@ Value comparison. Works for both string and number. Has optional parameter 'valu
   value: "N"
 ```
 
-> IDVARVAL = the column specified in the IDVAR column for each row.
+> IDVARVAL = the column specified in the IDVAR column for each row (type insensitive comparison).
 
 ```yaml
 - name: IDVARVAL
   operator: equal_to
   value: "IDVAR"
-  value is reference: true
+  value_is_reference: true
+  type_insensitive: true
 ```
 
 > EXDOSE EQ 0
@@ -31,7 +36,7 @@ Value comparison. Works for both string and number. Has optional parameter 'valu
 
 ## not_equal_to
 
-Complement of `equal_to`. Also has the optional parameter 'value is reference'.
+Complement of `equal_to`. Also has the optional parameters 'value_is_reference' and 'type_insensitive'.
 
 > --OCCUR ^= Y
 

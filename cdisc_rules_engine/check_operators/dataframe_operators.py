@@ -150,6 +150,7 @@ class DataframeType(BaseType):
         value_is_literal: bool = False,
         value_is_reference: bool = False,
         case_insensitive: bool = False,
+        type_insensitive: bool = False,
     ) -> bool:
         """
         Equality checks work slightly differently for clinical datasets.
@@ -162,8 +163,6 @@ class DataframeType(BaseType):
         """
         if value_is_reference:
             dynamic_column_name = row[comparator] if comparator in row else None
-            if dynamic_column_name is None or dynamic_column_name == "":
-                return False
             comparison_data = (
                 row[dynamic_column_name] if dynamic_column_name in row else None
             )
@@ -178,11 +177,17 @@ class DataframeType(BaseType):
         )
         if both_null:
             return False
+        if type_insensitive:
+            target_val = self._custom_str_conversion(row[target])
+            comparison_val = self._custom_str_conversion(comparison_data)
+        else:
+            target_val = row[target]
+            comparison_val = comparison_data
         if case_insensitive:
             target_val = row[target].lower() if row[target] else None
             comparison_val = comparison_data.lower() if comparison_data else None
             return target_val == comparison_val
-        return row[target] == comparison_data
+        return target_val == comparison_val
 
     def _check_inequality(
         self,
@@ -192,6 +197,7 @@ class DataframeType(BaseType):
         value_is_literal: bool = False,
         value_is_reference: bool = False,
         case_insensitive: bool = False,
+        type_insensitive: bool = False,
     ) -> bool:
         """
         Equality checks work slightly differently for clinical datasets.
@@ -204,8 +210,6 @@ class DataframeType(BaseType):
         """
         if value_is_reference:
             dynamic_column_name = row[comparator] if comparator in row else None
-            if dynamic_column_name is None or dynamic_column_name == "":
-                return False
             comparison_data = (
                 row[dynamic_column_name] if dynamic_column_name in row else None
             )
@@ -220,11 +224,17 @@ class DataframeType(BaseType):
         )
         if both_null:
             return False
+        if type_insensitive:
+            target_val = self._custom_str_conversion(row[target])
+            comparison_val = self._custom_str_conversion(comparison_data)
+        else:
+            target_val = row[target]
+            comparison_val = comparison_data
         if case_insensitive:
             target_val = row[target].lower() if row[target] else None
             comparison_val = comparison_data.lower() if comparison_data else None
             return target_val != comparison_val
-        return row[target] != comparison_data
+        return target_val != comparison_val
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -232,6 +242,7 @@ class DataframeType(BaseType):
         target = self.replace_prefix(other_value.get("target"))
         value_is_literal = other_value.get("value_is_literal", False)
         value_is_reference = other_value.get("value_is_reference", False)
+        type_insensitive = other_value.get("type_insensitive", False)
         comparator = (
             self.replace_prefix(other_value.get("comparator"))
             if not value_is_literal
@@ -239,7 +250,12 @@ class DataframeType(BaseType):
         )
         return self.value.apply(
             lambda row: self._check_equality(
-                row, target, comparator, value_is_literal, value_is_reference
+                row,
+                target,
+                comparator,
+                value_is_literal,
+                value_is_reference,
+                type_insensitive=type_insensitive,
             ),
             axis=1,
             meta=(None, "bool"),
@@ -285,6 +301,7 @@ class DataframeType(BaseType):
         target = self.replace_prefix(other_value.get("target"))
         value_is_literal = other_value.get("value_is_literal", False)
         value_is_reference = other_value.get("value_is_reference", False)
+        type_insensitive = other_value.get("type_insensitive", False)
         comparator = (
             self.replace_prefix(other_value.get("comparator"))
             if not value_is_literal
@@ -292,7 +309,12 @@ class DataframeType(BaseType):
         )
         return self.value.apply(
             lambda row: self._check_inequality(
-                row, target, comparator, value_is_literal, value_is_reference
+                row,
+                target,
+                comparator,
+                value_is_literal,
+                value_is_reference,
+                type_insensitive=type_insensitive,
             ),
             axis=1,
             meta=(None, "bool"),
