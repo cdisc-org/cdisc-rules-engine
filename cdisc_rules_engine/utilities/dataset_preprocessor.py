@@ -138,6 +138,7 @@ class DatasetPreprocessor:
                         left_dataset_domain_name=self._dataset_metadata.domain,
                         right_dataset=other_dataset,
                         right_dataset_domain_details=domain_details,
+                        datasets=datasets,
                     )
         logger.info(f"Dataset after preprocessing = {result}")
         return result
