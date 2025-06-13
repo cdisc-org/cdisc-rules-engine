@@ -15,7 +15,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: 3.9
+          python-version: 3.12
 
       - name: Install dependencies
         run: pip install requests selenium webdriver-manager pyperclip==1.9.0 selenium-wire blinker==1.4 brotli
