@@ -60,30 +60,6 @@ class DataProcessor:
             raise InvalidMatchKeyError("Match key did not return a unique record")
         return dataframe.iloc[0]
 
-    def preprocess_relationship_dataset(
-        self,
-        dataset_path: str,
-        dataset: DatasetInterface,
-        dataset_metadata: Iterable[SDTMDatasetMetadata],
-    ) -> dict:
-        # Get unique RDOMAINS and corresponding ID Var
-        reference_data = {}
-        if "RDOMAIN" in dataset:
-            rdomains = dataset["RDOMAIN"].unique()
-            idvar_column_values = self.get_column_values(dataset, "IDVAR").unique()
-            reference_data = self.async_get_reference_data(
-                dataset_path, dataset_metadata, idvar_column_values, rdomains
-            )
-        elif "RSUBJID" in dataset:
-            # get USUBJID from column in DM dataset
-            reference_data = self.get_column_data(
-                dataset_path, dataset_metadata, ["USUBJID"], "DM"
-            )
-            if "USUBJID" in reference_data.get("DM", {}):
-                reference_data["DM"]["RSUBJID"] = reference_data["DM"]["USUBJID"]
-                del reference_data["DM"]["USUBJID"]
-        return reference_data
-
     def get_column_values(self, dataset, column):
         if column in dataset:
             return dataset[column]

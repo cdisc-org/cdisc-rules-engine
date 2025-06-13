@@ -145,7 +145,6 @@ NOTE: DatasetVariable has several arguments that can be instantiated but dataset
 dataset_variable = DatasetVariable(
     dataset,
     column_prefix_map={"--": dataset_metadata.domain},
-    relationship_data=relationship_data,
     value_level_metadata=value_level_metadata,
     column_codelist_map=variable_codelist_map,
     codelist_term_maps=codelist_term_maps,
@@ -479,7 +478,6 @@ dataset = PandasDataset(data=my_dataframe)
 dataset_variable = DatasetVariable(
     dataset,
     column_prefix_map={"--": dataset_metadata.domain},
-    relationship_data=relationship_data,
     value_level_metadata=value_level_metadata,
     column_codelist_map=variable_codelist_map,
     codelist_term_maps=codelist_term_maps,
@@ -545,7 +543,6 @@ In the rule execution flow, the column_prefix_map is typically set using the dom
 dataset_variable = DatasetVariable(
     dataset,
     column_prefix_map={"--": dataset_metadata.domain},
-    relationship_data=relationship_data,
     value_level_metadata=value_level_metadata,
     column_codelist_map=variable_codelist_map,
     codelist_term_maps=codelist_term_maps,

@@ -1,85 +1,9 @@
 from typing import List
-from unittest.mock import patch
-import os
 import pandas as pd
 import pytest
-from cdisc_rules_engine.services.cache.in_memory_cache_service import (
-    InMemoryCacheService,
-)
 from cdisc_rules_engine.utilities.data_processor import DataProcessor
 from cdisc_rules_engine.models.dataset import PandasDataset, DaskDataset
-from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.enums.join_types import JoinTypes
-import numpy as np
-
-
-@pytest.mark.parametrize(
-    "data",
-    [
-        (
-            PandasDataset(
-                pd.DataFrame.from_dict(
-                    {
-                        "RDOMAIN": ["AE", "EC", "EC", "AE"],
-                        "IDVAR": ["AESEQ", "ECSEQ", "ECSEQ", "AESEQ"],
-                        "IDVARVAL": [1, 2, 1, 3],
-                    }
-                )
-            )
-        ),
-        (PandasDataset(pd.DataFrame.from_dict({"RSUBJID": [1, 4, 6000]}))),
-    ],
-)
-def test_preprocess_relationship_dataset(data):
-    dataset_metadata = [
-        SDTMDatasetMetadata(
-            name=domain,
-            first_record={"DOMAIN": domain},
-            filename=f"{domain.lower()}.xpt",
-        )
-        for domain in ["AE", "EC", "SUPP", "DM"]
-    ]
-    ae = PandasDataset(
-        pd.DataFrame.from_dict(
-            {
-                "AESTDY": [4, 5, 6],
-                "STUDYID": [101, 201, 300],
-                "AESEQ": [1, 2, 3],
-            }
-        )
-    )
-    ec = PandasDataset(
-        pd.DataFrame.from_dict(
-            {
-                "ECSTDY": [500, 4],
-                "STUDYID": [201, 101],
-                "ECSEQ": [2, 1],
-            }
-        )
-    )
-    dm = PandasDataset(pd.DataFrame.from_dict({"USUBJID": [1, 2, 3, 4, 5, 6000]}))
-    path_to_dataset_map: dict = {
-        os.path.join("path", "ae.xpt"): ae,
-        os.path.join("path", "ec.xpt"): ec,
-        os.path.join("path", "dm.xpt"): dm,
-        os.path.join("path", "data.xpt"): data,
-    }
-    with patch(
-        "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
-        side_effect=lambda dataset_name: path_to_dataset_map[dataset_name],
-    ):
-        data_processor = DataProcessor(cache=InMemoryCacheService())
-        reference_data = data_processor.preprocess_relationship_dataset(
-            "path", data, dataset_metadata
-        )
-        if "IDVAR" in data:
-            idvars = data["IDVAR"]
-            domains = data["RDOMAIN"]
-            for i, idvar in enumerate(idvars):
-                assert idvar in reference_data[domains[i]]
-        elif "RSUBJID" in data:
-            assert "RSUBJID" in reference_data["DM"]
-            assert np.array_equal(reference_data["DM"]["RSUBJID"], dm["USUBJID"])
 
 
 def test_filter_dataset_columns_by_metadata_and_rule():
