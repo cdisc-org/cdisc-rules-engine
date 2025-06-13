@@ -31,7 +31,7 @@ Value comparison. Works for both string and number. Has optional parameter 'valu
 
 ## not_equal_to
 
-Complement of `equal_to`
+Complement of `equal_to`. Also has the optional parameter 'value is reference'.
 
 > --OCCUR ^= Y
 
