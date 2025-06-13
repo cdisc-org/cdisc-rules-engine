@@ -18,6 +18,8 @@ response = requests.get(WORKFLOW_RUNS_URL, headers=headers)
 response.raise_for_status()
 workflow_data = response.json()
 
+print(workflow_data)
+
 first_run_id = workflow_data["workflow_runs"][0]["id"]
 print(f"First workflow run ID: {first_run_id}")
 
