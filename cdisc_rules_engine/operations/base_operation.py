@@ -198,6 +198,8 @@ class BaseOperation:
             and target_metadata.is_supp
         ):
             domain_for_library = "SUPPQUAL"
+        elif target_metadata.name.lower().startswith("REL"):
+            domain_for_library = target_metadata.name
         else:
             domain_for_library = self.params.domain
         dataset_class = self.data_service.get_dataset_class(
