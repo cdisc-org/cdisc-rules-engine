@@ -18,7 +18,7 @@ jobs:
           python-version: 3.12
 
       - name: Install dependencies
-        run: pip install requests selenium webdriver-manager pyperclip==1.9.0 selenium-wire blinker==1.4 brotli
+        run: pip install requests selenium webdriver-manager pyperclip==1.9.0 selenium-wire blinker==1.4 brotli certifi h2 hyperframe kaitaistruct pyasn1 pyOpenSSL pyparsing pysocks selenium wsproto zstandard
 
       - name: Extract Deploy Preview URL
         env:
