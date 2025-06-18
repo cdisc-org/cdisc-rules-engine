@@ -18,7 +18,17 @@ response = requests.get(WORKFLOW_RUNS_URL, headers=headers)
 response.raise_for_status()
 workflow_data = response.json()
 
-first_run_id = workflow_data["workflow_runs"][0]["id"]
+# Find the first workflow run with event == "push"
+first_push_run = next(
+    (run for run in workflow_data["workflow_runs"] if run["event"] == "pull_request"),
+    None,
+)
+
+if not first_push_run:
+    raise ValueError("No workflow run with event 'push' found")
+
+first_run_id = first_push_run["id"]
+print(f"First workflow run ID with 'push' event: {first_run_id}")
 print(f"First workflow run ID: {first_run_id}")
 
 logs_url = f"https://api.github.com/repos/cdisc-org/conformance-rules-editor/actions/runs/{first_run_id}/logs"
@@ -30,9 +40,17 @@ with zipfile.ZipFile(io.BytesIO(logs_response.content)) as zip_file:
     zip_file.extractall("logs")
 
 print(os.listdir("logs"))
-print(os.listdir(os.path.join("logs", "Build and Deploy Preview")))
-
 log_dir = os.path.join("logs")
+if os.path.exists(os.path.join("logs", "Build and Deploy Preview")):
+    print(os.listdir(os.path.join("logs", "Build and Deploy Preview")))
+    commit_files = glob.glob(
+        os.path.join(
+            log_dir, "Build and Deploy Preview", "[0-9]_Build and Deploy Preview.txt"
+        )
+    )
+else:
+    commit_files = None
+
 # List all .txt files in the directory
 file_path = None
 for filename in os.listdir(log_dir):
@@ -40,11 +58,6 @@ for filename in os.listdir(log_dir):
         file_path = os.path.join(log_dir, filename)
         print(f"Found log file: {file_path}")
 
-commit_files = glob.glob(
-    os.path.join(
-        log_dir, "Build and Deploy Preview", "[0-9]_Build and Deploy Preview.txt"
-    )
-)
 
 if not file_path:
     print("No matching Build and Deploy Preview log file found")
