@@ -3,6 +3,10 @@
 ## equal_to
 
 Value comparison. Works for both string and number.
+Has optional parameter:
+
+- 'value_is_reference' when true, the value parameter specifies a column name whose content determines which column to compare against dynamically.
+- 'type_insensitive' when true, both values are converted to strings before comparison to handle type mismatches between string and numeric data.
 
 > --OCCUR = N
 
@@ -10,6 +14,16 @@ Value comparison. Works for both string and number.
 - name: --OCCUR
   operator: equal_to
   value: "N"
+```
+
+> IDVARVAL = the column specified in the IDVAR column for each row (type insensitive comparison).
+
+```yaml
+- name: IDVARVAL
+  operator: equal_to
+  value: "IDVAR"
+  value_is_reference: true
+  type_insensitive: true
 ```
 
 > EXDOSE EQ 0
@@ -22,7 +36,7 @@ Value comparison. Works for both string and number.
 
 ## not_equal_to
 
-Complement of `equal_to`
+Complement of `equal_to`. Also has the optional parameters 'value_is_reference' and 'type_insensitive'.
 
 > --OCCUR ^= Y
 
@@ -285,7 +299,7 @@ True if the value in `value` is a case insensitive substring of the value in `na
 
 ```yaml
 - name: "--TOXGR"
-  operator: "contains_case_insentisitve"
+  operator: "contains_case_insensitive"
   value: "grade"
 ```
 
@@ -810,92 +824,6 @@ Relationship Integrity Check
 ## is_not_unique_relationship
 
 Complement of `is_unique_relationship`
-
-## is_valid_relationship
-
-> Records found in the domain referenced by RDOMAIN, where variable in IDVAR = value in IDVARVAL
-
-```yaml
-Scopes:
-  Domains:
-    - RELREC
-Check:
-  all:
-    - name: "IDVAR"
-      operator: is_valid_relationship
-      context: "RDOMAIN"
-      value: "IDVARVAL"
-```
-
-Both is_valid_relationship and is_not_valid relationship can use an optional 'within' argument
-
-```yaml
-Scopes:
-  Domains:
-    - RELREC
-Check:
-  all:
-    - name: "IDVAR"
-      operator: is_valid_relationship
-      context: "RDOMAIN"
-      value: "IDVARVAL"
-```
-
-> Records found in the domain referenced by RDOMAIN, where variable in IDVAR = value in IDVARVAL, scoped within the same USUBJID
-
-## is_not_valid_relationship
-
-Complement of `is_valid_relationship`
-
-Relationship Integrity Check
-
-> No records found in the domain referenced by RDOMAIN, where variable in IDVAR = value in IDVARVAL
-
-```yaml
-Scopes:
-  Domains:
-    - RELREC
-Check:
-  all:
-    - name: "IDVAR"
-      operator: is_not_valid_relationship
-      context: "RDOMAIN"
-      value: "IDVARVAL"
-```
-
-## is_valid_reference
-
-Reference
-
-> IDVAR is a valid reference as specified, given the domain context in RDOMAIN
-
-```yaml
-Scopes:
-  Domains:
-    - RELREC
-Check:
-  all:
-    - name: "IDVAR"
-      operator: is_valid_reference
-      context: "RDOMAIN"
-```
-
-## is_not_valid_reference
-
-Complement of `is_valid_reference`
-
-> IDVAR is an invalid reference as specified, given the domain context in RDOMAIN
-
-```yaml
-Scopes:
-  Domains:
-    - RELREC
-Check:
-  all:
-    - name: "IDVAR"
-      operator: is_not_valid_reference
-      context: "RDOMAIN"
-```
 
 ## empty_within_except_last_row
 
