@@ -299,7 +299,7 @@ True if the value in `value` is a case insensitive substring of the value in `na
 
 ```yaml
 - name: "--TOXGR"
-  operator: "contains_case_insentisitve"
+  operator: "contains_case_insensitive"
   value: "grade"
 ```
 
