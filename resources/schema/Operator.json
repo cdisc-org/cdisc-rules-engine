@@ -956,7 +956,7 @@
       "const": true
     },
     "type_insensitive": {
-      "type": true
+      "const": true
     },
     "within": {
       "$ref": "CORE-base.json#/$defs/VariableName"
