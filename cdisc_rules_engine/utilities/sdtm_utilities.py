@@ -98,7 +98,9 @@ def get_variables_metadata_from_standard(  # noqa
     variables_metadata = []
     if dataset_class:
         # both custom and non-custom domains pull from model
-        class_details = {"name": dataset_class}
+        class_details, domain_details = get_class_and_domain_metadata(
+            standard_details, domain
+        )
         (
             identifiers_metadata,
             class_variables_metadata,
@@ -187,6 +189,25 @@ def get_allowed_class_variables(
     if variables_metadata:
         sort_key = "ordinal" if "ordinal" in variables_metadata[0] else "order_number"
         variables_metadata.sort(key=lambda item: item[sort_key])
+
+    # if class_name == FINDINGS:
+    #     findings_class_metadata: dict = get_class_metadata(model_details, FINDINGS)
+    #     findings_class_variables = findings_class_metadata["classVariables"]
+    #     sort_key = (
+    #         "ordinal" if "ordinal" in findings_class_variables[0] else "order_number"
+    #     )
+    #     findings_class_variables.sort(key=lambda item: item[sort_key])
+    #     test_index = len(findings_class_variables) - 1
+    #     for i, v in enumerate(findings_class_variables):
+    #         if v["name"] == FINDINGS_TEST_VARIABLE:
+    #             test_index = i
+    #             break
+    #     # Insert FINDINGS class variables after --TEST
+    #     variables_metadata = (
+    #         findings_class_variables[: test_index + 1]
+    #         + variables_metadata
+    #         + findings_class_variables[test_index + 1 :]
+    #     )
 
     if class_name == FINDINGS_ABOUT:
         # Add FINDINGS class variables. Findings About class variables should
