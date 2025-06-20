@@ -145,6 +145,15 @@
     {
       "properties": {
         "operator": {
+          "const": "get_dataset_filtered_variables"
+        }
+      },
+      "required": ["id", "operator", "key_name", "key_value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
           "const": "label_referenced_variable_metadata"
         }
       },
@@ -454,6 +463,12 @@
       "enum": ["meddra"]
     },
     "filter": { "type": "object" },
+    "filter_key": {
+      "type": "string"
+    },
+    "filter_value": {
+      "type": "string"
+    },
     "group": {
       "items": {
         "$ref": "CORE-base.json#/$defs/VariableName"

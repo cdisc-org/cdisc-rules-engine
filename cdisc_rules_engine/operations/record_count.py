@@ -22,19 +22,34 @@ class RecordCount(BaseOperation):
             result = len(filtered)
         if self.params.grouping:
             self.params.target = "size"
+            if isinstance(self.params.grouping, (list)):
+                effective_grouping = []
+                for col in self.params.grouping:
+                    if not self.params.dataframe[col].isna().all():
+                        effective_grouping.append(col)
+            else:
+                effective_grouping = self.params.grouping
             group_df = self.params.dataframe.get_grouped_size(
-                self.params.grouping, as_index=False
+                effective_grouping, as_index=False
             )
             if filtered is not None:
                 group_df = (
-                    group_df[self.params.grouping]
+                    group_df[effective_grouping]
                     .merge(
-                        filtered.get_grouped_size(self.params.grouping, as_index=False),
-                        on=self.params.grouping,
+                        filtered.get_grouped_size(effective_grouping, as_index=False),
+                        on=effective_grouping,
                         how="left",
                     )
                     .fillna(0)
                     .astype({self.params.target: int64})
                 )
+            if isinstance(self.params.grouping, list):
+                missing_cols = [
+                    col for col in self.params.grouping if col not in group_df.columns
+                ]
+                for col in missing_cols:
+                    original_col = self.params.dataframe[col]
+                    group_df[col] = None
+                    group_df[col] = group_df[col].astype(original_col.dtype)
             return group_df
         return result
