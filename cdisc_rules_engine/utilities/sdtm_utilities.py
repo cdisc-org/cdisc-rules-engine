@@ -36,6 +36,12 @@ def get_class_and_domain_metadata(
 
     """
     # Get domain and class details for domain.
+    if (
+        domain
+        and (domain.upper().startswith("SUPP") or domain.upper().startswith("SQ"))
+        and len(domain) > 2
+    ):
+        domain = "SUPPQUAL"
     for c in standard_details.get("classes"):
         domain_details = search_in_list_of_dicts(
             c.get("datasets", []), lambda item: item["name"] == domain
