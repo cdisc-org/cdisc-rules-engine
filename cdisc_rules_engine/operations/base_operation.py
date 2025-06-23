@@ -192,15 +192,25 @@ class BaseOperation:
             if ds.unsplit_name == self.params.domain:
                 target_metadata = ds
                 break
+        if (
+            target_metadata
+            and hasattr(target_metadata, "is_supp")
+            and target_metadata.is_supp
+        ):
+            domain_for_library = "SUPPQUAL"
+        elif target_metadata and target_metadata.name.lower().startswith("REL"):
+            domain_for_library = target_metadata.name
+        else:
+            domain_for_library = self.params.domain
         dataset_class = self.data_service.get_dataset_class(
             self.evaluation_dataset,
             self.params.dataset_path,
-            self.params.datasets,
+            domain_for_library,
             target_metadata,
         )
 
         return sdtm_utilities.get_variables_metadata_from_standard(
-            self.params.domain,
+            domain_for_library,
             self.library_metadata,
             dataset_class,
         )
