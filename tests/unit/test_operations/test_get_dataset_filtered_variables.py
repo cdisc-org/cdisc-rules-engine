@@ -1,4 +1,5 @@
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
+from cdisc_rules_engine.models.dataset.dask_dataset import DaskDataset
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
@@ -538,6 +539,164 @@ def test_get_dataset_filtered_variables(
     result = operation.execute()
 
     assert operation_params.operation_id in result
+    expected = pd.Series(
+        [expected_variables] * len(study_data[list(study_data.keys())[0]])
+    )
+    assert result[operation_params.operation_id].equals(expected)
+
+
+def test_get_dataset_filtered_variables_dask(
+    operation_params: OperationParams,
+):
+    """Test GetDatasetFilteredVariables operation with DaskDataset"""
+    study_data = {
+        "STUDYID": ["TEST_STUDY", "TEST_STUDY", "TEST_STUDY"],
+        "DOMAIN": ["AE", "AE", "AE"],
+        "USUBJID": ["SUBJ001", "SUBJ002", "SUBJ003"],
+        "AETERM": ["Headache", "Nausea", "Fatigue"],
+        "VISITNUM": [1, 2, 1],
+        "VISIT": ["Day 1", "Day 7", "Day 1"],
+    }
+
+    operation_params.dataframe = DaskDataset.from_dict(study_data)
+    operation_params.domain = "AE"
+    operation_params.standard = "sdtmig"
+    operation_params.standard_version = "3-4"
+    operation_params.key_name = "role"
+    operation_params.key_value = "Timing"
+    operation_params.datasets = [SDTMDatasetMetadata(name="AE")]
+
+    model_metadata = {
+        "datasets": [
+            {
+                "_links": {"parentClass": {"title": "Events"}},
+                "name": "AE",
+                "datasetVariables": [
+                    {"name": "USUBJID", "ordinal": 2},
+                    {"name": "AESEQ", "ordinal": 3},
+                    {"name": "AETERM", "ordinal": 4},
+                    {
+                        "name": "VISITNUM",
+                        "ordinal": 17,
+                        "role": VariableRoles.TIMING.value,
+                    },
+                    {
+                        "name": "VISIT",
+                        "ordinal": 18,
+                        "role": VariableRoles.TIMING.value,
+                    },
+                ],
+            }
+        ],
+        "classes": [
+            {
+                "name": "Events",
+                "label": "Events",
+                "classVariables": [
+                    {"name": "--TERM", "ordinal": 1},
+                    {"name": "--SEQ", "ordinal": 2},
+                ],
+            },
+            {
+                "name": GENERAL_OBSERVATIONS_CLASS,
+                "label": GENERAL_OBSERVATIONS_CLASS,
+                "classVariables": [
+                    {
+                        "name": "STUDYID",
+                        "role": VariableRoles.IDENTIFIER.value,
+                        "ordinal": 1,
+                    },
+                    {
+                        "name": "DOMAIN",
+                        "role": VariableRoles.IDENTIFIER.value,
+                        "ordinal": 2,
+                    },
+                    {
+                        "name": "USUBJID",
+                        "role": VariableRoles.IDENTIFIER.value,
+                        "ordinal": 3,
+                    },
+                    {
+                        "name": "VISITNUM",
+                        "role": VariableRoles.TIMING.value,
+                        "ordinal": 17,
+                    },
+                    {
+                        "name": "VISIT",
+                        "role": VariableRoles.TIMING.value,
+                        "ordinal": 18,
+                    },
+                    {
+                        "name": "AETIMING",
+                        "role": VariableRoles.TIMING.value,
+                        "ordinal": 33,
+                    },
+                ],
+            },
+        ],
+    }
+
+    standard_metadata = {
+        "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
+        "classes": [
+            {
+                "name": "Events",
+                "datasets": [
+                    {
+                        "name": "AE",
+                        "label": "Adverse Events",
+                        "datasetVariables": [
+                            {"name": "AETEST", "ordinal": 1},
+                            {"name": "AENEW", "ordinal": 2},
+                            {
+                                "name": "VISITNUM",
+                                "ordinal": 3,
+                                "role": VariableRoles.TIMING.value,
+                            },
+                            {
+                                "name": "VISIT",
+                                "ordinal": 4,
+                                "role": VariableRoles.TIMING.value,
+                            },
+                        ],
+                    }
+                ],
+            }
+        ],
+    }
+
+    cache = InMemoryCacheService.get_instance()
+    library_metadata = LibraryMetadataContainer(
+        standard_metadata=standard_metadata, model_metadata=model_metadata
+    )
+
+    data_service = LocalDataService(
+        cache_service=cache,
+        config=ConfigService(),
+        reader_factory=DataReaderFactory(),
+        standard="sdtmig",
+        standard_version="3-4",
+        library_metadata=library_metadata,
+    )
+
+    def mock_get_raw_metadata(*args, **kwargs):
+        return SDTMDatasetMetadata(name="AE")
+
+    data_service.get_raw_dataset_metadata = mock_get_raw_metadata
+
+    with patch.object(LocalDataService, "get_dataset_class", return_value=EVENTS):
+        operation = GetDatasetFilteredVariables(
+            operation_params,
+            operation_params.dataframe,
+            cache,
+            data_service,
+            library_metadata,
+        )
+
+    result = operation.execute()
+
+    assert operation_params.operation_id in result
+    expected_variables = ["VISITNUM", "VISIT"]
     expected = pd.Series(
         [expected_variables] * len(study_data[list(study_data.keys())[0]])
     )
