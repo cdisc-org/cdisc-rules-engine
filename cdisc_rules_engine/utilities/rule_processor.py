@@ -340,6 +340,7 @@ class RuleProcessor:
                 standard_substandard=standard_substandard,
                 external_dictionaries=external_dictionaries,
                 ct_version=operation.get("version"),
+                package=operation.get("package"),
                 ct_attribute=operation.get("attribute"),
                 ct_package_types=operation.get("ct_package_types"),
                 ct_packages=kwargs.get("ct_packages"),
@@ -359,6 +360,10 @@ class RuleProcessor:
                 returntype=operation.get("returntype"),
                 codelists=operation.get("codelists"),
                 codelist=operation.get("codelist"),
+                codelist_code=operation.get("codelist_code"),
+                map=operation.get("map"),
+                term_code=operation.get("term_code"),
+                term_value=operation.get("term_value"),
             )
 
             # execute operation
