@@ -407,7 +407,8 @@ class RuleProcessor:
             # download other domain
             domain_details: dict = search_in_list_of_dicts(
                 operation_params.datasets,
-                lambda item: item.unsplit_name == operation_params.domain,
+                lambda item: item.unsplit_name.upper()
+                == operation_params.domain.upper(),
             )
             if domain_details is None:
                 raise DomainNotFoundError(
