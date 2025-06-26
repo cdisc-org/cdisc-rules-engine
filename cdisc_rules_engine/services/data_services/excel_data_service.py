@@ -112,9 +112,10 @@ class ExcelDataService(BaseDataService):
             datasets_worksheet[DATASET_FILENAME_COLUMN] == dataset_name
         ]
         dataset = self.get_dataset(dataset_name=dataset_name)
+        first_record = dataset.data.iloc[0].to_dict() if not dataset.empty else {}
         return SDTMDatasetMetadata(
-            name=dataset_name.split(".")[0].upper(),
-            first_record=(dataset.data.iloc[0].to_dict() if not dataset.empty else {}),
+            name=first_record.get("instanceType", dataset_name.split(".")[0].upper()),
+            first_record=first_record,
             label=metadata[DATASET_LABEL_COLUMN].iloc[0] if not metadata.empty else "",
             modification_date=datetime.fromtimestamp(
                 os.path.getmtime(self.dataset_path)
