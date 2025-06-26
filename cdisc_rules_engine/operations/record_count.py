@@ -22,11 +22,8 @@ class RecordCount(BaseOperation):
             result = len(filtered)
         if self.params.grouping:
             self.params.target = "size"
-            if isinstance(self.params.grouping, (list)):
-                effective_grouping = []
-                for col in self.params.grouping:
-                    if not self.params.dataframe[col].isna().all():
-                        effective_grouping.append(col)
+            if isinstance(self.params.grouping, list):
+                effective_grouping = self._build_effective_grouping()
             else:
                 effective_grouping = self.params.grouping
             group_df = self.params.dataframe.get_grouped_size(
@@ -53,3 +50,19 @@ class RecordCount(BaseOperation):
                     group_df[col] = group_df[col].astype(original_col.dtype)
             return group_df
         return result
+
+    def _build_effective_grouping(self) -> list:
+        effective_grouping = []
+        for col in self.params.grouping:
+            if col in self.params.dataframe.columns:
+                sample_val = self.params.dataframe[col].iloc[0]
+                if isinstance(sample_val, (list, tuple)):
+                    effective_grouping.extend(
+                        [c for c in sample_val if c in self.params.dataframe.columns]
+                    )
+                elif not self.params.dataframe[col].isna().all():
+                    effective_grouping.append(col)
+            else:
+                effective_grouping.append(col)
+        # remove duplicates while preserving order
+        return list(dict.fromkeys(effective_grouping))
