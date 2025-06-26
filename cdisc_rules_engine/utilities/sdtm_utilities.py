@@ -66,7 +66,7 @@ def get_variables_metadata_from_standard(  # noqa
     is_custom = domain not in standard_details.get("domains", {})
     variables_metadata = []
     if dataset_class:
-        # Both custom and non-custom domains get variables from model
+        # Both custom and non-custom domains get dataset variables from model
         class_details, domain_details = get_class_and_domain_metadata(
             standard_details, domain
         )
@@ -89,7 +89,8 @@ def get_variables_metadata_from_standard(  # noqa
         if is_custom:
             variables_metadata = model_variables
         else:
-            # Non-custom domains: merge model variables with implementation guide domain variables
+            # Non-custom domains: implementation guide class variables overwrites model variables
+            # only if they are not in the dataset variables
             domain_variables = domain_details.get("datasetVariables", [])
             variables_metadata = merge_variables_metadata(
                 model_variables, domain_variables
@@ -172,12 +173,6 @@ def get_allowed_class_variables(
         sort_key = "ordinal" if "ordinal" in variables_metadata[0] else "order_number"
         variables_metadata.sort(key=lambda item: item[sort_key])
 
-    if class_name == FINDINGS:
-        findings_class_metadata: dict = get_class_metadata(model_details, FINDINGS)
-        variables_metadata = findings_class_metadata["classVariables"]
-        sort_key = "ordinal" if "ordinal" in variables_metadata[0] else "order_number"
-        variables_metadata.sort(key=lambda item: item[sort_key])
-
     if class_name == FINDINGS_ABOUT:
         # Add FINDINGS class variables. Findings About class variables should
         # Appear in the list after the --TEST variable
@@ -201,6 +196,10 @@ def get_allowed_class_variables(
         gen_obs_class_metadata: dict = get_class_metadata(
             model_details, GENERAL_OBSERVATIONS_CLASS
         )
+        findings_class_metadata: dict = get_class_metadata(model_details, class_name)
+        variables_metadata = findings_class_metadata["classVariables"]
+        sort_key = "ordinal" if "ordinal" in variables_metadata[0] else "order_number"
+        variables_metadata.sort(key=lambda item: item[sort_key])
         identifiers_metadata, timing_metadata = group_class_variables_by_role(
             gen_obs_class_metadata["classVariables"]
         )
@@ -322,6 +321,12 @@ def get_variables_metadata_from_standard_model(
     """
     # get model details from cache
     model_details = library_metadata.model_metadata
+    if (
+        domain
+        and (domain.upper().startswith("SUPP") or domain.upper().startswith("SQ"))
+        and len(domain) > 2
+    ):
+        domain = "SUPPQUAL"
     domain_details = get_model_domain_metadata(model_details, domain)
     variables_metadata = []
 
