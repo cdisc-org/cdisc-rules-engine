@@ -289,7 +289,7 @@ class RuleProcessor:
         """
         Check that rule is applicable to entity
         """
-        entities = rule.get("entities", {})
+        entities = rule.get("entities") or {}
         included_entities = entities.get("Include", [])
         excluded_entities = entities.get("Exclude", [])
         is_included = (
