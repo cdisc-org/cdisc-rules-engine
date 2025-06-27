@@ -300,7 +300,7 @@ class RuleProcessor:
             dataset_metadata.name in excluded_entities
             or ALL_KEYWORD in excluded_entities
         )
-        return is_included and not is_excluded
+        return not entities or (is_included and not is_excluded)
 
     def valid_rule_structure(self, rule) -> bool:
         required_keys = ["standards", "core_id"]

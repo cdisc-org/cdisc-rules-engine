@@ -14,7 +14,7 @@ from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
             },
             PandasDataset,
             "shares_at_least_one_element_with",
-            True,
+            [True, True, True],
         ),
         (
             {
@@ -23,7 +23,7 @@ from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
             },
             DaskDataset,
             "shares_at_least_one_element_with",
-            False,
+            [False, False, False],
         ),
         (
             {
@@ -32,7 +32,7 @@ from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
             },
             PandasDataset,
             "shares_exactly_one_element_with",
-            True,
+            [True, True, True],
         ),
         (
             {
@@ -41,7 +41,7 @@ from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
             },
             DaskDataset,
             "shares_exactly_one_element_with",
-            True,
+            [True, True, True],
         ),
         (
             {
@@ -50,7 +50,7 @@ from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
             },
             PandasDataset,
             "shares_no_elements_with",
-            True,
+            [True, True, True],
         ),
         (
             {
@@ -59,7 +59,7 @@ from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
             },
             DaskDataset,
             "shares_no_elements_with",
-            False,
+            [False, False, False],
         ),
     ],
 )
@@ -69,7 +69,7 @@ def test_element_sharing_operators(data, dataset_type, operator, expected_result
     result = getattr(dataframe_type, operator)(
         {"target": "target", "comparator": "comparator"}
     )
-    assert result == expected_result
+    assert result.tolist() == expected_result
 
 
 def test_element_sharing_operators_cases():
@@ -82,16 +82,15 @@ def test_element_sharing_operators_cases():
 
     assert dataframe_type.shares_at_least_one_element_with(
         {"target": "target", "comparator": "comparator"}
-    )
+    ).tolist() == [True, True, True, False]
 
-    # Changed expectation to True
     assert dataframe_type.shares_exactly_one_element_with(
         {"target": "target", "comparator": "comparator"}
-    )
+    ).tolist() == [True, True, False, False]
 
-    assert not dataframe_type.shares_no_elements_with(
+    assert dataframe_type.shares_no_elements_with(
         {"target": "target", "comparator": "comparator"}
-    )
+    ).tolist() == [False, False, False, True]
 
 
 def test_element_sharing_operators_with_single_elements():
@@ -101,15 +100,15 @@ def test_element_sharing_operators_with_single_elements():
 
     assert dataframe_type.shares_at_least_one_element_with(
         {"target": "target", "comparator": "comparator"}
-    )
+    ).tolist() == [False, True, False, False]
 
     assert dataframe_type.shares_exactly_one_element_with(
         {"target": "target", "comparator": "comparator"}
-    )
+    ).tolist() == [False, True, False, False]
 
-    assert not dataframe_type.shares_no_elements_with(
+    assert dataframe_type.shares_no_elements_with(
         {"target": "target", "comparator": "comparator"}
-    )
+    ).tolist() == [True, False, True, True]
 
 
 def test_element_sharing_operators_with_mixed_types():
@@ -122,12 +121,12 @@ def test_element_sharing_operators_with_mixed_types():
 
     assert dataframe_type.shares_at_least_one_element_with(
         {"target": "target", "comparator": "comparator"}
-    )
+    ).tolist() == [True, True, True, True]
 
     assert dataframe_type.shares_exactly_one_element_with(
         {"target": "target", "comparator": "comparator"}
-    )
+    ).tolist() == [True, True, True, True]
 
-    assert not dataframe_type.shares_no_elements_with(
+    assert dataframe_type.shares_no_elements_with(
         {"target": "target", "comparator": "comparator"}
-    )
+    ).tolist() == [False, False, False, False]
