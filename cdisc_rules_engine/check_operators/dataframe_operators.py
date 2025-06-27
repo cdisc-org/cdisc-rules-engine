@@ -1570,7 +1570,7 @@ class DataframeType(BaseType):
             )
             return bool(target_set.intersection(comparator_set))
 
-        return self.value.apply(check_shared_elements, axis=1).any()
+        return self.value.apply(check_shared_elements, axis=1)
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -1591,7 +1591,7 @@ class DataframeType(BaseType):
             )
             return len(target_set.intersection(comparator_set)) == 1
 
-        return self.value.apply(check_exactly_one_shared_element, axis=1).any()
+        return self.value.apply(check_exactly_one_shared_element, axis=1)
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -1612,7 +1612,7 @@ class DataframeType(BaseType):
             )
             return len(target_set.intersection(comparator_set)) == 0
 
-        return self.value.apply(check_no_shared_elements, axis=1).all()
+        return self.value.apply(check_no_shared_elements, axis=1)
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
