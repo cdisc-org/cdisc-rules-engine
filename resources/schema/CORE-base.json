@@ -176,6 +176,21 @@
     "VariableName": {
       "pattern": "^(--[A-Z0-9]{1,6}|[A-Z][A-Z0-9]{0,7})$",
       "type": "string"
+    },
+    "OperationResultId": {
+      "pattern": "^\\$[A-Za-z_][A-Za-z0-9_]*$",
+      "type": "string"
+    },
+    "VariableReference": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/VariableName"
+        },
+        {
+          "$ref": "#/$defs/OperationResultId"
+        }
+      ],
+      "description": "Can reference either a dataset variable name or an operation result"
     }
   },
   "$id": "https://cdisc.org/CORE-base.json",
