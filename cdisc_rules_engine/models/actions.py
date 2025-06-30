@@ -284,13 +284,13 @@ class COREActions(BaseActions):
         for key, value in row_dict.items():
             if isinstance(value, list):
                 filtered_dict[key] = (
-                    "null"
+                    None
                     if any(val in NULL_FLAVORS for val in value) or pd.isna(value).any()
                     else value
                 )
             else:
                 filtered_dict[key] = (
-                    "null" if (value in NULL_FLAVORS or pd.isna(value)) else value
+                    None if (value in NULL_FLAVORS or pd.isna(value)) else value
                 )
         error_object = ValidationErrorEntity(
             dataset=(
