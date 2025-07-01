@@ -488,8 +488,8 @@ class CachePopulator:
             for path in self.custom_rule_path:
                 if os.path.isfile(path) and path.endswith((".json", ".yml", ".yaml")):
                     rule_files.append(path)
-            else:
-                print(f"Warning: {path} is not a valid file. Skipping.")
+                else:
+                    print(f"Warning: {path} is not a valid file. Skipping.")
         else:
             raise ValueError("Invalid directory or path specified")
         custom_rules_file = os.path.join(
