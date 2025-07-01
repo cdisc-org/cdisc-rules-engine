@@ -475,6 +475,8 @@ Generates a dataframe where each record in the dataframe is the library ig varia
 
 Allows the creation of a lookup table to take the values from multiple input columns and map them to values in an output column. The `map` parameter contains a list of objects. Each dictionary contains column names as properties that match the column names in the source dataset and an `output` property that will be returned as a result.
 
+If `map` has a single object and `output` is the only property specified on that object, this will function as a direct assignment.
+
 For example, given the following current dataset:
 
 | id  | parent_entity | parent_rel     |
@@ -498,12 +500,30 @@ Operations:
         output: C201265
 ```
 
-This will result in the following result dataset:
+This will result in the following dataset:
 
 | id  | parent_entity | parent_rel     | $codelist_code |
 | --- | ------------- | -------------- | -------------- |
 | 1   | Timing        | relativeToFrom | C201265        |
 | 2   | Something     | relativeToFrom | None           |
+| 3   | Timing        | type           | C201264        |
+
+The following operation:
+
+```yaml
+Operations:
+  - id: $codelist_code
+    operator: map
+    map:
+      - output: C201264
+```
+
+Will result in the following dataset:
+
+| id  | parent_entity | parent_rel     | $codelist_code |
+| --- | ------------- | -------------- | -------------- |
+| 1   | Timing        | relativeToFrom | C201264        |
+| 2   | Something     | relativeToFrom | C201264        |
 | 3   | Timing        | type           | C201264        |
 
 ## max
