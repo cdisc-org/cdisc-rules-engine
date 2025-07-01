@@ -40,7 +40,7 @@ try:
     driver.get(RULE_EDITOR_URL)
 
     time.sleep(10)  # wait for the page to load
-    
+
     print("Waiting for username field to be clickable...")
     username_field = wait.until(
         EC.visibility_of_element_located((By.XPATH, '//*[@id="signInName"]'))
