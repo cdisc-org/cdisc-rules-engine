@@ -39,8 +39,9 @@ try:
     print("Opening Rule Editor site...")
     driver.get(RULE_EDITOR_URL)
 
-    time.sleep(3)  # wait for the page to load
+    time.sleep(10)  # wait for the page to load
     
+    print("Waiting for username field to be clickable...")
     username_field = wait.until(
         EC.visibility_of_element_located((By.XPATH, '//*[@id="signInName"]'))
     )
@@ -48,13 +49,16 @@ try:
     username_field = wait.until(
         EC.element_to_be_clickable((By.XPATH, '//*[@id="signInName"]'))
     )
+    print("Username field is clickable.")
     username_field.send_keys(username)
     print("Username entered.")
 
+    print("Waiting for password field to be clickable...")
     password_field = wait.until(
         EC.element_to_be_clickable((By.XPATH, '//*[@id="password"]'))
     )
     time.sleep(1)  # wait for the password field to be ready
+    print("Password field is clickable.")
     password_field.send_keys(password)
     print("Password entered.")
 
