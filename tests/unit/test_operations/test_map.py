@@ -1,6 +1,5 @@
 from unittest.mock import MagicMock
 
-import pandas as pd
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.operations.map import Map
 from pytest import mark
@@ -48,4 +47,4 @@ def test_map(operation_params, map, expected):
     )
 
     result = operation._execute_operation()
-    assert result.equals(pd.Series(expected))
+    assert result.tolist() == expected

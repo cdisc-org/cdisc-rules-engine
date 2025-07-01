@@ -1,6 +1,5 @@
 from unittest.mock import MagicMock
-import pandas as pd
-import pytest
+from pytest import fixture, mark, raises
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.operations.codelist_extensible import CodelistExtensible
 from cdisc_rules_engine.models.library_metadata_container import (
@@ -9,7 +8,7 @@ from cdisc_rules_engine.models.library_metadata_container import (
 from cdisc_rules_engine.exceptions.custom_exceptions import MissingDataError
 
 
-@pytest.fixture
+@fixture
 def mock_metadata():
     return {
         "mock_package": {
@@ -104,7 +103,7 @@ def test_missing_codelist(operation_params):
         MagicMock(),
         library_metadata,
     )
-    with pytest.raises(
+    with raises(
         MissingDataError, match="Codelist 'CL_NONEXISTENT' not found in metadata"
     ):
         operation._execute_operation()
@@ -122,14 +121,27 @@ def test_empty_metadata(operation_params):
         MagicMock(),
         library_metadata,
     )
-    with pytest.raises(StopIteration):
+    with raises(StopIteration):
         operation._execute_operation()
 
 
-def test_multiple_versions(operation_params, mock_metadata):
+@mark.parametrize(
+    "codelist_code, expected",
+    [
+        (
+            "codelist_code",
+            [True, False, None],
+        ),
+        (
+            "C1",
+            [True, True, True],
+        ),
+    ],
+)
+def test_multiple_versions(operation_params, mock_metadata, codelist_code, expected):
     operation_params.package = "mock_package"
     operation_params.ct_version = "version"
-    operation_params.codelist_code = "codelist_code"
+    operation_params.codelist_code = codelist_code
     versions = ["v1", "v2", "v3"]
 
     library_metadata = LibraryMetadataContainer()
@@ -150,4 +162,4 @@ def test_multiple_versions(operation_params, mock_metadata):
     )
 
     result = operation._execute_operation()
-    assert result.equals(pd.Series([True, False, None]))
+    assert result.tolist() == expected

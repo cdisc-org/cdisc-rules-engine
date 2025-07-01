@@ -190,19 +190,20 @@ def test_empty_terms(operation_params):
 
 
 @pytest.mark.parametrize(
-    "term_code, term_value, expected",
+    "codelist_code, term_code, term_value, expected",
     [
-        ("t_code", None, ("Term1", "Term2", "Term3", np.NaN)),
-        (None, "t_value", ("T1", np.NaN, "T3", "T4")),
-        ("t_code", "t_value", RuleExecutionError),
+        ("codelist_code", "t_code", None, ("Term1", "Term2", "Term3", np.NaN)),
+        ("codelist_code", None, "t_value", ("T1", np.NaN, "T3", "T4")),
+        ("codelist_code", "t_code", "t_value", RuleExecutionError),
+        ("C1", "t_code", None, ("Term1", "Term2", np.NaN, np.NaN)),
     ],
 )
 def test_multiple_versions(
-    term_code, term_value, expected, operation_params, mock_metadata
+    codelist_code, term_code, term_value, expected, operation_params, mock_metadata
 ):
     operation_params.package = "mock_package"
     operation_params.ct_version = "version"
-    operation_params.codelist_code = "codelist_code"
+    operation_params.codelist_code = codelist_code
     operation_params.term_code = term_code
     operation_params.term_value = term_value
     versions = ["v1", "v2", "v1", "v2"]
