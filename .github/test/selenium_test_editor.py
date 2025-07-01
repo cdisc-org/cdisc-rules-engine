@@ -13,7 +13,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 import brotli
 
 # Get the Preview Deployment URL
-RULE_EDITOR_URL = os.getenv("RULE_EDITOR_URL")
+RULE_EDITOR_URL = "https://icy-flower-095494b10-dev.centralus.azurestaticapps.net/"
 if not RULE_EDITOR_URL:
     print("RULE_EDITOR_URL is not set! Test failed.")
     sys.exit(1)
@@ -25,16 +25,55 @@ chrome_options = Options()
 chrome_options.add_argument("--ignore-certificate-errors")
 chrome_options.add_argument("--window-size=1920,1080")
 chrome_options.add_argument("--disable-blink-features=AutomationControlled")
-chrome_options.add_argument("--headless=new")  # Headless mode
+# chrome_options.add_argument("--headless=new")  # Headless mode
 
 # Initialize driver using selenium-wire
 service = Service(ChromeDriverManager().install())
 driver = webdriver.Chrome(service=service, options=chrome_options)
 wait = WebDriverWait(driver, 20)
 
+username = os.getenv("RULE_EDITOR_USERNAME")
+password = os.getenv("RULE_EDITOR_PASSWORD")
+
 try:
     print("Opening Rule Editor site...")
     driver.get(RULE_EDITOR_URL)
+
+    time.sleep(3)  # wait for the page to load
+
+    username_field = wait.until(
+        EC.element_to_be_clickable((By.XPATH, '//*[@id="signInName"]'))
+    )
+    username_field.send_keys(username)
+    print("Username entered.")
+
+    password_field = wait.until(
+        EC.element_to_be_clickable((By.XPATH, '//*[@id="password"]'))
+    )
+    time.sleep(1)  # wait for the password field to be ready
+    password_field.send_keys(password)
+    print("Password entered.")
+
+    sign_in_button = wait.until(
+        EC.element_to_be_clickable((By.XPATH, '//*[@id="next"]'))
+    )
+    sign_in_button.click()
+    print("Sign in button clicked.")
+
+    time.sleep(8)  # wait for the login to complete
+
+    # Wait until the value attribute of the element is "QA Testing"
+    WebDriverWait(driver, 20).until(
+        lambda d: d.find_element(By.XPATH, '//*[@id="mui-11"]').get_attribute("value")
+        == "QA Testing"
+    )
+
+    name_clear_button = wait.until(
+        EC.element_to_be_clickable(
+            (By.XPATH, '//*[@id="rulesList"]/table/thead/tr/th[2]/div[2]/div/button')
+        )
+    )
+    name_clear_button.click()
 
     print("Searching for rule CG0006...")
     rule_search_field = wait.until(
