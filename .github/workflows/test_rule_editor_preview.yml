@@ -24,7 +24,7 @@ jobs:
         run: pip install requests selenium webdriver-manager pyperclip==1.9.0 selenium-wire blinker==1.4 brotli certifi h2 hyperframe kaitaistruct pyasn1 pyOpenSSL pyparsing pysocks selenium wsproto zstandard
 
       - name: Print commit SHA
-        run: echo "Commit ID: ${GITHUB_SHA}"
+        run: echo "Commit ID ${GITHUB_SHA}"
 
       - name: Run tests using preview URL
         env:
