@@ -86,13 +86,13 @@ class LibraryMetadataContainer:
             ct_lists.extend(
                 [
                     {
-                        "package": ct_package_type,
+                        "ct_package_type": ct_package_type,
                         "version": version,
-                        "codelist_code": key,
-                        "extensible": value.get("extensible"),
+                        "codelist_code": codelist_code,
+                        "extensible": codelist.get("extensible"),
                     }
-                    for key, value in ct_package_data.items()
-                    if "terms" in value
+                    for codelist_code, codelist in ct_package_data.items()
+                    if "terms" in codelist
                 ]
             )
         return ct_lists
@@ -106,7 +106,7 @@ class LibraryMetadataContainer:
             ct_terms.extend(
                 [
                     {
-                        "package": ct_package_type,
+                        "ct_package_type": ct_package_type,
                         "version": version,
                         "codelist_code": codelist_code,
                         "term_code": term["conceptId"],
