@@ -75,10 +75,7 @@ def get_variables_metadata_from_standard(domain, library_metadata):  # noqa
             class_variables_metadata,
             timing_metadata,
         ]:
-            for var in var_list:
-                var_copy = var.copy()
-                var_copy["name"] = var_copy["name"].replace("--", domain)
-                model_variables.append(var_copy)
+            replace_variable_wildcards(var_list, domain, model_variables)
     # Custom domains only pull from model hierarchy
     if is_custom:
         variables_metadata = model_variables
@@ -87,7 +84,10 @@ def get_variables_metadata_from_standard(domain, library_metadata):  # noqa
         ig_variables = IG_domain_details.get("datasetVariables", [])
         ig_variables.sort(key=lambda item: int(item["ordinal"]))
         if class_name in DETECTABLE_CLASSES:
-            merged_class_variables = class_variables_metadata
+            merged_class_variables = []
+            replace_variable_wildcards(
+                class_variables_metadata, domain, merged_class_variables
+            )
             class_vars_by_name = {
                 var["name"]: i for i, var in enumerate(merged_class_variables)
             }
@@ -101,11 +101,7 @@ def get_variables_metadata_from_standard(domain, library_metadata):  # noqa
                 merged_class_variables,
                 timing_metadata,
             ]:
-                if var_list:
-                    for var in var_list:
-                        var_copy = var.copy()
-                        var_copy["name"] = var_copy["name"].replace("--", domain)
-                        variables_metadata.append(var_copy)
+                replace_variable_wildcards(var_list, domain, variables_metadata)
         else:
             variables_metadata = ig_variables
     return variables_metadata
@@ -318,8 +314,11 @@ def get_model_domain_metadata(model_details: dict, domain_name: str) -> dict:
     return domain_details
 
 
-def replace_variable_wildcards(variables_metadata, domain):
-    return [var["name"].replace("--", domain) for var in variables_metadata]
+def replace_variable_wildcards(var_list, domain, target_list):
+    """Add variables from var_list to target_list, replacing '--' with domain in names."""
+    for var in var_list:
+        var["name"] = var["name"].replace("--", domain)
+        target_list.append(var)
 
 
 def get_all_model_wildcard_variables(model_details: dict):
