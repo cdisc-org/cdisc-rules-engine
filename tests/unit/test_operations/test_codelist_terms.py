@@ -196,6 +196,9 @@ def test_empty_terms(operation_params):
         ("codelist_code", None, "t_value", ("T1", np.NaN, "T3", "T4")),
         ("codelist_code", "t_code", "t_value", RuleExecutionError),
         ("C1", "t_code", None, ("Term1", "Term2", np.NaN, np.NaN)),
+        ("C1", None, "t_value", ("T1", np.NaN, np.NaN, np.NaN)),
+        ("C2", "t_code", None, (np.NaN, np.NaN, "Term3", np.NaN)),
+        ("C2", None, "t_value", (np.NaN, np.NaN, "T3", "T4")),
     ],
 )
 def test_multiple_versions(
@@ -217,8 +220,8 @@ def test_multiple_versions(
         {
             "version": versions,
             "codelist_code": ["C1", "C1", "C2", "C2"],
-            "t_code": ["T1", "T2", "T3", "T9"],
-            "t_value": ["Term1", "Term9", "Term3", "Term4"],
+            "t_code": ["T1", "T2", "t3", "T9"],
+            "t_value": ["Term1", "Term9", "term3", "Term4"],
         }
     )
 

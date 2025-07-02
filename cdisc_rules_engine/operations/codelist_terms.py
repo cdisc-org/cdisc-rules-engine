@@ -43,16 +43,23 @@ class CodelistTerms(BaseOperation):
         if self.params.codelist_code in self.evaluation_dataset.columns:
             result = self.evaluation_dataset.merge(
                 ct_df.data,
-                left_on=(self.params.ct_version, self.params.codelist_code, left_on),
-                right_on=("version", "codelist_code", right_on),
+                left_on=(
+                    self.params.ct_version,
+                    self.params.codelist_code,
+                    self.evaluation_dataset[left_on].str.lower(),
+                ),
+                right_on=("version", "codelist_code", ct_df[right_on].str.lower()),
                 how="left",
             )
         else:
             codelist = ct_df[ct_df["codelist_code"] == self.params.codelist_code]
             result = self.evaluation_dataset.merge(
                 codelist,
-                left_on=(self.params.ct_version, left_on),
-                right_on=("version", right_on),
+                left_on=(
+                    self.params.ct_version,
+                    self.evaluation_dataset[left_on].str.lower(),
+                ),
+                right_on=("version", codelist[right_on].str.lower()),
                 how="left",
             )
         return result[target]
