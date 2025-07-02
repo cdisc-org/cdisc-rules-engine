@@ -199,20 +199,17 @@ class BaseOperation:
         ):
             domain_for_library = "SUPPQUAL"
         elif target_metadata and "rel" in target_metadata.name.lower():
-            domain_for_library = target_metadata.name
+            if target_metadata.name.lower().startswith(
+                "ap"
+            ) and target_metadata.name.lower()[2:].startswith("rel"):
+                domain_for_library = target_metadata.name[2:]
+            else:
+                domain_for_library = target_metadata.name
         else:
             domain_for_library = self.params.domain
-        dataset_class = self.data_service.get_dataset_class(
-            self.evaluation_dataset,
-            self.params.dataset_path,
-            domain_for_library,
-            target_metadata,
-        )
-
         return sdtm_utilities.get_variables_metadata_from_standard(
             domain_for_library,
             self.library_metadata,
-            dataset_class,
         )
 
     def get_allowed_variable_permissibility(self, variable_metadata: dict):
