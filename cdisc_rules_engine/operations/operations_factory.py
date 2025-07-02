@@ -83,6 +83,9 @@ from cdisc_rules_engine.operations.codelist_extensible import CodelistExtensible
 from cdisc_rules_engine.operations.define_xml_extensible_codelists import (
     DefineCodelists,
 )
+from cdisc_rules_engine.operations.get_dataset_filtered_variables import (
+    GetDatasetFilteredVariables,
+)
 
 
 class OperationsFactory(FactoryInterface):
@@ -132,6 +135,7 @@ class OperationsFactory(FactoryInterface):
         "valid_external_dictionary_code": ValidExternalDictionaryCode,
         "valid_external_dictionary_code_term_pair": ValidExternalDictionaryCodeTermPair,
         "valid_define_external_dictionary_version": DefineDictionaryVersionValidator,
+        "get_dataset_filtered_variables": GetDatasetFilteredVariables,
     }
 
     @classmethod

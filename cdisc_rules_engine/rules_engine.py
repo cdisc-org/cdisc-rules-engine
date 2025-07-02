@@ -333,18 +333,9 @@ class RulesEngine:
             external_dictionaries=self.external_dictionaries,
             ct_packages=ct_packages,
         )
-        relationship_data = {}
-        if (
-            dataset_metadata is not None
-            and self.rule_processor.is_relationship_dataset(dataset_metadata.name)
-        ):
-            relationship_data = self.data_processor.preprocess_relationship_dataset(
-                os.path.dirname(dataset_metadata.full_path), dataset, datasets
-            )
         dataset_variable = DatasetVariable(
             dataset,
             column_prefix_map={"--": dataset_metadata.domain},
-            relationship_data=relationship_data,
             value_level_metadata=value_level_metadata,
             column_codelist_map=variable_codelist_map,
             codelist_term_maps=codelist_term_maps,

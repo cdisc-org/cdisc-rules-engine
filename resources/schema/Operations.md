@@ -382,6 +382,17 @@ Operations:
     operator: get_model_column_order
 ```
 
+## get_dataset_filtered_variables
+
+Filters variables from the dataset based on specified metadata criteria. Returns a list of variable names that exist in the dataset and match the filter criteria.
+
+```yaml
+- operation: get_dataset_filtered_variables
+  id: $timing_variables
+  key_name: "role"
+  key_value: "Timing"
+```
+
 ## get_model_filtered_variables
 
 Fetches variable level library model properties filtered by the provided `key_name` and `key_value`
@@ -707,7 +718,7 @@ Variable Metadata for custom domains will pull from the model while non-custom d
 
 ## record_count
 
-If no `filter` or `group` is provided, returns the number of records in the dataset. If `filter` is provided, returns the number of records in the dataset that contain the value(s) in the corresponding column(s) provided in the filter. If `group` is provided, returns the number of rows matching each unique set of the grouping variables. If both `filter` and `group` are provided, returns the number of records in the dataset that contain the value(s) in the corresponding column(s) provided in the filter that also match each unique set of the grouping variables.
+If no `filter` or `group` is provided, returns the number of records in the dataset. If `filter` is provided, returns the number of records in the dataset that contain the value(s) in the corresponding column(s) provided in the filter. If `group` is provided, returns the number of rows matching each unique set of the grouping variables. These can be static column name(s) or can be derived from other operations like `get_dataset_filtered_variables`. │ │If both `filter` and `group` are provided, returns the number of records in the dataset that contain the value(s) in the corresponding column(s) provided in the filter that also match each unique set of the grouping variables.
 
 If `group` is provided, `group_aliases` may also be provided to assign new grouping variable names so that results grouped by the values in one set of grouping variables can be merged onto a dataset according to the same grouping value(s) stored in different set of grouping variables. When both `group` and `group_aliases` are provided, columns are renamed according to corresponding list position (i.e., the 1st column in `group` is renamed to the 1st column in `group_aliases`, etc.). If there are more columns listed in `group` than in `group_aliases`, only the `group` columns with corresponding `group_aliases` columns will be renamed. If there are more columns listed in `group_aliases` than in `group`, the extra column names in `group_aliases` will be ignored.
 
