@@ -10,7 +10,7 @@ from cdisc_rules_engine.services import logger
 class CodelistTerms(BaseOperation):
     def _execute_operation(self) -> pd.Series:
         if (
-            self.params.package
+            self.params.ct_package_type
             and self.params.ct_version
             and self.params.codelist_code
             and self.params.ct_version in self.evaluation_dataset
@@ -37,7 +37,7 @@ class CodelistTerms(BaseOperation):
         ct_versions = self.evaluation_dataset[self.params.ct_version]
         unique_ct_versions = ct_versions.unique()
         ct_data = self.library_metadata.build_ct_terms(
-            self.params.package, unique_ct_versions
+            self.params.ct_package_type, unique_ct_versions
         )
         ct_df = self.evaluation_dataset.__class__.from_records(ct_data)
         if self.params.codelist_code in self.evaluation_dataset.columns:

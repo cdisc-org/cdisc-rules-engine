@@ -340,7 +340,7 @@ class RuleProcessor:
                 standard_substandard=standard_substandard,
                 external_dictionaries=external_dictionaries,
                 ct_version=operation.get("version"),
-                package=operation.get("package"),
+                ct_package_type=operation.get("ct_package_type"),
                 ct_attribute=operation.get("attribute"),
                 ct_package_types=operation.get("ct_package_types"),
                 ct_packages=kwargs.get("ct_packages"),

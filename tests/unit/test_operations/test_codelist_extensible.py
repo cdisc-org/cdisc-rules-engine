@@ -139,7 +139,7 @@ def test_empty_metadata(operation_params):
     ],
 )
 def test_multiple_versions(operation_params, mock_metadata, codelist_code, expected):
-    operation_params.package = "mock_package"
+    operation_params.ct_package_type = "mock_package"
     operation_params.ct_version = "version"
     operation_params.codelist_code = codelist_code
     versions = ["v1", "v2", "v3"]

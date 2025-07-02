@@ -417,25 +417,26 @@
     "ct_attribute": {
       "type": "string"
     },
+    "ct_package_type": {
+      "type": "string",
+      "enum": [
+        "ADAM",
+        "CDASH",
+        "COA",
+        "DDF",
+        "DEFINE-XML",
+        "GLOSSARY",
+        "MRCT",
+        "PROTOCOL",
+        "QRS",
+        "QS-FT",
+        "SDTM",
+        "SEND",
+        "TMF"
+      ]
+    },
     "ct_package_types": {
-      "items": {
-        "type": "string",
-        "enum": [
-          "ADAM",
-          "CDASH",
-          "COA",
-          "DDF",
-          "DEFINE-XML",
-          "GLOSSARY",
-          "MRCT",
-          "PROTOCOL",
-          "QRS",
-          "QS-FT",
-          "SDTM",
-          "SEND",
-          "TMF"
-        ]
-      },
+      "items": { "$ref": "#/properties/ct_package_type" },
       "type": "array"
     },
     "ct_packages": {
@@ -514,9 +515,6 @@
       "type": "string"
     },
     "operator": {
-      "type": "string"
-    },
-    "package": {
       "type": "string"
     },
     "returntype": {

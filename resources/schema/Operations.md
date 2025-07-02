@@ -33,7 +33,7 @@ Returns a list of valid codelist/term values. Used for evaluating whether NCI co
     ],
 ```
 
-If `package`, `version`, and `codelist_code` parameters are provided, it will instead attach a new column containing the term for each combination provided in the source dataset. If `term_code` is provided, it will find term values using the term codes. If `term_value` is provided, it will find term codes using the term values.Only one of `term_code` or `term_value` can be provided.
+If `ct_package_type`, `version`, and `codelist_code` parameters are provided, it will instead attach a new column containing the term for each combination provided in the source dataset. If `term_code` is provided, it will find term values using the term codes. If `term_value` is provided, it will find term codes using the term values.Only one of `term_code` or `term_value` can be provided.
 
 For example, given the current dataset:
 
@@ -48,7 +48,7 @@ and the following operation:
 ```yaml
 - id: $found_term_value
   operator: codelist_terms
-  package: ddfct
+  ct_package_type: ddfct
   version: codeSystemVersion
   codelist_code: $codelist_code
   term_code: code
@@ -67,7 +67,7 @@ Conversely, if given the same dataset, and the following operation:
 ```yaml
 - id: $found_term_code
   operator: codelist_terms
-  package: ddfct
+  ct_package_type: ddfct
   version: codeSystemVersion
   codelist_code: $codelist_code
   term_value: decode
@@ -85,7 +85,7 @@ This will result in the following dataset:
 
 Returns a Series indicating whether a specified `codelist` is extensible. Used in conjunction with `codelist_terms` to determine if values outside the codelist are acceptable. From the above example, `$extensible` will contain a bool if the codelist PKUDUG is extensible in all rows of the column.
 
-If `package`, `version`, and `codelist_code` parameters are provided, it will instead attach a new column containing the extensible value for each combination provided in the source dataset.
+If `ct_package_type`, `version`, and `codelist_code` parameters are provided, it will instead attach a new column containing the extensible value for each combination provided in the source dataset.
 
 For example, given the current dataset:
 
@@ -100,7 +100,7 @@ and the following operation:
 ```yaml
 - id: $codelist_extensible
   operator: codelist_extensible
-  package: ddfct
+  ct_package_type: ddfct
   version: codeSystemVersion
   codelist_code: $codelist_code
 ```

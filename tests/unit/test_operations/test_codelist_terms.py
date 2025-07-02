@@ -204,7 +204,7 @@ def test_empty_terms(operation_params):
 def test_multiple_versions(
     codelist_code, term_code, term_value, expected, operation_params, mock_metadata
 ):
-    operation_params.package = "mock_package"
+    operation_params.ct_package_type = "mock_package"
     operation_params.ct_version = "version"
     operation_params.codelist_code = codelist_code
     operation_params.term_code = term_code

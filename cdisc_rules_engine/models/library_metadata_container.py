@@ -67,8 +67,8 @@ class LibraryMetadataContainer:
     def set_ct_package_metadata(self, key, value):
         self._ct_package_metadata[key] = value
 
-    def _load_ct_package_data(self, package: str, version: str):
-        ct_package_version = f"{package}-{version}"
+    def _load_ct_package_data(self, ct_package_type: str, version: str):
+        ct_package_version = f"{ct_package_type}-{version}"
         ct_package_data = self.get_ct_package_metadata(ct_package_version)
         if ct_package_data is None:
             file_name = f"{ct_package_version}.pkl"
@@ -77,16 +77,16 @@ class LibraryMetadataContainer:
                 self.set_ct_package_metadata(ct_package_version, ct_package_data)
         return ct_package_data
 
-    def build_ct_lists(self, package: str, versions: str | Iterable[str]):
+    def build_ct_lists(self, ct_package_type: str, versions: str | Iterable[str]):
         if isinstance(versions, str):
             versions = {versions}
         ct_lists = []
         for version in {*versions}:
-            ct_package_data = self._load_ct_package_data(package, version)
+            ct_package_data = self._load_ct_package_data(ct_package_type, version)
             ct_lists.extend(
                 [
                     {
-                        "package": package,
+                        "package": ct_package_type,
                         "version": version,
                         "codelist_code": key,
                         "extensible": value.get("extensible"),
@@ -97,16 +97,16 @@ class LibraryMetadataContainer:
             )
         return ct_lists
 
-    def build_ct_terms(self, package: str, versions: str | Iterable[str]):
+    def build_ct_terms(self, ct_package_type: str, versions: str | Iterable[str]):
         if isinstance(versions, str):
             versions = {versions}
         ct_terms = []
         for version in {*versions}:
-            ct_package_data = self._load_ct_package_data(package, version)
+            ct_package_data = self._load_ct_package_data(ct_package_type, version)
             ct_terms.extend(
                 [
                     {
-                        "package": package,
+                        "package": ct_package_type,
                         "version": version,
                         "codelist_code": codelist_code,
                         "term_code": term["conceptId"],

@@ -39,7 +39,7 @@ class OperationParams:
     ct_package: list = None
     ct_packages: list = None
     ct_version: str = None
-    package: str = None
+    ct_package_type: str = None
     term_code: str = None
     term_value: str = None
     dictionary_term_type: str = None
