@@ -14,6 +14,7 @@ from cdisc_rules_engine.enums.variable_roles import VariableRoles
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
+import copy
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from typing import Iterable, Tuple, List, Optional
 
@@ -307,8 +308,10 @@ def get_model_domain_metadata(model_details: dict, domain_name: str) -> dict:
 def replace_variable_wildcards(var_list, domain, target_list):
     """Add variables from var_list to target_list, replacing '--' with domain in names."""
     for var in var_list:
-        var["name"] = var["name"].replace("--", domain)
-        target_list.append(var)
+        # Create a deepcopy to avoid modifying cached library metadata
+        var_copy = copy.deepcopy(var)
+        var_copy["name"] = var_copy["name"].replace("--", domain)
+        target_list.append(var_copy)
 
 
 def get_all_model_wildcard_variables(model_details: dict):
