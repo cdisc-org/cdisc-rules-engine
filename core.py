@@ -512,10 +512,20 @@ def list_rules(
     default=DefaultFilePaths.CACHE.value,
     help="Relative path to cache files containing pre loaded metadata and rules",
 )
+@click.option(
+    "-o",
+    "--custom",
+    is_flag=True,
+    default=False,
+    help="Flag to list all custom standards and versions in the cache",
+)
 @click.pass_context
-def list_rule_sets(ctx: click.Context, cache_path: str):
+def list_rule_sets(ctx: click.Context, cache_path: str, custom: bool):
     """Lists all standards and versions for which rules are available."""
-    rules_file = DefaultFilePaths.RULES_DICTIONARY.value
+    if custom:
+        rules_file = DefaultFilePaths.CUSTOM_RULES_DICTIONARY.value
+    else:
+        rules_file = DefaultFilePaths.RULES_DICTIONARY.value
     with open(os.path.join(cache_path, rules_file), "rb") as f:
         rules_data = pickle.load(f)
 
