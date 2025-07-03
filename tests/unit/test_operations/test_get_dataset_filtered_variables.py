@@ -301,7 +301,7 @@ wildcard_test = (
     {"name": "AE"},
     "role",
     "Identifier",
-    ["STUDYID"],
+    ["STUDYID", "AESEQ"],
 )
 
 no_match_test = (
@@ -468,7 +468,7 @@ findings_about_test = (
     {"name": "FA"},
     "role",
     "Identifier",
-    ["STUDYID", "DOMAIN"],
+    ["STUDYID", "DOMAIN", "USUBJID"],
 )
 
 

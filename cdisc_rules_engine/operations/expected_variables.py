@@ -18,7 +18,7 @@ class ExpectedVariables(BaseOperation):
         in accordance to "ordinal" key of library metadata.
         """
 
-        # get variables metadata from the standard model
+        # get variables metadata from the standard/model
         variables_metadata: List[dict] = self._get_variables_metadata_from_standard()
 
         return list(

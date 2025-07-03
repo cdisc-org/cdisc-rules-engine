@@ -181,20 +181,27 @@ class BaseDatasetBuilder:
 
     def get_library_variables_metadata(self) -> DatasetInterface:
         # TODO: Update to support other standard types
-        if self.datasets:
-            dataset = self.get_dataset_contents()
-            dataset_class = self.data_service.get_dataset_class(
-                dataset,
-                self.dataset_path,
-                self.datasets,
-                getattr(self, "domain", self.dataset_metadata),
-            )
+        if (
+            not self.dataset_metadata.domain
+            and self.dataset_metadata.is_supp
+            and self.dataset_metadata.rdomain
+        ):
+            domain = "SUPPQUAL"
+        elif (
+            not self.dataset_metadata.domain
+            and not self.dataset_metadata.rdomain
+            and "rel" in self.dataset_metadata.name.lower()
+        ):
+            if self.dataset_metadata.name.lower().startswith(
+                "ap"
+            ) and self.dataset_metadata.name.lower()[2:].startswith("rel"):
+                domain = self.dataset_metadata.name[2:]
+            else:
+                domain = self.dataset_metadata.name
         else:
-            dataset_class = None
+            domain = self.dataset_metadata.domain
         variables: List[dict] = sdtm_utilities.get_variables_metadata_from_standard(
-            domain=self.dataset_metadata.domain,
-            library_metadata=self.library_metadata,
-            dataset_class=dataset_class,
+            domain=domain, library_metadata=self.library_metadata
         )
 
         # Rename columns:
