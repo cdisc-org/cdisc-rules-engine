@@ -345,8 +345,8 @@ def test_get_column_order_from_library(
     variables: List[str] = [
         "STUDYID",
         "DOMAIN",
-        "AETEST",
-        "AENEW",
+        "AETERM",
+        "AESEQ",
         "TIMING_VAR",
     ]
     expected: pd.Series = pd.Series(
