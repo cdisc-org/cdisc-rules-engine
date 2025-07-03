@@ -288,6 +288,12 @@ class RuleProcessor:
                 return False
         return True
 
+    @staticmethod
+    def _ct_package_type_api_name(ct_package_type: str | None) -> str:
+        if ct_package_type is None:
+            return None
+        return f"{ct_package_type.lower()}ct"
+
     def perform_rule_operations(
         self,
         rule: dict,
@@ -340,9 +346,14 @@ class RuleProcessor:
                 standard_substandard=standard_substandard,
                 external_dictionaries=external_dictionaries,
                 ct_version=operation.get("version"),
-                ct_package_type=operation.get("ct_package_type"),
+                ct_package_type=RuleProcessor._ct_package_type_api_name(
+                    operation.get("ct_package_type")
+                ),
                 ct_attribute=operation.get("attribute"),
-                ct_package_types=operation.get("ct_package_types"),
+                ct_package_types=[
+                    RuleProcessor._ct_package_type_api_name(ct_package_type)
+                    for ct_package_type in operation.get("ct_package_types", [])
+                ],
                 ct_packages=kwargs.get("ct_packages"),
                 ct_package=kwargs.get("codelist_term_maps"),
                 attribute_name=operation.get("attribute_name", ""),

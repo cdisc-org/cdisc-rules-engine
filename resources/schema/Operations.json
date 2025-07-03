@@ -445,7 +445,7 @@
       ]
     },
     "ct_package_types": {
-      "items": { "$ref": "#/properties/ct_package_type" },
+      "items": { "$ref": "Operations.json#/properties/ct_package_type" },
       "type": "array"
     },
     "ct_packages": {

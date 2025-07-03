@@ -3,34 +3,24 @@
 Returns a list of valid codelist/term values. Used for evaluating whether NCI code or submission values are valid based on controlled terminology. Expects three parameters: `codelists` which is a list of the codelist submission value(s) to retrieve, `level` which is the level of data (either "codelist" or "term") at which to return data from, and `returntype` which is the type of values to return, either "code" for NCI Code(s) or "value" for submission value(s)
 
 ```yaml
--   "Check": {
-    "all": [
-      {
-        "name": "PPSTRESU",
-        "operator": "is_not_contained_by",
-        "value": "$terms"
-      },
-      {
-        "name": "$extensible",
-        "operator": "equal_to",
-        "value": true
-      }
-    ]
-},
--   "Operations": [
-      {
-        "id": "$terms",
-        "operator": "codelist_terms",
-        "codelists": ["PKUDUG"],
-        "level": "term",
-        "returntype": "value"
-      },
-      {
-        "id": "$extensible",
-        "codelist": "PKUDUG",
-        "operator": "codelist_extensible"
-      }
-    ],
+- Check:
+    - all:
+        - name: PPSTRESU
+          operator: is_not_contained_by
+          value: $terms
+        - name: $extensible
+          operator: equal_to
+          value: true
+- Operations:
+    - id: $terms
+      operator: codelist_terms
+      codelists:
+        - PKUDUG
+      level: term
+      returntype: value
+    - id: $extensible
+      codelist: PKUDUG
+      operator: codelist_extensible
 ```
 
 If `ct_package_type`, `version`, and `codelist_code` parameters are provided, it will instead attach a new column containing the term for each combination provided in the source dataset. If `term_code` is provided, it will find term values using the term codes. If `term_value` is provided, it will find term codes using the term values.Only one of `term_code` or `term_value` can be provided.
@@ -48,7 +38,7 @@ and the following operation:
 ```yaml
 - id: $found_term_value
   operator: codelist_terms
-  ct_package_type: ddfct
+  ct_package_type: DDF
   version: codeSystemVersion
   codelist_code: $codelist_code
   term_code: code
@@ -67,7 +57,7 @@ Conversely, if given the same dataset, and the following operation:
 ```yaml
 - id: $found_term_code
   operator: codelist_terms
-  ct_package_type: ddfct
+  ct_package_type: DDF
   version: codeSystemVersion
   codelist_code: $codelist_code
   term_value: decode
@@ -100,7 +90,7 @@ and the following operation:
 ```yaml
 - id: $codelist_extensible
   operator: codelist_extensible
-  ct_package_type: ddfct
+  ct_package_type: DDF
   version: codeSystemVersion
   codelist_code: $codelist_code
 ```
