@@ -84,24 +84,14 @@ def get_variables_metadata_from_standard(domain, library_metadata):  # noqa
         ig_variables = IG_domain_details.get("datasetVariables", [])
         ig_variables.sort(key=lambda item: int(item["ordinal"]))
         if class_name in DETECTABLE_CLASSES:
-            merged_class_variables = []
-            replace_variable_wildcards(
-                class_variables_metadata, domain, merged_class_variables
-            )
-            class_vars_by_name = {
-                var["name"]: i for i, var in enumerate(merged_class_variables)
+            variables_metadata = model_variables.copy()
+            model_vars_by_name = {
+                var["name"]: i for i, var in enumerate(variables_metadata)
             }
             for ig_var in ig_variables:
                 ig_var_name = ig_var["name"]
-                if ig_var_name in class_vars_by_name:
-                    merged_class_variables[class_vars_by_name[ig_var_name]] = ig_var
-            variables_metadata = []
-            for var_list in [
-                identifiers_metadata,
-                merged_class_variables,
-                timing_metadata,
-            ]:
-                replace_variable_wildcards(var_list, domain, variables_metadata)
+                if ig_var_name in model_vars_by_name:
+                    variables_metadata[model_vars_by_name[ig_var_name]] = ig_var
         else:
             variables_metadata = ig_variables
     return variables_metadata
