@@ -1,11 +1,16 @@
 from unittest.mock import MagicMock
+import numpy as np
+import pandas as pd
 import pytest
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.operations.codelist_terms import CodelistTerms
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
-from cdisc_rules_engine.exceptions.custom_exceptions import MissingDataError
+from cdisc_rules_engine.exceptions.custom_exceptions import (
+    MissingDataError,
+    RuleExecutionError,
+)
 
 
 @pytest.fixture
@@ -182,3 +187,53 @@ def test_empty_terms(operation_params):
 
     result = operation._execute_operation()
     assert result == []
+
+
+@pytest.mark.parametrize(
+    "codelist_code, term_code, term_value, expected",
+    [
+        ("codelist_code", "t_code", None, ("Term1", "Term2", "Term3", np.NaN)),
+        ("codelist_code", None, "t_value", ("T1", np.NaN, "T3", "T4")),
+        ("codelist_code", "t_code", "t_value", RuleExecutionError),
+        ("C1", "t_code", None, ("Term1", "Term2", np.NaN, np.NaN)),
+        ("C1", None, "t_value", ("T1", np.NaN, np.NaN, np.NaN)),
+        ("C2", "t_code", None, (np.NaN, np.NaN, "Term3", np.NaN)),
+        ("C2", None, "t_value", (np.NaN, np.NaN, "T3", "T4")),
+    ],
+)
+def test_multiple_versions(
+    codelist_code, term_code, term_value, expected, operation_params, mock_metadata
+):
+    operation_params.ct_package_type = "mock_package"
+    operation_params.ct_version = "version"
+    operation_params.codelist_code = codelist_code
+    operation_params.term_code = term_code
+    operation_params.term_value = term_value
+    versions = ["v1", "v2", "v1", "v2"]
+
+    library_metadata = LibraryMetadataContainer()
+    for version in versions:
+        mock_metadata[f"mock_package-{version}"] = mock_metadata["mock_package"]
+    library_metadata._ct_package_metadata = mock_metadata
+
+    evaluation_dataset = PandasDataset.from_dict(
+        {
+            "version": versions,
+            "codelist_code": ["C1", "C1", "C2", "C2"],
+            "t_code": ["T1", "T2", "t3", "T9"],
+            "t_value": ["Term1", "Term9", "term3", "Term4"],
+        }
+    )
+
+    operation = CodelistTerms(
+        operation_params,
+        evaluation_dataset,
+        MagicMock(),
+        MagicMock(),
+        library_metadata,
+    )
+    try:
+        result = operation._execute_operation()
+    except RuleExecutionError:
+        result = pd.Series(RuleExecutionError)
+    assert result.equals(pd.Series(expected))
