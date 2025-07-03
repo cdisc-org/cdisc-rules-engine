@@ -95,9 +95,18 @@ def get_variables_metadata_from_standard(domain, library_metadata):  # noqa
                     variables_metadata[model_vars_by_name[ig_var_name]] = ig_var
                 else:
                     # if a variable exists in the IG but not in the model,
-                    # insert it at the end of the variables metadata
-                    timing_metadata_length = len(timing_metadata)
-                    insertion_point = len(variables_metadata) - timing_metadata_length
+                    # insert it at the end of the its section
+                    ig_var_role = ig_var.get("role")
+                    if ig_var_role == "Identifier":
+                        identifiers_length = len(identifiers_metadata)
+                        insertion_point = identifiers_length
+                    elif ig_var_role == "Timing":
+                        insertion_point = len(variables_metadata)
+                    else:
+                        timing_metadata_length = len(timing_metadata)
+                        insertion_point = (
+                            len(variables_metadata) - timing_metadata_length
+                        )
                     variables_metadata.insert(insertion_point, ig_var)
                     model_vars_by_name = {
                         var["name"]: i for i, var in enumerate(variables_metadata)
