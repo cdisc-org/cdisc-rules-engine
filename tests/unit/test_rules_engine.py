@@ -2086,13 +2086,13 @@ def test_validate_additional_columns(
                 "message": "Inconsistencies found in enumerated TSVAL columns.",
                 "errors": [
                     {
-                        "value": {"TSVAL": "null"},
+                        "value": {"TSVAL": None},
                         "dataset": "ts.xpt",
                         "row": 2,
                         "USUBJID": "1",
                     },
                     {
-                        "value": {"TSVAL": "null"},
+                        "value": {"TSVAL": None},
                         "dataset": "ts.xpt",
                         "row": 4,
                         "USUBJID": "1",
@@ -2203,17 +2203,17 @@ def test_validate_dataset_contents_against_define_and_library_variable_metadata(
                 {
                     "dataset": "filename",
                     "row": 1,
-                    "value": {"AESEV": "null", "AESER": "1"},
+                    "value": {"AESEV": None, "AESER": "1"},
                 },
                 {
                     "dataset": "filename",
                     "row": 2,
-                    "value": {"AESEV": "null", "AESER": "2"},
+                    "value": {"AESEV": None, "AESER": "2"},
                 },
                 {
                     "dataset": "filename",
                     "row": 3,
-                    "value": {"AESEV": "test", "AESER": "null"},
+                    "value": {"AESEV": "test", "AESER": None},
                 },
             ],
         }

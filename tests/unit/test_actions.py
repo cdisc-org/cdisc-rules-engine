@@ -194,16 +194,13 @@ def test_nan_handling_in_error_object():
     df[SOURCE_FILENAME] = "test.xpt"
     df[SOURCE_ROW_NUMBER] = [1, 2, 3, 4]
 
-    # create expected DataFrame with NaN values replaced by 'null'
-    expected_df = df.copy()
-    expected_df["NAN_VAL"] = expected_df["NAN_VAL"].apply(
-        lambda x: "null" if pd.isna(x) else x
-    )
-    expected_df["NAN_LIST"] = expected_df["NAN_LIST"].apply(
-        lambda x: (
-            "null" if isinstance(x, list) and any(pd.isna(val) for val in x) else x
-        )
-    )
+    expected_nan_vals = [1.0, None, 3.0, None]
+    expected_nan_lists = [
+        [1.0, 2.0, 3.0],
+        [4.0, None, 6.0],
+        ["a", "b", "c"],
+        [7.0, 8.0, None],
+    ]
     variable = DatasetVariable(df)
     dataset_metadata = SDTMDatasetMetadata(
         first_record={"DOMAIN": "TV"}, filename="test.xpt"
@@ -213,22 +210,25 @@ def test_nan_handling_in_error_object():
     for i in range(len(df)):
         row = df.iloc[i]
         result = action._create_error_object(row, df)
-        expected_val = expected_df["NAN_VAL"].iloc[i]
-        expected_list = expected_df["NAN_LIST"].iloc[i]
+        expected_val = expected_nan_vals[i]
+        expected_list = expected_nan_lists[i]
         assert (
             result.value["NAN_VAL"] == expected_val
-        ), f"Row {i}: NAN_VAL does not match expected"
+        ), f"Row {i}: NAN_VAL does not match expected. Got {result.value['NAN_VAL']}, expected {expected_val}"
         assert (
             result.value["NAN_LIST"] == expected_list
-        ), f"Row {i}: NAN_LIST does not match expected"
+        ), f"Row {i}: NAN_LIST does not match expected. Got {result.value['NAN_LIST']}, expected {expected_list}"
 
     all_results = action.generate_targeted_error_object(
         set(dummy_rule["output_variables"]), df, "Testing NaN handling"
     )
     json_output = json.dumps(all_results.to_representation())
     assert (
-        '"NAN_VAL": "null"' in json_output
-    ), "Missing null value for NAN_VAL in output"
+        '"NAN_VAL": null' in json_output
+    ), "Missing null value for NAN_VAL in JSON output"
     assert (
-        '"NAN_LIST": "null"' in json_output
-    ), "Missing null value for NAN_LIST in output"
+        "[4.0, null, 6.0]" in json_output
+    ), "Missing list with individual null element [4.0, null, 6.0]"
+    assert (
+        "[7.0, 8.0, null]" in json_output
+    ), "Missing list with individual null element [7.0, 8.0, null]"
