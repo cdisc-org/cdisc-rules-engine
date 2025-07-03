@@ -364,6 +364,19 @@ To obtain an api key, please follow the instructions found here: <https://wiki.c
 python core.py list-rule-sets
 ```
 
+To list custom standards and versions instead:
+
+```bash
+python core.py list-rule-sets --custom
+# or using the short form:
+python core.py list-rule-sets -o
+```
+
+**Options:**
+
+- `-c, --cache_path` - Relative path to cache files containing pre-loaded metadata and rules
+- `-o, --custom` - Flag to list all custom standards and versions in the cache instead of CDISC standards & rules
+
 **- list-ct** - list ct packages available in the cache
 
 ```
