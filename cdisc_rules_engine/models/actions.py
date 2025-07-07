@@ -283,13 +283,10 @@ class COREActions(BaseActions):
         filtered_dict = {}
         for key, value in row_dict.items():
             if isinstance(value, list):
-                filtered_list = []
-                for val in value:
-                    if val in NULL_FLAVORS or pd.isna(val):
-                        filtered_list.append(None)
-                    else:
-                        filtered_list.append(val)
-                filtered_dict[key] = filtered_list
+                filtered_dict[key] = [
+                    None if (val in NULL_FLAVORS or pd.isna(val)) else val
+                    for val in value
+                ]
             else:
                 filtered_dict[key] = (
                     None if (value in NULL_FLAVORS or pd.isna(value)) else value
