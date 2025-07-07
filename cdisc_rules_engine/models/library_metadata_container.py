@@ -71,10 +71,16 @@ class LibraryMetadataContainer:
         ct_package_version = f"{ct_package_type}-{version}"
         ct_package_data = self.get_ct_package_metadata(ct_package_version)
         if ct_package_data is None:
-            file_name = f"{ct_package_version}.pkl"
-            with open(join(self._cache_path, file_name), "rb") as f:
-                ct_package_data = load(f)
-                self.set_ct_package_metadata(ct_package_version, ct_package_data)
+            file_name = join(self._cache_path, f"{ct_package_version}.pkl")
+            try:
+                with open(file_name, "rb") as f:
+                    ct_package_data = load(f)
+                    self.set_ct_package_metadata(ct_package_version, ct_package_data)
+            except FileNotFoundError:
+                # ct_package_type and version may be coming from the source data.
+                # Instead of raising an error, the rule should handle the missing package when appropriate.
+                ct_package_data = {}
+            self.set_ct_package_metadata(ct_package_version, ct_package_data)
         return ct_package_data
 
     def build_ct_lists(self, ct_package_type: str, versions: str | Iterable[str]):
