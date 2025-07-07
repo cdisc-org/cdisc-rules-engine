@@ -117,6 +117,12 @@ class MedDRAValidator(BaseDictionaryValidator):
             True: The term is valid
             False: The term is not valid
         """
+        if isinstance(code, float):
+            code_str = str(int(code))
+        elif isinstance(code, int):
+            code_str = str(code)
+        else:
+            code_str = str(code)
         term_dictionary = self.get_term_dictionary()
         term_type = term_type.lower()
         if term_type not in TermTypes.values():
@@ -124,4 +130,4 @@ class MedDRAValidator(BaseDictionaryValidator):
                 f"{term_type} does not correspond to a MedDRA term type"
             )
 
-        return code in term_dictionary.get(term_type, {})
+        return code_str in term_dictionary.get(term_type, {})
