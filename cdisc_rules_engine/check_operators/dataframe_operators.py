@@ -101,7 +101,7 @@ class DataframeType(BaseType):
     def replace_prefix(self, value: str) -> Union[str, Any]:
         if isinstance(value, str):
             for prefix, replacement in self.column_prefix_map.items():
-                if value.startswith(prefix):
+                if value.startswith(prefix) and replacement is not None:
                     return value.replace(prefix, replacement, 1)
         return value
 
