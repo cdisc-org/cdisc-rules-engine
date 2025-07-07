@@ -320,11 +320,11 @@ To obtain an api key, please follow the instructions found here: <https://wiki.c
   python core.py update-cache --update_custom_rule 'path/to/updated_rule.yaml'
   ```
 
-- **Remove custom rules**: Use the `--remove_custom_rules` or `-rcr` flag to remove rules from the cache. Can be a single rule ID, a comma-separated list of IDs, or 'ALL' to remove all custom rules:
+- **Remove custom rules**: Use the `--remove_custom_rules` or `-rcr` flag to remove rules from the cache. Can be a single rule ID, a comma-separated list of IDs, or ALL to remove all custom rules:
   ```bash
   python core.py update-cache --remove_custom_rules 'RULE_ID'
   python core.py update-cache --remove_custom_rules 'RULE_ID1,RULE_ID2,RULE_ID3'
-  python core.py update-cache --remove_custom_rules 'ALL'
+  python core.py update-cache --remove_custom_rules ALL
   ```
 
 ## List Rules
