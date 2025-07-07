@@ -126,20 +126,29 @@ def test_empty_metadata(operation_params):
 
 
 @mark.parametrize(
-    "codelist_code, expected",
+    "package_type, codelist_code, expected",
     [
         (
+            "mock_package",
             "codelist_code",
             [True, False, None],
         ),
         (
+            "mock_package",
             "C1",
             [True, True, True],
         ),
+        (
+            "missing_package",
+            "codelist_code",
+            [None, None, None],
+        ),
     ],
 )
-def test_multiple_versions(operation_params, mock_metadata, codelist_code, expected):
-    operation_params.ct_package_type = "mock_package"
+def test_multiple_versions(
+    operation_params, mock_metadata, package_type, codelist_code, expected
+):
+    operation_params.ct_package_type = package_type
     operation_params.ct_version = "version"
     operation_params.codelist_code = codelist_code
     versions = ["v1", "v2", "v3"]

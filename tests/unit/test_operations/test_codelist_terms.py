@@ -1,5 +1,5 @@
 from unittest.mock import MagicMock
-import numpy as np
+from numpy import nan
 import pandas as pd
 import pytest
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
@@ -190,21 +190,34 @@ def test_empty_terms(operation_params):
 
 
 @pytest.mark.parametrize(
-    "codelist_code, term_code, term_value, expected",
+    "package_type, codelist_code, term_code, term_value, expected",
     [
-        ("codelist_code", "t_code", None, ("Term1", "Term2", "Term3", np.NaN)),
-        ("codelist_code", None, "t_value", ("T1", np.NaN, "T3", "T4")),
-        ("codelist_code", "t_code", "t_value", RuleExecutionError),
-        ("C1", "t_code", None, ("Term1", "Term2", np.NaN, np.NaN)),
-        ("C1", None, "t_value", ("T1", np.NaN, np.NaN, np.NaN)),
-        ("C2", "t_code", None, (np.NaN, np.NaN, "Term3", np.NaN)),
-        ("C2", None, "t_value", (np.NaN, np.NaN, "T3", "T4")),
+        (
+            "mock_package",
+            "codelist_code",
+            "t_code",
+            None,
+            ("Term1", "Term2", "Term3", nan),
+        ),
+        ("mock_package", "codelist_code", None, "t_value", ("T1", nan, "T3", "T4")),
+        ("mock_package", "codelist_code", "t_code", "t_value", RuleExecutionError),
+        ("mock_package", "C1", "t_code", None, ("Term1", "Term2", nan, nan)),
+        ("mock_package", "C1", None, "t_value", ("T1", nan, nan, nan)),
+        ("mock_package", "C2", "t_code", None, (nan, nan, "Term3", nan)),
+        ("mock_package", "C2", None, "t_value", (nan, nan, "T3", "T4")),
+        ("missing_package", "codelist_code", "t_code", None, (None, None, None, None)),
     ],
 )
 def test_multiple_versions(
-    codelist_code, term_code, term_value, expected, operation_params, mock_metadata
+    package_type,
+    codelist_code,
+    term_code,
+    term_value,
+    expected,
+    operation_params,
+    mock_metadata,
 ):
-    operation_params.ct_package_type = "mock_package"
+    operation_params.ct_package_type = package_type
     operation_params.ct_version = "version"
     operation_params.codelist_code = codelist_code
     operation_params.term_code = term_code

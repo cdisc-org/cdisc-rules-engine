@@ -86,41 +86,39 @@ class LibraryMetadataContainer:
     def build_ct_lists(self, ct_package_type: str, versions: str | Iterable[str]):
         if isinstance(versions, str):
             versions = {versions}
-        ct_lists = []
+        ct_lists = {
+            "ct_package_type": [],
+            "version": [],
+            "codelist_code": [],
+            "extensible": [],
+        }
         for version in {*versions}:
             ct_package_data = self._load_ct_package_data(ct_package_type, version)
-            ct_lists.extend(
-                [
-                    {
-                        "ct_package_type": ct_package_type,
-                        "version": version,
-                        "codelist_code": codelist_code,
-                        "extensible": codelist.get("extensible"),
-                    }
-                    for codelist_code, codelist in ct_package_data.items()
-                    if "terms" in codelist
-                ]
-            )
+            for codelist_code, codelist in ct_package_data.items():
+                if "terms" in codelist:
+                    ct_lists["ct_package_type"].append(ct_package_type)
+                    ct_lists["version"].append(version)
+                    ct_lists["codelist_code"].append(codelist_code)
+                    ct_lists["extensible"].append(codelist.get("extensible"))
         return ct_lists
 
     def build_ct_terms(self, ct_package_type: str, versions: str | Iterable[str]):
         if isinstance(versions, str):
             versions = {versions}
-        ct_terms = []
+        ct_terms = {
+            "ct_package_type": [],
+            "version": [],
+            "codelist_code": [],
+            "term_code": [],
+            "term_value": [],
+        }
         for version in {*versions}:
             ct_package_data = self._load_ct_package_data(ct_package_type, version)
-            ct_terms.extend(
-                [
-                    {
-                        "ct_package_type": ct_package_type,
-                        "version": version,
-                        "codelist_code": codelist_code,
-                        "term_code": term["conceptId"],
-                        "term_value": term["submissionValue"],
-                    }
-                    for codelist_code, codelist in ct_package_data.items()
-                    if "terms" in codelist
-                    for term in codelist["terms"]
-                ]
-            )
+            for codelist_code, codelist in ct_package_data.items():
+                for term in codelist.get("terms", []):
+                    ct_terms["ct_package_type"].append(ct_package_type)
+                    ct_terms["version"].append(version)
+                    ct_terms["codelist_code"].append(codelist_code)
+                    ct_terms["term_code"].append(term["conceptId"])
+                    ct_terms["term_value"].append(term["submissionValue"])
         return ct_terms
