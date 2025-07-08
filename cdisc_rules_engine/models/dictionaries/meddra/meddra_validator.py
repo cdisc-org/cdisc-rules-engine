@@ -119,8 +119,6 @@ class MedDRAValidator(BaseDictionaryValidator):
         """
         if isinstance(code, float):
             code_str = str(int(code))
-        elif isinstance(code, int):
-            code_str = str(code)
         else:
             code_str = str(code)
         term_dictionary = self.get_term_dictionary()
