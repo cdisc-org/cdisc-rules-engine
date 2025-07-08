@@ -482,13 +482,13 @@
     },
     "group": {
       "items": {
-        "$ref": "CORE-base.json#/$defs/VariableName"
+        "$ref": "CORE-base.json#/$defs/VariableReference"
       },
       "type": "array"
     },
     "group_aliases": {
       "items": {
-        "$ref": "CORE-base.json#/$defs/VariableName"
+        "$ref": "CORE-base.json#/$defs/VariableReference"
       },
       "type": "array"
     },
