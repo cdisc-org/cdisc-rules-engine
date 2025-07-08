@@ -45,7 +45,7 @@ class DatasetPreprocessor:
         self._data_service = data_service
         self._rule_processor = RuleProcessor(self._data_service, cache_service)
 
-    def preprocess(
+    def preprocess(  # noqa
         self, rule: dict, datasets: Iterable[SDTMDatasetMetadata]
     ) -> DatasetInterface:
         """
@@ -72,11 +72,15 @@ class DatasetPreprocessor:
                     and self._dataset_metadata.is_supp
                     and self._dataset_metadata.rdomain
                 ):
-                    file_infos: list[SDTMDatasetMetadata] = [
-                        item
-                        for item in datasets
-                        if (item.domain == self._dataset_metadata.rdomain)
-                    ]
+                    if (
+                        domain_name == "SUPP--"
+                        or domain_name == self._dataset_metadata.name
+                    ):
+                        file_infos: list[SDTMDatasetMetadata] = [
+                            item
+                            for item in datasets
+                            if (item.domain == self._dataset_metadata.rdomain)
+                        ]
                 # find parent of other datasets
                 elif (
                     domain_name == self._dataset_metadata.domain

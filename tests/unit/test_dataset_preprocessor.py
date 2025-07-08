@@ -758,3 +758,171 @@ def test_preprocess_supp_with_blank_idvar_idvarval(mock_get_dataset):
     assert "QNAM" in result.data.columns
     assert "QVAL" in result.data.columns
     assert all(qnam == "AESPID" for qnam in result.data["QNAM"])
+
+
+@patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset")
+def test_preprocess_supp_wildcard_matches_all_supp_datasets(
+    mock_get_dataset: MagicMock,
+):
+    ae_dataset = PandasDataset(
+        pd.DataFrame.from_dict(
+            {
+                "STUDYID": ["CDISC-PILOT-01", "CDISC-PILOT-01"],
+                "DOMAIN": ["AE", "AE"],
+                "USUBJID": ["S001", "S001"],
+                "AESEQ": [1, 2],
+                "AETERM": ["Headache", "Nausea"],
+                "AEDECOD": ["Headache", "Nausea"],
+            }
+        )
+    )
+    suppae_dataset = PandasDataset(
+        pd.DataFrame.from_dict(
+            {
+                "STUDYID": ["CDISC-PILOT-01", "CDISC-PILOT-01"],
+                "RDOMAIN": ["AE", "AE"],
+                "USUBJID": ["S001", "S001"],
+                "IDVAR": ["AESEQ", "AESEQ"],
+                "IDVARVAL": ["1", "2"],
+                "QNAM": ["AESPID", "AESEV"],
+                "QLABEL": ["Sponsor ID", "Severity"],
+                "QVAL": ["SP001", "MILD"],
+            }
+        )
+    )
+
+    mock_get_dataset.return_value = suppae_dataset
+    rule_with_supp_wildcard = {
+        "core_id": "TestRule",
+        "datasets": [
+            {
+                "domain_name": "SUPP--",
+                "match_key": ["USUBJID"],
+                "relationship_columns": {
+                    "column_with_names": "QNAM",
+                    "column_with_values": "QVAL",
+                },
+            }
+        ],
+        "conditions": ConditionCompositeFactory.get_condition_composite(
+            {
+                "all": [
+                    {
+                        "name": "get_dataset",
+                        "operator": "equal_to",
+                        "value": {"target": "AESEV", "comparator": "MILD"},
+                    }
+                ]
+            }
+        ),
+    }
+    datasets = [
+        SDTMDatasetMetadata(
+            name="SUPPAE",
+            first_record={"RDOMAIN": "AE"},
+            filename="suppae.xpt",
+        ),
+    ]
+    data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
+    preprocessor = DatasetPreprocessor(
+        ae_dataset,
+        SDTMDatasetMetadata(
+            first_record={"DOMAIN": "AE"}, full_path=os.path.join("path", "ae.xpt")
+        ),
+        data_service,
+        InMemoryCacheService(),
+    )
+
+    result = preprocessor.preprocess(rule_with_supp_wildcard, datasets)
+    assert len(result.data) == 2
+    assert "RDOMAIN" in result.data.columns
+    assert "AESPID" in result.data.columns
+    assert "AESEV" in result.data.columns
+    assert result.data.loc[0, "AESPID"] == "SP001"
+    assert result.data.loc[1, "AESEV"] == "MILD"
+
+
+@patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset")
+def test_preprocess_specific_suppae_dataset(
+    mock_get_dataset: MagicMock,
+):
+
+    ae_dataset = PandasDataset(
+        pd.DataFrame.from_dict(
+            {
+                "STUDYID": ["CDISC-PILOT-01"],
+                "DOMAIN": ["AE"],
+                "USUBJID": ["S001"],
+                "AESEQ": [1],
+                "AETERM": ["Headache"],
+            }
+        )
+    )
+    suppae_dataset = PandasDataset(
+        pd.DataFrame.from_dict(
+            {
+                "STUDYID": ["CDISC-PILOT-01"],
+                "RDOMAIN": ["AE"],
+                "USUBJID": ["S001"],
+                "IDVAR": [""],
+                "IDVARVAL": [""],
+                "QNAM": ["AESPID"],
+                "QLABEL": ["Sponsor ID"],
+                "QVAL": ["SP001"],
+            }
+        )
+    )
+
+    mock_get_dataset.return_value = suppae_dataset
+    rule_with_specific_supp = {
+        "core_id": "TestRule",
+        "datasets": [
+            {
+                "domain_name": "SUPPAE",
+                "match_key": ["USUBJID"],
+                "relationship_columns": {
+                    "column_with_names": "IDVAR",
+                    "column_with_values": "IDVARVAL",
+                },
+            }
+        ],
+        "conditions": ConditionCompositeFactory.get_condition_composite(
+            {
+                "all": [
+                    {
+                        "name": "get_dataset",
+                        "operator": "equal_to",
+                        "value": {"target": "QVAL", "comparator": "SP001"},
+                    }
+                ]
+            }
+        ),
+    }
+    datasets = [
+        SDTMDatasetMetadata(
+            name="SUPPAE",
+            first_record={"RDOMAIN": "AE"},
+            filename="suppae.xpt",
+        ),
+    ]
+
+    data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
+    preprocessor = DatasetPreprocessor(
+        ae_dataset,
+        SDTMDatasetMetadata(
+            first_record={"DOMAIN": "AE"}, full_path=os.path.join("path", "ae.xpt")
+        ),
+        data_service,
+        InMemoryCacheService(),
+    )
+
+    result = preprocessor.preprocess(rule_with_specific_supp, datasets)
+    assert len(result.data) >= 1
+    assert "USUBJID" in result.data.columns
+    assert "AETERM" in result.data.columns
+    assert "QNAM" in result.data.columns
+    assert "QVAL" in result.data.columns
+    qval_values = result.data["QVAL"].dropna().tolist()
+    assert "SP001" in qval_values
+    expected_path = os.path.join("path", "suppae.xpt")
+    mock_get_dataset.assert_called_with(dataset_name=expected_path)

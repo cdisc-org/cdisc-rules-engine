@@ -162,10 +162,8 @@ class DataframeType(BaseType):
         equal_to       Populated   Populated   A == B
         """
         if value_is_reference:
-            dynamic_column_name = row[comparator] if comparator in row else None
-            comparison_data = (
-                row[dynamic_column_name] if dynamic_column_name in row else None
-            )
+            dynamic_column_name = row[comparator]
+            comparison_data = row[dynamic_column_name]
         else:
             comparison_data = (
                 comparator
@@ -209,10 +207,8 @@ class DataframeType(BaseType):
         not_equal_to   Populated   Populated   A != B
         """
         if value_is_reference:
-            dynamic_column_name = row[comparator] if comparator in row else None
-            comparison_data = (
-                row[dynamic_column_name] if dynamic_column_name in row else None
-            )
+            dynamic_column_name = row[comparator]
+            comparison_data = row[dynamic_column_name]
         else:
             comparison_data = (
                 comparator
