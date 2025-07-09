@@ -453,3 +453,158 @@ def test_operation_result_grouping_record_count(operation_params: OperationParam
     operation_result = result[operation_params.operation_id]
     expected_series = pd.Series([2, 2, 1, 1, 1], name="operation_id", dtype="int64")
     assert operation_result.equals(expected_series)
+
+
+@pytest.mark.parametrize(
+    "data, expected, filter",
+    [
+        (
+            PandasDataset.from_dict(
+                {
+                    "STUDYID": ["CDISC01", "CDISC01", "CDISC01", "CDISC01", "CDISC01"],
+                    "USUBJID": ["TEST1", "TEST1", "TEST1", "TEST1", "TEST1"],
+                    "QNAM": ["RACE1", "RACE2", "RACE3", "HEIGHT", "WEIGHT"],
+                    "QVAL": ["ASIAN", "WHITE", "BLACK", "180", "75"],
+                }
+            ),
+            PandasDataset.from_dict(
+                {
+                    "STUDYID": ["CDISC01", "CDISC01", "CDISC01", "CDISC01", "CDISC01"],
+                    "USUBJID": ["TEST1", "TEST1", "TEST1", "TEST1", "TEST1"],
+                    "QNAM": ["RACE1", "RACE2", "RACE3", "HEIGHT", "WEIGHT"],
+                    "QVAL": ["ASIAN", "WHITE", "BLACK", "180", "75"],
+                    "operation_id": [3, 3, 3, 3, 3],
+                }
+            ),
+            {"QNAM": "RACE%"},
+        ),
+        (
+            PandasDataset.from_dict(
+                {
+                    "STUDYID": ["CDISC01", "CDISC01", "CDISC01"],
+                    "USUBJID": ["TEST1", "TEST1", "TEST1"],
+                    "QNAM": ["RACE1", "HEIGHT", "WEIGHT"],
+                    "QVAL": ["ASIAN", "180", "75"],
+                }
+            ),
+            PandasDataset.from_dict(
+                {
+                    "STUDYID": ["CDISC01", "CDISC01", "CDISC01"],
+                    "USUBJID": ["TEST1", "TEST1", "TEST1"],
+                    "QNAM": ["RACE1", "HEIGHT", "WEIGHT"],
+                    "QVAL": ["ASIAN", "180", "75"],
+                    "operation_id": [0, 0, 0],
+                }
+            ),
+            {"QNAM": "VITAL%"},
+        ),
+        (
+            PandasDataset.from_dict(
+                {
+                    "STUDYID": ["CDISC01", "CDISC01", "CDISC01"],
+                    "USUBJID": ["TEST1", "TEST1", "TEST1"],
+                    "QNAM": ["RACE1", "RACE2", "HEIGHT"],
+                    "QVAL": ["ASIAN", "WHITE", "180"],
+                }
+            ),
+            PandasDataset.from_dict(
+                {
+                    "STUDYID": ["CDISC01", "CDISC01", "CDISC01"],
+                    "USUBJID": ["TEST1", "TEST1", "TEST1"],
+                    "QNAM": ["RACE1", "RACE2", "HEIGHT"],
+                    "QVAL": ["ASIAN", "WHITE", "180"],
+                    "operation_id": [1, 1, 1],
+                }
+            ),
+            {"QNAM": "RACE1"},
+        ),
+    ],
+)
+def test_wildcard_filtered_record_count(
+    data, expected, filter, operation_params: OperationParams
+):
+    config = ConfigService()
+    cache = CacheServiceFactory(config).get_cache_service()
+    data_service = DataServiceFactory(config, cache).get_data_service()
+    operation_params.dataframe = data
+    operation_params.filter = filter
+    result = RecordCount(operation_params, data, cache, data_service).execute()
+    assert operation_params.operation_id in result
+    assert result.equals(expected)
+
+
+@pytest.mark.parametrize(
+    "data, expected, filter, grouping",
+    [
+        (
+            PandasDataset.from_dict(
+                {
+                    "STUDYID": [
+                        "CDISC01",
+                        "CDISC01",
+                        "CDISC01",
+                        "CDISC01",
+                        "CDISC01",
+                        "CDISC01",
+                    ],
+                    "USUBJID": ["TEST1", "TEST1", "TEST1", "TEST2", "TEST2", "TEST2"],
+                    "QNAM": ["RACE1", "RACE2", "HEIGHT", "RACE3", "RACE4", "WEIGHT"],
+                    "QVAL": ["ASIAN", "WHITE", "180", "BLACK", "OTHER", "75"],
+                }
+            ),
+            PandasDataset.from_dict(
+                {
+                    "STUDYID": [
+                        "CDISC01",
+                        "CDISC01",
+                        "CDISC01",
+                        "CDISC01",
+                        "CDISC01",
+                        "CDISC01",
+                    ],
+                    "USUBJID": ["TEST1", "TEST1", "TEST1", "TEST2", "TEST2", "TEST2"],
+                    "QNAM": ["RACE1", "RACE2", "HEIGHT", "RACE3", "RACE4", "WEIGHT"],
+                    "QVAL": ["ASIAN", "WHITE", "180", "BLACK", "OTHER", "75"],
+                    "operation_id": [2, 2, 2, 2, 2, 2],
+                }
+            ),
+            {"QNAM": "RACE%"},
+            ["USUBJID"],
+        ),
+        (
+            PandasDataset.from_dict(
+                {
+                    "STUDYID": ["CDISC01", "CDISC01", "CDISC01", "CDISC01"],
+                    "USUBJID": ["TEST1", "TEST1", "TEST2", "TEST3"],
+                    "QNAM": ["RACE1", "RACE2", "RACE3", "HEIGHT"],
+                    "QVAL": ["ASIAN", "WHITE", "BLACK", "180"],
+                }
+            ),
+            PandasDataset.from_dict(
+                {
+                    "STUDYID": ["CDISC01", "CDISC01", "CDISC01", "CDISC01"],
+                    "USUBJID": ["TEST1", "TEST1", "TEST2", "TEST3"],
+                    "QNAM": ["RACE1", "RACE2", "RACE3", "HEIGHT"],
+                    "QVAL": ["ASIAN", "WHITE", "BLACK", "180"],
+                    "operation_id": [2, 2, 1, 0],
+                }
+            ),
+            {"QNAM": "RACE%"},
+            ["USUBJID"],
+        ),
+    ],
+)
+def test_wildcard_grouped_record_count(
+    data, expected, filter, grouping, operation_params: OperationParams
+):
+    config = ConfigService()
+    cache = CacheServiceFactory(config).get_cache_service()
+    data_service = DataServiceFactory(config, cache).get_data_service()
+    operation_params.dataframe = data
+    operation_params.filter = filter
+    operation_params.grouping = grouping
+    result = RecordCount(operation_params, data, cache, data_service).execute()
+    assert operation_params.operation_id in result
+    for group_col in grouping:
+        assert group_col in result
+    assert result.equals(expected)
