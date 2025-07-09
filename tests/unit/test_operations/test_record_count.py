@@ -423,3 +423,33 @@ def test_blank_grouping_record_count(data, expected, operation_params: Operation
     assert "STUDYID" in result
     assert "DOMAIN" in result
     assert result.data.equals(expected.data)
+
+
+def test_operation_result_grouping_record_count(operation_params: OperationParams):
+    config = ConfigService()
+    cache = CacheServiceFactory(config).get_cache_service()
+    data_service = DataServiceFactory(config, cache).get_data_service()
+    data = PandasDataset.from_dict(
+        {
+            "STUDYID": ["STUDY1", "STUDY1", "STUDY1", "STUDY2", "STUDY2"],
+            "DOMAIN": ["AE", "AE", "DM", "AE", "DM"],
+            "USUBJID": ["SUBJ1", "SUBJ2", "SUBJ1", "SUBJ1", "SUBJ1"],
+            "AESEQ": [1, 1, None, 1, None],
+            "$group_cols": [
+                ["STUDYID", "DOMAIN"],
+                ["STUDYID", "DOMAIN"],
+                ["STUDYID", "DOMAIN"],
+                ["STUDYID", "DOMAIN"],
+                ["STUDYID", "DOMAIN"],
+            ],
+        }
+    )
+    operation_params.dataframe = data
+    operation_params.grouping = ["$group_cols"]
+    result = RecordCount(operation_params, data, cache, data_service).execute()
+    assert operation_params.operation_id in result
+    assert "STUDYID" in result
+    assert "DOMAIN" in result
+    operation_result = result[operation_params.operation_id]
+    expected_series = pd.Series([2, 2, 1, 1, 1], name="operation_id", dtype="int64")
+    assert operation_result.equals(expected_series)
