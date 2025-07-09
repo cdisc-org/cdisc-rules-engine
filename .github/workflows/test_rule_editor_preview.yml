@@ -10,10 +10,10 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: 3.12
           
@@ -21,7 +21,7 @@ jobs:
         run: python -m ensurepip --upgrade && python -m pip install --upgrade pip setuptools
 
       - name: Install dependencies
-        run: pip install requests selenium webdriver-manager pyperclip==1.9.0 selenium-wire blinker==1.4 brotli certifi h2 hyperframe kaitaistruct pyasn1 pyOpenSSL pyparsing pysocks selenium wsproto zstandard
+        run: pip install requests selenium webdriver-manager selenium-wire brotli
 
       - name: Print commit SHA
         run: echo "Commit ID ${GITHUB_SHA}"
