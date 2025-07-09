@@ -21,7 +21,7 @@ jobs:
         run: python -m ensurepip --upgrade && python -m pip install --upgrade pip setuptools
 
       - name: Install dependencies
-        run: pip install requests selenium webdriver-manager selenium-wire brotli
+        run: pip install requests selenium webdriver-manager selenium-wire brotli blinker==1.4
 
       - name: Print commit SHA
         run: echo "Commit ID ${GITHUB_SHA}"
