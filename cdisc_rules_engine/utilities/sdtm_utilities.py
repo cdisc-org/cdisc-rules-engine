@@ -14,6 +14,7 @@ from cdisc_rules_engine.enums.variable_roles import VariableRoles
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
+import copy
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from typing import Iterable, Tuple, List, Optional
 
@@ -36,12 +37,6 @@ def get_class_and_domain_metadata(
 
     """
     # Get domain and class details for domain.
-    if (
-        domain
-        and (domain.upper().startswith("SUPP") or domain.upper().startswith("SQ"))
-        and len(domain) > 2
-    ):
-        domain = "SUPPQUAL"
     for c in standard_details.get("classes"):
         domain_details = search_in_list_of_dicts(
             c.get("datasets", []), lambda item: item["name"] == domain
@@ -58,116 +53,66 @@ def get_tabulation_model_type_and_version(model_link: dict) -> Tuple:
     return model_type, model_version
 
 
-def get_variables_metadata_from_standard(  # noqa
-    domain: str,
-    library_metadata: LibraryMetadataContainer,
-    dataset_class: str = None,
-    include_model_variables: bool = True,
-) -> List[dict]:
-    """
-    Gets variables metadata for the given class and domain from cache.
-    The cache stores CDISC Library metadata.
-
-    Args:
-        standard: Standard to validate against
-        standard_version: Version of the standard to validate against
-        domain: The domain being validated
-        cache: Cache service for retrieving previously cached library data
-        config: Config used to create a cdisc library client.
-        include_model_variables: Boolean flag signifying whether or not
-                                 model variables are included
-    Returns:
-    [
-        {
-            "label":"Study Identifier",
-            "name":"STUDYID",
-            "ordinal":"1",
-            "role":"Identifier",
-            "description": "desc",
-            "simpleDatatype": "Char"
-        },
-        {
-            "label":"Domain Abbreviation",
-            "name":"DOMAIN",
-            "ordinal":"2",
-            "role":"Identifier"
-        },
-            ...
-    ]
-    """
-    # get model details from cache
-    standard_details: dict = library_metadata.standard_metadata
-    model = standard_details.get("_links", {}).get("model")
-    model_type, model_version = get_tabulation_model_type_and_version(model)
+def get_variables_metadata_from_standard(domain, library_metadata):  # noqa
+    standard_details = library_metadata.standard_metadata
     model_details = library_metadata.model_metadata
     is_custom = domain not in standard_details.get("domains", {})
     variables_metadata = []
-    if dataset_class:
-        # both custom and non-custom domains pull from model
-        class_details = {"name": dataset_class}
+    IG_class_details, IG_domain_details = get_class_and_domain_metadata(
+        standard_details, domain
+    )
+    class_name = convert_library_class_name_to_ct_class(IG_class_details.get("name"))
+    model_class_details = get_class_metadata(model_details, class_name)
+    # Both custom and standard General Observations pull from model
+    if is_custom or class_name in DETECTABLE_CLASSES:
         (
             identifiers_metadata,
             class_variables_metadata,
             timing_metadata,
-        ) = get_allowed_class_variables(model_details, class_details)
-        if identifiers_metadata:
-            for var in identifiers_metadata:
-                var["name"] = var["name"].replace("--", domain)
-                variables_metadata.append(var)
-        if class_variables_metadata:
-            for var in class_variables_metadata:
-                var["name"] = var["name"].replace("--", domain)
-                variables_metadata.append(var)
-        if timing_metadata:
-            for var in timing_metadata:
-                var["name"] = var["name"].replace("--", domain)
-                variables_metadata.append(var)
-        if not is_custom:
-            # non-custom domains pull from implementation guide as well
-            class_details, domain_details = get_class_and_domain_metadata(
-                standard_details, domain
-            )
-            variables_metadata.extend(domain_details.get("datasetVariables"))
-            for var in variables_metadata:
-                if "ordinal" in var:
-                    var["order_number"] = var.pop("ordinal")
-            variables_metadata.sort(key=lambda item: int(item["order_number"]))
-            class_name = convert_library_class_name_to_ct_class(
-                class_details.get("name")
-            )
-            if (
-                class_name in DETECTABLE_CLASSES
-                and model_details
-                and include_model_variables
-            ):
-                existing_variables = set([var["name"] for var in variables_metadata])
-                (
-                    identifiers_metadata,
-                    class_variables_metadata,
-                    timing_metadata,
-                ) = get_allowed_class_variables(model_details, class_details)
-
-                """
-                In some cases an identifier variable appears in both
-                the model class and the ig domain. We want to make sure to only add variables
-                that don't already appear in the ig domain to the list of variables
-                in order to avoid having duplicate variables in the output.
-                """
-                if identifiers_metadata:
-                    new_identifiers = [
-                        idvar
-                        for idvar in identifiers_metadata
-                        if idvar["name"].replace("--", domain) not in existing_variables
-                    ]
-                    variables_metadata = new_identifiers + variables_metadata
-                if timing_metadata:
-                    new_timing_vars = [
-                        timing_var
-                        for timing_var in timing_metadata
-                        if timing_var["name"].replace("--", domain)
-                        not in existing_variables
-                    ]
-                    variables_metadata = variables_metadata + new_timing_vars
+        ) = get_allowed_class_variables(model_details, model_class_details)
+        model_variables = []
+        for var_list in [
+            identifiers_metadata,
+            class_variables_metadata,
+            timing_metadata,
+        ]:
+            replace_variable_wildcards(var_list, domain, model_variables)
+    # Custom domains only pull from model hierarchy
+    if is_custom:
+        variables_metadata = model_variables
+    # All non-custom domains pull from IG and overwrite the model variables
+    else:
+        ig_variables = IG_domain_details.get("datasetVariables", [])
+        ig_variables.sort(key=lambda item: int(item["ordinal"]))
+        if class_name in DETECTABLE_CLASSES:
+            variables_metadata = model_variables.copy()
+            model_vars_by_name = {
+                var["name"]: i for i, var in enumerate(variables_metadata)
+            }
+            for ig_var in ig_variables:
+                ig_var_name = ig_var["name"]
+                if ig_var_name in model_vars_by_name:
+                    variables_metadata[model_vars_by_name[ig_var_name]] = ig_var
+                else:
+                    # if a variable exists in the IG but not in the model,
+                    # insert it at the end of the its section
+                    ig_var_role = ig_var.get("role")
+                    if ig_var_role == "Identifier":
+                        identifiers_length = len(identifiers_metadata)
+                        insertion_point = identifiers_length
+                    elif ig_var_role == "Timing":
+                        insertion_point = len(variables_metadata)
+                    else:
+                        timing_metadata_length = len(timing_metadata)
+                        insertion_point = (
+                            len(variables_metadata) - timing_metadata_length
+                        )
+                    variables_metadata.insert(insertion_point, ig_var)
+                    model_vars_by_name = {
+                        var["name"]: i for i, var in enumerate(variables_metadata)
+                    }
+        else:
+            variables_metadata = ig_variables
     return variables_metadata
 
 
@@ -179,7 +124,7 @@ def get_allowed_class_variables(
 
     Args:
         model_details: Model metadata from cdisc library
-        class_details: IG class metadata from cdisc library
+        class_details: Model class metadata from cdisc library
 
     Returns:
         A tuple containing three lists:
@@ -189,27 +134,21 @@ def get_allowed_class_variables(
     """
     # General Observation class variables to variables metadata
     class_name = convert_library_class_name_to_ct_class(class_details.get("name"))
-    variables_metadata = class_details.get("classVariables", [])
-    if variables_metadata:
-        sort_key = "ordinal" if "ordinal" in variables_metadata[0] else "order_number"
-        variables_metadata.sort(key=lambda item: item[sort_key])
-
+    class_variables_metadata = class_details.get("classVariables", [])
+    class_variables_metadata.sort(key=lambda item: int(item["ordinal"]))
     if class_name == FINDINGS_ABOUT:
         # Add FINDINGS class variables. Findings About class variables should
         # Appear in the list after the --TEST variable
         findings_class_metadata: dict = get_class_metadata(model_details, FINDINGS)
         findings_class_variables = findings_class_metadata["classVariables"]
-        FAsort_key = (
-            "ordinal" if "ordinal" in findings_class_variables[0] else "order_number"
-        )
-        findings_class_variables.sort(key=lambda item: item[FAsort_key])
+        findings_class_variables.sort(key=lambda item: int(item["ordinal"]))
         test_index = len(findings_class_variables) - 1
         for i, v in enumerate(findings_class_variables):
             if v["name"] == FINDINGS_TEST_VARIABLE:
                 test_index = i
-                variables_metadata = (
+                class_variables_metadata = (
                     findings_class_variables[: test_index + 1]
-                    + variables_metadata
+                    + class_variables_metadata
                     + findings_class_variables[test_index + 1 :]
                 )
                 break
@@ -217,22 +156,14 @@ def get_allowed_class_variables(
         gen_obs_class_metadata: dict = get_class_metadata(
             model_details, GENERAL_OBSERVATIONS_CLASS
         )
+        gen_obs_class_variables = gen_obs_class_metadata["classVariables"]
         identifiers_metadata, timing_metadata = group_class_variables_by_role(
-            gen_obs_class_metadata["classVariables"]
+            gen_obs_class_variables
         )
-
-        def standardize_order_number(var):
-            if "ordinal" in var:
-                var["order_number"] = var.pop("ordinal")
-            return var
-
-        identifiers_metadata = list(map(standardize_order_number, identifiers_metadata))
-        timing_metadata = list(map(standardize_order_number, timing_metadata))
-        # Identifiers are added to the beginning and Timing to the end
-        identifiers_metadata.sort(key=lambda item: item["order_number"])
-        timing_metadata.sort(key=lambda item: item["order_number"])
-        return identifiers_metadata, variables_metadata, timing_metadata
-    return [], variables_metadata, []
+        identifiers_metadata.sort(key=lambda item: int(item["ordinal"]))
+        timing_metadata.sort(key=lambda item: int(item["ordinal"]))
+        return identifiers_metadata, class_variables_metadata, timing_metadata
+    return [], class_variables_metadata, []
 
 
 def get_class_metadata(
@@ -338,6 +269,12 @@ def get_variables_metadata_from_standard_model(
     """
     # get model details from cache
     model_details = library_metadata.model_metadata
+    if (
+        domain
+        and (domain.upper().startswith("SUPP") or domain.upper().startswith("SQ"))
+        and len(domain) > 2
+    ):
+        domain = "SUPPQUAL"
     domain_details = get_model_domain_metadata(model_details, domain)
     variables_metadata = []
 
@@ -349,10 +286,7 @@ def get_variables_metadata_from_standard_model(
         class_details = get_class_metadata(model_details, class_name)
         variables_metadata = domain_details.get("datasetVariables", [])
         if variables_metadata:
-            sort_key = (
-                "ordinal" if "ordinal" in variables_metadata[0] else "order_number"
-            )
-            variables_metadata.sort(key=lambda item: item[sort_key])
+            variables_metadata.sort(key=lambda item: int(item["ordinal"]))
     else:
         # Domain not found in the model. Detect class name from data
         domain_details = search_in_list_of_dicts(
@@ -389,8 +323,13 @@ def get_model_domain_metadata(model_details: dict, domain_name: str) -> dict:
     return domain_details
 
 
-def replace_variable_wildcards(variables_metadata, domain):
-    return [var["name"].replace("--", domain) for var in variables_metadata]
+def replace_variable_wildcards(var_list, domain, target_list):
+    """Add variables from var_list to target_list, replacing '--' with domain in names."""
+    for var in var_list:
+        # Create a deepcopy to avoid modifying cached library metadata
+        var_copy = copy.deepcopy(var)
+        var_copy["name"] = var_copy["name"].replace("--", domain)
+        target_list.append(var_copy)
 
 
 def get_all_model_wildcard_variables(model_details: dict):
