@@ -132,7 +132,7 @@ Directory must contain the `Loinc.csv` with capital 'L'
 Validates dictionary versions against define.xml specifications.
 
 ```yaml
-Operation:
+Operations:
   - operator: valid_define_external_dictionary_version
     id: $is_valid_loinc_version
     external_dictionary_type: loinc
@@ -145,7 +145,7 @@ Operation:
 Validates dictionary values with optional case sensitivity.
 
 ```yaml
-Operation:
+Operations:
   - operator: valid_external_dictionary_value
     name: --DECOD
     id: $is_valid_decod_value
@@ -159,7 +159,7 @@ Operation:
 Validates dictionary codes.
 
 ```yaml
-Operation:
+Operations:
   - operator: valid_external_dictionary_code
     name: --COD
     id: $is_valid_cod_code
@@ -172,7 +172,7 @@ Operation:
 Validates matching of code-term pairs.
 
 ```yaml
-Operation:
+Operations:
   - operator: valid_external_dictionary_code_term_pair
     name: --COD
     id: $is_valid_loinc_code_term_pair
@@ -195,7 +195,7 @@ Validates MedDRA codes across all levels:
 Example:
 
 ```yaml
-Operation:
+Operations:
   - id: $is_valid_meddra_codes
     operator: valid_meddra_code_references
 ```

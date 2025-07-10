@@ -9,7 +9,7 @@
           "const": "codelist_extensible"
         }
       },
-      "required": ["id", "operator", "codelist"],
+      "required": ["id", "operator"],
       "type": "object"
     },
     {
@@ -18,7 +18,7 @@
           "const": "codelist_terms"
         }
       },
-      "required": ["id", "operator", "codelists", "level", "returntype"],
+      "required": ["id", "operator"],
       "type": "object"
     },
     {
@@ -158,6 +158,13 @@
         }
       },
       "required": ["id", "operator", "name"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": { "const": "map" }
+      },
+      "required": ["id", "operator", "map"],
       "type": "object"
     },
     {
@@ -407,6 +414,9 @@
     "codelist": {
       "type": "string"
     },
+    "codelist_code": {
+      "type": "string"
+    },
     "codelists": {
       "items": {
         "type": "string"
@@ -416,25 +426,26 @@
     "ct_attribute": {
       "type": "string"
     },
+    "ct_package_type": {
+      "type": "string",
+      "enum": [
+        "ADAM",
+        "CDASH",
+        "COA",
+        "DDF",
+        "DEFINE-XML",
+        "GLOSSARY",
+        "MRCT",
+        "PROTOCOL",
+        "QRS",
+        "QS-FT",
+        "SDTM",
+        "SEND",
+        "TMF"
+      ]
+    },
     "ct_package_types": {
-      "items": {
-        "type": "string",
-        "enum": [
-          "ADAM",
-          "CDASH",
-          "COA",
-          "DDF",
-          "DEFINE-XML",
-          "GLOSSARY",
-          "MRCT",
-          "PROTOCOL",
-          "QRS",
-          "QS-FT",
-          "SDTM",
-          "SEND",
-          "TMF"
-        ]
-      },
+      "items": { "$ref": "Operations.json#/properties/ct_package_type" },
       "type": "array"
     },
     "ct_packages": {
@@ -505,14 +516,33 @@
       "type": "string",
       "enum": ["codelist", "term"]
     },
-    "returntype": {
-      "type": "string",
-      "enum": ["code", "value"]
+    "map": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "output": { "type": "string" }
+        },
+        "required": ["output"]
+      }
     },
     "name": {
       "type": "string"
     },
     "operator": {
+      "type": "string"
+    },
+    "returntype": {
+      "type": "string",
+      "enum": ["code", "value"]
+    },
+    "term_value": {
+      "type": "string"
+    },
+    "term_code": {
+      "type": "string"
+    },
+    "version": {
       "type": "string"
     }
   },

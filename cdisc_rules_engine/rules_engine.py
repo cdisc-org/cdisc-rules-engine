@@ -82,7 +82,9 @@ class RulesEngine:
             self.dataset_paths
         )
         self.rule_processor = RuleProcessor(
-            self.data_service, self.cache, self.library_metadata
+            self.data_service,
+            self.cache,
+            self.library_metadata,
         )
         self.data_processor = DataProcessor(self.data_service, self.cache)
         self.ct_packages = kwargs.get("ct_packages", [])
