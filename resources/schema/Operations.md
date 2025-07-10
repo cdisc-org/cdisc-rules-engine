@@ -716,6 +716,8 @@ Variable Metadata for custom domains will pull from the model while non-custom d
 
 If no `filter` or `group` is provided, returns the number of records in the dataset. If `filter` is provided, returns the number of records in the dataset that contain the value(s) in the corresponding column(s) provided in the filter. If `group` is provided, returns the number of rows matching each unique set of the grouping variables. These can be static column name(s) or can be derived from other operations like `get_dataset_filtered_variables`. │ │If both `filter` and `group` are provided, returns the number of records in the dataset that contain the value(s) in the corresponding column(s) provided in the filter that also match each unique set of the grouping variables.
 
+**Wildcard Filtering**: Filter values ending with `%` will match any records where the column value starts with the specified prefix. For example, `RACE%` will match `RACE1`, `RACE2`, `RACE3`, etc. This is useful for matching related variables with numeric or alphabetic suffixes.
+
 If `group` is provided, `group_aliases` may also be provided to assign new grouping variable names so that results grouped by the values in one set of grouping variables can be merged onto a dataset according to the same grouping value(s) stored in different set of grouping variables. When both `group` and `group_aliases` are provided, columns are renamed according to corresponding list position (i.e., the 1st column in `group` is renamed to the 1st column in `group_aliases`, etc.). If there are more columns listed in `group` than in `group_aliases`, only the `group` columns with corresponding `group_aliases` columns will be renamed. If there are more columns listed in `group_aliases` than in `group`, the extra column names in `group_aliases` will be ignored.
 
 Example: return the number of records in a dataset.
@@ -733,6 +735,17 @@ Example: return the number of records where STUDYID = "CDISC01" and FLAGVAR = "Y
   filter:
     STUDYID: "CDISC01"
     FLAGVAR: "Y"
+```
+
+Example: return the number of records where QNAM starts with "RACE" (matches RACE1, RACE2, RACE3, etc.) per USUBJID.
+
+```yaml
+- operation: record_count
+  id: $race_records_in_dataset
+  filter:
+    QNAM: "RACE%"
+  group:
+    - "USUBJID"
 ```
 
 Example: return the number of records grouped by USUBJID.

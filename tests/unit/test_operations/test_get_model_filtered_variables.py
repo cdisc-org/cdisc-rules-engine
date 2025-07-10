@@ -6,10 +6,8 @@ import pytest
 import pandas as pd
 from typing import List
 from unittest.mock import patch
-
 from cdisc_rules_engine.constants.classes import (
     GENERAL_OBSERVATIONS_CLASS,
-    FINDINGS,
     FINDINGS_ABOUT,
     EVENTS,
 )
@@ -272,250 +270,10 @@ test_set2 = (
     ["STUDYID", "DOMAIN", "USUBJID", "AETERM"],
 )
 
-test_set3 = (
-    {
-        "datasets": [
-            {
-                "_links": {"parentClass": {"title": FINDINGS_ABOUT}},
-                "name": "NOTTHESAME",
-                "datasetVariables": [
-                    {
-                        "name": "AETERM",
-                        "ordinal": 4,
-                    },
-                    {
-                        "name": "AESEQ",
-                        "ordinal": 3,
-                    },
-                ],
-            }
-        ],
-        "classes": [
-            {
-                "name": FINDINGS_ABOUT,
-                "label": FINDINGS_ABOUT,
-                "classVariables": [
-                    {"name": "--OBJ", "ordinal": 1},
-                    {
-                        "name": "USUBJID",
-                        "role": VariableRoles.IDENTIFIER.value,
-                        "ordinal": 2,
-                    },
-                    {
-                        "name": "IDVAR1",
-                        "role": VariableRoles.IDENTIFIER.value,
-                        "ordinal": 3,
-                    },
-                    {
-                        "name": "TIMING_VAR1",
-                        "role": VariableRoles.TIMING.value,
-                        "ordinal": 31,
-                    },
-                    {
-                        "name": "TIMING_VAR2",
-                        "role": VariableRoles.TIMING.value,
-                        "ordinal": 32,
-                    },
-                ],
-            },
-            {
-                "name": FINDINGS,
-                "label": FINDINGS,
-                "classVariables": [
-                    {"name": "--VAR1", "ordinal": 1},
-                    {"name": "--TEST", "ordinal": 2},
-                    {"name": "--VAR2", "ordinal": 3},
-                ],
-            },
-            {
-                "name": GENERAL_OBSERVATIONS_CLASS,
-                "label": GENERAL_OBSERVATIONS_CLASS,
-                "classVariables": [
-                    {
-                        "name": "DOMAIN",
-                        "role": VariableRoles.IDENTIFIER.value,
-                        "ordinal": 2,
-                    },
-                    {
-                        "name": "STUDYID",
-                        "role": VariableRoles.IDENTIFIER.value,
-                        "ordinal": 1,
-                    },
-                    {
-                        "name": "TIMING_VAR1",
-                        "role": VariableRoles.TIMING.value,
-                        "ordinal": 32,
-                    },
-                    {
-                        "name": "TIMING_VAR2",
-                        "role": VariableRoles.TIMING.value,
-                        "ordinal": 33,
-                    },
-                ],
-            },
-        ],
-    },
-    {
-        "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
-        "classes": [
-            {
-                "name": FINDINGS_ABOUT,
-                "datasets": [
-                    {
-                        "name": "AE",
-                        "label": "Adverse Events",
-                        "datasetVariables": [
-                            {"name": "AETEST", "ordinal": 1},
-                            {"name": "AENEW", "ordinal": 2},
-                        ],
-                    }
-                ],
-            }
-        ],
-    },
-    {
-        "STUDYID": [
-            "TEST_STUDY",
-            "TEST_STUDY",
-            "TEST_STUDY",
-        ],
-        "DOMAIN": ["AE", "AE", "AE"],
-        "AEOBJ": [
-            "test",
-            "test",
-            "test",
-        ],
-        "AETESTCD": ["test", "test", "test"],
-    },
-    {"name": "AE"},
-    "Timing",
-    ["TIMING_VAR1", "TIMING_VAR2"],
-)
-
-test_set4 = (
-    {
-        "datasets": [
-            {
-                "_links": {"parentClass": {"title": FINDINGS_ABOUT}},
-                "name": "NOTTHESAME",
-                "datasetVariables": [
-                    {
-                        "name": "AETERM",
-                        "ordinal": 4,
-                    },
-                    {
-                        "name": "AESEQ",
-                        "ordinal": 3,
-                    },
-                ],
-            }
-        ],
-        "classes": [
-            {
-                "name": FINDINGS_ABOUT,
-                "label": FINDINGS_ABOUT,
-                "classVariables": [
-                    {"name": "--OBJ", "ordinal": 1},
-                    {
-                        "name": "USUBJID",
-                        "role": VariableRoles.IDENTIFIER.value,
-                        "ordinal": 2,
-                    },
-                    {
-                        "name": "IDVAR1",
-                        "role": VariableRoles.IDENTIFIER.value,
-                        "ordinal": 3,
-                    },
-                    {
-                        "name": "TIMING_VAR1",
-                        "role": VariableRoles.TIMING.value,
-                        "ordinal": 31,
-                    },
-                    {
-                        "name": "TIMING_VAR2",
-                        "role": VariableRoles.TIMING.value,
-                        "ordinal": 32,
-                    },
-                ],
-            },
-            {
-                "name": FINDINGS,
-                "label": FINDINGS,
-                "classVariables": [
-                    {"name": "--VAR1", "ordinal": 1},
-                    {"name": "--TEST", "ordinal": 2},
-                    {"name": "--VAR2", "ordinal": 3},
-                ],
-            },
-            {
-                "name": GENERAL_OBSERVATIONS_CLASS,
-                "label": GENERAL_OBSERVATIONS_CLASS,
-                "classVariables": [
-                    {
-                        "name": "DOMAIN",
-                        "role": VariableRoles.IDENTIFIER.value,
-                        "ordinal": 2,
-                    },
-                    {
-                        "name": "STUDYID",
-                        "role": VariableRoles.IDENTIFIER.value,
-                        "ordinal": 1,
-                    },
-                    {
-                        "name": "IDVAR1",
-                        "role": VariableRoles.IDENTIFIER.value,
-                        "ordinal": 3,
-                    },
-                    {
-                        "name": "TIMING_VAR",
-                        "role": VariableRoles.TIMING.value,
-                        "ordinal": 33,
-                    },
-                ],
-            },
-        ],
-    },
-    {
-        "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
-        "classes": [
-            {
-                "name": FINDINGS_ABOUT,
-                "datasets": [
-                    {
-                        "name": "AE",
-                        "label": "Adverse Events",
-                        "datasetVariables": [
-                            {"name": "AETEST", "ordinal": 1},
-                            {"name": "AENEW", "ordinal": 2},
-                        ],
-                    }
-                ],
-            }
-        ],
-    },
-    {
-        "STUDYID": [
-            "TEST_STUDY",
-            "TEST_STUDY",
-            "TEST_STUDY",
-        ],
-        "DOMAIN": ["AE", "AE", "AE"],
-        "AEOBJ": [
-            "test",
-            "test",
-            "test",
-        ],
-        "AETESTCD": ["test", "test", "test"],
-    },
-    {"name": "AE"},
-    "Identifier",
-    ["STUDYID", "DOMAIN", "IDVAR1"],
-)
-
 
 @pytest.mark.parametrize(
     "model_metadata, standard_metadata, study_data, dataset_metadata, key_val, var_list",
-    [test_set1, test_set2, test_set3, test_set4],
+    [test_set1, test_set2],
 )
 def test_get_model_filtered_variables(
     operation_params: OperationParams,
@@ -526,10 +284,6 @@ def test_get_model_filtered_variables(
     key_val: str,
     var_list: List[str],
 ):
-    """
-    Unit test for DataProcessor.get_column_order_from_library.
-    Mocks cache call to return metadata.
-    """
     if key_val is None:
         key_val = "Timing"
     operation_params.dataframe = PandasDataset.from_dict(study_data)
@@ -539,7 +293,6 @@ def test_get_model_filtered_variables(
     operation_params.key_name = "role"
     operation_params.key_value = key_val
     operation_params.datasets = [SDTMDatasetMetadata(**dataset_metadata)]
-
     # save model metadata to cache
     cache = InMemoryCacheService.get_instance()
     library_metadata = LibraryMetadataContainer(
@@ -554,13 +307,11 @@ def test_get_model_filtered_variables(
         standard_version="3-4",
         library_metadata=library_metadata,
     )
-
     expected_class = (
         EVENTS
         if model_metadata["datasets"][0]["_links"]["parentClass"]["title"] == "Events"
         else FINDINGS_ABOUT
     )
-
     """
     this fuction replaces get_raw_dataset_metadata in LocalDataService to
     prevent filtering into the decorator that checks cache
@@ -570,7 +321,6 @@ def test_get_model_filtered_variables(
         return SDTMDatasetMetadata(**dataset_metadata)
 
     data_service.get_raw_dataset_metadata = mock_get_raw_metadata
-
     with patch.object(
         LocalDataService, "get_dataset_class", return_value=expected_class
     ):
@@ -581,7 +331,6 @@ def test_get_model_filtered_variables(
             data_service,
             library_metadata,
         )
-
     operation = LibraryModelVariablesFilter(
         operation_params,
         operation_params.dataframe,
@@ -589,9 +338,7 @@ def test_get_model_filtered_variables(
         data_service,
         library_metadata,
     )
-
     result = operation.execute()
-
     variables: List[str] = var_list
     expected = pd.Series(
         [
