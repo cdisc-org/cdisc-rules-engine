@@ -75,7 +75,6 @@ class LibraryMetadataContainer:
             try:
                 with open(file_name, "rb") as f:
                     ct_package_data = load(f)
-                    self.set_ct_package_metadata(ct_package_version, ct_package_data)
             except FileNotFoundError:
                 # ct_package_type and version may be coming from the source data.
                 # Instead of raising an error, the rule should handle the missing package when appropriate.
@@ -95,7 +94,7 @@ class LibraryMetadataContainer:
         for version in {*versions}:
             ct_package_data = self._load_ct_package_data(ct_package_type, version)
             for codelist_code, codelist in ct_package_data.items():
-                if "terms" in codelist:
+                if isinstance(codelist, dict) and "terms" in codelist:
                     ct_lists["ct_package_type"].append(ct_package_type)
                     ct_lists["version"].append(version)
                     ct_lists["codelist_code"].append(codelist_code)
@@ -115,7 +114,9 @@ class LibraryMetadataContainer:
         for version in {*versions}:
             ct_package_data = self._load_ct_package_data(ct_package_type, version)
             for codelist_code, codelist in ct_package_data.items():
-                for term in codelist.get("terms", []):
+                for term in (
+                    codelist.get("terms", []) if isinstance(codelist, dict) else []
+                ):
                     ct_terms["ct_package_type"].append(ct_package_type)
                     ct_terms["version"].append(version)
                     ct_terms["codelist_code"].append(codelist_code)
