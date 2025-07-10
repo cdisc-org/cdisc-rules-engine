@@ -12,6 +12,8 @@ from cdisc_rules_engine.services.cache.cache_service_factory import (
 )
 import pytest
 
+from cdisc_rules_engine.utilities.rule_processor import RuleProcessor
+
 
 @pytest.mark.parametrize(
     "standard, ct_package_types, expected",
@@ -73,7 +75,10 @@ def test_valid_codelist_dates(
     cache = CacheServiceFactory(config).get_cache_service()
     library_metadata = LibraryMetadataContainer(published_ct_packages=valid_codelists)
     operation_params.standard = standard
-    operation_params.ct_package_types = ct_package_types
+    operation_params.ct_package_types = [
+        RuleProcessor._ct_package_type_api_name(ct_package_type)
+        for ct_package_type in ct_package_types or []
+    ]
     result = ValidCodelistDates(
         operation_params,
         PandasDataset.from_dict({"test": [1, 2, 33]}),
