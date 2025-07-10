@@ -161,7 +161,10 @@ ex. if TS.xpt, AE.xpt, EC.xpt, and SUPPEC.xpt are submitted -> [TS, AE, EC, SUPP
 
 ## distinct
 
-Get a distinct list of values for the given `name`. If a `group` list is specified, the distinct value list will be grouped by the variables within `group`.
+Get a distinct list of values for the given `name`.
+
+- If a `group` list is specified, the distinct value list will be grouped by the variables within `group`.
+- If a `filter` object is provided, only values for records that match the filter criteria are included in the distinct values.
 
 If `group` is provided, `group_aliases` may also be provided to assign new grouping variable names so that results grouped by the values in one set of grouping variables can be merged onto a dataset according to the same grouping value(s) stored in different set of grouping variables. When both `group` and `group_aliases` are provided, columns are renamed according to corresponding list position (i.e., the 1st column in `group` is renamed to the 1st column in `group_aliases`, etc.). If there are more columns listed in `group` than in `group_aliases`, only the `group` columns with corresponding `group_aliases` columns will be renamed. If there are more columns listed in `group_aliases` than in `group`, the extra column names in `group_aliases` will be ignored. See [record_count](#record_count) for an example of the use of `group_aliases`.
 
@@ -183,6 +186,9 @@ Operations:
     id: $ds_dsdecod
     group:
       - USUBJID
+    filter:
+      CAT: "CATEGORY 1"
+      SCAT: "SUBCATEGORY A"
 ```
 
 ## domain_is_custom

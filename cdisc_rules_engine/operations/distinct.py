@@ -4,16 +4,19 @@ from cdisc_rules_engine.operations.base_operation import BaseOperation
 
 class Distinct(BaseOperation):
     def _execute_operation(self):
+        result = self.params.dataframe
+        if self.params.filter:
+            result = self._filter_data(result)
         if not self.params.grouping:
-            data = self.params.dataframe[self.params.target].unique()
+            data = result[self.params.target].unique()
             if isinstance(data[0], bytes):
                 data = data.astype(str)
             result = set(data)
         else:
-            grouped = self.params.dataframe.groupby(
+            grouped = result.groupby(
                 self.params.grouping, as_index=False, group_keys=False
             ).data
-            if isinstance(self.params.dataframe.data, pd.DataFrame):
+            if isinstance(result.data, pd.DataFrame):
                 result = grouped[self.params.target].agg(self._unique_values_for_column)
             else:
                 result = (

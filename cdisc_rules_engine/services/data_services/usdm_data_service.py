@@ -100,7 +100,7 @@ class USDMDataService(BaseDataService):
         dataset = self.get_dataset(dataset_name=dataset_name)
         domain = self.__get_domain_from_dataset_name(dataset_name)
         return SDTMDatasetMetadata(
-            name=dataset_name,
+            name=domain,
             first_record={"DOMAIN": domain},
             label=domain,
             modification_date=datetime.fromtimestamp(

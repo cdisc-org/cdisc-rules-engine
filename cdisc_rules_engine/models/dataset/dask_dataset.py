@@ -18,6 +18,8 @@ class DaskDataset(PandasDataset):
         columns=None,
         length=None,
     ):
+        if isinstance(data, pd.DataFrame):
+            data = dd.from_pandas(data, npartitions=DEFAULT_NUM_PARTITIONS)
         self._data = data
         self.length = length
         if columns and self._data.empty:
