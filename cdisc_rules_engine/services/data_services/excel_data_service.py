@@ -23,6 +23,7 @@ from .base_data_service import BaseDataService, cached_dataset
 DATASETS_SHEET_NAME = "Datasets"
 DATASET_FILENAME_COLUMN = "Filename"
 DATASET_LABEL_COLUMN = "Label"
+DATASET_NAME_COLUMN = "Dataset Name"
 
 
 class ExcelDataService(BaseDataService):
@@ -98,6 +99,15 @@ class ExcelDataService(BaseDataService):
         dataset = PandasDataset(dataframe)
         return dataset
 
+    def _get_dataset_name(
+        self, metadata: pd.DataFrame, first_record: dict, dataset_filename: str
+    ) -> str:
+        if DATASET_NAME_COLUMN in metadata.columns:
+            return metadata[DATASET_NAME_COLUMN].iloc[0]
+        if self.standard == "usdm":
+            return first_record.get("instanceType", dataset_filename.split(".")[0])
+        return dataset_filename.split(".")[0].upper()
+
     @cached_dataset(DatasetTypes.RAW_METADATA.value)
     def get_raw_dataset_metadata(
         self, dataset_name: str, **kwargs
@@ -114,7 +124,7 @@ class ExcelDataService(BaseDataService):
         dataset = self.get_dataset(dataset_name=dataset_name)
         first_record = dataset.data.iloc[0].to_dict() if not dataset.empty else {}
         return SDTMDatasetMetadata(
-            name=first_record.get("instanceType", dataset_name.split(".")[0].upper()),
+            name=self._get_dataset_name(metadata, first_record, dataset_name),
             first_record=first_record,
             label=metadata[DATASET_LABEL_COLUMN].iloc[0] if not metadata.empty else "",
             modification_date=datetime.fromtimestamp(
