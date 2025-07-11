@@ -203,7 +203,14 @@ class BaseDatasetBuilder:
         variables: List[dict] = sdtm_utilities.get_variables_metadata_from_standard(
             domain=domain, library_metadata=self.library_metadata
         )
-
+        for variable in variables:
+            variable["ccode"] = ""
+            if variable.get("codelistSubmissionValues"):
+                if "_links" in variable and "codelist" in variable["_links"]:
+                    first_codelist = variable["_links"]["codelist"][0]
+                    href = first_codelist["href"]
+                    codelist_code = href.split("/")[-1]
+                    variable["ccode"] = codelist_code
         # Rename columns:
         column_name_mapping = {
             "ordinal": "order_number",

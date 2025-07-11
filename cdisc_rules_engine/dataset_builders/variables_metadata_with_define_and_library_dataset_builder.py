@@ -33,6 +33,7 @@ class VariablesMetadataWithDefineAndLibraryDatasetBuilder(BaseDatasetBuilder):
         library_variable_data_type,
         library_variable_role,
         library_variable_core,
+        library_variable_ccode,
         library_variable_order_number
         """
         variable_metadata: List[dict] = self.get_define_xml_variables_metadata()
