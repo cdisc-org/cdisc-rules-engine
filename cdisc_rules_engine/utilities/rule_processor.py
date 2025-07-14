@@ -435,8 +435,8 @@ class RuleProcessor:
         if previous_operations:
             cache_key = f'{cache_key}-{";".join(previous_operations)}'
         result: DatasetInterface = self.cache.get(cache_key)
-        if result is not None:
-            return result
+        # if result is not None:
+        #     return result
 
         if not self.is_current_domain(
             operation_params.dataframe, operation_params.domain
