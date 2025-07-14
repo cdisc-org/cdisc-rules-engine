@@ -1,6 +1,5 @@
 from __future__ import annotations
-import asyncio
-from typing import Iterable, List, Optional, Set, TYPE_CHECKING
+from typing import List, Optional, TYPE_CHECKING
 
 from cdisc_rules_engine.models.dataset import PandasDataset, DaskDataset
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
@@ -9,7 +8,6 @@ import pandas as pd
 
 from cdisc_rules_engine.config import config
 from cdisc_rules_engine.enums.join_types import JoinTypes
-from cdisc_rules_engine.exceptions.custom_exceptions import InvalidMatchKeyError
 from cdisc_rules_engine.services.cache.cache_service_factory import CacheServiceFactory
 from cdisc_rules_engine.interfaces import (
     CacheServiceInterface,
@@ -21,9 +19,7 @@ from cdisc_rules_engine.services.data_services import (
 )
 from cdisc_rules_engine.utilities.utils import (
     search_in_list_of_dicts,
-    get_dataset_name_from_details,
 )
-import os
 from cdisc_rules_engine.utilities.sdtm_utilities import add_variable_wildcards
 
 if TYPE_CHECKING:
@@ -37,83 +33,6 @@ class DataProcessor:
             data_service or DataServiceFactory(config, self.cache).get_data_service()
         )
         self.dataset_implementation = self.data_service.dataset_implementation
-
-    @staticmethod
-    async def get_dataset_variables(study_path, dataset, data_service) -> Set:
-        data = data_service.get_dataset(
-            os.path.join(study_path, dataset.get("filename"))
-        )
-        return set(data.columns)
-
-    @staticmethod
-    async def get_all_study_variables(study_path, data_service, datasets) -> Set:
-        coroutines = [
-            DataProcessor.get_dataset_variables(study_path, dataset, data_service)
-            for dataset in datasets
-        ]
-        dataset_variables: List[Set] = await asyncio.gather(*coroutines)
-        return set().union(*dataset_variables)
-
-    @staticmethod
-    def get_unique_record(dataframe):
-        if len(dataframe.index) > 1:
-            raise InvalidMatchKeyError("Match key did not return a unique record")
-        return dataframe.iloc[0]
-
-    def get_column_values(self, dataset, column):
-        if column in dataset:
-            return dataset[column]
-        return pd.Series([])
-
-    def get_columns(self, dataset, columns):
-        column_data = {}
-        for column in columns:
-            if column in dataset:
-                column_data[column] = dataset[column].values
-        return column_data
-
-    def get_column_data(
-        self,
-        dataset_path: str,
-        dataset_metadata: Iterable[SDTMDatasetMetadata],
-        columns: list,
-        domain: str,
-    ):
-        reference_data = {}
-        domain_details: SDTMDatasetMetadata = search_in_list_of_dicts(
-            dataset_metadata, lambda item: item.domain == domain
-        )
-        if domain_details:
-            filename = get_dataset_name_from_details(domain_details)
-            data_filename = os.path.join(dataset_path, filename)
-            new_data = self.data_service.get_dataset(dataset_name=data_filename)
-            reference_data[domain] = self.get_columns(new_data, columns)
-        return reference_data
-
-    async def async_get_column_data(self, dataset_path, datasets, columns, domain):
-        loop = asyncio.get_event_loop()
-        return await loop.run_in_executor(
-            None, self.get_column_data, dataset_path, datasets, columns, domain
-        )
-
-    def async_get_reference_data(
-        self,
-        dataset_path,
-        dataset_metadata: Iterable[SDTMDatasetMetadata],
-        columns,
-        domains,
-    ):
-        coroutines = [
-            self.async_get_column_data(dataset_path, dataset_metadata, columns, domain)
-            for domain in domains
-        ]
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        reference_data = {}
-        data = loop.run_until_complete(asyncio.gather(*coroutines))
-        for column in data:
-            reference_data = {**reference_data, **column}
-        return reference_data
 
     @staticmethod
     def convert_float_merge_keys(series: pd.Series) -> pd.Series:
