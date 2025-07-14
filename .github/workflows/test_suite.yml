@@ -110,6 +110,7 @@ jobs:
             echo "Dask comparison completed successfully (no differences)"
           else
             echo "Dask comparison found differences"
+          fi
 
       - name: Generate dask comparison summary
         if: steps.dask_run.outputs.dask_success == 'true'
