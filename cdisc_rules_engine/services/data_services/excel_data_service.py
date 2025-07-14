@@ -102,7 +102,7 @@ class ExcelDataService(BaseDataService):
     def _get_dataset_name(
         self, metadata: pd.DataFrame, first_record: dict, dataset_filename: str
     ) -> str:
-        if DATASET_NAME_COLUMN in metadata.columns:
+        if DATASET_NAME_COLUMN in metadata.columns and not metadata.empty:
             return metadata[DATASET_NAME_COLUMN].iloc[0]
         if self.standard == "usdm":
             return first_record.get("instanceType", dataset_filename.split(".")[0])
