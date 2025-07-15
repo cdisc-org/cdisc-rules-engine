@@ -1,6 +1,6 @@
 import unittest
 import pandas as pd
-from business_rules.utils import flatten_list
+from cdisc_rules_engine.check_operators.helpers import flatten_list
 import pytest
 
 

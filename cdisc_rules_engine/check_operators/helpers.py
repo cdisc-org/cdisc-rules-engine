@@ -199,8 +199,8 @@ def apply_regex(regex: str, val: str):
         return None
 
 
-def flatten_list(data, list):
-    for item in list:
+def flatten_list(data, items):
+    for item in items:
         if isinstance(item, list):
             yield from flatten_list(data, item)
         elif item in data and isinstance(data[item].iloc[0], list):
