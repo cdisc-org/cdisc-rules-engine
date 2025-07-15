@@ -1,7 +1,7 @@
 from business_rules.operators import BaseType, type_operator
 from typing import Union, Any, List, Tuple
 from business_rules.fields import FIELD_DATAFRAME
-from business_rules.utils import (
+from cdisc_rules_engine.check_operators.helpers import (
     flatten_list,
     is_valid_date,
     vectorized_is_valid,
@@ -11,8 +11,8 @@ from business_rules.utils import (
     vectorized_is_in,
     vectorized_case_insensitive_is_in,
     apply_regex,
+    vectorized_compare_dates,
 )
-from cdisc_rules_engine.check_operators.helpers import vectorized_compare_dates
 
 from cdisc_rules_engine.constants import NULL_FLAVORS
 from cdisc_rules_engine.utilities.utils import dates_overlap, parse_date
@@ -134,8 +134,7 @@ class DataframeType(BaseType):
         if column_exists:
             return self.value.convert_to_series([True] * len(self.value))
         else:
-            exists_in_nested = self.value.apply(check_row, axis=1).any()
-            return self.value.convert_to_series([exists_in_nested] * len(self.value))
+            return self.value.convert_to_series(self.value.apply(check_row, axis=1))
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
