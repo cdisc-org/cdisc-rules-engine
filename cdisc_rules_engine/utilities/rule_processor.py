@@ -6,6 +6,7 @@ from cdisc_rules_engine.interfaces.cache_service_interface import (
 from cdisc_rules_engine.models.dataset.dataset_interface import (
     DatasetInterface,
 )
+from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
@@ -280,6 +281,26 @@ class RuleProcessor:
         if domain_to_check in allowed_domains:
             return True
         return False
+
+    @classmethod
+    def rule_applies_to_entity(
+        cls, dataset_metadata: DatasetMetadata, rule: dict
+    ) -> bool:
+        """
+        Check that rule is applicable to entity
+        """
+        entities = rule.get("entities") or {}
+        included_entities = entities.get("Include", [])
+        excluded_entities = entities.get("Exclude", [])
+        is_included = (
+            dataset_metadata.name in included_entities
+            or ALL_KEYWORD in included_entities
+        )
+        is_excluded = (
+            dataset_metadata.name in excluded_entities
+            or ALL_KEYWORD in excluded_entities
+        )
+        return not entities or (is_included and not is_excluded)
 
     def valid_rule_structure(self, rule) -> bool:
         required_keys = ["standards", "core_id"]
@@ -600,6 +621,13 @@ class RuleProcessor:
         if not self.rule_applies_to_class(rule, datasets, dataset_metadata):
             reason = (
                 f"Rule skipped - doesn't apply to class for "
+                f"rule id={rule_id}, dataset={dataset_name}"
+            )
+            logger.info(f"is_suitable_for_validation. {reason}, result=False")
+            return False, reason
+        if not self.rule_applies_to_entity(dataset_metadata, rule):
+            reason = (
+                f"Rule skipped - doesn't apply to entity for "
                 f"rule id={rule_id}, dataset={dataset_name}"
             )
             logger.info(f"is_suitable_for_validation. {reason}, result=False")

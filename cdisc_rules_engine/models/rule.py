@@ -27,6 +27,7 @@ class Rule:
         self.classes: dict = record_params.get("classes")
         self.domains: dict = record_params.get("domains")
         self.datasets: dict = record_params.get("datasets")
+        self.entities: dict = record_params.get("entities")
         self.rule_type: RuleTypes = record_params["rule_type"]
         self.operations: List[dict] = record_params.get("operations")
         self.conditions: dict = record_params["conditions"]
@@ -48,6 +49,7 @@ class Rule:
                 "standards": cls.parse_standards(authorities),
                 "classes": rule_metadata.get("Scope", {}).get("Classes"),
                 "domains": rule_metadata.get("Scope", {}).get("Domains"),
+                "entities": rule_metadata.get("Scope", {}).get("Entities"),
                 "rule_type": rule_metadata.get("Rule_Type"),
                 "conditions": cls.parse_conditions(rule_metadata.get("Check")),
                 "actions": cls.parse_actions(rule_metadata.get("Outcome")),

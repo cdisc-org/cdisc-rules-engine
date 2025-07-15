@@ -96,3 +96,83 @@ def test_grouped_distinct(
     assert grouping_column in result
     for _, val in result.iterrows():
         assert val[operation_params.operation_id] == expected.get(val[grouping_column])
+
+
+@pytest.mark.parametrize(
+    "data, expected, grouping_aliases, filter",
+    [
+        (
+            PandasDataset.from_dict(
+                {
+                    "values": [11, 12, 12, 5, 18, 9],
+                    "patient": [1, 2, 2, 1, 2, 1],
+                    "cat": [1, 1, 1, 1, 2, 1],
+                    "scat": ["a", "a", "a", "a", "a", "b"],
+                }
+            ),
+            {1: {5, 11}, 2: {12}},
+            None,
+            {"cat": 1, "scat": "a"},
+        ),
+        (
+            DaskDataset.from_dict(
+                {
+                    "values": [11, 12, 12, 5, 18, 9],
+                    "patient": [1, 2, 2, 1, 2, 1],
+                    "cat": [1, 1, 1, 1, 2, 1],
+                    "scat": ["a", "a", "a", "a", "a", "b"],
+                }
+            ),
+            {1: {5, 11}, 2: {12}},
+            None,
+            {"cat": 1, "scat": "a"},
+        ),
+        (
+            PandasDataset.from_dict(
+                {
+                    "values": [11, 12, 12, 5, 18, 9],
+                    "patient": [1, 2, 2, 1, 2, 1],
+                    "cat": [1, 1, 1, 1, 2, 1],
+                    "scat": ["a", "a", "a", "a", "a", "b"],
+                    "subject": [1, 2, 2, 1, 2, 3],
+                }
+            ),
+            {1: {5, 11}, 2: {12}, 3: None},
+            ["subject"],
+            {"cat": 1, "scat": "a"},
+        ),
+        (
+            DaskDataset.from_dict(
+                {
+                    "values": [11, 12, 12, 5, 18, 9],
+                    "patient": [1, 2, 2, 1, 2, 1],
+                    "cat": [1, 1, 1, 1, 2, 1],
+                    "scat": ["a", "a", "a", "a", "a", "b"],
+                    "subject": [1, 2, 2, 1, 2, 3],
+                }
+            ),
+            {1: {5, 11}, 2: {12}, 3: None},
+            ["subject"],
+            {"cat": 1, "scat": "a"},
+        ),
+    ],
+)
+def test_filtered_grouped_distinct(
+    data, expected, grouping_aliases, filter, operation_params: OperationParams
+):
+    config = ConfigService()
+    cache = CacheServiceFactory(config).get_cache_service()
+    data_service = DataServiceFactory(config, cache).get_data_service()
+    operation_params.dataframe = data
+    operation_params.target = "values"
+    operation_params.filter = filter
+    operation_params.grouping = ["patient"]
+    operation_params.grouping_aliases = grouping_aliases
+    result = Distinct(operation_params, data, cache, data_service).execute()
+    grouping_column = "".join(
+        operation_params.grouping_aliases or operation_params.grouping
+    )
+    assert operation_params.operation_id in result
+    assert grouping_column in result
+    for _, val in result.iterrows():
+        assert val[operation_params.operation_id] == expected.get(val[grouping_column])
