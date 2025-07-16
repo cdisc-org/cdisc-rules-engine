@@ -471,7 +471,15 @@ class RuleProcessor:
         )
         result = operation.execute()
         if not DataProcessor.is_dummy_data(self.data_service):
-            self.cache.add(cache_key, result)
+            try:
+                self.cache.add(cache_key, result)
+            except Exception as e:
+                # Log the cache error but continue with the operation
+                # Cache failures should not prevent rule validation
+                logger.warning(
+                    f"Failed to add result to cache for key '{cache_key}': {e}. "
+                    f"Continuing with operation result."
+                )
         return result
 
     def is_current_domain(self, dataset, target_domain):
