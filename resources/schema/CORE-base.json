@@ -167,6 +167,7 @@
           "ALL",
           "MEDICAL DEVICE TIME-TO-EVENT",
           "NON-COMPARTMENTAL ANALYSIS",
+          "POPULATION PHARMACOKINETIC ANALYSIS",
           "TIME-TO-EVENT"
         ],
         "type": "string"
