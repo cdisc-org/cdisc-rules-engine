@@ -480,6 +480,7 @@ class RuleProcessor:
                     f"Failed to add result to cache for key '{cache_key}': {e}. "
                     f"Continuing with operation result."
                 )
+                logger.warning(f"val_dy: {result['$val_dy']}")
         return result
 
     def is_current_domain(self, dataset, target_domain):
