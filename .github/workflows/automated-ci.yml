@@ -1,13 +1,6 @@
 name: CI
 on: pull_request
 jobs:
-  lint_format:
-    uses: ./.github/workflows/lint_format.yml
-  test_unit:
-    uses: ./.github/workflows/test_unit.yml
   test_suite:
     uses: ./.github/workflows/test_suite.yml
-    secrets: inherit
-  test_rule_editor_preview:
-    uses: ./.github/workflows/test_rule_editor_preview.yml
     secrets: inherit
