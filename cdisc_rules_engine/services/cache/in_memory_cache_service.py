@@ -8,6 +8,7 @@ from cdisc_rules_engine.models.dataset import DatasetInterface
 from cachetools import LRUCache
 import psutil
 from multiprocessing import Lock
+from cdisc_rules_engine.services import logger
 
 
 def get_data_size(dataset):
@@ -37,10 +38,17 @@ class InMemoryCacheService(CacheServiceInterface):
         )
 
     def add(self, cache_key, data):
-        if get_data_size(data) > self.max_size:
-            return
-        with self.cache_lock:
-            self.cache[cache_key] = data
+        try:
+            if get_data_size(data) > self.max_size:
+                return
+            with self.cache_lock:
+                self.cache[cache_key] = data
+        except Exception as e:
+            # Log the cache error but continue with the operation
+            # Cache failures should not prevent rule validation
+            logger.warning(
+                f"Cache error in memory cache service for key '{cache_key}': {e}. "
+            )
 
     def add_dataset(self, cache_key, data):
         with self.dataset_cache_lock:
