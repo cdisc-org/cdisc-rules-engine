@@ -9,6 +9,7 @@ from cachetools import LRUCache
 import psutil
 from multiprocessing import Lock
 from cdisc_rules_engine.services import logger
+import traceback
 
 
 def get_data_size(dataset):
@@ -49,6 +50,9 @@ class InMemoryCacheService(CacheServiceInterface):
             logger.warning(
                 f"Cache error in memory cache service for key '{cache_key}': {e}. "
             )
+            logger.warning(f"val_dy: {data['$val_dy']}")
+            logger.warning(f"Full traceback:\n{traceback.format_exc()}")
+            raise e
 
     def add_dataset(self, cache_key, data):
         with self.dataset_cache_lock:

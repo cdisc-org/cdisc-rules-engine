@@ -481,6 +481,7 @@ class RuleProcessor:
                     f"Continuing with operation result."
                 )
                 logger.warning(f"val_dy: {result['$val_dy']}")
+                raise e
         return result
 
     def is_current_domain(self, dataset, target_domain):
