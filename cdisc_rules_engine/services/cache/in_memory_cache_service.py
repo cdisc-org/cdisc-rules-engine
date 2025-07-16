@@ -9,7 +9,6 @@ from cachetools import LRUCache
 import psutil
 from multiprocessing import Lock
 from cdisc_rules_engine.services import logger
-import traceback
 
 
 def get_data_size(dataset):
@@ -39,20 +38,20 @@ class InMemoryCacheService(CacheServiceInterface):
         )
 
     def add(self, cache_key, data):
+        if get_data_size(data) > self.max_size:
+            return
         try:
-            if get_data_size(data) > self.max_size:
-                return
             with self.cache_lock:
                 self.cache[cache_key] = data
-        except Exception as e:
+        except ValueError as e:
+            # Sometimes pympler.asizeof raises:
+            #  ValueError: invalid option: reset(base=-n)
             # Log the cache error but continue with the operation
             # Cache failures should not prevent rule validation
             logger.warning(
-                f"Cache error in memory cache service for key '{cache_key}': {e}. "
+                f"Failed to add result to cache for key '{cache_key}': {e}. "
+                f"Continuing with operation result."
             )
-            logger.warning(f"val_dy: {data['$val_dy']}")
-            logger.warning(f"Full cache traceback:\n{traceback.format_exc()}")
-            raise e
 
     def add_dataset(self, cache_key, data):
         with self.dataset_cache_lock:
