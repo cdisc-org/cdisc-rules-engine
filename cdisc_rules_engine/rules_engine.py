@@ -174,6 +174,8 @@ class RulesEngine:
             Error: {e}
             Error Type: {type(e)}
             Error Message: {str(e)}
+            Dataset Name: {dataset_metadata.name}
+            Rule ID: {rule.get("core_id", "unknown")}
             Full traceback:
             {traceback.format_exc()}
             """
