@@ -27,7 +27,7 @@ from cdisc_rules_engine.constants.classes import SPECIAL_PURPOSE
 from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 from cdisc_rules_engine.interfaces import ConditionInterface
 from cdisc_rules_engine.models.base_validation_entity import BaseValidationEntity
-from business_rules.utils import is_valid_date
+from cdisc_rules_engine.check_operators.helpers import is_valid_date
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 
 

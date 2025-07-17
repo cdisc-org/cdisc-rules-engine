@@ -11,7 +11,7 @@ requires-python = ">=3.12, <3.13"
 license = { text = "MIT" }
 authors = [{ name = "cdisc-org", email = "info@cdisc.org" }]
 dependencies = [
-    "business_rules_enhanced==1.4.6",
+    "business_rules_enhanced==1.4.8",
     "cdisc-library-client==0.1.6",
     "importlib-metadata==8.5.0",
     "jsonpath-ng==1.6.1",
