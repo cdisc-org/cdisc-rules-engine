@@ -287,6 +287,7 @@ try:
         print("Test Failed: API response does NOT match expected JSON.")
         print("Received:")
         print(json.dumps(rule_exec_response, indent=2))
+        sys.exit(1)
 
 
 except Exception as e:
