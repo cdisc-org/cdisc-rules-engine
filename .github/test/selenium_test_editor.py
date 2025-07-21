@@ -13,7 +13,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 import brotli
 
 # Get the Preview Deployment URL
-RULE_EDITOR_URL = "https://icy-flower-095494b10-dev.centralus.azurestaticapps.net/"
+RULE_EDITOR_URL = os.getenv("RULE_EDITOR_PREVIEW_URL")
 if not RULE_EDITOR_URL:
     print("RULE_EDITOR_URL is not set! Test failed.")
     sys.exit(1)

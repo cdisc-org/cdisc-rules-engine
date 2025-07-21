@@ -6,6 +6,7 @@ on:
 
 jobs:
   extract_and_test:
+    needs: rule_tester
     runs-on: ubuntu-latest
 
     steps:
