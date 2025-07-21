@@ -1,6 +1,15 @@
 name: Deploy Rule Tester Endpoint
 on:
   workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+        default: DEV
+      branch:
+        required: false
+        type: string
+        default: ''
   workflow_dispatch:
     inputs:
       environment:
