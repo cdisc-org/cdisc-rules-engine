@@ -32,6 +32,8 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment || 'PROD' }}
     steps:
+      - name: Print branch being deployed
+        run: echo "Deploying branch: ${{ inputs.branch || github.ref_name }}"
       - uses: actions/checkout@v4
         with:
           ref: ${{ inputs.branch || github.ref_name }}
