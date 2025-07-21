@@ -7,6 +7,7 @@ on:
 jobs:
   rule_tester:
     uses: ./.github/workflows/rule-tester.yml
+    secrets: inherit
     with:
       environment: DEV
       branch: ${{ github.head_ref || github.ref_name }}
