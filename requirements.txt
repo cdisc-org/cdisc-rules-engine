@@ -1,5 +1,5 @@
 black==24.10.0
-business_rules_enhanced==1.4.7
+business_rules_enhanced==1.4.8
 cdisc-library-client==0.1.6
 click==8.1.7
 flake8==6.1.0
@@ -20,7 +20,7 @@ pyyaml==6.0.2
 redis==4.5.0
 requests~=2.32.3
 setuptools~=75.6.0
-cachetools==5.5.0
+cachetools==6.1.0
 Pympler==1.1
 psutil==6.1.1
 dask[dataframe]==2024.6.0

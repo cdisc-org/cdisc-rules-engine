@@ -1,7 +1,7 @@
 from business_rules.operators import BaseType, type_operator
 from typing import Union, Any, List, Tuple
 from business_rules.fields import FIELD_DATAFRAME
-from business_rules.utils import (
+from cdisc_rules_engine.check_operators.helpers import (
     flatten_list,
     is_valid_date,
     vectorized_is_valid,
@@ -11,8 +11,8 @@ from business_rules.utils import (
     vectorized_is_in,
     vectorized_case_insensitive_is_in,
     apply_regex,
+    vectorized_compare_dates,
 )
-from cdisc_rules_engine.check_operators.helpers import vectorized_compare_dates
 
 from cdisc_rules_engine.constants import NULL_FLAVORS
 from cdisc_rules_engine.utilities.utils import dates_overlap, parse_date
@@ -162,10 +162,8 @@ class DataframeType(BaseType):
         equal_to       Populated   Populated   A == B
         """
         if value_is_reference:
-            dynamic_column_name = row[comparator] if comparator in row else None
-            comparison_data = (
-                row[dynamic_column_name] if dynamic_column_name in row else None
-            )
+            dynamic_column_name = row[comparator]
+            comparison_data = row[dynamic_column_name]
         else:
             comparison_data = (
                 comparator
@@ -209,10 +207,8 @@ class DataframeType(BaseType):
         not_equal_to   Populated   Populated   A != B
         """
         if value_is_reference:
-            dynamic_column_name = row[comparator] if comparator in row else None
-            comparison_data = (
-                row[dynamic_column_name] if dynamic_column_name in row else None
-            )
+            dynamic_column_name = row[comparator]
+            comparison_data = row[dynamic_column_name]
         else:
             comparison_data = (
                 comparator
@@ -1570,7 +1566,7 @@ class DataframeType(BaseType):
             )
             return bool(target_set.intersection(comparator_set))
 
-        return self.value.apply(check_shared_elements, axis=1).any()
+        return self.value.apply(check_shared_elements, axis=1)
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -1591,7 +1587,7 @@ class DataframeType(BaseType):
             )
             return len(target_set.intersection(comparator_set)) == 1
 
-        return self.value.apply(check_exactly_one_shared_element, axis=1).any()
+        return self.value.apply(check_exactly_one_shared_element, axis=1)
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -1612,7 +1608,7 @@ class DataframeType(BaseType):
             )
             return len(target_set.intersection(comparator_set)) == 0
 
-        return self.value.apply(check_no_shared_elements, axis=1).all()
+        return self.value.apply(check_no_shared_elements, axis=1)
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)

@@ -3,39 +3,105 @@
 Returns a list of valid codelist/term values. Used for evaluating whether NCI code or submission values are valid based on controlled terminology. Expects three parameters: `codelists` which is a list of the codelist submission value(s) to retrieve, `level` which is the level of data (either "codelist" or "term") at which to return data from, and `returntype` which is the type of values to return, either "code" for NCI Code(s) or "value" for submission value(s)
 
 ```yaml
--   "Check": {
-    "all": [
-      {
-        "name": "PPSTRESU",
-        "operator": "is_not_contained_by",
-        "value": "$terms"
-      },
-      {
-        "name": "$extensible",
-        "operator": "equal_to",
-        "value": true
-      }
-    ]
-},
--   "Operations": [
-      {
-        "id": "$terms",
-        "operator": "codelist_terms",
-        "codelists": ["PKUDUG"],
-        "level": "term",
-        "returntype": "value"
-      },
-      {
-        "id": "$extensible",
-        "codelist": "PKUDUG",
-        "operator": "codelist_extensible"
-      }
-    ],
+- Check:
+    - all:
+        - name: PPSTRESU
+          operator: is_not_contained_by
+          value: $terms
+        - name: $extensible
+          operator: equal_to
+          value: true
+- Operations:
+    - id: $terms
+      operator: codelist_terms
+      codelists:
+        - PKUDUG
+      level: term
+      returntype: value
+    - id: $extensible
+      codelist: PKUDUG
+      operator: codelist_extensible
 ```
+
+If `ct_package_type`, `version`, and `codelist_code` parameters are provided, it will instead attach a new column containing the term for each combination provided in the source dataset. If `term_code` is provided, it will find term values using the term codes. If `term_value` is provided, it will find term codes using the term values.Only one of `term_code` or `term_value` can be provided.
+
+For example, given the current dataset:
+
+| id  | codeSystemVersion | $codelist_code | code    | decode     |
+| --- | ----------------- | -------------- | ------- | ---------- |
+| 1   | 2024-09-27        | C201264        | C201356 | After      |
+| 2   | 2024-09-27        | C201265        | C201352 | End to End |
+| 3   | 2023-03-29        | C127262        | C51282  | CLINIC     |
+
+and the following operation:
+
+```yaml
+- id: $found_term_value
+  operator: codelist_terms
+  ct_package_type: DDF
+  version: codeSystemVersion
+  codelist_code: $codelist_code
+  term_code: code
+```
+
+This will result in the following dataset:
+
+| id  | codeSystemVersion | $codelist_code | code    | decode     | $found_term_value |
+| --- | ----------------- | -------------- | ------- | ---------- | ----------------- |
+| 1   | 2024-09-27        | C201264        | C201356 | After      | After             |
+| 2   | 2024-09-27        | C201265        | C201352 | End to End | End to End        |
+| 3   | 2023-03-29        | C127262        | C51282  | CLINIC     | CLINIC            |
+
+Conversely, if given the same dataset, and the following operation:
+
+```yaml
+- id: $found_term_code
+  operator: codelist_terms
+  ct_package_type: DDF
+  version: codeSystemVersion
+  codelist_code: $codelist_code
+  term_value: decode
+```
+
+This will result in the following dataset:
+
+| id  | codeSystemVersion | $codelist_code | code    | decode     | $found_term_code |
+| --- | ----------------- | -------------- | ------- | ---------- | ---------------- |
+| 1   | 2024-09-27        | C201264        | C201356 | After      | C201356          |
+| 2   | 2024-09-27        | C201265        | C201352 | End to End | C201352          |
+| 3   | 2023-03-29        | C127262        | C51282  | CLINIC     | C51282           |
 
 ## codelist_extensible
 
 Returns a Series indicating whether a specified `codelist` is extensible. Used in conjunction with `codelist_terms` to determine if values outside the codelist are acceptable. From the above example, `$extensible` will contain a bool if the codelist PKUDUG is extensible in all rows of the column.
+
+If `ct_package_type`, `version`, and `codelist_code` parameters are provided, it will instead attach a new column containing the extensible value for each combination provided in the source dataset.
+
+For example, given the current dataset:
+
+| id  | codeSystemVersion | $codelist_code |
+| --- | ----------------- | -------------- |
+| 1   | 2024-09-27        | C201264        |
+| 2   | 2024-09-27        | C201265        |
+| 3   | 2023-03-29        | C127262        |
+
+and the following operation:
+
+```yaml
+- id: $codelist_extensible
+  operator: codelist_extensible
+  ct_package_type: DDF
+  version: codeSystemVersion
+  codelist_code: $codelist_code
+```
+
+This will result in the following dataset:
+
+| id  | codeSystemVersion | $codelist_code | $codelist_extensible |
+| --- | ----------------- | -------------- | -------------------- |
+| 1   | 2024-09-27        | C201264        | false                |
+| 2   | 2024-09-27        | C201265        | false                |
+| 3   | 2023-03-29        | C127262        | true                 |
 
 ## define_extensible_codelists
 
@@ -56,7 +122,7 @@ If a target variable `name` is specified, returns the specified metadata in the 
 - Input
 
   ```yaml
-  - operation: define_variable_metadata
+  - operator: define_variable_metadata
     attribute_name: define_variable_label
     name: LBTESTCD
     id: $LBTESTCD_VARIABLE_LABEL
@@ -71,7 +137,7 @@ If no target variable `name` specified, returns a dictionary containing the spec
 - Input
 
   ```yaml
-  - operation: define_variable_metadata`
+  - operator: define_variable_metadata`
     attribute_name: define_variable_label`
     id: $VARIABLE_LABEL`
   ```
@@ -95,7 +161,10 @@ ex. if TS.xpt, AE.xpt, EC.xpt, and SUPPEC.xpt are submitted -> [TS, AE, EC, SUPP
 
 ## distinct
 
-Get a distinct list of values for the given `name`. If a `group` list is specified, the distinct value list will be grouped by the variables within `group`.
+Get a distinct list of values for the given `name`.
+
+- If a `group` list is specified, the distinct value list will be grouped by the variables within `group`.
+- If a `filter` object is provided, only values for records that match the filter criteria are included in the distinct values.
 
 If `group` is provided, `group_aliases` may also be provided to assign new grouping variable names so that results grouped by the values in one set of grouping variables can be merged onto a dataset according to the same grouping value(s) stored in different set of grouping variables. When both `group` and `group_aliases` are provided, columns are renamed according to corresponding list position (i.e., the 1st column in `group` is renamed to the 1st column in `group_aliases`, etc.). If there are more columns listed in `group` than in `group_aliases`, only the `group` columns with corresponding `group_aliases` columns will be renamed. If there are more columns listed in `group_aliases` than in `group`, the extra column names in `group_aliases` will be ignored. See [record_count](#record_count) for an example of the use of `group_aliases`.
 
@@ -117,6 +186,9 @@ Operations:
     id: $ds_dsdecod
     group:
       - USUBJID
+    filter:
+      CAT: "CATEGORY 1"
+      SCAT: "SUBCATEGORY A"
 ```
 
 ## domain_is_custom
@@ -208,7 +280,7 @@ Variable Metadata for custom domains will pull from the model while non-custom d
   Version: `3-4`
 
   ```yaml
-  - operation: expected_variables`
+  - operator: expected_variables`
     id: $expected_variables`
   ```
 
@@ -250,7 +322,7 @@ Fetches attribute values for a codelist specified in a dataset (like TS)
 ```yaml
 - id: $TERM_CCODES
   name: TSVCDREF
-  operation: get_codelist_attributes
+  operator: get_codelist_attributes
   ct_attribute: Term CCODE
   ct_version: TSVCDVER
   ct_packages:
@@ -332,7 +404,7 @@ Example
   Version: `3-4`
 
   ```yaml
-  - operation: get_model_filtered_variables`
+  - operator: get_model_filtered_variables`
     id: $model_filtered_variables`
     key_name: "role"
     key_value: "Timing"
@@ -383,7 +455,7 @@ Generates a dataframe where each record in the dataframe is the library ig varia
   Rule:
 
   ```yaml
-  - operation: label_referenced_variable_metadata
+  - operator: label_referenced_variable_metadata
     id: $label_referenced_variable_metadata
     name: "QLABEL"
   ```
@@ -405,6 +477,61 @@ Generates a dataframe where each record in the dataframe is the library ig varia
     "$label_referenced_variable_label": ["Toxicity", null, "Analysis Method"]
   }
   ```
+
+## map
+
+Allows the creation of a lookup table to take the values from multiple input columns and map them to values in an output column. The `map` parameter contains a list of objects. Each dictionary contains column names as properties that match the column names in the source dataset and an `output` property that will be returned as a result.
+
+If `map` has a single object and `output` is the only property specified on that object, this will function as a direct assignment.
+
+For example, given the following current dataset:
+
+| id  | parent_entity | parent_rel     |
+| --- | ------------- | -------------- |
+| 1   | Timing        | relativeToFrom |
+| 2   | Something     | relativeToFrom |
+| 3   | Timing        | type           |
+
+and the following operation:
+
+```yaml
+Operations:
+  - id: $codelist_code
+    operator: map
+    map:
+      - parent_entity: Timing
+        parent_rel: type
+        output: C201264
+      - parent_entity: Timing
+        parent_rel: relativeToFrom
+        output: C201265
+```
+
+This will result in the following dataset:
+
+| id  | parent_entity | parent_rel     | $codelist_code |
+| --- | ------------- | -------------- | -------------- |
+| 1   | Timing        | relativeToFrom | C201265        |
+| 2   | Something     | relativeToFrom | None           |
+| 3   | Timing        | type           | C201264        |
+
+The following operation:
+
+```yaml
+Operations:
+  - id: $codelist_code
+    operator: map
+    map:
+      - output: C201264
+```
+
+Will result in the following dataset:
+
+| id  | parent_entity | parent_rel     | $codelist_code |
+| --- | ------------- | -------------- | -------------- |
+| 1   | Timing        | relativeToFrom | C201264        |
+| 2   | Something     | relativeToFrom | C201264        |
+| 3   | Timing        | type           | C201264        |
 
 ## max
 
@@ -538,7 +665,7 @@ Generates a dataframe where each record in the dataframe is the library ig varia
   Rule:
 
   ```yaml
-  - operation: name_referenced_variable_metadata`
+  - operator: name_referenced_variable_metadata`
     id: $name_referenced_variable_metadata`
     name: "QNAM"
   ```
@@ -575,7 +702,7 @@ Variable Metadata for custom domains will pull from the model while non-custom d
   Version: `3-4`
 
   ```yaml
-  - operation: permissible_variables`
+  - operator: permissible_variables`
     id: $permissible_variables`
   ```
 
@@ -589,29 +716,42 @@ Variable Metadata for custom domains will pull from the model while non-custom d
 
 If no `filter` or `group` is provided, returns the number of records in the dataset. If `filter` is provided, returns the number of records in the dataset that contain the value(s) in the corresponding column(s) provided in the filter. If `group` is provided, returns the number of rows matching each unique set of the grouping variables. These can be static column name(s) or can be derived from other operations like `get_dataset_filtered_variables`. │ │If both `filter` and `group` are provided, returns the number of records in the dataset that contain the value(s) in the corresponding column(s) provided in the filter that also match each unique set of the grouping variables.
 
+**Wildcard Filtering**: Filter values ending with `%` will match any records where the column value starts with the specified prefix. For example, `RACE%` will match `RACE1`, `RACE2`, `RACE3`, etc. This is useful for matching related variables with numeric or alphabetic suffixes.
+
 If `group` is provided, `group_aliases` may also be provided to assign new grouping variable names so that results grouped by the values in one set of grouping variables can be merged onto a dataset according to the same grouping value(s) stored in different set of grouping variables. When both `group` and `group_aliases` are provided, columns are renamed according to corresponding list position (i.e., the 1st column in `group` is renamed to the 1st column in `group_aliases`, etc.). If there are more columns listed in `group` than in `group_aliases`, only the `group` columns with corresponding `group_aliases` columns will be renamed. If there are more columns listed in `group_aliases` than in `group`, the extra column names in `group_aliases` will be ignored.
 
 Example: return the number of records in a dataset.
 
 ```yaml
-- operation: record_count
+- operator: record_count
   id: $records_in_dataset
 ```
 
 Example: return the number of records where STUDYID = "CDISC01" and FLAGVAR = "Y".
 
 ```yaml
-- operation: record_count
+- operator: record_count
   id: $flagged_cdisc01_records_in_dataset
   filter:
     STUDYID: "CDISC01"
     FLAGVAR: "Y"
 ```
 
-Example: return the number of records grouped by USUBJID.
+Example: return the number of records where QNAM starts with "RACE" (matches RACE1, RACE2, RACE3, etc.) per USUBJID.
 
 ```yaml
 - operation: record_count
+  id: $race_records_in_dataset
+  filter:
+    QNAM: "RACE%"
+  group:
+    - "USUBJID"
+```
+
+Example: return the number of records grouped by USUBJID.
+
+```yaml
+- operator: record_count
   id: $records_per_usubjid
   group:
     - USUBJID
@@ -620,7 +760,7 @@ Example: return the number of records grouped by USUBJID.
 Example: return the number of records grouped by USUBJID where FLAGVAR = "Y".
 
 ```yaml
-- operation: record_count
+- operator: record_count
   id: $flagged_records_per_usubjid
   group:
     - USUBJID
@@ -631,7 +771,7 @@ Example: return the number of records grouped by USUBJID where FLAGVAR = "Y".
 Example: return the number of records grouped by USUBJID and IDVARVAL where QNAM = "TEST1" and IDVAR = "GROUPID", renaming the IDVARVAL column to GROUPID for subsequent merging.
 
 ```yaml
-- operation: record_count
+- operator: record_count
   id: $test1_records_per_usubjid_groupid
   group:
     - USUBJID
@@ -681,7 +821,7 @@ Variable Metadata for custom domains will pull from the model while non-custom d
   Version: `3-4`
 
   ```yaml
-  - operation: required_variables
+  - operator: required_variables
     id: $required_variables
   ```
 
@@ -721,7 +861,7 @@ the operation will return:
 By default, the standard is as specified when running validation - as the validation runtime parameter and/or as specified in the rule header - and the list of terminology packages is obtained from the current cache. If required, the default standard may be overridden using the optional `ct_package_types` parameter. For example, given the same list of terminology packages, the following operation:
 
 ```yaml
-Operation:
+Operations:
   - operator: valid_codelist_dates
     id: $valid_dates
     ct_package_types:
@@ -758,7 +898,7 @@ the version parsed from the dictionary files.
 Input:
 
 ```yaml
-Operation:
+Operations:
   - operator: valid_define_external_dictionary_version
     id: $is_valid_loinc_version
     external_dictionary_type: loinc
@@ -779,7 +919,7 @@ Can be case insensitive by setting `case_sensitive` attribute to false. It is tr
 Input:
 
 ```yaml
-Operation:
+Operations:
   - operator: valid_external_dictionary_value
     name: --DECOD
     id: $is_valid_decod_value
@@ -801,7 +941,7 @@ Returns true if the target variable contains a valid external dictionary code, o
 Input:
 
 ```yaml
-Operation:
+Operations:
   - operator: valid_external_dictionary_code
     name: --COD
     id: $is_valid_cod_code
@@ -824,7 +964,7 @@ external_dictionary_term_variable parameter should contain the name of the varia
 Input:
 
 ```yaml
-Operation:
+Operations:
   - operator: valid_external_dictionary_code_term_pair
     name: --COD
     id: $is_valid_loinc_code_term_pair
@@ -853,9 +993,9 @@ Determines whether the values are valid in the following variables:
 **Input:**
 
 ```yaml
-Operation:
+Operations:
   - id: $is_valid_meddra_codes
-    operation: valid_meddra_code_references
+    operator: valid_meddra_code_references
 ```
 
 **Output:**
@@ -879,7 +1019,7 @@ Determines whether the values are valid in the following variable pairs:
 ```yaml
 Operations:
   - id: $is_valid_meddra_pairs
-    operation: valid_meddra_code_term_pairs
+    operator: valid_meddra_code_term_pairs
 ```
 
 **Output:**
@@ -903,7 +1043,7 @@ Determines whether the values are valid in the following variables:
 ```yaml
 Operations:
   - id: $is_valid_meddra_terms
-    operation: valid_meddra_term_references
+    operator: valid_meddra_term_references
 ```
 
 **Output:**
@@ -923,7 +1063,7 @@ Checks if a reference to whodrug term in `name` points to the existing code in A
 ```yaml
 Operations:
   - id: $whodrug_refs_valid
-    operation: valid_whodrug_references
+    operator: valid_whodrug_references
 ```
 
 **Output:**

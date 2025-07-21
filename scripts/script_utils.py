@@ -137,6 +137,7 @@ def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:  # noqa
         variables_metadata=variables_metadata,
         ct_package_metadata=ct_package_data,
         published_ct_packages=published_ct_packages,
+        cache_path=args.cache,
     )
 
 

@@ -1,6 +1,6 @@
 from copy import deepcopy
 from typing import Iterable, List, Union
-
+from dateutil.parser._parser import ParserError
 from business_rules import export_rule_data
 from business_rules.engine import run
 import os
@@ -82,7 +82,9 @@ class RulesEngine:
             self.dataset_paths
         )
         self.rule_processor = RuleProcessor(
-            self.data_service, self.cache, self.library_metadata
+            self.data_service,
+            self.cache,
+            self.library_metadata,
         )
         self.data_processor = DataProcessor(self.data_service, self.cache)
         self.ct_packages = kwargs.get("ct_packages", [])
@@ -172,6 +174,8 @@ class RulesEngine:
             Error: {e}
             Error Type: {type(e)}
             Error Message: {str(e)}
+            Dataset Name: {dataset_metadata.name}
+            Rule ID: {rule.get("core_id", "unknown")}
             Full traceback:
             {traceback.format_exc()}
             """
@@ -387,7 +391,7 @@ class RulesEngine:
                 message="Rule contains invalid operator",
             )
             message = "rule execution error"
-        elif isinstance(exception, KeyError):
+        elif isinstance(exception, (KeyError, ParserError)):
             error_obj = FailedValidationEntity(
                 dataset=os.path.basename(dataset_path),
                 error="Column not found in data",

@@ -37,6 +37,7 @@ model_metadata = {
             "classVariables": [
                 {"name": "--TERM", "ordinal": 1},
                 {"name": "--SEQ", "ordinal": 2},
+                {"name": "--NEW", "ordinal": 3},
             ],
         },
         {
