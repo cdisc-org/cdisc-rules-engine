@@ -9,7 +9,6 @@ on:
       branch:
         required: false
         type: string
-        default: ''
   workflow_dispatch:
     inputs:
       environment:
@@ -32,11 +31,11 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment || 'PROD' }}
     steps:
-      - name: Print branch being deployed
-        run: echo "Deploying branch: ${{ inputs.branch || github.ref_name }}"
       - uses: actions/checkout@v4
         with:
           ref: ${{ inputs.branch || github.ref_name }}
+      - name: Print branch being deployed
+        run: echo "Deploying branch: ${{ inputs.branch || github.ref_name }}"
       - uses: azure/login@v2
         with:
           creds: ${{ env.creds }}
