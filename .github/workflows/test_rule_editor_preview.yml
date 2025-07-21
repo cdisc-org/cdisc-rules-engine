@@ -5,6 +5,11 @@ on:
   workflow_dispatch:
 
 jobs:
+  rule_tester:
+    uses: ./.github/workflows/rule-tester.yml
+    with:
+      environment: DEV
+      branch: ${{ github.head_ref || github.ref_name }}
   extract_and_test:
     needs: rule_tester
     runs-on: ubuntu-latest

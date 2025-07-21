@@ -6,6 +6,10 @@ on:
         required: true
         default: DEV
         type: environment
+      branch:
+        required: false
+        default: ''
+        description: 'Branch to deploy'
   push:
     branches:
       - main
@@ -19,6 +23,8 @@ jobs:
     environment: ${{ inputs.environment || 'PROD' }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch || github.ref_name }}
       - uses: azure/login@v2
         with:
           creds: ${{ env.creds }}
