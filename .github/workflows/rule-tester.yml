@@ -40,10 +40,13 @@ jobs:
           ref: ${{ inputs.branch || github.ref_name }}
 
       - name: Print branch being deployed
-        env:
-          BRANCH: ${{ inputs.branch != '' && inputs.branch || github.ref_name }}
-        run: echo "Deploying branch: $BRANCH"
-        
+        run: |
+          BRANCH_NAME="${{ inputs.branch }}"
+          if [ -z "$BRANCH_NAME" ]; then
+            BRANCH_NAME="${GITHUB_REF_NAME}"
+          fi
+          echo "Deploying branch: $BRANCH_NAME"
+
       - uses: azure/login@v2
         with:
           creds: ${{ env.creds }}
