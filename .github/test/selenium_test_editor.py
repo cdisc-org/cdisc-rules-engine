@@ -96,7 +96,8 @@ try:
         )
     )
     search_result.click()
-    print("Rule selected.")
+
+    print("Rule selected: ", search_result.text)
 
     print("Switching to test tab...")
     test_tab_button = wait.until(
