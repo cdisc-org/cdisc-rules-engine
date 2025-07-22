@@ -1,7 +1,7 @@
 import re
 from datetime import datetime
 from typing import List, Dict, Any
-from base_reader import BaseReader
+from cdisc_rules_engine.readers.base_reader import BaseReader
 from dataclasses import dataclass
 
 
@@ -12,11 +12,12 @@ class CodelistMetadata:
     standard_type: str
     version_date: str
     file_type: str
+    extension: str
 
 
 class CodelistReader(BaseReader):
     """
-    Reader for CDISC Controlled Terminology codelist CSV files.
+    Reader for CDISC Controlled Terminology codelist Excel files.
     Handles both codelist and code_list_item files.
     """
 
@@ -25,7 +26,8 @@ class CodelistReader(BaseReader):
     FILENAME_PATTERN = re.compile(
         r"^(?P<standard_type>ADaM|SDTM)_CT_"
         r"(?P<version_date>\d{8})_terminology_"
-        r"(?P<file_type>codelist|code_list_item)\.csv$"
+        r"(?P<file_type>codelist|code_list_item)"
+        r"\.(?P<extension>csv|tsv|xlsx|xls)$"
     )
 
     def _extract_metadata(self) -> CodelistMetadata:
@@ -34,7 +36,7 @@ class CodelistReader(BaseReader):
         if not match:
             raise ValueError(
                 f"Filename does not match expected pattern: {self.file_path.name}\n"
-                f"Expected format: <STANDARD>_CT_<YYYYMMDD>_terminology_<TYPE>.csv"
+                f"Expected format: <STANDARD>_CT_<YYYYMMDD>_terminology_<TYPE>.<EXTENSION>"
             )
 
         groups = match.groupdict()
@@ -42,6 +44,7 @@ class CodelistReader(BaseReader):
             standard_type=groups["standard_type"],
             version_date=groups["version_date"],
             file_type=groups["file_type"],
+            extension=groups["extension"],
         )
 
     def _format_version_date(self, date_str: str) -> str:
@@ -53,8 +56,8 @@ class CodelistReader(BaseReader):
             raise ValueError(f"Invalid date format: {date_str}")
 
     def read(self) -> List[Dict[str, Any]]:
-        """Read the CSV file and return data formatted for SQL insertion."""
-        raw_data = self._read_csv()
+        """Read the excel file and return data formatted for SQL insertion."""
+        raw_data = self._read_excel()
         if self.metadata.file_type == "codelist":
             return self._format_codelist_data(raw_data)
         else:

@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
+from csv import DictReader
+from pandas import read_excel
 from pathlib import Path
 from typing import List, Dict, Any
-import csv
 
 
 class BaseReader(ABC):
@@ -39,15 +40,23 @@ class BaseReader(ABC):
         """
         pass
 
-    def _read_csv(self) -> List[Dict[str, Any]]:
+    def _read_excel(self) -> List[Dict[str, Any]]:
         """
-        Common CSV reading functionality.
-        Used by subclasses to read CSV files (e.g. metadata standards, terminology).
+        Common excel file reading functionality.
+        Used by subclasses to read csv/tsv/xlsx/xls files (e.g. metadata standards, terminology).
         """
         data = []
         with open(self.file_path, "r", encoding="utf-8") as file:
-            reader = csv.DictReader(file)
-            for row in reader:
-                cleaned_row = {k: v.strip() if v else None for k, v in row.items()}
-                data.append(cleaned_row)
+            if self.file_path.suffix in [".csv", ".tsv"]:
+                reader = DictReader(file)
+                for row in reader:
+                    cleaned_row = {k: v.strip() if v else None for k, v in row.items()}
+                    data.append(cleaned_row)
+            elif self.file_path.suffix in [".xlsx", ".xls"]:
+                df = read_excel(self.file_path)
+                data = df.to_dict(orient="records")
+            else:
+                raise ValueError(
+                    f"Unsupported file type: {self.file_path.suffix}. Supported types are: .csv, .tsv, .xlsx, .xls"
+                )
         return data
