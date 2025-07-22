@@ -486,7 +486,7 @@ $env:DATASET_SIZE_THRESHOLD=0; core.exe validate -rest -of -config -commands
 ### Linux/Mac (Bash)
 
 ```bash
-DATASET_SIZE_THRESHOLD=0 ./core.exe -rest -of -config -commands
+DATASET_SIZE_THRESHOLD=0 ./core -rest -of -config -commands
 ```
 
 ## .env File (Alternative)
