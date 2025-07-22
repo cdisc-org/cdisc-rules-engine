@@ -90,6 +90,8 @@ try:
     rule_search_field.click()
     rule_search_field.send_keys("CG0006")
 
+    time.sleep(5)
+
     search_result = wait.until(
         EC.element_to_be_clickable(
             (By.XPATH, '//*[@id="rulesList"]/table/tbody/tr/td[1]')
@@ -280,7 +282,6 @@ try:
             }
         ],
     }
-
     # Compare result
     if rule_exec_response == expected_json:
         print("Test Passed: API response matches expected JSON.")
