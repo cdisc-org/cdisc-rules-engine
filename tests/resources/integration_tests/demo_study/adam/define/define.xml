@@ -1,0 +1,3371 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<?xml-stylesheet type="text/xsl" href="define2-0-0.xsl"?>
+<!-- ******************************************************************************* -->
+<!-- File: define.xml                                                                -->
+<!-- Date: 09JUL2016                                                                -->
+<!-- Description: Define.xml file for XYZ123                          -->
+<!-- Created by the %make_define2 SAS macro                                          -->
+<!-- ******************************************************************************* -->
+<ODM
+  xmlns="http://www.cdisc.org/ns/odm/v1.3"
+  xmlns:xlink="http://www.w3.org/1999/xlink"
+  xmlns:def="http://www.cdisc.org/ns/def/v2.0"
+  ODMVersion="1.3.2"
+  xmlns:arm="http://www.cdisc.org/ns/arm/v1.0"
+  FileOID="XYZ123"
+  FileType="Snapshot"
+  CreationDateTime="2016-07-09T22:06:45">
+<Study OID="123">
+  <GlobalVariables>
+    <StudyName>XYZ123</StudyName>
+    <StudyDescription>A PHASE IIB, DOUBLE-BLIND, MULTI-CENTER, PLACEBO CONTROLLED, PARALLEL GROUP TRIAL OF ANALGEZIA HCL FOR THE TREATMENT OF CHRONIC PAIN</StudyDescription>
+    <ProtocolName>XYZ123</ProtocolName>
+  </GlobalVariables>
+  <MetaDataVersion OID="CDISC.ADaM-IG.1.0"
+    Name="XYZ123, ADAM Data Definitions"
+    Description="XYZ123, ADAM Data Definitions"
+    def:DefineVersion="2.0.0"
+    def:StandardName="ADaM-IG"
+    def:StandardVersion="1.0">
+
+    <!-- ******************************************* -->
+    <!-- EXTERNAL DOCUMENT REFERENCE             *** -->
+    <!-- ******************************************* -->
+    <def:SupplementalDoc>
+      <def:DocumentRef leafID="ADRG"/>
+    </def:SupplementalDoc>
+
+
+    <!-- ******************************************* -->
+    <!-- VALUE LEVEL LIST DEFINITION INFORMATION  ** -->
+    <!-- ******************************************* -->
+    <def:ValueListDef OID="VL.ADEF.AVAL">
+      <ItemRef ItemOID="VL.ADEF.AVAL.XPPAIN"
+        OrderNumber="1"
+        Mandatory="No">
+        <def:WhereClauseRef WhereClauseOID="WC.ADEF.AVAL.XPPAIN"/>
+      </ItemRef>
+    </def:ValueListDef>
+    <def:ValueListDef OID="VL.ADEF.CRIT1">
+      <ItemRef ItemOID="VL.ADEF.CRIT1.XPPAIN"
+        OrderNumber="1"
+        Mandatory="No"
+        MethodOID="COM.CRIT1">
+        <def:WhereClauseRef WhereClauseOID="WC.ADEF.CRIT1.XPPAIN"/>
+      </ItemRef>
+    </def:ValueListDef>
+    <def:ValueListDef OID="VL.ADEF.CRIT1FL">
+      <ItemRef ItemOID="VL.ADEF.CRIT1FL.XPPAIN"
+        OrderNumber="1"
+        Mandatory="No"
+        MethodOID="RESPONDER">
+        <def:WhereClauseRef WhereClauseOID="WC.ADEF.CRIT1FL.XPPAIN"/>
+      </ItemRef>
+    </def:ValueListDef>
+    <def:ValueListDef OID="VL.ADTTE.AVAL">
+      <ItemRef ItemOID="VL.ADTTE.AVAL.TTPNRELF"
+        OrderNumber="1"
+        Mandatory="No"
+        MethodOID="TTPNRELF">
+        <def:WhereClauseRef WhereClauseOID="WC.ADTTE.AVAL.TTPNRELF"/>
+      </ItemRef>
+    </def:ValueListDef>
+    <def:ValueListDef OID="VL.ADTTE.CNSR">
+      <ItemRef ItemOID="VL.ADTTE.CNSR.TTPNRELF"
+        OrderNumber="1"
+        Mandatory="No"
+        MethodOID="TTPNRELF.CNSR">
+        <def:WhereClauseRef WhereClauseOID="WC.ADTTE.CNSR.TTPNRELF"/>
+      </ItemRef>
+    </def:ValueListDef>
+    <def:ValueListDef OID="VL.ADTTE.EVNTDESC">
+      <ItemRef ItemOID="VL.ADTTE.EVNTDESC.XPPAIN"
+        OrderNumber="1"
+        Mandatory="No"
+        MethodOID="TTPNRELF.EVNTDESC">
+        <def:WhereClauseRef WhereClauseOID="WC.ADTTE.EVNTDESC.XPPAIN"/>
+      </ItemRef>
+    </def:ValueListDef>
+
+    <!-- ****************************************************************** -->
+    <!-- WhereClause Definitions Used/Referenced in Value List Definitions) -->
+    <!-- ****************************************************************** -->
+    <def:WhereClauseDef OID="WC.ADEF.AVAL.XPPAIN">
+      <RangeCheck SoftHard="Soft" def:ItemOID="ADEF.PARAMCD" Comparator="EQ">
+        <CheckValue>XPPAIN</CheckValue>
+      </RangeCheck>
+    </def:WhereClauseDef>
+    <def:WhereClauseDef OID="WC.ADEF.CRIT1.XPPAIN">
+      <RangeCheck SoftHard="Soft" def:ItemOID="ADEF.PARAMCD" Comparator="EQ">
+        <CheckValue>XPPAIN</CheckValue>
+      </RangeCheck>
+    </def:WhereClauseDef>
+    <def:WhereClauseDef OID="WC.ADEF.CRIT1FL.XPPAIN">
+      <RangeCheck SoftHard="Soft" def:ItemOID="ADEF.PARAMCD" Comparator="EQ">
+        <CheckValue>XPPAIN</CheckValue>
+      </RangeCheck>
+    </def:WhereClauseDef>
+    <def:WhereClauseDef OID="WC.ADTTE.AVAL.TTPNRELF">
+      <RangeCheck SoftHard="Soft" def:ItemOID="ADTTE.PARAMCD" Comparator="EQ">
+        <CheckValue>TTPNRELF</CheckValue>
+      </RangeCheck>
+    </def:WhereClauseDef>
+    <def:WhereClauseDef OID="WC.ADTTE.CNSR.TTPNRELF">
+      <RangeCheck SoftHard="Soft" def:ItemOID="ADTTE.PARAMCD" Comparator="EQ">
+        <CheckValue>TTPNRELF</CheckValue>
+      </RangeCheck>
+    </def:WhereClauseDef>
+    <def:WhereClauseDef OID="WC.ADTTE.EVNTDESC.XPPAIN">
+      <RangeCheck SoftHard="Soft" def:ItemOID="ADTTE.PARAMCD" Comparator="EQ">
+        <CheckValue>XPPAIN</CheckValue>
+      </RangeCheck>
+    </def:WhereClauseDef>
+    <def:WhereClauseDef OID="WC.Figure_14.2.1.1">
+      <RangeCheck SoftHard="Soft" def:ItemOID="ADTTE.ITTFL" Comparator="EQ">
+        <CheckValue>Y</CheckValue>
+      </RangeCheck>
+      <RangeCheck SoftHard="Soft" def:ItemOID="ADTTE.PARAMCD" Comparator="EQ">
+        <CheckValue>TTPNRELF</CheckValue>
+      </RangeCheck>
+    </def:WhereClauseDef>
+    <def:WhereClauseDef OID="WC.ITTFL">
+      <RangeCheck SoftHard="Soft" def:ItemOID="ADSL.ITTFL" Comparator="EQ">
+        <CheckValue>Y</CheckValue>
+      </RangeCheck>
+    </def:WhereClauseDef>
+    <def:WhereClauseDef OID="WC.LB.LBTESTCD.GLUC.LBCAT.CHEMISTRY">
+      <RangeCheck SoftHard="Soft" def:ItemOID="LB.LBCAT" Comparator="EQ">
+        <CheckValue>CHEMISTRY</CheckValue>
+      </RangeCheck>
+      <RangeCheck SoftHard="Soft" def:ItemOID="LB.LBTESTCD" Comparator="EQ">
+        <CheckValue>GLUC</CheckValue>
+      </RangeCheck>
+    </def:WhereClauseDef>
+    <def:WhereClauseDef OID="WC.LB.LBTESTCD.GLUC.LBCAT.URINALYSIS">
+      <RangeCheck SoftHard="Soft" def:ItemOID="LB.LBCAT" Comparator="EQ">
+        <CheckValue>URINALYSIS</CheckValue>
+      </RangeCheck>
+      <RangeCheck SoftHard="Soft" def:ItemOID="LB.LBTESTCD" Comparator="EQ">
+        <CheckValue>GLUC</CheckValue>
+      </RangeCheck>
+    </def:WhereClauseDef>
+    <def:WhereClauseDef OID="WC.Table_14.2.1.1">
+      <RangeCheck SoftHard="Soft" def:ItemOID="ADEF.ITTFL" Comparator="EQ">
+        <CheckValue>Y</CheckValue>
+      </RangeCheck>
+      <RangeCheck SoftHard="Soft" def:ItemOID="ADEF.ABLFL" Comparator="NE">
+        <CheckValue>Y</CheckValue>
+      </RangeCheck>
+      <RangeCheck SoftHard="Soft" def:ItemOID="ADEF.PARAMCD" Comparator="EQ">
+        <CheckValue>XPPAIN</CheckValue>
+      </RangeCheck>
+    </def:WhereClauseDef>
+    <def:WhereClauseDef OID="WC.Table_14.3.2.1">
+      <RangeCheck SoftHard="Soft" def:ItemOID="ADAE.TRTEMFL" Comparator="EQ">
+        <CheckValue>Y</CheckValue>
+      </RangeCheck>
+    </def:WhereClauseDef>
+    <!-- ******************************************* -->
+    <!-- ADSL           ItemGroupDef INFORMATION *** -->
+    <!-- ******************************************* -->
+    <ItemGroupDef OID="ADSL"
+      Domain="ADSL"
+      Name="ADSL"
+      Repeating="No"
+      Purpose="Analysis"
+      IsReferenceData="No"
+      SASDatasetName="ADSL"
+      def:Structure="ADSL - One record per subject"
+      def:Class="Subject level analysis dataset"
+      def:CommentOID="COM.ADSL"
+      def:ArchiveLocationID="Location.ADSL">
+      <Description>
+        <TranslatedText xml:lang="en">Subject Level Analysis Dataset</TranslatedText>
+      </Description>
+      <ItemRef ItemOID="ADSL.STUDYID"
+        OrderNumber="1"
+        Mandatory="Yes"
+        KeySequence="1"
+/>
+      <ItemRef ItemOID="ADSL.USUBJID"
+        OrderNumber="2"
+        Mandatory="Yes"
+        KeySequence="2"
+/>
+      <ItemRef ItemOID="ADSL.SUBJID"
+        OrderNumber="3"
+        Mandatory="Yes"
+/>
+      <ItemRef ItemOID="ADSL.SITEID"
+        OrderNumber="4"
+        Mandatory="Yes"
+/>
+      <ItemRef ItemOID="ADSL.COUNTRY"
+        OrderNumber="5"
+        Mandatory="Yes"
+/>
+      <ItemRef ItemOID="ADSL.BRTHDT"
+        OrderNumber="6"
+        Mandatory="No"
+/>
+      <ItemRef ItemOID="ADSL.AGE"
+        OrderNumber="7"
+        Mandatory="Yes"
+/>
+      <ItemRef ItemOID="ADSL.AGEU"
+        OrderNumber="8"
+        Mandatory="Yes"
+/>
+      <ItemRef ItemOID="ADSL.AGEGR1"
+        OrderNumber="9"
+        Mandatory="No"
+        MethodOID="AGEGR1"
+/>
+      <ItemRef ItemOID="ADSL.AGEGR1N"
+        OrderNumber="10"
+        Mandatory="No"
+        MethodOID="COMP.SEECODELIST"
+/>
+      <ItemRef ItemOID="ADSL.SEX"
+        OrderNumber="11"
+        Mandatory="Yes"
+/>
+      <ItemRef ItemOID="ADSL.RACE"
+        OrderNumber="12"
+        Mandatory="Yes"
+/>
+      <ItemRef ItemOID="ADSL.RACEOTH"
+        OrderNumber="13"
+        Mandatory="No"
+/>
+      <ItemRef ItemOID="ADSL.RANDDT"
+        OrderNumber="14"
+        Mandatory="No"
+        MethodOID="RANDDT"
+/>
+      <ItemRef ItemOID="ADSL.TRTSDT"
+        OrderNumber="15"
+        Mandatory="Yes"
+        MethodOID="TRTSDT"
+/>
+      <ItemRef ItemOID="ADSL.TRTEDT"
+        OrderNumber="16"
+        Mandatory="Yes"
+        MethodOID="TRTEDT"
+/>
+      <ItemRef ItemOID="ADSL.ARM"
+        OrderNumber="17"
+        Mandatory="Yes"
+/>
+      <ItemRef ItemOID="ADSL.TRT01P"
+        OrderNumber="18"
+        Mandatory="Yes"
+/>
+      <ItemRef ItemOID="ADSL.TRT01A"
+        OrderNumber="19"
+        Mandatory="Yes"
+/>
+      <ItemRef ItemOID="ADSL.TRT01PN"
+        OrderNumber="20"
+        Mandatory="No"
+        MethodOID="COMP.SEECODELIST"
+/>
+      <ItemRef ItemOID="ADSL.TRT01AN"
+        OrderNumber="21"
+        Mandatory="No"
+        MethodOID="COMP.SEECODELIST"
+/>
+      <ItemRef ItemOID="ADSL.ITTFL"
+        OrderNumber="22"
+        Mandatory="No"
+        MethodOID="ITTFL"
+/>
+      <ItemRef ItemOID="ADSL.SAFFL"
+        OrderNumber="23"
+        Mandatory="No"
+        MethodOID="SAFFL"
+/>
+      <ItemRef ItemOID="ADSL.RESPFL"
+        OrderNumber="24"
+        Mandatory="No"
+        MethodOID="RESPFL"
+/>
+      <!-- **************************************************** -->
+      <!-- def:leaf details for hypertext linking the dataset   -->
+      <!-- **************************************************** -->
+      <def:leaf ID="Location.ADSL" xlink:href="ADSL.xpt">
+        <def:title>ADSL.xpt </def:title>
+      </def:leaf>
+    </ItemGroupDef>
+    <!-- ******************************************* -->
+    <!-- ADAE           ItemGroupDef INFORMATION *** -->
+    <!-- ******************************************* -->
+    <ItemGroupDef OID="ADAE"
+      Domain="ADAE"
+      Name="ADAE"
+      Repeating="Yes"
+      Purpose="Analysis"
+      IsReferenceData="No"
+      SASDatasetName="ADAE"
+      def:Structure="ADAE - One record per event per subject"
+      def:Class="Occurrence data structure"
+      def:CommentOID="COM.ADAE"
+      def:ArchiveLocationID="Location.ADAE">
+      <Description>
+        <TranslatedText xml:lang="en">Adverse Events Analysis Datasets</TranslatedText>
+      </Description>
+      <ItemRef ItemOID="ADAE.STUDYID"
+        OrderNumber="1"
+        Mandatory="Yes"
+        KeySequence="1"
+/>
+      <ItemRef ItemOID="ADAE.USUBJID"
+        OrderNumber="2"
+        Mandatory="Yes"
+        KeySequence="2"
+/>
+      <ItemRef ItemOID="ADAE.SITEID"
+        OrderNumber="3"
+        Mandatory="Yes"
+/>
+      <ItemRef ItemOID="ADAE.COUNTRY"
+        OrderNumber="4"
+        Mandatory="Yes"
+/>
+      <ItemRef ItemOID="ADAE.AESEQ"
+        OrderNumber="5"
+        Mandatory="Yes"
+/>
+      <ItemRef ItemOID="ADAE.AGE"
+        OrderNumber="6"
+        Mandatory="Yes"
+/>
+      <ItemRef ItemOID="ADAE.AGEGR1N"
+        OrderNumber="7"
+        Mandatory="Yes"
+        MethodOID="COMP.SEECODELIST"
+/>
+      <ItemRef ItemOID="ADAE.AGEGR1"
+        OrderNumber="8"
+        Mandatory="Yes"
+        MethodOID="AGEGR1"
+/>
+      <ItemRef ItemOID="ADAE.SEX"
+        OrderNumber="9"
+        Mandatory="Yes"
+/>
+      <ItemRef ItemOID="ADAE.TRTAN"
+        OrderNumber="10"
+        Mandatory="Yes"
+/>
+      <ItemRef ItemOID="ADAE.TRTA"
+        OrderNumber="11"
+        Mandatory="No"
+/>
+      <ItemRef ItemOID="ADAE.AETERM"
+        OrderNumber="12"
+        Mandatory="Yes"
+/>
+      <ItemRef ItemOID="ADAE.AEDECOD"
+        OrderNumber="13"
+        Mandatory="Yes"
+        KeySequence="4"
+/>
+      <ItemRef ItemOID="ADAE.AEBODSYS"
+        OrderNumber="14"
+        Mandatory="Yes"
+/>
+      <ItemRef ItemOID="ADAE.ASTDT"
+        OrderNumber="15"
+        Mandatory="Yes"
+        MethodOID="ADAE.ASTDT"
+        KeySequence="3"
+/>
+      <ItemRef ItemOID="ADAE.AENDT"
+        OrderNumber="16"
+        Mandatory="Yes"
+        MethodOID="ADAE.AENDT"
+/>
+      <ItemRef ItemOID="ADAE.ASTDY"
+        OrderNumber="17"
+        Mandatory="No"
+        MethodOID="ADAE.ASTDY"
+/>
+      <ItemRef ItemOID="ADAE.AENDY"
+        OrderNumber="18"
+        Mandatory="No"
+        MethodOID="ADAE.AENDY"
+/>
+      <ItemRef ItemOID="ADAE.AESEV"
+        OrderNumber="19"
+        Mandatory="No"
+/>
+      <ItemRef ItemOID="ADAE.AESEVN"
+        OrderNumber="20"
+        Mandatory="No"
+        MethodOID="COMP.SEECODELIST"
+/>
+      <ItemRef ItemOID="ADAE.AESER"
+        OrderNumber="21"
+        Mandatory="No"
+/>
+      <ItemRef ItemOID="ADAE.AEACN"
+        OrderNumber="22"
+        Mandatory="No"
+/>
+      <ItemRef ItemOID="ADAE.AEREL"
+        OrderNumber="23"
+        Mandatory="No"
+/>
+      <ItemRef ItemOID="ADAE.AERELN"
+        OrderNumber="24"
+        Mandatory="No"
+        MethodOID="COMP.SEECODELIST"
+/>
+      <ItemRef ItemOID="ADAE.CQ01NAM"
+        OrderNumber="25"
+        Mandatory="No"
+        MethodOID="COMP.CQ01NAME"
+/>
+      <ItemRef ItemOID="ADAE.RELGR1"
+        OrderNumber="26"
+        Mandatory="No"
+        MethodOID="RELGR1"
+/>
+      <ItemRef ItemOID="ADAE.RELGR1N"
+        OrderNumber="27"
+        Mandatory="No"
+        MethodOID="COMP.SEECODELIST"
+/>
+      <ItemRef ItemOID="ADAE.TRTEMFL"
+        OrderNumber="28"
+        Mandatory="No"
+/>
+      <ItemRef ItemOID="ADAE.SAFFL"
+        OrderNumber="29"
+        Mandatory="No"
+/>
+      <!-- **************************************************** -->
+      <!-- def:leaf details for hypertext linking the dataset   -->
+      <!-- **************************************************** -->
+      <def:leaf ID="Location.ADAE" xlink:href="ADAE.xpt">
+        <def:title>ADAE.xpt </def:title>
+      </def:leaf>
+    </ItemGroupDef>
+    <!-- ******************************************* -->
+    <!-- ADEF           ItemGroupDef INFORMATION *** -->
+    <!-- ******************************************* -->
+    <ItemGroupDef OID="ADEF"
+      Domain="ADEF"
+      Name="ADEF"
+      Repeating="Yes"
+      Purpose="Analysis"
+      IsReferenceData="No"
+      SASDatasetName="ADEF"
+      def:Structure="One record per subject per visit"
+      def:Class="Basic data structure"
+      def:CommentOID="COM.ADEF"
+      def:ArchiveLocationID="Location.ADEF">
+      <Description>
+        <TranslatedText xml:lang="en">Efficacy/Pain Scores Analysis Dataset</TranslatedText>
+      </Description>
+      <ItemRef ItemOID="ADEF.STUDYID"
+        OrderNumber="1"
+        Mandatory="Yes"
+        KeySequence="1"
+/>
+      <ItemRef ItemOID="ADEF.USUBJID"
+        OrderNumber="2"
+        Mandatory="Yes"
+        KeySequence="2"
+/>
+      <ItemRef ItemOID="ADEF.SITEID"
+        OrderNumber="3"
+        Mandatory="Yes"
+/>
+      <ItemRef ItemOID="ADEF.COUNTRY"
+        OrderNumber="4"
+        Mandatory="Yes"
+/>
+      <ItemRef ItemOID="ADEF.RANDDT"
+        OrderNumber="5"
+        Mandatory="No"
+/>
+      <ItemRef ItemOID="ADEF.AGE"
+        OrderNumber="6"
+        Mandatory="Yes"
+/>
+      <ItemRef ItemOID="ADEF.AGEGR1N"
+        OrderNumber="7"
+        Mandatory="Yes"
+        MethodOID="COMP.SEECODELIST"
+/>
+      <ItemRef ItemOID="ADEF.AGEGR1"
+        OrderNumber="8"
+        Mandatory="Yes"
+        MethodOID="AGEGR1"
+/>
+      <ItemRef ItemOID="ADEF.SEX"
+        OrderNumber="9"
+        Mandatory="Yes"
+/>
+      <ItemRef ItemOID="ADEF.RACE"
+        OrderNumber="10"
+        Mandatory="Yes"
+/>
+      <ItemRef ItemOID="ADEF.TRTPN"
+        OrderNumber="11"
+        Mandatory="Yes"
+/>
+      <ItemRef ItemOID="ADEF.TRTP"
+        OrderNumber="13"
+        Mandatory="No"
+        MethodOID="TRTP"
+/>
+      <ItemRef ItemOID="ADEF.PARAMCD"
+        OrderNumber="14"
+        Mandatory="No"
+        KeySequence="3"
+/>
+      <ItemRef ItemOID="ADEF.PARAM"
+        OrderNumber="15"
+        Mandatory="No"
+/>
+      <ItemRef ItemOID="ADEF.AVISIT"
+        OrderNumber="16"
+        Mandatory="No"
+/>
+      <ItemRef ItemOID="ADEF.AVISITN"
+        OrderNumber="17"
+        Mandatory="No"
+        MethodOID="COMP.SEECODELIST"
+        KeySequence="4"
+/>
+      <ItemRef ItemOID="ADEF.ABLFL"
+        OrderNumber="18"
+        Mandatory="No"
+        MethodOID="ABLFL"
+/>
+      <ItemRef ItemOID="ADEF.XPSEQ"
+        OrderNumber="19"
+        Mandatory="No"
+/>
+      <ItemRef ItemOID="ADEF.VISITNUM"
+        OrderNumber="20"
+        Mandatory="No"
+/>
+      <ItemRef ItemOID="ADEF.ADT"
+        OrderNumber="21"
+        Mandatory="No"
+        MethodOID="ADT"
+        KeySequence="5"
+/>
+      <ItemRef ItemOID="ADEF.ADY"
+        OrderNumber="22"
+        Mandatory="No"
+        MethodOID="ADY"
+/>
+      <ItemRef ItemOID="ADEF.AVAL"
+        OrderNumber="23"
+        Mandatory="No"
+        MethodOID="COMP.SEEVALUELEVEL"
+/>
+      <ItemRef ItemOID="ADEF.AVALC"
+        OrderNumber="24"
+        Mandatory="No"
+        MethodOID="COMP.SEEVALUELEVEL"
+/>
+      <ItemRef ItemOID="ADEF.BASE"
+        OrderNumber="25"
+        Mandatory="No"
+        MethodOID="BASE"
+/>
+      <ItemRef ItemOID="ADEF.CHG"
+        OrderNumber="27"
+        Mandatory="No"
+        MethodOID="CHANGEFROMBASELINE"
+/>
+      <ItemRef ItemOID="ADEF.CRIT1FL"
+        OrderNumber="28"
+        Mandatory="No"
+        MethodOID="COMP.SEEVALUELEVEL"
+/>
+      <ItemRef ItemOID="ADEF.CRIT1"
+        OrderNumber="29"
+        Mandatory="No"
+        MethodOID="COMP.SEEVALUELEVEL"
+/>
+      <ItemRef ItemOID="ADEF.ITTFL"
+        OrderNumber="30"
+        Mandatory="No"
+/>
+      <!-- **************************************************** -->
+      <!-- def:leaf details for hypertext linking the dataset   -->
+      <!-- **************************************************** -->
+      <def:leaf ID="Location.ADEF" xlink:href="ADEF.xpt">
+        <def:title>ADEF.xpt </def:title>
+      </def:leaf>
+    </ItemGroupDef>
+    <!-- ******************************************* -->
+    <!-- ADTTE          ItemGroupDef INFORMATION *** -->
+    <!-- ******************************************* -->
+    <ItemGroupDef OID="ADTTE"
+      Domain="ADTTE"
+      Name="ADTTE"
+      Repeating="No"
+      Purpose="Analysis"
+      IsReferenceData="No"
+      SASDatasetName="ADTTE"
+      def:Structure="One record per subject"
+      def:Class="Basic data structure"
+      def:CommentOID="COM.ADTTE"
+      def:ArchiveLocationID="Location.ADTTE">
+      <Description>
+        <TranslatedText xml:lang="en">Time-to-Pain Relief Analysis Dataset</TranslatedText>
+      </Description>
+      <ItemRef ItemOID="ADTTE.STUDYID"
+        OrderNumber="1"
+        Mandatory="Yes"
+        KeySequence="1"
+/>
+      <ItemRef ItemOID="ADTTE.USUBJID"
+        OrderNumber="2"
+        Mandatory="Yes"
+        KeySequence="2"
+/>
+      <ItemRef ItemOID="ADTTE.SITEID"
+        OrderNumber="3"
+        Mandatory="Yes"
+/>
+      <ItemRef ItemOID="ADTTE.COUNTRY"
+        OrderNumber="4"
+        Mandatory="Yes"
+/>
+      <ItemRef ItemOID="ADTTE.AGE"
+        OrderNumber="5"
+        Mandatory="Yes"
+/>
+      <ItemRef ItemOID="ADTTE.AGEGR1N"
+        OrderNumber="6"
+        Mandatory="Yes"
+        MethodOID="COMP.SEECODELIST"
+/>
+      <ItemRef ItemOID="ADTTE.AGEGR1"
+        OrderNumber="7"
+        Mandatory="Yes"
+        MethodOID="AGEGR1"
+/>
+      <ItemRef ItemOID="ADTTE.SEX"
+        OrderNumber="8"
+        Mandatory="Yes"
+/>
+      <ItemRef ItemOID="ADTTE.RACE"
+        OrderNumber="9"
+        Mandatory="Yes"
+/>
+      <ItemRef ItemOID="ADTTE.TRTPN"
+        OrderNumber="10"
+        Mandatory="Yes"
+/>
+      <ItemRef ItemOID="ADTTE.TRTP"
+        OrderNumber="11"
+        Mandatory="No"
+/>
+      <ItemRef ItemOID="ADTTE.PARAMCD"
+        OrderNumber="12"
+        Mandatory="No"
+        KeySequence="3"
+/>
+      <ItemRef ItemOID="ADTTE.PARAM"
+        OrderNumber="13"
+        Mandatory="No"
+/>
+      <ItemRef ItemOID="ADTTE.ADT"
+        OrderNumber="14"
+        Mandatory="No"
+/>
+      <ItemRef ItemOID="ADTTE.STARTDT"
+        OrderNumber="15"
+        Mandatory="No"
+/>
+      <ItemRef ItemOID="ADTTE.AVAL"
+        OrderNumber="16"
+        Mandatory="Yes"
+        MethodOID="COMP.SEEVALUELEVEL"
+/>
+      <ItemRef ItemOID="ADTTE.CNSR"
+        OrderNumber="17"
+        Mandatory="Yes"
+        MethodOID="COMP.SEEVALUELEVEL"
+/>
+      <ItemRef ItemOID="ADTTE.EVNTDESC"
+        OrderNumber="18"
+        Mandatory="No"
+        MethodOID="COMP.SEEVALUELEVEL"
+/>
+      <ItemRef ItemOID="ADTTE.SRCDOM"
+        OrderNumber="19"
+        Mandatory="No"
+        MethodOID="ADTTE.SRCDOM"
+/>
+      <ItemRef ItemOID="ADTTE.SRCVAR"
+        OrderNumber="20"
+        Mandatory="No"
+        MethodOID="ADTTE.SRCVAR"
+/>
+      <ItemRef ItemOID="ADTTE.SRCSEQ"
+        OrderNumber="21"
+        Mandatory="No"
+        MethodOID="ADTTE.SRCSEQ"
+/>
+      <ItemRef ItemOID="ADTTE.ITTFL"
+        OrderNumber="22"
+        Mandatory="No"
+/>
+      <!-- **************************************************** -->
+      <!-- def:leaf details for hypertext linking the dataset   -->
+      <!-- **************************************************** -->
+      <def:leaf ID="Location.ADTTE" xlink:href="ADTTE.xpt">
+        <def:title>ADTTE.xpt </def:title>
+      </def:leaf>
+    </ItemGroupDef>
+    <!-- ************************************************************ -->
+    <!-- The details of each variable are here for all domains         -->
+    <!-- ************************************************************ -->
+    <ItemDef OID="ADAE.STUDYID"
+      Name="STUDYID"
+      SASFieldName="STUDYID"
+      DataType="text"
+      Length="15"
+      def:DisplayFormat="15"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Study Identifier</TranslatedText>
+      </Description>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">ADSL.STUDYID</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADAE.USUBJID"
+      Name="USUBJID"
+      SASFieldName="USUBJID"
+      DataType="text"
+      Length="25"
+      def:DisplayFormat="25"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Unique Subject Identifier</TranslatedText>
+      </Description>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">ADSL.USUBJID</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADAE.SITEID"
+      Name="SITEID"
+      SASFieldName="SITEID"
+      DataType="text"
+      Length="7"
+      def:DisplayFormat="7"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Study Site Identifier</TranslatedText>
+      </Description>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">ADSL.SITEID</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADAE.COUNTRY"
+      Name="COUNTRY"
+      SASFieldName="COUNTRY"
+      DataType="text"
+      Length="3"
+      def:DisplayFormat="3"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Country</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.COUNTRY"/>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">ADSL.COUNTRY</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADAE.AESEQ"
+      Name="AESEQ"
+      SASFieldName="AESEQ"
+      DataType="integer"
+      Length="8"
+      def:DisplayFormat="8"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Sequence Number</TranslatedText>
+      </Description>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">AE.AESEQ</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADAE.AGE"
+      Name="AGE"
+      SASFieldName="AGE"
+      DataType="integer"
+      Length="8"
+      def:DisplayFormat="8"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Unique Subject Identifier</TranslatedText>
+      </Description>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">ADSL.AGE</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADAE.AGEGR1N"
+      Name="AGEGR1N"
+      SASFieldName="AGEGR1N"
+      DataType="integer"
+      Length="8"
+      def:DisplayFormat="8"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Pooled Age Group 1 (N)</TranslatedText>
+      </Description>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">ADSL.AGEGR1N</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADAE.AGEGR1"
+      Name="AGEGR1"
+      SASFieldName="AGEGR1"
+      DataType="text"
+      Length="20"
+      def:DisplayFormat="20"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Pooled Age Group 1</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.AGEGR1"/>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">ADSL.AGEGR1</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADAE.SEX"
+      Name="SEX"
+      SASFieldName="SEX"
+      DataType="text"
+      Length="1"
+      def:DisplayFormat="1"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Sex</TranslatedText>
+      </Description>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">ADSL.SEX</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADAE.TRTAN"
+      Name="TRTAN"
+      SASFieldName="TRTAN"
+      DataType="integer"
+      Length="8"
+      def:DisplayFormat="8"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Actual Treatment (N)</TranslatedText>
+      </Description>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">ADSL.TRT01AN</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADAE.TRTA"
+      Name="TRTA"
+      SASFieldName="TRTA"
+      DataType="text"
+      Length="40"
+      def:DisplayFormat="40"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Actual Treatment</TranslatedText>
+      </Description>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">ADSL.TRT01A</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADAE.AETERM"
+      Name="AETERM"
+      SASFieldName="AETERM"
+      DataType="text"
+      Length="200"
+      def:DisplayFormat="200"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Reported Term for the Adverse Event</TranslatedText>
+      </Description>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">AE.AETERM</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADAE.AEDECOD"
+      Name="AEDECOD"
+      SASFieldName="AEDECOD"
+      DataType="text"
+      Length="200"
+      def:DisplayFormat="200"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Dictionary-Derived Term</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.MedDRA"/>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">AE.AEDECOD</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADAE.AEBODSYS"
+      Name="AEBODSYS"
+      SASFieldName="AEBODSYS"
+      DataType="text"
+      Length="200"
+      def:DisplayFormat="200"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Body System or Organ Class</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.MedDRA"/>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">AE.AEBODSYS</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADAE.ASTDT"
+      Name="ASTDT"
+      SASFieldName="ASTDT"
+      DataType="integer"
+      Length="8"
+      def:DisplayFormat="8"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Start Date/Time of Adverse Events</TranslatedText>
+      </Description>
+      <def:Origin Type="Derived">
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADAE.AENDT"
+      Name="AENDT"
+      SASFieldName="AENDT"
+      DataType="integer"
+      Length="8"
+      def:DisplayFormat="8"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">End Date/Time of Adverse Events</TranslatedText>
+      </Description>
+      <def:Origin Type="Derived">
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADAE.ASTDY"
+      Name="ASTDY"
+      SASFieldName="ASTDY"
+      DataType="integer"
+      Length="8"
+      def:DisplayFormat="8"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Study Day of Start of Adverse Event</TranslatedText>
+      </Description>
+      <def:Origin Type="Derived">
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADAE.AENDY"
+      Name="AENDY"
+      SASFieldName="AENDY"
+      DataType="integer"
+      Length="8"
+      def:DisplayFormat="8"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Study Day of End of Adverse Event</TranslatedText>
+      </Description>
+      <def:Origin Type="Derived">
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADAE.AESEV"
+      Name="AESEV"
+      SASFieldName="AESEV"
+      DataType="text"
+      Length="40"
+      def:DisplayFormat="40"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Severity/Intensity</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.AESEV"/>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">AE.AESEV</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADAE.AESEVN"
+      Name="AESEVN"
+      SASFieldName="AESEVN"
+      DataType="integer"
+      Length="8"
+      def:DisplayFormat="1"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Severity/Intensity (N)</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.AESEVN"/>
+      <def:Origin Type="Derived">
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADAE.AESER"
+      Name="AESER"
+      SASFieldName="AESER"
+      DataType="text"
+      Length="40"
+      def:DisplayFormat="40"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Serious Event</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.YN"/>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">AE.AESER</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADAE.AEACN"
+      Name="AEACN"
+      SASFieldName="AEACN"
+      DataType="text"
+      Length="40"
+      def:DisplayFormat="40"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Action Taken with Study Treatment</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.ACN"/>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">AE.AEACN</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADAE.AEREL"
+      Name="AEREL"
+      SASFieldName="AEREL"
+      DataType="text"
+      Length="40"
+      def:DisplayFormat="40"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Causality</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.AEREL"/>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">AE.AEREL</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADAE.AERELN"
+      Name="AERELN"
+      SASFieldName="AERELN"
+      DataType="integer"
+      Length="8"
+      def:DisplayFormat="1"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Causality (N)</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.AERELN"/>
+      <def:Origin Type="Derived">
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADAE.CQ01NAM"
+      Name="CQ01NAM"
+      SASFieldName="CQ01NAM"
+      DataType="text"
+      Length="200"
+      def:DisplayFormat="200"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">CQ 01 Name</TranslatedText>
+      </Description>
+      <def:Origin Type="Derived">
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADAE.RELGR1"
+      Name="RELGR1"
+      SASFieldName="RELGR1"
+      DataType="text"
+      Length="15"
+      def:DisplayFormat="15"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Pooled Causality Group 1</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.RELGR1"/>
+      <def:Origin Type="Derived">
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADAE.RELGR1N"
+      Name="RELGR1N"
+      SASFieldName="RELGR1N"
+      DataType="integer"
+      Length="8"
+      def:DisplayFormat="8"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Pooled Causality Group 1 (N)</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.RELGR1N"/>
+      <def:Origin Type="Derived">
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADAE.TRTEMFL"
+      Name="TRTEMFL"
+      SASFieldName="TRTEMFL"
+      DataType="text"
+      Length="1"
+      def:DisplayFormat="1"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Treatment Emergent Flag</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.FLAGS"/>
+      <def:Origin Type="Derived">
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADAE.SAFFL"
+      Name="SAFFL"
+      SASFieldName="SAFFL"
+      DataType="text"
+      Length="1"
+      def:DisplayFormat="1"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Safety Population Flag</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.FLAGS"/>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">ADSL.SAFFL</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADEF.STUDYID"
+      Name="STUDYID"
+      SASFieldName="STUDYID"
+      DataType="text"
+      Length="15"
+      def:DisplayFormat="15"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Study Identifier</TranslatedText>
+      </Description>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">ADSL.STUDYID</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADEF.USUBJID"
+      Name="USUBJID"
+      SASFieldName="USUBJID"
+      DataType="text"
+      Length="25"
+      def:DisplayFormat="25"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Unique Subject Identifier</TranslatedText>
+      </Description>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">ADSL.USUBJID</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADEF.SITEID"
+      Name="SITEID"
+      SASFieldName="SITEID"
+      DataType="text"
+      Length="7"
+      def:DisplayFormat="7"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Study Site Identifier</TranslatedText>
+      </Description>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">ADSL.SITEID</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADEF.COUNTRY"
+      Name="COUNTRY"
+      SASFieldName="COUNTRY"
+      DataType="text"
+      Length="3"
+      def:DisplayFormat="3"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Country</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.COUNTRY"/>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">ADSL.COUNTRY</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADEF.RANDDT"
+      Name="RANDDT"
+      SASFieldName="RANDDT"
+      DataType="integer"
+      Length="8"
+      def:DisplayFormat="date9."
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Date of Randomization</TranslatedText>
+      </Description>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">ADSL.RANDDT</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADEF.AGE"
+      Name="AGE"
+      SASFieldName="AGE"
+      DataType="integer"
+      Length="8"
+      def:DisplayFormat="8"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Age</TranslatedText>
+      </Description>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">ADSL.AGE</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADEF.AGEGR1N"
+      Name="AGEGR1N"
+      SASFieldName="AGEGR1N"
+      DataType="integer"
+      Length="8"
+      def:DisplayFormat="8"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Pooled Age Group 1 (N)</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.AGEGR1N"/>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">ADSL.AGEGR1N</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADEF.AGEGR1"
+      Name="AGEGR1"
+      SASFieldName="AGEGR1"
+      DataType="text"
+      Length="20"
+      def:DisplayFormat="20"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Pooled Age Group 1</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.AGEGR1"/>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">ADSL.AGEGR1</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADEF.SEX"
+      Name="SEX"
+      SASFieldName="SEX"
+      DataType="text"
+      Length="1"
+      def:DisplayFormat="1"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Sex</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.SEX"/>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">ADSL.SEX</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADEF.RACE"
+      Name="RACE"
+      SASFieldName="RACE"
+      DataType="text"
+      Length="40"
+      def:DisplayFormat="40"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Race</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.RACE"/>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">ADSL.RACE</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADEF.TRTPN"
+      Name="TRTPN"
+      SASFieldName="TRTPN"
+      DataType="integer"
+      Length="8"
+      def:DisplayFormat="8"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Planned Treatment (N)</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.ARMN"/>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">ADSL.TRT01PN</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADEF.TRTP"
+      Name="TRTP"
+      SASFieldName="TRTP"
+      DataType="text"
+      Length="40"
+      def:DisplayFormat="40"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Planned Treatment</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.ARM"/>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">ADSL.TRT01P</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADEF.PARAMCD"
+      Name="PARAMCD"
+      SASFieldName="PARAMCD"
+      DataType="text"
+      Length="8"
+      def:DisplayFormat="8"
+      def:CommentOID="COM.SEECODELIST"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Parameter Code</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.ADEF.PARAMCD"/>
+      <def:Origin Type="Assigned">
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADEF.PARAM"
+      Name="PARAM"
+      SASFieldName="PARAM"
+      DataType="text"
+      Length="40"
+      def:DisplayFormat="40"
+      def:CommentOID="COM.SEECODELIST"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Parameter</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.ADEF.PARAM"/>
+      <def:Origin Type="Assigned">
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADEF.AVISIT"
+      Name="AVISIT"
+      SASFieldName="AVISIT"
+      DataType="text"
+      Length="16"
+      def:DisplayFormat="16"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Analysis Visit</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.VISIT"/>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">XP.VISIT</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADEF.AVISITN"
+      Name="AVISITN"
+      SASFieldName="AVISITN"
+      DataType="integer"
+      Length="8"
+      def:DisplayFormat="8"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Analysis Visit (N)</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.AVISITN"/>
+      <def:Origin Type="Derived">
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADEF.ABLFL"
+      Name="ABLFL"
+      SASFieldName="ABLFL"
+      DataType="text"
+      Length="1"
+      def:DisplayFormat="1"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Baseline Record Flag</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.FLAGS"/>
+      <def:Origin Type="Derived">
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADEF.XPSEQ"
+      Name="XPSEQ"
+      SASFieldName="XPSEQ"
+      DataType="integer"
+      Length="8"
+      def:DisplayFormat="8"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Sequence Number</TranslatedText>
+      </Description>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">XP.XPSEQ</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADEF.VISITNUM"
+      Name="VISITNUM"
+      SASFieldName="VISITNUM"
+      DataType="integer"
+      Length="8"
+      def:DisplayFormat="8"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Visit Number</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.VISITNUM"/>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">XP.VISITNUM</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADEF.ADT"
+      Name="ADT"
+      SASFieldName="ADT"
+      DataType="integer"
+      Length="8"
+      def:DisplayFormat="date9."
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Analysis Date</TranslatedText>
+      </Description>
+      <def:Origin Type="Derived">
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADEF.ADY"
+      Name="ADY"
+      SASFieldName="ADY"
+      DataType="integer"
+      Length="8"
+      def:DisplayFormat="8"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Analysis Relative Day</TranslatedText>
+      </Description>
+      <def:Origin Type="Derived">
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADEF.AVAL"
+      Name="AVAL"
+      SASFieldName="AVAL"
+      DataType="integer"
+      Length="8"
+      def:DisplayFormat="8"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Analysis Value</TranslatedText>
+      </Description>
+      <def:Origin Type="Derived">
+      </def:Origin>
+      <def:ValueListRef ValueListOID="VL.ADEF.AVAL"/>
+    </ItemDef>
+    <ItemDef OID="ADEF.AVALC"
+      Name="AVALC"
+      SASFieldName="AVALC"
+      DataType="text"
+      Length="12"
+      def:DisplayFormat="12"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Analysis Value (C)</TranslatedText>
+      </Description>
+      <def:Origin Type="Derived">
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADEF.BASE"
+      Name="BASE"
+      SASFieldName="BASE"
+      DataType="integer"
+      Length="8"
+      def:DisplayFormat="8"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Baseline Value</TranslatedText>
+      </Description>
+      <def:Origin Type="Derived">
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADEF.CHG"
+      Name="CHG"
+      SASFieldName="CHG"
+      DataType="integer"
+      Length="8"
+      def:DisplayFormat="8"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Change from Baseline</TranslatedText>
+      </Description>
+      <def:Origin Type="Derived">
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADEF.CRIT1FL"
+      Name="CRIT1FL"
+      SASFieldName="CRIT1FL"
+      DataType="text"
+      Length="1"
+      def:DisplayFormat="1"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Criterion 1 Evaluation Result Flag</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.YN"/>
+      <def:Origin Type="Derived">
+      </def:Origin>
+      <def:ValueListRef ValueListOID="VL.ADEF.CRIT1FL"/>
+    </ItemDef>
+    <ItemDef OID="ADEF.CRIT1"
+      Name="CRIT1"
+      SASFieldName="CRIT1"
+      DataType="text"
+      Length="60"
+      def:DisplayFormat="60"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Analysis Criterion 1</TranslatedText>
+      </Description>
+      <def:Origin Type="Derived">
+      </def:Origin>
+      <def:ValueListRef ValueListOID="VL.ADEF.CRIT1"/>
+    </ItemDef>
+    <ItemDef OID="ADEF.ITTFL"
+      Name="ITTFL"
+      SASFieldName="ITTFL"
+      DataType="text"
+      Length="1"
+      def:DisplayFormat="1"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Intent-to-Treat Flag</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.FLAGS"/>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">ADSL.ITTFL</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADSL.STUDYID"
+      Name="STUDYID"
+      SASFieldName="STUDYID"
+      DataType="text"
+      Length="15"
+      def:DisplayFormat="15"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Study Identifier</TranslatedText>
+      </Description>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">DM.STUDYID</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADSL.USUBJID"
+      Name="USUBJID"
+      SASFieldName="USUBJID"
+      DataType="text"
+      Length="25"
+      def:DisplayFormat="25"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Unique Subject Identifier</TranslatedText>
+      </Description>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">DM.USUBJID</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADSL.SUBJID"
+      Name="SUBJID"
+      SASFieldName="SUBJID"
+      DataType="text"
+      Length="7"
+      def:DisplayFormat="7"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Subject Identifier for the Study</TranslatedText>
+      </Description>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">DM.SUBJID</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADSL.SITEID"
+      Name="SITEID"
+      SASFieldName="SITEID"
+      DataType="text"
+      Length="7"
+      def:DisplayFormat="7"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Study Site Identifier</TranslatedText>
+      </Description>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">DM.SITEID</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADSL.COUNTRY"
+      Name="COUNTRY"
+      SASFieldName="COUNTRY"
+      DataType="text"
+      Length="3"
+      def:DisplayFormat="3"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Country</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.COUNTRY"/>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">DM.COUNTRY</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADSL.BRTHDT"
+      Name="BRTHDT"
+      SASFieldName="BRTHDT"
+      DataType="integer"
+      Length="8"
+      def:DisplayFormat="8"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Date of Birth</TranslatedText>
+      </Description>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">DM.BIRTHDTC</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADSL.AGE"
+      Name="AGE"
+      SASFieldName="AGE"
+      DataType="integer"
+      Length="8"
+      def:DisplayFormat="3.0"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Age</TranslatedText>
+      </Description>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">DM.AGE</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADSL.AGEU"
+      Name="AGEU"
+      SASFieldName="AGEU"
+      DataType="text"
+      Length="5"
+      def:DisplayFormat="5"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Age Units</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.AGEU"/>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">DM.AGEU</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADSL.AGEGR1"
+      Name="AGEGR1"
+      SASFieldName="AGEGR1"
+      DataType="text"
+      Length="40"
+      def:DisplayFormat="40"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Pooled Age Group 1</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.AGEGR1"/>
+      <def:Origin Type="Derived">
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADSL.AGEGR1N"
+      Name="AGEGR1N"
+      SASFieldName="AGEGR1N"
+      DataType="integer"
+      Length="8"
+      def:DisplayFormat="8"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Pooled Age Group 1 (N)</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.AGEGR1N"/>
+      <def:Origin Type="Derived">
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADSL.SEX"
+      Name="SEX"
+      SASFieldName="SEX"
+      DataType="text"
+      Length="1"
+      def:DisplayFormat="1"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Sex</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.SEX"/>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">DM.SEX</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADSL.RACE"
+      Name="RACE"
+      SASFieldName="RACE"
+      DataType="text"
+      Length="40"
+      def:DisplayFormat="40"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Race</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.RACE"/>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">DM.RACE</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADSL.RACEOTH"
+      Name="RACEOTH"
+      SASFieldName="RACEOTH"
+      DataType="text"
+      Length="40"
+      def:DisplayFormat="40"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Race, Other, Specify</TranslatedText>
+      </Description>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">DM.RACEOTH</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADSL.RANDDT"
+      Name="RANDDT"
+      SASFieldName="RANDDT"
+      DataType="integer"
+      Length="8"
+      def:DisplayFormat="8"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Date of Randomization</TranslatedText>
+      </Description>
+      <def:Origin Type="Derived">
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADSL.TRTSDT"
+      Name="TRTSDT"
+      SASFieldName="TRTSDT"
+      DataType="integer"
+      Length="8"
+      def:DisplayFormat="8"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Date of First Exposure to Treatment</TranslatedText>
+      </Description>
+      <def:Origin Type="Derived">
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADSL.TRTEDT"
+      Name="TRTEDT"
+      SASFieldName="TRTEDT"
+      DataType="integer"
+      Length="8"
+      def:DisplayFormat="8"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Date of Last Exposure to Treatment</TranslatedText>
+      </Description>
+      <def:Origin Type="Derived">
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADSL.ARM"
+      Name="ARM"
+      SASFieldName="ARM"
+      DataType="text"
+      Length="40"
+      def:DisplayFormat="40"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Description of Planned Arm</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.ARM"/>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">DM.ARM</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADSL.TRT01P"
+      Name="TRT01P"
+      SASFieldName="TRT01P"
+      DataType="text"
+      Length="40"
+      def:DisplayFormat="40"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Planned Treatment for Period 01</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.ARM"/>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">DM.ARM</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADSL.TRT01A"
+      Name="TRT01A"
+      SASFieldName="TRT01A"
+      DataType="text"
+      Length="40"
+      def:DisplayFormat="40"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Actual Treatment for Period 01</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.ARM"/>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">DM.ARM</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADSL.TRT01PN"
+      Name="TRT01PN"
+      SASFieldName="TRT01PN"
+      DataType="integer"
+      Length="8"
+      def:DisplayFormat="8"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Planned Treatment for Period 01 (N)</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.ARMN"/>
+      <def:Origin Type="Derived">
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADSL.TRT01AN"
+      Name="TRT01AN"
+      SASFieldName="TRT01AN"
+      DataType="integer"
+      Length="8"
+      def:DisplayFormat="8"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Actual Treatment for Period 01 (N)</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.ARMN"/>
+      <def:Origin Type="Derived">
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADSL.ITTFL"
+      Name="ITTFL"
+      SASFieldName="ITTFL"
+      DataType="text"
+      Length="1"
+      def:DisplayFormat="1"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Intent-To-Treat Population Flag</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.FLAGS"/>
+      <def:Origin Type="Derived">
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADSL.SAFFL"
+      Name="SAFFL"
+      SASFieldName="SAFFL"
+      DataType="text"
+      Length="1"
+      def:DisplayFormat="1"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Safety Population Flag</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.FLAGS"/>
+      <def:Origin Type="Derived">
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADSL.RESPFL"
+      Name="RESPFL"
+      SASFieldName="RESPFL"
+      DataType="text"
+      Length="1"
+      def:DisplayFormat="1"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Efficacy Responder Flag</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.YN"/>
+      <def:Origin Type="Derived">
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADTTE.STUDYID"
+      Name="STUDYID"
+      SASFieldName="STUDYID"
+      DataType="text"
+      Length="15"
+      def:DisplayFormat="15"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Study Identifier</TranslatedText>
+      </Description>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">ADSL.STUDYID</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADTTE.USUBJID"
+      Name="USUBJID"
+      SASFieldName="USUBJID"
+      DataType="text"
+      Length="25"
+      def:DisplayFormat="25"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Domain Abbreviation</TranslatedText>
+      </Description>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">ADSL.USUBJID</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADTTE.SITEID"
+      Name="SITEID"
+      SASFieldName="SITEID"
+      DataType="text"
+      Length="7"
+      def:DisplayFormat="7"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Study Site Identifier</TranslatedText>
+      </Description>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">ADSL.SITEID</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADTTE.COUNTRY"
+      Name="COUNTRY"
+      SASFieldName="COUNTRY"
+      DataType="text"
+      Length="3"
+      def:DisplayFormat="3"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Country</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.COUNTRY"/>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">ADSL.COUNTRY</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADTTE.AGE"
+      Name="AGE"
+      SASFieldName="AGE"
+      DataType="integer"
+      Length="8"
+      def:DisplayFormat="8"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Unique Subject Identifier</TranslatedText>
+      </Description>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">ADSL.AGE</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADTTE.AGEGR1N"
+      Name="AGEGR1N"
+      SASFieldName="AGEGR1N"
+      DataType="integer"
+      Length="8"
+      def:DisplayFormat="8"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Pooled Age Group 1 (N)</TranslatedText>
+      </Description>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">ADSL.AGEGR1N</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADTTE.AGEGR1"
+      Name="AGEGR1"
+      SASFieldName="AGEGR1"
+      DataType="text"
+      Length="20"
+      def:DisplayFormat="20"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Pooled Age Group 1</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.AGEGR1"/>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">ADSL.AGEGR1</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADTTE.SEX"
+      Name="SEX"
+      SASFieldName="SEX"
+      DataType="text"
+      Length="1"
+      def:DisplayFormat="1"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Sex</TranslatedText>
+      </Description>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">ADSL.SEX</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADTTE.RACE"
+      Name="RACE"
+      SASFieldName="RACE"
+      DataType="text"
+      Length="40"
+      def:DisplayFormat="40"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Race</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.RACE"/>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">ADSL.RACE</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADTTE.TRTPN"
+      Name="TRTPN"
+      SASFieldName="TRTPN"
+      DataType="integer"
+      Length="8"
+      def:DisplayFormat="8"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Planned Treatment (N)</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.ARMN"/>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">ADSL.TRT01PN</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADTTE.TRTP"
+      Name="TRTP"
+      SASFieldName="TRTP"
+      DataType="text"
+      Length="40"
+      def:DisplayFormat="40"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Planned Treatment</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.ARM"/>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">ADSL.TRT01P</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADTTE.PARAMCD"
+      Name="PARAMCD"
+      SASFieldName="PARAMCD"
+      DataType="text"
+      Length="8"
+      def:DisplayFormat="8"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Parameter Code</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.ADTTE.PARAMCD"/>
+      <def:Origin Type="Assigned">
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADTTE.PARAM"
+      Name="PARAM"
+      SASFieldName="PARAM"
+      DataType="text"
+      Length="40"
+      def:DisplayFormat="40"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Parameter</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.ADTTE.PARAM"/>
+      <def:Origin Type="Assigned">
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADTTE.ADT"
+      Name="ADT"
+      SASFieldName="ADT"
+      DataType="integer"
+      Length="8"
+      def:DisplayFormat="8"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Analysis Date</TranslatedText>
+      </Description>
+      <def:Origin Type="Derived">
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADTTE.STARTDT"
+      Name="STARTDT"
+      SASFieldName="STARTDT"
+      DataType="integer"
+      Length="8"
+      def:DisplayFormat="8"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Time to Event Origin Date for Subject</TranslatedText>
+      </Description>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">ADSL.RANDDT</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADTTE.AVAL"
+      Name="AVAL"
+      SASFieldName="AVAL"
+      DataType="integer"
+      Length="8"
+      def:DisplayFormat="8"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Analysis Value</TranslatedText>
+      </Description>
+      <def:Origin Type="Derived">
+      </def:Origin>
+      <def:ValueListRef ValueListOID="VL.ADTTE.AVAL"/>
+    </ItemDef>
+    <ItemDef OID="ADTTE.CNSR"
+      Name="CNSR"
+      SASFieldName="CNSR"
+      DataType="integer"
+      Length="8"
+      def:DisplayFormat="8"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Censor</TranslatedText>
+      </Description>
+      <def:Origin Type="Derived">
+      </def:Origin>
+      <def:ValueListRef ValueListOID="VL.ADTTE.CNSR"/>
+    </ItemDef>
+    <ItemDef OID="ADTTE.EVNTDESC"
+      Name="EVNTDESC"
+      SASFieldName="EVNTDESC"
+      DataType="text"
+      Length="50"
+      def:DisplayFormat="50"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Event description</TranslatedText>
+      </Description>
+      <def:Origin Type="Derived">
+      </def:Origin>
+      <def:ValueListRef ValueListOID="VL.ADTTE.EVNTDESC"/>
+    </ItemDef>
+    <ItemDef OID="ADTTE.SRCDOM"
+      Name="SRCDOM"
+      SASFieldName="SRCDOM"
+      DataType="text"
+      Length="6"
+      def:DisplayFormat="6"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Source Domain</TranslatedText>
+      </Description>
+      <def:Origin Type="Derived">
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADTTE.SRCVAR"
+      Name="SRCVAR"
+      SASFieldName="SRCVAR"
+      DataType="text"
+      Length="8"
+      def:DisplayFormat="8"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Source Variable</TranslatedText>
+      </Description>
+      <def:Origin Type="Derived">
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADTTE.SRCSEQ"
+      Name="SRCSEQ"
+      SASFieldName="SRCSEQ"
+      DataType="integer"
+      Length="8"
+      def:DisplayFormat="8"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Source Sequence Number</TranslatedText>
+      </Description>
+      <def:Origin Type="Derived">
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="ADTTE.ITTFL"
+      Name="ITTFL"
+      SASFieldName="ITTFL"
+      DataType="text"
+      Length="1"
+      def:DisplayFormat="1"
+      >
+      <Description>
+          <TranslatedText xml:lang="en">Intent-to-Treat Flag</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.FLAGS"/>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">ADSL.ITTFL</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <!-- ************************************************************ -->
+    <!-- The details of value level items are here                    -->
+    <!-- ************************************************************ -->
+    <ItemDef OID="VL.ADEF.AVAL.XPPAIN"
+      Name="XPPAIN"
+      DataType="integer"
+      SASFieldName="XPPAIN"
+      Length="8"
+      def:DisplayFormat="1."
+      >
+      <Description>
+        <TranslatedText xml:lang="en">Pain Score</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.PAINSCORE"/>
+      <def:Origin Type="Predecessor">
+        <Description>
+          <TranslatedText xml:lang="en">XP.XPSTRESN</TranslatedText>
+        </Description>
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="VL.ADEF.CRIT1.XPPAIN"
+      Name="XPPAIN"
+      DataType="text"
+      SASFieldName="XPPAIN"
+      Length="51"
+      def:DisplayFormat="$52."
+      >
+      <Description>
+        <TranslatedText xml:lang="en">Pain Score</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.ADEF.CRIT1"/>
+      <def:Origin Type="Assigned">
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="VL.ADEF.CRIT1FL.XPPAIN"
+      Name="XPPAIN"
+      DataType="text"
+      SASFieldName="XPPAIN"
+      Length="1"
+      def:DisplayFormat="$1."
+      >
+      <Description>
+        <TranslatedText xml:lang="en">Pain Score</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.YN"/>
+      <def:Origin Type="Derived">
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="VL.ADTTE.AVAL.TTPNRELF"
+      Name="TTPNRELF"
+      DataType="integer"
+      SASFieldName="TTPNRELF"
+      Length="8"
+      def:DisplayFormat="8."
+      >
+      <Description>
+        <TranslatedText xml:lang="en">Time to First Pain Relief</TranslatedText>
+      </Description>
+      <def:Origin Type="Derived">
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="VL.ADTTE.CNSR.TTPNRELF"
+      Name="TTPNRELF"
+      DataType="integer"
+      SASFieldName="TTPNRELF"
+      Length="8"
+      def:DisplayFormat="8."
+      >
+      <Description>
+        <TranslatedText xml:lang="en">Censor</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.CENSOR"/>
+      <def:Origin Type="Derived">
+      </def:Origin>
+    </ItemDef>
+    <ItemDef OID="VL.ADTTE.EVNTDESC.XPPAIN"
+      Name="XPPAIN"
+      DataType="text"
+      SASFieldName="XPPAIN"
+      Length="50"
+      def:DisplayFormat="$50"
+      >
+      <Description>
+        <TranslatedText xml:lang="en">Event or Censoring Description</TranslatedText>
+      </Description>
+      <CodeListRef CodeListOID="CodeList.EVNTDESC"/>
+      <def:Origin Type="Derived">
+      </def:Origin>
+    </ItemDef>
+    <!-- ************************************************************ -->
+    <!-- Codelists are presented below                                -->
+    <!-- ************************************************************ -->
+    <CodeList OID="CodeList.ACN"
+      Name="ACN"
+      DataType="text">
+      <CodeListItem CodedValue="DOSE INCREASED" OrderNumber="1">
+        <Decode>
+          <TranslatedText>DOSE INCREASED</TranslatedText>
+        </Decode>
+      </CodeListItem>
+      <CodeListItem CodedValue="DOSE NOT CHANGED" OrderNumber="2">
+        <Decode>
+          <TranslatedText>DOSE NOT CHANGED</TranslatedText>
+        </Decode>
+      </CodeListItem>
+      <CodeListItem CodedValue="DOSE REDUCED" OrderNumber="3">
+        <Decode>
+          <TranslatedText>DOSE REDUCED</TranslatedText>
+        </Decode>
+      </CodeListItem>
+      <CodeListItem CodedValue="DRUG INTERRUPTED" OrderNumber="4">
+        <Decode>
+          <TranslatedText>DRUG INTERRUPTED</TranslatedText>
+        </Decode>
+      </CodeListItem>
+      <CodeListItem CodedValue="DRUG WITHDRAWN" OrderNumber="5">
+        <Decode>
+          <TranslatedText>DRUG WITHDRAWN</TranslatedText>
+        </Decode>
+      </CodeListItem>
+      <CodeListItem CodedValue="NOT APPLICABLE" OrderNumber="6">
+        <Decode>
+          <TranslatedText>NA</TranslatedText>
+        </Decode>
+      </CodeListItem>
+      <CodeListItem CodedValue="UNKNOWN" OrderNumber="7">
+        <Decode>
+          <TranslatedText>U; Unknown</TranslatedText>
+        </Decode>
+      </CodeListItem>
+    </CodeList>
+    <CodeList OID="CodeList.ADEF.CRIT1"
+      Name="ADEF.CRIT1"
+      DataType="text">
+      <CodeListItem CodedValue="Pain improvement from baseline of at least 2 points" OrderNumber="1">
+        <Decode>
+          <TranslatedText>Pain improvement from baseline of at least 2 points</TranslatedText>
+        </Decode>
+      </CodeListItem>
+    </CodeList>
+    <CodeList OID="CodeList.ADEF.PARAM"
+      Name="ADEF.PARAM"
+      DataType="text">
+      <CodeListItem CodedValue="Pain Score" OrderNumber="1">
+        <Decode>
+          <TranslatedText>Pain Score</TranslatedText>
+        </Decode>
+      </CodeListItem>
+    </CodeList>
+    <CodeList OID="CodeList.ADEF.PARAMCD"
+      Name="ADEF.PARAMCD"
+      DataType="text">
+      <CodeListItem CodedValue="XPPAIN" OrderNumber="1">
+        <Decode>
+          <TranslatedText>Pain Score</TranslatedText>
+        </Decode>
+      </CodeListItem>
+    </CodeList>
+    <CodeList OID="CodeList.ADTTE.PARAM"
+      Name="ADTTE.PARAM"
+      DataType="text">
+      <CodeListItem CodedValue="Time to first pain relief" OrderNumber="1">
+        <Decode>
+          <TranslatedText>Time to first pain relief</TranslatedText>
+        </Decode>
+      </CodeListItem>
+    </CodeList>
+    <CodeList OID="CodeList.ADTTE.PARAMCD"
+      Name="ADTTE.PARAMCD"
+      DataType="text">
+      <CodeListItem CodedValue="TTPNRELF" OrderNumber="1">
+        <Decode>
+          <TranslatedText>Time to first pain relief</TranslatedText>
+        </Decode>
+      </CodeListItem>
+    </CodeList>
+    <CodeList OID="CodeList.AEREL"
+      Name="AEREL"
+      DataType="text">
+      <CodeListItem CodedValue="NOT RELATED" OrderNumber="1">
+        <Decode>
+          <TranslatedText>NOT RELATED</TranslatedText>
+        </Decode>
+      </CodeListItem>
+      <CodeListItem CodedValue="POSSIBLY RELATED" OrderNumber="2">
+        <Decode>
+          <TranslatedText>POSSIBLY RELATED</TranslatedText>
+        </Decode>
+      </CodeListItem>
+      <CodeListItem CodedValue="PROBABLY RELATED" OrderNumber="3">
+        <Decode>
+          <TranslatedText>PROBABLY RELATED</TranslatedText>
+        </Decode>
+      </CodeListItem>
+    </CodeList>
+    <CodeList OID="CodeList.AERELN"
+      Name="AERELN"
+      DataType="integer">
+      <CodeListItem CodedValue="0" OrderNumber="1">
+        <Decode>
+          <TranslatedText>NOT RELATED</TranslatedText>
+        </Decode>
+      </CodeListItem>
+      <CodeListItem CodedValue="1" OrderNumber="2">
+        <Decode>
+          <TranslatedText>POSSIBLY RELATED</TranslatedText>
+        </Decode>
+      </CodeListItem>
+      <CodeListItem CodedValue="2" OrderNumber="3">
+        <Decode>
+          <TranslatedText>PROBABLY RELATED</TranslatedText>
+        </Decode>
+      </CodeListItem>
+    </CodeList>
+    <CodeList OID="CodeList.AESEV"
+      Name="AESEV"
+      DataType="text">
+      <CodeListItem CodedValue="MILD" OrderNumber="1">
+        <Decode>
+          <TranslatedText>Grade 1; 1</TranslatedText>
+        </Decode>
+      </CodeListItem>
+      <CodeListItem CodedValue="MODERATE" OrderNumber="2">
+        <Decode>
+          <TranslatedText>Grade 2; 2</TranslatedText>
+        </Decode>
+      </CodeListItem>
+      <CodeListItem CodedValue="SEVERE" OrderNumber="3">
+        <Decode>
+          <TranslatedText>Grade 3; 3</TranslatedText>
+        </Decode>
+      </CodeListItem>
+    </CodeList>
+    <CodeList OID="CodeList.AESEVN"
+      Name="AESEVN"
+      DataType="integer">
+      <CodeListItem CodedValue="1" OrderNumber="1">
+        <Decode>
+          <TranslatedText>Mild</TranslatedText>
+        </Decode>
+      </CodeListItem>
+      <CodeListItem CodedValue="2" OrderNumber="2">
+        <Decode>
+          <TranslatedText>Moderate</TranslatedText>
+        </Decode>
+      </CodeListItem>
+      <CodeListItem CodedValue="3" OrderNumber="3">
+        <Decode>
+          <TranslatedText>Severe</TranslatedText>
+        </Decode>
+      </CodeListItem>
+    </CodeList>
+    <CodeList OID="CodeList.AGEGR1"
+      Name="AGEGR1"
+      DataType="text">
+      <CodeListItem CodedValue="&lt;55 YEARS" OrderNumber="1">
+        <Decode>
+          <TranslatedText>&lt;55 Years</TranslatedText>
+        </Decode>
+      </CodeListItem>
+      <CodeListItem CodedValue="&gt;=55 YEARS" OrderNumber="2">
+        <Decode>
+          <TranslatedText>&gt;=55 Years</TranslatedText>
+        </Decode>
+      </CodeListItem>
+    </CodeList>
+    <CodeList OID="CodeList.AGEGR1N"
+      Name="AGEGR1N"
+      DataType="integer">
+      <CodeListItem CodedValue="1" OrderNumber="1">
+        <Decode>
+          <TranslatedText>&lt;55 Years</TranslatedText>
+        </Decode>
+      </CodeListItem>
+      <CodeListItem CodedValue="2" OrderNumber="2">
+        <Decode>
+          <TranslatedText>&gt;=55 Years</TranslatedText>
+        </Decode>
+      </CodeListItem>
+    </CodeList>
+    <CodeList OID="CodeList.AGEU"
+      Name="AGEU"
+      DataType="text">
+      <CodeListItem CodedValue="YEARS" OrderNumber="1">
+        <Decode>
+          <TranslatedText>YEARS</TranslatedText>
+        </Decode>
+      </CodeListItem>
+    </CodeList>
+    <CodeList OID="CodeList.ARM"
+      Name="ARM"
+      DataType="text">
+      <CodeListItem CodedValue="Analgezia HCL 30 mg" OrderNumber="1">
+        <Decode>
+          <TranslatedText>Analgezia HCL 30 mg</TranslatedText>
+        </Decode>
+      </CodeListItem>
+      <CodeListItem CodedValue="Placebo" OrderNumber="2">
+        <Decode>
+          <TranslatedText>Placebo</TranslatedText>
+        </Decode>
+      </CodeListItem>
+    </CodeList>
+    <CodeList OID="CodeList.ARMCD"
+      Name="ARMCD"
+      DataType="text">
+      <CodeListItem CodedValue="ALG123" OrderNumber="1">
+        <Decode>
+          <TranslatedText>Analgezia HCL 30 mg</TranslatedText>
+        </Decode>
+      </CodeListItem>
+      <CodeListItem CodedValue="PLACEBO" OrderNumber="2">
+        <Decode>
+          <TranslatedText>Placebo</TranslatedText>
+        </Decode>
+      </CodeListItem>
+    </CodeList>
+    <CodeList OID="CodeList.ARMN"
+      Name="ARMN"
+      DataType="integer">
+      <CodeListItem CodedValue="1" OrderNumber="1">
+        <Decode>
+          <TranslatedText>Analgezia HCL 30 mg</TranslatedText>
+        </Decode>
+      </CodeListItem>
+      <CodeListItem CodedValue="0" OrderNumber="2">
+        <Decode>
+          <TranslatedText>Placebo</TranslatedText>
+        </Decode>
+      </CodeListItem>
+    </CodeList>
+    <CodeList OID="CodeList.AVISITN"
+      Name="AVISITN"
+      DataType="integer">
+      <CodeListItem CodedValue="0" OrderNumber="1">
+        <Decode>
+          <TranslatedText>Baseline</TranslatedText>
+        </Decode>
+      </CodeListItem>
+      <CodeListItem CodedValue="3" OrderNumber="2">
+        <Decode>
+          <TranslatedText>Month 3</TranslatedText>
+        </Decode>
+      </CodeListItem>
+      <CodeListItem CodedValue="6" OrderNumber="3">
+        <Decode>
+          <TranslatedText>Month 6</TranslatedText>
+        </Decode>
+      </CodeListItem>
+    </CodeList>
+    <CodeList OID="CodeList.CENSOR"
+      Name="CENSOR"
+      DataType="integer">
+      <CodeListItem CodedValue="0" OrderNumber="1">
+        <Decode>
+          <TranslatedText>Pain relief</TranslatedText>
+        </Decode>
+      </CodeListItem>
+      <CodeListItem CodedValue="1" OrderNumber="2">
+        <Decode>
+          <TranslatedText>Pain worsening prior to relief</TranslatedText>
+        </Decode>
+      </CodeListItem>
+      <CodeListItem CodedValue="2" OrderNumber="3">
+        <Decode>
+          <TranslatedText>Pain adverse event prior to relief</TranslatedText>
+        </Decode>
+      </CodeListItem>
+      <CodeListItem CodedValue="3" OrderNumber="4">
+        <Decode>
+          <TranslatedText>No relief and no worsening at last assessment</TranslatedText>
+        </Decode>
+      </CodeListItem>
+    </CodeList>
+    <CodeList OID="CodeList.COUNTRY"
+      Name="COUNTRY"
+      DataType="text">
+      <CodeListItem CodedValue="USA" OrderNumber="1">
+        <Decode>
+          <TranslatedText>UNITED STATES</TranslatedText>
+        </Decode>
+      </CodeListItem>
+    </CodeList>
+    <CodeList OID="CodeList.CRIT1VALUES"
+      Name="CRIT1VALUES"
+      DataType="text">
+      <CodeListItem CodedValue="Pain improvement from baseline of at least 2 points" OrderNumber="1">
+        <Decode>
+          <TranslatedText>Pain improvement from baseline of at least 2 points</TranslatedText>
+        </Decode>
+      </CodeListItem>
+    </CodeList>
+    <CodeList OID="CodeList.EVNTDESC"
+      Name="EVNTDESC"
+      DataType="text">
+      <CodeListItem CodedValue="PAIN RELIEF" OrderNumber="1">
+        <Decode>
+          <TranslatedText>Pain relief</TranslatedText>
+        </Decode>
+      </CodeListItem>
+      <CodeListItem CodedValue="PAIN WORSENING PRIOR TO RELIEF" OrderNumber="2">
+        <Decode>
+          <TranslatedText>Pain worsening prior to relief</TranslatedText>
+        </Decode>
+      </CodeListItem>
+      <CodeListItem CodedValue="PAIN ADVERSE EVENT PRIOR TO RELIEF" OrderNumber="3">
+        <Decode>
+          <TranslatedText>Pain adverse event prior to relief</TranslatedText>
+        </Decode>
+      </CodeListItem>
+      <CodeListItem CodedValue="NO RELIEF AND NO WORSENING AT LAST ASSESSMENT" OrderNumber="4">
+        <Decode>
+          <TranslatedText>No relief and no worsening at last assessment</TranslatedText>
+        </Decode>
+      </CodeListItem>
+    </CodeList>
+    <CodeList OID="CodeList.FLAGS"
+      Name="FLAGS"
+      DataType="text">
+      <CodeListItem CodedValue="Y" OrderNumber="1">
+        <Decode>
+          <TranslatedText>Yes</TranslatedText>
+        </Decode>
+      </CodeListItem>
+    </CodeList>
+    <CodeList OID="CodeList.PAINSCORE"
+      Name="PAINSCORE"
+      DataType="integer">
+      <CodeListItem CodedValue="0" OrderNumber="0">
+        <Decode>
+          <TranslatedText>None</TranslatedText>
+        </Decode>
+      </CodeListItem>
+      <CodeListItem CodedValue="1" OrderNumber="1">
+        <Decode>
+          <TranslatedText>Mild</TranslatedText>
+        </Decode>
+      </CodeListItem>
+      <CodeListItem CodedValue="2" OrderNumber="2">
+        <Decode>
+          <TranslatedText>Moderate</TranslatedText>
+        </Decode>
+      </CodeListItem>
+      <CodeListItem CodedValue="3" OrderNumber="3">
+        <Decode>
+          <TranslatedText>Severe</TranslatedText>
+        </Decode>
+      </CodeListItem>
+    </CodeList>
+    <CodeList OID="CodeList.RACE"
+      Name="RACE"
+      DataType="text">
+      <CodeListItem CodedValue="BLACK OR AFRICAN AMERICAN" OrderNumber="1">
+        <Decode>
+          <TranslatedText>BLACK OR AFRICAN AMERICAN</TranslatedText>
+        </Decode>
+      </CodeListItem>
+      <CodeListItem CodedValue="ASIAN" OrderNumber="2">
+        <Decode>
+          <TranslatedText>ASIAN</TranslatedText>
+        </Decode>
+      </CodeListItem>
+      <CodeListItem CodedValue="WHITE" OrderNumber="3">
+        <Decode>
+          <TranslatedText>WHITE</TranslatedText>
+        </Decode>
+      </CodeListItem>
+    </CodeList>
+    <CodeList OID="CodeList.RELGR1"
+      Name="RELGR1"
+      DataType="text">
+      <CodeListItem CodedValue="Not related" OrderNumber="1">
+        <Decode>
+          <TranslatedText>Not related</TranslatedText>
+        </Decode>
+      </CodeListItem>
+      <CodeListItem CodedValue="Related" OrderNumber="2">
+        <Decode>
+          <TranslatedText>Related</TranslatedText>
+        </Decode>
+      </CodeListItem>
+    </CodeList>
+    <CodeList OID="CodeList.RELGR1N"
+      Name="RELGR1N"
+      DataType="integer">
+      <CodeListItem CodedValue="0" OrderNumber="1">
+        <Decode>
+          <TranslatedText>Not related</TranslatedText>
+        </Decode>
+      </CodeListItem>
+      <CodeListItem CodedValue="1" OrderNumber="1">
+        <Decode>
+          <TranslatedText>Related</TranslatedText>
+        </Decode>
+      </CodeListItem>
+    </CodeList>
+    <CodeList OID="CodeList.SEX"
+      Name="SEX"
+      DataType="text">
+      <CodeListItem CodedValue="F" OrderNumber="1">
+        <Decode>
+          <TranslatedText>FEMALE</TranslatedText>
+        </Decode>
+      </CodeListItem>
+      <CodeListItem CodedValue="M" OrderNumber="2">
+        <Decode>
+          <TranslatedText>MALE</TranslatedText>
+        </Decode>
+      </CodeListItem>
+      <CodeListItem CodedValue="U" OrderNumber="3">
+        <Decode>
+          <TranslatedText>UNKNOWN</TranslatedText>
+        </Decode>
+      </CodeListItem>
+    </CodeList>
+    <CodeList OID="CodeList.TRT01PN"
+      Name="TRT01PN"
+      DataType="integer">
+      <CodeListItem CodedValue="0" OrderNumber="1">
+        <Decode>
+          <TranslatedText>Placebo</TranslatedText>
+        </Decode>
+      </CodeListItem>
+      <CodeListItem CodedValue="1" OrderNumber="2">
+        <Decode>
+          <TranslatedText>Analgezia HCL 30 mg</TranslatedText>
+        </Decode>
+      </CodeListItem>
+    </CodeList>
+    <CodeList OID="CodeList.VISIT"
+      Name="VISIT"
+      DataType="text">
+      <CodeListItem CodedValue="Baseline" OrderNumber="1">
+        <Decode>
+          <TranslatedText>Baseline</TranslatedText>
+        </Decode>
+      </CodeListItem>
+      <CodeListItem CodedValue="Month 3" OrderNumber="2">
+        <Decode>
+          <TranslatedText>Month 3</TranslatedText>
+        </Decode>
+      </CodeListItem>
+      <CodeListItem CodedValue="Month 6" OrderNumber="3">
+        <Decode>
+          <TranslatedText>Month 6</TranslatedText>
+        </Decode>
+      </CodeListItem>
+    </CodeList>
+    <CodeList OID="CodeList.VISITNUM"
+      Name="VISITNUM"
+      DataType="text">
+      <CodeListItem CodedValue="0" OrderNumber="1">
+        <Decode>
+          <TranslatedText>Baseline</TranslatedText>
+        </Decode>
+      </CodeListItem>
+      <CodeListItem CodedValue="1" OrderNumber="2">
+        <Decode>
+          <TranslatedText>Month 3</TranslatedText>
+        </Decode>
+      </CodeListItem>
+      <CodeListItem CodedValue="2" OrderNumber="3">
+        <Decode>
+          <TranslatedText>Month 6</TranslatedText>
+        </Decode>
+      </CodeListItem>
+    </CodeList>
+    <CodeList OID="CodeList.YN"
+      Name="YN"
+      DataType="text">
+      <CodeListItem CodedValue="N" OrderNumber="1">
+        <Decode>
+          <TranslatedText>NO</TranslatedText>
+        </Decode>
+      </CodeListItem>
+      <CodeListItem CodedValue="Y" OrderNumber="2">
+        <Decode>
+          <TranslatedText>YES</TranslatedText>
+        </Decode>
+      </CodeListItem>
+    </CodeList>
+
+    <!-- ******************************************* -->
+    <!-- COMPUTATIONAL METHOD INFORMATION        *** -->
+    <!-- ******************************************* -->
+    <MethodDef OID="BASE" Name="Baseline value derivation" Type="Computation">
+      <Description>
+        <TranslatedText xml:lang="en">Last non-missing value of AVAL prior to first dose</TranslatedText>
+      </Description>
+    </MethodDef>
+    <MethodDef OID="CHANGEFROMBASELINE" Name="Change from baseline calculation" Type="Computation">
+      <Description>
+        <TranslatedText xml:lang="en">AVAL-BASE</TranslatedText>
+      </Description>
+    </MethodDef>
+    <MethodDef OID="RESPONDER" Name="Responder derivation" Type="Computation">
+      <Description>
+        <TranslatedText xml:lang="en">IF (.Z&lt;CHG&lt;=-2) THEN CRIT1FL='Y' ELSE CRIT1FL='N'</TranslatedText>
+      </Description>
+    </MethodDef>
+    <MethodDef OID="TTPNRELF" Name="Time to first pain relief without worsening derivation" Type="Computation">
+      <Description>
+        <TranslatedText xml:lang="en">Derived from ADEF.ADY (where PARAMCD=XPPAIN and ADY&gt;1) or ADAE.ASDY where CQ01NAM=PAIN EVENT.  Value is the earliest day when ADEF.CHG&lt;0 (for an event) or (ADEF.CHG&gt;0 or ADAE.ASDY&gt;0) (for subjects censored due to pain worsening) or the last record where ADEF.CHG=0 (for subjects censored due to no improvement or worsening by the time of the last</TranslatedText>
+      </Description>
+    </MethodDef>
+    <MethodDef OID="TTPNRELF.CNSR" Name="Censoring algorithm for Time to First Pain Relief" Type="Computation">
+      <Description>
+        <TranslatedText xml:lang="en">if pain relief occurs before worsening, then CNSR=0; else if worsening from pain data, then CNSR=1; else if worsening from AE data, then CNSR=3; else if no relief and no worsening at time of last observation, then CNSR=4</TranslatedText>
+      </Description>
+    </MethodDef>
+    <MethodDef OID="TTPNRELF.EVNTDESC" Name="Event descriptions for Time to First Pain Relief" Type="Computation">
+      <Description>
+        <TranslatedText xml:lang="en">if CNSR=0, then EVNTDESC=PAIN RELIEF; if CNSR=1, then EVNTDESC=PAIN WORSENING PRIOR TO RELIEF; if CNSR=2, then EVNTDESC=PAIN ADVERSE EVENT PRIOR TO RELIEF; if CNSR=3, then EVNTDESC=NO RELIEF AND NO WORSENING AT LAST ASSESSMENT</TranslatedText>
+      </Description>
+    </MethodDef>
+    <MethodDef OID="TRTSDT" Name="Date of first exposure to treatment derivation" Type="Computation">
+      <Description>
+        <TranslatedText xml:lang="en">EX.EXSTDTC where EXSEQ=1, converted to a SAS date.  See SAP for missing or partial value imputations.</TranslatedText>
+      </Description>
+    </MethodDef>
+    <MethodDef OID="TRTEDT" Name="Date of last exposure to treatment derivation" Type="Computation">
+      <Description>
+        <TranslatedText xml:lang="en">EX.EXENDTC converted to a SAS date for the last record in EX.  See SAP for missing or partial value imputations.</TranslatedText>
+      </Description>
+    </MethodDef>
+    <MethodDef OID="ITTFL" Name="Intent-to-Treat flag derivation" Type="Computation">
+      <Description>
+        <TranslatedText xml:lang="en">If ADSL.RANDDT ^= missing then Y, else Null</TranslatedText>
+      </Description>
+    </MethodDef>
+    <MethodDef OID="SAFFL" Name="Safety population flag derivation" Type="Computation">
+      <Description>
+        <TranslatedText xml:lang="en">If ADSL.TRTSDT^=missing then Y, else Null</TranslatedText>
+      </Description>
+    </MethodDef>
+    <MethodDef OID="RESPFL" Name="Responder population flag derivation" Type="Computation">
+      <Description>
+        <TranslatedText xml:lang="en">If XP.VISIT='Month 6' and XPSTRESN represents at least a two-point improvement from the baseline record then Y, else N</TranslatedText>
+      </Description>
+    </MethodDef>
+    <MethodDef OID="RANDDT" Name="Randomization date derivation" Type="Computation">
+      <Description>
+        <TranslatedText xml:lang="en">SUPPDM.QVAL where SUPPDM.QNAM=RANDDTC, converted to a SAS date</TranslatedText>
+      </Description>
+    </MethodDef>
+    <MethodDef OID="ABLFL" Name="Analysis baseline record flag" Type="Computation">
+      <Description>
+        <TranslatedText xml:lang="en">Last visit with a non-missing record prior to first dose</TranslatedText>
+      </Description>
+    </MethodDef>
+    <MethodDef OID="ADT" Name="Analysis date calculation" Type="Computation">
+      <Description>
+        <TranslatedText xml:lang="en">XPDTC converted to a SAS date.  See SAP for missing or partial value imputations</TranslatedText>
+      </Description>
+    </MethodDef>
+    <MethodDef OID="ADY" Name="Analysis day calculation" Type="Computation">
+      <Description>
+        <TranslatedText xml:lang="en">ADT - ADSL.RANDDT + 1</TranslatedText>
+      </Description>
+    </MethodDef>
+    <MethodDef OID="ADAE.ASTDT" Name="Analysis start date calculation" Type="Computation">
+      <Description>
+        <TranslatedText xml:lang="en">AESTDTC converted to a SAS date.  See SAP for missing or partial value imputations</TranslatedText>
+      </Description>
+    </MethodDef>
+    <MethodDef OID="ADAE.AENDT" Name="Analysis end date calculation" Type="Computation">
+      <Description>
+        <TranslatedText xml:lang="en">AEENDTC converted to a SAS date.  See SAP for missing or partial value imputations</TranslatedText>
+      </Description>
+    </MethodDef>
+    <MethodDef OID="ADAE.ASTDY" Name="Analysis start day calculation" Type="Computation">
+      <Description>
+        <TranslatedText xml:lang="en">ASTDT - ADSL.TRTSDT + 1</TranslatedText>
+      </Description>
+    </MethodDef>
+    <MethodDef OID="ADAE.AENDY" Name="Analysis end day calculation" Type="Computation">
+      <Description>
+        <TranslatedText xml:lang="en">AENDT - ADSL.TRTEDT + 1</TranslatedText>
+      </Description>
+    </MethodDef>
+    <MethodDef OID="ADTTE.SRCVAR" Name="SRCVAR algorithm" Type="Computation">
+      <Description>
+        <TranslatedText xml:lang="en">SRCVAR = ADEF if first event is a negative pain score or if worsening occurs before an improvement.  SRCVAR = ADAE if ADAE.CQ01NAM is non-missing on a date prior to a pain improvement or worsening.</TranslatedText>
+      </Description>
+    </MethodDef>
+    <MethodDef OID="ADTTE.SRCSEQ" Name="SRCSEQ algorithm" Type="Computation">
+      <Description>
+        <TranslatedText xml:lang="en">if SRCVAR=ADEF then SRCSEQ=ADEF.XPSEQ from the corresponding record; else if SRCVAR=ADAE then SRCSEQ=ADAE.AESEQ from the corresponding record.</TranslatedText>
+      </Description>
+    </MethodDef>
+    <MethodDef OID="COMP.SEECODELIST" Name="See codelist" Type="Computation">
+      <Description>
+        <TranslatedText xml:lang="en">See codelist</TranslatedText>
+      </Description>
+    </MethodDef>
+    <MethodDef OID="COMP.SEEVALUELEVEL" Name="See parameter value-level metadata" Type="Computation">
+      <Description>
+        <TranslatedText xml:lang="en">See parameter value-level metadata</TranslatedText>
+      </Description>
+    </MethodDef>
+    <MethodDef OID="RELGR1" Name="AE relatedness derivation" Type="Computation">
+      <Description>
+        <TranslatedText xml:lang="en">If AEREL=NOT RELATED  then NOT RELATED; Otherwise RELATED</TranslatedText>
+      </Description>
+    </MethodDef>
+    <MethodDef OID="AGEGR1" Name="Age group derivation" Type="Computation">
+      <Description>
+        <TranslatedText xml:lang="en">If age&lt;55 then "&lt;55 years"; else if age&gt;=55 then "&gt;=55 YEARS"</TranslatedText>
+      </Description>
+    </MethodDef>
+
+    <!-- ******************************** -->
+    <!-- COMMENTS DEFINITION SECTION      -->
+    <!-- ******************************** -->
+    <def:CommentDef OID="COM.CRIT1">
+      <Description>
+        <TranslatedText xml:lang="en">Assignment per the codelist</TranslatedText>
+      </Description>
+    </def:CommentDef>
+    <def:CommentDef OID="COM.CQ01NAME">
+      <Description>
+        <TranslatedText xml:lang="en">if non-null then PAIN EVENT</TranslatedText>
+      </Description>
+    </def:CommentDef>
+    <def:CommentDef OID="COM.SEECODELIST">
+      <Description>
+        <TranslatedText xml:lang="en">See codelist</TranslatedText>
+      </Description>
+    </def:CommentDef>
+    <def:CommentDef OID="COM.SEEVALUELEVEL">
+      <Description>
+        <TranslatedText xml:lang="en">See parameter value-level metadata</TranslatedText>
+      </Description>
+    </def:CommentDef>
+    <def:CommentDef OID="COM.ADAE">
+      <Description>
+        <TranslatedText xml:lang="en">Primarily derived from SDTM.AE</TranslatedText>
+      </Description>
+    </def:CommentDef>
+    <def:CommentDef OID="COM.ADSL">
+      <Description>
+        <TranslatedText xml:lang="en">Derived from multiple SDTM domains</TranslatedText>
+      </Description>
+    </def:CommentDef>
+    <def:CommentDef OID="COM.ADEF">
+      <Description>
+        <TranslatedText xml:lang="en">Primarily derived from SDTM.XP</TranslatedText>
+      </Description>
+    </def:CommentDef>
+    <def:CommentDef OID="COM.ADTTE">
+      <Description>
+        <TranslatedText xml:lang="en">Primarily derived from ADaM.ADAE</TranslatedText>
+      </Description>
+    </def:CommentDef>
+
+    <!-- ******************************************* -->
+    <!-- LEAF DEFINITION SECTION                 *** -->
+    <!-- ******************************************* -->
+    <def:leaf ID="ADRG"
+      xlink:href="reviewersguide.pdf">
+      <def:title>Analysis Data Reviewer's Guide </def:title>
+    </def:leaf>
+
+    <def:leaf ID="SAP_Section_9.1.1"
+      xlink:href="..\..\..\..\53-clin-stud-rep\535-rep-effic-safety-stud\5351-stud-rep-contr\studyxyz123\studyxyz123_csr.pdf">
+      <def:title>SAP Section 9.1.1 </def:title>
+    </def:leaf>
+
+    <def:leaf ID="SAP_Section_9.2.1"
+      xlink:href="..\..\..\..\53-clin-stud-rep\535-rep-effic-safety-stud\5351-stud-rep-contr\studyxyz123\studyxyz123_csr.pdf">
+      <def:title>SAP Section 9.2.1 </def:title>
+    </def:leaf>
+
+    <def:leaf ID="SAP_Section_9.2.2"
+      xlink:href="..\..\..\..\53-clin-stud-rep\535-rep-effic-safety-stud\5351-stud-rep-contr\studyxyz123\studyxyz123_csr.pdf">
+      <def:title>SAP Section 9.2.2 </def:title>
+    </def:leaf>
+
+    <def:leaf ID="SAP_Section_9.3.1"
+      xlink:href="..\..\..\..\53-clin-stud-rep\535-rep-effic-safety-stud\5351-stud-rep-contr\studyxyz123\studyxyz123_csr.pdf">
+      <def:title>SAP Section 9.3.1 </def:title>
+    </def:leaf>
+
+    <def:leaf ID="Table_14.1.1"
+      xlink:href="..\..\..\..\53-clin-stud-rep\535-rep-effic-safety-stud\5351-stud-rep-contr\studyxyz123\studyxyz123_csr.pdf">
+      <def:title>Table 14.1.1 </def:title>
+    </def:leaf>
+
+    <def:leaf ID="Table_14.2.1"
+      xlink:href="..\..\..\..\53-clin-stud-rep\535-rep-effic-safety-stud\5351-stud-rep-contr\studyxyz123\studyxyz123_csr.pdf">
+      <def:title>Table 14.2.1 </def:title>
+    </def:leaf>
+
+    <def:leaf ID="Table_14.2.2"
+      xlink:href="..\..\..\..\53-clin-stud-rep\535-rep-effic-safety-stud\5351-stud-rep-contr\studyxyz123\studyxyz123_csr.pdf">
+      <def:title>Table 14.2.2 </def:title>
+    </def:leaf>
+
+    <def:leaf ID="Figure_14.2.1"
+      xlink:href="..\..\..\..\53-clin-stud-rep\535-rep-effic-safety-stud\5351-stud-rep-contr\studyxyz123\studyxyz123_csr.pdf">
+      <def:title>Figure 14.2.1 </def:title>
+    </def:leaf>
+
+    <def:leaf ID="ae-t14-3-02"
+      xlink:href="ae-t14-3-02.sas">
+      <def:title>AE Analysis Program </def:title>
+    </def:leaf>
+
+    <!-- ************************************************************ -->
+    <!-- Analysis Results MetaData are Presented Below                -->
+    <!-- ************************************************************ -->
+    <arm:AnalysisResultDisplays> 
+
+    <arm:ResultDisplay OID="RD.Table_14.1.1" Name="Table 14.1.1"> 
+      <Description>
+          <TranslatedText xml:lang="en">Summary of Demographics (ITT Population)</TranslatedText>
+      </Description>
+      <def:DocumentRef leafID="Table_14.1.1">
+        <def:PDFPageRef PageRefs="302" Type="PhysicalRef"/>
+      </def:DocumentRef>
+      <arm:AnalysisResult 
+        OID="Table_14.1.1"
+        ParameterOID="ADSL.PARAMCD"
+        ResultIdentifier="Table_14.1.1"
+        AnalysisReason="SPECIFIED IN SAP"
+        AnalysisPurpose="Comparisons of baseline characteristics by treatment group">
+        <Description>
+          <TranslatedText xml:lang="en">Summary of Demographics</TranslatedText>
+        </Description>
+        <arm:AnalysisDatasets>
+          <arm:AnalysisDataset ItemGroupOID="ADSL" >
+          <def:WhereClauseRef WhereClauseOID="WC.ITTFL" />
+
+          <arm:AnalysisVariable ItemOID="ADSL.AGE"/>
+          <arm:AnalysisVariable ItemOID="ADSL.AGEGR1"/>
+          <arm:AnalysisVariable ItemOID="ADSL.SEX"/>
+          <arm:AnalysisVariable ItemOID="ADSL.RACE"/>
+          </arm:AnalysisDataset>
+        </arm:AnalysisDatasets>
+        <arm:Documentation>
+        <Description>
+          <TranslatedText xml:lang="en">Rates and chi-squared tests of categorical demographic variables </TranslatedText>
+        </Description>
+        <def:DocumentRef  leafID="SAP_Section_9.1.1">
+        </def:DocumentRef>
+        </arm:Documentation>
+
+        <arm:ProgrammingCode Context="SAS Version 9.4">
+        <arm:Code>
+PROC FREQ DATA=ADSL;
+  where ittfl=&quot;Y&quot;;
+  tables trt01pn * (agegr1 sex race) / cmh;
+  run;
+        </arm:Code>
+        </arm:ProgrammingCode>
+      </arm:AnalysisResult>
+    </arm:ResultDisplay>
+    <arm:ResultDisplay OID="RD.Table_14.2.1" Name="Table 14.2.1"> 
+      <Description>
+          <TranslatedText xml:lang="en">Responder Analysis by Visit</TranslatedText>
+      </Description>
+      <def:DocumentRef leafID="Table_14.2.1">
+        <def:PDFPageRef PageRefs="352" Type="PhysicalRef"/>
+      </def:DocumentRef>
+      <arm:AnalysisResult 
+        OID="Table_14.2.1"
+        ParameterOID="ADEF.PARAMCD"
+        ResultIdentifier="Table_14.2.1"
+        AnalysisReason="SPECIFIED IN SAP"
+        AnalysisPurpose="Primary efficacy endpoint">
+        <Description>
+          <TranslatedText xml:lang="en">Responder Analysis by Visit</TranslatedText>
+        </Description>
+        <arm:AnalysisDatasets>
+          <arm:AnalysisDataset ItemGroupOID="ADEF" >
+          <def:WhereClauseRef WhereClauseOID="WC.Table_14.2.1.1" />
+
+          <arm:AnalysisVariable ItemOID="ADEF.CRIT1FL"/>
+          </arm:AnalysisDataset>
+        </arm:AnalysisDatasets>
+        <arm:Documentation>
+        <Description>
+          <TranslatedText xml:lang="en">Chi-squared test of responder rates by treatment group </TranslatedText>
+        </Description>
+        <def:DocumentRef  leafID="SAP_Section_9.2.1">
+        </def:DocumentRef>
+        </arm:Documentation>
+
+        <arm:ProgrammingCode Context="SAS Version 9.4">
+        <arm:Code>
+proc freq data = adef;
+  by crit1 avisitn;
+  where ittfl=&quot;Y&quot;;
+  tables trtpn * crit1fl / chisq;
+        </arm:Code>
+        </arm:ProgrammingCode>
+      </arm:AnalysisResult>
+    </arm:ResultDisplay>
+    <arm:ResultDisplay OID="RD.Table_14.2.2" Name="Table 14.2.2"> 
+      <Description>
+          <TranslatedText xml:lang="en">Mean Pain Assessments and Changes from Baseline</TranslatedText>
+      </Description>
+      <def:DocumentRef leafID="Table_14.2.2">
+        <def:PDFPageRef PageRefs="353" Type="PhysicalRef"/>
+      </def:DocumentRef>
+      <arm:AnalysisResult 
+        OID="Table_14.2.2"
+        ParameterOID="ADEF.PARAMCD"
+        ResultIdentifier="Table_14.2.2"
+        AnalysisReason="SPECIFIED IN SAP"
+        AnalysisPurpose="Secondary efficacy endpoint">
+        <Description>
+          <TranslatedText xml:lang="en">Summary of Pain Relief</TranslatedText>
+        </Description>
+        <arm:AnalysisDatasets>
+          <arm:AnalysisDataset ItemGroupOID="ADEF" >
+          <def:WhereClauseRef WhereClauseOID="WC.Table_14.2.1.1" />
+
+          <arm:AnalysisVariable ItemOID="ADEF.AVAL"/>
+          <arm:AnalysisVariable ItemOID="ADEF.CHG"/>
+          </arm:AnalysisDataset>
+        </arm:AnalysisDatasets>
+        <arm:Documentation>
+        <Description>
+          <TranslatedText xml:lang="en">ANCOVA analysis of the treatment group effect with a baseline covariate, by visit </TranslatedText>
+        </Description>
+        <def:DocumentRef  leafID="SAP_Section_9.2.1">
+        </def:DocumentRef>
+        </arm:Documentation>
+
+        <arm:ProgrammingCode Context="SAS Version 9.4">
+        <arm:Code>
+proc glm data = adef;
+  by avisitn avisit;
+  class trtpn;
+  model aval = trtpn base;
+  run;
+        </arm:Code>
+        </arm:ProgrammingCode>
+      </arm:AnalysisResult>
+    </arm:ResultDisplay>
+    <arm:ResultDisplay OID="RD.Figure_14.2.1" Name="Figure 14.2.1"> 
+      <Description>
+          <TranslatedText xml:lang="en">Time to Pain Relief Analysis by Treatment Group</TranslatedText>
+      </Description>
+      <def:DocumentRef leafID="Figure_14.2.1">
+        <def:PDFPageRef PageRefs="354" Type="PhysicalRef"/>
+      </def:DocumentRef>
+      <arm:AnalysisResult 
+        OID="Figure_14.2.1.R.01"
+        ParameterOID="ADTTE.PARAMCD"
+        ResultIdentifier="Figure_14.2.1.R.01"
+        AnalysisReason="SPECIFIED IN SAP"
+        AnalysisPurpose="Secondary efficacy endpoint">
+        <Description>
+          <TranslatedText xml:lang="en">Time to Pain Relief Kaplan Meier Analysis</TranslatedText>
+        </Description>
+        <arm:AnalysisDatasets>
+          <arm:AnalysisDataset ItemGroupOID="ADTTE" >
+          <def:WhereClauseRef WhereClauseOID="WC.Figure_14.2.1.1" />
+
+          <arm:AnalysisVariable ItemOID="ADTTE.AVAL"/>
+          </arm:AnalysisDataset>
+        </arm:AnalysisDatasets>
+        <arm:Documentation>
+        <Description>
+          <TranslatedText xml:lang="en">Kaplan-Meier estimates and log-rank test for the treatment effect </TranslatedText>
+        </Description>
+        <def:DocumentRef  leafID="SAP_Section_9.2.2">
+        </def:DocumentRef>
+        </arm:Documentation>
+
+        <arm:ProgrammingCode Context="SAS Version 9.4">
+        <arm:Code>
+proc lifetest  data = adtte plots=s;
+  where ittfl = &quot;Y&quot; and paramcd = &quot;TTPNRELF&quot;;
+        </arm:Code>
+        </arm:ProgrammingCode>
+      </arm:AnalysisResult>
+      <arm:AnalysisResult 
+        OID="Figure_14.2.1.R.02"
+        ParameterOID="ADTTE.PARAMCD"
+        ResultIdentifier="Figure_14.2.1.R.02"
+        AnalysisReason="SPECIFIED IN SAP"
+        AnalysisPurpose="Secondary efficacy endpoint">
+        <Description>
+          <TranslatedText xml:lang="en">Time to Pain Relief Hazard Ratio Derivation</TranslatedText>
+        </Description>
+        <arm:AnalysisDatasets>
+          <arm:AnalysisDataset ItemGroupOID="ADTTE" >
+          <def:WhereClauseRef WhereClauseOID="WC.Figure_14.2.1.1" />
+
+          <arm:AnalysisVariable ItemOID="ADTTE.AVAL"/>
+          </arm:AnalysisDataset>
+        </arm:AnalysisDatasets>
+        <arm:Documentation>
+        <Description>
+          <TranslatedText xml:lang="en">Cox proportional hazards model used to derive the hazard ratio for the treatment group effect </TranslatedText>
+        </Description>
+        <def:DocumentRef  leafID="SAP_Section_9.2.2">
+        </def:DocumentRef>
+        </arm:Documentation>
+
+        <arm:ProgrammingCode Context="SAS Version 9.4">
+        <arm:Code>
+proc phreg data = adtte;
+  model aval*cnsr(1, 2, 3) = trtpn;
+  run;
+        </arm:Code>
+        </arm:ProgrammingCode>
+      </arm:AnalysisResult>
+    </arm:ResultDisplay>
+    <arm:ResultDisplay OID="RD.Table_14.3.2.1" Name=" "> 
+      <Description>
+          <TranslatedText xml:lang="en">Incidence Rates of TEAEs by System Organ Class and Preferred Term</TranslatedText>
+      </Description>
+      <def:DocumentRef leafID="Table_14.3.2.1">
+        <def:PDFPageRef PageRefs=" " Type=" "/>
+      </def:DocumentRef>
+      <arm:AnalysisResult 
+        OID="Table_14.3.2.1"
+        ParameterOID="ADAE.PARAMCD"
+        ResultIdentifier="Table_14.3.2.1"
+        AnalysisReason="SPECIFIED IN SAP"
+        AnalysisPurpose="Secondary safety endpoint">
+        <Description>
+          <TranslatedText xml:lang="en">Incidence Rates of TEAEs by System Organ Class and Preferred Term</TranslatedText>
+        </Description>
+        <arm:AnalysisDatasets>
+          <arm:AnalysisDataset ItemGroupOID="ADAE" >
+          <def:WhereClauseRef WhereClauseOID="WC.Table_14.3.2.1" />
+
+          <arm:AnalysisVariable ItemOID="ADAE.AEBODSYS"/>
+          <arm:AnalysisVariable ItemOID="ADAE.AEDECOD"/>
+          </arm:AnalysisDataset>
+        </arm:AnalysisDatasets>
+        <arm:Documentation>
+        <Description>
+          <TranslatedText xml:lang="en">Incidence rates of TEAEs by System Organ Class and Preferred Term </TranslatedText>
+        </Description>
+        <def:DocumentRef  leafID="SAP_Section_9.3.1">
+        </def:DocumentRef>
+        </arm:Documentation>
+
+        <arm:ProgrammingCode Context="SAS Version 9.4">
+          <def:DocumentRef leafID="ae-t14-3-02" />
+        </arm:ProgrammingCode>
+      </arm:AnalysisResult>
+    </arm:ResultDisplay>
+    </arm:AnalysisResultDisplays>
+  </MetaDataVersion>
+</Study>
+</ODM>
