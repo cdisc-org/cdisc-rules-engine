@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 from unittest.mock import MagicMock
+from pathlib import Path
 
 from cdisc_rules_engine.models.dataset import PandasDataset
 import pytest
@@ -38,6 +39,12 @@ def pytest_collection_modifyitems(config, items):
 @pytest.fixture(scope="session")
 def run_regression_tests(request):
     return request.config.getoption("-m") == "regression"
+
+
+@pytest.fixture
+def resources_directory():
+    """Get the path to the test resources directory."""
+    return Path("tests/resources")
 
 
 def mock_get_dataset(dataset_name):
