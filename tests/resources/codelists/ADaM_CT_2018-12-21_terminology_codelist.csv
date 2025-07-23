@@ -1,8 +1,0 @@
-code,extensible,name,value,synonym,definition,term,standard_and_date
-C117745,Yes,Analysis Purpose,ANLPURP,Analysis Purpose,Purpose of a specific analysis result described in ADaM analysis results metadata.,CDISC ADaM Analysis Purpose Terminology,ADaM CT 2018-12-21
-C117744,Yes,Analysis Reason,ANLREAS,Analysis Reason,Reason for reporting a specific analysis result described in ADaM analysis results metadata.,CDISC ADaM Analysis Reason Terminology,ADaM CT 2018-12-21
-C81223,No,Date Imputation Flag,DATEFL,Date Imputation Flag,Date Imputation Flag: Indicates the level of imputation reflected in a date value.,CDISC ADaM Date Imputation Flag Terminology,ADaM CT 2018-12-21
-C81224,Yes,Derivation Type,DTYPE,Derivation Type,Derivation Type: Analysis value derivation method.,CDISC ADaM Derivation Type Terminology,ADaM CT 2018-12-21
-C81225,No,Parameter Type,PARAMTYP,Parameter Type,Parameter Type: Indicates whether the parameter is derived as a function of one or more other parameters.,CDISC ADaM Parameter Type Terminology,ADaM CT 2018-12-21
-C124296,Yes,Subject Trial Status,SBJTSTAT,Subject Trial Status,Indicates the status of the subject in the trial.,CDISC ADaM Subject Trial Status Terminology,ADaM CT 2018-12-21
-C81226,No,Time Imputation Flag,TIMEFL,Time Imputation Flag,Time Imputation Flag: Indicates the level of imputation reflected in a time value.,CDISC ADaM Time Imputation Flag Terminology,ADaM CT 2018-12-21

@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import List, Dict, Any
 from cdisc_rules_engine.readers.base_reader import BaseReader
 from dataclasses import dataclass
+import pandas as pd
 
 
 @dataclass
@@ -11,24 +12,32 @@ class CodelistMetadata:
 
     standard_type: str
     version_date: str
-    file_type: str
     extension: str
 
 
 class CodelistReader(BaseReader):
     """
-    Reader for CDISC Controlled Terminology codelist Excel files.
-    Handles both codelist and code_list_item files.
+    Reader for CDISC Controlled Terminology codelist files.
+    Handles both codelist and code_list_item files in CSV and Excel formats.
     """
 
-    # Regex pattern to extract metadata from filename
-    # Example: ADaM_CT_20250328_terminology_codelist.csv
     FILENAME_PATTERN = re.compile(
         r"^(?P<standard_type>ADaM|SDTM)_CT_"
-        r"(?P<version_date>\d{8})_terminology_"
-        r"(?P<file_type>codelist|code_list_item)"
+        r"(?P<version_date>\d{8}|\d{4}-\d{2}-\d{2})"
         r"\.(?P<extension>csv|tsv|xlsx|xls)$"
     )
+
+    EXCEL_COLUMN_MAPPING = {
+        "Code": "item_code",
+        "Codelist Code": "codelist_code",
+        "Codelist Extensible (Yes/No)": "extensible",
+        "Codelist Name": "name",
+        "CDISC Submission Value": "value",
+        "CDISC Synonym(s)": "synonym",
+        "CDISC Definition": "definition",
+        "NCI Preferred Term": "term",
+        "Standard and Date": "standard_and_date",
+    }
 
     def _extract_metadata(self) -> CodelistMetadata:
         """Extract metadata from the filename."""
@@ -36,36 +45,55 @@ class CodelistReader(BaseReader):
         if not match:
             raise ValueError(
                 f"Filename does not match expected pattern: {self.file_path.name}\n"
-                f"Expected format: <STANDARD>_CT_<YYYYMMDD>_terminology_<TYPE>.<EXTENSION>"
+                "Expected formats:\n"
+                "  - <STANDARD>_CT_<YYYYMMDD>.<EXT>\n"
+                "  - <STANDARD>_CT_<YYYY-MM-DD>.<EXT>"
             )
 
         groups = match.groupdict()
+
         return CodelistMetadata(
             standard_type=groups["standard_type"],
             version_date=groups["version_date"],
-            file_type=groups["file_type"],
             extension=groups["extension"],
         )
 
     def _format_version_date(self, date_str: str) -> str:
         """Convert YYYYMMDD to YYYY-MM-DD format."""
+        if "-" in date_str:
+            return date_str
+
         try:
             date_obj = datetime.strptime(date_str, "%Y%m%d")
             return date_obj.strftime("%Y-%m-%d")
         except ValueError:
             raise ValueError(f"Invalid date format: {date_str}")
 
-    def read(self) -> List[Dict[str, Any]]:
-        """Read the excel file and return data formatted for SQL insertion."""
-        raw_data = self._read_excel()
-        if self.metadata.file_type == "codelist":
-            return self._format_codelist_data(raw_data)
-        else:
-            return self._format_code_list_item_data(raw_data)
+    def _read_excel_with_sheet(self) -> List[Dict[str, Any]]:
+        """Read Excel file from the terminology sheet and normalise column names."""
+        try:
+            df = pd.read_excel(self.file_path, sheet_name="Terminology")
+            df = df.rename(columns=self.EXCEL_COLUMN_MAPPING)
 
-    def _format_codelist_data(
-        self, raw_data: List[Dict[str, Any]]
-    ) -> List[Dict[str, Any]]:
+            return df.where(df.notna(), None).to_dict("records")
+        except ValueError as e:
+            if "Worksheet named 'Terminology' not found" in str(e):
+                df = pd.read_excel(self.file_path)
+                df = df.rename(columns=self.EXCEL_COLUMN_MAPPING)
+                return df.where(df.notna(), None).to_dict("records")
+            raise
+
+    def read(self) -> List[Dict[str, Any]]:
+        """Read the file and return data formatted for SQL insertion."""
+        if self.metadata.extension in ["xlsx", "xls"]:
+            raw_data = self._read_excel_with_sheet()
+        elif self.metadata.extension == "csv":
+            raw_data = self._read_excel()
+        else:
+            raise ValueError(f"Unsupported file extension: {self.metadata.extension}")
+        return self._format_data(raw_data)
+
+    def _format_data(self, raw_data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """Format data for the codelist table."""
         formatted_data = []
         version_date = self._format_version_date(self.metadata.version_date)
@@ -74,7 +102,8 @@ class CodelistReader(BaseReader):
             formatted_row = {
                 "standard_type": self.metadata.standard_type,
                 "version_date": version_date,
-                "code": row.get("code"),
+                "item_code": row.get("item_code"),
+                "codelist_code": row.get("codelist_code"),
                 "extensible": row.get("extensible"),
                 "name": row.get("name"),
                 "value": row.get("value"),
@@ -110,7 +139,3 @@ class CodelistReader(BaseReader):
             formatted_data.append(formatted_row)
 
         return formatted_data
-
-    def get_table_name(self) -> str:
-        """Return the appropriate table name for this file type."""
-        return self.metadata.file_type.replace("_", "_")
