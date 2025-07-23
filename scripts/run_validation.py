@@ -101,6 +101,7 @@ def set_log_level(args):
     if args.log_level.lower() == "disabled":
         engine_logger.disabled = True
     else:
+        engine_logger.disabled = False
         engine_logger.setLevel(args.log_level.lower())
     if args.progress == ProgressParameterOptions.VERBOSE_OUTPUT.value:
         engine_logger.disabled = False
