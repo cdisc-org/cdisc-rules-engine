@@ -1,5 +1,4 @@
 import pytest
-from pathlib import Path
 from cdisc_rules_engine.readers.codelist_reader import CodelistReader
 
 CODELIST_KEYS = [
@@ -79,12 +78,6 @@ EXPECTED_ROW_COUNTS = {
 }
 
 
-@pytest.fixture
-def codelists_directory():
-    """Get the path to the codelists test resources directory."""
-    return Path("tests/resources/codelists")
-
-
 def get_all_codelist_files(directory):
     """Get all codelist files from the directory."""
     files = []
@@ -92,9 +85,9 @@ def get_all_codelist_files(directory):
     return sorted(files)
 
 
-def test_all_files_readable(codelists_directory):
+def test_all_files_readable(resources_directory):
     """Test that all codelist files can be read without errors."""
-    files = get_all_codelist_files(codelists_directory)
+    files = get_all_codelist_files(resources_directory / "codelists")
 
     assert len(files) > 0, "No codelist files found in test directory"
 
@@ -107,9 +100,9 @@ def test_all_files_readable(codelists_directory):
             pytest.fail(f"Failed to read {file_path.name}: {str(e)}")
 
 
-def test_row_counts(codelists_directory):
+def test_row_counts(resources_directory):
     """Test that each file returns the expected number of rows."""
-    files = get_all_codelist_files(codelists_directory)
+    files = get_all_codelist_files(resources_directory / "codelists")
 
     for file_path in files:
         reader = CodelistReader(str(file_path))
@@ -125,9 +118,9 @@ def test_row_counts(codelists_directory):
             print(f"{file_path.name}: {len(data)} rows")
 
 
-def test_keys_structure(codelists_directory):
+def test_keys_structure(resources_directory):
     """Test that all rows have the correct keys in the correct order."""
-    files = get_all_codelist_files(codelists_directory)
+    files = get_all_codelist_files(resources_directory / "codelists")
 
     for file_path in files:
         reader = CodelistReader(str(file_path))
@@ -148,9 +141,9 @@ def test_keys_structure(codelists_directory):
             )
 
 
-def test_metadata_extraction(codelists_directory):
+def test_metadata_extraction(resources_directory):
     """Test that metadata is correctly extracted from all files."""
-    files = get_all_codelist_files(codelists_directory)
+    files = get_all_codelist_files(resources_directory / "codelists")
 
     for file_path in files:
         reader = CodelistReader(str(file_path))
@@ -159,9 +152,9 @@ def test_metadata_extraction(codelists_directory):
         assert reader.metadata.extension in ["csv", "xlsx", "xls"]
 
 
-def test_data_values_populated(codelists_directory):
+def test_data_values_populated(resources_directory):
     """Test that data values are correctly populated."""
-    files = get_all_codelist_files(codelists_directory)
+    files = get_all_codelist_files(resources_directory / "codelists")
 
     for file_path in files:
         reader = CodelistReader(str(file_path))
