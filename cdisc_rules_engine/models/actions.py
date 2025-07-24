@@ -1,5 +1,4 @@
 from typing import List, Optional, Set, Hashable
-
 from os import path
 import pandas as pd
 from business_rules.actions import BaseActions, rule_action
@@ -137,9 +136,21 @@ class COREActions(BaseActions):
             }
 
             # Create the initial error
-            error_value = (
-                dict(errors_df.iloc[0].to_dict()) if not all_targets_missing else {}
-            )
+            if not all_targets_missing:
+                raw_error_dict = errors_df.iloc[0].to_dict()
+                error_value = {}
+                for key, value in raw_error_dict.items():
+                    if isinstance(value, list):
+                        error_value[key] = [
+                            None if (val in NULL_FLAVORS or pd.isna(val)) else val
+                            for val in value
+                        ]
+                    else:
+                        error_value[key] = (
+                            None if (value in NULL_FLAVORS or pd.isna(value)) else value
+                        )
+            else:
+                error_value = {}
 
             # Add missing variables to the error value
             if missing_vars:
