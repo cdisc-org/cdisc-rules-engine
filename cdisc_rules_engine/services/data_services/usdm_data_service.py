@@ -48,9 +48,14 @@ class USDMDataService(BaseDataService):
             self.dataset_path
         )
 
+        # Build the id lookup dict once for fast reference resolution
+        self._id_lookup = self.__build_id_lookup(self.json)
+
         self.dataset_content_index: dict = self.__get_datasets_content_index(
             dataset_name="USDM_content_index", json=self.json
         )
+
+        self._jsonpath_cache = {}
 
     @classmethod
     def get_instance(
@@ -234,6 +239,30 @@ class USDMDataService(BaseDataService):
         }
         return record
 
+    def __build_id_lookup(self, obj=None):
+        """Iteratively build a dict mapping id -> object."""
+        lookup = {}
+        stack = [obj if obj is not None else self.json]
+        while stack:
+            current = stack.pop()
+            if isinstance(current, dict):
+                if "id" in current:
+                    lookup[current["id"]] = current
+                stack.extend(current.values())
+            elif isinstance(current, list):
+                stack.extend(current)
+        return lookup
+
+    def __find_definition(self, json, id: str):
+        # Use the pre-built lookup dict for fast access
+        return self._id_lookup.get(id, None)
+
+    def _get_parsed_jsonpath(self, path_expr):
+        key = path_expr.strip()
+        if key not in self._jsonpath_cache:
+            self._jsonpath_cache[key] = parse(key)
+        return self._jsonpath_cache[key]
+
     def __get_dataset(self, dataset_name: str) -> DatasetInterface:
         datasets = self.dataset_content_index
         dataset_paths = [
@@ -244,7 +273,8 @@ class USDMDataService(BaseDataService):
         ]
         all_nodes = []
         for dataset_path in dataset_paths:
-            nodes = [match for match in parse(dataset_path["path"]).find(self.json)]
+            parsed_expr = self._get_parsed_jsonpath(dataset_path["path"])
+            nodes = [match for match in parsed_expr.find(self.json)]
             if len(nodes) != 1:
                 raise Exception(
                     f"Multiple objects found with path: {dataset_path['path']}"
@@ -261,14 +291,6 @@ class USDMDataService(BaseDataService):
             for node in all_nodes
         ]
         return self._reader_factory.dataset_implementation.from_records(records)
-
-    def __find_definition(self, json, id: str):
-        definition = parse(f"$..*[?(@.id = '{id}')]").find(json)
-        if definition:
-            if len(definition) > 1:
-                raise Exception(f"Multiple objects found with id: {id}")
-            return definition[0].value
-        return None
 
     def __get_entity_name(self, value, parent: DatumInContext):
         if type(value) is dict:
