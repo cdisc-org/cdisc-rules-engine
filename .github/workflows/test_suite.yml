@@ -44,9 +44,11 @@ jobs:
 
       - name: Run validation with pandas (CORE)
         id: pandas_run
+        env:
+          CDISC_LIBRARY_API_KEY: ${{ secrets.CDISC_LIBRARY_API_KEY }}
         continue-on-error: true
         run: |
-          python core.py validate -s sdtmig -v 3-3 ${{ env.RULE_LIST }} -d CORE_Test_Suite/data -ct sdtmct-2020-03-27 -of json -o CORE_Test_Suite/pandas-results -l info || true
+          python core.py validate -s sdtmig -v 3-3 ${{ env.RULE_LIST }} -d CORE_Test_Suite/data -dxp CORE_Test_Suite/data/Define.xml -of json -o CORE_Test_Suite/pandas-results -l info || true
 
           if [ -f "CORE_Test_Suite/pandas-results.json" ]; then
             echo "pandas_success=true" >> $GITHUB_OUTPUT
@@ -85,8 +87,9 @@ jobs:
         continue-on-error: true
         env:
           DATASET_SIZE_THRESHOLD: 0
+          CDISC_LIBRARY_API_KEY: ${{ secrets.CDISC_LIBRARY_API_KEY }}
         run: |
-          python core.py validate -s sdtmig -v 3-3 ${{ env.RULE_LIST }} -d CORE_Test_Suite/data -ct sdtmct-2020-03-27 -of json -o CORE_Test_Suite/dask-results -l info || true
+          python core.py validate -s sdtmig -v 3-3 ${{ env.RULE_LIST }} -d CORE_Test_Suite/data -dxp CORE_Test_Suite/data/Define.xml -of json -o CORE_Test_Suite/dask-results -l info || true
 
           if [ -f "CORE_Test_Suite/dask-results.json" ]; then
             echo "dask_success=true" >> $GITHUB_OUTPUT
