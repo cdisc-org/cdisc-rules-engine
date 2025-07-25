@@ -254,7 +254,7 @@ def load_specified_rules(
         if rule in standard_rules:
             valid_rule_ids.add(rule)
         else:
-            engine_logger.error(
+            raise ValueError(
                 f"The rule specified '{rule}' is not in the standard {standard} and version {version}"
             )
     rules = []
