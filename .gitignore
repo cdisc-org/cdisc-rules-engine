@@ -1,3 +1,13 @@
+# Custom Local
+*.xlsx
+cProfile.txt
+compare_cprofile.py
+output*.txt
+pilot_usdm.json
+usdm2xl.py
+usdm2xl_jsonata.py
+cProfile_results/
+
 # Editors
 .vscode/
 .idea/
