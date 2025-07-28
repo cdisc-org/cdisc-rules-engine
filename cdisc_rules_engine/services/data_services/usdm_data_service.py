@@ -27,6 +27,29 @@ from .base_data_service import BaseDataService, cached_dataset
 
 
 class USDMDataService(BaseDataService):
+    def _traverse_path(self, obj, path):
+        """
+        Traverse a nested dict/list using a path string like 'foo.bar[0].baz'.
+        Returns the node at the path, or raises KeyError/IndexError if not found.
+        Supports dot notation and list indices.
+        """
+        import re
+        parts = re.split(r'\.(?![^\[]*\])', path)  # split on dot not inside brackets
+        current = obj
+        for part in parts:
+            # Handle list index, e.g. 'foo[3]'
+            m = re.match(r'([\w-]+)(\[(\d+)\])?', part)
+            if not m:
+                raise KeyError(f"Invalid path segment: {part}")
+            key = m.group(1)
+            idx = m.group(3)
+            if isinstance(current, dict):
+                current = current[key]
+            else:
+                raise KeyError(f"Expected dict at {key} in {part}")
+            if idx is not None:
+                current = current[int(idx)]
+        return current
     _instance = None
 
     def __init__(
@@ -213,29 +236,27 @@ class USDMDataService(BaseDataService):
         return flattened
 
     @staticmethod
-    def __get_parent(node) -> DatumInContext:
-        return (
-            node.context if node.context and type(node.context.value) is list else node
-        )
+    def __get_parent(node):
+        # Native node: just return node itself
+        return node
 
     @staticmethod
-    def __get_closest_non_list_ancestor(node) -> DatumInContext:
-        return (
-            node.context.context if type(node.context.value) is list else node.context
-        )
+    def __get_closest_non_list_ancestor(node):
+        # Native node: just return node itself
+        return node
 
     def __get_record_metadata(self, node) -> dict:
-        closest_non_list_ancestor = USDMDataService.__get_closest_non_list_ancestor(
-            node
-        )
+        # For native node, just use node.value and node.path
+        value = node.value
+        parent_entity = self.__get_entity_name(value, node)
+        parent_id = value.get("id", "") if isinstance(value, dict) else ""
+        parent_rel = getattr(node, "path", "")
+        rel_type = getattr(node, "type", "")
         record = {
-            "parent_entity": self.__get_entity_name(
-                closest_non_list_ancestor.value,
-                USDMDataService.__get_parent(closest_non_list_ancestor),
-            ),
-            "parent_id": closest_non_list_ancestor.value.get("id", ""),
-            "parent_rel": f"{USDMDataService.__get_parent(node).path}",
-            "rel_type": node.type,
+            "parent_entity": parent_entity,
+            "parent_id": parent_id,
+            "parent_rel": parent_rel,
+            "rel_type": rel_type,
         }
         return record
 
@@ -273,13 +294,14 @@ class USDMDataService(BaseDataService):
         ]
         all_nodes = []
         for dataset_path in dataset_paths:
-            parsed_expr = self._get_parsed_jsonpath(dataset_path["path"])
-            nodes = [match for match in parsed_expr.find(self.json)]
-            if len(nodes) != 1:
-                raise Exception(
-                    f"Multiple objects found with path: {dataset_path['path']}"
-                )
-            node = nodes[0]
+            try:
+                value = self._traverse_path(self.json, dataset_path["path"])
+            except (KeyError, IndexError) as e:
+                raise Exception(f"Path not found: {dataset_path['path']} ({e})")
+            # Create a simple node-like object for compatibility
+            node = type('Node', (), {})()
+            node.value = value
+            node.path = dataset_path["path"]
             if dataset_path["type"] == "reference":
                 node.value = self.__find_definition(self.json, node.value)
                 node.type = "reference"
