@@ -1049,10 +1049,19 @@ class DataframeType(BaseType):
                     grouping_cols.append(col_name)
         df_check = self.value[grouping_cols + [target]].copy()
         df_check = df_check.fillna("_NaN_")
-        results = pd.Series(True, index=df_check.index)
-        for name, group in df_check.groupby(grouping_cols):
-            if group[target].nunique() == 1:
-                results[group.index] = False
+        results = pd.Series(False, index=df_check.index)
+        for name, group in df_check.groupby(grouping_cols, dropna=False):
+            if group[target].nunique() > 1:
+                value_counts = group[target].value_counts()
+                max_count = value_counts.max()
+                # if same amount of inconsistency values, flag all
+                most_common_values = value_counts[value_counts == max_count]
+                if len(most_common_values) > 1:
+                    results[group.index] = True
+                else:
+                    most_common_value = most_common_values.index[0]
+                    minority_rows = group[group[target] != most_common_value]
+                    results[minority_rows.index] = True
         return results
 
     @log_operator_execution
