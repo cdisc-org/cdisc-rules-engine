@@ -1,6 +1,18 @@
 import os
+import re
 from io import IOBase
 from typing import List, Sequence
+from dataclasses import dataclass
+
+
+# Node dataclass for dataset traversal
+@dataclass
+class Node:
+    value: any
+    path: str
+    type: str
+
+
 from json import load
 from jsonpath_ng import DatumInContext
 from jsonpath_ng.ext import parse
@@ -27,18 +39,20 @@ from .base_data_service import BaseDataService, cached_dataset
 
 
 class USDMDataService(BaseDataService):
+    # Pre-compiled regex pattern for matching list indices
+    _LIST_INDEX_REGEX = re.compile(r"([\w-]+)(\[(\d+)\])?")
+
     def _traverse_path(self, obj, path):
         """
         Traverse a nested dict/list using a path string like 'foo.bar[0].baz'.
         Returns the node at the path, or raises KeyError/IndexError if not found.
         Supports dot notation and list indices.
         """
-        import re
-        parts = re.split(r'\.(?![^\[]*\])', path)  # split on dot not inside brackets
+        parts = re.split(r"\.(?![^\[]*\])", path)  # split on dot not inside brackets
         current = obj
         for part in parts:
             # Handle list index, e.g. 'foo[3]'
-            m = re.match(r'([\w-]+)(\[(\d+)\])?', part)
+            m = self._LIST_INDEX_REGEX.match(part)
             if not m:
                 raise KeyError(f"Invalid path segment: {part}")
             key = m.group(1)
@@ -50,6 +64,7 @@ class USDMDataService(BaseDataService):
             if idx is not None:
                 current = current[int(idx)]
         return current
+
     _instance = None
 
     def __init__(
@@ -298,15 +313,13 @@ class USDMDataService(BaseDataService):
                 value = self._traverse_path(self.json, dataset_path["path"])
             except (KeyError, IndexError) as e:
                 raise Exception(f"Path not found: {dataset_path['path']} ({e})")
-            # Create a simple node-like object for compatibility
-            node = type('Node', (), {})()
-            node.value = value
-            node.path = dataset_path["path"]
             if dataset_path["type"] == "reference":
-                node.value = self.__find_definition(self.json, node.value)
-                node.type = "reference"
+                node_value = self.__find_definition(self.json, value)
+                node_type = "reference"
             else:
-                node.type = "definition"
+                node_value = value
+                node_type = "definition"
+            node = Node(value=node_value, path=dataset_path["path"], type=node_type)
             all_nodes.append(node)
         records = [
             self.__get_record_metadata(node) | self.__get_record_data(node.value)
@@ -314,7 +327,7 @@ class USDMDataService(BaseDataService):
         ]
         return self._reader_factory.dataset_implementation.from_records(records)
 
-    def __get_entity_name(self, value, parent: DatumInContext):
+    def __get_entity_name(self, value, parent: any):
         if type(value) is dict:
             api_type = (
                 value.get("instanceType")
