@@ -88,7 +88,11 @@ class CodelistTerms(BaseOperation):
                 ct_package_data = ct_packages["define_XML_merged_CT"]
             else:
                 ct_package_data = next(
-                    (pkg for name, pkg in ct_packages.items() if name != "extensible")
+                    (
+                        pkg
+                        for name, pkg in ct_packages.items()
+                        if name != "extensible" and not name.startswith("define-xml")
+                    )
                 )
         except AttributeError as e:
             logger.warning(
