@@ -394,6 +394,7 @@ Attach define xml metadata at variable level
 - `library_variable_data_type`
 - `library_variable_role`
 - `library_variable_core`
+- `library_variable_ccode`
 
 ## Variables Metadata Check against Define XML and Library Metadata
 
