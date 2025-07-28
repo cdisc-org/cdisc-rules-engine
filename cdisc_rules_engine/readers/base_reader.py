@@ -1,8 +1,11 @@
 from abc import ABC, abstractmethod
 from csv import DictReader
-from pandas import read_excel
+import pandas as pd
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Union
+
+
+CHUNKSIZE = 10000
 
 
 class BaseReader(ABC):
@@ -12,7 +15,6 @@ class BaseReader(ABC):
     """
 
     def __init__(self, file_path: str):
-        """Initialise the reader with a file path."""
         self.file_path = Path(file_path)
         self._validate_file()
         self.metadata = self._extract_metadata()
@@ -25,7 +27,7 @@ class BaseReader(ABC):
             raise ValueError(f"Path is not a file: {self.file_path}")
 
     @abstractmethod
-    def _extract_metadata(self) -> Dict[str, Any]:
+    def _extract_metadata(self) -> Any:
         """
         Extract metadata from the file name or content.
         Must be implemented by subclasses.
@@ -33,7 +35,7 @@ class BaseReader(ABC):
         pass
 
     @abstractmethod
-    def read(self) -> List[Dict[str, Any]]:
+    def read(self) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
         """
         Read the file and return serialised data.
         Must be implemented by subclasses.
@@ -53,7 +55,7 @@ class BaseReader(ABC):
                     cleaned_row = {k: v.strip() if v else None for k, v in row.items()}
                     data.append(cleaned_row)
             elif self.file_path.suffix in [".xlsx", ".xls"]:
-                df = read_excel(self.file_path)
+                df = pd.read_excel(self.file_path)
                 data = df.to_dict(orient="records")
             else:
                 raise ValueError(
