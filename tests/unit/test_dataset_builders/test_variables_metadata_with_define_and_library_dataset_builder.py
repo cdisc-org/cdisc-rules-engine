@@ -172,6 +172,7 @@ def test_build_combined_metadata(
         "define_variable_length",
         "define_variable_has_codelist",
         "define_variable_codelist_coded_values",
+        "define_variable_codelist_coded_codes",
         "define_variable_mandatory",
         "define_variable_has_comment",
         "library_variable_name",
@@ -220,6 +221,11 @@ def test_build_combined_metadata(
         "MILD",
         "MODERATE",
         "SEVERE",
+    }
+    assert set(aesev_row["define_variable_codelist_coded_codes"]) == {
+        "C41338",
+        "C41339",
+        "C41340",
     }
     mandatory_vars = result[result["define_variable_mandatory"] == "Yes"]
     assert not mandatory_vars.empty
