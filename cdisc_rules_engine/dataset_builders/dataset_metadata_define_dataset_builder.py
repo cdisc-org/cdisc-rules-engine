@@ -27,7 +27,6 @@ class DatasetMetadataDefineDatasetBuilder(BaseDatasetBuilder):
         define_dataset_is_non_standard - whether a dataset is a standard
         define_dataset_variables - dataset variables
         define_dataset_key_sequence - dataset key sequence
-        define_variable_codelist_coded_values - Codelist coded values
 
         ...,
         """
@@ -72,8 +71,6 @@ class DatasetMetadataDefineDatasetBuilder(BaseDatasetBuilder):
             "define_dataset_class",
             "define_dataset_structure",
             "define_dataset_is_non_standard",
-            "define_variable_codelist_coded_values",
-            "define_variable_codelist_coded_codes",
         ]
         define_metadata = self.get_define_metadata()
         if not define_metadata:
