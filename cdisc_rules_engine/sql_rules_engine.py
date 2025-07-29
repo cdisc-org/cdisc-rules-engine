@@ -5,7 +5,7 @@ from business_rules import export_rule_data
 from business_rules.engine import run
 import os
 from cdisc_rules_engine.config import config as default_config
-from cdisc_rules_engine.data_service.PostgresQLDataService import PostgresQLDataService, SQLDatasetMetadata
+from cdisc_rules_engine.data_service.postgresql_data_service import PostgresQLDataService, SQLDatasetMetadata
 from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 
 # from cdisc_rules_engine.enums.rule_types import RuleTypes

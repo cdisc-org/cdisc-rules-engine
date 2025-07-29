@@ -1,4 +1,4 @@
-from cdisc_rules_engine.data_service.PostgresQLDataService import PostgresQLDataService
+from cdisc_rules_engine.data_service.postgresql_data_service import PostgresQLDataService
 
 
 def test_get_dataset_metadata_sql(get_sample_lb_dataset, get_sample_supp_dataset):

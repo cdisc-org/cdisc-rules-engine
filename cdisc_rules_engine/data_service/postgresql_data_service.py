@@ -7,9 +7,9 @@ import pandasql as ps
 from pathlib import Path
 
 from cdisc_rules_engine.constants.domains import SUPPLEMENTARY_DOMAINS
-from cdisc_rules_engine.data_service.SQLDataService import SQLDataService
+from cdisc_rules_engine.data_service.sql_data_service import SQLDataService
 from cdisc_rules_engine.data_service.sql_interface import PostgresQLInterface
-from cdisc_rules_engine.models.TestDataset import TestDataset
+from cdisc_rules_engine.models.test_dataset import TestDataset
 
 
 @dataclass

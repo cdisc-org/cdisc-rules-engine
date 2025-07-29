@@ -6,10 +6,10 @@ from multiprocessing.managers import SyncManager
 from typing import List, Iterable, Callable
 
 from cdisc_rules_engine.config import config
-from cdisc_rules_engine.data_service.PostgresQLDataService import PostgresQLDataService
+from cdisc_rules_engine.data_service.postgresql_data_service import PostgresQLDataService
 from cdisc_rules_engine.enums.progress_parameter_options import ProgressParameterOptions
 
-from cdisc_rules_engine.models.TestDataset import TestDataset
+from cdisc_rules_engine.models.test_dataset import TestDataset
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )

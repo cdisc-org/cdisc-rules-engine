@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
 
-from cdisc_rules_engine.models.TestDataset import TestDataset
+from cdisc_rules_engine.models.test_dataset import TestDataset
 
 
 class SQLDataService(ABC):

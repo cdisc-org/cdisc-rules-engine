@@ -3,7 +3,7 @@ from datetime import datetime
 from unittest.mock import MagicMock
 from pathlib import Path
 
-from cdisc_rules_engine.models.TestDataset import TestDataset, TestVariableMetadata
+from cdisc_rules_engine.models.test_dataset import TestDataset, TestVariableMetadata
 from cdisc_rules_engine.models.dataset import PandasDataset
 import pytest
 import sys

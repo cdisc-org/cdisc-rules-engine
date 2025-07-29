@@ -1,6 +1,6 @@
 import re
 from typing import List, Optional, Set, Tuple
-from cdisc_rules_engine.data_service.PostgresQLDataService import SQLDatasetMetadata
+from cdisc_rules_engine.data_service.postgresql_data_service import SQLDatasetMetadata
 from cdisc_rules_engine.interfaces.cache_service_interface import (
     CacheServiceInterface,
 )
