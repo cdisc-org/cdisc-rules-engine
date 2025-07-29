@@ -133,7 +133,7 @@ class SQLCOREActions(BaseActions):
             errors_list = [
                 ValidationErrorEntity(
                     value=error_value,
-                    dataset=self._get_dataset_name(data),
+                    dataset=self.sql_dataset_metadata.dataset_name,
                 )
             ]
         elif self.rule.get("sensitivity") == Sensitivity.RECORD.value:

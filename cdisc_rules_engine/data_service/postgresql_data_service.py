@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Union
 import pandas as pd
-import pandasql as ps
 
 from pathlib import Path
 
@@ -35,13 +34,10 @@ class PostgresQLDataService(SQLDataService):
         terminology_paths: dict = None,
         data_dfs: dict[str, pd.DataFrame] = None,
         pre_processed_dfs: dict[str, pd.DataFrame] = None,
-        metadata_df: pd.DataFrame = None,
     ):
         super().__init__(datasets_path, define_xml_path, terminology_paths)
         self.data_dfs = data_dfs
         self.pre_processed_dfs = pre_processed_dfs
-        self.metadata_df = metadata_df
-        self.psql = ps.PandaSQL()
         self.pgi = postgres_interface
 
     @classmethod
@@ -54,10 +50,9 @@ class PostgresQLDataService(SQLDataService):
     ) -> "PostgresQLDataService":
         """
         Constructor for tests, passing in TestDataset
-        and create corresponding SQL tables, setting path to "memory"
+        and create corresponding SQL tables
         """
         data_dfs = {}
-        metadata_df = pd.DataFrame()
         metadata_rows: list[dict[str, Union[str, int, float]]] = []
 
         # PostgresDB setup
@@ -105,28 +100,12 @@ class PostgresQLDataService(SQLDataService):
                         "var_format": test_variable["format"],
                     }
                 )
-                new_row = pd.DataFrame(
-                    {
-                        "filename": [test_dataset["filename"]],
-                        "filepath": [test_dataset["filepath"]],
-                        "dataset_id": [test_dataset["name"]],
-                        "dataset_name": [test_dataset["name"]],
-                        "dataset_label": [test_dataset["label"]],
-                        "domain": [test_dataset["domain"]],
-                        "name": [test_variable["name"]],
-                        "label": [test_variable["label"]],
-                        "type": [test_variable["type"]],
-                        "length": [test_variable["length"]],
-                        "format": [test_variable["format"]],
-                    }
-                )
-                metadata_df = pd.concat([metadata_df, new_row], ignore_index=True)
 
         # write metadata rows into DB
         pgi.insert_data(table_name="data_metadata", data=metadata_rows)
 
         pre_processed_dfs = PostgresQLDataService._pre_process_data_dfs(data_dfs)
-        return cls(pgi, datasets_path, define_xml_path, terminology_paths, data_dfs, pre_processed_dfs, metadata_df)
+        return cls(pgi, datasets_path, define_xml_path, terminology_paths, data_dfs, pre_processed_dfs)
 
     def _pre_process_data_dfs(data_dfs: dict[pd.DataFrame]) -> dict[pd.DataFrame]:
         # TODO
@@ -171,39 +150,30 @@ class PostgresQLDataService(SQLDataService):
         pass
 
     def get_uploaded_dataset_ids(self) -> list[str]:
-        metadata_df = self.metadata_df
-        query = "SELECT DISTINCT dataset_id FROM metadata_df"
-        result_df = self._safe_psql(query, {"metadata_df": metadata_df})
-        if result_df.empty:
-            return False
-        domains = result_df["dataset_id"].to_list()
-        return domains
+        query = "SELECT DISTINCT dataset_id FROM data_metadata;"
+        self.pgi.execute_sql(query=query)
+        results = self.pgi.fetch_all()
+        return [res["dataset_id"] for res in results]
 
     def get_dataset_metadata(self, dataset_id: str) -> SQLDatasetMetadata:
-        metadata_df = self.metadata_df
         query = f"""
             SELECT *
-            FROM metadata_df
-            WHERE dataset_id = '{dataset_id}'
+            FROM data_metadata
+            WHERE dataset_id = '{dataset_id}';
         """
-        result_df = self._safe_psql(query, {"metadata_df": metadata_df})
+        self.pgi.execute_sql(query=query)
+        results = self.pgi.fetch_all()
         return SQLDatasetMetadata(
-            filename=result_df["filename"].iloc[0],
-            filepath=result_df["filepath"].iloc[0],
-            dataset_id=result_df["dataset_id"].iloc[0],
-            dataset_name=result_df["dataset_name"].iloc[0],
-            dataset_label=result_df["dataset_label"].iloc[0],
-            domain=result_df["domain"].iloc[0],
-            is_supp=str(result_df["domain"].iloc[0]).startswith(SUPPLEMENTARY_DOMAINS),
-            rdomain=self.get_rdomain(result_df["dataset_id"].iloc[0]),
-            variables=result_df["name"].to_list(),
+            filename=results[0].get("dataset_filename"),
+            filepath=results[0].get("dataset_filepath"),
+            dataset_id=results[0].get("dataset_id"),
+            dataset_name=results[0].get("dataset_name"),
+            dataset_label=results[0].get("dataset_label"),
+            domain=results[0].get("dataset_domain"),
+            is_supp=results[0].get("dataset_is_supp"),
+            rdomain=results[0].get("dataset_rdomain"),
+            variables=[res["var_name"] for res in results],
         )
-
-    def get_rdomain(self, dataset_id: str) -> Union[str, None]:
-        """
-        Return dataset rdomain based on dataset_id.
-        """
-        return self._get_first_col_value_from_data(dataset_id, "RDOMAIN")
 
     def _get_unsplit_name(
         name: str,
@@ -217,38 +187,3 @@ class PostgresQLDataService(SQLDataService):
         if name.startswith("SQ"):
             return f"SQ{rdomain}"
         return name
-
-    def _get_first_col_value_from_data(self, dataset_id: str, col: str) -> Union[str, None]:
-        dataset = self.data_dfs.get(dataset_id, None)
-        if dataset is None:
-            return None
-        query = f"""
-            SELECT {col}
-            FROM dataset
-            LIMIT 1
-        """
-        result_df = self._safe_psql(query, {"dataset": dataset})
-        if result_df.empty:
-            return None
-        ret = result_df[col].iat[0]
-        return ret
-
-    def _safe_psql(self, query: str, env: dict) -> pd.DataFrame:
-        try:
-            return self.psql(query, env)
-        except ps.PandaSQLException:
-            return pd.DataFrame()
-
-    def _get_val_from_var_from_metadata(self, dataset_id: str, col: str) -> Union[str, None]:
-        metadata_df = self.metadata_df
-        query = f"""
-            SELECT {col}
-            FROM metadata_df
-            WHERE dataset_id = '{dataset_id}'
-            LIMIT 1
-        """
-        result_df = self._safe_psql(query, {"metadata_df": metadata_df})
-        if result_df.empty:
-            return None
-        ret = result_df[col].iat[0]
-        return ret

@@ -2,18 +2,21 @@ from cdisc_rules_engine.data_service.postgresql_data_service import PostgresQLDa
 
 
 def test_get_dataset_metadata_sql(get_sample_lb_dataset, get_sample_supp_dataset):
-    sql_data_service = PostgresQLDataService.from_list_of_testdatasets([get_sample_lb_dataset])
-    ds_metadata = sql_data_service.get_dataset_metadata("LB")
+    sql_data_service = PostgresQLDataService.from_list_of_testdatasets([get_sample_lb_dataset, get_sample_supp_dataset])
+    ds_metadata = sql_data_service.get_dataset_metadata(dataset_id="LB")
     assert 2 == len(ds_metadata.variables)
-
-    sql_data_service = PostgresQLDataService.from_list_of_testdatasets([get_sample_supp_dataset])
-    ds_metadata = sql_data_service.get_dataset_metadata("SUPPDM")
+    assert ds_metadata.dataset_id is not None
+    assert ds_metadata.domain is not None
+    assert ds_metadata.rdomain is None
+    assert not ds_metadata.is_supp
+    ds_metadata = sql_data_service.get_dataset_metadata(dataset_id="SUPPDM")
     assert 3 == len(ds_metadata.variables)
+    assert ds_metadata.dataset_id is not None
+    assert ds_metadata.domain is not None
+    assert "DM" == ds_metadata.rdomain
+    assert ds_metadata.is_supp
 
 
-def test_get_rdomain(get_sample_lb_dataset, get_sample_supp_dataset):
-    sql_data_service = PostgresQLDataService.from_list_of_testdatasets([get_sample_lb_dataset])
-    assert sql_data_service.get_rdomain("LB") is None
-
-    sql_data_service = PostgresQLDataService.from_list_of_testdatasets([get_sample_supp_dataset])
-    assert "DM" == sql_data_service.get_rdomain("SUPPDM")
+def test_get_uploaded_dataset_ids(get_sample_lb_dataset, get_sample_supp_dataset):
+    sql_data_service = PostgresQLDataService.from_list_of_testdatasets([get_sample_lb_dataset, get_sample_supp_dataset])
+    assert 2 == len(sql_data_service.get_uploaded_dataset_ids())
