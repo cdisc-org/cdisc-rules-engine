@@ -94,6 +94,14 @@ These steps should be run before running any tests or core commands using the no
 NOTE: if you have multiple versions of python on your machine, you can call python 3.12 for the virtual environment's creation instead of the above command:
 `python3.12 -m venv <virtual_environment_name>`
 
+- Duplicate the two .env files at these directories and copy over the contents of the .env.example files:
+  `./.env.example`
+  `./environment/local/.env.example`
+
+- Ensure you have the docker desktop app running and then run these commands to set-up docker for this environment:
+  `cd ./environment/local`
+  `docker-compose up`
+
 - Activate the virtual environment:
 
 `./<virtual_environment_name>/bin/activate` -- on linux/mac </br>
