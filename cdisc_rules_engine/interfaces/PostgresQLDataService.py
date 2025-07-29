@@ -57,7 +57,7 @@ class PostgresQLDataService(SQLDataService):
         for test_dataset in test_datasets:
             # Collect content
             ddf = pd.DataFrame.from_records(test_dataset["records"])
-            ddf.columns = [col.lower() for col in ddf.columns]
+            ddf.columns = [col for col in ddf.columns]
             data_dfs[test_dataset["name"]] = ddf
 
             # Collect variable metadata
@@ -155,7 +155,7 @@ class PostgresQLDataService(SQLDataService):
         """
         Return dataset rdomain based on dataset_id.
         """
-        return self._get_first_col_value_from_data(dataset_id, "rdomain")
+        return self._get_first_col_value_from_data(dataset_id, "RDOMAIN")
 
     def _get_first_col_value_from_data(self, dataset_id: str, col: str) -> Union[str, None]:
         dataset = self.data_dfs.get(dataset_id, None)

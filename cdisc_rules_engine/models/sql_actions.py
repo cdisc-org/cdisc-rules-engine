@@ -24,19 +24,14 @@ class SQLCOREActions(BaseActions):
     def __init__(
         self,
         output_container: list,
-        variable: DatasetVariable,
+        validation_dataset: DatasetVariable,
         sql_dataset_metadata: SQLDatasetMetadata,
         rule: dict,
-        value_level_metadata: list = None,
     ):
-        if value_level_metadata is None:
-            value_level_metadata = []
-
         self.output_container = output_container
-        self.variable = variable
+        self.validation_dataset = validation_dataset
         self.sql_dataset_metadata = sql_dataset_metadata
         self.rule = rule
-        self.value_level_metadata = value_level_metadata
 
     # @rule_action(params={"message": FIELD_TEXT, "target": FIELD_TEXT})
     # def generate_record_message(self, message, target=None):
@@ -48,15 +43,15 @@ class SQLCOREActions(BaseActions):
     @rule_action(params={"message": FIELD_TEXT})
     def generate_dataset_error_objects(self, message: str, results: pd.Series):
         # leave only those columns where errors have been found
-        rows_with_error = self.variable.dataset.get_error_rows(results)
+        rows_with_error = self.validation_dataset.dataset.get_error_rows(results)
         target_names: Set[str] = SQLRuleProcessor.extract_target_names_from_rule(
             self.rule,
             self.sql_dataset_metadata.domain,
-            self.variable.dataset.columns.tolist(),
+            self.validation_dataset.dataset.columns.tolist(),
         )
         target_names = self._get_target_names_from_list_values(target_names, rows_with_error)
-        if self.value_level_metadata:
-            target_names = self.extract_target_names_from_value_level_metadata()
+        # if self.value_level_metadata:
+        #     target_names = self.extract_target_names_from_value_level_metadata()
         error_object = self.generate_targeted_error_object(target_names, rows_with_error, message)
         self.output_container.append(error_object.to_representation())
 
@@ -73,7 +68,7 @@ class SQLCOREActions(BaseActions):
             for candidate_list in rows_with_error[target]
             if isinstance(candidate_list, list)
             for value in candidate_list
-            if value in self.variable.dataset.columns
+            if value in self.validation_dataset.dataset.columns
         )
         return expanded_target_names
 
@@ -263,8 +258,8 @@ class SQLCOREActions(BaseActions):
         )
         return error_object
 
-    def extract_target_names_from_value_level_metadata(self):
-        return set([item["define_variable_name"] for item in self.value_level_metadata])
+    # def extract_target_names_from_value_level_metadata(self):
+    #     return set([item["define_variable_name"] for item in self.value_level_metadata])
 
     @staticmethod
     def _sequence_exists(sequence: pd.Series, row_name: Hashable) -> bool:

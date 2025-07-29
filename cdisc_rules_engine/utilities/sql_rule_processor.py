@@ -1,11 +1,8 @@
 import re
-from typing import Iterable, List, Optional, Set, Tuple
+from typing import List, Optional, Set, Tuple
 from cdisc_rules_engine.interfaces.PostgresQLDataService import SQLDatasetMetadata
 from cdisc_rules_engine.interfaces.cache_service_interface import (
     CacheServiceInterface,
-)
-from cdisc_rules_engine.models.dataset.dataset_interface import (
-    DatasetInterface,
 )
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
@@ -42,10 +39,6 @@ from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.models.external_dictionaries_container import (
     ExternalDictionariesContainer,
 )
-from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
-from cdisc_rules_engine.interfaces.data_service_interface import (
-    DataServiceInterface,
-)
 
 # from cdisc_rules_engine.exceptions.custom_exceptions import DomainNotFoundError
 
@@ -53,11 +46,9 @@ from cdisc_rules_engine.interfaces.data_service_interface import (
 class SQLRuleProcessor:
     def __init__(
         self,
-        data_service: DataServiceInterface,
         cache: CacheServiceInterface,
         library_metadata: LibraryMetadataContainer = None,
     ):
-        self.data_service = data_service
         self.cache = cache
         self.library_metadata = library_metadata
 
@@ -286,19 +277,21 @@ class SQLRuleProcessor:
     #         return None
     #     return f"{ct_package_type.lower()}ct"
 
+    # TODO: this is where operations are triggered
     def perform_rule_operations(
         self,
         rule: dict,
-        dataset: DatasetInterface,
-        domain: str,
-        datasets: Iterable[SDTMDatasetMetadata],
-        dataset_path: str,
+        dataset_id: str,
+        # dataset: DatasetInterface,
+        # domain: str,
+        # datasets: Iterable[SDTMDatasetMetadata],
+        # dataset_path: str,
         standard: str,
         standard_version: str,
         standard_substandard: str,
         external_dictionaries: ExternalDictionariesContainer = ExternalDictionariesContainer(),
         **kwargs,
-    ) -> DatasetInterface:
+    ) -> str:
         """
         Applies rule operations to the dataset.
         Returns the processed dataset. Operation result is appended as a new column.
@@ -306,9 +299,9 @@ class SQLRuleProcessor:
         operations: List[dict] = rule.get("operations") or []
         if not operations:
             # stop function execution if no operations have been provided
-            return dataset
+            return dataset_id
 
-        dataset_copy = dataset.copy()
+        # dataset_copy = dataset.copy()
         # previous_operations = []
         # for operation in operations:
         #     # change -- pattern to domain name
@@ -370,7 +363,7 @@ class SQLRuleProcessor:
         #     previous_operations.append(operation_params.operation_name)
 
         #     logger.info(f"Processed rule operation. " f"operation={operation_params.operation_name}, rule={rule}")
-        return dataset_copy
+        return dataset_id
 
     # def _execute_operation(
     #     self,
@@ -532,7 +525,7 @@ class SQLRuleProcessor:
         self,
         rule: dict,
         sql_dataset_metadata: SQLDatasetMetadata,
-        datasets: Iterable[SDTMDatasetMetadata],
+        # datasets: Iterable[SDTMDatasetMetadata],
         standard,
         standard_substandard: str,
     ) -> Tuple[bool, str]:

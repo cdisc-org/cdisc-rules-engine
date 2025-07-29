@@ -66,7 +66,7 @@ def log_operator_execution(func):
     return wrapper
 
 
-class DataframeType(BaseType):
+class SQLDataframeType(BaseType):
 
     name = "dataframe"
 
@@ -496,6 +496,7 @@ class DataframeType(BaseType):
         results = self._where_greater_than_or_equal_to(target_column, comparison_data)
         return self.value.convert_to_series(results)
 
+    # TODO: this is the first operator for our rule, replace with data service
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
     def greater_than(self, other_value):

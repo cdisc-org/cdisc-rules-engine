@@ -10,14 +10,11 @@ from __future__ import annotations
 from cdisc_rules_engine.config import config
 
 # from cdisc_rules_engine.enums.join_types import JoinTypes
+from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.services.cache.cache_service_factory import CacheServiceFactory
 from cdisc_rules_engine.interfaces import (
     CacheServiceInterface,
     # DataServiceInterface,
-)
-from cdisc_rules_engine.services.data_services import (
-    DataServiceFactory,
-    # DummyDataService,
 )
 
 # from cdisc_rules_engine.utilities.utils import (
@@ -30,10 +27,9 @@ from cdisc_rules_engine.services.data_services import (
 
 
 class SQLDataProcessor:
-    def __init__(self, data_service=None, cache: CacheServiceInterface = None):
+    def __init__(self, cache: CacheServiceInterface = None):
         self.cache = cache or CacheServiceFactory(config).get_cache_service()
-        self.data_service = data_service or DataServiceFactory(config, self.cache).get_data_service()
-        self.dataset_implementation = self.data_service.dataset_implementation
+        self.dataset_implementation = PandasDataset
 
     # @staticmethod
     # def convert_float_merge_keys(series: pd.Series) -> pd.Series:

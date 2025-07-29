@@ -6,8 +6,6 @@ from multiprocessing.managers import SyncManager
 from typing import List, Iterable, Callable
 
 from cdisc_rules_engine.config import config
-from cdisc_rules_engine.config.config import ConfigService
-from cdisc_rules_engine.dummy_models.dummy_dataset import DummyDataset
 from cdisc_rules_engine.enums.progress_parameter_options import ProgressParameterOptions
 
 from cdisc_rules_engine.interfaces.PostgresQLDataService import PostgresQLDataService
@@ -29,9 +27,6 @@ from cdisc_rules_engine.services.data_services import (
     DataServiceFactory,
 )
 from cdisc_rules_engine.models.dataset import PandasDataset
-from cdisc_rules_engine.services.data_services.dummy_data_service import (
-    DummyDataService,
-)
 from cdisc_rules_engine.sql_rules_engine import SQLRulesEngine
 
 # from cdisc_rules_engine.utilities.utils import (
@@ -190,45 +185,21 @@ def sql_run_validation(args: Validation_args):
 # this is the tests entrypoint, CLI enters above where only the args are passed in
 def sql_run_single_rule_validation(
     datasets: list[TestDataset],
-    rule,
+    rule: dict,
     define_xml: str = None,
     cache: InMemoryCacheService = None,
     standard: str = None,
     standard_version: str = "",
     standard_substandard: str = None,
-    codelists=[],
+    codelists: list = [],
 ) -> dict:
 
-    sql_data_service = PostgresQLDataService.from_list_of_testdatasets(datasets)
-
-    # BS, this gets the DataService pushed from tests and ultimately the main command, containing all the standards
-    datasets = [DummyDataset(dataset_data) for dataset_data in datasets]
-
-    # this disappears - we initialize the SQL data service and with it have all available in test or main command
-    data_service = DummyDataService.get_instance(
-        cache,
-        ConfigService(),
+    rules_engine = SQLRulesEngine(
+        data_service=PostgresQLDataService.from_list_of_testdatasets(datasets),
+        cache=cache,
         standard=standard,
         standard_version=standard_version,
         standard_substandard=standard_substandard,
-        data=datasets,
-        define_xml=define_xml,
-        library_metadata=None,
-    )
-    # refactor to get rid of cache - only needs access to the other stuff
-    engine = SQLRulesEngine(
-        sql_data_service,
-        cache,
-        data_service,
-        standard=standard,
-        standard_version=standard_version,
-        standard_substandard=standard_substandard,
-        library_metadata=None,
     )
 
-    # not sure why this happens here, think of where this should be happening
-    rule = Rule.from_cdisc_metadata(rule)
-
-    # finally we do something useful
-    results = engine.sql_validate_single_rule(rule, datasets)
-    return results
+    return rules_engine.sql_validate_single_rule(Rule.from_cdisc_metadata(rule))

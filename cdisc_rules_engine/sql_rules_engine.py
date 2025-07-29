@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import Iterable, List, Union
+from typing import List, Union
 
 from business_rules import export_rule_data
 from business_rules.engine import run
@@ -19,17 +19,15 @@ from cdisc_rules_engine.exceptions.custom_exceptions import (
 from cdisc_rules_engine.interfaces import (
     CacheServiceInterface,
     ConfigInterface,
-    DataServiceInterface,
 )
 from cdisc_rules_engine.interfaces.PostgresQLDataService import PostgresQLDataService
-from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
-from cdisc_rules_engine.models.dataset_variable import DatasetVariable
 from cdisc_rules_engine.models.failed_validation_entity import FailedValidationEntity
 from cdisc_rules_engine.models.rule_conditions.condition_composite_factory import (
     ConditionCompositeFactory,
 )
 from cdisc_rules_engine.models.sql_actions import SQLCOREActions
+from cdisc_rules_engine.models.sql_variable import SQLVariable
 from cdisc_rules_engine.models.validation_error_container import (
     ValidationErrorContainer,
 )
@@ -40,16 +38,13 @@ from cdisc_rules_engine.services.cache import CacheServiceFactory
 #     DefineXMLReaderFactory,
 # )
 from cdisc_rules_engine.utilities.sql_data_processor import SQLDataProcessor
-from cdisc_rules_engine.utilities.sql_dataset_preprocessor import SQLDatasetPreprocessor
 from cdisc_rules_engine.utilities.sql_rule_processor import SQLRuleProcessor
 from cdisc_rules_engine.utilities.utils import (
     serialize_rule,
 )
-from cdisc_rules_engine.dataset_builders import builder_factory
 from cdisc_rules_engine.models.external_dictionaries_container import (
     ExternalDictionariesContainer,
 )
-from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.interfaces.PostgresQLDataService import SQLDatasetMetadata
 import traceback
 
@@ -57,54 +52,46 @@ import traceback
 class SQLRulesEngine:
     def __init__(
         self,
-        ds: PostgresQLDataService,
+        data_service: PostgresQLDataService,
         cache: CacheServiceInterface = None,
-        data_service: DataServiceInterface = None,
         config_obj: ConfigInterface = None,
         external_dictionaries: ExternalDictionariesContainer = ExternalDictionariesContainer(),
         **kwargs,
     ):
         self.config = config_obj or default_config
         self.cache = cache or CacheServiceFactory(self.config).get_cache_service()
-        self.data_service = data_service
 
         self.standard = kwargs.get("standard")
         self.standard_version = (kwargs.get("standard_version") or "").replace(".", "-")
         self.standard_substandard = kwargs.get("standard_substandard") or None
 
-        # TODO: remove eventually
-        self.dataset_implementation = PandasDataset
-        kwargs["dataset_implementation"] = self.dataset_implementation
-
         # TODO: move into data service
-        self.max_dataset_size = kwargs.get("max_dataset_size")
         self.dataset_paths = kwargs.get("dataset_paths")
         self.ct_packages = kwargs.get("ct_packages", [])
         self.ct_package = kwargs.get("ct_package")
         self.external_dictionaries = external_dictionaries
         self.define_xml_path: str = kwargs.get("define_xml_path")
         self.validate_xml: bool = kwargs.get("validate_xml")
-        self.data_processor = SQLDataProcessor(self.data_service, self.cache)
+        self.data_processor = SQLDataProcessor(self.cache)
 
         # this stays
-        self.rule_processor = SQLRuleProcessor(self.data_service, self.cache)
-        self.ds = ds
+        self.rule_processor = SQLRuleProcessor(self.cache)
+        self.data_service = data_service
 
     def get_schema(self):
-        return export_rule_data(DatasetVariable, SQLCOREActions)
+        return export_rule_data(SQLVariable, SQLCOREActions)
 
-    def sql_validate_single_rule(self, rule: dict, datasets: Iterable[SDTMDatasetMetadata]):
+    def sql_validate_single_rule(self, rule: dict):
         results = {}
         rule["conditions"] = ConditionCompositeFactory.get_condition_composite(rule["conditions"])
-        for dataset_metadata in datasets:
-            # for pp_ds_id in self.ds.pre_processed_dfs.keys():
-            pp_ds_id = dataset_metadata.name
-            sql_dataset_metadata = self.ds.get_dataset_metadata(pp_ds_id)
+
+        # iterate through all pre-processed user datasets
+        for pp_ds_id in self.data_service.pre_processed_dfs.keys():
+            sql_dataset_metadata = self.data_service.get_dataset_metadata(pp_ds_id)
 
             is_suitable, reason = self.rule_processor.is_suitable_for_validation(
                 rule,
                 sql_dataset_metadata,
-                datasets,
                 self.standard,
                 self.standard_substandard,
             )
@@ -114,9 +101,7 @@ class SQLRulesEngine:
                 #     if not include_split:
                 #         continue  # handling split datasets
                 # results[dataset_metadata.unsplit_name] = self.validate_single_dataset(
-                results[sql_dataset_metadata.domain] = self.validate_single_dataset(
-                    rule, datasets, dataset_metadata, sql_dataset_metadata
-                )
+                results[sql_dataset_metadata.domain] = self.validate_single_dataset(rule, sql_dataset_metadata)
             else:
                 logger.info(f"Skipped dataset {sql_dataset_metadata.dataset_name}. Reason: {reason}")
                 error_obj: ValidationErrorContainer = ValidationErrorContainer(
@@ -131,8 +116,6 @@ class SQLRulesEngine:
     def validate_single_dataset(
         self,
         rule: dict,
-        datasets: Iterable[SDTMDatasetMetadata],
-        dataset_metadata: SDTMDatasetMetadata,
         sql_dataset_metadata: SQLDatasetMetadata,
     ) -> List[Union[dict, str]]:
         """
@@ -141,10 +124,11 @@ class SQLRulesEngine:
         """
         logger.info(
             f"Validating {sql_dataset_metadata.dataset_name}. "
-            f"rule={rule}. dataset_path={sql_dataset_metadata.filepath}. datasets={self.ds.get_uploaded_dataset_ids()}."
+            f"rule={rule}. dataset_path={sql_dataset_metadata.filepath}. "
+            f"datasets={self.data_service.get_uploaded_dataset_ids()}."
         )
         try:
-            result: List[Union[dict, str]] = self.validate_rule(rule, datasets, dataset_metadata, sql_dataset_metadata)
+            result: List[Union[dict, str]] = self.validate_rule(rule, sql_dataset_metadata)
             logger.info(f"Validated dataset {sql_dataset_metadata.dataset_name}. Result = {result}")
             if result:
                 return result
@@ -177,44 +161,15 @@ class SQLRulesEngine:
             # this wrapping into a list is necessary to keep return type consistent
             return [error_obj.to_representation()]
 
-    def get_dataset_builder(
-        self,
-        rule: dict,
-        datasets: Iterable[SDTMDatasetMetadata],
-        dataset_metadata: SDTMDatasetMetadata,
-    ):
-        return builder_factory.get_service(
-            rule.get("rule_type"),
-            rule=rule,
-            data_service=self.data_service,
-            cache_service=self.cache,
-            data_processor=self.data_processor,
-            rule_processor=self.rule_processor,
-            dataset_metadata=dataset_metadata,
-            datasets=datasets,
-            dataset_path=dataset_metadata.full_path,
-            define_xml_path=self.define_xml_path,
-            standard=self.standard,
-            standard_version=self.standard_version,
-            standard_substandard=self.standard_substandard,
-            library_metadata=None,
-            dataset_implementation=self.data_service.dataset_implementation,
-        )
-
     def validate_rule(
         self,
         rule: dict,
-        datasets: Iterable[SDTMDatasetMetadata],
-        dataset_metadata: SDTMDatasetMetadata,
         sql_dataset_metadata: SQLDatasetMetadata,
     ) -> List[Union[dict, str]]:
         """
          This function is an entrypoint for rule validation.
         It defines a rule validator based on its type and calls it.
         """
-        kwargs = {}
-        builder = self.get_dataset_builder(rule, datasets, dataset_metadata)
-        dataset = builder.get_dataset()
         # Update rule for certain rule types
         # SPECIAL CASES FOR RULE TYPES ###############################
         # TODO: Handle these special cases better.
@@ -247,60 +202,53 @@ class SQLRulesEngine:
         #     rule_copy["conditions"].set_conditions(updated_conditions)
         #     # When duplicating conditions,
         #     # rule should be copied to prevent updates to concurrent rule executions
-        #     return self.execute_rule(rule_copy, dataset, datasets, dataset_metadata, **kwargs)
+        #     return self.execute_rule(rule_copy, datasets, dataset_metadata, **kwargs)
 
-        kwargs["ct_packages"] = list(self.ct_packages)
-
-        logger.info(f"Using dataset build by: {builder.__class__}")
-        return self.execute_rule(rule, dataset, datasets, sql_dataset_metadata, **kwargs)
+        # logger.info(f"Using dataset build by: {builder.__class__}")
+        return self.execute_rule(rule, sql_dataset_metadata)
 
     def execute_rule(
         self,
         rule: dict,
-        dataset: DatasetInterface,
-        datasets: Iterable[SDTMDatasetMetadata],
         sql_dataset_metadata: SQLDatasetMetadata,
-        value_level_metadata: List[dict] = None,
-        variable_codelist_map: dict = None,
-        codelist_term_maps: list = None,
+        value_level_metadata: List[dict] = [],
+        variable_codelist_map: dict = {},
+        codelist_term_maps: list = [],
         ct_packages: list = None,
     ) -> List[str]:
         """
         Executes the given rule on a given dataset.
         """
-        if value_level_metadata is None:
-            value_level_metadata = []
-        if variable_codelist_map is None:
-            variable_codelist_map = {}
-        if codelist_term_maps is None:
-            codelist_term_maps = []
-        # Add conditions to rule for all variables if variables: all appears
-        # in condition
+        # Add conditions to rule for all variables if variables: all appears in condition
         rule_copy = deepcopy(rule)
         updated_conditions = SQLRuleProcessor.duplicate_conditions_for_all_targets(
-            rule["conditions"], dataset.columns.to_list()
+            rule["conditions"],
+            sql_dataset_metadata.variables,
         )
         rule_copy["conditions"].set_conditions(updated_conditions)
-        # Adding copy for now to avoid updating cached dataset
-        dataset = deepcopy(dataset)
-        # preprocess dataset
-        dataset_preprocessor = SQLDatasetPreprocessor(dataset, sql_dataset_metadata, self.data_service, self.cache)
-        dataset = dataset_preprocessor.preprocess(rule_copy, datasets)
-        dataset = self.rule_processor.perform_rule_operations(
+
+        # PRE-PROCESSING -> move to ingest!!!!
+
+        #   preprocess dataset
+        #   dataset_preprocessor = SQLDatasetPreprocessor(dataset, sql_dataset_metadata, self.data_service, self.cache)
+        #   dataset = dataset_preprocessor.preprocess(rule_copy, datasets)
+
+        #  OPERATIONS - these are actually rule-specific, so they belong here
+        #  TODO: pass in dataservice
+        processed_ds_id = self.rule_processor.perform_rule_operations(
             rule_copy,
-            dataset,
-            # TODO: this used to be: dataset_metadata.unsplit_name, so beware!
-            sql_dataset_metadata.dataset_name,
-            datasets,
-            sql_dataset_metadata.filepath,
+            sql_dataset_metadata.dataset_id,
             standard=self.standard,
             standard_version=self.standard_version,
             standard_substandard=self.standard_substandard,
             external_dictionaries=self.external_dictionaries,
             ct_packages=ct_packages,
         )
-        dataset_variable = DatasetVariable(
-            dataset,
+
+        # VENMO ENGINE START - this is actually rule-specific, so it belongs here
+        #  TODO: pass in dataservice
+        validation_dataset = SQLVariable(
+            PandasDataset(self.data_service.data_dfs.get(processed_ds_id)),
             column_prefix_map={"--": sql_dataset_metadata.domain},
             value_level_metadata=value_level_metadata,
             column_codelist_map=variable_codelist_map,
@@ -309,13 +257,9 @@ class SQLRulesEngine:
         results = []
         run(
             serialize_rule(rule_copy),  # engine expects a JSON serialized dict
-            defined_variables=dataset_variable,
+            defined_variables=validation_dataset,
             defined_actions=SQLCOREActions(
-                results,
-                variable=dataset_variable,
-                sql_dataset_metadata=sql_dataset_metadata,
-                rule=rule,
-                value_level_metadata=value_level_metadata,
+                results, validation_dataset=validation_dataset, sql_dataset_metadata=sql_dataset_metadata, rule=rule
             ),
         )
         return results
