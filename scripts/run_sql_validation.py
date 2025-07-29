@@ -9,6 +9,9 @@ from cdisc_rules_engine.config import config
 from cdisc_rules_engine.config.config import ConfigService
 from cdisc_rules_engine.dummy_models.dummy_dataset import DummyDataset
 from cdisc_rules_engine.enums.progress_parameter_options import ProgressParameterOptions
+
+from cdisc_rules_engine.interfaces.PostgresQLDataService import PostgresQLDataService
+from cdisc_rules_engine.models.TestDataset import TestDataset
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
@@ -30,12 +33,13 @@ from cdisc_rules_engine.services.data_services.dummy_data_service import (
     DummyDataService,
 )
 from cdisc_rules_engine.sql_rules_engine import SQLRulesEngine
-from cdisc_rules_engine.utilities.utils import (
-    get_library_variables_metadata_cache_key,
-    get_model_details_cache_key_from_ig,
-    get_standard_details_cache_key,
-    get_variable_codelist_map_cache_key,
-)
+
+# from cdisc_rules_engine.utilities.utils import (
+#     get_library_variables_metadata_cache_key,
+#     get_model_details_cache_key_from_ig,
+#     get_standard_details_cache_key,
+#     get_variable_codelist_map_cache_key,
+# )
 from scripts.script_utils import (
     fill_cache_with_dictionaries,
     get_cache_service,
@@ -47,7 +51,8 @@ from cdisc_rules_engine.services.reporting import BaseReport, ReportFactory
 from cdisc_rules_engine.utilities.progress_displayers import get_progress_displayer
 from warnings import simplefilter
 import os
-from cdisc_rules_engine.constants.cache_constants import PUBLISHED_CT_PACKAGES
+
+# from cdisc_rules_engine.constants.cache_constants import PUBLISHED_CT_PACKAGES
 
 simplefilter(action="ignore", category=FutureWarning)  # Suppress warnings coming from numpy
 """
@@ -184,7 +189,7 @@ def sql_run_validation(args: Validation_args):
 # TODO: fix this one first
 # this is the tests entrypoint, CLI enters above where only the args are passed in
 def sql_run_single_rule_validation(
-    datasets,
+    datasets: list[TestDataset],
     rule,
     define_xml: str = None,
     cache: InMemoryCacheService = None,
@@ -193,35 +198,11 @@ def sql_run_single_rule_validation(
     standard_substandard: str = None,
     codelists=[],
 ) -> dict:
+
+    sql_data_service = PostgresQLDataService.from_list_of_testdatasets(datasets)
+
     # BS, this gets the DataService pushed from tests and ultimately the main command, containing all the standards
     datasets = [DummyDataset(dataset_data) for dataset_data in datasets]
-
-    # get rid of cache and initialize standards in DB if not already present
-    cache = cache or InMemoryCacheService()
-    standard_details_cache_key = get_standard_details_cache_key(standard, standard_version, standard_substandard)
-    variable_details_cache_key = get_library_variables_metadata_cache_key(
-        standard, standard_version, standard_substandard
-    )
-    standard_metadata = cache.get(standard_details_cache_key)
-    if standard_metadata:
-        model_cache_key = get_model_details_cache_key_from_ig(standard_metadata)
-        model_metadata = cache.get(model_cache_key)
-    else:
-        model_metadata = {}
-    variable_codelist_cache_key = get_variable_codelist_map_cache_key(standard, standard_version, standard_substandard)
-    ct_package_metadata = {}
-    for codelist in codelists:
-        ct_package_metadata[codelist] = cache.get(codelist)
-
-    # Can we replace this?
-    library_metadata = LibraryMetadataContainer(
-        standard_metadata=standard_metadata,
-        model_metadata=model_metadata,
-        variables_metadata=cache.get(variable_details_cache_key),
-        variable_codelist_map=cache.get(variable_codelist_cache_key),
-        ct_package_metadata=ct_package_metadata,
-        published_ct_packages=cache.get(PUBLISHED_CT_PACKAGES),
-    )
 
     # this disappears - we initialize the SQL data service and with it have all available in test or main command
     data_service = DummyDataService.get_instance(
@@ -232,16 +213,17 @@ def sql_run_single_rule_validation(
         standard_substandard=standard_substandard,
         data=datasets,
         define_xml=define_xml,
-        library_metadata=library_metadata,
+        library_metadata=None,
     )
     # refactor to get rid of cache - only needs access to the other stuff
     engine = SQLRulesEngine(
+        sql_data_service,
         cache,
         data_service,
         standard=standard,
         standard_version=standard_version,
         standard_substandard=standard_substandard,
-        library_metadata=library_metadata,
+        library_metadata=None,
     )
 
     # not sure why this happens here, think of where this should be happening

@@ -3,6 +3,7 @@ from datetime import datetime
 from unittest.mock import MagicMock
 from pathlib import Path
 
+from cdisc_rules_engine.models.TestDataset import TestDataset, TestVariableMetadata
 from cdisc_rules_engine.models.dataset import PandasDataset
 import pytest
 import sys
@@ -49,12 +50,8 @@ def resources_directory():
 
 def mock_get_dataset(dataset_name):
     dataframe_map = {
-        "ae.xpt": PandasDataset.from_dict(
-            {"AESTDY": [1, 2, 40, 59], "USUBJID": [1, 2, 3, 45]}
-        ),
-        "ec.xpt": PandasDataset.from_dict(
-            {"ECCOOLVAR": [3, 4, 5000, 35], "USUBJID": [1, 2, 3, 45]}
-        ),
+        "ae.xpt": PandasDataset.from_dict({"AESTDY": [1, 2, 40, 59], "USUBJID": [1, 2, 3, 45]}),
+        "ec.xpt": PandasDataset.from_dict({"ECCOOLVAR": [3, 4, 5000, 35], "USUBJID": [1, 2, 3, 45]}),
     }
     return dataframe_map.get(dataset_name.split("/")[-1])
 
@@ -146,9 +143,7 @@ def dataset_rule_multiple_conditions() -> dict:
             {
                 "name": "generate_dataset_error_objects",
                 "params": {
-                    "message": (
-                        "Length of ECCOOLVAR is not equal to 5 " "or ECCOOLVAR == cool."
-                    ),
+                    "message": ("Length of ECCOOLVAR is not equal to 5 " "or ECCOOLVAR == cool."),
                 },
             }
         ],
@@ -821,10 +816,7 @@ def define_xml_variable_validation_rule() -> dict:
             {
                 "name": "generate_dataset_error_objects",
                 "params": {
-                    "message": (
-                        "Variable metadata variable_size "
-                        "does not match define variable size"
-                    ),
+                    "message": ("Variable metadata variable_size " "does not match define variable size"),
                 },
             }
         ],
@@ -858,8 +850,7 @@ def define_xml_value_level_metadata_validation_rule() -> dict:
                 "name": "generate_dataset_error_objects",
                 "params": {
                     "message": (
-                        "Variable data does not match length "
-                        "specified by value level metadata in define.xml"
+                        "Variable data does not match length " "specified by value level metadata in define.xml"
                     ),
                 },
             }
@@ -978,9 +969,7 @@ def dataset_rule_inconsistent_enumerated_columns() -> dict:
         "actions": [
             {
                 "name": "generate_dataset_error_objects",
-                "params": {
-                    "message": "Inconsistencies found in enumerated TSVAL columns."
-                },
+                "params": {"message": "Inconsistencies found in enumerated TSVAL columns."},
             }
         ],
     }
@@ -1274,3 +1263,68 @@ def dataset_metadata() -> dict:
 
 def get_python_executable():
     return sys.executable
+
+
+@pytest.fixture
+def get_sample_lb_dataset() -> TestDataset:
+    return TestDataset(
+        filename="lb.xpt",
+        filepath="path/to/lb.xpt",
+        name="LB",
+        domain="LB",
+        label="Laboratory Test Results",
+        variables=[
+            TestVariableMetadata(
+                name="DOMAIN",
+                label="Domain Abbreviation",
+                type="Char",
+                length=4,
+            ),
+            TestVariableMetadata(
+                name="LBSEQ",
+                label="Sequence Number",
+                type="Num",
+                length=8,
+            ),
+        ],
+        records={
+            "DOMAIN": ["LB", "LB"],
+            "LBSEQ": [1, 2],
+        },
+    )
+
+
+@pytest.fixture
+def get_sample_supp_dataset() -> TestDataset:
+    return TestDataset(
+        filename="suppdm.xpt",
+        filepath="path/to/suppdm.xpt",
+        name="SUPPDM",
+        domain="SUPPDM",
+        label="Supplemental Demographics Domain",
+        variables=[
+            TestVariableMetadata(
+                name="DOMAIN",
+                label="Domain Abbreviation",
+                type="Char",
+                length=4,
+            ),
+            TestVariableMetadata(
+                name="RDOMAIN",
+                label="Referenced Domain",
+                type="Char",
+                length=4,
+            ),
+            TestVariableMetadata(
+                name="LBSEQ",
+                label="Sequence Number",
+                type="Num",
+                length=8,
+            ),
+        ],
+        records={
+            "DOMAIN": ["SUPPDM", "SUPPDM"],
+            "RDOMAIN": ["DM", "DM"],
+            "LBSEQ": [1, 2],
+        },
+    )

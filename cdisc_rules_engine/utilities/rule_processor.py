@@ -57,9 +57,7 @@ class RuleProcessor:
         self.library_metadata = library_metadata
 
     @classmethod
-    def rule_applies_to_domain(
-        cls, dataset_metadata: SDTMDatasetMetadata, rule: dict
-    ) -> bool:
+    def rule_applies_to_domain(cls, dataset_metadata: SDTMDatasetMetadata, rule: dict) -> bool:
         """
         Check that rule is applicable to dataset domain
         """
@@ -69,9 +67,7 @@ class RuleProcessor:
         included_domains = domains.get("Include", [])
         excluded_domains = domains.get("Exclude", [])
 
-        is_included = cls._is_domain_name_included(
-            dataset_metadata, included_domains, include_split_datasets
-        )
+        is_included = cls._is_domain_name_included(dataset_metadata, included_domains, include_split_datasets)
         is_excluded = cls._is_domain_name_excluded(dataset_metadata, excluded_domains)
 
         # additional check for split domains based on the flag
@@ -118,9 +114,7 @@ class RuleProcessor:
         return False
 
     @classmethod
-    def _is_domain_name_excluded(
-        cls, dataset_metadata: SDTMDatasetMetadata, excluded_domains: List[str]
-    ) -> bool:
+    def _is_domain_name_excluded(cls, dataset_metadata: SDTMDatasetMetadata, excluded_domains: List[str]) -> bool:
         """
         If excluded domains are specified,
          and the domain is in the list of excluded domains,
@@ -168,9 +162,7 @@ class RuleProcessor:
         return is_excluded, is_included
 
     @classmethod
-    def _domain_matched_ap_or_supp(
-        cls, dataset_metadata: SDTMDatasetMetadata, domains_to_check: List[str]
-    ) -> bool:
+    def _domain_matched_ap_or_supp(cls, dataset_metadata: SDTMDatasetMetadata, domains_to_check: List[str]) -> bool:
         """
         Check that domain name match with only
         AP / APFA / APRELSUB / SUPP / SQ naming pattern
@@ -180,11 +172,7 @@ class RuleProcessor:
 
         return any(set(domains_to_check).intersection(supp_ap_domains)) and (
             dataset_metadata.is_supp
-            or is_ap_domain(
-                dataset_metadata.domain
-                or dataset_metadata.rdomain
-                or dataset_metadata.name
-            )
+            or is_ap_domain(dataset_metadata.domain or dataset_metadata.rdomain or dataset_metadata.name)
         )
 
     def rule_applies_to_class(
@@ -242,8 +230,7 @@ class RuleProcessor:
                 dataset_metadata,
             )
             if class_name and (
-                (class_name in excluded_classes)
-                or (class_name == FINDINGS_ABOUT and FINDINGS in excluded_classes)
+                (class_name in excluded_classes) or (class_name == FINDINGS_ABOUT and FINDINGS in excluded_classes)
             ):
                 is_excluded = True
         return is_included and not is_excluded
@@ -346,9 +333,7 @@ class RuleProcessor:
                 standard_substandard=standard_substandard,
                 external_dictionaries=external_dictionaries,
                 ct_version=operation.get("version"),
-                ct_package_type=RuleProcessor._ct_package_type_api_name(
-                    operation.get("ct_package_type")
-                ),
+                ct_package_type=RuleProcessor._ct_package_type_api_name(operation.get("ct_package_type")),
                 ct_attribute=operation.get("attribute"),
                 ct_package_types=[
                     RuleProcessor._ct_package_type_api_name(ct_package_type)
@@ -361,9 +346,7 @@ class RuleProcessor:
                 key_value=operation.get("key_value", ""),
                 case_sensitive=operation.get("case_sensitive", True),
                 external_dictionary_type=operation.get("external_dictionary_type"),
-                external_dictionary_term_variable=operation.get(
-                    "external_dictionary_term_variable"
-                ),
+                external_dictionary_term_variable=operation.get("external_dictionary_term_variable"),
                 dictionary_term_type=operation.get("dictionary_term_type"),
                 filter=operation.get("filter", None),
                 grouping_aliases=operation.get("group_aliases"),
@@ -378,15 +361,10 @@ class RuleProcessor:
             )
 
             # execute operation
-            dataset_copy = self._execute_operation(
-                operation_params, dataset_copy, previous_operations
-            )
+            dataset_copy = self._execute_operation(operation_params, dataset_copy, previous_operations)
             previous_operations.append(operation_params.operation_name)
 
-            logger.info(
-                f"Processed rule operation. "
-                f"operation={operation_params.operation_name}, rule={rule}"
-            )
+            logger.info(f"Processed rule operation. " f"operation={operation_params.operation_name}, rule={rule}")
         return dataset_copy
 
     def _execute_operation(
@@ -417,9 +395,7 @@ class RuleProcessor:
         if result is not None:
             return result
 
-        if not self.is_current_domain(
-            operation_params.dataframe, operation_params.domain
-        ):
+        if not self.is_current_domain(operation_params.dataframe, operation_params.domain):
             # download other domain
             domain_details: dict = search_in_list_of_dicts(
                 operation_params.datasets,
@@ -435,9 +411,7 @@ class RuleProcessor:
                 get_directory_path(operation_params.dataset_path),
                 filename,
             )
-            operation_params.dataframe = self.data_service.get_dataset(
-                dataset_name=file_path
-            )
+            operation_params.dataframe = self.data_service.get_dataset(dataset_name=file_path)
 
         # call the operation
         operation = operations_factory.get_service(
@@ -472,9 +446,7 @@ class RuleProcessor:
             result = True
         else:
             result = False
-        logger.info(
-            f"is_relationship_dataset. dataset_name={dataset_name}, result={result}"
-        )
+        logger.info(f"is_relationship_dataset. dataset_name={dataset_name}, result={result}")
         return result
 
     def get_size_unit_from_rule(self, rule: dict) -> Optional[str]:
@@ -487,9 +459,7 @@ class RuleProcessor:
             if value["target"] == "dataset_size":
                 return value.get("unit")
 
-    def add_operator_to_rule_conditions(
-        self, rule: dict, target_to_operator_map: dict, domain: str
-    ):
+    def add_operator_to_rule_conditions(self, rule: dict, target_to_operator_map: dict, domain: str):
         """
         Adds "operator" key to rule condition.
         target_to_operator_map parameter is a dict
@@ -499,26 +469,18 @@ class RuleProcessor:
         """
         conditions: ConditionInterface = rule["conditions"]
         for condition in conditions.values():
-            target: str = (
-                condition.get("value", {}).get("target", "").replace("--", domain)
-            )
-            operator_to_add: Optional[Union[str, list]] = target_to_operator_map.get(
-                target
-            )
+            target: str = condition.get("value", {}).get("target", "").replace("--", domain)
+            operator_to_add: Optional[Union[str, list]] = target_to_operator_map.get(target)
             if not operator_to_add:
                 continue
             if isinstance(operator_to_add, str):
                 condition["operator"] = operator_to_add
             elif isinstance(operator_to_add, list):
-                nested_conditions = [
-                    {**condition, "operator": operator} for operator in operator_to_add
-                ]
+                nested_conditions = [{**condition, "operator": operator} for operator in operator_to_add]
                 condition.clear()  # delete all keys from dict
                 condition[AllowedConditionsKeys.ANY.value] = nested_conditions
 
-    def add_comparator_to_rule_conditions(
-        self, rule: dict, comparator: dict = None, target_prefix=None
-    ):
+    def add_comparator_to_rule_conditions(self, rule: dict, comparator: dict = None, target_prefix=None):
         """
         Adds "comparator" key to rule conditions.value key.
 
@@ -541,14 +503,11 @@ class RuleProcessor:
             if comparator_to_add:
                 value["comparator"] = comparator_to_add
         logger.info(
-            f"Added comparator to rule conditions. "
-            f"comparator={comparator}, conditions={rule['conditions']}"
+            f"Added comparator to rule conditions. " f"comparator={comparator}, conditions={rule['conditions']}"
         )
 
     @staticmethod
-    def duplicate_conditions_for_all_targets(
-        conditions: ConditionInterface, targets: List[str]
-    ) -> dict:
+    def duplicate_conditions_for_all_targets(conditions: ConditionInterface, targets: List[str]) -> dict:
         """
         Given a list of conditions duplicates the condition for all targets as necessary
         """
@@ -558,9 +517,7 @@ class RuleProcessor:
             new_conditions_list = []
             for condition in conditions_list:
                 if condition.should_copy():
-                    new_conditions_list.extend(
-                        [condition.copy().set_target(target) for target in targets]
-                    )
+                    new_conditions_list.extend([condition.copy().set_target(target) for target in targets])
                 else:
                     new_conditions_list.append(condition)
             new_conditions_dict[key] = new_conditions_list
@@ -581,39 +538,23 @@ class RuleProcessor:
             reason = f"Rule skipped - invalid rule structure for rule id={rule_id}"
             logger.info(f"is_suitable_for_validation. {reason}, result=False")
             return False, reason
-        if not self.rule_applies_to_use_case(
-            dataset_metadata, rule, standard, standard_substandard
-        ):
-            reason = (
-                f"Rule skipped - doesn't apply to use case for "
-                f"rule id={rule_id}, dataset={dataset_name}"
-            )
+        if not self.rule_applies_to_use_case(dataset_metadata, rule, standard, standard_substandard):
+            reason = f"Rule skipped - doesn't apply to use case for " f"rule id={rule_id}, dataset={dataset_name}"
             logger.info(f"is_suitable_for_validation. {reason}, result=False")
             return False, reason
         if not self.rule_applies_to_domain(dataset_metadata, rule):
-            reason = (
-                f"Rule skipped - doesn't apply to domain for "
-                f"rule id={rule_id}, dataset={dataset_name}"
-            )
+            reason = f"Rule skipped - doesn't apply to domain for " f"rule id={rule_id}, dataset={dataset_name}"
             logger.info(f"is_suitable_for_validation. {reason}, result=False")
             return False, reason
         if not self.rule_applies_to_class(rule, datasets, dataset_metadata):
-            reason = (
-                f"Rule skipped - doesn't apply to class for "
-                f"rule id={rule_id}, dataset={dataset_name}"
-            )
+            reason = f"Rule skipped - doesn't apply to class for " f"rule id={rule_id}, dataset={dataset_name}"
             logger.info(f"is_suitable_for_validation. {reason}, result=False")
             return False, reason
-        logger.info(
-            f"is_suitable_for_validation. rule id={rule_id}, "
-            f"dataset={dataset_name}, result=True"
-        )
+        logger.info(f"is_suitable_for_validation. rule id={rule_id}, " f"dataset={dataset_name}, result=True")
         return True, ""
 
     @staticmethod
-    def extract_target_names_from_rule(
-        rule: dict, domain: str, column_names: List[str]
-    ) -> Set[str]:
+    def extract_target_names_from_rule(rule: dict, domain: str, column_names: List[str]) -> Set[str]:
         r"""
         Extracts target from each item of condition list.
 
@@ -630,9 +571,7 @@ class RuleProcessor:
         """
         output_variables: List[str] = rule.get("output_variables", [])
         if output_variables:
-            target_names: List[str] = [
-                var.replace("--", domain or "", 1) for var in output_variables
-            ]
+            target_names: List[str] = [var.replace("--", domain or "", 1) for var in output_variables]
         else:
             target_names: List[str] = []
             conditions: ConditionInterface = rule["conditions"]
@@ -643,9 +582,7 @@ class RuleProcessor:
                 if target is None:
                     continue
                 target = target.replace("--", domain or "")
-                op_related_pattern: str = RuleProcessor.get_operator_related_pattern(
-                    condition.get("operator"), target
-                )
+                op_related_pattern: str = RuleProcessor.get_operator_related_pattern(condition.get("operator"), target)
                 if op_related_pattern is not None:
                     # if pattern exists -> return only matching column names
                     target_names.extend(

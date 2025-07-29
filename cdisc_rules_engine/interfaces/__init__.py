@@ -8,6 +8,7 @@ from .logger_interface import LoggerInterface
 from .representation_interface import RepresentationInterface
 from .dictionary_term_interface import DictionaryTermInterface
 from .terms_factory_interface import TermsFactoryInterface
+from .PostgresQLDataService import PostgresQLDataService
 
 
 __all__ = [
@@ -21,4 +22,5 @@ __all__ = [
     "RepresentationInterface",
     "DictionaryTermInterface",
     "TermsFactoryInterface",
+    "PostgresQLDataService",
 ]
