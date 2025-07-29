@@ -10,8 +10,6 @@ class SQLDataService(ABC):
         self,
         datasets_path: Path = None,
         define_xml_path: Path = None,
-        codelists_path: Path = None,
-        metadata_standards_path: Path = None,
         terminology_paths: dict = None,
     ):
         """
@@ -26,15 +24,13 @@ class SQLDataService(ABC):
         """
         self.datasets_path = datasets_path
         self.define_xml_path = define_xml_path
-        self.codelists_path = codelists_path
-        self.metadata_standards_path = metadata_standards_path
         self.terminology_paths = terminology_paths
 
         self._create_sql_tables_from_dataset_paths()
         self._create_definexml_tables()
-        self._create_codelist_tables()
-        self._create_standards_tables()
         self._create_terminology_tables()
+        self._create_standards_tables()
+        self._create_codelist_tables()
 
     @abstractmethod
     def from_list_of_testdatasets(cls, test_datasets: list[TestDataset]) -> None:
