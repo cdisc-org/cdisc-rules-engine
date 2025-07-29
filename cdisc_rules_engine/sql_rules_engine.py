@@ -5,6 +5,7 @@ from business_rules import export_rule_data
 from business_rules.engine import run
 import os
 from cdisc_rules_engine.config import config as default_config
+from cdisc_rules_engine.data_service.PostgresQLDataService import PostgresQLDataService, SQLDatasetMetadata
 from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 
 # from cdisc_rules_engine.enums.rule_types import RuleTypes
@@ -20,7 +21,6 @@ from cdisc_rules_engine.interfaces import (
     CacheServiceInterface,
     ConfigInterface,
 )
-from cdisc_rules_engine.interfaces.PostgresQLDataService import PostgresQLDataService
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.models.failed_validation_entity import FailedValidationEntity
 from cdisc_rules_engine.models.rule_conditions.condition_composite_factory import (
@@ -45,7 +45,6 @@ from cdisc_rules_engine.utilities.utils import (
 from cdisc_rules_engine.models.external_dictionaries_container import (
     ExternalDictionariesContainer,
 )
-from cdisc_rules_engine.interfaces.PostgresQLDataService import SQLDatasetMetadata
 import traceback
 
 

@@ -1,11 +1,11 @@
 import logging
-from cdisc_rules_engine.data_service.database import Database, DatabaseConfig
+from cdisc_rules_engine.data_service.database import DatabasePostgres, DatabaseConfigPostgres
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-config = DatabaseConfig()
-db = Database(config)
+config = DatabaseConfigPostgres()
+db = DatabasePostgres(config)
 
 try:
     if db.get_connection():

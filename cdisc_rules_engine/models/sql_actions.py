@@ -10,8 +10,8 @@ from cdisc_rules_engine.constants.metadata_columns import (
     SOURCE_FILENAME,
     SOURCE_ROW_NUMBER,
 )
+from cdisc_rules_engine.data_service.PostgresQLDataService import SQLDatasetMetadata
 from cdisc_rules_engine.enums.sensitivity import Sensitivity
-from cdisc_rules_engine.interfaces.PostgresQLDataService import SQLDatasetMetadata
 from cdisc_rules_engine.models.dataset_variable import DatasetVariable
 from cdisc_rules_engine.models.validation_error_container import (
     ValidationErrorContainer,

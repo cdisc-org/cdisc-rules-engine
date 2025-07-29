@@ -102,7 +102,7 @@ def test_variable_metadata_extraction(clinical_data_directory):
                 assert "name" in var
                 assert "label" in var
                 assert "format" in var
-                assert "ctype" in var or "type" in var
+                assert "type" in var
                 assert "length" in var
 
 

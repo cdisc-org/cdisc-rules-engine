@@ -15,7 +15,7 @@ load_dotenv()
 
 
 @dataclass
-class DatabaseConfig:
+class DatabaseConfigPostgres:
     host = getenv("DATABASE_HOST")
     port = (
         getenv("DATABASE_PORT") if not isinstance(getenv("DATABASE_PORT"), str) else int(getenv("DATABASE_PORT", 5432))
@@ -27,10 +27,10 @@ class DatabaseConfig:
     max_connections: int = 10
 
 
-class Database:
+class DatabasePostgres:
     """Database connection management with connection pooling"""
 
-    def __init__(self, config: DatabaseConfig = DatabaseConfig()):
+    def __init__(self, config: DatabaseConfigPostgres = DatabaseConfigPostgres()):
         self.config = config
         self._pool: Optional[psycopg2.pool.SimpleConnectionPool] = None
         self._init_pool()
@@ -53,27 +53,15 @@ class Database:
             raise
 
     @contextmanager
-    def get_connection(self):
-        """Get a connection from the pool"""
-        conn = None
-        if self._pool:
-            try:
-                conn = self._pool.getconn()
-                yield conn
-            finally:
-                if conn:
-                    self._pool.putconn(conn)
-
-    @contextmanager
-    def get_cursor(self, dict_cursor: bool = True):
-        """Get a cursor from a pooled connection"""
-        with self.get_connection() as conn:
+    def get_connection_and_cursor(self, dict_cursor: bool = True):
+        conn = self._pool.getconn()
+        try:
             cursor_factory = RealDictCursor if dict_cursor else None
             cursor = conn.cursor(cursor_factory=cursor_factory)
-            try:
-                yield cursor
-            finally:
-                cursor.close()
+            yield conn, cursor
+            cursor.close()
+        finally:
+            self._pool.putconn(conn)
 
     def close_pool(self):
         """Close all connections in the pool"""

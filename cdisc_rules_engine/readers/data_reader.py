@@ -132,7 +132,7 @@ class DataReader(BaseReader):
                         if col.format and isinstance(col.format, bytes)
                         else col.format
                     ),
-                    "ctype": (
+                    "type": (
                         col.ctype.decode("utf-8").strip() if col.ctype and isinstance(col.ctype, bytes) else col.ctype
                     ),
                     "length": col.length,

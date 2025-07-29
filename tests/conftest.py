@@ -1279,12 +1279,14 @@ def get_sample_lb_dataset() -> TestDataset:
                 label="Domain Abbreviation",
                 type="Char",
                 length=4,
+                format="",
             ),
             TestVariableMetadata(
                 name="LBSEQ",
                 label="Sequence Number",
                 type="Num",
                 length=8,
+                format="",
             ),
         ],
         records={
@@ -1308,18 +1310,21 @@ def get_sample_supp_dataset() -> TestDataset:
                 label="Domain Abbreviation",
                 type="Char",
                 length=4,
+                format="",
             ),
             TestVariableMetadata(
                 name="RDOMAIN",
                 label="Referenced Domain",
                 type="Char",
                 length=4,
+                format="",
             ),
             TestVariableMetadata(
                 name="LBSEQ",
                 label="Sequence Number",
                 type="Num",
                 length=8,
+                format="",
             ),
         ],
         records={
