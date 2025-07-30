@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Union
 import pandas as pd
+import logging
 
 from pathlib import Path
 
@@ -9,6 +10,14 @@ from cdisc_rules_engine.constants.domains import SUPPLEMENTARY_DOMAINS
 from cdisc_rules_engine.data_service.sql_data_service import SQLDataService
 from cdisc_rules_engine.data_service.sql_interface import PostgresQLInterface
 from cdisc_rules_engine.models.test_dataset import TestDataset
+from cdisc_rules_engine.readers.data_reader import DataReader
+from cdisc_rules_engine.readers.codelist_reader import CodelistReader
+from cdisc_rules_engine.readers.metadata_standards_reader import MetadataStandardsReader
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+SCHEMA_PATH = Path(__file__).parent / "schemas"
 
 
 @dataclass
@@ -31,11 +40,13 @@ class PostgresQLDataService(SQLDataService):
         postgres_interface: PostgresQLInterface,
         datasets_path: Path = None,
         define_xml_path: Path = None,
+        codelists_path: Path = None,
+        metadata_standards_path: Path = None,
         terminology_paths: dict = None,
         data_dfs: dict[str, pd.DataFrame] = None,
         pre_processed_dfs: dict[str, pd.DataFrame] = None,
     ):
-        super().__init__(datasets_path, define_xml_path, terminology_paths)
+        super().__init__(datasets_path, define_xml_path, codelists_path, metadata_standards_path, terminology_paths)
         self.data_dfs = data_dfs
         self.pre_processed_dfs = pre_processed_dfs
         self.pgi = postgres_interface
@@ -60,7 +71,7 @@ class PostgresQLDataService(SQLDataService):
         pgi.init_database()
 
         # create metadata table in postgres
-        pgi.execute_sql_file(str(Path(__file__).parent / "schemas" / "clinical_data_metadata_schema.sql"))
+        pgi.execute_sql_file(str(SCHEMA_PATH / "clinical_data_metadata_schema.sql"))
 
         # generate timestamp
         timestamp = datetime.now().astimezone()
@@ -122,7 +133,98 @@ class PostgresQLDataService(SQLDataService):
         Iterate through dataset files in `self.datasets_path`
         and create corresponding SQL tables.
         """
-        pass
+        if not self.datasets_path or not self.datasets_path.exists():
+            logger.info("No datasets path provided or path doesn't exist")
+            return
+
+        self.pgi.execute_sql_file(str(SCHEMA_PATH / "clinical_data_metadata_schema.sql"))
+
+        timestamp = datetime.now().astimezone()
+
+        for file_path in self.datasets_path.iterdir():
+            self._process_dataset_file(file_path, timestamp)
+
+    def _process_dataset_file(self, file_path: Path, timestamp: datetime) -> None:
+        """Process a single dataset file."""
+        try:
+            reader = DataReader(str(file_path))
+            metadata_info = reader.read_metadata()
+
+            table_name = file_path.stem.lower()
+
+            logger.info(f"Loading dataset {file_path.name} into table {table_name}")
+
+            metadata_rows = []
+            first_chunk_processed = False
+
+            for chunk_data in reader.read():
+                if not first_chunk_processed and chunk_data:
+                    first_chunk = chunk_data[0]
+                    self._create_table_with_indexes(table_name, first_chunk)
+
+                    metadata_rows = self._build_metadata_rows(
+                        file_path, table_name, metadata_info, first_chunk, timestamp
+                    )
+                    first_chunk_processed = True
+
+                if chunk_data:
+                    self.pgi.insert_data(table_name, chunk_data)
+
+            if metadata_rows:
+                self.pgi.insert_data("data_metadata", metadata_rows)
+
+            logger.info(f"Successfully loaded {file_path.name}")
+
+        except Exception as e:
+            logger.error(f"Failed to load {file_path.name}: {e}")
+
+    def _create_table_with_indexes(self, table_name: str, first_chunk: dict) -> None:
+        """Create table and add indexes for CDISC variables."""
+        self.pgi.create_table_from_data(table_name, first_chunk)
+
+        for col in ("USUBJID", "STUDYID", "DOMAIN", "SEQ", "IDVAR", "IDVARVAL"):
+            if col in first_chunk:
+                self.pgi.execute_sql(
+                    f"CREATE INDEX IF NOT EXISTS idx_{table_name}_{col.lower()} ON {table_name}({col})"
+                )
+
+    def _build_metadata_rows(
+        self, file_path: Path, table_name: str, metadata_info: dict, first_chunk: dict, timestamp: datetime
+    ) -> list[dict]:
+        """Build metadata rows for all variables in the dataset."""
+
+        domain = first_chunk.get("DOMAIN", None)
+        is_supp = domain.startswith(SUPPLEMENTARY_DOMAINS) if domain is not None else False
+        rdomain = first_chunk.get("RDOMAIN", None)
+        unsplit_name = PostgresQLDataService._get_unsplit_name(table_name, domain, rdomain)
+        is_split = table_name != unsplit_name
+
+        metadata_rows = []
+        for var_info in metadata_info["variables"]:
+            metadata_rows.append(
+                {
+                    "created_at": timestamp,
+                    "updated_at": timestamp,
+                    "dataset_filename": file_path.name,
+                    "dataset_filepath": str(file_path),
+                    "dataset_id": table_name,
+                    "dataset_name": table_name,
+                    "dataset_label": metadata_info["metadata"].get("dataset_label", ""),
+                    "dataset_domain": domain,
+                    "dataset_is_supp": is_supp,
+                    "dataset_rdomain": rdomain,
+                    "dataset_is_split": is_split,
+                    "dataset_unsplit_name": unsplit_name,
+                    "dataset_preprocessed": None,
+                    "var_name": var_info.get("name", ""),
+                    "var_label": var_info.get("label"),
+                    "var_type": var_info.get("type") or var_info.get("ctype"),
+                    "var_length": var_info.get("length"),
+                    "var_format": var_info.get("format"),
+                }
+            )
+
+        return metadata_rows
 
     def _create_definexml_tables(self) -> None:
         """
@@ -141,13 +243,57 @@ class PostgresQLDataService(SQLDataService):
         """
         Create all necessary SQL tables for IG standards.
         """
-        pass
+        if not self.metadata_standards_path:
+            # TODO: Implement caching system to retrieve previously loaded IG metadata standards
+            logger.info("No metadata standards path provided, will use cached IG metadata in future implementation")
+            return
+
+        if not self.metadata_standards_path.exists():
+            logger.warning(f"Metadata standards path {self.metadata_standards_path} does not exist")
+            return
+
+        self.pgi.execute_sql_file(str(SCHEMA_PATH / "ig_datasets.sql"))
+        self.pgi.execute_sql_file(str(SCHEMA_PATH / "ig_variables.sql"))
+
+        for file_path in self.metadata_standards_path.iterdir():
+            try:
+                reader = MetadataStandardsReader(str(file_path))
+                ig_data = reader.read()
+
+                if ig_data.get("datasets"):
+                    self.pgi.insert_data("ig_datasets", ig_data["datasets"])
+
+                if ig_data.get("variables"):
+                    self.pgi.insert_data("ig_variables", ig_data["variables"])
+
+                logger.info(f"Loaded IG metadata from {file_path.name}")
+
+            except Exception as e:
+                logger.error(f"Failed to load IG metadata {file_path.name}: {e}")
+                continue
 
     def _create_codelist_tables(self) -> None:
         """
         Create all necessary SQL tables for CDISC codelists.
         """
-        pass
+        if not self.codelists_path.exists():
+            logger.warning(f"Codelists path {self.codelists_path} does not exist")
+            return
+
+        self.pgi.execute_sql_file(str(SCHEMA_PATH / "codelists.sql"))
+
+        for file_path in self.codelists_path.iterdir():
+            try:
+                reader = CodelistReader(str(file_path))
+                codelist_data = reader.read()
+
+                if codelist_data:
+                    self.pgi.insert_data("codelists", codelist_data)
+                    logger.info(f"Loaded codelist from {file_path.name}")
+
+            except Exception as e:
+                logger.error(f"Failed to load codelist {file_path.name}: {e}")
+                continue
 
     def get_uploaded_dataset_ids(self) -> list[str]:
         query = "SELECT DISTINCT dataset_id FROM data_metadata;"
