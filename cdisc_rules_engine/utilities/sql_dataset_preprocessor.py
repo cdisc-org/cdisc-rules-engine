@@ -1,6 +1,7 @@
 from typing import Iterable, List
 
-from cdisc_rules_engine.interfaces.PostgresQLDataService import SQLDatasetMetadata
+
+from cdisc_rules_engine.data_service.postgresql_data_service import SQLDatasetMetadata
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 

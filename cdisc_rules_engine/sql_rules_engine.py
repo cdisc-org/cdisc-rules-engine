@@ -247,7 +247,9 @@ class SQLRulesEngine:
         # VENMO ENGINE START - this is actually rule-specific, so it belongs here
         #  TODO: pass in dataservice
         validation_dataset = SQLVariable(
-            PandasDataset(self.data_service.data_dfs.get(processed_ds_id)),
+            validation_dataset_id=processed_ds_id,
+            sql_data_service=self.data_service,
+            dataset=PandasDataset(self.data_service.data_dfs.get(processed_ds_id)),
             column_prefix_map={"--": sql_dataset_metadata.domain},
             value_level_metadata=value_level_metadata,
             column_codelist_map=variable_codelist_map,

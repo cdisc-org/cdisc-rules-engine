@@ -76,7 +76,13 @@ class PostgresQLDataService(SQLDataService):
         # generate timestamp
         timestamp = datetime.now().astimezone()
         for test_dataset in test_datasets:
-            # Collect content
+            # Create schema and table:
+            row_dicts = [
+                dict(zip(test_dataset["records"], values)) for values in zip(*test_dataset["records"].values())
+            ]
+            pgi.create_table_from_data(table_name=test_dataset["name"], data=row_dicts[0])
+            pgi.insert_data(table_name=test_dataset["name"], data=row_dicts)
+
             ddf = pd.DataFrame.from_records(test_dataset["records"])
             ddf.columns = [col for col in ddf.columns]
             data_dfs[test_dataset["name"]] = ddf
@@ -117,6 +123,23 @@ class PostgresQLDataService(SQLDataService):
 
         pre_processed_dfs = PostgresQLDataService._pre_process_data_dfs(data_dfs)
         return cls(pgi, datasets_path, define_xml_path, terminology_paths, data_dfs, pre_processed_dfs)
+
+    @classmethod
+    def from_column_data(
+        cls, table_name: str, column_data: dict[str, list[str, int, float]]
+    ) -> "PostgresQLDataService":
+        """
+        Constructor for tests, passing in column_data and create corresponding SQL tables
+        column_data example: {"target": [1, 2, 4], "VAR2": [3, 3, 3]}
+        """
+        # PostgresDB setup
+        pgi = PostgresQLInterface()
+        pgi.init_database()
+        # Create schema and table:
+        row_dicts = [dict(zip(column_data, values)) for values in zip(*column_data.values())]
+        pgi.create_table_from_data(table_name=table_name, data=row_dicts[0])
+        pgi.insert_data(table_name=table_name, data=row_dicts)
+        return cls(pgi)
 
     def _pre_process_data_dfs(data_dfs: dict[pd.DataFrame]) -> dict[pd.DataFrame]:
         # TODO

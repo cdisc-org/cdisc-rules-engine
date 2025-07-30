@@ -33,7 +33,7 @@ class SQLSerialiser:
             columns.append(col_def)
 
         columns_sql = ",\n    ".join(columns)
-        return f"CREATE TABLE IF NOT EXISTS {table_name} (\n    {columns_sql}\n);"
+        return f"CREATE TABLE IF NOT EXISTS {table_name} (\n id SERIAL PRIMARY KEY, {columns_sql}\n);"
 
     @classmethod
     def insert_dict(cls, table_name: str, data: Dict[str, Any]) -> Tuple[str, List[Any]]:

@@ -15,6 +15,7 @@ from business_rules.utils import (
 from cdisc_rules_engine.check_operators.helpers import vectorized_compare_dates
 
 from cdisc_rules_engine.constants import NULL_FLAVORS
+from cdisc_rules_engine.data_service.postgresql_data_service import PostgresQLDataService
 from cdisc_rules_engine.utilities.utils import dates_overlap, parse_date
 import numpy as np
 import dask.dataframe as dd
@@ -71,7 +72,9 @@ class SQLDataframeType(BaseType):
     name = "dataframe"
 
     def __init__(self, data):
-        self.value: DatasetInterface = data["value"]
+        self.validation_df: DatasetInterface = data.get("df", PandasDataset(data=pd.DataFrame()))
+        self.validation_dataset_id: str = data["validation_dataset_id"]
+        self.sql_data_service: PostgresQLDataService = data["sql_data_service"]
         self.column_prefix_map = data.get("column_prefix_map", {})
         self.value_level_metadata = data.get("value_level_metadata", [])
         self.column_codelist_map = data.get("column_codelist_map", {})
@@ -89,7 +92,7 @@ class SQLDataframeType(BaseType):
         return x
 
     def convert_string_data_to_lower(self, data):
-        if self.value.is_series(data):
+        if self.validation_df.is_series(data):
             data = data.str.lower()
         else:
             data = data.lower()
@@ -111,11 +114,13 @@ class SQLDataframeType(BaseType):
         if value_is_literal:
             return comparator
         else:
-            return self.value.get(comparator, comparator)
+            return self.validation_df.get(comparator, comparator)
 
     @log_operator_execution
     def is_column_of_iterables(self, column):
-        return self.value.is_series(column) and (isinstance(column.iloc[0], list) or isinstance(column.iloc[0], set))
+        return self.validation_df.is_series(column) and (
+            isinstance(column.iloc[0], list) or isinstance(column.iloc[0], set)
+        )
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -125,12 +130,12 @@ class SQLDataframeType(BaseType):
         def check_row(row):
             return any(target_column in item for item in row if isinstance(item, list))
 
-        column_exists = target_column in self.value.columns
+        column_exists = target_column in self.validation_df.columns
         if column_exists:
-            return self.value.convert_to_series([True] * len(self.value))
+            return self.validation_df.convert_to_series([True] * len(self.validation_df))
         else:
-            exists_in_nested = self.value.apply(check_row, axis=1).any()
-            return self.value.convert_to_series([exists_in_nested] * len(self.value))
+            exists_in_nested = self.validation_df.apply(check_row, axis=1).any()
+            return self.validation_df.convert_to_series([exists_in_nested] * len(self.validation_df))
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -227,7 +232,7 @@ class SQLDataframeType(BaseType):
             if not value_is_literal
             else other_value.get("comparator")
         )
-        return self.value.apply(
+        return self.validation_df.apply(
             lambda row: self._check_equality(
                 row,
                 target,
@@ -250,7 +255,7 @@ class SQLDataframeType(BaseType):
             if not value_is_literal
             else other_value.get("comparator")
         )
-        return self.value.apply(
+        return self.validation_df.apply(
             lambda row: self._check_equality(row, target, comparator, value_is_literal, case_insensitive=True),
             axis=1,
         )
@@ -265,7 +270,7 @@ class SQLDataframeType(BaseType):
             if not value_is_literal
             else other_value.get("comparator")
         )
-        return self.value.apply(
+        return self.validation_df.apply(
             lambda row: self._check_inequality(row, target, comparator, value_is_literal, case_insensitive=True),
             axis=1,
         )
@@ -282,7 +287,7 @@ class SQLDataframeType(BaseType):
             if not value_is_literal
             else other_value.get("comparator")
         )
-        return self.value.apply(
+        return self.validation_df.apply(
             lambda row: self._check_inequality(
                 row,
                 target,
@@ -395,19 +400,19 @@ class SQLDataframeType(BaseType):
         return ~self.suffix_is_contained_by(other_value)
 
     def _get_string_part_series(self, part_to_validate: str, length: int, target: str):
-        if not self.value[target].apply(type).eq(str).all():
+        if not self.validation_df[target].apply(type).eq(str).all():
             raise ValueError("The operator can't be used with non-string values")
 
         if part_to_validate == "suffix":
-            series_to_validate = self.value[target].str.slice(-length)
+            series_to_validate = self.validation_df[target].str.slice(-length)
         elif part_to_validate == "prefix":
-            series_to_validate = self.value[target].str.slice(stop=length)
+            series_to_validate = self.validation_df[target].str.slice(stop=length)
         else:
             raise ValueError(
                 f"Invalid part to validate: {part_to_validate}. \
                     Valid values are: suffix, prefix"
             )
-        series_to_validate = series_to_validate.mask(pd.isna(self.value[target]))
+        series_to_validate = series_to_validate.mask(pd.isna(self.validation_df[target]))
         return series_to_validate
 
     def _value_is_contained_by(self, series, comparison_data):
@@ -415,7 +420,7 @@ class SQLDataframeType(BaseType):
             results = vectorized_is_in(series, comparison_data)
         else:
             results = series.isin(comparison_data)
-        return self.value.convert_to_series(results)
+        return self.validation_df.convert_to_series(results)
 
     def _check_equality_of_string_part(
         self,
@@ -430,89 +435,47 @@ class SQLDataframeType(BaseType):
         series_to_validate = self._get_string_part_series(part_to_validate, length, target)
         return series_to_validate.eq(comparison_data).astype(bool)
 
-    def _where_less_than(self, target, comparison):
-        return np.where(target < comparison, True, False)
-
-    def _where_greater_than(self, target, comparison):
-        return np.where(target > comparison, True, False)
-
-    def _where_less_than_or_equal_to(self, target, comparison):
-        return np.where(target <= comparison, True, False)
-
-    def _where_greater_than_or_equal_to(self, target, comparison):
-        return np.where(target >= comparison, True, False)
-
-    def _to_numeric(self, target, **kwargs):
-        return pd.to_numeric(target, **kwargs)
-
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
     def less_than(self, other_value):
-        target = self.replace_prefix(other_value.get("target"))
-        value_is_literal = other_value.get("value_is_literal", False)
-        comparator = (
-            self.replace_prefix(other_value.get("comparator"))
-            if not value_is_literal
-            else other_value.get("comparator")
-        )
-        comparison_data = self.get_comparator_data(comparator, value_is_literal)
-        target_column = self._to_numeric(self.value[target], errors="coerce")
-        if self.value.is_series(comparison_data):
-            comparison_data = self._to_numeric(comparison_data, errors="coerce")
-        results = self._where_less_than(target_column, comparison_data)
-        return self.value.convert_to_series(results)
+        return self._numeric_comparison(other_value, "<")
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
     def less_than_or_equal_to(self, other_value):
-        target = self.replace_prefix(other_value.get("target"))
-        value_is_literal = other_value.get("value_is_literal", False)
-        comparator = (
-            self.replace_prefix(other_value.get("comparator"))
-            if not value_is_literal
-            else other_value.get("comparator")
-        )
-        comparison_data = self.get_comparator_data(comparator, value_is_literal)
-        target_column = self._to_numeric(self.value[target], errors="coerce")
-        if self.value.is_series(comparison_data):
-            comparison_data = self._to_numeric(comparison_data, errors="coerce")
-        results = self._where_less_than_or_equal_to(target_column, comparison_data)
-        return self.value.convert_to_series(results)
+        return self._numeric_comparison(other_value, "<=")
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
     def greater_than_or_equal_to(self, other_value):
-        target = self.replace_prefix(other_value.get("target"))
-        value_is_literal = other_value.get("value_is_literal", False)
-        comparator = (
-            self.replace_prefix(other_value.get("comparator"))
-            if not value_is_literal
-            else other_value.get("comparator")
-        )
-        comparison_data = self.get_comparator_data(comparator, value_is_literal)
-        target_column = self._to_numeric(self.value[target], errors="coerce")
-        if self.value.is_series(comparison_data):
-            comparison_data = self._to_numeric(comparison_data, errors="coerce")
-        results = self._where_greater_than_or_equal_to(target_column, comparison_data)
-        return self.value.convert_to_series(results)
+        return self._numeric_comparison(other_value, ">=")
 
-    # TODO: this is the first operator for our rule, replace with data service
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
     def greater_than(self, other_value):
+        return self._numeric_comparison(other_value, ">")
+
+    def _numeric_comparison(
+        self,
+        other_value: dict,
+        operator: str,
+    ):
         target = self.replace_prefix(other_value.get("target"))
-        value_is_literal = other_value.get("value_is_literal", False)
-        comparator = (
-            self.replace_prefix(other_value.get("comparator"))
-            if not value_is_literal
-            else other_value.get("comparator")
-        )
-        comparison_data = self.get_comparator_data(comparator, value_is_literal)
-        target_column = self._to_numeric(self.value[target], errors="coerce")
-        if self.value.is_series(comparison_data):
-            comparison_data = self._to_numeric(comparison_data, errors="coerce")
-        results = self._where_greater_than(target_column, comparison_data)
-        return self.value.convert_to_series(results)
+        comparator_is_column = other_value.get("value_is_literal", False)
+        comparator = other_value.get("comparator")
+        if comparator_is_column:
+            subquery = f"WHEN CAST({target} AS NUMERIC) {operator} CAST({comparator} AS NUMERIC) THEN true"
+        else:
+            subquery = f"WHEN CAST({target} AS NUMERIC) {operator} {comparator} THEN true"
+        query = f"""
+                SELECT id, CASE {subquery} ELSE false END AS numeric_compare
+                FROM {self.validation_dataset_id.lower()};
+            """
+        self.sql_data_service.pgi.execute_sql(query=query)
+        sql_results = self.sql_data_service.pgi.fetch_all()
+        # Construct pandas Series (no -1 offset if id is properly 0-based or 1-based consistently)
+        return_series = pd.Series(data={item["id"] - 1: item["numeric_compare"] for item in sql_results})
+        return return_series
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -525,14 +488,14 @@ class SQLDataframeType(BaseType):
             else other_value.get("comparator")
         )
         comparison_data = self.get_comparator_data(comparator, value_is_literal)
-        if self.is_column_of_iterables(self.value[target]) or isinstance(comparison_data, str):
-            results = vectorized_is_in(comparison_data, self.value[target])
-        elif self.value.is_series(comparison_data):
-            results = self._series_is_in(self.value[target], comparison_data)
+        if self.is_column_of_iterables(self.validation_df[target]) or isinstance(comparison_data, str):
+            results = vectorized_is_in(comparison_data, self.validation_df[target])
+        elif self.validation_df.is_series(comparison_data):
+            results = self._series_is_in(self.validation_df[target], comparison_data)
         else:
             # Handles numeric case. This case should never occur
-            results = np.where(self.value[target] == comparison_data, True, False)
-        return self.value.convert_to_series(results)
+            results = np.where(self.validation_df[target] == comparison_data, True, False)
+        return self.validation_df.convert_to_series(results)
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -554,16 +517,16 @@ class SQLDataframeType(BaseType):
         )
         comparison_data = self.get_comparator_data(comparator, value_is_literal)
         comparison_data = self.convert_string_data_to_lower(comparison_data)
-        if self.is_column_of_iterables(self.value[target]):
-            results = vectorized_case_insensitive_is_in(comparison_data, self.value[target])
-        elif self.value.is_series(comparison_data):
+        if self.is_column_of_iterables(self.validation_df[target]):
+            results = vectorized_case_insensitive_is_in(comparison_data, self.validation_df[target])
+        elif self.validation_df.is_series(comparison_data):
             results = self._series_is_in(
-                self.convert_string_data_to_lower(self.value[target]),
+                self.convert_string_data_to_lower(self.validation_df[target]),
                 self.convert_string_data_to_lower(comparison_data),
             )
         else:
-            results = vectorized_case_insensitive_is_in(comparison_data.lower(), self.value[target])
-        return self.value.convert_to_series(results)
+            results = vectorized_case_insensitive_is_in(comparison_data.lower(), self.validation_df[target])
+        return self.validation_df.convert_to_series(results)
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -581,10 +544,10 @@ class SQLDataframeType(BaseType):
             comparator = self.replace_prefix(comparator)
         comparison_data = self.get_comparator_data(comparator, value_is_literal)
         if self.is_column_of_iterables(comparison_data):
-            results = vectorized_is_in(self.value[target], comparison_data)
+            results = vectorized_is_in(self.validation_df[target], comparison_data)
         else:
-            results = self.value[target].isin(comparison_data)
-        return self.value.convert_to_series(results)
+            results = self.validation_df[target].isin(comparison_data)
+        return self.validation_df.convert_to_series(results)
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -604,12 +567,12 @@ class SQLDataframeType(BaseType):
             comparator = self.replace_prefix(comparator)
         comparison_data = self.get_comparator_data(comparator, value_is_literal)
         if self.is_column_of_iterables(comparison_data):
-            results = vectorized_case_insensitive_is_in(self.value[target].str.lower(), comparison_data)
-            return self.value.convert_to_series(results)
-        elif self.value.is_series(comparison_data):
-            results = self.value[target].str.lower().isin(comparison_data.str.lower())
+            results = vectorized_case_insensitive_is_in(self.validation_df[target].str.lower(), comparison_data)
+            return self.validation_df.convert_to_series(results)
+        elif self.validation_df.is_series(comparison_data):
+            results = self.validation_df[target].str.lower().isin(comparison_data.str.lower())
         else:
-            results = self.value[target].str.lower().isin(comparison_data)
+            results = self.validation_df[target].str.lower().isin(comparison_data)
         return results
 
     @log_operator_execution
@@ -623,7 +586,7 @@ class SQLDataframeType(BaseType):
         target = self.replace_prefix(other_value.get("target"))
         comparator = other_value.get("comparator")
         prefix = other_value.get("prefix")
-        converted_strings = self.value[target].map(lambda x: self._custom_str_conversion(x))
+        converted_strings = self.validation_df[target].map(lambda x: self._custom_str_conversion(x))
         results = converted_strings.notna() & converted_strings.astype(str).map(
             lambda x: re.search(comparator, x[:prefix]) is not None
         )
@@ -635,7 +598,7 @@ class SQLDataframeType(BaseType):
         target = self.replace_prefix(other_value.get("target"))
         comparator = other_value.get("comparator")
         prefix = other_value.get("prefix")
-        converted_strings = self.value[target].map(lambda x: self._custom_str_conversion(x))
+        converted_strings = self.validation_df[target].map(lambda x: self._custom_str_conversion(x))
         results = converted_strings.notna() & ~converted_strings.astype(str).map(
             lambda x: re.search(comparator, x[:prefix]) is not None
         )
@@ -647,7 +610,7 @@ class SQLDataframeType(BaseType):
         target = self.replace_prefix(other_value.get("target"))
         comparator = other_value.get("comparator")
         suffix = other_value.get("suffix")
-        converted_strings = self.value[target].map(lambda x: self._custom_str_conversion(x))
+        converted_strings = self.validation_df[target].map(lambda x: self._custom_str_conversion(x))
         results = converted_strings.notna() & converted_strings.astype(str).map(
             lambda x: re.search(comparator, x[-suffix:]) is not None
         )
@@ -659,7 +622,7 @@ class SQLDataframeType(BaseType):
         target = self.replace_prefix(other_value.get("target"))
         comparator = other_value.get("comparator")
         suffix = other_value.get("suffix")
-        converted_strings = self.value[target].map(lambda x: self._custom_str_conversion(x))
+        converted_strings = self.validation_df[target].map(lambda x: self._custom_str_conversion(x))
         results = converted_strings.notna() & ~converted_strings.astype(str).map(
             lambda x: re.search(comparator, x[-suffix:]) is not None
         )
@@ -670,7 +633,7 @@ class SQLDataframeType(BaseType):
     def matches_regex(self, other_value):
         target = self.replace_prefix(other_value.get("target"))
         comparator = other_value.get("comparator")
-        converted_strings = self.value[target].map(lambda x: self._custom_str_conversion(x))
+        converted_strings = self.validation_df[target].map(lambda x: self._custom_str_conversion(x))
         results = converted_strings.notna() & converted_strings.astype(str).str.match(comparator)
         return results
 
@@ -679,7 +642,7 @@ class SQLDataframeType(BaseType):
     def not_matches_regex(self, other_value):
         target = self.replace_prefix(other_value.get("target"))
         comparator = other_value.get("comparator")
-        converted_strings = self.value[target].map(lambda x: self._custom_str_conversion(x))
+        converted_strings = self.validation_df[target].map(lambda x: self._custom_str_conversion(x))
         results = converted_strings.notna() & ~converted_strings.astype(str).str.match(comparator)
         return results
 
@@ -701,8 +664,8 @@ class SQLDataframeType(BaseType):
         else:
             parsed_data = comparison_data.str.findall(regex).str[0]
         parsed_id = str(uuid4())
-        self.value[parsed_id] = parsed_data
-        return self.value.apply(
+        self.validation_df[parsed_id] = parsed_data
+        return self.validation_df.apply(
             lambda row: self._check_equality(row, target, parsed_id, value_is_literal),
             axis=1,
         )
@@ -719,10 +682,10 @@ class SQLDataframeType(BaseType):
         comparator = other_value.get("comparator")
         value_is_literal: bool = other_value.get("value_is_literal", False)
         comparison_data = self.get_comparator_data(comparator, value_is_literal)
-        if self.value.is_series(comparison_data):
+        if self.validation_df.is_series(comparison_data):
             # need to convert series to tuple to make startswith operator work correctly
             comparison_data: Tuple[str] = tuple(comparison_data)
-        results = self.value[target].str.startswith(comparison_data)
+        results = self.validation_df[target].str.startswith(comparison_data)
         return results
 
     @log_operator_execution
@@ -732,10 +695,10 @@ class SQLDataframeType(BaseType):
         comparator = other_value.get("comparator")
         value_is_literal: bool = other_value.get("value_is_literal", False)
         comparison_data = self.get_comparator_data(comparator, value_is_literal)
-        if self.value.is_series(comparison_data):
+        if self.validation_df.is_series(comparison_data):
             # need to convert series to tuple to make endswith operator work correctly
             comparison_data: Tuple[str] = tuple(comparison_data)
-        results = self.value[target].str.endswith(comparison_data)
+        results = self.validation_df[target].str.endswith(comparison_data)
         return results
 
     @log_operator_execution
@@ -750,13 +713,13 @@ class SQLDataframeType(BaseType):
         comparator = other_value.get("comparator")
         value_is_literal: bool = other_value.get("value_is_literal", False)
         comparison_data = self.get_comparator_data(comparator, value_is_literal)
-        if self.value.is_series(comparison_data):
+        if self.validation_df.is_series(comparison_data):
             if is_integer_dtype(comparison_data):
-                results = self.value[target].str.len().eq(comparison_data).astype(bool)
+                results = self.validation_df[target].str.len().eq(comparison_data).astype(bool)
             else:
-                results = self.value[target].str.len().eq(comparison_data.str.len()).astype(bool)
+                results = self.validation_df[target].str.len().eq(comparison_data.str.len()).astype(bool)
         else:
-            results = self.value[target].str.len().eq(comparator).astype(bool)
+            results = self.validation_df[target].str.len().eq(comparator).astype(bool)
         return results
 
     @log_operator_execution
@@ -776,13 +739,13 @@ class SQLDataframeType(BaseType):
         comparator = other_value.get("comparator")
         value_is_literal: bool = other_value.get("value_is_literal", False)
         comparison_data = self.get_comparator_data(comparator, value_is_literal)
-        if self.value.is_series(comparison_data):
+        if self.validation_df.is_series(comparison_data):
             if is_integer_dtype(comparison_data):
-                results = self.value[target].str.len().gt(comparison_data)
+                results = self.validation_df[target].str.len().gt(comparison_data)
             else:
-                results = self.value[target].str.len().gt(comparison_data.str.len())
+                results = self.validation_df[target].str.len().gt(comparison_data.str.len())
         else:
-            results = self.value[target].str.len().gt(comparison_data)
+            results = self.validation_df[target].str.len().gt(comparison_data)
         return results
 
     @log_operator_execution
@@ -792,13 +755,13 @@ class SQLDataframeType(BaseType):
         comparator = other_value.get("comparator")
         value_is_literal: bool = other_value.get("value_is_literal", False)
         comparison_data = self.get_comparator_data(comparator, value_is_literal)
-        if self.value.is_series(comparison_data):
+        if self.validation_df.is_series(comparison_data):
             if is_integer_dtype(comparison_data):
-                results = self.value[target].str.len().ge(comparison_data)
+                results = self.validation_df[target].str.len().ge(comparison_data)
             else:
-                results = self.value[target].str.len().ge(comparison_data.str.len())
+                results = self.validation_df[target].str.len().ge(comparison_data.str.len())
         else:
-            results = self.value[target].str.len().ge(comparator)
+            results = self.validation_df[target].str.len().ge(comparator)
         return results
 
     @log_operator_execution
@@ -816,11 +779,11 @@ class SQLDataframeType(BaseType):
     def empty(self, other_value: dict):
         target = self.replace_prefix(other_value.get("target"))
         results = np.where(
-            self.value[target].isin(NULL_FLAVORS) | pd.isna(self.value[target]),
+            self.validation_df[target].isin(NULL_FLAVORS) | pd.isna(self.validation_df[target]),
             True,
             False,
         )
-        return self.value.convert_to_series(results)
+        return self.validation_df.convert_to_series(results)
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -830,15 +793,15 @@ class SQLDataframeType(BaseType):
         order_by_column: str = self.replace_prefix(other_value.get("ordering"))
         # group all targets by comparator
         if order_by_column:
-            ordered_df = self.value.sort_values(by=[comparator, order_by_column])
+            ordered_df = self.validation_df.sort_values(by=[comparator, order_by_column])
         else:
-            ordered_df = self.value.sort_values(by=[comparator])
+            ordered_df = self.validation_df.sort_values(by=[comparator])
         grouped_target = ordered_df.groupby(comparator)[target]
         # validate all targets except the last one
         results = grouped_target.apply(lambda x: x[:-1]).apply(
             lambda x: (pd.isna(x).all() if isinstance(x, (pd.Series, list)) else (x in NULL_FLAVORS or pd.isna(x)))
         )
-        if isinstance(self.value, DaskDataset) and self.value.is_series(results):
+        if isinstance(self.validation_df, DaskDataset) and self.validation_df.is_series(results):
             results = results.compute()
         # return values with corresponding indexes from results
         return pd.Series(results.reset_index(level=0, drop=True))
@@ -856,15 +819,15 @@ class SQLDataframeType(BaseType):
         order_by_column: str = self.replace_prefix(other_value.get("ordering"))
         # group all targets by comparator
         if order_by_column:
-            ordered_df = self.value.sort_values(by=[comparator, order_by_column])
+            ordered_df = self.validation_df.sort_values(by=[comparator, order_by_column])
         else:
-            ordered_df = self.value.sort_values(by=[comparator])
+            ordered_df = self.validation_df.sort_values(by=[comparator])
         grouped_target = ordered_df.groupby(comparator)[target]
         # validate all targets except the last one
         results = ~grouped_target.apply(lambda x: x[:-1]).apply(
             lambda x: (pd.isna(x).all() if isinstance(x, (pd.Series, list)) else (x in NULL_FLAVORS or pd.isna(x)))
         )
-        if isinstance(self.value, DaskDataset) and self.value.is_series(results):
+        if isinstance(self.validation_df, DaskDataset) and self.validation_df.is_series(results):
             computed_results = results.compute()
             return computed_results.reset_index(level=0, drop=True)
 
@@ -878,11 +841,11 @@ class SQLDataframeType(BaseType):
         comparator = other_value.get("comparator")
         if isinstance(comparator, list):
             # get column as array of values
-            values = flatten_list(self.value, comparator)
+            values = flatten_list(self.validation_df, comparator)
         else:
             comparator = self.replace_prefix(comparator)
-            values = self.value[comparator].unique()
-        return self.value.convert_to_series(set(values).issubset(set(self.value[target].unique())))
+            values = self.validation_df[comparator].unique()
+        return self.validation_df.convert_to_series(set(values).issubset(set(self.validation_df[target].unique())))
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -893,18 +856,18 @@ class SQLDataframeType(BaseType):
     @type_operator(FIELD_DATAFRAME)
     def invalid_date(self, other_value):
         target = self.replace_prefix(other_value.get("target"))
-        results = ~vectorized_is_valid(self.value[target])
-        return self.value.convert_to_series(results)
+        results = ~vectorized_is_valid(self.validation_df[target])
+        return self.validation_df.convert_to_series(results)
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
     def invalid_duration(self, other_value):
         target = self.replace_prefix(other_value.get("target"))
         if other_value.get("negative") is False:
-            results = ~vectorized_is_valid_duration(self.value[target], False)
+            results = ~vectorized_is_valid_duration(self.validation_df[target], False)
         else:
-            results = ~vectorized_is_valid_duration(self.value[target], True)
-        return self.value.convert_to_series(results)
+            results = ~vectorized_is_valid_duration(self.validation_df[target], True)
+        return self.validation_df.convert_to_series(results)
 
     def date_comparison(self, other_value, operator):
         target = self.replace_prefix(other_value.get("target"))
@@ -913,11 +876,11 @@ class SQLDataframeType(BaseType):
         comparison_data = self.get_comparator_data(comparator, value_is_literal)
         component = other_value.get("date_component")
         results = np.where(
-            vectorized_compare_dates(component, self.value[target], comparison_data, operator),
+            vectorized_compare_dates(component, self.validation_df[target], comparison_data, operator),
             True,
             False,
         )
-        return self.value.convert_to_series(results)
+        return self.validation_df.convert_to_series(results)
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -958,8 +921,8 @@ class SQLDataframeType(BaseType):
     @type_operator(FIELD_DATAFRAME)
     def is_complete_date(self, other_value):
         target = self.replace_prefix(other_value.get("target"))
-        results = vectorized_is_complete_date(self.value[target])
-        return self.value.convert_to_series(results)
+        results = vectorized_is_complete_date(self.validation_df[target])
+        return self.validation_df.convert_to_series(results)
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -969,14 +932,14 @@ class SQLDataframeType(BaseType):
         grouping_cols = []
         if isinstance(comparator, str):
             col_name = self.replace_prefix(comparator)
-            if col_name in self.value.columns:
+            if col_name in self.validation_df.columns:
                 grouping_cols.append(col_name)
         else:
             for col in comparator:
                 col_name = self.replace_prefix(col)
-                if col_name in self.value.columns:
+                if col_name in self.validation_df.columns:
                     grouping_cols.append(col_name)
-        df_check = self.value[grouping_cols + [target]].copy()
+        df_check = self.validation_df[grouping_cols + [target]].copy()
         df_check = df_check.fillna("_NaN_")
         results = pd.Series(True, index=df_check.index)
         for name, group in df_check.groupby(grouping_cols):
@@ -990,19 +953,19 @@ class SQLDataframeType(BaseType):
         target = self.replace_prefix(other_value.get("target"))
         comparator = other_value.get("comparator")
         values = [target, comparator]
-        target_data = flatten_list(self.value, values)
+        target_data = flatten_list(self.validation_df, values)
         target_names = []
         for target_name in target_data:
             target_name = self.replace_prefix(target_name)
-            if target_name in self.value.columns:
+            if target_name in self.validation_df.columns:
                 target_names.append(target_name)
         target_names = list(set(target_names))
-        df_group = self.value[target_names].copy()
+        df_group = self.validation_df[target_names].copy()
         df_group = df_group.fillna("_NaN_")
         group_sizes = df_group.groupby(target_names).size()
         counts = df_group.apply(tuple, axis=1).map(group_sizes)
         results = np.where(counts <= 1, True, False)
-        return self.value.convert_to_series(results)
+        return self.validation_df.convert_to_series(results)
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -1042,17 +1005,17 @@ class SQLDataframeType(BaseType):
         else:
             comparator = self.replace_prefix(comparator)
         # remove repeating rows
-        df_without_duplicates: DatasetInterface = self.value[[target, comparator]].drop_duplicates()
+        df_without_duplicates: DatasetInterface = self.validation_df[[target, comparator]].drop_duplicates()
         # we need to check if ANY of the columns (target or comparator) is duplicated
         duplicated_comparator = df_without_duplicates[comparator].duplicated(keep=False)
         duplicated_target = df_without_duplicates[target].duplicated(keep=False)
-        result = self.value.convert_to_series([False] * len(self.value))
+        result = self.validation_df.convert_to_series([False] * len(self.validation_df))
         if duplicated_comparator.any():
             duplicated_comparator_values = set(df_without_duplicates[duplicated_comparator][comparator])
-            result += self.value[comparator].isin(duplicated_comparator_values)
+            result += self.validation_df[comparator].isin(duplicated_comparator_values)
         if duplicated_target.any():
             duplicated_target_values = set(df_without_duplicates[duplicated_target][target])
-            result += self.value[target].isin(duplicated_target_values)
+            result += self.validation_df[target].isin(duplicated_target_values)
         return result
 
     @log_operator_execution
@@ -1067,7 +1030,7 @@ class SQLDataframeType(BaseType):
         value = other_value.get("comparator")
         if not isinstance(value, str):
             raise Exception("Comparator must be a single String value")
-        return self.value.is_column_sorted_within(value, target)
+        return self.validation_df.is_column_sorted_within(value, target)
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -1079,36 +1042,36 @@ class SQLDataframeType(BaseType):
     def non_conformant_value_data_type(self, other_value):
         results = False
         for vlm in self.value_level_metadata:
-            results |= self.value.apply(lambda row: vlm["filter"](row) and not vlm["type_check"](row), axis=1)
-        return self.value.convert_to_series(results.values)
+            results |= self.validation_df.apply(lambda row: vlm["filter"](row) and not vlm["type_check"](row), axis=1)
+        return self.validation_df.convert_to_series(results.values)
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
     def non_conformant_value_length(self, other_value):
         results = False
         for vlm in self.value_level_metadata:
-            results |= self.value.apply(lambda row: vlm["filter"](row) and not vlm["length_check"](row), axis=1)
-        return self.value.convert_to_series(results)
+            results |= self.validation_df.apply(lambda row: vlm["filter"](row) and not vlm["length_check"](row), axis=1)
+        return self.validation_df.convert_to_series(results)
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
     def conformant_value_data_type(self, other_value):
         results = False
         for vlm in self.value_level_metadata:
-            results |= self.value.apply(
+            results |= self.validation_df.apply(
                 lambda row: vlm["filter"](row) and vlm["type_check"](row),
                 axis=1,
                 meta=pd.Series([True, False], dtype=bool),
             ).fillna(False)
-        return self.value.convert_to_series(results)
+        return self.validation_df.convert_to_series(results)
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
     def conformant_value_length(self, other_value):
         results = False
         for vlm in self.value_level_metadata:
-            results |= self.value.apply(lambda row: vlm["filter"](row) and vlm["length_check"](row), axis=1)
-        return self.value.convert_to_series(results)
+            results |= self.validation_df.apply(lambda row: vlm["filter"](row) and vlm["length_check"](row), axis=1)
+        return self.validation_df.convert_to_series(results)
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -1125,10 +1088,10 @@ class SQLDataframeType(BaseType):
         group_by_column: str = self.replace_prefix(other_value.get("within"))
         order_by_column: str = self.replace_prefix(other_value.get("ordering"))
         target_columns = [target, comparator, group_by_column, order_by_column]
-        ordered_df = self.value[target_columns].sort_values(by=[order_by_column])
+        ordered_df = self.validation_df[target_columns].sort_values(by=[order_by_column])
         grouped_df = ordered_df.groupby(group_by_column)
         results = grouped_df.apply(lambda x: self.compare_target_with_comparator_next_row(x, target, comparator))
-        return self.value.convert_to_series(results.explode().tolist())
+        return self.validation_df.convert_to_series(results.explode().tolist())
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -1151,7 +1114,7 @@ class SQLDataframeType(BaseType):
         )
         # we add True at the end as the last row of target has nothing to compare
         # so as to not raise errors or incorrect issues in the report with False or NaN
-        return self.value.convert_to_series(
+        return self.validation_df.convert_to_series(
             [
                 *results,
                 True,
@@ -1169,11 +1132,11 @@ class SQLDataframeType(BaseType):
         target = self.replace_prefix(other_value.get("target"))
         min_count: int = other_value.get("comparator") or 1
         group_by_column = self.replace_prefix(other_value.get("within"))
-        grouped = self.value.groupby([group_by_column, target])
+        grouped = self.validation_df.groupby([group_by_column, target])
         meta = (target, bool)
         results = grouped.apply(lambda x: self.validate_series_length(x, target, min_count), meta=meta)
         uuid = str(uuid4())
-        return self.value.merge(results.rename(uuid).reset_index(), on=[group_by_column, target])[uuid]
+        return self.validation_df.merge(results.rename(uuid).reset_index(), on=[group_by_column, target])[uuid]
 
     def validate_series_length(self, data: DatasetInterface, target: str, min_length: int):
         return len(data) > min_length
@@ -1196,7 +1159,7 @@ class SQLDataframeType(BaseType):
         the next enumerated variable has index 1 (VARIABLE1).
         """
         variable_name: str = self.replace_prefix(other_value.get("target"))
-        df = self.value
+        df = self.validation_df
         pattern = rf"^{re.escape(variable_name)}(\d*)$"
         matching_columns = [col for col in df.columns if re.match(pattern, col)]
         if not matching_columns:
@@ -1220,7 +1183,7 @@ class SQLDataframeType(BaseType):
     def references_correct_codelist(self, other_value: dict):
         target: str = self.replace_prefix(other_value.get("target"))
         comparator = self.replace_prefix(other_value.get("comparator"))
-        result = self.value.apply(
+        result = self.validation_df.apply(
             lambda row: self.valid_codelist_reference(row[target], row[comparator]),
             axis=1,
         )
@@ -1257,8 +1220,8 @@ class SQLDataframeType(BaseType):
         The operator ensures that the target column has different values.
         """
         target: str = self.replace_prefix(other_value.get("target"))
-        is_valid: bool = len(self.value[target].unique()) > 1
-        return self.value.convert_to_series([is_valid] * len(self.value[target]))
+        is_valid: bool = len(self.validation_df[target].unique()) > 1
+        return self.validation_df.convert_to_series([is_valid] * len(self.validation_df[target]))
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -1277,8 +1240,8 @@ class SQLDataframeType(BaseType):
             raise ValueError("invalid sorting order")
         sort_order_bool: bool = sort_order == "asc"
         return (
-            self.value[target]
-            .eq(self.value[target].sort_values(ascending=sort_order_bool, ignore_index=True))
+            self.validation_df[target]
+            .eq(self.validation_df[target].sort_values(ascending=sort_order_bool, ignore_index=True))
             .astype(bool)
         )
 
@@ -1297,11 +1260,11 @@ class SQLDataframeType(BaseType):
         target: str = self.replace_prefix(other_value.get("target"))
         reference_count_column: str = self.replace_prefix(other_value.get("comparator"))
         result = np.where(
-            vectorized_get_dict_key(self.value[reference_count_column], self.value[target]) > 1,
+            vectorized_get_dict_key(self.validation_df[reference_count_column], self.validation_df[target]) > 1,
             True,
             False,
         )
-        return self.value.convert_to_series(result)
+        return self.validation_df.convert_to_series(result)
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -1358,13 +1321,13 @@ class SQLDataframeType(BaseType):
         target: str = self.replace_prefix(other_value.get("target"))
         within: str = self.replace_prefix(other_value.get("within"))
         columns = other_value["comparator"]
-        result = pd.Series([True] * len(self.value), index=self.value.index)
-        pandas = isinstance(self.value, PandasDataset)
+        result = pd.Series([True] * len(self.validation_df), index=self.validation_df.index)
+        pandas = isinstance(self.validation_df, PandasDataset)
         for col in columns:
             comparator: str = self.replace_prefix(col["name"])
             ascending: bool = col["sort_order"].lower() != "desc"
             na_pos: str = col["null_position"]
-            sorted_df = self.value[[target, within, comparator]].sort_values(
+            sorted_df = self.validation_df[[target, within, comparator]].sort_values(
                 by=[within, comparator], ascending=ascending, na_position=na_pos
             )
             grouped_df = sorted_df.groupby(within)
@@ -1414,11 +1377,11 @@ class SQLDataframeType(BaseType):
         comparator = other_value.get("comparator")  # Assumes the comparator is a value not a column
         metadata_column = self.replace_prefix(other_value.get("metadata"))
         result = np.where(
-            vectorized_get_dict_key(self.value[metadata_column], target) == comparator,
+            vectorized_get_dict_key(self.validation_df[metadata_column], target) == comparator,
             True,
             False,
         )
-        return self.value.convert_to_series(result)
+        return self.validation_df.convert_to_series(result)
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -1436,7 +1399,7 @@ class SQLDataframeType(BaseType):
             comparator_set = set(row[comparator]) if isinstance(row[comparator], (list, set)) else {row[comparator]}
             return bool(target_set.intersection(comparator_set))
 
-        return self.value.apply(check_shared_elements, axis=1).any()
+        return self.validation_df.apply(check_shared_elements, axis=1).any()
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -1449,7 +1412,7 @@ class SQLDataframeType(BaseType):
             comparator_set = set(row[comparator]) if isinstance(row[comparator], (list, set)) else {row[comparator]}
             return len(target_set.intersection(comparator_set)) == 1
 
-        return self.value.apply(check_exactly_one_shared_element, axis=1).any()
+        return self.validation_df.apply(check_exactly_one_shared_element, axis=1).any()
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -1462,7 +1425,7 @@ class SQLDataframeType(BaseType):
             comparator_set = set(row[comparator]) if isinstance(row[comparator], (list, set)) else {row[comparator]}
             return len(target_set.intersection(comparator_set)) == 0
 
-        return self.value.apply(check_no_shared_elements, axis=1).all()
+        return self.validation_df.apply(check_no_shared_elements, axis=1).all()
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -1484,11 +1447,11 @@ class SQLDataframeType(BaseType):
                     return False
             return positions == sorted(positions)
 
-        if isinstance(self.value, DaskDataset):
-            results = self.value.apply(check_order, axis=1, meta=("check_order", bool))
-            results = self.value.convert_to_series(results)
+        if isinstance(self.validation_df, DaskDataset):
+            results = self.validation_df.apply(check_order, axis=1, meta=("check_order", bool))
+            results = self.validation_df.convert_to_series(results)
         else:
-            results = self.value.apply(check_order, axis=1)
+            results = self.validation_df.apply(check_order, axis=1)
         if missing_columns:
             logger.info(f"Columns not found in comparator list {comparator}: {', '.join(sorted(missing_columns))}")
         return results

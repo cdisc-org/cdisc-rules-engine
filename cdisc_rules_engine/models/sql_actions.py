@@ -12,7 +12,7 @@ from cdisc_rules_engine.constants.metadata_columns import (
 )
 from cdisc_rules_engine.data_service.postgresql_data_service import SQLDatasetMetadata
 from cdisc_rules_engine.enums.sensitivity import Sensitivity
-from cdisc_rules_engine.models.dataset_variable import DatasetVariable
+from cdisc_rules_engine.models.sql_variable import SQLVariable
 from cdisc_rules_engine.models.validation_error_container import (
     ValidationErrorContainer,
 )
@@ -24,7 +24,7 @@ class SQLCOREActions(BaseActions):
     def __init__(
         self,
         output_container: list,
-        validation_dataset: DatasetVariable,
+        validation_dataset: SQLVariable,
         sql_dataset_metadata: SQLDatasetMetadata,
         rule: dict,
     ):
@@ -43,11 +43,11 @@ class SQLCOREActions(BaseActions):
     @rule_action(params={"message": FIELD_TEXT})
     def generate_dataset_error_objects(self, message: str, results: pd.Series):
         # leave only those columns where errors have been found
-        rows_with_error = self.validation_dataset.dataset.get_error_rows(results)
+        rows_with_error = self.validation_dataset.get_error_rows(results)
         target_names: Set[str] = SQLRuleProcessor.extract_target_names_from_rule(
             self.rule,
             self.sql_dataset_metadata.domain,
-            self.validation_dataset.dataset.columns.tolist(),
+            self.validation_dataset.get_columns(),
         )
         target_names = self._get_target_names_from_list_values(target_names, rows_with_error)
         # if self.value_level_metadata:
@@ -68,7 +68,7 @@ class SQLCOREActions(BaseActions):
             for candidate_list in rows_with_error[target]
             if isinstance(candidate_list, list)
             for value in candidate_list
-            if value in self.validation_dataset.dataset.columns
+            if value in self.validation_dataset.get_columns()
         )
         return expanded_target_names
 
