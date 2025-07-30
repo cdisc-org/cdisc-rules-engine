@@ -309,9 +309,13 @@ class COREActions(BaseActions):
                 else ""
             ),
             row=(
-                int(source_row_number[df_row.name])
-                if isinstance(source_row_number, pd.Series)
-                else (int(df_row.name) + 1)
+                int(data.loc[df_row.name]["row_number"])
+                if "row_number" in data.columns
+                else (
+                    int(source_row_number[df_row.name])
+                    if isinstance(source_row_number, pd.Series)
+                    else (int(df_row.name) + 1)
+                )
             ),  # record number should start at 1, not 0
             value=filtered_dict,
             usubjid=(
