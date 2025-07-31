@@ -367,7 +367,7 @@ def load_rules_from_local(args) -> List[dict]:
     else:
         engine_logger.info(
             "No rules specified with -r rules flag. "
-            "Validating with all rules in local directory"
+            "Validating with rules in local directory"
         )
         keys = None
 
