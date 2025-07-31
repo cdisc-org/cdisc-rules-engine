@@ -327,7 +327,10 @@ class USDMDataService(BaseDataService):
         ]
         return self._reader_factory.dataset_implementation.from_records(records)
 
-    def __get_entity_name(self, value, parent: any):
+    def __get_entity_name(self, value, parent: any, _depth=0):
+        # Recursion guard to prevent infinite recursion
+        if _depth > 25:
+            return "UnknownEntity"
         if type(value) is dict:
             api_type = (
                 value.get("instanceType")
@@ -341,13 +344,12 @@ class USDMDataService(BaseDataService):
         if isinstance(mapped_entity, str):
             return mapped_entity
         else:
-            closest_non_list_ancestor = USDMDataService.__get_closest_non_list_ancestor(
-                parent
-            )
+            closest_non_list_ancestor = USDMDataService.__get_closest_non_list_ancestor(parent)
             return mapped_entity.get(
                 self.__get_entity_name(
                     closest_non_list_ancestor.value,
                     USDMDataService.__get_parent(closest_non_list_ancestor),
+                    _depth=_depth+1
                 ),
                 api_type,
             )
