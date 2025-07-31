@@ -1,10 +1,10 @@
 import itertools
 import time
+import tempfile
 from functools import partial
 from multiprocessing import Pool
 from multiprocessing.managers import SyncManager
 from typing import List, Iterable, Callable
-
 from cdisc_rules_engine.config import config
 from cdisc_rules_engine.config.config import ConfigService
 from cdisc_rules_engine.dummy_models.dummy_dataset import DummyDataset
@@ -19,6 +19,9 @@ from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.models.validation_args import Validation_args
 from cdisc_rules_engine.rules_engine import RulesEngine
 from cdisc_rules_engine.services import logger as engine_logger
+from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import (
+    DefineXMLReaderFactory,
+)
 from cdisc_rules_engine.services.cache import (
     InMemoryCacheService,
     RedisCacheService,
@@ -229,7 +232,22 @@ def run_single_rule_validation(
     ct_package_metadata = {}
     for codelist in codelists:
         ct_package_metadata[codelist] = cache.get(codelist)
-
+    if len(codelists) > 1 and define_xml:
+        temp_file_path = None
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".xml", delete=False
+        ) as temp_file:
+            temp_file.write(define_xml)
+            temp_file_path = temp_file.name
+        define_xml_reader = DefineXMLReaderFactory.from_filename(temp_file_path)
+        (
+            standards,
+            merged_CT_packages,
+            extensible,
+            merged_flag,
+        ) = define_xml_reader.get_ct_standards_metadata()
+        ct_package_metadata["define_XML_merged_CT"] = merged_CT_packages
+        os.unlink(temp_file_path)
     library_metadata = LibraryMetadataContainer(
         standard_metadata=standard_metadata,
         model_metadata=model_metadata,

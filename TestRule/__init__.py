@@ -5,6 +5,7 @@ from cdisc_rules_engine.services.cache.in_memory_cache_service import (
 from cdisc_rules_engine.services.cdisc_library_service import CDISCLibraryService
 from cdisc_rules_engine.services.cache.cache_populator_service import CachePopulator
 from scripts.run_validation import run_single_rule_validation
+from scripts.script_utils import extract_ct_packages_from_define_xml
 import json
 import os
 import asyncio
@@ -65,6 +66,14 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:  # 
         standard_version = standards_data.get("version")
         standard_substandard = standards_data.get("substandard")
         codelists = json_data.get("codelists", [])
+        define_xml = json_data.get("define_xml")
+        extracted_ct_packages = []
+        if define_xml:
+            extracted_ct_packages = extract_ct_packages_from_define_xml(define_xml)
+            if extracted_ct_packages:
+                for ct_package in extracted_ct_packages:
+                    if ct_package not in codelists:
+                        codelists.append(ct_package)
         cache = InMemoryCacheService()
         library_service = CDISCLibraryService(api_key, cache)
         cache_populator: CachePopulator = CachePopulator(cache, library_service)
@@ -83,7 +92,6 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:  # 
         if not datasets:
             raise KeyError("'datasets' required in request")
         validate_datasets_payload(datasets)
-        define_xml = json_data.get("define_xml")
         result = run_single_rule_validation(
             datasets,
             rule,

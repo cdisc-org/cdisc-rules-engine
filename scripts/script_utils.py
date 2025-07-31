@@ -1,5 +1,6 @@
 import json
 import yaml
+import tempfile
 
 from cdisc_rules_engine.enums.default_file_paths import DefaultFilePaths
 from cdisc_rules_engine.interfaces import CacheServiceInterface
@@ -46,14 +47,14 @@ def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:  # noqa
         define_xml_reader = DefineXMLReaderFactory.from_filename(args.define_xml_path)
         define_version = define_xml_reader.class_define_xml_version()
         if (
-            define_version.model_package == "define_2_1"
+            define_version.model_package.startswith("define_2_1")
             and len(args.controlled_terminology_package) > 0
         ):
             raise ValueError(
                 "Cannot use -ct controlled terminology package command with Define-XML2.1 submission"
             )
         elif (
-            define_version.model_package == "define_2_0"
+            define_version.model_package.startswith("define_2_0")
             and len(args.controlled_terminology_package) > 1
         ):
             raise ValueError(
@@ -106,7 +107,7 @@ def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:  # noqa
             with open(os.path.join(args.cache, file_name), "rb") as f:
                 data = pickle.load(f)
                 ct_package_data[ct_version] = data
-    if args.define_xml_path and define_version.model_package == "define_2_1":
+    if args.define_xml_path and define_version.model_package.startswith("define_2_1"):
         (
             standards,
             merged_CT_packages,
@@ -139,6 +140,48 @@ def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:  # noqa
         published_ct_packages=published_ct_packages,
         cache_path=args.cache,
     )
+
+
+def extract_ct_packages_from_define_xml(define_xml_content: str) -> List[str]:  # noqa
+    """
+    Util function for RuleTester to extract controlled terminology package names from define.xml content
+    """
+    ct_packages = []
+    temp_file_path = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".xml", delete=False
+        ) as temp_file:
+            temp_file.write(define_xml_content)
+            temp_file_path = temp_file.name
+        define_xml_reader = DefineXMLReaderFactory.from_filename(temp_file_path)
+        define_version = define_xml_reader.class_define_xml_version()
+        if define_version.model_package.startswith("define_2_1"):
+            (
+                standards,
+                merged_CT_packages,
+                extensible,
+                merged_flag,
+            ) = define_xml_reader.get_ct_standards_metadata()
+            for standard in standards:
+                if (
+                    standard.type == "CT"
+                    and "define-xml" not in standard.publishing_set.lower()
+                ):
+                    ct_package_name = (
+                        f"{standard.publishing_set.lower()}ct-{standard.version}"
+                    )
+                    ct_packages.append(ct_package_name)
+            return ct_packages
+    except Exception as e:
+        print(f"Error processing define.xml with DefineXMLReaderFactory: {e}")
+        return []
+    finally:
+        if temp_file_path and os.path.exists(temp_file_path):
+            try:
+                os.unlink(temp_file_path)
+            except Exception as e:
+                print(f"Error cleaning up temporary file: {e}")
 
 
 def check_custom_standard(args):
