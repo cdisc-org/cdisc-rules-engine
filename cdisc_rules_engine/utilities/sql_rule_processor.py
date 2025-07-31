@@ -1,9 +1,6 @@
 import re
 from typing import List, Optional, Set, Tuple
 from cdisc_rules_engine.data_service.postgresql_data_service import SQLDatasetMetadata
-from cdisc_rules_engine.interfaces.cache_service_interface import (
-    CacheServiceInterface,
-)
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
@@ -27,6 +24,8 @@ from cdisc_rules_engine.interfaces import ConditionInterface
 # from cdisc_rules_engine.models.rule_conditions import AllowedConditionsKeys
 # from cdisc_rules_engine.operations import operations_factory
 from cdisc_rules_engine.services import logger
+from cdisc_rules_engine.services.cache.cache_service_factory import CacheServiceFactory
+from cdisc_rules_engine.config import config as default_config
 
 # from cdisc_rules_engine.utilities.data_processor import DataProcessor
 # from cdisc_rules_engine.utilities.utils import (
@@ -36,9 +35,6 @@ from cdisc_rules_engine.services import logger
 #     search_in_list_of_dicts,
 #     get_dataset_name_from_details,
 # )
-from cdisc_rules_engine.models.external_dictionaries_container import (
-    ExternalDictionariesContainer,
-)
 
 # from cdisc_rules_engine.exceptions.custom_exceptions import DomainNotFoundError
 
@@ -46,10 +42,9 @@ from cdisc_rules_engine.models.external_dictionaries_container import (
 class SQLRuleProcessor:
     def __init__(
         self,
-        cache: CacheServiceInterface,
         library_metadata: LibraryMetadataContainer = None,
     ):
-        self.cache = cache
+        self.cache = CacheServiceFactory(default_config).get_cache_service()
         self.library_metadata = library_metadata
 
     # @classmethod
@@ -289,7 +284,7 @@ class SQLRuleProcessor:
         standard: str,
         standard_version: str,
         standard_substandard: str,
-        external_dictionaries: ExternalDictionariesContainer = ExternalDictionariesContainer(),
+        # external_dictionaries: ExternalDictionariesContainer = ExternalDictionariesContainer(),
         **kwargs,
     ) -> str:
         """
@@ -524,14 +519,13 @@ class SQLRuleProcessor:
     def is_suitable_for_validation(
         self,
         rule: dict,
-        sql_dataset_metadata: SQLDatasetMetadata,
-        # datasets: Iterable[SDTMDatasetMetadata],
+        dataset_metadata: SQLDatasetMetadata,
         standard,
         standard_substandard: str,
     ) -> Tuple[bool, str]:
         """Check if rule is suitable and return reason if not"""
         rule_id = rule.get("core_id", "unknown")
-        dataset_name = sql_dataset_metadata.dataset_name
+        dataset_name = dataset_metadata.dataset_name
         # if not self.valid_rule_structure(rule):
         #     reason = f"Rule skipped - invalid rule structure for rule id={rule_id}"
         #     logger.info(f"is_suitable_for_validation. {reason}, result=False")

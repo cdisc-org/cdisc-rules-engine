@@ -1,14 +1,14 @@
 from business_rules.variables import BaseVariables, rule_variable
 from pandas import DataFrame
-from cdisc_rules_engine.check_operators.sql_operators import SQLDataframeType
+from cdisc_rules_engine.check_operators.sql_operators import PostgresQLOperators
 from cdisc_rules_engine.data_service.postgresql_data_service import PostgresQLDataService
 
 
 def sql_rule_variable(label=None, options=None):
-    return rule_variable(SQLDataframeType, label=label, options=options)
+    return rule_variable(PostgresQLOperators, label=label, options=options)
 
 
-class SQLVariable(BaseVariables):
+class PostgresQLBusinessEngineObject(BaseVariables):
     """
     The class represents a dataset variable which
     holds a pandas DataFrame as a dataset.

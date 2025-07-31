@@ -2,12 +2,14 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 
 from cdisc_rules_engine.models.test_dataset import TestDataset
+from cdisc_rules_engine.utilities.ig_specification import IGSpecification
 
 
 class SQLDataService(ABC):
 
     def __init__(
         self,
+        ig_specs: IGSpecification,
         datasets_path: Path = None,
         define_xml_path: Path = None,
         codelists_path: Path = None,
@@ -26,6 +28,7 @@ class SQLDataService(ABC):
         """
         self.datasets_path = datasets_path
         self.define_xml_path = define_xml_path
+        self.ig_specs = ig_specs
         self.codelists_path = codelists_path
         self.metadata_standards_path = metadata_standards_path
         self.terminology_paths = terminology_paths

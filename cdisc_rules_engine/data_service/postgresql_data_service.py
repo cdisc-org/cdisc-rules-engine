@@ -13,6 +13,7 @@ from cdisc_rules_engine.models.test_dataset import TestDataset
 from cdisc_rules_engine.readers.data_reader import DataReader
 from cdisc_rules_engine.readers.codelist_reader import CodelistReader
 from cdisc_rules_engine.readers.metadata_standards_reader import MetadataStandardsReader
+from cdisc_rules_engine.utilities.ig_specification import IGSpecification
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -27,6 +28,7 @@ class SQLDatasetMetadata:
     dataset_id: str
     dataset_name: str
     dataset_label: str
+    unsplit_name: str
     domain: str
     is_supp: bool
     rdomain: str
@@ -38,6 +40,7 @@ class PostgresQLDataService(SQLDataService):
     def __init__(
         self,
         postgres_interface: PostgresQLInterface,
+        ig_specs: IGSpecification,
         datasets_path: Path = None,
         define_xml_path: Path = None,
         codelists_path: Path = None,
@@ -46,7 +49,9 @@ class PostgresQLDataService(SQLDataService):
         data_dfs: dict[str, pd.DataFrame] = None,
         pre_processed_dfs: dict[str, pd.DataFrame] = None,
     ):
-        super().__init__(datasets_path, define_xml_path, codelists_path, metadata_standards_path, terminology_paths)
+        super().__init__(
+            ig_specs, datasets_path, define_xml_path, codelists_path, metadata_standards_path, terminology_paths
+        )
         self.data_dfs = data_dfs
         self.pre_processed_dfs = pre_processed_dfs
         self.pgi = postgres_interface
@@ -55,6 +60,7 @@ class PostgresQLDataService(SQLDataService):
     def from_list_of_testdatasets(
         cls,
         test_datasets: list[TestDataset],
+        ig_specs: IGSpecification,
         datasets_path: Path = None,
         define_xml_path: Path = None,
         terminology_paths: dict = None,
@@ -122,7 +128,9 @@ class PostgresQLDataService(SQLDataService):
         pgi.insert_data(table_name="data_metadata", data=metadata_rows)
 
         pre_processed_dfs = PostgresQLDataService._pre_process_data_dfs(data_dfs)
-        return cls(pgi, datasets_path, define_xml_path, terminology_paths, data_dfs, pre_processed_dfs)
+        return cls(
+            pgi, ig_specs, datasets_path, define_xml_path, None, None, terminology_paths, data_dfs, pre_processed_dfs
+        )
 
     @classmethod
     def from_column_data(
@@ -139,7 +147,7 @@ class PostgresQLDataService(SQLDataService):
         row_dicts = [dict(zip(column_data, values)) for values in zip(*column_data.values())]
         pgi.create_table_from_data(table_name=table_name, data=row_dicts[0])
         pgi.insert_data(table_name=table_name, data=row_dicts)
-        return cls(pgi)
+        return cls(pgi, None)
 
     def _pre_process_data_dfs(data_dfs: dict[pd.DataFrame]) -> dict[pd.DataFrame]:
         # TODO
@@ -267,8 +275,7 @@ class PostgresQLDataService(SQLDataService):
         Create all necessary SQL tables for IG standards.
         """
         if not self.metadata_standards_path:
-            # TODO: Implement caching system to retrieve previously loaded IG metadata standards
-            logger.info("No metadata standards path provided, will use cached IG metadata in future implementation")
+            logger.info("No metadata standards path provided, will use cached IG metadata")
             return
 
         if not self.metadata_standards_path.exists():
@@ -299,6 +306,10 @@ class PostgresQLDataService(SQLDataService):
         """
         Create all necessary SQL tables for CDISC codelists.
         """
+        if not self.codelists_path:
+            logger.info("No codelists path provided, will use cached CDISC codelists")
+            return
+
         if not self.codelists_path.exists():
             logger.warning(f"Codelists path {self.codelists_path} does not exist")
             return
@@ -338,6 +349,7 @@ class PostgresQLDataService(SQLDataService):
             dataset_id=results[0].get("dataset_id"),
             dataset_name=results[0].get("dataset_name"),
             dataset_label=results[0].get("dataset_label"),
+            unsplit_name=results[0].get("dataset_unsplit_name"),
             domain=results[0].get("dataset_domain"),
             is_supp=results[0].get("dataset_is_supp"),
             rdomain=results[0].get("dataset_rdomain"),

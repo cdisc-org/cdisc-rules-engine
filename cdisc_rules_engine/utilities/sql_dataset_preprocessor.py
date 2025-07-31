@@ -29,12 +29,12 @@ class SQLDatasetPreprocessor:
     def __init__(
         self,
         dataset: DatasetInterface,
-        sql_dataset_metadata: SQLDatasetMetadata,
+        dataset_metadata: SQLDatasetMetadata,
         data_service: DataServiceInterface,
         cache_service: CacheServiceInterface,
     ):
         self._dataset: DatasetInterface = dataset
-        self._sql_dataset_metadata: SDTMDatasetMetadata = sql_dataset_metadata
+        self.dataset_metadata: SDTMDatasetMetadata = dataset_metadata
         self._data_service = data_service
         self._rule_processor = SQLRuleProcessor(self._data_service, cache_service)
 

@@ -67,7 +67,7 @@ def log_operator_execution(func):
     return wrapper
 
 
-class SQLDataframeType(BaseType):
+class PostgresQLOperators(BaseType):
 
     name = "dataframe"
 
@@ -455,23 +455,26 @@ class SQLDataframeType(BaseType):
     def greater_than(self, other_value):
         return self._numeric_comparison(other_value, ">")
 
+    def _add_column_query(self, table_name: str, column_name: str, column_type: str) -> str:
+        return f"ALTER TABLE {table_name} ADD COLUMN IF NOT EXISTS {column_name} {column_type};"
+
     def _numeric_comparison(
         self,
         other_value: dict,
         operator: str,
     ):
-        target = self.replace_prefix(other_value.get("target"))
-        comparator_is_column = other_value.get("value_is_literal", False)
-        comparator = other_value.get("comparator")
-        if comparator_is_column:
-            subquery = f"WHEN CAST({target} AS NUMERIC) {operator} CAST({comparator} AS NUMERIC) THEN true"
-        else:
-            subquery = f"WHEN CAST({target} AS NUMERIC) {operator} {comparator} THEN true"
-        query = f"""
-                SELECT id, CASE {subquery} ELSE false END AS numeric_compare
-                FROM {self.validation_dataset_id.lower()};
-            """
-        self.sql_data_service.pgi.execute_sql(query=query)
+        table_name = self.validation_dataset_id.lower()
+        column_name = "numeric_compare"
+        subquery = f"""CASE WHEN
+                            CAST({self.replace_prefix(other_value.get("target"))} AS NUMERIC)
+                                {operator}
+                            CAST({other_value.get("comparator")} AS NUMERIC) THEN true"""
+        query = f"UPDATE {table_name} SET {column_name} = {subquery} ELSE false END;"
+        self.sql_data_service.pgi.execute_many(
+            queries=[self._add_column_query(table_name, column_name, "BOOLEAN"), query]
+        )
+        # satisfy venmo process:
+        self.sql_data_service.pgi.execute_sql(f"SELECT id, {column_name} FROM {table_name};")
         sql_results = self.sql_data_service.pgi.fetch_all()
         # Construct pandas Series (no -1 offset if id is properly 0-based or 1-based consistently)
         return_series = pd.Series(data={item["id"] - 1: item["numeric_compare"] for item in sql_results})

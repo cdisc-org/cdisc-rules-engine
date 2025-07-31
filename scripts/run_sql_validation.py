@@ -9,7 +9,6 @@ from cdisc_rules_engine.config import config
 from cdisc_rules_engine.data_service.postgresql_data_service import PostgresQLDataService
 from cdisc_rules_engine.enums.progress_parameter_options import ProgressParameterOptions
 
-from cdisc_rules_engine.models.test_dataset import TestDataset
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
@@ -183,23 +182,5 @@ def sql_run_validation(args: Validation_args):
 
 # TODO: fix this one first
 # this is the tests entrypoint, CLI enters above where only the args are passed in
-def sql_run_single_rule_validation(
-    datasets: list[TestDataset],
-    rule: dict,
-    define_xml: str = None,
-    cache: InMemoryCacheService = None,
-    standard: str = None,
-    standard_version: str = "",
-    standard_substandard: str = None,
-    codelists: list = [],
-) -> dict:
-
-    rules_engine = SQLRulesEngine(
-        data_service=PostgresQLDataService.from_list_of_testdatasets(datasets),
-        cache=cache,
-        standard=standard,
-        standard_version=standard_version,
-        standard_substandard=standard_substandard,
-    )
-
-    return rules_engine.sql_validate_single_rule(Rule.from_cdisc_metadata(rule))
+def sql_run_single_rule_validation(data_service: PostgresQLDataService, rule: dict) -> dict:
+    return SQLRulesEngine(data_service=data_service).sql_validate_single_rule(Rule.from_cdisc_metadata(rule))

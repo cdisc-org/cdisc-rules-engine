@@ -2,7 +2,9 @@ from cdisc_rules_engine.data_service.postgresql_data_service import PostgresQLDa
 
 
 def test_get_dataset_metadata_sql(get_sample_lb_dataset, get_sample_supp_dataset):
-    sql_data_service = PostgresQLDataService.from_list_of_testdatasets([get_sample_lb_dataset, get_sample_supp_dataset])
+    sql_data_service = PostgresQLDataService.from_list_of_testdatasets(
+        [get_sample_lb_dataset, get_sample_supp_dataset], None
+    )
     ds_metadata = sql_data_service.get_dataset_metadata(dataset_id="LB")
     assert 2 == len(ds_metadata.variables)
     assert ds_metadata.dataset_id is not None
@@ -18,5 +20,7 @@ def test_get_dataset_metadata_sql(get_sample_lb_dataset, get_sample_supp_dataset
 
 
 def test_get_uploaded_dataset_ids(get_sample_lb_dataset, get_sample_supp_dataset):
-    sql_data_service = PostgresQLDataService.from_list_of_testdatasets([get_sample_lb_dataset, get_sample_supp_dataset])
+    sql_data_service = PostgresQLDataService.from_list_of_testdatasets(
+        [get_sample_lb_dataset, get_sample_supp_dataset], None
+    )
     assert 2 == len(sql_data_service.get_uploaded_dataset_ids())
