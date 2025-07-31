@@ -563,27 +563,6 @@ Check:
       operator: "inconsistent_enumerated_columns"
 ```
 
-## variable_metadata_equal_to
-
-Could be useful, for example, in checking variable permissibility in conjunction with the `variable_library_metadata` operation:
-
-```yaml
-Check:
-  all:
-    - operator: variable_metadata_equal_to
-      value: Exp
-      metadata: $permissibility
-    - operator: not_exists
-Operations:
-  - id: $permissibility
-    operator: variable_library_metadata
-    name: core
-```
-
-## variable_metadata_not_equal_to
-
-Complement of `variable_metadata_equal_to`
-
 # Relationship & Set
 
 ## is_contained_by

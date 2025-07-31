@@ -1528,36 +1528,6 @@ class DataframeType(BaseType):
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
-    def variable_metadata_equal_to(self, other_value: dict):
-        """
-        Validates the metadata for variables,
-        provided in the metadata column, is equal to
-        the comparator.
-        Ex.
-        target: STUDYID
-        comparator: "Exp"
-        metadata_column: {"STUDYID": "Req", "DOMAIN": "Req"}
-        result: False
-        """
-        target = self.replace_prefix(other_value.get("target"))
-        comparator = other_value.get(
-            "comparator"
-        )  # Assumes the comparator is a value not a column
-        metadata_column = self.replace_prefix(other_value.get("metadata"))
-        result = np.where(
-            vectorized_get_dict_key(self.value[metadata_column], target) == comparator,
-            True,
-            False,
-        )
-        return self.value.convert_to_series(result)
-
-    @log_operator_execution
-    @type_operator(FIELD_DATAFRAME)
-    def variable_metadata_not_equal_to(self, other_value: dict):
-        return ~self.variable_metadata_equal_to(other_value)
-
-    @log_operator_execution
-    @type_operator(FIELD_DATAFRAME)
     def shares_at_least_one_element_with(self, other_value: dict):
         target: str = self.replace_prefix(other_value.get("target"))
         comparator: str = self.replace_prefix(other_value.get("comparator"))
