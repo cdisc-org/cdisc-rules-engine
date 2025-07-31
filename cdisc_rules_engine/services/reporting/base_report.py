@@ -149,6 +149,7 @@ class BaseReport(ABC):
         for value in values:
             if value is None:
                 processed_values.append("null")
+                continue
             value = value.strip()
             if value == "" or value.lower() == "nan":
                 processed_values.append("null")
