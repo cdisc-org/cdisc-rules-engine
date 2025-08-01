@@ -1121,25 +1121,52 @@ class DataframeType(BaseType):
             comparator = self.replace_all_prefixes(comparator)
         else:
             comparator = self.replace_prefix(comparator)
-        # remove repeating rows
-        df_without_duplicates: DatasetInterface = self.value[
-            [target, comparator]
-        ].drop_duplicates()
-        # we need to check if ANY of the columns (target or comparator) is duplicated
-        duplicated_comparator = df_without_duplicates[comparator].duplicated(keep=False)
-        duplicated_target = df_without_duplicates[target].duplicated(keep=False)
+        df_subset = self.value[[target, comparator]].dropna(how="all")
+        df_without_duplicates = df_subset.drop_duplicates()
+        violated_targets = self._find_relationship_violations(
+            df_without_duplicates, target, comparator
+        )
         result = self.value.convert_to_series([False] * len(self.value))
-        if duplicated_comparator.any():
-            duplicated_comparator_values = set(
-                df_without_duplicates[duplicated_comparator][comparator]
+        if violated_targets:
+            clean_targets = {
+                v for v in violated_targets if pd.notna(v) and v != "" and v is not None
+            }
+            has_null_target = any(
+                pd.isna(v) or v == "" or v is None for v in violated_targets
             )
-            result += self.value[comparator].isin(duplicated_comparator_values)
-        if duplicated_target.any():
-            duplicated_target_values = set(
-                df_without_duplicates[duplicated_target][target]
-            )
-            result += self.value[target].isin(duplicated_target_values)
+            if clean_targets:
+                result = result | self.value[target].isin(clean_targets)
+            if has_null_target:
+                result = result | self.value[target].isna()
         return result
+
+    def _find_relationship_violations(self, df_without_duplicates, target, comparator):
+        """Find all target values that violate one-to-one relationship constraints."""
+        violated_targets = set()
+        for target_val in df_without_duplicates[target].dropna().unique():
+            target_rows = df_without_duplicates[
+                df_without_duplicates[target] == target_val
+            ]
+            comparator_values = target_rows[comparator]
+            unique_comparators = set()
+            for comp_val in comparator_values:
+                if pd.isna(comp_val) or comp_val == "" or comp_val is None:
+                    unique_comparators.add("NULL_PLACEHOLDER")
+                else:
+                    unique_comparators.add(comp_val)
+            if len(unique_comparators) > 1:
+                violated_targets.add(target_val)
+        for comp_val in df_without_duplicates[comparator].dropna().unique():
+            if comp_val == "" or pd.isna(comp_val):
+                continue
+            comp_rows = df_without_duplicates[
+                df_without_duplicates[comparator] == comp_val
+            ]
+            target_values = comp_rows[target]
+            if len(target_values) > 1:
+                for t_val in target_values:
+                    violated_targets.add(t_val)
+        return violated_targets
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
