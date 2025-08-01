@@ -336,3 +336,27 @@ def test_not_equal_to_case_insensitive(data, comparator, dataset_type, expected_
         {"target": "target", "comparator": comparator}
     )
     assert result.equals(df.convert_to_series(expected_result))
+
+
+@pytest.mark.parametrize(
+    "data,comparator,dataset_type,expected_result",
+    [
+        (
+            {"target": ["", "", None], "VAR2": ["", None, ""]},
+            "VAR2",
+            PandasDataset,
+            [False, False, False],
+        ),
+        (
+            {"target": ["A", "", None], "VAR2": ["", "B", None]},
+            "VAR2",
+            DaskDataset,
+            [True, True, False],
+        ),
+    ],
+)
+def test_not_equal_to_null_values(data, comparator, dataset_type, expected_result):
+    df = dataset_type.from_dict(data)
+    dataframe_type = DataframeType({"value": df})
+    result = dataframe_type.not_equal_to({"target": "target", "comparator": comparator})
+    assert result.equals(df.convert_to_series(expected_result))
