@@ -113,6 +113,7 @@ class PostgresQLInterface:
         self, table_name: str, data: Union[Dict[str, Any], List[Dict[str, Any]]], primary_key: Optional[str] = None
     ) -> None:
         """Create a table from Python data structures"""
+        # ensure lowercasing of table names and columns
         sample = data if isinstance(data, dict) else data[0]
 
         create_stmt = self.serialiser.create_table_from_dict(table_name, sample, primary_key)
@@ -124,6 +125,7 @@ class PostgresQLInterface:
         self, table_name: str, data: Union[Dict[str, list[str, int, float]], List[Dict[str, Any]]]
     ) -> Optional[int]:
         """Insert Python data into a table"""
+
         if isinstance(data, dict):
             query, values = self.serialiser.insert_dict(table_name, data)
             return self.execute_sql(query, values)

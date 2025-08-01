@@ -73,7 +73,7 @@ class PostgresQLOperators(BaseType):
 
     def __init__(self, data):
         self.validation_df: DatasetInterface = data.get("df", PandasDataset(data=pd.DataFrame()))
-        self.validation_dataset_id: str = data["validation_dataset_id"]
+        self.table_id: str = data["validation_dataset_id"]
         self.sql_data_service: PostgresQLDataService = data["sql_data_service"]
         self.column_prefix_map = data.get("column_prefix_map", {})
         self.value_level_metadata = data.get("value_level_metadata", [])
@@ -463,21 +463,31 @@ class PostgresQLOperators(BaseType):
         other_value: dict,
         operator: str,
     ):
-        table_name = self.validation_dataset_id.lower()
-        column_name = "numeric_compare"
-        subquery = f"""CASE WHEN
-                            CAST({self.replace_prefix(other_value.get("target"))} AS NUMERIC)
-                                {operator}
-                            CAST({other_value.get("comparator")} AS NUMERIC) THEN true"""
-        query = f"UPDATE {table_name} SET {column_name} = {subquery} ELSE false END;"
-        self.sql_data_service.pgi.execute_many(
-            queries=[self._add_column_query(table_name, column_name, "BOOLEAN"), query]
+        target_column = other_value.get("target").lower()
+        comparator = (
+            other_value.get("comparator").lower()
+            if isinstance(other_value.get("comparator"), str)
+            else other_value.get("comparator")
         )
+        exists, _, db_column = self.sql_data_service.cache.add_db_column_if_missing(
+            self.table_id, f"{target_column}{operator}{comparator}"
+        )
+        if not exists:
+            # do operation
+            db_table = self.sql_data_service.cache.get_db_table_hash(self.table_id)
+            subquery = f"""CASE WHEN
+                                CAST({self.replace_prefix(target_column)} AS NUMERIC)
+                                    {operator}
+                                CAST({comparator} AS NUMERIC) THEN true"""
+            query = f"UPDATE {db_table} SET {db_column} = {subquery} ELSE false END;"
+            self.sql_data_service.pgi.execute_many(
+                queries=[self._add_column_query(db_table, db_column, "BOOLEAN"), query]
+            )
         # satisfy venmo process:
-        self.sql_data_service.pgi.execute_sql(f"SELECT id, {column_name} FROM {table_name};")
+        self.sql_data_service.pgi.execute_sql(f"SELECT id, {db_column} FROM {db_table};")
         sql_results = self.sql_data_service.pgi.fetch_all()
         # Construct pandas Series (no -1 offset if id is properly 0-based or 1-based consistently)
-        return_series = pd.Series(data={item["id"] - 1: item["numeric_compare"] for item in sql_results})
+        return_series = pd.Series(data={item["id"] - 1: item[db_column] for item in sql_results})
         return return_series
 
     @log_operator_execution

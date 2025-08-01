@@ -12,10 +12,10 @@ from cdisc_rules_engine.enums.progress_parameter_options import ProgressParamete
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
-from cdisc_rules_engine.models.rule import Rule
 from cdisc_rules_engine.models.rule_conditions import ConditionCompositeFactory
 from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
+from cdisc_rules_engine.models.sql_rule import SQLRule
 from cdisc_rules_engine.models.validation_args import Validation_args
 from cdisc_rules_engine.services import logger as engine_logger
 from cdisc_rules_engine.services.cache import (
@@ -183,4 +183,4 @@ def sql_run_validation(args: Validation_args):
 # TODO: fix this one first
 # this is the tests entrypoint, CLI enters above where only the args are passed in
 def sql_run_single_rule_validation(data_service: PostgresQLDataService, rule: dict) -> dict:
-    return SQLRulesEngine(data_service=data_service).sql_validate_single_rule(Rule.from_cdisc_metadata(rule))
+    return SQLRulesEngine(data_service=data_service).sql_validate_single_rule(SQLRule.from_cdisc_metadata(rule))

@@ -49,6 +49,7 @@ class SQLCOREActions(BaseActions):
             self.dataset_metadata.domain,
             self.validation_dataset.get_columns(),
         )
+        target_names = [tn.lower() for tn in target_names]
         target_names = self._get_target_names_from_list_values(target_names, rows_with_error)
         # if self.value_level_metadata:
         #     target_names = self.extract_target_names_from_value_level_metadata()

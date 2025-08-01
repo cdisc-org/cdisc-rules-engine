@@ -17,13 +17,11 @@ class SQLSerialiser:
             return "TEXT"
 
     @classmethod
-    def create_table_from_dict(
-        cls, table_name: str, sample_dict: Dict[str, Any], primary_key: Optional[str] = None
-    ) -> str:
+    def create_table_from_dict(cls, table_name: str, sample: Dict[str, Any], primary_key: Optional[str] = None) -> str:
         """Generate CREATE TABLE statement from a dictionary"""
         columns = []
 
-        for key, value in sample_dict.items():
+        for key, value in sample.items():
             col_type = cls.python_to_sql_type(value)
             col_def = f"{key} {col_type}"
 
@@ -38,6 +36,7 @@ class SQLSerialiser:
     @classmethod
     def insert_dict(cls, table_name: str, data: Dict[str, Any]) -> Tuple[str, List[Any]]:
         """Generate INSERT statement from a dictionary"""
+        # lowercase the columns:
         columns = list(data.keys())
         values = [data[col] for col in columns]
 

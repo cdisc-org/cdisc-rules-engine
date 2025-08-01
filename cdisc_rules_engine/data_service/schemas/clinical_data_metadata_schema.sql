@@ -7,9 +7,10 @@ CREATE TABLE IF NOT EXISTS public.data_metadata (
     dataset_filename TEXT NOT NULL,
     dataset_filepath TEXT NOT NULL,
     dataset_id TEXT NOT NULL,
+    table_hash TEXT NOT NULL,
     dataset_name TEXT NOT NULL,
     dataset_label TEXT,
-    dataset_domain TEXT NOT NULL,
+    dataset_domain TEXT,
     -- handle supplementary dataset information
     dataset_is_supp BOOLEAN,
     dataset_rdomain TEXT,

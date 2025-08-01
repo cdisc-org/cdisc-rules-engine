@@ -7,6 +7,7 @@ import logging
 from pathlib import Path
 
 from cdisc_rules_engine.constants.domains import SUPPLEMENTARY_DOMAINS
+from cdisc_rules_engine.data_service.db_cache import DBCache
 from cdisc_rules_engine.data_service.sql_data_service import SQLDataService
 from cdisc_rules_engine.data_service.sql_interface import PostgresQLInterface
 from cdisc_rules_engine.models.test_dataset import TestDataset
@@ -26,6 +27,7 @@ class SQLDatasetMetadata:
     filename: str
     filepath: str
     dataset_id: str
+    table_hash: str
     dataset_name: str
     dataset_label: str
     unsplit_name: str
@@ -40,6 +42,7 @@ class PostgresQLDataService(SQLDataService):
     def __init__(
         self,
         postgres_interface: PostgresQLInterface,
+        cache: DBCache,
         ig_specs: IGSpecification,
         datasets_path: Path = None,
         define_xml_path: Path = None,
@@ -55,6 +58,7 @@ class PostgresQLDataService(SQLDataService):
         self.data_dfs = data_dfs
         self.pre_processed_dfs = pre_processed_dfs
         self.pgi = postgres_interface
+        self.cache = cache
 
     @classmethod
     def from_list_of_testdatasets(
@@ -86,19 +90,22 @@ class PostgresQLDataService(SQLDataService):
             row_dicts = [
                 dict(zip(test_dataset["records"], values)) for values in zip(*test_dataset["records"].values())
             ]
-            pgi.create_table_from_data(table_name=test_dataset["name"], data=row_dicts[0])
-            pgi.insert_data(table_name=test_dataset["name"], data=row_dicts)
+            # force lower_case throughout
+            table_name = test_dataset["name"].lower()
+            row_dicts = [{k.lower(): v for k, v in row.items()} for row in row_dicts]
 
-            ddf = pd.DataFrame.from_records(test_dataset["records"])
-            ddf.columns = [col for col in ddf.columns]
-            data_dfs[test_dataset["name"]] = ddf
+            pgi.create_table_from_data(table_name=table_name, data=row_dicts[0])
+            pgi.insert_data(table_name=table_name, data=row_dicts)
+
+            ddf = pd.DataFrame.from_records(row_dicts)
+            data_dfs[table_name] = ddf
 
             # Collect variable metadata
             for test_variable in test_dataset["variables"]:
                 name = test_dataset["name"]
-                domain = ddf["DOMAIN"].iloc[0] if "DOMAIN" in ddf.columns else None
+                domain = ddf["domain"].iloc[0] if "domain" in ddf.columns else None
                 is_supp = test_dataset["name"].startswith(SUPPLEMENTARY_DOMAINS)
-                rdomain = ddf["RDOMAIN"].iloc[0] if is_supp and "RDOMAIN" in ddf.columns else None
+                rdomain = ddf["rdomain"].iloc[0] if is_supp and "rdomain" in ddf.columns else None
                 unsplit_name = PostgresQLDataService._get_unsplit_name(name, domain, rdomain)
                 is_split = name != unsplit_name
                 metadata_rows.append(
@@ -107,7 +114,8 @@ class PostgresQLDataService(SQLDataService):
                         "updated_at": timestamp,
                         "dataset_filename": test_dataset["filename"],
                         "dataset_filepath": test_dataset["filepath"],
-                        "dataset_id": name,
+                        "dataset_id": name.lower(),
+                        "table_hash": name.lower(),
                         "dataset_name": name,
                         "dataset_label": test_dataset["label"],
                         "dataset_domain": domain,
@@ -116,7 +124,7 @@ class PostgresQLDataService(SQLDataService):
                         "dataset_is_split": is_split,
                         "dataset_unsplit_name": unsplit_name,
                         "dataset_preprocessed": None,
-                        "var_name": test_variable["name"],
+                        "var_name": test_variable["name"].lower(),
                         "var_label": test_variable["label"],
                         "var_type": test_variable["type"],
                         "var_length": test_variable["length"],
@@ -127,9 +135,21 @@ class PostgresQLDataService(SQLDataService):
         # write metadata rows into DB
         pgi.insert_data(table_name="data_metadata", data=metadata_rows)
 
+        # initialize cache
+        cache = DBCache.from_metadata_dict(metadata_rows)
+
         pre_processed_dfs = PostgresQLDataService._pre_process_data_dfs(data_dfs)
         return cls(
-            pgi, ig_specs, datasets_path, define_xml_path, None, None, terminology_paths, data_dfs, pre_processed_dfs
+            pgi,
+            cache,
+            ig_specs,
+            datasets_path,
+            define_xml_path,
+            None,
+            None,
+            terminology_paths,
+            data_dfs,
+            pre_processed_dfs,
         )
 
     @classmethod
@@ -145,9 +165,13 @@ class PostgresQLDataService(SQLDataService):
         pgi.init_database()
         # Create schema and table:
         row_dicts = [dict(zip(column_data, values)) for values in zip(*column_data.values())]
+        table_name = table_name.lower()
+        row_dicts = [{k.lower(): v for k, v in row.items()} for row in row_dicts]
         pgi.create_table_from_data(table_name=table_name, data=row_dicts[0])
         pgi.insert_data(table_name=table_name, data=row_dicts)
-        return cls(pgi, None)
+        pgi.execute_sql_file(str(SCHEMA_PATH / "clinical_data_metadata_schema.sql"))
+        metadata = [{"dataset_id": table_name, "var_name": var} for var in row_dicts[0].keys()]
+        return cls(postgres_interface=pgi, cache=DBCache.from_metadata_dict(metadata), ig_specs=None)
 
     def _pre_process_data_dfs(data_dfs: dict[pd.DataFrame]) -> dict[pd.DataFrame]:
         # TODO
@@ -181,6 +205,7 @@ class PostgresQLDataService(SQLDataService):
             reader = DataReader(str(file_path))
             metadata_info = reader.read_metadata()
 
+            # force table_name to be lowercase
             table_name = file_path.stem.lower()
 
             logger.info(f"Loading dataset {file_path.name} into table {table_name}")
@@ -189,6 +214,8 @@ class PostgresQLDataService(SQLDataService):
             first_chunk_processed = False
 
             for chunk_data in reader.read():
+                # force lowercase on columns
+                chunk_data = [{k.lower(): v for k, v in row} for row in chunk_data.items()]
                 if not first_chunk_processed and chunk_data:
                     first_chunk = chunk_data[0]
                     self._create_table_with_indexes(table_name, first_chunk)
@@ -213,7 +240,7 @@ class PostgresQLDataService(SQLDataService):
         """Create table and add indexes for CDISC variables."""
         self.pgi.create_table_from_data(table_name, first_chunk)
 
-        for col in ("USUBJID", "STUDYID", "DOMAIN", "SEQ", "IDVAR", "IDVARVAL"):
+        for col in ("usubjid", "studyid", "domain", "seq", "idvar", "idvarval"):
             if col in first_chunk:
                 self.pgi.execute_sql(
                     f"CREATE INDEX IF NOT EXISTS idx_{table_name}_{col.lower()} ON {table_name}({col})"
@@ -224,9 +251,9 @@ class PostgresQLDataService(SQLDataService):
     ) -> list[dict]:
         """Build metadata rows for all variables in the dataset."""
 
-        domain = first_chunk.get("DOMAIN", None)
+        domain = first_chunk.get("domain", None)
         is_supp = domain.startswith(SUPPLEMENTARY_DOMAINS) if domain is not None else False
-        rdomain = first_chunk.get("RDOMAIN", None)
+        rdomain = first_chunk.get("rdomain", None)
         unsplit_name = PostgresQLDataService._get_unsplit_name(table_name, domain, rdomain)
         is_split = table_name != unsplit_name
 
@@ -247,7 +274,7 @@ class PostgresQLDataService(SQLDataService):
                     "dataset_is_split": is_split,
                     "dataset_unsplit_name": unsplit_name,
                     "dataset_preprocessed": None,
-                    "var_name": var_info.get("name", ""),
+                    "var_name": var_info.get("name", "").lower(),
                     "var_label": var_info.get("label"),
                     "var_type": var_info.get("type") or var_info.get("ctype"),
                     "var_length": var_info.get("length"),
@@ -291,9 +318,11 @@ class PostgresQLDataService(SQLDataService):
                 ig_data = reader.read()
 
                 if ig_data.get("datasets"):
+                    # TODO: lowercase all
                     self.pgi.insert_data("ig_datasets", ig_data["datasets"])
 
                 if ig_data.get("variables"):
+                    # TODO: lowercase all
                     self.pgi.insert_data("ig_variables", ig_data["variables"])
 
                 logger.info(f"Loaded IG metadata from {file_path.name}")
@@ -322,6 +351,7 @@ class PostgresQLDataService(SQLDataService):
                 codelist_data = reader.read()
 
                 if codelist_data:
+                    # TODO: lowercase all
                     self.pgi.insert_data("codelists", codelist_data)
                     logger.info(f"Loaded codelist from {file_path.name}")
 
@@ -347,6 +377,7 @@ class PostgresQLDataService(SQLDataService):
             filename=results[0].get("dataset_filename"),
             filepath=results[0].get("dataset_filepath"),
             dataset_id=results[0].get("dataset_id"),
+            table_hash=results[0].get("table_hash"),
             dataset_name=results[0].get("dataset_name"),
             dataset_label=results[0].get("dataset_label"),
             unsplit_name=results[0].get("dataset_unsplit_name"),

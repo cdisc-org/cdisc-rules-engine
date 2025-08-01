@@ -47,6 +47,7 @@ class SQLRulesEngine:
         rule["conditions"] = ConditionCompositeFactory.get_condition_composite(rule["conditions"])
 
         # iterate through all pre-processed user datasets
+        # TODO: replace with iteration through available SQL tables after pre_processing
         for pp_ds_id in self.data_service.pre_processed_dfs.keys():
             dataset_metadata = self.data_service.get_dataset_metadata(pp_ds_id)
 
