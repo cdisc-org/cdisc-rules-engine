@@ -1,11 +1,11 @@
 name: Build and Push Docker Image
 on:
-  workflow_run:
-    workflows: ["Release CORE Rules Engine"]
-    types:
-      - completed
-    branches:
-      - main
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+        description: "Version tag for the Docker image"
 jobs:
   check-if-latest:
     runs-on: ubuntu-latest
@@ -43,6 +43,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          ref: ${{ needs.check-if-latest.outputs.version }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
