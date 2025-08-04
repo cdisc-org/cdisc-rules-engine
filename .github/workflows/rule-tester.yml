@@ -6,9 +6,6 @@ on:
       environment:
         required: true
         type: string
-      branch:
-        required: false
-        type: string
 
   workflow_dispatch:
     inputs:
@@ -16,10 +13,6 @@ on:
         required: true
         default: DEV
         type: environment
-      branch:
-        required: false
-        default: ''
-        description: 'Branch to deploy'
 
   push:
     branches:
@@ -37,16 +30,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.branch || github.ref_name }}
-
-      - name: Print branch being deployed
-        run: |
-          BRANCH_NAME="${{ inputs.branch }}"
-          if [ -z "$BRANCH_NAME" ]; then
-            BRANCH_NAME="${GITHUB_REF_NAME}"
-          fi
-          echo "Deploying branch: $BRANCH_NAME"
-
+          ref: ${{ github.ref_name }}
       - uses: azure/login@v2
         with:
           creds: ${{ env.creds }}
@@ -55,7 +39,8 @@ jobs:
         with:
           app-name: ${{ env.functionAppName }}
           mask-inputs: false
-          app-settings-json: '{"WEBSITE_ENABLE_SYNC_UPDATE_SITE": "1"}'
+          app-settings-json: '{"WEBSITE_ENABLE_SYNC_UPDATE_SITE": "1"}' # wait for this step to complete before the webapps-deploy step
+
           general-settings-json: '{"linuxFxVersion": "PYTHON|${{ env.PYTHON_VERSION }}"}'
           slot-name: ${{ vars.AZURE_WEBAPP_SLOT }}
 

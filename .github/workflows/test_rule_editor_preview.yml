@@ -5,13 +5,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  rule_tester:
-    uses: ./.github/workflows/rule-tester.yml
-    secrets: inherit
-    with:
-      environment: DEV
-      branch: ${{ github.head_ref || github.ref_name }}
-  extract_and_test:
+  end_to_end_test:
     needs: rule_tester
     runs-on: ubuntu-latest
 
@@ -28,7 +22,7 @@ jobs:
         run: python -m ensurepip --upgrade && python -m pip install --upgrade pip setuptools
 
       - name: Install dependencies
-        run: pip install requests selenium webdriver-manager selenium-wire brotli blinker==1.4
+        run: pip install requests selenium webdriver-manager selenium-wire blinker==1.4 brotli
 
       - name: Print commit SHA
         run: echo "Commit ID ${GITHUB_SHA}"
@@ -37,5 +31,5 @@ jobs:
         env:
           RULE_EDITOR_USERNAME: ${{ secrets.RULE_EDITOR_USERNAME }}
           RULE_EDITOR_PASSWORD: ${{ secrets.RULE_EDITOR_PASSWORD }}
-          RULE_EDITOR_PREVIEW_URL: ${{ secrets.RULE_EDITOR_PREVIEW_URL }}
+          RULE_EDITOR_URL: ${{ secrets.RULE_EDITOR_URL }}
         run: python .github/test/selenium_test_editor.py

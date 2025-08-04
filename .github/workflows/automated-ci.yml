@@ -8,6 +8,12 @@ jobs:
   test_suite:
     uses: ./.github/workflows/test_suite.yml
     secrets: inherit
+  jobs:
+  rule_tester:
+    uses: ./.github/workflows/rule-tester.yml
+    secrets: inherit
+    with:
+      environment: DEV
   test_rule_editor_preview:
     uses: ./.github/workflows/test_rule_editor_preview.yml
     secrets: inherit

@@ -13,7 +13,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 import brotli
 
 # Get the Preview Deployment URL
-RULE_EDITOR_URL = os.getenv("RULE_EDITOR_PREVIEW_URL")
+RULE_EDITOR_URL = os.getenv("RULE_EDITOR_URL")
 if not RULE_EDITOR_URL:
     print("RULE_EDITOR_URL is not set! Test failed.")
     sys.exit(1)
@@ -39,7 +39,7 @@ try:
     print("Opening Rule Editor site...")
     driver.get(RULE_EDITOR_URL)
 
-    time.sleep(10)  # wait for the page to load
+    wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="signInName"]'))) # wait for the page to load
 
     print("Waiting for username field to be clickable...")
     username_field = wait.until(
@@ -57,7 +57,7 @@ try:
     password_field = wait.until(
         EC.element_to_be_clickable((By.XPATH, '//*[@id="password"]'))
     )
-    time.sleep(1)  # wait for the password field to be ready
+    wait.until(EC.visibility_of_element_located((By.XPATH, '//*[@id="password"]')))
     print("Password field is clickable.")
     password_field.send_keys(password)
     print("Password entered.")
@@ -68,7 +68,7 @@ try:
     sign_in_button.click()
     print("Sign in button clicked.")
 
-    time.sleep(8)  # wait for the login to complete
+    wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="mui-11"]')))  # wait for the login to complete
 
     # Wait until the value attribute of the element is "QA Testing"
     WebDriverWait(driver, 20).until(
@@ -90,7 +90,7 @@ try:
     rule_search_field.click()
     rule_search_field.send_keys("CG0006")
 
-    time.sleep(5)
+    time.sleep(5) # wait for the search results to load.
 
     search_result = wait.until(
         EC.element_to_be_clickable(
