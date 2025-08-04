@@ -108,3 +108,10 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           verbose: true
+
+  build-and-push-docker:
+    needs: [create-release-assets, deploy-PyPi]
+    uses: ./.github/workflows/docker_release.yml
+    with:
+      version: ${{ github.event.release.tag_name }}
+    secrets: inherit
