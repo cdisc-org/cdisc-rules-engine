@@ -254,7 +254,7 @@ def load_specified_rules(
         if rule in standard_rules:
             valid_rule_ids.add(rule)
         else:
-            engine_logger.error(
+            raise ValueError(
                 f"The rule specified '{rule}' is not in the standard {standard} and version {version}"
             )
     rules = []
@@ -367,7 +367,7 @@ def load_rules_from_local(args) -> List[dict]:
     else:
         engine_logger.info(
             "No rules specified with -r rules flag. "
-            "Validating with all rules in local directory"
+            "Validating with rules in local directory"
         )
         keys = None
 

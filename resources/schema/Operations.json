@@ -371,15 +371,6 @@
     },
     {
       "properties": {
-        "operator": {
-          "const": "variable_library_metadata"
-        }
-      },
-      "required": ["id", "operator", "name"],
-      "type": "object"
-    },
-    {
-      "properties": {
         "operator": { "const": "variable_names" }
       },
       "required": ["id", "operator"],

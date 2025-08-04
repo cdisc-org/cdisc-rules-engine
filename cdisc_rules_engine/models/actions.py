@@ -1,5 +1,4 @@
 from typing import List, Optional, Set, Hashable
-
 from os import path
 import pandas as pd
 from business_rules.actions import BaseActions, rule_action
@@ -137,9 +136,21 @@ class COREActions(BaseActions):
             }
 
             # Create the initial error
-            error_value = (
-                dict(errors_df.iloc[0].to_dict()) if not all_targets_missing else {}
-            )
+            if not all_targets_missing:
+                raw_error_dict = errors_df.iloc[0].to_dict()
+                error_value = {}
+                for key, value in raw_error_dict.items():
+                    if isinstance(value, list):
+                        error_value[key] = [
+                            None if (val in NULL_FLAVORS or pd.isna(val)) else val
+                            for val in value
+                        ]
+                    else:
+                        error_value[key] = (
+                            None if (value in NULL_FLAVORS or pd.isna(value)) else value
+                        )
+            else:
+                error_value = {}
 
             # Add missing variables to the error value
             if missing_vars:
@@ -298,9 +309,13 @@ class COREActions(BaseActions):
                 else ""
             ),
             row=(
-                int(source_row_number[df_row.name])
-                if isinstance(source_row_number, pd.Series)
-                else (int(df_row.name) + 1)
+                int(data.loc[df_row.name]["row_number"])
+                if "row_number" in data.columns
+                else (
+                    int(source_row_number[df_row.name])
+                    if isinstance(source_row_number, pd.Series)
+                    else (int(df_row.name) + 1)
+                )
             ),  # record number should start at 1, not 0
             value=filtered_dict,
             usubjid=(

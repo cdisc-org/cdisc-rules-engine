@@ -464,3 +464,41 @@ When submitting an issue, please include:
 - Steps to reproduce the issue (for bugs)
 - Your operating system and environment details
 - Any relevant logs or error messages
+
+# Setting DATASET_SIZE_THRESHOLD for Large Datasets
+
+The CDISC Rules Engine respects the `DATASET_SIZE_THRESHOLD` environment variable to determine when to use Dask for large dataset processing. Setting this to 0 coerces Dask usage over Pandas. A .env in the root directory with this variable set will cause this implementation coercion for the CLI. This can also be done with the executable releases via multiple methods:
+
+## Quick Commands
+
+### Windows (Command Prompt)
+
+```cmd
+set DATASET_SIZE_THRESHOLD=0 && core.exe validate -rest -of -config -commands
+```
+
+### Windows (PowerShell)
+
+```powershell
+$env:DATASET_SIZE_THRESHOLD=0; core.exe validate -rest -of -config -commands
+```
+
+### Linux/Mac (Bash)
+
+```bash
+DATASET_SIZE_THRESHOLD=0 ./core -rest -of -config -commands
+```
+
+## .env File (Alternative)
+
+Create a `.env` file in the root directory of the release containing:
+
+```
+DATASET_SIZE_THRESHOLD=0
+```
+
+Then run normally: `core.exe validate -rest -of -config -commands
+
+---
+
+**Note:** Setting `DATASET_SIZE_THRESHOLD=0` tells the engine to use Dask processing for all datasets regardless of size, size threshold defaults to 1/4 of available RAM so datasets larger than this will use Dask
