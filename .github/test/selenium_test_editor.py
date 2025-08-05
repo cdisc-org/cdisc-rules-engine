@@ -26,6 +26,9 @@ chrome_options.add_argument("--ignore-certificate-errors")
 chrome_options.add_argument("--window-size=1920,1080")
 chrome_options.add_argument("--disable-blink-features=AutomationControlled")
 chrome_options.add_argument("--headless=new")  # Headless mode
+chrome_options.add_argument('--disable-gpu')
+chrome_options.add_argument('--no-sandbox')
+chrome_options.add_argument('--disable-dev-shm-usage')
 
 # Initialize driver using selenium-wire
 service = Service(ChromeDriverManager().install())
