@@ -39,7 +39,9 @@ try:
     print("Opening Rule Editor site...")
     driver.get(RULE_EDITOR_URL)
 
-    wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="signInName"]'))) # wait for the page to load
+    wait.until(
+        EC.presence_of_element_located((By.XPATH, '//*[@id="signInName"]'))
+    )  # wait for the page to load
 
     print("Waiting for username field to be clickable...")
     username_field = wait.until(
@@ -68,7 +70,9 @@ try:
     sign_in_button.click()
     print("Sign in button clicked.")
 
-    wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="mui-11"]')))  # wait for the login to complete
+    wait.until(
+        EC.presence_of_element_located((By.XPATH, '//*[@id="mui-11"]'))
+    )  # wait for the login to complete
 
     # Wait until the value attribute of the element is "QA Testing"
     WebDriverWait(driver, 20).until(
@@ -90,7 +94,7 @@ try:
     rule_search_field.click()
     rule_search_field.send_keys("CG0006")
 
-    time.sleep(5) # wait for the search results to load.
+    time.sleep(5)  # wait for the search results to load.
 
     search_result = wait.until(
         EC.element_to_be_clickable(

@@ -29,8 +29,6 @@ jobs:
     environment: ${{ inputs.environment || 'PROD' }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.ref_name }}
       - uses: azure/login@v2
         with:
           creds: ${{ env.creds }}
