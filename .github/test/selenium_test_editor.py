@@ -70,9 +70,7 @@ try:
     sign_in_button.click()
     print("Sign in button clicked.")
 
-    wait.until(
-        EC.presence_of_element_located((By.XPATH, '//*[@id="mui-11"]'))
-    )  # wait for the login to complete
+    time.sleep(10) # wait for the login to complete
 
     # Wait until the value attribute of the element is "QA Testing"
     WebDriverWait(driver, 20).until(
