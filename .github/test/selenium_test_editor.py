@@ -70,7 +70,7 @@ try:
     sign_in_button.click()
     print("Sign in button clicked.")
 
-    time.sleep(10)  # wait for the login to complete
+    time.sleep(20)  # wait for the login to complete
 
     # Wait until the value attribute of the element is "QA Testing"
     name_clear_button = wait.until(
