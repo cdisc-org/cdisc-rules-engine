@@ -12,6 +12,7 @@ from cdisc_rules_engine.data_service.sql_data_service import SQLDataService
 from cdisc_rules_engine.data_service.sql_interface import PostgresQLInterface
 from cdisc_rules_engine.models.test_dataset import TestDataset
 from cdisc_rules_engine.readers.data_reader import DataReader
+from cdisc_rules_engine.readers.define_xml_reader import XMLReader
 from cdisc_rules_engine.readers.codelist_reader import CodelistReader
 from cdisc_rules_engine.readers.metadata_standards_reader import MetadataStandardsReader
 from cdisc_rules_engine.utilities.ig_specification import IGSpecification
@@ -284,11 +285,55 @@ class PostgresQLDataService(SQLDataService):
 
         return metadata_rows
 
-    def _create_definexml_tables(self) -> None:
-        """
-        Read the self.define_xml_path and create corresponding SQL tables.
-        """
-        pass
+    def create_definexml_tables(self):
+        """Create tables for Define-XML metadata"""
+        if not self.define_xml_path:
+            logger.info("No Define-XML path provided.")
+            return
+
+        if not self.define_xml_path.exists():
+            logger.warning(f"Define-XML path {self.define_xml_path} does not exist.")
+            return
+
+        for query in (SCHEMA_PATH / "xml").glob("*.sql"):
+            self.pgi.execute_sql_file(str(SCHEMA_PATH / "xml" / query))
+
+        logger.info("Define-XML tables created successfully")
+
+        reader = XMLReader(str(self.define_xml_path))
+        xml_data = reader.read()
+
+        try:
+            insert_order = [
+                "studies",
+                "metadata_versions",
+                "comments",
+                "methods",
+                "documents",
+                "codelists",
+                "codelist_items",
+                "variables",
+                "datasets",
+                "dataset_variables",
+                "value_lists",
+                "value_list_items",
+                "where_clauses",
+                "where_clause_conditions",
+                "variable_codelist_refs",
+                "variable_value_lists",
+                "analysis_results",
+            ]
+
+            for table_name in insert_order:
+                if table_name in xml_data and xml_data[table_name]:
+                    records = xml_data[table_name]
+                    self.pgi.insert_data(table_name, records)
+
+            logger.info("Define-XML data inserted successfully")
+
+        except Exception as e:
+            logger.error(f"Error inserting Define-XML data: {str(e)}")
+            raise
 
     def _create_terminology_tables(self) -> None:
         """

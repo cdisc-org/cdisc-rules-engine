@@ -7,6 +7,7 @@ from .base_reader import BaseReader
 from .codelist_reader import CodelistReader, CodelistMetadata
 from .metadata_standards_reader import MetadataStandardsReader, MetadataStandardMetadata
 from .data_reader import DataReader, ClinicalDataMetadata
+from .define_xml_reader import XMLReader
 
 __all__ = [
     "BaseReader",
@@ -16,4 +17,5 @@ __all__ = [
     "MetadataStandardMetadata",
     "DataReader",
     "ClinicalDataMetadata",
+    "XMLReader",
 ]
