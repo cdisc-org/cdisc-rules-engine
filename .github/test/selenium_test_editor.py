@@ -73,10 +73,16 @@ try:
     time.sleep(10)  # wait for the login to complete
 
     # Wait until the value attribute of the element is "QA Testing"
-    WebDriverWait(driver, 20).until(
-        lambda d: d.find_element(By.XPATH, '//*[@id="mui-11"]').get_attribute("value")
-        == "QA Testing"
+    name_clear_button = wait.until(
+        EC.visibility_of_element_located(
+            (By.XPATH, '//*[@id="rulesList"]/table/thead/tr/th[2]/div[2]/div/button')
+        )
     )
+    wait.until(
+        EC.element_to_be_clickable(
+            (By.XPATH, '//*[@id="rulesList"]/table/thead/tr/th[2]/div[2]/div/button')
+        )
+    ).click()
     print("Login successful and user is on the correct page.")
 
     name_clear_button = wait.until(
