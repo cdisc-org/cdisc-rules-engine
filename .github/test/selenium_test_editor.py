@@ -26,9 +26,9 @@ chrome_options.add_argument("--ignore-certificate-errors")
 chrome_options.add_argument("--window-size=1920,1080")
 chrome_options.add_argument("--disable-blink-features=AutomationControlled")
 chrome_options.add_argument("--headless=new")  # Headless mode
-chrome_options.add_argument('--disable-gpu')
-chrome_options.add_argument('--no-sandbox')
-chrome_options.add_argument('--disable-dev-shm-usage')
+chrome_options.add_argument("--disable-gpu")
+chrome_options.add_argument("--no-sandbox")
+chrome_options.add_argument("--disable-dev-shm-usage")
 
 # Initialize driver using selenium-wire
 service = Service(ChromeDriverManager().install())
@@ -37,6 +37,10 @@ wait = WebDriverWait(driver, 20)
 
 username = os.getenv("RULE_EDITOR_USERNAME")
 password = os.getenv("RULE_EDITOR_PASSWORD")
+
+if not username or not password:
+    print("RULE_EDITOR_USERNAME or RULE_EDITOR_PASSWORD is not set! Test failed.")
+    sys.exit(1)
 
 try:
     print("Opening Rule Editor site...")

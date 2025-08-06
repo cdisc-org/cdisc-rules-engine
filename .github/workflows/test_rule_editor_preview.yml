@@ -34,7 +34,7 @@ jobs:
 
       - name: Run tests using preview URL
         env:
-          RULE_EDITOR_USERNAME: ${{ secrets.RULE_EDITOR_USERNAME }}
+          RULE_EDITOR_USERNAME: ${{ vars.RULE_EDITOR_USERNAME }}
           RULE_EDITOR_PASSWORD: ${{ secrets.RULE_EDITOR_PASSWORD }}
           RULE_EDITOR_URL: ${{ vars.RULE_EDITOR_URL }}
         run: python .github/test/selenium_test_editor.py
