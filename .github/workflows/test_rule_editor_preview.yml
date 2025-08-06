@@ -38,3 +38,10 @@ jobs:
           RULE_EDITOR_PASSWORD: ${{ secrets.RULE_EDITOR_PASSWORD }}
           RULE_EDITOR_URL: ${{ vars.RULE_EDITOR_URL }}
         run: python .github/test/selenium_test_editor.py
+
+      - name: Upload screenshot (always runs)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: selenium-screenshot
+          path: login_screenshot.png

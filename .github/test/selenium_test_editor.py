@@ -74,6 +74,9 @@ try:
     print("Sign in button clicked.")
 
     time.sleep(20)  # wait for the login to complete
+    screenshot_path = "login_screenshot.png"
+    driver.save_screenshot(screenshot_path)
+    print(f"Screenshot saved to {screenshot_path}")
 
     # Wait until the value attribute of the element is "QA Testing"
     name_clear_button = wait.until(
