@@ -78,9 +78,6 @@ try:
     print("Sign in button clicked.")
 
     time.sleep(20)  # wait for the login to complete
-    screenshot_path = "login_screenshot.png"
-    driver.save_screenshot(screenshot_path)
-    print(f"Screenshot saved to {screenshot_path}")
 
     # Wait until the value attribute of the element is "QA Testing"
     name_clear_button = wait.until(
@@ -88,12 +85,6 @@ try:
             (By.XPATH, '//*[@id="rulesList"]/table/thead/tr/th[2]/div[2]/div/button')
         )
     )
-    wait.until(
-        EC.element_to_be_clickable(
-            (By.XPATH, '//*[@id="rulesList"]/table/thead/tr/th[2]/div[2]/div/button')
-        )
-    ).click()
-    print("Login successful and user is on the correct page.")
 
     name_clear_button = wait.until(
         EC.element_to_be_clickable(
@@ -101,6 +92,7 @@ try:
         )
     )
     name_clear_button.click()
+    print("Login successful and user is on the correct page.")
 
     print("Searching for rule CG0006...")
     rule_search_field = wait.until(
@@ -313,6 +305,9 @@ try:
 
 except Exception as e:
     print(f"Test Failed due to exception: {e}")
+    screenshot_path = "login_screenshot.png"
+    driver.save_screenshot(screenshot_path)
+    print(f"Screenshot saved to {screenshot_path}")
     sys.exit(1)
 
 finally:
