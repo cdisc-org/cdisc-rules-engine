@@ -3,24 +3,12 @@ import re
 from io import IOBase
 from typing import List, Sequence
 from dataclasses import dataclass
-
-
-# Node dataclass for dataset traversal
-@dataclass
-class Node:
-    value: any
-    path: str
-    type: str
-
-
 from json import load
 from jsonpath_ng import DatumInContext
 from jsonpath_ng.ext import parse
 from datetime import datetime
 from yaml import safe_load
 from numpy import empty, vectorize
-import re
-
 from cdisc_rules_engine.interfaces import CacheServiceInterface, ConfigInterface
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
@@ -36,6 +24,14 @@ from cdisc_rules_engine.utilities.utils import (
     extract_file_name_from_path_string,
 )
 from .base_data_service import BaseDataService, cached_dataset
+
+
+# Node dataclass for dataset traversal
+@dataclass
+class Node:
+    value: any
+    path: str
+    type: str
 
 
 class USDMDataService(BaseDataService):
@@ -276,7 +272,6 @@ class USDMDataService(BaseDataService):
         return record
 
     def __build_id_lookup(self, obj=None):
-        """Iteratively build a dict mapping id -> object."""
         lookup = {}
         stack = [obj if obj is not None else self.json]
         while stack:
@@ -284,9 +279,11 @@ class USDMDataService(BaseDataService):
             if isinstance(current, dict):
                 if "id" in current:
                     lookup[current["id"]] = current
-                stack.extend(current.values())
+                # FIX: Sort keys for consistent order
+                sorted_keys = sorted(current.keys())
+                stack.extend([current[key] for key in sorted_keys])
             elif isinstance(current, list):
-                stack.extend(current)
+                stack.extend(reversed(current))
         return lookup
 
     def __find_definition(self, json, id: str):
@@ -344,12 +341,14 @@ class USDMDataService(BaseDataService):
         if isinstance(mapped_entity, str):
             return mapped_entity
         else:
-            closest_non_list_ancestor = USDMDataService.__get_closest_non_list_ancestor(parent)
+            closest_non_list_ancestor = USDMDataService.__get_closest_non_list_ancestor(
+                parent
+            )
             return mapped_entity.get(
                 self.__get_entity_name(
                     closest_non_list_ancestor.value,
                     USDMDataService.__get_parent(closest_non_list_ancestor),
-                    _depth=_depth+1
+                    _depth=_depth + 1,
                 ),
                 api_type,
             )
