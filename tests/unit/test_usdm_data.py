@@ -43,6 +43,14 @@ def test_get_datasets():
         config=ConfigService(), cache_service=mock_cache, dataset_path=dataset_path
     )
     datasets = data_service.get_datasets()
+    print(f"\nActual datasets found ({len(datasets)}): ")
+    actual_names = [ds.name for ds in sorted(datasets, key=lambda x: x.name)]
+    for name in actual_names:
+        print(f" - {name}")
+
+    # Debug: Print expected count
+    print(f"Actual: {len(datasets)} datasets")
+    print(f"Difference: {33 - len(datasets)}")
     assert len(datasets) == 33
 
 
