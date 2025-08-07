@@ -344,12 +344,14 @@ class USDMDataService(BaseDataService):
         if isinstance(mapped_entity, str):
             return mapped_entity
         else:
-            closest_non_list_ancestor = USDMDataService.__get_closest_non_list_ancestor(parent)
+            closest_non_list_ancestor = USDMDataService.__get_closest_non_list_ancestor(
+                parent
+            )
             return mapped_entity.get(
                 self.__get_entity_name(
                     closest_non_list_ancestor.value,
                     USDMDataService.__get_parent(closest_non_list_ancestor),
-                    _depth=_depth+1
+                    _depth=_depth + 1,
                 ),
                 api_type,
             )
