@@ -7,6 +7,7 @@ pilot_usdm.json
 usdm2xl.py
 usdm2xl_jsonata.py
 cProfile_results/
+results.txt
 
 # Editors
 .vscode/

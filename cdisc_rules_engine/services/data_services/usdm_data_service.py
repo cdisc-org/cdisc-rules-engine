@@ -3,16 +3,6 @@ import re
 from io import IOBase
 from typing import List, Sequence
 from dataclasses import dataclass
-
-
-# Node dataclass for dataset traversal
-@dataclass
-class Node:
-    value: any
-    path: str
-    type: str
-
-
 from json import load
 from jsonpath_ng import DatumInContext
 from jsonpath_ng.ext import parse
@@ -36,6 +26,14 @@ from cdisc_rules_engine.utilities.utils import (
     extract_file_name_from_path_string,
 )
 from .base_data_service import BaseDataService, cached_dataset
+
+
+# Node dataclass for dataset traversal
+@dataclass
+class Node:
+    value: any
+    path: str
+    type: str
 
 
 class USDMDataService(BaseDataService):
@@ -225,6 +223,8 @@ class USDMDataService(BaseDataService):
                 dataset_name=dataset["dataset_name"]
             )
             datasets.append(dataset_metadata)
+        # Print dataset names for debugging
+        # print("Returned dataset names:", [d.name for d in datasets])
         return datasets
 
     def to_parquet(self, file_path: str) -> str:
@@ -261,11 +261,25 @@ class USDMDataService(BaseDataService):
         return node
 
     def __get_record_metadata(self, node) -> dict:
-        # For native node, just use node.value and node.path
         value = node.value
-        parent_entity = self.__get_entity_name(value, node)
-        parent_id = value.get("id", "") if isinstance(value, dict) else ""
-        parent_rel = getattr(node, "path", "")
+        # parent_entity and parent_id come from the parent object
+        parent_entity = (
+            node.parent.get("instanceType", "")
+            if hasattr(node, "parent") and isinstance(node.parent, dict)
+            else ""
+        )
+        parent_id = (
+            node.parent.get("id", "")
+            if hasattr(node, "parent") and isinstance(node.parent, dict)
+            else ""
+        )
+        path = getattr(node, "path", "")
+        # Remove trailing [index] if present
+        path_no_index = re.sub(r"\[\d+\]$", "", path)
+        # Get the last attribute after splitting by '.'
+        parent_rel = (
+            path_no_index.split(".")[-1] if "." in path_no_index else path_no_index
+        )
         rel_type = getattr(node, "type", "")
         record = {
             "parent_entity": parent_entity,
@@ -407,7 +421,11 @@ class USDMDataService(BaseDataService):
                     metadata.append(metadatum)
         dataset_dict = {}
         for path in metadata:
-            dataset_dict.setdefault(path["entity"], []).append(
+            entity = path["entity"]
+            if entity.lower() == "code":
+                entity = "Code"
+            # Do not skip 'null' entities; include them as datasets
+            dataset_dict.setdefault(entity, []).append(
                 {"path": path["path"], "type": path["type"]}
             )
         return [
