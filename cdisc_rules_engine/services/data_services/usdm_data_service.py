@@ -408,6 +408,7 @@ class USDMDataService(BaseDataService):
                 entity = "Code"
             if entity is None or entity.lower() in ["null", "nonetype", ""]:
                 continue
+            entity = entity.lower()
             dataset_dict.setdefault(entity, []).append(
                 {"path": path["path"], "type": path["type"]}
             )
