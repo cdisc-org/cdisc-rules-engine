@@ -403,7 +403,12 @@ class USDMDataService(BaseDataService):
                     metadata.append(metadatum)
         dataset_dict = {}
         for path in metadata:
-            dataset_dict.setdefault(path["entity"], []).append(
+            entity = path["entity"]
+            if entity.lower() == "code":
+                entity = "Code"
+            if entity.lower() in ["null", "nonetype"]:
+                continue
+            dataset_dict.setdefault(entity, []).append(
                 {"path": path["path"], "type": path["type"]}
             )
         return [
