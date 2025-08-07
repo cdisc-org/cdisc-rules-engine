@@ -279,7 +279,6 @@ class USDMDataService(BaseDataService):
             if isinstance(current, dict):
                 if "id" in current:
                     lookup[current["id"]] = current
-                # FIX: Sort keys for consistent order
                 sorted_keys = sorted(current.keys())
                 stack.extend([current[key] for key in sorted_keys])
             elif isinstance(current, list):
