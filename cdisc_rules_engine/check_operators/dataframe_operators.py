@@ -1049,10 +1049,19 @@ class DataframeType(BaseType):
                     grouping_cols.append(col_name)
         df_check = self.value[grouping_cols + [target]].copy()
         df_check = df_check.fillna("_NaN_")
-        results = pd.Series(True, index=df_check.index)
-        for name, group in df_check.groupby(grouping_cols):
-            if group[target].nunique() == 1:
-                results[group.index] = False
+        results = pd.Series(False, index=df_check.index)
+        for name, group in df_check.groupby(grouping_cols, dropna=False):
+            if group[target].nunique() > 1:
+                value_counts = group[target].value_counts()
+                max_count = value_counts.max()
+                # if same amount of inconsistency values, flag all
+                most_common_values = value_counts[value_counts == max_count]
+                if len(most_common_values) > 1:
+                    results[group.index] = True
+                else:
+                    most_common_value = most_common_values.index[0]
+                    minority_rows = group[group[target] != most_common_value]
+                    results[minority_rows.index] = True
         return results
 
     @log_operator_execution
@@ -1112,25 +1121,52 @@ class DataframeType(BaseType):
             comparator = self.replace_all_prefixes(comparator)
         else:
             comparator = self.replace_prefix(comparator)
-        # remove repeating rows
-        df_without_duplicates: DatasetInterface = self.value[
-            [target, comparator]
-        ].drop_duplicates()
-        # we need to check if ANY of the columns (target or comparator) is duplicated
-        duplicated_comparator = df_without_duplicates[comparator].duplicated(keep=False)
-        duplicated_target = df_without_duplicates[target].duplicated(keep=False)
+        df_subset = self.value[[target, comparator]].dropna(how="all")
+        df_without_duplicates = df_subset.drop_duplicates()
+        violated_targets = self._find_relationship_violations(
+            df_without_duplicates, target, comparator
+        )
         result = self.value.convert_to_series([False] * len(self.value))
-        if duplicated_comparator.any():
-            duplicated_comparator_values = set(
-                df_without_duplicates[duplicated_comparator][comparator]
+        if violated_targets:
+            clean_targets = {
+                v for v in violated_targets if pd.notna(v) and v != "" and v is not None
+            }
+            has_null_target = any(
+                pd.isna(v) or v == "" or v is None for v in violated_targets
             )
-            result += self.value[comparator].isin(duplicated_comparator_values)
-        if duplicated_target.any():
-            duplicated_target_values = set(
-                df_without_duplicates[duplicated_target][target]
-            )
-            result += self.value[target].isin(duplicated_target_values)
+            if clean_targets:
+                result = result | self.value[target].isin(clean_targets)
+            if has_null_target:
+                result = result | self.value[target].isna()
         return result
+
+    def _find_relationship_violations(self, df_without_duplicates, target, comparator):
+        """Find all target values that violate one-to-one relationship constraints."""
+        violated_targets = set()
+        for target_val in df_without_duplicates[target].dropna().unique():
+            target_rows = df_without_duplicates[
+                df_without_duplicates[target] == target_val
+            ]
+            comparator_values = target_rows[comparator]
+            unique_comparators = set()
+            for comp_val in comparator_values:
+                if pd.isna(comp_val) or comp_val == "" or comp_val is None:
+                    unique_comparators.add("NULL_PLACEHOLDER")
+                else:
+                    unique_comparators.add(comp_val)
+            if len(unique_comparators) > 1:
+                violated_targets.add(target_val)
+        for comp_val in df_without_duplicates[comparator].dropna().unique():
+            if comp_val == "" or pd.isna(comp_val):
+                continue
+            comp_rows = df_without_duplicates[
+                df_without_duplicates[comparator] == comp_val
+            ]
+            target_values = comp_rows[target]
+            if len(target_values) > 1:
+                for t_val in target_values:
+                    violated_targets.add(t_val)
+        return violated_targets
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -1516,36 +1552,6 @@ class DataframeType(BaseType):
     @type_operator(FIELD_DATAFRAME)
     def target_is_not_sorted_by(self, other_value: dict):
         return ~self.target_is_sorted_by(other_value)
-
-    @log_operator_execution
-    @type_operator(FIELD_DATAFRAME)
-    def variable_metadata_equal_to(self, other_value: dict):
-        """
-        Validates the metadata for variables,
-        provided in the metadata column, is equal to
-        the comparator.
-        Ex.
-        target: STUDYID
-        comparator: "Exp"
-        metadata_column: {"STUDYID": "Req", "DOMAIN": "Req"}
-        result: False
-        """
-        target = self.replace_prefix(other_value.get("target"))
-        comparator = other_value.get(
-            "comparator"
-        )  # Assumes the comparator is a value not a column
-        metadata_column = self.replace_prefix(other_value.get("metadata"))
-        result = np.where(
-            vectorized_get_dict_key(self.value[metadata_column], target) == comparator,
-            True,
-            False,
-        )
-        return self.value.convert_to_series(result)
-
-    @log_operator_execution
-    @type_operator(FIELD_DATAFRAME)
-    def variable_metadata_not_equal_to(self, other_value: dict):
-        return ~self.variable_metadata_equal_to(other_value)
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)

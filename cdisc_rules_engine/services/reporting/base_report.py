@@ -124,10 +124,13 @@ class BaseReport(ABC):
                         "row": error.get("row", ""),
                         "SEQ": error.get("SEQ", ""),
                     }
-                    values = [
-                        str(error.get("value", {}).get(variable))
-                        for variable in variables
-                    ]
+                    values = []
+                    for variable in variables:
+                        raw_value = error.get("value", {}).get(variable)
+                        if raw_value is None:
+                            values.append(None)
+                        else:
+                            values.append(str(raw_value))
                     processed_values = self.process_values(values, excel)
                     if self._item_type == "list":
                         error_item["variables"] = ", ".join(variables)
@@ -144,8 +147,11 @@ class BaseReport(ABC):
             return "null" if excel else ["null"]
         processed_values = []
         for value in values:
+            if value is None:
+                processed_values.append("null")
+                continue
             value = value.strip()
-            if value == "" or value.lower() == "none" or value.lower() == "nan":
+            if value == "" or value.lower() == "nan":
                 processed_values.append("null")
             else:
                 processed_values.append(value)

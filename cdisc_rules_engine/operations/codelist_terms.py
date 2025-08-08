@@ -86,9 +86,18 @@ class CodelistTerms(BaseOperation):
             ct_packages = self.library_metadata._ct_package_metadata
             if "define_XML_merged_CT" in ct_packages:
                 ct_package_data = ct_packages["define_XML_merged_CT"]
+            elif not ct_packages:
+                raise MissingDataError(
+                    "CT package data is not populated. "
+                    "A valid define.xml file or -ct command is required to execute."
+                )
             else:
                 ct_package_data = next(
-                    (pkg for name, pkg in ct_packages.items() if name != "extensible")
+                    (
+                        pkg
+                        for name, pkg in ct_packages.items()
+                        if name != "extensible" and not name.startswith("define-xml")
+                    )
                 )
         except AttributeError as e:
             logger.warning(
