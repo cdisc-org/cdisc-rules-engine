@@ -29,8 +29,6 @@ RUN LATEST_RELEASE_URL=$(curl -s --fail --retry 3 https://api.github.com/repos/c
         "$LATEST_RELEASE_URL" \
     && unzip core-ubuntu-latest.zip -d cdisc-rules-engine \
     && rm core-ubuntu-latest.zip \
-    && ls -la cdisc-rules-engine/ \
-    && ls -la cdisc-rules-engine/core/ \
     && mv cdisc-rules-engine/core/* . \
     && rm -rf cdisc-rules-engine \
     && chmod +x /app/core
