@@ -1,6 +1,7 @@
 import os
 from io import IOBase
-from typing import List, Sequence
+from typing import List, Sequence, Any
+from dataclasses import dataclass
 from json import load
 from jsonpath_ng import DatumInContext
 from jsonpath_ng.ext import parse
@@ -26,7 +27,41 @@ from cdisc_rules_engine.utilities.utils import (
 from .base_data_service import BaseDataService, cached_dataset
 
 
+# Node dataclass for dataset traversal
+@dataclass
+class Node:
+    value: Any
+    path: str
+    type: str
+
+
 class USDMDataService(BaseDataService):
+    # Pre-compiled regex pattern for matching list indices
+    _LIST_INDEX_REGEX = re.compile(r"([\w-]+)(\[(\d+)\])?")
+
+    def _traverse_path(self, obj, path):
+        """
+        Traverse a nested dict/list using a path string like 'foo.bar[0].baz'.
+        Returns the node at the path, or raises KeyError/IndexError if not found.
+        Supports dot notation and list indices.
+        """
+        parts = re.split(r"\.(?![^\[]*\])", path)  # split on dot not inside brackets
+        current = obj
+        for part in parts:
+            # Handle list index, e.g. 'foo[3]'
+            m = self._LIST_INDEX_REGEX.match(part)
+            if not m:
+                raise KeyError(f"Invalid path segment: {part}")
+            key = m.group(1)
+            idx = m.group(3)
+            if isinstance(current, dict):
+                current = current[key]
+            else:
+                raise KeyError(f"Expected dict at {key} in {part}")
+            if idx is not None:
+                current = current[int(idx)]
+        return current
+
     _instance = None
 
     def __init__(
@@ -48,9 +83,14 @@ class USDMDataService(BaseDataService):
             self.dataset_path
         )
 
+        # Build the id lookup dict once for fast reference resolution
+        self._id_lookup = self.__build_id_lookup(self.json)
+
         self.dataset_content_index: dict = self.__get_datasets_content_index(
             dataset_name="USDM_content_index", json=self.json
         )
+
+        self._jsonpath_cache = {}
 
     @classmethod
     def get_instance(
@@ -208,31 +248,67 @@ class USDMDataService(BaseDataService):
         return flattened
 
     @staticmethod
-    def __get_parent(node) -> DatumInContext:
-        return (
-            node.context if node.context and type(node.context.value) is list else node
-        )
+    def __get_parent(node):
+        # Native node: just return node itself
+        return node
 
     @staticmethod
-    def __get_closest_non_list_ancestor(node) -> DatumInContext:
-        return (
-            node.context.context if type(node.context.value) is list else node.context
-        )
+    def __get_closest_non_list_ancestor(node):
+        # Native node: just return node itself
+        return node
 
     def __get_record_metadata(self, node) -> dict:
-        closest_non_list_ancestor = USDMDataService.__get_closest_non_list_ancestor(
-            node
+        # value = node.value
+        # parent_entity and parent_id come from the parent object
+        parent_entity = (
+            node.parent.get("instanceType", "")
+            if hasattr(node, "parent") and isinstance(node.parent, dict)
+            else ""
         )
+        parent_id = (
+            node.parent.get("id", "")
+            if hasattr(node, "parent") and isinstance(node.parent, dict)
+            else ""
+        )
+        path = getattr(node, "path", "")
+        # Remove trailing [index] if present
+        path_no_index = re.sub(r"\[\d+\]$", "", path)
+        # Get the last attribute after splitting by '.'
+        parent_rel = (
+            path_no_index.split(".")[-1] if "." in path_no_index else path_no_index
+        )
+        rel_type = getattr(node, "type", "")
         record = {
-            "parent_entity": self.__get_entity_name(
-                closest_non_list_ancestor.value,
-                USDMDataService.__get_parent(closest_non_list_ancestor),
-            ),
-            "parent_id": closest_non_list_ancestor.value.get("id", ""),
-            "parent_rel": f"{USDMDataService.__get_parent(node).path}",
-            "rel_type": node.type,
+            "parent_entity": parent_entity,
+            "parent_id": parent_id,
+            "parent_rel": parent_rel,
+            "rel_type": rel_type,
         }
         return record
+
+    def __build_id_lookup(self, obj=None):
+        """Iteratively build a dict mapping id -> object."""
+        lookup = {}
+        stack = [obj if obj is not None else self.json]
+        while stack:
+            current = stack.pop()
+            if isinstance(current, dict):
+                if "id" in current:
+                    lookup[current["id"]] = current
+                stack.extend(current.values())
+            elif isinstance(current, list):
+                stack.extend(current)
+        return lookup
+
+    def __find_definition(self, json, id: str):
+        # Use the pre-built lookup dict for fast access
+        return self._id_lookup.get(id, None)
+
+    def _get_parsed_jsonpath(self, path_expr):
+        key = path_expr.strip()
+        if key not in self._jsonpath_cache:
+            self._jsonpath_cache[key] = parse(key)
+        return self._jsonpath_cache[key]
 
     def __get_dataset(self, dataset_name: str) -> DatasetInterface:
         datasets = self.dataset_content_index
@@ -244,17 +320,17 @@ class USDMDataService(BaseDataService):
         ]
         all_nodes = []
         for dataset_path in dataset_paths:
-            nodes = [match for match in parse(dataset_path["path"]).find(self.json)]
-            if len(nodes) != 1:
-                raise Exception(
-                    f"Multiple objects found with path: {dataset_path['path']}"
-                )
-            node = nodes[0]
+            try:
+                value = self._traverse_path(self.json, dataset_path["path"])
+            except (KeyError, IndexError) as e:
+                raise Exception(f"Path not found: {dataset_path['path']} ({e})")
             if dataset_path["type"] == "reference":
-                node.value = self.__find_definition(self.json, node.value)
-                node.type = "reference"
+                node_value = self.__find_definition(self.json, value)
+                node_type = "reference"
             else:
-                node.type = "definition"
+                node_value = value
+                node_type = "definition"
+            node = Node(value=node_value, path=dataset_path["path"], type=node_type)
             all_nodes.append(node)
         records = [
             self.__get_record_metadata(node) | self.__get_record_data(node.value)
@@ -262,15 +338,10 @@ class USDMDataService(BaseDataService):
         ]
         return self._reader_factory.dataset_implementation.from_records(records)
 
-    def __find_definition(self, json, id: str):
-        definition = parse(f"$..*[?(@.id = '{id}')]").find(json)
-        if definition:
-            if len(definition) > 1:
-                raise Exception(f"Multiple objects found with id: {id}")
-            return definition[0].value
-        return None
-
-    def __get_entity_name(self, value, parent: DatumInContext):
+    def __get_entity_name(self, value, parent: Any, _depth=0):
+        # Recursion guard to prevent infinite recursion
+        if _depth > 25:
+            return "UnknownEntity"
         if type(value) is dict:
             api_type = (
                 value.get("instanceType")
@@ -284,16 +355,7 @@ class USDMDataService(BaseDataService):
         if isinstance(mapped_entity, str):
             return mapped_entity
         else:
-            closest_non_list_ancestor = USDMDataService.__get_closest_non_list_ancestor(
-                parent
-            )
-            return mapped_entity.get(
-                self.__get_entity_name(
-                    closest_non_list_ancestor.value,
-                    USDMDataService.__get_parent(closest_non_list_ancestor),
-                ),
-                api_type,
-            )
+            return api_type
 
     def __read_metadata(
         self,
@@ -346,7 +408,11 @@ class USDMDataService(BaseDataService):
                     metadata.append(metadatum)
         dataset_dict = {}
         for path in metadata:
-            dataset_dict.setdefault(path["entity"], []).append(
+            entity = path["entity"]
+            if entity.lower() == "code":
+                entity = "Code"
+            # Do not skip 'null' entities; include them as datasets
+            dataset_dict.setdefault(entity, []).append(
                 {"path": path["path"], "type": path["type"]}
             )
         return [
