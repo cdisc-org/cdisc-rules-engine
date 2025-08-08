@@ -1,7 +1,6 @@
 import os
-import re
 from io import IOBase
-from typing import List, Sequence
+from typing import List, Sequence, Any
 from dataclasses import dataclass
 from json import load
 from jsonpath_ng import DatumInContext
@@ -31,7 +30,7 @@ from .base_data_service import BaseDataService, cached_dataset
 # Node dataclass for dataset traversal
 @dataclass
 class Node:
-    value: any
+    value: Any
     path: str
     type: str
 
@@ -261,7 +260,7 @@ class USDMDataService(BaseDataService):
         return node
 
     def __get_record_metadata(self, node) -> dict:
-        value = node.value
+        # value = node.value
         # parent_entity and parent_id come from the parent object
         parent_entity = (
             node.parent.get("instanceType", "")
@@ -341,7 +340,7 @@ class USDMDataService(BaseDataService):
         ]
         return self._reader_factory.dataset_implementation.from_records(records)
 
-    def __get_entity_name(self, value, parent: any, _depth=0):
+    def __get_entity_name(self, value, parent: Any, _depth=0):
         # Recursion guard to prevent infinite recursion
         if _depth > 25:
             return "UnknownEntity"
@@ -358,17 +357,7 @@ class USDMDataService(BaseDataService):
         if isinstance(mapped_entity, str):
             return mapped_entity
         else:
-            closest_non_list_ancestor = USDMDataService.__get_closest_non_list_ancestor(
-                parent
-            )
-            return mapped_entity.get(
-                self.__get_entity_name(
-                    closest_non_list_ancestor.value,
-                    USDMDataService.__get_parent(closest_non_list_ancestor),
-                    _depth=_depth + 1,
-                ),
-                api_type,
-            )
+            return api_type
 
     def __read_metadata(
         self,
