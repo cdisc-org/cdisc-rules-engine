@@ -224,7 +224,6 @@ class USDMDataService(BaseDataService):
             )
             datasets.append(dataset_metadata)
         # Print dataset names for debugging
-        # print("Returned dataset names:", [d.name for d in datasets])
         return datasets
 
     def to_parquet(self, file_path: str) -> str:
