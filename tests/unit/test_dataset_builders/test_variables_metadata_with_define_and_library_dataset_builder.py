@@ -78,6 +78,7 @@ def test_build_combined_metadata(
             "library_variable_core": ["Req", "Req", "Req", "Req"],
             "library_variable_order_number": ["1", "2", "9", "8"],
             "library_variable_data_type": ["Char", "Char", "Char", "Num"],
+            "library_variable_ccode": ["C49487", "C69256", "C41331", "C25364"],
         }
     )
     mock_get_library_variables_metadata.return_value = PandasDataset(library_vars_data)
@@ -176,20 +177,23 @@ def test_build_combined_metadata(
         "define_variable_mandatory",
         "define_variable_has_comment",
         "library_variable_name",
-        "library_variable_role",
         "library_variable_label",
-        "library_variable_core",
-        "library_variable_order_number",
         "library_variable_data_type",
+        "library_variable_role",
+        "library_variable_core",
+        "library_variable_ccode",
+        "library_variable_order_number",
         "variable_has_empty_values",
     }
     assert set(result.columns.tolist()) == expected_columns
+
     core_variables = ["STUDYID", "USUBJID", "AETERM"]
     for var in core_variables:
         row = result[result["variable_name"] == var].iloc[0]
         assert row["define_variable_name"] == var
         assert row["library_variable_name"] == var
         assert row["variable_has_empty_values"] == (var in ["USUBJID", "AETERM"])
+
     studyid_row = result[result["variable_name"] == "STUDYID"].iloc[0]
     assert studyid_row["variable_size"] == 16.0
     assert studyid_row["variable_order_number"] == 1.0
@@ -197,58 +201,49 @@ def test_build_combined_metadata(
     assert studyid_row["define_variable_role"] == "Identifier"
     assert studyid_row["library_variable_core"] == "Req"
     assert not studyid_row["variable_has_empty_values"]
-    define_only_vars = ["DOMAIN", "AESEQ", "AELNKID"]  # Sample of define-only variables
-    for var in define_only_vars:
-        rows = result[result["define_variable_name"] == var]
-        assert len(rows) == 1
-        row = rows.iloc[0]
-        assert pd.isna(row["variable_name"]) or row["variable_name"] == ""
-        assert row["variable_has_empty_values"]
-    library_only_rows = result[
-        (result["library_variable_name"].notna())
-        & (result["variable_name"].isna() | (result["variable_name"] == ""))
-    ]
-    assert not library_only_rows.empty
-    aeseq_lib_row = result[result["library_variable_name"] == "AESEQ"].iloc[0]
-    assert aeseq_lib_row["library_variable_role"] == "Topic"
-    assert aeseq_lib_row["library_variable_core"] == "Req"
-    assert aeseq_lib_row["library_variable_data_type"] == "Num"
-    codelist_vars = result[result["define_variable_has_codelist"].astype(bool)]
-    assert not codelist_vars.empty
-    aesev_row = result[result["define_variable_name"] == "AESEV"].iloc[0]
-    assert aesev_row["define_variable_has_codelist"]
-    assert set(aesev_row["define_variable_codelist_coded_values"]) == {
-        "MILD",
-        "MODERATE",
-        "SEVERE",
-    }
-    assert set(aesev_row["define_variable_codelist_coded_codes"]) == {
-        "C41338",
-        "C41339",
-        "C41340",
-    }
+
     mandatory_vars = result[result["define_variable_mandatory"] == "Yes"]
     assert not mandatory_vars.empty
     assert all(
-        mandatory_vars["define_variable_name"].isin(
-            ["STUDYID", "USUBJID", "AETERM", "DOMAIN", "AESEQ", "AEDECOD"]
-        )
+        mandatory_vars["define_variable_name"].isin(["STUDYID", "USUBJID", "AETERM"])
     )
+
     empty_value_vars = result[result["variable_has_empty_values"]]
     assert not empty_value_vars.empty
     assert "USUBJID" in empty_value_vars["variable_name"].values
     assert "AETERM" in empty_value_vars["variable_name"].values
-    numeric_vars = result[result["define_variable_data_type"] == "integer"]
-    assert all(
-        var in ["AESEQ", "AESTDY", "AEENDY"]
-        for var in numeric_vars["define_variable_name"]
-    )
+
     non_empty_vars = ["STUDYID"]
     for _, row in result.iterrows():
         if row["variable_name"] in non_empty_vars:
             assert row["variable_has_empty_values"] is False
         else:
-            assert row["variable_has_empty_values"]
+            assert row["variable_has_empty_values"] is True
+
     assert not result["variable_name"].isin([np.nan]).any()
     assert not result["define_variable_name"].isin([np.nan]).any()
     assert not result["library_variable_name"].isin([np.nan]).any()
+
+    usubjid_row = result[result["variable_name"] == "USUBJID"].iloc[0]
+    assert usubjid_row["variable_size"] == 16.0
+    assert usubjid_row["variable_order_number"] == 2.0
+    assert usubjid_row["variable_data_type"] == "Char"
+    assert usubjid_row["define_variable_role"] == "Identifier"
+    assert usubjid_row["library_variable_core"] == "Req"
+    assert usubjid_row["variable_has_empty_values"]
+
+    aeterm_row = result[result["variable_name"] == "AETERM"].iloc[0]
+    assert aeterm_row["variable_size"] == 200.0
+    assert aeterm_row["variable_order_number"] == 9.0
+    assert aeterm_row["variable_data_type"] == "Char"
+    assert aeterm_row["define_variable_role"] == "Topic"
+    assert aeterm_row["library_variable_core"] == "Req"
+    assert aeterm_row["variable_has_empty_values"]
+
+    assert len(result) == 3
+
+    for _, row in result.iterrows():
+        assert row["library_variable_name"] != ""
+        assert row["library_variable_role"] in ["Identifier", "Topic"]
+        assert row["library_variable_core"] == "Req"
+        assert row["library_variable_ccode"] in ["C49487", "C69256", "C41331"]

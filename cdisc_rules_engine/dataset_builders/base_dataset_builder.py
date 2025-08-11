@@ -101,7 +101,9 @@ class BaseDatasetBuilder:
             )
         else:
             # single dataset. the most common case
-            dataset: DatasetInterface = self.data_service.get_dataset(self.dataset_path)
+            dataset: DatasetInterface = self.data_service.get_dataset(
+                dataset_name=self.dataset_path
+            )
             dataset = tag_source(dataset, self.dataset_metadata)
         return dataset
 
@@ -211,17 +213,14 @@ class BaseDatasetBuilder:
                     href = first_codelist["href"]
                     codelist_code = href.split("/")[-1]
                     variable["ccode"] = codelist_code
-        # Rename columns:
-        column_name_mapping = {
-            "ordinal": "order_number",
-            "simpleDatatype": "data_type",
-        }
+            if "role" not in variable:
+                variable["role"] = ""
+            if "core" not in variable:
+                variable["core"] = ""
 
         for var in variables:
-            var["name"] = var["name"].replace("--", self.dataset_metadata.domain)
-            for key, new_key in column_name_mapping.items():
-                if key in var:
-                    var[new_key] = var.pop(key)
+            replacement_domain = self.dataset_metadata.domain or ""
+            var["name"] = var["name"].replace("--", replacement_domain)
 
         dataset = self.dataset_implementation.from_records(variables)
         dataset.data = dataset.data.add_prefix("library_variable_")
