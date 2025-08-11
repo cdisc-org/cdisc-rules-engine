@@ -407,11 +407,11 @@ Attach define xml metadata at variable level
 - `variable_format`
 - `variable_has_empty_values`
 - `library_variable_name`
-- `library_variable_order_number`
-- `library_variable_label`
-- `library_variable_data_type`
 - `library_variable_role`
+- `library_variable_label`
 - `library_variable_core`
+- `library_variable_order_number`
+- `library_variable_data_type`
 - `library_variable_ccode`
 
 ## Variables Metadata Check against Define XML and Library Metadata
