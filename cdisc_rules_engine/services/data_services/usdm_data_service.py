@@ -27,12 +27,13 @@ from cdisc_rules_engine.utilities.utils import (
 from .base_data_service import BaseDataService, cached_dataset
 
 
-# Node dataclass for dataset traversal
+# Node dataclass for dataset traversal, now with parent tracking
 @dataclass
 class Node:
     value: Any
     path: str
     type: str
+    parent: dict = None
 
 
 class USDMDataService(BaseDataService):
@@ -218,8 +219,11 @@ class USDMDataService(BaseDataService):
     def get_datasets(self) -> List[dict]:
         datasets = []
         for dataset in self.dataset_content_index:
+            dataset_name = dataset.get("dataset_name")
+            if not dataset_name:
+                continue
             dataset_metadata: SDTMDatasetMetadata = self.get_raw_dataset_metadata(
-                dataset_name=dataset["dataset_name"]
+                dataset_name=dataset_name
             )
             datasets.append(dataset_metadata)
         return datasets
@@ -258,18 +262,18 @@ class USDMDataService(BaseDataService):
         return node
 
     def __get_record_metadata(self, node) -> dict:
-        # value = node.value
-        # parent_entity and parent_id come from the parent object
-        parent_entity = (
-            node.parent.get("instanceType", "")
-            if hasattr(node, "parent") and isinstance(node.parent, dict)
-            else ""
-        )
-        parent_id = (
-            node.parent.get("id", "")
-            if hasattr(node, "parent") and isinstance(node.parent, dict)
-            else ""
-        )
+        # Walk up the parent chain to find the closest ancestor with instanceType and id
+        parent = getattr(node, "parent", None)
+        parent_entity = ""
+        parent_id = ""
+        while parent and isinstance(parent, dict):
+            if parent.get("instanceType") and parent.get("id"):
+                parent_entity = parent["instanceType"]
+                parent_id = parent["id"]
+                break
+            parent = (
+                parent.get("parent") if isinstance(parent.get("parent"), dict) else None
+            )
         path = getattr(node, "path", "")
         # Remove trailing [index] if present
         path_no_index = re.sub(r"\[\d+\]$", "", path)
@@ -319,6 +323,18 @@ class USDMDataService(BaseDataService):
             for path in dataset_metadata["content_paths"]
         ]
         all_nodes = []
+
+        def get_parent_from_path(obj, path):
+            # Traverse to the parent of the node at the given path
+            if not path or "." not in path:
+                return None
+            parent_path = ".".join(path.split(".")[:-1])
+            # print("DEBUG:", parent_path)
+            try:
+                return self._traverse_path(obj, parent_path)
+            except Exception:
+                return None
+
         for dataset_path in dataset_paths:
             try:
                 value = self._traverse_path(self.json, dataset_path["path"])
@@ -330,7 +346,13 @@ class USDMDataService(BaseDataService):
             else:
                 node_value = value
                 node_type = "definition"
-            node = Node(value=node_value, path=dataset_path["path"], type=node_type)
+            parent = get_parent_from_path(self.json, dataset_path["path"])
+            node = Node(
+                value=node_value,
+                path=dataset_path["path"],
+                type=node_type,
+                parent=parent,
+            )
             all_nodes.append(node)
         records = [
             self.__get_record_metadata(node) | self.__get_record_data(node.value)
