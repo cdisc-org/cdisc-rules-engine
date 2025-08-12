@@ -232,14 +232,17 @@ jobs:
         run: |
           PANDAS_DIFF="${{ env.pandas_diff }}"
           DASK_DIFF="${{ env.dask_diff }}"
+          USDM_NEG_DIFF="${{ env.usdm_neg_diff }}"
+          USDM_POS_DIFF="${{ env.usdm_pos_diff }}"
 
-          if [[ "$PANDAS_DIFF" == "1" || "$DASK_DIFF" == "1" ]]; then
-            echo "Differences found in either Pandas or Dask comparison"
+
+          if [[ "$PANDAS_DIFF" == "1" || "$DASK_DIFF" == "1" || "$USDM_NEG_DIFF" == "1" || "$USDM_POS_DIFF" == "1" ]]; then
+            echo "Differences found in one or more comparisons"
             exit 1
-          elif [[ "$PANDAS_DIFF" == "0" && "$DASK_DIFF" == "0" ]]; then
-            echo "No differences found in either comparison"
+          elif [[ "$PANDAS_DIFF" == "0" && "$DASK_DIFF" == "0" && "$USDM_NEG_DIFF" == "0" && "$USDM_POS_DIFF" == "0" ]]; then
+            echo "No differences found in any comparison"
             exit 0
           else
-            echo "Issue with comparison script"
+            echo "Issue with comparison scripts"
             exit 1
           fi
