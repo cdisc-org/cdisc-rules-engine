@@ -206,13 +206,8 @@ class RuleProcessor:
             )
             if ds not in included_datastructures:
                 is_included = False
-
         if excluded_datastructures:
-            variables = self.data_service.get_variables_metadata(
-                dataset_name=dataset_metadata.full_path, datasets=datasets
-            ).data.variable_name
             ds = self.data_service.get_data_structure(
-                variables,
                 dataset_metadata.full_path,
                 datasets,
                 dataset_metadata,
@@ -442,7 +437,7 @@ class RuleProcessor:
             )
         return dataset_copy
 
-    def _execute_operation_(
+    def _execute_operation(
         self,
         operation_params: OperationParams,
         dataset: DatasetInterface,
