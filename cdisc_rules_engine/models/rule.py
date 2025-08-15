@@ -55,7 +55,7 @@ class Rule:
                 "actions": cls.parse_actions(rule_metadata.get("Outcome")),
                 "use_case": rule_metadata.get("Scope", {}).get("Use_Case"),
                 "data_structures": rule_metadata.get("Scope", {}).get(
-                    "Data_Structures", {}
+                    "Data_Structures"
                 ),
             }
 
