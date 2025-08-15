@@ -29,6 +29,7 @@ from cdisc_rules_engine.interfaces import ConditionInterface
 from cdisc_rules_engine.models.base_validation_entity import BaseValidationEntity
 from cdisc_rules_engine.check_operators.helpers import is_valid_date
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
+from cdisc_rules_engine.constants.adam_products import ADAM_PRODUCTS
 
 
 def convert_file_size(size_in_bytes: int, desired_unit: str) -> float:
@@ -68,6 +69,7 @@ def get_execution_status(results):
 
 
 def get_standard_codelist_cache_key(standard: str, version: str) -> str:
+    standard, version = normalize_adam_input(standard, version)
     return f"{standard.lower()}-{version.replace('.', '-')}-codelists"
 
 
@@ -156,6 +158,9 @@ def get_library_variables_metadata_cache_key(
     standard_type: str, standard_version: str, standard_substandard: str
 ) -> str:
     if not standard_substandard:
+        standard_type, standard_version = normalize_adam_input(
+            standard_type, standard_version
+        )
         return f"library_variables_metadata/{standard_type}/{standard_version}"
     else:
         return f"library_variables_metadata/{standard_type}/{standard_version}/{standard_substandard}"
@@ -164,10 +169,33 @@ def get_library_variables_metadata_cache_key(
 def get_standard_details_cache_key(
     standard_type: str, standard_version: str, standard_substandard: str = None
 ) -> str:
+    standard_type, standard_version = normalize_adam_input(
+        standard_type, standard_version
+    )
     if not standard_substandard:
         return f"standards/{standard_type}/{standard_version}"
     else:
         return f"standards/{standard_type}/{standard_version}/{standard_substandard}"
+
+
+def normalize_adam_input(standard: str, version: str) -> tuple:
+    """
+    Normalizes ADAM user input to the expected internal format.
+    Args:
+        standard: User input like 'adamig', 'adam-adae'
+        version: User input like '1-0'
+    Returns:
+        Tuple of (normalized_standard, normalized_version)
+        Examples:
+        - ('adamig', '1-0') -> ('adam', 'adamig-1-0')
+        - ('adam-adae', '1-0') -> ('adam', 'adam-adae-1-0')
+        - ('sdtm', '3-4') -> ('sdtm', '3-4')
+    """
+    standard_lower = standard.lower()
+    if standard_lower in ADAM_PRODUCTS:
+        return "adam", f"{standard_lower}-{version}"
+    # Non-ADAM standard - keep as is
+    return standard, version
 
 
 def get_model_details_cache_key(standard: str, model_version: str) -> str:
@@ -177,9 +205,14 @@ def get_model_details_cache_key(standard: str, model_version: str) -> str:
 def get_model_details_cache_key_from_ig(standard_metadata: dict) -> str:
     model_link = standard_metadata.get("_links", {}).get("model", {}).get("href", "")
     model_link_parts = model_link.split("/")
-    return get_model_details_cache_key(
-        standard=model_link_parts[2], model_version=model_link_parts[3]
-    )
+    standard = model_link_parts[2]
+    full_version = model_link_parts[3]
+    # for ADaM, there is an extra adam prefix in the version
+    if full_version.startswith(f"{standard}-"):
+        version = full_version[len(standard) + 1 :]
+    else:
+        version = full_version
+    return get_model_details_cache_key(standard=standard, model_version=version)
 
 
 def replace_pattern_in_list_of_strings(
@@ -313,6 +346,7 @@ def get_variable_codelist_map_cache_key(standard: str, version: str, subversion)
     if subversion:
         return f"{standard}-{version}-{subversion}-codelists"
     else:
+        standard, version = normalize_adam_input(standard, version)
         return f"{standard}-{version}-codelists"
 
 
