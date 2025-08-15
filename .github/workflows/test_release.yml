@@ -11,7 +11,9 @@ jobs:
           - os: "ubuntu-latest"
             name: "core-ubuntu-latest"
           - os: "macos-latest"
-            name: "core-mac"
+            name: "core-mac-apple-silicon"
+          - os: "macos-13"
+            name: "core-mac-intel"
           - os: "windows-latest"
             name: "core-windows"
     uses: ./.github/workflows/build-binary.yml
@@ -34,8 +36,12 @@ jobs:
           dest: core-ubuntu-latest.zip
       - uses: vimtor/action-zip@v1
         with:
-          files: artifacts/core-mac/
-          dest: core-mac.zip
+          files: artifacts/core-mac-intel/
+          dest: core-mac-intel.zip
+      - uses: vimtor/action-zip@v1
+        with:
+          files: artifacts/core-mac-apple-silicon/
+          dest: core-mac-apple-silicon.zip
       - uses: vimtor/action-zip@v1
         with:
           files: artifacts/core-windows/
@@ -46,7 +52,8 @@ jobs:
           name: release-artifacts
           path: |
             core-ubuntu-latest.zip
-            core-mac.zip
+            core-mac-intel.zip
+            core-mac-apple-silicon.zip
             core-windows.zip
   deploy-PyPi:
     needs: create-release-assets
