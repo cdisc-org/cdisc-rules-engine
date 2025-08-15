@@ -182,6 +182,7 @@ def run_validation(args: Validation_args):
     # build all desired reports
     end = time.time()
     elapsed_time = end - start
+    engine_logger.info("Done Rule execution, creating reports")
     reporting_factory = ReportFactory(
         datasets, results, elapsed_time, args, data_service
     )
@@ -192,7 +193,7 @@ def run_validation(args: Validation_args):
             dictionary_versions=dictionary_versions,
         )
     print(f"Output: {args.output}")
-    engine_logger.info("Cleaning up intermediate files")
+    engine_logger.info(" Report generated, Cleaning up intermediate files")
     for file in created_files:
         engine_logger.info(f"Deleting file {file}")
         os.remove(file)

@@ -56,7 +56,7 @@ def cached_dataset(dataset_type: str):
             instance: BaseDataService = args[0]
             dataset_name: str = kwargs["dataset_name"]
             logger.info(
-                f"Downloading dataset from storage. dataset_name={dataset_name},"
+                f"Downloading dataset from storage. dataset_name={dataset_name}, "
                 f" wrapped function={func.__name__}"
             )
             cache_key: str = get_dataset_cache_key_from_path(dataset_name, dataset_type)
@@ -178,6 +178,26 @@ class BaseDataService(DataServiceInterface, ABC):
         return self._handle_special_cases(
             dataset, dataset_metadata, file_path, datasets
         )
+
+    def get_data_structure(
+        self,
+        file_path: str,
+        datasets: Iterable[SDTMDatasetMetadata],
+        dataset_metadata: SDTMDatasetMetadata,
+    ) -> Optional[str]:
+        if self.library_metadata.standard_metadata:
+            data_structures = self.library_metadata.standard_metadata.get(
+                "dataStructures", []
+            )
+            if data_structures:
+                for data_structure in data_structures:
+                    if (
+                        data_structure.get("name").lower()
+                        == dataset_metadata.name.lower()
+                    ):
+                        return data_structure.get("class")
+                return ""
+        return ""
 
     @cached_dataset(DatasetTypes.METADATA.value)
     def get_dataset_metadata(
