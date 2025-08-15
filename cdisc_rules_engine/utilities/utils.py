@@ -191,9 +191,10 @@ def normalize_adam_input(standard: str, version: str) -> tuple:
         - ('adam-adae', '1-0') -> ('adam', 'adam-adae-1-0')
         - ('sdtm', '3-4') -> ('sdtm', '3-4')
     """
-    standard_lower = standard.lower()
-    if standard_lower in ADAM_PRODUCTS:
-        return "adam", f"{standard_lower}-{version}"
+    if standard:
+        standard_lower = standard.lower()
+        if standard_lower in ADAM_PRODUCTS:
+            return "adam", f"{standard_lower}-{version}"
     # Non-ADAM standard - keep as is
     return standard, version
 

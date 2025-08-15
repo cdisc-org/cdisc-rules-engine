@@ -188,7 +188,6 @@ class RuleProcessor:
             )
         )
 
-    @classmethod
     def rule_applies_to_data_structure(
         self, rule, datasets, dataset_metadata: SDTMDatasetMetadata
     ):
@@ -443,7 +442,7 @@ class RuleProcessor:
             )
         return dataset_copy
 
-    def _execute_operation(
+    def _execute_operation_(
         self,
         operation_params: OperationParams,
         dataset: DatasetInterface,
@@ -479,7 +478,7 @@ class RuleProcessor:
                 operation_params.datasets,
                 lambda item: item.unsplit_name == operation_params.domain,
             )
-            if domain_details is None:  # noqa: E713
+            if domain_details is None:
                 raise DomainNotFoundError(
                     f"Operation {operation_params.operation_name} requires Domain "
                     f"{operation_params.domain} but Domain not found in dataset"
