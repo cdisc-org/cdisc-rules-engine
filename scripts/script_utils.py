@@ -395,11 +395,12 @@ def load_rules_from_cache(args) -> List[dict]:
 
 def load_rules_from_local(args) -> List[dict]:
     rules = []
-    rule_files = (
-        [os.path.join(args.local_rules, file) for file in os.listdir(args.local_rules)]
-        if os.path.isdir(args.local_rules)
-        else [args.local_rules]
-    )
+    rule_files = []
+    for path in args.local_rules:
+        if os.path.isdir(path):
+            rule_files.extend([os.path.join(path, file) for file in os.listdir(path)])
+        else:
+            rule_files.append(path)
     rule_data = {}
 
     if args.rules:
@@ -410,7 +411,7 @@ def load_rules_from_local(args) -> List[dict]:
     else:
         engine_logger.info(
             "No rules specified with -r rules flag. "
-            "Validating with all rules in local directory"
+            "Validating with rules in local directory"
         )
         keys = None
 

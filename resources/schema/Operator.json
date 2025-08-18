@@ -807,24 +807,6 @@
     {
       "properties": {
         "operator": {
-          "const": "variable_metadata_equal_to"
-        }
-      },
-      "required": ["operator", "metadata", "value"],
-      "type": "object"
-    },
-    {
-      "properties": {
-        "operator": {
-          "const": "variable_metadata_not_equal_to"
-        }
-      },
-      "required": ["operator", "metadata", "value"],
-      "type": "object"
-    },
-    {
-      "properties": {
-        "operator": {
           "const": "inconsistent_enumerated_columns"
         }
       },

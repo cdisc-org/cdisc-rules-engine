@@ -18,6 +18,7 @@ class VariablesMetadataWithLibraryMetadataDatasetBuilder(BaseDatasetBuilder):
         library_variable_data_type,
         library_variable_role,
         library_variable_core,
+        library_variable_ccode,
         library_variable_order_number
         """
         # get dataset metadata and execute the rule
@@ -30,9 +31,27 @@ class VariablesMetadataWithLibraryMetadataDatasetBuilder(BaseDatasetBuilder):
         )
         dataset_contents = self.get_dataset_contents()
         library_variables_metadata = self.get_library_variables_metadata()
-
+        column_name_mapping = {
+            "library_variable_ordinal": "library_variable_order_number",
+            "library_variable_simpleDatatype": "library_variable_data_type",
+        }
+        if hasattr(library_variables_metadata, "data"):
+            library_data = library_variables_metadata.data
+        else:
+            library_data = library_variables_metadata._data
+        library_data = library_data.rename(columns=column_name_mapping)
         data = content_variables_metadata.merge(
-            library_variables_metadata.data,
+            library_data[
+                [
+                    "library_variable_name",
+                    "library_variable_label",
+                    "library_variable_data_type",
+                    "library_variable_role",
+                    "library_variable_core",
+                    "library_variable_ccode",
+                    "library_variable_order_number",
+                ]
+            ],
             how="left",
             left_on="variable_name",
             right_on="library_variable_name",

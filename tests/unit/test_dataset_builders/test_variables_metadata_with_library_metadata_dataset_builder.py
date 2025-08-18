@@ -54,6 +54,7 @@ def test_variable_metadata_with_library_metadata_dataset_builder(
             "library_variable_core": ["Req", "Req", "Req", "Req"],
             "library_variable_order_number": ["1", "2", "9", "8"],
             "library_variable_data_type": ["Char", "Char", "Char", "Num"],
+            "library_variable_ccode": ["C49487", "C69256", "C41331", "C25364"],
         }
     )
     mock_get_library_variables_metadata.return_value = PandasDataset(library_vars_data)
@@ -158,11 +159,12 @@ def test_variable_metadata_with_library_metadata_dataset_builder(
         "variable_order_number",
         "variable_data_type",
         "library_variable_name",
-        "library_variable_role",
         "library_variable_label",
-        "library_variable_core",
-        "library_variable_order_number",
         "library_variable_data_type",
+        "library_variable_role",
+        "library_variable_core",
+        "library_variable_ccode",
+        "library_variable_order_number",
         "variable_has_empty_values",
     ]
     assert result["library_variable_name"].tolist() == [
@@ -212,6 +214,7 @@ def test_variable_metadata_with_library_metadata_dataset_builder_variable_only_i
             "library_variable_core": ["Req", "Req", "Req", "Perm"],
             "library_variable_order_number": ["1", "2", "9", "2000"],
             "library_variable_data_type": ["Char", "Char", "Char", "Num"],
+            "library_variable_ccode": ["C49487", "C69256", "C41331", "C25364"],
         }
     )
     mock_get_library_variables_metadata.return_value = PandasDataset(library_vars_data)
@@ -382,6 +385,7 @@ def test_variable_metadata_with_library_metadata_dataset_builder_variable_only_i
             "library_variable_label",
             "library_variable_core",
             "library_variable_data_type",
+            "library_variable_ccode",
             "variable_has_empty_values",
         ]
     )
