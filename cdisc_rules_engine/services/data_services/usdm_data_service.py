@@ -285,7 +285,7 @@ class USDMDataService(BaseDataService):
             path_no_index.split(".")[-1] if "." in path_no_index else path_no_index
         )
         rel_type = getattr(node, "type", "")
-        # Guarantee 'Wrapper' for all top-level Study attributes (any path starting with '`this`' or with no dot)
+        # 'Wrapper' for all top-level Study attributes (any path starting with '`this`' or with no dot)
         if path.startswith("`this`") or "." not in path:
             parent_entity = self.entity_dict["`this`"]
         # If still not set, use schema mapping for node type or key
@@ -296,9 +296,7 @@ class USDMDataService(BaseDataService):
             elif path:
                 key = path.split(".")[-1] if "." in path else path
                 parent_entity = self.entity_dict.get(key, key)
-        # print(
-        #    f"DEBUG __get_record_metadata: path={path}, parent_entity={parent_entity}"
-        # )
+
         record = {
             "parent_entity": parent_entity,
             "parent_id": parent_id,
