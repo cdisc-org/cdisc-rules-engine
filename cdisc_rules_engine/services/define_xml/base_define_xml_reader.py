@@ -349,6 +349,7 @@ class BaseDefineXMLReader(ABC):
             "define_variable_length": None,
             "define_variable_has_codelist": False,
             "define_variable_codelist_coded_values": [],
+            "define_variable_codelist_coded_codes": [],
             "define_variable_mandatory": None,
             "define_variable_has_comment": False,
         }
@@ -377,6 +378,9 @@ class BaseDefineXMLReader(ABC):
                 data["define_variable_codelist_coded_values"].extend(
                     self._get_codelist_coded_values(codelist)
                 )
+                data["define_variable_codelist_coded_codes"].extend(
+                    self._get_codelist_coded_codes(codelist)
+                )
             if itemdef.Origin:
                 data["define_variable_origin_type"] = self._get_origin_type(itemdef)
             data["define_variable_has_no_data"] = getattr(itemref, "HasNoData", "")
@@ -404,6 +408,14 @@ class BaseDefineXMLReader(ABC):
         if codelist:
             for codelist_item in codelist.CodeListItem + codelist.EnumeratedItem:
                 yield codelist_item.CodedValue
+
+    def _get_codelist_coded_codes(self, codelist):
+        if codelist:
+            for codelist_item in codelist.CodeListItem + codelist.EnumeratedItem:
+                if hasattr(codelist_item, "Alias") and codelist_item.Alias:
+                    for alias in codelist_item.Alias:
+                        if hasattr(alias, "Name"):
+                            yield alias.Name
 
     @abstractmethod
     def _get_origin_type(self, itemdef):

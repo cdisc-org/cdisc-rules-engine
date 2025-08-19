@@ -119,6 +119,7 @@ any:
 - `define_variable_order_number`
 - `define_variable_has_codelist`
 - `define_variable_codelist_coded_values`
+- `define_variable_codelist_coded_values`
 - `define_variable_has_comment`
 
 #### Rule Macro
@@ -143,6 +144,8 @@ Attach variable codelist and codelist terms
 - `define_variable_order_number`
 - `define_variable_has_codelist`
 - `define_variable_codelist_coded_values`
+- `define_variable_codelist_coded_codes`
+- `define_variable_mandatory`
 - `define_variable_has_comment`
 - `library_variable_name`
 - `library_variable_order_number`
@@ -363,7 +366,22 @@ Attach define xml metadata at value level
 - `variable_`...
 - `define_variable_name`
 - `define_variable_label`
-- `define_variable_`...
+- `define_variable_data_type`
+- `define_variable_is_collected`
+- `define_variable_role`
+- `define_variable_size`
+- `define_variable_ccode`
+- `define_variable_format`
+- `define_variable_allowed_terms`
+- `define_variable_origin_type`
+- `define_variable_has_no_data`
+- `define_variable_order_number`
+- `define_variable_length`
+- `define_variable_has_codelist`
+- `define_variable_codelist_coded_values`
+- `define_variable_codelist_coded_codes`
+- `define_variable_mandatory`
+- `define_variable_has_comment`
 
 #### Rule Macro
 
@@ -389,11 +407,11 @@ Attach define xml metadata at variable level
 - `variable_format`
 - `variable_has_empty_values`
 - `library_variable_name`
-- `library_variable_order_number`
-- `library_variable_label`
-- `library_variable_data_type`
 - `library_variable_role`
+- `library_variable_label`
 - `library_variable_core`
+- `library_variable_order_number`
+- `library_variable_data_type`
 - `library_variable_ccode`
 
 ## Variables Metadata Check against Define XML and Library Metadata
@@ -420,6 +438,7 @@ Attach define xml metadata at variable level
 - `define_variable_length`
 - `define_variable_has_codelist`
 - `define_variable_codelist_coded_values`
+- `define_variable_codelist_coded_codes`
 - `define_variable_mandatory`
 - `define_variable_has_comment`
 - `library_variable_name`

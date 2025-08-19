@@ -26,8 +26,10 @@ class VariablesMetadataWithDefineAndLibraryDatasetBuilder(BaseDatasetBuilder):
         define_variable_has_no_data,
         define_variable_order_number,
         define_variable_has_codelist,
-        define_variable_codelist_coded_values
-        define_variable_mandatory
+        define_variable_codelist_coded_values,
+        define_variable_codelist_coded_codes,
+        define_variable_mandatory,
+        variable_has_empty_values
         library_variable_name,
         library_variable_label,
         library_variable_data_type,
@@ -44,6 +46,15 @@ class VariablesMetadataWithDefineAndLibraryDatasetBuilder(BaseDatasetBuilder):
             variable_metadata
         )
         library_metadata: DatasetInterface = self.get_library_variables_metadata()
+        column_name_mapping = {
+            "library_variable_ordinal": "library_variable_order_number",
+            "library_variable_simpleDatatype": "library_variable_data_type",
+        }
+        if hasattr(library_metadata, "data"):
+            library_data = library_metadata.data
+        else:
+            library_data = library_metadata._data
+        library_data = library_data.rename(columns=column_name_mapping)
         dataset_contents = self.get_dataset_contents()
 
         # First merge: content metadata with define metadata
@@ -51,12 +62,22 @@ class VariablesMetadataWithDefineAndLibraryDatasetBuilder(BaseDatasetBuilder):
             define_metadata.data,
             left_on="variable_name",
             right_on="define_variable_name",
-            how="outer",
+            how="left",
         )
         # Second merge: add library metadata
         final_dataframe = merged_data.merge(
-            library_metadata.data,
-            how="outer",
+            library_data[
+                [
+                    "library_variable_name",
+                    "library_variable_label",
+                    "library_variable_data_type",
+                    "library_variable_role",
+                    "library_variable_core",
+                    "library_variable_ccode",
+                    "library_variable_order_number",
+                ]
+            ],
+            how="left",
             left_on="variable_name",
             right_on="library_variable_name",
         ).fillna("")

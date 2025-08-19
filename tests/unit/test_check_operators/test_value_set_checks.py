@@ -98,7 +98,7 @@ def test_is_not_ordered_set(target, comparator, dataset_type, expected_result):
     "target, comparator, dataset_type, expected_result",
     [
         ("BGSTRESU", "USUBJID", PandasDataset, [False, False, True, True]),
-        ("STRESU", "TESTCD", PandasDataset, [True, True, True, False]),
+        ("STRESU", "TESTCD", PandasDataset, [False, False, True, False]),
         ("STRESU", ["TESTCD", "METHOD"], PandasDataset, [False, False, False, False]),
     ],
 )
@@ -124,7 +124,7 @@ def test_is_inconsistent_across_dataset(
     "target, comparator, dataset_type, expected_result",
     [
         ("BGSTRESU", "USUBJID", DaskDataset, [False, False, True, True]),
-        ("STRESU", "TESTCD", DaskDataset, [True, True, True, False]),
+        ("STRESU", "TESTCD", DaskDataset, [False, False, True, False]),
         ("STRESU", ["TESTCD", "METHOD"], DaskDataset, [False, False, False, False]),
     ],
 )
@@ -173,3 +173,61 @@ def test_is_inconsistent_across_dataset_empty_dataset():
         {"value": df, "column_prefix_map": {"--": ""}}
     ).is_inconsistent_across_dataset({"target": "BGSTRESU", "comparator": "USUBJID"})
     assert len(result) == 0
+
+
+@pytest.mark.parametrize(
+    "target, comparator, dataset_type, expected_result",
+    [
+        ("VALUE", "GROUP", PandasDataset, [False, False, False, True]),
+    ],
+)
+def test_is_inconsistent_clear_majority(
+    target, comparator, dataset_type, expected_result
+):
+    data = {
+        "GROUP": ["GROUP1", "GROUP1", "GROUP1", "GROUP1"],
+        "VALUE": ["A", "A", "A", "B"],
+    }
+    df = dataset_type.from_dict(data)
+    result = DataframeType(
+        {"value": df, "column_prefix_map": {"--": ""}}
+    ).is_inconsistent_across_dataset({"target": target, "comparator": comparator})
+    assert result.equals(df.convert_to_series(expected_result))
+
+
+@pytest.mark.parametrize(
+    "target, comparator, dataset_type, expected_result",
+    [
+        ("VALUE", "GROUP", PandasDataset, [True, True, False]),
+    ],
+)
+def test_is_inconsistent_perfect_tie(target, comparator, dataset_type, expected_result):
+    data = {
+        "GROUP": ["GROUP1", "GROUP1", "GROUP2"],
+        "VALUE": ["A", "B", "X"],
+    }
+    df = dataset_type.from_dict(data)
+    result = DataframeType(
+        {"value": df, "column_prefix_map": {"--": ""}}
+    ).is_inconsistent_across_dataset({"target": target, "comparator": comparator})
+    assert result.equals(df.convert_to_series(expected_result))
+
+
+@pytest.mark.parametrize(
+    "target, comparator, dataset_type, expected_result",
+    [
+        ("VALUE", "GROUP", PandasDataset, [True, True, True]),
+    ],
+)
+def test_is_inconsistent_three_way_tie(
+    target, comparator, dataset_type, expected_result
+):
+    data = {
+        "GROUP": ["GROUP1", "GROUP1", "GROUP1"],
+        "VALUE": ["A", "B", "C"],
+    }
+    df = dataset_type.from_dict(data)
+    result = DataframeType(
+        {"value": df, "column_prefix_map": {"--": ""}}
+    ).is_inconsistent_across_dataset({"target": target, "comparator": comparator})
+    assert result.equals(df.convert_to_series(expected_result))

@@ -875,6 +875,63 @@ will return:
 ["2023-05-19", "2023-10-26", "2023-12-13"]
 ```
 
+## variable_count
+
+Returns a mapping of variable names to the number of times that variable appears in a domain within the study.
+
+- Input
+
+  ```json
+  {
+    "AE": ["STUDYID", "DOMAIN", "USUBJID", "AETERM", "AEENDTC"],
+    "LB": ["STUDYID", "DOMAIN", "USUBJID", "LBTESTCD", "LBENDTC"]
+  }
+  ```
+
+- Output
+
+  ```json
+  {
+    "STUDYID": 2,
+    "DOMAIN": 2,
+    "USUBJID": 2,
+    "--TERM": 1,
+    "--TESTCD": 1,
+    "--ENDTC": 2
+  }
+  ```
+
+## variable_exists
+
+Flag an error if MIDS is in the dataset currently being evaluated and the TM domain is not present in the study
+
+```yaml
+Rule Type: Domain Presence Check
+Check:
+  all:
+    - name: $MIDS_EXISTS
+      operator: equal_to
+      value: true
+    - name: TM
+      operator: not_exists
+Operations:
+  - id: $MIDS_EXISTS
+    name: MIDS
+    operator: variable_exists
+```
+
+## variable_is_null
+
+True if variable is missing or if all values within a variable are null or empty string
+
+## variable_names
+
+Return the set of variable names from the library for the given standard
+
+## variable_value_count
+
+Given a variable `name`, returns a mapping of variable values to the number of times that value appears in the variable within all datasets in the study.
+
 # External Dictionary Validation Operations
 
 ## Supported External Dictionary Types
@@ -1087,95 +1144,3 @@ Operations:
   - id: $valid_whodrug_codes
     operator: whodrug_code_hierarchy
 ```
-
-## variable_count
-
-Returns a mapping of variable names to the number of times that variable appears in a domain within the study.
-
-- Input
-
-  ```json
-  {
-    "AE": ["STUDYID", "DOMAIN", "USUBJID", "AETERM", "AEENDTC"],
-    "LB": ["STUDYID", "DOMAIN", "USUBJID", "LBTESTCD", "LBENDTC"]
-  }
-  ```
-
-- Output
-
-  ```json
-  {
-    "STUDYID": 2,
-    "DOMAIN": 2,
-    "USUBJID": 2,
-    "--TERM": 1,
-    "--TESTCD": 1,
-    "--ENDTC": 2
-  }
-  ```
-
-## variable_exists
-
-Flag an error if MIDS is in the dataset currently being evaluated and the TM domain is not present in the study
-
-```yaml
-Rule Type: Domain Presence Check
-Check:
-  all:
-    - name: $MIDS_EXISTS
-      operator: equal_to
-      value: true
-    - name: TM
-      operator: not_exists
-Operations:
-  - id: $MIDS_EXISTS
-    name: MIDS
-    operator: variable_exists
-```
-
-## variable_is_null
-
-True if variable is missing or if all values within a variable are null or empty string
-
-## variable_names
-
-Return the set of variable names from the library for the given standard
-
-## variable_library_metadata
-
-Get the metadata value from the library for all variables in the current dataset. Metadata attribute is specified by the `name`.
-
-Result
-
-```json
-{
-  "STUDYID": "Req",
-  "DOMAIN": "Req",
-  "AEGRPID": "Perm",
-  "AETERM": "Req",
-  "AELLT": "Exp",
-  "...": "..."
-}
-```
-
-> Condition: Variable Core Status = Required
-
-> Rule: Variable ^= null
-
-```yaml
-Check:
-  any:
-    - all:
-        - operator: variable_metadata_equal_to
-          value: Req
-          metadata: $var_perm
-        - operator: empty
-Operations:
-  - id: $var_perm
-    operator: variable_library_metadata
-    name: core
-```
-
-## variable_value_count
-
-Given a variable `name`, returns a mapping of variable values to the number of times that value appears in the variable within all datasets in the study.

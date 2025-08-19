@@ -459,6 +459,22 @@ class RulesEngine:
                 message=message,
                 status=ExecutionStatus.SKIPPED.value,
             )
+        elif isinstance(
+            exception, AttributeError
+        ) and "'NoneType' object has no attribute" in str(exception):
+            error_obj = ValidationErrorContainer(
+                dataset=os.path.basename(dataset_path),
+                message="Missing field during execution, rule may not be applicable- unable to process dataset",
+                status=ExecutionStatus.SKIPPED.value,
+            )
+            message = "rule evaluation skipped - missing metadata"
+            errors = [error_obj]
+            return ValidationErrorContainer(
+                dataset=os.path.basename(dataset_path),
+                errors=errors,
+                message=message,
+                status=ExecutionStatus.SKIPPED.value,
+            )
         else:
             error_obj = FailedValidationEntity(
                 dataset=os.path.basename(dataset_path),
