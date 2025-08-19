@@ -287,12 +287,13 @@ class USDMDataService(BaseDataService):
         rel_type = getattr(node, "type", "")
         # 'Wrapper' for all top-level Study attributes (any path starting with '`this`' or with no dot)
         if path.startswith("`this`") or "." not in path:
-            parent_entity = self.entity_dict["`this`"]
+            # parent_entity = self.entity_dict["`this`"]
+            parent_entity = self.entity_dict.get("`this`")
         # If still not set, use schema mapping for node type or key
         if not parent_entity:
             node_type = getattr(node, "type", None)
             if node_type and node_type in self.entity_dict:
-                parent_entity = self.entity_dict[node_type]
+                parent_entity = self.entity_dict.get(node_type)
             elif path:
                 key = path.split(".")[-1] if "." in path else path
                 parent_entity = self.entity_dict.get(key, key)
