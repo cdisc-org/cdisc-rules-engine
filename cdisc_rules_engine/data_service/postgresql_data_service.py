@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Union
+from typing import Union, Optional, List, Dict, Any
 import pandas as pd
 import logging
 
@@ -10,6 +10,7 @@ from cdisc_rules_engine.constants.domains import SUPPLEMENTARY_DOMAINS
 from cdisc_rules_engine.data_service.db_cache import DBCache
 from cdisc_rules_engine.data_service.sql_data_service import SQLDataService
 from cdisc_rules_engine.data_service.sql_interface import PostgresQLInterface
+from cdisc_rules_engine.data_service.sql_data_preprocessor import DataPreprocessor
 from cdisc_rules_engine.models.test_dataset import TestDataset
 from cdisc_rules_engine.readers.data_reader import DataReader
 from cdisc_rules_engine.readers.define_xml_reader import XMLReader
@@ -60,6 +61,8 @@ class PostgresQLDataService(SQLDataService):
         self.pre_processed_dfs = pre_processed_dfs
         self.pgi = postgres_interface
         self.cache = cache
+
+        self.data_preprocessor = DataPreprocessor(postgres_interface, cache)
 
     @classmethod
     def from_list_of_testdatasets(
@@ -139,7 +142,7 @@ class PostgresQLDataService(SQLDataService):
         # initialize cache
         cache = DBCache.from_metadata_dict(metadata_rows)
 
-        pre_processed_dfs = PostgresQLDataService._pre_process_data_dfs(data_dfs)
+        pre_processed_dfs = PostgresQLDataService._pre_process_data_dfs(data_dfs, pgi, cache)
         return cls(
             pgi,
             cache,
@@ -174,15 +177,54 @@ class PostgresQLDataService(SQLDataService):
         metadata = [{"dataset_id": table_name, "var_name": var} for var in row_dicts[0].keys()]
         return cls(postgres_interface=pgi, cache=DBCache.from_metadata_dict(metadata), ig_specs=None)
 
-    def _pre_process_data_dfs(data_dfs: dict[pd.DataFrame]) -> dict[pd.DataFrame]:
-        # TODO
+    @staticmethod
+    def _pre_process_data_dfs(
+        data_dfs: dict[str, pd.DataFrame], postgres_interface: PostgresQLInterface, cache: DBCache
+    ) -> dict[str, pd.DataFrame]:
+        """Performs all preprocessing operations on data using the DataPreprocessor."""
+        logger.info("Starting data preprocessing")
+        preprocessor = DataPreprocessor(postgres_interface, cache)
+        preprocessing_results = preprocessor.preprocess_all()
+        logger.info(f"Preprocessing completed: {preprocessing_results}")
+        return data_dfs  # this is a redundant return because the data has been updated within the sql database
+
+    @classmethod
+    def from_dataset_paths(
+        cls,
+        datasets_path: Path,
+        ig_specs: IGSpecification,
+        define_xml_path: Path = None,
+        terminology_paths: dict = None,
+    ) -> "PostgresQLDataService":
         """
-        This method will be responsible to doing all pre-processing, like split dataset concatenation
-        and relrec / related merges to move this logic out of the rule execution and perform this during
-        database initialization.
-        Don't forget to add the pre-processed data metadata into the metadata_df
+        Load test datasets from dataset_paths to be used during test execution
         """
-        return data_dfs
+        pgi = PostgresQLInterface()
+        pgi.init_database()
+
+        data_dfs = {}
+        metadata_rows: list[dict[str, Union[str, int, float]]] = []
+
+        instance = cls(
+            postgres_interface=pgi,
+            cache=DBCache.from_metadata_dict(metadata_rows),
+            ig_specs=ig_specs,
+            datasets_path=datasets_path,
+            define_xml_path=define_xml_path,
+            terminology_paths=terminology_paths,
+            data_dfs=data_dfs,
+            pre_processed_dfs=None,
+        )
+
+        instance.pre_processed_dfs = PostgresQLDataService._pre_process_data_dfs(data_dfs, pgi, instance.cache)
+
+        validation_errors = instance.data_preprocessor.get_validation_errors()
+        if validation_errors:
+            logger.warning(f"Found {len(validation_errors)} validation errors during preprocessing")
+            for error in validation_errors:
+                logger.warning(f"  {error['type']}: {error['error']}")
+
+        return instance
 
     def _create_sql_tables_from_dataset_paths(self) -> None:
         """
@@ -433,11 +475,106 @@ class PostgresQLDataService(SQLDataService):
             variables=[res["var_name"] for res in results],
         )
 
+    def get_preprocessed_dataset_for_rule(self, rule_spec: dict) -> Optional[str]:
+        """Get or create preprocessed dataset based on rule requirements."""
+        datasets = rule_spec.get("datasets", [])
+
+        for dataset_spec in datasets:
+            domain_name = dataset_spec.get("domain_name") or dataset_spec.get("domain")
+
+            if domain_name in ["RELREC", "SUPP--", "SUPPQUAL"] or (
+                domain_name and (domain_name.startswith("CO") or domain_name.startswith("SUPP"))
+            ):
+                merged_dataset_name = self.data_preprocessor.process_rule_driven_merges(rule_spec)
+
+                if merged_dataset_name:
+                    logger.info(f"Created/retrieved preprocessed dataset: {merged_dataset_name}")
+                    return merged_dataset_name
+
+        return None
+
+    def get_preprocessing_status(self) -> dict:
+        """Get the current status of data preprocessing."""
+        return self.data_preprocessor.get_preprocessing_status()
+
+    def get_preprocessing_validation_errors(self) -> List[Dict[str, Any]]:
+        """Get validation errors found during preprocessing."""
+        return self.data_preprocessor.get_validation_errors()
+
+    def dataset_needs_preprocessing(self, dataset_id: str) -> bool:
+        """Check if a dataset needs preprocessing based on its characteristics."""
+        query = """
+            SELECT
+                dataset_is_split,
+                dataset_domain,
+                preprocessing_stage
+            FROM public.data_metadata
+            WHERE dataset_id = %s
+            LIMIT 1
+        """
+
+        self.pgi.execute_sql(query, (dataset_id.lower(),))
+        result = self.pgi.fetch_one()
+
+        if not result:
+            return False
+
+        is_split = result["dataset_is_split"]
+        domain = result["dataset_domain"]
+        stage = result["preprocessing_stage"]
+
+        # Needs preprocessing if:
+        # - It's a split dataset that hasn't been processed
+        # - It's a relationship domain (RELREC, CO*, SUPP*) not yet cataloged
+        # - It's in 'raw' stage
+        needs_preprocessing = (
+            (is_split and stage == "raw")
+            or (domain and domain in ["RELREC"] and stage == "raw")
+            or (domain and domain.startswith("CO") and stage == "raw")
+            or (self._is_supp_dataset(dataset_id) and stage == "raw")
+        )
+
+        return needs_preprocessing
+
+    def _dataset_exists(self, dataset_name: str) -> bool:
+        """Check if a dataset/table exists in the database."""
+        query = """
+            SELECT EXISTS (
+                SELECT 1
+                FROM information_schema.tables
+                WHERE table_schema = 'public'
+                  AND table_name = %s
+            )
+        """
+
+        self.pgi.execute_sql(query, (dataset_name.lower(),))
+
+        results = self.pgi.fetch_all()
+        if results:
+            return results[0]
+        return False
+
+    def _is_supp_dataset(self, dataset_id: str) -> bool:
+        """Check if a dataset is a SUPP dataset."""
+        query = """
+            SELECT dataset_is_supp
+            FROM public.data_metadata
+            WHERE dataset_id = %s
+            LIMIT 1
+        """
+
+        self.pgi.execute_sql(query, (dataset_id.lower(),))
+        result = self.pgi.fetch_one()
+
+        return result["dataset_is_supp"] if result else False
+
+    @staticmethod
     def _get_unsplit_name(
         name: str,
         domain: Union[str, None],
         rdomain: str,
     ) -> str:
+        """Get the unsplit name for a dataset."""
         if domain:
             return domain
         if name.startswith("SUPP"):

@@ -97,13 +97,13 @@ class PostgresQLInterface:
 
         return affected_rows_list
 
-    def fetch_one(self) -> Optional[Dict[str, Any]]:
+    def fetch_one(self) -> Optional[Any]:
         """Fetch one result from the last query"""
         if self._last_results:
             return self._last_results.pop(0)
         return None
 
-    def fetch_all(self) -> List[Dict[str, Any]]:
+    def fetch_all(self) -> List[Optional[Any]]:
         """Fetch all results from the last query"""
         results = self._last_results.copy()
         self._last_results.clear()

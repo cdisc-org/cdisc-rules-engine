@@ -1326,8 +1326,34 @@ def get_sample_supp_dataset() -> TestDataset:
             ),
         ],
         records={
+            "STUDYID": ["CDISC01", "CDISC01"],
+            "USUBJID": ["P01", "P02"],
+            "IDVAR": ["USUBJID", "USUBJID"],
+            "IDVARVAL": ["P01", "P02"],
+            "QNAM": ["ARM", "ARM"],
+            "QVAL": ["ARM A", "ARM A"],
             "DOMAIN": ["SUPPDM", "SUPPDM"],
             "RDOMAIN": ["DM", "DM"],
             "LBSEQ": [1, 2],
+        },
+    )
+
+
+@pytest.fixture
+def get_sample_dm_dataset() -> TestDataset:
+    """Provides a sample DM dataset for SUPPDM to reference."""
+    return TestDataset(
+        filename="dm.xpt",
+        filepath="path/to/dm.xpt",
+        name="DM",
+        label="Demographics",
+        variables=[
+            TestVariableMetadata(name="STUDYID", label="Study Identifier", type="Char", length=8, format=""),
+            TestVariableMetadata(name="USUBJID", label="Unique Subject Identifier", type="Char", length=12, format=""),
+        ],
+        records={
+            "STUDYID": ["CDISC01", "CDISC01"],
+            "USUBJID": ["P01", "P02"],
+            "DOMAIN": ["DM", "DM"],
         },
     )

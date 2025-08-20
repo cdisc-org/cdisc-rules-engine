@@ -2,10 +2,13 @@ from cdisc_rules_engine.data_service.db_cache import DBCache
 from cdisc_rules_engine.data_service.postgresql_data_service import PostgresQLDataService
 
 
-def test_db_cache_initialization(get_sample_supp_dataset, get_sample_lb_dataset):
-    ds = PostgresQLDataService.from_list_of_testdatasets([get_sample_supp_dataset, get_sample_lb_dataset], None)
+def test_db_cache_initialization(get_sample_supp_dataset, get_sample_lb_dataset, get_sample_dm_dataset):
+    ds = PostgresQLDataService.from_list_of_testdatasets(
+        [get_sample_supp_dataset, get_sample_lb_dataset, get_sample_dm_dataset], None
+    )
     assert "suppdm" == ds.cache.get_tables().get("suppdm")
     assert "lb" == ds.cache.get_tables().get("lb")
+    assert "dm" == ds.cache.get_tables().get("dm")
 
     assert "suppdm" == ds.cache.get_db_table_cache("suppdm").get("db_table")
     assert 3 == len(ds.cache.get_db_table_cache("suppdm").get("columns"))
@@ -36,8 +39,10 @@ def test_empty_cache():
     assert cache.get_db_column_hash("suppdm", "domain") is None
 
 
-def test_add_db_column_if_missing(get_sample_supp_dataset, get_sample_lb_dataset):
-    ds = PostgresQLDataService.from_list_of_testdatasets([get_sample_supp_dataset, get_sample_lb_dataset], None)
+def test_add_db_column_if_missing(get_sample_supp_dataset, get_sample_lb_dataset, get_sample_dm_dataset):
+    ds = PostgresQLDataService.from_list_of_testdatasets(
+        [get_sample_supp_dataset, get_sample_lb_dataset, get_sample_dm_dataset], None
+    )
     # case exists
     assert (True, "lbseq", "lbseq") == ds.cache.add_db_column_if_missing(table_key="lb", column_key="lbseq")
     assert (True, "rdomain", "rdomain") == ds.cache.add_db_column_if_missing(table_key="suppdm", column_key="rdomain")
