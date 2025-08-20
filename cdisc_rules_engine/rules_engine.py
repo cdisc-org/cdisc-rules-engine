@@ -176,8 +176,7 @@ class RulesEngine:
             Error Message: {str(e)}
             Dataset Name: {dataset_metadata.name}
             Rule ID: {rule.get("core_id", "unknown")}
-            Full traceback:
-            {traceback.format_exc()}
+            Full traceback: {traceback.format_exc()}
             """
             )
             error_obj: ValidationErrorContainer = self.handle_validation_exceptions(
@@ -460,7 +459,6 @@ class RulesEngine:
             error_obj = ValidationErrorContainer(
                 dataset=os.path.basename(dataset_path),
                 message="Missing field during execution, rule may not be applicable- unable to process dataset",
-                status=ExecutionStatus.SKIPPED.value,
             )
             message = "rule evaluation skipped - missing metadata"
             errors = [error_obj]

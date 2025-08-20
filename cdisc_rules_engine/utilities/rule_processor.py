@@ -188,6 +188,34 @@ class RuleProcessor:
             )
         )
 
+    def rule_applies_to_data_structure(
+        self, rule, datasets, dataset_metadata: SDTMDatasetMetadata
+    ):
+        datastructures = rule.get("data_structures") or {}
+        included_datastructures = datastructures.get("Include", [])
+        excluded_datastructures = datastructures.get("Exclude", [])
+        is_included = True
+        is_excluded = False
+        if included_datastructures:
+            if ALL_KEYWORD in included_datastructures:
+                return True
+            ds = self.data_service.get_data_structure(
+                dataset_metadata.full_path,
+                datasets,
+                dataset_metadata,
+            )
+            if ds not in included_datastructures:
+                is_included = False
+        if excluded_datastructures:
+            ds = self.data_service.get_data_structure(
+                dataset_metadata.full_path,
+                datasets,
+                dataset_metadata,
+            )
+            if ds and (ds in excluded_datastructures):
+                is_excluded = True
+        return is_included and not is_excluded
+
     def rule_applies_to_class(
         self,
         rule,
@@ -231,7 +259,6 @@ class RuleProcessor:
                 class_name == FINDINGS_ABOUT and FINDINGS in included_classes
             ):
                 is_included = False
-
         if excluded_classes:
             variables = self.data_service.get_variables_metadata(
                 dataset_name=dataset_metadata.full_path, datasets=datasets
@@ -607,6 +634,13 @@ class RuleProcessor:
         ):
             reason = (
                 f"Rule skipped - doesn't apply to use case for "
+                f"rule id={rule_id}, dataset={dataset_name}"
+            )
+            logger.info(f"is_suitable_for_validation. {reason}, result=False")
+            return False, reason
+        if not self.rule_applies_to_data_structure(rule, datasets, dataset_metadata):
+            reason = (
+                f"Rule skipped - doesn't apply to data structure for "
                 f"rule id={rule_id}, dataset={dataset_name}"
             )
             logger.info(f"is_suitable_for_validation. {reason}, result=False")
