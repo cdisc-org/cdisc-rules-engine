@@ -211,6 +211,8 @@ class PostgresQLDataService(SQLDataService):
 
             logger.info(f"Loading dataset {file_path.name} into table {table_name}")
 
+            self._create_table_with_indexes(table_name, metadata_info)
+
             metadata_rows = []
             first_chunk_processed = False
 
@@ -219,7 +221,6 @@ class PostgresQLDataService(SQLDataService):
                 chunk_data = [{k.lower(): v for k, v in row} for row in chunk_data.items()]
                 if not first_chunk_processed and chunk_data:
                     first_chunk = chunk_data[0]
-                    self._create_table_with_indexes(table_name, first_chunk)
 
                     metadata_rows = self._build_metadata_rows(
                         file_path, table_name, metadata_info, first_chunk, timestamp
@@ -237,12 +238,12 @@ class PostgresQLDataService(SQLDataService):
         except Exception as e:
             logger.error(f"Failed to load {file_path.name}: {e}")
 
-    def _create_table_with_indexes(self, table_name: str, first_chunk: dict) -> None:
+    def _create_table_with_indexes(self, table_name: str, metadata: dict) -> None:
         """Create table and add indexes for CDISC variables."""
-        self.pgi.create_table_from_data(table_name, first_chunk)
+        self.pgi.create_table_from_metadata(table_name, metadata)
 
         for col in ("usubjid", "studyid", "domain", "seq", "idvar", "idvarval"):
-            if col in first_chunk:
+            if col in [var["name"].lower() for var in metadata["variables"]]:
                 self.pgi.execute_sql(
                     f"CREATE INDEX IF NOT EXISTS idx_{table_name}_{col.lower()} ON {table_name}({col})"
                 )
@@ -285,7 +286,7 @@ class PostgresQLDataService(SQLDataService):
 
         return metadata_rows
 
-    def create_definexml_tables(self):
+    def _create_definexml_tables(self):
         """Create tables for Define-XML metadata"""
         if not self.define_xml_path:
             logger.info("No Define-XML path provided.")

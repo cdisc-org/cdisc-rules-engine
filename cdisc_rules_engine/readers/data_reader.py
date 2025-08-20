@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Dict, Any, Iterator
+from typing import List, Dict, Any, Iterator, Optional
 
 import pandas as pd
 from pandas.io.sas.sas7bdat import SAS7BDATReader
@@ -32,6 +32,7 @@ class DataReader(BaseReader):
 
     def __init__(self, file_path: str):
         super().__init__(file_path)
+        self._column_types: Optional[Dict[str, str]] = None
 
     def read_metadata(self) -> Dict[str, Any]:
         """Read only the metadata."""
@@ -45,6 +46,8 @@ class DataReader(BaseReader):
         try:
             variable_metadata = self._extract_variable_metadata(reader)
             record_count = self._get_record_count(reader)
+
+            self._column_types = self._extract_column_types(variable_metadata)
 
             study_id = None
             try:
@@ -71,6 +74,10 @@ class DataReader(BaseReader):
 
     def read(self) -> Iterator[List[Dict[str, Any]]]:
         """Read and stream records in chunks."""
+        if self._column_types is None:
+            metadata = self.read_metadata()
+            self._column_types = self._extract_column_types(metadata["variables"])
+
         yield from self._read_chunks(chunksize=self.CHUNKSIZE)
 
     def _read_chunks(self, chunksize: int = CHUNKSIZE) -> Iterator[List[Dict[str, Any]]]:
@@ -83,8 +90,55 @@ class DataReader(BaseReader):
         )
 
         for chunk_df in reader:
-            chunk_data = chunk_df.where(chunk_df.notna(), None).to_dict(orient="records")
+            chunk_df = self._cleanup_missing_values(chunk_df)
+            chunk_data = chunk_df.to_dict(orient="records")
             yield chunk_data
+
+    def _cleanup_missing_values(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Clean up missing values based on column type."""
+        if self._column_types is None:
+            return df.where(df.notna(), None)
+
+        cleaned_df = df.copy()
+
+        for column in cleaned_df.columns:
+            column_type = self._column_types.get(column, "unknown")
+
+            if self._is_numeric_type(column_type):
+                cleaned_df[column] = cleaned_df[column].where(cleaned_df[column].notna(), None)
+            elif self._is_text_type(column_type):
+                cleaned_df[column] = cleaned_df[column].fillna("")
+                cleaned_df[column] = cleaned_df[column].apply(lambda x: "" if pd.isna(x) or x is None else x)
+            else:
+                cleaned_df[column] = cleaned_df[column].where(cleaned_df[column].notna(), None)
+
+        return cleaned_df
+
+    def _extract_column_types(self, variable_metadata: List[Dict[str, Any]]) -> Dict[str, str]:
+        """Extract column types from variable metadata."""
+        column_types = {}
+        for var in variable_metadata:
+            name = var.get("name", "")
+            sas_type = var.get("type", "")
+            column_types[name] = sas_type
+            column_types[name.upper()] = sas_type
+        return column_types
+
+    def _is_text_type(self, sas_type: str) -> bool:
+        """Determine if a SAS type represents a text/character column."""
+        if not sas_type:
+            return False
+
+        type_lower = str(sas_type).lower().strip()
+        return type_lower in ["s", "string", "c", "char", "character", "text"]
+
+    def _is_numeric_type(self, sas_type: str) -> bool:
+        """Determine if a SAS type represents a numeric column."""
+        if not sas_type:
+            return False
+
+        type_lower = str(sas_type).lower().strip()
+        return type_lower in ["d", "double", "n", "num", "numeric", "i", "int", "integer", "f", "float"]
 
     def _get_first_record(self) -> Dict[str, Any]:
         """Get the first record from the file."""
@@ -92,6 +146,19 @@ class DataReader(BaseReader):
             self.file_path, format="xport" if self.file_path.suffix == ".xpt" else "sas7bdat", encoding="utf-8", nrows=1
         )
         if not df.empty:
+            if self._column_types is None:
+                reader = (
+                    XportReader(self.file_path, encoding="utf-8")
+                    if self.file_path.suffix == ".xpt"
+                    else SAS7BDATReader(self.file_path, encoding="utf-8")
+                )
+                try:
+                    variable_metadata = self._extract_variable_metadata(reader)
+                    self._column_types = self._extract_column_types(variable_metadata)
+                finally:
+                    reader.close()
+
+            df = self._cleanup_missing_values(df)
             return df.iloc[0].to_dict()
         return {}
 

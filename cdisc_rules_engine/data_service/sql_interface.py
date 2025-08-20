@@ -116,7 +116,16 @@ class PostgresQLInterface:
         # ensure lowercasing of table names and columns
         sample = data if isinstance(data, dict) else data[0]
 
-        create_stmt = self.serialiser.create_table_from_dict(table_name, sample, primary_key)
+        create_stmt = self.serialiser.create_table_query_from_data(table_name, sample, primary_key)
+
+        self.execute_sql(create_stmt)
+        logger.info(f"Table {table_name} created successfully")
+
+    def create_table_from_metadata(
+        self, table_name: str, metadata: Dict[str, Any], primary_key: Optional[str] = None
+    ) -> None:
+        """Create a table from dataset metadata"""
+        create_stmt = self.serialiser.create_table_query_from_data_metadata_dict(table_name, metadata, primary_key)
 
         self.execute_sql(create_stmt)
         logger.info(f"Table {table_name} created successfully")
