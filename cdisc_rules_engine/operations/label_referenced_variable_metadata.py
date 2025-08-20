@@ -9,6 +9,14 @@ class LabelReferencedVariableMetadata(BaseOperation):
         found in the column provided in self.params.target.
         """
         variables_metadata = self._get_variables_metadata_from_standard()
+
+        # Ensure all expected metadata fields are present
+        expected_fields = ["name", "role", "ordinal", "label"]
+        for metadata in variables_metadata:
+            for field in expected_fields:
+                if field not in metadata:
+                    metadata[field] = ""
+
         df = self.evaluation_dataset.__class__.from_records(variables_metadata)
         df.data = df.data.add_prefix(f"{self.params.operation_id}_")
         target_columns = df.columns
