@@ -23,7 +23,7 @@ from cdisc_rules_engine.constants.domains import (
     APRELSUB_DOMAIN,
     SUPPLEMENTARY_DOMAINS,
 )
-from cdisc_rules_engine.constants.classes import SPECIAL_PURPOSE
+from cdisc_rules_engine.constants.classes import SPECIAL_PURPOSE, SPECIAL_PURPOSE_MODEL
 from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 from cdisc_rules_engine.interfaces import ConditionInterface
 from cdisc_rules_engine.models.base_validation_entity import BaseValidationEntity
@@ -362,7 +362,10 @@ def get_dictionary_path(directory_path: str, file_name: str) -> str:
 
 
 def convert_library_class_name_to_ct_class(class_name: str):
-    conversions = {"special-purpose": SPECIAL_PURPOSE}
+    conversions = {
+        "special purpose": SPECIAL_PURPOSE,
+        "special-purpose datasets": SPECIAL_PURPOSE_MODEL,
+    }
     return conversions.get(class_name.lower(), class_name.upper())
 
 

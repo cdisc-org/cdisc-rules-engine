@@ -434,15 +434,16 @@ def process_rule(rule, args, rule_data, rules, keys):
     if not core_id:
         engine_logger.error("Rule missing core_id. Skipping...")
         return
-
     rule_identifier = get_rules_cache_key(
         args.standard, args.version.replace(".", "-"), core_id
     )
     if rule_identifier in rule_data:
         engine_logger.error(f"Duplicate rule {core_id} in local directory. Skipping...")
         return
-
-    if args.standard and args.version:
+    if rule.get("status", None).lower() == "draft":
+        rule_data[rule_identifier] = rule
+        rules.append(rule)
+    elif rule.get("status", None).lower() == "published":
         if not rule_matches_standard_version(
             rule, args.standard, args.version, args.substandard
         ):
@@ -454,14 +455,14 @@ def process_rule(rule, args, rule_data, rules, keys):
                 f"version '{args.version}'{substandard_msg}. Skipping..."
             )
             return
-    if keys is None or rule_identifier in keys:
-        rule_data[rule_identifier] = rule
-        rules.append(rule)
-    else:
-        engine_logger.info(
-            f"Rule {core_id} not specified with "
-            "-r rule flag and in local directory. Skipping..."
-        )
+        if keys is None or rule_identifier in keys:
+            rule_data[rule_identifier] = rule
+            rules.append(rule)
+        else:
+            engine_logger.info(
+                f"Rule {core_id} not specified with "
+                "-r rule flag and in local directory. Skipping..."
+            )
 
 
 def get_max_dataset_size(dataset_paths: Iterable[str]):
