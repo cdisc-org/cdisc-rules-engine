@@ -267,9 +267,12 @@ class USDMDataService(BaseDataService):
         parent_entity = ""
         parent_id = ""
         while parent and isinstance(parent, dict):
-            if parent.get("instanceType") and parent.get("id"):
-                parent_entity = parent["instanceType"]
-                parent_id = parent["id"]
+            if parent.get("instanceType"):
+                # Use schema mapping for instanceType if available
+                parent_entity = self.entity_dict.get(
+                    parent["instanceType"], parent["instanceType"]
+                )
+                parent_id = parent.get("id", "")
                 break
             parent = (
                 parent.get("parent") if isinstance(parent.get("parent"), dict) else None
@@ -282,6 +285,19 @@ class USDMDataService(BaseDataService):
             path_no_index.split(".")[-1] if "." in path_no_index else path_no_index
         )
         rel_type = getattr(node, "type", "")
+        # 'Wrapper' for all top-level Study attributes (any path starting with '`this`' or with no dot)
+        if path.startswith("`this`") or "." not in path:
+            # parent_entity = self.entity_dict["`this`"]
+            parent_entity = self.entity_dict.get("`this`")
+        # If still not set, use schema mapping for node type or key
+        if not parent_entity:
+            node_type = getattr(node, "type", None)
+            if node_type and node_type in self.entity_dict:
+                parent_entity = self.entity_dict.get(node_type)
+            elif path:
+                key = path.split(".")[-1] if "." in path else path
+                parent_entity = self.entity_dict.get(key, key)
+
         record = {
             "parent_entity": parent_entity,
             "parent_id": parent_id,
