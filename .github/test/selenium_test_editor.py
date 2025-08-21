@@ -152,6 +152,10 @@ try:
     # Give a few seconds for the POST request to complete
     time.sleep(3)
 
+    screenshot_path = "login_screenshot.png"
+    driver.save_screenshot(screenshot_path)
+    print(f"Screenshot saved to {screenshot_path}")
+
     # Find the rule execution API call
     rule_exec_response = None
     for request in driver.requests:
