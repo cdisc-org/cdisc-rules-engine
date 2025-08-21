@@ -5,11 +5,6 @@ on:
   workflow_dispatch:
 
 jobs:
-  rule_tester:
-    uses: ./.github/workflows/rule-tester.yml
-    secrets: inherit
-    with:
-      environment: DEV
   end_to_end_test:
     needs: rule_tester
     runs-on: ubuntu-latest
