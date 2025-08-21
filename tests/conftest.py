@@ -1304,6 +1304,48 @@ def get_sample_supp_dataset() -> TestDataset:
         label="Supplemental Demographics Domain",
         variables=[
             TestVariableMetadata(
+                name="STUDYID",
+                label="Study Identifier",
+                type="Char",
+                length=8,
+                format="",
+            ),
+            TestVariableMetadata(
+                name="USUBJID",
+                label="Unique Subject Identifier",
+                type="Char",
+                length=10,
+                format="",
+            ),
+            TestVariableMetadata(
+                name="IDVAR",
+                label="Identifying Variable",
+                type="Char",
+                length=16,
+                format="",
+            ),
+            TestVariableMetadata(
+                name="IDVARVAL",
+                label="Identifying Variable Value",
+                type="Char",
+                length=16,
+                format="",
+            ),
+            TestVariableMetadata(
+                name="QNAM",
+                label="Qualifier Variable Name",
+                type="Char",
+                length=4,
+                format="",
+            ),
+            TestVariableMetadata(
+                name="QVAL",
+                label="Data Value",
+                type="Char",
+                length=4,
+                format="",
+            ),
+            TestVariableMetadata(
                 name="DOMAIN",
                 label="Domain Abbreviation",
                 type="Char",
@@ -1349,11 +1391,12 @@ def get_sample_dm_dataset() -> TestDataset:
         label="Demographics",
         variables=[
             TestVariableMetadata(name="STUDYID", label="Study Identifier", type="Char", length=8, format=""),
+            TestVariableMetadata(name="DOMAIN", label="Domain Abbreviation", type="Char", length=8, format=""),
             TestVariableMetadata(name="USUBJID", label="Unique Subject Identifier", type="Char", length=12, format=""),
         ],
         records={
             "STUDYID": ["CDISC01", "CDISC01"],
-            "USUBJID": ["P01", "P02"],
             "DOMAIN": ["DM", "DM"],
+            "USUBJID": ["P01", "P02"],
         },
     )

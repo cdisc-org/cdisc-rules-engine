@@ -12,7 +12,7 @@ def test_get_dataset_metadata_sql(get_sample_lb_dataset, get_sample_supp_dataset
     assert ds_metadata.rdomain is None
     assert not ds_metadata.is_supp
     ds_metadata = sql_data_service.get_dataset_metadata(dataset_id="suppdm")
-    assert 3 == len(ds_metadata.variables)
+    assert 9 == len(ds_metadata.variables)
     assert ds_metadata.dataset_id is not None
     assert ds_metadata.domain is not None
     assert "DM" == ds_metadata.rdomain

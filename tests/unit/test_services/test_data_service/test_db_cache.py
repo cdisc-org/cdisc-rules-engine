@@ -11,14 +11,14 @@ def test_db_cache_initialization(get_sample_supp_dataset, get_sample_lb_dataset,
     assert "dm" == ds.cache.get_tables().get("dm")
 
     assert "suppdm" == ds.cache.get_db_table_cache("suppdm").get("db_table")
-    assert 3 == len(ds.cache.get_db_table_cache("suppdm").get("columns"))
+    assert 9 == len(ds.cache.get_db_table_cache("suppdm").get("columns"))
     assert "lb" == ds.cache.get_db_table_cache("lb").get("db_table")
     assert 2 == len(ds.cache.get_db_table_cache("lb").get("columns"))
 
     assert "suppdm" == ds.cache.get_db_table_hash("suppdm")
     assert "lb" == ds.cache.get_db_table_hash("lb")
 
-    assert 3 == len(ds.cache.get_columns("suppdm"))
+    assert 9 == len(ds.cache.get_columns("suppdm"))
     assert 2 == len(ds.cache.get_columns("lb"))
 
     assert "domain" == ds.cache.get_db_column_hash("suppdm", "domain")

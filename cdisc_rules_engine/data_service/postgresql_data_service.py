@@ -70,7 +70,7 @@ class PostgresQLDataService(SQLDataService):
         test_datasets: list[TestDataset],
         ig_specs: IGSpecification,
         datasets_path: Path = None,
-        define_xml_path: Path = None,
+        define_xml_path: str = "",
         terminology_paths: dict = None,
     ) -> "PostgresQLDataService":
         """
@@ -98,7 +98,8 @@ class PostgresQLDataService(SQLDataService):
             table_name = test_dataset["name"].lower()
             row_dicts = [{k.lower(): v for k, v in row.items()} for row in row_dicts]
 
-            pgi.create_table_from_data(table_name=table_name, data=row_dicts[0])
+            # collect col types from variables
+            pgi.create_table_from_metadata(table_name=table_name, metadata=test_dataset)
             pgi.insert_data(table_name=table_name, data=row_dicts)
 
             ddf = pd.DataFrame.from_records(row_dicts)

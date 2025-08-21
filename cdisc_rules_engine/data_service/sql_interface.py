@@ -153,7 +153,7 @@ class PostgresQLInterface:
                     return affected_rows
                 except Exception as e:
                     conn.rollback()
-                    logger.error(f"Insert failed: {e}")
+                    logger.error(f"Insert failed: {e} - table name {table_name} for insert data: {str(values_list)}")
                     raise
 
     def compile_and_execute(self, statements: List[str], commit: bool = True) -> None:

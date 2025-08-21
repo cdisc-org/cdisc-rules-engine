@@ -17,9 +17,9 @@ class SQLSerialiser:
     @staticmethod
     def sas_to_sql_type(type: str) -> str:
         """Map sas types to SQL types."""
-        if type in ("char", "s"):
+        if type.lower() in ("char", "s"):
             return "TEXT"
-        elif type in ("numeric", "d"):
+        elif type.lower() in ("num", "numeric", "d"):
             return "REAL"
         else:
             raise ValueError(f"Unsupported type: {type}")
