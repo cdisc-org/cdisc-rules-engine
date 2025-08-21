@@ -6,7 +6,6 @@ on:
 
 jobs:
   end_to_end_test:
-    needs: rule_tester
     runs-on: ubuntu-latest
 
     steps:
