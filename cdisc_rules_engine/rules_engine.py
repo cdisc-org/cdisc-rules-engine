@@ -36,6 +36,7 @@ from cdisc_rules_engine.services.data_services import DataServiceFactory
 from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import (
     DefineXMLReaderFactory,
 )
+from cdisc_rules_engine.utilities.jsonata_processor import JSONataProcessor
 from cdisc_rules_engine.utilities.data_processor import DataProcessor
 from cdisc_rules_engine.utilities.dataset_preprocessor import DatasetPreprocessor
 from cdisc_rules_engine.utilities.rule_processor import RuleProcessor
@@ -282,6 +283,10 @@ class RulesEngine:
             # rule should be copied to prevent updates to concurrent rule executions
             return self.execute_rule(
                 rule_copy, dataset, datasets, dataset_metadata, **kwargs
+            )
+        elif rule.get("rule_type") == RuleTypes.JSONATA.value:
+            return JSONataProcessor.execute_jsonata_rule(
+                rule, dataset, datasets, dataset_metadata, **kwargs
             )
 
         kwargs["ct_packages"] = list(self.ct_packages)
