@@ -440,7 +440,7 @@ def process_rule(rule, args, rule_data, rules, keys):
     if rule_identifier in rule_data:
         engine_logger.error(f"Duplicate rule {core_id} in local directory. Skipping...")
         return
-    if rule.get("status", None).lower() == "draft":
+    if rule.get("status", "").lower() == "draft":
         rule_data[rule_identifier] = rule
         rules.append(rule)
     elif rule.get("status", None).lower() == "published":
