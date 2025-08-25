@@ -1,10 +1,12 @@
-import os
 import json
-from dotenv import load_dotenv
+import os
 from unittest.mock import patch
 
+from dotenv import load_dotenv
 
-from cdisc_rules_engine.data_service.postgresql_data_service import PostgresQLDataService
+from cdisc_rules_engine.data_service.postgresql_data_service import (
+    PostgresQLDataService,
+)
 from scripts.run_sql_validation import sql_run_single_rule_validation
 from tests.rule_regression.regression import (
     delete_files_in_directory,
@@ -21,7 +23,11 @@ def test_regression_all_rules(pytestconfig, get_core_rules_df, get_core_rule):
     for _, row in regression_df.iterrows():
         rule_reg = run_single_rule_regression(row, get_core_rule)
         regression_json.append(rule_reg)
-    with open(str(pytestconfig.rootpath) + "/tests/resources/rules/rules.json", "w", encoding="utf-8") as f:
+    with open(
+        str(pytestconfig.rootpath) + "/tests/resources/rules/rules.json",
+        "w",
+        encoding="utf-8",
+    ) as f:
         json.dump(regression_json, f, ensure_ascii=False, indent=4)
 
 

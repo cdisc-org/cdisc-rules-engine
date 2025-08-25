@@ -2,17 +2,23 @@ import json
 import os
 import re
 from typing import Tuple
-from psycopg2 import errors
-from deepdiff import DeepDiff
 
 import pandas as pd
+from deepdiff import DeepDiff
+from psycopg2 import errors
 
-
-from cdisc_rules_engine.data_service.postgresql_data_service import PostgresQLDataService
+from cdisc_rules_engine.data_service.postgresql_data_service import (
+    PostgresQLDataService,
+)
 from cdisc_rules_engine.models.test_dataset import TestDataset, TestVariableMetadata
 from cdisc_rules_engine.utilities.ig_specification import IGSpecification
 from scripts.run_sql_validation import sql_run_single_rule_validation
 from scripts.run_validation import run_single_rule_validation
+
+RULE_DEPTH = 2
+TYPE_DEPTH = RULE_DEPTH + 1
+CASE_DEPTH = TYPE_DEPTH + 1
+DATA_DEPTH = CASE_DEPTH + 2
 
 
 def run_single_rule_regression(row: pd.Series, get_core_rule) -> list:
@@ -48,7 +54,7 @@ def run_single_rule_regression(row: pd.Series, get_core_rule) -> list:
                     if len(paths) == 1:
                         rule_regression["rule_in_mltple_standards"] = []
                         p = paths[0]
-                        rule_regression["sharepoint_source"] = p.split("/")[-2]
+                        rule_regression["sharepoint_source"] = p.split("/")[-RULE_DEPTH : -(RULE_DEPTH - 1)][0]
 
                         for case in ["negative", "positive"]:
                             case_path = p + f"/{case}"
@@ -63,7 +69,7 @@ def run_single_rule_regression(row: pd.Series, get_core_rule) -> list:
 
 def initialize_regression_dict(row) -> dict:
     return {
-        "core-id": row["Core-ID"] if pd.notna(row["Core-ID"]) and str(row["Core-ID"]).strip() else "unknown",
+        "core-id": (row["Core-ID"] if pd.notna(row["Core-ID"]) and str(row["Core-ID"]).strip() else "unknown"),
         "cdisc_rule_id": (
             row["CDISC Rule ID"] if pd.notna(row["CDISC Rule ID"]) and str(row["CDISC Rule ID"]).strip() else "unknown"
         ),
@@ -73,7 +79,7 @@ def initialize_regression_dict(row) -> dict:
         "executability": (
             row["Executability"] if pd.notna(row["Executability"]) and str(row["Executability"]).strip() else "unknown"
         ),
-        "status": row["Status"] if pd.notna(row["Status"]) and str(row["Status"]).strip() else "unknown",
+        "status": (row["Status"] if pd.notna(row["Status"]) and str(row["Status"]).strip() else "unknown"),
         "standard_source": row["standard_source"],
     }
 
@@ -86,7 +92,7 @@ def run_test_cases(
     rule,
 ):
     two_digit_pattern = re.compile(r"^\d{2}$")
-    cur_regression[f"{case}_folder_path"] = "/".join(case_folder_path.split("/")[-5:])
+    cur_regression[f"{case}_folder_path"] = extract_final_path(case_folder_path, TYPE_DEPTH)
     test_case_folder_paths = [
         case_folder_path + "/" + name
         for name in os.listdir(case_folder_path)
@@ -111,8 +117,8 @@ def run_test_cases(
             )
             test_case_regression.append(
                 {
-                    "/".join(test_case_folder_path.split("/")[-5:]): {
-                        "test_case_xslx_file": "/".join(test_case_file_path.split("/")[-7:]),
+                    extract_final_path(test_case_folder_path, CASE_DEPTH): {
+                        "test_case_xslx_file": extract_final_path(test_case_file_path, DATA_DEPTH),
                         "engine_regression": engine_regression,
                     }
                 }
@@ -429,7 +435,9 @@ def sharepoint_xlsx_to_test_datasets(path: str) -> list[TestDataset]:
     return test_datasets
 
 
-def extract_variables(dataset_df: pd.DataFrame) -> Tuple[list[TestVariableMetadata, dict]]:
+def extract_variables(
+    dataset_df: pd.DataFrame,
+) -> Tuple[list[TestVariableMetadata, dict]]:
     variables = []
     col_type_dict = {}
     for col in dataset_df.columns:
@@ -443,7 +451,13 @@ def extract_variables(dataset_df: pd.DataFrame) -> Tuple[list[TestVariableMetada
 
         # Create a variable dictionary
         variables.append(
-            {"name": var_name, "label": var_label, "type": var_type, "length": var_length, "format": var_format}
+            {
+                "name": var_name,
+                "label": var_label,
+                "type": var_type,
+                "length": var_length,
+                "format": var_format,
+            }
         )
 
         # collect appropriate column type for SQL
@@ -557,7 +571,18 @@ def output_engine_results_json(pytestconfig, get_core_rules_df, get_core_rule, e
             json.dump(value, f, ensure_ascii=False, indent=4)
 
 
+def extract_final_path(path: str, part_num: int) -> str:
+    parts = path.split("/")
+    if len(parts) < part_num:
+        raise ValueError(f"Path {path} does not have enough parts to extract {part_num} parts.")
+    return "/".join(parts[-part_num:])
+
+
 def delete_files_in_directory(dir_path: str):
+    # Ensure the directory exists before attempting to delete files
+    if not os.path.exists(dir_path):
+        os.makedirs(dir_path)
+
     for filename in os.listdir(dir_path):
         file_path = os.path.join(dir_path, filename)
         if os.path.isfile(file_path):
