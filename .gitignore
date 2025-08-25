@@ -149,3 +149,6 @@ resources/cache/custom_rules.pkl
 *.swp
 
 Organization_Custom.json
+
+# local rule regression
+tests/resources/rules/dev

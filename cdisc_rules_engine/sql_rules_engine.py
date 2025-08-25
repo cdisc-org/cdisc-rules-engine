@@ -258,32 +258,36 @@ class SQLRulesEngine:
             )
             message = "rule execution error"
         elif isinstance(exception, KeyError):
+            message = ", ".join(sorted(exception.args[0].split(", ")))
             error_obj = FailedValidationEntity(
                 dataset=os.path.basename(dataset_path),
                 error="Column not found in data",
-                message=exception.args[0],
+                message=message,
             )
             message = "rule execution error"
         elif isinstance(exception, DomainNotFoundInDefineXMLError):
+            message = ", ".join(sorted(exception.args[0].split(", ")))
             error_obj = FailedValidationEntity(
                 dataset=os.path.basename(dataset_path),
                 error=DomainNotFoundInDefineXMLError.description,
-                message=exception.args[0],
+                message=message,
             )
             message = "rule execution error"
         elif isinstance(exception, VariableMetadataNotFoundError):
+            message = ", ".join(sorted(exception.args[0].split(", ")))
             error_obj = FailedValidationEntity(
                 dataset=os.path.basename(dataset_path),
                 error=VariableMetadataNotFoundError.description,
-                message=exception.args[0],
+                message=message,
             )
             message = "rule execution error"
         elif isinstance(exception, FailedSchemaValidation):
             if self.validate_xml:
+                message = ", ".join(sorted(exception.args[0].split(", ")))
                 error_obj: ValidationErrorContainer = ValidationErrorContainer(
                     status=ExecutionStatus.SKIPPED.value,
                     error=FailedSchemaValidation.description,
-                    message=exception.args[0],
+                    message=message,
                 )
                 message = "Schema Validation Error"
                 errors = [error_obj]
