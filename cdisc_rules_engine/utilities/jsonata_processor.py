@@ -1,3 +1,5 @@
+from functools import cache
+from glob import glob
 from jsonata import Jsonata
 
 from cdisc_rules_engine.enums.execution_status import ExecutionStatus
@@ -12,9 +14,11 @@ from cdisc_rules_engine.models.validation_error_entity import (
 class JSONataProcessor:
 
     @staticmethod
-    def execute_jsonata_rule(rule, dataset, datasets, dataset_metadata, **kwargs):
+    def execute_jsonata_rule(rule, dataset, dataset_metadata, jsonata_functions_path):
+        custom_functions = JSONataProcessor.get_custom_functions(jsonata_functions_path)
         check = rule.get("conditions")
-        expr = Jsonata(check)
+        full_string = f"(\n{custom_functions}{check}\n)"
+        expr = Jsonata(full_string)
         results = expr.evaluate(dataset)
         errors = (
             [
@@ -43,3 +47,17 @@ class JSONataProcessor:
             ),
         )
         return [validation_error_container.to_representation()]
+
+    @staticmethod
+    @cache
+    def get_custom_functions(jsonata_functions_path):
+        if not jsonata_functions_path:
+            return ""
+        functions = []
+        for filepath in glob(f"{jsonata_functions_path}/*.jsonata"):
+            with open(filepath, "r") as file:
+                function_definition = file.read()
+                function_definition = function_definition.replace("{", "", 1)
+                function_definition = "".join(function_definition.rsplit("}", 1))
+                functions.append(function_definition)
+        return f"$utils:={{\n{',\n'.join(functions)}\n}};\n"

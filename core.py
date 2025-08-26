@@ -204,6 +204,13 @@ def cli():
     default="y",
     help="Enable XML validation (default 'y' to enable, otherwise disable)",
 )
+@click.option(
+    "-jfp",
+    "--jsonata-functions-path",
+    required=False,
+    type=click.Path(exists=True, file_okay=False, readable=True, resolve_path=True),
+    help="Path to directory containing a set of custom JSONata functions.",
+)
 @click.pass_context
 def validate(
     ctx,
@@ -235,6 +242,7 @@ def validate(
     progress: str,
     define_xml_path: str,
     validate_xml: str,
+    jsonata_functions_path: str,
 ):
     """
     Validate data using CDISC Rules Engine
@@ -321,6 +329,7 @@ def validate(
             progress,
             define_xml_path,
             validate_xml_bool,
+            jsonata_functions_path,
         )
     )
 
@@ -667,6 +676,7 @@ def test_validate():
             define_xml_path = None
             validate_xml = False
             json_output = os.path.join(temp_dir, "json_validation_output")
+            jsonata_functions_path = None
             run_validation(
                 Validation_args(
                     cache_path,
@@ -689,6 +699,7 @@ def test_validate():
                     progress,
                     define_xml_path,
                     validate_xml,
+                    jsonata_functions_path,
                 )
             )
             print("JSON validation completed successfully!")
@@ -715,6 +726,7 @@ def test_validate():
                     progress,
                     define_xml_path,
                     validate_xml,
+                    jsonata_functions_path,
                 )
             )
             print("XPT validation completed successfully!")

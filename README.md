@@ -180,6 +180,7 @@ Run `python core.py validate --help` to see the list of validation options.
                                   progress. By default a progress bar like
                                   "[████████████████████████████--------]
                                   78%"is printed.
+  -jfp, --jsonata-functions-path  Path to directory containing a set of custom JSONata functions.
   --help                          Show this message and exit.
 ```
 
