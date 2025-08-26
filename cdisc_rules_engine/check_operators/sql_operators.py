@@ -1217,12 +1217,13 @@ class PostgresQLOperators(BaseType):
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
     def has_different_values(self, other_value: dict):
-        """
-        The operator ensures that the target column has different values.
-        """
-        target: str = self.replace_prefix(other_value.get("target"))
-        is_valid: bool = len(self.validation_df[target].unique()) > 1
-        return self.validation_df.convert_to_series([is_valid] * len(self.validation_df[target]))
+        target_column = other_value.get("target").lower()
+        operation_name = f"{target_column}_has_different_values"
+        db_table = self.sql_data_service.cache.get_db_table_hash(self.table_id)
+
+        return self._do_check_operator(
+            operation_name, lambda: f"(SELECT COUNT(DISTINCT {target_column}) FROM {db_table}) > 1"
+        )
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
