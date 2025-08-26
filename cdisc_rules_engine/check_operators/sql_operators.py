@@ -1,35 +1,38 @@
-from business_rules.operators import BaseType, type_operator
-from typing import Union, Any, List, Tuple
+import operator
+import re
+import traceback
+from functools import wraps
+from typing import Any, List, Tuple, Union
+from uuid import uuid4
+
+import dask.dataframe as dd
+import numpy as np
+import pandas as pd
 from business_rules.fields import FIELD_DATAFRAME
+from business_rules.operators import BaseType, type_operator
 from business_rules.utils import (
+    apply_regex,
     flatten_list,
     is_valid_date,
+    vectorized_case_insensitive_is_in,
+    vectorized_get_dict_key,
+    vectorized_is_complete_date,
+    vectorized_is_in,
     vectorized_is_valid,
     vectorized_is_valid_duration,
-    vectorized_is_complete_date,
-    vectorized_get_dict_key,
-    vectorized_is_in,
-    vectorized_case_insensitive_is_in,
-    apply_regex,
 )
-from cdisc_rules_engine.check_operators.helpers import vectorized_compare_dates
-
-from cdisc_rules_engine.constants import NULL_FLAVORS
-from cdisc_rules_engine.data_service.postgresql_data_service import PostgresQLDataService
-from cdisc_rules_engine.utilities.utils import dates_overlap, parse_date
-import numpy as np
-import dask.dataframe as dd
-import pandas as pd
-import re
-import operator
-from uuid import uuid4
-from cdisc_rules_engine.models.dataset.dask_dataset import DaskDataset
-from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
-from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from pandas.api.types import is_integer_dtype
+
+from cdisc_rules_engine.check_operators.helpers import vectorized_compare_dates
+from cdisc_rules_engine.constants import NULL_FLAVORS
+from cdisc_rules_engine.data_service.postgresql_data_service import (
+    PostgresQLDataService,
+)
+from cdisc_rules_engine.models.dataset.dask_dataset import DaskDataset
+from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
+from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.services import logger
-from functools import wraps
-import traceback
+from cdisc_rules_engine.utilities.utils import dates_overlap, parse_date
 
 
 def log_operator_execution(func):
@@ -122,25 +125,22 @@ class PostgresQLOperators(BaseType):
             isinstance(column.iloc[0], list) or isinstance(column.iloc[0], set)
         )
 
+    def _exists(self, column: str) -> bool:
+        return column.lower() in self.sql_data_service.cache.get_columns(self.table_id)
+
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
     def exists(self, other_value):
         target_column = self.replace_prefix(other_value.get("target"))
-
-        def check_row(row):
-            return any(target_column in item for item in row if isinstance(item, list))
-
-        column_exists = target_column in self.validation_df.columns
-        if column_exists:
-            return self.validation_df.convert_to_series([True] * len(self.validation_df))
-        else:
-            exists_in_nested = self.validation_df.apply(check_row, axis=1).any()
-            return self.validation_df.convert_to_series([exists_in_nested] * len(self.validation_df))
+        result = self._exists(target_column)
+        return self._do_check_operator(f"""{target_column}_exists""", lambda: "TRUE" if result else "FALSE")
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
     def not_exists(self, other_value):
-        return ~self.exists(other_value)
+        target_column = self.replace_prefix(other_value.get("target"))
+        result = not self._exists(target_column)
+        return self._do_check_operator(f"""{target_column}_notexists""", lambda: "TRUE" if result else "FALSE")
 
     def _check_equality(
         self,
@@ -455,40 +455,28 @@ class PostgresQLOperators(BaseType):
     def greater_than(self, other_value):
         return self._numeric_comparison(other_value, ">")
 
-    def _add_column_query(self, table_name: str, column_name: str, column_type: str) -> str:
-        return f"ALTER TABLE {table_name} ADD COLUMN IF NOT EXISTS {column_name} {column_type};"
-
     def _numeric_comparison(
         self,
         other_value: dict,
         operator: str,
     ):
-        target_column = other_value.get("target").lower()
+        target_column = self.replace_prefix(other_value.get("target")).lower()
         comparator = (
             other_value.get("comparator").lower()
             if isinstance(other_value.get("comparator"), str)
             else other_value.get("comparator")
         )
-        exists, _, db_column = self.sql_data_service.cache.add_db_column_if_missing(
-            self.table_id, f"{target_column}{operator}{comparator}"
-        )
-        if not exists:
-            # do operation
-            db_table = self.sql_data_service.cache.get_db_table_hash(self.table_id)
-            subquery = f"""CASE WHEN
-                                CAST({self.replace_prefix(target_column)} AS NUMERIC)
-                                    {operator}
-                                CAST({comparator} AS NUMERIC) THEN true"""
-            query = f"UPDATE {db_table} SET {db_column} = {subquery} ELSE false END;"
-            self.sql_data_service.pgi.execute_many(
-                queries=[self._add_column_query(db_table, db_column, "BOOLEAN"), query]
-            )
-        # satisfy venmo process:
-        self.sql_data_service.pgi.execute_sql(f"SELECT id, {db_column} FROM {db_table};")
-        sql_results = self.sql_data_service.pgi.fetch_all()
-        # Construct pandas Series (no -1 offset if id is properly 0-based or 1-based consistently)
-        return_series = pd.Series(data={item["id"] - 1: item[db_column] for item in sql_results})
-        return return_series
+
+        def sql():
+            return f"""CASE WHEN
+                            CAST({target_column} AS NUMERIC)
+                                {operator}
+                            CAST({comparator} AS NUMERIC) THEN true
+                        ELSE false
+                        END
+                        """
+
+        return self._do_check_operator(f"{target_column}{operator}{comparator}", sql)
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -1473,3 +1461,35 @@ class PostgresQLOperators(BaseType):
     @type_operator(FIELD_DATAFRAME)
     def is_not_ordered_subset_of(self, other_value: dict):
         return ~self.is_ordered_subset_of(other_value)
+
+    def _add_column_query(self, table_name: str, column_name: str, column_type: str) -> str:
+        return f"ALTER TABLE {table_name} ADD COLUMN IF NOT EXISTS {column_name} {column_type};"
+
+    def _fetch_for_venmo(self, db_column: str):
+        """
+        Fetches data from a SQL table and returns it as a pandas Series,
+        so we can pass it to Venmo.
+        """
+        # Fetch all of the rows
+        self.sql_data_service.pgi.execute_sql(f"SELECT id, {db_column} FROM {self.table_id};")
+        sql_results = self.sql_data_service.pgi.fetch_all()
+
+        # Fix off-by-one
+        return_series = pd.Series(data={item["id"] - 1: item[db_column] for item in sql_results})
+        return return_series
+
+    def _do_check_operator(self, new_column: str, sql_fn: str):
+        """
+        Runs a check operator. First checks if the columns already exists,
+        if not, generates the SQL to create the column and runs it to populate the column.
+        """
+        exists, _, db_column = self.sql_data_service.cache.add_db_column_if_missing(self.table_id, new_column)
+        if not exists:
+            # do operation
+            db_table = self.sql_data_service.cache.get_db_table_hash(self.table_id)
+            subquery = sql_fn()
+            query = f"UPDATE {db_table} SET {db_column} = ({subquery});"
+            self.sql_data_service.pgi.execute_many(
+                queries=[self._add_column_query(db_table, db_column, "BOOLEAN"), query]
+            )
+        return self._fetch_for_venmo(db_column)
