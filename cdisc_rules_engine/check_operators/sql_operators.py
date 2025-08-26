@@ -16,7 +16,6 @@ from business_rules.utils import (
     is_valid_date,
     vectorized_case_insensitive_is_in,
     vectorized_get_dict_key,
-    vectorized_is_complete_date,
     vectorized_is_in,
     vectorized_is_valid,
     vectorized_is_valid_duration,
@@ -916,14 +915,31 @@ class PostgresQLOperators(BaseType):
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
     def is_incomplete_date(self, other_value):
-        return ~self.is_complete_date(other_value)
+        # Ensure target column is lowercase and prefix replaced
+        target = self.replace_prefix(other_value.get("target")).lower()
+        # Build a unique operation name for SQL
+        op_name = f"{target}_is_incomplete_date"
+
+        # SQL logic for incomplete date: not (length = 10 and not null)
+        def sql():
+            return f"""
+                CASE WHEN NOT (LENGTH({target}) = 10 AND {target} IS NOT NULL) THEN TRUE ELSE FALSE END
+            """
+
+        return self._do_check_operator(op_name, sql)
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
     def is_complete_date(self, other_value):
-        target = self.replace_prefix(other_value.get("target"))
-        results = vectorized_is_complete_date(self.validation_df[target])
-        return self.validation_df.convert_to_series(results)
+        target = self.replace_prefix(other_value.get("target")).lower()
+        op_name = f"{target}_is_complete_date"
+
+        def sql():
+            return f"""
+                CASE WHEN LENGTH({target}) = 10 AND {target} IS NOT NULL THEN TRUE ELSE FALSE END
+            """
+
+        return self._do_check_operator(op_name, sql)
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
