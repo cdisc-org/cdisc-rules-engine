@@ -17,6 +17,7 @@ from cdisc_rules_engine.utilities.utils import (
     get_dataset_name_from_details,
 )
 import os
+import pandas as pd
 
 
 class DatasetPreprocessor:
@@ -133,7 +134,9 @@ class DatasetPreprocessor:
                         left_dataset_domain_name=self._dataset_metadata.domain,
                         right_dataset=other_dataset,
                         right_dataset_domain_name=file_info.domain,
+                        right_dataset_metadata=file_info,
                         match_keys=domain_details.get("match_key"),
+                        datasets=datasets,
                     )
                     merged_domains.add(file_info.domain)
                 else:
@@ -187,30 +190,171 @@ class DatasetPreprocessor:
         left_dataset_domain_name: str,
         right_dataset: DatasetInterface,
         right_dataset_domain_name: str,
-        match_keys,
+        right_dataset_metadata: SDTMDatasetMetadata,
+        match_keys: List[str],
+        datasets: Iterable[SDTMDatasetMetadata] = None,
     ) -> DatasetInterface:
-        """
-        Merges child to parent datasets on their match keys.
-        Identifies dataset type and merges based on it.
-        """
-        left_dataset_match_keys = replace_pattern_in_list_of_strings(
-            get_sided_match_keys(match_keys=match_keys, side="left"),
-            "--",
-            left_dataset_domain_name,
+        is_supplemental, rdomain_dataset = self._classify_dataset(
+            left_dataset, self._dataset_metadata
         )
-        right_dataset_match_keys = replace_pattern_in_list_of_strings(
-            get_sided_match_keys(match_keys=match_keys, side="right"),
-            "--",
-            right_dataset_domain_name,
+        has_idvar_keys = "IDVAR" in match_keys or "IDVARVAL" in match_keys
+        if is_supplemental or rdomain_dataset and has_idvar_keys:
+            return self._merge_rdomain_dataset(
+                left_dataset,
+                left_dataset_domain_name,
+                right_dataset,
+                right_dataset_domain_name,
+                self._dataset_metadata,
+                match_keys,
+                datasets,
+            )
+        else:
+            left_dataset_match_keys = replace_pattern_in_list_of_strings(
+                get_sided_match_keys(match_keys=match_keys, side="left"),
+                "--",
+                left_dataset_domain_name,
+            )
+            right_dataset_match_keys = replace_pattern_in_list_of_strings(
+                get_sided_match_keys(match_keys=match_keys, side="right"),
+                "--",
+                right_dataset_domain_name,
+            )
+            result = left_dataset.merge(
+                right_dataset.data,
+                how="left",
+                left_on=left_dataset_match_keys,
+                right_on=right_dataset_match_keys,
+                suffixes=("", f".{right_dataset_domain_name}"),
+            )
+            return result
+
+    def _classify_dataset(
+        self, dataset: DatasetInterface, metadata: SDTMDatasetMetadata
+    ) -> tuple[bool, bool]:
+        is_supplemental = metadata and metadata.is_supp
+        has_rdomain_not_supp = "RDOMAIN" in dataset.columns and not is_supplemental
+
+        return is_supplemental, has_rdomain_not_supp
+
+    def _merge_rdomain_dataset(
+        self,
+        left_dataset: DatasetInterface,
+        left_dataset_domain_name: str,
+        right_dataset: DatasetInterface,
+        right_dataset_domain_name: str,
+        right_dataset_metadata: SDTMDatasetMetadata,
+        match_keys: List[str],
+        datasets: Iterable[SDTMDatasetMetadata],
+    ) -> DatasetInterface:
+        """Simplified IDVAR/IDVARVAL merge with RDOMAIN filtering."""
+        logger.info(
+            f"Starting RDOMAIN merge: child={left_dataset_domain_name}, parent={right_dataset_domain_name}"
         )
-        result = left_dataset.merge(
-            right_dataset.data,
-            how="left",
-            left_on=left_dataset_match_keys,
-            right_on=right_dataset_match_keys,
-            suffixes=("", f".{right_dataset_domain_name}"),
+
+        # Filter child records for this specific parent
+        relevant_child_records = self._get_relevant_child_records(
+            left_dataset, right_dataset_domain_name
         )
-        return result
+        merged_records = self._merge_with_idvar(relevant_child_records, right_dataset)
+        logger.info(f"After IDVAR merge: {len(merged_records)} merged records")
+        return self._update_dataset(
+            left_dataset, relevant_child_records, merged_records
+        )
+
+    def _get_relevant_child_records(
+        self, left_dataset: DatasetInterface, parent_domain: str
+    ) -> DatasetInterface:
+        """Get child records that should merge with this specific parent."""
+
+        # Supplemental datasets: use metadata
+        if self._dataset_metadata.is_supp and self._dataset_metadata.rdomain:
+            if self._dataset_metadata.rdomain == parent_domain:
+                return left_dataset  # All records should merge with this parent
+            else:
+                return left_dataset.iloc[
+                    0:0
+                ]  # Empty dataset - no records for this parent
+
+        # Multi-domain datasets: use RDOMAIN column
+        if "RDOMAIN" in left_dataset.columns:
+            filtered = left_dataset[left_dataset["RDOMAIN"] == parent_domain]
+            logger.info(
+                f"Filtering {len(left_dataset)} records where RDOMAIN='{parent_domain}', found {len(filtered)} matches"
+            )
+            return filtered
+
+        # Fallback: all records
+        logger.warning(
+            f"No RDOMAIN filtering available for parent '{parent_domain}', using all records"
+        )
+        return left_dataset
+
+    def _merge_with_idvar(
+        self, child_records: DatasetInterface, parent_dataset: DatasetInterface
+    ) -> pd.DataFrame:
+        """Merge using IDVAR/IDVARVAL columns."""
+        results = []
+
+        for _, child_row in child_records.iterrows():
+            idvar = child_row.get("IDVAR")
+            idvarval = child_row.get("IDVARVAL")
+
+            # Find matching parent record
+            if (
+                pd.notna(idvar)
+                and pd.notna(idvarval)
+                and idvar in parent_dataset.columns
+            ):
+                # Try to match with type conversion
+                try:
+                    parent_col = parent_dataset[idvar]
+                    if pd.api.types.is_numeric_dtype(parent_col.dtype):
+                        idvarval = (
+                            float(idvarval)
+                            if "." in str(idvarval)
+                            else int(float(str(idvarval)))
+                        )
+
+                    parent_match = parent_dataset[parent_col == idvarval]
+                    if not parent_match.empty:
+                        # Merge child + parent
+                        merged = {
+                            **child_row.to_dict(),
+                            **parent_match.iloc[0].to_dict(),
+                        }
+                        results.append(merged)
+                        continue
+                except (ValueError, TypeError):
+                    pass
+
+            # No match found - child + None for parent columns
+            merged = child_row.to_dict()
+            for col in parent_dataset.columns:
+                if col not in merged:
+                    merged[col] = None
+            results.append(merged)
+
+        return pd.DataFrame(results)
+
+    def _update_dataset(
+        self,
+        original: DatasetInterface,
+        old_records: DatasetInterface,
+        new_records: pd.DataFrame,
+    ) -> DatasetInterface:
+        """Replace old records with new merged records."""
+
+        if old_records.empty:
+            return original
+
+        # For supplemental: replace entire dataset
+        if self._dataset_metadata.is_supp:
+            return self._dataset.__class__(data=new_records)
+
+        # For multi-domain: replace specific records
+        result = original.data.drop(old_records.index)
+        result = pd.concat([result, new_records], ignore_index=True)
+        return self._dataset.__class__(data=result)
 
     def _merge_datasets(
         self,
