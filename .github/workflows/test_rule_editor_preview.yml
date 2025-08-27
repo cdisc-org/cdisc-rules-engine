@@ -5,29 +5,37 @@ on:
   workflow_dispatch:
 
 jobs:
-  extract_and_test:
+  end_to_end_test:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: 3.9
+          python-version: 3.12
+          
+      - name: Ensure setuptools is installed
+        run: python -m ensurepip --upgrade && python -m pip install --upgrade pip setuptools
 
       - name: Install dependencies
-        run: pip install requests selenium webdriver-manager pyperclip==1.9.0 selenium-wire blinker==1.4 brotli
-
-      - name: Extract Deploy Preview URL
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: python .github/test/extract_deploy_link.py
+        run: pip install requests selenium webdriver-manager selenium-wire blinker==1.4 brotli
 
       - name: Print commit SHA
-        run: |
-          echo "Commit ID: ${GITHUB_SHA}"
+        run: echo "Commit ID ${GITHUB_SHA}"
+
       - name: Run tests using preview URL
-      
+        env:
+          RULE_EDITOR_USERNAME: ${{ vars.RULE_EDITOR_USERNAME }}
+          RULE_EDITOR_PASSWORD: ${{ secrets.RULE_EDITOR_PASSWORD }}
+          RULE_EDITOR_URL: ${{ vars.RULE_EDITOR_URL }}
         run: python .github/test/selenium_test_editor.py
+
+      - name: Upload screenshot (always runs)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: selenium-screenshot
+          path: login_screenshot.png

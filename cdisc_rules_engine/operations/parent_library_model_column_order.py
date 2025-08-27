@@ -28,8 +28,8 @@ class ParentLibraryModelColumnOrder(LibraryModelColumnOrder):
                     rdomain,
                     self._get_parent_variable_names_list(domain_to_datasets, rdomain),
                 )
-                for rdomain in self.params.dataframe.get(
-                    "RDOMAIN", [None] * len(self.params.dataframe)
+                for rdomain in self.evaluation_dataset.get(
+                    "RDOMAIN", [None] * len(self.evaluation_dataset)
                 )
             )
         )
@@ -48,6 +48,6 @@ class ParentLibraryModelColumnOrder(LibraryModelColumnOrder):
                 f"{rdomain} but Domain not found in datasets"
             )
         parent_dataframe = self.data_service.get_dataset(
-            dataset_name=parent_datasets[0].filename
+            dataset_name=parent_datasets[0].full_path
         )
         return self._get_variable_names_list(rdomain, parent_dataframe)
