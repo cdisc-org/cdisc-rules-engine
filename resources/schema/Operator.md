@@ -277,6 +277,60 @@ Complement of `suffix_equal_to`
 
 ## contains
 
+True if the value in `value` is contained within the collection/iterable in the target column, or if there's an exact match for non-iterable data.
+
+**For iterable columns (lists, arrays):** Checks if the value exists as an element within the collection.
+**For string columns:** Checks if the comparison value exists as an element when the target is treated as an iterable.
+**For series comparisons:** Uses pandas `.isin()` method for membership testing.
+
+Example:
+
+```yaml
+- name: "--TOXGR" # Column containing lists like ['GRADE', 'SEVERITY', 'ONSET']
+  operator: "contains"
+  value: "GRADE" # True if 'GRADE' is an element in the list
+```
+
+## does_not_contain
+
+Complement of `contains`. Returns True when the value is NOT contained within the target collection.
+
+```yaml
+- name: "--TOXGR"
+  operator: "does_not_contain"
+  value: "GRADE" # True if 'GRADE' is NOT an element in the list
+```
+
+## contains_case_insensitive
+
+True if the value in `value` is contained within the collection/iterable in the target column, performing case-insensitive comparison.
+
+**For iterable columns:** Converts both the search value and collection elements to lowercase before checking membership.
+**For string data:** Performs case-insensitive membership testing.
+**For series comparisons:** Uses lowercase conversion on both series before `.isin()` comparison.
+
+Example:
+
+```yaml
+- name: "--TOXGR" # Column containing lists like ['Grade', 'Severity', 'Onset']
+  operator: "contains_case_insensitive"
+  value: "grade" # True if 'Grade'/'GRADE'/'grade' exists in the list
+```
+
+## does_not_contain_case_insensitive
+
+Complement of `contains_case_insensitive`. Returns True when the value is NOT contained within the target collection (case-insensitive).
+
+Example:
+
+```yaml
+- name: "--TOXGR"
+  operator: "does_not_contain_case_insensitive"
+  value: "grade" # True if no case variation of 'grade' exists in the list
+```
+
+## contains
+
 True if the value in `value` is a substring of the value in `name`
 
 > --TOXGR contains 'GRADE'
