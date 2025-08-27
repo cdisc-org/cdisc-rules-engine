@@ -301,10 +301,6 @@ Complement of `contains`. Returns True when the value is NOT contained within th
 
 True if the value in `value` is contained within the collection/iterable in the target column, performing case-insensitive comparison.
 
-**For iterable columns:** Converts both the search value and collection elements to lowercase before checking membership.
-**For string data:** Performs case-insensitive membership testing.
-**For series comparisons:** Uses lowercase conversion on both series before `.isin()` comparison.
-
 Example:
 
 ```yaml
