@@ -277,11 +277,7 @@ Complement of `suffix_equal_to`
 
 ## contains
 
-True if the value in `value` is contained within the collection/iterable in the target column, or if there's an exact match for non-iterable data.
-
-**For iterable columns (lists, arrays):** Checks if the value exists as an element within the collection.
-**For string columns:** Checks if the comparison value exists as an element when the target is treated as an iterable.
-**For series comparisons:** Uses pandas `.isin()` method for membership testing.
+Will return True if the value in `value` is contained within the collection/iterable in the target column, or if there's an exact match for non-iterable data.
 
 Example:
 
