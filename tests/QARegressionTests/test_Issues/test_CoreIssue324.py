@@ -1,6 +1,7 @@
 import os
 import subprocess
 import unittest
+
 import openpyxl
 import pytest
 from conftest import get_python_executable
@@ -27,11 +28,7 @@ class TerminalCommandTestCase(unittest.TestCase):
 
         # Get the latest created Excel file
         files = os.listdir()
-        excel_files = [
-            file
-            for file in files
-            if file.startswith("CORE-Report-") and file.endswith(".xlsx")
-        ]
+        excel_files = [file for file in files if file.startswith("CORE-Report-") and file.endswith(".xlsx")]
         cls.excel_file_path = sorted(excel_files)[-1]
 
     def test_excel_file_contents(self):

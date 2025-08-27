@@ -5,24 +5,24 @@ import pandas as pd
 import pytest
 from conftest import mock_data_service
 
-from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
+from cdisc_rules_engine.constants.classes import (
+    EVENTS,
+    FINDINGS,
+    FINDINGS_ABOUT,
+    INTERVENTIONS,
+)
+from cdisc_rules_engine.constants.rule_constants import ALL_KEYWORD
+from cdisc_rules_engine.models.dataset import DaskDataset, PandasDataset
 from cdisc_rules_engine.models.rule_conditions import ConditionCompositeFactory
 from cdisc_rules_engine.models.rule_conditions.condition_composite import (
     ConditionComposite,
 )
 from cdisc_rules_engine.models.rule_conditions.single_condition import SingleCondition
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.services.cache.in_memory_cache_service import (
     InMemoryCacheService,
 )
 from cdisc_rules_engine.utilities.rule_processor import RuleProcessor
-from cdisc_rules_engine.constants.rule_constants import ALL_KEYWORD
-from cdisc_rules_engine.constants.classes import (
-    FINDINGS,
-    FINDINGS_ABOUT,
-    EVENTS,
-    INTERVENTIONS,
-)
-from cdisc_rules_engine.models.dataset import PandasDataset, DaskDataset
 
 
 @pytest.mark.parametrize(
@@ -59,10 +59,7 @@ from cdisc_rules_engine.models.dataset import PandasDataset, DaskDataset
 )
 def test_rule_applies_to_domain(mock_data_service, name, rule_metadata, outcome):
     processor = RuleProcessor(mock_data_service, InMemoryCacheService())
-    assert (
-        processor.rule_applies_to_domain(SDTMDatasetMetadata(name=name), rule_metadata)
-        == outcome
-    )
+    assert processor.rule_applies_to_domain(SDTMDatasetMetadata(name=name), rule_metadata) == outcome
 
 
 @pytest.mark.parametrize(
@@ -203,9 +200,7 @@ def test_rule_applies_to_domain(mock_data_service, name, rule_metadata, outcome)
         ),
     ],
 )
-def test_rule_applies_to_domain_split_datasets(
-    mock_data_service, rule_domains: dict, expected_results: List[bool]
-):
+def test_rule_applies_to_domain_split_datasets(mock_data_service, rule_domains: dict, expected_results: List[bool]):
     rule = {"domains": rule_domains}
     domains: List[dict] = [
         {"name": "AE", "domain": "AE"},
@@ -415,16 +410,9 @@ def test_rule_applies_to_use_case(
     rule = {"use_case": rule_use_case}
     dataset_metadata = SDTMDatasetMetadata(
         name=dataset_name,
-        first_record=(
-            {"DOMAIN": domain, "RDOMAIN": rdomain} if domain or rdomain else {}
-        ),
+        first_record=({"DOMAIN": domain, "RDOMAIN": rdomain} if domain or rdomain else {}),
     )
-    assert (
-        processor.rule_applies_to_use_case(
-            dataset_metadata, rule, standard, standard_substandard
-        )
-        == outcome
-    )
+    assert processor.rule_applies_to_use_case(dataset_metadata, rule, standard, standard_substandard) == outcome
 
 
 @pytest.mark.parametrize("dataset_implementation", [PandasDataset, DaskDataset])
@@ -476,9 +464,7 @@ def test_perform_rule_operation(mock_data_service, dataset_implementation):
             },
         ],
     }
-    df = dataset_implementation.from_dict(
-        {"AESTDY": [11, 12, 40, 59, 59], "DOMAIN": ["AE", "AE", "AE", "AE", "AE"]}
-    )
+    df = dataset_implementation.from_dict({"AESTDY": [11, 12, 40, 59, 59], "DOMAIN": ["AE", "AE", "AE", "AE", "AE"]})
     processor = RuleProcessor(mock_data_service, InMemoryCacheService())
     with patch(
         "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
@@ -505,9 +491,7 @@ def test_perform_rule_operation(mock_data_service, dataset_implementation):
 
 
 @pytest.mark.parametrize("dataset_implementation", [PandasDataset, DaskDataset])
-def test_perform_rule_operation_with_grouping(
-    mock_data_service, dataset_implementation
-):
+def test_perform_rule_operation_with_grouping(mock_data_service, dataset_implementation):
     conditions = {
         "all": [
             {
@@ -524,8 +508,7 @@ def test_perform_rule_operation_with_grouping(
             {
                 "name": "generate_record_message",
                 "params": {
-                    "message": "Value for AESTDY less than the "
-                    "maximum EC.ECDOSE value: $max_aestdy",
+                    "message": "Value for AESTDY less than the " "maximum EC.ECDOSE value: $max_aestdy",
                     "target": "AESTDY",
                 },
             }
@@ -623,9 +606,7 @@ def test_perform_rule_operation_with_grouping(
 
 
 @pytest.mark.parametrize("dataset_implementation", [PandasDataset, DaskDataset])
-def test_perform_rule_operation_with_multi_key_grouping(
-    mock_data_service, dataset_implementation
-):
+def test_perform_rule_operation_with_multi_key_grouping(mock_data_service, dataset_implementation):
     conditions = {
         "all": [
             {
@@ -642,8 +623,7 @@ def test_perform_rule_operation_with_multi_key_grouping(
             {
                 "name": "generate_record_message",
                 "params": {
-                    "message": "Value for AESTDY less than the maximum"
-                    "EC.ECDOSE value: $max_aestdy",
+                    "message": "Value for AESTDY less than the maximum" "EC.ECDOSE value: $max_aestdy",
                     "target": "AESTDY",
                 },
             }
@@ -704,9 +684,7 @@ def test_perform_rule_operation_with_multi_key_grouping(
 
 
 @pytest.mark.parametrize("dataset_implementation", [PandasDataset, DaskDataset])
-def test_perform_rule_operation_with_null_operations(
-    mock_data_service, dataset_implementation
-):
+def test_perform_rule_operation_with_null_operations(mock_data_service, dataset_implementation):
     conditions = {
         "all": [
             {
@@ -723,17 +701,14 @@ def test_perform_rule_operation_with_null_operations(
             {
                 "name": "generate_record_message",
                 "params": {
-                    "message": "Value for AESTDY less than the "
-                    "maximum EC.ECDOSE value: $max_aestdy",
+                    "message": "Value for AESTDY less than the " "maximum EC.ECDOSE value: $max_aestdy",
                     "target": "AESTDY",
                 },
             }
         ],
         "operations": None,
     }
-    df = dataset_implementation.from_dict(
-        {"AESTDY": [11, 12, 40, 59], "USUBJID": [1, 200, 1, 200]}
-    )
+    df = dataset_implementation.from_dict({"AESTDY": [11, 12, 40, 59], "USUBJID": [1, 200, 1, 200]})
     processor = RuleProcessor(mock_data_service, InMemoryCacheService())
     new_data = processor.perform_rule_operations(
         rule,
@@ -748,9 +723,7 @@ def test_perform_rule_operation_with_null_operations(
     assert df.equals(new_data)
 
 
-@patch(
-    "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset_metadata"
-)
+@patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset_metadata")
 @pytest.mark.parametrize("dataset_implementation", [PandasDataset, DaskDataset])
 def test_perform_extract_metadata_operation(
     mock_get_dataset_metadata: MagicMock,
@@ -806,11 +779,7 @@ def test_perform_extract_metadata_operation(
         rule=rule_equal_to_with_extract_metadata_operation,
         dataset=dataset,
         domain="SUPPEC",
-        datasets=[
-            SDTMDatasetMetadata(
-                name="SUPPEC", first_record={"RDOMAIN": "EC"}, filename="suppec.xpt"
-            )
-        ],
+        datasets=[SDTMDatasetMetadata(name="SUPPEC", first_record={"RDOMAIN": "EC"}, filename="suppec.xpt")],
         dataset_path="study/data_bundle/suppec.xpt",
         standard="sdtmig",
         standard_version="3-1-2",
@@ -834,9 +803,7 @@ def test_add_comparator_to_conditions(mock_data_service):
             {"value": {"target": "dataset_name"}},
         ]
     }
-    rule: dict = {
-        "conditions": ConditionCompositeFactory.get_condition_composite(conditions)
-    }
+    rule: dict = {"conditions": ConditionCompositeFactory.get_condition_composite(conditions)}
     comparator: dict = {
         "dataset_name": "AE",
         "dataset_label": "Adverse Events",
@@ -879,9 +846,7 @@ def test_add_comparator_to_conditions_nested_conditions(mock_data_service):
             {"value": {"target": "dataset_location"}},
         ]
     }
-    rule: dict = {
-        "conditions": ConditionCompositeFactory.get_condition_composite(conditions)
-    }
+    rule: dict = {"conditions": ConditionCompositeFactory.get_condition_composite(conditions)}
     comparator: dict = {
         "dataset_name": "AE",
         "dataset_label": "Adverse Events",
@@ -1142,9 +1107,7 @@ def test_duplicate_for_targets():
     )
     composite.add_conditions("all", [single_condition_1])
     targets = ["AESTDY", "AESCAT", "AEWWWR"]
-    duplicated_conditions = RuleProcessor.duplicate_conditions_for_all_targets(
-        composite, targets
-    )
+    duplicated_conditions = RuleProcessor.duplicate_conditions_for_all_targets(composite, targets)
     composite.set_conditions(duplicated_conditions)
     items = composite.items()
     check = items[0]
@@ -1152,9 +1115,7 @@ def test_duplicate_for_targets():
     assert check[0] == "all"
     for target in targets:
         # Assert there is one condition for each target in the targets list
-        assert (
-            len([cond for cond in check[1] if cond["value"]["target"] == target]) == 1
-        )
+        assert len([cond for cond in check[1] if cond["value"]["target"] == target]) == 1
 
 
 def test_add_variable_conditions_nested_list():
@@ -1185,12 +1146,8 @@ def test_add_variable_conditions_nested_list():
             },
         }
     )
-    variable_not_exists = SingleCondition(
-        {"name": "get_dataset", "operator": "not_exists"}
-    )
-    nested_composite.add_conditions(
-        "all", [variable_metadata_equal_to, variable_not_exists]
-    )
+    variable_not_exists = SingleCondition({"name": "get_dataset", "operator": "not_exists"})
+    nested_composite.add_conditions("all", [variable_metadata_equal_to, variable_not_exists])
     composite.add_conditions("any", [single_condition, nested_composite])
     targets = ["AESTDY", "AESCAT", "AEWWWR"]
     duplicated = RuleProcessor.duplicate_conditions_for_all_targets(composite, targets)
@@ -1205,10 +1162,7 @@ def test_add_variable_conditions_nested_list():
         assert "all" in condition
         additional_checks = condition["all"]
         assert len(additional_checks) == 2
-        assert (
-            additional_checks[0]["value"]["target"]
-            == additional_checks[1]["value"]["target"]
-        )
+        assert additional_checks[0]["value"]["target"] == additional_checks[1]["value"]["target"]
         target = additional_checks[0]["value"]["target"]
         assert target in targets
         assert target not in targets_seen  # verify that all targets are used
@@ -1241,12 +1195,8 @@ def test_add_conditions_nested_no_duplicates():
             "value": {"comparator": "Req", "target": "Test"},
         }
     )
-    variable_not_exists = SingleCondition(
-        {"name": "get_dataset", "operator": "not_exists", "value": {"target": "T"}}
-    )
-    nested_composite.add_conditions(
-        "all", [variable_metadata_equal_to, variable_not_exists]
-    )
+    variable_not_exists = SingleCondition({"name": "get_dataset", "operator": "not_exists", "value": {"target": "T"}})
+    nested_composite.add_conditions("all", [variable_metadata_equal_to, variable_not_exists])
     composite.add_conditions("any", [single_condition, nested_composite])
     targets = ["AESTDY", "AESCAT", "AEWWWR"]
     duplicated = RuleProcessor.duplicate_conditions_for_all_targets(composite, targets)

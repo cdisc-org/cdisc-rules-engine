@@ -1,21 +1,23 @@
-import pytest
-import pandas as pd
 from unittest.mock import MagicMock, patch
+
+import pandas as pd
+import pytest
+from conftest import mock_data_service
+
 from cdisc_rules_engine.dataset_builders.contents_define_dataset_builder import (
     ContentsDefineDatasetBuilder,
 )
-from cdisc_rules_engine.services.data_services import DummyDataService
+from cdisc_rules_engine.dummy_models.dummy_dataset import DummyDataset
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
+from cdisc_rules_engine.models.rule_conditions import ConditionCompositeFactory
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
-from conftest import mock_data_service
-from cdisc_rules_engine.utilities.rule_processor import RuleProcessor
 from cdisc_rules_engine.services.cache.in_memory_cache_service import (
     InMemoryCacheService,
 )
-from cdisc_rules_engine.dummy_models.dummy_dataset import DummyDataset
-from cdisc_rules_engine.models.rule_conditions import ConditionCompositeFactory
+from cdisc_rules_engine.services.data_services import DummyDataService
+from cdisc_rules_engine.utilities.rule_processor import RuleProcessor
 
 datasets = [
     {
@@ -830,9 +832,7 @@ def test_contents_define_dataset_builder(dataset_path):
         rule_processor=RuleProcessor(mock_data_service, InMemoryCacheService()),
         data_processor=None,
         dataset_path=dataset_path,
-        datasets=[
-            SDTMDatasetMetadata(**dataset) for dataset in dataset_metadata.values()
-        ],
+        datasets=[SDTMDatasetMetadata(**dataset) for dataset in dataset_metadata.values()],
         dataset_metadata=SDTMDatasetMetadata(**dataset_metadata[dataset_path]),
         define_xml_path=None,
         standard="sdtmig",

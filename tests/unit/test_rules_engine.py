@@ -1,29 +1,30 @@
 import os
 from typing import List
 from unittest.mock import MagicMock, patch
-from cdisc_rules_engine.models.library_metadata_container import (
-    LibraryMetadataContainer,
-)
 
 import pandas as pd
 import pytest
 from conftest import get_matches_regex_pattern_rule
+
 from cdisc_rules_engine.constants.classes import GENERAL_OBSERVATIONS_CLASS
 from cdisc_rules_engine.constants.rule_constants import ALL_KEYWORD
-from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 from cdisc_rules_engine.enums.variable_roles import VariableRoles
+from cdisc_rules_engine.models.dataset import PandasDataset
+from cdisc_rules_engine.models.external_dictionaries_container import (
+    DictionaryTypes,
+    ExternalDictionariesContainer,
+)
+from cdisc_rules_engine.models.library_metadata_container import (
+    LibraryMetadataContainer,
+)
 from cdisc_rules_engine.models.rule_conditions import ConditionCompositeFactory
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.rules_engine import RulesEngine
 from cdisc_rules_engine.services.cache.in_memory_cache_service import (
     InMemoryCacheService,
 )
-from cdisc_rules_engine.models.external_dictionaries_container import (
-    ExternalDictionariesContainer,
-    DictionaryTypes,
-)
 from cdisc_rules_engine.utilities.rule_processor import RuleProcessor
-from cdisc_rules_engine.models.dataset import PandasDataset
 
 
 def test_get_schema():
@@ -87,9 +88,7 @@ def test_validate_rule_invalid_suffix(
         "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
         return_value=dataset_mock,
     ):
-        validation_result: List[dict] = RulesEngine(
-            standard="sdtmig"
-        ).validate_single_dataset(
+        validation_result: List[dict] = RulesEngine(standard="sdtmig").validate_single_dataset(
             mock_ae_record_rule_equal_to_suffix,
             [],
             SDTMDatasetMetadata(
@@ -106,9 +105,7 @@ def test_validate_rule_invalid_suffix(
                 "domain": "AE",
                 "variables": ["AESTDY"],
                 "message": "Suffix of AESTDY is equal to test.",
-                "errors": [
-                    {"value": {"AESTDY": "valid-test"}, "dataset": "bundle", "row": 1}
-                ],
+                "errors": [{"value": {"AESTDY": "valid-test"}, "dataset": "bundle", "row": 1}],
             }
         ]
 
@@ -135,9 +132,7 @@ def test_validate_rule_invalid_prefix(
         "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
         return_value=dataset_mock,
     ):
-        validation_result: List[dict] = RulesEngine(
-            standard="sdtmig"
-        ).validate_single_dataset(
+        validation_result: List[dict] = RulesEngine(standard="sdtmig").validate_single_dataset(
             mock_record_rule_equal_to_string_prefix,
             [],
             SDTMDatasetMetadata(
@@ -154,17 +149,13 @@ def test_validate_rule_invalid_prefix(
                 "domain": "AE",
                 "variables": ["AESTDY"],
                 "message": "Prefix of AESTDY is equal to test.",
-                "errors": [
-                    {"value": {"AESTDY": "test-valid"}, "dataset": "bundle", "row": 1}
-                ],
+                "errors": [{"value": {"AESTDY": "test-valid"}, "dataset": "bundle", "row": 1}],
             }
         ]
 
 
 @patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset_class")
-def test_validate_rule_cross_dataset_check(
-    mock_get_dataset_class, dataset_rule_equal_to: dict
-):
+def test_validate_rule_cross_dataset_check(mock_get_dataset_class, dataset_rule_equal_to: dict):
     """
     The test checks that a rule can be executed for several datasets.
     We have 2 datasets that have common STUDYID and SUBJECTID columns and
@@ -256,9 +247,9 @@ def test_validate_rule_cross_dataset_check(
                 full_path=os.path.join("path", "ae.xpt"),
             ),
         ]
-        validation_result: List[str] = RulesEngine(
-            standard="sdtmig", standard_version="3-4"
-        ).validate_single_dataset(dataset_rule_equal_to, datasets, datasets[0])
+        validation_result: List[str] = RulesEngine(standard="sdtmig", standard_version="3-4").validate_single_dataset(
+            dataset_rule_equal_to, datasets, datasets[0]
+        )
         assert validation_result == [
             {
                 "executionStatus": "success",
@@ -357,9 +348,7 @@ def test_validate_one_to_one_rel_across_datasets(dataset_rule_one_to_one_related
         "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
         side_effect=lambda dataset_name: path_to_dataset_map[dataset_name],
     ):
-        validation_result: List[dict] = RulesEngine(
-            standard="sdtmig"
-        ).validate_single_dataset(
+        validation_result: List[dict] = RulesEngine(standard="sdtmig").validate_single_dataset(
             dataset_rule_one_to_one_related,
             datasets,
             datasets[0],
@@ -398,9 +387,7 @@ def test_validate_rule_single_dataset_check(dataset_rule_greater_than: dict):
         "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
         return_value=dataset_mock,
     ):
-        validation_result: List[dict] = RulesEngine(
-            standard="sdtmig"
-        ).validate_single_dataset(
+        validation_result: List[dict] = RulesEngine(standard="sdtmig").validate_single_dataset(
             dataset_rule_greater_than,
             [],
             SDTMDatasetMetadata(
@@ -444,9 +431,7 @@ def test_validate_rule_equal_length(dataset_rule_has_equal_length: dict):
         "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
         return_value=dataset_mock,
     ):
-        validation_result: List[dict] = RulesEngine(
-            standard="sdtmig"
-        ).validate_single_dataset(
+        validation_result: List[dict] = RulesEngine(standard="sdtmig").validate_single_dataset(
             dataset_rule_has_equal_length,
             [],
             SDTMDatasetMetadata(
@@ -463,9 +448,7 @@ def test_validate_rule_equal_length(dataset_rule_has_equal_length: dict):
                 "dataset": "bundle",
                 "variables": ["ECCOOLVAR"],
                 "message": "Length of ECCOOLVAR is equal to 5.",
-                "errors": [
-                    {"value": {"ECCOOLVAR": "equal"}, "dataset": "bundle", "row": 2}
-                ],
+                "errors": [{"value": {"ECCOOLVAR": "equal"}, "dataset": "bundle", "row": 2}],
             }
         ]
 
@@ -487,9 +470,7 @@ def test_validate_is_contained_by_distinct(mock_rule_distinct_operation: dict):
     ]
     ae_dataset = PandasDataset(pd.DataFrame.from_dict({"AESTDY": [1, 2, 3, 5000]}))
 
-    dm_dataset = PandasDataset(
-        pd.DataFrame.from_dict({"USUBJID": [1, 2, 2, 3, 4, 5, 5, 3, 3, 3]})
-    )
+    dm_dataset = PandasDataset(pd.DataFrame.from_dict({"USUBJID": [1, 2, 2, 3, 4, 5, 5, 3, 3, 3]}))
 
     path_to_dataset_map: dict = {
         os.path.join("path", "ae.xpt"): ae_dataset,
@@ -499,9 +480,7 @@ def test_validate_is_contained_by_distinct(mock_rule_distinct_operation: dict):
         "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
         side_effect=lambda dataset_name: path_to_dataset_map[dataset_name],
     ):
-        validation_result: List[dict] = RulesEngine(
-            standard="sdtmig"
-        ).validate_single_dataset(
+        validation_result: List[dict] = RulesEngine(standard="sdtmig").validate_single_dataset(
             mock_rule_distinct_operation,
             datasets,
             datasets[1],
@@ -537,9 +516,7 @@ def test_validate_rule_not_equal_length(dataset_rule_has_not_equal_length: dict)
         "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
         return_value=dataset_mock,
     ):
-        validation_result: List[dict] = RulesEngine(
-            standard="sdtmig"
-        ).validate_single_dataset(
+        validation_result: List[dict] = RulesEngine(standard="sdtmig").validate_single_dataset(
             dataset_rule_has_not_equal_length,
             [],
             SDTMDatasetMetadata(
@@ -580,9 +557,7 @@ def test_validate_rule_multiple_conditions(dataset_rule_multiple_conditions: dic
         "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
         return_value=dataset_mock,
     ):
-        validation_result: List[dict] = RulesEngine(
-            standard="sdtmig"
-        ).validate_single_dataset(
+        validation_result: List[dict] = RulesEngine(standard="sdtmig").validate_single_dataset(
             dataset_rule_multiple_conditions,
             [],
             SDTMDatasetMetadata(
@@ -598,9 +573,7 @@ def test_validate_rule_multiple_conditions(dataset_rule_multiple_conditions: dic
                 "domain": "EC",
                 "dataset": "bundle",
                 "variables": ["ECCOOLVAR"],
-                "message": (
-                    "Length of ECCOOLVAR is not equal to 5 or ECCOOLVAR == cool."
-                ),
+                "message": ("Length of ECCOOLVAR is not equal to 5 or ECCOOLVAR == cool."),
                 "errors": [
                     {"value": {"ECCOOLVAR": "valid"}, "dataset": "bundle", "row": 2},
                     {"value": {"ECCOOLVAR": "cool"}, "dataset": "bundle", "row": 3},
@@ -615,16 +588,12 @@ def test_validate_record_rule_numbers_separated_by_dash_pattern():
     """
     number_number_pattern: str = r"^\d+\-\d+$"
     rule: dict = get_matches_regex_pattern_rule(number_number_pattern)
-    dataset_mock = PandasDataset(
-        pd.DataFrame.from_dict({"AESTDY": ["5-5", "10-10", "test"]})
-    )
+    dataset_mock = PandasDataset(pd.DataFrame.from_dict({"AESTDY": ["5-5", "10-10", "test"]}))
     with patch(
         "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
         return_value=dataset_mock,
     ):
-        validation_result: List[dict] = RulesEngine(
-            standard="sdtmig"
-        ).validate_single_dataset(
+        validation_result: List[dict] = RulesEngine(standard="sdtmig").validate_single_dataset(
             rule,
             [],
             SDTMDatasetMetadata(
@@ -655,16 +624,12 @@ def test_validate_record_rule_semi_colon_delimited_pattern():
     """
     semi_colon_delimited_pattern: str = "[^,]*;[^,]*"
     rule: dict = get_matches_regex_pattern_rule(semi_colon_delimited_pattern)
-    dataset_mock = PandasDataset(
-        pd.DataFrame.from_dict({"AESTDY": ["5;5", "alex;alex", "test"]})
-    )
+    dataset_mock = PandasDataset(pd.DataFrame.from_dict({"AESTDY": ["5;5", "alex;alex", "test"]}))
     with patch(
         "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
         return_value=dataset_mock,
     ):
-        validation_result: List[dict] = RulesEngine(
-            standard="sdtmig"
-        ).validate_single_dataset(
+        validation_result: List[dict] = RulesEngine(standard="sdtmig").validate_single_dataset(
             rule,
             [],
             SDTMDatasetMetadata(
@@ -697,16 +662,12 @@ def test_validate_record_rule_no_letters_numbers_underscores():
     # checks that string contains characters other than letters, numbers or underscores
     does_not_contain_pattern: str = "^((?![a-zA-Z0-9_]).)*$"
     rule: dict = get_matches_regex_pattern_rule(does_not_contain_pattern)
-    dataset_mock = PandasDataset(
-        pd.DataFrame.from_dict({"AESTDY": ["[.*)]#@", "alex", "|>.§!"]})
-    )
+    dataset_mock = PandasDataset(pd.DataFrame.from_dict({"AESTDY": ["[.*)]#@", "alex", "|>.§!"]}))
     with patch(
         "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
         return_value=dataset_mock,
     ):
-        validation_result: List[dict] = RulesEngine(
-            standard="sdtmig"
-        ).validate_single_dataset(
+        validation_result: List[dict] = RulesEngine(standard="sdtmig").validate_single_dataset(
             rule,
             [],
             SDTMDatasetMetadata(
@@ -734,9 +695,7 @@ def test_validate_record_rule_no_letters_numbers_underscores():
 @patch(
     "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset_metadata",
 )
-def test_validate_dataset_metadata(
-    mock_get_dataset_metadata: MagicMock, dataset_metadata_not_equal_to_rule: dict
-):
+def test_validate_dataset_metadata(mock_get_dataset_metadata: MagicMock, dataset_metadata_not_equal_to_rule: dict):
     """
     Unit test that checks dataset metadata validation.
     """
@@ -757,9 +716,7 @@ def test_validate_dataset_metadata(
     )
     mock_get_dataset_metadata.return_value = dataset_mock
 
-    validation_result: List[dict] = RulesEngine(
-        standard="sdtmig"
-    ).validate_single_dataset(
+    validation_result: List[dict] = RulesEngine(standard="sdtmig").validate_single_dataset(
         dataset_metadata_not_equal_to_rule,
         [],
         SDTMDatasetMetadata(
@@ -781,9 +738,7 @@ def test_validate_dataset_metadata(
     ]
 
 
-@patch(
-    "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset_metadata"
-)
+@patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset_metadata")
 def test_validate_dataset_metadata_wrong_metadata(
     mock_get_dataset_metadata: MagicMock,
     dataset_metadata_not_equal_to_rule: dict,
@@ -809,9 +764,7 @@ def test_validate_dataset_metadata_wrong_metadata(
     )
     mock_get_dataset_metadata.return_value = dataset_mock
 
-    validation_result: List[dict] = RulesEngine(
-        standard="sdtmig"
-    ).validate_single_dataset(
+    validation_result: List[dict] = RulesEngine(standard="sdtmig").validate_single_dataset(
         dataset_metadata_not_equal_to_rule,
         [],
         SDTMDatasetMetadata(
@@ -846,9 +799,7 @@ def test_validate_dataset_metadata_wrong_metadata(
 @patch(
     "cdisc_rules_engine.services.data_services.LocalDataService.get_variables_metadata",
 )
-def test_validate_variable_metadata(
-    mock_get_variables_metadata: MagicMock, variables_metadata_rule: dict
-):
+def test_validate_variable_metadata(mock_get_variables_metadata: MagicMock, variables_metadata_rule: dict):
     """
     Unit test that checks variable metadata validation.
     """
@@ -864,9 +815,7 @@ def test_validate_variable_metadata(
     )
     mock_get_variables_metadata.return_value = dataset_mock
 
-    validation_result: List[dict] = RulesEngine(
-        standard="sdtmig"
-    ).validate_single_dataset(
+    validation_result: List[dict] = RulesEngine(standard="sdtmig").validate_single_dataset(
         variables_metadata_rule,
         [],
         SDTMDatasetMetadata(
@@ -887,9 +836,7 @@ def test_validate_variable_metadata(
         }
     ]
 
-    validation_result: List[dict] = RulesEngine(
-        standard="sdtmig"
-    ).validate_single_dataset(
+    validation_result: List[dict] = RulesEngine(standard="sdtmig").validate_single_dataset(
         variables_metadata_rule,
         [],
         SDTMDatasetMetadata(
@@ -936,9 +883,7 @@ def test_validate_variable_metadata_wrong_metadata(
     )
     mock_get_variables_metadata.return_value = dataset_mock
 
-    validation_result: List[dict] = RulesEngine(
-        standard="sdtmig"
-    ).validate_single_dataset(
+    validation_result: List[dict] = RulesEngine(standard="sdtmig").validate_single_dataset(
         variables_metadata_rule,
         [],
         SDTMDatasetMetadata(
@@ -969,9 +914,7 @@ def test_validate_variable_metadata_wrong_metadata(
                     "row": 2,
                     "value": {
                         "variable_name": "longer than eight as well",
-                        "variable_label": (
-                            "Long Long Label Very Long Longer than 40 chars"
-                        ),
+                        "variable_label": ("Long Long Label Very Long Longer than 40 chars"),
                         "variable_data_type": "Char",
                     },
                 },
@@ -1014,12 +957,10 @@ def test_rule_with_domain_prefix_replacement(mock_get_dataset: MagicMock):
     }
     df = PandasDataset(pd.DataFrame.from_dict({"AESTDY": [11, 12, 40, 59, 59]}))
     mock_get_dataset.return_value = df
-    dataset_metadata = SDTMDatasetMetadata(
-        first_record={"DOMAIN": "AE"}, filename="bundle", full_path="study/bundle"
+    dataset_metadata = SDTMDatasetMetadata(first_record={"DOMAIN": "AE"}, filename="bundle", full_path="study/bundle")
+    validation_result: List[dict] = RulesEngine(standard="sdtmig").validate_single_dataset(
+        rule, [dataset_metadata], dataset_metadata
     )
-    validation_result: List[dict] = RulesEngine(
-        standard="sdtmig"
-    ).validate_single_dataset(rule, [dataset_metadata], dataset_metadata)
     assert validation_result == [
         {
             "executionStatus": "success",
@@ -1053,9 +994,7 @@ def test_rule_with_domain_prefix_replacement(mock_get_dataset: MagicMock):
                     "domain": "AE",
                     "variables": ["AE"],
                     "message": "Domain AE exists",
-                    "errors": [
-                        {"value": {"AE": "ae.xpt"}, "dataset": "bundle", "row": 1}
-                    ],
+                    "errors": [{"value": {"AE": "ae.xpt"}, "dataset": "bundle", "row": 1}],
                 }
             ],
         ),
@@ -1074,9 +1013,7 @@ def test_rule_with_domain_prefix_replacement(mock_get_dataset: MagicMock):
         ),
     ],
 )
-def test_validate_domain_presence(
-    domain_presence_rule: dict, datasets: List[str], expected_validation_result: list
-):
+def test_validate_domain_presence(domain_presence_rule: dict, datasets: List[str], expected_validation_result: list):
     """
     Unit test for RulesEngine.validate_domain_presence.
     """
@@ -1088,9 +1025,7 @@ def test_validate_domain_presence(
         )
         for dataset in datasets
     ]
-    actual_validation_result: List[dict] = RulesEngine(
-        standard="sdtmig"
-    ).validate_single_dataset(
+    actual_validation_result: List[dict] = RulesEngine(standard="sdtmig").validate_single_dataset(
         domain_presence_rule,
         dataset_metadata,
         SDTMDatasetMetadata(
@@ -1139,9 +1074,7 @@ def test_validate_single_dataset(dataset_rule_equal_to_error_objects: dict):
                 full_path="study/bundle",
             )
         ]
-        validation_result: List[dict] = RulesEngine(
-            standard="sdtmig"
-        ).validate_single_dataset(
+        validation_result: List[dict] = RulesEngine(standard="sdtmig").validate_single_dataset(
             dataset_rule_equal_to_error_objects,
             datasets,
             datasets[0],
@@ -1224,9 +1157,7 @@ def test_validate_single_dataset_not_equal_to(
             filename="data_bundle",
             full_path="study/data_bundle",
         )
-        validation_result: List[dict] = RulesEngine(
-            standard="sdtmig"
-        ).validate_single_dataset(
+        validation_result: List[dict] = RulesEngine(standard="sdtmig").validate_single_dataset(
             dataset_rule_not_equal_to_error_objects,
             [dataset_metadata],
             dataset_metadata,
@@ -1257,9 +1188,7 @@ def test_validate_single_dataset_not_equal_to(
                         "SEQ": 3,
                     },
                 ],
-                "message": RuleProcessor.extract_message_from_rule(
-                    dataset_rule_not_equal_to_error_objects
-                ),
+                "message": RuleProcessor.extract_message_from_rule(dataset_rule_not_equal_to_error_objects),
             }
         ]
 
@@ -1343,10 +1272,7 @@ def test_validate_single_dataset_not_equal_to(
         ),
     ],
 )
-@patch(
-    "cdisc_rules_engine.dataset_builders.base_dataset_builder."
-    + "BaseDatasetBuilder.get_define_metadata"
-)
+@patch("cdisc_rules_engine.dataset_builders.base_dataset_builder." + "BaseDatasetBuilder.get_define_metadata")
 @patch(
     "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset_metadata",
 )
@@ -1371,9 +1297,7 @@ def test_validate_dataset_metadata_against_define_xml(
         full_path="CDISC01/test/ae.xpt",
         filename="ae.xpt",
     )
-    validation_result: List[dict] = RulesEngine(
-        standard="sdtmig"
-    ).validate_single_dataset(
+    validation_result: List[dict] = RulesEngine(standard="sdtmig").validate_single_dataset(
         define_xml_validation_rule,
         [dataset_metadata],
         dataset_metadata,
@@ -1417,13 +1341,8 @@ def test_validate_dataset_metadata_against_define_xml(
                     "dataset": "test",
                     "executionStatus": ExecutionStatus.SUCCESS.value,
                     "variables": ["variable_size"],
-                    "errors": [
-                        {"dataset": "test", "row": 1, "value": {"variable_size": 30}}
-                    ],
-                    "message": (
-                        "Variable metadata variable_size "
-                        "does not match define variable size"
-                    ),
+                    "errors": [{"dataset": "test", "row": 1, "value": {"variable_size": 30}}],
+                    "message": ("Variable metadata variable_size " "does not match define variable size"),
                 }
             ],
         ),
@@ -1460,25 +1379,17 @@ def test_validate_dataset_metadata_against_define_xml(
                     "dataset": "test",
                     "executionStatus": ExecutionStatus.SUCCESS.value,
                     "variables": ["variable_size"],
-                    "errors": [
-                        {"dataset": "test", "row": 1, "value": {"variable_size": 30}}
-                    ],
-                    "message": (
-                        "Variable metadata variable_size "
-                        "does not match define variable size"
-                    ),
+                    "errors": [{"dataset": "test", "row": 1, "value": {"variable_size": 30}}],
+                    "message": ("Variable metadata variable_size " "does not match define variable size"),
                 }
             ],
         ),
     ],
 )
 @patch(
-    "cdisc_rules_engine.dataset_builders.base_dataset_builder."
-    + "BaseDatasetBuilder.get_define_xml_variables_metadata"
+    "cdisc_rules_engine.dataset_builders.base_dataset_builder." + "BaseDatasetBuilder.get_define_xml_variables_metadata"
 )
-@patch(
-    "cdisc_rules_engine.services.data_services.LocalDataService.get_variables_metadata"
-)
+@patch("cdisc_rules_engine.services.data_services.LocalDataService.get_variables_metadata")
 def test_validate_variable_metadata_against_define_xml(
     mock_get_variables_metadata: MagicMock,
     mock_get_define_xml_variables_metadata: MagicMock,
@@ -1499,9 +1410,7 @@ def test_validate_variable_metadata_against_define_xml(
         filename="test",
         full_path="CDISC01/test",
     )
-    validation_result: List[dict] = RulesEngine(
-        standard="sdtmig"
-    ).validate_single_dataset(
+    validation_result: List[dict] = RulesEngine(standard="sdtmig").validate_single_dataset(
         dataset_metadata=dataset_metadata,
         rule=define_xml_variable_validation_rule,
         datasets=[dataset_metadata],
@@ -1509,9 +1418,7 @@ def test_validate_variable_metadata_against_define_xml(
     assert validation_result == expected_validation_result
 
 
-@patch(
-    "cdisc_rules_engine.rules_engine.RulesEngine.get_define_xml_value_level_metadata"
-)
+@patch("cdisc_rules_engine.rules_engine.RulesEngine.get_define_xml_value_level_metadata")
 def test_validate_value_level_metadata_against_define_xml(
     mock_get_define_xml_value_level_metadata,
     define_xml_value_level_metadata_validation_rule: dict,
@@ -1553,12 +1460,8 @@ def test_validate_value_level_metadata_against_define_xml(
         "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
         return_value=df,
     ):
-        dataset_metadata = SDTMDatasetMetadata(
-            first_record={"DOMAIN": "AE"}, filename="test", full_path="CDISC01/test"
-        )
-        validation_result: List[dict] = RulesEngine(
-            standard="sdtmig"
-        ).validate_single_dataset(
+        dataset_metadata = SDTMDatasetMetadata(first_record={"DOMAIN": "AE"}, filename="test", full_path="CDISC01/test")
+        validation_result: List[dict] = RulesEngine(standard="sdtmig").validate_single_dataset(
             dataset_metadata=dataset_metadata,
             rule=define_xml_value_level_metadata_validation_rule,
             datasets=[dataset_metadata],
@@ -1587,10 +1490,7 @@ def test_validate_value_level_metadata_against_define_xml(
                         "SEQ": 4,
                     },
                 ],
-                "message": (
-                    "Variable data does not match length specified "
-                    "by value level metadata in define.xml"
-                ),
+                "message": ("Variable data does not match length specified " "by value level metadata in define.xml"),
             }
         ]
 
@@ -1660,9 +1560,7 @@ def test_validate_split_dataset_contents(
     """
     Unit test for validating contents of a split dataset.
     """
-    dataset_rule_equal_to_error_objects["domains"][
-        "include_split_datasets"
-    ] = include_split_datasets
+    dataset_rule_equal_to_error_objects["domains"]["include_split_datasets"] = include_split_datasets
 
     dataset_rule_equal_to_error_objects["domains"]["Exclude"] = exclude
 
@@ -1730,9 +1628,7 @@ def test_validate_split_dataset_contents(
             full_path="CDISC01/test/ae_1.xpt",
         ),
     ]
-    validation_result: List[dict] = RulesEngine(
-        standard="sdtmig"
-    ).validate_single_dataset(
+    validation_result: List[dict] = RulesEngine(standard="sdtmig").validate_single_dataset(
         dataset_metadata=datasets[0],
         rule=dataset_rule_equal_to_error_objects,
         datasets=datasets,
@@ -1797,16 +1693,10 @@ def test_validate_split_dataset_metadata(
     mock_async_get_datasets.return_value = [first_dataset_part, second_dataset_part]
     mock_get_dataset_metadata.return_value = second_dataset_part
     datasets = [
-        SDTMDatasetMetadata(
-            first_record={"DOMAIN": "EC"}, filename="ec_2.xpt", full_path="ec_2.xpt"
-        ),
-        SDTMDatasetMetadata(
-            first_record={"DOMAIN": "EC"}, filename="ec_1.xpt", full_path="ec_1.xpt"
-        ),
+        SDTMDatasetMetadata(first_record={"DOMAIN": "EC"}, filename="ec_2.xpt", full_path="ec_2.xpt"),
+        SDTMDatasetMetadata(first_record={"DOMAIN": "EC"}, filename="ec_1.xpt", full_path="ec_1.xpt"),
     ]
-    validation_result: List[dict] = RulesEngine(
-        standard="sdtmig"
-    ).validate_single_dataset(
+    validation_result: List[dict] = RulesEngine(standard="sdtmig").validate_single_dataset(
         dataset_metadata=datasets[1],
         rule=dataset_metadata_not_equal_to_rule,
         datasets=datasets,
@@ -1836,9 +1726,7 @@ def test_validate_split_dataset_metadata(
 
 
 @patch("cdisc_rules_engine.services.data_services.LocalDataService._async_get_datasets")
-def test_validate_split_dataset_variables_metadata(
-    mock_async_get_datasets: MagicMock, variables_metadata_rule: dict
-):
+def test_validate_split_dataset_variables_metadata(mock_async_get_datasets: MagicMock, variables_metadata_rule: dict):
     """
     Unit test for validating variables metadata of a split dataset.
     """
@@ -1882,9 +1770,7 @@ def test_validate_split_dataset_variables_metadata(
             full_path="CDISC/test/ec_1.xpt",
         ),
     ]
-    validation_result: List[dict] = RulesEngine(
-        standard="sdtmig"
-    ).validate_single_dataset(
+    validation_result: List[dict] = RulesEngine(standard="sdtmig").validate_single_dataset(
         rule=variables_metadata_rule,
         datasets=datasets,
         dataset_metadata=datasets[0],
@@ -1900,9 +1786,7 @@ def test_validate_split_dataset_variables_metadata(
                     "dataset": "ec_2.xpt",
                     "row": 1,
                     "value": {
-                        "variable_label": (
-                            "Study Identifier Study Identifier Very Long"
-                        ),
+                        "variable_label": ("Study Identifier Study Identifier Very Long"),
                         "variable_name": "STUDYIDLONG",
                         "variable_data_type": "Char",
                     },
@@ -2005,9 +1889,7 @@ def test_validate_record_in_parent_domain(
                 full_path=os.path.join("path", "suppec.xpt"),
             ),
         ]
-        validation_result: List[str] = RulesEngine(
-            standard="sdtmig", standard_version="3-4"
-        ).validate_single_dataset(
+        validation_result: List[str] = RulesEngine(standard="sdtmig", standard_version="3-4").validate_single_dataset(
             dataset_rule_record_in_parent_domain_equal_to,
             datasets,
             datasets[0],
@@ -2033,9 +1915,7 @@ def test_validate_record_in_parent_domain(
 
 
 @patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset_class")
-def test_validate_additional_columns(
-    mock_get_dataset_class, dataset_rule_inconsistent_enumerated_columns: dict
-):
+def test_validate_additional_columns(mock_get_dataset_class, dataset_rule_inconsistent_enumerated_columns: dict):
     """
     Unit test for validating additional columns like TSVAL1, TSVAL2.
     """
@@ -2070,9 +1950,7 @@ def test_validate_additional_columns(
             filename="ts.xpt",
             full_path="CDISC01/test/ts.xpt",
         )
-        validation_result: List[dict] = RulesEngine(
-            standard="sdtmig", standard_version="3-4"
-        ).validate_single_dataset(
+        validation_result: List[dict] = RulesEngine(standard="sdtmig", standard_version="3-4").validate_single_dataset(
             rule=dataset_rule_inconsistent_enumerated_columns,
             datasets=[datset_metadata],
             dataset_metadata=datset_metadata,
@@ -2102,9 +1980,7 @@ def test_validate_additional_columns(
         ]
 
 
-@patch(
-    "cdisc_rules_engine.services.data_services.LocalDataService.get_define_xml_contents"
-)
+@patch("cdisc_rules_engine.services.data_services.LocalDataService.get_define_xml_contents")
 @patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset")
 @patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset_class")
 def test_validate_dataset_contents_against_define_and_library_variable_metadata(
@@ -2150,9 +2026,7 @@ def test_validate_dataset_contents_against_define_and_library_variable_metadata(
     library_metadata = LibraryMetadataContainer(variables_metadata=variables_metadata)
 
     # mock define xml download to return test file contents
-    test_define_path: str = (
-        f"{os.path.dirname(__file__)}/../resources/test_defineV21-SDTM.xml"
-    )
+    test_define_path: str = f"{os.path.dirname(__file__)}/../resources/test_defineV21-SDTM.xml"
     with open(test_define_path, "rb") as file:
         contents: bytes = file.read()
     mock_get_define_xml_contents.return_value = contents
@@ -2196,9 +2070,7 @@ def test_validate_dataset_contents_against_define_and_library_variable_metadata(
                 "AESER",
                 "AESEV",
             ],  # AELNKID must not be included since its core status is not "Perm"
-            "message": RuleProcessor.extract_message_from_rule(
-                rule_check_dataset_against_library_and_define
-            ),
+            "message": RuleProcessor.extract_message_from_rule(rule_check_dataset_against_library_and_define),
             "errors": [
                 {
                     "dataset": "filename",
@@ -2276,9 +2148,7 @@ def test_validate_single_dataset_operation_dataset_larger_than_target_dataset(
         os.path.join("study_id", "data_bundle_id", "ie.xpt"): target_dataset,
         os.path.join("study_id", "data_bundle_id", "ti.xpt"): operation_result_dataset,
     }
-    mock_get_dataset.side_effect = lambda dataset_name: path_to_dataset_map[
-        dataset_name
-    ]
+    mock_get_dataset.side_effect = lambda dataset_name: path_to_dataset_map[dataset_name]
     mock_get_dataset_class.return_value = None
     datasets = [
         SDTMDatasetMetadata(
@@ -2294,9 +2164,7 @@ def test_validate_single_dataset_operation_dataset_larger_than_target_dataset(
             full_path=os.path.join("study_id", "data_bundle_id", "ti.xpt"),
         ),
     ]
-    validation_result: List[dict] = RulesEngine(
-        standard="sdtmig", standard_version="3-4"
-    ).validate_single_dataset(
+    validation_result: List[dict] = RulesEngine(standard="sdtmig", standard_version="3-4").validate_single_dataset(
         rule=rule_distinct_operation_is_not_contained_by,
         datasets=datasets,
         dataset_metadata=datasets[0],
@@ -2314,9 +2182,7 @@ def test_validate_single_dataset_operation_dataset_larger_than_target_dataset(
 
 
 @patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset")
-@patch(
-    "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset_metadata"
-)
+@patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset_metadata")
 def test_validate_extract_metadata_operation(
     mock_get_dataset_metadata: MagicMock,
     mock_get_dataset: MagicMock,
@@ -2369,9 +2235,7 @@ def test_validate_extract_metadata_operation(
     )
 
     # run validation
-    validation_result: List[dict] = RulesEngine(
-        standard="sdtmig"
-    ).validate_single_dataset(
+    validation_result: List[dict] = RulesEngine(standard="sdtmig").validate_single_dataset(
         rule=rule_equal_to_with_extract_metadata_operation,
         datasets=[dataset_metadata],
         dataset_metadata=dataset_metadata,
@@ -2384,9 +2248,7 @@ def test_validate_extract_metadata_operation(
             "variables": [
                 "RDOMAIN",
             ],
-            "message": RuleProcessor.extract_message_from_rule(
-                rule_equal_to_with_extract_metadata_operation
-            ),
+            "message": RuleProcessor.extract_message_from_rule(rule_equal_to_with_extract_metadata_operation),
             "errors": [
                 {
                     "dataset": "suppec.xpt",
@@ -2454,11 +2316,7 @@ def test_dataset_references_invalid_whodrug_terms(
         cache_service,
         installed_whodrug_dictionaries["data_service"],
         external_dictionaries=ExternalDictionariesContainer(
-            {
-                DictionaryTypes.WHODRUG.value: installed_whodrug_dictionaries[
-                    "whodrug_path"
-                ]
-            }
+            {DictionaryTypes.WHODRUG.value: installed_whodrug_dictionaries["whodrug_path"]}
         ),
         standard="sdtmig",
         standard_version="3-4",
@@ -2476,9 +2334,7 @@ def test_dataset_references_invalid_whodrug_terms(
             "variables": [
                 "AEINA",
             ],
-            "message": RuleProcessor.extract_message_from_rule(
-                rule_dataset_references_invalid_whodrug_terms
-            ),
+            "message": RuleProcessor.extract_message_from_rule(rule_dataset_references_invalid_whodrug_terms),
             "errors": [
                 {
                     "dataset": "dataset_path",
@@ -2500,9 +2356,7 @@ def test_dataset_references_invalid_whodrug_terms(
 
 
 @patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset")
-@patch(
-    "cdisc_rules_engine.services.data_services.LocalDataService.get_variables_metadata"
-)
+@patch("cdisc_rules_engine.services.data_services.LocalDataService.get_variables_metadata")
 @patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset_class")
 def test_validate_variables_order_against_library_metadata(
     mock_get_dataset_class: MagicMock,
@@ -2661,9 +2515,7 @@ def test_validate_variables_order_against_library_metadata(
             }
         ],
     }
-    library_metadata = LibraryMetadataContainer(
-        model_metadata=cache_data, standard_metadata=standard_data
-    )
+    library_metadata = LibraryMetadataContainer(model_metadata=cache_data, standard_metadata=standard_data)
     dataset_metadata = SDTMDatasetMetadata(
         first_record={"DOMAIN": "AE"},
         filename="dataset_path",
@@ -2702,9 +2554,7 @@ def test_validate_variables_order_against_library_metadata(
                 "DOMAIN",
                 "STUDYID",
             ],
-            "message": RuleProcessor.extract_message_from_rule(
-                rule_validate_columns_order_against_library_metadata
-            ),
+            "message": RuleProcessor.extract_message_from_rule(rule_validate_columns_order_against_library_metadata),
             "errors": [
                 {
                     "value": {

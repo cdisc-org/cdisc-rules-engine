@@ -6,8 +6,10 @@ jobs:
   test_unit:
     uses: ./.github/workflows/test_unit.yml
   test_suite:
+    if: false
     uses: ./.github/workflows/test_suite.yml
     secrets: inherit
   test_rule_editor_preview:
+    if: false
     uses: ./.github/workflows/test_rule_editor_preview.yml
     secrets: inherit

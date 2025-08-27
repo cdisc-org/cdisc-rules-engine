@@ -2,9 +2,9 @@ import json
 import os
 import subprocess
 import unittest
+
 import pytest
 from conftest import get_python_executable
-
 
 """This regression test is for automating the validation of acceptancce criteria
 which is "For any variables that come from datasets and appear in the results,
@@ -52,11 +52,7 @@ class JSONSearchTestCase(unittest.TestCase):
 
         # Get the latest created JSON file
         files = os.listdir()
-        json_files = [
-            file
-            for file in files
-            if file.startswith("CORE-Report-") and file.endswith(".json")
-        ]
+        json_files = [file for file in files if file.startswith("CORE-Report-") and file.endswith(".json")]
         cls.json_file_path = sorted(json_files)[-1]
 
     def test_searched_values_are_capital(self):
@@ -76,9 +72,7 @@ class JSONSearchTestCase(unittest.TestCase):
 
         # Check if all values are capitalized
         for value in result:
-            self.assertEqual(
-                value, value.upper(), f"Value '{value}' is not capitalized."
-            )
+            self.assertEqual(value, value.upper(), f"Value '{value}' is not capitalized.")
 
     @classmethod
     def tearDownClass(cls):

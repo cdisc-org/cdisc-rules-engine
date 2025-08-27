@@ -1,4 +1,10 @@
+import json
+from unittest.mock import MagicMock
+
+import pandas as pd
 import pytest
+from conftest import mock_data_service
+
 from cdisc_rules_engine.constants.metadata_columns import (
     SOURCE_FILENAME,
     SOURCE_ROW_NUMBER,
@@ -6,21 +12,17 @@ from cdisc_rules_engine.constants.metadata_columns import (
 from cdisc_rules_engine.dataset_builders.contents_dataset_builder import (
     ContentsDatasetBuilder,
 )
-from unittest.mock import MagicMock
+from cdisc_rules_engine.dummy_models.dummy_dataset import DummyDataset
+from cdisc_rules_engine.models.dataset import PandasDataset
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
-from cdisc_rules_engine.services.data_services import DummyDataService
-from cdisc_rules_engine.dummy_models.dummy_dataset import DummyDataset
 from cdisc_rules_engine.models.rule_conditions import ConditionCompositeFactory
-from conftest import mock_data_service
-from cdisc_rules_engine.utilities.rule_processor import RuleProcessor
 from cdisc_rules_engine.services.cache.in_memory_cache_service import (
     InMemoryCacheService,
 )
-from cdisc_rules_engine.models.dataset import PandasDataset
-import pandas as pd
-import json
+from cdisc_rules_engine.services.data_services import DummyDataService
+from cdisc_rules_engine.utilities.rule_processor import RuleProcessor
 
 with open(r"tests/resources/CoreIssue499/data.json", "r") as file:
     test_data = json.load(file)
@@ -371,9 +373,7 @@ def test_ContentDatasetBuilder_split_datasets(conditions):
     expected = PandasDataset(expected_df)
     result = ContentsDatasetBuilder(
         rule=rule,
-        data_service=DummyDataService(
-            MagicMock(), MagicMock(), MagicMock(), data=datasets
-        ),
+        data_service=DummyDataService(MagicMock(), MagicMock(), MagicMock(), data=datasets),
         cache_service=None,
         rule_processor=processor,
         data_processor=None,

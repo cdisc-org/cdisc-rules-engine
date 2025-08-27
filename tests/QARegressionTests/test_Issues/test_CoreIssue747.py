@@ -1,14 +1,15 @@
-import subprocess
 import os
+import subprocess
+
 import openpyxl
 import pytest
 from conftest import get_python_executable
 from QARegressionTests.globals import (
-    issue_datails_sheet,
     dataset_details_sheet,
-    rules_report_sheet,
-    issue_sheet_coreid_column,
     dataset_sheet_dataset_column,
+    issue_datails_sheet,
+    issue_sheet_coreid_column,
+    rules_report_sheet,
     rules_sheet_rule_status_column,
 )
 
@@ -26,9 +27,7 @@ def test_CG0019():
         + " -dp "
         + os.path.join("tests", "resources", "CoreIssue747", "Datasets.json")
         + " -dxp "
-        + os.path.join(
-            "tests", "resources", "CoreIssue747", "define_CG0019_split_and_supp.xml"
-        )
+        + os.path.join("tests", "resources", "CoreIssue747", "define_CG0019_split_and_supp.xml")
     )
 
     # Construct the command
@@ -58,9 +57,7 @@ def test_CG0019():
     # Remove None values using list comprehension
     coreid_values = [value for value in coreid_values if value is not None]
     dataset_values = [value for value in dataset_values if value is not None]
-    rule_status_column_values = [
-        value for value in rule_status_column_values if value is not None
-    ]
+    rule_status_column_values = [value for value in rule_status_column_values if value is not None]
 
     # Perform the assertion
     assert process.returncode == 0, f"Process failed with error: {stderr.decode()}"

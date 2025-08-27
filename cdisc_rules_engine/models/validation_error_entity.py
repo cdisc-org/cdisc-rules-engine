@@ -1,5 +1,6 @@
-from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 from cdisc_rules_engine.enums.base_enum import BaseEnum
+from cdisc_rules_engine.enums.execution_status import ExecutionStatus
+
 from .base_validation_entity import BaseValidationEntity
 
 
@@ -32,8 +33,6 @@ class ValidationErrorEntity(BaseValidationEntity):
         for key, val in self.value.items():
             if isinstance(val, set):
                 data[key] = sorted(list(val))
-            elif isinstance(val, list):
-                data[key] = sorted(val)
             elif isinstance(val, BaseEnum):
                 data[key] = val.value
             else:

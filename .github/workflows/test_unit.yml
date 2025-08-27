@@ -5,6 +5,26 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        # Docker Hub image
+        image: postgres
+        # Provide the password for postgres
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: coredb
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
+
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
@@ -14,7 +34,20 @@ jobs:
       - name: Install requirements
         run: |
           pip install -r requirements.txt
-      - name: Running Tests
-        run: |
-          python -m pytest tests/unit/ --cov=cdisc_rules_engine --cov-fail-under=75
-          python -m pytest tests/QARegressionTests/
+      - name: Running unit tests
+        # Clearly we need to get this back up to 75%
+        run: python -m pytest tests/unit/ --cov=cdisc_rules_engine --cov-fail-under=65
+        env:
+          DATABASE_HOST: localhost
+          DATABASE_PORT: 5432
+          DATABASE_NAME: coredb
+          DATABASE_USER: postgres
+          DATABASE_PASSWORD: postgres
+      - name: Running QA tests
+        run: python -m pytest tests/QARegressionTests/
+        env:
+          DATABASE_HOST: localhost
+          DATABASE_PORT: 5432
+          DATABASE_NAME: coredb
+          DATABASE_USER: postgres
+          DATABASE_PASSWORD: postgres

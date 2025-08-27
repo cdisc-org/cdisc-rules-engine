@@ -7,12 +7,12 @@ from dotenv import load_dotenv
 from cdisc_rules_engine.data_service.postgresql_data_service import (
     PostgresQLDataService,
 )
-from scripts.run_sql_validation import sql_run_single_rule_validation
-from tests.rule_regression.regression import (
+from rule_regression.regression import (
     delete_files_in_directory,
     output_engine_results_json,
     run_single_rule_regression,
 )
+from scripts.run_sql_validation import sql_run_single_rule_validation
 
 load_dotenv()
 
