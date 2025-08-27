@@ -126,7 +126,7 @@ def run_test_cases(
         except FileNotFoundError:
             test_case_regression.append(
                 {
-                    "/".join(test_case_folder_path.split("/")[-5:]): {
+                    extract_final_path(test_case_folder_path, CASE_DEPTH): {
                         "test_case_xslx_file": None,
                         "engine_regression": None,
                     }
@@ -245,7 +245,7 @@ def process_test_case_dataset(
                 regression_errors["old_result_validation"] = "invalid"
                 regression_errors["sql_results_validation"] = "invalid"
             else:
-                regression_errors["validation_file"] = "/".join(validation_file_path.split("/")[-7:])
+                regression_errors["validation_file"] = extract_final_path(validation_file_path, DATA_DEPTH)
                 try:
                     with open(validation_file_path, "r", encoding="utf-8") as f:
                         validated_result = json.load(f)
