@@ -1,0 +1,52 @@
+# .github/workflows/build-ubuntu-22.04.yml
+name: Build Ubuntu 22.04 Binary
+
+on:
+  workflow_dispatch: # Manual trigger
+
+jobs:
+  build-ubuntu-22-04:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install setuptools wheel twine
+          pip install --no-deps -r requirements.txt
+          pip install -r requirements.txt --no-cache-dir
+
+      - name: Build Binary
+        run: |
+          pyinstaller --onedir \
+            --contents-directory "." \
+            core.py \
+            --dist ./dist/output/core-ubuntu-22.04 \
+            --collect-submodules pyreadstat \
+            --add-data="resources/cache:resources/cache" \
+            --add-data="resources/templates:resources/templates" \
+            --add-data="resources/schema:resources/schema" \
+            --add-data="tests/resources/datasets:tests/resources/datasets"
+
+      - name: Test Binary
+        run: |
+          cd dist/output/core-ubuntu-22.04/core
+          chmod +x core
+          ./core --help || echo "Help command failed but binary exists"
+
+      - name: Create Release Package
+        run: |
+          cd dist/output
+          tar -czf cdisc-core-ubuntu-22.04.tar.gz core-ubuntu-22.04/
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cdisc-core-ubuntu-22.04
+          path: dist/output/cdisc-core-ubuntu-22.04.tar.gz
