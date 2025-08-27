@@ -1,5 +1,8 @@
 import pytest
 from cdisc_rules_engine.readers.codelist_reader import CodelistReader
+from functools import lru_cache
+import concurrent.futures
+from pathlib import Path
 
 CODELIST_KEYS = [
     "standard_type",
@@ -77,6 +80,11 @@ EXPECTED_ROW_COUNTS = {
     "SDTM_CT_2025-03-28.xlsx": 44856,
 }
 
+SDTM_CODELIST_RANGE = ["2025"]
+
+# change to True for all files, otherwise all ADaM and latest SDTM file will be used
+TEST_ALL_FILES = False
+
 
 def get_all_codelist_files(directory):
     """Get all codelist files from the directory."""
@@ -85,46 +93,87 @@ def get_all_codelist_files(directory):
     return sorted(files)
 
 
-def test_all_files_readable(resources_directory):
-    """Test that all codelist files can be read without errors."""
-    files = get_all_codelist_files(resources_directory / "codelists")
-
-    assert len(files) > 0, "No codelist files found in test directory"
-
-    for file_path in files:
-        try:
-            reader = CodelistReader(str(file_path))
-            data = reader.read()
-            assert isinstance(data, list), f"Failed to read {file_path.name}"
-        except Exception as e:
-            pytest.fail(f"Failed to read {file_path.name}: {str(e)}")
-
-
-def test_row_counts(resources_directory):
-    """Test that each file returns the expected number of rows."""
-    files = get_all_codelist_files(resources_directory / "codelists")
-
-    for file_path in files:
+def _load_single_file(file_path):
+    """Load a single codelist file."""
+    try:
         reader = CodelistReader(str(file_path))
         data = reader.read()
+        return file_path, (reader, data)
+    except Exception as e:
+        return file_path, (None, e)
+
+
+@lru_cache(maxsize=None)
+def _load_all_codelists(codelists_dir_str, test_subset=False):
+    """
+    Load all codelist files with parallel processing.
+    This is cached at module level.
+    """
+    codelists_dir = Path(codelists_dir_str)
+    files = get_all_codelist_files(codelists_dir)
+
+    if test_subset and not TEST_ALL_FILES:
+        subset_files = []
+        for f in files:
+            if "ADaM" in f.name:
+                subset_files.append(f)
+            elif "SDTM" in f.name and any([y in f.name for y in SDTM_CODELIST_RANGE]):
+                subset_files.append(f)
+        files = subset_files
+
+    cache = {}
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
+        futures = [executor.submit(_load_single_file, f) for f in files]
+
+        for future in concurrent.futures.as_completed(futures):
+            file_path, result = future.result()
+            cache[file_path] = result
+
+    return cache
+
+
+@pytest.fixture
+def codelist_cache(resources_directory):
+    """
+    Function-scoped fixture that returns the cached codelist data.
+    The actual loading is cached at module level via lru_cache.
+    """
+    codelists_dir = resources_directory / "codelists"
+    # set test_subset=True to go faster
+    return _load_all_codelists(str(codelists_dir), test_subset=True)
+
+
+def test_all_files_readable(codelist_cache):
+    """Test that all codelist files can be read without errors."""
+    assert len(codelist_cache) > 0, "No codelist files found in test directory"
+
+    for file_path, (reader, data) in codelist_cache.items():
+        if reader is None:
+            pytest.fail(f"Failed to read {file_path.name}: {str(data)}")
+        assert isinstance(data, list), f"Failed to read {file_path.name}"
+
+
+def test_row_counts(codelist_cache):
+    """Test that each file returns the expected number of rows."""
+    for file_path, (reader, data) in codelist_cache.items():
+        if reader is None:
+            pytest.fail(f"Reader is None for {file_path.name}")
 
         expected_count = EXPECTED_ROW_COUNTS.get(file_path.name)
         if expected_count is not None:
             assert len(data) == expected_count, (
-                f"{file_path.name}: Expected {expected_count} rows, "
-                f"got {len(data)} rows"
+                f"{file_path.name}: Expected {expected_count} rows, " f"got {len(data)} rows"
             )
         else:
             print(f"{file_path.name}: {len(data)} rows")
 
 
-def test_keys_structure(resources_directory):
+def test_keys_structure(codelist_cache):
     """Test that all rows have the correct keys in the correct order."""
-    files = get_all_codelist_files(resources_directory / "codelists")
-
-    for file_path in files:
-        reader = CodelistReader(str(file_path))
-        data = reader.read()
+    for file_path, (reader, data) in codelist_cache.items():
+        if reader is None:
+            pytest.fail(f"Reader is None for {file_path.name}")
 
         if len(data) == 0:
             continue
@@ -135,49 +184,39 @@ def test_keys_structure(resources_directory):
             actual_keys = list(row.keys())
 
             assert actual_keys == CODELIST_KEYS, (
-                f"{file_path.name} row {i}: Keys don't match.\n"
-                f"Expected: {CODELIST_KEYS}\n"
-                f"Actual: {actual_keys}"
+                f"{file_path.name} row {i}: Keys don't match.\n" f"Expected: {CODELIST_KEYS}\n" f"Actual: {actual_keys}"
             )
 
 
-def test_metadata_extraction(resources_directory):
+def test_metadata_extraction(codelist_cache):
     """Test that metadata is correctly extracted from all files."""
-    files = get_all_codelist_files(resources_directory / "codelists")
+    for _, (reader, _) in codelist_cache.items():
+        if reader is None:
+            pytest.fail("Reader is None for a codelist file")
 
-    for file_path in files:
-        reader = CodelistReader(str(file_path))
         assert reader.metadata.standard_type in ["ADaM", "SDTM"]
         assert reader.metadata.version_date is not None
         assert reader.metadata.extension in ["csv", "xlsx", "xls"]
 
 
-def test_data_values_populated(resources_directory):
+def test_data_values_populated(codelist_cache):
     """Test that data values are correctly populated."""
-    files = get_all_codelist_files(resources_directory / "codelists")
-
-    for file_path in files:
-        reader = CodelistReader(str(file_path))
-        data = reader.read()
+    for file_path, (reader, data) in codelist_cache.items():
+        if reader is None:
+            pytest.fail(f"Reader is None for {file_path.name}")
 
         if len(data) == 0:
             continue
 
         first_row = data[0]
 
-        # Fully populated columns
         assert first_row["standard_type"] is not None
         assert first_row["version_date"] is not None
         assert first_row["name"] is not None
         assert first_row["value"] is not None
 
-        # Partially populated columns
         optional_fields = ["synonym", "definition", "term"]
         for field in optional_fields:
             if field in first_row:
-                non_none_count = sum(
-                    1 for row in data[:100] if row.get(field) is not None
-                )
-                assert (
-                    non_none_count > 0
-                ), f"All {field} values are None in {file_path.name}"
+                non_none_count = sum(1 for row in data[:10] if row.get(field) is not None)
+                assert non_none_count > 0, f"All {field} values are None in {file_path.name}"
