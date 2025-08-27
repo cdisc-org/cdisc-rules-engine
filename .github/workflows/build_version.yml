@@ -2,7 +2,7 @@
 name: Build Ubuntu 22.04 Binary
 
 on:
-  workflow_dispatch: # Manual trigger
+  workflow_dispatch:
 
 jobs:
   build-ubuntu-22-04:
