@@ -321,46 +321,6 @@ Example:
   value: "grade" # True if no case variation of 'grade' exists in the list
 ```
 
-## contains
-
-True if the value in `value` is a substring of the value in `name`
-
-> --TOXGR contains 'GRADE'
-
-```yaml
-- name: "--TOXGR"
-  operator: "contains"
-  value: "GRADE"
-```
-
-## does_not_contain
-
-Complement of `contains`
-
-## contains_case_insensitive
-
-True if the value in `value` is a case insensitive substring of the value in `name`
-
-> --TOXGR contains 'GRADE', regardless of text case
-
-```yaml
-- name: "--TOXGR"
-  operator: "contains_case_insensitive"
-  value: "grade"
-```
-
-## does_not_contain_case_insensitive
-
-Complement of `contains_case_insensitive`
-
-> --TOXGR does not contain 'GRADE', regardless of text case
-
-```yaml
-- name: "--TOXGR"
-  operator: "does_not_contain_case_insensitive"
-  value: "grade"
-```
-
 ## longer_than
 
 Length comparison
