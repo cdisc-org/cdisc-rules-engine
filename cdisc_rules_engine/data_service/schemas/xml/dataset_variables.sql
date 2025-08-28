@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS dataset_variables (
-    dataset_var_id SERIAL PRIMARY KEY,
+    dataset_var_id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     dataset_id INTEGER NOT NULL REFERENCES datasets(dataset_id),
     variable_id INTEGER NOT NULL REFERENCES variables(variable_id),
     order_number INTEGER,

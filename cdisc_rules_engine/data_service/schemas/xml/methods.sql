@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS methods (
-    method_id SERIAL PRIMARY KEY,
+    method_id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     version_id INTEGER NOT NULL REFERENCES metadata_versions(version_id),
     method_oid VARCHAR(200) NOT NULL,
     method_name VARCHAR(500),

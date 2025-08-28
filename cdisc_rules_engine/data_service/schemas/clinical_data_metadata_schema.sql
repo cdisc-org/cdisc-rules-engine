@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS public.data_metadata (
     -- general fields
-    id SERIAL PRIMARY KEY,
+    id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     created_at TIMESTAMPTZ,
     updated_at TIMESTAMPTZ,
     -- general dataset metadata

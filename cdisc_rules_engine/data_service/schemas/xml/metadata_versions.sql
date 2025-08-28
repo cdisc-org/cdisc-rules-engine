@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS metadata_versions (
-    version_id SERIAL PRIMARY KEY,
+    version_id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     study_id INTEGER NOT NULL REFERENCES studies(study_id),
     version_oid VARCHAR(200) NOT NULL,
     version_name VARCHAR(500),

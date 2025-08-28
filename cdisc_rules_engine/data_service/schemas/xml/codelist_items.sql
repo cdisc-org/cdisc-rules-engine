@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS codelist_items (
-    item_id SERIAL PRIMARY KEY,
+    item_id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     codelist_id INTEGER NOT NULL REFERENCES codelists(codelist_id),
     coded_value VARCHAR(500),
     decode_text TEXT,

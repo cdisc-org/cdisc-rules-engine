@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS codelists (
-    codelist_id SERIAL PRIMARY KEY,
+    codelist_id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     version_id INTEGER NOT NULL REFERENCES metadata_versions(version_id),
     codelist_oid VARCHAR(200) NOT NULL,
     codelist_name VARCHAR(200),

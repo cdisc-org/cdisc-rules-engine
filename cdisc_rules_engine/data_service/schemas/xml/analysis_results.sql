@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS analysis_results (
-    result_id SERIAL PRIMARY KEY,
+    result_id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     version_id INTEGER NOT NULL REFERENCES metadata_versions(version_id),
     result_oid VARCHAR(200) NOT NULL,
     display_oid VARCHAR(200),

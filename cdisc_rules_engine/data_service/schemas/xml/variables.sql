@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS variables (
-    variable_id SERIAL PRIMARY KEY,
+    variable_id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     version_id INTEGER NOT NULL REFERENCES metadata_versions(version_id),
     variable_oid VARCHAR(200) NOT NULL,
     variable_name VARCHAR(40),

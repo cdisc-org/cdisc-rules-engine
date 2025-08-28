@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS datasets (
-    dataset_id SERIAL PRIMARY KEY,
+    dataset_id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     version_id INTEGER NOT NULL REFERENCES metadata_versions(version_id),
     dataset_oid VARCHAR(200) NOT NULL,
     domain VARCHAR(10),

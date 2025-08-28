@@ -1,4 +1,4 @@
-from typing import List, Tuple, Dict, Any, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 
 class SQLSerialiser:
@@ -8,7 +8,7 @@ class SQLSerialiser:
     def python_to_sql_type(value: Any) -> str:
         """Map python types to SQL types."""
         if isinstance(value, (int, float)):
-            return "REAL"
+            return "DOUBLE PRECISION"
         elif isinstance(value, str):
             return "TEXT"
         else:
@@ -20,7 +20,7 @@ class SQLSerialiser:
         if type.lower() in ("char", "s"):
             return "TEXT"
         elif type.lower() in ("num", "numeric", "d"):
-            return "REAL"
+            return "DOUBLE PRECISION"
         else:
             raise ValueError(f"Unsupported type: {type}")
 
@@ -42,9 +42,13 @@ class SQLSerialiser:
 
         if len(columns) > 0:
             columns_sql = ",\n    ".join(columns)
-            return f"CREATE TABLE IF NOT EXISTS {table_name} (\n id SERIAL PRIMARY KEY, {columns_sql}\n);"
+            return f"""CREATE TABLE IF NOT EXISTS {table_name} (
+                    id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY, {columns_sql}
+                );"""
         else:
-            return f"CREATE TABLE IF NOT EXISTS {table_name} (\n id SERIAL PRIMARY KEY \n);"
+            return f"""CREATE TABLE IF NOT EXISTS {table_name} (
+                        id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY
+                    );"""
 
     @classmethod
     def create_table_query_from_data_metadata_dict(
@@ -63,9 +67,13 @@ class SQLSerialiser:
 
         if len(columns) > 0:
             columns_sql = ",\n    ".join(columns)
-            return f"CREATE TABLE IF NOT EXISTS {table_name} (\n id SERIAL PRIMARY KEY, {columns_sql}\n);"
+            return f"""CREATE TABLE IF NOT EXISTS {table_name} (
+                id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY, {columns_sql}
+            );"""
         else:
-            return f"CREATE TABLE IF NOT EXISTS {table_name} (\n id SERIAL PRIMARY KEY \n);"
+            return f"""CREATE TABLE IF NOT EXISTS {table_name} (
+                    id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY
+                );"""
 
     @classmethod
     def insert_dict(cls, table_name: str, data: Dict[str, Any]) -> Tuple[str, List[Any]]:
