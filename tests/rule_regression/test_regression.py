@@ -1,6 +1,5 @@
 import json
 import os
-from unittest.mock import patch
 
 from dotenv import load_dotenv
 
@@ -44,9 +43,7 @@ def test_regression_single_rule_DEV(pytestconfig, get_core_rules_df, get_core_ru
     output_engine_results_json(pytestconfig, get_core_rules_df, get_core_rule, "sql")
 
 
-@patch("cdisc_rules_engine.services.data_services.DummyDataService.get_dataset_class")
-def test_rule_existing_rule(mock_get_dataset_class, get_sample_lb_rule, get_sample_lb_dataset):
-    mock_get_dataset_class.return_value = None
+def test_rule_existing_rule(get_sample_lb_rule, get_sample_lb_dataset):
     ig_specs = {
         "standard": "SDTMIG",
         "standard_version": "3.4",

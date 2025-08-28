@@ -277,11 +277,7 @@ def process_test_case_dataset(
 
 def validate_engine_result(engine_result: list[dict], validated_result: list[dict]) -> dict:
     val_result = validated_result["results"]
-    diff = DeepDiff(
-        engine_result,
-        val_result,
-        ignore_order=True,
-    )
+    diff = DeepDiff(engine_result, val_result, ignore_order=True, ignore_string_case=True)
     if diff:
         return "failed"
     else:
@@ -295,9 +291,10 @@ def old_vs_sql_regression_comparison(old_results: list[dict], sql_results: list[
         # find matching dataset/domain entries
         sql_res = next(
             (
-                res
-                for res in sql_results
-                if res.get("dataset") == o_res.get("dataset") and res.get("domain") == o_res.get("domain")
+                sql_res
+                for sql_res in sql_results
+                if sql_res.get("dataset") == o_res.get("dataset").replace(".xpt", "")
+                and sql_res.get("domain") == o_res.get("domain")
             ),
             None,
         )
@@ -306,23 +303,26 @@ def old_vs_sql_regression_comparison(old_results: list[dict], sql_results: list[
                 comp_regression["execution_status_match"] = False
             else:
                 comp_regression["execution_status_match"] = True
-                if not o_res.get("number_of_errors") != sql_res.get("number_of_errors"):
+                if o_res.get("number_errors") != sql_res.get("number_errors"):
                     comp_regression["number_of_errors_match"] = False
+                    comp_regression["deep_diff"] = compare_error_lists(o_res.get("errors"), sql_res.get("errors"))
                 else:
                     comp_regression["number_of_errors_match"] = True
                     comp_regression["deep_diff"] = compare_error_lists(o_res.get("errors"), sql_res.get("errors"))
         else:
             comp_regression["execution_status_match"] = False
             comp_regression["number_of_errors_match"] = False
+            comp_regression["deep_diff"] = []
 
     return comp_regression
 
 
 def compare_error_lists(old_errors, sql_errors):
-    set1 = {json.dumps(item, sort_keys=True) for sublist in old_errors for item in sublist}
-    set2 = {json.dumps(item, sort_keys=True) for sublist in sql_errors for item in sublist}
-    diff_serialized = set1.symmetric_difference(set2)
-    return [json.loads(item) for item in diff_serialized]
+    diff = DeepDiff(old_errors, sql_errors, ignore_order=True, ignore_string_case=True)
+    if diff:
+        return diff
+    else:
+        return []
 
 
 def extract_results_regression(results):

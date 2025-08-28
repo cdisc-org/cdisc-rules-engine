@@ -111,7 +111,7 @@ class PostgresQLOperators(BaseType):
         """return self.validation_df.is_series(column) and (
             isinstance(column.iloc[0], list) or isinstance(column.iloc[0], set)
         )"""
-        raise NotImplementedError()
+        raise NotImplementedError("is_column_of_iterables check_operator not implemented")
 
     def _exists(self, column: str) -> bool:
         return column.lower() in self.sql_data_service.cache.get_columns(self.table_id)
@@ -304,7 +304,7 @@ class PostgresQLOperators(BaseType):
         comparison_data = self.get_comparator_data(comparator, value_is_literal)
         suffix: int = self.replace_prefix(other_value.get("suffix"))
         return self._check_equality_of_string_part(target, comparison_data, "suffix", suffix)"""
-        raise NotImplementedError()
+        raise NotImplementedError("suffix_equal_to check_operator not implemented")
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -333,7 +333,7 @@ class PostgresQLOperators(BaseType):
             comparison_data = self.get_comparator_data(comparator, value_is_literal)
         prefix: int = self.replace_prefix(other_value.get("prefix"))
         return self._check_equality_of_string_part(target, comparison_data, "prefix", prefix)"""
-        raise NotImplementedError()
+        raise NotImplementedError("prefix_equal_to check_operator not implemented")
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -360,7 +360,7 @@ class PostgresQLOperators(BaseType):
         prefix_length: int = other_value.get("prefix")
         series_to_validate = self._get_string_part_series("prefix", prefix_length, target)
         return self._value_is_contained_by(series_to_validate, comparison_data)"""
-        raise NotImplementedError()
+        raise NotImplementedError("prefix_is_contained_by check_operator not implemented")
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -384,7 +384,7 @@ class PostgresQLOperators(BaseType):
         suffix_length: int = other_value.get("suffix")
         series_to_validate = self._get_string_part_series("suffix", suffix_length, target)
         return self._value_is_contained_by(series_to_validate, comparison_data)"""
-        raise NotImplementedError()
+        raise NotImplementedError("suffix_is_contained_by check_operator not implemented")
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -406,7 +406,7 @@ class PostgresQLOperators(BaseType):
             )
         series_to_validate = series_to_validate.mask(pd.isna(self.validation_df[target]))
         return series_to_validate"""
-        raise NotImplementedError()
+        raise NotImplementedError("_get_string_part_series check_operator not implemented")
 
     def _value_is_contained_by(self, series, comparison_data):
         """if self.is_column_of_iterables(comparison_data):
@@ -414,7 +414,7 @@ class PostgresQLOperators(BaseType):
         else:
             results = series.isin(comparison_data)
         return self.validation_df.convert_to_series(results)"""
-        raise NotImplementedError()
+        raise NotImplementedError("_value_is_contained_by check_operator not implemented")
 
     def _check_equality_of_string_part(
         self,
@@ -428,7 +428,7 @@ class PostgresQLOperators(BaseType):
         """
         """series_to_validate = self._get_string_part_series(part_to_validate, length, target)
         return series_to_validate.eq(comparison_data).astype(bool)"""
-        raise NotImplementedError()
+        raise NotImplementedError("_check_equality_of_string_part check_operator not implemented")
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -492,7 +492,7 @@ class PostgresQLOperators(BaseType):
             # Handles numeric case. This case should never occur
             results = np.where(self.validation_df[target] == comparison_data, True, False)
         return self.validation_df.convert_to_series(results)"""
-        raise NotImplementedError()
+        raise NotImplementedError("contains check_operator not implemented")
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -524,7 +524,7 @@ class PostgresQLOperators(BaseType):
         else:
             results = vectorized_case_insensitive_is_in(comparison_data.lower(), self.validation_df[target])
         return self.validation_df.convert_to_series(results)"""
-        raise NotImplementedError()
+        raise NotImplementedError("contains_case_insensitive check_operator not implemented")
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -546,7 +546,7 @@ class PostgresQLOperators(BaseType):
         else:
             results = self.validation_df[target].isin(comparison_data)
         return self.validation_df.convert_to_series(results)"""
-        raise NotImplementedError()
+        raise NotImplementedError("is_contained_by check_operator not implemented")
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -573,7 +573,7 @@ class PostgresQLOperators(BaseType):
         else:
             results = self.validation_df[target].str.lower().isin(comparison_data)
         return results"""
-        raise NotImplementedError()
+        raise NotImplementedError("is_contained_by_case_insensitive check_operator not implemented")
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -591,7 +591,7 @@ class PostgresQLOperators(BaseType):
             lambda x: re.search(comparator, x[:prefix]) is not None
         )
         return results"""
-        raise NotImplementedError()
+        raise NotImplementedError("prefix_matches_regex check_operator not implemented")
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -604,7 +604,7 @@ class PostgresQLOperators(BaseType):
             lambda x: re.search(comparator, x[:prefix]) is not None
         )
         return results"""
-        raise NotImplementedError()
+        raise NotImplementedError("not_prefix_matches_regex check_operator not implemented")
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -617,7 +617,7 @@ class PostgresQLOperators(BaseType):
             lambda x: re.search(comparator, x[-suffix:]) is not None
         )
         return results"""
-        raise NotImplementedError()
+        raise NotImplementedError("suffix_matches_regex check_operator not implemented")
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -630,7 +630,7 @@ class PostgresQLOperators(BaseType):
             lambda x: re.search(comparator, x[-suffix:]) is not None
         )
         return results"""
-        raise NotImplementedError()
+        raise NotImplementedError("not_suffix_matches_regex check_operator not implemented")
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -640,7 +640,7 @@ class PostgresQLOperators(BaseType):
         converted_strings = self.validation_df[target].map(lambda x: self._custom_str_conversion(x))
         results = converted_strings.notna() & converted_strings.astype(str).str.match(comparator)
         return results"""
-        raise NotImplementedError()
+        raise NotImplementedError("matches_regex check_operator not implemented")
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -650,7 +650,7 @@ class PostgresQLOperators(BaseType):
         converted_strings = self.validation_df[target].map(lambda x: self._custom_str_conversion(x))
         results = converted_strings.notna() & ~converted_strings.astype(str).str.match(comparator)
         return results"""
-        raise NotImplementedError()
+        raise NotImplementedError("not_matches_regex check_operator not implemented")
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -675,7 +675,7 @@ class PostgresQLOperators(BaseType):
             lambda row: self._check_equality(row, target, parsed_id, value_is_literal),
             axis=1,
         )"""
-        raise NotImplementedError()
+        raise NotImplementedError("equals_string_part check_operator not implemented")
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -694,7 +694,7 @@ class PostgresQLOperators(BaseType):
             comparison_data: Tuple[str] = tuple(comparison_data)
         results = self.validation_df[target].str.startswith(comparison_data)
         return results"""
-        raise NotImplementedError()
+        raise NotImplementedError("starts_with check_operator not implemented")
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -708,7 +708,7 @@ class PostgresQLOperators(BaseType):
             comparison_data: Tuple[str] = tuple(comparison_data)
         results = self.validation_df[target].str.endswith(comparison_data)
         return results"""
-        raise NotImplementedError()
+        raise NotImplementedError("ends_with check_operator not implemented")
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -730,7 +730,7 @@ class PostgresQLOperators(BaseType):
         else:
             results = self.validation_df[target].str.len().eq(comparator).astype(bool)
         return results"""
-        raise NotImplementedError()
+        raise NotImplementedError("has_equal_length check_operator not implemented")
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -757,7 +757,7 @@ class PostgresQLOperators(BaseType):
         else:
             results = self.validation_df[target].str.len().gt(comparison_data)
         return results"""
-        raise NotImplementedError()
+        raise NotImplementedError("longer_than check_operator not implemented")
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -774,7 +774,7 @@ class PostgresQLOperators(BaseType):
         else:
             results = self.validation_df[target].str.len().ge(comparator)
         return results"""
-        raise NotImplementedError()
+        raise NotImplementedError("longer_than_or_equal_to check_operator not implemented")
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -796,7 +796,7 @@ class PostgresQLOperators(BaseType):
             False,
         )
         return self.validation_df.convert_to_series(results)"""
-        raise NotImplementedError()
+        raise NotImplementedError("empty check_operator not implemented")
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -818,7 +818,7 @@ class PostgresQLOperators(BaseType):
             results = results.compute()
         # return values with corresponding indexes from results
         return pd.Series(results.reset_index(level=0, drop=True))"""
-        raise NotImplementedError()
+        raise NotImplementedError("empty_within_except_last_row check_operator not implemented")
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -847,7 +847,7 @@ class PostgresQLOperators(BaseType):
 
         # return values with corresponding indexes from results
         return pd.Series(results.reset_index(level=0, drop=True))"""
-        raise NotImplementedError()
+        raise NotImplementedError("non_empty_within_except_last_row check_operator not implemented")
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -861,7 +861,7 @@ class PostgresQLOperators(BaseType):
             comparator = self.replace_prefix(comparator)
             values = self.validation_df[comparator].unique()
         return self.validation_df.convert_to_series(set(values).issubset(set(self.validation_df[target].unique())))"""
-        raise NotImplementedError()
+        raise NotImplementedError("contains_all check_operator not implemented")
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -874,7 +874,7 @@ class PostgresQLOperators(BaseType):
         """target = self.replace_prefix(other_value.get("target"))
         results = ~vectorized_is_valid(self.validation_df[target])
         return self.validation_df.convert_to_series(results)"""
-        raise NotImplementedError()
+        raise NotImplementedError("invalid_date check_operator not implemented")
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -885,7 +885,7 @@ class PostgresQLOperators(BaseType):
         else:
             results = ~vectorized_is_valid_duration(self.validation_df[target], True)
         return self.validation_df.convert_to_series(results)"""
-        raise NotImplementedError()
+        raise NotImplementedError("invalid_duration check_operator not implemented")
 
     def date_comparison(self, other_value, operator):
         target = self.replace_prefix(other_value.get("target"))
@@ -964,7 +964,7 @@ class PostgresQLOperators(BaseType):
             if group[target].nunique() == 1:
                 results[group.index] = False
         return results"""
-        raise NotImplementedError()
+        raise NotImplementedError("is_inconsistent_across_dataset check_operator not implemented")
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -985,7 +985,7 @@ class PostgresQLOperators(BaseType):
         counts = df_group.apply(tuple, axis=1).map(group_sizes)
         results = np.where(counts <= 1, True, False)
         return self.validation_df.convert_to_series(results)"""
-        raise NotImplementedError()
+        raise NotImplementedError("is_unique_set check_operator not implemented")
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -1037,7 +1037,7 @@ class PostgresQLOperators(BaseType):
             duplicated_target_values = set(df_without_duplicates[duplicated_target][target])
             result += self.validation_df[target].isin(duplicated_target_values)
         return result"""
-        raise NotImplementedError()
+        raise NotImplementedError("is_not_unique_relationship check_operator not implemented")
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -1052,7 +1052,7 @@ class PostgresQLOperators(BaseType):
         if not isinstance(value, str):
             raise Exception("Comparator must be a single String value")
         return self.validation_df.is_column_sorted_within(value, target)"""
-        raise NotImplementedError()
+        raise NotImplementedError("is_ordered_set check_operator not implemented")
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -1066,7 +1066,7 @@ class PostgresQLOperators(BaseType):
         for vlm in self.value_level_metadata:
             results |= self.validation_df.apply(lambda row: vlm["filter"](row) and not vlm["type_check"](row), axis=1)
         return self.validation_df.convert_to_series(results.values)"""
-        raise NotImplementedError()
+        raise NotImplementedError("non_conformant_value_data_type check_operator not implemented")
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -1075,7 +1075,7 @@ class PostgresQLOperators(BaseType):
         for vlm in self.value_level_metadata:
             results |= self.validation_df.apply(lambda row: vlm["filter"](row) and not vlm["length_check"](row), axis=1)
         return self.validation_df.convert_to_series(results)"""
-        raise NotImplementedError()
+        raise NotImplementedError("non_conformant_value_length check_operator not implemented")
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -1096,7 +1096,7 @@ class PostgresQLOperators(BaseType):
         for vlm in self.value_level_metadata:
             results |= self.validation_df.apply(lambda row: vlm["filter"](row) and vlm["length_check"](row), axis=1)
         return self.validation_df.convert_to_series(results)"""
-        raise NotImplementedError()
+        raise NotImplementedError("conformant_value_length check_operator not implemented")
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -1117,7 +1117,7 @@ class PostgresQLOperators(BaseType):
         grouped_df = ordered_df.groupby(group_by_column)
         results = grouped_df.apply(lambda x: self.compare_target_with_comparator_next_row(x, target, comparator))
         return self.validation_df.convert_to_series(results.explode().tolist())"""
-        raise NotImplementedError()
+        raise NotImplementedError("has_next_corresponding_record check_operator not implemented")
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -1146,7 +1146,7 @@ class PostgresQLOperators(BaseType):
                 True,
             ]
         ).tolist()"""
-        raise NotImplementedError()
+        raise NotImplementedError("compare_target_with_comparator_next_row check_operator not implemented")
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -1217,7 +1217,7 @@ class PostgresQLOperators(BaseType):
             return False
 
         return df.apply(check_inconsistency, axis=1)"""
-        raise NotImplementedError()
+        raise NotImplementedError("inconsistent_enumerated_columns check_operator not implemented")
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -1229,7 +1229,7 @@ class PostgresQLOperators(BaseType):
             axis=1,
         )
         return result"""
-        raise NotImplementedError()
+        raise NotImplementedError("references_correct_codelist check_operator not implemented")
 
     @type_operator(FIELD_DATAFRAME)
     def does_not_reference_correct_codelist(self, other_value: dict):
@@ -1242,7 +1242,7 @@ class PostgresQLOperators(BaseType):
             if next_position < len(row) and not (pd.isna(row[next_position]) or row[next_position] in NULL_FLAVORS):
                 return True
         return False"""
-        raise NotImplementedError()
+        raise NotImplementedError("next_column_exists_and_previous_is_null check_operator not implemented")
 
     def valid_codelist_reference(self, column_name, codelist):
         if column_name in self.column_codelist_map:
@@ -1288,7 +1288,7 @@ class PostgresQLOperators(BaseType):
             .eq(self.validation_df[target].sort_values(ascending=sort_order_bool, ignore_index=True))
             .astype(bool)
         )"""
-        raise NotImplementedError()
+        raise NotImplementedError("is_ordered_by check_operator not implemented")
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -1310,7 +1310,7 @@ class PostgresQLOperators(BaseType):
             False,
         )
         return self.validation_df.convert_to_series(result)"""
-        raise NotImplementedError()
+        raise NotImplementedError("value_has_multiple_references check_operator not implemented")
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -1400,7 +1400,7 @@ class PostgresQLOperators(BaseType):
                     result = result.compute()
                 result = result.squeeze()
         return result"""
-        raise NotImplementedError()
+        raise NotImplementedError("target_is_sorted_by check_operator not implemented")
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -1429,7 +1429,7 @@ class PostgresQLOperators(BaseType):
             False,
         )
         return self.validation_df.convert_to_series(result)"""
-        raise NotImplementedError()
+        raise NotImplementedError("variable_metadata_equal_to check_operator not implemented")
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -1448,7 +1448,7 @@ class PostgresQLOperators(BaseType):
             return bool(target_set.intersection(comparator_set))
 
         return self.validation_df.apply(check_shared_elements, axis=1).any()"""
-        raise NotImplementedError()
+        raise NotImplementedError("shares_at_least_one_element_with check_operator not implemented")
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -1462,7 +1462,7 @@ class PostgresQLOperators(BaseType):
             return len(target_set.intersection(comparator_set)) == 1
 
         return self.validation_df.apply(check_exactly_one_shared_element, axis=1).any()"""
-        raise NotImplementedError()
+        raise NotImplementedError("shares_exactly_one_element_with check_operator not implemented")
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -1476,7 +1476,7 @@ class PostgresQLOperators(BaseType):
             return len(target_set.intersection(comparator_set)) == 0
 
         return self.validation_df.apply(check_no_shared_elements, axis=1).all()"""
-        raise NotImplementedError()
+        raise NotImplementedError("shares_no_elements_with check_operator not implemented")
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -1506,7 +1506,7 @@ class PostgresQLOperators(BaseType):
         if missing_columns:
             logger.info(f"Columns not found in comparator list {comparator}: {', '.join(sorted(missing_columns))}")
         return results"""
-        raise NotImplementedError()
+        raise NotImplementedError("is_ordered_subset_of check_operator not implemented")
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
