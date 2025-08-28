@@ -78,6 +78,7 @@ git pull upstream main
 docker build -f Dockerfile.build -t cdisc-builder .
 
 # Extract the executable and remove container
+mkdir -p ./build-output
 CONTAINER_ID=$(docker create cdisc-builder)
 docker cp $CONTAINER_ID:/app/dist/output/core-ubuntu-22.04/core ./build-output/
 docker rm $CONTAINER_ID
@@ -99,6 +100,7 @@ docker create cdisc-builder > temp_id.txt
 set /p CONTAINER_ID=<temp_id.txt
 
 REM Extract the executable
+if not exist "build-output" mkdir build-output
 docker cp %CONTAINER_ID%:/app/dist/output/core-ubuntu-22.04/core ./build-output/
 
 REM Clean up
@@ -115,34 +117,10 @@ echo Executable ready: ./build-output/core
 docker build -f Dockerfile.build -t cdisc-builder .
 
 # Extract the executable and remove container
+New-Item -ItemType Directory -Force -Path ./build-output
 $CONTAINER_ID = docker create cdisc-builder
 docker cp "${CONTAINER_ID}:/app/dist/output/core-ubuntu-22.04/core" ./build-output/
 docker rm $CONTAINER_ID
-
-# Note: chmod is not needed on Windows
-Write-Host "Executable ready: ./build-output/core"
-```
-
-### Alternative: Create build-output directory first
-
-If you encounter issues with the docker cp command, create the output directory first:
-
-#### Linux/macOS/WSL/Git Bash:
-
-```bash
-mkdir -p ./build-output
-```
-
-#### Windows Command Prompt:
-
-```cmd
-if not exist "build-output" mkdir build-output
-```
-
-#### Windows PowerShell:
-
-```powershell
-New-Item -ItemType Directory -Force -Path ./build-output
 ```
 
 ## Customizing the Build for Your Environment
