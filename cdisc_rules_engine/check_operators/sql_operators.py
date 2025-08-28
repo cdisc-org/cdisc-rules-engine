@@ -789,14 +789,12 @@ class PostgresQLOperators(BaseType):
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
     def empty(self, other_value: dict):
-        """target = self.replace_prefix(other_value.get("target"))
-        results = np.where(
-            self.validation_df[target].isin(NULL_FLAVORS) | pd.isna(self.validation_df[target]),
-            True,
-            False,
-        )
-        return self.validation_df.convert_to_series(results)"""
-        raise NotImplementedError("empty check_operator not implemented")
+        column = self.replace_prefix(other_value.get("target"))
+
+        def sql():
+            return self._is_empty_sql(column)
+
+        return self._do_check_operator(f"{column}_empty", sql)
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -1512,6 +1510,12 @@ class PostgresQLOperators(BaseType):
     @type_operator(FIELD_DATAFRAME)
     def is_not_ordered_subset_of(self, other_value: dict):
         return ~self.is_ordered_subset_of(other_value)
+
+    def _is_empty_sql(self, col: str) -> str:
+        """
+        Generates a SQL query to check if a column is empty.
+        """
+        return f"({col} IS NULL OR {col} = '')"
 
     def _add_column_query(self, table_name: str, column_name: str, column_type: str) -> str:
         return f"ALTER TABLE {table_name} ADD COLUMN IF NOT EXISTS {column_name} {column_type};"
