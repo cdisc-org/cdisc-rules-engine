@@ -1152,22 +1152,34 @@ class PostgresQLOperators(BaseType):
     @type_operator(FIELD_DATAFRAME)
     def present_on_multiple_rows_within(self, other_value: dict):
         """
-        The operator ensures that the target is present on multiple rows
-        within a group_by column. The dataframe is grouped by a certain column
-        and the check is applied to each group.
+        Verifies if a value in the 'target' column appears on multiple rows
+        within groups defined by the 'within' column.
         """
-        """target = self.replace_prefix(other_value.get("target"))
-        min_count: int = other_value.get("comparator") or 1
-        group_by_column = self.replace_prefix(other_value.get("within"))
-        grouped = self.validation_df.groupby([group_by_column, target])
-        meta = (target, bool)
-        results = grouped.apply(lambda x: self.validate_series_length(x, target, min_count), meta=meta)
-        uuid = str(uuid4())
-        return self.validation_df.merge(results.rename(uuid).reset_index(), on=[group_by_column, target])[uuid]"""
-        raise NotImplementedError()
+        target_column = self.replace_prefix(other_value.get("target")).lower()
+        min_count = other_value.get("comparator") or 1
+        within_column = self.replace_prefix(other_value.get("within")).lower()
 
-    def validate_series_length(self, data: DatasetInterface, target: str, min_length: int):
-        return len(data) > min_length
+        op_name = f"{target_column}_{within_column}_{min_count}_present_on_multiple_rows"
+
+        def generate_update_query(db_table: str, db_column: str) -> str:
+            # Construct the UPDATE query. This uses a window function to count
+            # occurrences within each group and then updates each row accordingly.
+            return f"""
+                UPDATE {db_table} AS t
+                SET {db_column} = sub.is_present
+                FROM (
+                    SELECT
+                        id,
+                        (COUNT(*) OVER (PARTITION BY {within_column}, {target_column})) > {min_count} AS is_present
+                    FROM {db_table}
+                    ORDER BY id
+                ) AS sub
+                WHERE t.id = sub.id;
+            """
+
+        result_series = self._do_complex_check_operator(op_name, generate_update_query)
+
+        return result_series
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -1517,17 +1529,24 @@ class PostgresQLOperators(BaseType):
         return_series = pd.Series(data={item["id"] - 1: item[db_column] for item in sql_results})
         return return_series
 
-    def _do_check_operator(self, new_column: str, sql_fn: str):
-        """
-        Runs a check operator. First checks if the columns already exists,
-        if not, generates the SQL to create the column and runs it to populate the column.
-        """
+    def _do_check_operator(self, new_column: str, sql_subquery_fn):
+        # Handles simple checks by creating a column and updating it with a scalar subquery.
         exists, _, db_column = self.sql_data_service.cache.add_db_column_if_missing(self.table_id, new_column)
         if not exists:
-            # do operation
             db_table = self.sql_data_service.cache.get_db_table_hash(self.table_id)
-            subquery = sql_fn()
+            subquery = sql_subquery_fn()
             query = f"UPDATE {db_table} SET {db_column} = ({subquery});"
+            self.sql_data_service.pgi.execute_many(
+                queries=[self._add_column_query(db_table, db_column, "BOOLEAN"), query]
+            )
+        return self._fetch_for_venmo(db_column)
+
+    def _do_complex_check_operator(self, new_column: str, sql_full_query_fn):
+        # Handles complex checks by creating a column and populating it with a full custom query.
+        exists, _, db_column = self.sql_data_service.cache.add_db_column_if_missing(self.table_id, new_column)
+        if not exists:
+            db_table = self.sql_data_service.cache.get_db_table_hash(self.table_id)
+            query = sql_full_query_fn(db_table, db_column)
             self.sql_data_service.pgi.execute_many(
                 queries=[self._add_column_query(db_table, db_column, "BOOLEAN"), query]
             )
