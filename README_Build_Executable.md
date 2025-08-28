@@ -45,6 +45,7 @@ The runner in our workflow currently builds for ubuntu-22.04 but this can be cha
 - Docker Desktop installed and running
 - Git
 - **Note**: There is no official support for a macOS docker runner; Windows also requires some additional setup
+- **Note**: You will need to run Windows Command Prompt / Windows Powershell as administrator. This can be done by right clicking and the application and selecting 'Run as Administrator'
 
 ### Step 1: Clone Repository
 
