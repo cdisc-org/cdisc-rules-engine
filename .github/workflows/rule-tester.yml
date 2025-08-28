@@ -15,6 +15,7 @@ env:
   PYTHON_VERSION: "3.12"
 jobs:
   deploy_rule_tester:
+    if: false
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment || 'PROD' }}
     steps:
