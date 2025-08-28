@@ -195,7 +195,7 @@ class DatasetPreprocessor:
             left_dataset, self._dataset_metadata
         )
         has_idvar_keys = "IDVAR" in match_keys or "IDVARVAL" in match_keys
-        if is_supplemental or rdomain_dataset and has_idvar_keys:
+        if (is_supplemental or rdomain_dataset) and has_idvar_keys:
             return self._merge_rdomain_dataset(
                 left_dataset,
                 left_dataset_domain_name,
