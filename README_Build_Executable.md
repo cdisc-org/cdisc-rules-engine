@@ -130,9 +130,13 @@ The default Dockerfile builds for Ubuntu 22.04 on AMD64 architecture. To customi
 
 ### Change Target Operating System
 
+To change what underlying OS the executable is built on to match your implementation needs, you will need to edit the dockerfile
+
 - https://docs.docker.com/reference/dockerfile/#from
 - **Windows**: https://hub.docker.com/r/microsoft/windows
 - **macOS**: https://hub.docker.com/search - you can explore DockerHub to find a macOS image to utilize
+
+You will need to edit these areas of the dockerfile:
 
 ```dockerfile
 # Change the base image (line 2)
@@ -143,7 +147,7 @@ FROM --platform=linux/amd64 ubuntu:22.04
 
 ### Update PyInstaller Output Path
 
-If you change the base OS, update the PyInstaller dist path to match:
+If you change the base OS, update the PyInstaller dist path. this is for clarity and organization, but it's not technically required for functionality:
 
 ```dockerfile
 # Change the --dist path in the pyinstaller command (around line 20)
@@ -182,6 +186,14 @@ REM docker cp %CONTAINER_ID%:/app/dist/output/core-windows/core ./build-output/
 docker cp "${CONTAINER_ID}:/app/dist/output/core-ubuntu-22.04/core" ./build-output/
 # Example for Windows build:
 # docker cp "${CONTAINER_ID}:/app/dist/output/core-windows/core" ./build-output/
+```
+
+### Executability
+
+Currently the Dockerfile.build is ubuntu and we give the file executable permissions. This may not be required depending on your OS.
+
+```bash
+RUN chmod +x /app/dist/output/core-ubuntu-22.04/core/core && \
 ```
 
 ## Platform-Specific Notes
