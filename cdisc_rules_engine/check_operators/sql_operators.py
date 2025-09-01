@@ -1689,7 +1689,19 @@ class PostgresQLOperators(BaseType):
         """
         Generates a SQL query to check if a column is empty.
         """
-        return f"({col} IS NULL OR {col} = '')"
+        column = self.sql_data_service.pgi.schema.get_column(self.table_id, col)
+        if not column:
+            raise ValueError(f"Column {col} does not exist in the table {self.table_id}.")
+
+        match column.type:
+            case "Char":
+                return f"({column.hash} IS NULL OR {column.hash} = '')"
+            case "Bool":
+                return f"({column.hash} IS NULL)"
+            case "Num":
+                return f"({column.hash} IS NULL)"
+            case _:
+                raise ValueError(f"Unsupported column type: {column.type} for column {col}.")
 
     def _fetch_for_venmo(self, column: str):
         """

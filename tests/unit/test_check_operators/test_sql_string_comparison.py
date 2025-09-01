@@ -16,6 +16,10 @@ from cdisc_rules_engine.data_service.postgresql_data_service import (
             {"target": ["Att", "", None]},
             [False, True, True],
         ),
+        (
+            {"target": [1, 2, None]},
+            [False, False, True],
+        ),
     ],
 )
 def test_empty(data, expected_result):
@@ -30,6 +34,7 @@ def test_empty(data, expected_result):
     "data,expected_result",
     [
         ({"target": ["Att", "", None]}, [True, False, False]),
+        ({"target": [1, 2, None]}, [True, True, False]),
     ],
 )
 def test_non_empty(data, expected_result):
