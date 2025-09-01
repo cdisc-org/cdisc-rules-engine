@@ -2,6 +2,8 @@ import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
+from psycopg2.errors import ProgrammingError
+
 from cdisc_rules_engine.data_service.database import (
     DatabaseConfigPostgres,
     DatabasePostgres,
@@ -68,6 +70,10 @@ class PostgresQLInterface:
             except Exception as e:
                 conn.rollback()
                 logger.error(f"Query execution failed: {e}")
+
+                # TODO: Adding this temporarily to make regression deterministic
+                if isinstance(e, ProgrammingError):
+                    raise ProgrammingError("A postgres SQL error occurred") from e
                 raise
 
         return affected_rows
@@ -99,6 +105,10 @@ class PostgresQLInterface:
             except Exception as e:
                 conn.rollback()
                 logger.error(f"Batch execution failed: {e}")
+
+                # TODO: Adding this temporarily to make regression deterministic
+                if isinstance(e, ProgrammingError):
+                    raise ProgrammingError("A postgres SQL error occurred") from e
                 raise
 
         return affected_rows_list
