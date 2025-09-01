@@ -6,9 +6,8 @@ from cdisc_rules_engine.sql_operations.sql_base_operation import SqlBaseOperatio
 class SqlDistinct(SqlBaseOperation):
     def _execute_operation(self):
         if not self.params.grouping:
-            cache = self.data_service.cache
-            dataset_id = cache.get_db_table_hash(self.params.domain)
-            column_id = cache.get_db_column_hash(self.params.domain, self.params.target)
+            dataset_id = self.data_service.pgi.schema.get_table_hash(self.params.domain)
+            column_id = self.data_service.pgi.schema.get_column_hash(self.params.domain, self.params.target)
             return f"(SELECT DISTINCT {column_id} FROM {dataset_id})"
         else:
             """grouped = self.params.dataframe.groupby(self.params.grouping, as_index=False, group_keys=False).data

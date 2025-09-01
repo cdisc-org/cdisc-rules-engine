@@ -1,20 +1,20 @@
+import logging
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Union, Optional, List, Dict, Any
-import pandas as pd
-import logging
-
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
+
+import pandas as pd
 
 from cdisc_rules_engine.constants.domains import SUPPLEMENTARY_DOMAINS
-from cdisc_rules_engine.data_service.db_cache import DBCache
+from cdisc_rules_engine.data_service.sql_data_preprocessor import DataPreprocessor
 from cdisc_rules_engine.data_service.sql_data_service import SQLDataService
 from cdisc_rules_engine.data_service.sql_interface import PostgresQLInterface
-from cdisc_rules_engine.data_service.sql_data_preprocessor import DataPreprocessor
+from cdisc_rules_engine.models.sql.table_schema import SqlTableSchema
 from cdisc_rules_engine.models.test_dataset import TestDataset
+from cdisc_rules_engine.readers.codelist_reader import CodelistReader
 from cdisc_rules_engine.readers.data_reader import DataReader
 from cdisc_rules_engine.readers.define_xml_reader import XMLReader
-from cdisc_rules_engine.readers.codelist_reader import CodelistReader
 from cdisc_rules_engine.readers.metadata_standards_reader import MetadataStandardsReader
 from cdisc_rules_engine.utilities.ig_specification import IGSpecification
 
@@ -44,7 +44,6 @@ class PostgresQLDataService(SQLDataService):
     def __init__(
         self,
         postgres_interface: PostgresQLInterface,
-        cache: DBCache,
         ig_specs: IGSpecification,
         datasets_path: Path = None,
         define_xml_path: Path = None,
@@ -60,9 +59,8 @@ class PostgresQLDataService(SQLDataService):
         self.data_dfs = data_dfs
         self.pre_processed_dfs = pre_processed_dfs
         self.pgi = postgres_interface
-        self.cache = cache
 
-        self.data_preprocessor = DataPreprocessor(postgres_interface, cache)
+        self.data_preprocessor = DataPreprocessor(postgres_interface)
 
     @classmethod
     def from_list_of_testdatasets(
@@ -87,6 +85,19 @@ class PostgresQLDataService(SQLDataService):
         # create metadata table in postgres
         pgi.execute_sql_file(str(SCHEMA_PATH / "clinical_data_metadata_schema.sql"))
 
+        pre_processed_dfs = PostgresQLDataService._pre_process_data_dfs(data_dfs, pgi)
+        instance = cls(
+            pgi,
+            ig_specs,
+            datasets_path,
+            define_xml_path,
+            None,
+            None,
+            terminology_paths,
+            data_dfs,
+            pre_processed_dfs,
+        )
+
         # generate timestamp
         timestamp = datetime.now().astimezone()
         for test_dataset in test_datasets:
@@ -98,8 +109,8 @@ class PostgresQLDataService(SQLDataService):
             table_name = test_dataset["name"].lower()
             row_dicts = [{k.lower(): v for k, v in row.items()} for row in row_dicts]
 
-            # collect col types from variables
-            pgi.create_table_from_metadata(table_name=table_name, metadata=test_dataset)
+            schema = SqlTableSchema.from_metadata(test_dataset)
+            pgi.create_table(schema)
             pgi.insert_data(table_name=table_name, data=row_dicts)
 
             ddf = pd.DataFrame.from_records(row_dicts)
@@ -140,22 +151,7 @@ class PostgresQLDataService(SQLDataService):
         # write metadata rows into DB
         pgi.insert_data(table_name="data_metadata", data=metadata_rows)
 
-        # initialize cache
-        cache = DBCache.from_metadata_dict(metadata_rows)
-
-        pre_processed_dfs = PostgresQLDataService._pre_process_data_dfs(data_dfs, pgi, cache)
-        return cls(
-            pgi,
-            cache,
-            ig_specs,
-            datasets_path,
-            define_xml_path,
-            None,
-            None,
-            terminology_paths,
-            data_dfs,
-            pre_processed_dfs,
-        )
+        return instance
 
     @classmethod
     def from_column_data(
@@ -168,23 +164,27 @@ class PostgresQLDataService(SQLDataService):
         # PostgresDB setup
         pgi = PostgresQLInterface()
         pgi.init_database()
+
+        instance = cls(postgres_interface=pgi, ig_specs=None)
+
         # Create schema and table:
         row_dicts = [dict(zip(column_data, values)) for values in zip(*column_data.values())]
-        table_name = table_name.lower()
         row_dicts = [{k.lower(): v for k, v in row.items()} for row in row_dicts]
-        pgi.create_table_from_data(table_name=table_name, data=row_dicts[0])
+
+        schema = SqlTableSchema.from_data(table_name, row_dicts[0])
+        pgi.create_table(schema)
+
         pgi.insert_data(table_name=table_name, data=row_dicts)
         pgi.execute_sql_file(str(SCHEMA_PATH / "clinical_data_metadata_schema.sql"))
-        metadata = [{"dataset_id": table_name, "var_name": var} for var in row_dicts[0].keys()]
-        return cls(postgres_interface=pgi, cache=DBCache.from_metadata_dict(metadata), ig_specs=None)
+        return instance
 
     @staticmethod
     def _pre_process_data_dfs(
-        data_dfs: dict[str, pd.DataFrame], postgres_interface: PostgresQLInterface, cache: DBCache
+        data_dfs: dict[str, pd.DataFrame], postgres_interface: PostgresQLInterface
     ) -> dict[str, pd.DataFrame]:
         """Performs all preprocessing operations on data using the DataPreprocessor."""
         logger.info("Starting data preprocessing")
-        preprocessor = DataPreprocessor(postgres_interface, cache)
+        preprocessor = DataPreprocessor(postgres_interface)
         preprocessing_results = preprocessor.preprocess_all()
         logger.info(f"Preprocessing completed: {preprocessing_results}")
         return data_dfs  # this is a redundant return because the data has been updated within the sql database
@@ -204,11 +204,9 @@ class PostgresQLDataService(SQLDataService):
         pgi.init_database()
 
         data_dfs = {}
-        metadata_rows: list[dict[str, Union[str, int, float]]] = []
 
         instance = cls(
             postgres_interface=pgi,
-            cache=DBCache.from_metadata_dict(metadata_rows),
             ig_specs=ig_specs,
             datasets_path=datasets_path,
             define_xml_path=define_xml_path,

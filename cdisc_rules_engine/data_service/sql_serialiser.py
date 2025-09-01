@@ -1,79 +1,52 @@
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Tuple
+
+from cdisc_rules_engine.models.sql import DATASET_COLUMN_TYPES
+from cdisc_rules_engine.models.sql.column_schema import SqlColumnSchema
+from cdisc_rules_engine.models.sql.table_schema import (
+    SqlTableSchema,
+)
 
 
 class SQLSerialiser:
     """Convert Python objects to SQL statements"""
 
     @staticmethod
-    def python_to_sql_type(value: Any) -> str:
-        """Map python types to SQL types."""
-        if isinstance(value, (int, float)):
-            return "DOUBLE PRECISION"
-        elif isinstance(value, str):
-            return "TEXT"
-        else:
-            raise ValueError(f"Unsupported type: {type(value)}")
-
-    @staticmethod
-    def sas_to_sql_type(type: str) -> str:
-        """Map sas types to SQL types."""
-        if type.lower() in ("char", "s"):
-            return "TEXT"
-        elif type.lower() in ("num", "numeric", "d"):
-            return "DOUBLE PRECISION"
-        else:
-            raise ValueError(f"Unsupported type: {type}")
+    def column_type_to_sql_type(value: DATASET_COLUMN_TYPES) -> str:
+        """Map column types to SQL types."""
+        match value:
+            case "Char":
+                return "TEXT"
+            case "Num":
+                return "DOUBLE PRECISION"
+            case "Bool":
+                return "BOOLEAN"
+            case _:
+                raise ValueError(f"Unsupported column type: {type(value)}")
 
     @classmethod
-    def create_table_query_from_data(
-        cls, table_name: str, sample: Dict[str, Any], primary_key: Optional[str] = None
-    ) -> str:
-        """Generate CREATE TABLE statement from a dictionary"""
-        columns = []
+    def create_table_query_from_schema(cls, schema: "SqlTableSchema") -> str:  # , primary_key: Optional[str] = None
+        """Generate CREATE TABLE statement from a schema"""
+        column_definitions = []
 
-        for key, value in sample.items():
-            col_type = cls.python_to_sql_type(value)
-            col_def = f"{key} {col_type}"
+        for column in schema._columns.values():
+            sql_type = cls.column_type_to_sql_type(column.type)
+            col_def = f"{column.hash} {sql_type}"
 
-            if key == primary_key:
-                col_def += " PRIMARY KEY"
+            # TODO: Why are we defining the primary key here and also in the query below?
+            # if key == primary_key:
+            #     col_def += " PRIMARY KEY"
 
-            columns.append(col_def)
+            column_definitions.append(col_def)
 
-        if len(columns) > 0:
-            columns_sql = ",\n    ".join(columns)
-            return f"""CREATE TABLE IF NOT EXISTS {table_name} (
+        if len(column_definitions) > 0:
+            columns_sql = ",\n    ".join(column_definitions)
+            return f"""CREATE TABLE IF NOT EXISTS {schema.name} (
                     id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY, {columns_sql}
                 );"""
         else:
-            return f"""CREATE TABLE IF NOT EXISTS {table_name} (
+            return f"""CREATE TABLE IF NOT EXISTS {schema.name} (
                         id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY
                     );"""
-
-    @classmethod
-    def create_table_query_from_data_metadata_dict(
-        cls, table_name: str, metadata: Dict[str, Any], primary_key: Optional[str] = None
-    ) -> str:
-        """Generate CREATE TABLE statement from the dataset metadata."""
-        columns = []
-        variable_metadata = metadata["variables"]
-        for var in variable_metadata:
-            col_def = f"{var['name'].lower()} {cls.sas_to_sql_type(var['type'])}"
-
-            if var["name"] == primary_key:
-                col_def += " PRIMARY KEY"
-
-            columns.append(col_def)
-
-        if len(columns) > 0:
-            columns_sql = ",\n    ".join(columns)
-            return f"""CREATE TABLE IF NOT EXISTS {table_name} (
-                id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY, {columns_sql}
-            );"""
-        else:
-            return f"""CREATE TABLE IF NOT EXISTS {table_name} (
-                    id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY
-                );"""
 
     @classmethod
     def insert_dict(cls, table_name: str, data: Dict[str, Any]) -> Tuple[str, List[Any]]:
@@ -106,3 +79,9 @@ class SQLSerialiser:
             values.append(row_values)
 
         return query, values
+
+    @classmethod
+    def create_column_from_schema(cls, table_schema: SqlTableSchema, column_schema: "SqlColumnSchema") -> str:
+        """Generate ALTER TABLE statement from a schema"""
+        sql_type = cls.column_type_to_sql_type(column_schema.type)
+        return f"ALTER TABLE {table_schema.name} ADD COLUMN {column_schema.hash} {sql_type};"

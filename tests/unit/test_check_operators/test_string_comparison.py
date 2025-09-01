@@ -1,6 +1,6 @@
-from cdisc_rules_engine.check_operators.dataframe_operators import DataframeType
 import pytest
 
+from cdisc_rules_engine.check_operators.dataframe_operators import DataframeType
 from cdisc_rules_engine.models.dataset.dask_dataset import DaskDataset
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 
@@ -27,9 +27,7 @@ from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 def test_equals_string_part(data, comparator, regex, dataset_type, expected_result):
     df = dataset_type.from_dict(data)
     dataframe_type = DataframeType({"value": df})
-    result = dataframe_type.equals_string_part(
-        {"target": "target", "comparator": comparator, "regex": regex}
-    )
+    result = dataframe_type.equals_string_part({"target": "target", "comparator": comparator, "regex": regex})
     assert result.equals(df.convert_to_series(expected_result))
 
 
@@ -107,9 +105,7 @@ def test_ends_with(data, comparator, dataset_type, expected_result):
 def test_has_equal_length(data, comparator, dataset_type, expected_result):
     df = dataset_type.from_dict(data)
     dataframe_type = DataframeType({"value": df})
-    result = dataframe_type.has_equal_length(
-        {"target": "target", "comparator": comparator}
-    )
+    result = dataframe_type.has_equal_length({"target": "target", "comparator": comparator})
     assert result.equals(df.convert_to_series(expected_result))
 
 
@@ -139,9 +135,7 @@ def test_has_equal_length(data, comparator, dataset_type, expected_result):
 def test_has_not_equal_length(data, comparator, dataset_type, expected_result):
     df = dataset_type.from_dict(data)
     dataframe_type = DataframeType({"value": df})
-    result = dataframe_type.has_not_equal_length(
-        {"target": "target", "comparator": comparator}
-    )
+    result = dataframe_type.has_not_equal_length({"target": "target", "comparator": comparator})
     assert result.equals(df.convert_to_series(expected_result))
 
 
@@ -201,9 +195,7 @@ def test_longer_than(data, comparator, dataset_type, expected_result):
 def test_longer_than_or_equal_to(data, comparator, dataset_type, expected_result):
     df = dataset_type.from_dict(data)
     dataframe_type = DataframeType({"value": df})
-    result = dataframe_type.longer_than_or_equal_to(
-        {"target": "target", "comparator": comparator}
-    )
+    result = dataframe_type.longer_than_or_equal_to({"target": "target", "comparator": comparator})
     assert result.equals(df.convert_to_series(expected_result))
 
 
@@ -263,9 +255,7 @@ def test_shorter_than(data, comparator, dataset_type, expected_result):
 def test_shorter_than_or_equal_to(data, comparator, dataset_type, expected_result):
     df = dataset_type.from_dict(data)
     dataframe_type = DataframeType({"value": df})
-    result = dataframe_type.shorter_than_or_equal_to(
-        {"target": "target", "comparator": comparator}
-    )
+    result = dataframe_type.shorter_than_or_equal_to({"target": "target", "comparator": comparator})
     assert result.equals(df.convert_to_series(expected_result))
 
 
@@ -273,14 +263,14 @@ def test_shorter_than_or_equal_to(data, comparator, dataset_type, expected_resul
     "data,dataset_type,expected_result",
     [
         (
-            {"target": ["Att", "", None, {None}, {None, 1}, {1, 2}]},
+            {"target": ["Att", "", None, {None}, {None, 1}, {1, 2}, 1]},
             PandasDataset,
-            [False, True, True, True, False, False],
+            [False, True, True, True, False, False, False],
         ),
         (
-            {"target": ["Att", "", None, {None}, {None, 1}, {1, 2}]},
+            {"target": ["Att", "", None, {None}, {None, 1}, {1, 2}, 1]},
             DaskDataset,
-            [False, True, True, True, False, False],
+            [False, True, True, True, False, False, False],
         ),
     ],
 )
@@ -294,8 +284,8 @@ def test_empty(data, dataset_type, expected_result):
 @pytest.mark.parametrize(
     "data,dataset_type,expected_result",
     [
-        ({"target": ["Att", "", None]}, PandasDataset, [True, False, False]),
-        ({"target": ["Att", "", None]}, DaskDataset, [True, False, False]),
+        ({"target": ["Att", "", None, 1]}, PandasDataset, [True, False, False, True]),
+        ({"target": ["Att", "", None, 1]}, DaskDataset, [True, False, False, True]),
     ],
 )
 def test_non_empty(data, dataset_type, expected_result):
@@ -367,9 +357,7 @@ def test_non_empty(data, dataset_type, expected_result):
 def test_prefix_matches_regex(data, comparator, prefix, dataset_type, expected_result):
     df = dataset_type.from_dict(data)
     dataframe_type = DataframeType({"value": df})
-    result = dataframe_type.prefix_matches_regex(
-        {"target": "target", "comparator": comparator, "prefix": prefix}
-    )
+    result = dataframe_type.prefix_matches_regex({"target": "target", "comparator": comparator, "prefix": prefix})
     assert result.equals(df.convert_to_series(expected_result))
 
 
@@ -435,9 +423,7 @@ def test_prefix_matches_regex(data, comparator, prefix, dataset_type, expected_r
 def test_suffix_matches_regex(data, comparator, suffix, dataset_type, expected_result):
     df = dataset_type.from_dict(data)
     dataframe_type = DataframeType({"value": df})
-    result = dataframe_type.suffix_matches_regex(
-        {"target": "target", "comparator": comparator, "suffix": suffix}
-    )
+    result = dataframe_type.suffix_matches_regex({"target": "target", "comparator": comparator, "suffix": suffix})
     assert result.equals(df.convert_to_series(expected_result))
 
 
@@ -500,14 +486,10 @@ def test_suffix_matches_regex(data, comparator, suffix, dataset_type, expected_r
         ),
     ],
 )
-def test_not_suffix_matches_regex(
-    data, comparator, suffix, dataset_type, expected_result
-):
+def test_not_suffix_matches_regex(data, comparator, suffix, dataset_type, expected_result):
     df = dataset_type.from_dict(data)
     dataframe_type = DataframeType({"value": df})
-    result = dataframe_type.not_suffix_matches_regex(
-        {"target": "target", "comparator": comparator, "suffix": suffix}
-    )
+    result = dataframe_type.not_suffix_matches_regex({"target": "target", "comparator": comparator, "suffix": suffix})
     assert result.equals(df.convert_to_series(expected_result))
 
 
@@ -570,14 +552,10 @@ def test_not_suffix_matches_regex(
         ),
     ],
 )
-def test_not_prefix_matches_regex(
-    data, comparator, prefix, dataset_type, expected_result
-):
+def test_not_prefix_matches_regex(data, comparator, prefix, dataset_type, expected_result):
     df = dataset_type.from_dict(data)
     dataframe_type = DataframeType({"value": df})
-    result = dataframe_type.not_prefix_matches_regex(
-        {"target": "target", "comparator": comparator, "prefix": prefix}
-    )
+    result = dataframe_type.not_prefix_matches_regex({"target": "target", "comparator": comparator, "prefix": prefix})
     assert result.equals(df.convert_to_series(expected_result))
 
 
@@ -637,9 +615,7 @@ def test_not_prefix_matches_regex(
 def test_matches_regex(data, comparator, dataset_type, expected_result):
     df = dataset_type.from_dict(data)
     dataframe_type = DataframeType({"value": df})
-    result = dataframe_type.matches_regex(
-        {"target": "target", "comparator": comparator}
-    )
+    result = dataframe_type.matches_regex({"target": "target", "comparator": comparator})
     assert result.equals(df.convert_to_series(expected_result))
 
 
@@ -699,7 +675,5 @@ def test_matches_regex(data, comparator, dataset_type, expected_result):
 def test_not_matches_regex(data, comparator, dataset_type, expected_result):
     df = dataset_type.from_dict(data)
     dataframe_type = DataframeType({"value": df})
-    result = dataframe_type.not_matches_regex(
-        {"target": "target", "comparator": comparator}
-    )
+    result = dataframe_type.not_matches_regex({"target": "target", "comparator": comparator})
     assert result.equals(df.convert_to_series(expected_result))

@@ -1,10 +1,12 @@
-from typing import TypedDict, List, Dict, Literal, Union
+from typing import Dict, List, TypedDict, Union
+
+from cdisc_rules_engine.models.sql import DATASET_COLUMN_TYPES
 
 
 class TestVariableMetadata(TypedDict):
     name: str
     label: str
-    type: Literal["Char", "Num"]
+    type: DATASET_COLUMN_TYPES
     length: int
     format: str
 

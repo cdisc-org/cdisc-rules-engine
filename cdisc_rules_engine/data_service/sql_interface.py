@@ -1,10 +1,16 @@
 import logging
 from pathlib import Path
-from typing import List, Any, Optional, Union, Dict, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 
-from cdisc_rules_engine.data_service.database import DatabasePostgres, DatabaseConfigPostgres
-from cdisc_rules_engine.data_service.sql_serialiser import SQLSerialiser
+from cdisc_rules_engine.data_service.database import (
+    DatabaseConfigPostgres,
+    DatabasePostgres,
+)
 from cdisc_rules_engine.data_service.sql_compiler import SQLCompiler
+from cdisc_rules_engine.data_service.sql_serialiser import SQLSerialiser
+from cdisc_rules_engine.models.sql.column_schema import SqlColumnSchema
+from cdisc_rules_engine.models.sql.db_schema import SqlDbSchema
+from cdisc_rules_engine.models.sql.table_schema import SqlTableSchema
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -16,9 +22,9 @@ class PostgresQLInterface:
     def __init__(self, config: Optional[DatabaseConfigPostgres] = None):
         self.config = config or DatabaseConfigPostgres()
         self.db: Optional[DatabasePostgres] = None
-        self.serialiser = SQLSerialiser()
         self.compiler = SQLCompiler()
         self._last_results: List[Any] = []
+        self.schema = SqlDbSchema()
 
     def init_database(self):
         """Initialise the database connection"""
@@ -109,26 +115,23 @@ class PostgresQLInterface:
         self._last_results.clear()
         return results
 
-    def create_table_from_data(
-        self, table_name: str, data: Union[Dict[str, Any], List[Dict[str, Any]]], primary_key: Optional[str] = None
-    ) -> None:
-        """Create a table from Python data structures"""
-        # ensure lowercasing of table names and columns
-        sample = data if isinstance(data, dict) else data[0]
-
-        create_stmt = self.serialiser.create_table_query_from_data(table_name, sample, primary_key)
-
+    def create_table(self, schema: SqlTableSchema) -> None:
+        """Adds a table to the db"""
+        create_stmt = SQLSerialiser.create_table_query_from_schema(schema)
         self.execute_sql(create_stmt)
-        logger.info(f"Table {table_name} created successfully")
+        self.schema.add_table(schema)
+        logger.info(f"Table {schema.name} created successfully")
 
-    def create_table_from_metadata(
-        self, table_name: str, metadata: Dict[str, Any], primary_key: Optional[str] = None
-    ) -> None:
-        """Create a table from dataset metadata"""
-        create_stmt = self.serialiser.create_table_query_from_data_metadata_dict(table_name, metadata, primary_key)
+    def add_column(self, table: str, schema: SqlColumnSchema) -> None:
+        """Adds a column to an existing table"""
+        table_schema = self.schema.get_table(table)
+        if not table_schema:
+            raise ValueError(f"Table {table} does not exist in the schema")
 
-        self.execute_sql(create_stmt)
-        logger.info(f"Table {table_name} created successfully")
+        alter_stmt = SQLSerialiser.create_column_from_schema(table_schema, schema)
+        self.execute_sql(alter_stmt)
+        table_schema.add_column(schema.name, schema)
+        logger.info(f"Column {table}.{schema.name} created successfully")
 
     def insert_data(
         self, table_name: str, data: Union[Dict[str, list[str, int, float]], List[Dict[str, Any]]]
@@ -136,13 +139,13 @@ class PostgresQLInterface:
         """Insert Python data into a table"""
 
         if isinstance(data, dict):
-            query, values = self.serialiser.insert_dict(table_name, data)
+            query, values = SQLSerialiser.insert_dict(table_name, data)
             return self.execute_sql(query, values)
         else:
             if not self.db:
                 raise RuntimeError("Database not initialised. Call init_database() first.")
 
-            query, values_list = self.serialiser.insert_many_dicts(table_name, data)
+            query, values_list = SQLSerialiser.insert_many_dicts(table_name, data)
 
             with self.db.get_connection_and_cursor() as (conn, cursor):
                 try:

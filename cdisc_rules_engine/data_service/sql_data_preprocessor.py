@@ -8,7 +8,6 @@ from collections import defaultdict
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Set
 
-from cdisc_rules_engine.data_service.db_cache import DBCache
 from cdisc_rules_engine.data_service.sql_interface import PostgresQLInterface
 
 logger = logging.getLogger(__name__)
@@ -20,9 +19,8 @@ class DataPreprocessor:
     Operations should be performed at data ingestion time.
     """
 
-    def __init__(self, postgres_interface: PostgresQLInterface, cache: DBCache):
+    def __init__(self, postgres_interface: PostgresQLInterface):
         self.pgi = postgres_interface
-        self.cache = cache
         self._merged_datasets_cache: Set[str] = set()
         self._relrec_catalog: Optional[List[Dict]] = None
         self._co_catalog: Optional[List[Dict]] = None
