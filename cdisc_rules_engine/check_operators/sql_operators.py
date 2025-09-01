@@ -574,19 +574,60 @@ class PostgresQLOperators(BaseType):
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
     def is_contained_by(self, other_value):
-        """target = self.replace_prefix(other_value.get("target"))
+        """
+        Checks if the target column values are contained within the comparator.
+
+        Returns True if target value exists in the comparator collection/column and is not null/empty.
+        Returns False if target value is null, empty, or not found in comparator.
+
+        Handles three types of comparators:
+        1. List of literal values - check if target is in the list
+        2. Column name (when value_is_literal=False) - checks if target value exists anywhere in the comparator column
+        3. Single literal value - checks direct equality with the target
+
+        """
+        target_column = self.replace_prefix(other_value.get("target")).lower()
         value_is_literal = other_value.get("value_is_literal", False)
         comparator = other_value.get("comparator")
-        if isinstance(comparator, str) and not value_is_literal:
-            # column name provided
-            comparator = self.replace_prefix(comparator)
-        comparison_data = self.get_comparator_data(comparator, value_is_literal)
-        if self.is_column_of_iterables(comparison_data):
-            results = vectorized_is_in(self.validation_df[target], comparison_data)
+
+        if isinstance(comparator, list):
+            # List of literal values - use SQL IN clause
+            values_list = "', '".join(str(v).replace("'", "''") for v in comparator)
+            cache_key = f"{target_column}_contained_by_list"
+
+            def sql():
+                return f"""CASE WHEN {target_column} IS NOT NULL
+                          AND {target_column} != ''
+                          AND {target_column} IN ('{values_list}')
+                          THEN true
+                          ELSE false
+                          END"""
+
+        elif isinstance(comparator, str) and not value_is_literal and self._exists(comparator):
+            # Column name provided - check if target value exists anywhere in comparator column
+            comparator_column = self.replace_prefix(comparator).lower()
+            cache_key = f"{target_column}_contained_by_{comparator_column}"
+            db_table = self.sql_data_service.cache.get_db_table_hash(self.table_id)
+
+            def sql():
+                return f"""CASE WHEN {target_column} IS NOT NULL
+                          AND {target_column} != ''
+                          AND {target_column} IN (
+                              SELECT DISTINCT {comparator_column}
+                              FROM {db_table}
+                              WHERE {comparator_column} IS NOT NULL
+                              AND {comparator_column} != ''
+                          )
+                          THEN true
+                          ELSE false
+                          END"""
+
         else:
-            results = self.validation_df[target].isin(comparison_data)
-        return self.validation_df.convert_to_series(results)"""
-        raise NotImplementedError("is_contained_by check_operator not implemented")
+            return self.equal_to(
+                {"target": other_value.get("target"), "comparator": comparator, "value_is_literal": True}
+            )
+
+        return self._do_check_operator(cache_key, sql)
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -596,24 +637,19 @@ class PostgresQLOperators(BaseType):
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
     def is_contained_by_case_insensitive(self, other_value):
-        """target = self.replace_prefix(other_value.get("target"))
-        comparator = other_value.get("comparator", [])
-        value_is_literal = other_value.get("value_is_literal", False)
+        comparator = other_value["comparator"]
         if isinstance(comparator, list):
-            comparator = [val.lower() for val in comparator]
-        elif isinstance(comparator, str) and not value_is_literal:
-            # column name provided
-            comparator = self.replace_prefix(comparator)
-        comparison_data = self.get_comparator_data(comparator, value_is_literal)
-        if self.is_column_of_iterables(comparison_data):
-            results = vectorized_case_insensitive_is_in(self.validation_df[target].str.lower(), comparison_data)
-            return self.validation_df.convert_to_series(results)
-        elif self.validation_df.is_series(comparison_data):
-            results = self.validation_df[target].str.lower().isin(comparison_data.str.lower())
-        else:
-            results = self.validation_df[target].str.lower().isin(comparison_data)
-        return results"""
-        raise NotImplementedError("is_contained_by_case_insensitive check_operator not implemented")
+            comparator = [str(v).lower() for v in comparator]
+        elif isinstance(comparator, str):
+            comparator = comparator.lower()
+
+        return self.is_contained_by(
+            {
+                "target": f"LOWER({self.replace_prefix(other_value['target']).lower()})",
+                "comparator": comparator,
+                "value_is_literal": other_value.get("value_is_literal", False),
+            }
+        )
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
