@@ -1,20 +1,25 @@
+import os
+import traceback
 from copy import deepcopy
 from typing import List, Union
 
 from business_rules import export_rule_data
 from business_rules.engine import run
-import os
-from cdisc_rules_engine.data_service.postgresql_data_service import PostgresQLDataService, SQLDatasetMetadata
+
+from cdisc_rules_engine.data_service.postgresql_data_service import (
+    PostgresQLDataService,
+    SQLDatasetMetadata,
+)
 from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 
 # from cdisc_rules_engine.enums.rule_types import RuleTypes
 from cdisc_rules_engine.exceptions.custom_exceptions import (
     DatasetNotFoundError,
+    DomainNotFoundError,
     DomainNotFoundInDefineXMLError,
+    FailedSchemaValidation,
     RuleFormatError,
     VariableMetadataNotFoundError,
-    FailedSchemaValidation,
-    DomainNotFoundError,
 )
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.models.failed_validation_entity import FailedValidationEntity
@@ -31,7 +36,6 @@ from cdisc_rules_engine.utilities.sql_rule_processor import SQLRuleProcessor
 from cdisc_rules_engine.utilities.utils import (
     serialize_rule,
 )
-import traceback
 
 
 class SQLRulesEngine:
@@ -188,33 +192,26 @@ class SQLRulesEngine:
         )
         rule_copy["conditions"].set_conditions(updated_conditions)
 
-        # PRE-PROCESSING -> move to ingest!!!!
-
-        #   preprocess dataset
-        #   dataset_preprocessor = SQLDatasetPreprocessor(dataset, dataset_metadata, self.data_service, self.cache)
-        #   dataset = dataset_preprocessor.preprocess(rule_copy, datasets)
-
-        #  OPERATIONS - these are actually rule-specific, so they belong here
-        #  TODO: pass in dataservice
-        processed_ds_id = self.rule_processor.perform_rule_operations(
+        # Apply any operations
+        operation_variables = self.rule_processor.perform_rule_operations(
             rule_copy,
-            dataset_metadata.dataset_id,
-            standard=self.data_service.ig_specs.get("standard"),
-            standard_version=self.data_service.ig_specs.get("standard_version"),
-            standard_substandard=self.data_service.ig_specs.get("standard_substandard"),
-            ct_packages=ct_packages,
+            dataset_metadata.domain,
+            data_service=self.data_service,
         )
+
+        dataset_id = dataset_metadata.dataset_id
 
         # VENMO ENGINE START - this is actually rule-specific, so it belongs here
         #  TODO: pass in dataservice
         validation_dataset = PostgresQLBusinessEngineObject(
-            validation_dataset_id=processed_ds_id,
+            validation_dataset_id=dataset_id,
             sql_data_service=self.data_service,
-            dataset=PandasDataset(self.data_service.data_dfs.get(processed_ds_id)),
+            dataset=PandasDataset(self.data_service.data_dfs.get(dataset_id)),
             column_prefix_map={"--": dataset_metadata.domain},
             value_level_metadata=value_level_metadata,
             column_codelist_map=variable_codelist_map,
             codelist_term_maps=codelist_term_maps,
+            operation_variables=operation_variables,
         )
         results = []
         run(

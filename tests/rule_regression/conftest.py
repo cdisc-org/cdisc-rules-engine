@@ -1,7 +1,8 @@
-import pytest
 import pickle
 from ast import literal_eval
+
 import pandas as pd
+import pytest
 
 
 @pytest.fixture
@@ -63,15 +64,22 @@ def get_sample_lb_rule() -> dict:
             "all": [
                 {
                     "name": "get_dataset",
-                    "operator": "greater_than",
-                    "value": {"target": "LBSEQ", "comparator": 0},
+                    "operator": "less_than",
+                    "value": {"target": "LBSEQ", "comparator": "$lbseqmax"},
                 }
             ]
         },
+        "operations": [
+            {
+                "id": "$lbseqmax",
+                "name": "LBSEQ",
+                "operator": "max",
+            }
+        ],
         "actions": [
             {
                 "name": "generate_dataset_error_objects",
-                "params": {"message": "LBSEQ greater than 0"},
+                "params": {"message": "LBSEQ less than maximum value"},
             }
         ],
     }

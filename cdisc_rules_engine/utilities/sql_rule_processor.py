@@ -1,8 +1,10 @@
 import re
 from typing import List, Optional, Set, Tuple
-from cdisc_rules_engine.data_service.postgresql_data_service import SQLDatasetMetadata
-from cdisc_rules_engine.models.library_metadata_container import (
-    LibraryMetadataContainer,
+
+from cdisc_rules_engine.config import config as default_config
+from cdisc_rules_engine.data_service.postgresql_data_service import (
+    PostgresQLDataService,
+    SQLDatasetMetadata,
 )
 
 # import os
@@ -18,14 +20,17 @@ from cdisc_rules_engine.models.library_metadata_container import (
 # from cdisc_rules_engine.constants.rule_constants import ALL_KEYWORD
 # from cdisc_rules_engine.constants.use_cases import USE_CASE_DOMAINS
 from cdisc_rules_engine.interfaces import ConditionInterface
+from cdisc_rules_engine.models.library_metadata_container import (
+    LibraryMetadataContainer,
+)
 
 # from cdisc_rules_engine.models.operation_params import OperationParams
-
 # from cdisc_rules_engine.models.rule_conditions import AllowedConditionsKeys
 # from cdisc_rules_engine.operations import operations_factory
+from cdisc_rules_engine.models.sql_operation_params import SqlOperationParams
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.services.cache.cache_service_factory import CacheServiceFactory
-from cdisc_rules_engine.config import config as default_config
+from cdisc_rules_engine.sql_operations import sql_operations_factory
 
 # from cdisc_rules_engine.utilities.data_processor import DataProcessor
 # from cdisc_rules_engine.utilities.utils import (
@@ -272,162 +277,52 @@ class SQLRuleProcessor:
     #         return None
     #     return f"{ct_package_type.lower()}ct"
 
-    # TODO: this is where operations are triggered
     def perform_rule_operations(
         self,
         rule: dict,
-        dataset_id: str,
-        # dataset: DatasetInterface,
-        # domain: str,
-        # datasets: Iterable[SDTMDatasetMetadata],
-        # dataset_path: str,
-        standard: str,
-        standard_version: str,
-        standard_substandard: str,
-        # external_dictionaries: ExternalDictionariesContainer = ExternalDictionariesContainer(),
-        **kwargs,
-    ) -> str:
+        current_domain: str,
+        data_service: PostgresQLDataService,
+    ) -> dict[str, str]:
         """
-        Applies rule operations to the dataset.
-        Returns the processed dataset. Operation result is appended as a new column.
+        Each operation creates an output variable
         """
         operations: List[dict] = rule.get("operations") or []
-        if not operations:
-            # stop function execution if no operations have been provided
-            return dataset_id
+        output_variables: dict[str, str] = {}
 
-        # dataset_copy = dataset.copy()
-        # previous_operations = []
-        # for operation in operations:
-        #     # change -- pattern to domain name
-        #     original_target: str = operation.get("name")
-        #     target: str = original_target
-        #     domain: str = operation.get("domain", domain)
-        #     if target and target.startswith("--") and domain:
-        #         # Not a study wide operation
-        #         target = target.replace("--", domain)
-        #         domain = domain.replace("--", domain)
+        for operation in operations:
+            rule_name = operation.get("operator", "")
+            output_variable = operation.get("id", "")
 
-        #     # get necessary operation
-        #     operation_params = OperationParams(
-        #         core_id=rule.get("core_id"),
-        #         operation_id=operation.get("id"),
-        #         operation_name=operation.get("operator"),
-        #         dataframe=dataset_copy,
-        #         target=target,
-        #         original_target=original_target,
-        #         domain=domain,
-        #         dataset_path=dataset_path,
-        #         directory_path=get_directory_path(dataset_path),
-        #         datasets=datasets,
-        #         grouping=operation.get("group", []),
-        #         standard=standard,
-        #         standard_version=standard_version,
-        #         standard_substandard=standard_substandard,
-        #         external_dictionaries=external_dictionaries,
-        #         ct_version=operation.get("version"),
-        #         ct_package_type=SQLRuleProcessor._ct_package_type_api_name(operation.get("ct_package_type")),
-        #         ct_attribute=operation.get("attribute"),
-        #         ct_package_types=[
-        #             SQLRuleProcessor._ct_package_type_api_name(ct_package_type)
-        #             for ct_package_type in operation.get("ct_package_types", [])
-        #         ],
-        #         ct_packages=kwargs.get("ct_packages"),
-        #         ct_package=kwargs.get("codelist_term_maps"),
-        #         attribute_name=operation.get("attribute_name", ""),
-        #         key_name=operation.get("key_name", ""),
-        #         key_value=operation.get("key_value", ""),
-        #         case_sensitive=operation.get("case_sensitive", True),
-        #         external_dictionary_type=operation.get("external_dictionary_type"),
-        #         external_dictionary_term_variable=operation.get("external_dictionary_term_variable"),
-        #         dictionary_term_type=operation.get("dictionary_term_type"),
-        #         filter=operation.get("filter", None),
-        #         grouping_aliases=operation.get("group_aliases"),
-        #         level=operation.get("level"),
-        #         returntype=operation.get("returntype"),
-        #         codelists=operation.get("codelists"),
-        #         codelist=operation.get("codelist"),
-        #         codelist_code=operation.get("codelist_code"),
-        #         map=operation.get("map"),
-        #         term_code=operation.get("term_code"),
-        #         term_value=operation.get("term_value"),
-        #     )
+            if not output_variable.startswith("$"):
+                raise ValueError(
+                    f"Output variable must start with '$', "
+                    f"but got '{output_variable}' in rule {rule.get('core_id', 'unknown')}"
+                )
 
-        #     # execute operation
-        #     dataset_copy = self._execute_operation(operation_params, dataset_copy, previous_operations)
-        #     previous_operations.append(operation_params.operation_name)
+            # change -- pattern to domain name
+            target_variable: str = operation.get("name")
+            operation_domain: str = operation.get("domain", current_domain)
+            if target_variable and target_variable.startswith("--") and current_domain:
+                # Not a study wide operation
+                target_variable = target_variable.replace("--", current_domain)
 
-        #     logger.info(f"Processed rule operation. " f"operation={operation_params.operation_name}, rule={rule}")
-        return dataset_id
+                # TODO: WTF is this line doing?
+                # domain = domain.replace("--", domain)
 
-    # def _execute_operation(
-    #     self,
-    #     operation_params: OperationParams,
-    #     dataset: DatasetInterface,
-    #     previous_operations: List[str] = [],
-    # ):
-    #     """
-    #     Internal method that executes the given operation.
-    #     Checks the cache first, if the operation result is not found
-    #     in cache -> executes it and adds to the cache.
-    #     """
-    #     # check cache
-    #     cache_key = get_operations_cache_key(
-    #         core_id=operation_params.core_id,
-    #         directory_path=operation_params.directory_path,
-    #         operation_name=operation_params.operation_name,
-    #         domain=operation_params.domain,
-    #         grouping=";".join(operation_params.grouping),
-    #         target_variable=operation_params.target,
-    #         dataset_path=operation_params.dataset_path,
-    #         operation_id=operation_params.operation_id,
-    #     )
-    #     if previous_operations:
-    #         cache_key = f'{cache_key}-{";".join(previous_operations)}'
-    #     result: DatasetInterface = self.cache.get(cache_key)
-    #     if result is not None:
-    #         return result
+            # build parameters for the operation
+            params = SqlOperationParams(
+                domain=operation_domain,
+                target=target_variable,
+                standard=data_service.ig_specs.get("standard"),
+                standard_version=data_service.ig_specs.get("standard_version"),
+            )
 
-    #     if not self.is_current_domain(operation_params.dataframe, operation_params.domain):
-    #         # download other domain
-    #         domain_details: dict = search_in_list_of_dicts(
-    #             operation_params.datasets,
-    #             lambda item: item.unsplit_name == operation_params.domain,
-    #         )
-    #         if domain_details is None:
-    #             raise DomainNotFoundError(
-    #                 f"Operation {operation_params.operation_name} requires Domain "
-    #                 f"{operation_params.domain} but Domain not found in dataset"
-    #             )
-    #         filename = get_dataset_name_from_details(domain_details)
-    #         file_path: str = os.path.join(
-    #             get_directory_path(operation_params.dataset_path),
-    #             filename,
-    #         )
-    #         operation_params.dataframe = self.data_service.get_dataset(dataset_name=file_path)
+            operation = sql_operations_factory.get_service(rule_name, params=params, data_service=data_service)
+            query = operation.execute()
+            output_variables[output_variable] = query
 
-    #     # call the operation
-    #     operation = operations_factory.get_service(
-    #         operation_params.operation_name,
-    #         operation_params=operation_params,
-    #         original_dataset=dataset,
-    #         cache=self.cache,
-    #         data_service=self.data_service,
-    #         library_metadata=self.library_metadata,
-    #     )
-    #     result = operation.execute()
-    #     if not DataProcessor.is_dummy_data(self.data_service):
-    #         self.cache.add(cache_key, result)
-    #     return result
-
-    # def is_current_domain(self, dataset, target_domain):
-    #     if not target_domain:
-    #         return True
-    #     elif not self.is_relationship_dataset(target_domain):
-    #         return "DOMAIN" in dataset and dataset["DOMAIN"].iloc[0] == target_domain
-    #     else:
-    #         # Always lookup relationship datasets when performing operations on them.
-    #         return False
+            logger.info(f"Processed rule operation. " f"operation={rule_name}, rule={rule}")
+        return output_variables
 
     # def is_relationship_dataset(self, dataset_name: str) -> bool:
     #     # TODO: this should come from the library and from the dataset metadata
