@@ -1163,26 +1163,54 @@ class PostgresQLOperators(BaseType):
         2        A
         3        C
         """
-        """target = self.replace_prefix(other_value.get("target"))
+        target_column = self.replace_prefix(other_value.get("target")).lower()
         comparator = other_value.get("comparator")
+
         if isinstance(comparator, list):
-            comparator = self.replace_all_prefixes(comparator)
+            comparator_columns = [self.replace_prefix(col).lower() for col in comparator]
+            comparator_list = ", ".join(comparator_columns)
+            concat_expr = " || '|' || ".join(comparator_columns)
+            op_name = f"{target_column}_{'_'.join(comparator_columns)}_not_unique_relationship"
         else:
-            comparator = self.replace_prefix(comparator)
-        # remove repeating rows
-        df_without_duplicates: DatasetInterface = self.validation_df[[target, comparator]].drop_duplicates()
-        # we need to check if ANY of the columns (target or comparator) is duplicated
-        duplicated_comparator = df_without_duplicates[comparator].duplicated(keep=False)
-        duplicated_target = df_without_duplicates[target].duplicated(keep=False)
-        result = self.validation_df.convert_to_series([False] * len(self.validation_df))
-        if duplicated_comparator.any():
-            duplicated_comparator_values = set(df_without_duplicates[duplicated_comparator][comparator])
-            result += self.validation_df[comparator].isin(duplicated_comparator_values)
-        if duplicated_target.any():
-            duplicated_target_values = set(df_without_duplicates[duplicated_target][target])
-            result += self.validation_df[target].isin(duplicated_target_values)
-        return result"""
-        raise NotImplementedError("is_not_unique_relationship check_operator not implemented")
+            comparator_column = self.replace_prefix(comparator).lower()
+            comparator_list = comparator_column
+            concat_expr = comparator_column
+            op_name = f"{target_column}_{comparator_column}_not_unique_relationship"
+
+        def generate_update_query(db_table: str, db_column: str) -> str:
+            return f"""
+                UPDATE {db_table} AS t
+                SET {db_column} = sub.has_violation
+                FROM (
+                    WITH distinct_pairs AS (
+                        SELECT DISTINCT {target_column}, {comparator_list}
+                        FROM {db_table}
+                    ),
+                    target_violations AS (
+                        SELECT {target_column}
+                        FROM distinct_pairs
+                        GROUP BY {target_column}
+                        HAVING COUNT(DISTINCT {concat_expr}) > 1
+                    ),
+                    comparator_violations AS (
+                        SELECT {concat_expr} as comp_key
+                        FROM distinct_pairs
+                        GROUP BY {concat_expr}
+                        HAVING COUNT(DISTINCT {target_column}) > 1
+                    )
+                    SELECT
+                        id,
+                        CASE WHEN
+                            {target_column} IN (SELECT {target_column} FROM target_violations) OR
+                            {concat_expr} IN (SELECT comp_key FROM comparator_violations)
+                        THEN true ELSE false END AS has_violation
+                    FROM {db_table}
+                    ORDER BY id
+                ) AS sub
+                WHERE t.id = sub.id;
+            """
+
+        return self._do_complex_check_operator(op_name, generate_update_query)
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
