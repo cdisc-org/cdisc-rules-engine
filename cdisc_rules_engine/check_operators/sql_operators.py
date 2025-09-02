@@ -6,10 +6,7 @@ import numpy as np
 import pandas as pd
 from business_rules.fields import FIELD_DATAFRAME
 from business_rules.operators import BaseType, type_operator
-from business_rules.utils import (
-    is_valid_date,
-    vectorized_is_complete_date,
-)
+from business_rules.utils import is_valid_date
 
 from cdisc_rules_engine.data_service.postgresql_data_service import (
     PostgresQLDataService,
@@ -1063,9 +1060,19 @@ class PostgresQLOperators(BaseType):
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
     def is_complete_date(self, other_value):
-        target = self.replace_prefix(other_value.get("target"))
-        results = vectorized_is_complete_date(self.validation_df[target])
-        return self.validation_df.convert_to_series(results)
+        target = self.replace_prefix(other_value.get("target")).lower()
+        op_name = f"{target}_is_complete_date"
+        return self._do_check_operator(
+            op_name,
+            lambda: (
+                f"CASE WHEN {target} IS NOT NULL "
+                f"AND {target} != '' "
+                f"AND {target}::text ~ "
+                f"'^\\d{{4}}-\\d{{2}}-\\d{{2}}"
+                f"(T\\d{{2}}:\\d{{2}}(:\\d{{2}})?(\\.\\d+)?([+-]\\d{{2}}:?\\d{{2}}|Z)?)?$' "
+                f"THEN TRUE ELSE FALSE END"
+            ),
+        )
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)

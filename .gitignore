@@ -155,3 +155,9 @@ tests/resources/rules/dev
 
 # Python virtual environment (add your own directory)
 venv_cdisc/
+
+# Local database files
+environment/local/db_data/
+
+# Dummy sharepoint
+tests/resources/unitTesting/

@@ -359,3 +359,45 @@ def test_sql_date_time_components(data, comparator, value_is_literal, date_compo
         }
     )
     assert result.equals(pd.Series(expected_result))
+
+
+IS_COMPLETE_DATE_TEST_DATA = [
+    (
+        {
+            "target": [
+                "2020-01-01",
+                "2020-01",
+                "2020",
+                "08/04",
+                "1987-30",
+                "2020-01-01T17:00:00+01:00",
+                "2020-01-01T19:20+01:00",
+            ]
+        },
+        [True, False, False, False, False, True, True],
+    )
+]
+
+
+@pytest.mark.parametrize(
+    "data,expected_complete",
+    IS_COMPLETE_DATE_TEST_DATA,
+)
+def test_is_complete_date_sql(data, expected_complete):
+    table_name = "test_table"
+    tds = PostgresQLDataService.from_column_data(table_name=table_name, column_data=data)
+    sql_ops = PostgresQLOperators({"validation_dataset_id": table_name, "sql_data_service": tds})
+    result_complete = sql_ops.is_complete_date({"target": "target"})
+    assert result_complete.equals(pd.Series(expected_complete))
+
+
+@pytest.mark.parametrize(
+    "data,expected_incomplete",
+    IS_COMPLETE_DATE_TEST_DATA,
+)
+def test_is_incomplete_date_sql(data, expected_incomplete):
+    table_name = "test_table"
+    tds = PostgresQLDataService.from_column_data(table_name=table_name, column_data=data)
+    sql_ops = PostgresQLOperators({"validation_dataset_id": table_name, "sql_data_service": tds})
+    result_incomplete = sql_ops.is_incomplete_date({"target": "target"})
+    assert result_incomplete.equals(~pd.Series(expected_incomplete))
