@@ -25,7 +25,7 @@ class ValueCheckVariableMetadataDatasetBuilder(ValuesDatasetBuilder):
             dataset_name=self.dataset_path, datasets=self.datasets, drop_duplicates=True
         )
         merged_df = data_contents_long_df.merge(
-            variable_metadata, how="left", on="variable_name"
+            variable_metadata._data, how="left", on="variable_name"
         )
         merged_df["variable_value_length"] = merged_df.apply(
             lambda row: ValuesDatasetBuilder.calculate_variable_value_length(

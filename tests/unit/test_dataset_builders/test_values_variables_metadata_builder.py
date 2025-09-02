@@ -138,19 +138,19 @@ def test_concat_with_split_datasets():
             ae1_data if dataset_name == "ae1.xpt" else ae2_data
         )
     )
-    data_service.get_variables_metadata = MagicMock(
-        return_value=pd.DataFrame.from_dict(
-            {
-                "variable_name": ["STUDYID", "USUBJID", "AETERM"],
-                "variable_label": ["Study ID", "Subject ID", "AE Term"],
-                "variable_size": [16, 20, 200],
-                "variable_order_number": [1, 2, 9],
-                "variable_data_type": ["text", "text", "text"],
-                "variable_format": ["$16.", "$20.", "$200."],
-            }
-        )
+    metadata_df = pd.DataFrame.from_dict(
+        {
+            "variable_name": ["STUDYID", "USUBJID", "AETERM"],
+            "variable_label": ["Study ID", "Subject ID", "AE Term"],
+            "variable_size": [16, 20, 200],
+            "variable_order_number": [1, 2, 9],
+            "variable_data_type": ["text", "text", "text"],
+            "variable_format": ["$16.", "$20.", "$200."],
+        }
     )
-
+    data_service.get_variables_metadata = MagicMock(
+        return_value=PandasDataset(metadata_df)
+    )
     builder = ValueCheckVariableMetadataDatasetBuilder(
         rule=MagicMock(),
         data_service=data_service,
