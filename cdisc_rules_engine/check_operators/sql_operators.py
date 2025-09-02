@@ -391,18 +391,12 @@ class PostgresQLOperators(BaseType):
         """
         Checks if target prefix is contained by the comparator.
         """
-        """target: str = self.replace_prefix(other_value.get("target"))
-        value_is_literal: bool = other_value.get("value_is_literal", False)
-        comparator: Union[str, Any] = (
-            self.replace_prefix(other_value.get("comparator"))
-            if not value_is_literal
-            else other_value.get("comparator")
-        )
-        comparison_data = self.get_comparator_data(comparator, value_is_literal)
-        prefix_length: int = other_value.get("prefix")
-        series_to_validate = self._get_string_part_series("prefix", prefix_length, target)
-        return self._value_is_contained_by(series_to_validate, comparison_data)"""
-        raise NotImplementedError("prefix_is_contained_by check_operator not implemented")
+        target = self.replace_prefix(other_value.get("target"))
+        prefix_length = other_value.get("prefix")
+        prefix_sql = f"LEFT({target}, {prefix_length})"
+
+        other_value["target"] = prefix_sql
+        return self.is_contained_by(other_value)
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -413,20 +407,14 @@ class PostgresQLOperators(BaseType):
     @type_operator(FIELD_DATAFRAME)
     def suffix_is_contained_by(self, other_value: dict):
         """
-        Checks if target prefix is equal to comparator.
+        Checks if target suffix is contained by the comparator.
         """
-        """target: str = self.replace_prefix(other_value.get("target"))
-        value_is_literal: bool = other_value.get("value_is_literal", False)
-        comparator: Union[str, Any] = (
-            self.replace_prefix(other_value.get("comparator"))
-            if not value_is_literal
-            else other_value.get("comparator")
-        )
-        comparison_data = self.get_comparator_data(comparator, value_is_literal)
-        suffix_length: int = other_value.get("suffix")
-        series_to_validate = self._get_string_part_series("suffix", suffix_length, target)
-        return self._value_is_contained_by(series_to_validate, comparison_data)"""
-        raise NotImplementedError("suffix_is_contained_by check_operator not implemented")
+        target = self.replace_prefix(other_value.get("target"))
+        suffix_length = other_value.get("suffix")
+        suffix_sql = f"RIGHT({target}, {suffix_length})"
+
+        other_value["target"] = suffix_sql
+        return self.is_contained_by(other_value)
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -449,14 +437,6 @@ class PostgresQLOperators(BaseType):
         series_to_validate = series_to_validate.mask(pd.isna(self.validation_df[target]))
         return series_to_validate"""
         raise NotImplementedError("_get_string_part_series check_operator not implemented")
-
-    def _value_is_contained_by(self, series, comparison_data):
-        """if self.is_column_of_iterables(comparison_data):
-            results = vectorized_is_in(series, comparison_data)
-        else:
-            results = series.isin(comparison_data)
-        return self.validation_df.convert_to_series(results)"""
-        raise NotImplementedError("_value_is_contained_by check_operator not implemented")
 
     def _check_equality_of_string_part(
         self,
