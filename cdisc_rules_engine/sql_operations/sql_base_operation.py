@@ -20,6 +20,7 @@ from cdisc_rules_engine.exceptions.custom_exceptions import (
     VariableMetadataNotFoundError,
 )
 from cdisc_rules_engine.models.sql_operation_params import SqlOperationParams
+from cdisc_rules_engine.models.sql_operation_result import SqlOperationResult
 from cdisc_rules_engine.services import logger
 
 
@@ -32,7 +33,7 @@ class SqlBaseOperation:
     def _execute_operation(self):
         raise NotImplementedError(f"Operation {self.__class__.__name__} exists but is not implemented")
 
-    def execute(self) -> str:
+    def execute(self) -> SqlOperationResult:
         """
         Execute the operation with error handling.
         Custom exceptions should be allowed to propagate up while other exceptions are logged.

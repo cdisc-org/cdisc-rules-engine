@@ -5,6 +5,7 @@ from cdisc_rules_engine.check_operators.sql_operators import PostgresQLOperators
 from cdisc_rules_engine.data_service.postgresql_data_service import (
     PostgresQLDataService,
 )
+from cdisc_rules_engine.models.sql_operation_result import SqlOperationResult
 
 
 @pytest.mark.parametrize(
@@ -34,36 +35,37 @@ from cdisc_rules_engine.data_service.postgresql_data_service import (
             True,
             [False, True, True],
         ),
-    ],
-)
-def test_equal_to(data, comparator, is_literal, expected_result):
-    table_name = "test_table"
-    tds = PostgresQLDataService.from_column_data(table_name=table_name, column_data=data)
-    sql_ops = PostgresQLOperators({"validation_dataset_id": table_name, "sql_data_service": tds})
-    result = sql_ops.equal_to({"target": "target", "comparator": comparator, "value_is_literal": is_literal})
-    assert result.equals(pd.Series(expected_result))
-
-
-@pytest.mark.parametrize(
-    "data,comparator,expected_result",
-    [
         (
             {"target": ["A", "B", ""], "VAR2": ["", "", ""]},
             "VAR2",
+            False,
             [False, False, False],
         ),
         (
             {"target": ["A", "B", None], "VAR2": ["A", "B", "C"]},
             "",
+            True,
             [False, False, False],
+        ),
+        (
+            {"target": ["A", "B", "C"]},
+            "$value",
+            False,
+            [True, False, False],
         ),
     ],
 )
-def test_equal_to_null_strings(data, comparator, expected_result):
+def test_equal_to(data, comparator, is_literal, expected_result):
     table_name = "test_table"
     tds = PostgresQLDataService.from_column_data(table_name=table_name, column_data=data)
-    sql_ops = PostgresQLOperators({"validation_dataset_id": table_name, "sql_data_service": tds})
-    result = sql_ops.equal_to({"target": "target", "comparator": comparator})
+    sql_ops = PostgresQLOperators(
+        {
+            "validation_dataset_id": table_name,
+            "sql_data_service": tds,
+            "operation_variables": {"$value": SqlOperationResult(query="SELECT 'A'", type="constant")},
+        }
+    )
+    result = sql_ops.equal_to({"target": "target", "comparator": comparator, "value_is_literal": is_literal})
     assert result.equals(pd.Series(expected_result))
 
 
@@ -194,12 +196,23 @@ def test_equality_operators_type_insensitive(data, comparator, operator, expecte
             "B",
             [True, False, True],
         ),
+        (
+            {"target": ["A", "a", "b"]},
+            "$value",
+            [False, True, True],
+        ),
     ],
 )
 def test_not_equal_to(data, comparator, expected_result):
     table_name = "test_table"
     tds = PostgresQLDataService.from_column_data(table_name=table_name, column_data=data)
-    sql_ops = PostgresQLOperators({"validation_dataset_id": table_name, "sql_data_service": tds})
+    sql_ops = PostgresQLOperators(
+        {
+            "validation_dataset_id": table_name,
+            "sql_data_service": tds,
+            "operation_variables": {"$value": SqlOperationResult(query="SELECT 'A'", type="constant")},
+        }
+    )
     result = sql_ops.not_equal_to({"target": "target", "comparator": comparator})
     assert result.equals(pd.Series(expected_result))
 
@@ -217,12 +230,23 @@ def test_not_equal_to(data, comparator, expected_result):
             "B",
             [False, True, True],
         ),
+        (
+            {"target": ["A", "a", "b"]},
+            "$value",
+            [True, True, False],
+        ),
     ],
 )
 def test_equal_to_case_insensitive(data, comparator, expected_result):
     table_name = "test_table"
     tds = PostgresQLDataService.from_column_data(table_name=table_name, column_data=data)
-    sql_ops = PostgresQLOperators({"validation_dataset_id": table_name, "sql_data_service": tds})
+    sql_ops = PostgresQLOperators(
+        {
+            "validation_dataset_id": table_name,
+            "sql_data_service": tds,
+            "operation_variables": {"$value": SqlOperationResult(query="SELECT 'A'", type="constant")},
+        }
+    )
     result = sql_ops.equal_to_case_insensitive({"target": "target", "comparator": comparator})
     assert result.equals(pd.Series(expected_result))
 
@@ -240,11 +264,22 @@ def test_equal_to_case_insensitive(data, comparator, expected_result):
             "b",
             [True, False, True],
         ),
+        (
+            {"target": ["A", "a", "b"]},
+            "$value",
+            [False, False, True],
+        ),
     ],
 )
 def test_not_equal_to_case_insensitive(data, comparator, expected_result):
     table_name = "test_table"
     tds = PostgresQLDataService.from_column_data(table_name=table_name, column_data=data)
-    sql_ops = PostgresQLOperators({"validation_dataset_id": table_name, "sql_data_service": tds})
+    sql_ops = PostgresQLOperators(
+        {
+            "validation_dataset_id": table_name,
+            "sql_data_service": tds,
+            "operation_variables": {"$value": SqlOperationResult(query="SELECT 'A'", type="constant")},
+        }
+    )
     result = sql_ops.not_equal_to_case_insensitive({"target": "target", "comparator": comparator})
     assert result.equals(pd.Series(expected_result))

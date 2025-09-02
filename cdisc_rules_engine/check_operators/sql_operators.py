@@ -14,6 +14,7 @@ from cdisc_rules_engine.data_service.postgresql_data_service import (
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.models.sql.column_schema import SqlColumnSchema
+from cdisc_rules_engine.models.sql_operation_result import SqlOperationResult
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.utilities.utils import dates_overlap, parse_date
 
@@ -65,7 +66,7 @@ class PostgresQLOperators(BaseType):
         self.value_level_metadata = data.get("value_level_metadata", [])
         self.column_codelist_map = data.get("column_codelist_map", {})
         self.codelist_term_maps = data.get("codelist_term_maps", [])
-        self.operation_variables = data.get("operation_variables", {})
+        self.operation_variables: dict[str, SqlOperationResult] = data.get("operation_variables", {})
 
     def _assert_valid_value_and_cast(self, value):
         return value
@@ -148,23 +149,24 @@ class PostgresQLOperators(BaseType):
         not_equal_to   Populated   "" or null  True
         not_equal_to   Populated   Populated   A != B
         """
-        target = original_target
+        target = self._column_sql(original_target)
+        value = self._constant_sql(value)
         if case_insensitive:
             target = f"""LOWER({target})"""
-            if isinstance(value, str):
-                value = value.lower()
+            value = f"""LOWER({value})"""
 
         if type_insensitive:
             target = f"""CAST({target} AS TEXT)"""
+            value = f"""CAST({value} AS TEXT)"""
 
         def sql():
-            if value is None or value == "":
+            if value == "":
                 if invert:
-                    query = f"""{original_target} IS NOT NULL AND {target} != ''"""
+                    query = f"NOT ({self._is_empty_sql(original_target)})"
                 else:
                     query = "FALSE"
             else:
-                query = f"""{original_target} IS NOT NULL AND {target} = '{value}'"""
+                query = f"NOT ({self._is_empty_sql(original_target)}) AND {target} = {value}" ""
                 if invert:
                     query = f"NOT ({query})"
 
@@ -568,9 +570,16 @@ class PostgresQLOperators(BaseType):
         target_column = self.replace_prefix(other_value.get("target")).lower()
         value_is_literal = other_value.get("value_is_literal", False)
         comparator = other_value.get("comparator")
+        case_insensitive = other_value.get("case_insensitive", False)
+
+        if case_insensitive:
+            target_column = f"""LOWER({target_column})"""
 
         if isinstance(comparator, list):
             # List of literal values - use SQL IN clause
+            # TODO: TMP
+            if case_insensitive:
+                comparator = [str(c).lower() for c in comparator]
             values_list = "', '".join(str(v).replace("'", "''") for v in comparator)
             cache_key = f"{target_column}_contained_by_list"
 
@@ -585,6 +594,8 @@ class PostgresQLOperators(BaseType):
         elif isinstance(comparator, str) and not value_is_literal and self._exists(comparator):
             # Column name provided - check if target value exists anywhere in comparator column
             comparator_column = self.replace_prefix(comparator).lower()
+            if case_insensitive:
+                comparator_column = f"""LOWER({comparator_column})"""
             cache_key = f"{target_column}_contained_by_{comparator_column}"
 
             def sql():
@@ -602,7 +613,12 @@ class PostgresQLOperators(BaseType):
 
         else:
             return self.equal_to(
-                {"target": other_value.get("target"), "comparator": comparator, "value_is_literal": True}
+                {
+                    "target": other_value.get("target"),
+                    "comparator": comparator,
+                    "value_is_literal": True,
+                    "case_insensitive": case_insensitive,
+                }
             )
 
         return self._do_check_operator(cache_key, sql)
@@ -615,19 +631,7 @@ class PostgresQLOperators(BaseType):
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
     def is_contained_by_case_insensitive(self, other_value):
-        comparator = other_value["comparator"]
-        if isinstance(comparator, list):
-            comparator = [str(v).lower() for v in comparator]
-        elif isinstance(comparator, str):
-            comparator = comparator.lower()
-
-        return self.is_contained_by(
-            {
-                "target": f"LOWER({self.replace_prefix(other_value['target']).lower()})",
-                "comparator": comparator,
-                "value_is_literal": other_value.get("value_is_literal", False),
-            }
-        )
+        return self.is_contained_by({**other_value, "case_insensitive": True})
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -1732,5 +1736,76 @@ class PostgresQLOperators(BaseType):
     def _table_sql(self):
         return self.sql_data_service.pgi.schema.get_table_hash(self.table_id)
 
-    def _column_sql(self, column: str):
-        return self.sql_data_service.pgi.schema.get_column_hash(self.table_id, column)
+    def _column_sql(self, column: str, lowercase: bool = False) -> str:
+        query = self.sql_data_service.pgi.schema.get_column_hash(self.table_id, column)
+        if lowercase:
+            query = f"LOWER({query})"
+        return query
+
+    def _constant_sql(self, value: Any, lowercase: bool = False) -> str:
+        """
+        Generates a SQL constant value based on the type of the value.
+        Will resolve any operation variables it finds.
+        Will map None to an empty string.
+        """
+        if isinstance(value, str):
+            if value in self.operation_variables:
+                variable = self.operation_variables[value]
+                if variable.type != "constant":
+                    raise ValueError(f"Variable {value} is not a constant.")
+                query = f"({variable.query})"
+            else:
+                query = f"'{value.replace("'", "''")}'"
+
+            if lowercase:
+                query = f"LOWER({query})"
+            return query
+        elif isinstance(value, bool):
+            return "TRUE" if value else "FALSE"
+        elif isinstance(value, (int, float)):
+            return str(value)
+        elif value is None:
+            return ""
+        else:
+            raise ValueError(f"Unsupported constant type: {type(value)}")
+
+    def _collection_sql(self, value: Any, lowercase: bool = False) -> str:
+        """
+        Generates a SQL collection string based on the type of the value.
+        """
+        if isinstance(value, list):
+            return f"({', '.join(self._constant_sql(v, lowercase=lowercase) for v in value)})"
+        elif isinstance(value, str):
+            if value in self.operation_variables:
+                variable = self.operation_variables[value]
+                if variable.type != "collection":
+                    raise ValueError(f"Variable {value} is not a collection.")
+                query = f"({variable.query})"
+                if lowercase:
+                    # column1 is the default column name
+                    query = f"(SELECT LOWER(column1) FROM {query})"
+                return query
+            raise ValueError(f"Expected a collection, got a string: {value}")
+        elif value is None:
+            return ""
+        else:
+            raise ValueError(f"Unsupported collection type: {type(value)}")
+
+    def _sql(self, value: Any, lowercase: bool = False) -> str:
+        """
+        Tries to generate a general SQL query. Will resolve a column is possible
+        or an operation variable if possible otherwise assumes it's a constant
+        """
+        if isinstance(value, str):
+            if value in self.operation_variables:
+                variable = self.operation_variables[value]
+                if variable.type == "constant":
+                    return self._constant_sql(value, lowercase=lowercase)
+                elif variable.type == "collection":
+                    return self._collection_sql(value, lowercase=lowercase)
+                else:
+                    raise ValueError(f"Unsupported variable type: {variable.type} for variable {value}.")
+            elif self.sql_data_service.pgi.schema.column_exists(self.table_id, value):
+                return self._column_sql(value, lowercase=lowercase)
+
+        return self._constant_sql(value, lowercase=lowercase)

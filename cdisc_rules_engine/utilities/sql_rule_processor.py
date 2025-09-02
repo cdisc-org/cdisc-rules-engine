@@ -28,6 +28,7 @@ from cdisc_rules_engine.models.library_metadata_container import (
 # from cdisc_rules_engine.models.rule_conditions import AllowedConditionsKeys
 # from cdisc_rules_engine.operations import operations_factory
 from cdisc_rules_engine.models.sql_operation_params import SqlOperationParams
+from cdisc_rules_engine.models.sql_operation_result import SqlOperationResult
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.services.cache.cache_service_factory import CacheServiceFactory
 from cdisc_rules_engine.sql_operations import sql_operations_factory
@@ -282,12 +283,12 @@ class SQLRuleProcessor:
         rule: dict,
         current_domain: str,
         data_service: PostgresQLDataService,
-    ) -> dict[str, str]:
+    ) -> dict[str, SqlOperationResult]:
         """
         Each operation creates an output variable
         """
         operations: List[dict] = rule.get("operations") or []
-        output_variables: dict[str, str] = {}
+        output_variables: dict[str, SqlOperationResult] = {}
 
         for operation in operations:
             rule_name = operation.get("operator", "")
