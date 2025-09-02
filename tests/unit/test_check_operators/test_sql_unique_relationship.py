@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from cdisc_rules_engine.check_operators.sql_operators import PostgresQLOperators
+from cdisc_rules_engine.check_operators.sql import PostgresQLOperators
 from cdisc_rules_engine.data_service.postgresql_data_service import PostgresQLDataService
 
 
