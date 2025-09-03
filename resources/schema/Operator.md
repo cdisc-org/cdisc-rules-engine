@@ -277,42 +277,48 @@ Complement of `suffix_equal_to`
 
 ## contains
 
-True if the value in `value` is a substring of the value in `name`
+Will return True if the value in `value` is contained within the collection/iterable in the target column, or if there's an exact match for non-iterable data.
 
-> --TOXGR contains 'GRADE'
+Example:
 
 ```yaml
-- name: "--TOXGR"
+- name: "--TOXGR" # Column containing lists like ['GRADE', 'SEVERITY', 'ONSET']
   operator: "contains"
-  value: "GRADE"
+  value: "GRADE" # True if 'GRADE' is an element in the list
 ```
 
 ## does_not_contain
 
-Complement of `contains`
-
-## contains_case_insensitive
-
-True if the value in `value` is a case insensitive substring of the value in `name`
-
-> --TOXGR contains 'GRADE', regardless of text case
+Complement of `contains`. Returns True when the value is NOT contained within the target collection.
 
 ```yaml
 - name: "--TOXGR"
+  operator: "does_not_contain"
+  value: "GRADE" # True if 'GRADE' is NOT an element in the list
+```
+
+## contains_case_insensitive
+
+True if the value in `value` is contained within the collection/iterable in the target column, performing case-insensitive comparison.
+
+Example:
+
+```yaml
+- name: "--TOXGR" # Column containing lists like ['Grade', 'Severity', 'Onset']
   operator: "contains_case_insensitive"
-  value: "grade"
+  value: "grade" # True if 'Grade'/'GRADE'/'grade' exists in the list
 ```
 
 ## does_not_contain_case_insensitive
 
-Complement of `contains_case_insensitive`
+Complement of `contains_case_insensitive`. Returns True when the value is NOT contained within the target collection (case-insensitive).
 
-> --TOXGR does not contain 'GRADE', regardless of text case
+Example:
 
 ```yaml
 - name: "--TOXGR"
   operator: "does_not_contain_case_insensitive"
-  value: "grade"
+  value: "grade" # True if no case variation of 'grade' exists in the list
 ```
 
 ## longer_than
