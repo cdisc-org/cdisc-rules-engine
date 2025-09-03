@@ -3,6 +3,7 @@ from glob import glob
 from jsonata import Jsonata
 
 from cdisc_rules_engine.enums.execution_status import ExecutionStatus
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.models.validation_error_container import (
     ValidationErrorContainer,
 )
@@ -14,7 +15,12 @@ from cdisc_rules_engine.models.validation_error_entity import (
 class JSONataProcessor:
 
     @staticmethod
-    def execute_jsonata_rule(rule, dataset, dataset_metadata, jsonata_functions_path):
+    def execute_jsonata_rule(
+        rule: dict,
+        dataset: dict,
+        dataset_metadata: SDTMDatasetMetadata,
+        jsonata_functions_path: str,
+    ):
         custom_functions = JSONataProcessor.get_custom_functions(jsonata_functions_path)
         check = rule.get("conditions")
         full_string = f"(\n{custom_functions}{check}\n)"
@@ -60,4 +66,4 @@ class JSONataProcessor:
                 function_definition = function_definition.replace("{", "", 1)
                 function_definition = "".join(function_definition.rsplit("}", 1))
                 functions.append(function_definition)
-        return f"$utils:={{\n{',\n'.join(functions)}\n}};\n"
+        return f"$utils:={{\n{f',\n'.join(functions)}\n}};\n"

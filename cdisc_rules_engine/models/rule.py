@@ -37,6 +37,7 @@ class Rule:
     @classmethod
     def from_cdisc_metadata(cls, rule_metadata: dict) -> dict:
         if cls.is_cdisc_rule_metadata(rule_metadata):
+            rule_metadata = cls.spaces_to_underscores(rule_metadata)
             authorities = rule_metadata.get("Authorities", [])
             executable_rule = {
                 "core_id": rule_metadata.get("Core", {}).get("Id"),
@@ -71,6 +72,17 @@ class Rule:
             return executable_rule
         else:
             return rule_metadata
+
+    @classmethod
+    def spaces_to_underscores(cls, obj):
+        if isinstance(obj, dict):
+            return {
+                key.replace(" ", "_"): cls.spaces_to_underscores(value)
+                for key, value in obj.items()
+            }
+        if isinstance(obj, list):
+            return [cls.spaces_to_underscores(item) for item in obj]
+        return obj
 
     @classmethod
     def parse_standards(cls, authorities: List[dict]) -> List[dict]:
