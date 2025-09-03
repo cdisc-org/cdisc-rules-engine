@@ -75,7 +75,7 @@ class SQLRulesEngine:
                     dataset=dataset_metadata.filename,
                     domain=dataset_metadata.domain or dataset_metadata.rdomain or "",
                 )
-                return [error_obj.to_representation()]
+                results[pp_ds_id] = [error_obj.to_representation()]
         return results
 
     def validate_single_dataset(
