@@ -43,6 +43,7 @@ from scripts.script_utils import (
 )
 from cdisc_rules_engine.services.reporting import BaseReport, ReportFactory
 from cdisc_rules_engine.utilities.progress_displayers import get_progress_displayer
+from cdisc_rules_engine.utilities.sql_rule_processor import SQLRuleProcessor
 from warnings import simplefilter
 import os
 
@@ -67,6 +68,10 @@ def sql_validate_single_rule(
     library_metadata: LibraryMetadataContainer,
     rule: dict = None,
 ):
+    if not SQLRuleProcessor.valid_rule_structure(rule):
+        engine_logger.error(f"Invalid rule structure: {rule}")
+        return RuleValidationResult(rule, [])
+
     rule["conditions"] = ConditionCompositeFactory.get_condition_composite(rule["conditions"])
     max_dataset_size = max(datasets, key=lambda x: x.file_size).file_size
     # call rule engine

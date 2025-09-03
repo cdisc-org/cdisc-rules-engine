@@ -12,6 +12,7 @@ from cdisc_rules_engine.data_service.postgresql_data_service import (
 )
 from cdisc_rules_engine.models.test_dataset import TestDataset, TestVariableMetadata
 from cdisc_rules_engine.utilities.ig_specification import IGSpecification
+from cdisc_rules_engine.utilities.sql_rule_processor import SQLRuleProcessor
 from scripts.run_sql_validation import sql_run_single_rule_validation
 from scripts.run_validation import run_single_rule_validation
 
@@ -47,23 +48,26 @@ def run_single_rule_regression(row: pd.Series, get_core_rule) -> list:
             if not rule:
                 rule_regression["in_cache"] = False
             else:
-                rule_regression["in_cache"] = True
-                rule_ids = row["rids"]
-                for rid in rule_ids:
-                    paths = get_data_paths_by_rule_id(row, rid)
-                    if len(paths) == 1:
-                        rule_regression["rule_in_mltple_standards"] = []
-                        p = paths[0]
-                        rule_regression["sharepoint_source"] = p.split("/")[-RULE_DEPTH : -(RULE_DEPTH - 1)][0]
+                if not SQLRuleProcessor.valid_rule_structure(rule):
+                    rule_regression["in_cache"] = False
+                else:
+                    rule_regression["in_cache"] = True
+                    rule_ids = row["rids"]
+                    for rid in rule_ids:
+                        paths = get_data_paths_by_rule_id(row, rid)
+                        if len(paths) == 1:
+                            rule_regression["rule_in_mltple_standards"] = []
+                            p = paths[0]
+                            rule_regression["sharepoint_source"] = p.split("/")[-RULE_DEPTH : -(RULE_DEPTH - 1)][0]
 
-                        for case in ["negative", "positive"]:
-                            case_path = p + f"/{case}"
-                            if os.path.exists(case_path):
-                                run_test_cases(rule_regression, case, case_path, ig_specs, rule)
-                    elif len(paths) < 1:
-                        rule_regression["rule_in_mltple_standards"] = []
-                    else:
-                        rule_regression["rule_in_mltple_standards"] = paths
+                            for case in ["negative", "positive"]:
+                                case_path = p + f"/{case}"
+                                if os.path.exists(case_path):
+                                    run_test_cases(rule_regression, case, case_path, ig_specs, rule)
+                        elif len(paths) < 1:
+                            rule_regression["rule_in_mltple_standards"] = []
+                        else:
+                            rule_regression["rule_in_mltple_standards"] = paths
     return rule_regression
 
 
