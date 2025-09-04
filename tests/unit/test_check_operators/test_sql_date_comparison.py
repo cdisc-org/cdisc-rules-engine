@@ -1,8 +1,7 @@
 import pandas as pd
 import pytest
 
-from cdisc_rules_engine.check_operators.sql import PostgresQLOperators
-from cdisc_rules_engine.data_service.postgresql_data_service import PostgresQLDataService
+from .helpers import create_sql_operators, assert_series_equals
 
 
 @pytest.mark.parametrize(
@@ -23,11 +22,9 @@ from cdisc_rules_engine.data_service.postgresql_data_service import PostgresQLDa
     ],
 )
 def test_sql_date_equal_to(data, comparator, value_is_literal, expected_result):
-    table_name = "test_table"
-    tds = PostgresQLDataService.from_column_data(table_name=table_name, column_data=data)
-    sql_ops = PostgresQLOperators({"validation_dataset_id": table_name, "sql_data_service": tds})
+    sql_ops = create_sql_operators(data)
     result = sql_ops.date_equal_to({"target": "target", "comparator": comparator, "value_is_literal": value_is_literal})
-    assert result.equals(pd.Series(expected_result))
+    assert_series_equals(result, expected_result)
 
 
 @pytest.mark.parametrize(
@@ -48,13 +45,11 @@ def test_sql_date_equal_to(data, comparator, value_is_literal, expected_result):
     ],
 )
 def test_sql_date_not_equal_to(data, comparator, value_is_literal, expected_result):
-    table_name = "test_table"
-    tds = PostgresQLDataService.from_column_data(table_name=table_name, column_data=data)
-    sql_ops = PostgresQLOperators({"validation_dataset_id": table_name, "sql_data_service": tds})
+    sql_ops = create_sql_operators(data)
     result = sql_ops.date_not_equal_to(
         {"target": "target", "comparator": comparator, "value_is_literal": value_is_literal}
     )
-    assert result.equals(pd.Series(expected_result))
+    assert_series_equals(result, expected_result)
 
 
 @pytest.mark.parametrize(
@@ -75,13 +70,11 @@ def test_sql_date_not_equal_to(data, comparator, value_is_literal, expected_resu
     ],
 )
 def test_sql_date_less_than(data, comparator, value_is_literal, expected_result):
-    table_name = "test_table"
-    tds = PostgresQLDataService.from_column_data(table_name=table_name, column_data=data)
-    sql_ops = PostgresQLOperators({"validation_dataset_id": table_name, "sql_data_service": tds})
+    sql_ops = create_sql_operators(data)
     result = sql_ops.date_less_than(
         {"target": "target", "comparator": comparator, "value_is_literal": value_is_literal}
     )
-    assert result.equals(pd.Series(expected_result))
+    assert_series_equals(result, expected_result)
 
 
 @pytest.mark.parametrize(
@@ -102,13 +95,11 @@ def test_sql_date_less_than(data, comparator, value_is_literal, expected_result)
     ],
 )
 def test_sql_date_less_than_or_equal_to(data, comparator, value_is_literal, expected_result):
-    table_name = "test_table"
-    tds = PostgresQLDataService.from_column_data(table_name=table_name, column_data=data)
-    sql_ops = PostgresQLOperators({"validation_dataset_id": table_name, "sql_data_service": tds})
+    sql_ops = create_sql_operators(data)
     result = sql_ops.date_less_than_or_equal_to(
         {"target": "target", "comparator": comparator, "value_is_literal": value_is_literal}
     )
-    assert result.equals(pd.Series(expected_result))
+    assert_series_equals(result, expected_result)
 
 
 @pytest.mark.parametrize(
@@ -129,13 +120,11 @@ def test_sql_date_less_than_or_equal_to(data, comparator, value_is_literal, expe
     ],
 )
 def test_sql_date_greater_than(data, comparator, value_is_literal, expected_result):
-    table_name = "test_table"
-    tds = PostgresQLDataService.from_column_data(table_name=table_name, column_data=data)
-    sql_ops = PostgresQLOperators({"validation_dataset_id": table_name, "sql_data_service": tds})
+    sql_ops = create_sql_operators(data)
     result = sql_ops.date_greater_than(
         {"target": "target", "comparator": comparator, "value_is_literal": value_is_literal}
     )
-    assert result.equals(pd.Series(expected_result))
+    assert_series_equals(result, expected_result)
 
 
 @pytest.mark.parametrize(
@@ -156,13 +145,11 @@ def test_sql_date_greater_than(data, comparator, value_is_literal, expected_resu
     ],
 )
 def test_sql_date_greater_than_or_equal_to(data, comparator, value_is_literal, expected_result):
-    table_name = "test_table"
-    tds = PostgresQLDataService.from_column_data(table_name=table_name, column_data=data)
-    sql_ops = PostgresQLOperators({"validation_dataset_id": table_name, "sql_data_service": tds})
+    sql_ops = create_sql_operators(data)
     result = sql_ops.date_greater_than_or_equal_to(
         {"target": "target", "comparator": comparator, "value_is_literal": value_is_literal}
     )
-    assert result.equals(pd.Series(expected_result))
+    assert_series_equals(result, expected_result)
 
 
 @pytest.mark.parametrize(
@@ -189,13 +176,11 @@ def test_sql_date_greater_than_or_equal_to(data, comparator, value_is_literal, e
     ],
 )
 def test_sql_date_less_than_equality_boundary(data, comparator, value_is_literal, expected_result):
-    table_name = "test_table"
-    tds = PostgresQLDataService.from_column_data(table_name=table_name, column_data=data)
-    sql_ops = PostgresQLOperators({"validation_dataset_id": table_name, "sql_data_service": tds})
+    sql_ops = create_sql_operators(data)
     result = sql_ops.date_less_than(
         {"target": "target", "comparator": comparator, "value_is_literal": value_is_literal}
     )
-    assert result.equals(pd.Series(expected_result))
+    assert_series_equals(result, expected_result)
 
 
 @pytest.mark.parametrize(
@@ -222,13 +207,11 @@ def test_sql_date_less_than_equality_boundary(data, comparator, value_is_literal
     ],
 )
 def test_sql_date_greater_than_equality_boundary(data, comparator, value_is_literal, expected_result):
-    table_name = "test_table"
-    tds = PostgresQLDataService.from_column_data(table_name=table_name, column_data=data)
-    sql_ops = PostgresQLOperators({"validation_dataset_id": table_name, "sql_data_service": tds})
+    sql_ops = create_sql_operators(data)
     result = sql_ops.date_greater_than(
         {"target": "target", "comparator": comparator, "value_is_literal": value_is_literal}
     )
-    assert result.equals(pd.Series(expected_result))
+    assert_series_equals(result, expected_result)
 
 
 @pytest.mark.parametrize(
@@ -265,9 +248,7 @@ def test_sql_date_greater_than_equality_boundary(data, comparator, value_is_lite
     ],
 )
 def test_sql_date_equal_to_with_components(data, comparator, value_is_literal, date_component, expected_result):
-    table_name = "test_table"
-    tds = PostgresQLDataService.from_column_data(table_name=table_name, column_data=data)
-    sql_ops = PostgresQLOperators({"validation_dataset_id": table_name, "sql_data_service": tds})
+    sql_ops = create_sql_operators(data)
     result = sql_ops.date_equal_to(
         {
             "target": "target",
@@ -276,7 +257,7 @@ def test_sql_date_equal_to_with_components(data, comparator, value_is_literal, d
             "date_component": date_component,
         }
     )
-    assert result.equals(pd.Series(expected_result))
+    assert_series_equals(result, expected_result)
 
 
 @pytest.mark.parametrize(
@@ -306,9 +287,7 @@ def test_sql_date_equal_to_with_components(data, comparator, value_is_literal, d
     ],
 )
 def test_sql_date_less_than_with_components(data, comparator, value_is_literal, date_component, expected_result):
-    table_name = "test_table"
-    tds = PostgresQLDataService.from_column_data(table_name=table_name, column_data=data)
-    sql_ops = PostgresQLOperators({"validation_dataset_id": table_name, "sql_data_service": tds})
+    sql_ops = create_sql_operators(data)
     result = sql_ops.date_less_than(
         {
             "target": "target",
@@ -317,7 +296,7 @@ def test_sql_date_less_than_with_components(data, comparator, value_is_literal, 
             "date_component": date_component,
         }
     )
-    assert result.equals(pd.Series(expected_result))
+    assert_series_equals(result, expected_result)
 
 
 @pytest.mark.parametrize(
@@ -347,9 +326,7 @@ def test_sql_date_less_than_with_components(data, comparator, value_is_literal, 
     ],
 )
 def test_sql_date_time_components(data, comparator, value_is_literal, date_component, expected_result):
-    table_name = "test_table"
-    tds = PostgresQLDataService.from_column_data(table_name=table_name, column_data=data)
-    sql_ops = PostgresQLOperators({"validation_dataset_id": table_name, "sql_data_service": tds})
+    sql_ops = create_sql_operators(data)
     result = sql_ops.date_less_than_or_equal_to(
         {
             "target": "target",
@@ -358,7 +335,7 @@ def test_sql_date_time_components(data, comparator, value_is_literal, date_compo
             "date_component": date_component,
         }
     )
-    assert result.equals(pd.Series(expected_result))
+    assert_series_equals(result, expected_result)
 
 
 IS_COMPLETE_DATE_TEST_DATA = [
@@ -384,11 +361,9 @@ IS_COMPLETE_DATE_TEST_DATA = [
     IS_COMPLETE_DATE_TEST_DATA,
 )
 def test_is_complete_date_sql(data, expected_complete):
-    table_name = "test_table"
-    tds = PostgresQLDataService.from_column_data(table_name=table_name, column_data=data)
-    sql_ops = PostgresQLOperators({"validation_dataset_id": table_name, "sql_data_service": tds})
+    sql_ops = create_sql_operators(data)
     result_complete = sql_ops.is_complete_date({"target": "target"})
-    assert result_complete.equals(pd.Series(expected_complete))
+    assert_series_equals(result_complete, expected_complete)
 
 
 @pytest.mark.parametrize(
@@ -396,8 +371,6 @@ def test_is_complete_date_sql(data, expected_complete):
     IS_COMPLETE_DATE_TEST_DATA,
 )
 def test_is_incomplete_date_sql(data, expected_incomplete):
-    table_name = "test_table"
-    tds = PostgresQLDataService.from_column_data(table_name=table_name, column_data=data)
-    sql_ops = PostgresQLOperators({"validation_dataset_id": table_name, "sql_data_service": tds})
+    sql_ops = create_sql_operators(data)
     result_incomplete = sql_ops.is_incomplete_date({"target": "target"})
-    assert result_incomplete.equals(~pd.Series(expected_incomplete))
+    assert_series_equals(result_incomplete, ~pd.Series(expected_incomplete))

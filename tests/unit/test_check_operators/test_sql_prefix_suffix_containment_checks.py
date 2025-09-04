@@ -1,10 +1,7 @@
 import pandas as pd
 import pytest
 
-from cdisc_rules_engine.check_operators.sql import PostgresQLOperators
-from cdisc_rules_engine.data_service.postgresql_data_service import (
-    PostgresQLDataService,
-)
+from .helpers import create_sql_operators, assert_series_equals
 
 PREFIX_IS_CONTAINED_BY_TEST_DATA = [
     (
@@ -89,9 +86,7 @@ SUFFIX_IS_CONTAINED_BY_TEST_DATA = [
     PREFIX_IS_CONTAINED_BY_TEST_DATA,
 )
 def test_prefix_is_contained_by(data, comparator, value_is_literal, length, expected_result):
-    table_name = "test_table"
-    tds = PostgresQLDataService.from_column_data(table_name=table_name, column_data=data)
-    sql_ops = PostgresQLOperators({"validation_dataset_id": table_name, "sql_data_service": tds})
+    sql_ops = create_sql_operators(data)
 
     result = sql_ops.prefix_is_contained_by(
         {
@@ -102,7 +97,7 @@ def test_prefix_is_contained_by(data, comparator, value_is_literal, length, expe
         }
     )
 
-    assert result.equals(pd.Series(expected_result))
+    assert_series_equals(result, expected_result)
 
 
 @pytest.mark.parametrize(
@@ -110,9 +105,7 @@ def test_prefix_is_contained_by(data, comparator, value_is_literal, length, expe
     PREFIX_IS_CONTAINED_BY_TEST_DATA,
 )
 def test_prefix_is_not_contained_by(data, comparator, value_is_literal, length, expected_result):
-    table_name = "test_table"
-    tds = PostgresQLDataService.from_column_data(table_name=table_name, column_data=data)
-    sql_ops = PostgresQLOperators({"validation_dataset_id": table_name, "sql_data_service": tds})
+    sql_ops = create_sql_operators(data)
 
     result = sql_ops.prefix_is_not_contained_by(
         {
@@ -123,7 +116,7 @@ def test_prefix_is_not_contained_by(data, comparator, value_is_literal, length, 
         }
     )
 
-    assert result.equals(~pd.Series(expected_result))
+    assert_series_equals(result, ~pd.Series(expected_result))
 
 
 @pytest.mark.parametrize(
@@ -131,9 +124,7 @@ def test_prefix_is_not_contained_by(data, comparator, value_is_literal, length, 
     SUFFIX_IS_CONTAINED_BY_TEST_DATA,
 )
 def test_suffix_is_contained_by(data, comparator, value_is_literal, length, expected_result):
-    table_name = "test_table"
-    tds = PostgresQLDataService.from_column_data(table_name=table_name, column_data=data)
-    sql_ops = PostgresQLOperators({"validation_dataset_id": table_name, "sql_data_service": tds})
+    sql_ops = create_sql_operators(data)
 
     result = sql_ops.suffix_is_contained_by(
         {
@@ -144,7 +135,7 @@ def test_suffix_is_contained_by(data, comparator, value_is_literal, length, expe
         }
     )
 
-    assert result.equals(pd.Series(expected_result))
+    assert_series_equals(result, expected_result)
 
 
 @pytest.mark.parametrize(
@@ -152,9 +143,7 @@ def test_suffix_is_contained_by(data, comparator, value_is_literal, length, expe
     SUFFIX_IS_CONTAINED_BY_TEST_DATA,
 )
 def test_suffix_is_not_contained_by(data, comparator, value_is_literal, length, expected_result):
-    table_name = "test_table"
-    tds = PostgresQLDataService.from_column_data(table_name=table_name, column_data=data)
-    sql_ops = PostgresQLOperators({"validation_dataset_id": table_name, "sql_data_service": tds})
+    sql_ops = create_sql_operators(data)
 
     result = sql_ops.suffix_is_not_contained_by(
         {
@@ -165,4 +154,4 @@ def test_suffix_is_not_contained_by(data, comparator, value_is_literal, length, 
         }
     )
 
-    assert result.equals(~pd.Series(expected_result))
+    assert_series_equals(result, ~pd.Series(expected_result))

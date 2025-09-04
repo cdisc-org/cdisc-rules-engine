@@ -1,10 +1,6 @@
-import pandas as pd
 import pytest
 
-from cdisc_rules_engine.check_operators.sql import PostgresQLOperators
-from cdisc_rules_engine.data_service.postgresql_data_service import (
-    PostgresQLDataService,
-)
+from .helpers import create_sql_operators, assert_series_equals
 
 
 @pytest.mark.parametrize(
@@ -23,11 +19,9 @@ from cdisc_rules_engine.data_service.postgresql_data_service import (
     ],
 )
 def test_empty(data, expected_result):
-    table_name = "test_table"
-    tds = PostgresQLDataService.from_column_data(table_name=table_name, column_data=data)
-    sql_ops = PostgresQLOperators({"validation_dataset_id": table_name, "sql_data_service": tds})
+    sql_ops = create_sql_operators(data)
     result = sql_ops.empty({"target": "target"})
-    assert result.equals(pd.Series(expected_result))
+    assert_series_equals(result, expected_result)
 
 
 @pytest.mark.parametrize(
@@ -38,8 +32,6 @@ def test_empty(data, expected_result):
     ],
 )
 def test_non_empty(data, expected_result):
-    table_name = "test_table"
-    tds = PostgresQLDataService.from_column_data(table_name=table_name, column_data=data)
-    sql_ops = PostgresQLOperators({"validation_dataset_id": table_name, "sql_data_service": tds})
+    sql_ops = create_sql_operators(data)
     result = sql_ops.non_empty({"target": "target"})
-    assert result.equals(pd.Series(expected_result))
+    assert_series_equals(result, expected_result)
