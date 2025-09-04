@@ -1,10 +1,6 @@
-import pandas as pd
 import pytest
 
-from cdisc_rules_engine.check_operators.sql import PostgresQLOperators
-from cdisc_rules_engine.data_service.postgresql_data_service import (
-    PostgresQLDataService,
-)
+from .helpers import create_sql_operators_with_config, assert_series_equals
 
 
 @pytest.mark.parametrize(
@@ -27,13 +23,9 @@ def test_exists(target, expected_result):
         # "nested_var": [["a", "b", "c"], ["d", "e"], ["f", "nested_var", "g"]],
         "non_nested_value": ["h", "i", "j"],
     }
-    table_name = "test_table"
-    tds = PostgresQLDataService.from_column_data(table_name=table_name, column_data=data)
-    sql_ops = PostgresQLOperators(
-        {"validation_dataset_id": table_name, "sql_data_service": tds, "column_prefix_map": {"--": "va"}}
-    )
+    sql_ops = create_sql_operators_with_config(data, {"column_prefix_map": {"--": "va"}})
     result = sql_ops.exists({"target": target})
-    assert result.equals(pd.Series(expected_result))
+    assert_series_equals(result, expected_result)
 
 
 @pytest.mark.parametrize(
@@ -56,10 +48,6 @@ def test_not_exists(target, expected_result):
         # "nested_var": [["a", "b", "c"], ["d", "e"], ["f", "nested_var", "g"]],
         "non_nested_value": ["h", "i", "j"],
     }
-    table_name = "test_table"
-    tds = PostgresQLDataService.from_column_data(table_name=table_name, column_data=data)
-    sql_ops = PostgresQLOperators(
-        {"validation_dataset_id": table_name, "sql_data_service": tds, "column_prefix_map": {"--": "va"}}
-    )
+    sql_ops = create_sql_operators_with_config(data, {"column_prefix_map": {"--": "va"}})
     result = sql_ops.not_exists({"target": target})
-    assert result.equals(pd.Series(expected_result))
+    assert_series_equals(result, expected_result)

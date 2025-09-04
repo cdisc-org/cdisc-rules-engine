@@ -1,11 +1,7 @@
-import pandas as pd
 import pytest
 
-from cdisc_rules_engine.check_operators.sql import PostgresQLOperators
-from cdisc_rules_engine.data_service.postgresql_data_service import (
-    PostgresQLDataService,
-)
 from cdisc_rules_engine.models.sql_operation_result import SqlOperationResult
+from .helpers import create_sql_operators, assert_series_equals
 
 
 @pytest.mark.parametrize(
@@ -56,17 +52,10 @@ from cdisc_rules_engine.models.sql_operation_result import SqlOperationResult
     ],
 )
 def test_equal_to(data, comparator, is_literal, expected_result):
-    table_name = "test_table"
-    tds = PostgresQLDataService.from_column_data(table_name=table_name, column_data=data)
-    sql_ops = PostgresQLOperators(
-        {
-            "validation_dataset_id": table_name,
-            "sql_data_service": tds,
-            "operation_variables": {"$value": SqlOperationResult(query="SELECT 'A'", type="constant")},
-        }
-    )
+    operation_variables = {"$value": SqlOperationResult(query="SELECT 'A'", type="constant")}
+    sql_ops = create_sql_operators(data, operation_variables)
     result = sql_ops.equal_to({"target": "target", "comparator": comparator, "value_is_literal": is_literal})
-    assert result.equals(pd.Series(expected_result))
+    assert_series_equals(result, expected_result)
 
 
 @pytest.mark.parametrize(
@@ -98,14 +87,12 @@ def test_equal_to(data, comparator, is_literal, expected_result):
 )
 def test_equality_operators_value_is_reference(data, comparator, operator, expected_result):
     """Test equal_to and not_equal_to operators with value_is_reference=True for dynamic column comparison."""
-    table_name = "test_table"
-    tds = PostgresQLDataService.from_column_data(table_name=table_name, column_data=data)
-    sql_ops = PostgresQLOperators({"validation_dataset_id": table_name, "sql_data_service": tds})
+    sql_ops = create_sql_operators(data)
     if operator == "equal_to":
         result = sql_ops.equal_to({"target": "target", "comparator": comparator, "value_is_reference": True})
     else:
         result = sql_ops.not_equal_to({"target": "target", "comparator": comparator, "value_is_reference": True})
-    assert result.equals(pd.Series(expected_result))
+    assert_series_equals(result, expected_result)
 
 
 @pytest.mark.parametrize(
@@ -157,9 +144,7 @@ def test_equality_operators_value_is_reference(data, comparator, operator, expec
     ],
 )
 def test_equality_operators_type_insensitive(data, comparator, operator, expected_result):
-    table_name = "test_table"
-    tds = PostgresQLDataService.from_column_data(table_name=table_name, column_data=data)
-    sql_ops = PostgresQLOperators({"validation_dataset_id": table_name, "sql_data_service": tds})
+    sql_ops = create_sql_operators(data)
 
     if operator == "equal_to":
         result = sql_ops.equal_to(
@@ -180,7 +165,7 @@ def test_equality_operators_type_insensitive(data, comparator, operator, expecte
             }
         )
 
-    assert result.equals(pd.Series(expected_result))
+    assert_series_equals(result, expected_result)
 
 
 @pytest.mark.parametrize(
@@ -204,17 +189,10 @@ def test_equality_operators_type_insensitive(data, comparator, operator, expecte
     ],
 )
 def test_not_equal_to(data, comparator, expected_result):
-    table_name = "test_table"
-    tds = PostgresQLDataService.from_column_data(table_name=table_name, column_data=data)
-    sql_ops = PostgresQLOperators(
-        {
-            "validation_dataset_id": table_name,
-            "sql_data_service": tds,
-            "operation_variables": {"$value": SqlOperationResult(query="SELECT 'A'", type="constant")},
-        }
-    )
+    operation_variables = {"$value": SqlOperationResult(query="SELECT 'A'", type="constant")}
+    sql_ops = create_sql_operators(data, operation_variables)
     result = sql_ops.not_equal_to({"target": "target", "comparator": comparator})
-    assert result.equals(pd.Series(expected_result))
+    assert_series_equals(result, expected_result)
 
 
 @pytest.mark.parametrize(
@@ -238,17 +216,10 @@ def test_not_equal_to(data, comparator, expected_result):
     ],
 )
 def test_equal_to_case_insensitive(data, comparator, expected_result):
-    table_name = "test_table"
-    tds = PostgresQLDataService.from_column_data(table_name=table_name, column_data=data)
-    sql_ops = PostgresQLOperators(
-        {
-            "validation_dataset_id": table_name,
-            "sql_data_service": tds,
-            "operation_variables": {"$value": SqlOperationResult(query="SELECT 'A'", type="constant")},
-        }
-    )
+    operation_variables = {"$value": SqlOperationResult(query="SELECT 'A'", type="constant")}
+    sql_ops = create_sql_operators(data, operation_variables)
     result = sql_ops.equal_to_case_insensitive({"target": "target", "comparator": comparator})
-    assert result.equals(pd.Series(expected_result))
+    assert_series_equals(result, expected_result)
 
 
 @pytest.mark.parametrize(
@@ -272,14 +243,7 @@ def test_equal_to_case_insensitive(data, comparator, expected_result):
     ],
 )
 def test_not_equal_to_case_insensitive(data, comparator, expected_result):
-    table_name = "test_table"
-    tds = PostgresQLDataService.from_column_data(table_name=table_name, column_data=data)
-    sql_ops = PostgresQLOperators(
-        {
-            "validation_dataset_id": table_name,
-            "sql_data_service": tds,
-            "operation_variables": {"$value": SqlOperationResult(query="SELECT 'A'", type="constant")},
-        }
-    )
+    operation_variables = {"$value": SqlOperationResult(query="SELECT 'A'", type="constant")}
+    sql_ops = create_sql_operators(data, operation_variables)
     result = sql_ops.not_equal_to_case_insensitive({"target": "target", "comparator": comparator})
-    assert result.equals(pd.Series(expected_result))
+    assert_series_equals(result, expected_result)
