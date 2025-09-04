@@ -7,7 +7,6 @@ import tempfile
 from datetime import datetime
 from multiprocessing import freeze_support
 from typing import Tuple
-from pathlib import Path
 
 import click
 from pathlib import Path
