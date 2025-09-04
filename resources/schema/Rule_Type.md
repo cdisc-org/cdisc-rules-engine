@@ -179,6 +179,97 @@ all:
     operator: not_exists
 ```
 
+## JSONata
+
+Apply a JSONata query to a JSON file. [JSONata documentation](https://docs.jsonata.org)
+
+### Example
+
+#### Rule
+
+```yaml
+Check: |
+  **.$filter($, $utils.equals).{"path":path, "A":A, "B":B}
+Core:
+  Id: JSONATA Test
+Status: Draft
+Outcome:
+  Message: "A equals B"
+  Output Variables:
+    - id
+    - name
+    - path
+    - A
+    - B
+Rule Type: JSONata
+Scope:
+  Entities:
+    Include:
+      - ALL
+Sensitivity: Record
+```
+
+#### Custom user function contained in external file "equals.jsonata"
+
+\* Note that in the CLI, you can pass a directory of such files using `-jfp` or `--jsonata-functions-path`
+
+```yaml
+{
+  "equals": function($v){ $v.A=$v.B }
+}
+```
+
+#### JSON Data
+
+```json
+{
+  "path": "",
+  "A": "same value 1",
+  "B": "same value 1",
+  "C": {
+    "path": "C",
+    "A": "different value 1",
+    "B": "different value 2",
+    "C": { "path": "C.C", "A": "same value 2", "B": "same value 2" }
+  }
+}
+```
+
+#### Result
+
+```json
+[
+  {
+    "executionStatus": "success",
+    "dataset": "",
+    "domain": "",
+    "variables": ["A", "B", "id", "name", "path"],
+    "message": "A equals B",
+    "errors": [
+      {
+        "value": { "path": "", "A": "same value 1", "B": "same value 1" },
+        "dataset": "",
+        "row": ""
+      },
+      {
+        "value": { "path": "C.C", "A": "same value 2", "B": "same value 2" },
+        "dataset": "",
+        "row": "C.C"
+      }
+    ]
+  }
+]
+```
+
+### Output Variables and Report column mapping
+
+You can use `Outcome.Output Variables` to specify which properties to display from the result JSON. The following result property names will map to the column names in the Excel output report.
+
+Result property name -> Report Issue Details Column Name:
+
+- `id` -> `USUBJID`
+- `path` -> `Record`
+
 ## Record Data
 
 #### Columns

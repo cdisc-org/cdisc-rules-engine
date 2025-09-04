@@ -41,6 +41,9 @@
         },
         {
           "$ref": "Operator.json"
+        },
+        {
+          "type": "string"
         }
       ]
     },

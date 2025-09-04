@@ -52,7 +52,7 @@ def test_jsonata_processor(mock_get_custom_functions: MagicMock):
             "dataset": "",
             "domain": None,
             "variables": ["A", "B", "id", "name", "path"],
-            "message": None,
+            "message": "A equals B",
             "errors": [
                 {
                     "value": {"path": "", "A": "same value 1", "B": "same value 1"},

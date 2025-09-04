@@ -45,7 +45,9 @@ class JSONataProcessor:
             domain=dataset_metadata.domain,
             targets=rule.get("output_variables"),
             errors=errors,
-            message=rule.get("message"),
+            message=next(iter(rule.get("actions", [])), {})
+            .get("params", {})
+            .get("message"),
             status=(
                 ExecutionStatus.SUCCESS.value
                 if results
@@ -66,4 +68,5 @@ class JSONataProcessor:
                 function_definition = function_definition.replace("{", "", 1)
                 function_definition = "".join(function_definition.rsplit("}", 1))
                 functions.append(function_definition)
-        return f"$utils:={{\n{f',\n'.join(functions)}\n}};\n"
+        functions_str = ",\n".join(functions)
+        return f"$utils:={{\n{functions_str}\n}};\n"
