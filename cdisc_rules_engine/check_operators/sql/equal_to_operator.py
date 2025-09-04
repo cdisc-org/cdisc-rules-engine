@@ -4,28 +4,43 @@ from .base_sql_operator import BaseSqlOperator
 class EqualToOperator(BaseSqlOperator):
     """Operator for equality comparisons."""
 
+    def __init__(self, data, invert=False, case_insensitive=False):
+        super().__init__(data)
+        self.invert = invert
+        self.case_insensitive = case_insensitive
+
     def execute_operator(self, other_value):
         target = self.replace_prefix(other_value.get("target")).lower()
         value_is_literal = other_value.get("value_is_literal", False)
         value_is_reference = other_value.get("value_is_reference", False)
-        case_insensitive = other_value.get("case_insensitive", False)
         type_insensitive = other_value.get("type_insensitive", False)
-        invert = other_value.get("invert", False)
         comparator = other_value.get("comparator")
         if not value_is_literal:
             comparator = self.replace_prefix(comparator)
         if value_is_reference:
             return self._check_equality_reference(
-                target, comparator, invert=invert, case_insensitive=case_insensitive, type_insensitive=type_insensitive
+                target,
+                comparator,
+                invert=self.invert,
+                case_insensitive=self.case_insensitive,
+                type_insensitive=type_insensitive,
             )
 
         if value_is_literal or not isinstance(comparator, str) or not self._exists(comparator):
             return self._check_equality_literal(
-                target, comparator, invert=invert, case_insensitive=case_insensitive, type_insensitive=type_insensitive
+                target,
+                comparator,
+                invert=self.invert,
+                case_insensitive=self.case_insensitive,
+                type_insensitive=type_insensitive,
             )
         else:
             return self._check_equality_comparison(
-                target, comparator, invert=invert, case_insensitive=case_insensitive, type_insensitive=type_insensitive
+                target,
+                comparator,
+                invert=self.invert,
+                case_insensitive=self.case_insensitive,
+                type_insensitive=type_insensitive,
             )
 
     def _check_equality_literal(

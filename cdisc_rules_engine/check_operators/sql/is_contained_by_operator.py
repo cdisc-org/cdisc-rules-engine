@@ -62,12 +62,11 @@ class IsContainedByOperator(BaseSqlOperator):
                           END"""
 
         else:
-            return EqualToOperator(self.original_data).execute_operator(
+            return EqualToOperator(self.original_data, case_insensitive=case_insensitive).execute_operator(
                 {
                     "target": other_value.get("target"),
                     "comparator": comparator,
                     "value_is_literal": True,
-                    "case_insensitive": case_insensitive,
                 }
             )
 

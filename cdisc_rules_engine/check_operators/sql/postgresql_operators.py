@@ -5,24 +5,12 @@ from cdisc_rules_engine.check_operators.sql.not_operator import NotOperator
 
 from .base_sql_operator import log_operator_execution
 from .exists_operator import ExistsOperator
-from .not_exists_operator import NotExistsOperator
 from .equal_to_operator import EqualToOperator
-from .not_equal_to_operator import NotEqualToOperator
-from .equal_to_case_insensitive_operator import EqualToCaseInsensitiveOperator
-from .not_equal_to_case_insensitive_operator import NotEqualToCaseInsensitiveOperator
 from .empty_operator import EmptyOperator
-from .less_than_operator import LessThanOperator
-from .greater_than_operator import GreaterThanOperator
-from .less_than_or_equal_to_operator import LessThanOrEqualToOperator
-from .greater_than_or_equal_to_operator import GreaterThanOrEqualToOperator
+from .numeric_comparison_operator import NumericComparisonOperator
 from .is_contained_by_operator import IsContainedByOperator
 from .has_different_values_operator import HasDifferentValuesOperator
-from .date_equal_to_operator import DateEqualToOperator
-from .date_not_equal_to_operator import DateNotEqualToOperator
-from .date_less_than_operator import DateLessThanOperator
-from .date_less_than_or_equal_to_operator import DateLessThanOrEqualToOperator
-from .date_greater_than_operator import DateGreaterThanOperator
-from .date_greater_than_or_equal_to_operator import DateGreaterThanOrEqualToOperator
+from .date_comparison_operator import DateComparisonOperator
 from .is_contained_by_case_insensitive_operator import IsContainedByCaseInsensitiveOperator
 from .is_not_unique_relationship_operator import IsNotUniqueRelationshipOperator
 from .present_on_multiple_rows_within_operator import PresentOnMultipleRowsWithinOperator
@@ -80,29 +68,29 @@ class PostgresQLOperators(BaseType):
 
     _operator_map = {
         "exists": lambda data: ExistsOperator(data),
-        "not_exists": lambda data: NotExistsOperator(data),  # TODO
+        "not_exists": lambda data: NotOperator(data, ExistsOperator),
         "equal_to": lambda data: EqualToOperator(data),
-        "not_equal_to": lambda data: NotEqualToOperator(data),  # TODO 1 single class for equalities
-        "equal_to_case_insensitive": lambda data: EqualToCaseInsensitiveOperator(data),
-        "not_equal_to_case_insensitive": lambda data: NotEqualToCaseInsensitiveOperator(data),
+        "not_equal_to": lambda data: EqualToOperator(data, invert=True),
+        "equal_to_case_insensitive": lambda data: EqualToOperator(data, case_insensitive=True),
+        "not_equal_to_case_insensitive": lambda data: EqualToOperator(data, case_insensitive=True, invert=True),
         "empty": lambda data: EmptyOperator(data),
         "non_empty": lambda data: NotOperator(data, EmptyOperator),
-        "less_than": lambda data: LessThanOperator(data),  # TODO 1 single class for comparisons
-        "greater_than": lambda data: GreaterThanOperator(data),
-        "less_than_or_equal_to": lambda data: LessThanOrEqualToOperator(data),
-        "greater_than_or_equal_to": lambda data: GreaterThanOrEqualToOperator(data),
+        "less_than": lambda data: NumericComparisonOperator(data, operator="<"),
+        "greater_than": lambda data: NumericComparisonOperator(data, operator=">"),
+        "less_than_or_equal_to": lambda data: NumericComparisonOperator(data, operator="<="),
+        "greater_than_or_equal_to": lambda data: NumericComparisonOperator(data, operator=">="),
         "is_contained_by": lambda data: IsContainedByOperator(data),
         "is_not_contained_by": lambda data: NotOperator(data, IsContainedByOperator),
         "is_contained_by_case_insensitive": lambda data: IsContainedByCaseInsensitiveOperator(data),
         "is_not_contained_by_case_insensitive": lambda data: NotOperator(data, IsContainedByCaseInsensitiveOperator),
         "has_different_values": lambda data: HasDifferentValuesOperator(data),
         "has_same_values": lambda data: NotOperator(data, HasDifferentValuesOperator),
-        "date_equal_to": lambda data: DateEqualToOperator(data),  # TODO 1 single class for dates
-        "date_not_equal_to": lambda data: DateNotEqualToOperator(data),
-        "date_less_than": lambda data: DateLessThanOperator(data),
-        "date_less_than_or_equal_to": lambda data: DateLessThanOrEqualToOperator(data),
-        "date_greater_than": lambda data: DateGreaterThanOperator(data),
-        "date_greater_than_or_equal_to": lambda data: DateGreaterThanOrEqualToOperator(data),
+        "date_equal_to": lambda data: DateComparisonOperator(data, operator="="),
+        "date_not_equal_to": lambda data: DateComparisonOperator(data, operator="!="),
+        "date_less_than": lambda data: DateComparisonOperator(data, operator="<"),
+        "date_less_than_or_equal_to": lambda data: DateComparisonOperator(data, operator="<="),
+        "date_greater_than": lambda data: DateComparisonOperator(data, operator=">"),
+        "date_greater_than_or_equal_to": lambda data: DateComparisonOperator(data, operator=">="),
         "is_not_unique_relationship": lambda data: IsNotUniqueRelationshipOperator(data),
         "is_unique_relationship": lambda data: NotOperator(data, IsNotUniqueRelationshipOperator),
         "present_on_multiple_rows_within": lambda data: PresentOnMultipleRowsWithinOperator(data),
