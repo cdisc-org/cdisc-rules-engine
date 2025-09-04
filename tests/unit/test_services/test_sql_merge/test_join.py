@@ -55,7 +55,8 @@ SIMPLE_DATA = {
     ],
 )
 def test_join(data, type, result):
-    ds = PostgresQLDataService.from_column_data(table_name="l", column_data=data["left"])
+    ds = PostgresQLDataService.test_instance()
+    PostgresQLDataService.add_test_dataset(ds.pgi, "l", data["left"])
     PostgresQLDataService.add_test_dataset(ds.pgi, "r", data["right"])
 
     # Perform the join operation
@@ -101,7 +102,8 @@ def test_join(data, type, result):
     ],
 )
 def test_multiple_keys(data, result):
-    ds = PostgresQLDataService.from_column_data(table_name="l", column_data=data["left"])
+    ds = PostgresQLDataService.test_instance()
+    PostgresQLDataService.add_test_dataset(ds.pgi, "l", data["left"])
     PostgresQLDataService.add_test_dataset(ds.pgi, "r", data["right"])
 
     # Perform the join operation
@@ -125,7 +127,8 @@ def test_multiple_keys(data, result):
     [SIMPLE_DATA],
 )
 def test_table_not_in_data(data):
-    ds = PostgresQLDataService.from_column_data(table_name="l", column_data=data["left"])
+    ds = PostgresQLDataService.test_instance()
+    PostgresQLDataService.add_test_dataset(ds.pgi, "l", data["left"])
     PostgresQLDataService.add_test_dataset(ds.pgi, "r", data["right"])
 
     # Perform the join operation
@@ -140,7 +143,8 @@ def test_table_not_in_data(data):
     [SIMPLE_DATA],
 )
 def test_column_not_in_data(data):
-    ds = PostgresQLDataService.from_column_data(table_name="l", column_data=data["left"])
+    ds = PostgresQLDataService.test_instance()
+    PostgresQLDataService.add_test_dataset(ds.pgi, "l", data["left"])
     PostgresQLDataService.add_test_dataset(ds.pgi, "r", data["right"])
 
     # Perform the join operation
@@ -155,7 +159,8 @@ def test_column_not_in_data(data):
     [SIMPLE_DATA],
 )
 def test_wrong_column_number(data):
-    ds = PostgresQLDataService.from_column_data(table_name="l", column_data=data["left"])
+    ds = PostgresQLDataService.test_instance()
+    PostgresQLDataService.add_test_dataset(ds.pgi, "l", data["left"])
     PostgresQLDataService.add_test_dataset(ds.pgi, "r", data["right"])
 
     # Perform the join operation
@@ -170,7 +175,8 @@ def test_wrong_column_number(data):
     [SIMPLE_DATA],
 )
 def test_run_twice(data):
-    ds = PostgresQLDataService.from_column_data(table_name="l", column_data=data["left"])
+    ds = PostgresQLDataService.test_instance()
+    PostgresQLDataService.add_test_dataset(ds.pgi, "l", data["left"])
     PostgresQLDataService.add_test_dataset(ds.pgi, "r", data["right"])
 
     # Perform the join operation

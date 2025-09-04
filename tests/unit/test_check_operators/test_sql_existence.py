@@ -1,6 +1,6 @@
 import pytest
 
-from .helpers import create_sql_operators_with_config, assert_series_equals
+from .helpers import assert_series_equals, create_sql_operators_with_config
 
 
 @pytest.mark.parametrize(

@@ -1,6 +1,7 @@
 """Helper functions for SQL operator tests."""
 
 import pandas as pd
+
 from cdisc_rules_engine.check_operators.sql import PostgresQLOperators
 from cdisc_rules_engine.data_service.postgresql_data_service import (
     PostgresQLDataService,
@@ -19,9 +20,10 @@ def create_sql_operators(column_data: dict, operation_variables: dict = None) ->
     Returns:
         PostgresQLOperators instance configured for testing
     """
-    tds = PostgresQLDataService.from_column_data(table_name=TEST_TABLE_NAME, column_data=column_data)
+    data_service = PostgresQLDataService.test_instance()
+    PostgresQLDataService.add_test_dataset(data_service.pgi, table_name=TEST_TABLE_NAME, column_data=column_data)
 
-    config = {"validation_dataset_id": TEST_TABLE_NAME, "sql_data_service": tds}
+    config = {"validation_dataset_id": TEST_TABLE_NAME, "sql_data_service": data_service}
 
     if operation_variables:
         config["operation_variables"] = operation_variables
@@ -39,9 +41,10 @@ def create_sql_operators_with_config(column_data: dict, extra_config: dict = Non
     Returns:
         PostgresQLOperators instance configured for testing
     """
-    tds = PostgresQLDataService.from_column_data(table_name=TEST_TABLE_NAME, column_data=column_data)
+    data_service = PostgresQLDataService.test_instance()
+    PostgresQLDataService.add_test_dataset(data_service.pgi, table_name=TEST_TABLE_NAME, column_data=column_data)
 
-    config = {"validation_dataset_id": TEST_TABLE_NAME, "sql_data_service": tds}
+    config = {"validation_dataset_id": TEST_TABLE_NAME, "sql_data_service": data_service}
 
     if extra_config:
         config.update(extra_config)

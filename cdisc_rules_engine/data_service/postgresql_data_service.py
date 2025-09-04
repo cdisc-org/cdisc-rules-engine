@@ -158,6 +158,11 @@ class PostgresQLDataService(SQLDataService):
     def add_test_dataset(
         pgi: PostgresQLInterface, table_name: str, column_data: dict[str, list[Union[str, int, float]]]
     ):
+        # Check all the columns are the same length
+        lengths = {len(v) for v in column_data.values()}
+        if len(set(lengths)) != 1:
+            raise ValueError("All input data columns must have the same length")
+
         # Create schema and table:
         row_dicts = [dict(zip(column_data, values)) for values in zip(*column_data.values())]
         row_dicts = [{k.lower(): v for k, v in row.items()} for row in row_dicts]
@@ -166,14 +171,12 @@ class PostgresQLDataService(SQLDataService):
         pgi.create_table(schema)
 
         pgi.insert_data(table_name=table_name, data=row_dicts)
+        return schema
 
     @classmethod
-    def from_column_data(
-        cls, table_name: str, column_data: dict[str, list[str, int, float]]
-    ) -> "PostgresQLDataService":
+    def test_instance(cls) -> "PostgresQLDataService":
         """
-        Constructor for tests, passing in column_data and create corresponding SQL tables
-        column_data example: {"target": [1, 2, 4], "VAR2": [3, 3, 3]}
+        Constructor for tests.
         """
         # PostgresDB setup
         pgi = PostgresQLInterface()
@@ -181,8 +184,6 @@ class PostgresQLDataService(SQLDataService):
 
         instance = cls(postgres_interface=pgi, ig_specs=None)
         pgi.execute_sql_file(str(SCHEMA_PATH / "clinical_data_metadata_schema.sql"))
-
-        cls.add_test_dataset(pgi, table_name, column_data)
         return instance
 
     @staticmethod
