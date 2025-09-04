@@ -187,14 +187,19 @@ def test_equality_operators_type_insensitive(data, comparator, operator, expecte
     "data,comparator,expected_result",
     [
         (
-            {"target": ["A", "B", "C"], "VAR2": ["A", "B", "C"]},
+            {"target": ["A", "B", "", "", None], "VAR2": ["A", "B", "C", None, None]},
             "VAR2",
-            [False, False, False],
+            [False, False, True, False, False],
         ),
         (
             {"target": ["A", "B", "C"], "VAR2": ["A", "B", "C"]},
             "B",
             [True, False, True],
+        ),
+        (
+            {"target": ["A", "", None]},
+            None,
+            [True, False, False],
         ),
         (
             {"target": ["A", "a", "b"]},

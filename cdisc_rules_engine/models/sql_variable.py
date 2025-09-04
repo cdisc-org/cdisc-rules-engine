@@ -1,7 +1,10 @@
 from business_rules.variables import BaseVariables, rule_variable
 from pandas import DataFrame
+
 from cdisc_rules_engine.check_operators.sql import PostgresQLOperators
-from cdisc_rules_engine.data_service.postgresql_data_service import PostgresQLDataService
+from cdisc_rules_engine.data_service.postgresql_data_service import (
+    PostgresQLDataService,
+)
 
 
 def sql_rule_variable(label=None, options=None):
@@ -16,30 +19,30 @@ class PostgresQLBusinessEngineObject(BaseVariables):
     to validate the dataset columns.
     """
 
-    def __init__(
-        self, validation_dataset_id: str, sql_data_service: PostgresQLDataService, dataset: DataFrame, **params
-    ):
+    def __init__(self, validation_dataset_id: str, sql_data_service: PostgresQLDataService, **params):
         self.validation_dataset_id = validation_dataset_id
         self.sql_data_service = sql_data_service
-        self.dataset = dataset
         self.params = params
 
     # common variables
     @sql_rule_variable(label="GET DATASET")
     def get_dataset(self) -> dict:
         return {
-            "df": self.dataset,
             "validation_dataset_id": self.validation_dataset_id,
             "sql_data_service": self.sql_data_service,
             **self.params,
         }
 
-    # TODO: fix when results is serialized into a proper python object
-    # (https://docs.google.com/document/d/151PkKjumpIBOysETQd9zXkAzvj1fLmvuRkkD0KyAhsg/edit?tab=t.0)
-    def get_error_rows(self, results) -> DataFrame:
-        data_with_results = self.dataset.copy()
-        data_with_results["results"] = results
-        return data_with_results[data_with_results["results"].isin([True])]
+    # TODO: Clean this up properly
+    def get_error_rows(self, truth_series) -> DataFrame:
+        true_indicies = [str(i + 1) for i, x in enumerate(truth_series) if x]
+        self.sql_data_service.pgi.execute_sql(
+            f"""SELECT * FROM
+                {self.sql_data_service.pgi.schema.get_table_hash(self.validation_dataset_id)}
+            WHERE id IN ({', '.join(true_indicies)})"""
+        )
+        results = self.sql_data_service.pgi.fetch_all()
+        return DataFrame(results)
 
     def get_columns(self) -> list[str]:
         query = f"""

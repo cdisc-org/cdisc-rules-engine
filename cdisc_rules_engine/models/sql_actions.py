@@ -1,6 +1,6 @@
-from typing import List, Optional, Set, Hashable
-
 from os import path
+from typing import Hashable, List, Optional, Set
+
 import pandas as pd
 from business_rules.actions import BaseActions, rule_action
 from business_rules.fields import FIELD_TEXT
@@ -8,7 +8,6 @@ from business_rules.fields import FIELD_TEXT
 from cdisc_rules_engine.constants import NULL_FLAVORS
 from cdisc_rules_engine.constants.metadata_columns import (
     SOURCE_FILENAME,
-    SOURCE_ROW_NUMBER,
 )
 from cdisc_rules_engine.data_service.postgresql_data_service import SQLDatasetMetadata
 from cdisc_rules_engine.enums.sensitivity import Sensitivity
@@ -237,7 +236,8 @@ class SQLCOREActions(BaseActions):
     def _create_error_object(self, df_row: pd.Series, data: pd.DataFrame) -> ValidationErrorEntity:
         usubjid: Optional[pd.Series] = data.get("USUBJID")
         sequence: Optional[pd.Series] = data.get(f"{self.dataset_metadata.domain or ''}SEQ")
-        source_row_number: Optional[pd.Series] = data.get(SOURCE_ROW_NUMBER)
+        row_id: Optional[pd.Series] = data.get("id")
+        # source_row_number: Optional[pd.Series] = data.get(SOURCE_ROW_NUMBER)
         source_filename: Optional[pd.Series] = data.get(SOURCE_FILENAME)
         row_dict = df_row.to_dict()
         filtered_dict = {}
@@ -248,11 +248,7 @@ class SQLCOREActions(BaseActions):
                 filtered_dict[key] = None if (value in NULL_FLAVORS or pd.isna(value)) else value
         error_object = ValidationErrorEntity(
             dataset=(path.basename(source_filename[df_row.name]) if isinstance(source_filename, pd.Series) else ""),
-            row=(
-                int(source_row_number[df_row.name])
-                if isinstance(source_row_number, pd.Series)
-                else (int(df_row.name) + 1)
-            ),  # record number should start at 1, not 0
+            row=int(row_id[df_row.name]),
             value=filtered_dict,
             usubjid=(str(usubjid[df_row.name]) if isinstance(usubjid, pd.Series) else None),
             sequence=(int(sequence[df_row.name]) if self._sequence_exists(sequence, df_row.name) else None),

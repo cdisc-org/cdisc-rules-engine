@@ -22,7 +22,7 @@ class SqlDbSchema:
     def get_table_hash(self, table: str) -> Union[str, None]:
         table_schema = self.get_table(table)
         if table_schema:
-            return table_schema.name
+            return table_schema.hash
         return None
 
     def get_column(self, table: str, column: str) -> Union[SqlColumnSchema, None]:

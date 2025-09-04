@@ -21,7 +21,6 @@ from cdisc_rules_engine.exceptions.custom_exceptions import (
     RuleFormatError,
     VariableMetadataNotFoundError,
 )
-from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.models.failed_validation_entity import FailedValidationEntity
 from cdisc_rules_engine.models.rule_conditions.condition_composite_factory import (
     ConditionCompositeFactory,
@@ -199,14 +198,14 @@ class SQLRulesEngine:
             data_service=self.data_service,
         )
 
-        dataset_id = dataset_metadata.dataset_id
+        # Apply any joins
+        dataset_id = self.data_service.get_dataset_for_rule(dataset_metadata, rule_copy)
 
         # VENMO ENGINE START - this is actually rule-specific, so it belongs here
         #  TODO: pass in dataservice
         validation_dataset = PostgresQLBusinessEngineObject(
             validation_dataset_id=dataset_id,
             sql_data_service=self.data_service,
-            dataset=PandasDataset(self.data_service.data_dfs.get(dataset_id)),
             column_prefix_map={"--": dataset_metadata.domain},
             value_level_metadata=value_level_metadata,
             column_codelist_map=variable_codelist_map,

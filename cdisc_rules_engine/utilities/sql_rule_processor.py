@@ -2,10 +2,6 @@ import re
 from typing import List, Optional, Set, Tuple
 
 from cdisc_rules_engine.config import config as default_config
-from cdisc_rules_engine.data_service.postgresql_data_service import (
-    PostgresQLDataService,
-    SQLDatasetMetadata,
-)
 
 # import os
 # from cdisc_rules_engine.constants.classes import (
@@ -18,6 +14,10 @@ from cdisc_rules_engine.data_service.postgresql_data_service import (
 #     SUPPLEMENTARY_DOMAINS,
 # )
 from cdisc_rules_engine.constants.rule_constants import ALL_KEYWORD
+from cdisc_rules_engine.data_service.postgresql_data_service import (
+    PostgresQLDataService,
+    SQLDatasetMetadata,
+)
 
 # from cdisc_rules_engine.constants.use_cases import USE_CASE_DOMAINS
 from cdisc_rules_engine.interfaces import ConditionInterface

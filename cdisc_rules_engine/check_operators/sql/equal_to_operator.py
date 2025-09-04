@@ -86,11 +86,8 @@ class EqualToOperator(BaseSqlOperator):
         Equality checks work slightly differently for clinical datasets.
         See truth table in _check_equality_literal for details.
         """
-        target = original_target
-        comparator = original_comparator
-        if case_insensitive:
-            target = f"""LOWER({target})"""
-            comparator = f"""LOWER({comparator})"""
+        target = self._column_sql(original_target, lowercase=case_insensitive)
+        comparator = self._column_sql(original_comparator, lowercase=case_insensitive)
 
         if type_insensitive:
             target = f"""CAST({target} AS TEXT)"""
@@ -99,17 +96,17 @@ class EqualToOperator(BaseSqlOperator):
         def sql():
             if invert:
                 return f"""CASE
-                        WHEN {original_target} IS NULL OR {target} = ''
-                            THEN {original_comparator} IS NULL OR {comparator} = ''
-                        WHEN {original_comparator} IS NULL OR {comparator} = ''
+                        WHEN {target} IS NULL OR {target} = ''
+                            THEN {comparator} IS NOT NULL AND {comparator} != ''
+                        WHEN {comparator} IS NULL OR {comparator} = ''
                             THEN TRUE
                         ELSE {target} != {comparator}
                     END"""
             else:
                 return f"""CASE
-                        WHEN {original_target} IS NULL OR {target} = ''
+                        WHEN {target} IS NULL OR {target} = ''
                             THEN FALSE
-                        WHEN {original_comparator} IS NULL OR {comparator} = ''
+                        WHEN {comparator} IS NULL OR {comparator} = ''
                             THEN FALSE
                         ELSE {target} = {comparator}
                     END"""

@@ -2,11 +2,12 @@ import logging
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Union
 
 import pandas as pd
 
 from cdisc_rules_engine.constants.domains import SUPPLEMENTARY_DOMAINS
+from cdisc_rules_engine.data_service.merges.join import SqlJoinMerge
 from cdisc_rules_engine.data_service.sql_data_preprocessor import DataPreprocessor
 from cdisc_rules_engine.data_service.sql_data_service import SQLDataService
 from cdisc_rules_engine.data_service.sql_interface import PostgresQLInterface
@@ -153,6 +154,19 @@ class PostgresQLDataService(SQLDataService):
 
         return instance
 
+    @staticmethod
+    def add_test_dataset(
+        pgi: PostgresQLInterface, table_name: str, column_data: dict[str, list[Union[str, int, float]]]
+    ):
+        # Create schema and table:
+        row_dicts = [dict(zip(column_data, values)) for values in zip(*column_data.values())]
+        row_dicts = [{k.lower(): v for k, v in row.items()} for row in row_dicts]
+
+        schema = SqlTableSchema.from_data(table_name, row_dicts[0])
+        pgi.create_table(schema)
+
+        pgi.insert_data(table_name=table_name, data=row_dicts)
+
     @classmethod
     def from_column_data(
         cls, table_name: str, column_data: dict[str, list[str, int, float]]
@@ -166,16 +180,9 @@ class PostgresQLDataService(SQLDataService):
         pgi.init_database()
 
         instance = cls(postgres_interface=pgi, ig_specs=None)
-
-        # Create schema and table:
-        row_dicts = [dict(zip(column_data, values)) for values in zip(*column_data.values())]
-        row_dicts = [{k.lower(): v for k, v in row.items()} for row in row_dicts]
-
-        schema = SqlTableSchema.from_data(table_name, row_dicts[0])
-        pgi.create_table(schema)
-
-        pgi.insert_data(table_name=table_name, data=row_dicts)
         pgi.execute_sql_file(str(SCHEMA_PATH / "clinical_data_metadata_schema.sql"))
+
+        cls.add_test_dataset(pgi, table_name, column_data)
         return instance
 
     @staticmethod
@@ -474,23 +481,32 @@ class PostgresQLDataService(SQLDataService):
             variables=[res["var_name"] for res in results],
         )
 
-    def get_preprocessed_dataset_for_rule(self, rule_spec: dict) -> Optional[str]:
+    def get_dataset_for_rule(self, dataset_metadata: SQLDatasetMetadata, rule: dict) -> str:
         """Get or create preprocessed dataset based on rule requirements."""
-        datasets = rule_spec.get("datasets", [])
+        datasets = rule.get("datasets", [])
+        if not datasets:
+            return dataset_metadata.dataset_id
 
-        for dataset_spec in datasets:
-            domain_name = dataset_spec.get("domain_name") or dataset_spec.get("domain")
+        left_id = dataset_metadata.dataset_id
 
-            if domain_name in ["RELREC", "SUPP--", "SUPPQUAL"] or (
-                domain_name and (domain_name.startswith("CO") or domain_name.startswith("SUPP"))
-            ):
-                merged_dataset_name = self.data_preprocessor.process_rule_driven_merges(rule_spec)
+        for merge_spec in datasets:
+            # TODO: This only handles simple joins for now
+            right = merge_spec.get("domain_name").lower()
+            join_type = merge_spec.get("join_type", "INNER")
+            # For now we assume pivot columns are always the same in left and right
+            pivot_columns = merge_spec.get("match_key", [])
 
-                if merged_dataset_name:
-                    logger.info(f"Created/retrieved preprocessed dataset: {merged_dataset_name}")
-                    return merged_dataset_name
+            joined_schema = SqlJoinMerge.perform_join(
+                pgi=self.pgi,
+                left=self.pgi.schema.get_table(left_id),
+                right=self.pgi.schema.get_table(right),
+                pivot_left=pivot_columns,
+                pivot_right=pivot_columns,
+                type=join_type.upper(),
+            )
+            left_id = joined_schema.name
 
-        return None
+        return left_id
 
     def get_preprocessing_status(self) -> dict:
         """Get the current status of data preprocessing."""

@@ -140,7 +140,7 @@ class PostgresQLInterface:
 
         alter_stmt = SQLSerialiser.create_column_from_schema(table_schema, schema)
         self.execute_sql(alter_stmt)
-        table_schema.add_column(schema.name, schema)
+        table_schema.add_column(schema)
         logger.info(f"Column {table}.{schema.name} created successfully")
 
     def insert_data(

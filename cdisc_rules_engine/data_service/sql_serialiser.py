@@ -40,11 +40,11 @@ class SQLSerialiser:
 
         if len(column_definitions) > 0:
             columns_sql = ",\n    ".join(column_definitions)
-            return f"""CREATE TABLE IF NOT EXISTS {schema.name} (
+            return f"""CREATE TABLE IF NOT EXISTS {schema.hash} (
                     id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY, {columns_sql}
                 );"""
         else:
-            return f"""CREATE TABLE IF NOT EXISTS {schema.name} (
+            return f"""CREATE TABLE IF NOT EXISTS {schema.hash} (
                         id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY
                     );"""
 
@@ -84,4 +84,4 @@ class SQLSerialiser:
     def create_column_from_schema(cls, table_schema: SqlTableSchema, column_schema: "SqlColumnSchema") -> str:
         """Generate ALTER TABLE statement from a schema"""
         sql_type = cls.column_type_to_sql_type(column_schema.type)
-        return f"ALTER TABLE {table_schema.name} ADD COLUMN {column_schema.hash} {sql_type};"
+        return f"ALTER TABLE {table_schema.hash} ADD COLUMN {column_schema.hash} {sql_type};"
