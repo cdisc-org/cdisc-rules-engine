@@ -1,5 +1,4 @@
-import re
-from typing import List, Optional, Set, Tuple
+from typing import List, Tuple
 
 from cdisc_rules_engine.config import config as default_config
 
@@ -457,50 +456,6 @@ class SQLRuleProcessor:
         logger.info(f"is_suitable_for_validation. rule id={rule_id}, dataset={dataset_name}, result=True")
         return True, ""
 
-    @staticmethod
-    def extract_target_names_from_rule(rule: dict, domain: str, column_names: List[str]) -> Set[str]:
-        r"""
-        Extracts target from each item of condition list.
-
-        Some operators require reporting additional column names when
-        extracting target names. An operator has a certain pattern,
-        to which these column names have to correspond. So we
-        have a mapping like {operator: pattern} to find the
-        necessary pattern and extract matching column names.
-        Example:
-            column: TSVAL
-            operator: additional_columns_empty
-            pattern: ^TSVAL\d+$ (starts with TSVAL and ends with number)
-            additional columns: TSVAL1, TSVAL2, TSVAL3 etc.
-        """
-        output_variables: List[str] = rule.get("output_variables", [])
-        if output_variables:
-            target_names: List[str] = [var.replace("--", domain or "", 1) for var in output_variables]
-        else:
-            target_names: List[str] = []
-            conditions: ConditionInterface = rule["conditions"]
-            for condition in conditions.values():
-                if condition.get("operator") == "not_exists":
-                    continue
-                target: str = condition["value"].get("target")
-                if target is None:
-                    continue
-                target = target.replace("--", domain or "")
-                op_related_pattern: str = SQLRuleProcessor.get_operator_related_pattern(
-                    condition.get("operator"), target
-                )
-                if op_related_pattern is not None:
-                    target_names.extend(
-                        filter(
-                            lambda name: re.match(op_related_pattern, name),
-                            column_names,
-                        )
-                    )
-                else:
-                    target_names.append(target)
-        target_names.sort()
-        return set([tn.lower() for tn in target_names])
-
     # @staticmethod
     # def extract_referenced_variables_from_rule(rule: dict):
     #     """
@@ -516,15 +471,6 @@ class SQLRuleProcessor:
     #         if comparator:
     #             target_names.append(comparator)
     #     return target_names
-
-    @staticmethod
-    def get_operator_related_pattern(operator: str, target: str) -> Optional[str]:
-        # {operator: pattern} mapping
-        operator_related_patterns: dict = {
-            "additional_columns_empty": rf"^{target}\d+$",
-            "additional_columns_not_empty": rf"^{target}\d+$",
-        }
-        return operator_related_patterns.get(operator)
 
     # @staticmethod
     # def extract_message_from_rule(rule: dict) -> str:

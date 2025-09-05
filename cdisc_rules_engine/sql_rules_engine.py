@@ -25,8 +25,10 @@ from cdisc_rules_engine.models.failed_validation_entity import FailedValidationE
 from cdisc_rules_engine.models.rule_conditions.condition_composite_factory import (
     ConditionCompositeFactory,
 )
-from cdisc_rules_engine.models.sql_actions import SQLCOREActions
-from cdisc_rules_engine.models.sql_variable import PostgresQLBusinessEngineObject
+from cdisc_rules_engine.models.sql_venmo_object import SqlVenmoObject
+from cdisc_rules_engine.models.sql_venmo_result_handler import (
+    SqlVenmoResultHandler,
+)
 from cdisc_rules_engine.models.validation_error_container import (
     ValidationErrorContainer,
 )
@@ -43,7 +45,7 @@ class SQLRulesEngine:
         self.data_service = data_service
 
     def get_schema(self):
-        return export_rule_data(PostgresQLBusinessEngineObject, SQLCOREActions)
+        return export_rule_data(SqlVenmoObject, SqlVenmoResultHandler)
 
     def sql_validate_single_rule(self, rule: dict):
         results = {}
@@ -201,23 +203,24 @@ class SQLRulesEngine:
         # Apply any joins
         dataset_id = self.data_service.get_dataset_for_rule(dataset_metadata, rule_copy)
 
-        # VENMO ENGINE START - this is actually rule-specific, so it belongs here
-        #  TODO: pass in dataservice
-        validation_dataset = PostgresQLBusinessEngineObject(
-            validation_dataset_id=dataset_id,
-            sql_data_service=self.data_service,
+        # Translator between venmo and the check operators
+        venmo_object = SqlVenmoObject(
+            dataset_id=dataset_id,
+            data_service=self.data_service,
             column_prefix_map={"--": dataset_metadata.domain},
-            value_level_metadata=value_level_metadata,
-            column_codelist_map=variable_codelist_map,
-            codelist_term_maps=codelist_term_maps,
             operation_variables=operation_variables,
         )
+
         results = []
         run(
             serialize_rule(rule_copy),  # engine expects a JSON serialized dict
-            defined_variables=validation_dataset,
-            defined_actions=SQLCOREActions(
-                results, validation_dataset=validation_dataset, dataset_metadata=dataset_metadata, rule=rule
+            defined_variables=venmo_object,
+            defined_actions=SqlVenmoResultHandler(
+                results,
+                dataset_metadata=dataset_metadata,
+                rule=rule,
+                data_service=self.data_service,
+                dataset_id=dataset_id,
             ),
         )
         return results

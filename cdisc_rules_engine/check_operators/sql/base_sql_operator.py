@@ -57,8 +57,8 @@ class BaseSqlOperator:
     def __init__(self, data):
         self.original_data = data
         self.validation_df: DatasetInterface = data.get("df", PandasDataset(data=pd.DataFrame()))
-        self.table_id: str = data["validation_dataset_id"]
-        self.sql_data_service: PostgresQLDataService = data["sql_data_service"]
+        self.table_id: str = data["dataset_id"]
+        self.sql_data_service: PostgresQLDataService = data["data_service"]
         self.column_prefix_map = data.get("column_prefix_map", {})
         self.value_level_metadata = data.get("value_level_metadata", [])
         self.column_codelist_map = data.get("column_codelist_map", {})

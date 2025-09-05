@@ -327,7 +327,9 @@ def old_vs_sql_regression_comparison(old_results: list[dict], sql_results: list[
 def compare_error_lists(old_errors, sql_errors):
     diff = DeepDiff(old_errors, sql_errors, ignore_order=True, ignore_string_case=True)
     if diff:
-        return diff
+        # Calling `to_json` to create a valid JSON (otherwise the output is not JSON serializable)
+        # and then converting it back to a Python object so it's formatted properly
+        return json.loads(diff.to_json())
     else:
         return []
 
