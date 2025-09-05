@@ -52,8 +52,7 @@ class SQLRulesEngine:
         rule["conditions"] = ConditionCompositeFactory.get_condition_composite(rule["conditions"])
 
         # iterate through all pre-processed user datasets
-        # TODO: replace with iteration through available SQL tables after pre_processing
-        for pp_ds_id in self.data_service.pre_processed_dfs.keys():
+        for pp_ds_id in self.data_service.get_uploaded_dataset_ids():
             dataset_metadata = self.data_service.get_dataset_metadata(pp_ds_id)
 
             is_suitable, reason = self.rule_processor.is_suitable_for_validation(

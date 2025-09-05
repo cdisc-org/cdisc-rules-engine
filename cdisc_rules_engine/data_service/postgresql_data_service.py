@@ -4,7 +4,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Union
 
-import pandas as pd
 
 from cdisc_rules_engine.constants.domains import SUPPLEMENTARY_DOMAINS
 from cdisc_rules_engine.data_service.merges.join import SqlJoinMerge
@@ -51,14 +50,10 @@ class PostgresQLDataService(SQLDataService):
         codelists_path: Path = None,
         metadata_standards_path: Path = None,
         terminology_paths: dict = None,
-        data_dfs: dict[str, pd.DataFrame] = None,
-        pre_processed_dfs: dict[str, pd.DataFrame] = None,
     ):
         super().__init__(
             ig_specs, datasets_path, define_xml_path, codelists_path, metadata_standards_path, terminology_paths
         )
-        self.data_dfs = data_dfs
-        self.pre_processed_dfs = pre_processed_dfs
         self.pgi = postgres_interface
 
         self.data_preprocessor = DataPreprocessor(postgres_interface)
@@ -76,7 +71,6 @@ class PostgresQLDataService(SQLDataService):
         Constructor for tests, passing in TestDataset
         and create corresponding SQL tables
         """
-        data_dfs = {}
         metadata_rows: list[dict[str, Union[str, int, float]]] = []
 
         # PostgresDB setup
@@ -86,7 +80,7 @@ class PostgresQLDataService(SQLDataService):
         # create metadata table in postgres
         pgi.execute_sql_file(str(SCHEMA_PATH / "clinical_data_metadata_schema.sql"))
 
-        pre_processed_dfs = PostgresQLDataService._pre_process_data_dfs(data_dfs, pgi)
+        PostgresQLDataService._preprocess_data(pgi)
         instance = cls(
             pgi,
             ig_specs,
@@ -95,8 +89,6 @@ class PostgresQLDataService(SQLDataService):
             None,
             None,
             terminology_paths,
-            data_dfs,
-            pre_processed_dfs,
         )
 
         # generate timestamp
@@ -114,15 +106,12 @@ class PostgresQLDataService(SQLDataService):
             pgi.create_table(schema)
             pgi.insert_data(table_name=table_name, data=row_dicts)
 
-            ddf = pd.DataFrame.from_records(row_dicts)
-            data_dfs[table_name] = ddf
-
             # Collect variable metadata
             for test_variable in test_dataset["variables"]:
                 name = test_dataset["name"]
-                domain = ddf["domain"].iloc[0] if "domain" in ddf.columns else None
+                domain = row_dicts[0].get("domain") if row_dicts else None
                 is_supp = test_dataset["name"].startswith(SUPPLEMENTARY_DOMAINS)
-                rdomain = ddf["rdomain"].iloc[0] if is_supp and "rdomain" in ddf.columns else None
+                rdomain = row_dicts[0].get("rdomain") if is_supp and row_dicts else None
                 unsplit_name = PostgresQLDataService._get_unsplit_name(name, domain, rdomain)
                 is_split = name != unsplit_name
                 metadata_rows.append(
@@ -187,15 +176,12 @@ class PostgresQLDataService(SQLDataService):
         return instance
 
     @staticmethod
-    def _pre_process_data_dfs(
-        data_dfs: dict[str, pd.DataFrame], postgres_interface: PostgresQLInterface
-    ) -> dict[str, pd.DataFrame]:
+    def _preprocess_data(postgres_interface: PostgresQLInterface):
         """Performs all preprocessing operations on data using the DataPreprocessor."""
         logger.info("Starting data preprocessing")
         preprocessor = DataPreprocessor(postgres_interface)
         preprocessing_results = preprocessor.preprocess_all()
         logger.info(f"Preprocessing completed: {preprocessing_results}")
-        return data_dfs  # this is a redundant return because the data has been updated within the sql database
 
     @classmethod
     def from_dataset_paths(
@@ -211,19 +197,15 @@ class PostgresQLDataService(SQLDataService):
         pgi = PostgresQLInterface()
         pgi.init_database()
 
-        data_dfs = {}
-
         instance = cls(
             postgres_interface=pgi,
             ig_specs=ig_specs,
             datasets_path=datasets_path,
             define_xml_path=define_xml_path,
             terminology_paths=terminology_paths,
-            data_dfs=data_dfs,
-            pre_processed_dfs=None,
         )
 
-        instance.pre_processed_dfs = PostgresQLDataService._pre_process_data_dfs(data_dfs, pgi, instance.cache)
+        PostgresQLDataService._preprocess_data(pgi)
 
         validation_errors = instance.data_preprocessor.get_validation_errors()
         if validation_errors:
@@ -455,7 +437,7 @@ class PostgresQLDataService(SQLDataService):
                 continue
 
     def get_uploaded_dataset_ids(self) -> list[str]:
-        query = "SELECT DISTINCT dataset_id FROM data_metadata;"
+        query = "SELECT dataset_id FROM data_metadata GROUP BY dataset_id ORDER BY MIN(id);"
         self.pgi.execute_sql(query=query)
         results = self.pgi.fetch_all()
         return [res["dataset_id"] for res in results]
