@@ -1,12 +1,18 @@
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 from cdisc_rules_engine.config import config as default_config
 
 # import os
-# from cdisc_rules_engine.constants.classes import (
-#     FINDINGS_ABOUT,
-#     FINDINGS,
-# )
+from cdisc_rules_engine.constants.classes import (
+    FINDINGS,
+    SPECIAL_PURPOSE,
+    INTERVENTIONS,
+    EVENTS,
+    RELATIONSHIP,
+    TRIAL_DESIGN,
+    FINDINGS_ABOUT,
+)
+
 # from cdisc_rules_engine.constants.domains import (
 #     AP_DOMAIN,
 #     APFA_DOMAIN,
@@ -195,65 +201,87 @@ class SQLRuleProcessor:
     #         or is_ap_domain(dataset_metadata.domain or dataset_metadata.rdomain or dataset_metadata.name)
     #     )
 
-    # def rule_applies_to_class(
-    #     self,
-    #     rule,
-    #     datasets: Iterable[SDTMDatasetMetadata],
-    #     dataset_metadata: SDTMDatasetMetadata,
-    # ):
-    #     """
-    #     If included classes are specified and the class
-    #     is not in the list of included classes return false.
+    @classmethod
+    def rule_applies_to_class(cls, dataset_metadata: SQLDatasetMetadata, rule: dict) -> bool:
+        """Check if rule applies to dataset's class"""
+        classes = rule.get("classes") or {}
+        included_classes = classes.get("Include", [])
+        excluded_classes = classes.get("Exclude", [])
 
-    #     If excluded classes are specified and the class
-    #     is in the list of excluded classes return false
+        if not included_classes and not excluded_classes:
+            return True
 
-    #     Else return true.
+        variables = dataset_metadata.variables if hasattr(dataset_metadata, "variables") else []
+        domain_name = dataset_metadata.dataset_name
+        dataset_class = cls.get_dataset_class_from_variables(variables, domain_name)
 
-    #     Rule authors can specify classes to include that we cannot detect.
-    #     In this case, the get_dataset_class method will return None,
-    #     but included_classes will have values.
-    #     This will result in a rule not running when it is supposed to.
-    #     We filter out non-detectable classes here, so that rule authors
-    #     can specify them without it affecting if the rule runs or not.
-    #     """
-    #     classes = rule.get("classes") or {}
-    #     included_classes = classes.get("Include", [])
-    #     excluded_classes = classes.get("Exclude", [])
-    #     is_included = True
-    #     is_excluded = False
-    #     if included_classes:
-    #         if ALL_KEYWORD in included_classes:
-    #             return True
-    #         variables = self.data_service.get_variables_metadata(
-    #             dataset_name=dataset_metadata.full_path, datasets=datasets
-    #         ).data.variable_name
-    #         class_name = self.data_service.get_dataset_class(
-    #             variables,
-    #             dataset_metadata.full_path,
-    #             datasets,
-    #             dataset_metadata,
-    #         )
-    #         if (class_name not in included_classes) and not (
-    #             class_name == FINDINGS_ABOUT and FINDINGS in included_classes
-    #         ):
-    #             is_included = False
+        if dataset_class is None and included_classes:
+            logger.warning(f"Could not determine class for dataset {domain_name} with include restrictions")
+            return False
 
-    #     if excluded_classes:
-    #         variables = self.data_service.get_variables_metadata(
-    #             dataset_name=dataset_metadata.full_path, datasets=datasets
-    #         ).data.variable_name
-    #         class_name = self.data_service.get_dataset_class(
-    #             variables,
-    #             dataset_metadata.full_path,
-    #             datasets,
-    #             dataset_metadata,
-    #         )
-    #         if class_name and (
-    #             (class_name in excluded_classes) or (class_name == FINDINGS_ABOUT and FINDINGS in excluded_classes)
-    #         ):
-    #             is_excluded = True
-    #     return is_included and not is_excluded
+        if cls.matches_class_pattern(dataset_class, excluded_classes):
+            return False
+
+        if included_classes:
+            return cls.matches_class_pattern(dataset_class, included_classes)
+
+        return True
+
+    @staticmethod
+    def matches_class_pattern(dataset_class: Optional[str], patterns: list) -> bool:
+        """Check if dataset class matches any patterns."""
+        if dataset_class is None:
+            return False
+
+        for pattern in patterns:
+            if pattern == ALL_KEYWORD:
+                return True
+            if pattern == dataset_class:
+                return True
+            if dataset_class == FINDINGS_ABOUT and pattern == FINDINGS:
+                return True
+        return False
+
+    @staticmethod
+    def get_dataset_class_from_variables(variables: List[str], domain_name: str) -> Optional[str]:
+        """Determine dataset class based on variable names and domain"""
+        variables_upper = [v.upper() for v in variables]
+        domain_upper = domain_name.upper()
+
+        if domain_upper in ["DM", "CO", "SE", "SJ", "SV", "SM"]:
+            return SPECIAL_PURPOSE
+
+        if domain_upper in ["TA", "TE", "TI", "TS", "TV"]:
+            return TRIAL_DESIGN
+
+        if any([domain_upper.startswith(prefix) for prefix in ["REL", "SUPP", "SQ"]]):
+            return RELATIONSHIP
+
+        if any(
+            v.endswith("TESTCD")
+            or v.endswith("TEST")
+            or v.endswith("ORRES")
+            or v.endswith("STRESC")
+            or v.endswith("STRESN")
+            for v in variables_upper
+        ):
+            if any(v.endswith("OBJ") for v in variables_upper):
+                return FINDINGS_ABOUT
+            return FINDINGS
+
+        if any(
+            v.endswith("TRT") or v.endswith("DOSE") or v.endswith("DOSFRQ") or v.endswith("ROUTE")
+            for v in variables_upper
+        ):
+            return INTERVENTIONS
+
+        if any(
+            v.endswith("TERM") or v.endswith("DECOD") or v.endswith("LLT") or v.endswith("PTCD")
+            for v in variables_upper
+        ):
+            return EVENTS
+
+        return None
 
     # def rule_applies_to_use_case(
     #     self,
@@ -439,16 +467,16 @@ class SQLRuleProcessor:
         rule_id = rule.get("core_id", "unknown")
         dataset_name = dataset_metadata.dataset_name
 
+        if not self.rule_applies_to_class(dataset_metadata, rule):
+            reason = f"Rule skipped - doesn't apply to class for " f"rule id={rule_id}, dataset={dataset_name}"
+            logger.info(f"is_suitable_for_validation. {reason}, result=False")
+            return False, reason
         if not self.rule_applies_to_domain(dataset_metadata, rule):
             reason = f"Rule skipped - doesn't apply to domain for rule id={rule_id}, dataset={dataset_name}"
             logger.info(f"is_suitable_for_validation. {reason}, result=False")
             return False, reason
         # if not self.rule_applies_to_use_case(dataset_metadata, rule, standard, standard_substandard):
         #     reason = f"Rule skipped - doesn't apply to use case for " f"rule id={rule_id}, dataset={dataset_name}"
-        #     logger.info(f"is_suitable_for_validation. {reason}, result=False")
-        #     return False, reason
-        # if not self.rule_applies_to_class(rule, datasets, dataset_metadata):
-        #     reason = f"Rule skipped - doesn't apply to class for " f"rule id={rule_id}, dataset={dataset_name}"
         #     logger.info(f"is_suitable_for_validation. {reason}, result=False")
         #     return False, reason
         # TODO: uncomment and reimplement above other checks (i.e. class, use-case)
