@@ -4,7 +4,7 @@ from cdisc_rules_engine.interfaces import (
 )
 
 
-class USDMJSONReader(DataReaderInterface):
+class JSONReader(DataReaderInterface):
     def from_file(self, file_path):
         with open(file_path) as fp:
             json = load(fp)
