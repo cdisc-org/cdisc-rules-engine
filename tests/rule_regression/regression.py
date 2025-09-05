@@ -235,6 +235,9 @@ def process_test_case_dataset(
 
         regression_errors["old_vs_sql"] = old_vs_sql_regression_comparison(old_regression, sql_regression)
 
+        regression_errors["sql_overall_result"] = extract_overall_result(sql_regression)
+        regression_errors["old_overall_result"] = extract_overall_result(old_regression)
+
         # does validated_results path exist:
         validated_results_folder = f"{test_case_folder_path}/validated_results"
         if not os.path.exists(validated_results_folder):
@@ -377,6 +380,20 @@ def extract_results_regression(results):
             domain_res_regression["errors"] = [{"error": "unknown execution status"}]
         res_regression.append(domain_res_regression)
     return res_regression
+
+
+def extract_overall_result(results):
+    statuses = [domain["execution_status"] for domain in results]
+    if len(statuses) == 0:
+        return "missing"
+
+    if "execution_error" in statuses:
+        return "execution_error"
+
+    if all(status == "skipped" for status in statuses):
+        return "skipped"
+
+    return "success"
 
 
 def get_data_paths_by_rule_id(row: pd.Series, rid: str) -> list[str]:
