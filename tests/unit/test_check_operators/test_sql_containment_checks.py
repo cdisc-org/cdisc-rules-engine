@@ -3,6 +3,79 @@ import pytest
 
 from .helpers import create_sql_operators, assert_series_equals
 
+CONTAINS_TEST_DATA = [
+    (
+        {"target": ["Ctt", "Btt", "A"], "VAR2": ["Ctt", "btt", "lll"]},
+        "VAR2",
+        False,
+        [True, False, False],
+    ),
+    (
+        {"target": ["A", "B", "C"]},
+        "B",
+        True,
+        [False, True, False],
+    ),
+    (
+        {"target": ["Ctt", "Btt", "A"], "VAR2": ["X", "Y", "Ctt"]},
+        "VAR2",
+        False,
+        [False, False, True],
+    ),
+    (
+        {"target": ["A", "B", "C"]},
+        ["C", "Z", "A"],
+        True,
+        [True, False, True],
+    ),
+    (
+        {"target": ["b", "c", "a"], "VAR2": ["a", "b", "c"]},
+        "VAR2",
+        False,
+        [True, True, True],
+    ),
+    # Note: Doesn't seem like there is a way to test this using SQL
+    # (
+    #     {"target": [["A", "B", "C"], ["A", "B", "L"], ["L", "Q", "R"]]},
+    #     "L",
+    #     True,
+    #     [False, True, True],
+    # ),
+]
+
+
+@pytest.mark.parametrize(
+    "data,comparator,value_is_literal,expected_result",
+    CONTAINS_TEST_DATA,
+)
+def test_sql_contains(data, comparator, value_is_literal, expected_result):
+    sql_ops = create_sql_operators(data)
+    result = sql_ops.contains(
+        {
+            "target": "target",
+            "comparator": comparator,
+            "value_is_literal": value_is_literal,
+        }
+    )
+    assert_series_equals(result, expected_result)
+
+
+@pytest.mark.parametrize(
+    "data,comparator,value_is_literal,expected_result",
+    CONTAINS_TEST_DATA,
+)
+def test_sql_does_not_contain(data, comparator, value_is_literal, expected_result):
+    sql_ops = create_sql_operators(data)
+    result = sql_ops.does_not_contain(
+        {
+            "target": "target",
+            "comparator": comparator,
+            "value_is_literal": value_is_literal,
+        }
+    )
+    assert_series_equals(result, ~pd.Series(expected_result))
+
+
 CONTAINED_BY_TEST_DATA = [
     (
         {"target": ["Ctt", "Btt", "A"]},

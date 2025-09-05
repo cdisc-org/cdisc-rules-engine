@@ -1,24 +1,21 @@
 from .base_sql_operator import BaseSqlOperator
+from .is_contained_by_operator import IsContainedByOperator
 
 
 class ContainsOperator(BaseSqlOperator):
     """Operator for checking if target contains comparator values."""
 
     def execute_operator(self, other_value):
-        """target = self.replace_prefix(other_value.get("target"))
-        value_is_literal = other_value.get("value_is_literal", False)
-        comparator = (
-            self.replace_prefix(other_value.get("comparator"))
-            if not value_is_literal
-            else other_value.get("comparator")
-        )
-        comparison_data = self.get_comparator_data(comparator, value_is_literal)
-        if self.is_column_of_iterables(self.validation_df[target]) or isinstance(comparison_data, str):
-            results = vectorized_is_in(comparison_data, self.validation_df[target])
-        elif self.validation_df.is_series(comparison_data):
-            results = self._series_is_in(self.validation_df[target], comparison_data)
+        """
+        Checks if the comparator value(s) are contained within the target column values.
+        This is implemented by calling is_contained_by with target and comparator swapped.
+        """
+        if other_value.get("value_is_literal", False):
+            return IsContainedByOperator(self.original_data).execute_operator(other_value)
         else:
-            # Handles numeric case. This case should never occur
-            results = np.where(self.validation_df[target] == comparison_data, True, False)
-        return self.validation_df.convert_to_series(results)"""
-        raise NotImplementedError("contains check_operator not implemented")
+            swapped = {
+                "target": other_value["comparator"],
+                "comparator": other_value["target"],
+                "value_is_literal": other_value.get("value_is_literal", False),
+            }
+            return IsContainedByOperator(self.original_data).execute_operator(swapped)
