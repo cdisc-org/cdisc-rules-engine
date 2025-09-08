@@ -121,7 +121,7 @@ class PostgresQLOperators(BaseType):
         "is_unique_set": lambda data: IsUniqueSetOperator(data),
         "is_not_unique_set": lambda data: NotOperator(data, IsUniqueSetOperator),
         "is_ordered_set": lambda data: IsOrderedSetOperator(data),
-        "is_not_ordered_set": lambda data: NotOperator(data, IsOrderedByOperator),
+        "is_not_ordered_set": lambda data: NotOperator(data, IsOrderedSetOperator),
         "is_inconsistent_across_dataset": lambda data: IsInconsistentAcrossDatasetOperator(data),
         "conformant_value_data_type": lambda data: ConformantValueDataTypeOperator(data),
         "non_conformant_value_data_type": lambda data: NotOperator(data, ConformantValueDataTypeOperator),
