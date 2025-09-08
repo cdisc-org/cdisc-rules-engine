@@ -5,6 +5,10 @@ from .equal_to_operator import EqualToOperator
 class IsContainedByOperator(BaseSqlOperator):
     """Operator for checking if target values are contained by comparator collections."""
 
+    def __init__(self, data, case_insensitive=False):
+        super().__init__(data)
+        self.case_insensitive = case_insensitive
+
     def execute_operator(self, other_value):
         """
         Checks if the target column values are contained within the comparator.
@@ -20,15 +24,13 @@ class IsContainedByOperator(BaseSqlOperator):
         target_column = self.replace_prefix(other_value.get("target")).lower()
         value_is_literal = other_value.get("value_is_literal", False)
         comparator = other_value.get("comparator")
-        case_insensitive = other_value.get("case_insensitive", False)
 
-        if case_insensitive:
+        if self.case_insensitive:
             target_column = f"""LOWER({target_column})"""
 
         if isinstance(comparator, list):
             # List of literal values - use SQL IN clause
-            # TODO: TMP
-            if case_insensitive:
+            if self.case_insensitive:
                 comparator = [str(c).lower() for c in comparator]
             values_list = "', '".join(str(v).replace("'", "''") for v in comparator)
             cache_key = f"{target_column}_contained_by_list"
@@ -44,7 +46,7 @@ class IsContainedByOperator(BaseSqlOperator):
         elif isinstance(comparator, str) and not value_is_literal and self._exists(comparator):
             # Column name provided - check if target value exists anywhere in comparator column
             comparator_column = self.replace_prefix(comparator).lower()
-            if case_insensitive:
+            if self.case_insensitive:
                 comparator_column = f"""LOWER({comparator_column})"""
             cache_key = f"{target_column}_contained_by_{comparator_column}"
 
@@ -62,7 +64,7 @@ class IsContainedByOperator(BaseSqlOperator):
                           END"""
 
         else:
-            return EqualToOperator(self.original_data, case_insensitive=case_insensitive).execute_operator(
+            return EqualToOperator(self.original_data, case_insensitive=self.case_insensitive).execute_operator(
                 {
                     "target": other_value.get("target"),
                     "comparator": comparator,

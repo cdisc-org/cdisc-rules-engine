@@ -11,7 +11,6 @@ from .numeric_comparison_operator import NumericComparisonOperator
 from .is_contained_by_operator import IsContainedByOperator
 from .has_different_values_operator import HasDifferentValuesOperator
 from .date_comparison_operator import DateComparisonOperator
-from .is_contained_by_case_insensitive_operator import IsContainedByCaseInsensitiveOperator
 from .is_not_unique_relationship_operator import IsNotUniqueRelationshipOperator
 from .present_on_multiple_rows_within_operator import PresentOnMultipleRowsWithinOperator
 from .prefix_is_contained_by_operator import PrefixIsContainedByOperator
@@ -81,8 +80,10 @@ class PostgresQLOperators(BaseType):
         "greater_than_or_equal_to": lambda data: NumericComparisonOperator(data, operator=">="),
         "is_contained_by": lambda data: IsContainedByOperator(data),
         "is_not_contained_by": lambda data: NotOperator(data, IsContainedByOperator),
-        "is_contained_by_case_insensitive": lambda data: IsContainedByCaseInsensitiveOperator(data),
-        "is_not_contained_by_case_insensitive": lambda data: NotOperator(data, IsContainedByCaseInsensitiveOperator),
+        "is_contained_by_case_insensitive": lambda data: IsContainedByOperator(data, case_insensitive=True),
+        "is_not_contained_by_case_insensitive": lambda data: NotOperator(
+            data, lambda d: IsContainedByOperator(d, case_insensitive=True)
+        ),
         "has_different_values": lambda data: HasDifferentValuesOperator(data),
         "has_same_values": lambda data: NotOperator(data, HasDifferentValuesOperator),
         "date_equal_to": lambda data: DateComparisonOperator(data, operator="="),
