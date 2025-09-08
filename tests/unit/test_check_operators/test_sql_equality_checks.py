@@ -1,7 +1,7 @@
 import pytest
 
-from cdisc_rules_engine.models.sql_operation_result import SqlOperationResult
-from .helpers import create_sql_operators, assert_series_equals
+
+from .helpers import assert_series_equals, create_sql_operators
 
 
 @pytest.mark.parametrize(
@@ -45,15 +45,14 @@ from .helpers import create_sql_operators, assert_series_equals
         ),
         (
             {"target": ["A", "B", "C"]},
-            "$value",
+            "$constant",
             False,
             [True, False, False],
         ),
     ],
 )
 def test_equal_to(data, comparator, is_literal, expected_result):
-    operation_variables = {"$value": SqlOperationResult(query="SELECT 'A'", type="constant")}
-    sql_ops = create_sql_operators(data, operation_variables)
+    sql_ops = create_sql_operators(data)
     result = sql_ops.equal_to({"target": "target", "comparator": comparator, "value_is_literal": is_literal})
     assert_series_equals(result, expected_result)
 
@@ -188,14 +187,13 @@ def test_equality_operators_type_insensitive(data, comparator, operator, expecte
         ),
         (
             {"target": ["A", "a", "b"]},
-            "$value",
+            "$constant",
             [False, True, True],
         ),
     ],
 )
 def test_not_equal_to(data, comparator, expected_result):
-    operation_variables = {"$value": SqlOperationResult(query="SELECT 'A'", type="constant")}
-    sql_ops = create_sql_operators(data, operation_variables)
+    sql_ops = create_sql_operators(data)
     result = sql_ops.not_equal_to({"target": "target", "comparator": comparator})
     assert_series_equals(result, expected_result)
 
@@ -215,14 +213,13 @@ def test_not_equal_to(data, comparator, expected_result):
         ),
         (
             {"target": ["A", "a", "b"]},
-            "$value",
+            "$constant",
             [True, True, False],
         ),
     ],
 )
 def test_equal_to_case_insensitive(data, comparator, expected_result):
-    operation_variables = {"$value": SqlOperationResult(query="SELECT 'A'", type="constant")}
-    sql_ops = create_sql_operators(data, operation_variables)
+    sql_ops = create_sql_operators(data)
     result = sql_ops.equal_to_case_insensitive({"target": "target", "comparator": comparator})
     assert_series_equals(result, expected_result)
 
@@ -242,13 +239,12 @@ def test_equal_to_case_insensitive(data, comparator, expected_result):
         ),
         (
             {"target": ["A", "a", "b"]},
-            "$value",
+            "$constant",
             [False, False, True],
         ),
     ],
 )
 def test_not_equal_to_case_insensitive(data, comparator, expected_result):
-    operation_variables = {"$value": SqlOperationResult(query="SELECT 'A'", type="constant")}
-    sql_ops = create_sql_operators(data, operation_variables)
+    sql_ops = create_sql_operators(data)
     result = sql_ops.not_equal_to_case_insensitive({"target": "target", "comparator": comparator})
     assert_series_equals(result, expected_result)

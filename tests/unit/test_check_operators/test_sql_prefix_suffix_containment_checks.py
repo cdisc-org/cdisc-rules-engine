@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from .helpers import create_sql_operators, assert_series_equals
+from .helpers import assert_series_equals, create_sql_operators
 
 PREFIX_IS_CONTAINED_BY_TEST_DATA = [
     (
@@ -31,6 +31,13 @@ PREFIX_IS_CONTAINED_BY_TEST_DATA = [
         True,
         2,
         [True, False, True],
+    ),
+    (
+        {"target": ["AAA", "BAB", "CAC"]},
+        "$list",
+        False,
+        1,
+        [True, True, False],
     ),
     # Note: This pattern works in DataFrame tests but fails in SQL:
     # (
@@ -76,6 +83,13 @@ SUFFIX_IS_CONTAINED_BY_TEST_DATA = [
         ["ST", "CD"],
         True,
         2,
+        [True, True, False],
+    ),
+    (
+        {"target": ["AAA", "BAB", "CAC"]},
+        "$list",
+        False,
+        1,
         [True, True, False],
     ),
 ]

@@ -1,7 +1,7 @@
 import traceback
 from abc import abstractmethod
 from functools import wraps
-from typing import Any, List, Union
+from typing import Any, List, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -158,10 +158,16 @@ class BaseSqlOperator:
     def _table_sql(self):
         return self.sql_data_service.pgi.schema.get_table_hash(self.table_id)
 
-    def _column_sql(self, column: str, lowercase: bool = False) -> str:
+    def _column_sql(
+        self, column: str, lowercase: bool = False, prefix: Optional[int] = None, suffix: Optional[int] = None
+    ) -> str:
         query = self.sql_data_service.pgi.schema.get_column_hash(self.table_id, column)
         if lowercase:
             query = f"LOWER({query})"
+        if prefix is not None:
+            query = f"LEFT({query}, {prefix})"
+        if suffix is not None:
+            query = f"RIGHT({query}, {suffix})"
         return query
 
     def _constant_sql(self, value: Any, lowercase: bool = False) -> str:

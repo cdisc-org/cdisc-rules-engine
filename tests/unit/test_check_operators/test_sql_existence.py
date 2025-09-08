@@ -1,6 +1,9 @@
 import pytest
 
-from .helpers import assert_series_equals, create_sql_operators_with_config
+from .helpers import (
+    assert_series_equals,
+    create_sql_operators,
+)
 
 
 @pytest.mark.parametrize(
@@ -23,7 +26,7 @@ def test_exists(target, expected_result):
         # "nested_var": [["a", "b", "c"], ["d", "e"], ["f", "nested_var", "g"]],
         "non_nested_value": ["h", "i", "j"],
     }
-    sql_ops = create_sql_operators_with_config(data, {"column_prefix_map": {"--": "va"}})
+    sql_ops = create_sql_operators(data, extra_config={"column_prefix_map": {"--": "va"}})
     result = sql_ops.exists({"target": target})
     assert_series_equals(result, expected_result)
 
@@ -48,6 +51,6 @@ def test_not_exists(target, expected_result):
         # "nested_var": [["a", "b", "c"], ["d", "e"], ["f", "nested_var", "g"]],
         "non_nested_value": ["h", "i", "j"],
     }
-    sql_ops = create_sql_operators_with_config(data, {"column_prefix_map": {"--": "va"}})
+    sql_ops = create_sql_operators(data, extra_config={"column_prefix_map": {"--": "va"}})
     result = sql_ops.not_exists({"target": target})
     assert_series_equals(result, expected_result)

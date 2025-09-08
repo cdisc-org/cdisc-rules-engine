@@ -6,11 +6,14 @@ from cdisc_rules_engine.check_operators.sql import PostgresQLOperators
 from cdisc_rules_engine.data_service.postgresql_data_service import (
     PostgresQLDataService,
 )
+from cdisc_rules_engine.models.sql_operation_result import SqlOperationResult
 
 TEST_TABLE_NAME = "test_table"
 
 
-def create_sql_operators(column_data: dict, operation_variables: dict = None) -> PostgresQLOperators:
+def create_sql_operators(
+    column_data: dict, extra_operation_variables: dict = {}, extra_config: dict = {}
+) -> PostgresQLOperators:
     """Create PostgresQLOperators instance with test data.
 
     Args:
@@ -23,31 +26,14 @@ def create_sql_operators(column_data: dict, operation_variables: dict = None) ->
     data_service = PostgresQLDataService.test_instance()
     PostgresQLDataService.add_test_dataset(data_service.pgi, table_name=TEST_TABLE_NAME, column_data=column_data)
 
-    config = {"dataset_id": TEST_TABLE_NAME, "data_service": data_service}
+    config = {**extra_config, "dataset_id": TEST_TABLE_NAME, "data_service": data_service}
 
-    if operation_variables:
-        config["operation_variables"] = operation_variables
-
-    return PostgresQLOperators(config)
-
-
-def create_sql_operators_with_config(column_data: dict, extra_config: dict = None) -> PostgresQLOperators:
-    """Create PostgresQLOperators instance with test data and additional configuration.
-
-    Args:
-        column_data: Dictionary containing column names and their data
-        extra_config: Additional configuration parameters
-
-    Returns:
-        PostgresQLOperators instance configured for testing
-    """
-    data_service = PostgresQLDataService.test_instance()
-    PostgresQLDataService.add_test_dataset(data_service.pgi, table_name=TEST_TABLE_NAME, column_data=column_data)
-
-    config = {"dataset_id": TEST_TABLE_NAME, "data_service": data_service}
-
-    if extra_config:
-        config.update(extra_config)
+    config["operation_variables"] = {**extra_operation_variables}
+    config["operation_variables"]["$constant"] = SqlOperationResult(query="SELECT 'A'", type="constant")
+    config["operation_variables"]["$number"] = SqlOperationResult(query="SELECT 1.0", type="constant")
+    config["operation_variables"]["$list"] = SqlOperationResult(
+        query="SELECT column1 FROM (VALUES ('A'), ('B'))", type="collection"
+    )
 
     return PostgresQLOperators(config)
 

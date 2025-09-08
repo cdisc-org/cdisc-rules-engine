@@ -97,7 +97,7 @@ class SqlVenmoResultHandler(BaseActions):
         self.data_service.pgi.execute_sql(
             f"""SELECT * FROM
                 {self.data_service.pgi.schema.get_table_hash(self.dataset_id)}
-            WHERE id IN ({', '.join(true_indicies)})"""
+            WHERE id IN ({', '.join(true_indicies)}) ORDER BY id ASC"""
         )
         results = self.data_service.pgi.fetch_all()
         return list(results)

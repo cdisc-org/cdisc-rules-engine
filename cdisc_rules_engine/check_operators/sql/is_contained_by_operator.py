@@ -21,47 +21,34 @@ class IsContainedByOperator(BaseSqlOperator):
         2. Column name (when value_is_literal=False) - checks if target value exists anywhere in the comparator column
         3. Single literal value - checks direct equality with the target
         """
-        target_column = self.replace_prefix(other_value.get("target")).lower()
+        target_column = self.replace_prefix(other_value.get("target"))
         value_is_literal = other_value.get("value_is_literal", False)
         comparator = other_value.get("comparator")
 
-        if self.case_insensitive:
-            target_column = f"""LOWER({target_column})"""
+        prefix = other_value.get("prefix", None)
+        suffix = other_value.get("suffix", None)
 
-        if isinstance(comparator, list):
-            # List of literal values - use SQL IN clause
-            if self.case_insensitive:
-                comparator = [str(c).lower() for c in comparator]
-            values_list = "', '".join(str(v).replace("'", "''") for v in comparator)
-            cache_key = f"{target_column}_contained_by_list"
+        column = self._column_sql(target_column, lowercase=self.case_insensitive, prefix=prefix, suffix=suffix)
+
+        cache_key = (
+            f"{target_column}_contained_by_{comparator}_{value_is_literal}_{self.case_insensitive}_{prefix}_{suffix}"
+        )
+
+        if isinstance(comparator, list) or (isinstance(comparator, str) and comparator in self.operation_variables):
 
             def sql():
-                return f"""CASE WHEN {target_column} IS NOT NULL
-                          AND {target_column} != ''
-                          AND {target_column} IN ('{values_list}')
-                          THEN true
-                          ELSE false
-                          END"""
+                return f"""NOT ({self._is_empty_sql(target_column)})
+                          AND {column} IN {self._collection_sql(comparator, lowercase=self.case_insensitive)}"""
 
         elif isinstance(comparator, str) and not value_is_literal and self._exists(comparator):
-            # Column name provided - check if target value exists anywhere in comparator column
-            comparator_column = self.replace_prefix(comparator).lower()
-            if self.case_insensitive:
-                comparator_column = f"""LOWER({comparator_column})"""
-            cache_key = f"{target_column}_contained_by_{comparator_column}"
 
             def sql():
-                return f"""CASE WHEN {target_column} IS NOT NULL
-                          AND {target_column} != ''
-                          AND {target_column} IN (
-                              SELECT DISTINCT {comparator_column}
+                return f"""NOT ({self._is_empty_sql(target_column)})
+                          AND {column} IN (
+                              SELECT DISTINCT {self._column_sql(comparator, lowercase=self.case_insensitive)}
                               FROM {self._table_sql()}
-                              WHERE {comparator_column} IS NOT NULL
-                              AND {comparator_column} != ''
-                          )
-                          THEN true
-                          ELSE false
-                          END"""
+                              WHERE NOT ({self._is_empty_sql(comparator)})
+                          )"""
 
         else:
             return EqualToOperator(self.original_data, case_insensitive=self.case_insensitive).execute_operator(

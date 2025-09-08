@@ -332,7 +332,11 @@ def compare_error_lists(old_errors, sql_errors):
     if diff:
         # Calling `to_json` to create a valid JSON (otherwise the output is not JSON serializable)
         # and then converting it back to a Python object so it's formatted properly
-        return json.loads(diff.to_json())
+        reloaded = json.loads(diff.to_json())
+        # Need to sort the values_changed keys for consistent output
+        if "values_changed" in reloaded:
+            reloaded["values_changed"] = dict(sorted(reloaded["values_changed"].items()))
+        return reloaded
     else:
         return []
 
