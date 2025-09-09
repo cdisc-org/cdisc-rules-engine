@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from .helpers import assert_series_equals, create_sql_operators
+from .helpers import create_sql_operators, assert_series_equals
 
 CONTAINS_TEST_DATA = [
     (
@@ -185,3 +185,108 @@ def test_is_not_contained_by_case_insensitive(data, comparator, value_is_literal
         {"target": "target", "comparator": comparator, "value_is_literal": value_is_literal}
     )
     assert_series_equals(result, ~pd.Series(expected_result))
+
+
+CONTAINS_ALL_TEST_DATA = [
+    (
+        {"target": ["Ctt", "Btt", "A"], "VAR2": ["A", "Btt", "A"]},
+        "VAR2",
+        False,
+        True,
+    ),
+    (
+        {"target": ["A", "B", "C", "D"]},
+        ["A", "B", "C"],
+        True,
+        True,
+    ),
+    (
+        {"target": ["A", "B", "C"]},
+        [],
+        True,
+        True,
+    ),
+    (
+        {"target": ["A", "B", "C"]},
+        ["B"],
+        True,
+        True,
+    ),
+    (
+        {"target": ["A", "B", "C"]},
+        "$constant",
+        False,
+        True,
+    ),
+    (
+        {"target": ["A", "B", "C", "D"]},
+        "$list",
+        False,
+        True,
+    ),
+    # Negative test cases (should return False)
+    (
+        {"target": ["A", "B", "D"], "VAR2": ["A", "B", "C"]},
+        "VAR2",
+        False,
+        False,
+    ),
+    (
+        {"target": ["X", "Y", "Z"]},
+        ["A", "B"],
+        True,
+        False,
+    ),
+    (
+        {"target": ["A", "B", "C"]},
+        ["A", "B", "D"],
+        True,
+        False,
+    ),
+    (
+        {"target": ["A", "B"]},
+        ["A", "B", "C"],
+        True,
+        False,
+    ),
+    (
+        {"target": ["B"]},
+        [""],
+        True,
+        False,
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    "data,comparator,value_is_literal,expected_result",
+    CONTAINS_ALL_TEST_DATA,
+)
+def test_sql_contains_all(data, comparator, value_is_literal, expected_result):
+    sql_ops = create_sql_operators(data)
+    result = sql_ops.contains_all(
+        {
+            "target": "target",
+            "comparator": comparator,
+            "value_is_literal": value_is_literal,
+        }
+    )
+    expected_series = [expected_result] * len(data["target"])
+    assert_series_equals(result, expected_series)
+
+
+@pytest.mark.parametrize(
+    "data,comparator,value_is_literal,expected_result",
+    CONTAINS_ALL_TEST_DATA,
+)
+def test_sql_not_contains_all(data, comparator, value_is_literal, expected_result):
+    sql_ops = create_sql_operators(data)
+    result = sql_ops.not_contains_all(
+        {
+            "target": "target",
+            "comparator": comparator,
+            "value_is_literal": value_is_literal,
+        }
+    )
+    expected_series = [expected_result] * len(data["target"])
+    assert_series_equals(result, ~pd.Series(expected_series))
