@@ -7,6 +7,7 @@ from cdisc_rules_engine.sql_operations.numeric_operation import (
     SqlNumericOperation,
 )
 from cdisc_rules_engine.sql_operations.sql_base_operation import SqlBaseOperation
+from cdisc_rules_engine.sql_operations.variable_exists import SqlVariableExists
 
 
 class SqlOperationsFactory:
@@ -36,7 +37,7 @@ class SqlOperationsFactory:
         "whodrug_code_hierarchy": None,
         "valid_meddra_term_references": None,
         "valid_meddra_code_term_pairs": None,
-        "variable_exists": None,
+        "variable_exists": SqlVariableExists,
         "variable_names": None,
         "variable_library_metadata": None,
         "variable_value_count": None,
