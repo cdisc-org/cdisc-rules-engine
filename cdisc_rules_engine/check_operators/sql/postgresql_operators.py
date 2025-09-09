@@ -7,7 +7,6 @@ from .base_sql_operator import log_operator_execution
 from .conformant_value_data_type_operator import ConformantValueDataTypeOperator
 from .conformant_value_length_operator import ConformantValueLengthOperator
 from .contains_all_operator import ContainsAllOperator
-from .contains_case_insensitive_operator import ContainsCaseInsensitiveOperator
 from .contains_operator import ContainsOperator
 from .date_comparison_operator import DateComparisonOperator
 from .empty_operator import EmptyOperator
@@ -108,8 +107,10 @@ class PostgresQLOperators(BaseType):
         "suffix_is_not_contained_by": lambda data: NotOperator(data, IsContainedByOperator),
         "contains": lambda data: ContainsOperator(data),
         "does_not_contain": lambda data: NotOperator(data, ContainsOperator),
-        "contains_case_insensitive": lambda data: ContainsCaseInsensitiveOperator(data),
-        "does_not_contain_case_insensitive": lambda data: NotOperator(data, ContainsCaseInsensitiveOperator),
+        "contains_case_insensitive": lambda data: ContainsOperator(data, case_insensitive=True),
+        "does_not_contain_case_insensitive": lambda data: NotOperator(
+            data, lambda d: ContainsOperator(d, case_insensitive=True)
+        ),
         "matches_regex": lambda data: MatchesRegexOperator(data),
         "not_matches_regex": lambda data: NotMatchesRegexOperator(data),  # TODO check if this can use Not Operator
         "prefix_matches_regex": lambda data: PrefixMatchesRegexOperator(data),

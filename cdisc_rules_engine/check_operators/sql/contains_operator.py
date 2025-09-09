@@ -25,6 +25,9 @@ class ContainsOperator(BaseSqlOperator):
             return self._handle_literal_value(target_column, comparator, value_is_literal)
         elif isinstance(comparator, str) and self._exists(comparator):
             return self._handle_column_comparator(target_column, comparator)
+        elif isinstance(comparator, str):
+            # String literals when not explicitly marked as literal
+            return self._handle_literal_value(target_column, comparator, True)
         else:
             return self._handle_invalid_comparator(target_column, comparator)
 
