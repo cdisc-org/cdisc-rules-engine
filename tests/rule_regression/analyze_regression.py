@@ -40,18 +40,23 @@ def _process_test_cases(rule: Dict, test_type: str, pattern: re.Pattern) -> List
     return matches
 
 
-def extract_operator_failures(rules_data: List[Dict]) -> Dict[str, int]:
+def extract_operator_failures(rules_data: List[Dict]) -> tuple[Dict[str, int], Dict[str, int]]:
     """Extract missing operators and count their failures"""
     operator_failures = defaultdict(int)
+    operator_rules = defaultdict(set)
     operator_pattern = re.compile(r"(\w+) check_operator not implemented")
 
     for rule in rules_data:
+        core_id = rule.get("core-id", "unknown")
         for test_type in ["negative_regressions", "positive_regressions"]:
             matches = _process_test_cases(rule, test_type, operator_pattern)
             for operator_name in matches:
                 operator_failures[operator_name] += 1
+                operator_rules[operator_name].add(core_id)
 
-    return dict(operator_failures)
+    operator_rule_counts = {op: len(rules) for op, rules in operator_rules.items()}
+
+    return dict(operator_failures), operator_rule_counts
 
 
 def categorize_skip_types(skip_messages: List[str]) -> Dict[str, int]:
@@ -154,18 +159,114 @@ def analyze_meaningful_discrepancies(rules_data: List[Dict]) -> Dict[str, List[D
     return discrepancy_patterns
 
 
-def extract_missing_operations(rules_data: List[Dict]) -> Dict[str, int]:
+def extract_missing_operations(rules_data: List[Dict]) -> tuple[Dict[str, int], Dict[str, int]]:
     """Extract missing operations and count their failures"""
     operation_failures = defaultdict(int)
+    operation_rules = defaultdict(set)
     operation_pattern = re.compile(r"Operation (\w+) is not implemented")
 
     for rule in rules_data:
+        core_id = rule.get("core-id", "unknown")
         for test_type in ["negative_regressions", "positive_regressions"]:
             matches = _process_test_cases(rule, test_type, operation_pattern)
             for operation_name in matches:
                 operation_failures[operation_name] += 1
+                operation_rules[operation_name].add(core_id)
 
-    return dict(operation_failures)
+    operation_rule_counts = {op: len(rules) for op, rules in operation_rules.items()}
+
+    return dict(operation_failures), operation_rule_counts
+
+
+def _check_error_message_type(
+    message: str, operator_pattern: re.Pattern, operation_pattern: re.Pattern
+) -> tuple[bool, bool, bool]:
+    """Helper: Classify a single error message"""
+    has_operator_error = bool(operator_pattern.search(message))
+    has_operation_error = bool(operation_pattern.search(message))
+    has_other_error = _is_other_error(message) if not (has_operator_error or has_operation_error) else False
+    return has_operator_error, has_operation_error, has_other_error
+
+
+def _process_test_case_errors(
+    test_case_data: Dict, operator_pattern: re.Pattern, operation_pattern: re.Pattern
+) -> tuple[bool, bool, bool]:
+    """Helper: Process errors in a single test case"""
+    has_operator_error = False
+    has_operation_error = False
+    has_other_error = False
+
+    engine_regression = test_case_data.get("engine_regression")
+    if not engine_regression:
+        return has_operator_error, has_operation_error, has_other_error
+
+    results_sql = engine_regression.get("results_sql", [])
+    for result in results_sql:
+        if result.get("execution_status") == "execution_error":
+            errors = result.get("errors", [])
+            for error in errors:
+                message = error.get("message", "")
+                op_err, operation_err, other_err = _check_error_message_type(
+                    message, operator_pattern, operation_pattern
+                )
+                has_operator_error = has_operator_error or op_err
+                has_operation_error = has_operation_error or operation_err
+                has_other_error = has_other_error or other_err
+
+    return has_operator_error, has_operation_error, has_other_error
+
+
+def _check_rule_error_types(
+    rule: Dict, operator_pattern: re.Pattern, operation_pattern: re.Pattern
+) -> tuple[bool, bool, bool]:
+    """Helper: Check what error types a single rule has"""
+    has_operator_error = False
+    has_operation_error = False
+    has_other_error = False
+
+    for test_type in ["negative_regressions", "positive_regressions"]:
+        for test_case in rule.get(test_type, []):
+            for test_case_key, test_case_data in test_case.items():
+                if not isinstance(test_case_data, dict):
+                    continue
+
+                op_err, operation_err, other_err = _process_test_case_errors(
+                    test_case_data, operator_pattern, operation_pattern
+                )
+                has_operator_error = has_operator_error or op_err
+                has_operation_error = has_operation_error or operation_err
+                has_other_error = has_other_error or other_err
+
+    return has_operator_error, has_operation_error, has_other_error
+
+
+def analyze_rules_by_error_type(rules_data: List[Dict]) -> Dict[str, set]:
+    """Categorize rules by the types of errors they have"""
+    rules_with_operator_errors = set()
+    rules_with_operation_errors = set()
+    rules_with_other_errors = set()
+
+    operator_pattern = re.compile(r"(\w+) check_operator not implemented")
+    operation_pattern = re.compile(r"Operation (\w+) is not implemented")
+
+    for rule in rules_data:
+        core_id = rule.get("core-id", "unknown")
+        has_operator_error, has_operation_error, has_other_error = _check_rule_error_types(
+            rule, operator_pattern, operation_pattern
+        )
+
+        if has_operator_error:
+            rules_with_operator_errors.add(core_id)
+        if has_operation_error:
+            rules_with_operation_errors.add(core_id)
+        if has_other_error:
+            rules_with_other_errors.add(core_id)
+
+    return {
+        "operator_errors": rules_with_operator_errors,
+        "operation_errors": rules_with_operation_errors,
+        "other_errors": rules_with_other_errors,
+    }
 
 
 def _is_other_error(message: str) -> bool:
@@ -188,11 +289,13 @@ def _extract_other_errors_from_results(results_sql: List[Dict]) -> List[str]:
     return messages
 
 
-def categorize_other_errors(rules_data: List[Dict]) -> Counter:
+def categorize_other_errors(rules_data: List[Dict]) -> tuple[Counter, Dict[str, int]]:
     """Count other execution errors (excluding operators and operations)"""
     error_messages = []
+    error_rules = defaultdict(set)
 
     for rule in rules_data:
+        core_id = rule.get("core-id", "unknown")
         for test_type in ["negative_regressions", "positive_regressions"]:
             for test_case in rule.get(test_type, []):
                 for test_case_key, test_case_data in test_case.items():
@@ -203,41 +306,57 @@ def categorize_other_errors(rules_data: List[Dict]) -> Counter:
                         continue
 
                     results_sql = engine_regression.get("results_sql", [])
-                    error_messages.extend(_extract_other_errors_from_results(results_sql))
+                    messages = _extract_other_errors_from_results(results_sql)
+                    error_messages.extend(messages)
+                    for message in messages:
+                        error_rules[message].add(core_id)
 
-    return Counter(error_messages)
+    # Convert sets to counts
+    error_rule_counts = {msg: len(rules) for msg, rules in error_rules.items()}
+
+    return Counter(error_messages), error_rule_counts
 
 
-def _generate_operators_section(operator_failures: Dict[str, int]) -> List[str]:
+def _generate_operators_section(operator_failures: Dict[str, int], operator_rule_counts: Dict[str, int]) -> List[str]:
     """Helper: Generate missing operators section"""
     section = []
     if operator_failures:
         total_failures = sum(operator_failures.values())
-        section.append(f"## Missing Operators ({len(operator_failures)} operators, {total_failures} total failures)")
+        total_rules_affected = sum(operator_rule_counts.values())
+        section.append(
+            f"## Missing Operators ({len(operator_failures)} operators, {total_failures} total failures "
+            f"across {total_rules_affected} rule occurrences)"
+        )
         section.append("")
 
         sorted_operators = sorted(operator_failures.items(), key=lambda x: x[1], reverse=True)
         for i, (operator, count) in enumerate(sorted_operators, 1):
-            section.append(f"{i:2d}. **{operator}**: {count} failures")
+            rule_count = operator_rule_counts.get(operator, 0)
+            section.append(f"{i:2d}. **{operator}**: {count} failures across {rule_count} rules")
     else:
         section.append("## Missing Operators")
         section.append("No missing operator errors found!")
     return section
 
 
-def _generate_operations_section(operation_failures: Dict[str, int]) -> List[str]:
+def _generate_operations_section(
+    operation_failures: Dict[str, int], operation_rule_counts: Dict[str, int]
+) -> List[str]:
     """Helper: Generate missing operations section"""
     section = []
     if operation_failures:
         total_op_failures = sum(operation_failures.values())
+        total_rules_affected = sum(operation_rule_counts.values())
         section.append(
-            f"\n## Missing Operations ({len(operation_failures)} operations, {total_op_failures} total failures)"
+            f"\n## Missing Operations ({len(operation_failures)} operations, {total_op_failures} total failures "
+            f"across {total_rules_affected} rule occurrences)"
         )
         section.append("")
 
         sorted_operations = sorted(operation_failures.items(), key=lambda x: x[1], reverse=True)
         for i, (operation, count) in enumerate(sorted_operations, 1):
-            section.append(f"{i:2d}. **{operation}**: {count} failures")
+            rule_count = operation_rule_counts.get(operation, 0)
+            section.append(f"{i:2d}. **{operation}**: {count} failures across {rule_count} rules")
     else:
         section.append("\n## Missing Operations")
         section.append("No missing operation errors found!")
@@ -298,18 +417,50 @@ def _generate_discrepancies_section(discrepancies: Dict[str, List[Dict]]) -> Lis
     return section
 
 
-def _generate_other_errors_section(other_errors: Counter) -> List[str]:
+def _generate_other_errors_section(other_errors: Counter, other_error_rule_counts: Dict[str, int]) -> List[str]:
     """Helper: Generate other errors section"""
     section = []
     if other_errors:
+        total_failures = sum(other_errors.values())
+        total_rules_affected = sum(other_error_rule_counts.values())
         section.append(
-            f"## Other Execution Errors ({len(other_errors)} unique messages, {sum(other_errors.values())} total)"
+            f"## Other Execution Errors ({len(other_errors)} unique messages, {total_failures} total failures "
+            f"across {total_rules_affected} rule occurrences)"
         )
         section.append("")
 
-        for error_msg, count in other_errors.most_common(15):
-            short_msg = error_msg[:70] + "..." if len(error_msg) > 70 else error_msg
-            section.append(f"- [{count:3d}] {short_msg}")
+        for i, (error_msg, count) in enumerate(other_errors.most_common(15), 1):
+            rule_count = other_error_rule_counts.get(error_msg, 0)
+            short_msg = error_msg[:60] + "..." if len(error_msg) > 60 else error_msg
+            section.append(f"{i:2d}. **{short_msg}**: {count} failures across {rule_count} rules")
+    return section
+
+
+def _generate_rule_summary_section(rules_by_error_type: Dict[str, set], total_rules: int) -> List[str]:
+    """Helper: Generate rule summary section showing unique rules with errors"""
+    section = []
+    section.append(f"## Rule Error Summary (out of {total_rules} total rules)")
+    section.append("")
+
+    operator_rules = rules_by_error_type["operator_errors"]
+    operation_rules = rules_by_error_type["operation_errors"]
+    other_rules = rules_by_error_type["other_errors"]
+
+    # Calculate total unique rules with any error
+    all_error_rules = operator_rules | operation_rules | other_rules
+    clean_rules = total_rules - len(all_error_rules)
+
+    section.append(
+        f"- **Rules with any errors**: {len(all_error_rules)} ({len(all_error_rules) / total_rules * 100:.1f}%)"
+    )
+    section.append(f"- **Clean rules**: {clean_rules} ({clean_rules / total_rules * 100:.1f}%)")
+    section.append("")
+
+    section.append("**Error Breakdown by Category:**")
+    section.append(f"- Rules with **operator errors**: {len(operator_rules)}")
+    section.append(f"- Rules with **operation errors**: {len(operation_rules)}")
+    section.append(f"- Rules with **other errors**: {len(other_rules)}")
+
     return section
 
 
@@ -321,15 +472,20 @@ def generate_report(rules_data: List[Dict]) -> str:
     report.append("")
 
     # Generate all sections
-    operator_failures = extract_operator_failures(rules_data)
-    operation_failures = extract_missing_operations(rules_data)
+    operator_failures, operator_rule_counts = extract_operator_failures(rules_data)
+    operation_failures, operation_rule_counts = extract_missing_operations(rules_data)
+    rules_by_error_type = analyze_rules_by_error_type(rules_data)
     discrepancies = analyze_meaningful_discrepancies(rules_data)
-    other_errors = categorize_other_errors(rules_data)
+    other_errors, other_error_rule_counts = categorize_other_errors(rules_data)
 
-    report.extend(_generate_operators_section(operator_failures))
-    report.extend(_generate_operations_section(operation_failures))
+    # Add rule summary at the top
+    report.extend(_generate_rule_summary_section(rules_by_error_type, len(rules_data)))
+    report.append("")
+
+    report.extend(_generate_operators_section(operator_failures, operator_rule_counts))
+    report.extend(_generate_operations_section(operation_failures, operation_rule_counts))
+    report.extend(_generate_other_errors_section(other_errors, other_error_rule_counts))
     report.extend(_generate_discrepancies_section(discrepancies))
-    report.extend(_generate_other_errors_section(other_errors))
 
     return "\n".join(report)
 
