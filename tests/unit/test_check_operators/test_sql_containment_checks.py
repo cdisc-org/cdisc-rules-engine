@@ -5,49 +5,47 @@ from .helpers import create_sql_operators, assert_series_equals
 
 CONTAINS_TEST_DATA = [
     (
-        {"target": ["Ctt", "Btt", "A"], "VAR2": ["Ctt", "btt", "lll"]},
-        "VAR2",
-        False,
-        [True, False, False],
-    ),
-    (
-        {"target": ["A", "B", "C"]},
-        "B",
-        True,
-        [False, True, False],
-    ),
-    (
-        {"target": ["Ctt", "Btt", "A"], "VAR2": ["X", "Y", "Ctt"]},
-        "VAR2",
-        False,
-        [False, False, True],
-    ),
-    (
-        {"target": ["A", "B", "C"]},
-        ["C", "Z", "A"],
-        True,
-        [True, False, True],
-    ),
-    (
-        {"target": ["b", "c", "a"], "VAR2": ["a", "b", "c"]},
+        {"target": ["LBSEQ", "AESEQ", "A"], "VAR2": ["LB", "AE", "A"]},
         "VAR2",
         False,
         [True, True, True],
     ),
-    # TODO: Contains doesn't support operation variables yet
-    # (
-    #     {"target": ["B", "c", "a"]},
-    #     "$list",
-    #     False,
-    #     [True, False, False],
-    # ),
-    # Note: Doesn't seem like there is a way to test this using SQL
-    # (
-    #     {"target": [["A", "B", "C"], ["A", "B", "L"], ["L", "Q", "R"]]},
-    #     "L",
-    #     True,
-    #     [False, True, True],
-    # ),
+    (
+        {"target": ["TOXGR", "GRADE", "LBTEST"]},
+        "GR",
+        True,
+        [True, True, False],
+    ),
+    (
+        {"target": ["LBSEQ", "AESEQ", "DMSEQ"], "VAR2": ["XY", "ZZ", "AA"]},
+        "VAR2",
+        False,
+        [False, False, False],
+    ),
+    (
+        {"target": ["LBTEST", "AETERM", "DOMAIN"]},
+        ["LB", "AE", "XY"],
+        True,
+        [True, True, False],
+    ),
+    (
+        {"target": ["LBTEST", "AETEST", "DMTEST"], "VAR2": ["TEST", "TEST", "TEST"]},
+        "VAR2",
+        False,
+        [True, True, True],
+    ),
+    (
+        {"target": ["ABC", "XYZ", "A123"]},
+        "$constant",
+        False,
+        [True, False, True],
+    ),
+    (
+        {"target": ["B", "c", "a"]},
+        "$list",
+        False,
+        [True, False, False],
+    ),
 ]
 
 
