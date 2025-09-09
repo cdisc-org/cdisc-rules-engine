@@ -17,6 +17,7 @@ class SqlOperationParams:
 
     # Optional parameters with defaults
     grouping: List[str] = None
+    filter: dict = None
 
     # standard_substandard: str = None
     # attribute_name: str = None

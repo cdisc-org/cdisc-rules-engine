@@ -39,7 +39,7 @@ def setup_sql_operations(
         standard_version="",
         **extra_config,
     )
-    return SqlOperationsFactory().get_service(operation, params, data_service)
+    return SqlOperationsFactory.get_service(operation, params, data_service)
 
 
 def assert_operation_constant(operation: SqlBaseOperation, result: SqlOperationResult, expected: Any):

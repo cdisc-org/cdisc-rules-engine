@@ -1,17 +1,17 @@
-from typing import List, Tuple, Optional
+from typing import List, Optional, Tuple
 
 from cdisc_rules_engine.config import config as default_config
 
 # import os
 from cdisc_rules_engine.constants.classes import (
-    FINDINGS,
-    SPECIAL_PURPOSE,
-    INTERVENTIONS,
-    EVENTS,
-    RELATIONSHIP,
-    TRIAL_DESIGN,
-    FINDINGS_ABOUT,
     ASSOCIATED_PERSONS,
+    EVENTS,
+    FINDINGS,
+    FINDINGS_ABOUT,
+    INTERVENTIONS,
+    RELATIONSHIP,
+    SPECIAL_PURPOSE,
+    TRIAL_DESIGN,
 )
 
 # from cdisc_rules_engine.constants.domains import (
@@ -38,7 +38,9 @@ from cdisc_rules_engine.models.sql_operation_params import SqlOperationParams
 from cdisc_rules_engine.models.sql_operation_result import SqlOperationResult
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.services.cache.cache_service_factory import CacheServiceFactory
-from cdisc_rules_engine.sql_operations import sql_operations_factory
+from cdisc_rules_engine.sql_operations.sql_operations_factory import (
+    SqlOperationsFactory,
+)
 
 # from cdisc_rules_engine.utilities.data_processor import DataProcessor
 # from cdisc_rules_engine.utilities.utils import (
@@ -313,7 +315,7 @@ class SQLRuleProcessor:
                 standard_version=data_service.ig_specs.get("standard_version"),
             )
 
-            operation = sql_operations_factory.get_service(rule_name, params=params, data_service=data_service)
+            operation = SqlOperationsFactory.get_service(rule_name, params=params, data_service=data_service)
             query = operation.execute()
             output_variables[output_variable] = query
 

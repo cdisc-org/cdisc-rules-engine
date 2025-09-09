@@ -67,23 +67,26 @@ class SqlBaseOperation:
                 f"error in operation {self.__class__.__name__}: {str(e)}",
                 exc_info=True,
             )
-            # error_message = str(e)
-            # if isinstance(e, TypeError) and any(
-            #     phrase in error_message
-            #     for phrase in [
-            #         "NoneType",
-            #         "None",
-            #         "object is None",
-            #         "'NoneType'",
-            #         "None has no attribute",
-            #         "unsupported operand type",
-            #         "bad operand type",
-            #         "object is not",
-            #         "cannot be None",
-            #     ]
-            # ):
-            #     return None
             raise
+
+    def construct_where_clause(self) -> str:
+        """
+        Construct a WHERE clause from the provided filter conditions.
+        """
+        if not self.params.filter:
+            return ""
+
+        where_clauses = []
+        for column, value in self.params.filter.items():
+            column_sql = self.data_service.pgi.schema.get_column_hash(self.params.domain, column)
+            if isinstance(value, str):
+                where_clauses.append(f"{column_sql} = '{value.replace('\'', '\'\'')}'")
+            elif isinstance(value, (int, float)):
+                where_clauses.append(f"{column_sql} = {value}")
+            else:
+                raise ValueError(f"Unsupported filter value type: {type(value)} for column {column}")
+
+        return "WHERE " + " AND ".join(where_clauses) if where_clauses else ""
 
     @staticmethod
     def _replace_variable_wildcards(variables_metadata, domain):
