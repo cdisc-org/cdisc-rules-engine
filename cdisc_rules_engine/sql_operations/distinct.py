@@ -1,25 +1,26 @@
-import pandas as pd
-
 from cdisc_rules_engine.models.sql_operation_result import SqlOperationResult
 from cdisc_rules_engine.sql_operations.sql_base_operation import SqlBaseOperation
 
 
 class SqlDistinct(SqlBaseOperation):
     def _execute_operation(self):
+        dataset_id = self.data_service.pgi.schema.get_table_hash(self.params.domain)
+        column_id = self.data_service.pgi.schema.get_column_hash(self.params.domain, self.params.target)
         if not self.params.grouping:
-            dataset_id = self.data_service.pgi.schema.get_table_hash(self.params.domain)
-            column_id = self.data_service.pgi.schema.get_column_hash(self.params.domain, self.params.target)
 
-            query = f"SELECT DISTINCT {column_id} FROM {dataset_id}"
+            query = f"SELECT DISTINCT {column_id} AS value FROM {dataset_id}"
             return SqlOperationResult(query=query, type="collection")
         else:
-            """grouped = self.params.dataframe.groupby(self.params.grouping, as_index=False, group_keys=False).data
-            if isinstance(self.params.dataframe.data, pd.DataFrame):
-                result = grouped[self.params.target].agg(self._unique_values_for_column)
-            else:
-                result = grouped[self.params.target].unique().rename({self.params.target: self.params.operation_id})
-                result = result.apply(set).to_frame().reset_index()"""
-            raise NotImplementedError("Grouping functionality is not implemented yet.")
+            grouping_columns = [
+                self.data_service.pgi.schema.get_column(self.params.domain, group) for group in self.params.grouping
+            ]
 
-    def _unique_values_for_column(self, column):
-        return pd.Series({self.params.operation_id: set(column.unique())})
+            groups_select = ", ".join([f"{col.hash} AS {col.name}" for col in grouping_columns])
+            groups_group_by = ", ".join([col.hash for col in grouping_columns])
+
+            query = f"""SELECT
+                            {groups_select}, {column_id} AS value
+                        FROM {dataset_id}
+                        GROUP BY {groups_group_by}, {column_id}
+                        ORDER BY {groups_group_by}, {column_id}"""
+            return SqlOperationResult(query=query, type="table")

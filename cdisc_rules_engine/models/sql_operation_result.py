@@ -9,4 +9,4 @@ class SqlOperationResult:
     """
 
     query: str
-    type: Literal["collection", "constant"]
+    type: Literal["collection", "constant", "table"]

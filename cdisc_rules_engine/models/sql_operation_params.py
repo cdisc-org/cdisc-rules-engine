@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import List
 
 
 @dataclass
@@ -10,12 +11,13 @@ class SqlOperationParams:
 
     # Required parameters (no defaults) first
     domain: str
+    target: str
     standard: str
     standard_version: str
-    target: str
-    grouping: bool = False  # Add later?
 
     # Optional parameters with defaults
+    grouping: List[str] = None
+
     # standard_substandard: str = None
     # attribute_name: str = None
     # case_sensitive: bool = True

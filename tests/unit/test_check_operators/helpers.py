@@ -15,10 +15,12 @@ def create_sql_operators(
     column_data: dict, extra_operation_variables: dict = {}, extra_config: dict = {}
 ) -> PostgresQLOperators:
     """Create PostgresQLOperators instance with test data.
+    It will preload some operation variables which can be used in tests.
 
     Args:
         column_data: Dictionary containing column names and their data
-        operation_variables: Optional dictionary of operation variables
+        extra_operation_variables: Optional additional custom dictionary of operation variables
+        extra_config: Optional additional configuration for the operators
 
     Returns:
         PostgresQLOperators instance configured for testing

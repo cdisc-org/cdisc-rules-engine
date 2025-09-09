@@ -35,7 +35,7 @@ class SQLSerialiser:
 
         for column in schema._columns.values():
             if column.hash.upper() in SQL_RESERVED_KEYWORDS:
-                raise ValueError(f"Column name '{schema.hash}' is a reserved SQL keyword.")
+                raise ValueError(f"Column name '{column.hash}' is a reserved SQL keyword.")
             if column.hash.lower() == "id":
                 raise ValueError("Column name 'id' is reserved for primary key in SQL tables.")
 
