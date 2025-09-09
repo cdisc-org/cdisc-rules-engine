@@ -6,10 +6,11 @@ class SqlDistinct(SqlBaseOperation):
     def _execute_operation(self):
         dataset_id = self.data_service.pgi.schema.get_table_hash(self.params.domain)
         column_id = self.data_service.pgi.schema.get_column_hash(self.params.domain, self.params.target)
+        column_type = self.data_service.pgi.schema.get_column(self.params.domain, self.params.target).type
         if not self.params.grouping:
 
             query = f"SELECT DISTINCT {column_id} AS value FROM {dataset_id}"
-            return SqlOperationResult(query=query, type="collection")
+            return SqlOperationResult(query=query, type="collection", subtype=column_type)
         else:
             grouping_columns = [
                 self.data_service.pgi.schema.get_column(self.params.domain, group) for group in self.params.grouping
@@ -23,4 +24,4 @@ class SqlDistinct(SqlBaseOperation):
                         FROM {dataset_id}
                         GROUP BY {groups_group_by}, {column_id}
                         ORDER BY {groups_group_by}, {column_id}"""
-            return SqlOperationResult(query=query, type="table")
+            return SqlOperationResult(query=query, type="table", subtype=column_type)

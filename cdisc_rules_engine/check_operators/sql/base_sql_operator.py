@@ -193,7 +193,7 @@ class BaseSqlOperator:
         elif isinstance(value, (int, float)):
             return str(value)
         elif value is None:
-            return ""
+            return "NULL"
         else:
             raise ValueError(f"Unsupported constant type: {type(value)}")
 
@@ -219,12 +219,12 @@ class BaseSqlOperator:
         else:
             raise ValueError(f"Unsupported collection type: {type(value)}")
 
-    def _sql(self, value: Any, lowercase: bool = False) -> str:
+    def _sql(self, value: Any, lowercase: bool = False, value_is_literal: bool = False) -> str:
         """
         Tries to generate a general SQL query. Will resolve a column is possible
         or an operation variable if possible otherwise assumes it's a constant
         """
-        if isinstance(value, str):
+        if isinstance(value, str) and not value_is_literal:
             if value in self.operation_variables:
                 variable = self.operation_variables[value]
                 if variable.type == "constant":
@@ -284,7 +284,25 @@ class BaseSqlOperator:
     def _series_is_in(self, target, comparison_data):
         return np.where(comparison_data.isin(target), True, False)
 
-    def _is_empty_sql(self, col: str) -> str:
+    def _is_empty_sql(self, target: str) -> str:
+        """
+        Generates a SQL query to check target is empty, checks if it is an
+        operation variable or column, otherwise assumes it's a constant.
+        """
+        if isinstance(target, str):
+            if self.sql_data_service.pgi.schema.get_column(self.table_id, target) is not None:
+                return self._is_empty_sql_column(target)
+            elif target in self.operation_variables:
+                return self._is_empty_sql_operation_variable(target)
+
+        if isinstance(target, str) and target == "":
+            return "TRUE"
+        elif target is None:
+            return "TRUE"
+        else:
+            return "FALSE"
+
+    def _is_empty_sql_column(self, col: str) -> str:
         """
         Generates a SQL query to check if a column is empty.
         """
@@ -301,3 +319,23 @@ class BaseSqlOperator:
                 return f"({column.hash} IS NULL)"
             case _:
                 raise ValueError(f"Unsupported column type: {column.type} for column {col}.")
+
+    def _is_empty_sql_operation_variable(self, target: str) -> str:
+        """
+        Generates a SQL query to check if an operation variable is empty.
+        """
+        variable = self.operation_variables[target]
+        if not variable:
+            raise ValueError(f"Variable {target} does not exist.")
+        if variable.type != "constant":
+            raise ValueError(f"Variable {target} is not a constant.")
+
+        match variable.subtype:
+            case "Char":
+                return f"(({variable.query}) IS NULL OR ({variable.query}) = '')"
+            case "Bool":
+                return f"(({variable.query}) IS NULL)"
+            case "Num":
+                return f"(({variable.query}) IS NULL)"
+            case _:
+                raise ValueError(f"Unsupported variable type: {variable.subtype} for variable {target}.")

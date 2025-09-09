@@ -1,10 +1,10 @@
 # CDISC Rules Engine Regression Analysis
 =============================================
 
-## Missing Operators (14 operators, 195 total failures)
+## Missing Operators (14 operators, 199 total failures)
 
  1. **longer_than**: 66 failures
- 2. **is_unique_set**: 43 failures
+ 2. **is_unique_set**: 47 failures
  3. **not_matches_regex**: 30 failures
  4. **matches_regex**: 21 failures
  5. **longer_than_or_equal_to**: 9 failures
@@ -34,38 +34,38 @@
 
 ## SQL vs Old Engine Discrepancies
 
-### SQL Errors where Old Engine Skipped (206 cases)
+### SQL Errors where Old Engine Skipped (189 cases)
 *Indicates SQL engine running rules it shouldn't*
-- [58] A postgres SQL error occurred
+- [61] A postgres SQL error occurred
 - [22] is_unique_set check_operator not implemented
 - [18] longer_than check_operator not implemented
 - [13] not_matches_regex check_operator not implemented
+- [7] Rule contains invalid operator
 - [6] matches_regex check_operator not implemented
 - [5] Operation max_date is not implemented
-- [5] Rule contains invalid operator
-- [4] Column AGETXT does not exist in the table dm.
+- [4] Variable $ds_dsdecod is not a constant.
 - [4] Operation variable_exists is not implemented
 - [4] invalid_duration check_operator not implemented
 
-### SQL Success where Old Engine Skipped (211 cases)
+### SQL Success where Old Engine Skipped (228 cases)
 *Indicates SQL engine not respecting rule applicability*
 **Skip Types:**
-- Class Not Applicable: 157
-- Domain Not Applicable: 54
+- Class Not Applicable: 171
+- Domain Not Applicable: 57
 
 **Examples:**
+- [4] Rule skipped - doesn't apply to class for rule id=CORE-00012...
+- [4] Rule skipped - doesn't apply to class for rule id=CORE-00033...
 - [4] Rule skipped - doesn't apply to class for rule id=CORE-00033...
 - [4] Rule skipped - doesn't apply to class for rule id=CORE-00046...
 - [4] Rule skipped - doesn't apply to class for rule id=CORE-00056...
-- [3] Rule skipped - doesn't apply to class for rule id=CORE-00017...
-- [3] Rule skipped - doesn't apply to class for rule id=CORE-00025...
 
-### SQL Errors where Old Engine Succeeded (129 cases)
+### SQL Errors where Old Engine Succeeded (117 cases)
 *Indicates actual regressions in SQL implementation*
 - [19] Operation variable_exists is not implemented
 - [17] is_unique_set check_operator not implemented
 - [17] not_matches_regex check_operator not implemented
-- [14] A postgres SQL error occurred
+- [16] A postgres SQL error occurred
 - [13] longer_than check_operator not implemented
 - [9] Operation dataset_names is not implemented
 - [8] Operation variable_count is not implemented
@@ -73,21 +73,30 @@
 - [4] is_inconsistent_across_dataset check_operator not implemente...
 - [3] matches_regex check_operator not implemented
 
-## Other Execution Errors (57 unique messages, 215 total)
+## Other Execution Errors (15 unique messages, 153 total)
 
-- [ 99] A postgres SQL error occurred
-- [ 21] Rule contains invalid operator
-- [  4] Column AGETXT does not exist in the table dm.
+- [106] A postgres SQL error occurred
+- [ 26] Rule contains invalid operator
 - [  4] invalid input syntax for type double precision: "TV.VISITDY"
-LINE 1: ....
-- [  3] Column $trt_count does not exist in the table ts.
-- [  3] Column $stype_interventional does not exist in the table ts.
-- [  2] Column ecstat does not exist in the table ec.
-- [  2] Column ECSTAT does not exist in the table ec.
-- [  2] Column vsdrvfl does not exist in the table vs.
-- [  2] Column AGDOSTOT does not exist in the table ag.
-- [  2] Column ECDOSTOT does not exist in the table ec.
-- [  2] Column EXDOSTOT does not exist in the table ex.
-- [  2] Column MLDOSTOT does not exist in the table ml.
-- [  2] Column PRDOSTOT does not exist in the table pr.
-- [  2] Column IDVAR does not exist in the table co.
+LINE 6:  ...
+- [  4] Variable $ds_dsdecod is not a constant.
+- [  2] invalid input syntax for type numeric: "redacted"
+
+- [  2] invalid input syntax for type timestamp: "2019-03"
+
+- [  1] invalid input syntax for type double precision: "TV.VISITDY"
+LINE 6: ....
+- [  1] Column visitnum or visitnum not found in the respective schemas.
+- [  1] invalid input syntax for type timestamp: "2012-08"
+
+- [  1] invalid input syntax for type timestamp: "2006-03"
+
+- [  1] invalid input syntax for type timestamp: "2018-05"
+
+- [  1] invalid input syntax for type timestamp: "2018-04"
+
+- [  1] invalid input syntax for type timestamp: "2018-04-17T09"
+
+- [  1] invalid input syntax for type timestamp: "	2018-07"
+
+- [  1] invalid input syntax for type timestamp: "2019"

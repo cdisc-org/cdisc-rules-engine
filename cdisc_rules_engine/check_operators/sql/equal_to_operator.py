@@ -10,13 +10,14 @@ class EqualToOperator(BaseSqlOperator):
         self.case_insensitive = case_insensitive
 
     def execute_operator(self, other_value):
-        target = self.replace_prefix(other_value.get("target")).lower()
+        target = self.replace_prefix(other_value.get("target"))
         value_is_literal = other_value.get("value_is_literal", False)
         value_is_reference = other_value.get("value_is_reference", False)
         type_insensitive = other_value.get("type_insensitive", False)
         comparator = other_value.get("comparator")
         if not value_is_literal:
             comparator = self.replace_prefix(comparator)
+
         if value_is_reference:
             return self._check_equality_reference(
                 target,
@@ -26,74 +27,21 @@ class EqualToOperator(BaseSqlOperator):
                 type_insensitive=type_insensitive,
             )
 
-        if value_is_literal or not isinstance(comparator, str) or not self._exists(comparator):
-            return self._check_equality_literal(
-                target,
-                comparator,
-                invert=self.invert,
-                case_insensitive=self.case_insensitive,
-                type_insensitive=type_insensitive,
-            )
-        else:
-            return self._check_equality_comparison(
-                target,
-                comparator,
-                invert=self.invert,
-                case_insensitive=self.case_insensitive,
-                type_insensitive=type_insensitive,
-            )
+        return self._check_equality(
+            target,
+            comparator,
+            invert=self.invert,
+            case_insensitive=self.case_insensitive,
+            type_insensitive=type_insensitive,
+            value_is_literal=value_is_literal,
+        )
 
-    def _check_equality_literal(
-        self,
-        original_target,
-        value,
-        invert: bool = False,
-        case_insensitive: bool = False,
-        type_insensitive: bool = False,
-    ):
-        """
-        Equality checks work slightly differently for clinical datasets.
-        See truth table below:
-        Operator       --A         --B         Outcome
-        equal_to       "" or null  "" or null  False
-        equal_to       "" or null  Populated   False
-        equal_to       Populated   "" or null  False
-        equal_to       Populated   Populated   A == B
-        not_equal_to   "" or null  "" or null  False
-        not_equal_to   "" or null  Populated   True
-        not_equal_to   Populated   "" or null  True
-        not_equal_to   Populated   Populated   A != B
-        """
-        target = self._column_sql(original_target)
-        value = self._constant_sql(value)
-        if case_insensitive:
-            target = f"""LOWER({target})"""
-            value = f"""LOWER({value})"""
-
-        if type_insensitive:
-            target = f"""CAST({target} AS TEXT)"""
-            value = f"""CAST({value} AS TEXT)"""
-
-        def sql():
-            if value == "":
-                if invert:
-                    query = f"NOT ({self._is_empty_sql(original_target)})"
-                else:
-                    query = "FALSE"
-            else:
-                query = f"NOT ({self._is_empty_sql(original_target)}) AND {target} = {value}" ""
-                if invert:
-                    query = f"NOT ({query})"
-
-            return query
-
-        return self._do_check_operator(f"{original_target}={value}_{invert}_{case_insensitive}_{type_insensitive}", sql)
-
-    def _check_equality_comparison(
+    def _check_equality(
         self,
         original_target,
         original_comparator,
         invert: bool = False,
+        value_is_literal: bool = False,
         case_insensitive: bool = False,
         type_insensitive: bool = False,
     ):
@@ -101,8 +49,8 @@ class EqualToOperator(BaseSqlOperator):
         Equality checks work slightly differently for clinical datasets.
         See truth table in _check_equality_literal for details.
         """
-        target = self._column_sql(original_target, lowercase=case_insensitive)
-        comparator = self._column_sql(original_comparator, lowercase=case_insensitive)
+        target = self._sql(original_target, lowercase=case_insensitive)
+        comparator = self._sql(original_comparator, lowercase=case_insensitive, value_is_literal=value_is_literal)
 
         if type_insensitive:
             target = f"""CAST({target} AS TEXT)"""
@@ -111,17 +59,17 @@ class EqualToOperator(BaseSqlOperator):
         def sql():
             if invert:
                 return f"""CASE
-                        WHEN {target} IS NULL OR {target} = ''
-                            THEN {comparator} IS NOT NULL AND {comparator} != ''
-                        WHEN {comparator} IS NULL OR {comparator} = ''
+                        WHEN {self._is_empty_sql(original_target)}
+                            THEN NOT ({self._is_empty_sql(original_comparator)})
+                        WHEN {self._is_empty_sql(original_comparator)}
                             THEN TRUE
                         ELSE {target} != {comparator}
                     END"""
             else:
                 return f"""CASE
-                        WHEN {target} IS NULL OR {target} = ''
+                        WHEN {self._is_empty_sql(original_target)}
                             THEN FALSE
-                        WHEN {comparator} IS NULL OR {comparator} = ''
+                        WHEN {self._is_empty_sql(original_comparator)}
                             THEN FALSE
                         ELSE {target} = {comparator}
                     END"""

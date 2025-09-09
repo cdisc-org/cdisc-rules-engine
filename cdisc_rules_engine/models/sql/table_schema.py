@@ -16,13 +16,15 @@ class SqlTableSchema:
         self._columns[data.name.lower()] = data
 
     def get_column(self, column: str) -> Union[SqlColumnSchema, None]:
+        if column is None:
+            return None
         return self._columns.get(column.lower())
 
     def has_column(self, column: str) -> bool:
         return self.get_column(column) is not None
 
     def get_column_hash(self, column: str) -> Union[str, None]:
-        col = self._columns.get(column.lower())
+        col = self.get_column(column)
         if col:
             return col.hash
         return None

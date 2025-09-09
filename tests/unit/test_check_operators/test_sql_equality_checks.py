@@ -1,6 +1,5 @@
 import pytest
 
-
 from .helpers import assert_series_equals, create_sql_operators
 
 
@@ -247,4 +246,40 @@ def test_equal_to_case_insensitive(data, comparator, expected_result):
 def test_not_equal_to_case_insensitive(data, comparator, expected_result):
     sql_ops = create_sql_operators(data)
     result = sql_ops.not_equal_to_case_insensitive({"target": "target", "comparator": comparator})
+    assert_series_equals(result, expected_result)
+
+
+@pytest.mark.parametrize(
+    "data,target,comparator,expected_result",
+    [
+        (
+            {"target": ["1", "1", "1"]},
+            "$constant",
+            "A",
+            [True, True, True],
+        ),
+        (
+            {"target": ["1", "1", "1"]},
+            "$constant",
+            "B",
+            [False, False, False],
+        ),
+        (
+            {"target": ["1", "1", "1"]},
+            "$number",
+            1,
+            [True, True, True],
+        ),
+        (
+            {"target": ["1", "1", "1"]},
+            "$number",
+            2,
+            [False, False, False],
+        ),
+    ],
+)
+def test_operation_variable_as_target(data, target, comparator, expected_result):
+    # Data is irrelevant here, just determines number of output rows
+    sql_ops = create_sql_operators(data)
+    result = sql_ops.equal_to({"target": target, "comparator": comparator})
     assert_series_equals(result, expected_result)

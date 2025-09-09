@@ -25,7 +25,7 @@ class SqlNumericOperation(SqlBaseOperation):
 
         if not self.params.grouping:
             query = f"SELECT {self.function}({column_id}) AS value FROM {dataset_id} {where_clause}"
-            return SqlOperationResult(query=query, type="constant")
+            return SqlOperationResult(query=query, type="constant", subtype="Num")
         else:
             grouping_columns = [
                 self.data_service.pgi.schema.get_column(self.params.domain, group) for group in self.params.grouping
@@ -40,4 +40,4 @@ class SqlNumericOperation(SqlBaseOperation):
                         {where_clause}
                         GROUP BY {groups_group_by}
                         ORDER BY {groups_group_by}"""
-            return SqlOperationResult(query=query, type="table")
+            return SqlOperationResult(query=query, type="table", subtype="Num")
