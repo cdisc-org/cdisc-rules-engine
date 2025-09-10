@@ -15,16 +15,24 @@ class CodelistTerms(BaseOperation):
             and self.params.ct_version
             and self.params.codelist_code
             and self.params.ct_version in self.evaluation_dataset
-            and (self.params.term_code or self.params.term_value)
+            and (
+                self.params.term_code
+                or self.params.term_value
+                or self.params.term_pref_term
+            )
         ):
             return self._handle_multiple_versions()
         elif self.params.codelists:
             return self._handle_single_version()
 
     def _handle_multiple_versions(self) -> pd.Series:
-        if self.params.term_code and self.params.term_value:
+        if (
+            self.params.term_code
+            and self.params.term_value
+            and self.params.term_pref_term
+        ):
             raise RuleExecutionError(
-                "Both term_code and term_value cannot be specified at the same time."
+                "term_code, term_pref_term and term_value cannot be specified at the same time."
             )
         elif self.params.term_code:
             left_on = self.params.term_code
@@ -33,6 +41,10 @@ class CodelistTerms(BaseOperation):
         elif self.params.term_value:
             left_on = self.params.term_value
             right_on = "term_value"
+            target = "term_code"
+        elif self.params.term_pref_term:
+            left_on = self.params.term_pref_term
+            right_on = "term_pref_term"
             target = "term_code"
 
         ct_versions = self.evaluation_dataset[self.params.ct_version]
