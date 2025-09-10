@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from .helpers import create_sql_operators, assert_series_equals
+from .helpers import assert_series_equals, create_sql_operators
 
 
 @pytest.mark.parametrize(
@@ -17,6 +17,12 @@ from .helpers import create_sql_operators, assert_series_equals
             {"target": ["2023-01-15", "2023-02-20", "2023-03-10"], "VAR2": ["2023-01-20", "2023-02-15", "2023-03-05"]},
             "2023-02-20",
             True,
+            [False, True, False],
+        ),
+        (
+            {"target": ["2023-01-15", "2025-09-09", "2023-03-10"]},
+            "$date",
+            False,
             [False, True, False],
         ),
     ],
