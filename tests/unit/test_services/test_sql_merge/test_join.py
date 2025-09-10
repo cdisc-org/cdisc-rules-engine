@@ -189,3 +189,15 @@ def test_run_twice(data):
     )
 
     assert schema == schema2
+
+
+@pytest.mark.parametrize(
+    "data",
+    [SIMPLE_DATA],
+)
+def test_join_table_itself(data):
+    ds = PostgresQLDataService.test_instance()
+    PostgresQLDataService.add_test_dataset(ds.pgi, "l", data["left"])
+
+    with pytest.raises(Exception):
+        SqlJoinMerge.perform_join(ds.pgi, ds.pgi.schema.get_table("l"), ds.pgi.schema.get_table("l"), ["key"], ["key"])

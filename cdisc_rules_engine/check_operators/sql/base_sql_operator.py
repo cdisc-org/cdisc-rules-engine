@@ -162,6 +162,13 @@ class BaseSqlOperator:
         self, column: str, lowercase: bool = False, prefix: Optional[int] = None, suffix: Optional[int] = None
     ) -> str:
         query = self.sql_data_service.pgi.schema.get_column_hash(self.table_id, column)
+
+        # TODO: Throwing this temporarily, so we can determine which errors
+        # are actually postgres errors and which are just rules which run on
+        # optional variables without checking
+        if query is None:
+            raise KeyError(column)
+
         if lowercase:
             query = f"LOWER({query})"
         if prefix is not None:

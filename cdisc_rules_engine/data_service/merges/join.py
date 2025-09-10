@@ -19,6 +19,9 @@ class SqlJoinMerge:
         if len(pivot_left) != len(pivot_right):
             raise ValueError("Pivot columns must have the same length.")
 
+        if left.name == right.name:
+            raise ValueError("Cannot join a table to itself (currently). Use a different name for the right table.")
+
         # Ensure everything is lowercase for consistency
         pivot_left = [col.lower() for col in pivot_left]
         pivot_right = [col.lower() for col in pivot_right]
