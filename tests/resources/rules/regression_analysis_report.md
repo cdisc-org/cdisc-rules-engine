@@ -7,16 +7,16 @@
 - **Clean rules**: 644 (84.5%)
 
 **Error Breakdown by Category:**
-- Rules with **operator errors**: 54
-- Rules with **operation errors**: 19
+- Rules with **operator errors**: 56
+- Rules with **operation errors**: 17
 - Rules with **other errors**: 45
 
-## Missing Operators (14 operators, 203 total failures across 54 rule occurrences)
+## Missing Operators (14 operators, 223 total failures across 56 rule occurrences)
 
  1. **longer_than**: 66 failures across 12 rules
- 2. **is_unique_set**: 43 failures across 11 rules
- 3. **not_matches_regex**: 32 failures across 13 rules
- 4. **matches_regex**: 23 failures across 6 rules
+ 2. **matches_regex**: 43 failures across 8 rules
+ 3. **is_unique_set**: 43 failures across 11 rules
+ 4. **not_matches_regex**: 32 failures across 13 rules
  5. **longer_than_or_equal_to**: 9 failures across 1 rules
  6. **is_inconsistent_across_dataset**: 8 failures across 2 rules
  7. **invalid_duration**: 4 failures across 1 rules
@@ -28,20 +28,19 @@
 13. **empty_within_except_last_row**: 2 failures across 1 rules
 14. **prefix_equal_to**: 2 failures across 1 rules
 
-## Missing Operations (12 operations, 97 total failures across 19 rule occurrences)
+## Missing Operations (11 operations, 77 total failures across 17 rule occurrences)
 
  1. **variable_count**: 20 failures across 2 rules
- 2. **dataset_names**: 20 failures across 2 rules
- 3. **dy**: 16 failures across 3 rules
- 4. **domain_label**: 8 failures across 2 rules
- 5. **get_column_order_from_dataset**: 6 failures across 1 rules
- 6. **max_date**: 5 failures across 2 rules
- 7. **get_model_column_order**: 5 failures across 1 rules
- 8. **domain_is_custom**: 4 failures across 1 rules
- 9. **extract_metadata**: 4 failures across 1 rules
-10. **get_parent_model_column_order**: 4 failures across 1 rules
-11. **min_date**: 3 failures across 2 rules
-12. **valid_codelist_dates**: 2 failures across 1 rules
+ 2. **dy**: 16 failures across 3 rules
+ 3. **domain_label**: 8 failures across 2 rules
+ 4. **get_column_order_from_dataset**: 6 failures across 1 rules
+ 5. **max_date**: 5 failures across 2 rules
+ 6. **get_model_column_order**: 5 failures across 1 rules
+ 7. **domain_is_custom**: 4 failures across 1 rules
+ 8. **extract_metadata**: 4 failures across 1 rules
+ 9. **get_parent_model_column_order**: 4 failures across 1 rules
+10. **min_date**: 3 failures across 2 rules
+11. **valid_codelist_dates**: 2 failures across 1 rules
 ## Other Execution Errors (17 unique messages, 163 total failures across 50 rule occurrences)
 
  1. **A postgres SQL error occurred**: 114 failures across 32 rules
@@ -76,7 +75,7 @@
 - [22] is_unique_set check_operator not implemented
 - [18] longer_than check_operator not implemented
 - [15] not_matches_regex check_operator not implemented
-- [8] matches_regex check_operator not implemented
+- [9] matches_regex check_operator not implemented
 - [5] Operation max_date is not implemented
 - [4] Variable $ds_dsdecod is not a constant.
 - [4] invalid_duration check_operator not implemented
@@ -102,9 +101,9 @@
 - [16] A postgres SQL error occurred
 - [13] longer_than check_operator not implemented
 - [13] is_unique_set check_operator not implemented
-- [9] Operation dataset_names is not implemented
+- [12] matches_regex check_operator not implemented
 - [8] is_inconsistent_across_dataset check_operator not implemente...
 - [8] Operation variable_count is not implemented
 - [6] Operation dy is not implemented
-- [3] matches_regex check_operator not implemented
 - [3] longer_than_or_equal_to check_operator not implemented
+- [2] prefix_equal_to check_operator not implemented

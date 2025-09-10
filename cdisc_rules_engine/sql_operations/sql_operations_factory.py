@@ -2,6 +2,7 @@ from cdisc_rules_engine.data_service.postgresql_data_service import (
     PostgresQLDataService,
 )
 from cdisc_rules_engine.models.sql_operation_params import SqlOperationParams
+from cdisc_rules_engine.sql_operations.dataset_names import SqlDatasetNames
 from cdisc_rules_engine.sql_operations.distinct import SqlDistinct
 from cdisc_rules_engine.sql_operations.numeric_operation import (
     SqlNumericOperation,
@@ -14,7 +15,7 @@ class SqlOperationsFactory:
     _operations_map = {
         "codelist_extensible": None,
         "codelist_terms": None,
-        "dataset_names": None,
+        "dataset_names": SqlDatasetNames,
         "define_extensible_codelists": None,
         "distinct": SqlDistinct,
         "dy": None,

@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Tuple, Union
 
 from cdisc_rules_engine.models.sql.column_schema import SqlColumnSchema
 from cdisc_rules_engine.models.sql.table_schema import SqlTableSchema
@@ -18,6 +18,9 @@ class SqlDbSchema:
 
     def get_table(self, table: str) -> Union[SqlTableSchema, None]:
         return self._tables.get(table.lower())
+
+    def get_tables(self) -> list[Tuple[str, SqlTableSchema]]:
+        return list(self._tables.items())
 
     def get_table_hash(self, table: str) -> Union[str, None]:
         table_schema = self.get_table(table)
