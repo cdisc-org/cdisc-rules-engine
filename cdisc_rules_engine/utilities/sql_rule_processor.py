@@ -25,7 +25,6 @@ from cdisc_rules_engine.data_service.postgresql_data_service import (
     SQLDatasetMetadata,
 )
 
-# from cdisc_rules_engine.constants.use_cases import USE_CASE_DOMAINS
 from cdisc_rules_engine.interfaces import ConditionInterface
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
@@ -236,39 +235,6 @@ class SQLRuleProcessor:
             return ASSOCIATED_PERSONS
         return None
 
-    # def rule_applies_to_use_case(
-    #     self,
-    #     dataset_metadata: SDTMDatasetMetadata,
-    #     rule: dict,
-    #     standard: str,
-    #     standard_substandard: str,
-    # ) -> bool:
-    #     if standard.lower() != "tig":
-    #         return True
-    #     use_cases = rule.get("use_case") or []
-    #     if not use_cases:
-    #         return True
-    #     use_cases = [uc.strip() for uc in use_cases.split(",")]
-    #     substandard = standard_substandard.upper()
-    #     if substandard not in USE_CASE_DOMAINS:
-    #         return False
-
-    #     domain_to_check = dataset_metadata.domain
-    #     if dataset_metadata.is_supp and dataset_metadata.rdomain:
-    #         domain_to_check = dataset_metadata.rdomain
-
-    #     # Handle ADaM datasets with AD prefix
-    #     if substandard == "ADAM" and domain_to_check.startswith("AD"):
-    #         return "ANALYSIS" in use_cases
-
-    #     allowed_domains = set()
-    #     for use_case in use_cases:
-    #         if use_case in USE_CASE_DOMAINS[substandard]:
-    #             allowed_domains.update(USE_CASE_DOMAINS[substandard][use_case])
-    #     if domain_to_check in allowed_domains:
-    #         return True
-    #     return False
-
     # @staticmethod
     # def _ct_package_type_api_name(ct_package_type: str | None) -> str:
     #     if ct_package_type is None:
@@ -428,11 +394,6 @@ class SQLRuleProcessor:
             reason = f"Rule skipped - doesn't apply to domain for rule id={rule_id}, dataset={dataset_name}"
             logger.info(f"is_suitable_for_validation. {reason}, result=False")
             return False, reason
-        # if not self.rule_applies_to_use_case(dataset_metadata, rule, standard, standard_substandard):
-        #     reason = f"Rule skipped - doesn't apply to use case for " f"rule id={rule_id}, dataset={dataset_name}"
-        #     logger.info(f"is_suitable_for_validation. {reason}, result=False")
-        #     return False, reason
-        # TODO: uncomment and reimplement above other checks (i.e. use-case)
 
         logger.info(f"is_suitable_for_validation. rule id={rule_id}, dataset={dataset_name}, result=True")
         return True, ""
