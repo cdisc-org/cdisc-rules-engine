@@ -24,6 +24,15 @@ from cdisc_rules_engine.models.sql_operation_result import SqlOperationResult
 from cdisc_rules_engine.services import logger
 
 
+class SqlOperationError(Exception):
+    """Simple exception to identify which SQL operation caused the error."""
+
+    def __init__(self, original_exception, operation_name):
+        self.original_exception = original_exception
+        self.operation_name = operation_name
+        super().__init__(f"{operation_name}: {str(original_exception)}")
+
+
 class SqlBaseOperation:
     def __init__(self, params: SqlOperationParams, data_service: PostgresQLDataService):
         self.params = params
@@ -62,12 +71,13 @@ class SqlBaseOperation:
             logger.debug(f"error in operation {self.__class__.__name__}: {str(e)}")
             raise
         except Exception as e:
-            # Log unexpected errors
+            # Log unexpected errors and wrap with operation context
             logger.error(
                 f"error in operation {self.__class__.__name__}: {str(e)}",
                 exc_info=True,
             )
-            raise
+
+            raise SqlOperationError(original_exception=e, operation_name=self.__class__.__name__.lower()) from e
 
     def construct_where_clause(self) -> str:
         """

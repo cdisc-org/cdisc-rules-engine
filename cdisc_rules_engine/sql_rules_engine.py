@@ -5,7 +5,10 @@ from typing import List, Union
 
 from business_rules import export_rule_data
 from business_rules.engine import run
+from psycopg2.errors import ProgrammingError
 
+from cdisc_rules_engine.check_operators.sql.base_sql_operator import SqlOperatorError
+from cdisc_rules_engine.sql_operations.sql_base_operation import SqlOperationError
 from cdisc_rules_engine.data_service.postgresql_data_service import (
     PostgresQLDataService,
     SQLDatasetMetadata,
@@ -37,6 +40,17 @@ from cdisc_rules_engine.utilities.sql_rule_processor import SQLRuleProcessor
 from cdisc_rules_engine.utilities.utils import (
     serialize_rule,
 )
+
+
+def clean_postgres_message(message: str) -> str:
+    """Clean non-deterministic details from PostgreSQL error messages."""
+    if "does not exist" in message:
+        return "column or relation does not exist"
+    elif "syntax error" in message:
+        return "SQL syntax error"
+    elif "invalid input syntax" in message:
+        return "invalid input syntax"
+    return message
 
 
 class SQLRulesEngine:
@@ -322,6 +336,27 @@ class SQLRulesEngine:
                 message=message,
                 status=ExecutionStatus.SKIPPED.value,
             )
+        elif isinstance(exception, SqlOperatorError):
+            error_obj = FailedValidationEntity(
+                dataset=os.path.basename(dataset_path),
+                error=f"SQL error in {exception.operator_name} operator",
+                message=clean_postgres_message(str(exception.original_exception)),
+            )
+            message = "SQL operator execution error"
+        elif isinstance(exception, SqlOperationError):
+            error_obj = FailedValidationEntity(
+                dataset=os.path.basename(dataset_path),
+                error=f"SQL error in {exception.operation_name} operation",
+                message=clean_postgres_message(str(exception.original_exception)),
+            )
+            message = "SQL operation execution error"
+        elif isinstance(exception, ProgrammingError):
+            error_obj = FailedValidationEntity(
+                dataset=os.path.basename(dataset_path),
+                error="PostgreSQL Error",
+                message=clean_postgres_message(str(exception)),
+            )
+            message = "SQL execution error"
         else:
             error_obj = FailedValidationEntity(
                 dataset=os.path.basename(dataset_path),

@@ -276,6 +276,18 @@ def _is_other_error(message: str) -> bool:
     )
 
 
+def _extract_error_types_from_results(results_sql: List[Dict]) -> List[str]:
+    """Helper: Extract error types from SQL results using the 'error' field"""
+    error_types = []
+    for result in results_sql:
+        if result.get("execution_status") == "execution_error":
+            errors = result.get("errors", [])
+            for error in errors:
+                error_type = error.get("error", "Unknown error type")
+                error_types.append(error_type)
+    return error_types
+
+
 def _extract_other_errors_from_results(results_sql: List[Dict]) -> List[str]:
     """Helper: Extract other error messages from SQL results"""
     messages = []
@@ -289,9 +301,9 @@ def _extract_other_errors_from_results(results_sql: List[Dict]) -> List[str]:
     return messages
 
 
-def categorize_other_errors(rules_data: List[Dict]) -> tuple[Counter, Dict[str, int]]:
-    """Count other execution errors (excluding operators and operations)"""
-    error_messages = []
+def categorize_execution_errors(rules_data: List[Dict]) -> tuple[Counter, Dict[str, int]]:
+    """Categorize execution errors by error type (using our improved error field)"""
+    error_types = []
     error_rules = defaultdict(set)
 
     for rule in rules_data:
@@ -306,15 +318,15 @@ def categorize_other_errors(rules_data: List[Dict]) -> tuple[Counter, Dict[str, 
                         continue
 
                     results_sql = engine_regression.get("results_sql", [])
-                    messages = _extract_other_errors_from_results(results_sql)
-                    error_messages.extend(messages)
-                    for message in messages:
-                        error_rules[message].add(core_id)
+                    error_type_list = _extract_error_types_from_results(results_sql)
+                    error_types.extend(error_type_list)
+                    for error_type in error_type_list:
+                        error_rules[error_type].add(core_id)
 
     # Convert sets to counts
-    error_rule_counts = {msg: len(rules) for msg, rules in error_rules.items()}
+    error_rule_counts = {error_type: len(rules) for error_type, rules in error_rules.items()}
 
-    return Counter(error_messages), error_rule_counts
+    return Counter(error_types), error_rule_counts
 
 
 def _generate_operators_section(operator_failures: Dict[str, int], operator_rule_counts: Dict[str, int]) -> List[str]:
@@ -329,7 +341,10 @@ def _generate_operators_section(operator_failures: Dict[str, int], operator_rule
         )
         section.append("")
 
-        sorted_operators = sorted(operator_failures.items(), key=lambda x: x[1], reverse=True)
+        # Sort by rule count first, then by failure count
+        sorted_operators = sorted(
+            operator_failures.items(), key=lambda x: (operator_rule_counts.get(x[0], 0), x[1]), reverse=True
+        )
         for i, (operator, count) in enumerate(sorted_operators, 1):
             rule_count = operator_rule_counts.get(operator, 0)
             section.append(f"{i:2d}. **{operator}**: {count} failures across {rule_count} rules")
@@ -353,7 +368,10 @@ def _generate_operations_section(
         )
         section.append("")
 
-        sorted_operations = sorted(operation_failures.items(), key=lambda x: x[1], reverse=True)
+        # Sort by rule count first, then by failure count
+        sorted_operations = sorted(
+            operation_failures.items(), key=lambda x: (operation_rule_counts.get(x[0], 0), x[1]), reverse=True
+        )
         for i, (operation, count) in enumerate(sorted_operations, 1):
             rule_count = operation_rule_counts.get(operation, 0)
             section.append(f"{i:2d}. **{operation}**: {count} failures across {rule_count} rules")
@@ -417,22 +435,28 @@ def _generate_discrepancies_section(discrepancies: Dict[str, List[Dict]]) -> Lis
     return section
 
 
-def _generate_other_errors_section(other_errors: Counter, other_error_rule_counts: Dict[str, int]) -> List[str]:
-    """Helper: Generate other errors section"""
+def _generate_execution_errors_section(
+    execution_errors: Counter, execution_error_rule_counts: Dict[str, int]
+) -> List[str]:
+    """Helper: Generate execution errors section by error type"""
     section = []
-    if other_errors:
-        total_failures = sum(other_errors.values())
-        total_rules_affected = sum(other_error_rule_counts.values())
+    if execution_errors:
+        total_failures = sum(execution_errors.values())
+        total_rules_affected = sum(execution_error_rule_counts.values())
         section.append(
-            f"## Other Execution Errors ({len(other_errors)} unique messages, {total_failures} total failures "
+            f"## Execution Errors by Type ({len(execution_errors)} unique error types, {total_failures} total failures "
             f"across {total_rules_affected} rule occurrences)"
         )
         section.append("")
 
-        for i, (error_msg, count) in enumerate(other_errors.most_common(15), 1):
-            rule_count = other_error_rule_counts.get(error_msg, 0)
-            short_msg = error_msg[:60] + "..." if len(error_msg) > 60 else error_msg
-            section.append(f"{i:2d}. **{short_msg}**: {count} failures across {rule_count} rules")
+        # Sort by rule count first, then by failure count
+        sorted_errors = sorted(
+            execution_errors.items(), key=lambda x: (execution_error_rule_counts.get(x[0], 0), x[1]), reverse=True
+        )
+        for i, (error_type, count) in enumerate(sorted_errors[:15], 1):
+            rule_count = execution_error_rule_counts.get(error_type, 0)
+            section.append(f"{i:2d}. **{error_type}**: {count} failures across {rule_count} rules")
+        section.append("")
     return section
 
 
@@ -476,7 +500,7 @@ def generate_report(rules_data: List[Dict]) -> str:
     operation_failures, operation_rule_counts = extract_missing_operations(rules_data)
     rules_by_error_type = analyze_rules_by_error_type(rules_data)
     discrepancies = analyze_meaningful_discrepancies(rules_data)
-    other_errors, other_error_rule_counts = categorize_other_errors(rules_data)
+    execution_errors, execution_error_rule_counts = categorize_execution_errors(rules_data)
 
     # Add rule summary at the top
     report.extend(_generate_rule_summary_section(rules_by_error_type, len(rules_data)))
@@ -484,7 +508,7 @@ def generate_report(rules_data: List[Dict]) -> str:
 
     report.extend(_generate_operators_section(operator_failures, operator_rule_counts))
     report.extend(_generate_operations_section(operation_failures, operation_rule_counts))
-    report.extend(_generate_other_errors_section(other_errors, other_error_rule_counts))
+    report.extend(_generate_execution_errors_section(execution_errors, execution_error_rule_counts))
     report.extend(_generate_discrepancies_section(discrepancies))
 
     return "\n".join(report)
@@ -492,7 +516,11 @@ def generate_report(rules_data: List[Dict]) -> str:
 
 def main():
     """Main analysis function"""
-    rules_file = "../resources/rules/rules.json"
+    import os
+
+    # Use os.path.join for cross-platform compatibility
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    rules_file = os.path.join(script_dir, "..", "resources", "rules", "rules.json")
 
     print("Loading rules data...")
     try:
@@ -507,7 +535,7 @@ def main():
     report = generate_report(rules_data)
 
     # Save report to file
-    output_file = "../resources/rules/regression_analysis_report.md"
+    output_file = os.path.join(script_dir, "..", "resources", "rules", "regression_analysis_report.md")
     with open(output_file, "w", encoding="utf-8") as f:
         f.write(report)
 

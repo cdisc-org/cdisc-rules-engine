@@ -180,8 +180,8 @@ class PostgresQLOperators(BaseType):
             operator_factory = self._operator_map[name]
             operator_instance = operator_factory(self.data)
 
-            # Define the method with the necessary decorators
-            @log_operator_execution
+            # Define the method with the necessary decorators, passing the operator name
+            @log_operator_execution(name)
             @type_operator(FIELD_DATAFRAME)
             def operator_method(self, other_value):
                 return operator_instance.execute_operator(other_value)

@@ -16,39 +16,55 @@ from cdisc_rules_engine.models.sql_operation_result import SqlOperationResult
 from cdisc_rules_engine.services import logger
 
 
-def log_operator_execution(func):
-    @wraps(func)
-    def wrapper(self, other_value, *args, **kwargs):
-        try:
-            logger.info(f"Starting check operator: {func.__name__}")
-            result = func(self, other_value)
-            logger.info(f"Completed check operator: {func.__name__}")
-            return result
-        except Exception as e:
-            logger.error(f"Error in {func.__name__}: {str(e)}, " f"traceback: {traceback.format_exc()}")
-            error_message = str(e)
-            if isinstance(e, TypeError) and (
-                "NoneType" in error_message
-                or "None" in error_message
-                or any(
-                    phrase in error_message
-                    for phrase in [
-                        "NoneType",
-                        "object is None",
-                        "'NoneType'",
-                        "None has no attribute",
-                        "unsupported operand type",
-                        "bad operand type",
-                        "object is not",
-                        "cannot be None",
-                    ]
-                )
-            ):
-                return None
-            else:
-                raise
+class SqlOperatorError(Exception):
+    """Simple exception to identify which check operator caused the error."""
 
-    return wrapper
+    def __init__(self, original_exception, operator_name):
+        self.original_exception = original_exception
+        self.operator_name = operator_name
+        super().__init__(f"{operator_name}: {str(original_exception)}")
+
+
+def log_operator_execution(operator_name):
+    """Decorator that takes an operator name parameter."""
+
+    def decorator(func):
+        @wraps(func)
+        def wrapper(self, other_value, *args, **kwargs):
+            try:
+                logger.info(f"Starting check operator: {operator_name}")
+                result = func(self, other_value)
+                logger.info(f"Completed check operator: {operator_name}")
+                return result
+            except Exception as e:
+                logger.error(f"Error in {operator_name}: {str(e)}, " f"traceback: {traceback.format_exc()}")
+
+                # Handle None-type errors by returning None instead of raising
+                error_message = str(e)
+                if isinstance(e, TypeError) and (
+                    "NoneType" in error_message
+                    or "None" in error_message
+                    or any(
+                        phrase in error_message
+                        for phrase in [
+                            "NoneType",
+                            "object is None",
+                            "'NoneType'",
+                            "None has no attribute",
+                            "unsupported operand type",
+                            "bad operand type",
+                            "object is not",
+                            "cannot be None",
+                        ]
+                    )
+                ):
+                    return None
+                else:
+                    raise SqlOperatorError(original_exception=e, operator_name=operator_name) from e
+
+        return wrapper
+
+    return decorator
 
 
 class BaseSqlOperator:
