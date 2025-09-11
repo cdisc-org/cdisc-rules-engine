@@ -8,12 +8,9 @@ class IsCompleteDateOperator(BaseSqlOperator):
 
     def execute_operator(self, other_value):
         target = self.replace_prefix(other_value.get("target"))
-        target_sql = self._column_sql(target)
+        date_column = self.sql_data_service.pgi.generate_date_column(self.table_id, target)
         op_name = f"{target}_is_complete_date"
         return self._do_check_operator(
             op_name,
-            lambda: (
-                f"""NOT ({self._is_empty_sql(target)})
-                AND {target_sql}::text ~ '{COMPLETE_DATE_REGEX}'"""
-            ),
+            lambda: (f"NOT ({self._is_empty_sql(date_column.name)}) "),
         )

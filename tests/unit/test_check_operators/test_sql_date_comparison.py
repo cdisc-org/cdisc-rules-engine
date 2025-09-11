@@ -25,6 +25,12 @@ from .helpers import assert_series_equals, create_sql_operators
             False,
             [False, True, False],
         ),
+        (
+            {"target": ["2023-01-15", "2025-09", "2023-03-10"]},
+            "2023-01-15",
+            True,
+            [True, False, False],
+        ),
     ],
 )
 def test_sql_date_equal_to(data, comparator, value_is_literal, expected_result):

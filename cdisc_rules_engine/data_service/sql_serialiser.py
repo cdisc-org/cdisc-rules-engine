@@ -21,6 +21,8 @@ class SQLSerialiser:
                 return "DOUBLE PRECISION"
             case "Bool":
                 return "BOOLEAN"
+            case "Date":
+                return "TIMESTAMP"
             case _:
                 raise ValueError(f"Unsupported column type: {type(value)}")
 

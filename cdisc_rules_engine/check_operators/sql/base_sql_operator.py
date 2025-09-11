@@ -340,6 +340,8 @@ class BaseSqlOperator:
                 return f"({column.hash} IS NULL)"
             case "Num":
                 return f"({column.hash} IS NULL)"
+            case "Date":
+                return f"({column.hash} IS NULL)"
             case _:
                 raise ValueError(f"Unsupported column type: {column.type} for column {col}.")
 
@@ -359,6 +361,8 @@ class BaseSqlOperator:
             case "Bool":
                 return f"(({variable.query}) IS NULL)"
             case "Num":
+                return f"(({variable.query}) IS NULL)"
+            case "Date":
                 return f"(({variable.query}) IS NULL)"
             case _:
                 raise ValueError(f"Unsupported variable type: {variable.subtype} for variable {target}.")

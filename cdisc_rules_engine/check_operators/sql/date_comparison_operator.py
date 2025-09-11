@@ -21,14 +21,19 @@ class DateComparisonOperator(BaseSqlOperator):
         if isinstance(comparator, str) and not value_is_literal:
             comparator = self.replace_prefix(comparator).lower()
 
-        target_sql = self._column_sql(target)
-        comparator_sql = self._sql(comparator, value_is_literal=value_is_literal)
+        target_date_column = self.sql_data_service.pgi.generate_date_column(self.table_id, target)
+
+        if self.sql_data_service.pgi.schema.get_column(self.table_id, comparator) is None:
+            comparator_sql = f"CAST ({self._sql(comparator, value_is_literal=value_is_literal)} AS TIMESTAMP)"
+        else:
+            comparator_date_column = self.sql_data_service.pgi.generate_date_column(self.table_id, comparator)
+            comparator_sql = comparator_date_column.hash
 
         component_suffix = f"_{date_component}" if date_component else ""
         cache_key = f"{target}{self.operator}{comparator}{component_suffix}"
 
-        wrapped_target = f"CAST({target_sql} AS TIMESTAMP)"
-        wrapped_comparator = f"CAST({comparator_sql} AS TIMESTAMP)"
+        wrapped_target = target_date_column.hash
+        wrapped_comparator = comparator_sql
 
         if date_component:
             component_map = {
