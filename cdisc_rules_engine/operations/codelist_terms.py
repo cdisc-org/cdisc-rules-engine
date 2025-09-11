@@ -43,8 +43,8 @@ class CodelistTerms(BaseOperation):
             right_on = "term_value"
             target = "term_code"
         elif self.params.term_pref_term:
-            left_on = self.params.term_pref_term
-            right_on = "term_pref_term"
+            left_on = self.params.term_pref_term  # column from dataset
+            right_on = "term_pref_term"  # column from lib metadata
             target = "term_code"
 
         ct_versions = self.evaluation_dataset[self.params.ct_version]
