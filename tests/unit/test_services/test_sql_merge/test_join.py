@@ -1,6 +1,5 @@
 import pandas as pd
 import pytest
-from numpy import NaN
 
 from cdisc_rules_engine.data_service.merges.join import SqlJoinMerge
 from cdisc_rules_engine.data_service.postgresql_data_service import (
@@ -18,7 +17,7 @@ SIMPLE_DATA = {
     [SIMPLE_DATA],
 )
 @pytest.mark.parametrize(
-    "type, result",
+    "type, expected",
     [
         (
             "INNER",
@@ -32,7 +31,7 @@ SIMPLE_DATA = {
             [
                 {"key": 1, "name": "Alice", "age": 30},
                 {"key": 2, "name": "Bob", "age": 25},
-                {"key": 3, "name": "Charlie", "age": NaN},
+                {"key": 3, "name": "Charlie", "age": None},
             ],
         ),
         (
@@ -40,7 +39,7 @@ SIMPLE_DATA = {
             [
                 {"key": 1, "name": "Alice", "age": 30},
                 {"key": 2, "name": "Bob", "age": 25},
-                {"key": 4, "name": None, "age": 40},
+                {"key": None, "name": None, "age": 40},
             ],
         ),
         (
@@ -48,13 +47,13 @@ SIMPLE_DATA = {
             [
                 {"key": 1, "name": "Alice", "age": 30},
                 {"key": 2, "name": "Bob", "age": 25},
-                {"key": 3, "name": "Charlie", "age": NaN},
-                {"key": 4, "name": None, "age": 40},
+                {"key": 3, "name": "Charlie", "age": None},
+                {"key": None, "name": None, "age": 40},
             ],
         ),
     ],
 )
-def test_join(data, type, result):
+def test_join(data, type, expected):
     ds = PostgresQLDataService.test_instance()
     PostgresQLDataService.add_test_dataset(ds.pgi, "l", data["left"])
     PostgresQLDataService.add_test_dataset(ds.pgi, "r", data["right"])
@@ -67,16 +66,16 @@ def test_join(data, type, result):
     assert schema.get_column("key") is not None
     assert schema.get_column("name") is not None
     assert schema.get_column("age") is not None
+    assert schema.get_column("r.age") is not None
     assert ds.pgi.schema.get_table(schema.name) == schema
 
-    ds.pgi.execute_sql(f"SELECT key, name, {schema.get_column_hash("age")} AS age FROM {schema.hash}")
+    ds.pgi.execute_sql(f"SELECT key::int, name, {schema.get_column_hash("age")}::int AS age FROM {schema.hash}")
     result = pd.DataFrame(ds.pgi.fetch_all())
-    expected_result = pd.DataFrame(result)
-    assert expected_result.equals(result)
+    assert pd.DataFrame(expected).equals(result)
 
 
 @pytest.mark.parametrize(
-    "data, result",
+    "data, expected",
     [
         (
             {
@@ -93,15 +92,15 @@ def test_join(data, type, result):
                 },
             },
             [
-                {"key": 1, "key2": 1, "name": "Alice A", "age": 10},
-                {"key": 1, "key2": 2, "name": "Alice B", "age": 20},
-                {"key": 2, "key2": 2, "name": "Bob B", "age": 30},
-                {"key": 3, "key2": 1, "name": "Charlie", "age": 40},
+                {"key": 1, "key2": 1, "name": "Alice A", "age": 10, "r.name": "AA"},
+                {"key": 1, "key2": 2, "name": "Alice B", "age": 20, "r.name": "AB"},
+                {"key": 2, "key2": 2, "name": "Bob B", "age": 30, "r.name": "BB"},
+                {"key": 3, "key2": 1, "name": "Charlie", "age": 40, "r.name": "C"},
             ],
         ),
     ],
 )
-def test_multiple_keys(data, result):
+def test_multiple_keys(data, expected):
     ds = PostgresQLDataService.test_instance()
     PostgresQLDataService.add_test_dataset(ds.pgi, "l", data["left"])
     PostgresQLDataService.add_test_dataset(ds.pgi, "r", data["right"])
@@ -114,12 +113,21 @@ def test_multiple_keys(data, result):
     assert schema.get_column("key") is not None
     assert schema.get_column("name") is not None
     assert schema.get_column("age") is not None
+    assert schema.get_column("r.age") is not None
+    assert schema.get_column("r.name") is not None
     assert ds.pgi.schema.get_table(schema.name) == schema
 
-    ds.pgi.execute_sql(f"SELECT key, name, {schema.get_column_hash("age")} AS age FROM {schema.hash}")
+    ds.pgi.execute_sql(
+        f"""SELECT
+                key::int,
+                key2::int,
+                name,
+                {schema.get_column_hash("age")}::int AS age,
+                {schema.get_column_hash("r.name")} as "r.name"
+            FROM {schema.hash}"""
+    )
     result = pd.DataFrame(ds.pgi.fetch_all())
-    expected_result = pd.DataFrame(result)
-    assert expected_result.equals(result)
+    assert pd.DataFrame(expected).equals(result)
 
 
 @pytest.mark.parametrize(
@@ -199,5 +207,9 @@ def test_join_table_itself(data):
     ds = PostgresQLDataService.test_instance()
     PostgresQLDataService.add_test_dataset(ds.pgi, "l", data["left"])
 
-    with pytest.raises(Exception):
-        SqlJoinMerge.perform_join(ds.pgi, ds.pgi.schema.get_table("l"), ds.pgi.schema.get_table("l"), ["key"], ["key"])
+    schema = SqlJoinMerge.perform_join(
+        ds.pgi, ds.pgi.schema.get_table("l"), ds.pgi.schema.get_table("l"), ["key"], ["key"]
+    )
+    assert schema.has_column("key")
+    assert schema.has_column("name")
+    assert schema.has_column("l.name")

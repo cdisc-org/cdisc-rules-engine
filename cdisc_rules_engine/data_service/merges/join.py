@@ -15,12 +15,21 @@ class SqlJoinMerge:
         pivot_right: list[str],
         type: Literal["INNER", "LEFT", "RIGHT", "FULL OUTER"] = "INNER",
     ) -> SqlTableSchema:
-        """Perform a join operation on two SQL table schemas."""
+        """
+        Perform a join operation on two SQL table schemas.
+
+        The output table will have all of the columns from the left table as before.
+        All of the columns of the right table will be present under the name `<right>.<column_name>` (e.g. DM.ABC).
+        Any columns from the right table which aren't present in the left table will also be aliased,
+        so they will be available as `<column_name>` (e.g. ABC).
+
+        Example:
+        Table A: USUBJID, AGE
+        Table B: USUBJID, NAME, AGE
+        Result: USUBJID, AGE, B.NAME, B.AGE, NAME (aliased from B.AGE)
+        """
         if len(pivot_left) != len(pivot_right):
             raise ValueError("Pivot columns must have the same length.")
-
-        if left.name == right.name:
-            raise ValueError("Cannot join a table to itself (currently). Use a different name for the right table.")
 
         # Ensure everything is lowercase for consistency
         pivot_left = [col.lower() for col in pivot_left]
@@ -49,6 +58,9 @@ class SqlJoinMerge:
             pivot_left=pivot_left,
             pivot_right=pivot_right,
         )
+
+        if len(right_columns) == 0:
+            raise ValueError("No columns to join from the right table.")
 
         pgi.create_table(schema)
 
@@ -100,15 +112,19 @@ class SqlJoinMerge:
                 continue
             if name in pivot_right:
                 continue
-            # TODO: We may want to require that all merged variables are referenced by a unique name to avoid clashes
-            # new_column_name = f"{left.name}.{name}"
-            new_column_name = name
-            if joined_schema.get_column(name) is not None:
+
+            new_column_name = f"{right.name}.{name}"
+            if joined_schema.has_column(new_column_name):
                 # Skipping duplicated column
                 continue
 
+            # Add the main column schema
             new_col_schema = SqlColumnSchema.generated(column=new_column_name, type=column.type)
             joined_schema.add_column(new_col_schema)
             right_output_columns.append((column.hash, new_col_schema.hash))
+
+            # Alias the shortened column name
+            if not joined_schema.has_column(name):
+                joined_schema.add_column(SqlColumnSchema.alias(name, new_col_schema))
 
         return joined_schema, left_output_columns, right_output_columns

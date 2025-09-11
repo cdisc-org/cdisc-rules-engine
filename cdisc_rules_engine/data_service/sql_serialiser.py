@@ -33,14 +33,18 @@ class SQLSerialiser:
 
         column_definitions = []
 
-        for column in schema._columns.values():
-            if column.hash.upper() in SQL_RESERVED_KEYWORDS:
-                raise ValueError(f"Column name '{column.hash}' is a reserved SQL keyword.")
-            if column.hash.lower() == "id":
+        for _, col_schema in schema.get_columns():
+            # Skip alias columns
+            if col_schema.alias:
+                continue
+
+            if col_schema.hash.upper() in SQL_RESERVED_KEYWORDS:
+                raise ValueError(f"Column name '{col_schema.hash}' is a reserved SQL keyword.")
+            if col_schema.hash.lower() == "id":
                 raise ValueError("Column name 'id' is reserved for primary key in SQL tables.")
 
-            sql_type = cls.column_type_to_sql_type(column.type)
-            col_def = f"{column.hash} {sql_type}"
+            sql_type = cls.column_type_to_sql_type(col_schema.type)
+            col_def = f"{col_schema.hash} {sql_type}"
             column_definitions.append(col_def)
 
         if len(column_definitions) > 0:

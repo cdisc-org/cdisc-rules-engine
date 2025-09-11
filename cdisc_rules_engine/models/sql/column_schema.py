@@ -7,10 +7,11 @@ from cdisc_rules_engine.models.sql import DATASET_COLUMN_TYPES
 class SqlColumnSchema:
     """Stores the schema for a single SQL column."""
 
-    def __init__(self, name: str, hash: str, type: DATASET_COLUMN_TYPES):
+    def __init__(self, name: str, hash: str, type: DATASET_COLUMN_TYPES, alias: bool = False):
         self.name = name
         self.hash = hash
         self.type = type
+        self.alias = alias
 
     @staticmethod
     def python_to_sql_type(value: Any) -> str:
@@ -48,3 +49,8 @@ class SqlColumnSchema:
         """Create a SqlColumnSchema with a generated hash."""
         hash = generate_hash(column.lower())
         return cls(name=column.lower(), hash=hash, type=type)
+
+    @classmethod
+    def alias(cls, column: str, schema: "SqlColumnSchema") -> "SqlColumnSchema":
+        """Create a SqlColumnSchema which aliases another column."""
+        return cls(name=column.lower(), hash=schema.hash, type=schema.type, alias=True)

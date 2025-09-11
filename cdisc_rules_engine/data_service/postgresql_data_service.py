@@ -4,7 +4,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Union
 
-
 from cdisc_rules_engine.constants.domains import SUPPLEMENTARY_DOMAINS
 from cdisc_rules_engine.data_service.merges.join import SqlJoinMerge
 from cdisc_rules_engine.data_service.sql_data_preprocessor import DataPreprocessor
@@ -473,8 +472,12 @@ class PostgresQLDataService(SQLDataService):
         left_id = dataset_metadata.dataset_id
 
         for merge_spec in datasets:
-            # TODO: This only handles simple joins for now
             right = merge_spec.get("domain_name").lower()
+
+            # TODO: This only handles simple joins for now
+            if right in ("relrec", "supp--", "relsub", "co", "sq"):
+                raise NotImplementedError("Joins with relationship domains are not supported yet")
+
             join_type = merge_spec.get("join_type", "INNER")
             # For now we assume pivot columns are always the same in left and right
             pivot_columns = merge_spec.get("match_key", [])
