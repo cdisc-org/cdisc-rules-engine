@@ -261,6 +261,32 @@ class BaseSqlOperator:
 
         return self._constant_sql(value, lowercase=lowercase)
 
+    def _is_numeric_value(self, value: Any, value_is_literal: bool = False) -> bool:
+        """
+        Check if a value represents a numeric type that can be used directly in numeric comparisons.
+        """
+        # Direct numeric literals
+        if isinstance(value, (int, float)):
+            return True
+
+        # Numeric string literals
+        if value_is_literal and isinstance(value, str) and value.isdigit():
+            return True
+
+        if not value_is_literal and isinstance(value, str):
+            # Check operation variables
+            if value in self.operation_variables:
+                variable = self.operation_variables[value]
+                return variable.type == "constant" and variable.subtype == "Num"
+
+            # Check column types
+            if self.sql_data_service.pgi.schema.column_exists(self.table_id, value):
+                value_column = self.replace_prefix(value).lower()
+                col_schema = self.sql_data_service.pgi.schema.get_column(self.table_id, value_column)
+                return col_schema and col_schema.type == "Num"
+
+        return False
+
     def valid_codelist_reference(self, column_name, codelist):
         if column_name in self.column_codelist_map:
             return codelist in self.column_codelist_map[column_name]

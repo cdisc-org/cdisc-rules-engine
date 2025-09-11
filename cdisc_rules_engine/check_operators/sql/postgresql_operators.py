@@ -16,7 +16,7 @@ from .equal_to_operator import EqualToOperator
 from .equals_string_part_operator import EqualsStringPartOperator
 from .exists_operator import ExistsOperator
 from .has_different_values_operator import HasDifferentValuesOperator
-from .has_equal_length_operator import HasEqualLengthOperator
+
 from .has_next_corresponding_record_operator import HasNextCorrespondingRecordOperator
 from .inconsistent_enumerated_columns_operator import (
     InconsistentEnumeratedColumnsOperator,
@@ -31,14 +31,14 @@ from .is_ordered_by_operator import IsOrderedByOperator
 from .is_ordered_set_operator import IsOrderedSetOperator
 from .is_ordered_subset_of_operator import IsOrderedSubsetOfOperator
 from .is_unique_set_operator import IsUniqueSetOperator
-from .longer_than_operator import LongerThanOperator
-from .longer_than_or_equal_to_operator import LongerThanOrEqualToOperator
+
 from .matches_regex_operator import MatchesRegexOperator
 from .not_matches_regex_operator import NotMatchesRegexOperator
 from .not_prefix_matches_regex_operator import NotPrefixMatchesRegexOperator
 from .not_suffix_matches_regex_operator import NotSuffixMatchesRegexOperator
 from .numeric_comparison_operator import NumericComparisonOperator
 from .prefix_equal_to_operator import PrefixEqualToOperator
+from .string_length_comparison_operator import StringLengthComparisonOperator
 from .prefix_matches_regex_operator import PrefixMatchesRegexOperator
 from .present_on_multiple_rows_within_operator import (
     PresentOnMultipleRowsWithinOperator,
@@ -138,12 +138,12 @@ class PostgresQLOperators(BaseType):
         "suffix_not_equal_to": lambda data: NotOperator(data, SuffixEqualToOperator),
         "prefix_equal_to": lambda data: PrefixEqualToOperator(data),
         "prefix_not_equal_to": lambda data: NotOperator(data, PrefixEqualToOperator),
-        "has_equal_length": lambda data: HasEqualLengthOperator(data),
-        "has_not_equal_length": lambda data: NotOperator(data, HasEqualLengthOperator),
-        "longer_than": lambda data: LongerThanOperator(data),
-        "shorter_than_or_equal_to": lambda data: NotOperator(data, LongerThanOperator),
-        "longer_than_or_equal_to": lambda data: LongerThanOrEqualToOperator(data),
-        "shorter_than": lambda data: NotOperator(data, LongerThanOrEqualToOperator),
+        "has_equal_length": lambda data: StringLengthComparisonOperator(data, operator="="),
+        "has_not_equal_length": lambda data: StringLengthComparisonOperator(data, operator="!="),
+        "longer_than": lambda data: StringLengthComparisonOperator(data, operator=">"),
+        "shorter_than_or_equal_to": lambda data: StringLengthComparisonOperator(data, operator="<="),
+        "longer_than_or_equal_to": lambda data: StringLengthComparisonOperator(data, operator=">="),
+        "shorter_than": lambda data: StringLengthComparisonOperator(data, operator="<"),
         "empty_within_except_last_row": lambda data: EmptyWithinExceptLastRowOperator(data),
         "non_empty_within_except_last_row": lambda data: NotOperator(data, EmptyWithinExceptLastRowOperator),
         "contains_all": lambda data: ContainsAllOperator(data),
