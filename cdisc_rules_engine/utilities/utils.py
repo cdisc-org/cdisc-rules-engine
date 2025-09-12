@@ -8,7 +8,7 @@ import os
 import re
 import pandas as pd
 from datetime import datetime
-from typing import Callable, Iterable, List, Optional, Union
+from typing import Any, Callable, Iterable, List, Optional, Union
 from uuid import UUID
 from cdisc_rules_engine.constants.metadata_columns import (
     SOURCE_FILENAME,
@@ -52,14 +52,10 @@ def get_execution_status(results):
     if len(results) == 0:
         return ExecutionStatus.SUCCESS.value
     if isinstance(results[0], BaseValidationEntity):
-        successful_results = [
-            entity for entity in results if entity.status == ExecutionStatus.SUCCESS
-        ]
+        successful_results = [entity for entity in results if entity.status == ExecutionStatus.SUCCESS]
     else:
         successful_results = [
-            result
-            for result in results
-            if result.get("executionStatus") == ExecutionStatus.SUCCESS.value
+            result for result in results if result.get("executionStatus") == ExecutionStatus.SUCCESS.value
         ]
     if successful_results:
         return ExecutionStatus.SUCCESS.value
@@ -84,9 +80,7 @@ def is_valid_iso_date(date_to_validate: str) -> bool:
     return is_valid
 
 
-def get_dataset_path(
-    study_id: str, data_bundle_id: str = None, filename: str = None
-) -> str:
+def get_dataset_path(study_id: str, data_bundle_id: str = None, filename: str = None) -> str:
     """
     Returns a path to dataset in the blob storage.
     """
@@ -119,16 +113,12 @@ def get_dataset_cache_key_from_study(
     """
     dataset_path: str = get_dataset_path(study_id, data_bundle_id, filename)
     if dataset_type:
-        dataset_path = DATASET_CACHE_KEY_TEMPLATE.format(
-            dataset_path=dataset_path, dataset_type=dataset_type
-        )
+        dataset_path = DATASET_CACHE_KEY_TEMPLATE.format(dataset_path=dataset_path, dataset_type=dataset_type)
     return dataset_path
 
 
 def get_dataset_cache_key_from_path(dataset_path: str, dataset_type: str) -> str:
-    return DATASET_CACHE_KEY_TEMPLATE.format(
-        dataset_path=dataset_path, dataset_type=dataset_type
-    )
+    return DATASET_CACHE_KEY_TEMPLATE.format(dataset_path=dataset_path, dataset_type=dataset_type)
 
 
 def is_supp_domain(dataset_domain: str) -> bool:
@@ -161,9 +151,7 @@ def get_library_variables_metadata_cache_key(
         return f"library_variables_metadata/{standard_type}/{standard_version}/{standard_substandard}"
 
 
-def get_standard_details_cache_key(
-    standard_type: str, standard_version: str, standard_substandard: str = None
-) -> str:
+def get_standard_details_cache_key(standard_type: str, standard_version: str, standard_substandard: str = None) -> str:
     if not standard_substandard:
         return f"standards/{standard_type}/{standard_version}"
     else:
@@ -177,14 +165,10 @@ def get_model_details_cache_key(standard: str, model_version: str) -> str:
 def get_model_details_cache_key_from_ig(standard_metadata: dict) -> str:
     model_link = standard_metadata.get("_links", {}).get("model", {}).get("href", "")
     model_link_parts = model_link.split("/")
-    return get_model_details_cache_key(
-        standard=model_link_parts[2], model_version=model_link_parts[3]
-    )
+    return get_model_details_cache_key(standard=model_link_parts[2], model_version=model_link_parts[3])
 
 
-def replace_pattern_in_list_of_strings(
-    list_of_strings: List[str], pattern: str, value: str
-) -> List[str]:
+def replace_pattern_in_list_of_strings(list_of_strings: List[str], pattern: str, value: str) -> List[str]:
     return [string.replace(pattern, value or "") for string in list_of_strings]
 
 
@@ -213,9 +197,7 @@ def get_directory_path(dataset_path):
     return os.path.dirname(dataset_path)
 
 
-def tag_source(
-    dataset: DatasetInterface, dataset_metadata: DatasetMetadata
-) -> DatasetInterface:
+def tag_source(dataset: DatasetInterface, dataset_metadata: DatasetMetadata) -> DatasetInterface:
     """
     For sdtm split datasets,
     Adds source filename and row number to dataset
@@ -228,19 +210,11 @@ def tag_source(
 def get_corresponding_datasets(
     datasets: Iterable[SDTMDatasetMetadata], dataset_metadata: SDTMDatasetMetadata
 ) -> List[SDTMDatasetMetadata]:
-    return [
-        other
-        for other in datasets
-        if dataset_metadata.unsplit_name == other.unsplit_name
-    ]
+    return [other for other in datasets if dataset_metadata.unsplit_name == other.unsplit_name]
 
 
 def get_dataset_name_from_details(dataset_metadata: SDTMDatasetMetadata) -> str:
-    return (
-        os.path.split(dataset_metadata.full_path)[-1]
-        if dataset_metadata.full_path
-        else dataset_metadata.filename
-    )
+    return os.path.split(dataset_metadata.full_path)[-1] if dataset_metadata.full_path else dataset_metadata.filename
 
 
 def serialize_rule(rule: dict) -> dict:
@@ -288,12 +262,7 @@ def extract_file_name_from_path_string(path: str) -> str:
 
 
 def generate_report_filename(generation_time: str) -> str:
-    timestamp = (
-        datetime.fromisoformat(generation_time)
-        .replace(microsecond=0)
-        .isoformat()
-        .replace(":", "-")
-    )
+    timestamp = datetime.fromisoformat(generation_time).replace(microsecond=0).isoformat().replace(":", "-")
     return f"CORE-Report-{timestamp}"
 
 
@@ -320,9 +289,7 @@ def get_meddra_code_term_pairs_cache_key(meddra_path: str) -> str:
     return f"meddra_valid_code_term_pairs_{meddra_path}"
 
 
-def get_item_index_by_condition(
-    list_of_dicts: List[dict], condition: Callable
-) -> Optional[int]:
+def get_item_index_by_condition(list_of_dicts: List[dict], condition: Callable) -> Optional[int]:
     """
     Uses linear search to return index of element
     in unsorted list which applies to the condition.
@@ -332,9 +299,7 @@ def get_item_index_by_condition(
             return index
 
 
-def search_in_list_of_dicts(
-    list_of_dicts: List[dict], condition: Callable
-) -> Optional[dict]:
+def search_in_list_of_dicts(list_of_dicts: List[dict], condition: Callable) -> Optional[dict]:
     """
     Returns an element of unsorted list that applies to the condition.
     """
@@ -371,10 +336,7 @@ def decode_line(line: bytes) -> str:
 
 
 def get_sided_match_keys(match_keys: List[Union[str, dict]], side: str) -> List[str]:
-    return [
-        match_key if isinstance(match_key, str) else match_key[side]
-        for match_key in match_keys
-    ]
+    return [match_key if isinstance(match_key, str) else match_key[side] for match_key in match_keys]
 
 
 def parse_date(date_str):
@@ -404,3 +366,20 @@ def replace_nan_values_in_df(df, columns):
             if mask.any():
                 df.loc[mask, col] = None
     return df
+
+
+def flatten_nested_list(items: List[Any]) -> List[Any]:
+    """
+    Flatten a potentially nested list structure.
+    """
+    result = []
+    items_to_process = list(items) if items else []
+
+    while items_to_process:
+        item = items_to_process.pop(0)
+        if isinstance(item, list):
+            items_to_process = item + items_to_process
+        elif item is not None:
+            result.append(item)
+
+    return result
