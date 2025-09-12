@@ -1,0 +1,55 @@
+Authorities:
+  - Organization: CDISC
+    Standards:
+      - Name: USDM
+        References:
+          - Citations:
+              - Cited Guidance:
+                  "A study version's study phase must be specified according to
+                  the extensible Trial Phase Response (C66737) SDTM codelist
+                  (e.g. an entry with a code or decode used from the codelist
+                  should be consistent with the full entry in the codelist)."
+                Document: "USDM_CORE_Rules.xlsx"
+            Origin: "USDM Conformance Rules"
+            Rule Identifier:
+              Id: "DDF00015"
+              Version: "1"
+            Version: "1.0"
+        Version: "3.0"
+Check:
+  all:
+    - name: studyPhase.standardCode.decode
+      operator: equal_to
+      value: $code_for_decode
+Core:
+  Id: "CORE-000409"
+  Status: Draft
+  Version: "1"
+Description: "A study version's study phase must be specified according to the
+  extensible Trial Phase Response (C66737) SDTM codelist (e.g. an entry with a
+  code or decode used from the codelist should be consistent with the full entry
+  in the codelist)."
+Executability: Fully Executable
+Operations:
+  - codelist_code: studyPhase.standardCode.code
+    ct_package_type: SDTM
+    id: $code_for_decode
+    operator: codelist_terms
+    term_pref_term: studyPhase.standardCode.decode
+    ct_version: studyPhase.standardCode.codeSystemVersion
+Outcome:
+  Message: 'The study version''s study phase is not specified according to the
+    extensible Trial Phase Response (C66737) SDTM codelist - codeSystem is not
+    "http://www.cdisc.org", codeSystemVersion is not a valid terminology package
+    date, and/or the code or decode is found in the codelist (case insensitive)
+    but the corresponding decode or code does not match the codelist value (case
+    sensitive).'
+  Output Variables:
+    - studyPhase.standardCode.decode
+    - $code_for_decode
+Rule Type: Record Data
+Scope:
+  Entities:
+    Include:
+      - "StudyVersion"
+Sensitivity: Record
