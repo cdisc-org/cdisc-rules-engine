@@ -1,7 +1,6 @@
 from unittest.mock import MagicMock, patch
 from yaml import safe_load
 from cdisc_rules_engine.models.rule import Rule
-from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.utilities.jsonata_processor import JSONataProcessor
 
 
@@ -71,7 +70,6 @@ def test_jsonata_processor(mock_get_custom_functions: MagicMock):
     result = JSONataProcessor.execute_jsonata_rule(
         rule=rule,
         dataset=dataset,
-        dataset_metadata=SDTMDatasetMetadata(),
         jsonata_functions_path="",
     )
 

@@ -103,16 +103,23 @@ class RulesEngine:
         rule["conditions"] = ConditionCompositeFactory.get_condition_composite(
             rule["conditions"]
         )
-        for dataset_metadata in datasets:
-            if dataset_metadata.unsplit_name in results and "domains" in rule:
-                include_split = rule["domains"].get("include_split_datasets", False)
-                if not include_split:
-                    continue  # handling split datasets
-            results[dataset_metadata.unsplit_name] = self.validate_single_dataset(
+        if rule.get("rule_type") == RuleTypes.JSONATA.value:
+            results["json"] = self.validate_single_dataset(
                 rule,
                 datasets,
-                dataset_metadata,
+                SDTMDatasetMetadata(name="json"),
             )
+        else:
+            for dataset_metadata in datasets:
+                if dataset_metadata.unsplit_name in results and "domains" in rule:
+                    include_split = rule["domains"].get("include_split_datasets", False)
+                    if not include_split:
+                        continue  # handling split datasets
+                results[dataset_metadata.unsplit_name] = self.validate_single_dataset(
+                    rule,
+                    datasets,
+                    dataset_metadata,
+                )
         return results
 
     def validate_single_dataset(
@@ -287,7 +294,7 @@ class RulesEngine:
             )
         elif rule.get("rule_type") == RuleTypes.JSONATA.value:
             return JSONataProcessor.execute_jsonata_rule(
-                rule, dataset, dataset_metadata, self.jsonata_functions_path
+                rule, dataset, self.jsonata_functions_path
             )
 
         kwargs["ct_packages"] = list(self.ct_packages)
