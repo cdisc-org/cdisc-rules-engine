@@ -386,3 +386,177 @@ def test_is_incomplete_date_sql(data, expected_incomplete):
     sql_ops = create_sql_operators(data)
     result_incomplete = sql_ops.is_incomplete_date({"target": "target"})
     assert_series_equals(result_incomplete, ~pd.Series(expected_incomplete))
+
+
+@pytest.mark.parametrize(
+    "data,expected_result",
+    [
+        (
+            {"target": ["2021", "2099", "2022", "2023"]},
+            [False, False, False, False],
+        ),
+        (
+            {"target": ["90999", "20999", "2022", "2023"]},
+            [True, True, False, False],
+        ),
+        (
+            {
+                "target": [
+                    "2022-03-11T092030",
+                    "2022-03-11T09,20,30",
+                    "2022-03-11T09@20@30",
+                    "2022-03-11T09!20:30",
+                ]
+            },
+            [True, True, True, True],
+        ),
+        (
+            {
+                "target": [
+                    "1997-07",
+                    "1997-07-16",
+                    "1997-07-16T19:20:30.45+01:00",
+                    "2022-05-08T13:44:66",
+                ]
+            },
+            [False, False, False, True],
+        ),
+        (
+            {
+                "target": [
+                    "1",
+                    "9999",
+                    "10000",
+                    "-1",
+                ]
+            },
+            [True, False, True, True],
+        ),
+        (
+            {
+                "target": [
+                    "2023-00",
+                    "2023-01",
+                    "2023-12",
+                    "2023-13",
+                ]
+            },
+            [True, False, False, True],
+        ),
+        (
+            {
+                "target": [
+                    "2023-",
+                    "2023-05-",
+                    "2023--",
+                    "2023-05--",
+                ]
+            },
+            [True, True, False, False],
+        ),
+        (
+            {
+                "target": [
+                    "2023-02-29",
+                    "2024-02-29",
+                    "2023-04-31",
+                    "2023-02-00",
+                ]
+            },
+            [True, False, True, True],
+        ),
+        (
+            {
+                "target": [
+                    "2023-01-01T23:59:59",
+                    "2023-01-01T24:00:00",
+                    "2023-01-01T12:60:00",
+                    "2023-01-01T12:30:60",
+                ]
+            },
+            [False, True, True, True],
+        ),
+        (
+            {
+                "target": [
+                    "2023-01-01T12:30:45Z",
+                    "2023-01-01T12:30:45+05:30",
+                    "2023-01-01T12:30:45.123",
+                    "2023-01-01T12:30:45.999Z",
+                ]
+            },
+            [False, False, False, False],
+        ),
+        (
+            {
+                "target": [
+                    "not-a-date",
+                    "2023/01/01",
+                    "01-01-2023",
+                    "2023.01.01",
+                ]
+            },
+            [True, True, True, True],
+        ),
+        (
+            {
+                "target": [
+                    "",
+                    None,
+                    " ",
+                    "2023 01 01",
+                    "2023-01-01 ",
+                ]
+            },
+            [True, True, True, True, True],
+        ),
+        (
+            {
+                "target": [
+                    "2023-01-01T00:00:00",
+                    "2023-01-01T23:59:59.999",
+                    "2023-01-01T25:00:00",
+                    "2023-01-01T12:30",
+                ]
+            },
+            [False, False, True, False],
+        ),
+        (
+            {
+                "target": [
+                    "0001",
+                    "2023-01",
+                    "2023-1",
+                    "23-01-01",
+                ]
+            },
+            [False, False, True, True],
+        ),
+        (
+            {
+                "target": [
+                    "2023-01/2023-02",
+                    "2023-01-01T12:-:",
+                    "2023-01-01/2023-01-02T12:30:45",
+                    "2023-01-01T12:30:-",
+                ]
+            },
+            [False, True, False, True],
+        ),
+        (
+            {
+                "target": [
+                    "2023-01/invalid",
+                    "2023-01-01T25:-:",
+                    "invalid/2023-02",
+                    "2023-01-01T12:65:-",
+                ]
+            },
+            [True, True, True, True],
+        ),
+    ],
+)
+def test_invalid_date_sql(data, expected_result):
+    sql_ops = create_sql_operators(data)
+    result = sql_ops.invalid_date({"target": "target"})
+    assert_series_equals(result, expected_result)
