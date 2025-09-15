@@ -198,6 +198,21 @@ def run_regression_on_test_case(
             test_case_folder_path,
         )
 
+        # Uncomment to produce reports for CDISC to use
+        # if regression_errors.get("old_overall_result") == "skipped":
+        #     try:
+        #         xlsx_data = pd.ExcelFile(data_file_path)
+        #         pd.read_excel(xlsx_data, sheet_name="Library")
+        #         present = True
+        #     except ValueError:
+        #         present = False
+
+        #     with open("./skipped.txt", "a") as f:
+        #         f.write(
+        #             f"""{extract_final_path(test_case_folder_path, 4)} - skipped - Library sheet: {
+        #                 "present" if present else "not found"}\n"""
+        #         )
+
     return None, None
 
 
@@ -560,13 +575,23 @@ def find_max_dir(root) -> str:
 def find_data_file(path: str) -> str:
     if not path:
         return ""
-    accepted_extensions = ["xls", "xlsx", "json"]
     try:
         for filename in os.listdir(path):
             full_path = os.path.join(path, filename)
             extension = filename.split(".")[-1].lower()
-            if os.path.isfile(full_path) and extension in accepted_extensions:
-                return path + "/" + filename
+            if not os.path.isfile(full_path) or extension not in ["xls", "xlsx"]:
+                continue
+
+            xlsx_data = pd.ExcelFile(full_path)
+            try:
+                # these throw an error when the sheet is not present
+                # TODO: Should really check for the presence of the library
+                # sheet, but nothing runs if it's not present so ¯\_(ツ)_/¯
+                # pd.read_excel(xlsx_data, sheet_name="Library")
+                pd.read_excel(xlsx_data, sheet_name="Datasets")
+            except ValueError:
+                continue
+            return full_path
     except FileNotFoundError:
         return ""
     return ""

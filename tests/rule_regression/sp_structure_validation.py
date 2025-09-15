@@ -1,6 +1,12 @@
 import os
 import re
 
+import pandas as pd
+
+XLSX_FILE_EXTENSIONS = [".xlsx"]
+
+# warnings.filterwarnings("ignore")
+
 
 def validate_folder_structure(rtype: str, root_folder: str, rule_id: str) -> list[str]:
     error_messages = []
@@ -114,12 +120,10 @@ def validate_two_digit_folders(
                 continue
 
             # Check if there is at least one '.xlsx' file in the 'data' folder
-            xlsx_extension = ".xlsx"
             json_extension = ".json"
             if subfolder_name == "data":
                 data_folder_validation(
                     error_messages,
-                    xlsx_extension,
                     subfolder_data_results_path,
                     two_digit_folder,
                     rtype,
@@ -131,7 +135,6 @@ def validate_two_digit_folders(
             if subfolder_name == "results":
                 results_folder_validation(
                     error_messages,
-                    xlsx_extension,
                     json_extension,
                     subfolder_data_results_path,
                     two_digit_folder,
@@ -143,25 +146,36 @@ def validate_two_digit_folders(
 
 def data_folder_validation(
     error_messages: list,
-    xlsx_extension: str,
     subfolder_data_results_path: str,
     two_digit_folder: str,
     rtype: str,
     rule_id: str,
     pos_neg_folder: str,
 ):
-    found_xlsx = any(f.is_file() and f.name.endswith(xlsx_extension) for f in os.scandir(subfolder_data_results_path))
+    found_xlsx = any(f.is_file() and is_xlsx_file(f.name) for f in os.scandir(subfolder_data_results_path))
     if not found_xlsx:
         error_messages.append(
             f"{rtype}:{rule_id}: Missing '.xlsx' file in 'data' folder under '{two_digit_folder}' "
             f"in '{pos_neg_folder}'."
         )
+
+    found_valid_xlsx = any(
+        f.is_file() and is_xlsx_file(f.name) and validate_xlsx_file(f) for f in os.scandir(subfolder_data_results_path)
+    )
+    if not found_valid_xlsx:
+        # print("No valid '.xlsx' file found in 'data' folder under ")
+        error_messages.append(
+            f"{rtype}:{rule_id}: No valid (must have Library and Datasets sheets) '.xlsx' file "
+            f"found in 'data' folder under '{two_digit_folder}' in '{pos_neg_folder}'."
+        )
+
     for file in os.scandir(subfolder_data_results_path):
-        if file.is_file() and not (file.name.endswith(xlsx_extension) or file.name.lower() == "define.xml"):
+        if file.is_file() and not (is_xlsx_file(file.name) or file.name.lower() == "define.xml"):
             error_messages.append(
                 f"{rtype}:{rule_id}: Non-xlsx and non-'define.xml' file found"
                 f"in 'data' folder under '{two_digit_folder}' in '{pos_neg_folder}'."
             )
+
     for f in os.scandir(subfolder_data_results_path):
         if f.is_dir():
             error_messages.append(
@@ -170,9 +184,19 @@ def data_folder_validation(
             )
 
 
+def validate_xlsx_file(file_name: os.DirEntry) -> bool:
+    xlsx_data = pd.ExcelFile(file_name)
+    try:
+        pd.read_excel(xlsx_data, sheet_name="Library")
+        pd.read_excel(xlsx_data, sheet_name="Datasets")
+    except ValueError:
+        # print(f"File {file_name.name} does not contain required sheets 'Library' and 'Datasets'.")
+        return False
+    return True
+
+
 def results_folder_validation(
     error_messages: list,
-    xlsx_extension: str,
     json_extension: str,
     subfolder_data_results_path: str,
     two_digit_folder: str,
@@ -181,7 +205,7 @@ def results_folder_validation(
     pos_neg_folder: str,
 ):
     for file in os.scandir(subfolder_data_results_path):
-        if file.is_file() and not (file.name.endswith(xlsx_extension) or file.name.endswith(json_extension)):
+        if file.is_file() and not (is_xlsx_file(file.name) or file.name.endswith(json_extension)):
             error_messages.append(
                 f"{rtype}:{rule_id}: Non-xlsx/json file found in 'results' folder "
                 f"under '{two_digit_folder}' in '{pos_neg_folder}'."
@@ -199,6 +223,10 @@ def get_immediate_subfolders(folder_path):
     return sorted([f.name for f in os.scandir(folder_path) if f.is_dir()])
 
 
+def is_xlsx_file(file_name: str) -> bool:
+    return any(file_name.lower().endswith(ext) for ext in XLSX_FILE_EXTENSIONS)
+
+
 def print_invalid(rtype: str, path: str):
     error_messages = []
     root_folder = f"{path}/{rtype}/"
@@ -206,13 +234,16 @@ def print_invalid(rtype: str, path: str):
     for rulefolder in subfolders:
         error_messages.extend(validate_folder_structure(rtype, root_folder + rulefolder, rule_id=rulefolder))
 
+    error_messages = [msg for msg in error_messages if "must have" in msg]
+    print(f"Found {len(error_messages)} issues in {rtype} folder structure.")
+
     output_file = f"{path}/___{rtype}_sharepoint_issues.txt"
     with open(output_file, "w", encoding="utf-8") as f:
         for item in error_messages:
             f.write(f"{item}\n")
 
 
-sp_path = os.path.expanduser("~") + "/data/CORE/CDISC_Sharepoint_dump_20250806/unitTesting"
+sp_path = os.path.expanduser("~") + "/Data/core-sharepoint"
 print_invalid("SDTMIG", sp_path)
 print_invalid("ADAMIG", sp_path)
 print_invalid("FDA Business Rules", sp_path)
