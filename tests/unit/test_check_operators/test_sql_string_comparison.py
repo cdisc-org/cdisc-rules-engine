@@ -32,6 +32,63 @@ def test_non_empty(data, expected_result):
 @pytest.mark.parametrize(
     "data,comparator,value_is_literal,expected_result",
     [
+        ({"target": ["ABC", "A", ""], "VAR2": ["A", "B", "D"]}, "VAR2", False, [True, False, False]),
+        ({"target": ["ABC", "A", ""]}, "A", True, [True, True, False]),
+        ({"target": ["ABC", "A", ""]}, "B", True, [False, False, False]),
+        ({"target": ["ABC", "A", ""]}, "$constant", False, [True, True, False]),
+        ({"target": ["ABC", "A", ""]}, "$list", False, [True, True, False]),
+        ({"target": ["", None, "ABC"]}, "A", True, [False, False, True]),
+        ({"target": ["ABC", "A", ""]}, "", True, [False, False, False]),
+        ({"target": ["ABC", "A", ""]}, ("A", "B"), True, [True, True, False]),
+        ({"target": ["ABC", "A", ""]}, ("A",), True, [True, True, False]),
+        ({"target": ["ABC", "", "A"]}, ("", "A"), True, [True, False, True]),
+        ({"target": ["ABC", "A", ""]}, ["A", "B"], True, [True, True, False]),
+        ({"target": ["ABC", "", "A"]}, ["A"], True, [True, False, True]),
+    ],
+)
+def test_starts_with(data, comparator, value_is_literal, expected_result):
+    sql_ops = create_sql_operators(data)
+    result = sql_ops.starts_with(
+        {
+            "target": "target",
+            "comparator": comparator,
+            "value_is_literal": value_is_literal,
+        }
+    )
+    assert_series_equals(result, expected_result)
+
+
+@pytest.mark.parametrize(
+    "data,comparator,value_is_literal,expected_result",
+    [
+        ({"target": ["ABC", "A", ""], "VAR2": ["C", "A", "D"]}, "VAR2", False, [True, True, False]),
+        ({"target": ["ABC", "A", ""]}, "C", True, [True, False, False]),
+        ({"target": ["ABC", "A", ""]}, "A", True, [False, True, False]),
+        ({"target": ["ABC", "A", ""]}, "$constant", False, [False, True, False]),
+        ({"target": ["ABC", "A", ""]}, "$list", False, [False, True, False]),
+        ({"target": ["", None, "ABC"]}, "C", True, [False, False, True]),
+        ({"target": ["ABC", "A", ""]}, "", True, [False, False, False]),
+        ({"target": ["ABC", "A", ""]}, ("C", "A"), True, [True, True, False]),
+        ({"target": ["ABC", "", "A"]}, ("", "A"), True, [False, False, True]),
+        ({"target": ["ABC", "A", ""]}, ["C", "A"], True, [True, True, False]),
+        ({"target": ["ABC", "A", ""]}, ["C"], True, [True, False, False]),
+    ],
+)
+def test_ends_with(data, comparator, value_is_literal, expected_result):
+    sql_ops = create_sql_operators(data)
+    result = sql_ops.ends_with(
+        {
+            "target": "target",
+            "comparator": comparator,
+            "value_is_literal": value_is_literal,
+        }
+    )
+    assert_series_equals(result, expected_result)
+
+
+@pytest.mark.parametrize(
+    "data,comparator,value_is_literal,expected_result",
+    [
         ({"target": ["ABC", "A", ""], "VAR2": ["AB", "ABC", "X"]}, "VAR2", False, [True, False, False]),
         ({"target": ["ABC", "A", ""]}, 2, True, [True, False, False]),
         ({"target": ["ABC", "A", ""]}, "AB", True, [True, False, False]),
@@ -41,7 +98,7 @@ def test_non_empty(data, expected_result):
         ({"target": ["ABC", None, "A"]}, 2, True, [True, False, False]),
     ],
 )
-def test_sql_longer_than(data, comparator, value_is_literal, expected_result):
+def test_longer_than(data, comparator, value_is_literal, expected_result):
     sql_ops = create_sql_operators(data)
     result = sql_ops.longer_than(
         {
@@ -64,7 +121,7 @@ def test_sql_longer_than(data, comparator, value_is_literal, expected_result):
         ({"target": ["A", None, ""]}, 3, True, [True, False, False]),
     ],
 )
-def test_sql_shorter_than_or_equal_to(data, comparator, value_is_literal, expected_result):
+def test_shorter_than_or_equal_to(data, comparator, value_is_literal, expected_result):
     sql_ops = create_sql_operators(data)
     result = sql_ops.shorter_than_or_equal_to(
         {
@@ -87,7 +144,7 @@ def test_sql_shorter_than_or_equal_to(data, comparator, value_is_literal, expect
         ({"target": ["ABC", None, ""]}, 1, True, [True, False, False]),
     ],
 )
-def test_sql_longer_than_or_equal_to(data, comparator, value_is_literal, expected_result):
+def test_longer_than_or_equal_to(data, comparator, value_is_literal, expected_result):
     sql_ops = create_sql_operators(data)
     result = sql_ops.longer_than_or_equal_to(
         {
@@ -110,7 +167,7 @@ def test_sql_longer_than_or_equal_to(data, comparator, value_is_literal, expecte
         ({"target": ["A", None, ""]}, 2, True, [True, False, False]),
     ],
 )
-def test_sql_shorter_than(data, comparator, value_is_literal, expected_result):
+def test_shorter_than(data, comparator, value_is_literal, expected_result):
     sql_ops = create_sql_operators(data)
     result = sql_ops.shorter_than(
         {
@@ -134,7 +191,7 @@ def test_sql_shorter_than(data, comparator, value_is_literal, expected_result):
         ({"target": ["AB", None, ""]}, 2, True, [True, False, False]),
     ],
 )
-def test_sql_has_equal_length(data, comparator, value_is_literal, expected_result):
+def test_has_equal_length(data, comparator, value_is_literal, expected_result):
     sql_ops = create_sql_operators(data)
     result = sql_ops.has_equal_length(
         {
@@ -157,7 +214,7 @@ def test_sql_has_equal_length(data, comparator, value_is_literal, expected_resul
         ({"target": ["ABC", None, ""]}, 2, True, [True, False, False]),
     ],
 )
-def test_sql_has_not_equal_length(data, comparator, value_is_literal, expected_result):
+def test_has_not_equal_length(data, comparator, value_is_literal, expected_result):
     sql_ops = create_sql_operators(data)
     result = sql_ops.has_not_equal_length(
         {
