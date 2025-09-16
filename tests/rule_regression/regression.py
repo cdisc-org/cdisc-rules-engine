@@ -24,6 +24,8 @@ TYPE_DEPTH = RULE_DEPTH + 1
 CASE_DEPTH = TYPE_DEPTH + 1
 DATA_DEPTH = CASE_DEPTH + 2
 
+METADATA_CACHE = {}
+
 
 def run_single_rule_regression(row: pd.Series, get_core_rule, target_case: Optional[str] = None) -> list:
     ig_specs = {
@@ -219,6 +221,39 @@ def run_regression_on_test_case(
     return None, None
 
 
+def get_metadata(ig_specs: IGSpecification, define_xml_path: str):
+    """
+    Get metadata from cache or create it if not present.
+    """
+    key = f"{ig_specs['standard']}_{ig_specs['standard_version']}_{ig_specs['standard_substandard']}_{define_xml_path}"
+    if key not in METADATA_CACHE:
+        METADATA_CACHE[key] = get_library_metadata_from_cache(
+            Validation_args(
+                cache=os.path.join(os.path.dirname(__file__), "..", "..", DefaultFilePaths.CACHE.value),
+                pool_size=None,
+                dataset_paths=None,
+                log_level=None,
+                report_template=None,
+                standard=ig_specs["standard"],
+                version=ig_specs["standard_version"],
+                substandard=ig_specs["standard_substandard"],
+                controlled_terminology_package=None,
+                output=None,
+                output_format=None,
+                raw_report=None,
+                define_version=None,
+                external_dictionaries=None,
+                rules=None,
+                local_rules=None,
+                custom_standard=None,
+                progress=None,
+                define_xml_path=define_xml_path,
+                validate_xml=None,
+            )
+        )
+    return METADATA_CACHE[key]
+
+
 def process_test_case_dataset(
     regression_errors: list,
     define_xml_file_path: str,
@@ -239,30 +274,7 @@ def process_test_case_dataset(
         regression_errors["results_sql"] = sql_regression
 
         # Execute in old engine
-        metadata = get_library_metadata_from_cache(
-            Validation_args(
-                cache=os.path.join(os.path.dirname(__file__), "..", "..", DefaultFilePaths.CACHE.value),
-                pool_size=None,
-                dataset_paths=None,
-                log_level=None,
-                report_template=None,
-                standard=ig_specs["standard"],
-                version=ig_specs["standard_version"],
-                substandard=ig_specs["standard_substandard"],
-                controlled_terminology_package=None,
-                output=None,
-                output_format=None,
-                raw_report=None,
-                define_version=None,
-                external_dictionaries=None,
-                rules=None,
-                local_rules=None,
-                custom_standard=None,
-                progress=None,
-                define_xml_path=define_xml_file_path,
-                validate_xml=None,
-            )
-        )
+        metadata = get_metadata(ig_specs, define_xml_file_path)
         old_results = run_single_rule_validation(
             data_test_datasets,
             rule,
@@ -338,36 +350,39 @@ def validate_engine_result(engine_result: list[dict], validated_result: list[dic
 
 
 def old_vs_sql_regression_comparison(old_results: list[dict], sql_results: list[dict]):
-    comp_regression = {}
+    dataset_mismatch = False
+    execution_status_mismatch = False
+    number_of_errors_mismatch = False
+    diff = {}
     # compare execution status
-    for o_res in old_results:
-        # find matching dataset/domain entries
-        sql_res = next(
-            (
-                sql_res
-                for sql_res in sql_results
-                if sql_res.get("dataset") == o_res.get("dataset").replace(".xpt", "")
-                and sql_res.get("domain") == o_res.get("domain")
-            ),
-            None,
-        )
-        if sql_res is not None:
-            if o_res.get("execution_status") != sql_res.get("execution_status"):
-                comp_regression["execution_status_match"] = False
-            else:
-                comp_regression["execution_status_match"] = True
-                if o_res.get("number_errors") != sql_res.get("number_errors"):
-                    comp_regression["number_of_errors_match"] = False
-                    comp_regression["deep_diff"] = compare_error_lists(o_res.get("errors"), sql_res.get("errors"))
-                else:
-                    comp_regression["number_of_errors_match"] = True
-                    comp_regression["deep_diff"] = compare_error_lists(o_res.get("errors"), sql_res.get("errors"))
-        else:
-            comp_regression["execution_status_match"] = False
-            comp_regression["number_of_errors_match"] = False
-            comp_regression["deep_diff"] = []
+    for sql, old in zip(sql_results, old_results):
+        if sql.get("dataset") != old.get("dataset") or sql.get("domain") != old.get("domain"):
+            dataset_mismatch = True
+            break
 
-    return comp_regression
+        if old.get("execution_status") != sql.get("execution_status"):
+            execution_status_mismatch = True
+            break
+
+        if old.get("number_errors") != sql.get("number_errors"):
+            number_of_errors_mismatch = True
+            break
+
+        dataset_diff = compare_error_lists(old.get("errors"), sql.get("errors"))
+        if dataset_diff:
+            diff[old.get("dataset")] = dataset_diff
+
+    if dataset_mismatch or execution_status_mismatch or number_of_errors_mismatch or diff:
+        return {
+            "dataset_mismatch": dataset_mismatch,
+            "execution_status_mismatch": execution_status_mismatch,
+            "number_of_errors_mismatch": number_of_errors_mismatch,
+            "diff": diff,
+        }
+    else:
+        return {
+            "equal": True,
+        }
 
 
 def compare_error_lists(old_errors, sql_errors):
@@ -508,7 +523,7 @@ def sharepoint_xlsx_to_test_datasets(path: str) -> list[TestDataset]:
                 TestDataset(
                     filename=filename,
                     filepath=filename,
-                    name=filename.split(".")[0],
+                    name=filename.split(".")[0].upper(),
                     label=label,
                     variables=variables,
                     records=data,

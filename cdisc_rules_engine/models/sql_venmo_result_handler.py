@@ -139,7 +139,7 @@ class SqlVenmoResultHandler(BaseActions):
 
         return ValidationErrorEntity(
             value=value,
-            dataset=self.dataset_metadata.dataset_name,
+            dataset=self.dataset_metadata.filename,
         )
 
     def _build_record_error_items(
@@ -224,7 +224,7 @@ class SqlVenmoResultHandler(BaseActions):
                 values[column] = value
 
         return ValidationErrorEntity(
-            dataset=self.dataset_metadata.dataset_name,
+            dataset=self.dataset_metadata.filename,
             row=row_id,
             usubjid=usubjid,
             sequence=sequence,
