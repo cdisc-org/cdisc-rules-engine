@@ -31,9 +31,9 @@ class JSONataProcessor:
                 error_entity = ValidationErrorEntity(
                     value=result,
                     dataset=result.get("dataset") or "",
-                    row=result.get("path"),
-                    usubjid=result.get("id"),
-                    sequence=result.get("iid"),
+                    row=result.get("record"),
+                    usubjid=result.get("usubjid"),
+                    sequence=result.get("sequence"),
                 )
                 errors[result.get("dataset")].append(error_entity)
         validation_error_container = [

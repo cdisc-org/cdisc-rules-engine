@@ -10,16 +10,14 @@ from cdisc_rules_engine.utilities.jsonata_processor import JSONataProcessor
 def test_jsonata_processor(mock_get_custom_functions: MagicMock):
     rule = """
         Check: |
-            **.$filter($, $utils.equals).{"path":path, "A":A, "B":B}
+            **.$filter($, $utils.equals).{"record":path, "A":A, "B":B}
         Core:
             Id: JSONATA Test
         Status: Draft
         Outcome:
             Message: "A equals B"
             Output Variables:
-                - id
-                - name
-                - path
+                - record
                 - A
                 - B
         Rule Type: JSONata
@@ -48,18 +46,22 @@ def test_jsonata_processor(mock_get_custom_functions: MagicMock):
     expected = [
         {
             "executionStatus": "success",
-            "dataset": "",
+            "dataset": None,
             "domain": None,
-            "variables": ["A", "B", "id", "name", "path"],
+            "variables": ["A", "B", "record"],
             "message": "A equals B",
             "errors": [
                 {
-                    "value": {"path": "", "A": "same value 1", "B": "same value 1"},
+                    "value": {"record": "", "A": "same value 1", "B": "same value 1"},
                     "dataset": "",
                     "row": "",
                 },
                 {
-                    "value": {"path": "C.C", "A": "same value 2", "B": "same value 2"},
+                    "value": {
+                        "record": "C.C",
+                        "A": "same value 2",
+                        "B": "same value 2",
+                    },
                     "dataset": "",
                     "row": "C.C",
                 },

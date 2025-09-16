@@ -189,16 +189,14 @@ Apply a JSONata query to a JSON file. [JSONata documentation](https://docs.jsona
 
 ```yaml
 Check: |
-  **.$filter($, $utils.equals).{"path":path, "A":A, "B":B}
+  **.$filter($, $utils.equals).{"record":path, "A":A, "B":B}
 Core:
   Id: JSONATA Test
 Status: Draft
 Outcome:
   Message: "A equals B"
   Output Variables:
-    - id
-    - name
-    - path
+    - record
     - A
     - B
 Rule Type: JSONata
@@ -243,16 +241,20 @@ Sensitivity: Record
     "executionStatus": "success",
     "dataset": "",
     "domain": "",
-    "variables": ["A", "B", "id", "name", "path"],
+    "variables": ["A", "B", "record"],
     "message": "A equals B",
     "errors": [
       {
-        "value": { "path": "", "A": "same value 1", "B": "same value 1" },
+        "value": { "record": "", "A": "same value 1", "B": "same value 1" },
         "dataset": "",
         "row": ""
       },
       {
-        "value": { "path": "C.C", "A": "same value 2", "B": "same value 2" },
+        "value": {
+          "record": "C.C",
+          "A": "same value 2",
+          "B": "same value 2"
+        },
         "dataset": "",
         "row": "C.C"
       }
@@ -267,8 +269,14 @@ You can use `Outcome.Output Variables` to specify which properties to display fr
 
 Result property name -> Report Issue Details Column Name:
 
-- `id` -> `USUBJID`
-- `path` -> `Record`
+- `dataset` -> `Dataset`
+- `usubjid` -> `USUBJID`
+- `record` -> `Record`
+- `sequence` -> `Sequence`
+
+### Scope
+
+`Scope` should always `Include` `ALL` to ensure the rule will be run. The rule is only run once for the entire JSON file. The `Dataset` determination must come from the rule's jsonata result property.
 
 ## Record Data
 
