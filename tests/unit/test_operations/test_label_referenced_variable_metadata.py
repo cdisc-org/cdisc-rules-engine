@@ -221,3 +221,148 @@ def test_get_label_referenced_variable_metadata(
         ].values
         == "AENEW"
     )
+
+
+@pytest.mark.parametrize("dataset_type", [(PandasDataset)])
+def test_get_label_referenced_variable_metadata_missing_role_field(
+    operation_params: OperationParams, dataset_type
+):
+    """Test that the operation works correctly when no variables have a role field."""
+    model_metadata = {
+        "datasets": [
+            {
+                "name": "FA",
+                "datasetVariables": [
+                    {
+                        "name": "FATERM",
+                        "ordinal": 4,
+                    },  # No role field
+                ],
+            }
+        ],
+        "classes": [
+            {
+                "name": "FINDINGS ABOUT",
+                "classVariables": [
+                    {"name": "--TERM", "ordinal": 1},  # No role field
+                ],
+            },
+            {
+                "name": "FINDINGS",
+                "classVariables": [
+                    {"name": "--TEST", "ordinal": 1},  # No role field
+                    {"name": "--TESTCD", "ordinal": 2},  # No role field
+                ],
+            },
+            {
+                "name": GENERAL_OBSERVATIONS_CLASS,
+                "classVariables": [
+                    {
+                        "name": "DOMAIN",
+                        "ordinal": 2,
+                    },  # No role field
+                    {
+                        "name": "STUDYID",
+                        "ordinal": 1,
+                    },  # No role field
+                ],
+            },
+        ],
+    }
+    standard_metadata = {
+        "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
+        "domains": {"FA"},
+        "classes": [
+            {
+                "name": "FINDINGS ABOUT",
+                "datasets": [
+                    {
+                        "name": "FA",
+                        "label": "Findings About",
+                        "datasetVariables": [
+                            {"name": "FATESTCD", "ordinal": 1, "label": "Test Code"},
+                            {"name": "FATEST", "ordinal": 2, "label": "Test Name"},
+                        ],
+                    }
+                ],
+            }
+        ],
+    }
+    operation_params.dataframe = dataset_type.from_dict(
+        {
+            "STUDYID": ["TEST_STUDY", "TEST_STUDY"],
+            "DOMAIN": ["FA", "FA"],
+            "FATERM": ["Test Code", "Test Name"],
+        }
+    )
+    operation_params.domain = "FA"
+    operation_params.standard = "sdtmig"
+    operation_params.standard_version = "3-4"
+    operation_params.target = "FATERM"
+    operation_params.operation_id = "$label_referenced_variable"
+
+    # save model metadata to cache
+    cache = InMemoryCacheService.get_instance()
+
+    library_metadata = LibraryMetadataContainer(
+        standard_metadata=standard_metadata, model_metadata=model_metadata
+    )
+    mock_dataset_class = Mock()
+    mock_dataset_class.name = "Findings About"
+    # execute operation
+    data_service = LocalDataService.get_instance(
+        cache_service=cache, config=ConfigService()
+    )
+    data_service.get_dataset_class = Mock(return_value=mock_dataset_class)
+    operation = LabelReferencedVariableMetadata(
+        operation_params,
+        operation_params.dataframe,
+        cache,
+        data_service,
+        library_metadata,
+    )
+
+    def mock_cached_method(*args, **kwargs):
+        return operation_params.dataframe
+
+    with patch(
+        "cdisc_rules_engine.services.data_services.LocalDataService.get_raw_dataset_metadata",
+        side_effect=mock_cached_method,
+    ):
+        result: pd.DataFrame = operation.execute()
+
+    # Test that all expected columns are present, even when no variables have a role field
+    expected_columns = [
+        "STUDYID",
+        "DOMAIN",
+        "FATERM",
+        "$label_referenced_variable_name",
+        "$label_referenced_variable_role",
+        "$label_referenced_variable_ordinal",
+        "$label_referenced_variable_label",
+    ]
+
+    actual_columns = result.columns.to_list()
+
+    # Check that all expected columns are present (order doesn't matter)
+    for col in expected_columns:
+        assert col in actual_columns, f"Expected column {col} not found in result"
+
+    # Test that the role column exists and can be accessed (even if empty)
+    role_values = result.data["$label_referenced_variable_role"].tolist()
+    assert isinstance(role_values, list)
+    assert len(role_values) == 2  # Should have 2 entries for the 2 test rows
+
+    # Test that the operation correctly matched the labels to variable names
+    assert (
+        result.data[result["$label_referenced_variable_label"] == "Test Code"][
+            "$label_referenced_variable_name"
+        ].values
+        == "FATESTCD"
+    )
+    assert (
+        result.data[result["$label_referenced_variable_label"] == "Test Name"][
+            "$label_referenced_variable_name"
+        ].values
+        == "FATEST"
+    )
