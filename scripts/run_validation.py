@@ -1,14 +1,18 @@
 import itertools
+import os
 import time
 from functools import partial
 from multiprocessing import Pool
 from multiprocessing.managers import SyncManager
-from typing import List, Iterable, Callable
+from typing import Callable, Iterable, List
+from warnings import simplefilter
 
 from cdisc_rules_engine.config import config
 from cdisc_rules_engine.config.config import ConfigService
+from cdisc_rules_engine.constants.cache_constants import PUBLISHED_CT_PACKAGES
 from cdisc_rules_engine.dummy_models.dummy_dataset import DummyDataset
 from cdisc_rules_engine.enums.progress_parameter_options import ProgressParameterOptions
+from cdisc_rules_engine.models.dataset import PandasDataset
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
@@ -26,11 +30,12 @@ from cdisc_rules_engine.services.cache import (
 from cdisc_rules_engine.services.data_services import (
     DataServiceFactory,
 )
-from cdisc_rules_engine.models.dataset import PandasDataset
 from cdisc_rules_engine.services.data_services.dummy_data_service import (
     DummyDataService,
 )
+from cdisc_rules_engine.services.reporting import BaseReport, ReportFactory
 from cdisc_rules_engine.utilities.data_processor import DataProcessor
+from cdisc_rules_engine.utilities.progress_displayers import get_progress_displayer
 from cdisc_rules_engine.utilities.rule_processor import RuleProcessor
 from cdisc_rules_engine.utilities.utils import (
     get_library_variables_metadata_cache_key,
@@ -42,18 +47,11 @@ from scripts.script_utils import (
     fill_cache_with_dictionaries,
     get_cache_service,
     get_library_metadata_from_cache,
-    get_rules,
     get_max_dataset_size,
+    get_rules,
 )
-from cdisc_rules_engine.services.reporting import BaseReport, ReportFactory
-from cdisc_rules_engine.utilities.progress_displayers import get_progress_displayer
-from warnings import simplefilter
-import os
-from cdisc_rules_engine.constants.cache_constants import PUBLISHED_CT_PACKAGES
 
-simplefilter(
-    action="ignore", category=FutureWarning
-)  # Suppress warnings coming from numpy
+simplefilter(action="ignore", category=FutureWarning)  # Suppress warnings coming from numpy
 """
 Sync manager used to manage instances of the cache between processes.
 Cache types are registered to this manager, and only one instance of the
@@ -72,9 +70,7 @@ def validate_single_rule(
     library_metadata: LibraryMetadataContainer,
     rule: dict = None,
 ):
-    rule["conditions"] = ConditionCompositeFactory.get_condition_composite(
-        rule["conditions"]
-    )
+    rule["conditions"] = ConditionCompositeFactory.get_condition_composite(rule["conditions"])
     max_dataset_size = max(datasets, key=lambda x: x.file_size).file_size
     # call rule engine
     engine = RulesEngine(
@@ -141,16 +137,12 @@ def run_validation(args: Validation_args):
     ).get_data_service(args.dataset_paths)
     # install dictionaries if needed
     dictionary_versions = fill_cache_with_dictionaries(shared_cache, args, data_service)
-    large_dataset_validation: bool = (
-        data_service.dataset_implementation != PandasDataset
-    )
+    large_dataset_validation: bool = data_service.dataset_implementation != PandasDataset
     datasets = data_service.get_datasets()
     created_files = []
     if large_dataset_validation and data_service.standard != "usdm":
         # convert all files to parquet temp files
-        engine_logger.warning(
-            "Large datasets must use parquet format, converting all datasets to parquet"
-        )
+        engine_logger.warning("Large datasets must use parquet format, converting all datasets to parquet")
         for dataset in datasets:
             file_path = dataset.full_path
             if file_path.endswith(".parquet"):
@@ -164,15 +156,11 @@ def run_validation(args: Validation_args):
     start = time.time()
     results = []
     # instantiate logger in each child process to maintain log level
-    initializer = partial(
-        initialize_logger, engine_logger.disabled, engine_logger._logger.level
-    )
+    initializer = partial(initialize_logger, engine_logger.disabled, engine_logger._logger.level)
     # run each rule in a separate process
     with Pool(args.pool_size, initializer=initializer) as pool:
         validation_results: Iterable[RuleValidationResult] = pool.imap_unordered(
-            partial(
-                validate_single_rule, shared_cache, datasets, args, library_metadata
-            ),
+            partial(validate_single_rule, shared_cache, datasets, args, library_metadata),
             rules,
         )
         progress_handler: Callable = get_progress_displayer(args)
@@ -181,9 +169,7 @@ def run_validation(args: Validation_args):
     # build all desired reports
     end = time.time()
     elapsed_time = end - start
-    reporting_factory = ReportFactory(
-        datasets, results, elapsed_time, args, data_service
-    )
+    reporting_factory = ReportFactory(datasets, results, elapsed_time, args, data_service)
     reporting_services: List[BaseReport] = reporting_factory.get_report_services()
     for reporting_service in reporting_services:
         reporting_service.write_report(
@@ -206,12 +192,11 @@ def run_single_rule_validation(
     standard_version: str = "",
     standard_substandard: str = None,
     codelists=[],
+    library_metadata: LibraryMetadataContainer = None,
 ) -> dict:
     datasets = [DummyDataset(dataset_data) for dataset_data in datasets]
     cache = cache or InMemoryCacheService()
-    standard_details_cache_key = get_standard_details_cache_key(
-        standard, standard_version, standard_substandard
-    )
+    standard_details_cache_key = get_standard_details_cache_key(standard, standard_version, standard_substandard)
     variable_details_cache_key = get_library_variables_metadata_cache_key(
         standard, standard_version, standard_substandard
     )
@@ -221,27 +206,24 @@ def run_single_rule_validation(
         model_metadata = cache.get(model_cache_key)
     else:
         model_metadata = {}
-    variable_codelist_cache_key = get_variable_codelist_map_cache_key(
-        standard, standard_version, standard_substandard
-    )
+    variable_codelist_cache_key = get_variable_codelist_map_cache_key(standard, standard_version, standard_substandard)
 
     ct_package_metadata = {}
     for codelist in codelists:
         ct_package_metadata[codelist] = cache.get(codelist)
 
-    library_metadata = LibraryMetadataContainer(
-        standard_metadata=standard_metadata,
-        model_metadata=model_metadata,
-        variables_metadata=cache.get(variable_details_cache_key),
-        variable_codelist_map=cache.get(variable_codelist_cache_key),
-        ct_package_metadata=ct_package_metadata,
-        published_ct_packages=cache.get(PUBLISHED_CT_PACKAGES),
-    )
+    if not library_metadata:
+        library_metadata = LibraryMetadataContainer(
+            standard_metadata=standard_metadata,
+            model_metadata=model_metadata,
+            variables_metadata=cache.get(variable_details_cache_key),
+            variable_codelist_map=cache.get(variable_codelist_cache_key),
+            ct_package_metadata=ct_package_metadata,
+            published_ct_packages=cache.get(PUBLISHED_CT_PACKAGES),
+        )
     if not standard and not standard_version and rule:
         standard = rule.get("Authorities")[0].get("Standards")[0].get("Name").lower()
-        standard_substandard = (
-            rule.get("Authorities")[0].get("Standards")[0].get("Substandard", None)
-        )
+        standard_substandard = rule.get("Authorities")[0].get("Standards")[0].get("Substandard", None)
         if standard_substandard is not None:
             standard_substandard = standard_substandard.lower()
         standard_version = rule.get("Authorities")[0].get("Standards")[0].get("Version")

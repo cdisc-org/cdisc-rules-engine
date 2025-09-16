@@ -10,11 +10,14 @@ from psycopg2 import errors
 from cdisc_rules_engine.data_service.postgresql_data_service import (
     PostgresQLDataService,
 )
+from cdisc_rules_engine.enums.default_file_paths import DefaultFilePaths
 from cdisc_rules_engine.models.test_dataset import TestDataset, TestVariableMetadata
+from cdisc_rules_engine.models.validation_args import Validation_args
 from cdisc_rules_engine.utilities.ig_specification import IGSpecification
 from cdisc_rules_engine.utilities.sql_rule_processor import SQLRuleProcessor
 from scripts.run_sql_validation import sql_run_single_rule_validation
 from scripts.run_validation import run_single_rule_validation
+from scripts.script_utils import get_library_metadata_from_cache
 
 RULE_DEPTH = 2
 TYPE_DEPTH = RULE_DEPTH + 1
@@ -24,7 +27,7 @@ DATA_DEPTH = CASE_DEPTH + 2
 
 def run_single_rule_regression(row: pd.Series, get_core_rule, target_case: Optional[str] = None) -> list:
     ig_specs = {
-        "standard": "SDTMIG",
+        "standard": "sdtmig",
         "standard_version": "3.4",
         "standard_substandard": None,
         "define_xml_version": None,
@@ -236,12 +239,37 @@ def process_test_case_dataset(
         regression_errors["results_sql"] = sql_regression
 
         # Execute in old engine
+        metadata = get_library_metadata_from_cache(
+            Validation_args(
+                cache=os.path.join(os.path.dirname(__file__), "..", "..", DefaultFilePaths.CACHE.value),
+                pool_size=None,
+                dataset_paths=None,
+                log_level=None,
+                report_template=None,
+                standard=ig_specs["standard"],
+                version=ig_specs["standard_version"],
+                substandard=ig_specs["standard_substandard"],
+                controlled_terminology_package=None,
+                output=None,
+                output_format=None,
+                raw_report=None,
+                define_version=None,
+                external_dictionaries=None,
+                rules=None,
+                local_rules=None,
+                custom_standard=None,
+                progress=None,
+                define_xml_path=define_xml_file_path,
+                validate_xml=None,
+            )
+        )
         old_results = run_single_rule_validation(
             data_test_datasets,
             rule,
             define_xml=define_xml_file_path,
             standard=ig_specs["standard"],
             standard_version=ig_specs["standard_version"],
+            library_metadata=metadata,
         )
         regression_errors["dataset_import_old"] = "SUCCESS"
         regression_errors["results_present_old"] = True
