@@ -37,7 +37,7 @@ from .not_matches_regex_operator import NotMatchesRegexOperator
 from .not_prefix_matches_regex_operator import NotPrefixMatchesRegexOperator
 from .not_suffix_matches_regex_operator import NotSuffixMatchesRegexOperator
 from .numeric_comparison_operator import NumericComparisonOperator
-from .prefix_equal_to_operator import PrefixEqualToOperator
+from .prefix_suffix_equal_to_operator import PrefixSuffixEqualToOperator
 from .string_length_comparison_operator import StringLengthComparisonOperator
 from .prefix_matches_regex_operator import PrefixMatchesRegexOperator
 from .present_on_multiple_rows_within_operator import (
@@ -52,7 +52,6 @@ from .shares_exactly_one_element_with_operator import (
 )
 from .shares_no_elements_with_operator import SharesNoElementsWithOperator
 from .starts_with_operator import StartsWithOperator
-from .suffix_equal_to_operator import SuffixEqualToOperator
 from .suffix_matches_regex_operator import SuffixMatchesRegexOperator
 from .target_is_sorted_by_operator import TargetIsSortedByOperator
 from .value_has_multiple_references_operator import ValueHasMultipleReferencesOperator
@@ -134,10 +133,10 @@ class PostgresQLOperators(BaseType):
         "non_conformant_value_data_type": lambda data: NotOperator(data, ConformantValueDataTypeOperator),
         "conformant_value_length": lambda data: ConformantValueLengthOperator(data),
         "non_conformant_value_length": lambda data: NotOperator(data, ConformantValueLengthOperator),
-        "suffix_equal_to": lambda data: SuffixEqualToOperator(data),
-        "suffix_not_equal_to": lambda data: NotOperator(data, SuffixEqualToOperator),
-        "prefix_equal_to": lambda data: PrefixEqualToOperator(data),
-        "prefix_not_equal_to": lambda data: NotOperator(data, PrefixEqualToOperator),
+        "suffix_equal_to": lambda data: PrefixSuffixEqualToOperator(data),
+        "suffix_not_equal_to": lambda data: NotOperator(data, PrefixSuffixEqualToOperator),
+        "prefix_equal_to": lambda data: PrefixSuffixEqualToOperator(data),
+        "prefix_not_equal_to": lambda data: NotOperator(data, PrefixSuffixEqualToOperator),
         "has_equal_length": lambda data: StringLengthComparisonOperator(data, operator="="),
         "has_not_equal_length": lambda data: StringLengthComparisonOperator(data, operator="!="),
         "longer_than": lambda data: StringLengthComparisonOperator(data, operator=">"),
