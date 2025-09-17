@@ -36,7 +36,7 @@ Operations:
     id: $code_for_decode
     operator: codelist_terms
     term_pref_term: studyPhase.standardCode.decode
-    ct_version: studyPhase.standardCode.codeSystemVersion
+    version: studyPhase.standardCode.codeSystemVersion
 Outcome:
   Message: 'The study version''s study phase is not specified according to the
     extensible Trial Phase Response (C66737) SDTM codelist - codeSystem is not
