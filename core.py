@@ -278,7 +278,7 @@ def validate(
             )
             ctx.exit()
         dataset_paths, found_formats = valid_data_file(
-            [str(Path(data).joinpath(fn)) for fn in os.listdir(data)]
+            [str(p) for p in Path(data).rglob("*") if p.is_file()]
         )
         if len(found_formats) > 1:
             logger.error(
