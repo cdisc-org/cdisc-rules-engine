@@ -114,7 +114,7 @@ def run_test_cases(
     ]
 
     test_case_regression = []
-    for test_case_folder_path in test_case_folder_paths:
+    for test_case_folder_path in sorted(test_case_folder_paths):
         if target_case and not test_case_folder_path.endswith(target_case):
             continue
 
@@ -632,7 +632,8 @@ def find_data_file(path: str) -> str:
     if not path:
         return ""
     try:
-        for filename in os.listdir(path):
+        # Sorting to remove any non-determinism between OSes
+        for filename in sorted(os.listdir(path)):
             full_path = os.path.join(path, filename)
             extension = filename.split(".")[-1].lower()
             if not os.path.isfile(full_path) or extension not in ["xls", "xlsx"]:
