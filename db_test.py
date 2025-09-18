@@ -8,9 +8,16 @@ config = DatabaseConfigPostgres()
 db = DatabasePostgres(config)
 
 try:
-    if db.get_connection():
-        logger.info("Database connection established successfully.")
-    else:
-        logger.error("Failed to establish database connection.")
+    with db.get_connection_and_cursor() as (conn, cursor):
+        cursor.execute("SELECT version();")
+        version = cursor.fetchone()
+        logger.info("✅ Database connection successful!")
+        logger.info(f"PostgreSQL version: {version['version']}")
+        # Test simple query
+        cursor.execute("SELECT current_database(), current_user;")
+        db_info = cursor.fetchone()
+        logger.info(f"Connected to database: {db_info['current_database']} as user: {db_info['current_user']}")
 except Exception as e:
-    logger.error(f"An error occurred while connecting to the database: {e}")
+    logger.error(f"❌ An error occurred while testing the database connection: {e}")
+finally:
+    db.close_pool()

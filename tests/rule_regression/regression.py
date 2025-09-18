@@ -1,6 +1,7 @@
 import json
 import os
 import re
+from pathlib import Path
 from typing import Optional, Tuple
 
 import pandas as pd
@@ -63,12 +64,14 @@ def run_single_rule_regression(row: pd.Series, get_core_rule, target_case: Optio
         if len(paths) == 1:
             rule_regression["rule_in_mltple_standards"] = []
             p = paths[0]
-            rule_regression["sharepoint_source"] = p.split("/")[-RULE_DEPTH : -(RULE_DEPTH - 1)][0]
+            path_obj = Path(p)
+            parts = path_obj.parts
+            rule_regression["sharepoint_source"] = parts[-RULE_DEPTH]
 
             for case in ["negative", "positive"]:
-                case_path = p + f"/{case}"
-                if os.path.exists(case_path):
-                    run_test_cases(rule_regression, case, case_path, ig_specs, rule, target_case)
+                case_path = path_obj / case
+                if case_path.exists():
+                    run_test_cases(rule_regression, case, str(case_path), ig_specs, rule, target_case)
         elif len(paths) < 1:
             rule_regression["rule_in_mltple_standards"] = []
         else:
@@ -103,10 +106,11 @@ def run_test_cases(
 ):
     two_digit_pattern = re.compile(r"^\d{2}$")
     cur_regression[f"{case}_folder_path"] = extract_final_path(case_folder_path, TYPE_DEPTH)
+    case_path = Path(case_folder_path)
     test_case_folder_paths = [
-        case_folder_path + "/" + name
+        str(case_path / name)
         for name in os.listdir(case_folder_path)
-        if os.path.isdir(os.path.join(case_folder_path, name)) and two_digit_pattern.match(name)
+        if (case_path / name).is_dir() and two_digit_pattern.match(name)
     ]
 
     test_case_regression = []
@@ -115,8 +119,10 @@ def run_test_cases(
             continue
 
         try:
-            test_case_file_path = find_data_file(test_case_folder_path + "/data")
-            define_xml_file_path = find_define_xml_file_path(test_case_folder_path + "/data")
+            test_case_path = Path(test_case_folder_path)
+            data_path = test_case_path / "data"
+            test_case_file_path = find_data_file(str(data_path))
+            define_xml_file_path = find_define_xml_file_path(str(data_path))
             # run engine
             engine_regression = {}
             run_regression_on_test_case(
@@ -294,8 +300,9 @@ def process_test_case_dataset(
         regression_errors["old_overall_result"] = extract_overall_result(old_regression)
 
         # does validated_results path exist:
-        validated_results_folder = f"{test_case_folder_path}/validated_results"
-        if not os.path.exists(validated_results_folder):
+        test_case_path = Path(test_case_folder_path)
+        validated_results_folder = test_case_path / "validated_results"
+        if not validated_results_folder.exists():
             regression_errors["validated_results_folder_exists"] = False
             regression_errors["validation_file"] = ""
             regression_errors["validation_file_validation"] = ""
@@ -303,7 +310,7 @@ def process_test_case_dataset(
             regression_errors["sql_results_validation"] = "invalid"
         else:
             regression_errors["validated_results_folder_exists"] = True
-            validation_file_path = find_data_file(validated_results_folder)
+            validation_file_path = find_data_file(str(validated_results_folder))
             if not validation_file_path:
                 regression_errors["validation_file"] = ""
                 regression_errors["validation_file_validation"] = ""
@@ -459,12 +466,12 @@ def extract_overall_result(results):
 
 
 def get_data_paths_by_rule_id(row: pd.Series, rid: str) -> list[str]:
-    local_path = os.getenv("REGRESSION_PATH")
+    local_path = Path(os.getenv("REGRESSION_PATH"))
     paths = []
     if "SDTMIG" in row["std"]:
         paths.extend(
             find_dirs(
-                local_path + "SDTMIG",
+                local_path / "SDTMIG",
                 rid,
                 case_insensitive=True,
             )
@@ -480,19 +487,19 @@ def get_data_paths_by_rule_id(row: pd.Series, rid: str) -> list[str]:
         )
     paths.extend(
         find_dirs(
-            local_path + "FDA Business Rules",
+            local_path / "FDA Business Rules",
             rid,
             case_insensitive=True,
         )
     )
     paths.extend(
         find_dirs(
-            local_path + "FDA Validator Rules",
+            local_path / "FDA Validator Rules",
             rid,
             case_insensitive=True,
         )
     )
-    return paths
+    return [str(p) for p in paths]
 
 
 def sharepoint_xlsx_to_test_datasets(path: str) -> list[TestDataset]:
@@ -535,7 +542,7 @@ def sharepoint_xlsx_to_test_datasets(path: str) -> list[TestDataset]:
 
 def extract_variables(
     dataset_df: pd.DataFrame,
-) -> Tuple[list[TestVariableMetadata, dict]]:
+) -> Tuple[list[TestVariableMetadata], dict]:
     variables = []
     col_type_dict = {}
     for col in dataset_df.columns:
@@ -592,27 +599,33 @@ def extract_data(filename: str, col_type_dict: dict, dataset_df: pd.DataFrame) -
     return data
 
 
-def find_dirs(root, target_name, case_insensitive=False) -> list[str]:
+def find_dirs(root: Path, target_name: str, case_insensitive=False) -> list[Path]:
     matches = []
-    for d in os.listdir(root):
-        if (d == target_name) or (case_insensitive and d.lower() == target_name.lower()):
-            matches.append(os.path.join(root, d))
+    if not root.exists():
+        return matches
+
+    for item in root.iterdir():
+        if item.is_dir():
+            if (item.name == target_name) or (case_insensitive and item.name.lower() == target_name.lower()):
+                matches.append(item)
     return matches
 
 
-def find_max_dir(root) -> str:
-    max = 0
-    max_d = ""
-    try:
-        for d in os.listdir(root):
-            if d.isdigit():
-                d_int = int(d)
-                if d_int >= max:
-                    max = d_int
-                    max_d = os.path.join(root, d)
-        return max_d
-    except FileNotFoundError:
+def find_max_dir(root: str) -> str:
+    root_path = Path(root)
+    if not root_path.exists():
         return ""
+
+    max_num = 0
+    max_dir = ""
+
+    for item in root_path.iterdir():
+        if item.is_dir() and item.name.isdigit():
+            num = int(item.name)
+            if num >= max_num:
+                max_num = num
+                max_dir = str(item)
+    return max_dir
 
 
 def find_data_file(path: str) -> str:
@@ -667,31 +680,38 @@ def output_engine_results_json(pytestconfig, get_core_rules_df, get_core_rule, e
         test_case_results.append({"_".join(key.split("/")[-3:]): {"results": results_old}})
 
     # output
-    output_folder = str(pytestconfig.rootpath) + f"/tests/resources/rules/dev/test_case_results_{engine}/"
-    delete_files_in_directory(output_folder)
+    output_folder = Path(pytestconfig.rootpath) / f"tests/resources/rules/dev/test_case_results_{engine}/"
+    delete_files_in_directory(str(output_folder))
     for result in test_case_results:
         key, value = next(iter(result.items()))
-        with open(
-            f"{output_folder}{key}_results.json",
-            "w",
-            encoding="utf-8",
-        ) as f:
+        output_file = output_folder / f"{key}_results.json"
+        with open(output_file, "w", encoding="utf-8") as f:
             json.dump(value, f, ensure_ascii=False, indent=4)
 
 
 def extract_final_path(path: str, part_num: int) -> str:
-    parts = path.split("/")
+    """Extract the final N parts of a path using pathlib for cross-platform compatibility."""
+    if not path:
+        return ""
+
+    path_obj = Path(path)
+    parts = path_obj.parts
+
     if len(parts) < part_num:
         raise ValueError(f"Path {path} does not have enough parts to extract {part_num} parts.")
+
+    # Join the last part_num parts using forward slashes for consistency
     return "/".join(parts[-part_num:])
 
 
 def delete_files_in_directory(dir_path: str):
-    # Ensure the directory exists before attempting to delete files
-    if not os.path.exists(dir_path):
-        os.makedirs(dir_path)
+    """Delete all files in a directory, creating it if it doesn't exist."""
+    dir_path_obj = Path(dir_path)
 
-    for filename in os.listdir(dir_path):
-        file_path = os.path.join(dir_path, filename)
-        if os.path.isfile(file_path):
-            os.remove(file_path)
+    # Ensure the directory exists before attempting to delete files
+    if not dir_path_obj.exists():
+        dir_path_obj.mkdir(parents=True, exist_ok=True)
+
+    for file_path in dir_path_obj.iterdir():
+        if file_path.is_file():
+            file_path.unlink()

@@ -152,10 +152,13 @@ class PostgresQLDataService(SQLDataService):
             raise ValueError("All input data columns must have the same length")
 
         # Create schema and table:
+        schema_row = {
+            col.lower(): next((val for val in values if val is not None), "") for col, values in column_data.items()
+        }
         row_dicts = [dict(zip(column_data, values)) for values in zip(*column_data.values())]
         row_dicts = [{k.lower(): v for k, v in row.items()} for row in row_dicts]
 
-        schema = SqlTableSchema.from_data(table_name, row_dicts[0])
+        schema = SqlTableSchema.from_data(table_name, schema_row)
         pgi.create_table(schema)
 
         pgi.insert_data(table_name=table_name, data=row_dicts)
