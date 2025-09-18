@@ -1,7 +1,6 @@
 import pandas as pd
 import dask.dataframe as dd
 import os
-import json
 import jsonschema
 
 from cdisc_rules_engine.interfaces import (
@@ -12,19 +11,18 @@ from cdisc_rules_engine.models.dataset.dask_dataset import DaskDataset
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 import tempfile
 
+from cdisc_rules_engine.services.data_readers.json_reader import JSONReader
+
 
 class DatasetJSONReader(DataReaderInterface):
     def get_schema(self) -> dict:
-        with open(
+        schema = JSONReader().from_file(
             os.path.join("resources", "schema", "dataset.schema.json")
-        ) as schemajson:
-            schema = schemajson.read()
-        return json.loads(schema)
+        )
+        return schema
 
     def read_json_file(self, file_path: str) -> dict:
-        with open(file_path, "r") as file:
-            datasetjson = json.load(file)
-        return datasetjson
+        return JSONReader().from_file(file_path)
 
     def _raw_dataset_from_file(self, file_path) -> pd.DataFrame:
         # Load Dataset-JSON Schema

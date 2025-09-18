@@ -10,6 +10,7 @@ from cdisc_rules_engine.enums.rule_types import RuleTypes
 from cdisc_rules_engine.exceptions.custom_exceptions import (
     DatasetNotFoundError,
     DomainNotFoundInDefineXMLError,
+    InvalidJSONFormat,
     RuleFormatError,
     VariableMetadataNotFoundError,
     FailedSchemaValidation,
@@ -422,6 +423,13 @@ class RulesEngine:
             error_obj = FailedValidationEntity(
                 dataset=os.path.basename(dataset_path),
                 error=VariableMetadataNotFoundError.description,
+                message=exception.args[0],
+            )
+            message = "rule execution error"
+        elif isinstance(exception, InvalidJSONFormat):
+            error_obj = FailedValidationEntity(
+                dataset=os.path.basename(dataset_path),
+                error=InvalidJSONFormat.description,
                 message=exception.args[0],
             )
             message = "rule execution error"
