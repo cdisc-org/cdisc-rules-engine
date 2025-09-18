@@ -20,7 +20,7 @@ Check:
   all:
     - name: studyPhase.standardCode.decode
       operator: equal_to
-      value: $code_for_decode
+      value: term_code
 Core:
   Id: "CORE-000409"
   Status: Draft
@@ -33,7 +33,7 @@ Executability: Fully Executable
 Operations:
   - codelist_code: studyPhase.standardCode.code
     ct_package_type: SDTM
-    id: $code_for_decode
+    id: term_code
     operator: codelist_terms
     term_pref_term: studyPhase.standardCode.decode
     version: studyPhase.standardCode.codeSystemVersion
@@ -46,7 +46,7 @@ Outcome:
     sensitive).'
   Output Variables:
     - studyPhase.standardCode.decode
-    - $code_for_decode
+    - term_code
 Rule Type: Record Data
 Scope:
   Entities:

@@ -27,30 +27,25 @@
       ],
       "records": {
         "studyPhase.standardCode.code": [
-          "C15601",
-          "c48660",
-          "C198366",
-          "C199989"
+          "C141657",
+          "C182464",
+          "C115388"
         ],
         "studyPhase.standardCode.codeSystemVersion": [
           "2023-12-15",
           "2023-12-15",
-          "2023-12-15",
-          "2023-12-17"
+          "2023-12-15"
         ],
         "studyPhase.standardCode.decode": [
-          "Phase II Trial",
-          "NOT APPLICABLE",
-          "PHASE I/II/III TRIAL",
-          "PHASE IB TRIAL"
+          "10-Meter Walk/Run - Was Walk/Run Performed",
+          "Abnormal Involuntary Movement Scale AIMS0101 Through AIMS0107 Original Result - None",
+          "6MWT - Distance at 1 Minute"
         ]
       }
     }
   ],
   "codelists": [
     "sdtmct-2023-09-29",
-    "sdtmct-2023-12-15",
-    "sdtmct-2024-03-29",
-    "sdtmct-2024-09-27"
+    "sdtmct-2023-12-15"
   ]
 }
