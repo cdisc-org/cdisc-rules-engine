@@ -13,6 +13,9 @@ class SqlTableSchema:
         self._columns: dict[str, SqlColumnSchema] = {}
         self.source = source
 
+        id_column = SqlColumnSchema(name="id", hash="id", type="Num")
+        self.add_column(id_column)
+
     def add_column(self, data: SqlColumnSchema) -> None:
         self._columns[data.name.lower()] = data
 
@@ -36,6 +39,11 @@ class SqlTableSchema:
     @classmethod
     def from_data(cls, table_name: str, data: dict[str, Any]) -> "SqlTableSchema":
         """Create a SqlTableSchema from a dictionary."""
+        # Check for reserved column names in user data
+        for column in data.keys():
+            if column.lower() == "id":
+                raise ValueError("Column name 'id' is reserved for primary key in SQL tables.")
+
         instance = cls(table_name.lower(), table_name.lower(), source="data")
         for column, value in data.items():
             instance.add_column(SqlColumnSchema.from_data(column, value))

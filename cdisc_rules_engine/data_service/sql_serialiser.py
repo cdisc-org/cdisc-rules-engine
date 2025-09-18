@@ -40,10 +40,11 @@ class SQLSerialiser:
             if col_schema.alias:
                 continue
 
+            if col_schema.hash.lower() == "id":
+                continue
+
             if col_schema.hash.upper() in SQL_RESERVED_KEYWORDS:
                 raise ValueError(f"Column name '{col_schema.hash}' is a reserved SQL keyword.")
-            if col_schema.hash.lower() == "id":
-                raise ValueError("Column name 'id' is reserved for primary key in SQL tables.")
 
             sql_type = cls.column_type_to_sql_type(col_schema.type)
             col_def = f"{col_schema.hash} {sql_type}"
@@ -96,10 +97,11 @@ class SQLSerialiser:
     def create_column_from_schema(cls, table_schema: SqlTableSchema, column_schema: "SqlColumnSchema") -> str:
         """Generate ALTER TABLE statement from a schema"""
 
+        if column_schema.hash.lower() == "id":
+            raise ValueError("Column name 'id' is reserved for primary key in SQL tables and cannot be added.")
+
         if column_schema.hash.upper() in SQL_RESERVED_KEYWORDS:
             raise ValueError(f"Column name '{column_schema.hash}' is a reserved SQL keyword.")
-        if column_schema.hash.lower() == "id":
-            raise ValueError("Column name 'id' is reserved for primary key in SQL tables.")
 
         sql_type = cls.column_type_to_sql_type(column_schema.type)
         return f"ALTER TABLE {table_schema.hash} ADD COLUMN {column_schema.hash} {sql_type};"
