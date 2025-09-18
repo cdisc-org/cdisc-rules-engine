@@ -26,13 +26,18 @@ class CodelistTerms(BaseOperation):
             return self._handle_single_version()
 
     def _handle_multiple_versions(self) -> pd.Series:
-        if (
-            self.params.term_code
-            and self.params.term_value
-            and self.params.term_pref_term
-        ):
+        params_count: int = sum(
+            1
+            for x in (
+                self.params.term_code,
+                self.params.term_value,
+                self.params.term_pref_term,
+            )
+            if x
+        )
+        if params_count > 1:
             raise RuleExecutionError(
-                "term_code, term_pref_term and term_value cannot be specified at the same time."
+                "More than one of term_code, term_pref_term and term_value cannot be specified at the same time."
             )
         elif self.params.term_code:
             left_on = self.params.term_code
