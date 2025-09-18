@@ -42,15 +42,15 @@ class CodelistTerms(BaseOperation):
         elif self.params.term_code:
             left_on = self.params.term_code
             right_on = "term_code"
-            target = "term_value"
+            target = f"term_{self.params.returntype or 'value'}"
         elif self.params.term_value:
             left_on = self.params.term_value
             right_on = "term_value"
-            target = "term_code"
+            target = f"term_{self.params.returntype or 'code'}"
         elif self.params.term_pref_term:
             left_on = self.params.term_pref_term  # column from dataset
             right_on = "term_pref_term"  # column from lib metadata
-            target = "term_code"
+            target = f"term_{self.params.returntype or 'code'}"
 
         ct_versions = self.evaluation_dataset[self.params.ct_version]
         unique_ct_versions = ct_versions.unique()

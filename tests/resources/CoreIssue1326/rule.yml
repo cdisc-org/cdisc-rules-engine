@@ -17,10 +17,42 @@ Authorities:
             Version: "1.0"
         Version: "3.0"
 Check:
-  all:
-    - name: studyPhase.standardCode.decode
-      operator: equal_to
-      value: term_code
+  not:
+    any:
+      - all:
+          - name: $code_for_pref_term
+            operator: empty
+          - name: $code_for_value
+            operator: empty
+          - name: $pref_term_for_code
+            operator: empty
+          - name: $value_for_code
+            operator: empty
+      - all:
+          - any:
+              - name: $pref_term_for_code
+                operator: non_empty
+              - name: $value_for_code
+                operator: non_empty
+          - any:
+              - name: $code_for_pref_term
+                operator: non_empty
+              - name: $code_for_value
+                operator: non_empty
+          - any:
+              - name: studyPhase.standardCode.code
+                operator: equal_to
+                value: $code_for_pref_term
+              - name: studyPhase.standardCode.code
+                operator: equal_to
+                value: $code_for_value
+          - any:
+              - name: studyPhase.standardCode.decode
+                operator: equal_to
+                value: $pref_term_for_code
+              - name: studyPhase.standardCode.decode
+                operator: equal_to
+                value: $value_for_code
 Core:
   Id: "CORE-000409"
   Status: Draft
@@ -31,12 +63,38 @@ Description: "A study version's study phase must be specified according to the
   in the codelist)."
 Executability: Fully Executable
 Operations:
-  - codelist_code: studyPhase.standardCode.code
+  - id: $codelist_code
+    map:
+      - output: C66737
+    operator: map
+  - codelist_code: $codelist_code
     ct_package_type: SDTM
-    id: term_code
+    id: $value_for_code
+    operator: codelist_terms
+    term_code: studyPhase.standardCode.code
+    version: studyPhase.standardCode.codeSystemVersion
+    returntype: value
+  - codelist_code: $codelist_code
+    ct_package_type: SDTM
+    id: $pref_term_for_code
+    operator: codelist_terms
+    term_code: studyPhase.standardCode.code
+    version: studyPhase.standardCode.codeSystemVersion
+    returntype: pref_term
+  - codelist_code: $codelist_code
+    ct_package_type: SDTM
+    id: $code_for_pref_term
     operator: codelist_terms
     term_pref_term: studyPhase.standardCode.decode
     version: studyPhase.standardCode.codeSystemVersion
+    returntype: code
+  - codelist_code: $codelist_code
+    ct_package_type: SDTM
+    id: $code_for_value
+    operator: codelist_terms
+    term_value: studyPhase.standardCode.decode
+    version: studyPhase.standardCode.codeSystemVersion
+    returntype: code
 Outcome:
   Message: 'The study version''s study phase is not specified according to the
     extensible Trial Phase Response (C66737) SDTM codelist - codeSystem is not
@@ -45,8 +103,12 @@ Outcome:
     but the corresponding decode or code does not match the codelist value (case
     sensitive).'
   Output Variables:
+    - $code_for_pref_term
+    - $code_for_value
+    - $pref_term_for_code
+    - $value_for_code
+    - studyPhase.standardCode.code
     - studyPhase.standardCode.decode
-    - term_code
 Rule Type: Record Data
 Scope:
   Entities:
