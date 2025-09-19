@@ -54,9 +54,9 @@ SIMPLE_DATA = {
     ],
 )
 def test_join(data, type, expected):
-    ds = PostgresQLDataService.test_instance()
-    PostgresQLDataService.add_test_dataset(ds.pgi, "l", data["left"])
-    PostgresQLDataService.add_test_dataset(ds.pgi, "r", data["right"])
+    ds = PostgresQLDataService.instance()
+    PostgresQLDataService.add_test_dataset(ds, "l", data["left"])
+    PostgresQLDataService.add_test_dataset(ds, "r", data["right"])
 
     # Perform the join operation
     schema = SqlJoinMerge.perform_join(
@@ -101,9 +101,9 @@ def test_join(data, type, expected):
     ],
 )
 def test_multiple_keys(data, expected):
-    ds = PostgresQLDataService.test_instance()
-    PostgresQLDataService.add_test_dataset(ds.pgi, "l", data["left"])
-    PostgresQLDataService.add_test_dataset(ds.pgi, "r", data["right"])
+    ds = PostgresQLDataService.instance()
+    PostgresQLDataService.add_test_dataset(ds, "l", data["left"])
+    PostgresQLDataService.add_test_dataset(ds, "r", data["right"])
 
     # Perform the join operation
     schema = SqlJoinMerge.perform_join(
@@ -135,9 +135,9 @@ def test_multiple_keys(data, expected):
     [SIMPLE_DATA],
 )
 def test_table_not_in_data(data):
-    ds = PostgresQLDataService.test_instance()
-    PostgresQLDataService.add_test_dataset(ds.pgi, "l", data["left"])
-    PostgresQLDataService.add_test_dataset(ds.pgi, "r", data["right"])
+    ds = PostgresQLDataService.instance()
+    PostgresQLDataService.add_test_dataset(ds, "l", data["left"])
+    PostgresQLDataService.add_test_dataset(ds, "r", data["right"])
 
     # Perform the join operation
     with pytest.raises(Exception):
@@ -151,9 +151,9 @@ def test_table_not_in_data(data):
     [SIMPLE_DATA],
 )
 def test_column_not_in_data(data):
-    ds = PostgresQLDataService.test_instance()
-    PostgresQLDataService.add_test_dataset(ds.pgi, "l", data["left"])
-    PostgresQLDataService.add_test_dataset(ds.pgi, "r", data["right"])
+    ds = PostgresQLDataService.instance()
+    PostgresQLDataService.add_test_dataset(ds, "l", data["left"])
+    PostgresQLDataService.add_test_dataset(ds, "r", data["right"])
 
     # Perform the join operation
     with pytest.raises(Exception):
@@ -167,9 +167,9 @@ def test_column_not_in_data(data):
     [SIMPLE_DATA],
 )
 def test_wrong_column_number(data):
-    ds = PostgresQLDataService.test_instance()
-    PostgresQLDataService.add_test_dataset(ds.pgi, "l", data["left"])
-    PostgresQLDataService.add_test_dataset(ds.pgi, "r", data["right"])
+    ds = PostgresQLDataService.instance()
+    PostgresQLDataService.add_test_dataset(ds, "l", data["left"])
+    PostgresQLDataService.add_test_dataset(ds, "r", data["right"])
 
     # Perform the join operation
     with pytest.raises(Exception):
@@ -183,9 +183,9 @@ def test_wrong_column_number(data):
     [SIMPLE_DATA],
 )
 def test_run_twice(data):
-    ds = PostgresQLDataService.test_instance()
-    PostgresQLDataService.add_test_dataset(ds.pgi, "l", data["left"])
-    PostgresQLDataService.add_test_dataset(ds.pgi, "r", data["right"])
+    ds = PostgresQLDataService.instance()
+    PostgresQLDataService.add_test_dataset(ds, "l", data["left"])
+    PostgresQLDataService.add_test_dataset(ds, "r", data["right"])
 
     # Perform the join operation
     schema = SqlJoinMerge.perform_join(
@@ -204,8 +204,8 @@ def test_run_twice(data):
     [SIMPLE_DATA],
 )
 def test_join_table_itself(data):
-    ds = PostgresQLDataService.test_instance()
-    PostgresQLDataService.add_test_dataset(ds.pgi, "l", data["left"])
+    ds = PostgresQLDataService.instance()
+    PostgresQLDataService.add_test_dataset(ds, "l", data["left"])
 
     schema = SqlJoinMerge.perform_join(
         ds.pgi, ds.pgi.schema.get_table("l"), ds.pgi.schema.get_table("l"), ["key"], ["key"]

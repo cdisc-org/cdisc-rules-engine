@@ -8,12 +8,15 @@ from collections import defaultdict
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Set
 
+from cdisc_rules_engine.data_service.postgresql_data_service import (
+    PostgresQLDataService,
+)
 from cdisc_rules_engine.data_service.sql_interface import PostgresQLInterface
 
 logger = logging.getLogger(__name__)
 
 
-class DataPreprocessor:
+class SqlDataPreprocessor:
     """
     Performs preprocessing operations on clinical data.
     Operations should be performed at data ingestion time.
@@ -1454,3 +1457,46 @@ class DataPreprocessor:
         for stage in stages:
             if stage in results and results[stage]:
                 self.pgi.execute_sql(insert_query, (run_id, timestamp, stage, json.dumps(results[stage]), None, None))
+
+    @staticmethod
+    def run(data_service: PostgresQLDataService):
+        logger.info("Starting data preprocessing")
+        preprocessor = SqlDataPreprocessor(data_service)
+        preprocessing_results = preprocessor.preprocess_all()
+        logger.info(f"Preprocessing completed: {preprocessing_results}")
+
+    # TODO: Dumping here for now in case it's useful
+    # def dataset_needs_preprocessing(self, dataset_id: str) -> bool:
+    #     """Check if a dataset needs preprocessing based on its characteristics."""
+    #     query = """
+    #         SELECT
+    #             dataset_is_split,
+    #             dataset_domain,
+    #             preprocessing_stage
+    #         FROM public.data_metadata
+    #         WHERE dataset_id = %s
+    #         LIMIT 1
+    #     """
+
+    #     self.pgi.execute_sql(query, (dataset_id.lower(),))
+    #     result = self.pgi.fetch_one()
+
+    #     if not result:
+    #         return False
+
+    #     is_split = result["dataset_is_split"]
+    #     domain = result["dataset_domain"]
+    #     stage = result["preprocessing_stage"]
+
+    #     # Needs preprocessing if:
+    #     # - It's a split dataset that hasn't been processed
+    #     # - It's a relationship domain (RELREC, CO*, SUPP*) not yet cataloged
+    #     # - It's in 'raw' stage
+    #     needs_preprocessing = (
+    #         (is_split and stage == "raw")
+    #         or (domain and domain in ["RELREC"] and stage == "raw")
+    #         or (domain and domain.startswith("CO") and stage == "raw")
+    #         or (self._is_supp_dataset(dataset_id) and stage == "raw")
+    #     )
+
+    #     return needs_preprocessing

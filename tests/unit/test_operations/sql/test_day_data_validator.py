@@ -7,6 +7,7 @@ from cdisc_rules_engine.models.sql_operation_params import SqlOperationParams
 from cdisc_rules_engine.sql_operations.sql_operations_factory import (
     SqlOperationsFactory,
 )
+
 from .helpers import assert_operation_table
 
 
@@ -74,10 +75,10 @@ from .helpers import assert_operation_table
     ],
 )
 def test_sql_dy_calculation(current_data, dm_data, expected):
-    data_service = PostgresQLDataService.test_instance()
+    data_service = PostgresQLDataService.instance()
 
-    PostgresQLDataService.add_test_dataset(data_service.pgi, table_name="DM", column_data=dm_data)
-    PostgresQLDataService.add_test_dataset(data_service.pgi, table_name="EX", column_data=current_data)
+    PostgresQLDataService.add_test_dataset(data_service, table_name="DM", column_data=dm_data)
+    PostgresQLDataService.add_test_dataset(data_service, table_name="EX", column_data=current_data)
 
     params = SqlOperationParams(domain="EX", target="EXSTDTC", standard="", standard_version="")
     operation = SqlOperationsFactory.get_service("dy", params, data_service)
@@ -107,9 +108,9 @@ def test_sql_dy_calculation(current_data, dm_data, expected):
     ],
 )
 def test_sql_dy_no_dm_domain(current_data, expected):
-    data_service = PostgresQLDataService.test_instance()
+    data_service = PostgresQLDataService.instance()
 
-    PostgresQLDataService.add_test_dataset(data_service.pgi, table_name="EX", column_data=current_data)
+    PostgresQLDataService.add_test_dataset(data_service, table_name="EX", column_data=current_data)
 
     params = SqlOperationParams(domain="EX", target="EXSTDTC", standard="", standard_version="")
     operation = SqlOperationsFactory.get_service("dy", params, data_service)
@@ -146,10 +147,10 @@ def test_sql_dy_no_dm_domain(current_data, expected):
     ],
 )
 def test_sql_dy_missing_usubjid(current_data, dm_data, expected):
-    data_service = PostgresQLDataService.test_instance()
+    data_service = PostgresQLDataService.instance()
 
-    PostgresQLDataService.add_test_dataset(data_service.pgi, table_name="DM", column_data=dm_data)
-    PostgresQLDataService.add_test_dataset(data_service.pgi, table_name="EX", column_data=current_data)
+    PostgresQLDataService.add_test_dataset(data_service, table_name="DM", column_data=dm_data)
+    PostgresQLDataService.add_test_dataset(data_service, table_name="EX", column_data=current_data)
 
     params = SqlOperationParams(domain="EX", target="EXSTDTC", standard="", standard_version="")
     operation = SqlOperationsFactory.get_service("dy", params, data_service)
@@ -191,10 +192,10 @@ def test_sql_dy_missing_usubjid(current_data, dm_data, expected):
 )
 def test_sql_dy_invalid_dates(current_data, dm_data, expected):
     """Test DY calculation with various invalid date formats."""
-    data_service = PostgresQLDataService.test_instance()
+    data_service = PostgresQLDataService.instance()
 
-    PostgresQLDataService.add_test_dataset(data_service.pgi, table_name="DM", column_data=dm_data)
-    PostgresQLDataService.add_test_dataset(data_service.pgi, table_name="EX", column_data=current_data)
+    PostgresQLDataService.add_test_dataset(data_service, table_name="DM", column_data=dm_data)
+    PostgresQLDataService.add_test_dataset(data_service, table_name="EX", column_data=current_data)
 
     params = SqlOperationParams(domain="EX", target="EXSTDTC", standard="", standard_version="")
     operation = SqlOperationsFactory.get_service("dy", params, data_service)

@@ -7,7 +7,7 @@ from cdisc_rules_engine.models.sql.column_schema import SqlColumnSchema
 class SqlTableSchema:
     """Stores the schema for a SQL table."""
 
-    def __init__(self, name: str, hash: str, source: Literal["data", "derived"]):
+    def __init__(self, name: str, hash: str, source: Literal["data", "derived", "static"]):
         self.name = name
         self.hash = hash
         self._columns: dict[str, SqlColumnSchema] = {}
@@ -62,3 +62,8 @@ class SqlTableSchema:
         """Create a SqlTableSchema for a join operation."""
         hash = generate_hash(name.lower())
         return cls(name.lower(), hash, source="derived")
+
+    @classmethod
+    def static(cls, name: str) -> "SqlTableSchema":
+        """Create a SqlTableSchema for a static table (ie an implementation guide table)."""
+        return cls(name.lower(), name.lower(), source="static")

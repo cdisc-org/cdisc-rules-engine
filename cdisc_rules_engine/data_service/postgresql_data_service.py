@@ -1,20 +1,27 @@
 import logging
 from dataclasses import dataclass
-from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Union
+from typing import List, Union
 
-from cdisc_rules_engine.constants.domains import SUPPLEMENTARY_DOMAINS
+from cdisc_rules_engine.data_service.loading.load_datasets import SqlDatasetLoader
+from cdisc_rules_engine.data_service.loading.load_test_datasets import (
+    SqlTestDatasetLoader,
+)
 from cdisc_rules_engine.data_service.merges.join import SqlJoinMerge
-from cdisc_rules_engine.data_service.sql_data_preprocessor import DataPreprocessor
-from cdisc_rules_engine.data_service.sql_data_service import SQLDataService
 from cdisc_rules_engine.data_service.sql_interface import PostgresQLInterface
+from cdisc_rules_engine.data_service.startup.populate_codelists import (
+    populate_codelists,
+)
+from cdisc_rules_engine.data_service.startup.populate_standards import (
+    populate_standards,
+)
+from cdisc_rules_engine.data_service.startup.populate_terminology import (
+    populate_terminology,
+)
+from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.models.sql.table_schema import SqlTableSchema
 from cdisc_rules_engine.models.test_dataset import TestDataset
-from cdisc_rules_engine.readers.codelist_reader import CodelistReader
-from cdisc_rules_engine.readers.data_reader import DataReader
-from cdisc_rules_engine.readers.define_xml_reader import XMLReader
-from cdisc_rules_engine.readers.metadata_standards_reader import MetadataStandardsReader
 from cdisc_rules_engine.utilities.ig_specification import IGSpecification
 
 logging.basicConfig(level=logging.INFO)
@@ -38,113 +45,50 @@ class SQLDatasetMetadata:
     variables: list[str]
 
 
-class PostgresQLDataService(SQLDataService):
+class PostgresQLDataService:
 
-    def __init__(
-        self,
-        postgres_interface: PostgresQLInterface,
-        ig_specs: IGSpecification,
-        datasets_path: Path = None,
-        define_xml_path: Path = None,
-        codelists_path: Path = None,
-        metadata_standards_path: Path = None,
-        terminology_paths: dict = None,
-    ):
-        super().__init__(
-            ig_specs, datasets_path, define_xml_path, codelists_path, metadata_standards_path, terminology_paths
-        )
+    def __init__(self, postgres_interface: PostgresQLInterface, standard: IGSpecification):
         self.pgi = postgres_interface
+        self.datasets: List[DatasetMetadata] = []
+        self.ig_specs = standard
 
-        self.data_preprocessor = DataPreprocessor(postgres_interface)
+    @classmethod
+    def instance(cls, standard: IGSpecification = None) -> "PostgresQLDataService":
+        """
+        Create a PostgresQLDataService instance with an initialized database.
+        """
+        # PostgresDB setup
+        pgi = PostgresQLInterface()
+        pgi.init_database()
+
+        instance = cls(postgres_interface=pgi, standard=standard)
+        pgi.execute_sql_file(str(SCHEMA_PATH / "clinical_data_metadata_schema.sql"))
+        populate_terminology(pgi)
+        populate_codelists(pgi)
+        populate_standards(pgi)
+        return instance
 
     @classmethod
     def from_list_of_testdatasets(
-        cls,
-        test_datasets: list[TestDataset],
-        ig_specs: IGSpecification,
-        datasets_path: Path = None,
-        define_xml_path: str = "",
-        terminology_paths: dict = None,
+        cls, test_datasets: list[TestDataset], standard: IGSpecification = None
     ) -> "PostgresQLDataService":
         """
         Constructor for tests, passing in TestDataset
         and create corresponding SQL tables
         """
-        metadata_rows: list[dict[str, Union[str, int, float]]] = []
+        instance = cls.instance(standard)
+        instance.datasets += SqlTestDatasetLoader.load_test_datasets(instance.pgi, test_datasets)
+        return instance
 
-        # PostgresDB setup
-        pgi = PostgresQLInterface()
-        pgi.init_database()
-
-        # create metadata table in postgres
-        pgi.execute_sql_file(str(SCHEMA_PATH / "clinical_data_metadata_schema.sql"))
-
-        PostgresQLDataService._preprocess_data(pgi)
-        instance = cls(
-            pgi,
-            ig_specs,
-            datasets_path,
-            define_xml_path,
-            None,
-            None,
-            terminology_paths,
-        )
-
-        # generate timestamp
-        timestamp = datetime.now().astimezone()
-        for test_dataset in test_datasets:
-            # Create schema and table:
-            row_dicts = [
-                dict(zip(test_dataset["records"], values)) for values in zip(*test_dataset["records"].values())
-            ]
-            # force lower_case throughout
-            table_name = test_dataset["name"].lower()
-            row_dicts = [{k.lower(): v for k, v in row.items()} for row in row_dicts]
-
-            schema = SqlTableSchema.from_metadata(test_dataset)
-            pgi.create_table(schema)
-            pgi.insert_data(table_name=table_name, data=row_dicts)
-
-            # Collect variable metadata
-            for test_variable in test_dataset["variables"]:
-                name = test_dataset["name"]
-                domain = row_dicts[0].get("domain") if row_dicts else None
-                is_supp = test_dataset["name"].startswith(SUPPLEMENTARY_DOMAINS)
-                rdomain = row_dicts[0].get("rdomain") if is_supp and row_dicts else None
-                unsplit_name = PostgresQLDataService._get_unsplit_name(name, domain, rdomain)
-                is_split = name != unsplit_name
-                metadata_rows.append(
-                    {
-                        "created_at": timestamp,
-                        "updated_at": timestamp,
-                        "dataset_filename": test_dataset["filename"],
-                        "dataset_filepath": test_dataset["filepath"],
-                        "dataset_id": name.lower(),
-                        "table_hash": name.lower(),
-                        "dataset_name": name,
-                        "dataset_label": test_dataset["label"],
-                        "dataset_domain": domain,
-                        "dataset_is_supp": is_supp,
-                        "dataset_rdomain": rdomain,
-                        "dataset_is_split": is_split,
-                        "dataset_unsplit_name": unsplit_name,
-                        "dataset_preprocessed": None,
-                        "var_name": test_variable["name"].lower(),
-                        "var_label": test_variable["label"],
-                        "var_type": test_variable["type"],
-                        "var_length": test_variable["length"],
-                        "var_format": test_variable["format"],
-                    }
-                )
-
-        # write metadata rows into DB
-        pgi.insert_data(table_name="data_metadata", data=metadata_rows)
-
+    @classmethod
+    def from_dataset_paths(cls, datasets_path: Path, standard: IGSpecification = None) -> "PostgresQLDataService":
+        instance = cls.instance(standard)
+        instance.datasets += SqlDatasetLoader.load_datasets(instance.pgi, datasets_path)
         return instance
 
     @staticmethod
     def add_test_dataset(
-        pgi: PostgresQLInterface, table_name: str, column_data: dict[str, list[Union[str, int, float]]]
+        data_service: "PostgresQLDataService", table_name: str, column_data: dict[str, list[Union[str, int, float]]]
     ):
         # Check all the columns are the same length
         lengths = {len(v) for v in column_data.values()}
@@ -159,313 +103,46 @@ class PostgresQLDataService(SQLDataService):
         row_dicts = [{k.lower(): v for k, v in row.items()} for row in row_dicts]
 
         schema = SqlTableSchema.from_data(table_name, schema_row)
-        pgi.create_table(schema)
+        data_service.pgi.create_table(schema)
 
-        pgi.insert_data(table_name=table_name, data=row_dicts)
-        return schema
+        data_service.pgi.insert_data(table_name=table_name, data=row_dicts)
 
-    @classmethod
-    def test_instance(cls) -> "PostgresQLDataService":
-        """
-        Constructor for tests.
-        """
-        # PostgresDB setup
-        pgi = PostgresQLInterface()
-        pgi.init_database()
-
-        instance = cls(postgres_interface=pgi, ig_specs=None)
-        pgi.execute_sql_file(str(SCHEMA_PATH / "clinical_data_metadata_schema.sql"))
-        return instance
-
-    @staticmethod
-    def _preprocess_data(postgres_interface: PostgresQLInterface):
-        """Performs all preprocessing operations on data using the DataPreprocessor."""
-        logger.info("Starting data preprocessing")
-        preprocessor = DataPreprocessor(postgres_interface)
-        preprocessing_results = preprocessor.preprocess_all()
-        logger.info(f"Preprocessing completed: {preprocessing_results}")
-
-    @classmethod
-    def from_dataset_paths(
-        cls,
-        datasets_path: Path,
-        ig_specs: IGSpecification,
-        define_xml_path: Path = None,
-        terminology_paths: dict = None,
-    ) -> "PostgresQLDataService":
-        """
-        Load test datasets from dataset_paths to be used during test execution
-        """
-        pgi = PostgresQLInterface()
-        pgi.init_database()
-
-        instance = cls(
-            postgres_interface=pgi,
-            ig_specs=ig_specs,
-            datasets_path=datasets_path,
-            define_xml_path=define_xml_path,
-            terminology_paths=terminology_paths,
+        data_service.datasets.append(
+            SDTMDatasetMetadata(
+                file_size=0,
+                filename=f"{table_name}.xpt",
+                full_path=f"/test/{table_name}.xpt",
+                label=f"Test {table_name} Dataset",
+                name=table_name,
+                record_count=len(row_dicts),
+                modification_date=None,
+                original_path=None,
+                first_record=row_dicts[0],
+            )
         )
 
-        PostgresQLDataService._preprocess_data(pgi)
-
-        validation_errors = instance.data_preprocessor.get_validation_errors()
-        if validation_errors:
-            logger.warning(f"Found {len(validation_errors)} validation errors during preprocessing")
-            for error in validation_errors:
-                logger.warning(f"  {error['type']}: {error['error']}")
-
-        return instance
-
-    def _create_sql_tables_from_dataset_paths(self) -> None:
-        """
-        Iterate through dataset files in `self.datasets_path`
-        and create corresponding SQL tables.
-        """
-        if not self.datasets_path or not self.datasets_path.exists():
-            logger.info("No datasets path provided or path doesn't exist")
-            return
-
-        self.pgi.execute_sql_file(str(SCHEMA_PATH / "clinical_data_metadata_schema.sql"))
-
-        timestamp = datetime.now().astimezone()
-
-        for file_path in self.datasets_path.iterdir():
-            self._process_dataset_file(file_path, timestamp)
-
-    def _process_dataset_file(self, file_path: Path, timestamp: datetime) -> None:
-        """Process a single dataset file."""
-        try:
-            reader = DataReader(str(file_path))
-            metadata_info = reader.read_metadata()
-
-            # force table_name to be lowercase
-            table_name = file_path.stem.lower()
-
-            logger.info(f"Loading dataset {file_path.name} into table {table_name}")
-
-            self._create_table_with_indexes(table_name, metadata_info)
-
-            metadata_rows = []
-            first_chunk_processed = False
-
-            for chunk_data in reader.read():
-                # force lowercase on columns
-                chunk_data = [{k.lower(): v for k, v in row} for row in chunk_data.items()]
-                if not first_chunk_processed and chunk_data:
-                    first_chunk = chunk_data[0]
-
-                    metadata_rows = self._build_metadata_rows(
-                        file_path, table_name, metadata_info, first_chunk, timestamp
-                    )
-                    first_chunk_processed = True
-
-                if chunk_data:
-                    self.pgi.insert_data(table_name, chunk_data)
-
-            if metadata_rows:
-                self.pgi.insert_data("data_metadata", metadata_rows)
-
-            logger.info(f"Successfully loaded {file_path.name}")
-
-        except Exception as e:
-            logger.error(f"Failed to load {file_path.name}: {e}")
-
-    def _create_table_with_indexes(self, table_name: str, metadata: dict) -> None:
-        """Create table and add indexes for CDISC variables."""
-        self.pgi.create_table_from_metadata(table_name, metadata)
-
-        for col in ("usubjid", "studyid", "domain", "seq", "idvar", "idvarval"):
-            if col in [var["name"].lower() for var in metadata["variables"]]:
-                self.pgi.execute_sql(
-                    f"CREATE INDEX IF NOT EXISTS idx_{table_name}_{col.lower()} ON {table_name}({col})"
-                )
-
-    def _build_metadata_rows(
-        self, file_path: Path, table_name: str, metadata_info: dict, first_chunk: dict, timestamp: datetime
-    ) -> list[dict]:
-        """Build metadata rows for all variables in the dataset."""
-
-        domain = first_chunk.get("domain", None)
-        is_supp = domain.startswith(SUPPLEMENTARY_DOMAINS) if domain is not None else False
-        rdomain = first_chunk.get("rdomain", None)
-        unsplit_name = PostgresQLDataService._get_unsplit_name(table_name, domain, rdomain)
-        is_split = table_name != unsplit_name
-
-        metadata_rows = []
-        for var_info in metadata_info["variables"]:
-            metadata_rows.append(
-                {
-                    "created_at": timestamp,
-                    "updated_at": timestamp,
-                    "dataset_filename": file_path.name,
-                    "dataset_filepath": str(file_path),
-                    "dataset_id": table_name,
-                    "dataset_name": table_name,
-                    "dataset_label": metadata_info["metadata"].get("dataset_label", ""),
-                    "dataset_domain": domain,
-                    "dataset_is_supp": is_supp,
-                    "dataset_rdomain": rdomain,
-                    "dataset_is_split": is_split,
-                    "dataset_unsplit_name": unsplit_name,
-                    "dataset_preprocessed": None,
-                    "var_name": var_info.get("name", "").lower(),
-                    "var_label": var_info.get("label"),
-                    "var_type": var_info.get("type") or var_info.get("ctype"),
-                    "var_length": var_info.get("length"),
-                    "var_format": var_info.get("format"),
-                }
-            )
-
-        return metadata_rows
-
-    def _create_definexml_tables(self):
-        """Create tables for Define-XML metadata"""
-        if not self.define_xml_path:
-            logger.info("No Define-XML path provided.")
-            return
-
-        if not self.define_xml_path.exists():
-            logger.warning(f"Define-XML path {self.define_xml_path} does not exist.")
-            return
-
-        for query in (SCHEMA_PATH / "xml").glob("*.sql"):
-            self.pgi.execute_sql_file(str(SCHEMA_PATH / "xml" / query))
-
-        logger.info("Define-XML tables created successfully")
-
-        reader = XMLReader(str(self.define_xml_path))
-        xml_data = reader.read()
-
-        try:
-            insert_order = [
-                "studies",
-                "metadata_versions",
-                "comments",
-                "methods",
-                "documents",
-                "codelists",
-                "codelist_items",
-                "variables",
-                "datasets",
-                "dataset_variables",
-                "value_lists",
-                "value_list_items",
-                "where_clauses",
-                "where_clause_conditions",
-                "variable_codelist_refs",
-                "variable_value_lists",
-                "analysis_results",
-            ]
-
-            for table_name in insert_order:
-                if table_name in xml_data and xml_data[table_name]:
-                    records = xml_data[table_name]
-                    self.pgi.insert_data(table_name, records)
-
-            logger.info("Define-XML data inserted successfully")
-
-        except Exception as e:
-            logger.error(f"Error inserting Define-XML data: {str(e)}")
-            raise
-
-    def _create_terminology_tables(self) -> None:
-        """
-        Iterate through self.terminology_paths dict
-        and create corresponding SQL tables if paths exist.
-        """
-        pass
-
-    def _create_standards_tables(self) -> None:
-        """
-        Create all necessary SQL tables for IG standards.
-        """
-        if not self.metadata_standards_path:
-            logger.info("No metadata standards path provided, will use cached IG metadata")
-            return
-
-        if not self.metadata_standards_path.exists():
-            logger.warning(f"Metadata standards path {self.metadata_standards_path} does not exist")
-            return
-
-        self.pgi.execute_sql_file(str(SCHEMA_PATH / "ig_datasets.sql"))
-        self.pgi.execute_sql_file(str(SCHEMA_PATH / "ig_variables.sql"))
-
-        for file_path in self.metadata_standards_path.iterdir():
-            try:
-                reader = MetadataStandardsReader(str(file_path))
-                ig_data = reader.read()
-
-                if ig_data.get("datasets"):
-                    # TODO: lowercase all
-                    self.pgi.insert_data("ig_datasets", ig_data["datasets"])
-
-                if ig_data.get("variables"):
-                    # TODO: lowercase all
-                    self.pgi.insert_data("ig_variables", ig_data["variables"])
-
-                logger.info(f"Loaded IG metadata from {file_path.name}")
-
-            except Exception as e:
-                logger.error(f"Failed to load IG metadata {file_path.name}: {e}")
-                continue
-
-    def _create_codelist_tables(self) -> None:
-        """
-        Create all necessary SQL tables for CDISC codelists.
-        """
-        if not self.codelists_path:
-            logger.info("No codelists path provided, will use cached CDISC codelists")
-            return
-
-        if not self.codelists_path.exists():
-            logger.warning(f"Codelists path {self.codelists_path} does not exist")
-            return
-
-        self.pgi.execute_sql_file(str(SCHEMA_PATH / "codelists.sql"))
-
-        for file_path in self.codelists_path.iterdir():
-            try:
-                reader = CodelistReader(str(file_path))
-                codelist_data = reader.read()
-
-                if codelist_data:
-                    # TODO: lowercase all
-                    self.pgi.insert_data("codelists", codelist_data)
-                    logger.info(f"Loaded codelist from {file_path.name}")
-
-            except Exception as e:
-                logger.error(f"Failed to load codelist {file_path.name}: {e}")
-                continue
+        return schema
 
     def get_uploaded_dataset_ids(self) -> list[str]:
-        query = "SELECT dataset_id FROM data_metadata GROUP BY dataset_id ORDER BY MIN(id);"
-        self.pgi.execute_sql(query=query)
-        results = self.pgi.fetch_all()
-        return [res["dataset_id"] for res in results]
+        return [dataset.name for dataset in self.datasets]
 
     def get_dataset_metadata(self, dataset_id: str) -> SQLDatasetMetadata:
-        query = f"""
-            SELECT *
-            FROM data_metadata
-            WHERE dataset_id = '{dataset_id}';
-        """
-        self.pgi.execute_sql(query=query)
-        results = self.pgi.fetch_all()
-        if not results:
+
+        tmp = next((metadata for metadata in self.datasets if metadata.name.lower() == dataset_id.lower()), None)
+        if not tmp:
             return None
         return SQLDatasetMetadata(
-            filename=results[0].get("dataset_filename"),
-            filepath=results[0].get("dataset_filepath"),
-            dataset_id=results[0].get("dataset_id"),
-            table_hash=results[0].get("table_hash"),
-            dataset_name=results[0].get("dataset_name"),
-            dataset_label=results[0].get("dataset_label"),
-            unsplit_name=results[0].get("dataset_unsplit_name"),
-            domain=results[0].get("dataset_domain"),
-            is_supp=results[0].get("dataset_is_supp"),
-            rdomain=results[0].get("dataset_rdomain"),
-            variables=[res["var_name"] for res in results],
+            filename=tmp.filename,
+            filepath=str(tmp.full_path),
+            dataset_id=tmp.name,
+            table_hash=tmp.name,
+            dataset_name=tmp.name,
+            dataset_label=tmp.label,
+            unsplit_name=tmp.name,
+            domain=tmp.domain,
+            is_supp=tmp.is_supp,
+            rdomain=tmp.rdomain,
+            variables=[],
         )
 
     def get_dataset_for_rule(self, dataset_metadata: SQLDatasetMetadata, rule: dict) -> str:
@@ -498,93 +175,3 @@ class PostgresQLDataService(SQLDataService):
             left_id = joined_schema.name
 
         return left_id
-
-    def get_preprocessing_status(self) -> dict:
-        """Get the current status of data preprocessing."""
-        return self.data_preprocessor.get_preprocessing_status()
-
-    def get_preprocessing_validation_errors(self) -> List[Dict[str, Any]]:
-        """Get validation errors found during preprocessing."""
-        return self.data_preprocessor.get_validation_errors()
-
-    def dataset_needs_preprocessing(self, dataset_id: str) -> bool:
-        """Check if a dataset needs preprocessing based on its characteristics."""
-        query = """
-            SELECT
-                dataset_is_split,
-                dataset_domain,
-                preprocessing_stage
-            FROM public.data_metadata
-            WHERE dataset_id = %s
-            LIMIT 1
-        """
-
-        self.pgi.execute_sql(query, (dataset_id.lower(),))
-        result = self.pgi.fetch_one()
-
-        if not result:
-            return False
-
-        is_split = result["dataset_is_split"]
-        domain = result["dataset_domain"]
-        stage = result["preprocessing_stage"]
-
-        # Needs preprocessing if:
-        # - It's a split dataset that hasn't been processed
-        # - It's a relationship domain (RELREC, CO*, SUPP*) not yet cataloged
-        # - It's in 'raw' stage
-        needs_preprocessing = (
-            (is_split and stage == "raw")
-            or (domain and domain in ["RELREC"] and stage == "raw")
-            or (domain and domain.startswith("CO") and stage == "raw")
-            or (self._is_supp_dataset(dataset_id) and stage == "raw")
-        )
-
-        return needs_preprocessing
-
-    def _dataset_exists(self, dataset_name: str) -> bool:
-        """Check if a dataset/table exists in the database."""
-        query = """
-            SELECT EXISTS (
-                SELECT 1
-                FROM information_schema.tables
-                WHERE table_schema = 'public'
-                  AND table_name = %s
-            )
-        """
-
-        self.pgi.execute_sql(query, (dataset_name.lower(),))
-
-        results = self.pgi.fetch_all()
-        if results:
-            return results[0]
-        return False
-
-    def _is_supp_dataset(self, dataset_id: str) -> bool:
-        """Check if a dataset is a SUPP dataset."""
-        query = """
-            SELECT dataset_is_supp
-            FROM public.data_metadata
-            WHERE dataset_id = %s
-            LIMIT 1
-        """
-
-        self.pgi.execute_sql(query, (dataset_id.lower(),))
-        result = self.pgi.fetch_one()
-
-        return result["dataset_is_supp"] if result else False
-
-    @staticmethod
-    def _get_unsplit_name(
-        name: str,
-        domain: Union[str, None],
-        rdomain: str,
-    ) -> str:
-        """Get the unsplit name for a dataset."""
-        if domain:
-            return domain
-        if name.startswith("SUPP"):
-            return f"SUPP{rdomain}"
-        if name.startswith("SQ"):
-            return f"SQ{rdomain}"
-        return name

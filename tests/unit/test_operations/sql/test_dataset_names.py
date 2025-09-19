@@ -13,13 +13,13 @@ from .helpers import (
 
 
 def test_dataset_names():
-    data_service = PostgresQLDataService.test_instance()
+    data_service = PostgresQLDataService.instance()
     t1 = PostgresQLDataService.add_test_dataset(
-        data_service.pgi, table_name="t1", column_data={"key": [1, 2, 3], "name": ["A", "B", "C"]}
+        data_service, table_name="t1", column_data={"key": [1, 2, 3], "name": ["A", "B", "C"]}
     )
 
     t2 = PostgresQLDataService.add_test_dataset(
-        data_service.pgi, table_name="t2", column_data={"key": [1, 2, 3], "age": [10, 20, 30]}
+        data_service, table_name="t2", column_data={"key": [1, 2, 3], "age": [10, 20, 30]}
     )
 
     SqlJoinMerge.perform_join(data_service.pgi, t1, t2, ["key"], ["key"])
