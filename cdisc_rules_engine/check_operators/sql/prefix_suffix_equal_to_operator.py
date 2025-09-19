@@ -1,3 +1,5 @@
+from cdisc_rules_engine.constants.domains import DOMAIN
+
 from .base_sql_operator import BaseSqlOperator
 
 
@@ -31,18 +33,18 @@ class PrefixSuffixEqualToOperator(BaseSqlOperator):
         cache_key = f"{target_column}_{mode}_equal_to_{str(comparator).replace(' ', '_')}_{value_is_literal}_{length}"
 
         def sql():
-            target_sql = self._column_sql(target_column)
+
             if mode == "prefix":
-                compare_sql = f"LEFT({target_sql}, {length})"
+                target_sql = self._column_sql(target_column, prefix=length)
             else:
-                compare_sql = f"RIGHT({target_sql}, {length})"
+                target_sql = self._column_sql(target_column, suffix=length)
 
             # Handle special case for DOMAIN comparator
-            if comparator == "DOMAIN" and not value_is_literal:
+            if comparator == DOMAIN and not value_is_literal:
                 domain_value = self.column_prefix_map.get("--", "")
                 if domain_value:
                     return f"""NOT ({self._is_empty_sql(target_column)})
-                              AND {compare_sql} = {self._constant_sql(domain_value)}"""
+                              AND LOWER({target_sql}) = LOWER({self._constant_sql(domain_value)})"""
                 else:
                     return "FALSE"
 
@@ -59,13 +61,13 @@ class PrefixSuffixEqualToOperator(BaseSqlOperator):
                 # Single value comparison
                 comparator_sql = self._sql(comparator, value_is_literal=value_is_literal)
                 return f"""NOT ({self._is_empty_sql(target_column)})
-                          AND {compare_sql} = {comparator_sql}"""
+                          AND LOWER({target_sql}) = LOWER({comparator_sql})"""
 
             # Multi-value comparison using EXISTS
             return f"""NOT ({self._is_empty_sql(target_column)})
                       AND EXISTS (
                           SELECT 1 FROM {data_source} AS values_table(value)
-                          WHERE {compare_sql} = values_table.value
+                          WHERE LOWER({target_sql}) = LOWER(values_table.value)
                       )"""
 
         return self._do_check_operator(cache_key, sql)

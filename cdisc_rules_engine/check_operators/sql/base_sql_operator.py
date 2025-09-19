@@ -6,6 +6,7 @@ from typing import Any, List, Optional, Union
 import numpy as np
 import pandas as pd
 
+from cdisc_rules_engine.constants.metadata_columns import DATASET_NAME
 from cdisc_rules_engine.data_service.postgresql_data_service import (
     PostgresQLDataService,
 )
@@ -80,6 +81,7 @@ class BaseSqlOperator:
         self.column_codelist_map = data.get("column_codelist_map", {})
         self.codelist_term_maps = data.get("codelist_term_maps", [])
         self.operation_variables: dict[str, SqlOperationResult] = data.get("operation_variables", {})
+        self.dataset_metadata = self.sql_data_service.get_dataset_metadata(self.table_id) or {}
 
     @abstractmethod
     def execute_operator(self, other_value):
@@ -178,6 +180,16 @@ class BaseSqlOperator:
         self, column: str, lowercase: bool = False, prefix: Optional[int] = None, suffix: Optional[int] = None
     ) -> str:
         query = self.sql_data_service.pgi.schema.get_column_hash(self.table_id, column)
+
+        if column == DATASET_NAME:
+            dataset_name = (
+                self.dataset_metadata.dataset_name if hasattr(self.dataset_metadata, "dataset_name") else None
+            )
+            if prefix is not None:
+                dataset_name = dataset_name[: int(prefix)]
+            elif suffix is not None:
+                dataset_name = dataset_name[-int(suffix) :] if int(suffix) > 0 else ""
+            return self._constant_sql(dataset_name, lowercase=lowercase)
 
         # TODO: Throwing this temporarily, so we can determine which errors
         # are actually postgres errors and which are just rules which run on

@@ -1,3 +1,4 @@
 SOURCE_FILENAME = "source_filename"
 SOURCE_ROW_NUMBER = "source_row_number"
+DATASET_NAME = "dataset_name"
 METADATA_COLUMNS = {SOURCE_FILENAME, SOURCE_ROW_NUMBER}

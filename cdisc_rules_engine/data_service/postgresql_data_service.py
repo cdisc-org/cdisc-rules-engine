@@ -452,6 +452,8 @@ class PostgresQLDataService(SQLDataService):
         """
         self.pgi.execute_sql(query=query)
         results = self.pgi.fetch_all()
+        if not results:
+            return None
         return SQLDatasetMetadata(
             filename=results[0].get("dataset_filename"),
             filepath=results[0].get("dataset_filepath"),
