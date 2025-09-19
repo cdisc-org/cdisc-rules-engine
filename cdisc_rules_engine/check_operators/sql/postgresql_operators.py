@@ -119,7 +119,7 @@ class PostgresQLOperators(BaseType):
         "starts_with": lambda data: StartsWithOperator(data),
         "ends_with": lambda data: EndsWithOperator(data),
         "equals_string_part": lambda data: EqualsStringPartOperator(data),
-        "does_not_equal_string_part": lambda data: NotOperator(data, EqualsStringPartOperator),
+        "does_not_equal_string_part": lambda data: EqualsStringPartOperator(data, invert=True),
         "invalid_date": lambda data: InvalidDateOperator(data),
         "invalid_duration": lambda data: InvalidDurationOperator(data),
         "is_complete_date": lambda data: IsCompleteDateOperator(data),
