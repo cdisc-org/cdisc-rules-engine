@@ -19,12 +19,16 @@ from cdisc_rules_engine.constants.classes import (
 #     APFA_DOMAIN,
 #     SUPPLEMENTARY_DOMAINS,
 # )
+from cdisc_rules_engine.constants.domains import (
+    AP_DOMAIN,
+    APFA_DOMAIN,
+    SUPPLEMENTARY_DOMAINS,
+)
 from cdisc_rules_engine.constants.rule_constants import ALL_KEYWORD
 from cdisc_rules_engine.data_service.postgresql_data_service import (
     PostgresQLDataService,
     SQLDatasetMetadata,
 )
-
 from cdisc_rules_engine.interfaces import ConditionInterface
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
@@ -40,6 +44,7 @@ from cdisc_rules_engine.services.cache.cache_service_factory import CacheService
 from cdisc_rules_engine.sql_operations.sql_operations_factory import (
     SqlOperationsFactory,
 )
+from cdisc_rules_engine.utilities.utils import is_ap_domain
 
 # from cdisc_rules_engine.utilities.data_processor import DataProcessor
 # from cdisc_rules_engine.utilities.utils import (
@@ -63,50 +68,122 @@ class SQLRuleProcessor:
 
     @classmethod
     def rule_applies_to_domain(cls, dataset_metadata: SQLDatasetMetadata, rule: dict) -> bool:
-        """Check that rule is applicable to dataset domain"""
+        """
+        Check that rule is applicable to dataset domain
+        """
         domains = rule.get("domains") or {}
+        include_split_datasets: bool = domains.get("include_split_datasets")
+
         included_domains = domains.get("Include", [])
         excluded_domains = domains.get("Exclude", [])
 
-        domain_name = dataset_metadata.dataset_name.upper()
+        is_included = cls._is_domain_name_included(dataset_metadata, included_domains, include_split_datasets)
+        is_excluded = cls._is_domain_name_excluded(dataset_metadata, excluded_domains)
 
-        is_explicitly_included = domain_name in included_domains
-        is_explicitly_excluded = domain_name in excluded_domains
+        # additional check for split domains based on the flag
+        is_excluded, is_included = cls._handle_split_domains(
+            dataset_metadata.is_split,
+            include_split_datasets,
+            is_excluded,
+            is_included,
+        )
 
-        if is_explicitly_excluded:
-            return False
+        return is_included and not is_excluded
 
-        if is_explicitly_included:
+    @classmethod
+    def _is_domain_name_included(
+        cls,
+        dataset_metadata: SQLDatasetMetadata,
+        included_domains: List[str],
+        include_split_datasets: bool,
+    ) -> bool:
+        """
+        If included domains aren't specified
+         and include_split_datasets is True,
+         and it is not a split dataset
+         -> domain is not included
+        If included domains are specified,
+         and the domain is not in the list of included domains,
+         and domain doesn't match with AP / APFA / APRELSUB / SUPP / SQ naming pattern
+         -> domain is not included.
+        In other cases domain is included
+        """
+        if not included_domains:
+            if include_split_datasets is True and not dataset_metadata.is_split:
+                return False
             return True
 
-        included_by_pattern = cls.matches_domain_pattern(domain_name, included_domains)
-        excluded_by_pattern = cls.matches_domain_pattern(domain_name, excluded_domains)
-
-        if included_domains and not included_by_pattern:
-            return False
-
-        if excluded_by_pattern:
-            return False
-
-        return True
-
-    @staticmethod
-    def matches_domain_pattern(domain: str, patterns: list) -> bool:
-        """Check if domain matches any of the patterns."""
-        for pattern in patterns:
-            if pattern == ALL_KEYWORD:
-                return True
-            if pattern == domain:
-                return True
-            if pattern.endswith("--"):
-                prefix = pattern[:-2]
-                if domain.startswith(prefix):
-                    return True
-            if pattern.startswith("--"):
-                suffix = pattern[2:]
-                if domain.endswith(suffix):
-                    return True
+        if (
+            dataset_metadata.domain in included_domains
+            or dataset_metadata.dataset_name in included_domains
+            or ALL_KEYWORD in included_domains
+        ):
+            return True
+        if cls._domain_matched_ap_or_supp(dataset_metadata, included_domains):
+            return True
         return False
+
+    @classmethod
+    def _is_domain_name_excluded(cls, dataset_metadata: SQLDatasetMetadata, excluded_domains: List[str]) -> bool:
+        """
+        If excluded domains are specified,
+         and the domain is in the list of excluded domains,
+         or domain name match with AP / APFA / APRELSUB / SUPP / SQ naming pattern
+         domain is excluded.
+
+        In other cases domain is not excluded.
+        """
+        if not excluded_domains:
+            return False
+
+        if (
+            dataset_metadata.domain in excluded_domains
+            or dataset_metadata.dataset_name in excluded_domains
+            or dataset_metadata.unsplit_name in excluded_domains
+            or ALL_KEYWORD in excluded_domains
+        ):
+            return True
+        if cls._domain_matched_ap_or_supp(dataset_metadata, excluded_domains):
+            return True
+        return False
+
+    @classmethod
+    def _handle_split_domains(
+        cls,
+        is_split_domain: bool,
+        include_split_datasets: bool,
+        is_excluded: bool,
+        is_included: bool,
+    ) -> Tuple[bool, bool]:
+        """
+        HANDLING SPLIT DOMAINS
+
+        If include_split_datasets is True -
+        add split domains to the list of included domains.
+        If no included domains specified, only validate split domains
+
+        If include_split_datasets is False - Exclude split domains
+        If include_split_datasets is None - Do nothing
+        """
+        if include_split_datasets is True and is_split_domain and not is_excluded:
+            is_included = True
+        if include_split_datasets is False and is_split_domain:
+            is_excluded = True
+        return is_excluded, is_included
+
+    @classmethod
+    def _domain_matched_ap_or_supp(cls, dataset_metadata: SQLDatasetMetadata, domains_to_check: List[str]) -> bool:
+        """
+        Check that domain name match with only
+        AP / APFA / APRELSUB / SUPP / SQ naming pattern
+        """
+        supp_ap_domains = {f"{domain}--" for domain in SUPPLEMENTARY_DOMAINS}
+        supp_ap_domains.update({f"{AP_DOMAIN}--", f"{APFA_DOMAIN}--"})
+
+        return any(set(domains_to_check).intersection(supp_ap_domains)) and (
+            dataset_metadata.is_supp
+            or is_ap_domain(dataset_metadata.domain or dataset_metadata.rdomain or dataset_metadata.dataset_name)
+        )
 
     @classmethod
     def rule_applies_to_class(cls, dataset_metadata: SQLDatasetMetadata, rule: dict) -> bool:
