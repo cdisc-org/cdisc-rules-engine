@@ -17,42 +17,42 @@ Authorities:
             Version: "1.0"
         Version: "3.0"
 Check:
-  not:
-    any:
-      - all:
-          - name: $code_for_pref_term
-            operator: empty
-          - name: $code_for_value
-            operator: empty
-          - name: $pref_term_for_code
-            operator: empty
-          - name: $value_for_code
-            operator: empty
-      - all:
-          - any:
+  all:
+    - not:
+        any:
+          - all:
+              - name: $code_for_pref_term
+                operator: empty
+              - name: $code_for_value
+                operator: empty
+              - name: $pref_term_for_code
+                operator: empty
+              - name: $value_for_code
+                operator: empty
+          - all:
               - name: $pref_term_for_code
                 operator: non_empty
               - name: $value_for_code
                 operator: non_empty
-          - any:
-              - name: $code_for_pref_term
-                operator: non_empty
-              - name: $code_for_value
-                operator: non_empty
-          - any:
-              - name: studyPhase.standardCode.code
-                operator: equal_to
-                value: $code_for_pref_term
-              - name: studyPhase.standardCode.code
-                operator: equal_to
-                value: $code_for_value
-          - any:
-              - name: studyPhase.standardCode.decode
-                operator: equal_to
-                value: $pref_term_for_code
-              - name: studyPhase.standardCode.decode
-                operator: equal_to
-                value: $value_for_code
+              - any:
+                  - name: $code_for_pref_term
+                    operator: non_empty
+                  - name: $code_for_value
+                    operator: non_empty
+              - any:
+                  - name: studyPhase.standardCode.code
+                    operator: equal_to
+                    value: $code_for_pref_term
+                  - name: studyPhase.standardCode.code
+                    operator: equal_to
+                    value: $code_for_value
+              - any:
+                  - name: studyPhase.standardCode.decode
+                    operator: equal_to
+                    value: $pref_term_for_code
+                  - name: studyPhase.standardCode.decode
+                    operator: equal_to
+                    value: $value_for_code
 Core:
   Id: "CORE-000409"
   Status: Draft
