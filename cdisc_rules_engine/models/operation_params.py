@@ -42,6 +42,7 @@ class OperationParams:
     ct_package_type: str = None
     term_code: str = None
     term_value: str = None
+    term_pref_term: str = None
     dictionary_term_type: str = None
     external_dictionaries: ExternalDictionariesContainer = None
     external_dictionary_term_variable: str = None
