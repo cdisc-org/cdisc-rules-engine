@@ -13,7 +13,8 @@ class JSONReader(DataReaderInterface):
             return json
         except Exception as e:
             raise InvalidJSONFormat(
-                f"\n  Error reading JSON from: {file_path}\n  {type(e).__name__}: {e}"
+                f"\n  Error reading JSON from: {file_path}"
+                f"\n  {type(e).__name__}: {e}"
             )
 
     def read(self, data):

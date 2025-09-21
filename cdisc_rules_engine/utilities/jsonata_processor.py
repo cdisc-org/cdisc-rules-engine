@@ -4,6 +4,9 @@ from glob import glob
 from jsonata import Jsonata
 
 from cdisc_rules_engine.enums.execution_status import ExecutionStatus
+from cdisc_rules_engine.exceptions.custom_exceptions import (
+    RuleFormatError,
+)
 from cdisc_rules_engine.models.validation_error_container import (
     ValidationErrorContainer,
 )
@@ -24,9 +27,20 @@ class JSONataProcessor:
         check = rule.get("conditions")
         full_string = f"(\n{custom_functions}{check}\n)"
         expr = Jsonata(full_string)
-        results = expr.evaluate(dataset)
+        try:
+            results = expr.evaluate(dataset)
+        except Exception as e:
+            raise RuleFormatError(
+                f"\n  Error evaluating JSONata Rule with Core Id: {rule.get("core_id")}"
+                f"\n  {type(e).__name__}: {e}"
+            )
         errors = defaultdict(list)
         if results:
+            if not isinstance(results, list):
+                raise RuleFormatError(
+                    f"\n  Error in return type of JSONata Rule with Core Id: {rule.get('core_id')}"
+                    f"\n  Expected a list, but got: {results}"
+                )
             for result in results:
                 error_entity = ValidationErrorEntity(
                     value=result,
@@ -62,10 +76,16 @@ class JSONataProcessor:
             return ""
         functions = []
         for filepath in glob(f"{jsonata_functions_path}/*.jsonata"):
-            with open(filepath, "r") as file:
-                function_definition = file.read()
-                function_definition = function_definition.replace("{", "", 1)
-                function_definition = "".join(function_definition.rsplit("}", 1))
-                functions.append(function_definition)
+            try:
+                with open(filepath, "r") as file:
+                    function_definition = file.read()
+                    function_definition = function_definition.replace("{", "", 1)
+                    function_definition = "".join(function_definition.rsplit("}", 1))
+                    functions.append(function_definition)
+            except Exception as e:
+                raise RuleFormatError(
+                    f"\n  Error loading JSONata custom functions at path: {filepath}"
+                    f"\n  {type(e).__name__}: {e}"
+                )
         functions_str = ",\n".join(functions)
         return f"$utils:={{\n{functions_str}\n}};\n"
