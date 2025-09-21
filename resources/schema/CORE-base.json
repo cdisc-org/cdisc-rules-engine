@@ -41,9 +41,6 @@
         },
         {
           "$ref": "Operator.json"
-        },
-        {
-          "type": "string"
         }
       ]
     },
@@ -363,7 +360,14 @@
       "type": "array"
     },
     "Check": {
-      "$ref": "#/$defs/Boolean"
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Boolean"
+        },
+        {
+          "type": "string"
+        }
+      ]
     },
     "Core": {
       "properties": {
