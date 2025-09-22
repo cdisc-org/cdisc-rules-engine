@@ -110,6 +110,7 @@ class LibraryMetadataContainer:
             "codelist_code": [],
             "term_code": [],
             "term_value": [],
+            "term_pref_term": [],
         }
         for version in {*versions}:
             ct_package_data = self._load_ct_package_data(ct_package_type, version)
@@ -122,4 +123,5 @@ class LibraryMetadataContainer:
                     ct_terms["codelist_code"].append(codelist_code)
                     ct_terms["term_code"].append(term["conceptId"])
                     ct_terms["term_value"].append(term["submissionValue"])
+                    ct_terms["term_pref_term"].append(term.get("preferredTerm"))
         return ct_terms

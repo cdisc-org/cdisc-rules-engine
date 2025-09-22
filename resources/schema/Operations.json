@@ -533,6 +533,9 @@
     "term_code": {
       "type": "string"
     },
+    "term_pref_term": {
+      "type": "string"
+    },
     "version": {
       "type": "string"
     }
