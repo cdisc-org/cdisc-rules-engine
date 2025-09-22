@@ -11,7 +11,7 @@ class MatchesRegexOperator(BaseSqlOperator):
 
         def sql():
             return f"""CASE WHEN
-                            {target_column} IS NOT NULL
+                            NOT ({self._is_empty_sql(target)})
                             AND {target_column}::text ~ '{comparator}'
                         THEN true
                         ELSE false

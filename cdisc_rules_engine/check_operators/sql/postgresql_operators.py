@@ -34,8 +34,6 @@ from .is_unique_set_operator import IsUniqueSetOperator
 
 from .matches_regex_operator import MatchesRegexOperator
 from .not_matches_regex_operator import NotMatchesRegexOperator
-from .not_prefix_matches_regex_operator import NotPrefixMatchesRegexOperator
-from .not_suffix_matches_regex_operator import NotSuffixMatchesRegexOperator
 from .numeric_comparison_operator import NumericComparisonOperator
 from .prefix_suffix_equal_to_operator import PrefixSuffixEqualToOperator
 from .string_length_comparison_operator import StringLengthComparisonOperator
@@ -113,9 +111,9 @@ class PostgresQLOperators(BaseType):
         "matches_regex": lambda data: MatchesRegexOperator(data),
         "not_matches_regex": lambda data: NotMatchesRegexOperator(data),  # TODO check if this can use Not Operator
         "prefix_matches_regex": lambda data: PrefixMatchesRegexOperator(data),
-        "not_prefix_matches_regex": lambda data: NotPrefixMatchesRegexOperator(data),
+        "not_prefix_matches_regex": lambda data: PrefixMatchesRegexOperator(data, invert=True),
         "suffix_matches_regex": lambda data: SuffixMatchesRegexOperator(data),
-        "not_suffix_matches_regex": lambda data: NotSuffixMatchesRegexOperator(data),
+        "not_suffix_matches_regex": lambda data: SuffixMatchesRegexOperator(data, invert=True),
         "starts_with": lambda data: StartsWithOperator(data),
         "ends_with": lambda data: EndsWithOperator(data),
         "equals_string_part": lambda data: EqualsStringPartOperator(data),

@@ -4,13 +4,35 @@ from .base_sql_operator import BaseSqlOperator
 class PrefixMatchesRegexOperator(BaseSqlOperator):
     """Operator for prefix regex pattern matching."""
 
+    def __init__(self, data, invert=False):
+        super().__init__(data)
+        self.invert = invert
+
     def execute_operator(self, other_value):
-        """target = self.replace_prefix(other_value.get("target"))
+        target = self.replace_prefix(other_value.get("target")).lower()
+        target_column = self._column_sql(target)
         comparator = other_value.get("comparator")
         prefix = other_value.get("prefix")
-        converted_strings = self.validation_df[target].map(lambda x: self._custom_str_conversion(x))
-        results = converted_strings.notna() & converted_strings.astype(str).map(
-            lambda x: re.search(comparator, x[:prefix]) is not None
-        )
-        return results"""
-        raise NotImplementedError("prefix_matches_regex check_operator not implemented")
+
+        if self.invert:
+            operator_name = f"{target_column}_not_prefix_matches_regex"
+        else:
+            operator_name = f"{target_column}_prefix_matches_regex"
+
+        def sql():
+            prefix_expr = f"LEFT({target_column}::text, {prefix})"
+
+            if self.invert:
+                return f"""CASE
+                        WHEN {self._is_empty_sql(target)} THEN FALSE
+                        WHEN {prefix_expr} ~ '{comparator}' THEN FALSE
+                        ELSE TRUE
+                        END"""
+            else:
+                return f"""CASE
+                        WHEN {self._is_empty_sql(target)} THEN FALSE
+                        WHEN {prefix_expr} ~ '{comparator}' THEN TRUE
+                        ELSE FALSE
+                        END"""
+
+        return self._do_check_operator(operator_name, sql)
