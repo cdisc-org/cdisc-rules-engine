@@ -71,9 +71,11 @@ class DatasetXPTMetadataReader:
         }
 
         if self._estimate_dataset_length:
-            self._metadata_container["dataset_length"] = (
-                self._calculate_dataset_length()
-            )
+            try:
+                dataset_length: int = self._calculate_dataset_length()
+            except ValueError:
+                dataset_length = 0
+            self._metadata_container["dataset_length"] = dataset_length
         self._convert_variable_types()
         self._metadata_container["adam_info"] = self._extract_adam_info(
             self._metadata_container["variable_names"]
