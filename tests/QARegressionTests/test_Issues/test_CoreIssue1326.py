@@ -14,7 +14,7 @@ from QARegressionTests.globals import (
 )
 
 
-# @pytest.mark.regression
+@pytest.mark.regression
 class TestPrefTerm(unittest.TestCase):
     def test_positive_dataset(self):
         # Run the command in the terminal
@@ -28,9 +28,14 @@ class TestPrefTerm(unittest.TestCase):
             "-v",
             "3-0",
             "-dp",
-            os.path.join("tests", "resources", "CoreIssue1326", "regression-test-coreid-DDF00015-positive.json"),
+            os.path.join(
+                "tests",
+                "resources",
+                "CoreIssue1326",
+                "regression-test-coreid-DDF00015-positive.json",
+            ),
             "-lr",
-            os.path.join("tests", "resources", "CoreIssue1326", "rule.yml")
+            os.path.join("tests", "resources", "CoreIssue1326", "rule.yml"),
         ]
         subprocess.run(command, check=True)
 
@@ -62,8 +67,9 @@ class TestPrefTerm(unittest.TestCase):
         values_column_values = [
             value for value in values_column_values if value is not None
         ]
-        rules_report_sheet = workbook["Rules Report"]
-        rules_values = [row for row in rules_report_sheet.iter_rows(values_only=True)][1:]
+        rules_values = [
+            row for row in workbook[rules_report_sheet].iter_rows(values_only=True)
+        ][1:]
         rules_values = [row for row in rules_values if any(row)]
         # Perform the assertion
         # Ensure only two negative values are caught
@@ -87,9 +93,14 @@ class TestPrefTerm(unittest.TestCase):
             "-v",
             "3-0",
             "-dp",
-            os.path.join("tests", "resources", "CoreIssue1326", "regression-test-coreid-DDF00015-negative.json"),
+            os.path.join(
+                "tests",
+                "resources",
+                "CoreIssue1326",
+                "regression-test-coreid-DDF00015-negative.json",
+            ),
             "-lr",
-            os.path.join("tests", "resources", "CoreIssue1326", "rule.yml")
+            os.path.join("tests", "resources", "CoreIssue1326", "rule.yml"),
         ]
         subprocess.run(command, check=True)
 
@@ -114,7 +125,9 @@ class TestPrefTerm(unittest.TestCase):
 
         # --- Issue Summary ---
         issue_summary_sheet = workbook["Issue Summary"]
-        summary_values = [row for row in issue_summary_sheet.iter_rows(values_only=True)][1:]
+        summary_values = [
+            row for row in issue_summary_sheet.iter_rows(values_only=True)
+        ][1:]
         summary_values = [row for row in summary_values if any(row)]
         assert len(summary_values) > 0
         assert summary_values[0][1] == "CORE-000409"
@@ -131,15 +144,18 @@ class TestPrefTerm(unittest.TestCase):
             "null, null, Phase Ib Trial, PHASE IB TRIAL, C199989, PHASE 2 TRIAL",
         ]
         issue_details_sheet = workbook[issue_datails_sheet]
-        details_values = [row for row in issue_details_sheet.iter_rows(values_only=True)][1:]
+        details_values = [
+            row for row in issue_details_sheet.iter_rows(values_only=True)
+        ][1:]
         details_values = [row for row in details_values if any(row)]
         assert all(row[0] == "CORE-000409" for row in details_values)
         actual_values = [row[-1] for row in details_values]
         assert actual_values == expected_values
 
         # --- Rules Report ---
-        rules_report_sheet = workbook["Rules Report"]
-        rules_values = [row for row in rules_report_sheet.iter_rows(values_only=True)][1:]
+        rules_values = [
+            row for row in workbook[rules_report_sheet].iter_rows(values_only=True)
+        ][1:]
         rules_values = [row for row in rules_values if any(row)]
         assert len(rules_values) > 0
         assert rules_values[0][0] == "CORE-000409"
@@ -147,6 +163,7 @@ class TestPrefTerm(unittest.TestCase):
 
         if os.path.exists(excel_file_path):
             os.remove(excel_file_path)
+
 
 # if __name__ == "__main__":
 #     unittest.main()
