@@ -6,7 +6,7 @@ Operations for working with controlled terminology, codelist validation, and ext
 
 ### codelist_terms
 
-Returns a list of valid codelist/term values. Used for evaluating whether NCI code or submission values are valid based on controlled terminology. Expects three parameters: codelists which is a list of the codelist submission value(s) to retrieve, level which is the level of data (either "codelist" or "term") at which to return data from, and returntype which is the type of values to return, either "code" for NCI Code(s) or "value" for submission value(s)
+Returns a list of valid codelist/term values. Used for evaluating whether NCI codes, submission values or NCI preferred terms are valid based on controlled terminology. Expects three parameters: `codelists` which is a list of the codelist submission value(s) to retrieve, `level` which is the level of data (either "codelist" or "term") at which to return data from, and `returntype` which is the type of values to return: "code" for NCI Code(s), "value" for submission value(s), or "pref_term" for NCI preferred term(s).
 
 ```yaml
 - Check:
@@ -29,18 +29,24 @@ Returns a list of valid codelist/term values. Used for evaluating whether NCI co
       operator: codelist_extensible
 ```
 
-If ct_package_type, version, and codelist_code parameters are provided, it will instead attach a new column containing the term for each combination provided in the source dataset. If term_code is provided, it will find term values using the term codes. If term_value is provided, it will find term codes using the term values.Only one of term_code or term_value can be provided.
+If `ct_package_type`, `version`, and `codelist_code` parameters are provided, it will instead attach a new column containing the term for each combination provided in the source dataset. If a column name is provided as:
+
+- `term_code`, it will find term information using the term codes in the specified column.
+- `term_value`, it will find term information using the term submission values in the specified column.
+- `term_pref_term`, it will find term information using the term preferred terms in the specified column.
+
+Only one of `term_code`, `term_value` or `term_pref_term` can be provided. The term information returned will depend on the value of the `returntype` parameter, as described above. If `returntype` is not specified, specifying `term_code` will return the term submission value and specifying either `term_value` or `term_pref_term` will return the term code.
 
 For example, given the current dataset:
 
 ```
-id 	codeSystemVersion 	$codelist_code 	code 	decode
-1 	2024-09-27 	C201264 	C201356 	After
-2 	2024-09-27 	C201265 	C201352 	End to End
-3 	2023-03-29 	C127262 	C51282 	CLINIC
+id 	codeSystemVersion  $codelist_code  code     decode
+1 	2024-09-27         C201264         C201356  After
+2 	2024-09-27         C201265         C201352  End to End
+3 	2023-03-29         C127262         C51282   CLINIC
 ```
 
-and the following operation:
+and the following operations:
 
 ```yaml
 - id: $found_term_value
@@ -49,36 +55,54 @@ and the following operation:
   version: codeSystemVersion
   codelist_code: $codelist_code
   term_code: code
+- id: $found_term_pref_term
+  operator: codelist_terms
+  ct_package_type: DDF
+  version: codeSystemVersion
+  codelist_code: $codelist_code
+  term_code: code
+  returntype: pref_term
 ```
 
 This will result in the following dataset:
 
 ```
-id 	codeSystemVersion 	$codelist_code 	code 	decode 	$found_term_value
-1 	2024-09-27 	C201264 	C201356 	After 	After
-2 	2024-09-27 	C201265 	C201352 	End to End 	End to End
-3 	2023-03-29 	C127262 	C51282 	CLINIC 	CLINIC
+ id   codeSystemVersion  $codelist_code  code     decode      $found_term_value  $found_term_pref_term
+ 1    2024-09-27         C201264         C201356  After       After              After Timing Type
+ 2    2024-09-27         C201265         C201352  End to End  End to End         End to End
+ 3    2023-03-31         C127262         C51282   CLINIC      CLINIC             Clinic
 ```
 
-Conversely, if given the same dataset, and the following operation:
+Conversely, if given the same dataset, and the following operations:
 
 ```yaml
-- id: $found_term_code
+- id: $found_term_code1
   operator: codelist_terms
   ct_package_type: DDF
   version: codeSystemVersion
   codelist_code: $codelist_code
   term_value: decode
+- id: $found_term_code2
+  operator: codelist_terms
+  ct_package_type: DDF
+  version: codeSystemVersion
+  codelist_code: $codelist_code
+  term_pref_term: decode
 ```
 
 This will result in the following dataset:
 
 ```
-id 	codeSystemVersion 	$codelist_code 	code 	decode 	$found_term_code
-1 	2024-09-27 	C201264 	C201356 	After 	C201356
-2 	2024-09-27 	C201265 	C201352 	End to End 	C201352
-3 	2023-03-29 	C127262 	C51282 	CLINIC 	C51282
+ id   codeSystemVersion  $codelist_code  code     decode      $found_term_code1  $found_term_code2
+ 1    2024-09-27         C201264         C201356  After       C201356
+ 2    2024-09-27         C201265         C201352  End to End  C201352            C201352
+ 3    2023-03-31         C127262         C51282   CLINIC      C51282             C51282
 ```
+
+Note that `$found_term_code2` is:
+
+- `null` for the first record because "After" does not match any NCI preferred term in the C201264 codelist.
+- populated for the third record because matching is case-insensitive (i.e., "CLINIC" matches "Clinic").
 
 ### codelist_extensible
 
