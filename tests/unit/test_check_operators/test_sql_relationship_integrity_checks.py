@@ -179,3 +179,175 @@ def test_does_not_have_next_corresponding_record(data, expected_result):
         }
     )
     assert_series_equals(result, ~pd.Series(expected_result))
+
+
+EMPTY_WITHIN_EXCEPT_LAST_ROW_DATA = [
+    (
+        {
+            "USUBJID": [1, 1, 1, 2, 2, 2],
+            "valid": [
+                "2020-10-10",
+                "2020-10-10",
+                "2020-10-10",
+                "2021",
+                "2021",
+                "2021",
+            ],
+            "invalid": [
+                "2020-10-10",
+                None,
+                None,
+                "2020",
+                "2020",
+                None,
+            ],
+            "SEQ": [1, 2, 3, 1, 2, 3],
+        },
+        {"target": "valid", "comparator": "USUBJID"},
+        [False, False, False, False, False, False],
+    ),
+    (
+        {
+            "USUBJID": [1, 1, 1, 2, 2, 2],
+            "valid": [
+                "2020-10-10",
+                "2020-10-10",
+                "2020-10-10",
+                "2021",
+                "2021",
+                "2021",
+            ],
+            "invalid": [
+                "2020-10-10",
+                None,
+                None,
+                "2020",
+                "2020",
+                None,
+            ],
+            "SEQ": [1, 2, 3, 1, 2, 3],
+        },
+        {"target": "invalid", "comparator": "USUBJID"},
+        [False, True, False, False, False, False],
+    ),
+    (
+        {
+            "USUBJID": [789, 789, 789, 789, 790, 790, 790, 790],
+            "SESEQ": [1, 2, 3, 4, 5, 6, 7, 8],
+            "SEENDTC": [
+                "2006-06-03T10:32",
+                "2006-06-10T09:47",
+                "2006-06-17",
+                "2006-06-18",
+                "2006-06-03T10:14",
+                "2006-06-10T10:32",
+                "2006-06-17",
+                "2006-06-18",
+            ],
+            "SESTDTC": [
+                "2006-06-01",
+                "2006-06-03T10:32",
+                "2006-06-10T09:47",
+                "2006-06-17",
+                "2006-06-01",
+                "2006-06-03T10:14",
+                "2006-06-10T10:32",
+                "2006-06-17",
+            ],
+        },
+        {"target": "SEENDTC", "comparator": "USUBJID", "ordering": "SESTDTC"},
+        [False, False, False, False, False, False, False, False],
+    ),
+    (
+        {
+            "USUBJID": [789, 789, 789, 789, 790, 790, 790, 790],
+            "SESEQ": [1, 2, 3, 4, 5, 6, 7, 8],
+            "SEENDTC": [
+                "",
+                "2006-06-10T09:47",
+                "2006-06-17",
+                "2006-06-18",
+                "2006-06-03T10:14",
+                "2006-06-10T10:32",
+                "2006-06-17",
+                "2006-06-18",
+            ],
+            "SESTDTC": [
+                "2006-06-01",
+                "2006-06-03T10:32",
+                "2006-06-10T09:47",
+                "2006-06-17",
+                "2006-06-01",
+                "2006-06-03T10:14",
+                "2006-06-10T10:32",
+                "2006-06-17",
+            ],
+        },
+        {"target": "SEENDTC", "comparator": "USUBJID", "ordering": "SESTDTC"},
+        [True, False, False, False, False, False, False, False],
+    ),
+    (
+        {
+            "USUBJID": [1, 1, 1, 2, 2, 2],
+            "VISITNUM": [1, 2, 3, 1, 2, 3],
+            "VISIT": [
+                "SCREENING",
+                "",
+                "",
+                "SCREENING",
+                "TREATMENT",
+                "",
+            ],
+            "VISITDTC": [
+                "2020-01-01",
+                "2020-01-15",
+                "2020-02-01",
+                "2020-01-01",
+                "2020-01-15",
+                "2020-02-01",
+            ],
+        },
+        {"target": "VISIT", "comparator": "USUBJID", "ordering": "VISITDTC"},
+        [False, True, False, False, False, False],
+    ),
+    (
+        {
+            "USUBJID": [1, 1, 1, 2, 2, 2],
+            "VISITNUM": [1, 2, 3, 1, 2, 3],
+            "VISIT": [
+                "",
+                "",
+                "FOLLOW-UP",
+                "",
+                None,
+                "FOLLOW-UP",
+            ],
+            "VISITDTC": [
+                "2020-01-01",
+                "2020-01-15",
+                "2020-02-01",
+                "2020-01-01",
+                "2020-01-15",
+                "2020-02-01",
+            ],
+        },
+        {"target": "VISIT", "comparator": "USUBJID", "ordering": "VISITDTC"},
+        [True, True, False, True, True, False],
+    ),
+]
+
+
+@pytest.mark.parametrize("data, params, expected_result", EMPTY_WITHIN_EXCEPT_LAST_ROW_DATA)
+def test_empty_within_except_last_row(data, params, expected_result):
+    """Test for empty_within_except_last_row operator."""
+    sql_ops = create_sql_operators(data)
+    result = sql_ops.empty_within_except_last_row(params)
+    assert_series_equals(result, expected_result)
+
+
+@pytest.mark.parametrize("data, params, expected_result", EMPTY_WITHIN_EXCEPT_LAST_ROW_DATA)
+def test_non_empty_within_except_last_row(data, params, expected_result):
+    """Test for non_empty_within_except_last_row operator (inverse of empty_within_except_last_row)."""
+    sql_ops = create_sql_operators(data)
+    result = sql_ops.non_empty_within_except_last_row(params)
+    assert_series_equals(result, ~pd.Series(expected_result))

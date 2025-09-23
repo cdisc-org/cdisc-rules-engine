@@ -5,21 +5,58 @@ class EmptyWithinExceptLastRowOperator(BaseSqlOperator):
     """Operator for checking if values are empty within group except last row."""
 
     def execute_operator(self, other_value):
-        """target = self.replace_prefix(other_value.get("target"))
-        comparator = other_value.get("comparator")
-        order_by_column: str = self.replace_prefix(other_value.get("ordering"))
-        # group all targets by comparator
-        if order_by_column:
-            ordered_df = self.validation_df.sort_values(by=[comparator, order_by_column])
-        else:
-            ordered_df = self.validation_df.sort_values(by=[comparator])
-        grouped_target = ordered_df.groupby(comparator)[target]
-        # validate all targets except the last one
-        results = grouped_target.apply(lambda x: x[:-1]).apply(
-            lambda x: (pd.isna(x).all() if isinstance(x, (pd.Series, list)) else (x in NULL_FLAVORS or pd.isna(x)))
-        )
-        if isinstance(self.validation_df, DaskDataset) and self.validation_df.is_series(results):
-            results = results.compute()
-        # return values with corresponding indexes from results
-        return pd.Series(results.reset_index(level=0, drop=True))"""
-        raise NotImplementedError("empty_within_except_last_row check_operator not implemented")
+        """
+        Returns a boolean for each row indicating if that row's target value is empty
+        within its group (last row in each group always returns false).
+
+        Args:
+            other_value: Dictionary containing:
+                - target: The target column to check for empty values
+                - comparator: The column to group by
+                - ordering: Optional column to determine the order within groups
+
+        Returns:
+            Boolean for each row: true if row is empty and not last in group, false otherwise
+        """
+        target = self.replace_prefix(other_value.get("target"))
+        comparator = self.replace_prefix(other_value.get("comparator"))
+        order_by = self.replace_prefix(other_value.get("ordering"))
+
+        if not all([target, comparator]):
+            raise ValueError("Missing required parameters: target or comparator")
+
+        cache_key = f"{target}_empty_within_except_last_row_{comparator}"
+        if order_by:
+            cache_key += f"_ordered_by_{order_by}"
+
+        def sql(table_name, column_name):
+            return f"""
+            WITH ranked AS (
+                SELECT
+                    id,
+                    {self._column_sql(target)} AS target_val,
+                    ROW_NUMBER() OVER (
+                        PARTITION BY {self._column_sql(comparator)}
+                        ORDER BY {self._column_sql(order_by) if order_by else 'id'}
+                    ) AS rn,
+                    COUNT(*) OVER (
+                        PARTITION BY {self._column_sql(comparator)}
+                    ) AS cnt
+                FROM {table_name}
+            )
+            UPDATE {table_name} t
+            SET {column_name} = (
+                SELECT
+                    CASE
+                        -- Last row in group is always false
+                        WHEN r.rn = r.cnt THEN false
+                        -- Note: We don't use _is_empty_sql here because we're working with a column alias (target_val)
+                        WHEN r.target_val IS NULL OR r.target_val = '' THEN true
+                        ELSE false
+                    END
+                FROM ranked r
+                WHERE r.id = t.id
+            )
+            """
+
+        return self._do_complex_check_operator(cache_key, sql)
