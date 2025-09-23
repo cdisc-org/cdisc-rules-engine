@@ -189,7 +189,7 @@ Apply a JSONata query to a JSON file. [JSONata documentation](https://docs.jsona
 
 ```yaml
 Check: |
-  **.$filter($, $utils.equals).{"record":path, "A":A, "B":B}
+  **.$filter($, $myutils.equals).{"record":path, "A":A, "B":B}
 Core:
   Id: JSONATA Test
 Status: Draft
@@ -209,7 +209,8 @@ Sensitivity: Record
 
 #### Custom user function contained in external file "equals.jsonata"
 
-\* Note that in the CLI, you can pass a directory of such files using `-jfp` or `--jsonata-functions-path`
+\* Note that in the CLI, you can pass a variable name and directory of such files using `-jcf` or `--jsonata-custom-functions`. The engine's built-in JSONata functions are accessible from the `$utils` variable. For example to load two more directories containing functions into `$myutils` and `$yourutils`, add the options:
+`-jcf myutils path/to/myutils -jcf yourutils path/to/yourutils`
 
 ```yaml
 {

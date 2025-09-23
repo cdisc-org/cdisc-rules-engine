@@ -23,6 +23,6 @@ Validation_args = namedtuple(
         "progress",
         "define_xml_path",
         "validate_xml",
-        "jsonata_functions_path",
+        "jsonata_custom_functions",
     ],
 )

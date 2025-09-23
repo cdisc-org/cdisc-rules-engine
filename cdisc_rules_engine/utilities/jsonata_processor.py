@@ -3,8 +3,11 @@ from functools import cache
 from glob import glob
 from jsonata import Jsonata
 
+from cdisc_rules_engine.enums.default_file_paths import DefaultFilePaths
 from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 from cdisc_rules_engine.exceptions.custom_exceptions import (
+    MissingDataError,
+    RuleExecutionError,
     RuleFormatError,
 )
 from cdisc_rules_engine.models.validation_error_container import (
@@ -21,16 +24,24 @@ class JSONataProcessor:
     def execute_jsonata_rule(
         rule: dict,
         dataset: dict,
-        jsonata_functions_path: str,
+        jsonata_custom_functions: tuple[()] | tuple[tuple[str, str], ...],
     ):
-        custom_functions = JSONataProcessor.get_custom_functions(jsonata_functions_path)
+        custom_functions = JSONataProcessor.get_all_custom_functions(
+            jsonata_custom_functions
+        )
         check = rule.get("conditions")
         full_string = f"(\n{custom_functions}{check}\n)"
-        expr = Jsonata(full_string)
+        try:
+            expr = Jsonata(full_string)
+        except Exception as e:
+            raise RuleFormatError(
+                f"\n  Error parsing JSONata Rule for Core Id: {rule.get("core_id")}"
+                f"\n  {type(e).__name__}: {e}"
+            )
         try:
             results = expr.evaluate(dataset)
         except Exception as e:
-            raise RuleFormatError(
+            raise RuleExecutionError(
                 f"\n  Error evaluating JSONata Rule with Core Id: {rule.get("core_id")}"
                 f"\n  {type(e).__name__}: {e}"
             )
@@ -71,11 +82,28 @@ class JSONataProcessor:
 
     @staticmethod
     @cache
-    def get_custom_functions(jsonata_functions_path):
-        if not jsonata_functions_path:
-            return ""
+    def get_all_custom_functions(
+        jsonata_custom_functions: tuple[()] | tuple[tuple[str, str], ...]
+    ):
+        builtins_and_customs = [
+            ("utils", DefaultFilePaths.JSONATA_UTILS.value),
+            *jsonata_custom_functions,
+        ]
+        functions = [
+            JSONataProcessor.get_custom_functions(name, path)
+            for name, path in builtins_and_customs
+        ]
+        return "\n".join(functions)
+
+    @staticmethod
+    def get_custom_functions(jsonata_functions_name: str, jsonata_functions_path: str):
         functions = []
-        for filepath in glob(f"{jsonata_functions_path}/*.jsonata"):
+        filepaths = glob(f"{jsonata_functions_path}/*.jsonata")
+        if not filepaths:
+            raise MissingDataError(
+                f"\n  No JSONata custom functions found at path: {jsonata_functions_path}"
+            )
+        for filepath in filepaths:
             try:
                 with open(filepath, "r") as file:
                     function_definition = file.read()
@@ -88,4 +116,4 @@ class JSONataProcessor:
                     f"\n  {type(e).__name__}: {e}"
                 )
         functions_str = ",\n".join(functions)
-        return f"$utils:={{\n{functions_str}\n}};\n"
+        return f"${jsonata_functions_name}:={{\n{functions_str}\n}};\n"

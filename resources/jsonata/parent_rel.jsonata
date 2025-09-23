@@ -1,0 +1,14 @@
+{
+    "parent_rel" : function($this, $parent)
+                    {
+                        $filter($keys($parent),
+                                function($k)
+                                {
+                                    (
+                                        $v := $lookup($parent,$k);
+                                        $type($v) = "array" ? $this in $v : $v = $this
+                                    )
+                                }
+                        )
+                    }
+}

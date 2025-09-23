@@ -1,0 +1,56 @@
+{
+    "report": function($rule,$data)
+                {
+                    (
+                        $errors := $append(null,$type($rule.check_func) = "string" ? $data.$eval($rule.check_func) : $rule.check_func($data));
+                        $rule_applies := function($instyp,$rs)
+                                            {
+                                                (
+                                                    $incent := [$rs.Include];
+                                                    $excent := [$rs.Exclude];
+                                                    $is_inc := $instyp in $incent or "ALL" in $incent;
+                                                    $is_exc := $instyp in $excent or "ALL" in $excent;
+                                                    $is_inc and $not($is_exc)
+                                                )
+                                            };
+                        $data.**.instanceType@$it.($errors)
+                            {
+                                $it: 
+                                    {
+                                        "executionStatus": "success",
+                                        "class": $it[0]
+                                    }
+                            } 
+                            ~> |*|
+                                (
+                                    $class := $.class;
+                                    $rule_applies($class,$rule.scope)
+                                        ?
+                                            $class in $errors.dataset 
+                                                ? 
+                                                    {
+                                                        "message": $rule.message,
+                                                        "errors" : $map($errors[dataset = $class],
+                                                                        function($obj)
+                                                                            {
+                                                                                $merge($map($rule.variables, function($var)
+                                                                                        {
+                                                                                            {
+                                                                                                $var: $var in $keys($obj) ? $lookup($obj,$var) : "Not in output"
+                                                                                            }
+                                                                                        }
+                                                                                    )
+                                                                                )
+                                                                            }
+                                                                    )[]
+                                                    }
+                                                : {}
+                                        :   {
+                                                "executionStatus": "skipped",
+                                                "message": "Rule skipped - doesn't apply to entity for rule id=, dataset=" & $class
+                                            }
+                                )|
+                            ~> $spread() ~> $sort(function($l,$r){$keys($l)[0]>$keys($r)[0]}) ~> $merge()
+                    )
+                }
+}

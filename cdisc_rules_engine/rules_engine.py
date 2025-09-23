@@ -94,7 +94,9 @@ class RulesEngine:
         self.external_dictionaries = external_dictionaries
         self.define_xml_path: str = kwargs.get("define_xml_path")
         self.validate_xml: bool = kwargs.get("validate_xml")
-        self.jsonata_functions_path: str = kwargs.get("jsonata_functions_path")
+        self.jsonata_custom_functions: tuple[()] | tuple[tuple[str, str], ...] = (
+            kwargs.get("jsonata_custom_functions", ())
+        )
 
     def get_schema(self):
         return export_rule_data(DatasetVariable, COREActions)
@@ -295,7 +297,7 @@ class RulesEngine:
             )
         elif rule.get("rule_type") == RuleTypes.JSONATA.value:
             return JSONataProcessor.execute_jsonata_rule(
-                rule, dataset, self.jsonata_functions_path
+                rule, dataset, self.jsonata_custom_functions
             )
 
         kwargs["ct_packages"] = list(self.ct_packages)

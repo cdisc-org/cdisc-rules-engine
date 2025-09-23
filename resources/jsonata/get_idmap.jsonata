@@ -1,0 +1,35 @@
+{
+    "get_idmap" : function($obj,$mxids)
+                    {
+                        $reduce(
+                            ($obj.**[id]).
+                                {
+                                    "id": id, 
+                                    "instanceType": instanceType
+                                },
+                            function($idx,$v)
+                                {
+                                    (
+                                        $nxt := $v.instanceType in $keys($idx) ? $lookup($idx,$v.instanceType).next + 1 : 1;
+                                        $idx := $idx ~> |$|
+                                            {
+                                                $v.instanceType: 
+                                                    {
+                                                        "max": $lookup($idx,$v.instanceType).max,
+                                                        "next": $nxt,
+                                                        "ids": $append(
+                                                                $lookup($idx,$v.instanceType).ids, 
+                                                                {
+                                                                    "old": $v.id,
+                                                                    "new": $join([$v.instanceType,$string($nxt)],"_")
+                                                                }
+                                                            )
+                                                    }
+                                            }| ;
+                                    
+                                    )
+                                },
+                            $mxids
+                        ).**.${old: new}
+                    }
+}

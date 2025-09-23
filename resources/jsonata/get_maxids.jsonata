@@ -1,0 +1,12 @@
+{
+    "get_maxids" : function($wrapper)
+                    {
+                        $wrapper.(**[id]).$
+                            {
+                                instanceType: $.["max","next"]@$k
+                                    {
+                                        $k: $max($.$number($substringAfter($string(id),"_")))
+                                    }
+                            }
+                    }
+}
