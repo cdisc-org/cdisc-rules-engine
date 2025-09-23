@@ -64,12 +64,14 @@ class SqlVenmoResultHandler(BaseActions):
         rule: dict,
         dataset_id: str,
         data_service: PostgresQLDataService,
+        operation_variables: dict = None,
     ):
         self.output_container = output_container
         self.dataset_metadata = dataset_metadata
         self.rule = rule
         self.dataset_id = dataset_id
         self.data_service = data_service
+        self.operation_variables = operation_variables or {}
 
     @rule_action(params={"message": FIELD_TEXT})
     def generate_dataset_error_objects(self, message: str, results: pd.Series):
@@ -217,7 +219,13 @@ class SqlVenmoResultHandler(BaseActions):
                 values[column] = "Not in dataset"
                 continue
 
-            value = row.get(schema.get_column_hash(column))
+            if column.startswith("$"):
+                # Handle operation variables
+                value = self._evaluate_operation_variable(column, row, schema)
+            else:
+                # Handle regular table columns
+                value = row.get(schema.get_column_hash(column))
+
             if value is None or value in NULL_FLAVORS:
                 values[column] = None
             else:
@@ -231,13 +239,88 @@ class SqlVenmoResultHandler(BaseActions):
             value=values,
         )
 
+    def _evaluate_operation_variable(self, variable_name: str, row: dict, schema: SqlTableSchema):
+        """
+        Evaluate an operation variable for a specific row.
+        """
+        if variable_name not in self.operation_variables:
+            return "Operation variable not found"
+
+        operation_result = self.operation_variables[variable_name]
+
+        if operation_result.type == "constant":
+            return self._evaluate_constant_variable(operation_result, row, schema)
+        elif operation_result.type == "collection" and operation_result.params:
+            return self._evaluate_parameterized_collection(operation_result, row, schema)
+        else:
+            return "Unsupported operation variable type"
+
+    def _evaluate_constant_variable(self, operation_result, row: dict, schema: SqlTableSchema):
+        """Evaluate a constant operation variable."""
+        query = operation_result.query
+        if operation_result.params:
+            query = self._substitute_parameters(query, operation_result.params, row, schema)
+        return self._execute_query_for_single_value(query)
+
+    def _evaluate_parameterized_collection(self, operation_result, row: dict, schema: SqlTableSchema):
+        """Evaluate a parameterized collection operation variable."""
+        query = self._substitute_parameters(operation_result.query, operation_result.params, row, schema)
+        return self._execute_query_for_collection_value(query)
+
+    def _substitute_parameters(self, query: str, params: dict, row: dict, schema: SqlTableSchema) -> str:
+        """Substitute parameters in query with row values."""
+        for param_placeholder, column_name in params.items():
+            if column_name == "id":
+                param_value = row.get("id")
+            else:
+                param_value = row.get(schema.get_column_hash(column_name))
+
+            if param_value is None:
+                query = query.replace(param_placeholder, "NULL")
+            else:
+                query = query.replace(param_placeholder, str(param_value))
+        return query
+
+    def _execute_query_for_single_value(self, query: str):
+        """Execute query and return single value."""
+        try:
+            self.data_service.pgi.execute_sql(query)
+            result_rows = self.data_service.pgi.fetch_all()
+            if result_rows:
+                result_keys = list(result_rows[0].keys())
+                if result_keys:
+                    return result_rows[0][result_keys[0]]
+            return None
+        except Exception as e:
+            return f"Query error: {str(e)}"
+
+    def _execute_query_for_collection_value(self, query: str):
+        """Execute query and return collection value."""
+        try:
+            self.data_service.pgi.execute_sql(query)
+            result_rows = self.data_service.pgi.fetch_all()
+            if result_rows and len(result_rows) > 0:
+                return result_rows[0].get("value")
+            return None
+        except Exception as e:
+            return f"Query error: {str(e)}"
+
     @staticmethod
     def _get_target_columns(rule: dict, metadata: SQLDatasetMetadata, schema: SqlTableSchema) -> dict[str, bool]:
         """
         Returns the columns to display in the error object
         """
         target_columns = SqlVenmoResultHandler._extract_target_names_from_rule(rule, metadata, schema)
-        target_columns_with_presence = {column: schema.has_column(column) for column in target_columns}
+        target_columns_with_presence = {}
+
+        for column in target_columns:
+            if column.startswith("$"):
+                # Operation variables always exist if they're in the rule
+                target_columns_with_presence[column] = True
+            else:
+                # Regular columns need to be checked against the schema
+                target_columns_with_presence[column] = schema.has_column(column)
+
         return target_columns_with_presence
 
     @staticmethod

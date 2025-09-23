@@ -212,17 +212,7 @@ class BaseSqlOperator:
         Will map None to an empty string.
         """
         if isinstance(value, str):
-            if value in self.operation_variables:
-                variable = self.operation_variables[value]
-                if variable.type != "constant":
-                    raise ValueError(f"Variable {value} is not a constant.")
-                query = f"({variable.query})"
-            else:
-                query = f"'{value.replace("'", "''")}'"
-
-            if lowercase:
-                query = f"LOWER({query})"
-            return query
+            return self._handle_string_constant(value, lowercase)
         elif isinstance(value, bool):
             return "TRUE" if value else "FALSE"
         elif isinstance(value, (int, float)):
@@ -232,6 +222,38 @@ class BaseSqlOperator:
         else:
             raise ValueError(f"Unsupported constant type: {type(value)}")
 
+    def _handle_string_constant(self, value: str, lowercase: bool) -> str:
+        """Handle string constants, including operation variables."""
+        if value in self.operation_variables:
+            query = self._process_constant_operation_variable(value)
+        else:
+            query = f"'{value.replace("'", "''")}'"
+
+        if lowercase:
+            query = f"LOWER({query})"
+        return query
+
+    def _process_constant_operation_variable(self, value: str) -> str:
+        """Process a constant operation variable."""
+        variable = self.operation_variables[value]
+        if variable.type != "constant":
+            raise ValueError(f"Variable {value} is not a constant.")
+
+        query = variable.query
+        if variable.params:
+            query = self._substitute_operation_parameters(query, variable.params)
+        return f"({query})"
+
+    def _substitute_operation_parameters(self, query: str, params: dict) -> str:
+        """Substitute operation parameters in query."""
+        for param_placeholder, column_name in params.items():
+            if column_name == "id":
+                column_sql = f"{self._table_sql()}.{self._column_sql(column_name)}"
+            else:
+                column_sql = self._column_sql(column_name)
+            query = query.replace(param_placeholder, column_sql)
+        return query
+
     def _collection_sql(self, value: Any, lowercase: bool = False) -> str:
         """
         Generates a SQL collection string based on the type of the value.
@@ -239,20 +261,43 @@ class BaseSqlOperator:
         if isinstance(value, list):
             return f"({', '.join(self._constant_sql(v, lowercase=lowercase) for v in value)})"
         elif isinstance(value, str):
-            if value in self.operation_variables:
-                variable = self.operation_variables[value]
-                if variable.type != "collection":
-                    raise ValueError(f"Variable {value} is not a collection.")
-                query = f"({variable.query})"
-                if lowercase:
-                    # column1 is the default column name
-                    query = f"(SELECT LOWER(column1) FROM {query})"
-                return query
-            raise ValueError(f"Expected a collection, got a string: {value}")
+            return self._handle_string_collection(value, lowercase)
         elif value is None:
             return ""
         else:
             raise ValueError(f"Unsupported collection type: {type(value)}")
+
+    def _handle_string_collection(self, value: str, lowercase: bool) -> str:
+        """Handle string collections (operation variables)."""
+        if value not in self.operation_variables:
+            raise ValueError(f"Expected a collection, got a string: {value}")
+
+        variable = self.operation_variables[value]
+        if variable.type != "collection":
+            raise ValueError(f"Variable {value} is not a collection.")
+
+        query = self._process_collection_operation_variable(variable, lowercase)
+        return query
+
+    def _process_collection_operation_variable(self, variable, lowercase: bool) -> str:
+        """Process a collection operation variable."""
+        query = variable.query
+
+        if variable.params:
+            query = self._substitute_operation_parameters(query, variable.params)
+
+        query = f"({query})"
+        if lowercase:
+            query = self._apply_lowercase_to_collection(query, variable.params)
+        return query
+
+    def _apply_lowercase_to_collection(self, query: str, params: dict) -> str:
+        """Apply lowercase to collection query results."""
+        if params:
+            return f"(SELECT LOWER(value) FROM {query})"
+        else:
+            # column1 is the default column name for non-parameterized collections
+            return f"(SELECT LOWER(column1) FROM {query})"
 
     def _sql(self, value: Any, lowercase: bool = False, value_is_literal: bool = False) -> str:
         """
@@ -390,17 +435,31 @@ class BaseSqlOperator:
         variable = self.operation_variables[target]
         if not variable:
             raise ValueError(f"Variable {target} does not exist.")
+
         if variable.type != "constant":
             raise ValueError(f"Variable {target} is not a constant.")
 
+        # Handle parameterized constants
+        query = variable.query
+        if variable.params:
+            # Substitute parameters with actual column values from current row context
+            for param_placeholder, column_name in variable.params.items():
+                if column_name == "id":
+                    # For id parameters, use the current table's id column with table qualification
+                    column_sql = f"{self._table_sql()}.{self._column_sql(column_name)}"
+                else:
+                    column_sql = self._column_sql(column_name)
+                query = query.replace(param_placeholder, column_sql)
+
+        # Check if the resolved query result is empty based on variable subtype
         match variable.subtype:
             case "Char":
-                return f"(({variable.query}) IS NULL OR ({variable.query}) = '')"
+                return f"(({query}) IS NULL OR ({query}) = '')"
             case "Bool":
-                return f"(({variable.query}) IS NULL)"
+                return f"(({query}) IS NULL)"
             case "Num":
-                return f"(({variable.query}) IS NULL)"
+                return f"(({query}) IS NULL)"
             case "Date":
-                return f"(({variable.query}) IS NULL)"
+                return f"(({query}) IS NULL)"
             case _:
                 raise ValueError(f"Unsupported variable type: {variable.subtype} for variable {target}.")

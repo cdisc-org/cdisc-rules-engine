@@ -2,7 +2,7 @@ import pytest
 
 from .helpers import (
     assert_operation_constant,
-    assert_operation_table,
+    assert_operation_parameterized_constant,
     setup_sql_operations,
 )
 
@@ -101,7 +101,10 @@ def test_filtered_record_count(data, filter, expected):
             },
             {},
             ["STUDYID"],
-            [{"studyid": "CDISC01", "value": 2}, {"studyid": "CDISC02", "value": 1}],
+            [
+                {"params": {"$1": "CDISC01"}, "value": [2]},
+                {"params": {"$1": "CDISC02"}, "value": [1]},
+            ],
         ),
         (
             {
@@ -112,9 +115,10 @@ def test_filtered_record_count(data, filter, expected):
             },
             {"EQ": 1},
             ["STUDYID"],
-            # Currently it doesn't return 0 rows, but we might have to tweak this later
-            [{"studyid": "CDISC01", "value": 1}],
-            # [{"studyid": "CDISC01", "value": 1}, {"studyid": "CDISC02", "value": 0}],
+            [
+                {"params": {"$1": "CDISC01"}, "value": [1]},
+                {"params": {"$1": "CDISC02"}, "value": [0]},
+            ],
         ),
         (
             {
@@ -125,7 +129,10 @@ def test_filtered_record_count(data, filter, expected):
             },
             {"EQ": 2},
             ["DOMAIN", "STUDYID"],
-            [{"domain": "AE", "studyid": "CDISC01", "value": 2}, {"domain": "AE", "studyid": "CDISC02", "value": 1}],
+            [
+                {"params": {"$1": "AE", "$2": "CDISC01"}, "value": [2]},
+                {"params": {"$1": "AE", "$2": "CDISC02"}, "value": [1]},
+            ],
         ),
         (
             {
@@ -137,9 +144,9 @@ def test_filtered_record_count(data, filter, expected):
             {},
             ["STUDYID", "DOMAIN"],
             [
-                {"studyid": "CDISC01", "domain": "AE", "value": 1},
-                {"studyid": "CDISC01", "domain": None, "value": 2},
-                {"studyid": "CDISC02", "domain": None, "value": 2},
+                {"params": {"$1": "CDISC01", "$2": "AE"}, "value": [1]},
+                {"params": {"$1": "CDISC01", "$2": None}, "value": [2]},
+                {"params": {"$1": "CDISC02", "$2": None}, "value": [2]},
             ],
         ),
     ],
@@ -149,7 +156,7 @@ def test_filtered_grouped_record_count(data, filter, grouping, expected):
         "record_count", "values", data, extra_config={"filter": filter, "grouping": grouping}
     )
     result = operation.execute()
-    assert_operation_table(operation, result, expected)
+    assert_operation_parameterized_constant(operation, result, expected)
 
 
 # TODO: Handle operation variables in other operations

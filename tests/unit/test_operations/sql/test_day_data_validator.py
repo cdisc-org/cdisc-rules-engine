@@ -8,7 +8,7 @@ from cdisc_rules_engine.sql_operations.sql_operations_factory import (
     SqlOperationsFactory,
 )
 
-from .helpers import assert_operation_table
+from .helpers import assert_operation_constant, assert_operation_parameterized_constant
 
 
 @pytest.mark.parametrize(
@@ -40,13 +40,13 @@ from .helpers import assert_operation_table
                 ],
             },
             [
-                {"id": 1, "value": 4},
-                {"id": 2, "value": 32},
-                {"id": 3, "value": 1},
-                {"id": 4, "value": 13},
-                {"id": 5, "value": None},
-                {"id": 6, "value": None},
-                {"id": 7, "value": -1},
+                {"params": {"$1": 1}, "value": [4]},
+                {"params": {"$1": 2}, "value": [32]},
+                {"params": {"$1": 3}, "value": [1]},
+                {"params": {"$1": 4}, "value": [13]},
+                {"params": {"$1": 5}, "value": [None]},
+                {"params": {"$1": 6}, "value": [None]},
+                {"params": {"$1": 7}, "value": [-1]},
             ],
         ),
         (
@@ -67,9 +67,9 @@ from .helpers import assert_operation_table
                 ],
             },
             [
-                {"id": 1, "value": 1},
-                {"id": 2, "value": 2},
-                {"id": 3, "value": -1},
+                {"params": {"$1": 1}, "value": [1]},
+                {"params": {"$1": 2}, "value": [2]},
+                {"params": {"$1": 3}, "value": [-1]},
             ],
         ),
     ],
@@ -84,7 +84,7 @@ def test_sql_dy_calculation(current_data, dm_data, expected):
     operation = SqlOperationsFactory.get_service("dy", params, data_service)
     result = operation.execute()
 
-    assert_operation_table(operation, result, expected)
+    assert_operation_parameterized_constant(operation, result, expected)
 
 
 @pytest.mark.parametrize(
@@ -99,11 +99,7 @@ def test_sql_dy_calculation(current_data, dm_data, expected):
                     "2022-12-31T23:59:59",
                 ],
             },
-            [
-                {"id": 1, "value": 0},
-                {"id": 2, "value": 0},
-                {"id": 3, "value": 0},
-            ],
+            0,
         ),
     ],
 )
@@ -115,8 +111,7 @@ def test_sql_dy_no_dm_domain(current_data, expected):
     params = SqlOperationParams(domain="EX", target="EXSTDTC", standard="", standard_version="")
     operation = SqlOperationsFactory.get_service("dy", params, data_service)
     result = operation.execute()
-
-    assert_operation_table(operation, result, expected)
+    assert_operation_constant(operation, result, expected)
 
 
 @pytest.mark.parametrize(
@@ -139,9 +134,9 @@ def test_sql_dy_no_dm_domain(current_data, expected):
                 ],
             },
             [
-                {"id": 1, "value": 4},
-                {"id": 2, "value": 32},
-                {"id": 3, "value": None},
+                {"params": {"$1": 1}, "value": [4]},
+                {"params": {"$1": 2}, "value": [32]},
+                {"params": {"$1": 3}, "value": [None]},
             ],
         ),
     ],
@@ -156,7 +151,7 @@ def test_sql_dy_missing_usubjid(current_data, dm_data, expected):
     operation = SqlOperationsFactory.get_service("dy", params, data_service)
     result = operation.execute()
 
-    assert_operation_table(operation, result, expected)
+    assert_operation_parameterized_constant(operation, result, expected)
 
 
 @pytest.mark.parametrize(
@@ -182,10 +177,10 @@ def test_sql_dy_missing_usubjid(current_data, dm_data, expected):
                 ],
             },
             [
-                {"id": 1, "value": None},
-                {"id": 2, "value": None},
-                {"id": 3, "value": None},
-                {"id": 4, "value": 1},
+                {"params": {"$1": 1}, "value": [None]},
+                {"params": {"$1": 2}, "value": [None]},
+                {"params": {"$1": 3}, "value": [None]},
+                {"params": {"$1": 4}, "value": [1]},
             ],
         ),
     ],
@@ -201,4 +196,4 @@ def test_sql_dy_invalid_dates(current_data, dm_data, expected):
     operation = SqlOperationsFactory.get_service("dy", params, data_service)
     result = operation.execute()
 
-    assert_operation_table(operation, result, expected)
+    assert_operation_parameterized_constant(operation, result, expected)

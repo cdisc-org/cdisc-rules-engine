@@ -8,7 +8,7 @@ from cdisc_rules_engine.sql_operations.sql_operations_factory import (
 )
 
 from .helpers import (
-    assert_operation_list,
+    assert_operation_collection,
 )
 
 
@@ -27,4 +27,4 @@ def test_dataset_names():
     params = SqlOperationParams(domain="t1", target=None, standard="", standard_version="")
     operation = SqlOperationsFactory.get_service("dataset_names", params, data_service)
     result = operation.execute()
-    assert_operation_list(operation, result, ["t1", "t2"], unsorted=True)
+    assert_operation_collection(operation, result, ["t1", "t2"], unsorted=True)

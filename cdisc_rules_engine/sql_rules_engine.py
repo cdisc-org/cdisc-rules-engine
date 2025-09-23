@@ -234,6 +234,7 @@ class SQLRulesEngine:
                 rule=rule,
                 data_service=self.data_service,
                 dataset_id=dataset_id,
+                operation_variables=operation_variables,
             ),
         )
         return results

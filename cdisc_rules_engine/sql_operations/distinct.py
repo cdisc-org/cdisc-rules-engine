@@ -16,12 +16,16 @@ class SqlDistinctOperation(SqlBaseOperation):
                 self.data_service.pgi.schema.get_column(self.params.domain, group) for group in self.params.grouping
             ]
 
-            groups_select = ", ".join([f"{col.hash} AS {col.name}" for col in grouping_columns])
-            groups_group_by = ", ".join([col.hash for col in grouping_columns])
+            where_conditions = []
+            params = {}
+            for i, col in enumerate(grouping_columns):
+                param_name = f"${i + 1}"
+                where_conditions.append(f"{col.hash} = {param_name}")
+                params[param_name] = col.name
 
-            query = f"""SELECT
-                            {groups_select}, {column_id} AS value
+            where_clause = " AND ".join(where_conditions)
+
+            query = f"""SELECT DISTINCT {column_id} AS value
                         FROM {dataset_id}
-                        GROUP BY {groups_group_by}, {column_id}
-                        ORDER BY {groups_group_by}, {column_id}"""
-            return SqlOperationResult(query=query, type="table", subtype=column_type)
+                        WHERE {where_clause}"""
+            return SqlOperationResult(query=query, type="collection", subtype=column_type, params=params)

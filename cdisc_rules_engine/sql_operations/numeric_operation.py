@@ -31,13 +31,21 @@ class SqlNumericOperation(SqlBaseOperation):
                 self.data_service.pgi.schema.get_column(self.params.domain, group) for group in self.params.grouping
             ]
 
-            groups_select = ", ".join([f"{col.hash} AS {col.name}" for col in grouping_columns])
-            groups_group_by = ", ".join([col.hash for col in grouping_columns])
+            where_conditions = []
+            params = {}
+            for i, col in enumerate(grouping_columns):
+                param_name = f"${i + 1}"
+                where_conditions.append(f"({col.hash} = {param_name} OR ({col.hash} IS NULL AND {param_name} IS NULL))")
+                params[param_name] = col.name
 
-            query = f"""SELECT
-                            {groups_select}, {self.function}({column_id}) AS value
+            where_clause_parts = []
+            if where_clause.strip():
+                where_clause_parts.append(where_clause.replace("WHERE", "").strip())
+            where_clause_parts.extend(where_conditions)
+
+            combined_where = "WHERE " + " AND ".join(where_clause_parts)
+
+            query = f"""SELECT {self.function}({column_id}) AS value
                         FROM {dataset_id}
-                        {where_clause}
-                        GROUP BY {groups_group_by}
-                        ORDER BY {groups_group_by}"""
-            return SqlOperationResult(query=query, type="table", subtype="Num")
+                        {combined_where}"""
+            return SqlOperationResult(query=query, type="constant", subtype="Num", params=params)
