@@ -4,6 +4,7 @@ from cdisc_rules_engine.data_service.postgresql_data_service import (
 from cdisc_rules_engine.models.sql_operation_params import SqlOperationParams
 from cdisc_rules_engine.sql_operations.dataset_names import SqlDatasetNamesOperation
 from cdisc_rules_engine.sql_operations.distinct import SqlDistinctOperation
+from cdisc_rules_engine.sql_operations.domain_label import SqlDomainLabelOperation
 from cdisc_rules_engine.sql_operations.day_data_validator import SqlDayDataValidatorOperation
 from cdisc_rules_engine.sql_operations.numeric_operation import (
     SqlNumericOperation,
@@ -46,7 +47,7 @@ class SqlOperationsFactory:
         "variable_count": None,
         "variable_is_null": None,
         "domain_is_custom": None,
-        "domain_label": None,
+        "domain_label": lambda params, ds: SqlDomainLabelOperation(params, ds),
         "required_variables": None,
         "expected_variables": None,
         "permissible_variables": None,
