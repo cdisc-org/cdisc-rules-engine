@@ -11,6 +11,7 @@ from rule_regression.regression import (
     output_engine_results_json,
     run_single_rule_regression,
 )
+from rule_regression.operator_analysis import generate_operators_analysis_report
 from scripts.run_sql_validation import sql_run_single_rule_validation
 
 load_dotenv()
@@ -19,9 +20,20 @@ load_dotenv()
 def test_regression_all_rules(pytestconfig, get_core_rules_df, get_core_rule):
     regression_df = get_core_rules_df()
     regression_json = []
+    all_check_operators = set()
+
     for _, row in regression_df.iterrows():
         rule_reg = run_single_rule_regression(row, get_core_rule)
         regression_json.append(rule_reg)
+
+        # Extract and add check operators to the set
+        check_operators = rule_reg.get("check_operators", [])
+        if check_operators:
+            all_check_operators.update(check_operators)
+
+    # Generate and save the operators analysis report
+    generate_operators_analysis_report(all_check_operators)
+
     with open(
         str(pytestconfig.rootpath) + "/tests/resources/rules/rules.json",
         "w",
