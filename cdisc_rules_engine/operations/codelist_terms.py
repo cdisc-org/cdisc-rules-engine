@@ -152,6 +152,8 @@ class CodelistTerms(BaseOperation):
                 if code_obj.get("term") == "N/A":
                     if check == "code":
                         values.append(codelist_id)
+                    elif check == "pref_term":
+                        values.append(codelist_info["preferredTerm"])
                     else:
                         values.append(codelist_info["submissionValue"])
             elif codelist_level == "term":
@@ -159,6 +161,8 @@ class CodelistTerms(BaseOperation):
                 for term in terms:
                     if check == "value":
                         values.append(term["submissionValue"])
+                    elif check == "pref_term":
+                        values.append(term["preferredTerm"])
                     else:
                         values.append(term["conceptId"])
         return values

@@ -525,7 +525,7 @@
     },
     "returntype": {
       "type": "string",
-      "enum": ["code", "value"]
+      "enum": ["code", "value", "pref_term"]
     },
     "term_value": {
       "type": "string"
