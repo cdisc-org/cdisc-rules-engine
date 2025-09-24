@@ -1,6 +1,6 @@
 import pytest
 
-from .helpers import create_sql_operators, assert_series_equals
+from .helpers import assert_series_equals, create_sql_operators
 
 
 @pytest.mark.parametrize(
@@ -8,6 +8,7 @@ from .helpers import create_sql_operators, assert_series_equals
     [
         ({"target": ["Att", "", None]}, [False, True, True]),
         ({"target": [1, 2, None]}, [False, False, True]),
+        ({"other": [1, 2, None]}, [True, True, True]),
     ],
 )
 def test_empty(data, expected_result):
