@@ -99,9 +99,13 @@ class DataframeType(BaseType):
         return data
 
     def _is_null_or_empty(self, value):
-        if pd.isna(value) or value is None or value == "":
-            return True
-        return False
+        try:
+            result = pd.isna(value) | (value == "") | (value is None)
+            if hasattr(result, "all"):
+                return result.all()  # True only if ALL elements are null/empty
+            return result
+        except (ValueError, TypeError):
+            return pd.isna(value) or value is None or value == ""
 
     def replace_prefix(self, value: str) -> Union[str, Any]:
         if isinstance(value, str):
