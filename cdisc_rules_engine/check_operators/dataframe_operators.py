@@ -88,7 +88,7 @@ class DataframeType(BaseType):
             if isinstance(x, int):
                 return str(x).strip()
             elif isinstance(x, float):
-                return f"{x: .0f}" if x.is_integer() else str(x).strip()
+                return f"{x:.0f}" if x.is_integer() else str(x).strip()  # noqa: E231
         return x
 
     def convert_string_data_to_lower(self, data):
@@ -172,7 +172,7 @@ class DataframeType(BaseType):
             )
         both_null = (
             comparison_data == "" or pd.isna(comparison_data) or comparison_data is None
-        ) & (row[target] == "" or pd.isna(row[target]) or row[target] is None)
+        ) and (row[target] == "" or pd.isna(row[target]) or row[target] is None)
         if both_null:
             return False
         if type_insensitive:
@@ -217,7 +217,7 @@ class DataframeType(BaseType):
             )
         both_null = (
             comparison_data == "" or pd.isna(comparison_data) or comparison_data is None
-        ) & (row[target] == "" or pd.isna(row[target]) or row[target] is None)
+        ) and (row[target] == "" or pd.isna(row[target]) or row[target] is None)
         if both_null:
             return False
         if type_insensitive:
