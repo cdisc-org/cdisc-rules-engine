@@ -42,6 +42,9 @@ def create_sql_operators(
     config["operation_variables"]["$list"] = SqlOperationResult(
         query="SELECT column1 FROM (VALUES ('A'), ('B'))", type="collection", subtype="Char"
     )
+    config["operation_variables"]["$empty_date"] = SqlOperationResult(
+        query="SELECT NULL", type="constant", subtype="Date"
+    )
 
     return PostgresQLOperators(config)
 

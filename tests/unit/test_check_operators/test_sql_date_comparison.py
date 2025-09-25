@@ -185,6 +185,18 @@ def test_sql_date_greater_than_or_equal_to(data, comparator, value_is_literal, e
             True,
             [False, True, False],
         ),
+        (
+            {"target": ["2023-02-20", "2023-02-19", "2023-02-21"]},
+            "$empty_date",
+            False,
+            [False, False, False],
+        ),
+        (
+            {"target": ["2023-01-15", "2023-02-20", "2023-03-10"], "VAR2": ["2023-01-15", "2023-02-20", "2023-03-10"]},
+            "VAR2",
+            False,
+            [False, False, False],
+        ),
     ],
 )
 def test_sql_date_less_than_equality_boundary(data, comparator, value_is_literal, expected_result):

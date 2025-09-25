@@ -9,6 +9,7 @@ from cdisc_rules_engine.sql_operations.day_data_validator import SqlDayDataValid
 from cdisc_rules_engine.sql_operations.numeric_operation import (
     SqlNumericOperation,
 )
+from cdisc_rules_engine.sql_operations.date_operation import SqlDateOperation
 from cdisc_rules_engine.sql_operations.sql_base_operation import SqlBaseOperation
 from cdisc_rules_engine.sql_operations.variable_exists import SqlVariableExistsOperation
 
@@ -30,10 +31,10 @@ class SqlOperationsFactory:
         "get_parent_model_column_order": None,
         "map": None,
         "max": lambda params, ds: SqlNumericOperation(params, ds, "MAX"),
-        "max_date": None,
+        "max_date": lambda params, ds: SqlDateOperation(params, ds, "MAX"),
         "mean": lambda params, ds: SqlNumericOperation(params, ds, "AVG"),
         "min": lambda params, ds: SqlNumericOperation(params, ds, "MIN"),
-        "min_date": None,
+        "min_date": lambda params, ds: SqlDateOperation(params, ds, "MIN"),
         "record_count": lambda params, ds: SqlNumericOperation(params, ds, "COUNT"),
         "valid_meddra_code_references": None,
         "valid_whodrug_references": None,
