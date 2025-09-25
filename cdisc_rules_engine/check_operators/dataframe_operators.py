@@ -98,6 +98,11 @@ class DataframeType(BaseType):
             data = data.lower()
         return data
 
+    def _is_null_or_empty(self, value):
+        if pd.isna(value) or value is None or value == "":
+            return True
+        return False
+
     def replace_prefix(self, value: str) -> Union[str, Any]:
         if isinstance(value, str):
             for prefix, replacement in self.column_prefix_map.items():
@@ -170,9 +175,9 @@ class DataframeType(BaseType):
                 if comparator not in row or value_is_literal
                 else row[comparator]
             )
-        both_null = (
-            comparison_data == "" or pd.isna(comparison_data) or comparison_data is None
-        ) and (row[target] == "" or pd.isna(row[target]) or row[target] is None)
+        both_null = self._is_null_or_empty(comparison_data) & self._is_null_or_empty(
+            row[target]
+        )
         if both_null:
             return False
         if type_insensitive:
@@ -215,9 +220,9 @@ class DataframeType(BaseType):
                 if comparator not in row or value_is_literal
                 else row[comparator]
             )
-        both_null = (
-            comparison_data == "" or pd.isna(comparison_data) or comparison_data is None
-        ) and (row[target] == "" or pd.isna(row[target]) or row[target] is None)
+        both_null = self._is_null_or_empty(comparison_data) & self._is_null_or_empty(
+            row[target]
+        )
         if both_null:
             return False
         if type_insensitive:
