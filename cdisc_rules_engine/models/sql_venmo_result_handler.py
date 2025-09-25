@@ -277,6 +277,10 @@ class SqlVenmoResultHandler(BaseActions):
 
             if param_value is None:
                 query = query.replace(param_placeholder, "NULL")
+            # Wrap string values in single quotes to ensure they are treated
+            # as string literals in SQL rather than column names.
+            elif isinstance(param_value, str):
+                query = query.replace(param_placeholder, f"'{param_value}'")
             else:
                 query = query.replace(param_placeholder, str(param_value))
         return query

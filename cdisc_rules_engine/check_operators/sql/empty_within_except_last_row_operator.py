@@ -34,13 +34,13 @@ class EmptyWithinExceptLastRowOperator(BaseSqlOperator):
             WITH ranked AS (
                 SELECT
                     id,
-                    {self._column_sql(target)} AS target_val,
+                    {self._column_sql(target, alias=False)} AS target_val,
                     ROW_NUMBER() OVER (
-                        PARTITION BY {self._column_sql(comparator)}
-                        ORDER BY {self._column_sql(order_by) if order_by else 'id'}
+                        PARTITION BY {self._column_sql(comparator, alias=False)}
+                        ORDER BY {self._column_sql(order_by, alias=False) if order_by else 'id'}
                     ) AS rn,
                     COUNT(*) OVER (
-                        PARTITION BY {self._column_sql(comparator)}
+                        PARTITION BY {self._column_sql(comparator, alias=False)}
                     ) AS cnt
                 FROM {table_name}
             )

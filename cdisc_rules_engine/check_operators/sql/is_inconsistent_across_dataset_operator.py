@@ -43,17 +43,18 @@ class IsInconsistentAcrossDatasetOperator(BaseSqlOperator):
                         (
                             SELECT COUNT(DISTINCT
                                 CASE
-                                    WHEN t2.{self._column_sql(target_column)} IS NULL THEN 'NULL_VALUE'
-                                    ELSE CAST(t2.{self._column_sql(target_column)} AS TEXT)
+                                    WHEN t2.{self._column_sql(target_column, alias=False)} IS NULL THEN 'NULL_VALUE'
+                                    ELSE CAST(t2.{self._column_sql(target_column, alias=False)} AS TEXT)
                                 END
                             )
                             FROM {db_table} AS t2
                             WHERE (
-                                (t2.{self._column_sql(comparator_column)} = t1.{self._column_sql(comparator_column)})
+                                (t2.{self._column_sql(comparator_column, alias=False)}
+                                    = t1.{self._column_sql(comparator_column, alias=False)})
                                 OR
-                                (t2.{self._column_sql(comparator_column)} IS NULL
+                                (t2.{self._column_sql(comparator_column, alias=False)} IS NULL
                                 AND
-                                t1.{self._column_sql(comparator_column)} IS NULL)
+                                t1.{self._column_sql(comparator_column, alias=False)} IS NULL)
                             )
                         ) > 1 AS is_inconsistent
                     FROM {db_table} AS t1
@@ -80,8 +81,9 @@ class IsInconsistentAcrossDatasetOperator(BaseSqlOperator):
             where_conditions = []
             for comp_col in comparator_columns:
                 condition = (
-                    f"(t2.{self._column_sql(comp_col)} = t1.{self._column_sql(comp_col)}) "
-                    f"OR (t2.{self._column_sql(comp_col)} IS NULL AND t1.{self._column_sql(comp_col)} IS NULL)"
+                    f"(t2.{self._column_sql(comp_col, alias=False)} = t1.{self._column_sql(comp_col, alias=False)}) "
+                    f"OR (t2.{self._column_sql(comp_col, alias=False)} IS NULL "
+                    f"  AND t1.{self._column_sql(comp_col, alias=False)} IS NULL)"
                 )
                 where_conditions.append(f"({condition})")
             where_clause = " AND ".join(where_conditions)
@@ -95,8 +97,8 @@ class IsInconsistentAcrossDatasetOperator(BaseSqlOperator):
                         (
                             SELECT COUNT(DISTINCT
                                 CASE
-                                    WHEN t2.{self._column_sql(target_column)} IS NULL THEN 'NULL_VALUE'
-                                    ELSE CAST(t2.{self._column_sql(target_column)} AS TEXT)
+                                    WHEN t2.{self._column_sql(target_column, alias=False)} IS NULL THEN 'NULL_VALUE'
+                                    ELSE CAST(t2.{self._column_sql(target_column, alias=False)} AS TEXT)
                                 END
                             )
                             FROM {db_table} AS t2

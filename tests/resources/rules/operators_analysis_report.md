@@ -4,9 +4,9 @@
 
 - Total rules without check operators: 297
 - Total unique operators found in rules: 58
-- Total implemented PostgreSQL operators: 78
+- Total implemented PostgreSQL operators: 79
 - Missing operators (in rules but not implemented): 3
-- Extra operators (implemented but not used in rules): 23
+- Extra operators (implemented but not used in rules): 24
 
 ## ✅ Implementation Status
 
@@ -28,6 +28,7 @@ The following operators are implemented but not currently used in any rules:
 - contains_case_insensitive
 - does_not_contain_case_insensitive
 - does_not_reference_correct_codelist
+- equals_string_part
 - has_different_values
 - has_equal_length
 - has_next_corresponding_record

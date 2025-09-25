@@ -41,9 +41,9 @@ class ContainsAllOperator(BaseSqlOperator):
                               SELECT COUNT(DISTINCT val)
                               FROM (VALUES {values_clause}) AS comparator_values(val)
                               WHERE val IN (
-                                  SELECT DISTINCT {self._column_sql(target_column)}
+                                  SELECT DISTINCT {self._column_sql(target_column, alias=False)}
                                   FROM {self._table_sql()}
-                                  WHERE NOT ({self._is_empty_sql(target_column)})
+                                  WHERE NOT ({self._is_empty_sql(target_column, alias=False)})
                               )
                           ) = {len(comparator)}
                           THEN true
@@ -78,9 +78,9 @@ class ContainsAllOperator(BaseSqlOperator):
                           WHERE column1 IS NOT NULL
                           AND column1 != ''
                           AND column1 IN (
-                              SELECT DISTINCT {self._column_sql(target_column)}
+                              SELECT DISTINCT {self._column_sql(target_column, alias=False)}
                               FROM {self._table_sql()}
-                              WHERE NOT ({self._is_empty_sql(target_column)})
+                              WHERE NOT ({self._is_empty_sql(target_column, alias=False)})
                           )
                       ) = (
                           SELECT COUNT(DISTINCT column1)
@@ -100,9 +100,9 @@ class ContainsAllOperator(BaseSqlOperator):
 
         def sql():
             return f"""CASE WHEN {constant_sql} IN (
-                          SELECT DISTINCT {self._column_sql(target_column)}
+                          SELECT DISTINCT {self._column_sql(target_column, alias=False)}
                           FROM {self._table_sql()}
-                          WHERE NOT ({self._is_empty_sql(target_column)})
+                          WHERE NOT ({self._is_empty_sql(target_column, alias=False)})
                       )
                       THEN true
                       ELSE false
@@ -118,18 +118,18 @@ class ContainsAllOperator(BaseSqlOperator):
 
         def sql():
             return f"""CASE WHEN (
-                          SELECT COUNT(DISTINCT {self._column_sql(comparator_column)})
+                          SELECT COUNT(DISTINCT {self._column_sql(comparator_column, alias=False)})
                           FROM {self._table_sql()}
-                          WHERE NOT ({self._is_empty_sql(comparator_column)})
-                          AND {self._column_sql(comparator_column)} IN (
-                              SELECT DISTINCT {self._column_sql(target_column)}
+                          WHERE NOT ({self._is_empty_sql(comparator_column, alias=False)})
+                          AND {self._column_sql(comparator_column, alias=False)} IN (
+                              SELECT DISTINCT {self._column_sql(target_column, alias=False)}
                               FROM {self._table_sql()}
-                              WHERE NOT ({self._is_empty_sql(target_column)})
+                              WHERE NOT ({self._is_empty_sql(target_column, alias=False)})
                           )
                       ) = (
-                          SELECT COUNT(DISTINCT {self._column_sql(comparator_column)})
+                          SELECT COUNT(DISTINCT {self._column_sql(comparator_column, alias=False)})
                           FROM {self._table_sql()}
-                          WHERE NOT ({self._is_empty_sql(comparator_column)})
+                          WHERE NOT ({self._is_empty_sql(comparator_column, alias=False)})
                       )
                       THEN true
                       ELSE false

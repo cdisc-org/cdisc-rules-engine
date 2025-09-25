@@ -1,5 +1,6 @@
-from .base_sql_operator import BaseSqlOperator
 from cdisc_rules_engine.utilities.utils import flatten_nested_list
+
+from .base_sql_operator import BaseSqlOperator
 
 
 class IsUniqueSetOperator(BaseSqlOperator):
@@ -33,7 +34,8 @@ class IsUniqueSetOperator(BaseSqlOperator):
 
         def generate_update_query(db_table: str, db_column: str) -> str:
             concat_parts = [
-                f"COALESCE(NULLIF(CAST({self._column_sql(col)} AS TEXT), ''), '_NULL_')" for col in unique_columns
+                f"COALESCE(NULLIF(CAST({self._column_sql(col, alias=False)} AS TEXT), ''), '_NULL_')"
+                for col in unique_columns
             ]
             concat_expr = " || '|' || ".join(concat_parts)
 

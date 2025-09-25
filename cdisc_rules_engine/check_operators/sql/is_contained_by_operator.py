@@ -45,9 +45,10 @@ class IsContainedByOperator(BaseSqlOperator):
             def sql():
                 return f"""NOT ({self._is_empty_sql(target_column)})
                           AND {column} IN (
-                              SELECT DISTINCT {self._column_sql(comparator, lowercase=self.case_insensitive)}
+                              SELECT DISTINCT {self._column_sql(comparator,
+                                                                lowercase=self.case_insensitive, alias=False)}
                               FROM {self._table_sql()}
-                              WHERE NOT ({self._is_empty_sql(comparator)})
+                              WHERE NOT ({self._is_empty_sql(comparator, alias=False)})
                           )"""
 
         else:

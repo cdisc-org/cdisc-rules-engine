@@ -16,6 +16,8 @@ from cdisc_rules_engine.models.sql.column_schema import SqlColumnSchema
 from cdisc_rules_engine.models.sql_operation_result import SqlOperationResult
 from cdisc_rules_engine.services import logger
 
+CHECK_OPERATOR_TABLE_ALIAS = "co"
+
 
 class SqlOperatorError(Exception):
     """Simple exception to identify which check operator caused the error."""
@@ -141,7 +143,7 @@ class BaseSqlOperator:
         """
         # Fetch all of the rows
         self.sql_data_service.pgi.execute_sql(
-            f"SELECT id, {self._column_sql(column)} as data FROM {self._table_sql()};"
+            f"SELECT id, {self._column_sql(column, alias=False)} as data FROM {self._table_sql()} ORDER BY id ASC;"
         )
         sql_results = self.sql_data_service.pgi.fetch_all()
 
@@ -158,7 +160,9 @@ class BaseSqlOperator:
             )
 
             subquery = sql_subquery_fn()
-            query = f"UPDATE {self._table_sql()} SET {self._column_sql(new_column)} = ({subquery});"
+            query = f"""UPDATE
+                {self._table_sql()} AS {CHECK_OPERATOR_TABLE_ALIAS}
+                SET {self._column_sql(new_column, alias=False)} = ({subquery});"""
             self.sql_data_service.pgi.execute_sql(query)
         return self._fetch_for_venmo(new_column)
 
@@ -169,7 +173,7 @@ class BaseSqlOperator:
             self.sql_data_service.pgi.add_column(
                 table=self.table_id, schema=SqlColumnSchema.generated(new_column, "Bool")
             )
-            query = sql_full_query_fn(self._table_sql(), self._column_sql(new_column))
+            query = sql_full_query_fn(self._table_sql(), self._column_sql(new_column, alias=False))
             self.sql_data_service.pgi.execute_sql(query)
         return self._fetch_for_venmo(new_column)
 
@@ -177,9 +181,18 @@ class BaseSqlOperator:
         return self.sql_data_service.pgi.schema.get_table_hash(self.table_id)
 
     def _column_sql(
-        self, column: str, lowercase: bool = False, prefix: Optional[int] = None, suffix: Optional[int] = None
+        self,
+        column: str,
+        lowercase: bool = False,
+        prefix: Optional[int] = None,
+        suffix: Optional[int] = None,
+        alias: bool = True,
     ) -> str:
         query = self.sql_data_service.pgi.schema.get_column_hash(self.table_id, column)
+
+        # Prepend the table alias
+        if alias:
+            query = f"{CHECK_OPERATOR_TABLE_ALIAS}.{query}"
 
         if column == DATASET_NAME:
             dataset_name = (
@@ -247,10 +260,7 @@ class BaseSqlOperator:
     def _substitute_operation_parameters(self, query: str, params: dict) -> str:
         """Substitute operation parameters in query."""
         for param_placeholder, column_name in params.items():
-            if column_name == "id":
-                column_sql = f"{self._table_sql()}.{self._column_sql(column_name)}"
-            else:
-                column_sql = self._column_sql(column_name)
+            column_sql = self._column_sql(column_name)
             query = query.replace(param_placeholder, column_sql)
         return query
 
@@ -390,14 +400,14 @@ class BaseSqlOperator:
     def _series_is_in(self, target, comparison_data):
         return np.where(comparison_data.isin(target), True, False)
 
-    def _is_empty_sql(self, target: str) -> str:
+    def _is_empty_sql(self, target: str, alias: bool = True) -> str:
         """
         Generates a SQL query to check target is empty, checks if it is an
         operation variable or column, otherwise assumes it's a constant.
         """
         if isinstance(target, str):
             if self.sql_data_service.pgi.schema.get_column(self.table_id, target) is not None:
-                return self._is_empty_sql_column(target)
+                return self._is_empty_sql_column(target, alias)
             elif target in self.operation_variables:
                 return self._is_empty_sql_operation_variable(target)
 
@@ -408,7 +418,7 @@ class BaseSqlOperator:
         else:
             return "FALSE"
 
-    def _is_empty_sql_column(self, col: str) -> str:
+    def _is_empty_sql_column(self, col: str, alias: bool = True) -> str:
         """
         Generates a SQL query to check if a column is empty.
         """
@@ -416,15 +426,19 @@ class BaseSqlOperator:
         if not column:
             raise ValueError(f"Column {col} does not exist in the table {self.table_id}.")
 
+        key = column.hash
+        if alias:
+            key = f"{CHECK_OPERATOR_TABLE_ALIAS}.{key}"
+
         match column.type:
             case "Char":
-                return f"({column.hash} IS NULL OR {column.hash} = '')"
+                return f"({key} IS NULL OR {key} = '')"
             case "Bool":
-                return f"({column.hash} IS NULL)"
+                return f"({key} IS NULL)"
             case "Num":
-                return f"({column.hash} IS NULL)"
+                return f"({key} IS NULL)"
             case "Date":
-                return f"({column.hash} IS NULL)"
+                return f"({key} IS NULL)"
             case _:
                 raise ValueError(f"Unsupported column type: {column.type} for column {col}.")
 
@@ -444,11 +458,7 @@ class BaseSqlOperator:
         if variable.params:
             # Substitute parameters with actual column values from current row context
             for param_placeholder, column_name in variable.params.items():
-                if column_name == "id":
-                    # For id parameters, use the current table's id column with table qualification
-                    column_sql = f"{self._table_sql()}.{self._column_sql(column_name)}"
-                else:
-                    column_sql = self._column_sql(column_name)
+                column_sql = self._column_sql(column_name)
                 query = query.replace(param_placeholder, column_sql)
 
         # Check if the resolved query result is empty based on variable subtype

@@ -39,16 +39,16 @@ class HasNextCorrespondingRecordOperator(BaseSqlOperator):
                 SELECT
                     id,
                     ROW_NUMBER() OVER (
-                        PARTITION BY {self._column_sql(group_by)}
-                        ORDER BY {self._column_sql(order_by)}
+                        PARTITION BY {self._column_sql(group_by, alias=False)}
+                        ORDER BY {self._column_sql(order_by, alias=False)}
                     ) AS rn,
                     COUNT(*) OVER (
-                        PARTITION BY {self._column_sql(group_by)}
+                        PARTITION BY {self._column_sql(group_by, alias=False)}
                     ) AS cnt,
-                    {self._column_sql(target)} AS target_val,
-                    LEAD({self._column_sql(comparator)}) OVER (
-                        PARTITION BY {self._column_sql(group_by)}
-                        ORDER BY {self._column_sql(order_by)}
+                    {self._column_sql(target, alias=False)} AS target_val,
+                    LEAD({self._column_sql(comparator, alias=False)}) OVER (
+                        PARTITION BY {self._column_sql(group_by, alias=False)}
+                        ORDER BY {self._column_sql(order_by, alias=False)}
                     ) AS next_comp
                 FROM {table_name}
             )
