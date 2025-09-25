@@ -8,6 +8,7 @@ from cdisc_rules_engine.data_service.loading.load_test_datasets import (
     SqlTestDatasetLoader,
 )
 from cdisc_rules_engine.data_service.merges.join import SqlJoinMerge
+from cdisc_rules_engine.data_service.merges.supp import SqlSuppMerge
 from cdisc_rules_engine.data_service.sql_interface import PostgresQLInterface
 from cdisc_rules_engine.data_service.startup.populate_codelists import (
     populate_codelists,
@@ -156,24 +157,70 @@ class PostgresQLDataService:
         left_id = dataset_metadata.dataset_id
 
         for merge_spec in datasets:
-            right = merge_spec.get("domain_name").lower()
+            right: str = merge_spec.get("domain_name").lower()
+            # TODO: The spec -> rule conversion doesn't maintain the `is_relationship` boolean
+            # so we have to infer it here for now.
+            is_relationship = merge_spec.get("relationship_columns", None) is not None
+            is_child = bool(merge_spec.get("child"))
 
             # TODO: This only handles simple joins for now
-            if right in ("relrec", "supp--", "relsub", "co", "sq"):
+            if right in ("relrec", "relsub", "co", "sq") or is_relationship:
                 raise NotImplementedError("Joins with relationship domains are not supported yet")
-
-            join_type = merge_spec.get("join_type", "INNER")
-            # For now we assume pivot columns are always the same in left and right
-            pivot_columns = merge_spec.get("match_key", [])
-
-            joined_schema = SqlJoinMerge.perform_join(
-                pgi=self.pgi,
-                left=self.pgi.schema.get_table(left_id),
-                right=self.pgi.schema.get_table(right),
-                pivot_left=pivot_columns,
-                pivot_right=pivot_columns,
-                type=join_type.upper(),
-            )
-            left_id = joined_schema.name
+            elif right.startswith("supp") and not is_child:
+                left_id = self._do_supp_merge(
+                    original=left_id, target=right, dataset_metadata=dataset_metadata, merge_spec=merge_spec, rule=rule
+                )
+            else:
+                left_id = self._do_join_merge(left=left_id, right=right, merge_spec=merge_spec, rule=rule)
 
         return left_id
+
+    def _do_join_merge(self, left: str, right: str, merge_spec: dict, rule: dict) -> str:
+        """
+        Perform a join merge operation on the datasets.
+        """
+        join_type = merge_spec.get("join_type", "INNER")
+        # For now we assume pivot columns are always the same in left and right
+        pivot_columns = merge_spec.get("match_key", [])
+
+        joined_schema = SqlJoinMerge.perform_join(
+            pgi=self.pgi,
+            left=self.pgi.schema.get_table(left),
+            right=self.pgi.schema.get_table(right),
+            pivot_left=pivot_columns,
+            pivot_right=pivot_columns,
+            type=join_type.upper(),
+        )
+
+        return joined_schema.name
+
+    def _do_supp_merge(
+        self, original: str, target: str, dataset_metadata: SQLDatasetMetadata, merge_spec: dict, rule: dict
+    ) -> str:
+        """
+        Find the corresponding SUPP datasets, then perform a SUPP merge operation on the datasets.
+        """
+        if target != "supp--" and dataset_metadata.domain.lower() not in target:
+            raise ValueError(
+                f"Tried to SUPP merge {dataset_metadata.domain}, but the target domain {target} does not match."
+            )
+
+        supp_dataset = next(
+            (
+                dataset
+                for dataset in self.datasets
+                if dataset.is_supp and not dataset.is_split and dataset.rdomain == dataset_metadata.domain
+            ),
+            None,
+        )
+        if not supp_dataset:
+            raise ValueError(
+                f"Tried to SUPP merge {dataset_metadata.domain}, but could not find corresponding SUPP dataset."
+            )
+
+        return SqlSuppMerge.perform_join(
+            pgi=self.pgi,
+            original=self.pgi.schema.get_table(original),
+            supp=self.pgi.schema.get_table(supp_dataset.name),
+            domain=dataset_metadata.domain,
+        ).name
