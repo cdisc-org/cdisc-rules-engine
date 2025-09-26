@@ -16,7 +16,6 @@ from .equal_to_operator import EqualToOperator
 from .equals_string_part_operator import EqualsStringPartOperator
 from .exists_operator import ExistsOperator
 from .has_different_values_operator import HasDifferentValuesOperator
-
 from .has_next_corresponding_record_operator import HasNextCorrespondingRecordOperator
 from .inconsistent_enumerated_columns_operator import (
     InconsistentEnumeratedColumnsOperator,
@@ -31,13 +30,10 @@ from .is_ordered_by_operator import IsOrderedByOperator
 from .is_ordered_set_operator import IsOrderedSetOperator
 from .is_ordered_subset_of_operator import IsOrderedSubsetOfOperator
 from .is_unique_set_operator import IsUniqueSetOperator
-
 from .matches_regex_operator import MatchesRegexOperator
-from .not_matches_regex_operator import NotMatchesRegexOperator
 from .numeric_comparison_operator import NumericComparisonOperator
-from .prefix_suffix_equal_to_operator import PrefixSuffixEqualToOperator
-from .string_length_comparison_operator import StringLengthComparisonOperator
 from .prefix_matches_regex_operator import PrefixMatchesRegexOperator
+from .prefix_suffix_equal_to_operator import PrefixSuffixEqualToOperator
 from .present_on_multiple_rows_within_operator import (
     PresentOnMultipleRowsWithinOperator,
 )
@@ -50,6 +46,7 @@ from .shares_exactly_one_element_with_operator import (
 )
 from .shares_no_elements_with_operator import SharesNoElementsWithOperator
 from .starts_with_operator import StartsWithOperator
+from .string_length_comparison_operator import StringLengthComparisonOperator
 from .suffix_matches_regex_operator import SuffixMatchesRegexOperator
 from .target_is_sorted_by_operator import TargetIsSortedByOperator
 from .value_has_multiple_references_operator import ValueHasMultipleReferencesOperator
@@ -109,7 +106,7 @@ class PostgresQLOperators(BaseType):
             data, lambda d: ContainsOperator(d, case_insensitive=True)
         ),
         "matches_regex": lambda data: MatchesRegexOperator(data),
-        "not_matches_regex": lambda data: NotMatchesRegexOperator(data),  # TODO check if this can use Not Operator
+        "not_matches_regex": lambda data: MatchesRegexOperator(data, invert=True),
         "prefix_matches_regex": lambda data: PrefixMatchesRegexOperator(data),
         "not_prefix_matches_regex": lambda data: PrefixMatchesRegexOperator(data, invert=True),
         "suffix_matches_regex": lambda data: SuffixMatchesRegexOperator(data),
