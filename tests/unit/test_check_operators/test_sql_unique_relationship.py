@@ -1,6 +1,6 @@
 import pytest
 
-from .helpers import create_sql_operators, assert_series_equals
+from .helpers import assert_series_equals, create_sql_operators
 
 
 @pytest.mark.parametrize(
@@ -30,6 +30,24 @@ from .helpers import create_sql_operators, assert_series_equals
             "STUDYDESC",
             [False, False, False, False],
         ),
+        (
+            {"STUDYID": [1, 2, 3, 4], "STUDYDESC": ["A", "B", None, ""]},
+            "STUDYID",
+            "STUDYDESC",
+            [False, False, True, True],
+        ),
+        (
+            {"STUDYID": [1, 2, None, None], "STUDYDESC": ["A", "B", "C", "D"]},
+            "STUDYID",
+            "STUDYDESC",
+            [False, False, True, True],
+        ),
+        (
+            {"STUDYID": [1, 2, 3, 4], "STUDYDESC": [1, 2, 3, 3]},
+            "STUDYID",
+            "STUDYDESC",
+            [False, False, True, True],
+        ),
     ],
 )
 def test_sql_is_not_unique_relationship(data, target, comparator, expected_result):
@@ -58,6 +76,18 @@ def test_sql_is_not_unique_relationship(data, target, comparator, expected_resul
             "STUDYID",
             "STUDYDESC",
             [False, False, True],
+        ),
+        (
+            {"STUDYID": [1, 2, 3, 4], "STUDYDESC": ["A", "B", None, ""]},
+            "STUDYID",
+            "STUDYDESC",
+            [True, True, False, False],
+        ),
+        (
+            {"STUDYID": [1, 2, 3, 4], "STUDYDESC": [1, 2, 3, 3]},
+            "STUDYID",
+            "STUDYDESC",
+            [True, True, False, False],
         ),
     ],
 )

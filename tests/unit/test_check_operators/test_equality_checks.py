@@ -1,7 +1,7 @@
-from cdisc_rules_engine.check_operators.dataframe_operators import DataframeType
 import pytest
-from cdisc_rules_engine.models.dataset.dask_dataset import DaskDataset
 
+from cdisc_rules_engine.check_operators.dataframe_operators import DataframeType
+from cdisc_rules_engine.models.dataset.dask_dataset import DaskDataset
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 
 
@@ -118,16 +118,12 @@ def test_equal_to_null_strings(data, comparator, dataset_type, expected_result):
         ),
     ],
 )
-def test_equality_operators_value_is_reference(
-    data, comparator, operator, dataset_type, expected_result
-):
+def test_equality_operators_value_is_reference(data, comparator, operator, dataset_type, expected_result):
     """Test equal_to and not_equal_to operators with value_is_reference=True for dynamic column comparison."""
     df = dataset_type.from_dict(data)
     dataframe_type = DataframeType({"value": df})
     if operator == "equal_to":
-        result = dataframe_type.equal_to(
-            {"target": "IDVARVAL", "comparator": comparator, "value_is_reference": True}
-        )
+        result = dataframe_type.equal_to({"target": "IDVARVAL", "comparator": comparator, "value_is_reference": True})
     else:
         result = dataframe_type.not_equal_to(
             {"target": "IDVARVAL", "comparator": comparator, "value_is_reference": True}
@@ -234,9 +230,7 @@ def test_equality_operators_value_is_reference(
         ),
     ],
 )
-def test_equality_operators_type_insensitive(
-    data, comparator, operator, dataset_type, expected_result
-):
+def test_equality_operators_type_insensitive(data, comparator, operator, dataset_type, expected_result):
     df = dataset_type.from_dict(data)
     dataframe_type = DataframeType({"value": df})
 
@@ -306,9 +300,7 @@ def test_not_equal_to(data, comparator, dataset_type, expected_result):
 def test_equal_to_case_insensitive(data, comparator, dataset_type, expected_result):
     df = dataset_type.from_dict(data)
     dataframe_type = DataframeType({"value": df})
-    result = dataframe_type.equal_to_case_insensitive(
-        {"target": "target", "comparator": comparator}
-    )
+    result = dataframe_type.equal_to_case_insensitive({"target": "target", "comparator": comparator})
     assert result.equals(df.convert_to_series(expected_result))
 
 
@@ -332,7 +324,5 @@ def test_equal_to_case_insensitive(data, comparator, dataset_type, expected_resu
 def test_not_equal_to_case_insensitive(data, comparator, dataset_type, expected_result):
     df = dataset_type.from_dict(data)
     dataframe_type = DataframeType({"value": df})
-    result = dataframe_type.not_equal_to_case_insensitive(
-        {"target": "target", "comparator": comparator}
-    )
+    result = dataframe_type.not_equal_to_case_insensitive({"target": "target", "comparator": comparator})
     assert result.equals(df.convert_to_series(expected_result))

@@ -2,7 +2,21 @@ from .base_sql_operator import BaseSqlOperator
 
 
 class EqualToOperator(BaseSqlOperator):
-    """Operator for equality comparisons."""
+    """
+    Operator for equality comparisons.
+
+    Equality checks work slightly differently for clinical datasets.
+    See truth table below:
+    Operator       --A         --B         Outcome
+    equal_to       "" or null  "" or null  False
+    equal_to       "" or null  Populated   False
+    equal_to       Populated   "" or null  False
+    equal_to       Populated   Populated   A == B
+    not_equal_to   "" or null  "" or null  False
+    not_equal_to   "" or null  Populated   True
+    not_equal_to   Populated   "" or null  True
+    not_equal_to   Populated   Populated   A != B
+    """
 
     def __init__(self, data, invert=False, case_insensitive=False):
         super().__init__(data)
@@ -46,8 +60,8 @@ class EqualToOperator(BaseSqlOperator):
         type_insensitive: bool = False,
     ):
         """
-        Equality checks work slightly differently for clinical datasets.
-        See truth table in _check_equality_literal for details.
+        Beware of empty values.
+        See truth table above for details.
         """
         target = self._sql(original_target, lowercase=case_insensitive)
         comparator = self._sql(original_comparator, lowercase=case_insensitive, value_is_literal=value_is_literal)
@@ -87,8 +101,8 @@ class EqualToOperator(BaseSqlOperator):
         type_insensitive: bool = False,
     ):
         """
-        Equality checks work slightly differently for clinical datasets.
-        See truth table in _check_equality_literal for details.
+        Beware of empty values.
+        See truth table above for details.
 
         This method implements equality testing by reference, ie you specifiy a pivot
         column, that column is then used to look up which other column to compare
