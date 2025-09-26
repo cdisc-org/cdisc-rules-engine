@@ -8,6 +8,7 @@ from cdisc_rules_engine.data_service.loading.load_test_datasets import (
     SqlTestDatasetLoader,
 )
 from cdisc_rules_engine.data_service.merges.join import SqlJoinMerge
+from cdisc_rules_engine.data_service.merges.relrec import SqlRelrecMerge
 from cdisc_rules_engine.data_service.merges.supp import SqlSuppMerge
 from cdisc_rules_engine.data_service.sql_interface import PostgresQLInterface
 from cdisc_rules_engine.data_service.startup.populate_codelists import (
@@ -164,8 +165,16 @@ class PostgresQLDataService:
             is_child = bool(merge_spec.get("child"))
 
             # TODO: This only handles simple joins for now
-            if right in ("relrec", "relsub", "co", "sq") or is_relationship:
+            if right in ("relsub", "co", "sq") or is_relationship:
                 raise NotImplementedError("Joins with relationship domains are not supported yet")
+            elif right == "relrec":
+                left_id = self._do_relrec_merge(
+                    original=left_id,
+                    relrec_dataset=right,
+                    dataset_metadata=dataset_metadata,
+                    merge_spec=merge_spec,
+                    rule=rule,
+                )
             elif right.startswith("supp") and not is_child:
                 left_id = self._do_supp_merge(
                     original=left_id, target=right, dataset_metadata=dataset_metadata, merge_spec=merge_spec, rule=rule
@@ -223,4 +232,32 @@ class PostgresQLDataService:
             original=self.pgi.schema.get_table(original),
             supp=self.pgi.schema.get_table(supp_dataset.name),
             domain=dataset_metadata.domain,
+        ).name
+
+    def _do_relrec_merge(
+        self, original: str, relrec_dataset: str, dataset_metadata: SQLDatasetMetadata, merge_spec: dict, rule: dict
+    ) -> str:
+        """
+        Find the corresponding RELREC dataset, then perform a RELREC merge operation on the datasets.
+        """
+        # Find the RELREC dataset
+        relrec_data = next(
+            (
+                dataset
+                for dataset in self.datasets
+                if dataset.name.upper() == "RELREC" or dataset.domain.upper() == "RELREC"
+            ),
+            None,
+        )
+        if not relrec_data:
+            raise ValueError("Tried to RELREC merge, but could not find RELREC dataset.")
+
+        wildcard = merge_spec.get("wildcard", "__")
+
+        return SqlRelrecMerge.perform_join(
+            pgi=self.pgi,
+            original=self.pgi.schema.get_table(original),
+            relrec=self.pgi.schema.get_table(relrec_data.name),
+            domain=dataset_metadata.domain,
+            wildcard=wildcard,
         ).name
