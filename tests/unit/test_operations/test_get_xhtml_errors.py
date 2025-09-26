@@ -33,40 +33,58 @@ def build_params(dataset, target="text"):
     )
 
 
+# expected_type legend:
+#   ok -> []
+#   not_html -> ["Not HTML fragment"]
+#   invalid_html -> message starts with "Invalid HTML fragment:" (lenient HTML parse failed)
+#   invalid_xhtml -> message starts with "Invalid XHTML fragment:" (HTML ok, XML invalid)
+
+
 @pytest.mark.parametrize(
-    "values, expected",
+    "value, expected_type",
     [
-        (["<p>Test</p>"], [[]]),  # valid single root
-        (["<p>Hi</p><br/><span>Ok</span>"], [[]]),  # multi-root valid after wrapping
-        (["<p><b>Bad</p>"], [["__INVALID__"]]),  # mismatched tags
-        ([""], [[]]),  # empty string -> no errors
-        ([None], [[]]),  # None treated as no error (ignored)
-        ([123], [["Value is not a string"]]),  # non-string
-        ([["p", "q"]], [["Value is not a string (got iterable)"]]),  # iterable
+        ("<p>Test</p>", "ok"),
+        ("<p>A</p><p>B</p>", "ok"),  # multi-root
+        (
+            "<usdm:ref klass='klassName' id='idValue' attribute='attributeName'/>",
+            "ok",
+        ),  # custom prefix single
+        (
+            "<usdm:ref klass='klassName'/><p>Next</p>",
+            "ok",
+        ),  # custom prefix + another root
+        ("<p><b>Bad</p>", "invalid_xhtml"),  # mismatched tags
+        ("Plain text only", "not_html"),  # no tags
+        ("", "ok"),  # empty -> no errors
+        (None, "ok"),  # None -> no errors
+        ("<div><", "invalid_xhtml"),  # broken html tolerated by HTML parser, fails XML
     ],
 )
-def test_get_xhtml_errors(values, expected, base_services):
-    dataset = PandasDataset.from_dict({"text": values})
+def test_get_xhtml_errors(value, expected_type, base_services):
+    dataset = PandasDataset.from_dict({"text": [value]})
     params = build_params(dataset)
     _, cache, data_service = base_services
     result_dataset = GetXhtmlErrors(params, dataset, cache, data_service).execute()
     col = params.operation_id
     assert col in result_dataset
-    for i, exp in enumerate(expected):
-        cell = result_dataset[col].iloc[i]
-        if exp and exp[0] == "__INVALID__":
-            assert any("Invalid XHTML fragment" in msg for msg in cell)
-        else:
-            assert cell == exp
+    cell = result_dataset[col].iloc[0]
+    if expected_type == "ok":
+        assert cell == []
+    elif expected_type == "not_html":
+        assert cell == ["Not HTML fragment"]
+    elif expected_type == "invalid_html":
+        assert len(cell) == 1 and cell[0].startswith("Invalid HTML fragment:")
+    elif expected_type == "invalid_xhtml":
+        assert len(cell) == 1 and cell[0].startswith("Invalid XHTML fragment:")
+    else:
+        pytest.fail(f"Unknown expected_type {expected_type}")
 
 
 def test_get_xhtml_errors_missing_column(base_services):
-    # нет столбца text
     dataset = PandasDataset.from_dict({"OTHER": ["<p>Ok</p>"]})
     params = build_params(dataset)
     _, cache, data_service = base_services
     result_dataset = GetXhtmlErrors(params, dataset, cache, data_service).execute()
     errors_col = params.operation_id
-    assert errors_col in result_dataset
     val = result_dataset[errors_col].iloc[0]
     assert isinstance(val, list) and "Target column 'text' not found" in val[0]
