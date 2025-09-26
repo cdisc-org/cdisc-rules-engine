@@ -1,11 +1,11 @@
 import os
-import json
 import jsonschema
 import pandas as pd
 
 
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.services.adam_variable_reader import AdamVariableReader
+from cdisc_rules_engine.services.data_readers.json_reader import JSONReader
 
 
 class DatasetJSONMetadataReader:
@@ -25,14 +25,11 @@ class DatasetJSONMetadataReader:
         Extracts metadata from .json file.
         """
         # Load Dataset-JSON Schema
-        with open(
+        schema = JSONReader().from_file(
             os.path.join("resources", "schema", "dataset.schema.json")
-        ) as schemajson:
-            schema = schemajson.read()
-        schema = json.loads(schema)
+        )
 
-        with open(self._file_path, "r") as file:
-            datasetjson = json.load(file)
+        datasetjson = JSONReader().from_file(self._file_path)
 
         try:
             jsonschema.validate(datasetjson, schema)

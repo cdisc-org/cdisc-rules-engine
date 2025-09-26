@@ -57,6 +57,11 @@ class InvalidDatasetFormat(EngineError):
     description = "Dataset data is malformed."
 
 
+class InvalidJSONFormat(EngineError):
+    code = 400
+    description = "JSON data is malformed."
+
+
 class NumberOfAttemptsExceeded(EngineError):
     pass
 

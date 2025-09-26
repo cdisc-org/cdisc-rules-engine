@@ -1,0 +1,31 @@
+{
+    "make_dup" : function($obj,$imap)
+                    {
+                        $obj ~> |**[id]|(
+                                            $merge(
+                                                $each(
+                                                    $sift(
+                                                        function($v,$k)
+                                                            {
+                                                                $contains($k,/id(s)?$/i) and $type($v) != "null"
+                                                            }
+                                                    ),
+                                                    function($v,$k)
+                                                        {
+                                                            (
+                                                                $get_id := function($id){($id in $keys($imap)) ? $lookup($imap, $id) : $id};
+                                                                {
+                                                                
+                                                                    $k: $contains($k,/Ids$/)
+                                                                        ? [$map($v,$get_id)]
+                                                                        : $get_id($v)
+                                                                
+                                                            
+                                                                }
+                                                            )
+                                                        }
+                                                )
+                                            )
+                                        )|
+                    }
+}
