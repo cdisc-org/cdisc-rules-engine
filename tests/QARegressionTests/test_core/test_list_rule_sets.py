@@ -20,7 +20,7 @@ class TestListRuleSets(unittest.TestCase):
 
     def test_list_rule_sets_invalid_cache_path(self):
         result = self.runner.invoke(
-            list_rule_sets, ["--cache_path", os.path.join("resources")]
+            list_rule_sets, ["--cache-path", os.path.join("resources")]
         )
         self.assertNotEqual(result.exit_code, 0)
 
