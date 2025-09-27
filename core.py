@@ -202,7 +202,7 @@ def cli():
     "-vx",
     "--validate-xml",
     is_flag=True,
-    help="Enable XML validation (default 'y' to enable, otherwise disable)",
+    help="This flag enables XML validation against a Define-XML schema.",
 )
 @click.pass_context
 def validate(
@@ -385,7 +385,7 @@ def validate(
 @click.option(
     "-rcs",
     "--remove-custom-standard",
-    help=("removes a custom standard and version from the cache. "),
+    help=("Removes a custom standard and version from the cache. "),
     multiple=True,
 )
 @click.pass_context
@@ -455,7 +455,7 @@ def update_cache(
     is_flag=True,
     default=False,
     required=False,
-    help="flag to list custom rules in the cache",
+    help="Flag to list custom rules in the cache",
 )
 @click.option(
     "-r",
