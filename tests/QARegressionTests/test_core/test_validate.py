@@ -566,7 +566,7 @@ class TestValidate(unittest.TestCase):
         self.assertNotEqual(exit_code, 0)
         self.assertNotEqual(stderr, "", f"Error while executing command:\n{stderr}")
 
-    def test_validate_dummy_with_vx_as_no(self):
+    def test_validate_dummy_without_vx(self):
         args = (
             f"python core.py validate "
             f"-s sendig "
@@ -574,12 +574,11 @@ class TestValidate(unittest.TestCase):
             f"-dv 2.1 "
             f"-lr {os.path.join('tests','resources','CoreIssue295','SEND4.json')} "
             f"-dp {os.path.join('tests','resources','CoreIssue295','dm.json')} "
-            f"-vx no"
         )
         exit_code, stdout, stderr = run_command(args, True)
         self.assertNotIn("error", stdout)
 
-    def test_validate_dummy_with_vx_as_yes(self):
+    def test_validate_dummy_with_vx(self):
         args = (
             f"python core.py validate "
             f"-s sendig "
@@ -587,7 +586,7 @@ class TestValidate(unittest.TestCase):
             f"-dv 2.1 "
             f"-lr {os.path.join('tests','resources','CoreIssue295','SEND4.json')} "
             f"-dp {os.path.join('tests','resources','CoreIssue295','dm.json')} "
-            f"-vx y"
+            f"-vx"
         )
         exit_code, stdout, stderr = run_command(args, True)
         self.assertEqual(exit_code, 0)

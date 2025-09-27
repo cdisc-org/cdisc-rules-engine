@@ -123,7 +123,7 @@ Run `python core.py validate --help` to see the list of validation options.
   -ps, --pool-size INTEGER         Number of parallel processes for validation
   -d, --data TEXT                 Path to directory containing data files
   -dp, --dataset-path TEXT        Absolute path to dataset file. Can be specified multiple times.
-  -dxp, --define_xml_path TEXT    Path to Define-XML
+  -dxp, --define-xml-path TEXT    Path to Define-XML
   -l, --log-level [info|debug|error|critical|disabled|warn]
                                   Sets log level for engine logs, logs are
                                   disabled by default
@@ -154,7 +154,7 @@ Run `python core.py validate --help` to see the list of validation options.
                                   --output-format JSON.
   -dv, --define-version TEXT      Define-XML version used for validation
   -dxp, --define-xml-path         Path to define-xml file.
-  -vx, --validate-xml             Enable XML validation (default 'y' to enable, otherwise disable)
+  -vx, --validate-xml             This flag enables XML validation against a Define-XML schema.
   --whodrug TEXT                  Path to directory with WHODrug dictionary
                                   files
   --meddra TEXT                   Path to directory with MedDRA dictionary
@@ -169,9 +169,9 @@ Run `python core.py validate --help` to see the list of validation options.
   --snomed-url TEXT            Base url of snomed api to use. (ex. https://snowstorm.snomedtools.org/snowstorm/snomed-ct)
   --snomed-edition TEXT        Edition of snomed to use. (ex. SNOMEDCT-US)
   -r, --rules TEXT                Specify rule core ID ex. CORE-000001. Can be specified multiple times.
-  -lr, --local_rules TEXT         Specify relative path to directory or file containing
+  -lr, --local-rules TEXT         Specify relative path to directory or file containing
                                   local rule yml and/or json rule files.
-  -cs, --custom_standard       Adding this flag tells engine to use a custom standard specified with -s and -v
+  -cs, --custom-standard       Adding this flag tells engine to use a custom standard specified with -s and -v
                                   that has been uploaded to the cache using update-cache
   -vo, --verbose-output           Specify this option to print rules as they
                                   are completed
@@ -282,13 +282,13 @@ To obtain an api key, please follow the instructions found here: <https://wiki.c
 - To add or update a custom standard, use:
 
   ```bash
-  python core.py update-cache --custom_standard 'path/to/standard.json'
+  python core.py update-cache --custom-standard 'path/to/standard.json'
   ```
 
-- To remove custom standards, use the `--remove_custom_standard` or `-rcs` flag:
+- To remove custom standards, use the `--remove-custom-standard` or `-rcs` flag:
 
   ```bash
-  python core.py update-cache --remove_custom_standard 'mycustom/1-0'
+  python core.py update-cache --remove-custom-standard 'mycustom/1-0'
   ```
 
 - When executing validation against a custom standard, the system will use the standard as a lookup to determine which rules to apply from the rule cache. Custom standards which match CDISC standard names and versions can be used to get library metadata for the standard while still utilizing custom rules. If a custom name does not match a CDISC standard, library metadata will not be populated.
@@ -309,22 +309,22 @@ To obtain an api key, please follow the instructions found here: <https://wiki.c
 
 ## Custom Rules Management
 
-- **Add custom rules**: Use the `--custom_rules_directory` or `-crd` flag to specify a directory containing local rules, or `--custom_rule` or `-cr` flag to specify a single rule file:
+- **Add custom rules**: Use the `--custom-rules-directory` or `-crd` flag to specify a directory containing local rules, or `--custom-rule` or `-cr` flag to specify a single rule file:
   ```bash
-  python core.py update-cache --custom_rules_directory 'path/to/directory'
-  python core.py update-cache --custom_rule 'path/to/rule.json' --custom_rule 'path/to/rule.yaml'
+  python core.py update-cache --custom-rules-directory 'path/to/directory'
+  python core.py update-cache --custom-rule 'path/to/rule.json' --custom-rule 'path/to/rule.yaml'
   ```
-- **Update a custom rule**: Use the `--update_custom_rule` or `-ucr` flag to update an existing rule in the cache:
+- **Update a custom rule**: Use the `--update-custom-rule` or `-ucr` flag to update an existing rule in the cache:
 
   ```bash
-  python core.py update-cache --update_custom_rule 'path/to/updated_rule.yaml'
+  python core.py update-cache --update-custom-rule 'path/to/updated_rule.yaml'
   ```
 
-- **Remove custom rules**: Use the `--remove_custom_rules` or `-rcr` flag to remove rules from the cache. Can be a single rule ID, a comma-separated list of IDs, or ALL to remove all custom rules:
+- **Remove custom rules**: Use the `--remove-custom-rules` or `-rcr` flag to remove rules from the cache. Can be a single rule ID, a comma-separated list of IDs, or ALL to remove all custom rules:
   ```bash
-  python core.py update-cache --remove_custom_rules 'RULE_ID'
-  python core.py update-cache --remove_custom_rules 'RULE_ID1,RULE_ID2,RULE_ID3'
-  python core.py update-cache --remove_custom_rules ALL
+  python core.py update-cache --remove-custom-rules 'RULE_ID'
+  python core.py update-cache --remove-custom-rules 'RULE_ID1,RULE_ID2,RULE_ID3'
+  python core.py update-cache --remove-custom-rules ALL
   ```
 
 ## List Rules
@@ -350,12 +350,12 @@ To obtain an api key, please follow the instructions found here: <https://wiki.c
 - List all custom rules:
 
   ```bash
-  python core.py list-rules --custom_rules
+  python core.py list-rules --custom-rules
   ```
 
 - List custom rules with a specific ID:
   ```bash
-  python core.py list-rules --custom_rules -s custom_standard -v 1-0
+  python core.py list-rules --custom-rules -s custom_standard -v 1-0
   ```
 
 **- list-rule-sets** - lists all standards and versions for which rules are available:
@@ -374,7 +374,7 @@ python core.py list-rule-sets -o
 
 **Options:**
 
-- `-c, --cache_path` - Relative path to cache files containing pre-loaded metadata and rules
+- `-c, --cache-path` - Relative path to cache files containing pre-loaded metadata and rules
 - `-o, --custom` - Flag to list all custom standards and versions in the cache instead of CDISC standards & rules
 
 **- list-ct** - list ct packages available in the cache
@@ -385,7 +385,7 @@ Usage: python core.py list-ct [OPTIONS]
   Command to list the ct packages available in the cache.
 
 Options:
-  -c, --cache_path TEXT  Relative path to cache files containing pre loaded
+  -c, --cache-path TEXT  Relative path to cache files containing pre loaded
                          metadata and rules
   -s, --subsets TEXT     CT package subset type. Ex: sdtmct. Multiple values
                          allowed
