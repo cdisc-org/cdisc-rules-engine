@@ -396,6 +396,12 @@ def old_vs_sql_regression_comparison(old_results: list[dict], sql_results: list[
 
 
 def compare_error_lists(old_errors, sql_errors):
+    # The old engine is supposed to output null for all NULL_FLAVORS, but doesn't
+    # so we're going to fix it here
+    for error in old_errors:
+        if "value" in error:
+            error["value"] = {k: None if v == "" else v for k, v in error["value"].items()}
+
     diff = DeepDiff(old_errors, sql_errors, ignore_order=True, ignore_string_case=True)
     if diff:
         # Calling `to_json` to create a valid JSON (otherwise the output is not JSON serializable)
