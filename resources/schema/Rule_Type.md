@@ -192,7 +192,7 @@ Check: |
   **.$filter($, $myutils.equals).{"record":path, "A":A, "B":B}
 Core:
   Id: JSONATA Test
-Status: Draft
+  Status: Draft
 Outcome:
   Message: "A equals B"
   Output Variables:
