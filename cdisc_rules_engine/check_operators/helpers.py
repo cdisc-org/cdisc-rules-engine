@@ -173,6 +173,8 @@ def get_dict_key_val(dict_to_get: dict, key):
 def is_in(value, values):
     if values is None:
         return False
+    if value is None or np.isnan(value):
+        return False
     return value in values
 
 
