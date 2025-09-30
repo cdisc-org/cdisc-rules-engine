@@ -34,7 +34,7 @@ The following operators are implemented but not currently used in any rules:
 - has_next_corresponding_record
 - is_not_ordered_by
 - is_not_ordered_set
-- is_not_ordered_subset_of
+- is_ordered_set
 - is_unique_relationship
 - longer_than_or_equal_to
 - non_conformant_value_data_type

@@ -122,7 +122,7 @@ class PostgresQLOperators(BaseType):
         "is_unique_set": lambda data: IsUniqueSetOperator(data),
         "is_not_unique_set": lambda data: NotOperator(data, IsUniqueSetOperator),
         "is_ordered_set": lambda data: IsOrderedSetOperator(data),
-        "is_not_ordered_set": lambda data: NotOperator(data, IsOrderedSetOperator),
+        "is_not_ordered_set": lambda data: IsOrderedSetOperator(data, invert=True),
         "is_inconsistent_across_dataset": lambda data: IsInconsistentAcrossDatasetOperator(data),
         "conformant_value_data_type": lambda data: ConformantValueDataTypeOperator(data),
         "non_conformant_value_data_type": lambda data: NotOperator(data, ConformantValueDataTypeOperator),
@@ -159,7 +159,7 @@ class PostgresQLOperators(BaseType):
         "shares_exactly_one_element_with": lambda data: SharesExactlyOneElementWithOperator(data),
         "shares_no_elements_with": lambda data: SharesNoElementsWithOperator(data),
         "is_ordered_subset_of": lambda data: IsOrderedSubsetOfOperator(data),
-        "is_not_ordered_subset_of": lambda data: NotOperator(data, IsOrderedSubsetOfOperator),
+        "is_not_ordered_subset_of": lambda data: IsOrderedSubsetOfOperator(data, invert=True),
     }
 
     def __init__(self, data):
