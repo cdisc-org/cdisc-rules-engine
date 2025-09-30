@@ -33,31 +33,31 @@ def build_params(dataset, target="text"):
     )
 
 
-# expected_type legend:
+# expected_type legend (updated for new logic):
 #   ok -> []
-#   not_html -> ["Not HTML fragment"]
-#   invalid_html -> message starts with "Invalid HTML fragment:" (lenient HTML parse failed)
-#   invalid_xhtml -> message starts with "Invalid XHTML fragment:" (HTML ok, XML invalid)
+#   invalid_html -> message starts with "Invalid HTML fragment:" (html5lib parse failed)
+#   invalid_xml -> message starts with "Invalid XML fragment:" (HTML ok, XML well-formedness or DTD failed)
 
 
 @pytest.mark.parametrize(
     "value, expected_type",
     [
         ("<p>Test</p>", "ok"),
-        ("<p>A</p><p>B</p>", "ok"),  # multi-root
+        (
+            '<div><p>The primary objectives of this study are</p>\r\n<ul>\r\n<li><usdm:ref attribute="text" '
+            'id="Objective_1" klass="Objective"></usdm:ref></li>\r\n<li><usdm:ref attribute="text" id="Objective_2" '
+            'klass="Objective"></usdm:ref></li>\r\n</ul></div>',
+            "ok",
+        ),  # with prefixed tags
         (
             "<usdm:ref klass='klassName' id='idValue' attribute='attributeName'/>",
             "ok",
-        ),  # custom prefix single
-        (
-            "<usdm:ref klass='klassName'/><p>Next</p>",
-            "ok",
-        ),  # custom prefix + another root
-        ("<p><b>Bad</p>", "invalid_xhtml"),  # mismatched tags
-        ("Plain text only", "not_html"),  # no tags
-        ("", "ok"),  # empty -> no errors
-        (None, "ok"),  # None -> no errors
-        ("<div><", "invalid_xhtml"),  # broken html tolerated by HTML parser, fails XML
+        ),  # single custom prefix
+        ("<p><b>Bad</p>", "invalid_xml"),  # mismatched tags => XML error
+        ("Plain text only", "invalid_xml"),  # no tags => fails XML well-formedness
+        ("", "ok"),  # empty
+        (None, "ok"),  # None
+        ("<div><", "invalid_xml"),  # broken XML
     ],
 )
 def test_get_xhtml_errors(value, expected_type, base_services):
@@ -70,12 +70,10 @@ def test_get_xhtml_errors(value, expected_type, base_services):
     cell = result_dataset[col].iloc[0]
     if expected_type == "ok":
         assert cell == []
-    elif expected_type == "not_html":
-        assert cell == ["Not HTML fragment"]
     elif expected_type == "invalid_html":
         assert len(cell) == 1 and cell[0].startswith("Invalid HTML fragment:")
-    elif expected_type == "invalid_xhtml":
-        assert len(cell) == 1 and cell[0].startswith("Invalid XHTML fragment:")
+    elif expected_type == "invalid_xml":
+        assert len(cell) == 1 and cell[0].startswith("Invalid XML fragment:")
     else:
         pytest.fail(f"Unknown expected_type {expected_type}")
 

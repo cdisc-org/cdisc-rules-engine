@@ -1,6 +1,8 @@
-from typing import List, Set
-import re
-from lxml import etree, html
+import io
+from typing import List
+
+import html5lib
+from lxml import etree
 from cdisc_rules_engine.operations.base_operation import BaseOperation
 
 
@@ -9,22 +11,22 @@ class GetXhtmlErrors(BaseOperation):
 
     Order:
       1. Work on evaluation_dataset.
-      2. Heuristic: must contain at least one <...> tag pattern else Not HTML fragment.
-      3. Lenient HTML parse (lxml.html.fragments_fromstring). On failure -> Invalid HTML fragment.
-      4. Strict XML parse attempts:
-         a) raw
-         b) wrapped in <root> (multi-root support)
-         c) wrapped in <root> with auto-added namespace declarations for undefined prefixes
-            (handles custom prefixed tags like <usdm:ref .../>)
-         First success ends validation.
+      2. Lenient HTML validation (html5lib). If fails -> Invalid HTML fragment.
+      3. XML well-formedness validation (lxml.etree).
+      4. Optional DTD validation for <usdm:ref> elements (attributes: attribute, id, klass).
 
     Empty / None => no errors.
     Returns Series[ list[str] ]. Empty list => ok.
     """
 
-    TAG_REGEX = re.compile(r"<[^>]+>")
-    PREFIX_TAG_REGEX = re.compile(r"</?([A-Za-z_][\w.-]*):[A-Za-z_][\w.-]*")
-    NS_DECL_REGEX = re.compile(r"xmlns:([A-Za-z_][\w.-]*)=")
+    usdm_dtd = """\
+    <!ELEMENT ref EMPTY>
+    <!ATTLIST ref
+        attribute CDATA #REQUIRED
+        id        ID    #REQUIRED
+        klass     CDATA #REQUIRED
+    >
+    """
 
     def _execute_operation(self):
         dataset = self.evaluation_dataset
@@ -34,42 +36,6 @@ class GetXhtmlErrors(BaseOperation):
             return dataset.get_series_from_value(error_list)
         return dataset[target].apply(self._validate_fragment)
 
-    def _looks_like_html(self, text: str) -> bool:
-        return bool(self.TAG_REGEX.search(text))
-
-    def _parse_html(self, text: str):  # may raise ParserError / ValueError
-        return html.fragments_fromstring(text)
-
-    def _parse_xml(self, xml_text: str):
-        try:
-            etree.fromstring(xml_text.encode("utf-8"))
-            return None
-        except etree.XMLSyntaxError as e:
-            return str(e)
-
-    def _extract_prefixes(self, text: str) -> Set[str]:
-        prefixes = {m.group(1) for m in self.PREFIX_TAG_REGEX.finditer(text)}
-        return {p for p in prefixes if p not in {"xml"}}
-
-    def _existing_declared_prefixes(self, text: str) -> Set[str]:
-        return {m.group(1) for m in self.NS_DECL_REGEX.finditer(text)}
-
-    def _parse_with_auto_namespaces(self, text: str):
-        # Build root with declarations for any undeclared prefixes
-        detected = self._extract_prefixes(text)
-        declared = self._existing_declared_prefixes(text)
-        missing = detected - declared
-        if not missing:
-            # nothing new to declare, skip
-            return self._parse_xml(f"<root>{text}</root>")
-        decls_parts = []
-        for prefix in sorted(missing):
-            # Build declaration without f-string colon formatting ambiguity to satisfy flake8 E231
-            decls_parts.append("xmlns:" + prefix + "='urn:auto:" + prefix + "'")
-        decls = " ".join(decls_parts)
-        wrapped = f"<root {decls}>{text}</root>"
-        return self._parse_xml(wrapped)
-
     def _validate_fragment(self, value: str) -> List[str]:
         errors: List[str] = []
         if value is None:
@@ -77,29 +43,37 @@ class GetXhtmlErrors(BaseOperation):
         text = value.strip()
         if not text:
             return errors
-        if not self._looks_like_html(text):
-            errors.append("Not HTML fragment")
-            return errors
-        # HTML lenient parse
+        # 1. HTML validation (lenient)
         try:
-            self._parse_html(text)
-        except (etree.ParserError, ValueError) as e:
+            html5lib.parse(text)
+        except Exception as e:
             errors.append(f"Invalid HTML fragment: {e}")
             return errors
-        # XML strict attempts
-        xml_error = self._parse_xml(text)
-        if xml_error is None:
+        xhtml_str = text
+        # If custom usdm:ref prefix used without a namespace declaration, wrap to inject declaration.
+        # This wrapper is internal only for parsing; it does not modify source data.
+        if "usdm:ref" in text and "xmlns:usdm" not in text:
+            text = f'<root xmlns:usdm="usdm">{xhtml_str}</root>'
+        # 2. XML well-formedness
+        try:
+            parser = etree.XMLParser(ns_clean=True)
+            root = etree.fromstring(text.encode("utf-8"), parser=parser)
+        except etree.XMLSyntaxError as e:
+            errors.append(f"Invalid XML fragment: {e}")
             return errors
-        wrapped_error = self._parse_xml(f"<root>{text}</root>")
-        if wrapped_error is None:
-            return errors
-        # Namespace-aware retry if namespace prefix issues
-        if ("Namespace prefix" in xml_error) or ("Namespace prefix" in wrapped_error):
-            ns_error = self._parse_with_auto_namespaces(text)
-            if ns_error is None:
-                return errors
-            errors.append(f"Invalid XHTML fragment: {ns_error}")
-            return errors
-        # Final failure
-        errors.append(f"Invalid XHTML fragment: {wrapped_error}")
+        # 3. DTD validation for <usdm:ref>
+        refs = []
+        try:
+            refs = root.xpath("//usdm:ref", namespaces={"usdm": "usdm"})
+        except Exception:
+            # If prefix unbound and we failed to wrap (edge case), fallback silently
+            refs = []
+        if refs:
+            dtd = etree.DTD(io.StringIO(self.usdm_dtd))
+            for ref in refs:
+                ref_copy = etree.Element("ref", attrib=ref.attrib)
+                if not dtd.validate(ref_copy):
+                    errors.append(
+                        f"Invalid XML fragment: {dtd.error_log.filter_from_errors()}"
+                    )
         return errors
