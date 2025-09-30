@@ -525,12 +525,15 @@
     },
     "returntype": {
       "type": "string",
-      "enum": ["code", "value"]
+      "enum": ["code", "value", "pref_term"]
     },
     "term_value": {
       "type": "string"
     },
     "term_code": {
+      "type": "string"
+    },
+    "term_pref_term": {
       "type": "string"
     },
     "version": {

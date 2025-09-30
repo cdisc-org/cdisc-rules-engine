@@ -397,6 +397,7 @@ class RuleProcessor:
                 map=operation.get("map"),
                 term_code=operation.get("term_code"),
                 term_value=operation.get("term_value"),
+                term_pref_term=operation.get("term_pref_term"),
             )
 
             # execute operation

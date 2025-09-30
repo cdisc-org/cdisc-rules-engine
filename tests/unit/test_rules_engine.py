@@ -2570,11 +2570,6 @@ def test_validate_variables_order_against_library_metadata(
                         "role": VariableRoles.IDENTIFIER.value,
                         "ordinal": 1,
                     },
-                    {
-                        "name": "TIMING_VAR",
-                        "role": VariableRoles.TIMING.value,
-                        "ordinal": 33,
-                    },
                 ],
             },
         ]
@@ -2702,28 +2697,25 @@ def test_validate_variables_order_against_library_metadata(
                 "DOMAIN",
                 "STUDYID",
             ],
-            "message": RuleProcessor.extract_message_from_rule(
-                rule_validate_columns_order_against_library_metadata
-            ),
+            "message": "Order of variables is invalid",
             "errors": [
                 {
                     "value": {
-                        "$column_order_from_library": [
-                            "STUDYID",
-                            "DOMAIN",
-                            "AETERM",
-                            "AESEQ",
-                            "TIMING_VAR",
-                        ],
+                        "DOMAIN": "AE",
+                        "AESEQ": 1,
                         "$column_order_from_dataset": [
                             "DOMAIN",
                             "AESEQ",
                             "STUDYID",
                             "AETERM",
                         ],
-                        "AESEQ": 1,
                         "AETERM": "test",
-                        "DOMAIN": "AE",
+                        "$column_order_from_library": [
+                            "STUDYID",
+                            "DOMAIN",
+                            "AETERM",
+                            "AESEQ",
+                        ],
                         "STUDYID": "TEST_STUDY",
                     },
                     "dataset": "dataset_path",

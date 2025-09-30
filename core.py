@@ -167,23 +167,23 @@ def cli():
     "--rules",
     "-r",
     multiple=True,
-    help="specify rule core ID ex. CORE-000001. Can be specified multiple times",
+    help="Specify rule core ID ex. CORE-000001. Can be specified multiple times",
 )
 @click.option(
-    "--local_rules",
+    "--local-rules",
     "-lr",
     required=False,
     type=click.Path(exists=True, readable=True, resolve_path=True),
-    help="path to directory containing local rules.",
+    help="Path to directory containing local rules.",
     multiple=True,
 )
 @click.option(
-    "--custom_standard",
+    "--custom-standard",
     "-cs",
     required=False,
     is_flag=True,
     default=False,
-    help=("flag to run a validation using a custom_standard from the cache"),
+    help=("Flag to run a validation using a custom standard from the cache"),
 )
 @click.option(
     "-p",
@@ -200,8 +200,8 @@ def cli():
 @click.option(
     "-vx",
     "--validate-xml",
-    default="y",
-    help="Enable XML validation (default 'y' to enable, otherwise disable)",
+    is_flag=True,
+    help="This flag enables XML validation against a Define-XML schema.",
 )
 @click.option(
     "-jcf",
@@ -245,7 +245,7 @@ def validate(
     custom_standard: bool,
     progress: str,
     define_xml_path: str,
-    validate_xml: str,
+    validate_xml: bool,
     jsonata_custom_functions: tuple[()] | tuple[tuple[str, str], ...],
 ):
     """
@@ -301,7 +301,7 @@ def validate(
         dataset_paths, found_formats = valid_data_file([dp for dp in dataset_path])
         if len(found_formats) > 1:
             logger.error(
-                f"Argument --dataset_path contains more than one allowed file format ({', '.join(found_formats)})."  # noqa: E501
+                f"Argument --dataset-path contains more than one allowed file format ({', '.join(found_formats)})."  # noqa: E501
             )
             ctx.exit()
     else:
@@ -310,7 +310,6 @@ def validate(
         )
         # no need to define dataset_paths here, the program execution will stop
         ctx.exit()
-    validate_xml_bool = True if validate_xml.lower() in ("y", "yes") else False
     run_validation(
         Validation_args(
             cache_path,
@@ -332,7 +331,7 @@ def validate(
             custom_standard,
             progress,
             define_xml_path,
-            validate_xml_bool,
+            validate_xml,
             jsonata_custom_functions,
         )
     )
@@ -341,7 +340,7 @@ def validate(
 @click.command()
 @click.option(
     "-c",
-    "--cache_path",
+    "--cache-path",
     default=DefaultFilePaths.CACHE.value,
     help="Relative path to cache files containing pre loaded metadata and rules",
 )
@@ -357,7 +356,7 @@ def validate(
 )
 @click.option(
     "-crd",
-    "--custom_rules_directory",
+    "--custom-rules-directory",
     help=(
         "Relative path to directory containing local rules in yaml or JSON formats"
         "to be added to the cache. "
@@ -365,7 +364,7 @@ def validate(
 )
 @click.option(
     "-cr",
-    "--custom_rule",
+    "--custom-rule",
     multiple=True,
     help=(
         "Relative path to rule file in yaml or JSON formats"
@@ -374,7 +373,7 @@ def validate(
 )
 @click.option(
     "-rcr",
-    "--remove_custom_rules",
+    "--remove-custom-rules",
     help=(
         "Remove rules from the cache. Can be a single rule ID, a comma-separated list of IDs, "
         "or 'ALL' to remove all custom rules."
@@ -382,7 +381,7 @@ def validate(
 )
 @click.option(
     "-ucr",
-    "--update_custom_rule",
+    "--update-custom-rule",
     help=(
         "Relative path to rule file in yaml or JSON formats"
         "Rule will be updated in cache with this file. "
@@ -390,7 +389,7 @@ def validate(
 )
 @click.option(
     "-cs",
-    "--custom_standard",
+    "--custom-standard",
     help=(
         "Relative path to JSON file containing custom standard details."
         "Will update the standard if it already exists."
@@ -398,8 +397,8 @@ def validate(
 )
 @click.option(
     "-rcs",
-    "--remove_custom_standard",
-    help=("removes a custom standard and version from the cache. "),
+    "--remove-custom-standard",
+    help=("Removes a custom standard and version from the cache. "),
     multiple=True,
 )
 @click.pass_context
@@ -446,7 +445,7 @@ def update_cache(
 @click.command()
 @click.option(
     "-c",
-    "--cache_path",
+    "--cache-path",
     default=DefaultFilePaths.CACHE.value,
     help="Relative path to cache files containing pre loaded metadata and rules",
 )
@@ -465,15 +464,15 @@ def update_cache(
 )
 @click.option(
     "-cr",
-    "--custom_rules",
+    "--custom-rules",
     is_flag=True,
     default=False,
     required=False,
-    help="flag to list custom rules in the cache",
+    help="Flag to list custom rules in the cache",
 )
 @click.option(
     "-r",
-    "--rule_id",
+    "--rule-id",
     required=False,
     help="Rule ID to get rule for.",
     multiple=True,
@@ -522,7 +521,7 @@ def list_rules(
 @click.command()
 @click.option(
     "-c",
-    "--cache_path",
+    "--cache-path",
     default=DefaultFilePaths.CACHE.value,
     help="Relative path to cache files containing pre loaded metadata and rules",
 )
@@ -610,7 +609,7 @@ def version():
 @click.command()
 @click.option(
     "-c",
-    "--cache_path",
+    "--cache-path",
     default=DefaultFilePaths.CACHE.value,
     help="Relative path to cache files containing pre loaded metadata and rules",
 )
