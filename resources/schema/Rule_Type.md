@@ -279,7 +279,7 @@ Mapping of Result property names to Report Issue Details Column Names:
 
 ### Scope
 
-`Scope` should always `Include` `ALL` to ensure the rule will be run. The rule is only run once for the entire JSON file. The `Dataset` determination must come from the rule's jsonata result property.
+A JSONata rule will always run once for the entire JSON file, regardless of the Scope. The `Dataset` determination must come from the rule's JSONata result property.
 
 ## Record Data
 
