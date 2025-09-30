@@ -14,14 +14,14 @@ class TestJSONataProcessor(TestCase):
 
     rule = """
         Check: |
-            **.$filter($, $utils.equals).{"record":path, "A":A, "B":B}
+            **.$filter($, $utils.equals).{"row":path, "A":A, "B":B}
         Core:
             Id: JSONATA Test
         Status: Draft
         Outcome:
             Message: "A equals B"
             Output Variables:
-                - record
+                - row
                 - A
                 - B
         Rule Type: JSONata
@@ -52,17 +52,17 @@ class TestJSONataProcessor(TestCase):
             "executionStatus": "success",
             "dataset": None,
             "domain": None,
-            "variables": ["A", "B", "record"],
+            "variables": ["A", "B", "row"],
             "message": "A equals B",
             "errors": [
                 {
-                    "value": {"record": "", "A": "same value 1", "B": "same value 1"},
+                    "value": {"row": "", "A": "same value 1", "B": "same value 1"},
                     "dataset": "",
                     "row": "",
                 },
                 {
                     "value": {
-                        "record": "C.C",
+                        "row": "C.C",
                         "A": "same value 2",
                         "B": "same value 2",
                     },
@@ -99,7 +99,7 @@ class TestJSONataProcessor(TestCase):
             Outcome:
                 Message: "A equals B"
                 Output Variables:
-                    - record
+                    - row
                     - A
                     - B
             Rule Type: JSONata
@@ -124,14 +124,14 @@ class TestJSONataProcessor(TestCase):
     def test_jsonata_rule_execution_error(self, mock_get_custom_functions: MagicMock):
         rule = """
             Check: |
-                **.$filter($, $missing_utils.equals).{"record":path, "A":A, "B":B}
+                **.$filter($, $missing_utils.equals).{"row":path, "A":A, "B":B}
             Core:
                 Id: JSONATA Test
             Status: Draft
             Outcome:
                 Message: "A equals B"
                 Output Variables:
-                    - record
+                    - row
                     - A
                     - B
             Rule Type: JSONata

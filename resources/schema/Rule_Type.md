@@ -189,14 +189,14 @@ Apply a JSONata query to a JSON file. [JSONata documentation](https://docs.jsona
 
 ```yaml
 Check: |
-  **.$filter($, $myutils.equals).{"record":path, "A":A, "B":B}
+  **.$filter($, $myutils.equals).{"row":path, "A":A, "B":B}
 Core:
   Id: JSONATA Test
   Status: Draft
 Outcome:
   Message: "A equals B"
   Output Variables:
-    - record
+    - row
     - A
     - B
 Rule Type: JSONata
@@ -242,17 +242,17 @@ Sensitivity: Record
     "executionStatus": "success",
     "dataset": "",
     "domain": "",
-    "variables": ["A", "B", "record"],
+    "variables": ["A", "B", "row"],
     "message": "A equals B",
     "errors": [
       {
-        "value": { "record": "", "A": "same value 1", "B": "same value 1" },
+        "value": { "row": "", "A": "same value 1", "B": "same value 1" },
         "dataset": "",
         "row": ""
       },
       {
         "value": {
-          "record": "C.C",
+          "row": "C.C",
           "A": "same value 2",
           "B": "same value 2"
         },
@@ -268,12 +268,14 @@ Sensitivity: Record
 
 You can use `Outcome.Output Variables` to specify which properties to display from the result JSON. The following result property names will map to the column names in the Excel output report.
 
-Result property name -> Report Issue Details Column Name:
+Mapping of Result property names to Report Issue Details Column Names:
 
-- `dataset` -> `Dataset`
-- `usubjid` -> `USUBJID`
-- `record` -> `Record`
-- `sequence` -> `Sequence`
+| JSONata Result Name | JSON report property | Excel Column |
+| ------------------- | -------------------- | ------------ |
+| dataset             | dataset              | Dataset      |
+| row                 | row                  | Record       |
+| SEQ                 | SEQ                  | Sequence     |
+| USUBJID             | USUBJID              | USUBJID      |
 
 ### Scope
 
