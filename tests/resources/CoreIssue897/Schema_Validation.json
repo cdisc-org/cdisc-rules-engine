@@ -1,0 +1,567 @@
+[
+  {
+    "instancePath": "/Operations/0/operator",
+    "schemaPath": "#/anyOf/0/properties/operator/const",
+    "keyword": "const",
+    "params": {
+      "allowedValue": "codelist_extensible"
+    },
+    "message": "must be equal to constant"
+  },
+  {
+    "instancePath": "/Operations/0/operator",
+    "schemaPath": "#/anyOf/1/properties/operator/const",
+    "keyword": "const",
+    "params": {
+      "allowedValue": "codelist_terms"
+    },
+    "message": "must be equal to constant"
+  },
+  {
+    "instancePath": "/Operations/0",
+    "schemaPath": "#/anyOf/2/required",
+    "keyword": "required",
+    "params": {
+      "missingProperty": "codelists"
+    },
+    "message": "must have required property 'codelists'"
+  },
+  {
+    "instancePath": "/Operations/0/operator",
+    "schemaPath": "#/anyOf/2/properties/operator/const",
+    "keyword": "const",
+    "params": {
+      "allowedValue": "define_extensible_codelists"
+    },
+    "message": "must be equal to constant"
+  },
+  {
+    "instancePath": "/Operations/0",
+    "schemaPath": "#/anyOf/3/required",
+    "keyword": "required",
+    "params": {
+      "missingProperty": "attribute_name"
+    },
+    "message": "must have required property 'attribute_name'"
+  },
+  {
+    "instancePath": "/Operations/0/operator",
+    "schemaPath": "#/anyOf/3/properties/operator/const",
+    "keyword": "const",
+    "params": {
+      "allowedValue": "define_variable_metadata"
+    },
+    "message": "must be equal to constant"
+  },
+  {
+    "instancePath": "/Operations/0/operator",
+    "schemaPath": "#/anyOf/4/properties/operator/const",
+    "keyword": "const",
+    "params": {
+      "allowedValue": "distinct"
+    },
+    "message": "must be equal to constant"
+  },
+  {
+    "instancePath": "/Operations/0/operator",
+    "schemaPath": "#/anyOf/5/properties/operator/const",
+    "keyword": "const",
+    "params": {
+      "allowedValue": "domain_is_custom"
+    },
+    "message": "must be equal to constant"
+  },
+  {
+    "instancePath": "/Operations/0/operator",
+    "schemaPath": "#/anyOf/6/properties/operator/const",
+    "keyword": "const",
+    "params": {
+      "allowedValue": "domain_label"
+    },
+    "message": "must be equal to constant"
+  },
+  {
+    "instancePath": "/Operations/0/operator",
+    "schemaPath": "#/anyOf/7/properties/operator/const",
+    "keyword": "const",
+    "params": {
+      "allowedValue": "dy"
+    },
+    "message": "must be equal to constant"
+  },
+  {
+    "instancePath": "/Operations/0/operator",
+    "schemaPath": "#/anyOf/8/properties/operator/const",
+    "keyword": "const",
+    "params": {
+      "allowedValue": "extract_metadata"
+    },
+    "message": "must be equal to constant"
+  },
+  {
+    "instancePath": "/Operations/0/operator",
+    "schemaPath": "#/anyOf/9/properties/operator/const",
+    "keyword": "const",
+    "params": {
+      "allowedValue": "expected_variables"
+    },
+    "message": "must be equal to constant"
+  },
+  {
+    "instancePath": "/Operations/0",
+    "schemaPath": "#/anyOf/10/required",
+    "keyword": "required",
+    "params": {
+      "missingProperty": "ct_attribute"
+    },
+    "message": "must have required property 'ct_attribute'"
+  },
+  {
+    "instancePath": "/Operations/0",
+    "schemaPath": "#/anyOf/10/required",
+    "keyword": "required",
+    "params": {
+      "missingProperty": "ct_packages"
+    },
+    "message": "must have required property 'ct_packages'"
+  },
+  {
+    "instancePath": "/Operations/0",
+    "schemaPath": "#/anyOf/10/required",
+    "keyword": "required",
+    "params": {
+      "missingProperty": "ct_version"
+    },
+    "message": "must have required property 'ct_version'"
+  },
+  {
+    "instancePath": "/Operations/0/operator",
+    "schemaPath": "#/anyOf/10/properties/operator/const",
+    "keyword": "const",
+    "params": {
+      "allowedValue": "get_codelist_attributes"
+    },
+    "message": "must be equal to constant"
+  },
+  {
+    "instancePath": "/Operations/0/operator",
+    "schemaPath": "#/anyOf/11/properties/operator/const",
+    "keyword": "const",
+    "params": {
+      "allowedValue": "get_column_order_from_dataset"
+    },
+    "message": "must be equal to constant"
+  },
+  {
+    "instancePath": "/Operations/0/operator",
+    "schemaPath": "#/anyOf/12/properties/operator/const",
+    "keyword": "const",
+    "params": {
+      "allowedValue": "get_column_order_from_library"
+    },
+    "message": "must be equal to constant"
+  },
+  {
+    "instancePath": "/Operations/0/operator",
+    "schemaPath": "#/anyOf/13/properties/operator/const",
+    "keyword": "const",
+    "params": {
+      "allowedValue": "get_model_column_order"
+    },
+    "message": "must be equal to constant"
+  },
+  {
+    "instancePath": "/Operations/0",
+    "schemaPath": "#/anyOf/14/required",
+    "keyword": "required",
+    "params": {
+      "missingProperty": "key_name"
+    },
+    "message": "must have required property 'key_name'"
+  },
+  {
+    "instancePath": "/Operations/0",
+    "schemaPath": "#/anyOf/14/required",
+    "keyword": "required",
+    "params": {
+      "missingProperty": "key_value"
+    },
+    "message": "must have required property 'key_value'"
+  },
+  {
+    "instancePath": "/Operations/0/operator",
+    "schemaPath": "#/anyOf/14/properties/operator/const",
+    "keyword": "const",
+    "params": {
+      "allowedValue": "get_model_filtered_variables"
+    },
+    "message": "must be equal to constant"
+  },
+  {
+    "instancePath": "/Operations/0/operator",
+    "schemaPath": "#/anyOf/15/properties/operator/const",
+    "keyword": "const",
+    "params": {
+      "allowedValue": "get_parent_model_column_order"
+    },
+    "message": "must be equal to constant"
+  },
+  {
+    "instancePath": "/Operations/0",
+    "schemaPath": "#/anyOf/16/required",
+    "keyword": "required",
+    "params": {
+      "missingProperty": "key_name"
+    },
+    "message": "must have required property 'key_name'"
+  },
+  {
+    "instancePath": "/Operations/0",
+    "schemaPath": "#/anyOf/16/required",
+    "keyword": "required",
+    "params": {
+      "missingProperty": "key_value"
+    },
+    "message": "must have required property 'key_value'"
+  },
+  {
+    "instancePath": "/Operations/0/operator",
+    "schemaPath": "#/anyOf/16/properties/operator/const",
+    "keyword": "const",
+    "params": {
+      "allowedValue": "get_dataset_filtered_variables"
+    },
+    "message": "must be equal to constant"
+  },
+  {
+    "instancePath": "/Operations/0/operator",
+    "schemaPath": "#/anyOf/17/properties/operator/const",
+    "keyword": "const",
+    "params": {
+      "allowedValue": "label_referenced_variable_metadata"
+    },
+    "message": "must be equal to constant"
+  },
+  {
+    "instancePath": "/Operations/0",
+    "schemaPath": "#/anyOf/18/required",
+    "keyword": "required",
+    "params": {
+      "missingProperty": "map"
+    },
+    "message": "must have required property 'map'"
+  },
+  {
+    "instancePath": "/Operations/0/operator",
+    "schemaPath": "#/anyOf/18/properties/operator/const",
+    "keyword": "const",
+    "params": {
+      "allowedValue": "map"
+    },
+    "message": "must be equal to constant"
+  },
+  {
+    "instancePath": "/Operations/0/operator",
+    "schemaPath": "#/anyOf/19/properties/operator/const",
+    "keyword": "const",
+    "params": {
+      "allowedValue": "max"
+    },
+    "message": "must be equal to constant"
+  },
+  {
+    "instancePath": "/Operations/0/operator",
+    "schemaPath": "#/anyOf/20/properties/operator/const",
+    "keyword": "const",
+    "params": {
+      "allowedValue": "max_date"
+    },
+    "message": "must be equal to constant"
+  },
+  {
+    "instancePath": "/Operations/0/operator",
+    "schemaPath": "#/anyOf/21/properties/operator/const",
+    "keyword": "const",
+    "params": {
+      "allowedValue": "mean"
+    },
+    "message": "must be equal to constant"
+  },
+  {
+    "instancePath": "/Operations/0/operator",
+    "schemaPath": "#/anyOf/22/properties/operator/const",
+    "keyword": "const",
+    "params": {
+      "allowedValue": "min"
+    },
+    "message": "must be equal to constant"
+  },
+  {
+    "instancePath": "/Operations/0/operator",
+    "schemaPath": "#/anyOf/23/properties/operator/const",
+    "keyword": "const",
+    "params": {
+      "allowedValue": "min_date"
+    },
+    "message": "must be equal to constant"
+  },
+  {
+    "instancePath": "/Operations/0/operator",
+    "schemaPath": "#/anyOf/24/properties/operator/const",
+    "keyword": "const",
+    "params": {
+      "allowedValue": "name_referenced_variable_metadata"
+    },
+    "message": "must be equal to constant"
+  },
+  {
+    "instancePath": "/Operations/0/operator",
+    "schemaPath": "#/anyOf/25/properties/operator/const",
+    "keyword": "const",
+    "params": {
+      "allowedValue": "permissible_variables"
+    },
+    "message": "must be equal to constant"
+  },
+  {
+    "instancePath": "/Operations/0/operator",
+    "schemaPath": "#/anyOf/26/properties/operator/const",
+    "keyword": "const",
+    "params": {
+      "allowedValue": "record_count"
+    },
+    "message": "must be equal to constant"
+  },
+  {
+    "instancePath": "/Operations/0/operator",
+    "schemaPath": "#/anyOf/27/properties/operator/const",
+    "keyword": "const",
+    "params": {
+      "allowedValue": "required_variables"
+    },
+    "message": "must be equal to constant"
+  },
+  {
+    "instancePath": "/Operations/0/operator",
+    "schemaPath": "#/anyOf/28/properties/operator/const",
+    "keyword": "const",
+    "params": {
+      "allowedValue": "study_domains"
+    },
+    "message": "must be equal to constant"
+  },
+  {
+    "instancePath": "/Operations/0/operator",
+    "schemaPath": "#/anyOf/29/properties/operator/const",
+    "keyword": "const",
+    "params": {
+      "allowedValue": "dataset_names"
+    },
+    "message": "must be equal to constant"
+  },
+  {
+    "instancePath": "/Operations/0/operator",
+    "schemaPath": "#/anyOf/30/properties/operator/const",
+    "keyword": "const",
+    "params": {
+      "allowedValue": "valid_codelist_dates"
+    },
+    "message": "must be equal to constant"
+  },
+  {
+    "instancePath": "/Operations/0",
+    "schemaPath": "#/anyOf/31/required",
+    "keyword": "required",
+    "params": {
+      "missingProperty": "external_dictionary_type"
+    },
+    "message": "must have required property 'external_dictionary_type'"
+  },
+  {
+    "instancePath": "/Operations/0/operator",
+    "schemaPath": "#/anyOf/31/properties/operator/const",
+    "keyword": "const",
+    "params": {
+      "allowedValue": "valid_define_external_dictionary_version"
+    },
+    "message": "must be equal to constant"
+  },
+  {
+    "instancePath": "/Operations/0",
+    "schemaPath": "#/anyOf/32/required",
+    "keyword": "required",
+    "params": {
+      "missingProperty": "external_dictionary_type"
+    },
+    "message": "must have required property 'external_dictionary_type'"
+  },
+  {
+    "instancePath": "/Operations/0",
+    "schemaPath": "#/anyOf/32/required",
+    "keyword": "required",
+    "params": {
+      "missingProperty": "dictionary_term_type"
+    },
+    "message": "must have required property 'dictionary_term_type'"
+  },
+  {
+    "instancePath": "/Operations/0/operator",
+    "schemaPath": "#/anyOf/32/properties/operator/const",
+    "keyword": "const",
+    "params": {
+      "allowedValue": "valid_external_dictionary_value"
+    },
+    "message": "must be equal to constant"
+  },
+  {
+    "instancePath": "/Operations/0",
+    "schemaPath": "#/anyOf/33/required",
+    "keyword": "required",
+    "params": {
+      "missingProperty": "external_dictionary_type"
+    },
+    "message": "must have required property 'external_dictionary_type'"
+  },
+  {
+    "instancePath": "/Operations/0",
+    "schemaPath": "#/anyOf/33/required",
+    "keyword": "required",
+    "params": {
+      "missingProperty": "dictionary_term_type"
+    },
+    "message": "must have required property 'dictionary_term_type'"
+  },
+  {
+    "instancePath": "/Operations/0/operator",
+    "schemaPath": "#/anyOf/33/properties/operator/const",
+    "keyword": "const",
+    "params": {
+      "allowedValue": "valid_external_dictionary_code"
+    },
+    "message": "must be equal to constant"
+  },
+  {
+    "instancePath": "/Operations/0",
+    "schemaPath": "#/anyOf/34/required",
+    "keyword": "required",
+    "params": {
+      "missingProperty": "external_dictionary_type"
+    },
+    "message": "must have required property 'external_dictionary_type'"
+  },
+  {
+    "instancePath": "/Operations/0",
+    "schemaPath": "#/anyOf/34/required",
+    "keyword": "required",
+    "params": {
+      "missingProperty": "external_dictionary_term_variable"
+    },
+    "message": "must have required property 'external_dictionary_term_variable'"
+  },
+  {
+    "instancePath": "/Operations/0/operator",
+    "schemaPath": "#/anyOf/34/properties/operator/const",
+    "keyword": "const",
+    "params": {
+      "allowedValue": "valid_external_dictionary_code_term_pair"
+    },
+    "message": "must be equal to constant"
+  },
+  {
+    "instancePath": "/Operations/0/operator",
+    "schemaPath": "#/anyOf/35/properties/operator/const",
+    "keyword": "const",
+    "params": {
+      "allowedValue": "valid_meddra_code_references"
+    },
+    "message": "must be equal to constant"
+  },
+  {
+    "instancePath": "/Operations/0/operator",
+    "schemaPath": "#/anyOf/36/properties/operator/const",
+    "keyword": "const",
+    "params": {
+      "allowedValue": "valid_meddra_code_term_pairs"
+    },
+    "message": "must be equal to constant"
+  },
+  {
+    "instancePath": "/Operations/0/operator",
+    "schemaPath": "#/anyOf/37/properties/operator/const",
+    "keyword": "const",
+    "params": {
+      "allowedValue": "valid_meddra_term_references"
+    },
+    "message": "must be equal to constant"
+  },
+  {
+    "instancePath": "/Operations/0/operator",
+    "schemaPath": "#/anyOf/38/properties/operator/const",
+    "keyword": "const",
+    "params": {
+      "allowedValue": "valid_whodrug_references"
+    },
+    "message": "must be equal to constant"
+  },
+  {
+    "instancePath": "/Operations/0/operator",
+    "schemaPath": "#/anyOf/39/properties/operator/const",
+    "keyword": "const",
+    "params": {
+      "allowedValue": "variable_count"
+    },
+    "message": "must be equal to constant"
+  },
+  {
+    "instancePath": "/Operations/0/operator",
+    "schemaPath": "#/anyOf/40/properties/operator/const",
+    "keyword": "const",
+    "params": {
+      "allowedValue": "variable_exists"
+    },
+    "message": "must be equal to constant"
+  },
+  {
+    "instancePath": "/Operations/0/operator",
+    "schemaPath": "#/anyOf/41/properties/operator/const",
+    "keyword": "const",
+    "params": {
+      "allowedValue": "variable_is_null"
+    },
+    "message": "must be equal to constant"
+  },
+  {
+    "instancePath": "/Operations/0/operator",
+    "schemaPath": "#/anyOf/42/properties/operator/const",
+    "keyword": "const",
+    "params": {
+      "allowedValue": "variable_names"
+    },
+    "message": "must be equal to constant"
+  },
+  {
+    "instancePath": "/Operations/0/operator",
+    "schemaPath": "#/anyOf/43/properties/operator/const",
+    "keyword": "const",
+    "params": {
+      "allowedValue": "variable_value_count"
+    },
+    "message": "must be equal to constant"
+  },
+  {
+    "instancePath": "/Operations/0/operator",
+    "schemaPath": "#/anyOf/44/properties/operator/const",
+    "keyword": "const",
+    "params": {
+      "allowedValue": "whodrug_code_hierarchy"
+    },
+    "message": "must be equal to constant"
+  },
+  {
+    "instancePath": "/Operations/0",
+    "schemaPath": "#/anyOf",
+    "keyword": "anyOf",
+    "params": {},
+    "message": "must match a schema in anyOf"
+  }
+]
