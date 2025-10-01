@@ -73,10 +73,20 @@ def run_single_rule_regression(row: pd.Series, get_core_rule, target_case: Optio
             parts = path_obj.parts
             rule_regression["sharepoint_source"] = parts[-RULE_DEPTH]
 
+            core_id_nested_path = path_obj / cur_core_id
+            if core_id_nested_path.exists() and core_id_nested_path.is_dir():
+                base_case_path = core_id_nested_path
+                is_nested_structure = True
+            else:
+                base_case_path = path_obj
+                is_nested_structure = False
+
             for case in ["negative", "positive"]:
-                case_path = path_obj / case
+                case_path = base_case_path / case
                 if case_path.exists():
-                    run_test_cases(rule_regression, case, str(case_path), ig_specs, rule, target_case)
+                    run_test_cases(
+                        rule_regression, case, str(case_path), ig_specs, rule, target_case, is_nested_structure
+                    )
         elif len(paths) < 1:
             rule_regression["rule_in_mltple_standards"] = []
         else:
@@ -108,9 +118,11 @@ def run_test_cases(
     ig_specs: IGSpecification,
     rule,
     target_case: Optional[str] = None,
+    is_nested_structure: bool = False,
 ):
     two_digit_pattern = re.compile(r"^\d{2}$")
-    cur_regression[f"{case}_folder_path"] = extract_final_path(case_folder_path, TYPE_DEPTH)
+    path_depth = TYPE_DEPTH + 1 if is_nested_structure else TYPE_DEPTH
+    cur_regression[f"{case}_folder_path"] = extract_final_path(case_folder_path, path_depth)
     case_path = Path(case_folder_path)
     test_case_folder_paths = [
         str(case_path / name)
