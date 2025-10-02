@@ -313,7 +313,7 @@ class ExcelReport(BaseReport):
                     filename = parent_dir / f"{base_name}_part{i}{extension}"
                     with open(filename, "wb") as f:
                         f.write(excel_workbook_to_stream(wb))
-                    logger.info(f"Report part {i} written to: {filename}")
+                    logger.debug(f"Report part {i} written to: {filename}")
                 logger.warning(
                     f"Data exceeded Excel row limit. Created {len(workbooks)} report files. "
                     f"Total rows split across files."
