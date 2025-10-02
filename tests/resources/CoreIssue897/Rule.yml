@@ -14,13 +14,10 @@ Authorities:
         Version: "4.0"
 Check:
   all:
-    - name: rel_type
-      operator: equal_to
-      value: "definition"
     - name: $xhtml_errors
       operator: non_empty
 Core:
-  Id: ""
+  Id: "CORE-000409"
   Status: Draft
   Version: "1"
 Description: "Narrative content item text is expected to be HTML formatted."
@@ -32,11 +29,6 @@ Operations:
 Outcome:
   Message: "The narrative content item text contains non-conformant XHTML."
   Output Variables:
-    - parent_entity
-    - parent_id
-    - parent_rel
-    - id
-    - name
     - text
     - $xhtml_errors
 Rule Type: Record Data
