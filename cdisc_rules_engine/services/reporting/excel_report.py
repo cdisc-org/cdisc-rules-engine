@@ -302,7 +302,7 @@ class ExcelReport(BaseReport):
                 # Single file - use original filename
                 with open(self._output_name, "wb") as f:
                     f.write(excel_workbook_to_stream(workbooks[0]))
-                logger.info(f"Report written to: {self._output_name}")
+                logger.debug(f"Report written to: {self._output_name}")
             else:
                 # Multiple files - add part numbers
                 base_name = Path(self._output_name).stem
