@@ -280,6 +280,7 @@ def test_get_dataset_class_associated_domains():
                 "",
                 None,
                 False,
+                None,
             )
         )
         data_service = LocalDataService(
