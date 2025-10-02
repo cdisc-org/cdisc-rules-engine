@@ -204,6 +204,13 @@ def cli():
     is_flag=True,
     help="This flag enables XML validation against a Define-XML schema.",
 )
+@click.option(
+    "-mr",
+    "--max-report-rows",
+    type=int,
+    default=None,
+    help="Maximum number of rows per report sheet.",
+)
 @click.pass_context
 def validate(
     ctx,
@@ -235,6 +242,7 @@ def validate(
     progress: str,
     define_xml_path: str,
     validate_xml: bool,
+    max_report_rows: int,
 ):
     """
     Validate data using CDISC Rules Engine
@@ -320,6 +328,7 @@ def validate(
             progress,
             define_xml_path,
             validate_xml,
+            max_report_rows,
         )
     )
 
@@ -665,6 +674,7 @@ def test_validate():
             progress = ProgressParameterOptions.BAR.value
             define_xml_path = None
             validate_xml = False
+            max_report_rows = None
             json_output = os.path.join(temp_dir, "json_validation_output")
             run_validation(
                 Validation_args(
@@ -688,6 +698,7 @@ def test_validate():
                     progress,
                     define_xml_path,
                     validate_xml,
+                    max_report_rows,
                 )
             )
             print("JSON validation completed successfully!")
@@ -714,6 +725,7 @@ def test_validate():
                     progress,
                     define_xml_path,
                     validate_xml,
+                    max_report_rows,
                 )
             )
             print("XPT validation completed successfully!")
