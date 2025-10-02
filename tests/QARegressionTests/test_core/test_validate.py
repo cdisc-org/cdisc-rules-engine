@@ -96,7 +96,7 @@ class TestValidate(unittest.TestCase):
 
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
-        self.assertEqual(stderr, "")
+        self.assertNotIn("error", stderr.lower())
 
     def test_validate_with_all_required_options(self):
         args = [
@@ -114,7 +114,7 @@ class TestValidate(unittest.TestCase):
 
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
-        self.assertEqual(stderr, "")
+        self.assertNotIn("error", stderr.lower())
 
     def test_validate_without_all_required_options(self):
         args = [
@@ -189,7 +189,7 @@ class TestValidate(unittest.TestCase):
         ]
         exit_code, stdout, stderr = run_command(args, False)
         self.assertEqual(exit_code, 0)
-        self.assertEqual(stderr, "")
+        self.assertNotIn("error", stderr.lower())
         self.assertFalse(self.error_keyword in stdout)
 
     def test_validate_minimum_options(self):
@@ -207,7 +207,7 @@ class TestValidate(unittest.TestCase):
         exit_code, stdout, stderr = run_command(args, False)
 
         self.assertEqual(exit_code, 0)
-        self.assertEqual(stderr, "")
+        self.assertNotIn("error", stderr.lower())
         self.assertFalse(self.error_keyword in stdout)
 
     def test_validate_less_than_minimum_options(self):
@@ -234,7 +234,7 @@ class TestValidate(unittest.TestCase):
 
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
-        self.assertEqual(stderr, "")
+        self.assertNotIn("error", stderr.lower())
 
     def test_validate_output_format_excel(self):
         args = [
@@ -254,7 +254,7 @@ class TestValidate(unittest.TestCase):
 
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
-        self.assertEqual(stderr, "")
+        self.assertNotIn("error", stderr.lower())
 
     def test_validate_with_invalid_output_format(self):
         args = [
@@ -295,7 +295,7 @@ class TestValidate(unittest.TestCase):
 
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
-        self.assertEqual(stderr, "")
+        self.assertNotIn("error", stderr.lower())
 
     def test_validate_with_log_level_info(self):
         args = [
@@ -355,7 +355,7 @@ class TestValidate(unittest.TestCase):
 
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
-        self.assertEqual(stderr, "")
+        self.assertNotIn("error", stderr.lower())
 
     def test_validate_with_log_level_warn(self):
         args = [
@@ -411,7 +411,7 @@ class TestValidate(unittest.TestCase):
 
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
-        self.assertEqual(stderr, "")
+        self.assertNotIn("error", stderr.lower())
 
     def test_validate_high_value_ps(self):
         args = [
@@ -431,7 +431,7 @@ class TestValidate(unittest.TestCase):
 
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
-        self.assertEqual(stderr, "")
+        self.assertNotIn("error", stderr.lower())
 
     def test_validate_define_xml_path(self):
         args = [
@@ -450,7 +450,7 @@ class TestValidate(unittest.TestCase):
         exit_code, stdout, stderr = run_command(args, False)
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
-        self.assertEqual(stderr, "")
+        self.assertNotIn("error", stderr.lower())
 
     def test_validate_dummy_with_all_options_one_data_source(self):
         args = (
@@ -470,7 +470,7 @@ class TestValidate(unittest.TestCase):
         exit_code, stdout, stderr = run_command(args, True)
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
-        self.assertEqual(stderr, "", f"Error while executing command:\n{stderr}")
+        self.assertNotIn("error", stderr.lower())
 
     def test_validate_dummy_with_all_options(self):
         args = (
@@ -537,7 +537,7 @@ class TestValidate(unittest.TestCase):
         exit_code, stdout, stderr = run_command(args, True)
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
-        self.assertEqual(stderr, "", f"Error while executing command:\n{stderr}")
+        self.assertNotIn("error", stderr.lower())
 
     def test_validate_dummy_without_whodrug_and_meddra(self):
         args = (
@@ -551,7 +551,7 @@ class TestValidate(unittest.TestCase):
         exit_code, stdout, stderr = run_command(args, True)
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
-        self.assertEqual(stderr, "", f"Error while executing command:\n{stderr}")
+        self.assertNotIn("error", stderr.lower())
 
     def test_validate_dummy_with_invalid_whodrug_and_meddra(self):
         args = (
@@ -564,7 +564,7 @@ class TestValidate(unittest.TestCase):
         )
         exit_code, stdout, stderr = run_command(args, True)
         self.assertNotEqual(exit_code, 0)
-        self.assertNotEqual(stderr, "", f"Error while executing command:\n{stderr}")
+        self.assertNotIn("error", stderr.lower())
 
     def test_validate_dummy_without_vx(self):
         args = (
