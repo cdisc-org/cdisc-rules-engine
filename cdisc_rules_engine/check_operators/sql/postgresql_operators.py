@@ -38,13 +38,7 @@ from .present_on_multiple_rows_within_operator import (
     PresentOnMultipleRowsWithinOperator,
 )
 from .references_correct_codelist_operator import ReferencesCorrectCodelistOperator
-from .shares_at_least_one_element_with_operator import (
-    SharesAtLeastOneElementWithOperator,
-)
-from .shares_exactly_one_element_with_operator import (
-    SharesExactlyOneElementWithOperator,
-)
-from .shares_no_elements_with_operator import SharesNoElementsWithOperator
+from .shares_elements_with_operator import SharesElementsWithOperator
 from .starts_with_operator import StartsWithOperator
 from .string_length_comparison_operator import StringLengthComparisonOperator
 from .suffix_matches_regex_operator import SuffixMatchesRegexOperator
@@ -155,9 +149,11 @@ class PostgresQLOperators(BaseType):
         "target_is_not_sorted_by": lambda data: NotOperator(data, TargetIsSortedByOperator),
         "variable_metadata_equal_to": lambda data: VariableMetadataEqualToOperator(data),
         "variable_metadata_not_equal_to": lambda data: NotOperator(data, VariableMetadataEqualToOperator),
-        "shares_at_least_one_element_with": lambda data: SharesAtLeastOneElementWithOperator(data),
-        "shares_exactly_one_element_with": lambda data: SharesExactlyOneElementWithOperator(data),
-        "shares_no_elements_with": lambda data: SharesNoElementsWithOperator(data),
+        "shares_at_least_one_element_with": lambda data: SharesElementsWithOperator(
+            data, operation_type="at_least_one"
+        ),
+        "shares_exactly_one_element_with": lambda data: SharesElementsWithOperator(data, operation_type="exactly_one"),
+        "shares_no_elements_with": lambda data: SharesElementsWithOperator(data, operation_type="no_elements"),
         "is_ordered_subset_of": lambda data: IsOrderedSubsetOfOperator(data),
         "is_not_ordered_subset_of": lambda data: IsOrderedSubsetOfOperator(data, invert=True),
     }

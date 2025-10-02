@@ -4,9 +4,9 @@
 
 - Total rules without check operators: 297
 - Total unique operators found in rules: 58
-- Total implemented PostgreSQL operators: 79
-- Missing operators (in rules but not implemented): 3
-- Extra operators (implemented but not used in rules): 24
+- Total implemented PostgreSQL operators: 82
+- Missing operators (in rules but not implemented): 2
+- Extra operators (implemented but not used in rules): 26
 
 ## ✅ Implementation Status
 
@@ -16,7 +16,6 @@
 | --------------------------------- | ------------------ |
 | `inconsistent_enumerated_columns` | ❌ Not Implemented |
 | `is_not_valid_reference`          | ❌ Not Implemented |
-| `shares_no_elements_with`         | ❌ Not Implemented |
 
 ## 🔍 Unused Implemented Operators
 
@@ -41,6 +40,8 @@ The following operators are implemented but not currently used in any rules:
 - non_conformant_value_length
 - non_empty_within_except_last_row
 - prefix_is_contained_by
+- shares_at_least_one_element_with
+- shares_exactly_one_element_with
 - shorter_than_or_equal_to
 - suffix_equal_to
 - suffix_is_contained_by
