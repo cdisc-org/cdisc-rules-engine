@@ -564,7 +564,7 @@ class TestValidate(unittest.TestCase):
         )
         exit_code, stdout, stderr = run_command(args, True)
         self.assertNotEqual(exit_code, 0)
-        self.assertNotIn("error", stderr.lower())
+        self.assertEqual(stderr, "", f"Error while executing command: \n{stderr}")
 
     def test_validate_dummy_without_vx(self):
         args = (
@@ -590,7 +590,7 @@ class TestValidate(unittest.TestCase):
         )
         exit_code, stdout, stderr = run_command(args, True)
         self.assertEqual(exit_code, 0)
-        self.assertTrue(stderr == "")
+        self.assertNotIn("error", stdout)
 
     def tearDown(self):
         tearDown()
