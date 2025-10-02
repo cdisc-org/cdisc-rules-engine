@@ -15,11 +15,7 @@ from cdisc_rules_engine.services import logger
 def cust_asizeof(obj):
     try:
         return asizeof.asizeof(obj)
-    except (ValueError, TypeError, AttributeError) as e:
-        logger.warning(
-            f"asizeof failed for object type {type(obj).__name__}: {e}. "
-            "Using sys.getsizeof fallback."
-        )
+    except (ValueError, TypeError, AttributeError):
         return sys.getsizeof(obj)
 
 
