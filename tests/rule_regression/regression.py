@@ -260,7 +260,7 @@ def get_metadata(ig_specs: IGSpecification, define_xml_path: str):
                 standard=ig_specs["standard"],
                 version=ig_specs["standard_version"],
                 substandard=ig_specs["standard_substandard"],
-                controlled_terminology_package=None,
+                controlled_terminology_package=set(),
                 output=None,
                 output_format=None,
                 raw_report=None,
