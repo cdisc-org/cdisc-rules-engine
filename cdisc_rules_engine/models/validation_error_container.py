@@ -1,7 +1,5 @@
-from typing import List, Union, Optional
-from dataclasses import dataclass, field
-
-from cdisc_rules_engine.enums.execution_status import ExecutionStatus
+from typing import List, Union
+from dataclasses import dataclass
 from cdisc_rules_engine.utilities.utils import get_execution_status
 
 from .base_validation_entity import BaseValidationEntity
@@ -11,12 +9,12 @@ from .validation_error_entity import ValidationErrorEntity
 
 @dataclass
 class ValidationErrorContainer(BaseValidationEntity):
-    dataset: Optional[str] = field(default=None, init=False)
-    domain: Optional[str] = field(default=None, init=False)
-    targets: List[str] = field(default_factory=list, init=False)
-    errors: List[Union[ValidationErrorEntity, FailedValidationEntity]] = field(default_factory=list, init=False)
-    message: Optional[str] = field(default=None, init=False)
-    
+    dataset: str | None = None
+    domain: str | None = None
+    targets: List[str] = None
+    errors: List[Union[ValidationErrorEntity, FailedValidationEntity]] = None
+    message: str | None = None
+
     def __init__(self, **params):
         super().__init__()
         self.dataset = params.get("dataset")

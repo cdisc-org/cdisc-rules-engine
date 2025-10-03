@@ -1,5 +1,5 @@
 from typing import List, Union
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from cdisc_rules_engine.utilities.utils import get_execution_status
 from cdisc_rules_engine.models.rule import Rule
@@ -7,14 +7,14 @@ from cdisc_rules_engine.models.rule import Rule
 
 @dataclass
 class RuleValidationResult:
-    id: str = field(init=False)
-    cdisc_rule_id: str = field(init=False)
-    fda_rule_id: str = field(init=False)
-    executability: str = field(init=False)
-    message: str = field(init=False)
-    execution_status: str = field(init=False)
-    results: List[Union[dict, str]] = field(init=False)
-    
+    id: str = None
+    cdisc_rule_id: str = None
+    fda_rule_id: str = None
+    executability: str = None
+    message: str = None
+    execution_status: str = None
+    results: List[Union[dict, str]] = None
+
     def __init__(self, rule: Rule, results: List[Union[dict, str]]):
         self.id = rule.get("core_id")
         self.cdisc_rule_id = self._get_rule_ids(rule, "CDISC")

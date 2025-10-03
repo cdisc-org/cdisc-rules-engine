@@ -1,16 +1,16 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import List
 
 
 @dataclass
 class VariableMetadataContainer:
-    formats: List = field(init=False)
-    names: List = field(init=False)
-    order: List = field(init=False)
-    labels: List = field(init=False)
-    sizes: List = field(init=False)
-    data_types: List = field(init=False)
-    
+    formats: List = None
+    names: List = None
+    order: List = None
+    labels: List = None
+    sizes: List = None
+    data_types: List = None
+
     def __init__(self, contents_metadata: dict):
         variable_names = contents_metadata["variable_names"]
         self.formats = contents_metadata["variable_formats"]
