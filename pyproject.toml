@@ -14,6 +14,7 @@ dependencies = [
     "business_rules_enhanced==1.4.8",
     "cdisc-library-client==0.1.6",
     "importlib-metadata==8.5.0",
+    "jsonata-python==0.6.0",
     "jsonpath-ng==1.6.1",
     "jsonschema==4.18.5",
     "numpy~=1.23.2",
