@@ -161,8 +161,8 @@ class ExcelReport(BaseReport):
         Create multiple workbooks when data exceeds Excel's row limit.
         """
         workbooks = []
-        detailed_chunks = self._chunk_data(detailed_data, self.MAX_ROWS_PER_SHEET)
-        summary_chunks = self._chunk_data(summary_data, self.MAX_ROWS_PER_SHEET)
+        detailed_chunks = self._chunk_data(detailed_data, self.max_rows_per_sheet)
+        summary_chunks = self._chunk_data(summary_data, self.max_rows_per_sheet)
         num_files = max(len(detailed_chunks), len(summary_chunks))
         for i in range(num_files):
             wb = excel_open_workbook(template_buffer)
