@@ -1,14 +1,23 @@
+from dataclasses import dataclass, field
+from typing import Optional
 from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 from cdisc_rules_engine.enums.base_enum import BaseEnum
 from .base_validation_entity import BaseValidationEntity
 
 
+@dataclass
 class ValidationErrorEntity(BaseValidationEntity):
     """
     The entity describes an error that been flagged because
     a dataset violates a rule in a certain row.
     """
 
+    _dataset: Optional[str] = field(default=None, init=False)
+    _row: Optional[int] = field(default=None, init=False)
+    value: dict = field(init=False)
+    _usubjid: Optional[str] = field(default=None, init=False)
+    _sequence: Optional[int] = field(default=None, init=False)
+    
     def __init__(
         self,
         value: dict,
@@ -17,12 +26,13 @@ class ValidationErrorEntity(BaseValidationEntity):
         usubjid: str = None,
         sequence: int = None,
     ):
-        self._dataset: str = dataset
-        self._row: int = row
-        self.value: dict = value
-        self._usubjid: str = usubjid
-        self._sequence: int = sequence
-        self.status: ExecutionStatus = ExecutionStatus.SUCCESS
+        super().__init__()
+        self._dataset = dataset
+        self._row = row
+        self.value = value
+        self._usubjid = usubjid
+        self._sequence = sequence
+        self.status = ExecutionStatus.SUCCESS
 
     def _format_values(self) -> dict:
         """
@@ -38,7 +48,7 @@ class ValidationErrorEntity(BaseValidationEntity):
                 data[key] = val
         return data
 
-    def to_representation(self) -> dict:
+    def as_dict(self) -> dict:
         representation: dict = {
             "value": self._format_values(),
         }

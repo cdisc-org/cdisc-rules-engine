@@ -1,8 +1,15 @@
 from abc import ABC
+from dataclasses import dataclass
+from typing import Optional
 
-from cdisc_rules_engine.interfaces import RepresentationInterface
 
-
-class BaseValidationEntity(RepresentationInterface, ABC):
-    def __init__(self):
-        self.status = None
+@dataclass
+class BaseValidationEntity(ABC):
+    status: Optional = None
+    
+    def as_dict(self) -> dict:
+        """
+        Default implementation that can be overridden by subclasses.
+        Returns a basic dict representation.
+        """
+        return {"status": self.status}

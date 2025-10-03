@@ -61,7 +61,7 @@ class COREActions(BaseActions):
         error_object = self.generate_targeted_error_object(
             target_names, rows_with_error, message
         )
-        self.output_container.append(error_object.to_representation())
+        self.output_container.append(error_object.as_dict())
 
     @rule_action(params={"message": FIELD_TEXT})
     def generate_single_error(self, message):

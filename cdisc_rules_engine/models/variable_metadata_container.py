@@ -1,7 +1,16 @@
-from cdisc_rules_engine.interfaces import RepresentationInterface
+from dataclasses import dataclass, field
+from typing import List
 
 
-class VariableMetadataContainer(RepresentationInterface):
+@dataclass
+class VariableMetadataContainer:
+    formats: List = field(init=False)
+    names: List = field(init=False)
+    order: List = field(init=False)
+    labels: List = field(init=False)
+    sizes: List = field(init=False)
+    data_types: List = field(init=False)
+    
     def __init__(self, contents_metadata: dict):
         variable_names = contents_metadata["variable_names"]
         self.formats = contents_metadata["variable_formats"]
@@ -11,7 +20,7 @@ class VariableMetadataContainer(RepresentationInterface):
         self.sizes = contents_metadata["variable_name_to_size_map"].values()
         self.data_types = contents_metadata["variable_name_to_data_type_map"].values()
 
-    def to_representation(self) -> dict:
+    def as_dict(self) -> dict:
         return {
             "variable_name": self.names,
             "variable_order_number": self.order,
