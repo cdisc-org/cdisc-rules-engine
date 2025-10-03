@@ -1,8 +1,9 @@
-from typing import List, Union
+from typing import List
 from dataclasses import dataclass
 
 from cdisc_rules_engine.utilities.utils import get_execution_status
 from cdisc_rules_engine.models.rule import Rule
+from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 
 
 @dataclass
@@ -12,10 +13,10 @@ class RuleValidationResult:
     fda_rule_id: str = None
     executability: str = None
     message: str = None
-    execution_status: str = None
-    results: List[Union[dict, str]] = None
+    execution_status: ExecutionStatus = None
+    results: List[dict | str] = None
 
-    def __init__(self, rule: Rule, results: List[Union[dict, str]]):
+    def __init__(self, rule: Rule, results: List[dict | str]):
         self.id = rule.get("core_id")
         self.cdisc_rule_id = self._get_rule_ids(rule, "CDISC")
         self.fda_rule_id = self._get_rule_ids(rule, "FDA")
