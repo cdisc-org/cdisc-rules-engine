@@ -22,6 +22,7 @@ class ValidationErrorContainer(BaseValidationEntity):
         if self._status is None:
             status_value = get_execution_status(self.errors)
             # Find the ExecutionStatus enum by its string value
+            self._status = ExecutionStatus.SUCCESS  # Default fallback
             for status in ExecutionStatus:
                 if status.value == status_value:
                     self._status = status
@@ -33,15 +34,18 @@ class ValidationErrorContainer(BaseValidationEntity):
             return self._status
         status_value = get_execution_status(self.errors)
         # Find the ExecutionStatus enum by its string value
+        result = ExecutionStatus.SUCCESS  # Default fallback
         for status in ExecutionStatus:
             if status.value == status_value:
-                return status
-        return ExecutionStatus.SUCCESS  # fallback
+                result = status
+                break
+        return result
 
     @status.setter
     def status(self, value: ExecutionStatus | str):
         if isinstance(value, str):
             # Find the ExecutionStatus enum by its string value
+            self._status = ExecutionStatus.SUCCESS  # Default fallback
             for status in ExecutionStatus:
                 if status.value == value:
                     self._status = status

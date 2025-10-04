@@ -27,6 +27,7 @@ class RuleValidationResult:
             self.message = actions[0].get("params", {}).get("message")
         status_value = get_execution_status(results)
         # Find the ExecutionStatus enum by its string value
+        self.execution_status = ExecutionStatus.SUCCESS  # Default fallback
         for status in ExecutionStatus:
             if status.value == status_value:
                 self.execution_status = status
