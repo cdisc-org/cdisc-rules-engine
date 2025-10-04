@@ -85,7 +85,7 @@ def test_targeted_error_object_with_dataset_sensitivity():
     targets = set(dummy_rule["output_variables"])
     result = action.generate_targeted_error_object(targets, df, "TEST greater than 0")
     assert len(result.errors) == 1
-    error = result.errors[0].to_representation()
+    error = result.errors[0].as_dict()
     assert "row" not in error
     assert error["value"] == {"TEST": 1, "MISSING": "Not in dataset"}
 
@@ -120,7 +120,7 @@ def test_empty_sequential():
         tag_source(PandasDataset(df), dataset_metadata).data,
         "TVSEQ greater than 2",
     )
-    assert [err.to_representation() for err in result.errors] == [
+    assert [err.as_dict() for err in result.errors] == [
         {"value": {"TV": 1}, "dataset": "tv", "row": 1, "SEQ": 2},
         {"value": {"TV": 3}, "dataset": "tv", "row": 2, "SEQ": 4},
         {"value": {"TV": 5}, "dataset": "tv", "row": 3, "SEQ": 6},
@@ -161,7 +161,7 @@ def test_json_serializable_value(data):
     targets = set(dummy_rule["output_variables"])
     result = action.generate_targeted_error_object(targets, df, "TVSEQ greater than 2")
     # Ensure json dumps does not throw an error
-    json.dumps(result.to_representation())
+    json.dumps(result.as_dict())
 
 
 def test_nan_handling_in_error_object():
@@ -222,7 +222,7 @@ def test_nan_handling_in_error_object():
     all_results = action.generate_targeted_error_object(
         set(dummy_rule["output_variables"]), df, "Testing NaN handling"
     )
-    json_output = json.dumps(all_results.to_representation())
+    json_output = json.dumps(all_results.as_dict())
     assert (
         '"NAN_VAL": null' in json_output
     ), "Missing null value for NAN_VAL in JSON output"

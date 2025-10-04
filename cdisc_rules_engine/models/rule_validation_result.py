@@ -1,21 +1,37 @@
-from typing import List, Union
+from typing import List
+from dataclasses import dataclass
 
-from cdisc_rules_engine.interfaces import RepresentationInterface
 from cdisc_rules_engine.utilities.utils import get_execution_status
 from cdisc_rules_engine.models.rule import Rule
+from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 
 
-class RuleValidationResult(RepresentationInterface):
-    def __init__(self, rule: Rule, results: List[Union[dict, str]]):
-        self.id: str = rule.get("core_id")
-        self.cdisc_rule_id: str = self._get_rule_ids(rule, "CDISC")
-        self.fda_rule_id: str = self._get_rule_ids(rule, "FDA")
-        self.executability: str = rule.get("executability")
+@dataclass
+class RuleValidationResult:
+    id: str = None
+    cdisc_rule_id: str = None
+    fda_rule_id: str = None
+    executability: str = None
+    message: str = None
+    execution_status: ExecutionStatus = None
+    results: List[dict | str] = None
+
+    def __init__(self, rule: Rule, results: List[dict | str]):
+        self.id = rule.get("core_id")
+        self.cdisc_rule_id = self._get_rule_ids(rule, "CDISC")
+        self.fda_rule_id = self._get_rule_ids(rule, "FDA")
+        self.executability = rule.get("executability")
         actions = rule.get("actions")
-        self.message: str = None
+        self.message = None
         if actions and len(actions) == 1:
             self.message = actions[0].get("params", {}).get("message")
-        self.execution_status: str = get_execution_status(results)
+        status_value = get_execution_status(results)
+        # Find the ExecutionStatus enum by its string value
+        self.execution_status = ExecutionStatus.SUCCESS  # Default fallback
+        for status in ExecutionStatus:
+            if status.value == status_value:
+                self.execution_status = status
+                break
         self.results = results
 
     def _get_rule_ids(self, rule: Rule, org: str) -> str:
@@ -31,7 +47,7 @@ class RuleValidationResult(RepresentationInterface):
             )
         )
 
-    def to_representation(self) -> dict:
+    def as_dict(self) -> dict:
         return {
             "id": self.id,
             "executability": self.executability,

@@ -1,28 +1,21 @@
+from dataclasses import dataclass
 from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 from cdisc_rules_engine.enums.base_enum import BaseEnum
 from .base_validation_entity import BaseValidationEntity
 
 
+@dataclass
 class ValidationErrorEntity(BaseValidationEntity):
     """
     The entity describes an error that been flagged because
     a dataset violates a rule in a certain row.
     """
-
-    def __init__(
-        self,
-        value: dict,
-        dataset: str = None,
-        row: int = None,
-        usubjid: str = None,
-        sequence: int = None,
-    ):
-        self._dataset: str = dataset
-        self._row: int = row
-        self.value: dict = value
-        self._usubjid: str = usubjid
-        self._sequence: int = sequence
-        self.status: ExecutionStatus = ExecutionStatus.SUCCESS
+    value: dict
+    dataset: str | None = None
+    row: int | None = None
+    usubjid: str | None = None
+    sequence: int | None = None
+    status: ExecutionStatus = ExecutionStatus.SUCCESS
 
     def _format_values(self) -> dict:
         """
@@ -38,16 +31,16 @@ class ValidationErrorEntity(BaseValidationEntity):
                 data[key] = val
         return data
 
-    def to_representation(self) -> dict:
+    def as_dict(self) -> dict:
         representation: dict = {
             "value": self._format_values(),
         }
-        if self._dataset is not None:
-            representation["dataset"] = self._dataset
-        if self._row is not None:
-            representation["row"] = self._row
-        if self._usubjid:
-            representation["USUBJID"] = self._usubjid
-        if self._sequence:
-            representation["SEQ"] = self._sequence
+        if self.dataset is not None:
+            representation["dataset"] = self.dataset
+        if self.row is not None:
+            representation["row"] = self.row
+        if self.usubjid:
+            representation["USUBJID"] = self.usubjid
+        if self.sequence:
+            representation["SEQ"] = self.sequence
         return representation

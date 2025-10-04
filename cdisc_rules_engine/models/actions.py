@@ -61,7 +61,7 @@ class COREActions(BaseActions):
         error_object = self.generate_targeted_error_object(
             target_names, rows_with_error, message
         )
-        self.output_container.append(error_object.to_representation())
+        self.output_container.append(error_object.as_dict())
 
     @rule_action(params={"message": FIELD_TEXT})
     def generate_single_error(self, message):
@@ -193,19 +193,17 @@ class COREActions(BaseActions):
                 data, targets_not_in_dataset, all_targets_missing, errors_df
             )
         return ValidationErrorContainer(
-            **{
-                "domain": (
-                    f"SUPP{self.dataset_metadata.rdomain}"
-                    if self.dataset_metadata.is_supp
-                    else (self.dataset_metadata.domain or self.dataset_metadata.name)
-                ),
-                "dataset": ", ".join(
-                    sorted(set(error._dataset or "" for error in errors_list))
-                ),
-                "targets": sorted(targets),
-                "errors": errors_list,
-                "message": message.replace("--", self.dataset_metadata.domain or ""),
-            }
+            domain=(
+                f"SUPP{self.dataset_metadata.rdomain}"
+                if self.dataset_metadata.is_supp
+                else (self.dataset_metadata.domain or self.dataset_metadata.name)
+            ),
+            dataset=", ".join(
+                sorted(set(error.dataset or "" for error in errors_list))
+            ),
+            targets=sorted(targets),
+            errors=errors_list,
+            message=message.replace("--", self.dataset_metadata.domain or ""),
         )
 
     def _generate_errors_by_target_presence(

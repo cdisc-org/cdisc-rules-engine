@@ -1,8 +1,8 @@
 from abc import ABC
+from dataclasses import dataclass
+from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 
-from cdisc_rules_engine.interfaces import RepresentationInterface
 
-
-class BaseValidationEntity(RepresentationInterface, ABC):
-    def __init__(self):
-        self.status = None
+@dataclass
+class BaseValidationEntity(ABC):
+    status: ExecutionStatus | None = None
