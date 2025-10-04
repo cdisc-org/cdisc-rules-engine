@@ -17,6 +17,11 @@ class ValidationErrorContainer(BaseValidationEntity):
     message: str | None = None
     _status: ExecutionStatus | None = field(default=None, repr=False)
 
+    def __post_init__(self):
+        # If no explicit status was set, compute it from errors
+        if self._status is None:
+            self._status = ExecutionStatus(get_execution_status(self.errors))
+
     @property
     def status(self) -> ExecutionStatus:
         if self._status is not None:
