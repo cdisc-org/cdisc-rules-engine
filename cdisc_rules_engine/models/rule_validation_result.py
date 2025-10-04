@@ -25,7 +25,12 @@ class RuleValidationResult:
         self.message = None
         if actions and len(actions) == 1:
             self.message = actions[0].get("params", {}).get("message")
-        self.execution_status = get_execution_status(results)
+        status_value = get_execution_status(results)
+        # Find the ExecutionStatus enum by its string value
+        for status in ExecutionStatus:
+            if status.value == status_value:
+                self.execution_status = status
+                break
         self.results = results
 
     def _get_rule_ids(self, rule: Rule, org: str) -> str:

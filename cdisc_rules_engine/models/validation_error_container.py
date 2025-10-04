@@ -20,18 +20,32 @@ class ValidationErrorContainer(BaseValidationEntity):
     def __post_init__(self):
         # If no explicit status was set, compute it from errors
         if self._status is None:
-            self._status = ExecutionStatus(get_execution_status(self.errors))
+            status_value = get_execution_status(self.errors)
+            # Find the ExecutionStatus enum by its string value
+            for status in ExecutionStatus:
+                if status.value == status_value:
+                    self._status = status
+                    break
 
     @property
     def status(self) -> ExecutionStatus:
         if self._status is not None:
             return self._status
-        return ExecutionStatus(get_execution_status(self.errors))
+        status_value = get_execution_status(self.errors)
+        # Find the ExecutionStatus enum by its string value
+        for status in ExecutionStatus:
+            if status.value == status_value:
+                return status
+        return ExecutionStatus.SUCCESS  # fallback
 
     @status.setter
     def status(self, value: ExecutionStatus | str):
         if isinstance(value, str):
-            self._status = ExecutionStatus(value)
+            # Find the ExecutionStatus enum by its string value
+            for status in ExecutionStatus:
+                if status.value == value:
+                    self._status = status
+                    break
         else:
             self._status = value
 
