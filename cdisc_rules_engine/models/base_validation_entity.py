@@ -1,8 +1,8 @@
 from abc import ABC
 from dataclasses import dataclass
-from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 
 
 @dataclass
 class BaseValidationEntity(ABC):
-    status: ExecutionStatus | None = None
+    # Remove the default to fix field ordering issues in subclasses
+    pass
