@@ -23,10 +23,11 @@ class ValidationErrorContainer(BaseValidationEntity):
             status_value = get_execution_status(self.errors)
             # Find the ExecutionStatus enum by its string value
             self._status = ExecutionStatus.SUCCESS  # Default fallback
-            for status in ExecutionStatus:
-                if status.value == status_value:
-                    self._status = status
-                    break
+            if status_value:  # Add None check for safety
+                for status in ExecutionStatus:
+                    if status.value == status_value:
+                        self._status = status
+                        break
 
     @property
     def status(self) -> ExecutionStatus:
@@ -35,10 +36,11 @@ class ValidationErrorContainer(BaseValidationEntity):
         status_value = get_execution_status(self.errors)
         # Find the ExecutionStatus enum by its string value
         result = ExecutionStatus.SUCCESS  # Default fallback
-        for status in ExecutionStatus:
-            if status.value == status_value:
-                result = status
-                break
+        if status_value:  # Add None check for safety
+            for status in ExecutionStatus:
+                if status.value == status_value:
+                    result = status
+                    break
         return result
 
     @status.setter
@@ -46,10 +48,11 @@ class ValidationErrorContainer(BaseValidationEntity):
         if isinstance(value, str):
             # Find the ExecutionStatus enum by its string value
             self._status = ExecutionStatus.SUCCESS  # Default fallback
-            for status in ExecutionStatus:
-                if status.value == value:
-                    self._status = status
-                    break
+            if value:  # Add None/empty string check for safety
+                for status in ExecutionStatus:
+                    if status.value == value:
+                        self._status = status
+                        break
         else:
             self._status = value
 

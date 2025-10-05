@@ -28,10 +28,11 @@ class RuleValidationResult:
         status_value = get_execution_status(results)
         # Find the ExecutionStatus enum by its string value
         self.execution_status = ExecutionStatus.SUCCESS  # Default fallback
-        for status in ExecutionStatus:
-            if status.value == status_value:
-                self.execution_status = status
-                break
+        if status_value:  # Add None check for safety
+            for status in ExecutionStatus:
+                if status.value == status_value:
+                    self.execution_status = status
+                    break
         self.results = results
 
     def _get_rule_ids(self, rule: Rule, org: str) -> str:
