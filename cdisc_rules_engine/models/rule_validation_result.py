@@ -8,13 +8,13 @@ from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 
 @dataclass
 class RuleValidationResult:
-    id: str = None
-    cdisc_rule_id: str = None
-    fda_rule_id: str = None
-    executability: str = None
-    message: str = None
-    execution_status: ExecutionStatus = None
-    results: List[dict | str] = None
+    id: str | None = None
+    cdisc_rule_id: str | None = None
+    fda_rule_id: str | None = None
+    executability: str | None = None
+    message: str | None = None
+    execution_status: ExecutionStatus | None = None
+    results: List[dict | str] | None = None
 
     def __init__(self, rule: Rule, results: List[dict | str]):
         self.id = rule.get("core_id")
