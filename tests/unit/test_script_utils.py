@@ -66,7 +66,11 @@ def test_load_specified_rules_exclude(standard_context):
 
 def test_load_rules_from_local_include(monkeypatch, standard_context):
     standard, version, substandard, _ = standard_context
-    rule_paths = ["/rules/CORE.Local.0001.yml", "/rules/CORE.Local.0002.yml", "/rules/CORE.Local.0003.yml"]
+    rule_paths = [
+        "/rules/CORE.Local.0001.yml",
+        "/rules/CORE.Local.0002.yml",
+        "/rules/CORE.Local.0003.yml",
+    ]
 
     args = SimpleNamespace(
         local_rules=("/rules",),
@@ -102,8 +106,15 @@ def test_load_rules_from_local_include(monkeypatch, standard_context):
     }
 
     monkeypatch.setattr(script_utils.os.path, "isdir", lambda path: True)
-    monkeypatch.setattr(script_utils.os, "listdir",
-                        lambda path: ["CORE.Local.0001.yml", "CORE.Local.0002.yml", "CORE.Local.0003.yml"])
+    monkeypatch.setattr(
+        script_utils.os,
+        "listdir",
+        lambda path: [
+            "CORE.Local.0001.yml",
+            "CORE.Local.0002.yml",
+            "CORE.Local.0003.yml",
+        ],
+    )
     monkeypatch.setattr(
         script_utils,
         "load_and_parse_rule",
@@ -118,7 +129,11 @@ def test_load_rules_from_local_include(monkeypatch, standard_context):
 
 def test_load_rules_from_local_exclude(monkeypatch, standard_context):
     standard, version, substandard, _ = standard_context
-    rule_paths = ["/rules/CORE.Local.0001.yml", "/rules/CORE.Local.0002.yml", "/rules/CORE.Local.0003.yml"]
+    rule_paths = [
+        "/rules/CORE.Local.0001.yml",
+        "/rules/CORE.Local.0002.yml",
+        "/rules/CORE.Local.0003.yml",
+    ]
 
     args = SimpleNamespace(
         local_rules=("/rules",),
@@ -154,8 +169,15 @@ def test_load_rules_from_local_exclude(monkeypatch, standard_context):
     }
 
     monkeypatch.setattr(script_utils.os.path, "isdir", lambda path: True)
-    monkeypatch.setattr(script_utils.os, "listdir",
-                        lambda path: ["CORE.Local.0001.yml", "CORE.Local.0002.yml", "CORE.Local.0003.yml"])
+    monkeypatch.setattr(
+        script_utils.os,
+        "listdir",
+        lambda path: [
+            "CORE.Local.0001.yml",
+            "CORE.Local.0002.yml",
+            "CORE.Local.0003.yml",
+        ],
+    )
     monkeypatch.setattr(
         script_utils,
         "load_and_parse_rule",

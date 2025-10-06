@@ -245,7 +245,13 @@ def load_custom_rules(custom_data, cdisc_data, standard, version, rules, standar
 
 
 def load_specified_rules(
-    rules_data, rule_ids, excluded_rule_ids, standard, version, standard_dict, substandard
+    rules_data,
+    rule_ids,
+    excluded_rule_ids,
+    standard,
+    version,
+    standard_dict,
+    substandard,
 ):
     key = get_rules_cache_key(standard, version, substandard)
     standard_rules = standard_dict.get(key, {})
@@ -253,7 +259,9 @@ def load_specified_rules(
 
     # Determine valid rules based on inclusion and exclusion lists
     for rule in standard_rules:
-        if (rule_ids and rule in rule_ids) or (excluded_rule_ids and rule not in excluded_rule_ids):
+        if (rule_ids and rule in rule_ids) or (
+            excluded_rule_ids and rule not in excluded_rule_ids
+        ):
             valid_rule_ids.add(rule)
     # Check that all specified rules are valid
     if rule_ids:
@@ -479,9 +487,8 @@ def process_rule(rule, args, rule_data, rules, keys, excluded_keys):
                 f"version '{args.version}'{substandard_msg}. Skipping..."
             )
             return
-        if (
-            (keys is None or rule_identifier in keys)
-            and (excluded_keys is None or rule_identifier not in excluded_keys)
+        if (keys is None or rule_identifier in keys) and (
+            excluded_keys is None or rule_identifier not in excluded_keys
         ):
             rule_data[rule_identifier] = rule
             rules.append(rule)
