@@ -60,6 +60,9 @@ def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:  # noqa
                 "Cannot provide multiple controlled terminology packages with Define-XML2.0 submission"
             )
     standards_file = os.path.join(args.cache, "standards_details.pkl")
+    standard_schema_file = os.path.join(
+        args.cache, f"{args.standard}-{args.version}-schema.pkl"
+    )
     models_file = os.path.join(args.cache, "standards_models.pkl")
     variables_codelist_file = os.path.join(args.cache, "variable_codelist_maps.pkl")
     variables_metadata_file = os.path.join(args.cache, "variables_metadata.pkl")
@@ -77,6 +80,12 @@ def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:  # noqa
             model_details = data.get(model_cache_key, {})
     else:
         model_details = {}
+
+    if os.path.exists(standard_schema_file):
+        with open(standard_schema_file, "rb") as f:
+            standard_schema_definition = pickle.load(f)
+    else:
+        standard_schema_definition = {}
 
     with open(variables_codelist_file, "rb") as f:
         data = pickle.load(f)
@@ -132,6 +141,7 @@ def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:  # noqa
         ct_package_data["extensible"] = extensible_terms
     return LibraryMetadataContainer(
         standard_metadata=standard_metadata,
+        standard_schema_definition=standard_schema_definition,
         model_metadata=model_details,
         variable_codelist_map=variable_codelist_maps,
         variables_metadata=variables_metadata,
