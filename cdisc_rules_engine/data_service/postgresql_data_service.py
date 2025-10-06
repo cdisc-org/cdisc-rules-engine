@@ -7,6 +7,7 @@ from cdisc_rules_engine.data_service.loading.load_datasets import SqlDatasetLoad
 from cdisc_rules_engine.data_service.loading.load_test_datasets import (
     SqlTestDatasetLoader,
 )
+from cdisc_rules_engine.data_service.merges.child import SqlChildMerge
 from cdisc_rules_engine.data_service.merges.join import SqlJoinMerge
 from cdisc_rules_engine.data_service.merges.relationship import SqlRelationshipMerge
 from cdisc_rules_engine.data_service.merges.relrec import SqlRelrecMerge
@@ -164,7 +165,25 @@ class PostgresQLDataService:
             is_child = bool(merge_spec.get("child"))
 
             if is_child:
-                raise NotImplementedError("Child merges are not supported yet in SQL implementation")
+                # Gate: Only merge if domain_name matches current dataset
+                domain_name = merge_spec.get("domain_name")
+
+                is_supp_merge = (
+                    (domain_name[:4] == "SUPP" or domain_name[:4] == "SQAP")
+                    and dataset_metadata.is_supp
+                    and dataset_metadata.rdomain
+                    and (domain_name == "SUPP--" or domain_name == dataset_metadata.dataset_name)
+                )
+
+                domain_matches = domain_name == dataset_metadata.domain or domain_name == dataset_metadata.dataset_name
+
+                if is_supp_merge or domain_matches:
+                    left_id = self._do_child_merge(
+                        child=left_id,
+                        dataset_metadata=dataset_metadata,
+                        merge_spec=merge_spec,
+                        rule=rule,
+                    )
             elif right == "relrec":
                 left_id = self._do_relrec_merge(
                     original=left_id,
@@ -305,3 +324,19 @@ class PostgresQLDataService:
             relationship_columns=relationship_columns,
             match_keys=match_keys,
         ).name
+
+    def _do_child_merge(self, child: str, dataset_metadata: SQLDatasetMetadata, merge_spec: dict, rule: dict) -> str:
+        """
+        Perform child merge: Find parent dataset and LEFT JOIN child with parent.
+
+        Child dataset is on the left, parent on the right.
+        Uses SqlChildMerge for the operation.
+        """
+        result_schema = SqlChildMerge.perform_merge(
+            pgi=self.pgi,
+            child=self.pgi.schema.get_table(child),
+            child_domain=dataset_metadata.domain,
+            datasets=self.datasets,
+            merge_spec=merge_spec,
+        )
+        return result_schema.name

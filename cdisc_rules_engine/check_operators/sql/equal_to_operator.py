@@ -33,6 +33,11 @@ class EqualToOperator(BaseSqlOperator):
             comparator = self.replace_prefix(comparator)
 
         if value_is_reference:
+            if not self._exists(target):
+                raise KeyError(f"Target column '{target}' not found in dataset")
+            if not self._exists(comparator):
+                raise KeyError(f"Comparator column '{comparator}' not found in dataset")
+
             return self._check_equality_reference(
                 target,
                 comparator,
@@ -110,51 +115,47 @@ class EqualToOperator(BaseSqlOperator):
         columns that could be referenced (the DISTINCT values of the pivot column),
         and then generating a CASE statement that checks each of those values.
         """
-        column = original_target
+        target_col = self._column_sql(original_target, lowercase=case_insensitive, alias=True)
+        pivot_col = self._column_sql(pivot_column, alias=False)
+
+        if type_insensitive:
+            target_col = f"""CAST({target_col} AS TEXT)"""
 
         # Find all of the values of the pivot column -> all columns to compare against
-        self.sql_data_service.pgi.execute_sql(f"SELECT DISTINCT {pivot_column} col FROM {self.table_id};")
+        self.sql_data_service.pgi.execute_sql(f"SELECT DISTINCT {pivot_col} col FROM {self._table_sql()};")
         comparison_values = self.sql_data_service.pgi.fetch_all()
         comparison_values = [item["col"].lower() for item in comparison_values]
         comparison_values = filter(self._exists, comparison_values)
 
-        if case_insensitive:
-            column = f"""LOWER({column})"""
-
-        if type_insensitive:
-            column = f"""CAST({column} AS TEXT)"""
-
         # This builds up the case statement for a simple column comparison
         def single_comparison_sql(original_c):
-            c = original_c
-            if case_insensitive:
-                c = f"""LOWER({c})"""
+            c = self._column_sql(original_c, lowercase=case_insensitive, alias=True)
 
             if type_insensitive:
                 c = f"""CAST({c} AS TEXT)"""
 
             if invert:
                 return f"""CASE
-                        WHEN {original_target} IS NULL OR {column} = ''
-                            THEN {original_c} IS NULL OR {c} = ''
-                        WHEN {original_c} IS NULL OR {c} = ''
+                        WHEN {self._is_empty_sql(original_target)}
+                            THEN {self._is_empty_sql(original_c)}
+                        WHEN {self._is_empty_sql(original_c)}
                             THEN TRUE
-                        ELSE {column} != {c}
+                        ELSE {target_col} != {c}
                     END"""
             else:
                 return f"""CASE
-                        WHEN {original_target} IS NULL OR {column} = ''
+                        WHEN {self._is_empty_sql(original_target)}
                             THEN FALSE
-                        WHEN {original_c} IS NULL OR {c} = ''
+                        WHEN {self._is_empty_sql(original_c)}
                             THEN FALSE
-                        ELSE {column} = {c}
+                        ELSE {target_col} = {c}
                     END"""
 
         def sql():
             sql = "CASE "
             # Build a CASE statement for each possible column
             for c in comparison_values:
-                sql += f"WHEN LOWER({pivot_column}) = '{c.lower()}' THEN ({single_comparison_sql(c)}) "
+                sql += f"WHEN LOWER({pivot_col}) = '{c.lower()}' THEN ({single_comparison_sql(c)}) "
             sql += "ELSE FALSE END"
             return sql
 
