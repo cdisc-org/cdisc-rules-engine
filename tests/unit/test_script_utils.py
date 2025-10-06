@@ -24,7 +24,6 @@ def test_load_specified_rules_include(standard_context):
         "CORE-0003": {"core_id": "CORE-0003"},
     }
     standard_dict = {key: {rule_id: {} for rule_id in rules_data.keys()}}
-    print(standard_dict)
 
     result = load_specified_rules(
         rules_data,
@@ -36,7 +35,6 @@ def test_load_specified_rules_include(standard_context):
         substandard,
     )
 
-    print(result)
     returned_ids = {rule["core_id"] for rule in result}
     assert returned_ids == {"CORE-0001", "CORE-0003"}
 
