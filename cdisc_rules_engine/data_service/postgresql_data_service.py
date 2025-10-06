@@ -8,6 +8,7 @@ from cdisc_rules_engine.data_service.loading.load_test_datasets import (
     SqlTestDatasetLoader,
 )
 from cdisc_rules_engine.data_service.merges.join import SqlJoinMerge
+from cdisc_rules_engine.data_service.merges.relationship import SqlRelationshipMerge
 from cdisc_rules_engine.data_service.merges.relrec import SqlRelrecMerge
 from cdisc_rules_engine.data_service.merges.supp import SqlSuppMerge
 from cdisc_rules_engine.data_service.sql_interface import PostgresQLInterface
@@ -159,14 +160,11 @@ class PostgresQLDataService:
 
         for merge_spec in datasets:
             right: str = merge_spec.get("domain_name").lower()
-            # TODO: The spec -> rule conversion doesn't maintain the `is_relationship` boolean
-            # so we have to infer it here for now.
             is_relationship = merge_spec.get("relationship_columns", None) is not None
             is_child = bool(merge_spec.get("child"))
 
-            # TODO: This only handles simple joins for now
-            if right in ("relsub", "co", "sq") or is_relationship:
-                raise NotImplementedError("Joins with relationship domains are not supported yet")
+            if is_child:
+                raise NotImplementedError("Child merges are not supported yet in SQL implementation")
             elif right == "relrec":
                 left_id = self._do_relrec_merge(
                     original=left_id,
@@ -175,9 +173,17 @@ class PostgresQLDataService:
                     merge_spec=merge_spec,
                     rule=rule,
                 )
-            elif right.startswith("supp") and not is_child:
+            elif right == "supp--":
                 left_id = self._do_supp_merge(
                     original=left_id, target=right, dataset_metadata=dataset_metadata, merge_spec=merge_spec, rule=rule
+                )
+            elif is_relationship:
+                left_id = self._do_relationship_merge(
+                    original=left_id,
+                    relationship_dataset=right,
+                    dataset_metadata=dataset_metadata,
+                    merge_spec=merge_spec,
+                    rule=rule,
                 )
             else:
                 left_id = self._do_join_merge(left=left_id, right=right, merge_spec=merge_spec, rule=rule)
@@ -245,7 +251,7 @@ class PostgresQLDataService:
             (
                 dataset
                 for dataset in self.datasets
-                if dataset.name.upper() == "RELREC" or dataset.domain.upper() == "RELREC"
+                if dataset.name.upper() == "RELREC" or (dataset.domain and dataset.domain.upper() == "RELREC")
             ),
             None,
         )
@@ -260,4 +266,42 @@ class PostgresQLDataService:
             relrec=self.pgi.schema.get_table(relrec_data.name),
             domain=dataset_metadata.domain,
             wildcard=wildcard,
+        ).name
+
+    def _do_relationship_merge(
+        self,
+        original: str,
+        relationship_dataset: str,
+        dataset_metadata: SQLDatasetMetadata,
+        merge_spec: dict,
+        rule: dict,
+    ) -> str:
+        """
+        Perform a relationship merge operation on the datasets.
+
+        This handles relationship datasets like RELSUB, CO, SQ, or any dataset with relationship_columns.
+        """
+        # Find the relationship dataset
+        relationship_data = next(
+            (
+                dataset
+                for dataset in self.datasets
+                if dataset.name.upper() == relationship_dataset.upper()
+                or (dataset.domain and dataset.domain.upper() == relationship_dataset.upper())
+            ),
+            None,
+        )
+        if not relationship_data:
+            raise ValueError(f"Tried to relationship merge with {relationship_dataset}, but could not find dataset.")
+
+        relationship_columns = merge_spec.get("relationship_columns", {})
+        match_keys = merge_spec.get("match_key", {})
+
+        return SqlRelationshipMerge.perform_join(
+            pgi=self.pgi,
+            original=self.pgi.schema.get_table(original),
+            relationship_dataset=self.pgi.schema.get_table(relationship_data.name),
+            domain=relationship_dataset.upper(),
+            relationship_columns=relationship_columns,
+            match_keys=match_keys,
         ).name
