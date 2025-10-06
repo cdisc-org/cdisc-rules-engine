@@ -259,8 +259,8 @@ def load_specified_rules(
 
     # Determine valid rules based on inclusion and exclusion lists
     for rule in standard_rules:
-        if (rule_ids and rule in rule_ids) or (
-            excluded_rule_ids and rule not in excluded_rule_ids
+        if (rule_ids is None or rule in rule_ids) and (
+            excluded_rule_ids is None or rule not in excluded_rule_ids
         ):
             valid_rule_ids.add(rule)
     # Check that all specified rules are valid
