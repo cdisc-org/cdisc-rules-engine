@@ -208,7 +208,6 @@ def cli():
     "-vx",
     "--validate-xml",
     is_flag=True,
-    default=True,
     help="This flag enables XML validation against a Define-XML schema.",
 )
 @click.pass_context
