@@ -1,4 +1,5 @@
 from typing import Any, Literal, Tuple, Union
+from collections import OrderedDict
 
 from cdisc_rules_engine.data_service.util import generate_hash
 from cdisc_rules_engine.models.sql.column_schema import SqlColumnSchema
@@ -10,7 +11,7 @@ class SqlTableSchema:
     def __init__(self, name: str, hash: str, source: Literal["data", "derived", "static"]):
         self.name = name
         self.hash = hash
-        self._columns: dict[str, SqlColumnSchema] = {}
+        self._columns: OrderedDict[str, SqlColumnSchema] = OrderedDict()
         self.source = source
 
         id_column = SqlColumnSchema(name="id", hash="id", type="Num")
@@ -34,6 +35,7 @@ class SqlTableSchema:
         return None
 
     def get_columns(self) -> list[Tuple[str, SqlColumnSchema]]:
+        """Return columns in insertion order."""
         return list(self._columns.items())
 
     @classmethod

@@ -12,6 +12,7 @@ from cdisc_rules_engine.sql_operations.numeric_operation import (
 from cdisc_rules_engine.sql_operations.date_operation import SqlDateOperation
 from cdisc_rules_engine.sql_operations.sql_base_operation import SqlBaseOperation
 from cdisc_rules_engine.sql_operations.variable_exists import SqlVariableExistsOperation
+from cdisc_rules_engine.sql_operations.dataset_column_order import SqlDatasetColumnOrderOperation
 from cdisc_rules_engine.models.library_metadata_container import LibraryMetadataContainer
 
 
@@ -24,7 +25,7 @@ class SqlOperationsFactory:
         "distinct": SqlDistinctOperation,
         "dy": SqlDayDataValidatorOperation,
         "extract_metadata": None,
-        "get_column_order_from_dataset": None,
+        "get_column_order_from_dataset": SqlDatasetColumnOrderOperation,
         "get_column_order_from_library": None,
         "get_codelist_attributes": None,
         "get_model_column_order": None,
@@ -49,7 +50,7 @@ class SqlOperationsFactory:
         "variable_count": None,
         "variable_is_null": None,
         "domain_is_custom": None,
-        "domain_label": lambda params, ds: SqlDomainLabelOperation(params, ds),
+        "domain_label": SqlDomainLabelOperation,
         "required_variables": None,
         "expected_variables": None,
         "permissible_variables": None,
