@@ -45,7 +45,7 @@ class ExcelReport(BaseReport):
         )
         self._item_type = "list"
         max_rows_options = []
-        env_max_rows = os.getenv("MAX_ROWS_PER_SHEET")
+        env_max_rows = os.getenv("MAX_REPORT_ROWS")
         if env_max_rows:
             max_rows_options.append(int(env_max_rows))
         if args.max_report_rows is not None:
@@ -163,10 +163,14 @@ class ExcelReport(BaseReport):
         workbooks = []
         detailed_chunks = self._chunk_data(detailed_data, self.max_rows_per_sheet)
         summary_chunks = self._chunk_data(summary_data, self.max_rows_per_sheet)
+        summary_needs_split = len(summary_chunks) > 1
         num_files = max(len(detailed_chunks), len(summary_chunks))
         for i in range(num_files):
             wb = excel_open_workbook(template_buffer)
-            summary_chunk = summary_chunks[i] if i < len(summary_chunks) else []
+            if summary_needs_split:
+                summary_chunk = summary_chunks[i] if i < len(summary_chunks) else []
+            else:
+                summary_chunk = summary_data
             detailed_chunk = detailed_chunks[i] if i < len(detailed_chunks) else []
             excel_update_worksheet(
                 wb["Issue Summary"], summary_chunk, dict(wrap_text=True)
