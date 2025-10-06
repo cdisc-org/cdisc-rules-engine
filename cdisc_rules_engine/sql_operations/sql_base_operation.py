@@ -21,6 +21,7 @@ from cdisc_rules_engine.exceptions.custom_exceptions import (
 )
 from cdisc_rules_engine.models.sql_operation_params import SqlOperationParams
 from cdisc_rules_engine.models.sql_operation_result import SqlOperationResult
+from cdisc_rules_engine.models.library_metadata_container import LibraryMetadataContainer
 from cdisc_rules_engine.services import logger
 
 
@@ -34,9 +35,15 @@ class SqlOperationError(Exception):
 
 
 class SqlBaseOperation:
-    def __init__(self, params: SqlOperationParams, data_service: PostgresQLDataService):
+    def __init__(
+        self, params: SqlOperationParams, data_service: PostgresQLDataService, library_metadata=LibraryMetadataContainer
+    ):
+        """
+        Initialize the SQL base operation.
+        """
         self.params = params
         self.data_service = data_service
+        self.library_metadata = library_metadata
 
     @abstractmethod
     def _execute_operation(self):

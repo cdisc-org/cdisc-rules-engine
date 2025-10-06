@@ -289,7 +289,8 @@ def process_test_case_dataset(
         # Execute rule in SQL engine
         ds = PostgresQLDataService.from_list_of_testdatasets(data_test_datasets, standard=ig_specs)
         regression_errors["datasets_import_sql"] = "SUCCESS"
-        sql_results = sql_run_single_rule_validation(data_service=ds, rule=rule)
+        metadata = get_metadata(ig_specs, define_xml_file_path)
+        sql_results = sql_run_single_rule_validation(data_service=ds, rule=rule, library_metadata=metadata)
         regression_errors["results_present_sql"] = True
         sql_regression = extract_results_regression(sql_results)
         regression_errors["results_sql"] = sql_regression

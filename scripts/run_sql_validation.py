@@ -187,5 +187,9 @@ def sql_run_validation(args: Validation_args):
 
 # TODO: fix this one first
 # this is the tests entrypoint, CLI enters above where only the args are passed in
-def sql_run_single_rule_validation(data_service: PostgresQLDataService, rule: dict) -> dict:
-    return SQLRulesEngine(data_service=data_service).sql_validate_single_rule(SQLRule.from_cdisc_metadata(rule))
+def sql_run_single_rule_validation(
+    data_service: PostgresQLDataService, rule: dict, library_metadata: LibraryMetadataContainer
+) -> dict:
+    return SQLRulesEngine(data_service=data_service, library_metadata=library_metadata).sql_validate_single_rule(
+        SQLRule.from_cdisc_metadata(rule)
+    )

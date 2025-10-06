@@ -12,6 +12,7 @@ from cdisc_rules_engine.sql_operations.numeric_operation import (
 from cdisc_rules_engine.sql_operations.date_operation import SqlDateOperation
 from cdisc_rules_engine.sql_operations.sql_base_operation import SqlBaseOperation
 from cdisc_rules_engine.sql_operations.variable_exists import SqlVariableExistsOperation
+from cdisc_rules_engine.models.library_metadata_container import LibraryMetadataContainer
 
 
 class SqlOperationsFactory:
@@ -70,12 +71,19 @@ class SqlOperationsFactory:
         name: str,
         params: SqlOperationParams,
         data_service: PostgresQLDataService,
+        library_metadata=LibraryMetadataContainer,
     ) -> SqlBaseOperation:
         if name in cls._operations_map:
             operation = cls._operations_map.get(name)
             if operation is None:
                 raise NotImplementedError(f"Operation {name} is not implemented")
-            return operation(params, data_service)
+
+            # Check if operation is a lambda function (doesn't need library_metadata)
+            # TODO - improve this check if needed
+            if callable(operation) and hasattr(operation, "__name__") and operation.__name__ == "<lambda>":
+                return operation(params, data_service)
+            else:
+                return operation(params, data_service, library_metadata=library_metadata)
 
         raise ValueError(
             f"Operation name must be in  {list(cls._operations_map.keys())}, " f"given operation name is {name}"

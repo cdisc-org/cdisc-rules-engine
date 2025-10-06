@@ -360,7 +360,9 @@ class SQLRuleProcessor:
                 filter=operation.get("filter"),
             )
 
-            operation = SqlOperationsFactory.get_service(rule_name, params=params, data_service=data_service)
+            operation = SqlOperationsFactory.get_service(
+                rule_name, params=params, data_service=data_service, library_metadata=self.library_metadata
+            )
             query = operation.execute()
             output_variables[output_variable] = query
 

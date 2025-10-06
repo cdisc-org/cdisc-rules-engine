@@ -8,6 +8,7 @@ from business_rules.engine import run
 from psycopg2.errors import ProgrammingError
 
 from cdisc_rules_engine.check_operators.sql.base_sql_operator import SqlOperatorError
+from cdisc_rules_engine.models.library_metadata_container import LibraryMetadataContainer
 from cdisc_rules_engine.sql_operations.sql_base_operation import SqlOperationError
 from cdisc_rules_engine.data_service.postgresql_data_service import (
     PostgresQLDataService,
@@ -54,9 +55,10 @@ def clean_postgres_message(message: str) -> str:
 
 
 class SQLRulesEngine:
-    def __init__(self, data_service: PostgresQLDataService):
-        self.rule_processor = SQLRuleProcessor()
+    def __init__(self, data_service: PostgresQLDataService, library_metadata: LibraryMetadataContainer):
+        self.rule_processor = SQLRuleProcessor(library_metadata=library_metadata)
         self.data_service = data_service
+        self.library_metadata = library_metadata
 
     def get_schema(self):
         return export_rule_data(SqlVenmoObject, SqlVenmoResultHandler)
