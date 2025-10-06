@@ -245,18 +245,29 @@ def load_custom_rules(custom_data, cdisc_data, standard, version, rules, standar
 
 
 def load_specified_rules(
-    rules_data, rule_ids, standard, version, standard_dict, substandard
+    rules_data, rule_ids, excluded_rule_ids, standard, version, standard_dict, substandard
 ):
     key = get_rules_cache_key(standard, version, substandard)
     standard_rules = standard_dict.get(key, {})
     valid_rule_ids = set()
-    for rule in rule_ids:
-        if rule in standard_rules:
+
+    # Determine valid rules based on inclusion and exclusion lists
+    for rule in standard_rules:
+        if (rule_ids and rule in rule_ids) or (excluded_rule_ids and rule not in excluded_rule_ids):
             valid_rule_ids.add(rule)
-        else:
-            raise ValueError(
-                f"The rule specified '{rule}' is not in the standard {standard} and version {version}"
-            )
+    # Check that all specified rules are valid
+    if rule_ids:
+        for rule in rule_ids:
+            if rule not in standard_rules:
+                raise ValueError(
+                    f"The rule specified to include '{rule}' is not in the standard {standard} and version {version}"
+                )
+    else:
+        for rule in excluded_rule_ids:
+            if rule not in standard_rules:
+                raise ValueError(
+                    f"The rule specified to exclude '{rule}' is not in the standard {standard} and version {version}"
+                )
     rules = []
     for rule_id in valid_rule_ids:
         rule_data = rules_data.get(rule_id)
@@ -329,10 +340,11 @@ def load_rules_from_cache(args) -> List[dict]:
             args.rules,
             standard_dict,
         )
-    elif args.rules:
+    elif args.rules or args.exclude_rules:
         return load_specified_rules(
             rules_data,
             args.rules,
+            args.exclude_rules,
             args.standard,
             args.version.replace(".", "-"),
             standard_dict,
@@ -365,17 +377,25 @@ def load_rules_from_local(args) -> List[dict]:
             get_rules_cache_key(args.standard, args.version.replace(".", "-"), rule)
             for rule in args.rules
         )
+        excluded_keys = None
+    elif args.exclude_rules:
+        excluded_keys = set(
+            get_rules_cache_key(args.standard, args.version.replace(".", "-"), rule)
+            for rule in args.exclude_rules
+        )
+        keys = None
     else:
         engine_logger.info(
-            "No rules specified with -r rules flag. "
+            "No rules specified with -r or -er rules flags. "
             "Validating with rules in local directory"
         )
+        excluded_keys = None
         keys = None
 
     for rule_file in rule_files:
         rule = load_and_parse_rule(rule_file)
         if rule:
-            process_rule(rule, args, rule_data, rules, keys)
+            process_rule(rule, args, rule_data, rules, keys, excluded_keys)
 
     missing_keys = set()
     if keys:
@@ -428,7 +448,7 @@ def rule_matches_standard_version(rule, standard, version, substandard=None):
     return False
 
 
-def process_rule(rule, args, rule_data, rules, keys):
+def process_rule(rule, args, rule_data, rules, keys, excluded_keys):
     """Process a rule and add it to the rules list if applicable."""
     core_id = rule.get("core_id")
     if not core_id:
@@ -440,7 +460,11 @@ def process_rule(rule, args, rule_data, rules, keys):
     if rule_identifier in rule_data:
         engine_logger.error(f"Duplicate rule {core_id} in local directory. Skipping...")
         return
-    if rule.get("status", "").lower() == "draft":
+    if (
+        rule.get("status", "").lower() == "draft"
+        and (keys is None or rule_identifier in keys)
+        and (excluded_keys is None or rule_identifier not in excluded_keys)
+    ):
         rule_data[rule_identifier] = rule
         rules.append(rule)
     elif rule.get("status", None).lower() == "published":
@@ -455,13 +479,16 @@ def process_rule(rule, args, rule_data, rules, keys):
                 f"version '{args.version}'{substandard_msg}. Skipping..."
             )
             return
-        if keys is None or rule_identifier in keys:
+        if (
+            (keys is None or rule_identifier in keys)
+            and (excluded_keys is None or rule_identifier not in excluded_keys)
+        ):
             rule_data[rule_identifier] = rule
             rules.append(rule)
         else:
             engine_logger.info(
                 f"Rule {core_id} not specified with "
-                "-r rule flag and in local directory. Skipping..."
+                "-r rule flag or excluded with -er rule flag and in local directory. Skipping..."
             )
 
 

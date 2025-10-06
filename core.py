@@ -171,6 +171,12 @@ def cli():
     help="Specify rule core ID ex. CORE-000001. Can be specified multiple times",
 )
 @click.option(
+    "--exclude-rules",
+    "-er",
+    multiple=True,
+    help="Specify rule core ID to exclude, ex. CORE-000001. Can be specified multiple times",
+)
+@click.option(
     "--local-rules",
     "-lr",
     required=False,
@@ -202,6 +208,7 @@ def cli():
     "-vx",
     "--validate-xml",
     is_flag=True,
+    default=True,
     help="This flag enables XML validation against a Define-XML schema.",
 )
 @click.pass_context
@@ -230,6 +237,7 @@ def validate(
     snomed_edition: str,
     snomed_url: str,
     rules: Tuple[str],
+    exclude_rules: Tuple[str],
     local_rules: str,
     custom_standard: bool,
     progress: str,
@@ -253,6 +261,12 @@ def validate(
                 "Flag --raw-report can be used only when --output-format is JSON"
             )
             ctx.exit()
+
+    if exclude_rules and rules:
+        logger.error(
+            "Cannot use both --rules and --exclude_rules flags together."
+        )
+        ctx.exit()
 
     cache_path: str = os.path.join(os.path.dirname(__file__), cache)
 
@@ -315,6 +329,7 @@ def validate(
             define_version,
             external_dictionaries,
             rules,
+            exclude_rules,
             local_rules,
             custom_standard,
             progress,
