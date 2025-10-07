@@ -4,18 +4,17 @@
 
 - Total rules without check operators: 297
 - Total unique operators found in rules: 58
-- Total implemented PostgreSQL operators: 82
-- Missing operators (in rules but not implemented): 2
+- Total implemented PostgreSQL operators: 83
+- Missing operators (in rules but not implemented): 1
 - Extra operators (implemented but not used in rules): 26
 
 ## ✅ Implementation Status
 
 ### ❌ Missing Operators (Need Implementation)
 
-| Operator                          | Status             |
-| --------------------------------- | ------------------ |
-| `inconsistent_enumerated_columns` | ❌ Not Implemented |
-| `is_not_valid_reference`          | ❌ Not Implemented |
+| Operator                 | Status             |
+| ------------------------ | ------------------ |
+| `is_not_valid_reference` | ❌ Not Implemented |
 
 ## 🔍 Unused Implemented Operators
 
