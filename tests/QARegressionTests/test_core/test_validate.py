@@ -234,7 +234,7 @@ class TestValidate(unittest.TestCase):
         exit_code, stdout, stderr = run_command(args, False)
         self.assertEqual(exit_code, 0)
         self.assertIn(
-            "cannot use both --rules and --exclude_rules flags together.", stderr
+            "cannot use both --rules and --exclude-rules flags together.", stderr
         )
 
     def test_validate_minimum_options(self):
