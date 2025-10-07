@@ -252,6 +252,8 @@ class SqlVenmoResultHandler(BaseActions):
             return self._evaluate_constant_variable(operation_result, row, schema)
         elif operation_result.type == "collection" and operation_result.params:
             return self._evaluate_parameterized_collection(operation_result, row, schema)
+        elif operation_result.type == "collection":
+            return self._execute_query_for_collection_values(operation_result)
         else:
             return "Unsupported operation variable type"
 
@@ -306,6 +308,19 @@ class SqlVenmoResultHandler(BaseActions):
             if result_rows and len(result_rows) > 0:
                 return result_rows[0].get("value")
             return None
+        except Exception as e:
+            return f"Query error: {str(e)}"
+
+    def _execute_query_for_collection_values(self, operation_result):
+        """Execute query and return all collection values as a list."""
+
+        query = operation_result.query
+        try:
+            self.data_service.pgi.execute_sql(query)
+            result_rows = self.data_service.pgi.fetch_all()
+            if result_rows:
+                return [row.get("value") for row in result_rows if row.get("value") is not None]
+            return []
         except Exception as e:
             return f"Query error: {str(e)}"
 

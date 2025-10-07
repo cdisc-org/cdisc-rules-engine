@@ -1,133 +1,157 @@
 import pytest
+import pandas as pd
 
 from .helpers import create_sql_operators
 
 SHARES_AT_LEAST_ONE_ELEMENT_TEST_DATA = [
     (
-        {"target": ["A", "B", "C", "D"], "comparator": ["A", "Y", "Z", "W"]},
-        {"target": "target", "comparator": "comparator"},
-        True,
+        {"dummy": ["value"]},
+        {"target": "$list", "comparator": "$list"},
+        [True],
     ),
     (
-        {"target": ["A", "B", "C", "D"], "comparator": ["X", "Y", "Z", "W"]},
-        {"target": "target", "comparator": "comparator"},
-        False,
+        {"col1": ["A", "B", "C"], "col2": ["B", "C", "D"]},
+        {"target": "col1", "comparator": "col2"},
+        [True, True, True],
     ),
     (
-        {"target": ["A", "A", "A"], "comparator": ["A", "A", "A"]},
-        {"target": "target", "comparator": "comparator"},
-        True,
+        {"col1": ["A", "B"], "col2": ["B", "C"]},
+        {"target": "col1", "comparator": "col2"},
+        [True, True],
     ),
     (
-        {"target": ["", "", "A"], "comparator": ["", "B", "C"]},
-        {"target": "target", "comparator": "comparator"},
-        False,
+        {"col1": ["A", "B", "C"], "col2": ["A", "B", "D"]},
+        {"target": "col1", "comparator": "col2"},
+        [True, True, True],
     ),
     (
-        {"target_col": ["A", "B", "C"]},
-        {"target": "target_col", "comparator": "$constant"},
-        True,
+        {"col1": ["A", "B"], "col2": ["A", "B"]},
+        {"target": "col1", "comparator": "col2"},
+        [True, True],
     ),
     (
-        {"target_col": ["A", "B", "C", "D"]},
-        {"target": "$list", "comparator": "target_col"},
-        True,
+        {"col1": ["A", "B", "C", "D"]},
+        {"target": "$list", "comparator": "col1"},
+        [True, True, True, True],
+    ),
+    (
+        {"col1": ["A", "C", "D"]},
+        {"target": "col1", "comparator": "$list"},
+        [True, True, True],
+    ),
+    (
+        {"col1": ["A", "", None, "B"], "col2": ["A", "C", "", "D"]},
+        {"target": "col1", "comparator": "col2"},
+        [True, True, True, True],
+    ),
+    (
+        {"col1": ["", None, "A"], "col2": ["", "A", "B"]},
+        {"target": "col1", "comparator": "col2"},
+        [True, True, True],
+    ),
+    # Simple vs Simple test cases
+    (
+        {"dummy": ["value"]},
+        {"target": "$constant", "comparator": "$constant"},
+        [True],
     ),
     (
         {"dummy": ["value"]},
-        {"target": "$list", "comparator": "$list"},
-        True,
+        {"target": "A", "comparator": "A"},
+        [True],
+    ),
+    (
+        {"dummy": ["value"]},
+        {"target": "$constant", "comparator": "$constant"},
+        [True],
     ),
 ]
 
 SHARES_EXACTLY_ONE_ELEMENT_TEST_DATA = [
     (
-        {"target": ["A", "B", "C", "D"], "comparator": ["A", "Y", "Z", "W"]},
-        {"target": "target", "comparator": "comparator"},
-        True,
+        {"dummy": ["value"]},
+        {"target": "$list", "comparator": "$list"},
+        [False],
     ),
     (
-        {"target": ["A", "B", "C", "D"], "comparator": ["X", "Y", "Z", "W"]},
-        {"target": "target", "comparator": "comparator"},
-        False,
+        {"col1": ["A", "B"], "col2": ["B", "C"]},
+        {"target": "col1", "comparator": "col2"},
+        [True, True],
     ),
     (
-        {"target": ["A", "A", "A"], "comparator": ["A", "A", "A"]},
-        {"target": "target", "comparator": "comparator"},
-        True,
+        {"col1": ["A", "C", "D"]},
+        {"target": "col1", "comparator": "$list"},
+        [True, True, True],
     ),
     (
-        {"target": ["A", "B", "C", "D"], "comparator": ["A", "Y", "C", "W"]},
-        {"target": "target", "comparator": "comparator"},
-        False,
+        {"col1": ["A", "", None, "B"], "col2": ["A", "C", "", "D"]},
+        {"target": "col1", "comparator": "col2"},
+        [True, True, True, True],
     ),
+    (
+        {"col1": ["", None, "A"], "col2": ["", "A", "B"]},
+        {"target": "col1", "comparator": "col2"},
+        [True, True, True],
+    ),
+    # Simple vs Simple test cases
     (
         {"dummy": ["value"]},
         {"target": "$constant", "comparator": "$constant"},
-        True,
+        [True],
     ),
     (
         {"dummy": ["value"]},
-        {"target": "$list", "comparator": "$list"},
-        False,
+        {"target": "X", "comparator": "Y"},
+        [False],
+    ),
+    (
+        {"dummy": ["value"]},
+        {"target": "A", "comparator": "A"},
+        [True],
     ),
 ]
 
 SHARES_NO_ELEMENTS_TEST_DATA = [
     (
-        {"target": ["A", "B", "C", "D"], "comparator": ["X", "Y", "Z", "W"]},
-        {"target": "target", "comparator": "comparator"},
-        True,
-    ),
-    (
-        {"target": ["A", "B", "C", "D"], "comparator": ["A", "Y", "C", "W"]},
-        {"target": "target", "comparator": "comparator"},
-        False,
-    ),
-    (
-        {"target": ["A", "A", "A"], "comparator": ["A", "A", "A"]},
-        {"target": "target", "comparator": "comparator"},
-        False,
-    ),
-    (
-        {"target": ["", "", "A"], "comparator": ["", "B", "C"]},
-        {"target": "target", "comparator": "comparator"},
-        True,
-    ),
-    (
-        {"dummy": ["value"]},
-        {"target": "$constant", "comparator": "$date"},
-        True,
-    ),
-    (
-        {"target_col": ["X", "Y", "Z"]},
-        {"target": "target_col", "comparator": "$constant"},
-        True,
-    ),
-    (
-        {"target_col": ["A", "Y", "Z"]},
-        {"target": "target_col", "comparator": "$constant"},
-        False,
-    ),
-    (
-        {"comparator_col": ["X", "Y", "Z"]},
-        {"target": "$constant", "comparator": "comparator_col"},
-        True,
-    ),
-    (
-        {"dummy": ["value"]},
-        {"target": "$constant", "comparator": "$date"},
-        True,
-    ),
-    (
-        {"dummy": ["value"]},
-        {"target": "$list", "comparator": "$date"},
-        True,
-    ),
-    (
         {"dummy": ["value"]},
         {"target": "$list", "comparator": "$list"},
-        False,
+        [False],
+    ),
+    (
+        {"col1": ["A", "B"], "col2": ["C", "D"]},
+        {"target": "col1", "comparator": "col2"},
+        [True, True],
+    ),
+    (
+        {"col1": ["C", "D", "E"]},
+        {"target": "$list", "comparator": "col1"},
+        [True, True, True],
+    ),
+    (
+        {"col1": ["C", "D", "E"]},
+        {"target": "col1", "comparator": "$list"},
+        [True, True, True],
+    ),
+    (
+        {"col1": ["", None], "col2": ["", None]},
+        {"target": "col1", "comparator": "col2"},
+        [True, True],
+    ),
+    # Simple vs Simple test cases
+    (
+        {"dummy": ["value"]},
+        {"target": "A", "comparator": "B"},
+        [True],
+    ),
+    (
+        {"dummy": ["value"]},
+        {"target": "X", "comparator": "Y"},
+        [True],
+    ),
+    (
+        {"dummy": ["value"]},
+        {"target": "$constant", "comparator": "$constant"},
+        [False],
     ),
 ]
 
@@ -139,7 +163,8 @@ SHARES_NO_ELEMENTS_TEST_DATA = [
 def test_sql_shares_at_least_one_element_with(data, params, expected_result):
     sql_ops = create_sql_operators(data)
     result = sql_ops.shares_at_least_one_element_with(params)
-    assert result == expected_result
+    expected_series = pd.Series(expected_result, dtype=bool)
+    pd.testing.assert_series_equal(result, expected_series)
 
 
 @pytest.mark.parametrize(
@@ -149,7 +174,8 @@ def test_sql_shares_at_least_one_element_with(data, params, expected_result):
 def test_sql_shares_exactly_one_element_with(data, params, expected_result):
     sql_ops = create_sql_operators(data)
     result = sql_ops.shares_exactly_one_element_with(params)
-    assert result == expected_result
+    expected_series = pd.Series(expected_result, dtype=bool)
+    pd.testing.assert_series_equal(result, expected_series)
 
 
 @pytest.mark.parametrize(
@@ -159,54 +185,60 @@ def test_sql_shares_exactly_one_element_with(data, params, expected_result):
 def test_sql_shares_no_elements_with(data, params, expected_result):
     sql_ops = create_sql_operators(data)
     result = sql_ops.shares_no_elements_with(params)
-    assert result == expected_result
+    expected_series = pd.Series(expected_result, dtype=bool)
+    pd.testing.assert_series_equal(result, expected_series)
 
 
 SHARES_EDGE_CASES = [
     (
-        {"target": ["A"], "comparator": ["A"]},
-        True,
-        True,
-        False,
+        {"dummy": ["value"]},
+        {"target": "$constant", "comparator": "$constant"},
+        [True],
+        [True],
+        [False],
     ),
     (
-        {"target": ["A"], "comparator": ["B"]},
-        False,
-        False,
-        True,
+        {"dummy": ["value"]},
+        {"target": "$constant", "comparator": "$date"},
+        [False],
+        [False],
+        [True],
     ),
     (
-        {"target": ["A", "b"], "comparator": ["a", "B"]},
-        False,
-        False,
-        True,
+        {"dummy": ["value"]},
+        {"target": "$list", "comparator": "$constant"},
+        [True],
+        [True],
+        [False],
     ),
     (
-        {"target": ["1", "2", "3"], "comparator": ["1", "4", "5"]},
-        True,
-        True,
-        False,
-    ),
-    (
-        {"target": ["A", "B", "C"], "comparator": ["A", "B", "X"]},
-        True,
-        False,
-        False,
+        {"dummy": ["value"]},
+        {"target": "$list", "comparator": "$date"},
+        [False],
+        [False],
+        [True],
     ),
 ]
 
 
 @pytest.mark.parametrize(
-    "data,expected_at_least_one,expected_exactly_one,expected_no_elements",
+    "data,params,expected_at_least_one,expected_exactly_one,expected_no_elements",
     SHARES_EDGE_CASES,
 )
-def test_sql_shares_elements_edge_cases(data, expected_at_least_one, expected_exactly_one, expected_no_elements):
+def test_sql_shares_elements_edge_cases(
+    data, params, expected_at_least_one, expected_exactly_one, expected_no_elements
+):
     sql_ops = create_sql_operators(data)
 
-    result_at_least_one = sql_ops.shares_at_least_one_element_with({"target": "target", "comparator": "comparator"})
-    result_exactly_one = sql_ops.shares_exactly_one_element_with({"target": "target", "comparator": "comparator"})
-    result_no_elements = sql_ops.shares_no_elements_with({"target": "target", "comparator": "comparator"})
+    result_at_least_one = sql_ops.shares_at_least_one_element_with(params)
+    result_exactly_one = sql_ops.shares_exactly_one_element_with(params)
+    result_no_elements = sql_ops.shares_no_elements_with(params)
 
-    assert result_at_least_one is expected_at_least_one
-    assert result_exactly_one is expected_exactly_one
-    assert result_no_elements is expected_no_elements
+    # Convert expected lists to Series for proper comparison
+    expected_at_least_one_series = pd.Series(expected_at_least_one, dtype=bool)
+    expected_exactly_one_series = pd.Series(expected_exactly_one, dtype=bool)
+    expected_no_elements_series = pd.Series(expected_no_elements, dtype=bool)
+
+    pd.testing.assert_series_equal(result_at_least_one, expected_at_least_one_series)
+    pd.testing.assert_series_equal(result_exactly_one, expected_exactly_one_series)
+    pd.testing.assert_series_equal(result_no_elements, expected_no_elements_series)
