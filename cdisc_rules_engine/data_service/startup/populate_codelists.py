@@ -1,16 +1,13 @@
-import logging
 from pathlib import Path
 
 from cdisc_rules_engine.data_service.sql_interface import PostgresQLInterface
 from cdisc_rules_engine.models.sql.column_schema import SqlColumnSchema
 from cdisc_rules_engine.models.sql.table_schema import SqlTableSchema
 from cdisc_rules_engine.readers.codelist_reader import CodelistReader
+from cdisc_rules_engine.services import logger
 
 # TODO: Put this somewhere sensible
 CODELIST_TABLE_NAME = "ig_codelists"
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 SCHEMA_PATH = Path(__file__).parent / "schemas"
 

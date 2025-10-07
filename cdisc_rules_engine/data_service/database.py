@@ -1,15 +1,13 @@
-import logging
-import psycopg2.pool
-from os import getenv
-
 from contextlib import contextmanager
 from dataclasses import dataclass
-from dotenv import load_dotenv
-from psycopg2.extras import RealDictCursor
+from os import getenv
 from typing import Optional
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+import psycopg2.pool
+from dotenv import load_dotenv
+from psycopg2.extras import RealDictCursor
+
+from cdisc_rules_engine.services import logger
 
 load_dotenv()
 

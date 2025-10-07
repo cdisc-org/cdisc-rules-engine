@@ -1,4 +1,3 @@
-import logging
 from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Union
@@ -27,9 +26,6 @@ from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.models.sql.table_schema import SqlTableSchema
 from cdisc_rules_engine.models.test_dataset import TestDataset
 from cdisc_rules_engine.utilities.ig_specification import IGSpecification
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 SCHEMA_PATH = Path(__file__).parent / "schemas"
 
@@ -86,9 +82,9 @@ class PostgresQLDataService:
         return instance
 
     @classmethod
-    def from_dataset_paths(cls, datasets_path: Path, standard: IGSpecification = None) -> "PostgresQLDataService":
+    def from_dataset_paths(cls, dataset_paths: List[str], standard: IGSpecification = None) -> "PostgresQLDataService":
         instance = cls.instance(standard)
-        instance.datasets += SqlDatasetLoader.load_datasets(instance.pgi, datasets_path)
+        instance.datasets += SqlDatasetLoader.load_datasets(instance.pgi, dataset_paths)
         return instance
 
     @staticmethod
@@ -340,3 +336,7 @@ class PostgresQLDataService:
             merge_spec=merge_spec,
         )
         return result_schema.name
+
+    # Temporarily adding this method to get the report to output
+    def read_data(self, path: str):
+        return None

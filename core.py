@@ -6,29 +6,31 @@ import pickle
 import tempfile
 from datetime import datetime
 from multiprocessing import freeze_support
+from pathlib import Path
 from typing import Tuple
 
 import click
-from pathlib import Path
+
 from cdisc_rules_engine.config import config
+from cdisc_rules_engine.enums.dataformat_types import DataFormatTypes
 from cdisc_rules_engine.enums.default_file_paths import DefaultFilePaths
 from cdisc_rules_engine.enums.progress_parameter_options import ProgressParameterOptions
 from cdisc_rules_engine.enums.report_types import ReportTypes
-from cdisc_rules_engine.enums.dataformat_types import DataFormatTypes
+from cdisc_rules_engine.models.external_dictionaries_container import (
+    DictionaryTypes,
+    ExternalDictionariesContainer,
+)
 from cdisc_rules_engine.models.validation_args import Validation_args
-from scripts.run_validation import run_validation
 from cdisc_rules_engine.services.cache.cache_populator_service import CachePopulator
 from cdisc_rules_engine.services.cache.cache_service_factory import CacheServiceFactory
 from cdisc_rules_engine.services.cdisc_library_service import CDISCLibraryService
-from cdisc_rules_engine.models.external_dictionaries_container import (
-    ExternalDictionariesContainer,
-    DictionaryTypes,
-)
 from cdisc_rules_engine.utilities.utils import (
     generate_report_filename,
     get_rules_cache_key,
 )
 from scripts.list_dataset_metadata_handler import list_dataset_metadata_handler
+from scripts.run_sql_validation import run_sql_validation
+from scripts.run_validation import run_validation
 from version import __version__
 
 
@@ -116,10 +118,7 @@ def cli():
     "-ct",
     "--controlled-terminology-package",
     multiple=True,
-    help=(
-        "Controlled terminology package to validate against, "
-        "can provide more than one"
-    ),
+    help=("Controlled terminology package to validate against, " "can provide more than one"),
 )
 @click.option(
     "-o",
@@ -203,6 +202,19 @@ def cli():
     default="y",
     help="Enable XML validation (default 'y' to enable, otherwise disable)",
 )
+@click.option(
+    "-sql",
+    "--sql-engine",
+    is_flag=True,
+    default=False,
+    help="Flag to run validation using the SQL engine",
+)
+@click.option(
+    "-ns",
+    "--sql-namespace",
+    default="",
+    help="A prefix for all tables in the database when using the SQL engine",
+)
 @click.pass_context
 def validate(
     ctx,
@@ -234,6 +246,8 @@ def validate(
     progress: str,
     define_xml_path: str,
     validate_xml: str,
+    sql_engine: bool,
+    sql_namespace: str,
 ):
     """
     Validate data using CDISC Rules Engine
@@ -248,9 +262,7 @@ def validate(
 
     if raw_report is True:
         if not (len(output_format) == 1 and output_format[0] == ReportTypes.JSON.value):
-            logger.error(
-                "Flag --raw-report can be used only when --output-format is JSON"
-            )
+            logger.error("Flag --raw-report can be used only when --output-format is JSON")
             ctx.exit()
 
     cache_path: str = os.path.join(os.path.dirname(__file__), cache)
@@ -272,13 +284,9 @@ def validate(
     )
     if data:
         if dataset_path:
-            logger.error(
-                "Argument --dataset-path cannot be used together with argument --data"
-            )
+            logger.error("Argument --dataset-path cannot be used together with argument --data")
             ctx.exit()
-        dataset_paths, found_formats = valid_data_file(
-            [str(Path(data).joinpath(fn)) for fn in os.listdir(data)]
-        )
+        dataset_paths, found_formats = valid_data_file([str(Path(data).joinpath(fn)) for fn in os.listdir(data)])
         if len(found_formats) > 1:
             logger.error(
                 f"Argument --data contains more than one allowed file format ({', '.join(found_formats)})."  # noqa: E501
@@ -292,36 +300,36 @@ def validate(
             )
             ctx.exit()
     else:
-        logger.error(
-            "You must pass one of the following arguments: --dataset-path, --data"
-        )
+        logger.error("You must pass one of the following arguments: --dataset-path, --data")
         # no need to define dataset_paths here, the program execution will stop
         ctx.exit()
     validate_xml_bool = True if validate_xml.lower() in ("y", "yes") else False
-    run_validation(
-        Validation_args(
-            cache_path,
-            pool_size,
-            dataset_paths,
-            log_level,
-            report_template,
-            standard,
-            version,
-            substandard,
-            set(controlled_terminology_package),  # avoiding duplicates
-            output,
-            set(output_format),  # avoiding duplicates
-            raw_report,
-            define_version,
-            external_dictionaries,
-            rules,
-            local_rules,
-            custom_standard,
-            progress,
-            define_xml_path,
-            validate_xml_bool,
-        )
+    args = Validation_args(
+        cache_path,
+        pool_size,
+        dataset_paths,
+        log_level,
+        report_template,
+        standard,
+        version,
+        substandard,
+        set(controlled_terminology_package),  # avoiding duplicates
+        output,
+        set(output_format),  # avoiding duplicates
+        raw_report,
+        define_version,
+        external_dictionaries,
+        rules,
+        local_rules,
+        custom_standard,
+        progress,
+        define_xml_path,
+        validate_xml_bool,
     )
+    if sql_engine:
+        run_sql_validation(args)
+    else:
+        run_validation(args)
 
 
 @click.command()
@@ -334,29 +342,19 @@ def validate(
 @click.option(
     "--apikey",
     envvar="CDISC_LIBRARY_API_KEY",
-    help=(
-        "CDISC Library api key. "
-        "Can be provided in the environment "
-        "variable CDISC_LIBRARY_API_KEY"
-    ),
+    help=("CDISC Library api key. " "Can be provided in the environment " "variable CDISC_LIBRARY_API_KEY"),
     required=True,
 )
 @click.option(
     "-crd",
     "--custom_rules_directory",
-    help=(
-        "Relative path to directory containing local rules in yaml or JSON formats"
-        "to be added to the cache. "
-    ),
+    help=("Relative path to directory containing local rules in yaml or JSON formats" "to be added to the cache. "),
 )
 @click.option(
     "-cr",
     "--custom_rule",
     multiple=True,
-    help=(
-        "Relative path to rule file in yaml or JSON formats"
-        "to be added to the cache. "
-    ),
+    help=("Relative path to rule file in yaml or JSON formats" "to be added to the cache. "),
 )
 @click.option(
     "-rcr",
@@ -369,10 +367,7 @@ def validate(
 @click.option(
     "-ucr",
     "--update_custom_rule",
-    help=(
-        "Relative path to rule file in yaml or JSON formats"
-        "Rule will be updated in cache with this file. "
-    ),
+    help=("Relative path to rule file in yaml or JSON formats" "Rule will be updated in cache with this file. "),
 )
 @click.option(
     "-cs",
@@ -436,12 +431,8 @@ def update_cache(
     default=DefaultFilePaths.CACHE.value,
     help="Relative path to cache files containing pre loaded metadata and rules",
 )
-@click.option(
-    "-s", "--standard", required=False, help="CDISC standard to get rules for"
-)
-@click.option(
-    "-v", "--version", required=False, help="Standard version to get rules for"
-)
+@click.option("-s", "--standard", required=False, help="CDISC standard to get rules for")
+@click.option("-v", "--version", required=False, help="Standard version to get rules for")
 @click.option(
     "-ss",
     "--substandard",
@@ -491,9 +482,7 @@ def list_rules(
             if id in rules_data:
                 rules.append(rules_data[id])
     elif standard and version:
-        key_prefix = get_rules_cache_key(
-            standard, version.replace(".", "-"), substandard
-        )
+        key_prefix = get_rules_cache_key(standard, version.replace(".", "-"), substandard)
         if key_prefix in rules_dict:
             rule_ids = rules_dict[key_prefix]
             for rid in rule_ids:
@@ -624,25 +613,24 @@ def list_ct(cache_path: str, subsets: Tuple[str]):
 def test_validate():
     """**Release Test** validate command for executable."""
     try:
-        import sys
         import os
-        from cdisc_rules_engine.models.validation_args import Validation_args
-        from cdisc_rules_engine.models.external_dictionaries_container import (
-            ExternalDictionariesContainer,
-        )
-        from cdisc_rules_engine.enums.report_types import ReportTypes
+        import sys
+
+        from cdisc_rules_engine.enums.default_file_paths import DefaultFilePaths
         from cdisc_rules_engine.enums.progress_parameter_options import (
             ProgressParameterOptions,
         )
-        from cdisc_rules_engine.enums.default_file_paths import DefaultFilePaths
+        from cdisc_rules_engine.enums.report_types import ReportTypes
+        from cdisc_rules_engine.models.external_dictionaries_container import (
+            ExternalDictionariesContainer,
+        )
+        from cdisc_rules_engine.models.validation_args import Validation_args
 
         base_path = os.path.join("tests", "resources", "datasets")
         ts_path = os.path.join(base_path, "TS.json")
         ae_path = os.path.join(base_path, "ae.xpt")
         if not all(os.path.exists(path) for path in [ts_path, ae_path]):
-            raise FileNotFoundError(
-                "Test datasets not found in tests/resources/datasets"
-            )
+            raise FileNotFoundError("Test datasets not found in tests/resources/datasets")
 
         with tempfile.TemporaryDirectory() as temp_dir:
             cache_path = DefaultFilePaths.CACHE.value

@@ -1,13 +1,10 @@
 import xml.etree.ElementTree as ET
-from typing import Dict, List, Optional, Union
-import logging
-from datetime import datetime
 from dataclasses import dataclass
+from datetime import datetime
+from typing import Dict, List, Optional, Union
 
 from cdisc_rules_engine.readers.base_reader import BaseReader
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from cdisc_rules_engine.services import logger
 
 
 @dataclass

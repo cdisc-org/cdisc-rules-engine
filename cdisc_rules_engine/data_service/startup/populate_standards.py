@@ -1,17 +1,14 @@
-import logging
 from pathlib import Path
 
 from cdisc_rules_engine.data_service.sql_interface import PostgresQLInterface
 from cdisc_rules_engine.models.sql.column_schema import SqlColumnSchema
 from cdisc_rules_engine.models.sql.table_schema import SqlTableSchema
 from cdisc_rules_engine.readers.metadata_standards_reader import MetadataStandardsReader
+from cdisc_rules_engine.services import logger
 
 # TODO: Put this somewhere sensible
 IG_DATASETS_TABLE_NAME = "ig_datasets"
 IG_VARIABLES_TABLE_NAME = "ig_variables"
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 SCHEMA_PATH = Path(__file__).parent / "schemas"
 

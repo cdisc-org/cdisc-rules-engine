@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Dict, Any, Iterator, Optional
+from typing import Any, Dict, Iterator, List, Optional
 
 import pandas as pd
 from pandas.io.sas.sas7bdat import SAS7BDATReader
@@ -25,9 +25,6 @@ class DataReader(BaseReader):
 
     CHUNKSIZE = 10000
 
-    ADAM_DOMAINS = ["adae", "adef", "adsl", "adtte"]
-    SDTM_DOMAINS = ["ae", "dm", "ex", "lb", "suppdm", "ta", "td", "te", "ti", "ts", "tv", "xp"]
-
     SUPPORTED_EXTENSIONS = [".xpt", ".sas7bdat"]
 
     def __init__(self, file_path: str):
@@ -43,34 +40,13 @@ class DataReader(BaseReader):
         else:
             raise ValueError(f"Unsupported file format: {self.file_path.suffix}")
 
-        try:
-            variable_metadata = self._extract_variable_metadata(reader)
-            record_count = self._get_record_count(reader)
-
-            self._column_types = self._extract_column_types(variable_metadata)
-
-            study_id = None
-            try:
-                first_record = self._get_first_record()
-                if first_record and "STUDYID" in first_record:
-                    study_id = str(first_record["STUDYID"])
-            except Exception:
-                pass
-
-            return {
-                "metadata": {
-                    "name": self.file_path.name,
-                    "domain": self.metadata.domain,
-                    "standard_type": self.metadata.standard_type,
-                    "file_format": self.metadata.file_format,
-                    "study_id": study_id,
-                    "record_count": record_count,
-                    "variable_count": len(variable_metadata),
-                },
-                "variables": variable_metadata,
-            }
-        finally:
-            reader.close()
+        return {
+            "name": self.file_path.name.replace(self.file_path.suffix, ""),
+            # TODO: Fix these
+            "label": "",
+            "record_count": self._get_record_count(reader),
+            "variables": self._extract_variable_metadata(reader),
+        }
 
     def read(self) -> Iterator[List[Dict[str, Any]]]:
         """Read and stream records in chunks."""
@@ -164,22 +140,7 @@ class DataReader(BaseReader):
 
     def _extract_metadata(self) -> ClinicalDataMetadata:
         """Extract metadata from the file name or content."""
-        file_name = self.file_path.stem.lower()
-        domain = None
-        standard_type = None
-        file_format = self.file_path.suffix[1:]
-
-        if any(d in file_name for d in self.ADAM_DOMAINS):
-            standard_type = "ADaM"
-            domain = next((d for d in self.ADAM_DOMAINS if d in file_name), None)
-        elif any(d in file_name for d in self.SDTM_DOMAINS):
-            standard_type = "SDTM"
-            domain = next((d for d in self.SDTM_DOMAINS if d in file_name), None)
-
-        if not domain or not standard_type:
-            raise ValueError(f"Unsupported domain or standard type in file name: {file_name}")
-
-        return ClinicalDataMetadata(domain=domain, standard_type=standard_type, file_format=file_format)
+        return ClinicalDataMetadata(domain="A", standard_type="B", file_format="C")
 
     def _extract_variable_metadata(self, reader) -> List[Dict[str, Any]]:
         """Extract variable-level metadata from SAS reader."""
@@ -190,7 +151,7 @@ class DataReader(BaseReader):
                 var_info = {
                     "order": i + 1,
                     "col_id": col.col_id,
-                    "name": col.name.decode("utf-8").strip() if isinstance(col.name, bytes) else col.name,
+                    "name": str(col.name.decode("utf-8") if isinstance(col.name, bytes) else col.name).strip(),
                     "label": (
                         col.label.decode("utf-8").strip() if col.label and isinstance(col.label, bytes) else col.label
                     ),
@@ -200,7 +161,9 @@ class DataReader(BaseReader):
                         else col.format
                     ),
                     "type": (
-                        col.ctype.decode("utf-8").strip() if col.ctype and isinstance(col.ctype, bytes) else col.ctype
+                        str(
+                            col.ctype.decode("utf-8") if col.ctype and isinstance(col.ctype, bytes) else col.ctype
+                        ).strip()
                     ),
                     "length": col.length,
                 }
@@ -209,10 +172,10 @@ class DataReader(BaseReader):
             for i, field in enumerate(reader.fields):
                 var_info = {
                     "order": i + 1,
-                    "name": field.get("name", "").strip(),
+                    "name": str(field.get("name").decode("utf-8")).strip(),
                     "label": field.get("label", ""),
                     "format": field.get("nform", ""),
-                    "type": field.get("ntype", ""),
+                    "type": str(field.get("ntype")).strip(),
                     "length": field.get("field_length", 0),
                 }
                 variables.append(var_info)

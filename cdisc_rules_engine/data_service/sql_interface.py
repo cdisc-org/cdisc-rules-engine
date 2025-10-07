@@ -1,7 +1,5 @@
-import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
-
 
 from cdisc_rules_engine.constants.rule_constants import COMPLETE_DATE_REGEX
 from cdisc_rules_engine.data_service.database import (
@@ -13,9 +11,7 @@ from cdisc_rules_engine.data_service.sql_serialiser import SQLSerialiser
 from cdisc_rules_engine.models.sql.column_schema import SqlColumnSchema
 from cdisc_rules_engine.models.sql.db_schema import SqlDbSchema
 from cdisc_rules_engine.models.sql.table_schema import SqlTableSchema
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from cdisc_rules_engine.services import logger
 
 
 class PostgresQLInterface:
@@ -65,7 +61,7 @@ class PostgresQLInterface:
                 if commit:
                     conn.commit()
 
-                logger.info(f"Executed query successfully. Affected rows: {affected_rows}")
+                logger.debug(f"Executed query successfully. Affected rows: {affected_rows}")
 
             except Exception as e:
                 conn.rollback()
@@ -134,7 +130,7 @@ class PostgresQLInterface:
         alter_stmt = SQLSerialiser.create_column_from_schema(table_schema, schema)
         self.execute_sql(alter_stmt)
         table_schema.add_column(schema)
-        logger.info(f"Column {table}.{schema.name} created successfully")
+        logger.debug(f"Column {table}.{schema.name} created successfully")
 
     def generate_date_column(self, table: str, column: str) -> SqlColumnSchema:
         """Builds a date column from a string column and adds to the table"""
@@ -164,27 +160,23 @@ class PostgresQLInterface:
         self, table_name: str, data: Union[Dict[str, list[str, int, float]], List[Dict[str, Any]]]
     ) -> Optional[int]:
         """Insert Python data into a table"""
+        if not self.db:
+            raise RuntimeError("Database not initialised. Call init_database() first.")
+
+        schema = self.schema.get_table(table_name)
+        if not schema:
+            raise ValueError(f"Table {table_name} does not exist in the schema")
 
         if isinstance(data, dict):
-            query, values = SQLSerialiser.insert_dict(table_name, data)
-            return self.execute_sql(query, values)
+            query = SQLSerialiser.insert_dict(schema, data)
+            self.execute_sql(query)
+            logger.info(f"Inserted 1 row into {table_name}")
+            return 1
         else:
-            if not self.db:
-                raise RuntimeError("Database not initialised. Call init_database() first.")
-
-            query, values_list = SQLSerialiser.insert_many_dicts(table_name, data)
-
-            with self.db.get_connection_and_cursor() as (conn, cursor):
-                try:
-                    cursor.executemany(query, values_list)
-                    affected_rows = cursor.rowcount
-                    conn.commit()
-                    logger.info(f"Inserted {affected_rows} rows into {table_name}")
-                    return affected_rows
-                except Exception as e:
-                    conn.rollback()
-                    logger.error(f"Insert failed: {e} - table name {table_name} for insert data: {str(values_list)}")
-                    raise
+            query = SQLSerialiser.insert_many_dicts(schema, data)
+            rows = self.execute_sql(query)
+            logger.info(f"Inserted {rows} rows into {table_name}")
+            return rows
 
     def compile_and_execute(self, statements: List[str], commit: bool = True) -> None:
         """Compile multiple statements and execute as a single query"""

@@ -3,7 +3,6 @@ Data Preprocessor for SDTM and ADaM clinical data.
 """
 
 import json
-import logging
 from collections import defaultdict
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Set
@@ -12,8 +11,7 @@ from cdisc_rules_engine.data_service.postgresql_data_service import (
     PostgresQLDataService,
 )
 from cdisc_rules_engine.data_service.sql_interface import PostgresQLInterface
-
-logger = logging.getLogger(__name__)
+from cdisc_rules_engine.services import logger
 
 
 class SqlDataPreprocessor:

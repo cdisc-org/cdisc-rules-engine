@@ -1,4 +1,6 @@
-from typing import Any, Dict, List, Tuple
+from typing import Any, Callable, Dict, List, Tuple
+
+import pandas as pd
 
 from cdisc_rules_engine.data_service.reserved_keywords import SQL_RESERVED_KEYWORDS
 from cdisc_rules_engine.models.sql import DATASET_COLUMN_TYPES
@@ -61,37 +63,51 @@ class SQLSerialiser:
                     );"""
 
     @classmethod
-    def insert_dict(cls, table_name: str, data: Dict[str, Any]) -> Tuple[str, List[Any]]:
+    def insert_dict(cls, schema: SqlTableSchema, data: Dict[str, Any]) -> Tuple[str, List[Any]]:
         """Generate INSERT statement from a dictionary"""
-
-        # lowercase the columns:
-        columns = list(data.keys())
-        values = [data[col] for col in columns]
-
-        placeholders = ", ".join(["%s"] * len(columns))
-        columns_str = ", ".join(columns)
-
-        query = f"INSERT INTO {table_name} ({columns_str}) VALUES ({placeholders})"
-        return query, values
+        return cls.insert_many_dicts(schema, [data])
 
     @classmethod
-    def insert_many_dicts(cls, table_name: str, data: List[Dict[str, Any]]) -> Tuple[str, List[List[Any]]]:
+    def insert_many_dicts(cls, schema: SqlTableSchema, data: List[Dict[str, Any]]) -> Tuple[str, List[List[Any]]]:
         """Generate INSERT statement for multiple dictionaries"""
         if not data:
             raise ValueError("Data list cannot be empty")
 
-        columns = list(data[0].keys())
-        columns_str = ", ".join(columns)
-        placeholders = ", ".join(["%s"] * len(columns))
+        columns, map_fn = cls._generate_insertion_columns(schema, data[0])
+        rows = [f"({map_fn(row)})" for row in data]
 
-        query = f"INSERT INTO {table_name} ({columns_str}) VALUES ({placeholders})"
+        return f"INSERT INTO {schema.hash} ({columns}) VALUES {", ".join(rows)}"
 
-        values = []
-        for row in data:
-            row_values = [row.get(col) for col in columns]
-            values.append(row_values)
+    @staticmethod
+    def _generate_insertion_columns(
+        schema: SqlTableSchema, example_row: Dict[str, Any]
+    ) -> Tuple[str, Callable[[Dict[str, Any]], str]]:
+        """
+        Generates the list of columns and a function to convert a row to a SQL string.
+        """
+        example_row = {k.lower(): v for k, v in example_row.items()}
+        columns = []
+        for col_name, col_schema in schema.get_columns():
+            if col_schema.alias or col_name.lower() == "id":
+                continue
+            if col_name in example_row:
+                columns.append(col_schema.hash)
 
-        return query, values
+        def map_row_to_sql(row: Dict[str, Any]) -> str:
+            """
+            Maps a row to a SQL string for insertion.
+            """
+            values = []
+            for col_name in columns:
+                value = row.get(col_name.lower())
+                if isinstance(value, str):
+                    value = f"'{value}'"
+                elif value is None or pd.isna(value):
+                    value = "NULL"
+                values.append(str(value))
+            return ", ".join(values)
+
+        return ", ".join(columns), map_row_to_sql
 
     @classmethod
     def create_column_from_schema(cls, table_schema: SqlTableSchema, column_schema: "SqlColumnSchema") -> str:

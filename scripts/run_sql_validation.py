@@ -1,31 +1,21 @@
 import itertools
 import time
-from functools import partial
-from multiprocessing import Pool
-from multiprocessing.managers import SyncManager
-from typing import List, Iterable, Callable
+from typing import Callable, List
+from warnings import simplefilter
 
-from cdisc_rules_engine.config import config
-from cdisc_rules_engine.data_service.postgresql_data_service import PostgresQLDataService
+from cdisc_rules_engine.data_service.postgresql_data_service import (
+    PostgresQLDataService,
+)
 from cdisc_rules_engine.enums.progress_parameter_options import ProgressParameterOptions
-
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
 from cdisc_rules_engine.models.rule_conditions import ConditionCompositeFactory
 from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
-from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.models.sql_rule import SQLRule
 from cdisc_rules_engine.models.validation_args import Validation_args
 from cdisc_rules_engine.services import logger as engine_logger
-from cdisc_rules_engine.services.cache import (
-    InMemoryCacheService,
-    RedisCacheService,
-)
-from cdisc_rules_engine.services.data_services import (
-    DataServiceFactory,
-)
-from cdisc_rules_engine.models.dataset import PandasDataset
+from cdisc_rules_engine.services.reporting import BaseReport, ReportFactory
 from cdisc_rules_engine.sql_rules_engine import SQLRulesEngine
 
 # from cdisc_rules_engine.utilities.utils import (
@@ -34,38 +24,22 @@ from cdisc_rules_engine.sql_rules_engine import SQLRulesEngine
 #     get_standard_details_cache_key,
 #     get_variable_codelist_map_cache_key,
 # )
-from scripts.script_utils import (
-    fill_cache_with_dictionaries,
-    get_cache_service,
-    get_library_metadata_from_cache,
-    get_rules,
-    get_max_dataset_size,
-)
-from cdisc_rules_engine.services.reporting import BaseReport, ReportFactory
+from cdisc_rules_engine.utilities.ig_specification import IGSpecification
 from cdisc_rules_engine.utilities.progress_displayers import get_progress_displayer
 from cdisc_rules_engine.utilities.sql_rule_processor import SQLRuleProcessor
-from warnings import simplefilter
-import os
+from scripts.script_utils import (
+    get_library_metadata_from_cache,
+    get_rules,
+)
 
 # from cdisc_rules_engine.constants.cache_constants import PUBLISHED_CT_PACKAGES
 
 simplefilter(action="ignore", category=FutureWarning)  # Suppress warnings coming from numpy
-"""
-Sync manager used to manage instances of the cache between processes.
-Cache types are registered to this manager, and only one instance of the
-cache is created at startup and provided to each process.
-"""
-
-
-class CacheManager(SyncManager):
-    pass
 
 
 def sql_validate_single_rule(
-    cache,
-    datasets: Iterable[SDTMDatasetMetadata],
+    engine: SQLRulesEngine,
     args: Validation_args,
-    library_metadata: LibraryMetadataContainer,
     rule: dict = None,
 ):
     if not SQLRuleProcessor.valid_rule_structure(rule):
@@ -73,22 +47,8 @@ def sql_validate_single_rule(
         return RuleValidationResult(rule, [])
 
     rule["conditions"] = ConditionCompositeFactory.get_condition_composite(rule["conditions"])
-    max_dataset_size = max(datasets, key=lambda x: x.file_size).file_size
     # call rule engine
-    engine = SQLRulesEngine(
-        cache=cache,
-        standard=args.standard,
-        standard_version=args.version.replace(".", "-"),
-        standard_substandard=args.substandard,
-        external_dictionaries=args.external_dictionaries,
-        ct_packages=args.controlled_terminology_package,
-        define_xml_path=args.define_xml_path,
-        library_metadata=library_metadata,
-        max_dataset_size=max_dataset_size,
-        dataset_paths=args.dataset_paths,
-        validate_xml=args.validate_xml,
-    )
-    results = engine.sql_validate_single_rule(rule, datasets)
+    results = engine.sql_validate_single_rule(rule)
     results = list(itertools.chain(*results.values()))
     if args.progress == ProgressParameterOptions.VERBOSE_OUTPUT.value:
         engine_logger.log(f"{rule['core_id']} validation complete")
@@ -113,76 +73,59 @@ def initialize_logger(disabled, log_level):
         engine_logger.setLevel(log_level)
 
 
-def sql_run_validation(args: Validation_args):
+def run_sql_validation(args: Validation_args):
     set_log_level(args)
-    # fill cache
-    CacheManager.register("RedisCacheService", RedisCacheService)
-    CacheManager.register("InMemoryCacheService", InMemoryCacheService)
-    manager = CacheManager()
-    manager.start()
-    shared_cache = get_cache_service(manager)
-    engine_logger.info(f"Populating cache, cache path: {args.cache}")
+
     rules = get_rules(args)
     library_metadata: LibraryMetadataContainer = get_library_metadata_from_cache(args)
-    max_dataset_size = get_max_dataset_size(args.dataset_paths)
     standard = args.standard
     standard_version = args.version.replace(".", "-")
     standard_substandard = args.substandard
-    data_service = DataServiceFactory(
-        config,
-        shared_cache,
-        max_dataset_size=max_dataset_size,
+
+    spec = IGSpecification(
         standard=standard,
         standard_version=standard_version,
         standard_substandard=standard_substandard,
-        library_metadata=library_metadata,
-    ).get_data_service(args.dataset_paths)
-    # install dictionaries if needed
-    dictionary_versions = fill_cache_with_dictionaries(shared_cache, args, data_service)
-    large_dataset_validation: bool = data_service.dataset_implementation != PandasDataset
-    datasets = data_service.get_datasets()
-    created_files = []
-    if large_dataset_validation and data_service.standard != "usdm":
-        # convert all files to parquet temp files
-        engine_logger.warning("Large datasets must use parquet format, converting all datasets to parquet")
-        for dataset in datasets:
-            file_path = dataset.full_path
-            if file_path.endswith(".parquet"):
-                continue
-            num_rows, new_file = data_service.to_parquet(file_path)
-            created_files.append(new_file)
-            dataset.full_path = new_file
-            dataset.record_count = num_rows
-            dataset.original_path = file_path
-    engine_logger.info(f"Running {len(rules)} rules against {len(datasets)} datasets")
+    )
+
+    data_service = PostgresQLDataService.from_dataset_paths(args.dataset_paths, spec)
+
+    engine = SQLRulesEngine(data_service=data_service, library_metadata=library_metadata)
+
+    engine_logger.info(f"Running {len(rules)} rules against {len(data_service.datasets)} datasets")
     start = time.time()
     results = []
+
     # instantiate logger in each child process to maintain log level
-    initializer = partial(initialize_logger, engine_logger.disabled, engine_logger._logger.level)
+    # initializer = partial(initialize_logger, engine_logger.disabled, engine_logger._logger.level)
     # run each rule in a separate process
-    with Pool(args.pool_size, initializer=initializer) as pool:
-        validation_results: Iterable[RuleValidationResult] = pool.imap_unordered(
-            partial(sql_validate_single_rule, shared_cache, datasets, args, library_metadata),
-            rules,
-        )
-        progress_handler: Callable = get_progress_displayer(args)
-        results = progress_handler(rules, validation_results, results)
+    # with Pool(args.pool_size, initializer=initializer) as pool:
+    #     validation_results: Iterable[RuleValidationResult] = pool.imap_unordered(
+    #         partial(sql_validate_single_rule, engine, args),
+    #         rules,
+    #     )
+    #     progress_handler: Callable = get_progress_displayer(args)
+    #     results = progress_handler(rules, validation_results, results)
+    def run():
+        for rule in rules:
+            rule_result = sql_validate_single_rule(engine, args, rule)
+            yield rule_result
+
+    progress_handler: Callable = get_progress_displayer(args)
+    iterable = run()
+    progress_handler(rules, iterable, results)
 
     # build all desired reports
     end = time.time()
     elapsed_time = end - start
-    reporting_factory = ReportFactory(datasets, results, elapsed_time, args, data_service)
+    reporting_factory = ReportFactory(data_service.datasets, results, elapsed_time, args, data_service)
     reporting_services: List[BaseReport] = reporting_factory.get_report_services()
     for reporting_service in reporting_services:
         reporting_service.write_report(
             define_xml_path=args.define_xml_path,
-            dictionary_versions=dictionary_versions,
+            # dictionary_versions=dictionary_versions,
         )
     print(f"Output: {args.output}")
-    engine_logger.info("Cleaning up intermediate files")
-    for file in created_files:
-        engine_logger.info(f"Deleting file {file}")
-        os.remove(file)
 
 
 # TODO: fix this one first

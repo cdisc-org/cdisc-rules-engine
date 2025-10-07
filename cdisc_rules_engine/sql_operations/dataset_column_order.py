@@ -2,10 +2,6 @@ from cdisc_rules_engine.constants.metadata_columns import METADATA_COLUMNS
 from cdisc_rules_engine.models.sql_operation_result import SqlOperationResult
 from cdisc_rules_engine.sql_operations.sql_base_operation import SqlBaseOperation
 
-import logging
-
-logger = logging.getLogger(__name__)
-
 
 class SqlDatasetColumnOrderOperation(SqlBaseOperation):
 

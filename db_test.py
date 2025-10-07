@@ -1,8 +1,8 @@
-import logging
-from cdisc_rules_engine.data_service.database import DatabasePostgres, DatabaseConfigPostgres
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from cdisc_rules_engine.data_service.database import (
+    DatabaseConfigPostgres,
+    DatabasePostgres,
+)
+from cdisc_rules_engine.services import logger
 
 config = DatabaseConfigPostgres()
 db = DatabasePostgres(config)
