@@ -259,11 +259,11 @@ def validate(
             logger.error(
                 "Flag --raw-report can be used only when --output-format is JSON"
             )
-            ctx.exit()
+            ctx.exit(2)
 
     if exclude_rules and rules:
         logger.error("Cannot use both --rules and --exclude-rules flags together.")
-        ctx.exit()
+        ctx.exit(2)
 
     cache_path: str = os.path.join(os.path.dirname(__file__), cache)
 
@@ -287,7 +287,7 @@ def validate(
             logger.error(
                 "Argument --dataset-path cannot be used together with argument --data"
             )
-            ctx.exit()
+            ctx.exit(2)
         dataset_paths, found_formats = valid_data_file(
             [str(Path(data).joinpath(fn)) for fn in os.listdir(data)]
         )
@@ -295,20 +295,20 @@ def validate(
             logger.error(
                 f"Argument --data contains more than one allowed file format ({', '.join(found_formats)})."  # noqa: E501
             )
-            ctx.exit()
+            ctx.exit(2)
     elif dataset_path:
         dataset_paths, found_formats = valid_data_file([dp for dp in dataset_path])
         if len(found_formats) > 1:
             logger.error(
                 f"Argument --dataset-path contains more than one allowed file format ({', '.join(found_formats)})."  # noqa: E501
             )
-            ctx.exit()
+            ctx.exit(2)
     else:
         logger.error(
             "You must pass one of the following arguments: --dataset-path, --data"
         )
         # no need to define dataset_paths here, the program execution will stop
-        ctx.exit()
+        ctx.exit(2)
     run_validation(
         Validation_args(
             cache_path,
