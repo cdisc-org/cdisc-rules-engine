@@ -28,3 +28,4 @@ dask[array]==2024.6.0
 pyreadstat==1.2.7
 fastparquet==2024.2.0
 lxml==5.2.1
+html5lib==1.1
