@@ -672,6 +672,7 @@ def test_validate():
             define_version = None
             external_dictionaries = ExternalDictionariesContainer({})
             rules = []
+            exclude_rules = []
             local_rules = None
             custom_standard = False
             progress = ProgressParameterOptions.BAR.value
@@ -695,6 +696,7 @@ def test_validate():
                     define_version,
                     external_dictionaries,
                     rules,
+                    exclude_rules,
                     local_rules,
                     custom_standard,
                     progress,
@@ -721,6 +723,7 @@ def test_validate():
                     define_version,
                     external_dictionaries,
                     rules,
+                    exclude_rules,
                     local_rules,
                     custom_standard,
                     progress,
