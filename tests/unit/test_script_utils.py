@@ -28,7 +28,7 @@ def test_load_specified_rules_include(standard_context):
     result = load_specified_rules(
         rules_data,
         ("CORE-0001", "CORE-0003"),
-        None,
+        (),
         standard,
         version,
         standard_dict,
@@ -50,7 +50,7 @@ def test_load_specified_rules_exclude(standard_context):
 
     result = load_specified_rules(
         rules_data,
-        None,
+        (),
         ("CORE-0002",),
         standard,
         version,
@@ -73,7 +73,7 @@ def test_load_rules_from_local_include(monkeypatch, standard_context):
     args = SimpleNamespace(
         local_rules=("/rules",),
         rules=("CORE.Local.0001", "CORE.Local.0003"),
-        exclude_rules=None,
+        exclude_rules=(),
         standard=standard,
         version=version,
         substandard=substandard,
@@ -135,7 +135,7 @@ def test_load_rules_from_local_exclude(monkeypatch, standard_context):
 
     args = SimpleNamespace(
         local_rules=("/rules",),
-        rules=None,
+        rules=(),
         exclude_rules=("CORE.Local.0002",),
         standard=standard,
         version=version,
