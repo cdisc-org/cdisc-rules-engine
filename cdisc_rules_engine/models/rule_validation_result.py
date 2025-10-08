@@ -14,7 +14,7 @@ class RuleValidationResult(RepresentationInterface):
     executability: str | None = None
     message: str | None = None
     execution_status: str | None = None
-    results: List[dict | str] | None = None
+    results: List[dict | str] = []
 
     def __init__(self, rule: Rule, results: List[dict | str]):
         self.id = rule.get("core_id")
@@ -22,7 +22,6 @@ class RuleValidationResult(RepresentationInterface):
         self.fda_rule_id = self._get_rule_ids(rule, "FDA")
         self.executability = rule.get("executability")
         actions = rule.get("actions")
-        self.message = None
         if actions and len(actions) == 1:
             self.message = actions[0].get("params", {}).get("message")
         self.execution_status = get_execution_status(results)

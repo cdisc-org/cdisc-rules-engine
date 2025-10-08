@@ -1,5 +1,5 @@
 from typing import List
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from cdisc_rules_engine.utilities.utils import get_execution_status
 
 from .base_validation_entity import BaseValidationEntity
@@ -11,20 +11,18 @@ from .validation_error_entity import ValidationErrorEntity
 class ValidationErrorContainer(BaseValidationEntity):
     dataset: str | None = None
     domain: str | None = None
-    targets: List[str] = field(default_factory=list)
-    errors: List[ValidationErrorEntity | FailedValidationEntity] = field(
-        default_factory=list
-    )
+    targets: List[str] = []
+    errors: List[ValidationErrorEntity | FailedValidationEntity] = []
     message: str | None = None
-    execution_status: str | None = None
+    status: str | None = None
 
     @property
     def executionStatus(self):
-        return self.execution_status or get_execution_status(self.errors)
+        return self.status or get_execution_status(self.errors)
 
     def to_representation(self) -> dict:
         return {
-            "executionStatus": self.status,
+            "executionStatus": self.executionStatus,
             "dataset": self.dataset,
             "domain": self.domain,
             "variables": sorted(self.targets),
