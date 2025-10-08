@@ -101,7 +101,8 @@ class SQLSerialiser:
             for col_name in columns:
                 value = row.get(col_name.lower())
                 if isinstance(value, str):
-                    value = f"'{value}'"
+                    escaped_value = value.replace("'", "''")
+                    value = f"'{escaped_value}'"
                 elif value is None or pd.isna(value):
                     value = "NULL"
                 values.append(str(value))
