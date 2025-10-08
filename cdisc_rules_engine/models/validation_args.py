@@ -24,5 +24,6 @@ Validation_args = namedtuple(
         "define_xml_path",
         "validate_xml",
         "max_report_rows",
+        "max_errors_per_rule",
     ],
 )

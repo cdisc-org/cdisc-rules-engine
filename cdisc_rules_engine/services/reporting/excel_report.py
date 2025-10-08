@@ -44,16 +44,22 @@ class ExcelReport(BaseReport):
             datasets, dataset_paths, validation_results, elapsed_time, args, template
         )
         self._item_type = "list"
-        max_rows_options = []
-        env_max_rows = os.getenv("MAX_REPORT_ROWS")
-        if env_max_rows:
-            max_rows_options.append(int(env_max_rows))
-        if args.max_report_rows is not None:
-            max_rows_options.append(int(self._args.max_report_rows))
-        if max_rows_options:
-            self.max_rows_per_sheet = min(max_rows_options)
+        env_max_rows = (
+            int(os.getenv("MAX_REPORT_ROWS")) if os.getenv("MAX_REPORT_ROWS") else None
+        )
+        if env_max_rows is not None and args.max_report_rows is not None:
+            result = max(env_max_rows, args.max_report_rows)
+        elif env_max_rows is not None:
+            result = env_max_rows
+        elif args.max_report_rows is not None:
+            result = args.max_report_rows
         else:
-            self.max_rows_per_sheet = self.DEFAULT_MAX_ROWS
+            result = self.DEFAULT_MAX_ROWS
+        if result == 0:
+            result = None
+        elif result < 0:
+            result = self.DEFAULT_MAX_ROWS
+        self.max_rows_per_sheet = result
 
     @property
     def _file_format(self):
@@ -66,6 +72,8 @@ class ExcelReport(BaseReport):
         return chunks
 
     def _needs_splitting(self, summary_data: List, detailed_data: List) -> bool:
+        if self.max_rows_per_sheet is None:
+            return False
         return (
             len(summary_data) > self.max_rows_per_sheet
             or len(detailed_data) > self.max_rows_per_sheet

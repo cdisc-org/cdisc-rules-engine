@@ -7,6 +7,7 @@ import tempfile
 from datetime import datetime
 from multiprocessing import freeze_support
 from typing import Tuple
+from dotenv import load_dotenv
 
 import click
 from pathlib import Path
@@ -211,6 +212,13 @@ def cli():
     default=None,
     help="Maximum number of rows per report sheet.",
 )
+@click.option(
+    "-me",
+    "--max-errors-per-rule",
+    type=int,
+    default=None,
+    help="Maximum number of errors across all datasets for a given rule.",
+)
 @click.pass_context
 def validate(
     ctx,
@@ -243,6 +251,7 @@ def validate(
     define_xml_path: str,
     validate_xml: bool,
     max_report_rows: int,
+    max_report_errors: int,
 ):
     """
     Validate data using CDISC Rules Engine
@@ -254,6 +263,7 @@ def validate(
 
     # Validate conditional options
     logger = logging.getLogger("validator")
+    load_dotenv()
 
     if raw_report is True:
         if not (len(output_format) == 1 and output_format[0] == ReportTypes.JSON.value):
@@ -329,6 +339,7 @@ def validate(
             define_xml_path,
             validate_xml,
             max_report_rows,
+            max_report_errors,
         )
     )
 
@@ -675,6 +686,7 @@ def test_validate():
             define_xml_path = None
             validate_xml = False
             max_report_rows = None
+            max_report_errors = None
             json_output = os.path.join(temp_dir, "json_validation_output")
             run_validation(
                 Validation_args(
@@ -699,6 +711,7 @@ def test_validate():
                     define_xml_path,
                     validate_xml,
                     max_report_rows,
+                    max_report_errors,
                 )
             )
             print("JSON validation completed successfully!")
@@ -726,6 +739,7 @@ def test_validate():
                     define_xml_path,
                     validate_xml,
                     max_report_rows,
+                    max_report_errors,
                 )
             )
             print("XPT validation completed successfully!")
