@@ -130,8 +130,10 @@ mock_validation_results = [
 
 def test_get_rules_report_data():
     with open(test_report_template, "rb") as f:
+        mock_args = MagicMock()
+        mock_args.max_report_rows = None
         report: ExcelReport = ExcelReport(
-            [], "test", mock_validation_results, 10.1, MagicMock(), f
+            [], "test", mock_validation_results, 10.1, mock_args, f
         )
         report_data = report.get_rules_report_data()
         expected_reports = []
@@ -154,8 +156,10 @@ def test_get_rules_report_data():
 
 def test_get_detailed_data(excel=True):
     with open(test_report_template, "rb") as f:
+        mock_args = MagicMock()
+        mock_args.max_report_rows = None
         report: ExcelReport = ExcelReport(
-            [], "test", mock_validation_results, 10.1, MagicMock(), f
+            [], "test", mock_validation_results, 10.1, mock_args, f
         )
         detailed_data = report.get_detailed_data(excel=True)
         errors = [
@@ -201,8 +205,10 @@ def test_get_detailed_data(excel=True):
 
 def test_get_summary_data():
     with open(test_report_template, "rb") as f:
+        mock_args = MagicMock()
+        mock_args.max_report_rows = None
         report: ExcelReport = ExcelReport(
-            [], "test", mock_validation_results, 10.1, MagicMock(), f
+            [], "test", mock_validation_results, 10.1, mock_args, f
         )
         summary_data = report.get_summary_data()
         errors = [
