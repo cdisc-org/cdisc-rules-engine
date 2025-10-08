@@ -123,7 +123,10 @@ class RulesEngine:
             for result in dataset_results:
                 if result.get("executionStatus") == "success":
                     total_errors += len(result.get("errors"))
-                    if total_errors >= self.max_errors_per_rule:
+                    if (
+                        self.max_errors_per_rule
+                        and total_errors >= self.max_errors_per_rule
+                    ):
                         logger.info(
                             f"Rule {rule.get('core_id')}: Error limit ({self.max_errors_per_rule}) "
                             f"reached after processing {dataset_metadata.name}. "
