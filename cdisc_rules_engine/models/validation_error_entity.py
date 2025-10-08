@@ -10,9 +10,8 @@ class ValidationErrorEntity(BaseValidationEntity):
     The entity describes an error that been flagged because
     a dataset violates a rule in a certain row.
     """
-    # Required fields first (no defaults)
+
     value: dict
-    # Optional fields with defaults
     dataset: str | None = None
     row: int | None = None
     usubjid: str | None = None

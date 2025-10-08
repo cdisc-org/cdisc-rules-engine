@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from cdisc_rules_engine.interfaces import RepresentationInterface
 from cdisc_rules_engine.utilities.utils import get_execution_status
 from cdisc_rules_engine.models.rule import Rule
-from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 
 
 @dataclass
@@ -14,7 +13,7 @@ class RuleValidationResult(RepresentationInterface):
     fda_rule_id: str | None = None
     executability: str | None = None
     message: str | None = None
-    execution_status: ExecutionStatus | None = None
+    execution_status: str | None = None
     results: List[dict | str] | None = None
 
     def __init__(self, rule: Rule, results: List[dict | str]):
@@ -26,14 +25,7 @@ class RuleValidationResult(RepresentationInterface):
         self.message = None
         if actions and len(actions) == 1:
             self.message = actions[0].get("params", {}).get("message")
-        status_value = get_execution_status(results)
-        # Find the ExecutionStatus enum by its string value
-        self.execution_status = ExecutionStatus.SUCCESS  # Default fallback
-        if status_value:  # Add None check for safety
-            for status in ExecutionStatus:
-                if status.value == status_value:
-                    self.execution_status = status
-                    break
+        self.execution_status = get_execution_status(results)
         self.results = results
 
     def _get_rule_ids(self, rule: Rule, org: str) -> str:
