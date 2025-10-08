@@ -88,7 +88,7 @@ class DataframeType(BaseType):
             if isinstance(x, int):
                 return str(x).strip()
             elif isinstance(x, float):
-                return f"{x:.0f}" if x.is_integer() else str(x).strip()
+                return f"{x:.0f}" if x.is_integer() else str(x).strip()  # noqa: E231
         return x
 
     def convert_string_data_to_lower(self, data):
@@ -97,6 +97,15 @@ class DataframeType(BaseType):
         else:
             data = data.lower()
         return data
+
+    def _is_null_or_empty(self, value):
+        try:
+            result = pd.isna(value) | (value == "") | (value is None)
+            if hasattr(result, "all"):
+                return result.all()  # True only if ALL elements are null/empty
+            return result
+        except (ValueError, TypeError):
+            return pd.isna(value) or value is None or value == ""
 
     def replace_prefix(self, value: str) -> Union[str, Any]:
         if isinstance(value, str):
@@ -170,8 +179,8 @@ class DataframeType(BaseType):
                 if comparator not in row or value_is_literal
                 else row[comparator]
             )
-        both_null = (comparison_data == "" or comparison_data is None) & (
-            row[target] == "" or row[target] is None
+        both_null = self._is_null_or_empty(comparison_data) & self._is_null_or_empty(
+            row[target]
         )
         if both_null:
             return False
@@ -215,8 +224,8 @@ class DataframeType(BaseType):
                 if comparator not in row or value_is_literal
                 else row[comparator]
             )
-        both_null = (comparison_data == "" or comparison_data is None) & (
-            row[target] == "" or row[target] is None
+        both_null = self._is_null_or_empty(comparison_data) & self._is_null_or_empty(
+            row[target]
         )
         if both_null:
             return False
