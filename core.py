@@ -251,7 +251,7 @@ def validate(
     define_xml_path: str,
     validate_xml: bool,
     max_report_rows: int,
-    max_report_errors: int,
+    max_errors_per_rule: int,
 ):
     """
     Validate data using CDISC Rules Engine
@@ -339,7 +339,7 @@ def validate(
             define_xml_path,
             validate_xml,
             max_report_rows,
-            max_report_errors,
+            max_errors_per_rule,
         )
     )
 
