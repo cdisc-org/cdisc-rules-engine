@@ -164,7 +164,7 @@ class USDMDataService(BaseDataService):
             contents_metadata
         )
         return self._reader_factory.dataset_implementation.from_dict(
-            metadata_to_return.as_dict()
+            metadata_to_return.to_representation()
         )
 
     @cached_dataset(DatasetTypes.CONTENTS.value)

@@ -15,3 +15,10 @@ class FailedValidationEntity(BaseValidationEntity):
     dataset: str
     # Optional fields with defaults
     status: ExecutionStatus = ExecutionStatus.EXECUTION_ERROR
+
+    def to_representation(self) -> dict:
+        return {
+            "dataset": self.dataset,
+            "error": self.error,
+            "message": self.message,
+        }

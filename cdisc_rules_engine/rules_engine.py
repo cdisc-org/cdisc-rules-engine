@@ -152,7 +152,7 @@ class RulesEngine:
                             domain=dataset_metadata.domain
                             or dataset_metadata.rdomain,
                             errors=[],
-                        ).as_dict()
+                        ).to_representation()
                     ]
             else:
                 logger.info(
@@ -164,7 +164,7 @@ class RulesEngine:
                     domain=dataset_metadata.domain or dataset_metadata.rdomain or "",
                 )
                 error_obj.status = ExecutionStatus.SKIPPED.value
-                return [error_obj.as_dict()]
+                return [error_obj.to_representation()]
         except Exception as e:
             logger.trace(e)
             logger.error(
@@ -183,7 +183,7 @@ class RulesEngine:
             )
             error_obj.domain = dataset_metadata.domain or dataset_metadata.rdomain or ""
             # this wrapping into a list is necessary to keep return type consistent
-            return [error_obj.as_dict()]
+            return [error_obj.to_representation()]
 
     def get_dataset_builder(
         self,

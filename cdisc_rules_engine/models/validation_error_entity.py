@@ -33,7 +33,7 @@ class ValidationErrorEntity(BaseValidationEntity):
                 data[key] = val
         return data
 
-    def as_dict(self) -> dict:
+    def to_representation(self) -> dict:
         representation: dict = {
             "value": self._format_values(),
         }

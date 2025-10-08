@@ -1,13 +1,14 @@
 from typing import List
 from dataclasses import dataclass
 
+from cdisc_rules_engine.interfaces import RepresentationInterface
 from cdisc_rules_engine.utilities.utils import get_execution_status
 from cdisc_rules_engine.models.rule import Rule
 from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 
 
 @dataclass
-class RuleValidationResult:
+class RuleValidationResult(RepresentationInterface):
     id: str | None = None
     cdisc_rule_id: str | None = None
     fda_rule_id: str | None = None
@@ -48,7 +49,7 @@ class RuleValidationResult:
             )
         )
 
-    def as_dict(self) -> dict:
+    def to_representation(self) -> dict:
         return {
             "id": self.id,
             "executability": self.executability,

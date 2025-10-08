@@ -1,8 +1,9 @@
 from abc import ABC
 from dataclasses import dataclass
 
+from cdisc_rules_engine.interfaces import RepresentationInterface
+
 
 @dataclass
-class BaseValidationEntity(ABC):
-    # Remove the default to fix field ordering issues in subclasses
+class BaseValidationEntity(RepresentationInterface, ABC):
     pass

@@ -56,12 +56,12 @@ class ValidationErrorContainer(BaseValidationEntity):
         else:
             self._status = value
 
-    def as_dict(self) -> dict:
+    def to_representation(self) -> dict:
         return {
             "executionStatus": self.status,
             "dataset": self.dataset,
             "domain": self.domain,
             "variables": sorted(self.targets),
             "message": self.message,
-            "errors": [error.as_dict() for error in self.errors],
+            "errors": [error.to_representation() for error in self.errors],
         }

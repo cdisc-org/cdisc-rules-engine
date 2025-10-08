@@ -127,7 +127,7 @@ class LocalDataService(BaseDataService):
             contents_metadata
         )
         return self.dataset_implementation.from_dict(
-            metadata_to_return.as_dict()
+            metadata_to_return.to_representation()
         )
 
     @cached_dataset(DatasetTypes.CONTENTS.value)

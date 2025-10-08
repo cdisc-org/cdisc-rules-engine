@@ -90,7 +90,7 @@ class JsonReport(BaseReport):
 
         if kwargs.get("raw_report") is True:
             json_export["results_data"] = [
-                rule_result.as_dict() for rule_result in self._results
+                rule_result.to_representation() for rule_result in self._results
             ]
         else:
             json_export["Issue_Summary"] = self.get_summary_data()
