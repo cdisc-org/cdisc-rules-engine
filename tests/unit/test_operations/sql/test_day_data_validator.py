@@ -7,6 +7,9 @@ from cdisc_rules_engine.models.sql_operation_params import SqlOperationParams
 from cdisc_rules_engine.sql_operations.sql_operations_factory import (
     SqlOperationsFactory,
 )
+from cdisc_rules_engine.standards.default_standards_context import (
+    DefaultStandardsContext,
+)
 
 from .helpers import assert_operation_constant, assert_operation_parameterized_constant
 
@@ -80,7 +83,7 @@ def test_sql_dy_calculation(current_data, dm_data, expected):
     PostgresQLDataService.add_test_dataset(data_service, table_name="DM", column_data=dm_data)
     PostgresQLDataService.add_test_dataset(data_service, table_name="EX", column_data=current_data)
 
-    params = SqlOperationParams(domain="EX", target="EXSTDTC", standard="", standard_version="")
+    params = SqlOperationParams(domain="EX", target="EXSTDTC", standards_context=DefaultStandardsContext())
     operation = SqlOperationsFactory.get_service("dy", params, data_service)
     result = operation.execute()
 
@@ -108,7 +111,7 @@ def test_sql_dy_no_dm_domain(current_data, expected):
 
     PostgresQLDataService.add_test_dataset(data_service, table_name="EX", column_data=current_data)
 
-    params = SqlOperationParams(domain="EX", target="EXSTDTC", standard="", standard_version="")
+    params = SqlOperationParams(domain="EX", target="EXSTDTC", standards_context=DefaultStandardsContext())
     operation = SqlOperationsFactory.get_service("dy", params, data_service)
     result = operation.execute()
     assert_operation_constant(operation, result, expected)
@@ -147,7 +150,7 @@ def test_sql_dy_missing_usubjid(current_data, dm_data, expected):
     PostgresQLDataService.add_test_dataset(data_service, table_name="DM", column_data=dm_data)
     PostgresQLDataService.add_test_dataset(data_service, table_name="EX", column_data=current_data)
 
-    params = SqlOperationParams(domain="EX", target="EXSTDTC", standard="", standard_version="")
+    params = SqlOperationParams(domain="EX", target="EXSTDTC", standards_context=DefaultStandardsContext())
     operation = SqlOperationsFactory.get_service("dy", params, data_service)
     result = operation.execute()
 
@@ -192,7 +195,7 @@ def test_sql_dy_invalid_dates(current_data, dm_data, expected):
     PostgresQLDataService.add_test_dataset(data_service, table_name="DM", column_data=dm_data)
     PostgresQLDataService.add_test_dataset(data_service, table_name="EX", column_data=current_data)
 
-    params = SqlOperationParams(domain="EX", target="EXSTDTC", standard="", standard_version="")
+    params = SqlOperationParams(domain="EX", target="EXSTDTC", standards_context=DefaultStandardsContext())
     operation = SqlOperationsFactory.get_service("dy", params, data_service)
     result = operation.execute()
 

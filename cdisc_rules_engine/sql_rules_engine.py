@@ -8,8 +8,6 @@ from business_rules.engine import run
 from psycopg2.errors import ProgrammingError
 
 from cdisc_rules_engine.check_operators.sql.base_sql_operator import SqlOperatorError
-from cdisc_rules_engine.models.library_metadata_container import LibraryMetadataContainer
-from cdisc_rules_engine.sql_operations.sql_base_operation import SqlOperationError
 from cdisc_rules_engine.data_service.postgresql_data_service import (
     PostgresQLDataService,
     SQLDatasetMetadata,
@@ -37,6 +35,8 @@ from cdisc_rules_engine.models.validation_error_container import (
     ValidationErrorContainer,
 )
 from cdisc_rules_engine.services import logger
+from cdisc_rules_engine.sql_operations.sql_base_operation import SqlOperationError
+from cdisc_rules_engine.standards.base_standards_context import BaseStandardsContext
 from cdisc_rules_engine.utilities.sql_rule_processor import SQLRuleProcessor
 from cdisc_rules_engine.utilities.utils import (
     serialize_rule,
@@ -55,10 +55,9 @@ def clean_postgres_message(message: str) -> str:
 
 
 class SQLRulesEngine:
-    def __init__(self, data_service: PostgresQLDataService, library_metadata: LibraryMetadataContainer):
-        self.rule_processor = SQLRuleProcessor(library_metadata=library_metadata)
+    def __init__(self, data_service: PostgresQLDataService, standards_context: BaseStandardsContext):
         self.data_service = data_service
-        self.library_metadata = library_metadata
+        self.standards_context = standards_context
 
     def get_schema(self):
         return export_rule_data(SqlVenmoObject, SqlVenmoResultHandler)
@@ -71,11 +70,12 @@ class SQLRulesEngine:
         for pp_ds_id in self.data_service.get_uploaded_dataset_ids():
             dataset_metadata = self.data_service.get_dataset_metadata(pp_ds_id)
 
-            is_suitable, reason = self.rule_processor.is_suitable_for_validation(
+            is_suitable, reason = self.standards_context.within_rule_scope(
                 rule,
-                dataset_metadata,
-                self.data_service.ig_specs.get("standard"),
-                self.data_service.ig_specs.get("standard_substandard"),
+                next(
+                    (metadata for metadata in self.data_service.datasets if metadata.name.lower() == pp_ds_id.lower()),
+                    None,
+                ),
             )
             if is_suitable:
                 if dataset_metadata.unsplit_name in results and "domains" in rule:
@@ -209,10 +209,8 @@ class SQLRulesEngine:
         rule_copy["conditions"].set_conditions(updated_conditions)
 
         # Apply any operations
-        operation_variables = self.rule_processor.perform_rule_operations(
-            rule_copy,
-            dataset_metadata.domain,
-            data_service=self.data_service,
+        operation_variables = SQLRuleProcessor.perform_rule_operations(
+            rule_copy, dataset_metadata.domain, data_service=self.data_service, standards_context=self.standards_context
         )
 
         # Apply any joins

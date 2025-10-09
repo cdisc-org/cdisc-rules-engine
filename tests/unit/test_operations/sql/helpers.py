@@ -9,6 +9,9 @@ from cdisc_rules_engine.sql_operations.sql_base_operation import SqlBaseOperatio
 from cdisc_rules_engine.sql_operations.sql_operations_factory import (
     SqlOperationsFactory,
 )
+from cdisc_rules_engine.standards.default_standards_context import (
+    DefaultStandardsContext,
+)
 
 TEST_TABLE_NAME = "test_table"
 
@@ -34,9 +37,7 @@ def setup_sql_operations(
     params = SqlOperationParams(
         domain=TEST_TABLE_NAME,
         target=target,
-        # TODO: When relevant
-        standard="",
-        standard_version="",
+        standards_context=DefaultStandardsContext(),
         **extra_config,
     )
     return SqlOperationsFactory.get_service(operation, params, data_service)

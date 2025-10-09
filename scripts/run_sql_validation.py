@@ -24,7 +24,8 @@ from cdisc_rules_engine.sql_rules_engine import SQLRulesEngine
 #     get_standard_details_cache_key,
 #     get_variable_codelist_map_cache_key,
 # )
-from cdisc_rules_engine.utilities.ig_specification import IGSpecification
+from cdisc_rules_engine.standards.base_standards_context import BaseStandardsContext
+from cdisc_rules_engine.standards.standards_factory import StandardsFactory
 from cdisc_rules_engine.utilities.progress_displayers import get_progress_displayer
 from cdisc_rules_engine.utilities.sql_rule_processor import SQLRuleProcessor
 from scripts.script_utils import (
@@ -82,15 +83,13 @@ def run_sql_validation(args: Validation_args):
     standard_version = args.version.replace(".", "-")
     standard_substandard = args.substandard
 
-    spec = IGSpecification(
-        standard=standard,
-        standard_version=standard_version,
-        standard_substandard=standard_substandard,
+    standards_context = StandardsFactory.get_standards_context(
+        standard, standard_version, standard_substandard, library_metadata
     )
 
-    data_service = PostgresQLDataService.from_dataset_paths(args.dataset_paths, spec)
+    data_service = PostgresQLDataService.from_dataset_paths(args.dataset_paths)
 
-    engine = SQLRulesEngine(data_service=data_service, library_metadata=library_metadata)
+    engine = SQLRulesEngine(data_service=data_service, standards_context=standards_context)
 
     engine_logger.info(f"Running {len(rules)} rules against {len(data_service.datasets)} datasets")
     start = time.time()
@@ -131,8 +130,8 @@ def run_sql_validation(args: Validation_args):
 # TODO: fix this one first
 # this is the tests entrypoint, CLI enters above where only the args are passed in
 def sql_run_single_rule_validation(
-    data_service: PostgresQLDataService, rule: dict, library_metadata: LibraryMetadataContainer
+    data_service: PostgresQLDataService, rule: dict, standards_context: BaseStandardsContext
 ) -> dict:
-    return SQLRulesEngine(data_service=data_service, library_metadata=library_metadata).sql_validate_single_rule(
+    return SQLRulesEngine(data_service=data_service, standards_context=standards_context).sql_validate_single_rule(
         SQLRule.from_cdisc_metadata(rule)
     )

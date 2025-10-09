@@ -25,7 +25,6 @@ from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.models.sql.table_schema import SqlTableSchema
 from cdisc_rules_engine.models.test_dataset import TestDataset
-from cdisc_rules_engine.utilities.ig_specification import IGSpecification
 
 SCHEMA_PATH = Path(__file__).parent / "schemas"
 
@@ -48,13 +47,12 @@ class SQLDatasetMetadata:
 
 class PostgresQLDataService:
 
-    def __init__(self, postgres_interface: PostgresQLInterface, standard: IGSpecification):
+    def __init__(self, postgres_interface: PostgresQLInterface):
         self.pgi = postgres_interface
         self.datasets: List[DatasetMetadata] = []
-        self.ig_specs = standard
 
     @classmethod
-    def instance(cls, standard: IGSpecification = None) -> "PostgresQLDataService":
+    def instance(cls) -> "PostgresQLDataService":
         """
         Create a PostgresQLDataService instance with an initialized database.
         """
@@ -62,7 +60,7 @@ class PostgresQLDataService:
         pgi = PostgresQLInterface()
         pgi.init_database()
 
-        instance = cls(postgres_interface=pgi, standard=standard)
+        instance = cls(postgres_interface=pgi)
         pgi.execute_sql_file(str(SCHEMA_PATH / "clinical_data_metadata_schema.sql"))
         populate_terminology(pgi)
         populate_codelists(pgi)
@@ -70,20 +68,18 @@ class PostgresQLDataService:
         return instance
 
     @classmethod
-    def from_list_of_testdatasets(
-        cls, test_datasets: list[TestDataset], standard: IGSpecification = None
-    ) -> "PostgresQLDataService":
+    def from_list_of_testdatasets(cls, test_datasets: list[TestDataset]) -> "PostgresQLDataService":
         """
         Constructor for tests, passing in TestDataset
         and create corresponding SQL tables
         """
-        instance = cls.instance(standard)
+        instance = cls.instance()
         instance.datasets += SqlTestDatasetLoader.load_test_datasets(instance.pgi, test_datasets)
         return instance
 
     @classmethod
-    def from_dataset_paths(cls, dataset_paths: List[str], standard: IGSpecification = None) -> "PostgresQLDataService":
-        instance = cls.instance(standard)
+    def from_dataset_paths(cls, dataset_paths: List[str]) -> "PostgresQLDataService":
+        instance = cls.instance()
         instance.datasets += SqlDatasetLoader.load_datasets(instance.pgi, dataset_paths)
         return instance
 

@@ -14,6 +14,7 @@ from cdisc_rules_engine.data_service.postgresql_data_service import (
 from cdisc_rules_engine.enums.default_file_paths import DefaultFilePaths
 from cdisc_rules_engine.models.test_dataset import TestDataset, TestVariableMetadata
 from cdisc_rules_engine.models.validation_args import Validation_args
+from cdisc_rules_engine.standards.standards_factory import StandardsFactory
 from cdisc_rules_engine.utilities.ig_specification import IGSpecification
 from cdisc_rules_engine.utilities.sql_rule_processor import SQLRuleProcessor
 from scripts.run_sql_validation import sql_run_single_rule_validation
@@ -286,17 +287,23 @@ def process_test_case_dataset(
     test_case_folder_path: str,
 ):
     try:
-        # Execute rule in SQL engine
-        ds = PostgresQLDataService.from_list_of_testdatasets(data_test_datasets, standard=ig_specs)
-        regression_errors["datasets_import_sql"] = "SUCCESS"
         metadata = get_metadata(ig_specs, define_xml_file_path)
-        sql_results = sql_run_single_rule_validation(data_service=ds, rule=rule, library_metadata=metadata)
+
+        # Execute rule in SQL engine
+        ds = PostgresQLDataService.from_list_of_testdatasets(data_test_datasets)
+        regression_errors["datasets_import_sql"] = "SUCCESS"
+        standards_context = StandardsFactory.get_standards_context(
+            ig_specs.get("standard"),
+            ig_specs.get("standard_version"),
+            ig_specs.get("standard_substandard"),
+            library_metadata=metadata,
+        )
+        sql_results = sql_run_single_rule_validation(data_service=ds, rule=rule, standards_context=standards_context)
         regression_errors["results_present_sql"] = True
         sql_regression = extract_results_regression(sql_results)
         regression_errors["results_sql"] = sql_regression
 
         # Execute in old engine
-        metadata = get_metadata(ig_specs, define_xml_file_path)
         old_results = run_single_rule_validation(
             data_test_datasets,
             rule,

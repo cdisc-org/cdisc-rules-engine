@@ -24,7 +24,7 @@ def test_dataset_names():
 
     SqlJoinMerge.perform_join(data_service.pgi, t1, t2, ["key"], ["key"])
 
-    params = SqlOperationParams(domain="t1", target=None, standard="", standard_version="")
+    params = SqlOperationParams(domain="t1", target=None, standards_context=None)
     operation = SqlOperationsFactory.get_service("dataset_names", params, data_service)
     result = operation.execute()
     assert_operation_collection(operation, result, ["t1", "t2"], unsorted=True)
