@@ -1,6 +1,7 @@
 import pandas as pd
 import pytest
 
+from cdisc_rules_engine.constants.metadata_columns import SOURCE_ROW_NUMBER
 from cdisc_rules_engine.data_service.merges.join import SqlJoinMerge
 from cdisc_rules_engine.data_service.postgresql_data_service import (
     PostgresQLDataService,
@@ -213,3 +214,60 @@ def test_join_table_itself(data):
     assert schema.has_column("key")
     assert schema.has_column("name")
     assert schema.has_column("l.name")
+
+
+def test_source_row_number_preserved_through_join():
+    ds = PostgresQLDataService.instance()
+    sv_data = {
+        "STUDYID": ["STUDY1"] * 20,
+        "USUBJID": ["1201001"] * 20,
+        "SVSTDTC": [
+            "2018-08-13",
+            "2018-08-14",
+            "2018-08-15",
+            "2018-08-16",
+            "2018-08-17",
+            "2018-08-18",
+            "2018-08-19",
+            "2018-08-20",
+            "2018-08-21",
+            "2018-08-22",
+            "2018-08-23",
+            "2018-08-24",
+            "2018-08-25",
+            "2018-08-26",
+            "2018-08-27",
+            "2018-08-28",
+            "2018-08-29",
+            "2018-08-30",
+            "2018-08-31",
+            "2018-09-01",
+        ],
+        "EPOCH": ["SCREENING"] * 20,
+    }
+    se_data = {
+        "STUDYID": ["STUDY1"],
+        "USUBJID": ["1201001"],
+        "SESTDTC": ["2018-08-13"],
+        "SEENDTC": ["2018-08-19"],
+        "EPOCH": ["TREATMENT"],
+    }
+    sv_schema = PostgresQLDataService.add_test_dataset(ds, "sv", sv_data)
+    se_schema = PostgresQLDataService.add_test_dataset(ds, "se", se_data)
+
+    result = SqlJoinMerge.perform_join(
+        pgi=ds.pgi, left=sv_schema, right=se_schema, pivot_left=["USUBJID"], pivot_right=["USUBJID"], type="LEFT"
+    )
+
+    ds.pgi.execute_sql(
+        f"""
+            SELECT {SOURCE_ROW_NUMBER}, epoch, {result.get_column_hash('se.epoch')} as se_epoch
+            FROM {result.hash}
+            WHERE epoch != {result.get_column_hash('se.epoch')}
+            ORDER BY {SOURCE_ROW_NUMBER}
+        """
+    )
+    errors = ds.pgi.fetch_all()
+    assert len(errors) > 0
+    first_error_row = errors[0][SOURCE_ROW_NUMBER]
+    assert first_error_row == 1, f"Expected row 1, got row {first_error_row}"

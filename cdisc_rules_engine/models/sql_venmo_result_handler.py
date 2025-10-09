@@ -6,6 +6,7 @@ from business_rules.actions import BaseActions, rule_action
 from business_rules.fields import FIELD_TEXT
 
 from cdisc_rules_engine.constants import NULL_FLAVORS
+from cdisc_rules_engine.constants.metadata_columns import SOURCE_ROW_NUMBER
 from cdisc_rules_engine.data_service.postgresql_data_service import (
     PostgresQLDataService,
     SQLDatasetMetadata,
@@ -211,7 +212,14 @@ class SqlVenmoResultHandler(BaseActions):
         sequence_value = row.get(schema.get_column_hash(sequence_column))
         sequence = int(sequence_value) if sequence_value is not None and sequence_value != "" else None
 
-        row_id = row.get("id")
+        source_row_hash = schema.get_column_hash(SOURCE_ROW_NUMBER)
+        if not source_row_hash or source_row_hash not in row:
+            raise ValueError(
+                f"source_row_number not found in row data for table {schema.name}. "
+                f"Data loading issue. All data tables must have source_row_number."
+            )
+
+        row_id = row.get(source_row_hash)
 
         values = {}
         for column in sorted(target_columns.keys()):
@@ -220,10 +228,8 @@ class SqlVenmoResultHandler(BaseActions):
                 continue
 
             if column.startswith("$"):
-                # Handle operation variables
                 value = self._evaluate_operation_variable(column, row, schema)
             else:
-                # Handle regular table columns
                 value = row.get(schema.get_column_hash(column))
 
             if value is None or value in NULL_FLAVORS:
@@ -233,7 +239,7 @@ class SqlVenmoResultHandler(BaseActions):
 
         return ValidationErrorEntity(
             dataset=self.dataset_metadata.filename,
-            row=row_id,
+            row=int(row_id),
             usubjid=usubjid,
             sequence=sequence,
             value=values,

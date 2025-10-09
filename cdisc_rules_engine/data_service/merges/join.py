@@ -77,7 +77,7 @@ class SqlJoinMerge:
                     {', '.join(selected_right_columns)}
                 FROM {left.hash} l
                 {type} JOIN {right.hash} r ON {join_condition}
-                ORDER BY l.id
+                ORDER BY l.source_row_number, l.id
         """
 
         pgi.execute_sql(query)
@@ -100,7 +100,7 @@ class SqlJoinMerge:
         left_output_columns = []
         right_output_columns = []
 
-        # Add all of the left table's columns
+        # Add all of the left table's columns (including source_row_number)
         for name, column in left.get_columns():
             if name == "id":
                 continue

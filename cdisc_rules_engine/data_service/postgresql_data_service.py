@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Union
 
+from cdisc_rules_engine.constants.metadata_columns import SOURCE_ROW_NUMBER
 from cdisc_rules_engine.data_service.loading.load_datasets import SqlDatasetLoader
 from cdisc_rules_engine.data_service.loading.load_test_datasets import (
     SqlTestDatasetLoader,
@@ -23,7 +24,7 @@ from cdisc_rules_engine.data_service.startup.populate_terminology import (
 )
 from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
-from cdisc_rules_engine.models.sql.table_schema import SqlTableSchema
+from cdisc_rules_engine.models.sql.table_schema import SqlTableSchema, SqlColumnSchema
 from cdisc_rules_engine.models.test_dataset import TestDataset
 
 SCHEMA_PATH = Path(__file__).parent / "schemas"
@@ -92,6 +93,12 @@ class PostgresQLDataService:
         if len(set(lengths)) != 1:
             raise ValueError("All input data columns must have the same length")
 
+        if SOURCE_ROW_NUMBER in [k.lower() for k in column_data.keys()]:
+            raise ValueError(
+                f"Test dataset '{table_name}' contains reserved column 'source_row_number'. "
+                "This column is automatically generated and should not be in test data."
+            )
+
         # Create schema and table:
         schema_row = {
             col.lower(): next((val for val in values if val is not None), "") for col, values in column_data.items()
@@ -99,7 +106,12 @@ class PostgresQLDataService:
         row_dicts = [dict(zip(column_data, values)) for values in zip(*column_data.values())]
         row_dicts = [{k.lower(): v for k, v in row.items()} for row in row_dicts]
 
+        for idx, row in enumerate(row_dicts, start=1):
+            row[SOURCE_ROW_NUMBER] = idx
+
         schema = SqlTableSchema.from_data(table_name, schema_row)
+        source_row_column = SqlColumnSchema(name=SOURCE_ROW_NUMBER, hash=SOURCE_ROW_NUMBER, type="Num")
+        schema.add_column(source_row_column)
         data_service.pgi.create_table(schema)
 
         data_service.pgi.insert_data(table_name=table_name, data=row_dicts)
