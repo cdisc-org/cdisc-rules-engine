@@ -4,7 +4,7 @@ from typing import Iterable
 
 
 class LibraryMetadataContainer:
-    def __init__(  # TODO check constructor calls
+    def __init__(
         self,
         standard_metadata={},
         standard_schema_definition={},
