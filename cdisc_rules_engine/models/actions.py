@@ -95,22 +95,22 @@ class COREActions(BaseActions):
                   "dataset": "ae.xpt",
                   "row": 0,
                   "value": {"STUDYID": "Not in dataset"},
-                  "uSubjId": "2",
-                  "seq": 1,
+                  "USUBJID": "2",
+                  "SEQ": 1,
                 },
                 {
                   "dataset": "ae.xpt",
                   "row": 1,
                   "value": {"AESTDY": "test", "DOMAIN": "test"},
-                  "uSubjId": 7,
-                  "seq": 2,
+                  "USUBJID": 7,
+                  "SEQ": 2,
                 },
                 {
                   "dataset": "ae.xpt",
                   "row": 9,
                   "value": {"AESTDY": "test", "DOMAIN": "test"},
-                  "uSubjId": 12,
-                  "seq": 10,
+                  "USUBJID": 12,
+                  "SEQ": 10,
                 },
             ],
             "message": "AESTDY and DOMAIN are equal to test",
@@ -170,13 +170,11 @@ class COREActions(BaseActions):
             self.rule.get("sensitivity") is not None
         ):  # rule sensitivity is incorrectly defined
             error_entity = ValidationErrorEntity(
-                {
-                    "dataset": "N/A",
-                    "row": 0,
-                    "value": {"ERROR": "Invalid or undefined sensitivity in the rule"},
-                    "uSubjId": "N/A",
-                    "SEQ": 0,
-                }
+                dataset="N/A",
+                row=0,
+                value={"ERROR": "Invalid or undefined sensitivity in the rule"},
+                USUBJID="N/A",
+                SEQ=0,
             )
             return ValidationErrorContainer(
                 domain=(
@@ -237,12 +235,12 @@ class COREActions(BaseActions):
                     },
                     dataset=self._get_dataset_name(pd.DataFrame([row])),
                     row=int(row.get(SOURCE_ROW_NUMBER, idx + 1)),
-                    usubjid=(
+                    USUBJID=(
                         str(row.get("USUBJID"))
                         if "USUBJID" in row and not pd.isna(row["USUBJID"])
                         else None
                     ),
-                    sequence=(
+                    SEQ=(
                         int(row.get(f"{self.dataset_metadata.domain or ''}SEQ"))
                         if f"{self.dataset_metadata.domain or ''}SEQ" in row
                         and self._sequence_exists(
@@ -316,10 +314,10 @@ class COREActions(BaseActions):
                 )
             ),  # record number should start at 1, not 0
             value=filtered_dict,
-            usubjid=(
+            USUBJID=(
                 str(usubjid[df_row.name]) if isinstance(usubjid, pd.Series) else None
             ),
-            sequence=(
+            SEQ=(
                 int(sequence[df_row.name])
                 if self._sequence_exists(sequence, df_row.name)
                 else None

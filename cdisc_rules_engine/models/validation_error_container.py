@@ -1,5 +1,5 @@
 from typing import List
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from cdisc_rules_engine.utilities.utils import get_execution_status
 
 from .base_validation_entity import BaseValidationEntity
@@ -11,8 +11,10 @@ from .validation_error_entity import ValidationErrorEntity
 class ValidationErrorContainer(BaseValidationEntity):
     dataset: str | None = None
     domain: str | None = None
-    targets: List[str] = []
-    errors: List[ValidationErrorEntity | FailedValidationEntity] = []
+    targets: List[str] = field(default_factory=list)
+    errors: List[ValidationErrorEntity | FailedValidationEntity] = field(
+        default_factory=list
+    )
     message: str | None = None
     status: str | None = None
 

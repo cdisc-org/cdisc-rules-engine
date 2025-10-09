@@ -1,4 +1,5 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+
 from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 from cdisc_rules_engine.enums.base_enum import BaseEnum
 from .base_validation_entity import BaseValidationEntity
@@ -11,11 +12,11 @@ class ValidationErrorEntity(BaseValidationEntity):
     a dataset violates a rule in a certain row.
     """
 
-    value: dict
+    value: dict = field(default_factory=dict)
     dataset: str | None = None
     row: int | None = None
-    usubjid: str | None = None
-    sequence: int | None = None
+    USUBJID: str | None = None
+    SEQ: int | None = None
     status: ExecutionStatus = ExecutionStatus.SUCCESS
 
     def _format_values(self) -> dict:
@@ -40,8 +41,8 @@ class ValidationErrorEntity(BaseValidationEntity):
             representation["dataset"] = self.dataset
         if self.row is not None:
             representation["row"] = self.row
-        if self.usubjid:
-            representation["USUBJID"] = self.usubjid
-        if self.sequence:
-            representation["SEQ"] = self.sequence
+        if self.USUBJID is not None:
+            representation["USUBJID"] = self.USUBJID
+        if self.SEQ is not None:
+            representation["SEQ"] = self.SEQ
         return representation

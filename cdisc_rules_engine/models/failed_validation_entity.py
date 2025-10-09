@@ -3,7 +3,7 @@ from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 from .base_validation_entity import BaseValidationEntity
 
 
-@dataclass
+@dataclass(kw_only=True)
 class FailedValidationEntity(BaseValidationEntity):
     """
     The entity describes an error that occurred during validation

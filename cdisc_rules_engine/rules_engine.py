@@ -149,8 +149,7 @@ class RulesEngine:
                     return [
                         ValidationErrorContainer(
                             dataset=dataset_metadata.filename,
-                            domain=dataset_metadata.domain
-                            or dataset_metadata.rdomain,
+                            domain=dataset_metadata.domain or dataset_metadata.rdomain,
                             errors=[],
                         ).to_representation()
                     ]
@@ -162,8 +161,8 @@ class RulesEngine:
                     message=reason,
                     dataset=dataset_metadata.filename,
                     domain=dataset_metadata.domain or dataset_metadata.rdomain or "",
+                    status=ExecutionStatus.SKIPPED.value,
                 )
-                error_obj.status = ExecutionStatus.SKIPPED.value
                 return [error_obj.to_representation()]
         except Exception as e:
             logger.trace(e)
@@ -419,13 +418,12 @@ class RulesEngine:
                 )
                 message = "Schema Validation Error"
                 errors = [error_obj]
-                container = ValidationErrorContainer(
+                return ValidationErrorContainer(
                     errors=errors,
                     message=message,
                     dataset=os.path.basename(dataset_path),
+                    status=ExecutionStatus.SUCCESS.value,
                 )
-                container.status = ExecutionStatus.SUCCESS.value
-                return container
             else:
                 error_obj = FailedValidationEntity(
                     error="Schema validation is off",
@@ -434,13 +432,12 @@ class RulesEngine:
                 )
                 message = "Skipped because schema validation is off"
                 errors = [error_obj]
-                container = ValidationErrorContainer(
+                return ValidationErrorContainer(
                     dataset=os.path.basename(dataset_path),
                     errors=errors,
                     message=message,
+                    status=ExecutionStatus.SKIPPED.value,
                 )
-                container.status = ExecutionStatus.SKIPPED.value
-                return container
         elif isinstance(exception, DomainNotFoundError):
             error_obj = FailedValidationEntity(
                 error="Domain not found",
@@ -449,13 +446,12 @@ class RulesEngine:
             )
             message = "rule evaluation skipped - operation domain not found"
             errors = [error_obj]
-            container = ValidationErrorContainer(
+            return ValidationErrorContainer(
                 dataset=os.path.basename(dataset_path),
                 errors=errors,
                 message=message,
+                status=ExecutionStatus.SKIPPED.value,
             )
-            container.status = ExecutionStatus.SKIPPED.value
-            return container
         elif isinstance(
             exception, AttributeError
         ) and "'NoneType' object has no attribute" in str(exception):
@@ -466,13 +462,12 @@ class RulesEngine:
             )
             message = "rule evaluation skipped - missing metadata"
             errors = [error_obj]
-            container = ValidationErrorContainer(
+            return ValidationErrorContainer(
                 dataset=os.path.basename(dataset_path),
                 errors=errors,
                 message=message,
+                status=ExecutionStatus.SKIPPED.value,
             )
-            container.status = ExecutionStatus.SKIPPED.value
-            return container
         else:
             error_obj = FailedValidationEntity(
                 dataset=os.path.basename(dataset_path),
@@ -481,10 +476,9 @@ class RulesEngine:
             )
             message = "rule execution error"
         errors = [error_obj]
-        container = ValidationErrorContainer(
+        return ValidationErrorContainer(
             dataset=os.path.basename(dataset_path),
             errors=errors,
             message=message,
+            status=ExecutionStatus.EXECUTION_ERROR.value,
         )
-        container.status = ExecutionStatus.EXECUTION_ERROR.value
-        return container

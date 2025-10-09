@@ -1,5 +1,5 @@
 from typing import List
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from cdisc_rules_engine.interfaces import RepresentationInterface
 from cdisc_rules_engine.utilities.utils import get_execution_status
@@ -14,7 +14,7 @@ class RuleValidationResult(RepresentationInterface):
     executability: str | None = None
     message: str | None = None
     execution_status: str | None = None
-    results: List[dict | str] = []
+    results: List[dict | str] = field(default_factory=list)
 
     def __init__(self, rule: Rule, results: List[dict | str]):
         self.id = rule.get("core_id")
