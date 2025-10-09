@@ -1,6 +1,9 @@
 # flake8: noqa
 from typing import Type
 
+from cdisc_rules_engine.dataset_builders.json_schema_check_dataset_builder import (
+    JsonSchemaCheckDatasetBuilder,
+)
 from cdisc_rules_engine.interfaces import FactoryInterface
 from cdisc_rules_engine.dataset_builders.contents_dataset_builder import (
     ContentsDatasetBuilder,
@@ -73,6 +76,7 @@ class DatasetBuilderFactory(FactoryInterface):
         RuleTypes.VARIABLE_METADATA_CHECK_AGAINST_DEFINE_XML_AND_LIBRARY.value: VariablesMetadataWithDefineAndLibraryDatasetBuilder,
         RuleTypes.VALUE_CHECK_WITH_DATASET_METADATA.value: ValueCheckDatasetMetadataDatasetBuilder,
         RuleTypes.VALUE_CHECK_WITH_VARIABLE_METADATA.value: ValueCheckVariableMetadataDatasetBuilder,
+        RuleTypes.JSON_SCHEMA_CHECK.value: JsonSchemaCheckDatasetBuilder,
     }
 
     @classmethod
