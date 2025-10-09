@@ -192,6 +192,51 @@ class TestValidate(unittest.TestCase):
         self.assertEqual(stderr, "")
         self.assertFalse(self.error_keyword in stdout)
 
+    def test_validate_local_exclude_rule(self):
+        args = [
+            "python",
+            "core.py",
+            "validate",
+            "-s",
+            "sdtmig",
+            "-v",
+            "3.4",
+            "-dp",
+            os.path.join("tests", "resources", "datasets", "ae.xpt"),
+            "-lr",
+            os.path.join("tests", "resources", "rules"),
+            "-er",
+            "CORE-000473",
+        ]
+        exit_code, stdout, stderr = run_command(args, False)
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(stderr, "")
+        self.assertFalse(self.error_keyword in stdout)
+
+    def test_validate_include_exclude(self):
+        args = [
+            "python",
+            "core.py",
+            "validate",
+            "-s",
+            "sdtmig",
+            "-v",
+            "3.4",
+            "-dp",
+            os.path.join("tests", "resources", "datasets", "ae.xpt"),
+            "-lr",
+            os.path.join("tests", "resources", "rules"),
+            "-r",
+            "CORE-000470",
+            "-er",
+            "CORE-000473",
+        ]
+        exit_code, stdout, stderr = run_command(args, False)
+        self.assertEqual(exit_code, 0)
+        self.assertIn(
+            "cannot use both --rules and --exclude-rules flags together.", stderr
+        )
+
     def test_validate_minimum_options(self):
         args = [
             "python",
