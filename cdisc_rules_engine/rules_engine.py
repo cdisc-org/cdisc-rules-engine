@@ -158,10 +158,10 @@ class RulesEngine:
                     f"Skipped dataset {dataset_metadata.name}. Reason: {reason}"
                 )
                 error_obj = ValidationErrorContainer(
+                    status=ExecutionStatus.SKIPPED.value,
                     message=reason,
                     dataset=dataset_metadata.filename,
                     domain=dataset_metadata.domain or dataset_metadata.rdomain or "",
-                    status=ExecutionStatus.SKIPPED.value,
                 )
                 return [error_obj.to_representation()]
         except Exception as e:
@@ -421,16 +421,16 @@ class RulesEngine:
                 return ValidationErrorContainer(
                     errors=errors,
                     message=message,
-                    dataset=os.path.basename(dataset_path),
                     status=ExecutionStatus.SUCCESS.value,
+                    dataset=os.path.basename(dataset_path),
                 )
             else:
+                message = "Skipped because schema validation is off"
                 error_obj = FailedValidationEntity(
                     error="Schema validation is off",
-                    message="Skipped because schema validation is off",
+                    message=message,
                     dataset=os.path.basename(dataset_path),
                 )
-                message = "Skipped because schema validation is off"
                 errors = [error_obj]
                 return ValidationErrorContainer(
                     dataset=os.path.basename(dataset_path),
