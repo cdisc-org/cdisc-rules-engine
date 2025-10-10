@@ -172,6 +172,12 @@ def cli():
     help="Specify rule core ID ex. CORE-000001. Can be specified multiple times",
 )
 @click.option(
+    "--exclude-rules",
+    "-er",
+    multiple=True,
+    help="Specify rule core ID to exclude, ex. CORE-000001. Can be specified multiple times",
+)
+@click.option(
     "--local-rules",
     "-lr",
     required=False,
@@ -245,6 +251,7 @@ def validate(
     snomed_edition: str,
     snomed_url: str,
     rules: Tuple[str],
+    exclude_rules: Tuple[str],
     local_rules: str,
     custom_standard: bool,
     progress: str,
@@ -271,6 +278,10 @@ def validate(
                 "Flag --raw-report can be used only when --output-format is JSON"
             )
             ctx.exit()
+
+    if exclude_rules and rules:
+        logger.error("Cannot use both --rules and --exclude-rules flags together.")
+        ctx.exit()
 
     cache_path: str = os.path.join(os.path.dirname(__file__), cache)
 
@@ -333,6 +344,7 @@ def validate(
             define_version,
             external_dictionaries,
             rules,
+            exclude_rules,
             local_rules,
             custom_standard,
             progress,
@@ -680,6 +692,7 @@ def test_validate():
             define_version = None
             external_dictionaries = ExternalDictionariesContainer({})
             rules = []
+            exclude_rules = []
             local_rules = None
             custom_standard = False
             progress = ProgressParameterOptions.BAR.value
@@ -705,6 +718,7 @@ def test_validate():
                     define_version,
                     external_dictionaries,
                     rules,
+                    exclude_rules,
                     local_rules,
                     custom_standard,
                     progress,
@@ -733,6 +747,7 @@ def test_validate():
                     define_version,
                     external_dictionaries,
                     rules,
+                    exclude_rules,
                     local_rules,
                     custom_standard,
                     progress,
