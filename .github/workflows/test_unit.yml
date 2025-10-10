@@ -13,7 +13,7 @@ jobs:
           python-version: "3.12"
       - name: Install requirements
         run: |
-          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
       - name: Running Tests
         run: |
           python -m pytest tests/unit/ --cov=cdisc_rules_engine --cov-fail-under=75

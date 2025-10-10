@@ -34,8 +34,7 @@ jobs:
           python-version: "3.12"
       - name: Install linters
         run: |
-          pip install flake8==6.1.0
-          pip install black==24.10.0
+          pip install black flake8 -c requirements-dev.txt
       - name: Run flake8
         run: |
           flake8 ${{needs.get_changed_files.outputs.py}} --count --select=E9,F63,F7,F82 --show-source --statistics
