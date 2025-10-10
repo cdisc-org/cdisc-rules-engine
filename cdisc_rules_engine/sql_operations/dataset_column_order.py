@@ -15,8 +15,8 @@ class SqlDatasetColumnOrderOperation(SqlBaseOperation):
 
         columns = dataset_schema.get_columns()
 
-        # Filter out metadata columns and 'id' column, and convert to uppercase
-        column_names = [col[0].upper() for col in columns if col[0].upper() not in METADATA_COLUMNS and col[0] != "id"]
+        # Filter out metadata columns and 'id' column
+        column_names = [col[0].upper() for col in columns if col[0] not in METADATA_COLUMNS and col[0] != "id"]
 
         if column_names:
             # Format column names for SQL ARRAY

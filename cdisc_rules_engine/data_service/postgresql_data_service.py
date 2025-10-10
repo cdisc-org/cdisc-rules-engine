@@ -140,6 +140,18 @@ class PostgresQLDataService:
         tmp = next((metadata for metadata in self.datasets if metadata.name.lower() == dataset_id.lower()), None)
         if not tmp:
             return None
+
+        # Query data_metadata to get variable names
+        query = f"""
+            SELECT var_name
+            FROM data_metadata
+            WHERE dataset_id = '{dataset_id.lower()}'
+            ORDER BY id;
+        """
+        self.pgi.execute_sql(query=query)
+        results = self.pgi.fetch_all()
+        variables = [res["var_name"] for res in results] if results else []
+
         return SQLDatasetMetadata(
             filename=tmp.filename,
             filepath=str(tmp.full_path),
@@ -151,7 +163,7 @@ class PostgresQLDataService:
             domain=tmp.domain,
             is_supp=tmp.is_supp,
             rdomain=tmp.rdomain,
-            variables=[],
+            variables=variables,
             is_split=tmp.is_split,
         )
 

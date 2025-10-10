@@ -1,3 +1,4 @@
+import hashlib
 import traceback
 from abc import abstractmethod
 from functools import wraps
@@ -140,6 +141,7 @@ class BaseSqlOperator:
         """
         Fetches data from a SQL table and returns it as a pandas Series,
         so we can pass it to Venmo.
+
         """
         # Fetch all of the rows
         self.sql_data_service.pgi.execute_sql(
@@ -149,10 +151,13 @@ class BaseSqlOperator:
 
         # Fix off-by-one
         return_series = pd.Series(data={item["id"] - 1: item["data"] for item in sql_results})
+
         return return_series
 
     def _do_check_operator(self, new_column: str, sql_subquery_fn):
         # Handles simple checks by creating a column and updating it with a scalar subquery.
+        new_column = self._resolve_operation_variables_in_cache_key(new_column)
+
         exists = self.sql_data_service.pgi.schema.column_exists(self.table_id, new_column)
         if not exists:
             self.sql_data_service.pgi.add_column(
@@ -168,6 +173,8 @@ class BaseSqlOperator:
 
     def _do_complex_check_operator(self, new_column: str, sql_full_query_fn):
         # Handles complex checks by creating a column and populating it with a full custom query.
+        new_column = self._resolve_operation_variables_in_cache_key(new_column)
+
         exists = self.sql_data_service.pgi.schema.column_exists(self.table_id, new_column)
         if not exists:
             self.sql_data_service.pgi.add_column(
@@ -176,6 +183,37 @@ class BaseSqlOperator:
             query = sql_full_query_fn(self._table_sql(), self._column_sql(new_column, alias=False))
             self.sql_data_service.pgi.execute_sql(query)
         return self._fetch_for_venmo(new_column)
+
+    def _get_cache_key_component(self, value) -> str:
+        """
+        Get a cache-safe component for column naming.
+        If value is an operation variable, hash its resolved query.
+        Otherwise, return the value as a string.
+
+        This ensures that different operation results (e.g., SELECT TRUE vs SELECT FALSE)
+        get different cache keys, preventing incorrect cache reuse across datasets.
+        """
+        if isinstance(value, str) and value in self.operation_variables:
+            # Get the resolved query from the operation variable
+            op_var = self.operation_variables[value]
+            resolved_query = op_var.query
+
+            # Hash the query to create a unique, fixed-length identifier
+            query_hash = hashlib.md5(resolved_query.encode()).hexdigest()[:8]
+            return f"op_{query_hash}"
+
+        return str(value)
+
+    def _resolve_operation_variables_in_cache_key(self, cache_key: str) -> str:
+        """
+        Replace operation variable names ($variable) in cache key with their query hashes.
+        """
+        result = cache_key
+        for var_name in self.operation_variables:
+            if var_name in result:
+                var_hash = self._get_cache_key_component(var_name)
+                result = result.replace(var_name, var_hash)
+        return result
 
     def _table_sql(self):
         return self.sql_data_service.pgi.schema.get_table_hash(self.table_id)
