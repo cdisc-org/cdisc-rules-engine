@@ -751,6 +751,3 @@ cli.add_command(list_ct)
 if __name__ == "__main__":
     freeze_support()
     cli()
-
-
-
