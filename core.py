@@ -579,7 +579,7 @@ def list_rule_sets(ctx: click.Context, cache_path: str, custom: bool):
     for standard in sorted(rule_sets.keys()):
         versions = sorted(rule_sets[standard])
         for version in versions:
-            print(f"{standard.upper()}, {version}")
+            print(f"{standard}, {version}")
 
 
 @click.command()
