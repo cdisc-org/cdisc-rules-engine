@@ -207,6 +207,8 @@ class TestValidate(unittest.TestCase):
             os.path.join("tests", "resources", "rules"),
             "-er",
             "CORE-000473",
+            "-l",
+            "error",
         ]
         exit_code, stdout, stderr = run_command(args, False)
         self.assertEqual(exit_code, 0)
