@@ -2,6 +2,7 @@ from os import path
 from unittest.mock import patch
 
 from scripts.run_validation import run_single_rule_validation
+from cdisc_rules_engine.rules_engine import RulesEngine
 
 test_define_file_path: str = (
     f"{path.dirname(__file__)}/../../resources/test_defineV22-SDTM.xml"
@@ -9,7 +10,16 @@ test_define_file_path: str = (
 
 
 @patch("cdisc_rules_engine.services.data_services.DummyDataService.get_dataset_class")
-def test_rule_with_errors(mock_get_dataset_class):
+@patch("scripts.run_validation.RulesEngine")
+def test_rule_with_errors(mock_rules_engine_class, mock_get_dataset_class):
+
+    def patched_init(self, *args, **kwargs):
+        kwargs["max_errors_per_rule"] = 100
+        RulesEngine.__init__(self, *args, **kwargs)
+
+    mock_rules_engine_class.side_effect = lambda *args, **kwargs: (
+        type("RulesEngine", (RulesEngine,), {"__init__": patched_init})(*args, **kwargs)
+    )
     datasets = [
         {
             "filename": "lb.xpt",
@@ -72,7 +82,16 @@ def test_rule_with_errors(mock_get_dataset_class):
 
 
 @patch("cdisc_rules_engine.services.data_services.DummyDataService.get_dataset_class")
-def test_rule_without_errors(mock_get_dataset_class):
+@patch("scripts.run_validation.RulesEngine")
+def test_rule_without_errors(mock_rules_engine_class, mock_get_dataset_class):
+
+    def patched_init(self, *args, **kwargs):
+        kwargs["max_errors_per_rule"] = 100
+        RulesEngine.__init__(self, *args, **kwargs)
+
+    mock_rules_engine_class.side_effect = lambda *args, **kwargs: (
+        type("RulesEngine", (RulesEngine,), {"__init__": patched_init})(*args, **kwargs)
+    )
     datasets = [
         {
             "filename": "lb.xpt",
@@ -186,7 +205,21 @@ def test_rule_skipped():
     assert data["LB"][0]["executionStatus"] == "skipped"
 
 
-def test_rule_with_define_xml(define_xml_variable_validation_rule: dict):
+@patch("cdisc_rules_engine.services.data_services.DummyDataService.get_dataset_class")
+@patch("scripts.run_validation.RulesEngine")
+def test_rule_with_define_xml(
+    mock_rules_engine_class,
+    mock_get_dataset_class,
+    define_xml_variable_validation_rule: dict,
+):
+
+    def patched_init(self, *args, **kwargs):
+        kwargs["max_errors_per_rule"] = 100
+        RulesEngine.__init__(self, *args, **kwargs)
+
+    mock_rules_engine_class.side_effect = lambda *args, **kwargs: (
+        type("RulesEngine", (RulesEngine,), {"__init__": patched_init})(*args, **kwargs)
+    )
     datasets = [
         {
             "filename": "ae.xpt",
@@ -236,7 +269,7 @@ def test_rule_with_define_xml(define_xml_variable_validation_rule: dict):
             },
         }
     ]
-
+    mock_get_dataset_class.return_value = None
     with open(test_define_file_path, "r") as file:
         contents: str = file.read()
         data = run_single_rule_validation(

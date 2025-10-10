@@ -130,8 +130,10 @@ mock_validation_results = [
 
 def test_get_rules_report_data():
     with open(test_report_template, "rb") as f:
+        mock_args = MagicMock()
+        mock_args.max_report_rows = None
         report: ExcelReport = ExcelReport(
-            [], "test", mock_validation_results, 10.1, MagicMock(), f
+            [], "test", mock_validation_results, 10.1, mock_args, f
         )
         report_data = report.get_rules_report_data()
         expected_reports = []
@@ -154,8 +156,10 @@ def test_get_rules_report_data():
 
 def test_get_detailed_data(excel=True):
     with open(test_report_template, "rb") as f:
+        mock_args = MagicMock()
+        mock_args.max_report_rows = None
         report: ExcelReport = ExcelReport(
-            [], "test", mock_validation_results, 10.1, MagicMock(), f
+            [], "test", mock_validation_results, 10.1, mock_args, f
         )
         detailed_data = report.get_detailed_data(excel=True)
         errors = [
@@ -201,8 +205,10 @@ def test_get_detailed_data(excel=True):
 
 def test_get_summary_data():
     with open(test_report_template, "rb") as f:
+        mock_args = MagicMock()
+        mock_args.max_report_rows = None
         report: ExcelReport = ExcelReport(
-            [], "test", mock_validation_results, 10.1, MagicMock(), f
+            [], "test", mock_validation_results, 10.1, mock_args, f
         )
         summary_data = report.get_summary_data()
         errors = [
@@ -230,6 +236,8 @@ def test_get_export():
         mock_args = MagicMock()
         mock_args.meddra = "test"
         mock_args.whodrug = "test"
+        mock_args.max_report_rows = None
+
         datasets = [
             SDTMDatasetMetadata(
                 **{
@@ -246,13 +254,17 @@ def test_get_export():
             datasets, ["test"], mock_validation_results, 10.1, mock_args, f
         )
         cdiscCt = ["sdtmct-03-2021"]
-        wb = report.get_export(
+        f.seek(0)
+        template_buffer = f.read()
+        workbooks = report.get_export(
             define_version="2.1",
             cdiscCt=cdiscCt,
             standard="sdtmig",
             version="3.4",
             dictionary_versions={},
+            template_buffer=template_buffer,
         )
+        wb = workbooks[0]
         assert wb["Conformance Details"]["B3"].value == "10.1 seconds"
         assert wb["Conformance Details"]["B4"].value == __version__
         assert wb["Conformance Details"]["B7"].value == "SDTMIG"
