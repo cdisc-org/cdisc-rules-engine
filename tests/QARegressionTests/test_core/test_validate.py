@@ -230,6 +230,8 @@ class TestValidate(unittest.TestCase):
             "CORE-000470",
             "-er",
             "CORE-000473",
+            "-l",
+            "error",
         ]
         exit_code, stdout, stderr = run_command(args, False)
         self.assertEqual(exit_code, 0)
