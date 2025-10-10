@@ -162,7 +162,7 @@ Run `python core.py validate --help` to see the list of validation options.
                                   enforce.  After each dataset is validated for a single rule, the limit is checked
                                   and if it is met or exceeded, the validation for that rule will cease.
                                   Will default to 1000 if not specified.
-                                  Can be set via MAX_REPORT_ERRORS env variable;
+                                  Can be set via MAX_ERRORS_PER_RULE env variable;
                                   if both .env and -me are specified, the larger value will be used.
                                   If set to 0, no maximum will be enforced.
   -dv, --define-version TEXT      Define-XML version used for validation
