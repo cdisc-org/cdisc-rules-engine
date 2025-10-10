@@ -189,7 +189,7 @@ Apply a JSONata query to a JSON file. [JSONata documentation](https://docs.jsona
 
 ```yaml
 Check: |
-  **.$filter($, $myutils.equals).{"row":path, "A":A, "B":B}
+  **.$filter($, $myutils.equals).{"row":_path, "A":A, "B":B}
 Core:
   Id: JSONATA Test
   Status: Draft
@@ -222,14 +222,12 @@ Sensitivity: Record
 
 ```json
 {
-  "path": "",
   "A": "same value 1",
   "B": "same value 1",
   "C": {
-    "path": "C",
     "A": "different value 1",
     "B": "different value 2",
-    "C": { "path": "C.C", "A": "same value 2", "B": "same value 2" }
+    "C": { "A": "same value 2", "B": "same value 2" }
   }
 }
 ```
@@ -252,17 +250,21 @@ Sensitivity: Record
       },
       {
         "value": {
-          "row": "C.C",
+          "row": "/C/C",
           "A": "same value 2",
           "B": "same value 2"
         },
         "dataset": "",
-        "row": "C.C"
+        "row": "/C/C"
       }
     ]
   }
 ]
 ```
+
+### Preprocessing
+
+When the JSONata Rule Type is used, the input JSON file will be preprocessed to assign a `_path` attribute to each node in the JSON tree. The syntax for this path value will use the [JSON Pointer](https://datatracker.ietf.org/doc/html/rfc6901) syntax. This `_path` attribute can be referenced throughout the JSONata query.
 
 ### Output Variables and Report column mapping
 

@@ -1,6 +1,9 @@
 from unittest import TestCase
 from unittest.mock import MagicMock, patch
 from yaml import safe_load
+from cdisc_rules_engine.dataset_builders.jsonata_dataset_builder import (
+    add_json_pointer_paths,
+)
 from cdisc_rules_engine.exceptions.custom_exceptions import (
     MissingDataError,
     RuleExecutionError,
@@ -14,7 +17,7 @@ class TestJSONataProcessor(TestCase):
 
     rule = """
         Check: |
-            **.$filter($, $utils.equals).{"row":path, "A":A, "B":B}
+            **.$filter($, $utils.equals).{"row":_path, "A":A, "B":B}
         Core:
             Id: JSONATA Test
         Status: Draft
@@ -37,14 +40,12 @@ class TestJSONataProcessor(TestCase):
         };
     """
     dataset = {
-        "path": "",
         "A": "same value 1",
         "B": "same value 1",
         "C": {
-            "path": "C",
             "A": "different value 1",
             "B": "different value 2",
-            "C": {"path": "C.C", "A": "same value 2", "B": "same value 2"},
+            "C": {"A": "same value 2", "B": "same value 2"},
         },
     }
     expected = [
@@ -62,12 +63,12 @@ class TestJSONataProcessor(TestCase):
                 },
                 {
                     "value": {
-                        "row": "C.C",
+                        "row": "/C/C",
                         "A": "same value 2",
                         "B": "same value 2",
                     },
                     "dataset": "",
-                    "row": "C.C",
+                    "row": "/C/C",
                 },
             ],
         }
@@ -79,6 +80,7 @@ class TestJSONataProcessor(TestCase):
     def test_jsonata_processor(self, mock_get_custom_functions: MagicMock):
         mock_get_custom_functions.return_value = self.get_custom_functions
         rule = Rule.from_cdisc_metadata(safe_load(self.rule))
+        add_json_pointer_paths(self.dataset)
         result = JSONataProcessor.execute_jsonata_rule(
             rule=rule,
             dataset=self.dataset,
