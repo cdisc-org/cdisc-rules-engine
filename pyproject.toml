@@ -31,6 +31,8 @@ dependencies = [
     "fastparquet==2024.2.0",
     "dask[dataframe]==2024.2.0",
     "dask[array]==2024.2.0",
+    "lxml==5.2.1",
+    "html5lib==1.1",
 ]
 
 [project.urls]
