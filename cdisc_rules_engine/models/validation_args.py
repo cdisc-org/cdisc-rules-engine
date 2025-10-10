@@ -18,6 +18,7 @@ Validation_args = namedtuple(
         "define_version",
         "external_dictionaries",
         "rules",
+        "exclude_rules",
         "local_rules",
         "custom_standard",
         "progress",
