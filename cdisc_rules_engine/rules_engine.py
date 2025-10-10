@@ -440,9 +440,9 @@ class RulesEngine:
                 )
         elif isinstance(exception, DomainNotFoundError):
             error_obj = FailedValidationEntity(
+                dataset=os.path.basename(dataset_path),
                 error="Domain not found",
                 message=str(exception),
-                dataset=os.path.basename(dataset_path),
             )
             message = "rule evaluation skipped - operation domain not found"
             errors = [error_obj]
@@ -456,9 +456,9 @@ class RulesEngine:
             exception, AttributeError
         ) and "'NoneType' object has no attribute" in str(exception):
             error_obj = FailedValidationEntity(
+                dataset=os.path.basename(dataset_path),
                 error="Missing field during execution",
                 message="Missing field during execution, rule may not be applicable- unable to process dataset",
-                dataset=os.path.basename(dataset_path),
             )
             message = "rule evaluation skipped - missing metadata"
             errors = [error_obj]
