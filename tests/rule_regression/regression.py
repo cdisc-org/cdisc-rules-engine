@@ -388,15 +388,15 @@ def old_vs_sql_regression_comparison(old_results: list[dict], sql_results: list[
     for sql, old in zip(sql_results, old_results):
         if sql.get("dataset") != old.get("dataset") or sql.get("domain") != old.get("domain"):
             dataset_mismatch = True
-            break
+            continue
 
         if old.get("execution_status") != sql.get("execution_status"):
             execution_status_mismatch = True
-            break
+            continue
 
         if old.get("number_errors") != sql.get("number_errors"):
             number_of_errors_mismatch = True
-            break
+            continue
 
         dataset_diff = compare_error_lists(old.get("errors"), sql.get("errors"))
         if dataset_diff:
