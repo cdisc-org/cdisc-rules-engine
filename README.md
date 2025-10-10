@@ -73,7 +73,7 @@ In the terminal, navigate to the directory you intend to install CORE rules engi
 
 This project uses the `black` code formatter, `flake8` linter for python and `prettier` for JSON, YAML and MD.
 It also uses `pre-commit` to run `black`, `flake8` and `prettier` when you commit.
-Both dependencies are added to _requirements.txt_.
+Both dependencies are added to _requirements-dev.txt_.
 
 **Required**
 
