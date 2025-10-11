@@ -265,6 +265,10 @@ def validate(
         logger.error("Cannot use both --rules and --exclude-rules flags together.")
         ctx.exit(2)
 
+    if exclude_rules and rules:
+        logger.error("Cannot use both --rules and --exclude-rules flags together.")
+        ctx.exit()
+
     cache_path: str = os.path.join(os.path.dirname(__file__), cache)
 
     # Construct ExternalDictionariesContainer:
@@ -560,7 +564,7 @@ def list_rule_sets(ctx: click.Context, cache_path: str, custom: bool):
     for standard in sorted(rule_sets.keys()):
         versions = sorted(rule_sets[standard])
         for version in versions:
-            print(f"{standard.upper()}, {version}")
+            print(f"{standard}, {version}")
 
 
 @click.command()
