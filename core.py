@@ -207,8 +207,8 @@ def cli():
 @click.option(
     "-vx",
     "--validate-xml",
-    is_flag=True,
-    help="This flag enables XML validation against a Define-XML schema.",
+    default="y",
+    help="Enable XML validation (default 'y' to enable, otherwise disable)",
 )
 @click.pass_context
 def validate(
@@ -241,7 +241,7 @@ def validate(
     custom_standard: bool,
     progress: str,
     define_xml_path: str,
-    validate_xml: bool,
+    validate_xml: str,
 ):
     """
     Validate data using CDISC Rules Engine
@@ -309,6 +309,7 @@ def validate(
         )
         # no need to define dataset_paths here, the program execution will stop
         ctx.exit(2)
+    validate_xml_bool = True if validate_xml.lower() in ("y", "yes") else False
     run_validation(
         Validation_args(
             cache_path,
@@ -331,7 +332,7 @@ def validate(
             custom_standard,
             progress,
             define_xml_path,
-            validate_xml,
+            validate_xml_bool,
         )
     )
 
