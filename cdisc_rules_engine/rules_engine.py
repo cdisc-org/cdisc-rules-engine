@@ -148,19 +148,16 @@ class RulesEngine:
                     # No errors were generated, create success error container
                     return [
                         ValidationErrorContainer(
-                            **{
-                                "dataset": dataset_metadata.filename,
-                                "domain": dataset_metadata.domain
-                                or dataset_metadata.rdomain,
-                                "errors": [],
-                            }
+                            dataset=dataset_metadata.filename,
+                            domain=dataset_metadata.domain or dataset_metadata.rdomain,
+                            errors=[],
                         ).to_representation()
                     ]
             else:
                 logger.info(
                     f"Skipped dataset {dataset_metadata.name}. Reason: {reason}"
                 )
-                error_obj: ValidationErrorContainer = ValidationErrorContainer(
+                error_obj = ValidationErrorContainer(
                     status=ExecutionStatus.SKIPPED.value,
                     message=reason,
                     dataset=dataset_metadata.filename,
@@ -414,10 +411,10 @@ class RulesEngine:
             message = "rule execution error"
         elif isinstance(exception, FailedSchemaValidation):
             if self.validate_xml:
-                error_obj: ValidationErrorContainer = ValidationErrorContainer(
-                    status=ExecutionStatus.SKIPPED.value,
+                error_obj = FailedValidationEntity(
                     error=FailedSchemaValidation.description,
                     message=exception.args[0],
+                    dataset=os.path.basename(dataset_path),
                 )
                 message = "Schema Validation Error"
                 errors = [error_obj]
@@ -428,11 +425,12 @@ class RulesEngine:
                     dataset=os.path.basename(dataset_path),
                 )
             else:
-                error_obj: ValidationErrorContainer = ValidationErrorContainer(
-                    status=ExecutionStatus.SKIPPED.value,
+                message = "Skipped because schema validation is off"
+                error_obj = FailedValidationEntity(
+                    error="Schema validation is off",
+                    message=message,
                     dataset=os.path.basename(dataset_path),
                 )
-                message = "Skipped because schema validation is off"
                 errors = [error_obj]
                 return ValidationErrorContainer(
                     dataset=os.path.basename(dataset_path),
@@ -441,10 +439,10 @@ class RulesEngine:
                     status=ExecutionStatus.SKIPPED.value,
                 )
         elif isinstance(exception, DomainNotFoundError):
-            error_obj = ValidationErrorContainer(
+            error_obj = FailedValidationEntity(
                 dataset=os.path.basename(dataset_path),
+                error="Domain not found",
                 message=str(exception),
-                status=ExecutionStatus.SKIPPED.value,
             )
             message = "rule evaluation skipped - operation domain not found"
             errors = [error_obj]
@@ -457,10 +455,10 @@ class RulesEngine:
         elif isinstance(
             exception, AttributeError
         ) and "'NoneType' object has no attribute" in str(exception):
-            error_obj = ValidationErrorContainer(
+            error_obj = FailedValidationEntity(
                 dataset=os.path.basename(dataset_path),
+                error="Missing field during execution",
                 message="Missing field during execution, rule may not be applicable- unable to process dataset",
-                status=ExecutionStatus.SKIPPED.value,
             )
             message = "rule evaluation skipped - missing metadata"
             errors = [error_obj]
