@@ -31,3 +31,4 @@ class RuleTypes(BaseEnum):
     )
     VALUE_CHECK_WITH_DATASET_METADATA = "Value Check with Dataset Metadata"
     VALUE_CHECK_WITH_VARIABLE_METADATA = "Value Check with Variable Metadata"
+    JSON_SCHEMA_CHECK = "JSON Schema Check"

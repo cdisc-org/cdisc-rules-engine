@@ -7,6 +7,7 @@ class LibraryMetadataContainer:
     def __init__(
         self,
         standard_metadata={},
+        standard_schema_definition={},
         model_metadata={},
         ct_package_metadata={},
         variable_codelist_map={},
@@ -15,6 +16,7 @@ class LibraryMetadataContainer:
         cache_path: str = "",
     ):
         self._standard_metadata = standard_metadata
+        self._standard_schema_definition = standard_schema_definition
         self._model_metadata = model_metadata
         self._ct_package_metadata = ct_package_metadata
         self._variable_codelist_map = variable_codelist_map
@@ -29,6 +31,14 @@ class LibraryMetadataContainer:
     @standard_metadata.setter
     def standard_metadata(self, value):
         self._standard_metadata = value
+
+    @property
+    def standard_schema_definition(self):
+        return self._standard_schema_definition
+
+    @standard_schema_definition.setter
+    def standard_schema_definition(self, value):
+        self._standard_schema_definition = value
 
     @property
     def variable_codelist_map(self):
