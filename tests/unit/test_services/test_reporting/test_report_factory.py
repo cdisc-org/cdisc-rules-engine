@@ -14,7 +14,7 @@ def test_get_report_services():
         datasets=[],
         results=[],
         elapsed_time=10.5,
-        args=MagicMock(output_format=ReportTypes.values()),
+        args=MagicMock(output_format=ReportTypes.values(), max_report_rows=None),
         data_service=MagicMock(),
     )
     services = factory.get_report_services()

@@ -97,6 +97,7 @@ class RulesEngine:
         self.jsonata_custom_functions: tuple[()] | tuple[tuple[str, str], ...] = (
             kwargs.get("jsonata_custom_functions", ())
         )
+        self.max_errors_per_rule: int = kwargs.get("max_errors_per_rule")
 
     def get_schema(self):
         return export_rule_data(DatasetVariable, COREActions)
@@ -113,16 +114,37 @@ class RulesEngine:
                 SDTMDatasetMetadata(name="json"),
             )
         else:
+            total_errors = 0
             for dataset_metadata in datasets:
+                if self.max_errors_per_rule and total_errors >= self.max_errors_per_rule:
+                    logger.info(
+                        f"Rule {rule.get('core_id')}: Error limit ({self.max_errors_per_rule}) reached. "
+                        f"Skipping remaining datasets."
+                    )
+                    break
                 if dataset_metadata.unsplit_name in results and "domains" in rule:
                     include_split = rule["domains"].get("include_split_datasets", False)
                     if not include_split:
                         continue  # handling split datasets
-                results[dataset_metadata.unsplit_name] = self.validate_single_dataset(
+                dataset_results = self.validate_single_dataset(
                     rule,
                     datasets,
-                    dataset_metadata,
+                    SDTMDatasetMetadata(name="json"),
                 )
+                results[dataset_metadata.unsplit_name] = dataset_results
+                for result in dataset_results:
+                    if result.get("executionStatus") == "success":
+                        total_errors += len(result.get("errors"))
+                        if (
+                            self.max_errors_per_rule
+                            and total_errors >= self.max_errors_per_rule
+                        ):
+                            logger.info(
+                                f"Rule {rule.get('core_id')}: Error limit ({self.max_errors_per_rule}) "
+                                f"reached after processing {dataset_metadata.name}. "
+                                f"Execution halted at {total_errors} total errors."
+                            )
+                            break
         return results
 
     def validate_single_dataset(
@@ -188,8 +210,7 @@ class RulesEngine:
             Error Message: {str(e)}
             Dataset Name: {dataset_metadata.name}
             Rule ID: {rule.get("core_id", "unknown")}
-            Full traceback:
-            {traceback.format_exc()}
+            Full traceback: {traceback.format_exc()}
             """
             )
             error_obj: ValidationErrorContainer = self.handle_validation_exceptions(
