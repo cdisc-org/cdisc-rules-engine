@@ -101,9 +101,7 @@ NOTE: if you have multiple versions of python on your machine, you can call pyth
 
 - Install the requirements.
 
-`python -m pip install -r requirements.txt` # From the root directory
-
-`python -m pip install -r requirements-dev.txt` # From the root directory (this will install dev dependencies like black, flake8, pytest etc.)
+`python -m pip install -r requirements-dev.txt` # From the root directory
 
 ### **Running The Tests**
 
