@@ -116,7 +116,10 @@ class RulesEngine:
         else:
             total_errors = 0
             for dataset_metadata in datasets:
-                if self.max_errors_per_rule and total_errors >= self.max_errors_per_rule:
+                if (
+                    self.max_errors_per_rule
+                    and total_errors >= self.max_errors_per_rule
+                ):
                     logger.info(
                         f"Rule {rule.get('core_id')}: Error limit ({self.max_errors_per_rule}) reached. "
                         f"Skipping remaining datasets."
