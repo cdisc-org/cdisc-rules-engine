@@ -132,7 +132,7 @@ class RulesEngine:
                 dataset_results = self.validate_single_dataset(
                     rule,
                     datasets,
-                    SDTMDatasetMetadata(name="json"),
+                    dataset_metadata,
                 )
                 results[dataset_metadata.unsplit_name] = dataset_results
                 for result in dataset_results:
