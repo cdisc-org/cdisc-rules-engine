@@ -11,6 +11,7 @@ class RuleTypes(BaseEnum):
     DEFINE_ITEM_GROUP_METADATA_CHECK = "Define Item Group Metadata Check"
     DEFINE_ITEM_METADATA_CHECK = "Define Item Metadata Check"
     DOMAIN_PRESENCE_CHECK = "Domain Presence Check"
+    JSONATA = "JSONata"
     VALUE_LEVEL_METADATA_CHECK_AGAINST_DEFINE = (
         "Value Level Metadata Check against Define XML"
     )

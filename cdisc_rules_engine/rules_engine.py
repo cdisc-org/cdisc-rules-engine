@@ -10,6 +10,7 @@ from cdisc_rules_engine.enums.rule_types import RuleTypes
 from cdisc_rules_engine.exceptions.custom_exceptions import (
     DatasetNotFoundError,
     DomainNotFoundInDefineXMLError,
+    InvalidJSONFormat,
     RuleFormatError,
     VariableMetadataNotFoundError,
     FailedSchemaValidation,
@@ -36,6 +37,7 @@ from cdisc_rules_engine.services.data_services import DataServiceFactory
 from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import (
     DefineXMLReaderFactory,
 )
+from cdisc_rules_engine.utilities.jsonata_processor import JSONataProcessor
 from cdisc_rules_engine.utilities.data_processor import DataProcessor
 from cdisc_rules_engine.utilities.dataset_preprocessor import DatasetPreprocessor
 from cdisc_rules_engine.utilities.rule_processor import RuleProcessor
@@ -92,6 +94,9 @@ class RulesEngine:
         self.external_dictionaries = external_dictionaries
         self.define_xml_path: str = kwargs.get("define_xml_path")
         self.validate_xml: bool = kwargs.get("validate_xml")
+        self.jsonata_custom_functions: tuple[()] | tuple[tuple[str, str], ...] = (
+            kwargs.get("jsonata_custom_functions", ())
+        )
         self.max_errors_per_rule: int = kwargs.get("max_errors_per_rule")
 
     def get_schema(self):
@@ -102,37 +107,47 @@ class RulesEngine:
         rule["conditions"] = ConditionCompositeFactory.get_condition_composite(
             rule["conditions"]
         )
-        total_errors = 0
-        for dataset_metadata in datasets:
-            if self.max_errors_per_rule and total_errors >= self.max_errors_per_rule:
-                logger.info(
-                    f"Rule {rule.get('core_id')}: Error limit ({self.max_errors_per_rule}) reached. "
-                    f"Skipping remaining datasets."
-                )
-                break
-            if dataset_metadata.unsplit_name in results and "domains" in rule:
-                include_split = rule["domains"].get("include_split_datasets", False)
-                if not include_split:
-                    continue  # handling split datasets
-            dataset_results = self.validate_single_dataset(
+        if rule.get("rule_type") == RuleTypes.JSONATA.value:
+            results["json"] = self.validate_single_dataset(
                 rule,
                 datasets,
-                dataset_metadata,
+                SDTMDatasetMetadata(name="json"),
             )
-            results[dataset_metadata.unsplit_name] = dataset_results
-            for result in dataset_results:
-                if result.get("executionStatus") == "success":
-                    total_errors += len(result.get("errors"))
-                    if (
-                        self.max_errors_per_rule
-                        and total_errors >= self.max_errors_per_rule
-                    ):
-                        logger.info(
-                            f"Rule {rule.get('core_id')}: Error limit ({self.max_errors_per_rule}) "
-                            f"reached after processing {dataset_metadata.name}. "
-                            f"Execution halted at {total_errors} total errors."
-                        )
-                        break
+        else:
+            total_errors = 0
+            for dataset_metadata in datasets:
+                if (
+                    self.max_errors_per_rule
+                    and total_errors >= self.max_errors_per_rule
+                ):
+                    logger.info(
+                        f"Rule {rule.get('core_id')}: Error limit ({self.max_errors_per_rule}) reached. "
+                        f"Skipping remaining datasets."
+                    )
+                    break
+                if dataset_metadata.unsplit_name in results and "domains" in rule:
+                    include_split = rule["domains"].get("include_split_datasets", False)
+                    if not include_split:
+                        continue  # handling split datasets
+                dataset_results = self.validate_single_dataset(
+                    rule,
+                    datasets,
+                    dataset_metadata,
+                )
+                results[dataset_metadata.unsplit_name] = dataset_results
+                for result in dataset_results:
+                    if result.get("executionStatus") == "success":
+                        total_errors += len(result.get("errors"))
+                        if (
+                            self.max_errors_per_rule
+                            and total_errors >= self.max_errors_per_rule
+                        ):
+                            logger.info(
+                                f"Rule {rule.get('core_id')}: Error limit ({self.max_errors_per_rule}) "
+                                f"reached after processing {dataset_metadata.name}. "
+                                f"Execution halted at {total_errors} total errors."
+                            )
+                            break
         return results
 
     def validate_single_dataset(
@@ -304,6 +319,10 @@ class RulesEngine:
             return self.execute_rule(
                 rule_copy, dataset, datasets, dataset_metadata, **kwargs
             )
+        elif rule.get("rule_type") == RuleTypes.JSONATA.value:
+            return JSONataProcessor.execute_jsonata_rule(
+                rule, dataset, self.jsonata_custom_functions
+            )
 
         kwargs["ct_packages"] = list(self.ct_packages)
 
@@ -430,6 +449,13 @@ class RulesEngine:
             error_obj = FailedValidationEntity(
                 dataset=os.path.basename(dataset_path),
                 error=VariableMetadataNotFoundError.description,
+                message=exception.args[0],
+            )
+            message = "rule execution error"
+        elif isinstance(exception, InvalidJSONFormat):
+            error_obj = FailedValidationEntity(
+                dataset=os.path.basename(dataset_path),
+                error=InvalidJSONFormat.description,
                 message=exception.args[0],
             )
             message = "rule execution error"
