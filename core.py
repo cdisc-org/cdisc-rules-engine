@@ -7,6 +7,7 @@ import tempfile
 from datetime import datetime
 from multiprocessing import freeze_support
 from typing import Tuple
+from dotenv import load_dotenv
 
 import click
 from pathlib import Path
@@ -210,6 +211,20 @@ def cli():
     is_flag=True,
     help="This flag enables XML validation against a Define-XML schema.",
 )
+@click.option(
+    "-mr",
+    "--max-report-rows",
+    type=int,
+    default=None,
+    help="Maximum number of rows per report sheet.",
+)
+@click.option(
+    "-me",
+    "--max-errors-per-rule",
+    type=int,
+    default=None,
+    help="Maximum number of errors across all datasets for a given rule.",
+)
 @click.pass_context
 def validate(
     ctx,
@@ -242,6 +257,8 @@ def validate(
     progress: str,
     define_xml_path: str,
     validate_xml: bool,
+    max_report_rows: int,
+    max_errors_per_rule: int,
 ):
     """
     Validate data using CDISC Rules Engine
@@ -253,6 +270,7 @@ def validate(
 
     # Validate conditional options
     logger = logging.getLogger("validator")
+    load_dotenv()
 
     if raw_report is True:
         if not (len(output_format) == 1 and output_format[0] == ReportTypes.JSON.value):
@@ -332,6 +350,8 @@ def validate(
             progress,
             define_xml_path,
             validate_xml,
+            max_report_rows,
+            max_errors_per_rule,
         )
     )
 
@@ -559,7 +579,7 @@ def list_rule_sets(ctx: click.Context, cache_path: str, custom: bool):
     for standard in sorted(rule_sets.keys()):
         versions = sorted(rule_sets[standard])
         for version in versions:
-            print(f"{standard.upper()}, {version}")
+            print(f"{standard}, {version}")
 
 
 @click.command()
@@ -678,6 +698,8 @@ def test_validate():
             progress = ProgressParameterOptions.BAR.value
             define_xml_path = None
             validate_xml = False
+            max_report_rows = None
+            max_report_errors = None
             json_output = os.path.join(temp_dir, "json_validation_output")
             run_validation(
                 Validation_args(
@@ -702,6 +724,8 @@ def test_validate():
                     progress,
                     define_xml_path,
                     validate_xml,
+                    max_report_rows,
+                    max_report_errors,
                 )
             )
             print("JSON validation completed successfully!")
@@ -729,6 +753,8 @@ def test_validate():
                     progress,
                     define_xml_path,
                     validate_xml,
+                    max_report_rows,
+                    max_report_errors,
                 )
             )
             print("XPT validation completed successfully!")

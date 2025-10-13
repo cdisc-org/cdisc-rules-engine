@@ -44,6 +44,7 @@ from scripts.script_utils import (
     get_library_metadata_from_cache,
     get_rules,
     get_max_dataset_size,
+    set_max_errors_per_rule,
 )
 from cdisc_rules_engine.services.reporting import BaseReport, ReportFactory
 from cdisc_rules_engine.utilities.progress_displayers import get_progress_displayer
@@ -76,6 +77,7 @@ def validate_single_rule(
         rule["conditions"]
     )
     max_dataset_size = max(datasets, key=lambda x: x.file_size).file_size
+    max_errors_per_rule = set_max_errors_per_rule(args)
     # call rule engine
     engine = RulesEngine(
         cache=cache,
@@ -89,6 +91,7 @@ def validate_single_rule(
         max_dataset_size=max_dataset_size,
         dataset_paths=args.dataset_paths,
         validate_xml=args.validate_xml,
+        max_errors_per_rule=max_errors_per_rule,
     )
     results = engine.validate_single_rule(rule, datasets)
     results = list(itertools.chain(*results.values()))
