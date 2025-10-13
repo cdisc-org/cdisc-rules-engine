@@ -91,6 +91,7 @@ def validate_single_rule(
         max_dataset_size=max_dataset_size,
         dataset_paths=args.dataset_paths,
         validate_xml=args.validate_xml,
+        jsonata_custom_functions=args.jsonata_custom_functions,
         max_errors_per_rule=max_errors_per_rule,
     )
     results = engine.validate_single_rule(rule, datasets)

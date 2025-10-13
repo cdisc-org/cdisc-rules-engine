@@ -35,6 +35,10 @@
       "title": "Content domain presence at study level"
     },
     {
+      "const": "JSONata",
+      "title": "Apply a JSONata query to a JSON file"
+    },
+    {
       "const": "Record Data",
       "title": "Content data at record level. Most common Rule Type"
     },
@@ -50,7 +54,6 @@
       "const": "Value Level Metadata Check against Define XML",
       "title": "Content data at record level and define xml metadata at value level"
     },
-
     {
       "const": "Variable Metadata Check",
       "title": "Content metadata at variable level"

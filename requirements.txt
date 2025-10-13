@@ -4,6 +4,7 @@ cdisc-library-client==0.1.6
 click==8.1.7
 flake8==6.1.0
 importlib-metadata==8.5.0
+jsonata-python==0.6.0
 jsonpath-ng==1.6.1
 jsonschema==4.18.5
 numpy~=1.26.0

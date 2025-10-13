@@ -14,7 +14,11 @@ class ConditionCompositeFactory:
     """
 
     @classmethod
-    def get_condition_composite(cls, conditions: dict) -> ConditionInterface:
+    def get_condition_composite(
+        cls, conditions: dict | str
+    ) -> ConditionInterface | str:
+        if isinstance(conditions, str):
+            return conditions
         composite = ConditionComposite()
         for key, condition_list in conditions.items():
             # validate the rule structure

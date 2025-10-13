@@ -12,14 +12,15 @@ from cdisc_rules_engine.models.dataset.dask_dataset import DaskDataset
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 import tempfile
 
+from cdisc_rules_engine.services.data_readers.json_reader import JSONReader
+
 
 class DatasetNDJSONReader(DataReaderInterface):
     def get_schema(self) -> dict:
-        with open(
+        schema = JSONReader().from_file(
             os.path.join("resources", "schema", "dataset-ndjson-schema.json")
-        ) as schemandjson:
-            schema = schemandjson.read()
-        return json.loads(schema)
+        )
+        return schema
 
     def read_json_file(self, file_path: str) -> dict:
         with open(file_path, "r") as file:

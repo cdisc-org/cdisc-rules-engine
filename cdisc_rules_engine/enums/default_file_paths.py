@@ -1,9 +1,11 @@
+from os.path import join
 from cdisc_rules_engine.enums.base_enum import BaseEnum
 
 
 class DefaultFilePaths(BaseEnum):
-    CACHE = "resources/cache"
-    EXCEL_TEMPLATE_FILE = "resources/templates/report-template.xlsx"
+    CACHE = join("resources", "cache")
+    EXCEL_TEMPLATE_FILE = join("resources", "templates", "report-template.xlsx")
+    JSONATA_UTILS = join("resources", "jsonata")
     RULES_CACHE_FILE = "rules.pkl"
     RULES_DICTIONARY = "rules_dictionary.pkl"
     STANDARD_DETAILS_CACHE_FILE = "standards_details.pkl"

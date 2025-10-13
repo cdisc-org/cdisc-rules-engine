@@ -6,7 +6,6 @@ import pickle
 import tempfile
 from datetime import datetime
 from multiprocessing import freeze_support
-from typing import Tuple
 from dotenv import load_dotenv
 
 import click
@@ -33,7 +32,7 @@ from scripts.list_dataset_metadata_handler import list_dataset_metadata_handler
 from version import __version__
 
 
-def valid_data_file(data_path: list) -> Tuple[list, set]:
+def valid_data_file(data_path: list) -> tuple[list, set]:
     allowed_formats = [format.value for format in DataFormatTypes]
     found_formats = set()
     file_list = []
@@ -212,6 +211,18 @@ def cli():
     help="Enable XML validation (default 'y' to enable, otherwise disable)",
 )
 @click.option(
+    "-jcf",
+    "--jsonata-custom-functions",
+    default=[],
+    multiple=True,
+    required=False,
+    type=(
+        str,
+        click.Path(exists=True, file_okay=False, readable=True, resolve_path=True),
+    ),
+    help="Variable Name and Path to directory containing a set of custom JSONata functions.",
+)
+@click.option(
     "-mr",
     "--max-report-rows",
     type=int,
@@ -231,15 +242,15 @@ def validate(
     cache: str,
     pool_size: int,
     data: str,
-    dataset_path: Tuple[str],
+    dataset_path: tuple[str],
     log_level: str,
     report_template: str,
     standard: str,
     version: str,
     substandard: str,
-    controlled_terminology_package: Tuple[str],
+    controlled_terminology_package: tuple[str],
     output: str,
-    output_format: Tuple[str],
+    output_format: tuple[str],
     raw_report: bool,
     define_version: str,
     whodrug: str,
@@ -250,13 +261,14 @@ def validate(
     snomed_version: str,
     snomed_edition: str,
     snomed_url: str,
-    rules: Tuple[str],
-    exclude_rules: Tuple[str],
+    rules: tuple[str],
+    exclude_rules: tuple[str],
     local_rules: str,
     custom_standard: bool,
     progress: str,
     define_xml_path: str,
     validate_xml: str,
+    jsonata_custom_functions: tuple[()] | tuple[tuple[str, str], ...],
     max_report_rows: int,
     max_errors_per_rule: int,
 ):
@@ -355,6 +367,7 @@ def validate(
             progress,
             define_xml_path,
             validate_xml_bool,
+            jsonata_custom_functions,
             max_report_rows,
             max_errors_per_rule,
         )
@@ -595,7 +608,7 @@ def list_rule_sets(ctx: click.Context, cache_path: str, custom: bool):
     multiple=True,
 )
 @click.pass_context
-def list_dataset_metadata(ctx: click.Context, dataset_path: Tuple[str]):
+def list_dataset_metadata(ctx: click.Context, dataset_path: tuple[str]):
     """
     Command that lists metadata of given datasets.
 
@@ -644,7 +657,7 @@ def version():
     required=False,
     multiple=True,
 )
-def list_ct(cache_path: str, subsets: Tuple[str]):
+def list_ct(cache_path: str, subsets: tuple[str]):
     """
     Command to list the ct packages available in the cache.
     """
@@ -706,6 +719,7 @@ def test_validate():
             max_report_rows = None
             max_report_errors = None
             json_output = os.path.join(temp_dir, "json_validation_output")
+            jsonata_custom_functions = ()
             run_validation(
                 Validation_args(
                     cache_path,
@@ -729,6 +743,7 @@ def test_validate():
                     progress,
                     define_xml_path,
                     validate_xml,
+                    jsonata_custom_functions,
                     max_report_rows,
                     max_report_errors,
                 )
@@ -758,6 +773,7 @@ def test_validate():
                     progress,
                     define_xml_path,
                     validate_xml,
+                    jsonata_custom_functions,
                     max_report_rows,
                     max_report_errors,
                 )
