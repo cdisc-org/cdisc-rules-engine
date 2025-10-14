@@ -57,8 +57,8 @@ class JSONataProcessor:
                     value=result,
                     dataset=result.get("dataset") or "",
                     row=result.get("row"),
-                    usubjid=result.get("USUBJID"),
-                    sequence=result.get("SEQ"),
+                    USUBJID=result.get("USUBJID"),
+                    SEQ=result.get("SEQ"),
                 )
                 errors[result.get("dataset")].append(error_entity)
         validation_error_container = [
