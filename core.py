@@ -6,7 +6,7 @@ import pickle
 import tempfile
 from datetime import datetime
 from multiprocessing import freeze_support
-from typing import Tuple
+from dotenv import load_dotenv
 
 import click
 from pathlib import Path
@@ -32,7 +32,7 @@ from scripts.list_dataset_metadata_handler import list_dataset_metadata_handler
 from version import __version__
 
 
-def valid_data_file(data_path: list) -> Tuple[list, set]:
+def valid_data_file(data_path: list) -> tuple[list, set]:
     allowed_formats = [format.value for format in DataFormatTypes]
     found_formats = set()
     file_list = []
@@ -210,21 +210,47 @@ def cli():
     is_flag=True,
     help="This flag enables XML validation against a Define-XML schema.",
 )
+@click.option(
+    "-jcf",
+    "--jsonata-custom-functions",
+    default=[],
+    multiple=True,
+    required=False,
+    type=(
+        str,
+        click.Path(exists=True, file_okay=False, readable=True, resolve_path=True),
+    ),
+    help="Variable Name and Path to directory containing a set of custom JSONata functions.",
+)
+@click.option(
+    "-mr",
+    "--max-report-rows",
+    type=int,
+    default=None,
+    help="Maximum number of rows per report sheet.",
+)
+@click.option(
+    "-me",
+    "--max-errors-per-rule",
+    type=int,
+    default=None,
+    help="Maximum number of errors across all datasets for a given rule.",
+)
 @click.pass_context
 def validate(
     ctx,
     cache: str,
     pool_size: int,
     data: str,
-    dataset_path: Tuple[str],
+    dataset_path: tuple[str],
     log_level: str,
     report_template: str,
     standard: str,
     version: str,
     substandard: str,
-    controlled_terminology_package: Tuple[str],
+    controlled_terminology_package: tuple[str],
     output: str,
-    output_format: Tuple[str],
+    output_format: tuple[str],
     raw_report: bool,
     define_version: str,
     whodrug: str,
@@ -235,13 +261,16 @@ def validate(
     snomed_version: str,
     snomed_edition: str,
     snomed_url: str,
-    rules: Tuple[str],
-    exclude_rules: Tuple[str],
+    rules: tuple[str],
+    exclude_rules: tuple[str],
     local_rules: str,
     custom_standard: bool,
     progress: str,
     define_xml_path: str,
     validate_xml: bool,
+    jsonata_custom_functions: tuple[()] | tuple[tuple[str, str], ...],
+    max_report_rows: int,
+    max_errors_per_rule: int,
 ):
     """
     Validate data using CDISC Rules Engine
@@ -253,6 +282,7 @@ def validate(
 
     # Validate conditional options
     logger = logging.getLogger("validator")
+    load_dotenv()
 
     if raw_report is True:
         if not (len(output_format) == 1 and output_format[0] == ReportTypes.JSON.value):
@@ -332,6 +362,9 @@ def validate(
             progress,
             define_xml_path,
             validate_xml,
+            jsonata_custom_functions,
+            max_report_rows,
+            max_errors_per_rule,
         )
     )
 
@@ -559,7 +592,7 @@ def list_rule_sets(ctx: click.Context, cache_path: str, custom: bool):
     for standard in sorted(rule_sets.keys()):
         versions = sorted(rule_sets[standard])
         for version in versions:
-            print(f"{standard.upper()}, {version}")
+            print(f"{standard}, {version}")
 
 
 @click.command()
@@ -570,7 +603,7 @@ def list_rule_sets(ctx: click.Context, cache_path: str, custom: bool):
     multiple=True,
 )
 @click.pass_context
-def list_dataset_metadata(ctx: click.Context, dataset_path: Tuple[str]):
+def list_dataset_metadata(ctx: click.Context, dataset_path: tuple[str]):
     """
     Command that lists metadata of given datasets.
 
@@ -619,7 +652,7 @@ def version():
     required=False,
     multiple=True,
 )
-def list_ct(cache_path: str, subsets: Tuple[str]):
+def list_ct(cache_path: str, subsets: tuple[str]):
     """
     Command to list the ct packages available in the cache.
     """
@@ -678,7 +711,10 @@ def test_validate():
             progress = ProgressParameterOptions.BAR.value
             define_xml_path = None
             validate_xml = False
+            max_report_rows = None
+            max_report_errors = None
             json_output = os.path.join(temp_dir, "json_validation_output")
+            jsonata_custom_functions = ()
             run_validation(
                 Validation_args(
                     cache_path,
@@ -702,6 +738,9 @@ def test_validate():
                     progress,
                     define_xml_path,
                     validate_xml,
+                    jsonata_custom_functions,
+                    max_report_rows,
+                    max_report_errors,
                 )
             )
             print("JSON validation completed successfully!")
@@ -729,6 +768,9 @@ def test_validate():
                     progress,
                     define_xml_path,
                     validate_xml,
+                    jsonata_custom_functions,
+                    max_report_rows,
+                    max_report_errors,
                 )
             )
             print("XPT validation completed successfully!")

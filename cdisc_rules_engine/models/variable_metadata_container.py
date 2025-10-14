@@ -1,6 +1,9 @@
+from dataclasses import dataclass
+
 from cdisc_rules_engine.interfaces import RepresentationInterface
 
 
+@dataclass
 class VariableMetadataContainer(RepresentationInterface):
     def __init__(self, contents_metadata: dict):
         variable_names = contents_metadata["variable_names"]
