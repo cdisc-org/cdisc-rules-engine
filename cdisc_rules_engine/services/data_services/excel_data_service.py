@@ -1,4 +1,3 @@
-# test
 import os
 from io import IOBase
 from typing import List, Sequence
@@ -188,7 +187,7 @@ class ExcelDataService(BaseDataService):
     def get_datasets(self) -> List[dict]:
         try:
             worksheet = pd.read_excel(self.dataset_path, sheet_name=DATASETS_SHEET_NAME,
-                                     na_values=[''], keep_default_na=False)
+                                      na_values=[''], keep_default_na=False)
         except TypeError as e:
             logger.error(
                 f"Failed to read datasets from the Excel file at {self.dataset_path}. "
