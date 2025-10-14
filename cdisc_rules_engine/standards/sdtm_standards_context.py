@@ -1,14 +1,11 @@
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 
 from cdisc_rules_engine.constants.classes import (
-    ASSOCIATED_PERSONS,
     EVENTS,
     FINDINGS,
     FINDINGS_ABOUT,
     INTERVENTIONS,
     RELATIONSHIP,
-    SPECIAL_PURPOSE,
-    TRIAL_DESIGN,
 )
 from cdisc_rules_engine.constants.domains import (
     AP_DOMAIN,
@@ -22,7 +19,12 @@ from cdisc_rules_engine.models.library_metadata_container import (
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.standards.base_standards_context import BaseStandardsContext
-from cdisc_rules_engine.utilities.utils import is_ap_domain, search_in_list_of_dicts
+from cdisc_rules_engine.utilities.sdtm_utilities import get_class_and_domain_metadata
+from cdisc_rules_engine.utilities.utils import (
+    convert_library_class_name_to_ct_class,
+    is_ap_domain,
+    search_in_list_of_dicts,
+)
 
 
 class SdtmStandardsContext(BaseStandardsContext):
@@ -61,8 +63,9 @@ class SdtmStandardsContext(BaseStandardsContext):
         """Check if rule is suitable and return reason if not"""
         rule_id = rule.get("core_id", "unknown")
         dataset_name = metadata.name
+        domain = self.derive_domain(metadata.filename)
 
-        if not self.rule_applies_to_class(metadata, rule):
+        if not self.rule_applies_to_class(metadata, rule, domain):
             reason = f"Rule skipped - doesn't apply to class for " f"rule id={rule_id}, dataset={dataset_name}"
             logger.info(f"is_suitable_for_validation. {reason}, result=False")
             return False, reason
@@ -193,130 +196,146 @@ class SdtmStandardsContext(BaseStandardsContext):
             or is_ap_domain(dataset_metadata.domain or dataset_metadata.rdomain or dataset_metadata.name)
         )
 
-    @classmethod
-    def rule_applies_to_class(cls, dataset_metadata: SDTMDatasetMetadata, rule: dict) -> bool:
-        """Check if rule applies to dataset's class"""
+    def rule_applies_to_class(self, dataset_metadata: SDTMDatasetMetadata, rule: dict, domain: str):
+        """
+        If included classes are specified and the class
+        is not in the list of included classes return false.
+
+        If excluded classes are specified and the class
+        is in the list of excluded classes return false
+
+        Else return true.
+
+        Rule authors can specify classes to include that we cannot detect.
+        In this case, the get_dataset_class method will return None,
+        but included_classes will have values.
+        This will result in a rule not running when it is supposed to.
+        We filter out non-detectable classes here, so that rule authors
+        can specify them without it affecting if the rule runs or not.
+        """
         classes = rule.get("classes") or {}
         included_classes = classes.get("Include", [])
         excluded_classes = classes.get("Exclude", [])
+        is_included = True
+        is_excluded = False
 
-        if not included_classes and not excluded_classes:
-            return True
-
-        # TODO: Fix
-        variables = []  # dataset_metadata.variables if hasattr(dataset_metadata, "variables") else []
-        domain_name = dataset_metadata.name
-        dataset_class = cls.get_dataset_class_from_variables(variables, domain_name)
-
-        if dataset_class is None and (included_classes or excluded_classes):
-            logger.debug(
-                f"Could not determine class for {domain_name}, variables: {variables if variables else 'none'}"
-            )
-        else:
-            logger.debug(f"Dataset {domain_name} identified as class: {dataset_class}")
-
-        if cls.matches_class_pattern(dataset_class, excluded_classes):
-            return False
+        class_name = self.derive_class(dataset_metadata, domain)
 
         if included_classes:
-            return cls.matches_class_pattern(dataset_class, included_classes)
-
-        return True
-
-    @staticmethod
-    def matches_class_pattern(dataset_class: Optional[str], patterns: list) -> bool:
-        """Check if dataset class matches any patterns."""
-        if dataset_class is None:
-            return False
-
-        for pattern in patterns:
-            if pattern == ALL_KEYWORD:
+            if ALL_KEYWORD in included_classes:
                 return True
-            if pattern == dataset_class:
-                return True
-            if dataset_class == FINDINGS_ABOUT and pattern == FINDINGS:
-                return True
-        return False
+            if (class_name not in included_classes) and not (
+                class_name == FINDINGS_ABOUT and FINDINGS in included_classes
+            ):
+                is_included = False
 
-    @classmethod
-    def get_dataset_class_from_variables(cls, variables: List[str], domain_name: str) -> Optional[str]:
-        """Determine dataset class based on variable names and domain"""
-        variables_upper = [v.upper() for v in variables] if variables else []
-        domain_upper = domain_name.upper()
+        if excluded_classes:
+            if class_name and (
+                (class_name in excluded_classes) or (class_name == FINDINGS_ABOUT and FINDINGS in excluded_classes)
+            ):
+                is_excluded = True
+        return is_included and not is_excluded
 
-        if domain_upper in ["DM", "CO", "SE", "SU", "SV", "SM"]:
-            return SPECIAL_PURPOSE
+    def derive_class(self, dataset_metadata: SDTMDatasetMetadata, domain: str):
+        class_data, _ = get_class_and_domain_metadata(
+            self.library_metadata.standard_metadata,
+            domain,
+        )
+        name = class_data.get("name")
+        if name:
+            return convert_library_class_name_to_ct_class(name)
+        else:
+            return self._handle_special_cases(dataset_metadata)
 
-        if domain_upper in ["TA", "TE", "TI", "TS", "TV"]:
-            return TRIAL_DESIGN
-
-        if any([domain_upper.startswith(prefix) for prefix in ["REL", "SUPP", "SQ"]]):
+    def _handle_special_cases(
+        self,
+        dataset_metadata: SDTMDatasetMetadata,
+    ):
+        if not dataset_metadata.domain:
+            return None
+        if self._contains_topic_variable(dataset_metadata, dataset_metadata.domain, "TERM"):
+            return EVENTS
+        if self._contains_topic_variable(dataset_metadata, dataset_metadata.domain, "TRT"):
+            return INTERVENTIONS
+        if self._contains_topic_variable(dataset_metadata, dataset_metadata.domain, "QNAM"):
             return RELATIONSHIP
-
-        if not variables:
-            return cls.get_class_from_empty_variables(domain_upper)
-
-        if any(
-            v.endswith("TESTCD")
-            or v.endswith("TEST")
-            or v.endswith("ORRES")
-            or v.endswith("STRESC")
-            or v.endswith("STRESN")
-            for v in variables_upper
-        ):
-            if any(v.endswith("OBJ") for v in variables_upper):
+        if self._contains_topic_variable(dataset_metadata, dataset_metadata.domain, "TESTCD"):
+            if self._contains_topic_variable(dataset_metadata, dataset_metadata.domain, "OBJ"):
                 return FINDINGS_ABOUT
             return FINDINGS
-
-        if any(
-            v.endswith("TRT") or v.endswith("DOSE") or v.endswith("DOSFRQ") or v.endswith("ROUTE")
-            for v in variables_upper
-        ):
-            return INTERVENTIONS
-
-        if any(
-            v.endswith("TERM") or v.endswith("DECOD") or v.endswith("LLT") or v.endswith("PTCD")
-            for v in variables_upper
-        ):
-            return EVENTS
-
+        if self._is_associated_persons(dataset_metadata):
+            return self._get_associated_persons_inherit_class(dataset_metadata.domain)
         return None
 
-    @staticmethod
-    def get_class_from_empty_variables(domain_upper: str) -> Optional[str]:
-        """Determine dataset class based on domain name when no variables are present."""
-        if domain_upper in ["AE", "CE", "DS", "MH", "HO", "DV", "DD"]:
-            return EVENTS
-        if domain_upper in ["CM", "EX", "PR", "EC", "AG", "ML", "DO"]:
-            return INTERVENTIONS
-        if domain_upper in [
-            "LB",
-            "VS",
-            "EG",
-            "PE",
-            "IE",
-            "QS",
-            "SC",
-            "PC",
-            "PP",
-            "MB",
-            "MS",
-            "MI",
-            "DA",
-            "FT",
-            "GF",
-            "NV",
-            "OE",
-            "PK",
-            "RS",
-            "SS",
-            "TR",
-            "TU",
-            "UR",
-        ]:
-            return FINDINGS
-        if domain_upper == "FA":
-            return FINDINGS_ABOUT
-        if domain_upper.startswith("AP"):
-            return ASSOCIATED_PERSONS
+    def _is_associated_persons(self, dataset) -> bool:
+        """
+        Check if AP-- domain.
+        """
+        return "APID" in dataset
+
+    def _get_associated_persons_inherit_class(self, domain: str):
+        """
+        Find the domain this AP-- domain is related to, return its class.
+        """
+        # TODO: Needs access to other datasets, how will we do that?
         return None
+        # ap_suffix = domain[2:]
+        # directory_path = get_directory_path(file_path)
+        # if len(datasets) > 1:
+        #     domain_details: SDTMDatasetMetadata = search_in_list_of_dicts(
+        #         datasets, lambda item: item.domain == ap_suffix
+        #     )
+        #     if domain_details:
+        #         file_name = domain_details.filename
+        #         new_file_path = os.path.join(directory_path, file_name)
+        #         new_domain_dataset = self.get_dataset(dataset_name=new_file_path)
+        #     else:
+        #         raise ValueError("Filename for domain doesn't exist")
+        #     if self._is_associated_persons(new_domain_dataset):
+        #         raise ValueError("Nested Associated Persons domain reference")
+        #     return self.get_dataset_class(
+        #         new_domain_dataset,
+        #         new_file_path,
+        #         datasets,
+        #         domain_details,
+        #     )
+        # else:
+        #    return None
+
+    def _contains_topic_variable(
+        self,
+        dataset: SDTMDatasetMetadata,
+        domain: str,
+        variable: str,
+    ) -> bool:
+        """
+        Checks if the given dataset-class string ends with a particular variable string.
+        """
+
+        def check_presence(key):
+            # TODO: Needs to wait until we have the variables in the metadata
+            return True
+            # if hasattr(dataset, "columns"):
+            #     columns = dataset.columns
+            #     if hasattr(columns, "tolist"):
+            #         columns = columns.tolist()
+            #     in_dataset = key in columns
+            #     in_values = key in self.dataset_implementation.get_series_values(
+            #         dataset
+            #     )
+            # else:
+            #     series_values = dataset.values
+            #     if hasattr(series_values, "tolist"):
+            #         series_values = series_values.tolist()
+            #     in_dataset = key in series_values
+            #     in_values = key in self.dataset_implementation.get_series_values(
+            #         dataset
+            #     )
+            # return in_dataset or in_values
+
+        if not check_presence("DOMAIN") and not check_presence("RDOMAIN"):
+            return False
+        elif check_presence("DOMAIN"):
+            return check_presence(domain.upper() + variable)
+        elif check_presence("RDOMAIN"):
+            return check_presence(variable)
