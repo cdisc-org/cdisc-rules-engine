@@ -167,7 +167,7 @@ Run `python core.py validate --help` to see the list of validation options.
                                   If set to 0, no maximum will be enforced.
   -dv, --define-version TEXT      Define-XML version used for validation
   -dxp, --define-xml-path         Path to define-xml file.
-  -vx, --validate-xml             This flag enables XML validation against a Define-XML schema.
+  -vx, --validate-xml             Enable XML validation (default 'y' to enable, otherwise disable).
   --whodrug TEXT                  Path to directory with WHODrug dictionary
                                   files
   --meddra TEXT                   Path to directory with MedDRA dictionary
