@@ -37,6 +37,7 @@ from cdisc_rules_engine.exceptions.custom_exceptions import (
     InvalidDictionaryVariable,
     UnsupportedDictionaryType,
     FailedSchemaValidation,
+    ColumnNotFoundError,
 )
 
 
@@ -73,6 +74,7 @@ class BaseOperation:
         except (
             EngineError,
             DatasetNotFoundError,
+            ColumnNotFoundError,
             ReferentialIntegrityError,
             MissingDataError,
             RuleExecutionError,
