@@ -113,12 +113,9 @@ def test_na_value_preserved_not_converted_to_nan():
         # Create workbook with test data
         wb = Workbook()
 
-        # Remove the default sheet
-        default_sheet = wb.active
-        wb.remove(default_sheet)
-
-        # Create Datasets sheet (required by ExcelDataService)
-        datasets_sheet = wb.create_sheet("Datasets")
+        # Rename the default active sheet to "Datasets"
+        datasets_sheet = wb.active
+        datasets_sheet.title = "Datasets"
         datasets_sheet.append(["Filename", "Label", "Dataset Name"])
         datasets_sheet.append(["test.xpt", "Test Dataset", "TEST"])
 
@@ -141,6 +138,9 @@ def test_na_value_preserved_not_converted_to_nan():
         wb.close()
 
         # Test the ExcelDataService
+        # Reset the singleton instance to avoid cache issues
+        ExcelDataService._instance = None
+
         mock_cache = MagicMock()
         mock_cache.get_dataset.return_value = None
 
