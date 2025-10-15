@@ -73,7 +73,7 @@ In the terminal, navigate to the directory you intend to install CORE rules engi
 
 This project uses the `black` code formatter, `flake8` linter for python and `prettier` for JSON, YAML and MD.
 It also uses `pre-commit` to run `black`, `flake8` and `prettier` when you commit.
-Both dependencies are added to _requirements.txt_.
+Both dependencies are added to _requirements-dev.txt_.
 
 **Required**
 
@@ -101,7 +101,7 @@ NOTE: if you have multiple versions of python on your machine, you can call pyth
 
 - Install the requirements.
 
-`python -m pip install -r requirements.txt` # From the root directory
+`python -m pip install -r requirements-dev.txt` # From the root directory
 
 ### **Running The Tests**
 
@@ -167,7 +167,7 @@ Run `python core.py validate --help` to see the list of validation options.
                                   If set to 0, no maximum will be enforced.
   -dv, --define-version TEXT      Define-XML version used for validation
   -dxp, --define-xml-path         Path to define-xml file.
-  -vx, --validate-xml             This flag enables XML validation against a Define-XML schema.
+  -vx, --validate-xml             Enable XML validation (default 'y' to enable, otherwise disable).
   --whodrug TEXT                  Path to directory with WHODrug dictionary
                                   files
   --meddra TEXT                   Path to directory with MedDRA dictionary

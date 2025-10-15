@@ -49,16 +49,18 @@ def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:  # noqa
             define_version.model_package == "define_2_1"
             and len(args.controlled_terminology_package) > 0
         ):
-            raise ValueError(
+            engine_logger.error(
                 "Cannot use -ct controlled terminology package command with Define-XML2.1 submission"
             )
+            raise SystemError(2)
         elif (
             define_version.model_package == "define_2_0"
             and len(args.controlled_terminology_package) > 1
         ):
-            raise ValueError(
+            engine_logger.error(
                 "Cannot provide multiple controlled terminology packages with Define-XML2.0 submission"
             )
+            raise SystemError(2)
     standards_file = os.path.join(args.cache, "standards_details.pkl")
     models_file = os.path.join(args.cache, "standards_models.pkl")
     variables_codelist_file = os.path.join(args.cache, "variable_codelist_maps.pkl")
