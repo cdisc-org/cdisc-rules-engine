@@ -85,8 +85,12 @@ class ExcelDataService(BaseDataService):
             "String": str,
         }
         header = pd.read_excel(
-            self.dataset_path, sheet_name=dataset_name, header=None, nrows=3,
-            na_values=[''], keep_default_na=False
+            self.dataset_path,
+            sheet_name=dataset_name,
+            header=None,
+            nrows=3,
+            na_values=[""],
+            keep_default_na=False,
         )
         dtypes = dict(zip(header.iloc[0].tolist(), header.iloc[2].tolist()))
         dtypes = {key: dtype_mapping.get(value, str) for key, value in dtypes.items()}
@@ -95,7 +99,7 @@ class ExcelDataService(BaseDataService):
             sheet_name=dataset_name,
             dtype=dtypes,
             skiprows=(1, 2, 3),
-            na_values=[''],
+            na_values=[""],
             keep_default_na=False,
         )
         dataframe = dataframe.replace({nan: None})
@@ -119,8 +123,10 @@ class ExcelDataService(BaseDataService):
         Returns dataset metadata as DatasetMetadata instance.
         """
         datasets_worksheet = pd.read_excel(
-            self.dataset_path, sheet_name=DATASETS_SHEET_NAME,
-            na_values=[''], keep_default_na=False
+            self.dataset_path,
+            sheet_name=DATASETS_SHEET_NAME,
+            na_values=[""],
+            keep_default_na=False,
         )
         metadata = datasets_worksheet[
             datasets_worksheet[DATASET_FILENAME_COLUMN] == dataset_name
@@ -146,8 +152,12 @@ class ExcelDataService(BaseDataService):
         Gets dataset from blob storage and returns metadata of a certain variable.
         """
         dataframe = pd.read_excel(
-            self.dataset_path, sheet_name=dataset_name, header=None, nrows=4,
-            na_values=[''], keep_default_na=False
+            self.dataset_path,
+            sheet_name=dataset_name,
+            header=None,
+            nrows=4,
+            na_values=[""],
+            keep_default_na=False,
         )
         metadata_to_return: VariableMetadataContainer = VariableMetadataContainer(
             {
@@ -186,8 +196,12 @@ class ExcelDataService(BaseDataService):
 
     def get_datasets(self) -> List[dict]:
         try:
-            worksheet = pd.read_excel(self.dataset_path, sheet_name=DATASETS_SHEET_NAME,
-                                      na_values=[''], keep_default_na=False)
+            worksheet = pd.read_excel(
+                self.dataset_path,
+                sheet_name=DATASETS_SHEET_NAME,
+                na_values=[""],
+                keep_default_na=False,
+            )
         except TypeError as e:
             logger.error(
                 f"Failed to read datasets from the Excel file at {self.dataset_path}. "
