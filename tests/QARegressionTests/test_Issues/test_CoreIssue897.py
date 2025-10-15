@@ -130,7 +130,7 @@ class TestGetXHTMLErrors(unittest.TestCase):
         summary_values = [row for row in summary_values if any(row)]
         assert len(summary_values) > 0
         assert summary_values[0][1] == "CORE-000409"
-        assert summary_values[0][3] == 2
+        assert summary_values[0][3] == 6
 
         # --- Issue Details ---
         issue_details_sheet = workbook["Issue Details"]
@@ -139,7 +139,7 @@ class TestGetXHTMLErrors(unittest.TestCase):
         ][1:]
         details_values = [row for row in details_values if any(row)]
         assert all(row[0] == "CORE-000409" for row in details_values)
-        assert len(details_values) == 2
+        assert len(details_values) == 6
 
         # --- Rules Report ---
         rules_values = [

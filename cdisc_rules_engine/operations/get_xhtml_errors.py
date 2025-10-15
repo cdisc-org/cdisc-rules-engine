@@ -68,6 +68,7 @@ class GetXhtmlErrors(BaseOperation):
 
     def _validate_html(self, text: str) -> list:
         parser = html5lib.HTMLParser(namespaceHTMLElements=False)
+        text = f"<!DOCTYPE html>{text}" if "doctype" not in text.lower() else text
         parser.parse(text)
         errors = []
 
