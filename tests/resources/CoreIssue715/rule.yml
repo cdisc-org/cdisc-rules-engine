@@ -4,7 +4,7 @@ Authorities:
       - Name: USDM
         References:
           - Citations:
-              - Cited Guidance: "Narrative content item text is expected to be HTML formatted."
+              - Cited Guidance: "Narrative content dataset is expected to be USDM JSON compliant."
                 Document: "USDM_CORE_Rules.xlsx"
             Origin: "USDM Conformance Rules"
             Rule Identifier:
@@ -14,21 +14,21 @@ Authorities:
         Version: "4.0"
 Check:
   all:
-    - name: $json_schema_errors
+    - name: $message
       operator: non_empty
 Core:
   Id: "CORE-000409"
   Status: Draft
   Version: "1"
-Description: "Narrative content item text is expected to be HTML formatted."
+Description: "Narrative content dataset is expected to be USDM JSON compliant."
 Executability: Partially Executable - Possible Overreporting
 Operations:
-  - id: $json_schema_errors
-    operator: get_json_schema_errors
 Outcome:
-  Message: "The narrative content item text contains non-conformant XHTML."
+  Message: "The narrative content dataset is expected to be USDM JSON compliant."
   Output Variables:
-    - $json_schema_errors
+    - $path
+    - $message
+    - $validator
 Rule Type: JSON Schema Check
 Scope:
   Entities:
