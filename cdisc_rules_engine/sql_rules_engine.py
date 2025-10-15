@@ -1,5 +1,6 @@
 import os
 import traceback
+import re
 from copy import deepcopy
 from typing import List, Union
 
@@ -346,6 +347,40 @@ class SQLRulesEngine:
                 message=clean_postgres_message(str(exception)),
             )
             message = "SQL execution error"
+        elif isinstance(exception, ValueError):
+            error_message = str(exception)
+
+            schema_pattern = r"Column\s+(\w+)\s+or\s+(\w+)\s+not found in the respective schemas"
+            match = re.search(schema_pattern, error_message, re.IGNORECASE)
+
+            if match:
+                column_name = match.group(1).upper()
+
+                error_obj = FailedValidationEntity(
+                    dataset=os.path.basename(dataset_path),
+                    error="Column not found in data",
+                    message=column_name,
+                )
+                message = "rule execution error"
+            else:
+                column_pattern = r"Column\s+['\"]?(\w+)['\"]?\s+(?:does not exist|not found|missing)"
+                match = re.search(column_pattern, error_message, re.IGNORECASE)
+
+                if match:
+                    column_name = match.group(1).upper()
+                    error_obj = FailedValidationEntity(
+                        dataset=os.path.basename(dataset_path),
+                        error="Column not found in data",
+                        message=column_name,
+                    )
+                    message = "rule execution error"
+                else:
+                    error_obj = FailedValidationEntity(
+                        dataset=os.path.basename(dataset_path),
+                        error="Validation error",
+                        message=error_message,
+                    )
+                    message = "rule execution error"
         else:
             error_obj = FailedValidationEntity(
                 dataset=os.path.basename(dataset_path),
