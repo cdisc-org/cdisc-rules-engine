@@ -1,5 +1,6 @@
 import pytest
 from cdisc_rules_engine.config.config import ConfigService
+from cdisc_rules_engine.exceptions.custom_exceptions import ColumnNotFoundError
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.operations.get_xhtml_errors import GetXhtmlErrors
 from cdisc_rules_engine.models.operation_params import OperationParams
@@ -82,7 +83,5 @@ def test_get_xhtml_errors_missing_column(base_services):
     dataset = PandasDataset.from_dict({"OTHER": ["<p>Ok</p>"]})
     params = build_params(dataset)
     _, cache, data_service = base_services
-    result_dataset = GetXhtmlErrors(params, dataset, cache, data_service).execute()
-    errors_col = params.operation_id
-    val = result_dataset[errors_col].iloc[0]
-    assert isinstance(val, list) and "Target column 'text' not found" in val[0]
+    with pytest.raises(ColumnNotFoundError):
+        GetXhtmlErrors(params, dataset, cache, data_service).execute()
