@@ -32,6 +32,9 @@ class BaseReport(ABC):
         self._args = args
         self._template = template
         self._output_name: str = f"{self._args.output}.{self._file_format}"
+        self._max_errors_limit, self._errors_per_dataset_flag = (
+            self._args.max_errors_per_rule
+        )
 
     def get_summary_data(self) -> List[List]:
         """
@@ -43,7 +46,7 @@ class BaseReport(ABC):
             "CORE-ID",
             "Message",
             "Issues",
-            "Explanation"
+            "Dataset Issue Limit Reached"
         ]
         """
         summary_data = []
@@ -55,11 +58,18 @@ class BaseReport(ABC):
                         result.get("errors")
                         and result.get("executionStatus") == "success"
                     ):
+                        limits_applied = result.get("limits_applied", {})
+                        per_dataset_truncated = limits_applied.get(
+                            "per_dataset_truncated", False
+                        )
                         summary_item = {
                             "dataset": dataset,
                             "core_id": validation_result.id,
                             "message": result.get("message"),
                             "issues": len(result.get("errors")),
+                            "dataset_issue_limit_reached": (
+                                True if per_dataset_truncated else False
+                            ),
                         }
 
                         if self._item_type == "list":
@@ -168,11 +178,18 @@ class BaseReport(ABC):
             "CDISC RuleID",
             "FDA RuleID",
             "Message",
-            "Status"
+            "Status",
+            "Rule Issue Limit Reached"
         ]
         """
         rules_report = []
         for validation_result in self._results:
+            limit_reached = False
+            for result in validation_result.results or []:
+                limits_applied = result.get("limits_applied", {})
+                if limits_applied.get("per_rule_halted", False):
+                    limit_reached = True
+                    break
             rules_item = {
                 "core_id": validation_result.id,
                 "version": "1",
@@ -185,6 +202,7 @@ class BaseReport(ABC):
                     == ExecutionStatus.SUCCESS.value
                     else ExecutionStatus.SKIPPED.value.upper()
                 ),
+                "rule_issue_limit_reached": True if limit_reached else False,
             }
             if self._item_type == "list":
                 rules_report.append([*rules_item.values()])
