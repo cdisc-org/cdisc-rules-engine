@@ -886,32 +886,29 @@ class DataframeType(BaseType):
         Splits string values by a separator and checks if both parts have equal length.
         Generic string comparison operator useful for validating paired data formats
         where both parts must have the same level of detail or precision.
-        
+
         Parameters:
             target: Column name to check
             separator: String to split on (default: "/")
-        
+
         Returns:
             Boolean series where True means both parts have equal length
         """
         target = self.replace_prefix(other_value.get("target"))
         separator = other_value.get("separator", "/")
-        
+
         # Get the target column as string, preserving nulls
         target_series = self.value[target]
-        
+
         # Handle nulls and empty strings - they should return True (no violation)
         is_null_or_empty = target_series.isna() | (target_series == "")
-        
+
         # Convert to string for processing
         target_str = target_series.astype(str)
-        
-        # Check if separator exists
-        has_separator = target_str.str.contains(re.escape(separator), na=False, regex=True)
-        
+
         # Split by separator (only split once, into max 2 parts)
         split_series = target_str.str.split(separator, expand=False)
-        
+
         # Vectorized length check
         def validate_split(parts):
             if not isinstance(parts, list):
@@ -921,12 +918,12 @@ class DataframeType(BaseType):
             if len(parts) == 2:
                 return len(parts[0]) == len(parts[1])  # Check equal length
             return False  # More than 2 parts (multiple separators)
-        
+
         results = split_series.apply(validate_split)
-        
+
         # Ensure nulls/empties are marked as valid (True)
         results = results | is_null_or_empty
-        
+
         return results
 
     @log_operator_execution
