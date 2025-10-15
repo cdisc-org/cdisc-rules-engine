@@ -132,6 +132,7 @@ def test_get_rules_report_data():
     with open(test_report_template, "rb") as f:
         mock_args = MagicMock()
         mock_args.max_report_rows = None
+        mock_args.max_errors_per_rule = (None, False)
         report: ExcelReport = ExcelReport(
             [], "test", mock_validation_results, 10.1, mock_args, f
         )
@@ -146,6 +147,7 @@ def test_get_rules_report_data():
                     result.fda_rule_id,
                     result.message,
                     ExecutionStatus.SUCCESS.value.upper(),
+                    False,
                 ]
             )
         expected_reports = sorted(expected_reports, key=lambda x: x[0])
@@ -158,6 +160,7 @@ def test_get_detailed_data(excel=True):
     with open(test_report_template, "rb") as f:
         mock_args = MagicMock()
         mock_args.max_report_rows = None
+        mock_args.max_errors_per_rule = (None, False)
         report: ExcelReport = ExcelReport(
             [], "test", mock_validation_results, 10.1, mock_args, f
         )
@@ -207,6 +210,7 @@ def test_get_summary_data():
     with open(test_report_template, "rb") as f:
         mock_args = MagicMock()
         mock_args.max_report_rows = None
+        mock_args.max_errors_per_rule = (None, False)
         report: ExcelReport = ExcelReport(
             [], "test", mock_validation_results, 10.1, mock_args, f
         )
@@ -217,13 +221,9 @@ def test_get_summary_data():
                 mock_validation_results[0].id,
                 "AESTDY and DOMAIN are equal to test",
                 2,
+                False,
             ],
-            [
-                None,
-                mock_validation_results[1].id,
-                "TTVARs are wrong",
-                1,
-            ],
+            [None, mock_validation_results[1].id, "TTVARs are wrong", 1, False],
         ]
         errors = sorted(errors, key=lambda x: (x[0], x[1]))
         assert len(errors) == len(summary_data)
@@ -237,6 +237,7 @@ def test_get_export():
         mock_args.meddra = "test"
         mock_args.whodrug = "test"
         mock_args.max_report_rows = None
+        mock_args.max_errors_per_rule = (None, False)
 
         datasets = [
             SDTMDatasetMetadata(
@@ -267,11 +268,11 @@ def test_get_export():
         wb = workbooks[0]
         assert wb["Conformance Details"]["B3"].value == "10.1 seconds"
         assert wb["Conformance Details"]["B4"].value == __version__
-        assert wb["Conformance Details"]["B7"].value == "SDTMIG"
-        assert wb["Conformance Details"]["B8"].value == "NAP"
-        assert wb["Conformance Details"]["B9"].value == "V3.4"
-        assert wb["Conformance Details"]["B10"].value == ", ".join(cdiscCt)
-        assert wb["Conformance Details"]["B11"].value == "2.1"
+        assert wb["Conformance Details"]["B8"].value == "SDTMIG"
+        assert wb["Conformance Details"]["B9"].value == "NAP"
+        assert wb["Conformance Details"]["B10"].value == "V3.4"
+        assert wb["Conformance Details"]["B11"].value == ", ".join(cdiscCt)
+        assert wb["Conformance Details"]["B12"].value == "2.1"
 
         # Check dataset details tab
         assert wb["Dataset Details"]["A2"].value == "test.xpt"  # filename

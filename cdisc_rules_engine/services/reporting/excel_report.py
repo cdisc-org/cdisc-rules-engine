@@ -235,40 +235,40 @@ class ExcelReport(BaseReport):
         )
 
         # write standards details
-        wb["Conformance Details"]["B9"] = standard.upper()
+        wb["Conformance Details"]["B8"] = standard.upper()
         if "substandard" in kwargs and kwargs["substandard"] is not None:
-            wb["Conformance Details"]["B10"] = kwargs["substandard"]
-        wb["Conformance Details"]["B11"] = f"V{version}"
+            wb["Conformance Details"]["B9"] = kwargs["substandard"]
+        wb["Conformance Details"]["B10"] = f"V{version}"
         if cdiscCt:
-            wb["Conformance Details"]["B12"] = (
+            wb["Conformance Details"]["B11"] = (
                 ", ".join(cdiscCt)
                 if isinstance(cdiscCt, (list, tuple, set))
                 else str(cdiscCt)
             )
         else:
-            wb["Conformance Details"]["B12"] = ""
-        wb["Conformance Details"]["B13"] = define_version
+            wb["Conformance Details"]["B11"] = ""
+        wb["Conformance Details"]["B12"] = define_version
 
         # Populate external dictionary versions
         unii_version = dictionary_versions.get(DictionaryTypes.UNII.value)
         if unii_version is not None:
-            wb["Conformance Details"]["B14"] = unii_version
+            wb["Conformance Details"]["B13"] = unii_version
 
         medrt_version = dictionary_versions.get(DictionaryTypes.MEDRT.value)
         if medrt_version is not None:
-            wb["Conformance Details"]["B15"] = medrt_version
+            wb["Conformance Details"]["B14"] = medrt_version
 
         meddra_version = dictionary_versions.get(DictionaryTypes.MEDDRA.value)
         if meddra_version is not None:
-            wb["Conformance Details"]["B16"] = meddra_version
+            wb["Conformance Details"]["B15"] = meddra_version
 
         whodrug_version = dictionary_versions.get(DictionaryTypes.WHODRUG.value)
         if whodrug_version is not None:
-            wb["Conformance Details"]["B17"] = whodrug_version
+            wb["Conformance Details"]["B16"] = whodrug_version
 
         snomed_version = dictionary_versions.get(DictionaryTypes.SNOMED.value)
         if snomed_version is not None:
-            wb["Conformance Details"]["B18"] = snomed_version
+            wb["Conformance Details"]["B17"] = snomed_version
 
     def write_report(self, **kwargs):
         logger = logging.getLogger("validator")
