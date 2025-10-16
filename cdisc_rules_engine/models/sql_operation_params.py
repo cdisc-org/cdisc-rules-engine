@@ -19,6 +19,8 @@ class SqlOperationParams:
     # Optional parameters with defaults
     grouping: List[str] = None
     filter: dict = None
+    key_name: str = None
+    key_value: str = None
 
     # standard_substandard: str = None
     # attribute_name: str = None
@@ -41,8 +43,6 @@ class SqlOperationParams:
     # filter: dict = None
     # grouping: List[str] = None
     # grouping_aliases: List[str] = None
-    # key_name: str = None
-    # key_value: str = None
     # level: str = None
     # map: List[dict] = None
     # original_target: str = None

@@ -17,6 +17,7 @@ from cdisc_rules_engine.sql_operations.numeric_operation import (
 )
 from cdisc_rules_engine.sql_operations.sql_base_operation import SqlBaseOperation
 from cdisc_rules_engine.sql_operations.variable_exists import SqlVariableExistsOperation
+from cdisc_rules_engine.sql_operations.get_model_filtered_variables import SqlGetModelFilteredVariables
 
 
 class SqlOperationsFactory:
@@ -32,7 +33,7 @@ class SqlOperationsFactory:
         "get_column_order_from_library": None,
         "get_codelist_attributes": None,
         "get_model_column_order": None,
-        "get_model_filtered_variables": None,
+        "get_model_filtered_variables": SqlGetModelFilteredVariables,
         "get_parent_model_column_order": None,
         "map": None,
         "max": lambda params, ds: SqlNumericOperation(params, ds, "MAX"),

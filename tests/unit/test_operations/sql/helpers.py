@@ -40,6 +40,7 @@ def setup_sql_operations(
         standards_context=DefaultStandardsContext(),
         **extra_config,
     )
+
     return SqlOperationsFactory.get_service(operation, params, data_service)
 
 

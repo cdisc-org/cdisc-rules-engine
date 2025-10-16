@@ -19,12 +19,12 @@ class SqlDatasetColumnOrderOperation(SqlBaseOperation):
         column_names = [col[0].upper() for col in columns if col[0] not in METADATA_COLUMNS and col[0] != "id"]
 
         if column_names:
-            # Format column names for SQL ARRAY
-            formatted_cols = [f"'{name}'" for name in column_names]
-            array_str = f"ARRAY[{', '.join(formatted_cols)}]"
-            query = f"SELECT {array_str} AS value"
+            # Format column names for SQL VALUES clause to return individual rows
+            formatted_cols = [f"('{name}')" for name in column_names]
+            values_clause = ", ".join(formatted_cols)
+            query = f"SELECT column1 AS value FROM (VALUES {values_clause}) AS t(column1)"
         else:
-            # Return empty array
-            query = "SELECT ARRAY[]::text[] AS value"
+            # Return empty result set using VALUES with no rows
+            query = "SELECT column1 AS value FROM (VALUES (NULL)) AS t(column1) WHERE FALSE"
 
         return SqlOperationResult(query, type="collection", subtype="Char")

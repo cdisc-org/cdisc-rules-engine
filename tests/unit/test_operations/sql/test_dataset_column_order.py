@@ -15,9 +15,7 @@ import pytest
                 "AESEQ": [1, 2],
                 "USUBJID": ["TEST1", "TEST1"],
             },
-            [
-                ["STUDYID", "DOMAIN", "AESEQ", "USUBJID"],
-            ],
+            ["STUDYID", "DOMAIN", "AESEQ", "USUBJID"],
         ),
         (
             {
@@ -25,9 +23,7 @@ import pytest
                 "USUBJID": ["SUBJ1", "SUBJ2"],
                 "SUBJID": ["ID1", "ID2"],
             },
-            [
-                ["DOMAIN", "USUBJID", "SUBJID"],
-            ],
+            ["DOMAIN", "USUBJID", "SUBJID"],
         ),
     ],
 )
