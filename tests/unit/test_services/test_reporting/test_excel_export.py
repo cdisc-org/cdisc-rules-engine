@@ -147,7 +147,6 @@ def test_get_rules_report_data():
                     result.fda_rule_id,
                     result.message,
                     ExecutionStatus.SUCCESS.value.upper(),
-                    False,
                 ]
             )
         expected_reports = sorted(expected_reports, key=lambda x: x[0])
@@ -221,9 +220,8 @@ def test_get_summary_data():
                 mock_validation_results[0].id,
                 "AESTDY and DOMAIN are equal to test",
                 2,
-                False,
             ],
-            [None, mock_validation_results[1].id, "TTVARs are wrong", 1, False],
+            [None, mock_validation_results[1].id, "TTVARs are wrong", 1],
         ]
         errors = sorted(errors, key=lambda x: (x[0], x[1]))
         assert len(errors) == len(summary_data)
