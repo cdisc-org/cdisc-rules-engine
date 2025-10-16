@@ -138,7 +138,6 @@ def test_get_rules_report_data():
                 "fda_rule_id": result.fda_rule_id,
                 "message": result.message,
                 "status": ExecutionStatus.SUCCESS.value.upper(),
-                "rule_issue_limit_reached": False,
             }
         )
     expected_reports = sorted(expected_reports, key=lambda x: x["core_id"])
@@ -208,14 +207,12 @@ def test_get_summary_data():
             "core_id": mock_validation_results[0].id,
             "message": "AESTDY and DOMAIN are equal to test",
             "issues": 2,
-            "dataset_issue_limit_reached": False,
         },
         {
             "dataset": None,
             "core_id": mock_validation_results[1].id,
             "message": "TTVARs are wrong",
             "issues": 1,
-            "dataset_issue_limit_reached": False,
         },
     ]
     errors = sorted(errors, key=lambda x: (x["dataset"], x["core_id"]))

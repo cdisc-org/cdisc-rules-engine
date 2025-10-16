@@ -257,7 +257,7 @@ def test_get_export():
         cdiscCt = ["sdtmct-03-2021"]
         f.seek(0)
         template_buffer = f.read()
-        workbooks = report.get_export(
+        wb = report.get_export(
             define_version="2.1",
             cdiscCt=cdiscCt,
             standard="sdtmig",
@@ -265,14 +265,14 @@ def test_get_export():
             dictionary_versions={},
             template_buffer=template_buffer,
         )
-        wb = workbooks[0]
         assert wb["Conformance Details"]["B3"].value == "10.1 seconds"
         assert wb["Conformance Details"]["B4"].value == __version__
-        assert wb["Conformance Details"]["B8"].value == "SDTMIG"
-        assert wb["Conformance Details"]["B9"].value == "NAP"
-        assert wb["Conformance Details"]["B10"].value == "V3.4"
-        assert wb["Conformance Details"]["B11"].value == ", ".join(cdiscCt)
-        assert wb["Conformance Details"]["B12"].value == "2.1"
+
+        assert wb["Conformance Details"]["B9"].value == "SDTMIG"
+        assert wb["Conformance Details"]["B10"].value == "NAP"
+        assert wb["Conformance Details"]["B11"].value == "V3.4"
+        assert wb["Conformance Details"]["B12"].value == ", ".join(cdiscCt)
+        assert wb["Conformance Details"]["B13"].value == "2.1"
 
         # Check dataset details tab
         assert wb["Dataset Details"]["A2"].value == "test.xpt"  # filename
