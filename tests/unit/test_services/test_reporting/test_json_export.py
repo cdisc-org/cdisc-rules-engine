@@ -122,8 +122,10 @@ mock_validation_results = [
 
 
 def test_get_rules_report_data():
+    mock_args = MagicMock()
+    mock_args.max_errors_per_rule = (None, False)
     report: JsonReport = JsonReport(
-        [], "test", mock_validation_results, 10.1, MagicMock()
+        [], "test", mock_validation_results, 10.1, mock_args
     )
     report_data = report.get_rules_report_data()
     expected_reports = []
@@ -145,8 +147,10 @@ def test_get_rules_report_data():
 
 
 def test_get_detailed_data():
+    mock_args = MagicMock()
+    mock_args.max_errors_per_rule = (None, False)
     report: JsonReport = JsonReport(
-        [], "test", mock_validation_results, 10.1, MagicMock()
+        [], "test", mock_validation_results, 10.1, mock_args
     )
     detailed_data = report.get_detailed_data()
     errors = [
@@ -191,8 +195,10 @@ def test_get_detailed_data():
 
 
 def test_get_summary_data():
+    mock_args = MagicMock()
+    mock_args.max_errors_per_rule = (None, False)
     report: JsonReport = JsonReport(
-        [], "test", mock_validation_results, 10.1, MagicMock()
+        [], "test", mock_validation_results, 10.1, mock_args
     )
     summary_data = report.get_summary_data()
     errors = [
@@ -216,8 +222,10 @@ def test_get_summary_data():
 
 
 def test_get_export():
+    mock_args = MagicMock()
+    mock_args.max_errors_per_rule = (None, False)
     report: JsonReport = JsonReport(
-        [], "test", mock_validation_results, 10.1, MagicMock()
+        [], "test", mock_validation_results, 10.1, mock_args
     )
     cdiscCt = ["sdtmct-03-2021"]
     export = report.get_export(
@@ -234,6 +242,8 @@ def test_get_export():
     assert export["Conformance_Details"]["Version"] == "V3.4"
     assert export["Conformance_Details"]["CT_Version"] == "sdtmct-03-2021"
     assert export["Conformance_Details"]["Define_XML_Version"] == "2.1"
+    assert export["Conformance_Details"]["Issue_Limit_Per_Rule"] is None
+    assert export["Conformance_Details"]["Issue_Limit_Per_Dataset"] is False
     assert "Dataset_Details" in export
     assert isinstance(export["Dataset_Details"], list)
 

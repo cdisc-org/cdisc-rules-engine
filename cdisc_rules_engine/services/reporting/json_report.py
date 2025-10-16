@@ -55,6 +55,8 @@ class JsonReport(BaseReport):
             "Substandard": kwargs.get("substandard"),
             "CT_Version": ", ".join(cdiscCt),
             "Define_XML_Version": define_version,
+            "Issue_Limit_Per_Rule": self._max_errors_limit,
+            "Issue_Limit_Per_Dataset": True if self._errors_per_dataset_flag else False,
         }
         conformance_details["UNII_Version"] = dictionary_versions.get(
             DictionaryTypes.UNII.value

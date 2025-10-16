@@ -32,6 +32,9 @@ class BaseReport(ABC):
         self._args = args
         self._template = template
         self._output_name: str = f"{self._args.output}.{self._file_format}"
+        self._max_errors_limit, self._errors_per_dataset_flag = (
+            self._args.max_errors_per_rule
+        )
 
     def get_summary_data(self) -> List[List]:
         """
@@ -43,7 +46,6 @@ class BaseReport(ABC):
             "CORE-ID",
             "Message",
             "Issues",
-            "Explanation"
         ]
         """
         summary_data = []
