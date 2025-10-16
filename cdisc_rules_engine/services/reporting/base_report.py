@@ -170,7 +170,7 @@ class BaseReport(ABC):
             "CDISC RuleID",
             "FDA RuleID",
             "Message",
-            "Status",
+            "Status"
         ]
         """
         rules_report = []

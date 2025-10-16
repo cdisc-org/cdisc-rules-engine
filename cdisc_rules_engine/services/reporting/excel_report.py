@@ -72,7 +72,6 @@ class ExcelReport(BaseReport):
         standard,
         version,
         dictionary_versions,
-        template_buffer,
         **kwargs,
     ) -> Workbook:
         logger = logging.getLogger("validator")
@@ -87,7 +86,7 @@ class ExcelReport(BaseReport):
                 f"Issue Details truncated to limit of {self.max_rows_per_sheet} rows. "
                 f"Total issues found: {total_rows}"
             )
-        wb = excel_open_workbook(template_buffer)
+        wb = excel_open_workbook(self._template.read())
         excel_update_worksheet(wb["Issue Summary"], summary_data, dict(wrap_text=True))
         excel_update_worksheet(wb["Issue Details"], detailed_data, dict(wrap_text=True))
         excel_update_worksheet(
@@ -122,7 +121,11 @@ class ExcelReport(BaseReport):
         wb["Conformance Details"]["B3"] = f"{round(self._elapsed_time, 2)} seconds"
         wb["Conformance Details"]["B4"] = __version__
         wb["Conformance Details"]["B5"] = str(self._max_errors_limit)
-        wb["Conformance Details"]["B6"] = str(self._errors_per_dataset_flag)
+        wb["Conformance Details"]["B6"] = (
+            "None"
+            if self._errors_per_dataset_flag == 0
+            else str(self._errors_per_dataset_flag)
+        )
         wb["Conformance Details"]["B7"] = str(self.max_rows_per_sheet)
 
         # write dataset metadata
@@ -176,6 +179,7 @@ class ExcelReport(BaseReport):
         snomed_version = dictionary_versions.get(DictionaryTypes.SNOMED.value)
         if snomed_version is not None:
             wb["Conformance Details"]["B18"] = snomed_version
+        return wb
 
     def write_report(self, **kwargs):
         logger = logging.getLogger("validator")
@@ -196,14 +200,12 @@ class ExcelReport(BaseReport):
                     controlled_terminology = get_define_ct(
                         self._args.dataset_paths, define_version
                     )
-            template_buffer = self._template.read()
-            wb = self.get_export(
+            report_data = self.get_export(
                 define_version,
                 controlled_terminology,
                 self._args.standard,
                 self._args.version.replace("-", "."),
                 dictionary_versions,
-                template_buffer,
                 substandard=(
                     self._args.substandard
                     if hasattr(self._args, "substandard")
@@ -211,7 +213,7 @@ class ExcelReport(BaseReport):
                 ),
             )
             with open(self._output_name, "wb") as f:
-                f.write(excel_workbook_to_stream(wb))
+                f.write(excel_workbook_to_stream(report_data))
             logger.debug(f"Report written to: {self._output_name}")
         except Exception as e:
             logger.error(f"Error writing report: {e}")

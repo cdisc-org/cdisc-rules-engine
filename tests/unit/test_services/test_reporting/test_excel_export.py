@@ -255,19 +255,15 @@ def test_get_export():
             datasets, ["test"], mock_validation_results, 10.1, mock_args, f
         )
         cdiscCt = ["sdtmct-03-2021"]
-        f.seek(0)
-        template_buffer = f.read()
         wb = report.get_export(
             define_version="2.1",
             cdiscCt=cdiscCt,
             standard="sdtmig",
             version="3.4",
             dictionary_versions={},
-            template_buffer=template_buffer,
         )
         assert wb["Conformance Details"]["B3"].value == "10.1 seconds"
         assert wb["Conformance Details"]["B4"].value == __version__
-
         assert wb["Conformance Details"]["B9"].value == "SDTMIG"
         assert wb["Conformance Details"]["B10"].value == "NAP"
         assert wb["Conformance Details"]["B11"].value == "V3.4"
