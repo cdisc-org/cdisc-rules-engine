@@ -120,7 +120,6 @@ class RulesEngine:
             )
         else:
             total_errors = 0
-            per_rule_limit = False
             for dataset_metadata in datasets:
                 if (
                     self.max_errors_per_rule
@@ -131,7 +130,6 @@ class RulesEngine:
                         f"Rule {rule.get('core_id')}: Error limit ({self.max_errors_per_rule}) reached. "
                         f"Skipping remaining datasets."
                     )
-                    per_rule_limit = True
                     break
                 if dataset_metadata.unsplit_name in results and "domains" in rule:
                     include_split = rule["domains"].get("include_split_datasets", False)
@@ -148,19 +146,10 @@ class RulesEngine:
                             errors = result.get("errors", [])
                             if len(errors) > self.max_errors_per_rule:
                                 result["errors"] = errors[: self.max_errors_per_rule]
-                                result["limits_applied"] = {
-                                    "per_dataset_truncated": True,
-                                    "per_rule_halted": False,
-                                }
                                 logger.info(
                                     f"Rule {rule.get('core_id')}: Truncated {len(errors)} errors to "
                                     f"{self.max_errors_per_rule} for dataset {dataset_metadata.name}."
                                 )
-                            else:
-                                result["limits_applied"] = {
-                                    "per_dataset_truncated": False,
-                                    "per_rule_halted": False,
-                                }
 
                 results[dataset_metadata.unsplit_name] = dataset_results
 
@@ -177,20 +166,7 @@ class RulesEngine:
                                     f"reached after processing {dataset_metadata.name}. "
                                     f"Execution halted at {total_errors} total errors."
                                 )
-                                per_rule_limit = True
                                 break
-
-            if per_rule_limit:
-                for dataset_results_list in results.values():
-                    for result in dataset_results_list:
-                        if "limits_applied" not in result:
-                            result["limits_applied"] = {
-                                "per_dataset_truncated": False,
-                                "per_rule_halted": True,
-                            }
-                        else:
-                            result["limits_applied"]["per_rule_halted"] = True
-
         return results
 
     def validate_single_dataset(
