@@ -708,34 +708,18 @@ def test_not_matches_regex(data, comparator, dataset_type, expected_result):
 @pytest.mark.parametrize(
     "data,separator,dataset_type,expected_result",
     [
-        # SENDIG rule examples - valid interval date/times with equal precision
+        # PandasDataset tests with "/" separator
+        # Combines SENDIG examples, invalid cases, edge cases, and multiple separators
         (
             {
                 "target": [
+                    # SENDIG rule examples - valid interval date/times with equal precision
                     "2003-12-15T10:00/2003-12-15T10:30",
                     "2003-12-01/2003-12-10",
                     "2003-01-01/2003-06-30",
-                ]
-            },
-            "/",
-            PandasDataset,
-            [True, True, True],
-        ),
-        # Invalid example - different precision/length
-        (
-            {
-                "target": [
-                    "2003-12-15T10:00/2003-12-15T10:30:15",  # 16 chars vs 19 chars
-                ]
-            },
-            "/",
-            PandasDataset,
-            [False],
-        ),
-        # Edge cases
-        (
-            {
-                "target": [
+                    # Invalid example - different precision/length (16 chars vs 19 chars)
+                    "2003-12-15T10:00/2003-12-15T10:30:15",
+                    # Edge cases
                     "ABC/DEF",  # Equal length (3 each) - valid
                     "AB/CD",  # Equal length (2 each) - valid
                     "A/ABC",  # Different length (1 vs 3) - invalid
@@ -744,24 +728,29 @@ def test_not_matches_regex(data, comparator, dataset_type, expected_result):
                     "ABCDEF",  # No separator - valid (no violation)
                     "",  # Empty string - valid (no violation)
                     None,  # Null value - valid (no violation)
-                ]
-            },
-            "/",
-            PandasDataset,
-            [True, True, False, False, False, True, True, True],
-        ),
-        # Multiple separators case
-        (
-            {
-                "target": [
+                    # Multiple separators case
                     "2003-12-15/2003-12-16/2003-12-17",  # Multiple separators - invalid
                 ]
             },
             "/",
             PandasDataset,
-            [False],
+            [
+                True,
+                True,
+                True,
+                False,
+                True,
+                True,
+                False,
+                False,
+                False,
+                True,
+                True,
+                True,
+                False,
+            ],
         ),
-        # Custom separator
+        # Custom separator test
         (
             {
                 "target": [
@@ -773,29 +762,20 @@ def test_not_matches_regex(data, comparator, dataset_type, expected_result):
             PandasDataset,
             [True, False],
         ),
-        # Dask dataset tests
+        # DaskDataset tests with "/" separator - combining all Dask test cases
         (
             {
                 "target": [
                     "2003-12-15T10:00/2003-12-15T10:30",
                     "2003-12-01/2003-12-10",
                     "ABC/DEF",
-                ]
-            },
-            "/",
-            DaskDataset,
-            [True, True, True],
-        ),
-        (
-            {
-                "target": [
                     "2003-12-15T10:00/2003-12-15T10:30:15",
                     "A/ABC",
                 ]
             },
             "/",
             DaskDataset,
-            [False, False],
+            [True, True, True, False, False],
         ),
     ],
 )
@@ -820,7 +800,7 @@ def test_split_parts_have_equal_length(data, separator, dataset_type, expected_r
             {
                 "target": [
                     "2003-12-15T10:00/2003-12-15T10:30",  # Equal - returns False
-                    "2003-12-15T10:00/2003-12-15T10:30:15",  # Not equal - returns True
+                    "2003-12-15T10:00/2003-12-15T10:30:15",  # Unequal - returns True
                 ]
             },
             "/",
@@ -831,7 +811,7 @@ def test_split_parts_have_equal_length(data, separator, dataset_type, expected_r
             {
                 "target": [
                     "ABC/DEF",  # Equal - returns False
-                    "A/ABC",  # Not equal - returns True
+                    "A/ABC",  # Unequal - returns True
                 ]
             },
             "/",
@@ -840,16 +820,16 @@ def test_split_parts_have_equal_length(data, separator, dataset_type, expected_r
         ),
     ],
 )
-def test_split_parts_have_not_equal_length(
+def test_split_parts_have_unequal_length(
     data, separator, dataset_type, expected_result
 ):
     """
-    Test for split_parts_have_not_equal_length operator (complement).
-    Returns True when parts DON'T have equal length (violation case).
+    Test for split_parts_have_unequal_length operator (complement).
+    Returns True when parts have unequal length (violation case).
     """
     df = dataset_type.from_dict(data)
     dataframe_type = DataframeType({"value": df})
-    result = dataframe_type.split_parts_have_not_equal_length(
+    result = dataframe_type.split_parts_have_unequal_length(
         {"target": "target", "separator": separator}
     )
     assert result.equals(df.convert_to_series(expected_result))

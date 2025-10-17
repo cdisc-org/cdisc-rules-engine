@@ -928,10 +928,10 @@ class DataframeType(BaseType):
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
-    def split_parts_have_not_equal_length(self, other_value: dict):
+    def split_parts_have_unequal_length(self, other_value: dict):
         """
         Complement of split_parts_have_equal_length.
-        Returns True when the parts DON'T have equal length (violation case).
+        Returns True when the parts have unequal length (violation case).
         """
         return ~self.split_parts_have_equal_length(other_value)
 
