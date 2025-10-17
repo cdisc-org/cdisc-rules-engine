@@ -396,6 +396,7 @@ Complement of `has_equal_length`
 Splits a string by a separator and checks if both parts have equal length. Generic operator for validating paired data formats where both parts must have the same level of detail or precision.
 
 Parameters:
+
 - `separator`: The delimiter to split on (default: "/")
 
 > Check that string parts separated by a delimiter have equal length
@@ -407,21 +408,23 @@ Parameters:
 ```
 
 Use cases:
+
 - **Date/time intervals**: `2003-12-15T10:00/2003-12-15T10:30` → True (both 16 characters)
 - **Date ranges**: `2003-12-01/2003-12-10` → True (both 10 characters)
 - **Version ranges**: `1.2.3/2.0.0` → True (both 5 characters)
 - **Product codes**: `ABC-123/XYZ-789` → True (both 7 characters)
 
 Invalid example:
+
 - `2003-12-15T10:00/2003-12-15T10:30:15` → False (16 vs 19 characters - different precision)
 
-### split_parts_have_not_equal_length
+### split_parts_have_unequal_length
 
-Complement of `split_parts_have_equal_length`. Returns True when parts have different lengths (indicates a violation).
+Complement of `split_parts_have_equal_length`. Returns True when parts have unequal lengths (indicates a violation).
 
 ```yaml
 - name: --DTC
-  operator: split_parts_have_not_equal_length
+  operator: split_parts_have_unequal_length
   separator: "/"
 ```
 
