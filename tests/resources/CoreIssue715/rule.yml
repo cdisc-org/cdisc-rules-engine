@@ -29,6 +29,7 @@ Outcome:
     - path
     - message
     - validator
+    - validator_value
 Rule Type: JSON Schema Check
 Scope:
   Entities:
