@@ -1,7 +1,8 @@
-from typing import Any, Literal, Tuple, Union
 from collections import OrderedDict
+from typing import Any, Literal, Tuple, Union
 
 from cdisc_rules_engine.data_service.util import generate_hash
+from cdisc_rules_engine.models.dataset_metadata2 import DatasetMetadata2
 from cdisc_rules_engine.models.sql.column_schema import SqlColumnSchema
 
 
@@ -52,10 +53,10 @@ class SqlTableSchema:
         return instance
 
     @classmethod
-    def from_metadata(cls, metadata: dict[str, Any]) -> "SqlTableSchema":
+    def from_metadata(cls, metadata: DatasetMetadata2) -> "SqlTableSchema":
         """Create a SqlTableSchema from its metadata."""
-        instance = cls(metadata.get("name").lower(), metadata.get("name").lower(), source="data")
-        for variable_metadata in metadata.get("variables", []):
+        instance = cls(metadata.name.lower(), metadata.name.lower(), source="data")
+        for variable_metadata in metadata.variables:
             instance.add_column(SqlColumnSchema.from_metadata(variable_metadata))
         return instance
 

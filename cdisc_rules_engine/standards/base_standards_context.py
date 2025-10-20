@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Any
 
-from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
+from cdisc_rules_engine.models.dataset_metadata2 import DatasetMetadata2
 
 
 class BaseStandardsContext(ABC):
@@ -18,5 +18,5 @@ class BaseStandardsContext(ABC):
         pass
 
     @abstractmethod
-    def within_rule_scope(self, scope: dict[str, Any], metadata: DatasetMetadata):
+    def within_rule_scope(self, scope: dict[str, Any], metadata: DatasetMetadata2):
         pass

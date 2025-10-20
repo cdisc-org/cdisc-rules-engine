@@ -1,20 +1,9 @@
-from typing import Dict, List, TypedDict, Union
+from dataclasses import dataclass
+from typing import Dict, List, Union
 
-from cdisc_rules_engine.models.sql import DATASET_COLUMN_TYPES
-
-
-class TestVariableMetadata(TypedDict):
-    name: str
-    label: str
-    type: DATASET_COLUMN_TYPES
-    length: int
-    format: str
+from cdisc_rules_engine.models.dataset_metadata2 import DatasetMetadata2
 
 
-class TestDataset(TypedDict):
-    filename: str
-    filepath: str
-    name: str
-    label: str
-    variables: List[TestVariableMetadata]
+@dataclass
+class TestDataset(DatasetMetadata2):
     records: Dict[str, List[Union[str, int, float]]]

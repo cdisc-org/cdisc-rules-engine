@@ -86,19 +86,21 @@ class SQLSerialiser:
         Generates the list of columns and a function to convert a row to a SQL string.
         """
         example_row = {k.lower(): v for k, v in example_row.items()}
-        columns = []
+        column_names = []
+        column_hashes = []
         for col_name, col_schema in schema.get_columns():
             if col_schema.alias or col_name.lower() == "id":
                 continue
             if col_name in example_row:
-                columns.append(col_schema.hash)
+                column_names.append(col_name)
+                column_hashes.append(col_schema.hash)
 
         def map_row_to_sql(row: Dict[str, Any]) -> str:
             """
             Maps a row to a SQL string for insertion.
             """
             values = []
-            for col_name in columns:
+            for col_name in column_names:
                 value = row.get(col_name.lower())
                 if isinstance(value, str):
                     escaped_value = value.replace("'", "''")
@@ -108,7 +110,7 @@ class SQLSerialiser:
                 values.append(str(value))
             return ", ".join(values)
 
-        return ", ".join(columns), map_row_to_sql
+        return ", ".join(column_hashes), map_row_to_sql
 
     @classmethod
     def create_column_from_schema(cls, table_schema: SqlTableSchema, column_schema: "SqlColumnSchema") -> str:

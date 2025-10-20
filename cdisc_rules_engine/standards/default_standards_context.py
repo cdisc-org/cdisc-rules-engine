@@ -1,6 +1,6 @@
 from typing import Any
 
-from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
+from cdisc_rules_engine.models.dataset_metadata2 import DatasetMetadata2
 from cdisc_rules_engine.standards.base_standards_context import BaseStandardsContext
 
 
@@ -15,6 +15,6 @@ class DefaultStandardsContext(BaseStandardsContext):
     def get_domain_label(self, domain: str):
         return ""
 
-    def within_rule_scope(self, scope: dict[str, Any], metadata: DatasetMetadata):
+    def within_rule_scope(self, scope: dict[str, Any], metadata: DatasetMetadata2):
         # TODO: Should do a domain check
         return True

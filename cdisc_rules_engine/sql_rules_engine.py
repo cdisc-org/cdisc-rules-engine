@@ -36,9 +36,9 @@ from cdisc_rules_engine.models.validation_error_container import (
     ValidationErrorContainer,
 )
 from cdisc_rules_engine.services import logger
+from cdisc_rules_engine.sql_dataset_builders import sql_builder_factory
 from cdisc_rules_engine.sql_operations.sql_base_operation import SqlOperationError
 from cdisc_rules_engine.standards.base_standards_context import BaseStandardsContext
-from cdisc_rules_engine.sql_dataset_builders import sql_builder_factory
 from cdisc_rules_engine.utilities.sql_rule_processor import SQLRuleProcessor
 from cdisc_rules_engine.utilities.utils import (
     serialize_rule,
@@ -74,12 +74,13 @@ class SQLRulesEngine:
 
         # Collect all dataset metadata for builders that need it (e.g., DomainListDatasetBuilder)
         all_datasets = [
-            self.data_service.get_dataset_metadata(ds_id) for ds_id in self.data_service.get_uploaded_dataset_ids()
+            self.data_service.get_dataset_metadata(ds_id, self.standards_context)
+            for ds_id in self.data_service.get_uploaded_dataset_ids()
         ]
 
         # iterate through all pre-processed user datasets
         for pp_ds_id in self.data_service.get_uploaded_dataset_ids():
-            dataset_metadata = self.data_service.get_dataset_metadata(pp_ds_id)
+            dataset_metadata = self.data_service.get_dataset_metadata(pp_ds_id, self.standards_context)
 
             is_suitable, reason = self.standards_context.within_rule_scope(
                 rule,
@@ -211,6 +212,7 @@ class SQLRulesEngine:
             data_service=self.data_service,
             column_prefix_map={"--": dataset_metadata.domain},
             operation_variables=operation_variables,
+            dataset_metadata=dataset_metadata,
         )
 
         results = []

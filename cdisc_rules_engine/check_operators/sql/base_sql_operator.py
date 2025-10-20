@@ -10,6 +10,7 @@ import pandas as pd
 from cdisc_rules_engine.constants.metadata_columns import DATASET_NAME
 from cdisc_rules_engine.data_service.postgresql_data_service import (
     PostgresQLDataService,
+    SQLDatasetMetadata,
 )
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
@@ -84,7 +85,7 @@ class BaseSqlOperator:
         self.column_codelist_map = data.get("column_codelist_map", {})
         self.codelist_term_maps = data.get("codelist_term_maps", [])
         self.operation_variables: dict[str, SqlOperationResult] = data.get("operation_variables", {})
-        self.dataset_metadata = self.sql_data_service.get_dataset_metadata(self.table_id) or {}
+        self.dataset_metadata: SQLDatasetMetadata = data.get("dataset_metadata", None)
 
     @abstractmethod
     def execute_operator(self, other_value):
@@ -233,9 +234,7 @@ class BaseSqlOperator:
             query = f"{CHECK_OPERATOR_TABLE_ALIAS}.{query}"
 
         if column == DATASET_NAME:
-            dataset_name = (
-                self.dataset_metadata.dataset_name if hasattr(self.dataset_metadata, "dataset_name") else None
-            )
+            dataset_name = self.dataset_metadata.dataset_name
             if prefix is not None:
                 dataset_name = dataset_name[: int(prefix)]
             elif suffix is not None:

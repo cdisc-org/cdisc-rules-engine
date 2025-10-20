@@ -22,10 +22,13 @@ from cdisc_rules_engine.data_service.startup.populate_standards import (
 from cdisc_rules_engine.data_service.startup.populate_terminology import (
     populate_terminology,
 )
-from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
-from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
-from cdisc_rules_engine.models.sql.table_schema import SqlTableSchema, SqlColumnSchema
+from cdisc_rules_engine.models.dataset_metadata2 import (
+    DatasetMetadata2,
+    VariableMetadata,
+)
+from cdisc_rules_engine.models.sql.table_schema import SqlColumnSchema, SqlTableSchema
 from cdisc_rules_engine.models.test_dataset import TestDataset
+from cdisc_rules_engine.standards.base_standards_context import BaseStandardsContext
 
 SCHEMA_PATH = Path(__file__).parent / "schemas"
 
@@ -42,7 +45,7 @@ class SQLDatasetMetadata:
     domain: str
     is_supp: bool
     rdomain: str
-    variables: list[str]
+    variables: list[VariableMetadata]
     is_split: bool = False
 
 
@@ -50,7 +53,7 @@ class PostgresQLDataService:
 
     def __init__(self, postgres_interface: PostgresQLInterface):
         self.pgi = postgres_interface
-        self.datasets: List[DatasetMetadata] = []
+        self.datasets: List[DatasetMetadata2] = []
 
     @classmethod
     def instance(cls) -> "PostgresQLDataService":
@@ -117,16 +120,21 @@ class PostgresQLDataService:
         data_service.pgi.insert_data(table_name=table_name, data=row_dicts)
 
         data_service.datasets.append(
-            SDTMDatasetMetadata(
-                file_size=0,
+            DatasetMetadata2(
                 filename=f"{table_name}.xpt",
-                full_path=f"/test/{table_name}.xpt",
-                label=f"Test {table_name} Dataset",
                 name=table_name,
-                record_count=len(row_dicts),
-                modification_date=None,
-                original_path=None,
-                first_record=row_dicts[0],
+                label=f"Test {table_name} Dataset",
+                variables=[
+                    VariableMetadata(
+                        name=col,
+                        order=i + 1,
+                        label=f"Test {col} Variable",
+                        length=200,
+                        type="Char" if isinstance(next((val for val in values if val is not None), ""), str) else "Num",
+                        format="",
+                    )
+                    for i, (col, values) in enumerate(column_data.items())
+                ],
             )
         )
 
@@ -135,36 +143,25 @@ class PostgresQLDataService:
     def get_uploaded_dataset_ids(self) -> list[str]:
         return [dataset.name for dataset in self.datasets]
 
-    def get_dataset_metadata(self, dataset_id: str) -> SQLDatasetMetadata:
-
+    def get_dataset_metadata(self, dataset_id: str, standards_context: BaseStandardsContext) -> SQLDatasetMetadata:
         tmp = next((metadata for metadata in self.datasets if metadata.name.lower() == dataset_id.lower()), None)
         if not tmp:
             return None
-
-        # Query data_metadata to get variable names
-        query = f"""
-            SELECT var_name
-            FROM data_metadata
-            WHERE dataset_id = '{dataset_id.lower()}'
-            ORDER BY id;
-        """
-        self.pgi.execute_sql(query=query)
-        results = self.pgi.fetch_all()
-        variables = [res["var_name"] for res in results] if results else []
-
+        domain = standards_context.derive_domain(tmp.name)
         return SQLDatasetMetadata(
             filename=tmp.filename,
-            filepath=str(tmp.full_path),
+            filepath=tmp.filename,
             dataset_id=tmp.name,
             table_hash=tmp.name,
             dataset_name=tmp.name,
             dataset_label=tmp.label,
             unsplit_name=tmp.name,
-            domain=tmp.domain,
-            is_supp=tmp.is_supp,
-            rdomain=tmp.rdomain,
-            variables=variables,
-            is_split=tmp.is_split,
+            domain=domain,
+            # Clearly not going to stay here
+            is_supp=domain == "SUPPQUAL",
+            rdomain=self.name[4:].upper() if domain.startswith("supp") else None,
+            variables=tmp.variables,
+            is_split=tmp.name.startswith(domain.lower()) and tmp.name != domain.lower(),
         )
 
     def get_dataset_for_rule(self, dataset_metadata: SQLDatasetMetadata, rule: dict) -> str:

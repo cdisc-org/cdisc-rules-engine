@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import List
+
 from cdisc_rules_engine.data_service.postgresql_data_service import (
     PostgresQLDataService,
     SQLDatasetMetadata,

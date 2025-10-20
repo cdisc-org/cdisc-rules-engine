@@ -7,22 +7,16 @@ from cdisc_rules_engine.constants.classes import (
     INTERVENTIONS,
     RELATIONSHIP,
 )
-from cdisc_rules_engine.constants.domains import (
-    AP_DOMAIN,
-    APFA_DOMAIN,
-    SUPPLEMENTARY_DOMAINS,
-)
 from cdisc_rules_engine.constants.rule_constants import ALL_KEYWORD
+from cdisc_rules_engine.models.dataset_metadata2 import DatasetMetadata2
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
-from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.standards.base_standards_context import BaseStandardsContext
 from cdisc_rules_engine.utilities.sdtm_utilities import get_class_and_domain_metadata
 from cdisc_rules_engine.utilities.utils import (
     convert_library_class_name_to_ct_class,
-    is_ap_domain,
     search_in_list_of_dicts,
 )
 
@@ -58,18 +52,18 @@ class SdtmStandardsContext(BaseStandardsContext):
                 return domain_details.get("label", "")
         return ""
 
-    # TODO: Replace SDTMDatasetMetadata with a more generic metadata container
-    def within_rule_scope(self, rule: dict, metadata: SDTMDatasetMetadata):
+    def within_rule_scope(self, rule: dict, metadata: DatasetMetadata2):
         """Check if rule is suitable and return reason if not"""
         rule_id = rule.get("core_id", "unknown")
         dataset_name = metadata.name
-        domain = self.derive_domain(metadata.filename)
+        domain = self.derive_domain(metadata.name)
 
         if not self.rule_applies_to_class(metadata, rule, domain):
             reason = f"Rule skipped - doesn't apply to class for " f"rule id={rule_id}, dataset={dataset_name}"
             logger.info(f"is_suitable_for_validation. {reason}, result=False")
             return False, reason
-        if not self.rule_applies_to_domain(metadata, rule):
+        # TODO: Need to fix is_split
+        if not self.rule_applies_to_domain(metadata, rule, domain, is_split=False):
             reason = f"Rule skipped - doesn't apply to domain for rule id={rule_id}, dataset={dataset_name}"
             logger.info(f"is_suitable_for_validation. {reason}, result=False")
             return False, reason
@@ -78,7 +72,9 @@ class SdtmStandardsContext(BaseStandardsContext):
         return True, ""
 
     @classmethod
-    def rule_applies_to_domain(cls, dataset_metadata: SDTMDatasetMetadata, rule: dict) -> bool:
+    def rule_applies_to_domain(
+        cls, dataset_metadata: DatasetMetadata2, rule: dict, domain: str, is_split: bool
+    ) -> bool:
         """
         Check that rule is applicable to dataset domain
         """
@@ -88,12 +84,14 @@ class SdtmStandardsContext(BaseStandardsContext):
         included_domains = domains.get("Include", [])
         excluded_domains = domains.get("Exclude", [])
 
-        is_included = cls._is_domain_name_included(dataset_metadata, included_domains, include_split_datasets)
-        is_excluded = cls._is_domain_name_excluded(dataset_metadata, excluded_domains)
+        is_included = cls._is_domain_name_included(
+            dataset_metadata, domain, included_domains, include_split_datasets, is_split
+        )
+        is_excluded = cls._is_domain_name_excluded(dataset_metadata, domain, excluded_domains)
 
         # additional check for split domains based on the flag
         is_excluded, is_included = cls._handle_split_domains(
-            dataset_metadata.is_split,
+            is_split,
             include_split_datasets,
             is_excluded,
             is_included,
@@ -104,9 +102,11 @@ class SdtmStandardsContext(BaseStandardsContext):
     @classmethod
     def _is_domain_name_included(
         cls,
-        dataset_metadata: SDTMDatasetMetadata,
+        dataset_metadata: DatasetMetadata2,
+        domain: str,
         included_domains: List[str],
         include_split_datasets: bool,
+        is_split: bool,
     ) -> bool:
         """
         If included domains aren't specified
@@ -120,22 +120,20 @@ class SdtmStandardsContext(BaseStandardsContext):
         In other cases domain is included
         """
         if not included_domains:
-            if include_split_datasets is True and not dataset_metadata.is_split:
+            if include_split_datasets is True and not is_split:
                 return False
             return True
 
-        if (
-            dataset_metadata.domain in included_domains
-            or dataset_metadata.name in included_domains
-            or ALL_KEYWORD in included_domains
-        ):
+        if domain in included_domains or dataset_metadata.name in included_domains or ALL_KEYWORD in included_domains:
             return True
-        if cls._domain_matched_ap_or_supp(dataset_metadata, included_domains):
+        if cls._domain_matched_ap_or_supp(dataset_metadata, domain, included_domains):
             return True
         return False
 
     @classmethod
-    def _is_domain_name_excluded(cls, dataset_metadata: SDTMDatasetMetadata, excluded_domains: List[str]) -> bool:
+    def _is_domain_name_excluded(
+        cls, dataset_metadata: DatasetMetadata2, domain: str, excluded_domains: List[str]
+    ) -> bool:
         """
         If excluded domains are specified,
          and the domain is in the list of excluded domains,
@@ -148,13 +146,13 @@ class SdtmStandardsContext(BaseStandardsContext):
             return False
 
         if (
-            dataset_metadata.domain in excluded_domains
+            domain in excluded_domains
             or dataset_metadata.name in excluded_domains
-            or dataset_metadata.unsplit_name in excluded_domains
+            # or dataset_metadata.unsplit_name in excluded_domains
             or ALL_KEYWORD in excluded_domains
         ):
             return True
-        if cls._domain_matched_ap_or_supp(dataset_metadata, excluded_domains):
+        if cls._domain_matched_ap_or_supp(dataset_metadata, domain, excluded_domains):
             return True
         return False
 
@@ -183,20 +181,29 @@ class SdtmStandardsContext(BaseStandardsContext):
         return is_excluded, is_included
 
     @classmethod
-    def _domain_matched_ap_or_supp(cls, dataset_metadata: SDTMDatasetMetadata, domains_to_check: List[str]) -> bool:
+    def _domain_matched_ap_or_supp(
+        cls, dataset_metadata: DatasetMetadata2, domain: str, domains_to_check: List[str]
+    ) -> bool:
         """
         Check that domain name match with only
         AP / APFA / APRELSUB / SUPP / SQ naming pattern
         """
-        supp_ap_domains = {f"{domain}--" for domain in SUPPLEMENTARY_DOMAINS}
-        supp_ap_domains.update({f"{AP_DOMAIN}--", f"{APFA_DOMAIN}--"})
+        # supp_ap_domains = {f"{domain}--" for domain in SUPPLEMENTARY_DOMAINS}
+        # supp_ap_domains.update({f"{AP_DOMAIN}--", f"{APFA_DOMAIN}--"})
 
-        return any(set(domains_to_check).intersection(supp_ap_domains)) and (
-            dataset_metadata.is_supp
-            or is_ap_domain(dataset_metadata.domain or dataset_metadata.rdomain or dataset_metadata.name)
-        )
+        # return any(set(domains_to_check).intersection(supp_ap_domains)) and (
+        #     domain == "SUPPQUAL"
+        #     or is_ap_domain(dataset_metadata.domain or dataset_metadata.rdomain or dataset_metadata.name)
+        # )
+        if "SUPP--" in domains_to_check or "SQ--" in domains_to_check:
+            if domain == "SUPPQUAL":
+                return True
+        if "AP--" in domains_to_check or "APFA--" in domains_to_check:
+            if domain == "AP":
+                return True
+        return False
 
-    def rule_applies_to_class(self, dataset_metadata: SDTMDatasetMetadata, rule: dict, domain: str):
+    def rule_applies_to_class(self, dataset_metadata: DatasetMetadata2, rule: dict, domain: str):
         """
         If included classes are specified and the class
         is not in the list of included classes return false.
@@ -236,7 +243,7 @@ class SdtmStandardsContext(BaseStandardsContext):
                 is_excluded = True
         return is_included and not is_excluded
 
-    def derive_class(self, dataset_metadata: SDTMDatasetMetadata, domain: str):
+    def derive_class(self, dataset_metadata: DatasetMetadata2, domain: str):
         class_data, _ = get_class_and_domain_metadata(
             self.library_metadata.standard_metadata,
             domain,
@@ -245,26 +252,24 @@ class SdtmStandardsContext(BaseStandardsContext):
         if name:
             return convert_library_class_name_to_ct_class(name)
         else:
-            return self._handle_special_cases(dataset_metadata)
+            return self._handle_special_cases(dataset_metadata, domain)
 
-    def _handle_special_cases(
-        self,
-        dataset_metadata: SDTMDatasetMetadata,
-    ):
-        if not dataset_metadata.domain:
+    def _handle_special_cases(self, dataset_metadata: DatasetMetadata2, domain: str):
+        if not domain:
             return None
-        if self._contains_topic_variable(dataset_metadata, dataset_metadata.domain, "TERM"):
+        if self._contains_topic_variable(dataset_metadata, domain, "TERM"):
             return EVENTS
-        if self._contains_topic_variable(dataset_metadata, dataset_metadata.domain, "TRT"):
+        if self._contains_topic_variable(dataset_metadata, domain, "TRT"):
             return INTERVENTIONS
-        if self._contains_topic_variable(dataset_metadata, dataset_metadata.domain, "QNAM"):
+        if self._contains_topic_variable(dataset_metadata, domain, "QNAM"):
             return RELATIONSHIP
-        if self._contains_topic_variable(dataset_metadata, dataset_metadata.domain, "TESTCD"):
-            if self._contains_topic_variable(dataset_metadata, dataset_metadata.domain, "OBJ"):
+        if self._contains_topic_variable(dataset_metadata, domain, "TESTCD"):
+            if self._contains_topic_variable(dataset_metadata, domain, "OBJ"):
                 return FINDINGS_ABOUT
             return FINDINGS
-        if self._is_associated_persons(dataset_metadata):
-            return self._get_associated_persons_inherit_class(dataset_metadata.domain)
+        # if self._is_associated_persons(dataset_metadata):
+        if domain == "AP":
+            return self._get_associated_persons_inherit_class(domain)
         return None
 
     def _is_associated_persons(self, dataset) -> bool:
@@ -304,7 +309,7 @@ class SdtmStandardsContext(BaseStandardsContext):
 
     def _contains_topic_variable(
         self,
-        dataset: SDTMDatasetMetadata,
+        dataset: DatasetMetadata2,
         domain: str,
         variable: str,
     ) -> bool:
@@ -313,25 +318,7 @@ class SdtmStandardsContext(BaseStandardsContext):
         """
 
         def check_presence(key):
-            # TODO: Needs to wait until we have the variables in the metadata
-            return True
-            # if hasattr(dataset, "columns"):
-            #     columns = dataset.columns
-            #     if hasattr(columns, "tolist"):
-            #         columns = columns.tolist()
-            #     in_dataset = key in columns
-            #     in_values = key in self.dataset_implementation.get_series_values(
-            #         dataset
-            #     )
-            # else:
-            #     series_values = dataset.values
-            #     if hasattr(series_values, "tolist"):
-            #         series_values = series_values.tolist()
-            #     in_dataset = key in series_values
-            #     in_values = key in self.dataset_implementation.get_series_values(
-            #         dataset
-            #     )
-            # return in_dataset or in_values
+            return any(v for v in dataset.variables if v.name.lower() == key.lower())
 
         if not check_presence("DOMAIN") and not check_presence("RDOMAIN"):
             return False

@@ -24,27 +24,8 @@ class SqlVariablesMetadataBuilder(SqlBaseDatasetBuilder):
         Create variable metadata table for this dataset and return table name.
         """
         table_name = f"{self.dataset_metadata.dataset_id}_var_metadata"
-
         if self.data_service.pgi.schema.get_table(table_name) is not None:
             return table_name
-
-        query = f"""
-            SELECT
-                var_name,
-                var_label,
-                var_type,
-                var_length,
-                var_format
-            FROM data_metadata
-            WHERE LOWER(dataset_id) = LOWER('{self.dataset_metadata.dataset_id}')
-            ORDER BY id
-        """
-
-        self.data_service.pgi.execute_sql(query)
-        variables_info = self.data_service.pgi.fetch_all()
-
-        if not variables_info:
-            raise ValueError(f"No variables found in data_metadata for dataset: {self.dataset_metadata.dataset_id}")
 
         # Create table schema with required columns
         schema = SqlTableSchema.static(table_name)
@@ -57,46 +38,17 @@ class SqlVariablesMetadataBuilder(SqlBaseDatasetBuilder):
 
         self.data_service.pgi.create_table(schema)
 
-        for idx, var_info in enumerate(variables_info, start=1):
-            column_hashes = {
-                "variable_name": schema.get_column_hash("variable_name"),
-                "variable_order_number": schema.get_column_hash("variable_order_number"),
-                "variable_label": schema.get_column_hash("variable_label"),
-                "variable_size": schema.get_column_hash("variable_size"),
-                "variable_data_type": schema.get_column_hash("variable_data_type"),
-                "variable_format": schema.get_column_hash("variable_format"),
-            }
+        rows = []
 
-            # Map data_metadata fields to variable metadata columns
-            variable_name = var_info["var_name"].upper()
-            variable_order_number = idx
-            variable_label = var_info["var_label"]
-            variable_size = var_info["var_length"] or 0
-            variable_data_type = var_info["var_type"]
-            variable_format = var_info["var_format"]
+        for variable in self.dataset_metadata.variables:
+            row = {}
+            row["variable_name"] = variable.name.upper()
+            row["variable_order_number"] = variable.order
+            row["variable_label"] = variable.label
+            row["variable_size"] = variable.length
+            row["variable_data_type"] = variable.type
+            row["variable_format"] = variable.format
+            rows.append(row)
 
-            label_sql = f"'{variable_label}'" if variable_label else "NULL"
-            format_sql = f"'{variable_format}'" if variable_format else "NULL"
-
-            insert_sql = f"""
-                INSERT INTO {schema.hash} (
-                    {column_hashes['variable_name']},
-                    {column_hashes['variable_order_number']},
-                    {column_hashes['variable_label']},
-                    {column_hashes['variable_size']},
-                    {column_hashes['variable_data_type']},
-                    {column_hashes['variable_format']}
-                )
-                VALUES (
-                    '{variable_name}',
-                    {variable_order_number},
-                    {label_sql},
-                    {variable_size},
-                    '{variable_data_type}',
-                    {format_sql}
-                );
-            """
-
-            self.data_service.pgi.execute_sql(insert_sql)
-
+        self.data_service.pgi.insert_data(table_name, rows)
         return table_name

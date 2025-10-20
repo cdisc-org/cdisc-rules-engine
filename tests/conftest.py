@@ -11,6 +11,7 @@ from cdisc_rules_engine.constants.rule_constants import ALL_KEYWORD
 from cdisc_rules_engine.enums.rule_types import RuleTypes
 from cdisc_rules_engine.enums.sensitivity import Sensitivity
 from cdisc_rules_engine.models.dataset import PandasDataset
+from cdisc_rules_engine.models.dataset_metadata2 import VariableMetadata
 from cdisc_rules_engine.models.dictionaries.meddra import MedDRATermsFactory
 from cdisc_rules_engine.models.dictionaries.whodrug import WhoDrugTermsFactory
 from cdisc_rules_engine.models.external_dictionaries_container import (
@@ -19,7 +20,7 @@ from cdisc_rules_engine.models.external_dictionaries_container import (
 )
 from cdisc_rules_engine.models.operation_params import OperationParams
 from cdisc_rules_engine.models.rule_conditions import ConditionCompositeFactory
-from cdisc_rules_engine.models.test_dataset import TestDataset, TestVariableMetadata
+from cdisc_rules_engine.models.test_dataset import TestDataset
 from cdisc_rules_engine.services.cache import (
     InMemoryCacheService,
 )
@@ -1269,24 +1270,11 @@ def get_python_executable():
 def get_sample_lb_dataset() -> TestDataset:
     return TestDataset(
         filename="lb.xpt",
-        filepath="path/to/lb.xpt",
         name="LB",
         label="Laboratory Test Results",
         variables=[
-            TestVariableMetadata(
-                name="DOMAIN",
-                label="Domain Abbreviation",
-                type="Char",
-                length=4,
-                format="",
-            ),
-            TestVariableMetadata(
-                name="LBSEQ",
-                label="Sequence Number",
-                type="Num",
-                length=8,
-                format="",
-            ),
+            VariableMetadata(name="DOMAIN", label="Domain Abbreviation", type="Char", length=4, format="", order=1),
+            VariableMetadata(name="LBSEQ", label="Sequence Number", type="Num", length=8, format="", order=2),
         ],
         records={
             "DOMAIN": ["LB", "LB"],
@@ -1299,73 +1287,22 @@ def get_sample_lb_dataset() -> TestDataset:
 def get_sample_supp_dataset() -> TestDataset:
     return TestDataset(
         filename="suppdm.xpt",
-        filepath="path/to/suppdm.xpt",
         name="SUPPDM",
         label="Supplemental Demographics Domain",
         variables=[
-            TestVariableMetadata(
-                name="STUDYID",
-                label="Study Identifier",
-                type="Char",
-                length=8,
-                format="",
+            VariableMetadata(name="STUDYID", label="Study Identifier", type="Char", length=8, format="", order=1),
+            VariableMetadata(
+                name="USUBJID", label="Unique Subject Identifier", type="Char", length=10, format="", order=2
             ),
-            TestVariableMetadata(
-                name="USUBJID",
-                label="Unique Subject Identifier",
-                type="Char",
-                length=10,
-                format="",
+            VariableMetadata(name="IDVAR", label="Identifying Variable", type="Char", length=16, format="", order=3),
+            VariableMetadata(
+                name="IDVARVAL", label="Identifying Variable Value", type="Char", length=16, format="", order=4
             ),
-            TestVariableMetadata(
-                name="IDVAR",
-                label="Identifying Variable",
-                type="Char",
-                length=16,
-                format="",
-            ),
-            TestVariableMetadata(
-                name="IDVARVAL",
-                label="Identifying Variable Value",
-                type="Char",
-                length=16,
-                format="",
-            ),
-            TestVariableMetadata(
-                name="QNAM",
-                label="Qualifier Variable Name",
-                type="Char",
-                length=4,
-                format="",
-            ),
-            TestVariableMetadata(
-                name="QVAL",
-                label="Data Value",
-                type="Char",
-                length=4,
-                format="",
-            ),
-            TestVariableMetadata(
-                name="DOMAIN",
-                label="Domain Abbreviation",
-                type="Char",
-                length=4,
-                format="",
-            ),
-            TestVariableMetadata(
-                name="RDOMAIN",
-                label="Referenced Domain",
-                type="Char",
-                length=4,
-                format="",
-            ),
-            TestVariableMetadata(
-                name="LBSEQ",
-                label="Sequence Number",
-                type="Num",
-                length=8,
-                format="",
-            ),
+            VariableMetadata(name="QNAM", label="Qualifier Variable Name", type="Char", length=4, format="", order=5),
+            VariableMetadata(name="QVAL", label="Data Value", type="Char", length=4, format="", order=6),
+            VariableMetadata(name="DOMAIN", label="Domain Abbreviation", type="Char", length=4, format="", order=7),
+            VariableMetadata(name="RDOMAIN", label="Referenced Domain", type="Char", length=4, format="", order=8),
+            VariableMetadata(name="LBSEQ", label="Sequence Number", type="Num", length=8, format="", order=9),
         ],
         records={
             "STUDYID": ["CDISC01", "CDISC01"],
@@ -1386,13 +1323,14 @@ def get_sample_dm_dataset() -> TestDataset:
     """Provides a sample DM dataset for SUPPDM to reference."""
     return TestDataset(
         filename="dm.xpt",
-        filepath="path/to/dm.xpt",
         name="DM",
         label="Demographics",
         variables=[
-            TestVariableMetadata(name="STUDYID", label="Study Identifier", type="Char", length=8, format=""),
-            TestVariableMetadata(name="DOMAIN", label="Domain Abbreviation", type="Char", length=8, format=""),
-            TestVariableMetadata(name="USUBJID", label="Unique Subject Identifier", type="Char", length=12, format=""),
+            VariableMetadata(name="STUDYID", label="Study Identifier", type="Char", length=8, format="", order=1),
+            VariableMetadata(name="DOMAIN", label="Domain Abbreviation", type="Char", length=8, format="", order=2),
+            VariableMetadata(
+                name="USUBJID", label="Unique Subject Identifier", type="Char", length=12, format="", order=3
+            ),
         ],
         records={
             "STUDYID": ["CDISC01", "CDISC01"],

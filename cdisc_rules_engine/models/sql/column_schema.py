@@ -1,6 +1,7 @@
 from typing import Any
 
 from cdisc_rules_engine.data_service.util import generate_hash
+from cdisc_rules_engine.models.dataset_metadata2 import VariableMetadata
 from cdisc_rules_engine.models.sql import DATASET_COLUMN_TYPES
 
 
@@ -23,26 +24,15 @@ class SqlColumnSchema:
         else:
             raise ValueError(f"Unsupported type: {type(value)}")
 
-    @staticmethod
-    def sas_to_sql_type(type: str) -> str:
-        """Map sas types to SQL types."""
-        if type.lower() in ("char", "s"):
-            return "Char"
-        elif type.lower() in ("num", "numeric", "d"):
-            return "Num"
-        else:
-            raise ValueError(f"Unsupported type: {type}")
-
     @classmethod
     def from_data(cls, column: str, data: Any) -> "SqlColumnSchema":
         sql_type = cls.python_to_sql_type(data)
         return cls(name=column.lower(), hash=column.lower(), type=sql_type)
 
     @classmethod
-    def from_metadata(cls, metadata: dict[str, Any]) -> "SqlColumnSchema":
-        name = metadata.get("name").lower()
-        sql_type = cls.sas_to_sql_type(metadata.get("type"))
-        return cls(name=name, hash=name, type=sql_type)
+    def from_metadata(cls, metadata: VariableMetadata) -> "SqlColumnSchema":
+        name = metadata.name.lower()
+        return cls(name=name, hash=name, type=metadata.type)
 
     @classmethod
     def generated(cls, column: str, type: DATASET_COLUMN_TYPES) -> "SqlColumnSchema":
