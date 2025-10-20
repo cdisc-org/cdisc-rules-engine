@@ -33,6 +33,7 @@ class Rule:
         self.conditions: dict = record_params["conditions"]
         self.actions: dict = record_params["actions"]
         self.output_variables: dict = record_params.get("output_variables")
+        self.grouping_variables: List[str] = record_params.get("grouping_variables", [])
 
     @classmethod
     def from_cdisc_metadata(cls, rule_metadata: dict) -> dict:
@@ -69,6 +70,10 @@ class Rule:
                 executable_rule["output_variables"] = rule_metadata.get("Outcome", {})[
                     "Output_Variables"
                 ]
+            if "Grouping_Variables" in rule_metadata:
+                executable_rule["grouping_variables"] = rule_metadata.get(
+                    "Grouping_Variables"
+                )
             return executable_rule
         else:
             return rule_metadata

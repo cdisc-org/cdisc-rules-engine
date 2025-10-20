@@ -80,7 +80,7 @@ class COREActions(BaseActions):
         )
         return expanded_target_names
 
-    def generate_targeted_error_object(
+    def generate_targeted_error_object(  # noqa: C901
         self, targets: Set[str], data: pd.DataFrame, message: str
     ) -> ValidationErrorContainer:
         """
@@ -165,6 +165,41 @@ class COREActions(BaseActions):
         elif self.rule.get("sensitivity") == Sensitivity.RECORD.value:
             errors_list = self._generate_errors_by_target_presence(
                 data, targets_not_in_dataset, all_targets_missing, errors_df
+            )
+        elif self.rule.get("sensitivity") == Sensitivity.GROUP.value:
+            # Handle GROUP sensitivity
+            grouping_variables = self.rule.get("grouping_variables", [])
+
+            if not grouping_variables:
+                # Error: Group sensitivity requires Grouping_Variables
+                error_entity = ValidationErrorEntity(
+                    dataset=self._get_dataset_name(data),
+                    row=0,
+                    value={
+                        "ERROR": "Group sensitivity requires Grouping_Variables to be specified"
+                    },
+                    USUBJID=None,
+                    SEQ=None,
+                )
+                return ValidationErrorContainer(
+                    domain=(
+                        f"SUPP{self.dataset_metadata.rdomain}"
+                        if self.dataset_metadata.is_supp
+                        else (
+                            self.dataset_metadata.domain or self.dataset_metadata.name
+                        )
+                    ),
+                    targets=sorted(targets),
+                    message="Group sensitivity requires Grouping_Variables to be specified",
+                    errors=[error_entity],
+                )
+
+            errors_list = self._generate_errors_by_group(
+                data,
+                targets_not_in_dataset,
+                all_targets_missing,
+                errors_df,
+                grouping_variables,
             )
         elif (
             self.rule.get("sensitivity") is not None
@@ -265,6 +300,145 @@ class COREActions(BaseActions):
             if missing_vars:
                 for error in errors_list:
                     error.value = {**error.value, **missing_vars}
+        return errors_list
+
+    def _generate_errors_by_group(  # noqa: C901
+        self,
+        data: pd.DataFrame,
+        targets_not_in_dataset: Set[str],
+        all_targets_missing: bool,
+        errors_df: pd.DataFrame,
+        grouping_variables: List[str],
+    ) -> List[ValidationErrorEntity]:
+        """
+        Generate one error per group of records.
+
+        Args:
+            data: The original dataframe
+            targets_not_in_dataset: Set of target variables not found in the dataset
+            all_targets_missing: Boolean indicating if all targets are missing
+            errors_df: DataFrame subset with only the target variables (if any exist)
+            grouping_variables: List of variables to group by
+
+        Returns:
+            List of ValidationErrorEntity objects (one per group)
+        """
+        missing_vars = {target: "Not in dataset" for target in targets_not_in_dataset}
+        errors_list = []
+
+        # Validate grouping variables exist
+        available_grouping_vars = [
+            var for var in grouping_variables if var in data.columns
+        ]
+
+        if not available_grouping_vars:
+            # Fall back to dataset sensitivity if no grouping variables available
+            if not all_targets_missing and len(errors_df) > 0:
+                raw_error_dict = errors_df.iloc[0].to_dict()
+                error_value = {}
+                for key, value in raw_error_dict.items():
+                    if isinstance(value, list):
+                        error_value[key] = [
+                            None if (val in NULL_FLAVORS or pd.isna(val)) else val
+                            for val in value
+                        ]
+                    else:
+                        error_value[key] = (
+                            None if (value in NULL_FLAVORS or pd.isna(value)) else value
+                        )
+            else:
+                error_value = {}
+
+            if missing_vars:
+                error_value = {**error_value, **missing_vars}
+
+            return [
+                ValidationErrorEntity(
+                    value=error_value,
+                    dataset=self._get_dataset_name(data),
+                )
+            ]
+
+        # Group by the specified variables
+        if all_targets_missing:
+            grouped_data = data.groupby(available_grouping_vars, dropna=False)
+        else:
+            # Merge data with errors_df to preserve grouping info
+            # Use inner join to only get rows that have errors
+            merged_data = data.loc[errors_df.index].copy()
+            for col in errors_df.columns:
+                if col not in merged_data.columns:
+                    merged_data[col] = errors_df[col]
+            grouped_data = merged_data.groupby(available_grouping_vars, dropna=False)
+
+        # Create one error per group
+        for group_keys, group_df in grouped_data:
+            if all_targets_missing:
+                error_value = {
+                    target: "Not in dataset" for target in targets_not_in_dataset
+                }
+            else:
+                # Take the first row of the group as representative
+                first_row_idx = group_df.index[0]
+                if first_row_idx in errors_df.index:
+                    raw_error_dict = errors_df.loc[first_row_idx].to_dict()
+                    error_value = {}
+                    for key, value in raw_error_dict.items():
+                        if isinstance(value, list):
+                            error_value[key] = [
+                                None if (val in NULL_FLAVORS or pd.isna(val)) else val
+                                for val in value
+                            ]
+                        else:
+                            error_value[key] = (
+                                None
+                                if (value in NULL_FLAVORS or pd.isna(value))
+                                else value
+                            )
+                else:
+                    error_value = {}
+
+            # Add grouping variables to the error value for identification
+            if isinstance(group_keys, tuple):
+                for i, var in enumerate(available_grouping_vars):
+                    error_value[var] = group_keys[i]
+            else:
+                error_value[available_grouping_vars[0]] = group_keys
+
+            # Add missing variables
+            if missing_vars:
+                error_value = {**error_value, **missing_vars}
+
+            # Get representative row for USUBJID and SEQ
+            first_row = group_df.iloc[0]
+
+            error = ValidationErrorEntity(
+                value=error_value,
+                dataset=self._get_dataset_name(group_df),
+                row=int(first_row.get(SOURCE_ROW_NUMBER, first_row.name + 1)),
+                USUBJID=(
+                    str(first_row.get("USUBJID"))
+                    if "USUBJID" in first_row and not pd.isna(first_row["USUBJID"])
+                    else None
+                ),
+                SEQ=(
+                    int(first_row.get(f"{self.dataset_metadata.domain or ''}SEQ"))
+                    if f"{self.dataset_metadata.domain or ''}SEQ" in first_row
+                    and self._sequence_exists(
+                        pd.Series(
+                            {
+                                first_row.name: first_row.get(
+                                    f"{self.dataset_metadata.domain or ''}SEQ"
+                                )
+                            }
+                        ),
+                        first_row.name,
+                    )
+                    else None
+                ),
+            )
+            errors_list.append(error)
+
         return errors_list
 
     def _get_dataset_name(self, data: pd.DataFrame) -> str:
