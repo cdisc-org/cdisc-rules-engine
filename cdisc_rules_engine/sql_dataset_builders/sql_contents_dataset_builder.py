@@ -16,5 +16,5 @@ class SqlContentsDatasetBuilder(SqlBaseDatasetBuilder):
         otherwise it will be the base dataset table.
         """
         # This is the logic moved from your old execute_rule function
-        dataset_id = self.data_service.get_dataset_for_rule(self.dataset_metadata, self.rule)
+        dataset_id = self.data_service.get_dataset_for_rule(self.dataset_metadata, self.rule, self.standards_context)
         return dataset_id

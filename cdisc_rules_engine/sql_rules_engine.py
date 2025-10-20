@@ -174,6 +174,7 @@ class SQLRulesEngine:
             data_service=self.data_service,
             dataset_metadata=dataset_metadata,
             datasets=datasets,
+            standards_context=self.standards_context,
         )
 
         dataset_id = builder.get_dataset_id()

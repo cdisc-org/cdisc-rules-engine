@@ -9,8 +9,9 @@ from cdisc_rules_engine.data_service.merges.child import SqlChildMerge
 from cdisc_rules_engine.data_service.postgresql_data_service import (
     PostgresQLDataService,
 )
-from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
-
+from cdisc_rules_engine.standards.default_standards_context import (
+    DefaultStandardsContext,
+)
 
 SIMPLE_RDOMAIN_DATA = {
     "child": {
@@ -109,28 +110,13 @@ def test_child_merge_with_rdomain(data, expected, child_domain):
     child_schema = PostgresQLDataService.add_test_dataset(ds, "suppae", data["child"])
     PostgresQLDataService.add_test_dataset(ds, "ae", data["parent"])
 
-    first_record = {k: v[0] if v else None for k, v in data["parent"].items()}
-    first_record["DOMAIN"] = "AE"
-    datasets = [
-        SDTMDatasetMetadata(
-            name="ae",
-            filename="ae.xpt",
-            label="Adverse Events",
-            full_path="/test/ae.xpt",
-            file_size=100,
-            record_count=len(data["parent"]["STUDYID"]),
-            modification_date=None,
-            first_record=first_record,
-        )
-    ]
-
     merge_spec = {"match_key": ["STUDYID", "USUBJID", {"left": "IDVARVAL", "right": "AESEQ"}]}
 
     result_schema = SqlChildMerge.perform_merge(
         pgi=ds.pgi,
         child=child_schema,
         child_domain=child_domain,
-        datasets=datasets,
+        datasets=[ds.get_dataset_metadata(d.name, DefaultStandardsContext()) for d in ds.datasets],
         merge_spec=merge_spec,
     )
 
@@ -171,28 +157,13 @@ def test_child_merge_with_pattern_replacement():
     child_schema = PostgresQLDataService.add_test_dataset(ds, "supplb", data["child"])
     PostgresQLDataService.add_test_dataset(ds, "lb", data["parent"])
 
-    first_record = {k: v[0] for k, v in data["parent"].items()}
-    first_record["DOMAIN"] = "LB"
-    datasets = [
-        SDTMDatasetMetadata(
-            name="lb",
-            filename="lb.xpt",
-            label="Labs",
-            full_path="/test/lb.xpt",
-            file_size=100,
-            record_count=2,
-            modification_date=None,
-            first_record=first_record,
-        )
-    ]
-
     merge_spec = {"match_key": ["STUDYID", "USUBJID", {"left": "IDVARVAL", "right": "--SEQ"}]}
 
     result_schema = SqlChildMerge.perform_merge(
         pgi=ds.pgi,
         child=child_schema,
         child_domain="SUPPLB",
-        datasets=datasets,
+        datasets=[ds.get_dataset_metadata(d.name, DefaultStandardsContext()) for d in ds.datasets],
         merge_spec=merge_spec,
     )
 
@@ -223,28 +194,13 @@ def test_child_merge_match_key_fallback():
     child_schema = PostgresQLDataService.add_test_dataset(ds, "child", data["child"])
     PostgresQLDataService.add_test_dataset(ds, "parent", data["parent"])
 
-    first_record = {k: v[0] for k, v in data["parent"].items()}
-    first_record["DOMAIN"] = "PARENT"
-    datasets = [
-        SDTMDatasetMetadata(
-            name="parent",
-            filename="parent.xpt",
-            label="Parent",
-            full_path="/test/parent.xpt",
-            file_size=100,
-            record_count=2,
-            modification_date=None,
-            first_record=first_record,
-        )
-    ]
-
     merge_spec = {"match_key": ["STUDYID", "USUBJID", "SEQ"]}
 
     result_schema = SqlChildMerge.perform_merge(
         pgi=ds.pgi,
         child=child_schema,
         child_domain="CHILD",
-        datasets=datasets,
+        datasets=[ds.get_dataset_metadata(d.name, DefaultStandardsContext()) for d in ds.datasets],
         merge_spec=merge_spec,
     )
 
@@ -276,28 +232,13 @@ def test_child_merge_run_twice():
     child_schema = PostgresQLDataService.add_test_dataset(ds, "suppae", data["child"])
     PostgresQLDataService.add_test_dataset(ds, "ae", data["parent"])
 
-    first_record = {k: v[0] for k, v in data["parent"].items()}
-    first_record["DOMAIN"] = "AE"
-    datasets = [
-        SDTMDatasetMetadata(
-            name="ae",
-            filename="ae.xpt",
-            label="Adverse Events",
-            full_path="/test/ae.xpt",
-            file_size=100,
-            record_count=2,
-            modification_date=None,
-            first_record=first_record,
-        )
-    ]
-
     merge_spec = {"match_key": ["STUDYID", "USUBJID", {"left": "IDVARVAL", "right": "AESEQ"}]}
 
     result1 = SqlChildMerge.perform_merge(
         pgi=ds.pgi,
         child=child_schema,
         child_domain="SUPPAE",
-        datasets=datasets,
+        datasets=[ds.get_dataset_metadata(d.name, DefaultStandardsContext()) for d in ds.datasets],
         merge_spec=merge_spec,
     )
 
@@ -305,7 +246,7 @@ def test_child_merge_run_twice():
         pgi=ds.pgi,
         child=child_schema,
         child_domain="SUPPAE",
-        datasets=datasets,
+        datasets=[ds.get_dataset_metadata(d.name, DefaultStandardsContext()) for d in ds.datasets],
         merge_spec=merge_spec,
     )
 
@@ -359,28 +300,13 @@ def test_child_merge_unmatched_child_rows():
     child_schema = PostgresQLDataService.add_test_dataset(ds, "suppae", child_data)
     PostgresQLDataService.add_test_dataset(ds, "ae", parent_data)
 
-    first_record = {k: v[0] for k, v in parent_data.items()}
-    first_record["DOMAIN"] = "AE"
-    datasets = [
-        SDTMDatasetMetadata(
-            name="ae",
-            filename="ae.xpt",
-            label="Adverse Events",
-            full_path="/test/ae.xpt",
-            file_size=100,
-            record_count=1,
-            modification_date=None,
-            first_record=first_record,
-        )
-    ]
-
     merge_spec = {"match_key": ["STUDYID", "USUBJID", {"left": "IDVARVAL", "right": "AESEQ"}]}
 
     result_schema = SqlChildMerge.perform_merge(
         pgi=ds.pgi,
         child=child_schema,
         child_domain="SUPPAE",
-        datasets=datasets,
+        datasets=[ds.get_dataset_metadata(d.name, DefaultStandardsContext()) for d in ds.datasets],
         merge_spec=merge_spec,
     )
 

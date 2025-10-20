@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import Any, List, Tuple
 
 from cdisc_rules_engine.constants.classes import (
     EVENTS,
@@ -8,6 +8,14 @@ from cdisc_rules_engine.constants.classes import (
     RELATIONSHIP,
 )
 from cdisc_rules_engine.constants.rule_constants import ALL_KEYWORD
+from cdisc_rules_engine.data_service.merges.child import SqlChildMerge
+from cdisc_rules_engine.data_service.merges.relationship import SqlRelationshipMerge
+from cdisc_rules_engine.data_service.merges.relrec import SqlRelrecMerge
+from cdisc_rules_engine.data_service.merges.supp import SqlSuppMerge
+from cdisc_rules_engine.data_service.postgresql_data_service import (
+    PostgresQLDataService,
+    SQLDatasetMetadata,
+)
 from cdisc_rules_engine.models.dataset_metadata2 import DatasetMetadata2
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
@@ -70,6 +78,68 @@ class SdtmStandardsContext(BaseStandardsContext):
 
         logger.info(f"is_suitable_for_validation. rule id={rule_id}, dataset={dataset_name}, result=True")
         return True, ""
+
+    def perform_merge(
+        self,
+        data_service: PostgresQLDataService,
+        original: str,
+        dataset_metadata: SQLDatasetMetadata,
+        merge_spec: dict[str, Any],
+        rule: dict,
+    ) -> str:
+        right: str = merge_spec.get("domain_name").lower()
+        is_relationship = merge_spec.get("relationship_columns", None) is not None
+        is_child = bool(merge_spec.get("child"))
+
+        if is_child:
+            # TODO: This logic should be unnecessary, why is the same rule testing so many things
+            # Gate: Only merge if domain_name matches current dataset
+            domain_name = merge_spec.get("domain_name")
+
+            is_general_supp_merge = domain_name == "SUPP--" and dataset_metadata.is_supp
+            domain_matches = domain_name.upper() == dataset_metadata.domain.upper()
+
+            if is_general_supp_merge or domain_matches:
+                return self._do_child_merge(
+                    data_service,
+                    child=original,
+                    dataset_metadata=dataset_metadata,
+                    merge_spec=merge_spec,
+                    rule=rule,
+                )
+            else:
+                # This should really throw an error, because why are there merges defined which don't do
+                # anything, but this would break CORE RULE 206 currently
+                return original
+        elif right == "relrec":
+            return self._do_relrec_merge(
+                data_service,
+                original=original,
+                relrec_dataset=right,
+                dataset_metadata=dataset_metadata,
+                merge_spec=merge_spec,
+                rule=rule,
+            )
+        elif right == "supp--":
+            return self._do_supp_merge(
+                data_service,
+                original=original,
+                target=right,
+                dataset_metadata=dataset_metadata,
+                merge_spec=merge_spec,
+                rule=rule,
+            )
+        elif is_relationship:
+            return self._do_relationship_merge(
+                data_service,
+                original=original,
+                relationship_dataset=right,
+                dataset_metadata=dataset_metadata,
+                merge_spec=merge_spec,
+                rule=rule,
+            )
+        else:
+            return self._do_join_merge(data_service, original=original, merge_spec=merge_spec)
 
     @classmethod
     def rule_applies_to_domain(
@@ -326,3 +396,125 @@ class SdtmStandardsContext(BaseStandardsContext):
             return check_presence(domain.upper() + variable)
         elif check_presence("RDOMAIN"):
             return check_presence(variable)
+
+    def _do_supp_merge(
+        self,
+        data_service: PostgresQLDataService,
+        original: str,
+        target: str,
+        dataset_metadata: SQLDatasetMetadata,
+        merge_spec: dict,
+        rule: dict,
+    ) -> str:
+        """
+        Find the corresponding SUPP datasets, then perform a SUPP merge operation on the datasets.
+        """
+        rdomain = self.derive_domain(dataset_metadata.dataset_name).lower()
+        if target != "supp--" and rdomain not in target:
+            raise ValueError(f"Tried to SUPP merge {rdomain}, but the target domain {target} does not match.")
+
+        supp_dataset = next(
+            (dataset for dataset in data_service.datasets if dataset.name.lower() == f"supp--{rdomain}"),
+            None,
+        )
+        if not supp_dataset:
+            raise ValueError(f"Tried to SUPP merge {rdomain}, but could not find corresponding SUPP dataset.")
+
+        return SqlSuppMerge.perform_join(
+            pgi=data_service.pgi,
+            original=data_service.pgi.schema.get_table(original),
+            supp=data_service.pgi.schema.get_table(supp_dataset.name),
+            domain=rdomain,
+        ).name
+
+    def _do_relrec_merge(
+        self,
+        data_service: PostgresQLDataService,
+        original: str,
+        relrec_dataset: str,
+        dataset_metadata: SQLDatasetMetadata,
+        merge_spec: dict,
+        rule: dict,
+    ) -> str:
+        """
+        Find the corresponding RELREC dataset, then perform a RELREC merge operation on the datasets.
+        """
+        # Find the RELREC dataset
+        relrec_data = next(
+            (dataset for dataset in data_service.datasets if self.derive_domain(dataset.name) == "RELREC"),
+            None,
+        )
+        if not relrec_data:
+            raise ValueError("Tried to RELREC merge, but could not find RELREC dataset.")
+
+        wildcard = merge_spec.get("wildcard", "__")
+
+        return SqlRelrecMerge.perform_join(
+            pgi=data_service.pgi,
+            original=data_service.pgi.schema.get_table(original),
+            relrec=data_service.pgi.schema.get_table(relrec_data.name),
+            domain=dataset_metadata.domain,
+            wildcard=wildcard,
+        ).name
+
+    def _do_relationship_merge(
+        self,
+        data_service: PostgresQLDataService,
+        original: str,
+        relationship_dataset: str,
+        dataset_metadata: SQLDatasetMetadata,
+        merge_spec: dict,
+        rule: dict,
+    ) -> str:
+        """
+        Perform a relationship merge operation on the datasets.
+
+        This handles relationship datasets like RELSUB, CO, SQ, or any dataset with relationship_columns.
+        """
+        # Find the relationship dataset
+        domain = self.derive_domain(dataset_metadata.dataset_name)
+        relationship_data = next(
+            (
+                dataset
+                for dataset in data_service.datasets
+                if dataset.name.upper() == relationship_dataset.upper() or (domain == relationship_dataset.upper())
+            ),
+            None,
+        )
+        if not relationship_data:
+            raise ValueError(f"Tried to relationship merge with {relationship_dataset}, but could not find dataset.")
+
+        relationship_columns = merge_spec.get("relationship_columns", {})
+        match_keys = merge_spec.get("match_key", {})
+
+        return SqlRelationshipMerge.perform_join(
+            pgi=data_service.pgi,
+            original=data_service.pgi.schema.get_table(original),
+            relationship_dataset=data_service.pgi.schema.get_table(relationship_data.name),
+            domain=relationship_dataset.upper(),
+            relationship_columns=relationship_columns,
+            match_keys=match_keys,
+        ).name
+
+    def _do_child_merge(
+        self,
+        data_service: PostgresQLDataService,
+        child: str,
+        dataset_metadata: SQLDatasetMetadata,
+        merge_spec: dict,
+        rule: dict,
+    ) -> str:
+        """
+        Perform child merge: Find parent dataset and LEFT JOIN child with parent.
+
+        Child dataset is on the left, parent on the right.
+        Uses SqlChildMerge for the operation.
+        """
+        result_schema = SqlChildMerge.perform_merge(
+            pgi=data_service.pgi,
+            child=data_service.pgi.schema.get_table(child),
+            child_domain=dataset_metadata.domain,
+            datasets=[data_service.get_dataset_metadata(d.name, self) for d in data_service.datasets],
+            merge_spec=merge_spec,
+        )
+        return result_schema.name

@@ -1,9 +1,9 @@
 from typing import List
 
-from cdisc_rules_engine.data_service.sql_interface import PostgresQLInterface
 from cdisc_rules_engine.data_service.merges.join import SqlJoinMerge
+from cdisc_rules_engine.data_service.postgresql_data_service import SQLDatasetMetadata
+from cdisc_rules_engine.data_service.sql_interface import PostgresQLInterface
 from cdisc_rules_engine.models.sql.table_schema import SqlTableSchema
-from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.utilities.utils import (
     get_sided_match_keys,
     replace_pattern_in_list_of_strings,
@@ -18,7 +18,7 @@ class SqlChildMerge:
         pgi: PostgresQLInterface,
         child: SqlTableSchema,
         child_domain: str,
-        datasets: List[SDTMDatasetMetadata],
+        datasets: List[SQLDatasetMetadata],
         merge_spec: dict,
     ) -> SqlTableSchema:
         """
@@ -54,7 +54,7 @@ class SqlChildMerge:
             parent_keys = replace_pattern_in_list_of_strings(parent_keys, "--", parent_metadata.domain)
 
             # Perform LEFT JOIN
-            parent = pgi.schema.get_table(parent_metadata.name)
+            parent = pgi.schema.get_table(parent_metadata.dataset_name)
             result_schema = SqlJoinMerge.perform_join(
                 pgi=pgi,
                 left=result_schema,
@@ -93,8 +93,8 @@ class SqlChildMerge:
     def _find_parents_by_rdomain(
         pgi: PostgresQLInterface,
         child: SqlTableSchema,
-        datasets: List[SDTMDatasetMetadata],
-    ) -> List[SDTMDatasetMetadata]:
+        datasets: List[SQLDatasetMetadata],
+    ) -> List[SQLDatasetMetadata]:
         """Find parent datasets using the RDOMAIN column."""
         rdomain_values = SqlChildMerge._get_ordered_rdomain_values(pgi, child)
         if not rdomain_values:
@@ -113,9 +113,9 @@ class SqlChildMerge:
     def _find_parents_by_match_keys(
         pgi: PostgresQLInterface,
         child: SqlTableSchema,
-        datasets: List[SDTMDatasetMetadata],
+        datasets: List[SQLDatasetMetadata],
         merge_spec: dict,
-    ) -> List[SDTMDatasetMetadata]:
+    ) -> List[SQLDatasetMetadata]:
         """Find parent datasets using match keys as a fallback."""
         match_keys = merge_spec.get("match_key", [])
         if not match_keys:
@@ -124,10 +124,10 @@ class SqlChildMerge:
         parent_keys = get_sided_match_keys(match_keys, "right")
         matching_parents = []
         for ds in datasets:
-            if ds.name == child.name:
+            if ds.dataset_name == child.name:
                 continue
 
-            table = pgi.schema.get_table(ds.name)
+            table = pgi.schema.get_table(ds.dataset_name)
             if table and all(table.has_column(key.lower()) for key in parent_keys):
                 matching_parents.append(ds)
         return matching_parents
@@ -136,9 +136,9 @@ class SqlChildMerge:
     def _find_parents(
         pgi: PostgresQLInterface,
         child: SqlTableSchema,
-        datasets: List[SDTMDatasetMetadata],
+        datasets: List[SQLDatasetMetadata],
         merge_spec: dict,
-    ) -> List[SDTMDatasetMetadata]:
+    ) -> List[SQLDatasetMetadata]:
         """
         Find parent dataset(s) for a child using RDOMAIN or match keys.
         """

@@ -5,6 +5,7 @@ from cdisc_rules_engine.data_service.postgresql_data_service import (
     PostgresQLDataService,
     SQLDatasetMetadata,
 )
+from cdisc_rules_engine.standards.base_standards_context import BaseStandardsContext
 
 
 class SqlBaseDatasetBuilder(ABC):
@@ -17,12 +18,14 @@ class SqlBaseDatasetBuilder(ABC):
         rule: dict,
         data_service: PostgresQLDataService,
         dataset_metadata: SQLDatasetMetadata,
+        standards_context: BaseStandardsContext,
         datasets: List[SQLDatasetMetadata] = None,
         **kwargs,
     ):
         self.rule = rule
         self.data_service = data_service
         self.dataset_metadata = dataset_metadata
+        self.standards_context = standards_context
         self.datasets = datasets or []
         # Store any additional kwargs
         for key, value in kwargs.items():
