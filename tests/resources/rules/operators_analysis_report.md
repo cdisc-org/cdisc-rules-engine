@@ -4,9 +4,9 @@
 
 - Total rules without check operators: 297
 - Total unique operators found in rules: 58
-- Total implemented PostgreSQL operators: 83
+- Total implemented PostgreSQL operators: 84
 - Missing operators (in rules but not implemented): 1
-- Extra operators (implemented but not used in rules): 26
+- Extra operators (implemented but not used in rules): 27
 
 ## ✅ Implementation Status
 
@@ -45,6 +45,7 @@ The following operators are implemented but not currently used in any rules:
 - suffix_equal_to
 - suffix_is_contained_by
 - suffix_not_equal_to
+- target_is_sorted_by
 - value_does_not_have_multiple_references
 - variable_metadata_not_equal_to
 ```
