@@ -29,7 +29,7 @@ class ExcelReport(BaseReport):
     Generates an excel report for a given set of validation results.
     """
 
-    DEFAULT_MAX_ROWS = 1000000
+    DEFAULT_MAX_ROWS = 10000
 
     def __init__(
         self,
@@ -65,20 +65,6 @@ class ExcelReport(BaseReport):
     def _file_format(self):
         return ReportTypes.XLSX.value.lower()
 
-    def _chunk_data(self, data: List[List], chunk_size: int) -> List[List[List]]:
-        chunks = []
-        for i in range(0, len(data), chunk_size):
-            chunks.append(data[i : i + chunk_size])
-        return chunks
-
-    def _needs_splitting(self, summary_data: List, detailed_data: List) -> bool:
-        if self.max_rows_per_sheet is None:
-            return False
-        return (
-            len(summary_data) > self.max_rows_per_sheet
-            or len(detailed_data) > self.max_rows_per_sheet
-        )
-
     def get_export(
         self,
         define_version,
@@ -86,56 +72,21 @@ class ExcelReport(BaseReport):
         standard,
         version,
         dictionary_versions,
-        template_buffer,
         **kwargs,
-    ) -> List[Workbook]:
+    ) -> Workbook:
+        logger = logging.getLogger("validator")
         summary_data = self.get_summary_data()
         detailed_data = self.get_detailed_data(excel=True)
         rules_report_data = self.get_rules_report_data()
-        if not self._needs_splitting(summary_data, detailed_data):
-            # Single file - original behavior
-            wb = self._create_single_workbook(
-                template_buffer,
-                summary_data,
-                detailed_data,
-                rules_report_data,
-                define_version,
-                cdiscCt,
-                standard,
-                version,
-                dictionary_versions,
-                **kwargs,
-            )
-            return [wb]
-        else:
-            # Multiple files needed
-            return self._create_multiple_workbooks(
-                template_buffer,
-                summary_data,
-                detailed_data,
-                rules_report_data,
-                define_version,
-                cdiscCt,
-                standard,
-                version,
-                dictionary_versions,
-                **kwargs,
-            )
 
-    def _create_single_workbook(
-        self,
-        template_buffer,
-        summary_data,
-        detailed_data,
-        rules_report_data,
-        define_version,
-        cdiscCt,
-        standard,
-        version,
-        dictionary_versions,
-        **kwargs,
-    ) -> Workbook:
-        wb = excel_open_workbook(template_buffer)
+        total_rows = len(detailed_data)
+        if self.max_rows_per_sheet is not None and total_rows > self.max_rows_per_sheet:
+            detailed_data = detailed_data[: self.max_rows_per_sheet]
+            logger.warning(
+                f"Issue Details truncated to limit of {self.max_rows_per_sheet} rows. "
+                f"Total issues found: {total_rows}"
+            )
+        wb = excel_open_workbook(self._template.read())
         excel_update_worksheet(wb["Issue Summary"], summary_data, dict(wrap_text=True))
         excel_update_worksheet(wb["Issue Details"], detailed_data, dict(wrap_text=True))
         excel_update_worksheet(
@@ -152,57 +103,6 @@ class ExcelReport(BaseReport):
         )
         return wb
 
-    def _create_multiple_workbooks(
-        self,
-        template_buffer,
-        summary_data,
-        detailed_data,
-        rules_report_data,
-        define_version,
-        cdiscCt,
-        standard,
-        version,
-        dictionary_versions,
-        **kwargs,
-    ) -> List[Workbook]:
-        """
-        Create multiple workbooks when data exceeds Excel's row limit.
-        """
-        workbooks = []
-        detailed_chunks = self._chunk_data(detailed_data, self.max_rows_per_sheet)
-        summary_chunks = self._chunk_data(summary_data, self.max_rows_per_sheet)
-        summary_needs_split = len(summary_chunks) > 1
-        num_files = max(len(detailed_chunks), len(summary_chunks))
-        for i in range(num_files):
-            wb = excel_open_workbook(template_buffer)
-            if summary_needs_split:
-                summary_chunk = summary_chunks[i] if i < len(summary_chunks) else []
-            else:
-                summary_chunk = summary_data
-            detailed_chunk = detailed_chunks[i] if i < len(detailed_chunks) else []
-            excel_update_worksheet(
-                wb["Issue Summary"], summary_chunk, dict(wrap_text=True)
-            )
-            excel_update_worksheet(
-                wb["Issue Details"], detailed_chunk, dict(wrap_text=True)
-            )
-            excel_update_worksheet(
-                wb["Rules Report"], rules_report_data, dict(wrap_text=True)
-            )
-            self._populate_metadata_sheets(
-                wb,
-                define_version,
-                cdiscCt,
-                standard,
-                version,
-                dictionary_versions,
-                file_part=i + 1,
-                total_parts=num_files,
-                **kwargs,
-            )
-            workbooks.append(wb)
-        return workbooks
-
     def _populate_metadata_sheets(
         self,
         wb: Workbook,
@@ -211,19 +111,22 @@ class ExcelReport(BaseReport):
         standard,
         version,
         dictionary_versions,
-        file_part: int = None,
-        total_parts: int = None,
         **kwargs,
     ):
         """
         Populate the conformance and dataset details sheets.
         """
         timestamp = datetime.now().replace(microsecond=0).isoformat()
-        if file_part and total_parts:
-            timestamp += f" (Part {file_part} of {total_parts})"
         wb["Conformance Details"]["B2"] = timestamp
         wb["Conformance Details"]["B3"] = f"{round(self._elapsed_time, 2)} seconds"
         wb["Conformance Details"]["B4"] = __version__
+        wb["Conformance Details"]["B5"] = str(self._max_errors_limit)
+        wb["Conformance Details"]["B6"] = (
+            "None"
+            if self._errors_per_dataset_flag == 0
+            else str(self._errors_per_dataset_flag)
+        )
+        wb["Conformance Details"]["B7"] = str(self.max_rows_per_sheet)
 
         # write dataset metadata
         datasets_data = [
@@ -242,40 +145,41 @@ class ExcelReport(BaseReport):
         )
 
         # write standards details
-        wb["Conformance Details"]["B7"] = standard.upper()
+        wb["Conformance Details"]["B9"] = standard.upper()
         if "substandard" in kwargs and kwargs["substandard"] is not None:
-            wb["Conformance Details"]["B8"] = kwargs["substandard"]
-        wb["Conformance Details"]["B9"] = f"V{version}"
+            wb["Conformance Details"]["B10"] = kwargs["substandard"]
+        wb["Conformance Details"]["B11"] = f"V{version}"
         if cdiscCt:
-            wb["Conformance Details"]["B10"] = (
+            wb["Conformance Details"]["B12"] = (
                 ", ".join(cdiscCt)
                 if isinstance(cdiscCt, (list, tuple, set))
                 else str(cdiscCt)
             )
         else:
-            wb["Conformance Details"]["B10"] = ""
-        wb["Conformance Details"]["B11"] = define_version
+            wb["Conformance Details"]["B12"] = ""
+        wb["Conformance Details"]["B13"] = define_version
 
         # Populate external dictionary versions
         unii_version = dictionary_versions.get(DictionaryTypes.UNII.value)
         if unii_version is not None:
-            wb["Conformance Details"]["B12"] = unii_version
+            wb["Conformance Details"]["B14"] = unii_version
 
         medrt_version = dictionary_versions.get(DictionaryTypes.MEDRT.value)
         if medrt_version is not None:
-            wb["Conformance Details"]["B13"] = medrt_version
+            wb["Conformance Details"]["B15"] = medrt_version
 
         meddra_version = dictionary_versions.get(DictionaryTypes.MEDDRA.value)
         if meddra_version is not None:
-            wb["Conformance Details"]["B14"] = meddra_version
+            wb["Conformance Details"]["B16"] = meddra_version
 
         whodrug_version = dictionary_versions.get(DictionaryTypes.WHODRUG.value)
         if whodrug_version is not None:
-            wb["Conformance Details"]["B15"] = whodrug_version
+            wb["Conformance Details"]["B17"] = whodrug_version
 
         snomed_version = dictionary_versions.get(DictionaryTypes.SNOMED.value)
         if snomed_version is not None:
-            wb["Conformance Details"]["B16"] = snomed_version
+            wb["Conformance Details"]["B18"] = snomed_version
+        return wb
 
     def write_report(self, **kwargs):
         logger = logging.getLogger("validator")
@@ -296,40 +200,21 @@ class ExcelReport(BaseReport):
                     controlled_terminology = get_define_ct(
                         self._args.dataset_paths, define_version
                     )
-            template_buffer = self._template.read()
-            workbooks = self.get_export(
+            report_data = self.get_export(
                 define_version,
                 controlled_terminology,
                 self._args.standard,
                 self._args.version.replace("-", "."),
                 dictionary_versions,
-                template_buffer,
                 substandard=(
                     self._args.substandard
                     if hasattr(self._args, "substandard")
                     else None
                 ),
             )
-            if len(workbooks) == 1:
-                # Single file - use original filename
-                with open(self._output_name, "wb") as f:
-                    f.write(excel_workbook_to_stream(workbooks[0]))
-                logger.debug(f"Report written to: {self._output_name}")
-            else:
-                # Multiple files - add part numbers
-                base_name = Path(self._output_name).stem
-                extension = Path(self._output_name).suffix
-                parent_dir = Path(self._output_name).parent
-
-                for i, wb in enumerate(workbooks, 1):
-                    filename = parent_dir / f"{base_name}_part{i}{extension}"
-                    with open(filename, "wb") as f:
-                        f.write(excel_workbook_to_stream(wb))
-                    logger.debug(f"Report part {i} written to: {filename}")
-                logger.warning(
-                    f"Data exceeded Excel row limit. Created {len(workbooks)} report files. "
-                    f"Total rows split across files."
-                )
+            with open(self._output_name, "wb") as f:
+                f.write(excel_workbook_to_stream(report_data))
+            logger.debug(f"Report written to: {self._output_name}")
         except Exception as e:
             logger.error(f"Error writing report: {e}")
             raise e
