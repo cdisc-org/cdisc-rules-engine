@@ -90,6 +90,87 @@ def test_targeted_error_object_with_dataset_sensitivity():
     assert error["value"] == {"TEST": 1, "MISSING": "Not in dataset"}
 
 
+def test_targeted_error_object_with_group_sensitivity():
+    """Test that GROUP sensitivity reports one error per group"""
+    dummy_rule = {
+        "core_id": "FB4607",
+        "sensitivity": "Group",
+        "grouping_variables": ["SETCD"],
+        "conditions": {
+            "all": [
+                {
+                    "name": "get_dataset",
+                    "operator": "non_empty",
+                    "value": {"target": "TXPARMCD"},
+                }
+            ]
+        },
+        "actions": [
+            {
+                "name": "generate_dataset_error_objects",
+                "params": {"message": "Missing required TXPARMCD value per set"},
+            }
+        ],
+        "output_variables": ["SETCD", "TXPARMCD"],
+    }
+
+    # Create test data with 3 groups (SETCD), multiple records each
+    df = pd.DataFrame.from_dict(
+        {
+            "TXPARMCD": [
+                "PLANSUB",
+                "PLANSUB",
+                "PLANSUB",
+                "OTHER",
+                "OTHER",
+                "OTHER",
+                "OTHER",
+                "VALUE",
+                "VALUE",
+            ],
+            "SETCD": [
+                "SET1",
+                "SET1",
+                "SET1",
+                "SET2",
+                "SET2",
+                "SET2",
+                "SET2",
+                "SET3",
+                "SET3",
+            ],
+            "USUBJID": ["001", "001", "001", "002", "002", "002", "002", "003", "003"],
+        }
+    )
+
+    variable = DatasetVariable(PandasDataset(df))
+    dataset_metadata = SDTMDatasetMetadata(
+        first_record={"DOMAIN": "TX"}, filename="tx.xpt"
+    )
+    action = COREActions([], variable, dataset_metadata, dummy_rule)
+
+    targets = set(dummy_rule["output_variables"])
+    result = action.generate_targeted_error_object(
+        targets, df, "Missing required TXPARMCD value per set"
+    )
+
+    # Should have exactly 3 errors (one per SETCD group)
+    assert len(result.errors) == 3
+
+    # Extract SETCD values from errors
+    setcd_values = [
+        error.to_representation()["value"]["SETCD"] for error in result.errors
+    ]
+    assert sorted(setcd_values) == ["SET1", "SET2", "SET3"]
+
+    # Each error should have row information from the first record in its group
+    for error in result.errors:
+        error_repr = error.to_representation()
+        assert "row" in error_repr
+        assert "SETCD" in error_repr["value"]
+        assert "TXPARMCD" in error_repr["value"]
+
+
 def test_empty_sequential():
     dummy_rule = {
         "core_id": "MockRule",
