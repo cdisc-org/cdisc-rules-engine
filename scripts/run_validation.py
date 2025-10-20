@@ -77,7 +77,7 @@ def validate_single_rule(
         rule["conditions"]
     )
     max_dataset_size = max(datasets, key=lambda x: x.file_size).file_size
-    max_errors_per_rule = set_max_errors_per_rule(args)
+    max_errors_per_rule, per_dataset_flag = set_max_errors_per_rule(args)
     # call rule engine
     engine = RulesEngine(
         cache=cache,
@@ -93,6 +93,7 @@ def validate_single_rule(
         validate_xml=args.validate_xml,
         jsonata_custom_functions=args.jsonata_custom_functions,
         max_errors_per_rule=max_errors_per_rule,
+        errors_per_dataset_flag=per_dataset_flag,
     )
     results = engine.validate_single_rule(rule, datasets)
     results = list(itertools.chain(*results.values()))
