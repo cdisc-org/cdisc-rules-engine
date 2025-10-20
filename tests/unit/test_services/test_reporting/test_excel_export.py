@@ -132,6 +132,7 @@ def test_get_rules_report_data():
     with open(test_report_template, "rb") as f:
         mock_args = MagicMock()
         mock_args.max_report_rows = None
+        mock_args.max_errors_per_rule = (None, False)
         report: ExcelReport = ExcelReport(
             [], "test", mock_validation_results, 10.1, mock_args, f
         )
@@ -158,6 +159,7 @@ def test_get_detailed_data(excel=True):
     with open(test_report_template, "rb") as f:
         mock_args = MagicMock()
         mock_args.max_report_rows = None
+        mock_args.max_errors_per_rule = (None, False)
         report: ExcelReport = ExcelReport(
             [], "test", mock_validation_results, 10.1, mock_args, f
         )
@@ -207,6 +209,7 @@ def test_get_summary_data():
     with open(test_report_template, "rb") as f:
         mock_args = MagicMock()
         mock_args.max_report_rows = None
+        mock_args.max_errors_per_rule = (None, False)
         report: ExcelReport = ExcelReport(
             [], "test", mock_validation_results, 10.1, mock_args, f
         )
@@ -218,12 +221,7 @@ def test_get_summary_data():
                 "AESTDY and DOMAIN are equal to test",
                 2,
             ],
-            [
-                None,
-                mock_validation_results[1].id,
-                "TTVARs are wrong",
-                1,
-            ],
+            [None, mock_validation_results[1].id, "TTVARs are wrong", 1],
         ]
         errors = sorted(errors, key=lambda x: (x[0], x[1]))
         assert len(errors) == len(summary_data)
@@ -237,6 +235,7 @@ def test_get_export():
         mock_args.meddra = "test"
         mock_args.whodrug = "test"
         mock_args.max_report_rows = None
+        mock_args.max_errors_per_rule = (None, False)
 
         datasets = [
             SDTMDatasetMetadata(
@@ -254,24 +253,20 @@ def test_get_export():
             datasets, ["test"], mock_validation_results, 10.1, mock_args, f
         )
         cdiscCt = ["sdtmct-03-2021"]
-        f.seek(0)
-        template_buffer = f.read()
-        workbooks = report.get_export(
+        wb = report.get_export(
             define_version="2.1",
             cdiscCt=cdiscCt,
             standard="sdtmig",
             version="3.4",
             dictionary_versions={},
-            template_buffer=template_buffer,
         )
-        wb = workbooks[0]
         assert wb["Conformance Details"]["B3"].value == "10.1 seconds"
         assert wb["Conformance Details"]["B4"].value == __version__
-        assert wb["Conformance Details"]["B7"].value == "SDTMIG"
-        assert wb["Conformance Details"]["B8"].value == "NAP"
-        assert wb["Conformance Details"]["B9"].value == "V3.4"
-        assert wb["Conformance Details"]["B10"].value == ", ".join(cdiscCt)
-        assert wb["Conformance Details"]["B11"].value == "2.1"
+        assert wb["Conformance Details"]["B9"].value == "SDTMIG"
+        assert wb["Conformance Details"]["B10"].value == "NAP"
+        assert wb["Conformance Details"]["B11"].value == "V3.4"
+        assert wb["Conformance Details"]["B12"].value == ", ".join(cdiscCt)
+        assert wb["Conformance Details"]["B13"].value == "2.1"
 
         # Check dataset details tab
         assert wb["Dataset Details"]["A2"].value == "test.xpt"  # filename
