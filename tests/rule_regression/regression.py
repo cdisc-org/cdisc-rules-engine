@@ -300,14 +300,14 @@ def process_test_case_dataset(
         metadata = get_metadata(ig_specs, define_xml_file_path)
 
         # Execute rule in SQL engine
-        ds = PostgresQLDataService.from_list_of_testdatasets(data_test_datasets)
-        regression_errors["datasets_import_sql"] = "SUCCESS"
         standards_context = StandardsFactory.get_standards_context(
             ig_specs.get("standard"),
             ig_specs.get("standard_version"),
             ig_specs.get("standard_substandard"),
             library_metadata=metadata,
         )
+        ds = PostgresQLDataService.from_list_of_testdatasets(data_test_datasets, standards_context)
+        regression_errors["datasets_import_sql"] = "SUCCESS"
         sql_results = sql_run_single_rule_validation(data_service=ds, rule=rule, standards_context=standards_context)
         regression_errors["results_present_sql"] = True
         sql_regression = extract_results_regression(sql_results)
@@ -593,8 +593,7 @@ def extract_variables(
         var_format = ""  # Format is always empty
 
         if var_type not in ["Char", "Num"]:
-            print(f"Unknown variable type: {var_type}. This data needs fixing.")
-            var_type = "Char"  # Default to Char if unknown
+            raise ValueError(f"Unknown variable type: {var_type}. This data needs fixing.")
 
         # Create a variable dictionary
         variables.append(

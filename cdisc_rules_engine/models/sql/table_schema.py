@@ -55,6 +55,11 @@ class SqlTableSchema:
     @classmethod
     def from_metadata(cls, metadata: DatasetMetadata2) -> "SqlTableSchema":
         """Create a SqlTableSchema from its metadata."""
+        # Check for reserved column names in user data
+        for column in metadata.variables:
+            if column.name.lower() == "id":
+                raise ValueError("Column name 'id' is reserved for primary key in SQL tables.")
+
         instance = cls(metadata.name.lower(), metadata.name.lower(), source="data")
         for variable_metadata in metadata.variables:
             instance.add_column(SqlColumnSchema.from_metadata(variable_metadata))

@@ -3,15 +3,19 @@ from typing import Any
 
 from cdisc_rules_engine.data_service.merges.join import SqlJoinMerge
 from cdisc_rules_engine.data_service.postgresql_data_service import (
+    BaseDatasetMetadata,
     PostgresQLDataService,
-    SQLDatasetMetadata,
 )
 from cdisc_rules_engine.models.dataset_metadata2 import DatasetMetadata2
 
 
 class BaseStandardsContext(ABC):
     @abstractmethod
-    def derive_domain(self, filename: str) -> str:
+    def transform_dataset_metadata(self, source: DatasetMetadata2) -> BaseDatasetMetadata:
+        pass
+
+    @abstractmethod
+    def replace_domain_code(self, dataset_metadata: BaseDatasetMetadata, variable: str) -> str:
         pass
 
     @abstractmethod
@@ -31,7 +35,7 @@ class BaseStandardsContext(ABC):
         self,
         data_service: PostgresQLDataService,
         original: str,
-        dataset_metadata: SQLDatasetMetadata,
+        dataset_metadata: BaseDatasetMetadata,
         merge_spec: dict[str, Any],
         rule: dict,
     ) -> str:

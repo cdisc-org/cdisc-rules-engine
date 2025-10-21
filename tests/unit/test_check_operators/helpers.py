@@ -29,10 +29,13 @@ def create_sql_operators(
     Returns:
         PostgresQLOperators instance configured for testing
     """
+    standards_context = DefaultStandardsContext()
     data_service = PostgresQLDataService.instance()
 
     table_name = dataset_name or TEST_TABLE_NAME
-    PostgresQLDataService.add_test_dataset(data_service, table_name=table_name, column_data=column_data)
+    PostgresQLDataService.add_test_dataset(
+        data_service, table_name=table_name, column_data=column_data, standards_context=standards_context
+    )
 
     config = {**extra_config, "dataset_id": table_name, "data_service": data_service}
 
@@ -49,7 +52,9 @@ def create_sql_operators(
         query="SELECT NULL", type="constant", subtype="Date"
     )
 
-    config["dataset_metadata"] = data_service.get_dataset_metadata(table_name, DefaultStandardsContext())
+    config["dataset_metadata"] = data_service.get_dataset_metadata(
+        table_name,
+    )
 
     return PostgresQLOperators(config)
 

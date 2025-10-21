@@ -23,7 +23,7 @@ class SqlTestDatasetLoader:
 
         if row_dicts and SOURCE_ROW_NUMBER in row_dicts[0]:
             raise ValueError(
-                f"Test dataset '{table_name}' contains reserved column 'source_row_number'. "
+                f"Test dataset '{table_name}' contains reserved column '{SOURCE_ROW_NUMBER}'. "
                 "This column is automatically generated and should not be in test data."
             )
 
@@ -39,4 +39,4 @@ class SqlTestDatasetLoader:
 
         # TODO INDEX
 
-        return test_dataset
+        return DatasetMetadata2(**{k: v for k, v in test_dataset.__dict__.items() if k != "records"})

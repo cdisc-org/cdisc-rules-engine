@@ -6,7 +6,6 @@ from cdisc_rules_engine.data_service.postgresql_data_service import (
     PostgresQLDataService,
 )
 
-
 SIMPLE_RELATIONSHIP_DATA = {
     "original": {
         "STUDYID": ["STUDY001", "STUDY001", "STUDY001"],
@@ -161,11 +160,15 @@ MIXED_RDOMAIN_DATA = {
         ),
     ],
 )
-def test_relationship_merge(data, expected, domain):
+def test_relationship_merge(data, expected, domain, sdtm_standards_context):
     """Test relationship merge functionality with expected data comparison."""
     data_service = PostgresQLDataService.instance()
-    original_schema = PostgresQLDataService.add_test_dataset(data_service, "original", data["original"])
-    relationship_schema = PostgresQLDataService.add_test_dataset(data_service, "relationship", data["relationship"])
+    original_schema = PostgresQLDataService.add_test_dataset(
+        data_service, "original", data["original"], sdtm_standards_context
+    )
+    relationship_schema = PostgresQLDataService.add_test_dataset(
+        data_service, "relationship", data["relationship"], sdtm_standards_context
+    )
 
     relationship_columns = {"column_with_names": "IDVAR", "column_with_values": "IDVARVAL"}
 
@@ -200,22 +203,54 @@ def test_relationship_merge(data, expected, domain):
     assert expected_df.equals(actual_results), f"Expected {expected}, got {actual_results.to_dict('records')}"
 
 
-class TestSqlRelationshipMerge:
-    """Additional test cases for SqlRelationshipMerge functionality."""
+def test_merge_twice(sdtm_standards_context):
+    """Test that running the same merge twice returns cached result."""
+    data_service = PostgresQLDataService.instance()
+    original_schema = PostgresQLDataService.add_test_dataset(
+        data_service, "original", SIMPLE_RELATIONSHIP_DATA["original"], sdtm_standards_context
+    )
+    relationship_schema = PostgresQLDataService.add_test_dataset(
+        data_service, "relationship", SIMPLE_RELATIONSHIP_DATA["relationship"], sdtm_standards_context
+    )
 
-    def test_merge_twice(self):
-        """Test that running the same merge twice returns cached result."""
-        data_service = PostgresQLDataService.instance()
-        original_schema = PostgresQLDataService.add_test_dataset(
-            data_service, "original", SIMPLE_RELATIONSHIP_DATA["original"]
-        )
-        relationship_schema = PostgresQLDataService.add_test_dataset(
-            data_service, "relationship", SIMPLE_RELATIONSHIP_DATA["relationship"]
-        )
+    relationship_columns = {"column_with_names": "IDVAR", "column_with_values": "IDVARVAL"}
 
-        relationship_columns = {"column_with_names": "IDVAR", "column_with_values": "IDVARVAL"}
+    result1 = SqlRelationshipMerge.perform_join(
+        pgi=data_service.pgi,
+        original=original_schema,
+        relationship_dataset=relationship_schema,
+        domain="RELSUB",
+        relationship_columns=relationship_columns,
+    )
 
-        result1 = SqlRelationshipMerge.perform_join(
+    result2 = SqlRelationshipMerge.perform_join(
+        pgi=data_service.pgi,
+        original=original_schema,
+        relationship_dataset=relationship_schema,
+        domain="RELSUB",
+        relationship_columns=relationship_columns,
+    )
+
+    assert result1 == result2
+
+
+def test_validation_missing_original_columns(sdtm_standards_context):
+    """Test validation when required columns are missing in original dataset."""
+    data_service = PostgresQLDataService.instance()
+    original_schema = PostgresQLDataService.add_test_dataset(
+        data_service, "original", SIMPLE_RELATIONSHIP_DATA["original"], sdtm_standards_context
+    )
+    relationship_schema = PostgresQLDataService.add_test_dataset(
+        data_service, "relationship", SIMPLE_RELATIONSHIP_DATA["relationship"], sdtm_standards_context
+    )
+
+    # Remove required column
+    original_schema._columns.pop("usubjid", None)
+
+    relationship_columns = {"column_with_names": "IDVAR", "column_with_values": "IDVARVAL"}
+
+    with pytest.raises(ValueError, match="Original schema missing match key column"):
+        SqlRelationshipMerge.perform_join(
             pgi=data_service.pgi,
             original=original_schema,
             relationship_dataset=relationship_schema,
@@ -223,127 +258,96 @@ class TestSqlRelationshipMerge:
             relationship_columns=relationship_columns,
         )
 
-        result2 = SqlRelationshipMerge.perform_join(
+
+def test_validation_missing_relationship_columns(sdtm_standards_context):
+    """Test that missing relationship columns are handled gracefully with simple merge."""
+    data_service = PostgresQLDataService.instance()
+    original_schema = PostgresQLDataService.add_test_dataset(
+        data_service, "original", SIMPLE_RELATIONSHIP_DATA["original"], sdtm_standards_context
+    )
+    relationship_schema = PostgresQLDataService.add_test_dataset(
+        data_service, "relationship", SIMPLE_RELATIONSHIP_DATA["relationship"], sdtm_standards_context
+    )
+
+    relationship_schema._columns.pop("idvar", None)
+
+    relationship_columns = {"column_with_names": "IDVAR", "column_with_values": "IDVARVAL"}
+
+    result = SqlRelationshipMerge.perform_join(
+        pgi=data_service.pgi,
+        original=original_schema,
+        relationship_dataset=relationship_schema,
+        domain="RELSUB",
+        relationship_columns=relationship_columns,
+    )
+
+    assert "SIMPLE" in result.name.upper()
+
+
+def test_complex_multi_column_filtering(sdtm_standards_context):
+    """Test filtering with multiple IDVAR columns."""
+    data_service = PostgresQLDataService.instance()
+    original_schema = PostgresQLDataService.add_test_dataset(
+        data_service, "original", COMPLEX_RELATIONSHIP_DATA["original"], sdtm_standards_context
+    )
+    relationship_schema = PostgresQLDataService.add_test_dataset(
+        data_service, "relationship", COMPLEX_RELATIONSHIP_DATA["relationship"], sdtm_standards_context
+    )
+
+    relationship_columns = {"column_with_names": "IDVAR", "column_with_values": "IDVARVAL"}
+
+    result = SqlRelationshipMerge.perform_join(
+        pgi=data_service.pgi,
+        original=original_schema,
+        relationship_dataset=relationship_schema,
+        domain="CO",
+        relationship_columns=relationship_columns,
+    )
+
+    assert result.has_column("COREFID.CO")
+    assert result.has_column("COREF.CO")
+
+    data_service.pgi.execute_sql(
+        f"""SELECT
+                usubjid,
+                aeseq::int,
+                aesev,
+                {result.get_column_hash("COREF.CO")} as coref
+            FROM {result.hash}
+            WHERE {result.get_column_hash("COREF.CO")} IS NOT NULL
+            AND usubjid IS NOT NULL
+            ORDER BY aeseq"""
+    )
+    results = data_service.pgi.fetch_all()
+
+    assert len(results) >= 1
+    assert results[0]["aeseq"] == 1 and results[0]["aesev"] == "MILD"
+
+
+def test_validation_invalid_parameters(sdtm_standards_context):
+    """Test validation with invalid parameters."""
+    data_service = PostgresQLDataService.instance()
+    original_schema = PostgresQLDataService.add_test_dataset(
+        data_service, "original", SIMPLE_RELATIONSHIP_DATA["original"], sdtm_standards_context
+    )
+    relationship_schema = PostgresQLDataService.add_test_dataset(
+        data_service, "relationship", SIMPLE_RELATIONSHIP_DATA["relationship"], sdtm_standards_context
+    )
+
+    with pytest.raises(ValueError, match="relationship_columns parameter is required"):
+        SqlRelationshipMerge.perform_join(
             pgi=data_service.pgi,
             original=original_schema,
             relationship_dataset=relationship_schema,
             domain="RELSUB",
-            relationship_columns=relationship_columns,
+            relationship_columns=None,
         )
 
-        assert result1 == result2
-
-    def test_validation_missing_original_columns(self):
-        """Test validation when required columns are missing in original dataset."""
-        data_service = PostgresQLDataService.instance()
-        original_schema = PostgresQLDataService.add_test_dataset(
-            data_service, "original", SIMPLE_RELATIONSHIP_DATA["original"]
-        )
-        relationship_schema = PostgresQLDataService.add_test_dataset(
-            data_service, "relationship", SIMPLE_RELATIONSHIP_DATA["relationship"]
-        )
-
-        # Remove required column
-        original_schema._columns.pop("usubjid", None)
-
-        relationship_columns = {"column_with_names": "IDVAR", "column_with_values": "IDVARVAL"}
-
-        with pytest.raises(ValueError, match="Original schema missing match key column"):
-            SqlRelationshipMerge.perform_join(
-                pgi=data_service.pgi,
-                original=original_schema,
-                relationship_dataset=relationship_schema,
-                domain="RELSUB",
-                relationship_columns=relationship_columns,
-            )
-
-    def test_validation_missing_relationship_columns(self):
-        """Test that missing relationship columns are handled gracefully with simple merge."""
-        data_service = PostgresQLDataService.instance()
-        original_schema = PostgresQLDataService.add_test_dataset(
-            data_service, "original", SIMPLE_RELATIONSHIP_DATA["original"]
-        )
-        relationship_schema = PostgresQLDataService.add_test_dataset(
-            data_service, "relationship", SIMPLE_RELATIONSHIP_DATA["relationship"]
-        )
-
-        relationship_schema._columns.pop("idvar", None)
-
-        relationship_columns = {"column_with_names": "IDVAR", "column_with_values": "IDVARVAL"}
-
-        result = SqlRelationshipMerge.perform_join(
+    with pytest.raises(ValueError, match="column_with_names is required"):
+        SqlRelationshipMerge.perform_join(
             pgi=data_service.pgi,
             original=original_schema,
             relationship_dataset=relationship_schema,
             domain="RELSUB",
-            relationship_columns=relationship_columns,
+            relationship_columns={"column_with_names": "", "column_with_values": "IDVARVAL"},
         )
-
-        assert "SIMPLE" in result.name.upper()
-
-    def test_complex_multi_column_filtering(self):
-        """Test filtering with multiple IDVAR columns."""
-        data_service = PostgresQLDataService.instance()
-        original_schema = PostgresQLDataService.add_test_dataset(
-            data_service, "original", COMPLEX_RELATIONSHIP_DATA["original"]
-        )
-        relationship_schema = PostgresQLDataService.add_test_dataset(
-            data_service, "relationship", COMPLEX_RELATIONSHIP_DATA["relationship"]
-        )
-
-        relationship_columns = {"column_with_names": "IDVAR", "column_with_values": "IDVARVAL"}
-
-        result = SqlRelationshipMerge.perform_join(
-            pgi=data_service.pgi,
-            original=original_schema,
-            relationship_dataset=relationship_schema,
-            domain="CO",
-            relationship_columns=relationship_columns,
-        )
-
-        assert result.has_column("COREFID.CO")
-        assert result.has_column("COREF.CO")
-
-        data_service.pgi.execute_sql(
-            f"""SELECT
-                    usubjid,
-                    aeseq::int,
-                    aesev,
-                    {result.get_column_hash("COREF.CO")} as coref
-                FROM {result.hash}
-                WHERE {result.get_column_hash("COREF.CO")} IS NOT NULL
-                AND usubjid IS NOT NULL
-                ORDER BY aeseq"""
-        )
-        results = data_service.pgi.fetch_all()
-
-        assert len(results) >= 1
-        assert results[0]["aeseq"] == 1 and results[0]["aesev"] == "MILD"
-
-    def test_validation_invalid_parameters(self):
-        """Test validation with invalid parameters."""
-        data_service = PostgresQLDataService.instance()
-        original_schema = PostgresQLDataService.add_test_dataset(
-            data_service, "original", SIMPLE_RELATIONSHIP_DATA["original"]
-        )
-        relationship_schema = PostgresQLDataService.add_test_dataset(
-            data_service, "relationship", SIMPLE_RELATIONSHIP_DATA["relationship"]
-        )
-
-        with pytest.raises(ValueError, match="relationship_columns parameter is required"):
-            SqlRelationshipMerge.perform_join(
-                pgi=data_service.pgi,
-                original=original_schema,
-                relationship_dataset=relationship_schema,
-                domain="RELSUB",
-                relationship_columns=None,
-            )
-
-        with pytest.raises(ValueError, match="column_with_names is required"):
-            SqlRelationshipMerge.perform_join(
-                pgi=data_service.pgi,
-                original=original_schema,
-                relationship_dataset=relationship_schema,
-                domain="RELSUB",
-                relationship_columns={"column_with_names": "", "column_with_values": "IDVARVAL"},
-            )

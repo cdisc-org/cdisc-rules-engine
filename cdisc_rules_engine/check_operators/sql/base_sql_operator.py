@@ -10,13 +10,13 @@ import pandas as pd
 from cdisc_rules_engine.constants.metadata_columns import DATASET_NAME
 from cdisc_rules_engine.data_service.postgresql_data_service import (
     PostgresQLDataService,
-    SQLDatasetMetadata,
 )
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.models.sql.column_schema import SqlColumnSchema
 from cdisc_rules_engine.models.sql_operation_result import SqlOperationResult
 from cdisc_rules_engine.services import logger
+from cdisc_rules_engine.standards.base_dataset_metdata import BaseDatasetMetadata
 
 CHECK_OPERATOR_TABLE_ALIAS = "co"
 
@@ -85,7 +85,7 @@ class BaseSqlOperator:
         self.column_codelist_map = data.get("column_codelist_map", {})
         self.codelist_term_maps = data.get("codelist_term_maps", [])
         self.operation_variables: dict[str, SqlOperationResult] = data.get("operation_variables", {})
-        self.dataset_metadata: SQLDatasetMetadata = data.get("dataset_metadata", None)
+        self.dataset_metadata: BaseDatasetMetadata = data.get("dataset_metadata", None)
 
     @abstractmethod
     def execute_operator(self, other_value):
@@ -234,7 +234,7 @@ class BaseSqlOperator:
             query = f"{CHECK_OPERATOR_TABLE_ALIAS}.{query}"
 
         if column == DATASET_NAME:
-            dataset_name = self.dataset_metadata.dataset_name
+            dataset_name = self.dataset_metadata.name
             if prefix is not None:
                 dataset_name = dataset_name[: int(prefix)]
             elif suffix is not None:

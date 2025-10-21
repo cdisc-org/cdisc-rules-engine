@@ -9,7 +9,6 @@ from cdisc_rules_engine.constants import NULL_FLAVORS
 from cdisc_rules_engine.constants.metadata_columns import SOURCE_ROW_NUMBER
 from cdisc_rules_engine.data_service.postgresql_data_service import (
     PostgresQLDataService,
-    SQLDatasetMetadata,
 )
 from cdisc_rules_engine.enums.sensitivity import Sensitivity
 from cdisc_rules_engine.interfaces.condition_interface import ConditionInterface
@@ -18,6 +17,7 @@ from cdisc_rules_engine.models.validation_error_container import (
     ValidationErrorContainer,
 )
 from cdisc_rules_engine.models.validation_error_entity import ValidationErrorEntity
+from cdisc_rules_engine.standards.base_dataset_metdata import BaseDatasetMetadata
 
 
 class SqlVenmoResultHandler(BaseActions):
@@ -61,7 +61,7 @@ class SqlVenmoResultHandler(BaseActions):
     def __init__(
         self,
         output_container: list,
-        dataset_metadata: SQLDatasetMetadata,
+        dataset_metadata: BaseDatasetMetadata,
         rule: dict,
         dataset_id: str,
         data_service: PostgresQLDataService,
@@ -83,9 +83,9 @@ class SqlVenmoResultHandler(BaseActions):
         - Broadcast single-value Series to match original dataset length
         """
         # Broadcast single-value Series to original dataset length
-        if len(results) == 1 and self.dataset_id != self.dataset_metadata.dataset_id:
+        if len(results) == 1 and self.dataset_id != self.dataset_metadata.name:
             # Get row count of original dataset
-            original_table_hash = self.data_service.pgi.schema.get_table_hash(self.dataset_metadata.dataset_id)
+            original_table_hash = self.data_service.pgi.schema.get_table_hash(self.dataset_metadata.name)
             self.data_service.pgi.execute_sql(f"SELECT COUNT(*) as count FROM {original_table_hash};")
             count_result = self.data_service.pgi.fetch_all()
             original_row_count = count_result[0]["count"]
@@ -136,14 +136,10 @@ class SqlVenmoResultHandler(BaseActions):
         """
         Bundles the error rows into a ValidationErrorContainer.
         """
-        original_schema = self.data_service.pgi.schema.get_table(self.dataset_metadata.dataset_id)
+        original_schema = self.data_service.pgi.schema.get_table(self.dataset_metadata.name)
 
         return ValidationErrorContainer(
-            domain=(
-                f"SUPP{self.dataset_metadata.rdomain}"
-                if self.dataset_metadata.is_supp
-                else (self.dataset_metadata.domain or self.dataset_metadata.dataset_name)
-            ),
+            domain=(self.dataset_metadata.domain),
             dataset=", ".join(sorted(set(error._dataset or "" for error in error_rows))),
             targets=SqlVenmoResultHandler._get_target_columns(self.rule, self.dataset_metadata, original_schema),
             errors=error_rows,
@@ -370,7 +366,7 @@ class SqlVenmoResultHandler(BaseActions):
             return f"Query error: {str(e)}"
 
     @staticmethod
-    def _get_target_columns(rule: dict, metadata: SQLDatasetMetadata, schema: SqlTableSchema) -> dict[str, bool]:
+    def _get_target_columns(rule: dict, metadata: BaseDatasetMetadata, schema: SqlTableSchema) -> dict[str, bool]:
         """
         Returns the columns to display in the error object
         """
@@ -388,7 +384,7 @@ class SqlVenmoResultHandler(BaseActions):
         return target_columns_with_presence
 
     @staticmethod
-    def _extract_target_names_from_rule(rule: dict, metadata: SQLDatasetMetadata, schema: SqlTableSchema) -> List[str]:
+    def _extract_target_names_from_rule(rule: dict, metadata: BaseDatasetMetadata, schema: SqlTableSchema) -> List[str]:
         r"""
         Extracts target from each item of condition list.
 

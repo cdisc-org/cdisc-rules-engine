@@ -32,7 +32,9 @@ def setup_sql_operations(
         PostgresQLOperators instance configured for testing
     """
     data_service = PostgresQLDataService.instance()
-    PostgresQLDataService.add_test_dataset(data_service, table_name=TEST_TABLE_NAME, column_data=column_data)
+    PostgresQLDataService.add_test_dataset(
+        data_service, table_name=TEST_TABLE_NAME, column_data=column_data, standards_context=DefaultStandardsContext()
+    )
 
     params = SqlOperationParams(
         domain=TEST_TABLE_NAME,

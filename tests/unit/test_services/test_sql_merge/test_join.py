@@ -6,6 +6,9 @@ from cdisc_rules_engine.data_service.merges.join import SqlJoinMerge
 from cdisc_rules_engine.data_service.postgresql_data_service import (
     PostgresQLDataService,
 )
+from cdisc_rules_engine.standards.default_standards_context import (
+    DefaultStandardsContext,
+)
 
 SIMPLE_DATA = {
     "left": {"key": [1, 2, 3], "name": ["Alice", "Bob", "Charlie"]},
@@ -56,8 +59,8 @@ SIMPLE_DATA = {
 )
 def test_join(data, type, expected):
     ds = PostgresQLDataService.instance()
-    PostgresQLDataService.add_test_dataset(ds, "l", data["left"])
-    PostgresQLDataService.add_test_dataset(ds, "r", data["right"])
+    PostgresQLDataService.add_test_dataset(ds, "l", data["left"], DefaultStandardsContext())
+    PostgresQLDataService.add_test_dataset(ds, "r", data["right"], DefaultStandardsContext())
 
     # Perform the join operation
     schema = SqlJoinMerge.perform_join(
@@ -103,8 +106,8 @@ def test_join(data, type, expected):
 )
 def test_multiple_keys(data, expected):
     ds = PostgresQLDataService.instance()
-    PostgresQLDataService.add_test_dataset(ds, "l", data["left"])
-    PostgresQLDataService.add_test_dataset(ds, "r", data["right"])
+    PostgresQLDataService.add_test_dataset(ds, "l", data["left"], DefaultStandardsContext())
+    PostgresQLDataService.add_test_dataset(ds, "r", data["right"], DefaultStandardsContext())
 
     # Perform the join operation
     schema = SqlJoinMerge.perform_join(
@@ -137,8 +140,8 @@ def test_multiple_keys(data, expected):
 )
 def test_table_not_in_data(data):
     ds = PostgresQLDataService.instance()
-    PostgresQLDataService.add_test_dataset(ds, "l", data["left"])
-    PostgresQLDataService.add_test_dataset(ds, "r", data["right"])
+    PostgresQLDataService.add_test_dataset(ds, "l", data["left"], DefaultStandardsContext())
+    PostgresQLDataService.add_test_dataset(ds, "r", data["right"], DefaultStandardsContext())
 
     # Perform the join operation
     with pytest.raises(Exception):
@@ -153,8 +156,8 @@ def test_table_not_in_data(data):
 )
 def test_column_not_in_data(data):
     ds = PostgresQLDataService.instance()
-    PostgresQLDataService.add_test_dataset(ds, "l", data["left"])
-    PostgresQLDataService.add_test_dataset(ds, "r", data["right"])
+    PostgresQLDataService.add_test_dataset(ds, "l", data["left"], DefaultStandardsContext())
+    PostgresQLDataService.add_test_dataset(ds, "r", data["right"], DefaultStandardsContext())
 
     # Perform the join operation
     with pytest.raises(Exception):
@@ -169,8 +172,8 @@ def test_column_not_in_data(data):
 )
 def test_wrong_column_number(data):
     ds = PostgresQLDataService.instance()
-    PostgresQLDataService.add_test_dataset(ds, "l", data["left"])
-    PostgresQLDataService.add_test_dataset(ds, "r", data["right"])
+    PostgresQLDataService.add_test_dataset(ds, "l", data["left"], DefaultStandardsContext())
+    PostgresQLDataService.add_test_dataset(ds, "r", data["right"], DefaultStandardsContext())
 
     # Perform the join operation
     with pytest.raises(Exception):
@@ -185,8 +188,8 @@ def test_wrong_column_number(data):
 )
 def test_run_twice(data):
     ds = PostgresQLDataService.instance()
-    PostgresQLDataService.add_test_dataset(ds, "l", data["left"])
-    PostgresQLDataService.add_test_dataset(ds, "r", data["right"])
+    PostgresQLDataService.add_test_dataset(ds, "l", data["left"], DefaultStandardsContext())
+    PostgresQLDataService.add_test_dataset(ds, "r", data["right"], DefaultStandardsContext())
 
     # Perform the join operation
     schema = SqlJoinMerge.perform_join(
@@ -206,7 +209,7 @@ def test_run_twice(data):
 )
 def test_join_table_itself(data):
     ds = PostgresQLDataService.instance()
-    PostgresQLDataService.add_test_dataset(ds, "l", data["left"])
+    PostgresQLDataService.add_test_dataset(ds, "l", data["left"], DefaultStandardsContext())
 
     schema = SqlJoinMerge.perform_join(
         ds.pgi, ds.pgi.schema.get_table("l"), ds.pgi.schema.get_table("l"), ["key"], ["key"]
@@ -252,8 +255,8 @@ def test_source_row_number_preserved_through_join():
         "SEENDTC": ["2018-08-19"],
         "EPOCH": ["TREATMENT"],
     }
-    sv_schema = PostgresQLDataService.add_test_dataset(ds, "sv", sv_data)
-    se_schema = PostgresQLDataService.add_test_dataset(ds, "se", se_data)
+    sv_schema = PostgresQLDataService.add_test_dataset(ds, "sv", sv_data, DefaultStandardsContext())
+    se_schema = PostgresQLDataService.add_test_dataset(ds, "se", se_data, DefaultStandardsContext())
 
     result = SqlJoinMerge.perform_join(
         pgi=ds.pgi, left=sv_schema, right=se_schema, pivot_left=["USUBJID"], pivot_right=["USUBJID"], type="LEFT"

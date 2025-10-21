@@ -2,8 +2,8 @@ from abc import ABC, abstractmethod
 from typing import List
 
 from cdisc_rules_engine.data_service.postgresql_data_service import (
+    BaseDatasetMetadata,
     PostgresQLDataService,
-    SQLDatasetMetadata,
 )
 from cdisc_rules_engine.standards.base_standards_context import BaseStandardsContext
 
@@ -17,9 +17,9 @@ class SqlBaseDatasetBuilder(ABC):
         self,
         rule: dict,
         data_service: PostgresQLDataService,
-        dataset_metadata: SQLDatasetMetadata,
+        dataset_metadata: BaseDatasetMetadata,
         standards_context: BaseStandardsContext,
-        datasets: List[SQLDatasetMetadata] = None,
+        datasets: List[BaseDatasetMetadata] = None,
         **kwargs,
     ):
         self.rule = rule

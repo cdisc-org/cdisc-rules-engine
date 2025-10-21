@@ -8,6 +8,7 @@ import pytest
 
 from cdisc_rules_engine.config.config import ConfigService
 from cdisc_rules_engine.constants.rule_constants import ALL_KEYWORD
+from cdisc_rules_engine.enums.default_file_paths import DefaultFilePaths
 from cdisc_rules_engine.enums.rule_types import RuleTypes
 from cdisc_rules_engine.enums.sensitivity import Sensitivity
 from cdisc_rules_engine.models.dataset import PandasDataset
@@ -21,10 +22,13 @@ from cdisc_rules_engine.models.external_dictionaries_container import (
 from cdisc_rules_engine.models.operation_params import OperationParams
 from cdisc_rules_engine.models.rule_conditions import ConditionCompositeFactory
 from cdisc_rules_engine.models.test_dataset import TestDataset
+from cdisc_rules_engine.models.validation_args import Validation_args
 from cdisc_rules_engine.services.cache import (
     InMemoryCacheService,
 )
 from cdisc_rules_engine.services.data_services import LocalDataService
+from cdisc_rules_engine.standards.sdtm_standards_context import SdtmStandardsContext
+from scripts.script_utils import get_library_metadata_from_cache
 
 meddra_path: str = f"{os.path.dirname(__file__)}/resources/dictionaries/meddra"
 whodrug_path: str = f"{os.path.dirname(__file__)}/resources/dictionaries/whodrug"
@@ -1270,7 +1274,7 @@ def get_python_executable():
 def get_sample_lb_dataset() -> TestDataset:
     return TestDataset(
         filename="lb.xpt",
-        name="LB",
+        name="lb",
         label="Laboratory Test Results",
         variables=[
             VariableMetadata(name="DOMAIN", label="Domain Abbreviation", type="Char", length=4, format="", order=1),
@@ -1287,7 +1291,7 @@ def get_sample_lb_dataset() -> TestDataset:
 def get_sample_supp_dataset() -> TestDataset:
     return TestDataset(
         filename="suppdm.xpt",
-        name="SUPPDM",
+        name="suppdm",
         label="Supplemental Demographics Domain",
         variables=[
             VariableMetadata(name="STUDYID", label="Study Identifier", type="Char", length=8, format="", order=1),
@@ -1338,3 +1342,32 @@ def get_sample_dm_dataset() -> TestDataset:
             "USUBJID": ["P01", "P02"],
         },
     )
+
+
+@pytest.fixture
+def sdtm_standards_context() -> SdtmStandardsContext:
+    library_metadata = get_library_metadata_from_cache(
+        Validation_args(
+            cache=os.path.join(os.path.dirname(__file__), "..", DefaultFilePaths.CACHE.value),
+            pool_size=None,
+            dataset_paths=None,
+            log_level=None,
+            report_template=None,
+            standard="SDTMIG",
+            version="3.4",
+            substandard=None,
+            controlled_terminology_package=set(),
+            output=None,
+            output_format=None,
+            raw_report=None,
+            define_version=None,
+            external_dictionaries=None,
+            rules=None,
+            local_rules=None,
+            custom_standard=None,
+            progress=None,
+            define_xml_path=None,
+            validate_xml=None,
+        )
+    )
+    return SdtmStandardsContext(library_metadata)

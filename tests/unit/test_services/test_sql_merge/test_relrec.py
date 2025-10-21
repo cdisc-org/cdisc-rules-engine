@@ -5,7 +5,6 @@ from cdisc_rules_engine.data_service.postgresql_data_service import (
     PostgresQLDataService,
 )
 
-
 SIMPLE_RELREC_DATA = {
     "original": {
         "STUDYID": ["STUDY001", "STUDY001", "STUDY001"],
@@ -90,24 +89,21 @@ COMPLEX_RELREC_DATA = {
         ),
     ],
 )
-def test_relrec_merge_column_structure(
-    data,
-    expected_columns,
-):
+def test_relrec_merge_column_structure(data, expected_columns, sdtm_standards_context):
     """Test that RELREC merge creates the correct column structure."""
     ds = PostgresQLDataService.instance()
     pgi = ds.pgi
 
     # Create and populate original table
-    original_schema = PostgresQLDataService.add_test_dataset(ds, "ec", data["original"])
+    original_schema = PostgresQLDataService.add_test_dataset(ds, "ec", data["original"], sdtm_standards_context)
 
     # Create and populate RELREC table
-    relrec_schema = PostgresQLDataService.add_test_dataset(ds, "relrec", data["relrec"])
+    relrec_schema = PostgresQLDataService.add_test_dataset(ds, "relrec", data["relrec"], sdtm_standards_context)
 
     # Create related domain tables
     for domain, domain_data in data.items():
         if domain not in ["original", "relrec"]:
-            PostgresQLDataService.add_test_dataset(ds, domain, domain_data)
+            PostgresQLDataService.add_test_dataset(ds, domain, domain_data, sdtm_standards_context)
 
     # Perform RELREC merge
     result_schema = SqlRelrecMerge.perform_join(
@@ -123,17 +119,17 @@ def test_relrec_merge_column_structure(
         assert result_schema.has_column(expected_col), f"Missing expected column: {expected_col}"
 
 
-def test_relrec_merge_basic_functionality():
+def test_relrec_merge_basic_functionality(sdtm_standards_context):
     """Test basic RELREC merge functionality with simple data."""
     ds = PostgresQLDataService.instance()
     pgi = ds.pgi
     data = SIMPLE_RELREC_DATA
 
     # Create and populate tables
-    original_schema = PostgresQLDataService.add_test_dataset(ds, "ec", data["original"])
-    relrec_schema = PostgresQLDataService.add_test_dataset(ds, "relrec", data["relrec"])
+    original_schema = PostgresQLDataService.add_test_dataset(ds, "ec", data["original"], sdtm_standards_context)
+    relrec_schema = PostgresQLDataService.add_test_dataset(ds, "relrec", data["relrec"], sdtm_standards_context)
 
-    PostgresQLDataService.add_test_dataset(ds, "ae", data["ae"])
+    PostgresQLDataService.add_test_dataset(ds, "ae", data["ae"], sdtm_standards_context)
 
     # Perform RELREC merge
     result_schema = SqlRelrecMerge.perform_join(
@@ -150,7 +146,7 @@ def test_relrec_merge_basic_functionality():
     assert result[0]["count"] >= 1, "Result table should have at least one row"
 
 
-def test_relrec_merge_no_relationships():
+def test_relrec_merge_no_relationships(sdtm_standards_context):
     """Test RELREC merge when no relationships exist for the domain."""
     ds = PostgresQLDataService.instance()
     pgi = ds.pgi
@@ -162,7 +158,7 @@ def test_relrec_merge_no_relationships():
         "ECSEQ": [1],
         "ECSTDY": [1],
     }
-    original_schema = PostgresQLDataService.add_test_dataset(ds, "ec", original_data)
+    original_schema = PostgresQLDataService.add_test_dataset(ds, "ec", original_data, sdtm_standards_context)
 
     # Create RELREC with no EC relationships
     relrec_data = {
@@ -173,7 +169,7 @@ def test_relrec_merge_no_relationships():
         "IDVAR": ["AESEQ"],
         "IDVARVAL": ["1"],
     }
-    relrec_schema = PostgresQLDataService.add_test_dataset(ds, "relrec", relrec_data)
+    relrec_schema = PostgresQLDataService.add_test_dataset(ds, "relrec", relrec_data, sdtm_standards_context)
 
     # Perform RELREC merge
     result_schema = SqlRelrecMerge.perform_join(
@@ -190,17 +186,17 @@ def test_relrec_merge_no_relationships():
     assert result[0]["count"] == 1, "Should have original data when no relationships exist"
 
 
-def test_relrec_merge_wildcard_renaming():
+def test_relrec_merge_wildcard_renaming(sdtm_standards_context):
     """Test that wildcard renaming works correctly."""
     ds = PostgresQLDataService.instance()
     pgi = ds.pgi
     data = SIMPLE_RELREC_DATA
 
     # Create tables
-    original_schema = PostgresQLDataService.add_test_dataset(ds, "ec", data["original"])
-    relrec_schema = PostgresQLDataService.add_test_dataset(ds, "relrec", data["relrec"])
+    original_schema = PostgresQLDataService.add_test_dataset(ds, "ec", data["original"], sdtm_standards_context)
+    relrec_schema = PostgresQLDataService.add_test_dataset(ds, "relrec", data["relrec"], sdtm_standards_context)
 
-    PostgresQLDataService.add_test_dataset(ds, "ae", data["ae"])
+    PostgresQLDataService.add_test_dataset(ds, "ae", data["ae"], sdtm_standards_context)
 
     # Test different wildcard values
     for wildcard in ["__", "XX", "**"]:
@@ -217,7 +213,7 @@ def test_relrec_merge_wildcard_renaming():
         assert result_schema.has_column(expected_col), f"Missing wildcard column: {expected_col}"
 
 
-def test_relrec_validation_errors():
+def test_relrec_validation_errors(sdtm_standards_context):
     """Test that validation errors are properly raised."""
     ds = PostgresQLDataService.instance()
     pgi = ds.pgi
@@ -227,7 +223,9 @@ def test_relrec_validation_errors():
         "DOMAIN": ["EC"],  # Missing STUDYID, USUBJID
         "ECSEQ": [1],
     }
-    invalid_original_schema = PostgresQLDataService.add_test_dataset(ds, "ec_invalid", invalid_original_data)
+    invalid_original_schema = PostgresQLDataService.add_test_dataset(
+        ds, "ec_invalid", invalid_original_data, sdtm_standards_context
+    )
 
     relrec_data = {
         "STUDYID": ["STUDY001"],
@@ -235,7 +233,7 @@ def test_relrec_validation_errors():
         "RELID": ["REL001"],
         "RDOMAIN": ["EC"],
     }
-    relrec_schema = PostgresQLDataService.add_test_dataset(ds, "relrec", relrec_data)
+    relrec_schema = PostgresQLDataService.add_test_dataset(ds, "relrec", relrec_data, sdtm_standards_context)
 
     # Should raise validation error
     with pytest.raises(ValueError, match="Original schema is missing required column"):
@@ -248,7 +246,7 @@ def test_relrec_validation_errors():
         )
 
 
-def test_relrec_filter_for_domain():
+def test_relrec_filter_for_domain(sdtm_standards_context):
     """Test the _filter_relrec_for_domain method."""
     ds = PostgresQLDataService.instance()
     pgi = ds.pgi
@@ -261,7 +259,7 @@ def test_relrec_filter_for_domain():
         "IDVAR": ["ECSEQ", "AESEQ", "ECSEQ", ""],
         "IDVARVAL": ["1", "1", "1", ""],
     }
-    relrec_schema = PostgresQLDataService.add_test_dataset(ds, "relrec", relrec_data)
+    relrec_schema = PostgresQLDataService.add_test_dataset(ds, "relrec", relrec_data, sdtm_standards_context)
 
     # Filter for EC domain
     relationships = SqlRelrecMerge._filter_relrec_for_domain(pgi, relrec_schema, "EC")
@@ -276,7 +274,7 @@ def test_relrec_filter_for_domain():
     assert "EC" not in right_domains, "Should not include EC as right domain"
 
 
-def test_relrec_apply_wildcard_renaming():
+def test_relrec_apply_wildcard_renaming(sdtm_standards_context):
     """Test the _apply_wildcard_renaming method."""
     ds = PostgresQLDataService.instance()
     pgi = ds.pgi
@@ -289,7 +287,7 @@ def test_relrec_apply_wildcard_renaming():
         "AESTDY": [1],
         "AETERM": ["Headache"],
     }
-    domain_schema = PostgresQLDataService.add_test_dataset(ds, "ae", domain_data)
+    domain_schema = PostgresQLDataService.add_test_dataset(ds, "ae", domain_data, sdtm_standards_context)
 
     # Test wildcard renaming
     renamed_columns = SqlRelrecMerge._apply_wildcard_renaming(pgi, domain_schema, "AE", "__")
@@ -305,7 +303,7 @@ def test_relrec_apply_wildcard_renaming():
     assert renamed_columns["aeterm"] == "RELREC.aeterm", "AETERM should keep original name with RELREC prefix"
 
 
-def test_relrec_merge_cg0601_scenario():
+def test_relrec_merge_cg0601_scenario(sdtm_standards_context):
     """Test the specific CG0601 scenario with data type mismatch (string vs integer)."""
     ds = PostgresQLDataService.instance()
     pgi = ds.pgi
@@ -319,7 +317,7 @@ def test_relrec_merge_cg0601_scenario():
         "AETERM": ["HEADACHE", "FATIGUE", "NAUSEA"],
         "AEDECOD": ["Headache", None, "Nausea"],  # Row 2 has null AEDECOD
     }
-    ae_schema = PostgresQLDataService.add_test_dataset(ds, "ae", ae_data)
+    ae_schema = PostgresQLDataService.add_test_dataset(ds, "ae", ae_data, sdtm_standards_context)
 
     # Create FA data matching CG0601 test case
     fa_data = {
@@ -330,7 +328,7 @@ def test_relrec_merge_cg0601_scenario():
         "FAOBJ": ["OK", "ERROR", "WARNING"],  # Row 2 has "ERROR"
         "FATEST": ["Severity", "Severity", "Severity"],
     }
-    PostgresQLDataService.add_test_dataset(ds, "fa", fa_data)
+    PostgresQLDataService.add_test_dataset(ds, "fa", fa_data, sdtm_standards_context)
 
     # Create RELREC data matching CG0601 test case
     relrec_data = {
@@ -341,7 +339,7 @@ def test_relrec_merge_cg0601_scenario():
         "IDVAR": ["AEGRPID", "FAGRPID"],
         "IDVARVAL": ["", ""],  # Empty values - should join on IDVAR columns directly
     }
-    relrec_schema = PostgresQLDataService.add_test_dataset(ds, "relrec", relrec_data)
+    relrec_schema = PostgresQLDataService.add_test_dataset(ds, "relrec", relrec_data, sdtm_standards_context)
 
     # Perform RELREC merge
     result_schema = SqlRelrecMerge.perform_join(
@@ -381,7 +379,7 @@ def test_relrec_merge_cg0601_scenario():
     assert record["faobj"] == "ERROR", f"Expected FAOBJ=ERROR, got {record['faobj']}"
 
 
-def test_relrec_merge_multiple_relationships_no_duplicates():
+def test_relrec_merge_multiple_relationships_no_duplicates(sdtm_standards_context):
     """Test that multiple relationships for same record don't create duplicates."""
     ds = PostgresQLDataService.instance()
     pgi = ds.pgi
@@ -394,7 +392,7 @@ def test_relrec_merge_multiple_relationships_no_duplicates():
         "FAGRPID": ["1"],
         "FADECOD": ["TEST"],
     }
-    original_schema = PostgresQLDataService.add_test_dataset(ds, "fa", original_data)
+    original_schema = PostgresQLDataService.add_test_dataset(ds, "fa", original_data, sdtm_standards_context)
 
     # Create right domain data with multiple related records
     right_data = {
@@ -404,7 +402,7 @@ def test_relrec_merge_multiple_relationships_no_duplicates():
         "CMGRPID": ["1", "1"],  # Both relate to same FA record
         "FAOBJ": ["VALUE1", "VALUE2"],
     }
-    PostgresQLDataService.add_test_dataset(ds, "cm", right_data)
+    PostgresQLDataService.add_test_dataset(ds, "cm", right_data, sdtm_standards_context)
 
     # Create RELREC data with multiple relationships to same FA record
     relrec_data = {
@@ -415,7 +413,7 @@ def test_relrec_merge_multiple_relationships_no_duplicates():
         "IDVAR": ["FAGRPID", "CMGRPID", "FAGRPID", "CMGRPID"],
         "IDVARVAL": ["1", "1", "1", "1"],  # Specific values - should use WHERE filtering
     }
-    relrec_schema = PostgresQLDataService.add_test_dataset(ds, "relrec", relrec_data)
+    relrec_schema = PostgresQLDataService.add_test_dataset(ds, "relrec", relrec_data, sdtm_standards_context)
 
     # Perform RELREC merge
     result_schema = SqlRelrecMerge.perform_join(

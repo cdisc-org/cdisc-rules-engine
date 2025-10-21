@@ -1,14 +1,15 @@
-import pytest
 from unittest.mock import patch
+
+import pytest
 
 from cdisc_rules_engine.data_service.postgresql_data_service import (
     PostgresQLDataService,
 )
+from cdisc_rules_engine.enums.variable_roles import VariableRoles
 from cdisc_rules_engine.models.sql_operation_params import SqlOperationParams
 from cdisc_rules_engine.sql_operations.sql_operations_factory import (
     SqlOperationsFactory,
 )
-from cdisc_rules_engine.enums.variable_roles import VariableRoles
 from cdisc_rules_engine.standards.default_standards_context import (
     DefaultStandardsContext,
 )
@@ -16,7 +17,6 @@ from cdisc_rules_engine.standards.default_standards_context import (
 from .helpers import (
     assert_operation_collection,
 )
-
 
 # Test data sets matching the original operation tests
 test_set1_variables = [
@@ -146,6 +146,7 @@ def test_get_model_filtered_variables(mock_variables, key_value, expected):
             "STUDYID": ["TEST_STUDY", "TEST_STUDY", "TEST_STUDY"],
             "AETERM": ["test", "test", "test"],
         },
+        standards_context=DefaultStandardsContext(),
     )
 
     params = SqlOperationParams(
@@ -172,6 +173,7 @@ def test_get_model_filtered_variables_exception_handling():
             "STUDYID": ["TEST_STUDY", "TEST_STUDY", "TEST_STUDY"],
             "AETERM": ["test", "test", "test"],
         },
+        standards_context=DefaultStandardsContext(),
     )
 
     params = SqlOperationParams(

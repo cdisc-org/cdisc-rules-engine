@@ -2,7 +2,7 @@
 
 ## 📊 Summary
 
-- Total rules without check operators: 299
+- Total rules without check operators: 304
 - Total unique operators found in rules: 58
 - Total implemented PostgreSQL operators: 84
 - Missing operators (in rules but not implemented): 1
@@ -289,6 +289,9 @@ The following operators are implemented but not currently used in any rules:
 | CDSIC.ADaMIG.AD0113  | 113                                 | ADaMIG, ADaMIG-MD                                                                | Draft     | ❌       |
 | CORE-000008          | CG0132, FB0601                      | SDTMIG                                                                           | Draft     | ❌       |
 | CORE-000205          | CG0399                              | SDTMIG                                                                           | Draft     | ❌       |
+| CORE-000238          | CG0147, TIG0388                     | SDTMIG, TIG                                                                      | Published | ❌       |
+| CORE-000239          | CG0148, TIG0389                     | SDTMIG, TIG                                                                      | Published | ❌       |
+| CORE-000270          | CG0033, TIG0314                     | SDTMIG, TIG                                                                      | Published | ❌       |
 | CORE-000343          | CG0011                              | SDTMIG                                                                           | Draft     | ❌       |
 | CORE-000344          | CG0020                              | SDTMIG                                                                           | Draft     | ❌       |
 | CORE-000345          | CG0021                              | SDTMIG                                                                           | Draft     | ❌       |
@@ -301,7 +304,9 @@ The following operators are implemented but not currently used in any rules:
 | CORE-000560          | 1                                   | ADaMIG                                                                           | Published | ❌       |
 | CORE-000581          | CG0368, TIG0532, TRC1736a, TRC1736c | SDTMIG, TIG, SENDIG, SENDIG-GENETOX, SENDIG-DART, SENDIG-AR                      | Published | ❌       |
 | CORE-000739          | CG0407                              | SDTMIG                                                                           | Published | ❌       |
+| CORE-000744          | CG0174, TIG0403                     | SDTMIG, TIG                                                                      | Published | ❌       |
 | CORE-000748          | FB2504                              | SDTMIG                                                                           | Draft     | ❌       |
+| CORE-000844          | CG0531                              | SDTMIG                                                                           | Published | ❌       |
 | CORE-000852          | CG0330, CG0664, TIG0698, SEND48     | SDTMIG, TIG, SENDIG, SENDIG-GENETOX, SENDIG-DART                                 | Published | ❌       |
 | CORE-000853          | FB1602                              | SDTMIG, SENDIG, SENDIG-GENETOX, SENDIG-DART, SENDIG-AR                           | Published | ❌       |
 | CORE-000862          | FB3205                              | SDTMIG, SENDIG, SENDIG-AR, SENDIG-DART, SENDIG-GENETOX                           | Published | ❌       |

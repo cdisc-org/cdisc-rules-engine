@@ -9,9 +9,6 @@ from cdisc_rules_engine.data_service.merges.child import SqlChildMerge
 from cdisc_rules_engine.data_service.postgresql_data_service import (
     PostgresQLDataService,
 )
-from cdisc_rules_engine.standards.default_standards_context import (
-    DefaultStandardsContext,
-)
 
 SIMPLE_RDOMAIN_DATA = {
     "child": {
@@ -103,12 +100,12 @@ MATCH_KEY_FALLBACK_DATA = {
         ),
     ],
 )
-def test_child_merge_with_rdomain(data, expected, child_domain):
+def test_child_merge_with_rdomain(sdtm_standards_context, data, expected, child_domain):
     """Test basic child merge using RDOMAIN column to find parent."""
     ds = PostgresQLDataService.instance()
 
-    child_schema = PostgresQLDataService.add_test_dataset(ds, "suppae", data["child"])
-    PostgresQLDataService.add_test_dataset(ds, "ae", data["parent"])
+    child_schema = PostgresQLDataService.add_test_dataset(ds, "suppae", data["child"], sdtm_standards_context)
+    PostgresQLDataService.add_test_dataset(ds, "ae", data["parent"], sdtm_standards_context)
 
     merge_spec = {"match_key": ["STUDYID", "USUBJID", {"left": "IDVARVAL", "right": "AESEQ"}]}
 
@@ -116,7 +113,7 @@ def test_child_merge_with_rdomain(data, expected, child_domain):
         pgi=ds.pgi,
         child=child_schema,
         child_domain=child_domain,
-        datasets=[ds.get_dataset_metadata(d.name, DefaultStandardsContext()) for d in ds.datasets],
+        datasets=ds.datasets,
         merge_spec=merge_spec,
     )
 
@@ -149,13 +146,13 @@ def test_child_merge_with_rdomain(data, expected, child_domain):
     assert expected_df.equals(actual), f"Expected:\n{expected_df}\n\nActual:\n{actual}"
 
 
-def test_child_merge_with_pattern_replacement():
+def test_child_merge_with_pattern_replacement(sdtm_standards_context):
     """Test child merge with -- pattern replacement in match keys."""
     ds = PostgresQLDataService.instance()
     data = PATTERN_REPLACEMENT_DATA
 
-    child_schema = PostgresQLDataService.add_test_dataset(ds, "supplb", data["child"])
-    PostgresQLDataService.add_test_dataset(ds, "lb", data["parent"])
+    child_schema = PostgresQLDataService.add_test_dataset(ds, "supplb", data["child"], sdtm_standards_context)
+    PostgresQLDataService.add_test_dataset(ds, "lb", data["parent"], sdtm_standards_context)
 
     merge_spec = {"match_key": ["STUDYID", "USUBJID", {"left": "IDVARVAL", "right": "--SEQ"}]}
 
@@ -163,7 +160,7 @@ def test_child_merge_with_pattern_replacement():
         pgi=ds.pgi,
         child=child_schema,
         child_domain="SUPPLB",
-        datasets=[ds.get_dataset_metadata(d.name, DefaultStandardsContext()) for d in ds.datasets],
+        datasets=ds.datasets,
         merge_spec=merge_spec,
     )
 
@@ -186,13 +183,13 @@ def test_child_merge_with_pattern_replacement():
     assert results[1]["lbtest"] == "Sodium"
 
 
-def test_child_merge_match_key_fallback():
+def test_child_merge_match_key_fallback(sdtm_standards_context):
     """Test child merge using match key fallback (no RDOMAIN column)."""
     ds = PostgresQLDataService.instance()
     data = MATCH_KEY_FALLBACK_DATA
 
-    child_schema = PostgresQLDataService.add_test_dataset(ds, "child", data["child"])
-    PostgresQLDataService.add_test_dataset(ds, "parent", data["parent"])
+    child_schema = PostgresQLDataService.add_test_dataset(ds, "child", data["child"], sdtm_standards_context)
+    PostgresQLDataService.add_test_dataset(ds, "parent", data["parent"], sdtm_standards_context)
 
     merge_spec = {"match_key": ["STUDYID", "USUBJID", "SEQ"]}
 
@@ -200,7 +197,7 @@ def test_child_merge_match_key_fallback():
         pgi=ds.pgi,
         child=child_schema,
         child_domain="CHILD",
-        datasets=[ds.get_dataset_metadata(d.name, DefaultStandardsContext()) for d in ds.datasets],
+        datasets=ds.datasets,
         merge_spec=merge_spec,
     )
 
@@ -224,13 +221,13 @@ def test_child_merge_match_key_fallback():
     assert results[1]["parentcol"] == "Y"
 
 
-def test_child_merge_run_twice():
+def test_child_merge_run_twice(sdtm_standards_context):
     """Test that running same child merge twice returns cached result."""
     ds = PostgresQLDataService.instance()
     data = SIMPLE_RDOMAIN_DATA
 
-    child_schema = PostgresQLDataService.add_test_dataset(ds, "suppae", data["child"])
-    PostgresQLDataService.add_test_dataset(ds, "ae", data["parent"])
+    child_schema = PostgresQLDataService.add_test_dataset(ds, "suppae", data["child"], sdtm_standards_context)
+    PostgresQLDataService.add_test_dataset(ds, "ae", data["parent"], sdtm_standards_context)
 
     merge_spec = {"match_key": ["STUDYID", "USUBJID", {"left": "IDVARVAL", "right": "AESEQ"}]}
 
@@ -238,7 +235,7 @@ def test_child_merge_run_twice():
         pgi=ds.pgi,
         child=child_schema,
         child_domain="SUPPAE",
-        datasets=[ds.get_dataset_metadata(d.name, DefaultStandardsContext()) for d in ds.datasets],
+        datasets=ds.datasets,
         merge_spec=merge_spec,
     )
 
@@ -246,7 +243,7 @@ def test_child_merge_run_twice():
         pgi=ds.pgi,
         child=child_schema,
         child_domain="SUPPAE",
-        datasets=[ds.get_dataset_metadata(d.name, DefaultStandardsContext()) for d in ds.datasets],
+        datasets=ds.datasets,
         merge_spec=merge_spec,
     )
 
@@ -254,7 +251,7 @@ def test_child_merge_run_twice():
     assert result1.name == result2.name
 
 
-def test_child_merge_no_parent_found():
+def test_child_merge_no_parent_found(sdtm_standards_context):
     """Test that error is raised when no parent dataset is found."""
     ds = PostgresQLDataService.instance()
 
@@ -263,7 +260,7 @@ def test_child_merge_no_parent_found():
         "RDOMAIN": ["NONEXISTENT"],
         "USUBJID": ["U1"],
     }
-    child_schema = PostgresQLDataService.add_test_dataset(ds, "child", child_data)
+    child_schema = PostgresQLDataService.add_test_dataset(ds, "child", child_data, sdtm_standards_context)
 
     datasets = []
 
@@ -279,7 +276,7 @@ def test_child_merge_no_parent_found():
         )
 
 
-def test_child_merge_unmatched_child_rows():
+def test_child_merge_unmatched_child_rows(sdtm_standards_context):
     """Test that unmatched child rows are preserved with NULL parent values (LEFT JOIN)."""
     ds = PostgresQLDataService.instance()
 
@@ -297,8 +294,8 @@ def test_child_merge_unmatched_child_rows():
         "AETERM": ["Headache"],
     }
 
-    child_schema = PostgresQLDataService.add_test_dataset(ds, "suppae", child_data)
-    PostgresQLDataService.add_test_dataset(ds, "ae", parent_data)
+    child_schema = PostgresQLDataService.add_test_dataset(ds, "suppae", child_data, sdtm_standards_context)
+    PostgresQLDataService.add_test_dataset(ds, "ae", parent_data, sdtm_standards_context)
 
     merge_spec = {"match_key": ["STUDYID", "USUBJID", {"left": "IDVARVAL", "right": "AESEQ"}]}
 
@@ -306,7 +303,7 @@ def test_child_merge_unmatched_child_rows():
         pgi=ds.pgi,
         child=child_schema,
         child_domain="SUPPAE",
-        datasets=[ds.get_dataset_metadata(d.name, DefaultStandardsContext()) for d in ds.datasets],
+        datasets=ds.datasets,
         merge_spec=merge_spec,
     )
 

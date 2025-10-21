@@ -1,3 +1,5 @@
+from typing import List
+
 from cdisc_rules_engine.models.sql.column_schema import SqlColumnSchema
 from cdisc_rules_engine.models.sql.table_schema import SqlTableSchema
 from cdisc_rules_engine.sql_dataset_builders.sql_base_dataset_builder import (
@@ -9,12 +11,11 @@ class SqlDomainListDatasetBuilder(SqlBaseDatasetBuilder):
     """
     Builder for Domain Presence Check rules.
     Creates a physical table with one row containing all available domains as columns.
-    Mirrors DomainListDatasetBuilder which builds a wide DataFrame on-the-fly.
 
     Example table structure:
-       AE      EC      DM
-    -------|--------|--------
-    ae.xpt | ec.xpt | dm.xpt
+       AE      EC           DM
+    -------|--------|----------------
+    ae.xpt | ec.xpt | dm1.xpt,dm2.xpt
     """
 
     def build(self) -> str:
@@ -27,12 +28,14 @@ class SqlDomainListDatasetBuilder(SqlBaseDatasetBuilder):
         if self.data_service.pgi.schema.get_table(table_name) is not None:
             return table_name
 
-        # Build domain list from uploaded datasets (same as Python implementation)
-        # Python: {ds.unsplit_name: ds.filename for ds in self.datasets}
-        domain_dict = {}
+        domain_dict: dict[str, List[str]] = {}
         for ds in self.datasets:
-            if ds.domain:  # Only include datasets with a domain
-                domain_dict[ds.unsplit_name] = ds.filename
+            if not ds.domain:  # Only include datasets with a domain
+                continue
+
+            if ds.domain not in domain_dict:
+                domain_dict[ds.domain] = []
+            domain_dict[ds.domain].append(ds.filename)
 
         schema = SqlTableSchema.static(table_name)
 
@@ -46,7 +49,7 @@ class SqlDomainListDatasetBuilder(SqlBaseDatasetBuilder):
 
         if domain_dict:
             columns = [schema.get_column_hash(domain) for domain in domain_dict.keys()]
-            values = [f"'{filename}'" for filename in domain_dict.values()]
+            values = [f"'{",".join(filenames)}'" for filenames in domain_dict.values()]
 
             insert_sql = f"""
                 INSERT INTO {schema.hash} ({', '.join(columns)})

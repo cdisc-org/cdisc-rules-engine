@@ -13,8 +13,8 @@ from cdisc_rules_engine.data_service.merges.relationship import SqlRelationshipM
 from cdisc_rules_engine.data_service.merges.relrec import SqlRelrecMerge
 from cdisc_rules_engine.data_service.merges.supp import SqlSuppMerge
 from cdisc_rules_engine.data_service.postgresql_data_service import (
+    BaseDatasetMetadata,
     PostgresQLDataService,
-    SQLDatasetMetadata,
 )
 from cdisc_rules_engine.models.dataset_metadata2 import DatasetMetadata2
 from cdisc_rules_engine.models.library_metadata_container import (
@@ -22,6 +22,7 @@ from cdisc_rules_engine.models.library_metadata_container import (
 )
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.standards.base_standards_context import BaseStandardsContext
+from cdisc_rules_engine.standards.sdtm_dataset_metadata import SdtmDatasetMetadata2
 from cdisc_rules_engine.utilities.sdtm_utilities import get_class_and_domain_metadata
 from cdisc_rules_engine.utilities.utils import (
     convert_library_class_name_to_ct_class,
@@ -33,6 +34,17 @@ class SdtmStandardsContext(BaseStandardsContext):
     def __init__(self, library_metadata: LibraryMetadataContainer):
         super().__init__()
         self.library_metadata = library_metadata
+
+    def transform_dataset_metadata(self, source: DatasetMetadata2) -> SdtmDatasetMetadata2:
+        domain = self.derive_domain(source.name)
+        return SdtmDatasetMetadata2(
+            **source.__dict__,
+            domain=domain,
+            is_supp=domain == "SUPPQUAL",
+            is_split=self.derive_is_split(source.name, domain),
+            rdomain=self.derive_rdomain(source.name),
+            domain_code=self.derive_domain_code(domain),
+        )
 
     def derive_domain(self, filename: str):
         filename = filename.lower()
@@ -47,6 +59,37 @@ class SdtmStandardsContext(BaseStandardsContext):
             return "RELSUB"
         else:
             return filename[0:2].upper()
+
+    def derive_rdomain(self, name: str) -> str:
+        if name.lower().startswith("supp"):
+            return self.derive_domain(name[4:])
+        elif name.lower().startswith("sq"):
+            return self.derive_domain(name[2:])
+        else:
+            return ""
+
+    def derive_domain_code(self, domain: str):
+        """Derive the domain code for this domain"""
+        if domain == "SUPPQUAL":
+            return "Q"
+        if domain in ["RELREC", "RELSPEC", "RELSUB"]:
+            return ""
+        else:
+            return domain
+
+    def derive_is_split(self, name: str, domain: str):
+        if domain in ["SUPPQUAL", "RELREC", "RELSPEC", "RELSUB"]:
+            return False
+        elif name.lower().startswith("AP"):
+            return len(name) > 4
+        else:
+            return len(name) > 2
+
+    def replace_domain_code(self, dataset_metadata: SdtmDatasetMetadata2, variable: str) -> str:
+        """Replace any -- with the domain code"""
+        if "--" in variable and dataset_metadata.domain_code:
+            return variable.replace("--", dataset_metadata.domain_code)
+        return variable
 
     def get_domain_variables(self, domain: str):
         # TODO: Fetch from metadata
@@ -83,7 +126,7 @@ class SdtmStandardsContext(BaseStandardsContext):
         self,
         data_service: PostgresQLDataService,
         original: str,
-        dataset_metadata: SQLDatasetMetadata,
+        dataset_metadata: BaseDatasetMetadata,
         merge_spec: dict[str, Any],
         rule: dict,
     ) -> str:
@@ -402,14 +445,14 @@ class SdtmStandardsContext(BaseStandardsContext):
         data_service: PostgresQLDataService,
         original: str,
         target: str,
-        dataset_metadata: SQLDatasetMetadata,
+        dataset_metadata: SdtmDatasetMetadata2,
         merge_spec: dict,
         rule: dict,
     ) -> str:
         """
         Find the corresponding SUPP datasets, then perform a SUPP merge operation on the datasets.
         """
-        rdomain = self.derive_domain(dataset_metadata.dataset_name).lower()
+        rdomain = dataset_metadata.rdomain
         if target != "supp--" and rdomain not in target:
             raise ValueError(f"Tried to SUPP merge {rdomain}, but the target domain {target} does not match.")
 
@@ -432,7 +475,7 @@ class SdtmStandardsContext(BaseStandardsContext):
         data_service: PostgresQLDataService,
         original: str,
         relrec_dataset: str,
-        dataset_metadata: SQLDatasetMetadata,
+        dataset_metadata: BaseDatasetMetadata,
         merge_spec: dict,
         rule: dict,
     ) -> str:
@@ -462,7 +505,7 @@ class SdtmStandardsContext(BaseStandardsContext):
         data_service: PostgresQLDataService,
         original: str,
         relationship_dataset: str,
-        dataset_metadata: SQLDatasetMetadata,
+        dataset_metadata: SdtmDatasetMetadata2,
         merge_spec: dict,
         rule: dict,
     ) -> str:
@@ -472,7 +515,7 @@ class SdtmStandardsContext(BaseStandardsContext):
         This handles relationship datasets like RELSUB, CO, SQ, or any dataset with relationship_columns.
         """
         # Find the relationship dataset
-        domain = self.derive_domain(dataset_metadata.dataset_name)
+        domain = dataset_metadata.domain
         relationship_data = next(
             (
                 dataset
@@ -500,7 +543,7 @@ class SdtmStandardsContext(BaseStandardsContext):
         self,
         data_service: PostgresQLDataService,
         child: str,
-        dataset_metadata: SQLDatasetMetadata,
+        dataset_metadata: BaseDatasetMetadata,
         merge_spec: dict,
         rule: dict,
     ) -> str:
@@ -514,7 +557,7 @@ class SdtmStandardsContext(BaseStandardsContext):
             pgi=data_service.pgi,
             child=data_service.pgi.schema.get_table(child),
             child_domain=dataset_metadata.domain,
-            datasets=[data_service.get_dataset_metadata(d.name, self) for d in data_service.datasets],
+            datasets=data_service.datasets,
             merge_spec=merge_spec,
         )
         return result_schema.name

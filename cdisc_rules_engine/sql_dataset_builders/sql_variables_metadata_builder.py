@@ -23,7 +23,7 @@ class SqlVariablesMetadataBuilder(SqlBaseDatasetBuilder):
         """
         Create variable metadata table for this dataset and return table name.
         """
-        table_name = f"{self.dataset_metadata.dataset_id}_var_metadata"
+        table_name = f"{self.dataset_metadata.name}_var_metadata"
         if self.data_service.pgi.schema.get_table(table_name) is not None:
             return table_name
 

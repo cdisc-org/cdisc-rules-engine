@@ -4,12 +4,14 @@ from cdisc_rules_engine.data_service.postgresql_data_service import (
     PostgresQLDataService,
 )
 from cdisc_rules_engine.interfaces import ConditionInterface
+from cdisc_rules_engine.models.dataset_metadata2 import VariableMetadata
 from cdisc_rules_engine.models.sql_operation_params import SqlOperationParams
 from cdisc_rules_engine.models.sql_operation_result import SqlOperationResult
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.sql_operations.sql_operations_factory import (
     SqlOperationsFactory,
 )
+from cdisc_rules_engine.standards.base_dataset_metdata import BaseDatasetMetadata
 from cdisc_rules_engine.standards.base_standards_context import BaseStandardsContext
 
 
@@ -23,7 +25,7 @@ class SQLRuleProcessor:
     @staticmethod
     def perform_rule_operations(
         rule: dict,
-        current_domain: str,
+        dataset_metadata: BaseDatasetMetadata,
         data_service: PostgresQLDataService,
         standards_context: BaseStandardsContext,
     ) -> dict[str, SqlOperationResult]:
@@ -44,14 +46,10 @@ class SQLRuleProcessor:
                 )
 
             # change -- pattern to domain name
-            target_variable: str = operation.get("name")
-            operation_domain: str = operation.get("domain", current_domain)
-            if target_variable and target_variable.startswith("--") and current_domain:
-                # Not a study wide operation
-                target_variable = target_variable.replace("--", current_domain)
-
-                # TODO: WTF is this line doing?
-                # domain = domain.replace("--", domain)
+            target_variable: str = operation.get("name", None)
+            operation_domain: str = operation.get("domain", dataset_metadata.domain)
+            if target_variable:
+                target_variable = standards_context.replace_domain_code(dataset_metadata, target_variable)
 
             # build parameters for the operation
             params = SqlOperationParams(
@@ -142,7 +140,7 @@ class SQLRuleProcessor:
     #     )
 
     @staticmethod
-    def duplicate_conditions_for_all_targets(conditions: ConditionInterface, targets: List[str]) -> dict:
+    def duplicate_conditions_for_all_targets(conditions: ConditionInterface, targets: List[VariableMetadata]) -> dict:
         """
         Given a list of conditions duplicates the condition for all targets as necessary
         """
@@ -152,7 +150,7 @@ class SQLRuleProcessor:
             new_conditions_list = []
             for condition in conditions_list:
                 if condition.should_copy():
-                    new_conditions_list.extend([condition.copy().set_target(target) for target in targets])
+                    new_conditions_list.extend([condition.copy().set_target(target.name) for target in targets])
                 else:
                     new_conditions_list.append(condition)
             new_conditions_dict[key] = new_conditions_list
