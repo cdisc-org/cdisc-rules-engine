@@ -6,6 +6,7 @@ import pandas as pd
 
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.services.adam_variable_reader import AdamVariableReader
+from cdisc_rules_engine.services.data_readers.json_reader import JSONReader
 
 
 class DatasetNDJSONMetadataReader:
@@ -25,11 +26,9 @@ class DatasetNDJSONMetadataReader:
         Extracts metadata from .ndjson file.
         """
         # Load Dataset-NDJSON Schema
-        with open(
+        schema = JSONReader().from_file(
             os.path.join("resources", "schema", "dataset-ndjson-schema.json")
-        ) as schemandjson:
-            schema = schemandjson.read()
-        schema = json.loads(schema)
+        )
 
         with open(self._file_path, "r") as file:
             lines = file.readlines()

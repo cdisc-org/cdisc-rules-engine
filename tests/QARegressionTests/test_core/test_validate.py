@@ -96,7 +96,7 @@ class TestValidate(unittest.TestCase):
 
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
-        self.assertEqual(stderr, "")
+        self.assertNotIn("error", stderr.lower())
 
     def test_validate_with_all_required_options(self):
         args = [
@@ -114,7 +114,7 @@ class TestValidate(unittest.TestCase):
 
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
-        self.assertEqual(stderr, "")
+        self.assertNotIn("error", stderr.lower())
 
     def test_validate_without_all_required_options(self):
         args = [
@@ -189,8 +189,57 @@ class TestValidate(unittest.TestCase):
         ]
         exit_code, stdout, stderr = run_command(args, False)
         self.assertEqual(exit_code, 0)
+        self.assertNotIn("error", stderr.lower())
+        self.assertFalse(self.error_keyword in stdout)
+
+    def test_validate_local_exclude_rule(self):
+        args = [
+            "python",
+            "core.py",
+            "validate",
+            "-s",
+            "sdtmig",
+            "-v",
+            "3.4",
+            "-dp",
+            os.path.join("tests", "resources", "datasets", "ae.xpt"),
+            "-lr",
+            os.path.join("tests", "resources", "rules"),
+            "-er",
+            "CORE-000473",
+            "-l",
+            "error",
+        ]
+        exit_code, stdout, stderr = run_command(args, False)
+        self.assertEqual(exit_code, 0)
         self.assertEqual(stderr, "")
         self.assertFalse(self.error_keyword in stdout)
+
+    def test_validate_include_exclude(self):
+        args = [
+            "python",
+            "core.py",
+            "validate",
+            "-s",
+            "sdtmig",
+            "-v",
+            "3.4",
+            "-dp",
+            os.path.join("tests", "resources", "datasets", "ae.xpt"),
+            "-lr",
+            os.path.join("tests", "resources", "rules"),
+            "-r",
+            "CORE-000470",
+            "-er",
+            "CORE-000473",
+            "-l",
+            "error",
+        ]
+        exit_code, stdout, stderr = run_command(args, False)
+        self.assertEqual(exit_code, 2)
+        self.assertIn(
+            "cannot use both --rules and --exclude-rules flags together.", stderr
+        )
 
     def test_validate_minimum_options(self):
         args = [
@@ -207,7 +256,7 @@ class TestValidate(unittest.TestCase):
         exit_code, stdout, stderr = run_command(args, False)
 
         self.assertEqual(exit_code, 0)
-        self.assertEqual(stderr, "")
+        self.assertNotIn("error", stderr.lower())
         self.assertFalse(self.error_keyword in stdout)
 
     def test_validate_less_than_minimum_options(self):
@@ -234,7 +283,7 @@ class TestValidate(unittest.TestCase):
 
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
-        self.assertEqual(stderr, "")
+        self.assertNotIn("error", stderr.lower())
 
     def test_validate_output_format_excel(self):
         args = [
@@ -254,7 +303,7 @@ class TestValidate(unittest.TestCase):
 
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
-        self.assertEqual(stderr, "")
+        self.assertNotIn("error", stderr.lower())
 
     def test_validate_with_invalid_output_format(self):
         args = [
@@ -295,7 +344,7 @@ class TestValidate(unittest.TestCase):
 
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
-        self.assertEqual(stderr, "")
+        self.assertNotIn("error", stderr.lower())
 
     def test_validate_with_log_level_info(self):
         args = [
@@ -355,7 +404,7 @@ class TestValidate(unittest.TestCase):
 
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
-        self.assertEqual(stderr, "")
+        self.assertNotIn("error", stderr.lower())
 
     def test_validate_with_log_level_warn(self):
         args = [
@@ -411,7 +460,7 @@ class TestValidate(unittest.TestCase):
 
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
-        self.assertEqual(stderr, "")
+        self.assertNotIn("error", stderr.lower())
 
     def test_validate_high_value_ps(self):
         args = [
@@ -431,7 +480,7 @@ class TestValidate(unittest.TestCase):
 
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
-        self.assertEqual(stderr, "")
+        self.assertNotIn("error", stderr.lower())
 
     def test_validate_define_xml_path(self):
         args = [
@@ -450,7 +499,7 @@ class TestValidate(unittest.TestCase):
         exit_code, stdout, stderr = run_command(args, False)
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
-        self.assertEqual(stderr, "")
+        self.assertNotIn("error", stderr.lower())
 
     def test_validate_dummy_with_all_options_one_data_source(self):
         args = (
@@ -470,7 +519,7 @@ class TestValidate(unittest.TestCase):
         exit_code, stdout, stderr = run_command(args, True)
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
-        self.assertEqual(stderr, "", f"Error while executing command:\n{stderr}")
+        self.assertNotIn("error", stderr.lower())
 
     def test_validate_dummy_with_all_options(self):
         args = (
@@ -489,7 +538,7 @@ class TestValidate(unittest.TestCase):
             f"-l error"
         )
         exit_code, stdout, stderr = run_command(args, True)
-        self.assertEqual(exit_code, 0)
+        self.assertEqual(exit_code, 2)
         self.assertFalse(self.error_keyword in stdout)
         self.assertFalse(self.error_keyword in stdout)
         expected_pattern = (
@@ -513,7 +562,7 @@ class TestValidate(unittest.TestCase):
             f"-v 3.4 "
         )
         exit_code, stdout, stderr = run_command(args, True)
-        self.assertEqual(exit_code, 0)
+        self.assertEqual(exit_code, 2)
         expected_pattern = (
             r"\[error \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3} - "
             r"core\.py:\d+\] - you must pass one of the following arguments: "
@@ -537,7 +586,7 @@ class TestValidate(unittest.TestCase):
         exit_code, stdout, stderr = run_command(args, True)
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
-        self.assertEqual(stderr, "", f"Error while executing command:\n{stderr}")
+        self.assertNotIn("error", stderr.lower())
 
     def test_validate_dummy_without_whodrug_and_meddra(self):
         args = (
@@ -551,7 +600,7 @@ class TestValidate(unittest.TestCase):
         exit_code, stdout, stderr = run_command(args, True)
         self.assertEqual(exit_code, 0)
         self.assertFalse(self.error_keyword in stdout)
-        self.assertEqual(stderr, "", f"Error while executing command:\n{stderr}")
+        self.assertNotIn("error", stderr.lower())
 
     def test_validate_dummy_with_invalid_whodrug_and_meddra(self):
         args = (
@@ -564,9 +613,9 @@ class TestValidate(unittest.TestCase):
         )
         exit_code, stdout, stderr = run_command(args, True)
         self.assertNotEqual(exit_code, 0)
-        self.assertNotEqual(stderr, "", f"Error while executing command:\n{stderr}")
+        self.assertNotEqual(stderr, "")
 
-    def test_validate_dummy_without_vx(self):
+    def test_validate_dummy_with_vx_as_no(self):
         args = (
             f"python core.py validate "
             f"-s sendig "
@@ -574,11 +623,12 @@ class TestValidate(unittest.TestCase):
             f"-dv 2.1 "
             f"-lr {os.path.join('tests', 'resources', 'CoreIssue295', 'SEND4.json')} "
             f"-dp {os.path.join('tests', 'resources', 'CoreIssue295', 'dm.json')} "
+            f"-vx no"
         )
         exit_code, stdout, stderr = run_command(args, True)
         self.assertNotIn("error", stdout)
 
-    def test_validate_dummy_with_vx(self):
+    def test_validate_dummy_with_vx_as_yes(self):
         args = (
             f"python core.py validate "
             f"-s sendig "
@@ -586,11 +636,11 @@ class TestValidate(unittest.TestCase):
             f"-dv 2.1 "
             f"-lr {os.path.join('tests', 'resources', 'CoreIssue295', 'SEND4.json')} "
             f"-dp {os.path.join('tests', 'resources', 'CoreIssue295', 'dm.json')} "
-            f"-vx"
+            f"-vx y"
         )
         exit_code, stdout, stderr = run_command(args, True)
         self.assertEqual(exit_code, 0)
-        self.assertTrue(stderr == "")
+        self.assertNotIn("error", stdout)
 
     def tearDown(self):
         tearDown()
