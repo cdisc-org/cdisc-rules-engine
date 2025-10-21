@@ -184,7 +184,17 @@ class LocalDataService(BaseDataService):
             DataFormatTypes.JSON.value: DatasetJSONMetadataReader,
             DataFormatTypes.NDJSON.value: DatasetNDJSONMetadataReader,
         }
-        contents_metadata = _metadata_reader_map[file_name.split(".")[1].upper()](
+
+        file_extension = file_name.split(".")[1].upper()
+        if file_extension not in _metadata_reader_map:
+            supported_formats = ", ".join(_metadata_reader_map.keys())
+            raise ValueError(
+                f"Unsupported file format '{file_extension}' in file '{file_name}'.\n"
+                f"Supported formats: {supported_formats}\n"
+                f"Please provide dataset files in SAS V5 XPT or Dataset-JSON (JSON or NDJSON) format."
+            )
+
+        contents_metadata = _metadata_reader_map[file_extension](
             file_metadata["path"], file_name
         ).read()
         return {

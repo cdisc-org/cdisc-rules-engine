@@ -229,6 +229,20 @@ To validate a folder using rules for SDTM-IG version 3.4 use the following comma
 
 **_NOTE:_** Before running a validation in the CLI, you must first populate the cache with rules to validate against. See the update-cache command below.
 
+#### Supported Dataset Formats
+
+CORE supports the following dataset file formats for validation:
+
+- **XPT** - SAS Transport Format (version 5)
+- **JSON** - Dataset-JSON (CDISC standard format)
+- **NDJSON** - Newline Delimited JSON datasets
+
+**Important Notes:**
+
+- XLSX files are used for report output templates but are **not supported** as input datasets for validation.
+- Define-XML files should be provided via the `--define-xml-path` (or `-dxp`) option, not through the dataset directory (`-d` or `-dp`).
+- If you point to a folder containing unsupported file formats, CORE will display an error message indicating which formats are supported.
+
 ##### **Validate single rule**
 
 `python core.py validate -s sdtmig -v 3-4 -dp <path to dataset json file> -lr <path to rule json file> --meddra ./meddra/ --whodrug ./whodrug/`
