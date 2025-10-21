@@ -11,6 +11,8 @@ jobs:
         include:
           - os: "ubuntu-latest"
             name: "core-ubuntu-latest"
+          - os: "ubuntu-22.04"
+            name: "core-ubuntu-22.04"
           - os: "macos-latest"
             name: "core-mac-apple-silicon"
           - os: "windows-latest"
@@ -47,6 +49,11 @@ jobs:
         with:
           files: artifacts/core-windows/
           dest: core-windows.zip
+      - name: Create Ubuntu 22.04 tar.gz
+        run: |
+          cd artifacts/core-ubuntu-22.04
+          tar -czf ../../core-ubuntu-22.04.tar.gz .
+          cd ../..
 
       - name: Upload Ubuntu Latest Release Asset
         uses: actions/upload-release-asset@v1
@@ -57,6 +64,15 @@ jobs:
           asset_path: ./core-ubuntu-latest.zip
           asset_name: core-ubuntu-latest.zip
           asset_content_type: application/zip
+      - name: Upload Ubuntu 22.04 Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./core-ubuntu-22.04.tar.gz
+          asset_name: core-ubuntu-22.04.tar.gz
+          asset_content_type: application/gzip
       - name: Upload Mac Intel Release Asset
         uses: actions/upload-release-asset@v1
         env:

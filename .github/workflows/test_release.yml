@@ -10,6 +10,8 @@ jobs:
         include:
           - os: "ubuntu-latest"
             name: "core-ubuntu-latest"
+          - os: "ubuntu-22.04"
+            name: "core-ubuntu-22.04"
           - os: "macos-latest"
             name: "core-mac-apple-silicon"
           - os: "macos-13"
@@ -46,6 +48,11 @@ jobs:
         with:
           files: artifacts/core-windows/
           dest: core-windows.zip
+      - name: Create Ubuntu 22.04 tar.gz
+        run: |
+          cd artifacts/core-ubuntu-22.04
+          tar -czf ../../core-ubuntu-22.04.tar.gz .
+          cd ../..
       - name: Upload Release Assets
         uses: actions/upload-artifact@v4
         with:
@@ -55,6 +62,7 @@ jobs:
             core-mac-intel.zip
             core-mac-apple-silicon.zip
             core-windows.zip
+            core-ubuntu-22.04.tar.gz
   deploy-PyPi:
     needs: create-release-assets
     runs-on: ubuntu-latest

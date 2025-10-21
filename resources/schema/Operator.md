@@ -850,7 +850,7 @@ Checking for consistent values across groups and validating that variables maint
 
 ### is_inconsistent_across_dataset
 
-Checks if a variable maintains consistent values within groups defined by one or more grouping variables. Groups records by specified value(s) and validates that the target variable maintains the same value within each unique combination of grouping variables.
+Checks if a variable maintains consistent values within groups defined by one or more grouping variables. Groups records by specified value(s) and validates that the target variable maintains the same value within each unique combination of grouping variables. It reports based on majority--if is equal it will report all issues when it finds an inconcistency and if it finds a majority value that is concistent, it will report the minority value that is inconcistent.
 
 Single grouping variable - true if the values of BGSTRESU differ within USUBJID:
 
