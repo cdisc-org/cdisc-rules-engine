@@ -295,7 +295,7 @@ def validate(  # noqa: C901
     validate_xml: str,
     jsonata_custom_functions: tuple[()] | tuple[tuple[str, str], ...],
     max_report_rows: int,
-    max_errors_per_rule: tuple[int | bool],
+    max_errors_per_rule: tuple[int, bool],
 ):
     """
     Validate data using CDISC Rules Engine
