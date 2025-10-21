@@ -1,0 +1,16 @@
+{
+    "get_ref_value": function($usdm_ref,$within,$not_found_value)
+                        {
+                            (
+                                $found_obj := $within.**
+                                                        [
+                                                            id=$usdm_ref.id and
+                                                            instanceType=$usdm_ref.klass and
+                                                            $usdm_ref.attribute in $keys($)
+                                                        ];
+                                $found_obj 
+                                ? $found_obj.$lookup($,$usdm_ref.attribute)
+                                : $not_found_value                                        
+                            )
+                        }
+}

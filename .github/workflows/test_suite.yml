@@ -145,11 +145,25 @@ jobs:
             echo "usdm_neg_success=false" >> $GITHUB_OUTPUT
             echo "**Failed**: No results for negative test" >> $GITHUB_STEP_SUMMARY
           fi
+
       - name: Compare USDM negative result
         if: steps.usdm_neg.outputs.usdm_neg_success == 'true'
         continue-on-error: true
         run: |
           python CORE_Test_Suite/scripts/comparison.py CORE_Test_Suite/usdm_negative_report.json CORE_Test_Suite/USDM_Negative_Result.json CORE_Test_Suite/usdm_negative_comparison.xlsx --mode test --json-output CORE_Test_Suite/usdm_negative_comparison.json
+          USDM_NEG_EXIT_CODE=$?
+          echo "usdm_neg_diff=$USDM_NEG_EXIT_CODE" >> $GITHUB_ENV
+          if [ $USDM_NEG_EXIT_CODE -eq 0 ]; then
+            echo "USDM negative comparison completed successfully (no differences)"
+          else
+            echo "USDM negative comparison found differences"
+          fi
+
+      - name: Generate USDM negative comparison summary
+        if: steps.usdm_neg.outputs.usdm_neg_success == 'true'
+        continue-on-error: true
+        run: |
+          python CORE_Test_Suite/scripts/compare_implementations.py CORE_Test_Suite/usdm_negative_report.json CORE_Test_Suite/USDM_Negative_Result.json CORE_Test_Suite/usdm_negative_comparison.json --github-step-summary $GITHUB_STEP_SUMMARY --mode test
 
       - name: Run USDM validation (Positive)
         id: usdm_pos
@@ -172,6 +186,19 @@ jobs:
         continue-on-error: true
         run: |
           python CORE_Test_Suite/scripts/comparison.py CORE_Test_Suite/usdm_positive_report.json CORE_Test_Suite/USDM_Positive_Result.json CORE_Test_Suite/usdm_positive_comparison.xlsx --mode test --json-output CORE_Test_Suite/usdm_positive_comparison.json
+          USDM_POS_EXIT_CODE=$?
+          echo "usdm_pos_diff=$USDM_POS_EXIT_CODE" >> $GITHUB_ENV
+          if [ $USDM_POS_EXIT_CODE -eq 0 ]; then
+            echo "USDM positive comparison completed successfully (no differences)"
+          else
+            echo "USDM positive comparison found differences"
+          fi
+
+      - name: Generate USDM positive comparison summary
+        if: steps.usdm_pos.outputs.usdm_pos_success == 'true'
+        continue-on-error: true
+        run: |
+          python CORE_Test_Suite/scripts/compare_implementations.py CORE_Test_Suite/usdm_positive_report.json CORE_Test_Suite/USDM_Positive_Result.json CORE_Test_Suite/usdm_positive_comparison.json --github-step-summary $GITHUB_STEP_SUMMARY --mode test
 
       #######################
       # UPLOAD ALL RESULTS
@@ -205,14 +232,17 @@ jobs:
         run: |
           PANDAS_DIFF="${{ env.pandas_diff }}"
           DASK_DIFF="${{ env.dask_diff }}"
+          USDM_NEG_DIFF="${{ env.usdm_neg_diff }}"
+          USDM_POS_DIFF="${{ env.usdm_pos_diff }}"
 
-          if [[ "$PANDAS_DIFF" == "1" || "$DASK_DIFF" == "1" ]]; then
-            echo "Differences found in either Pandas or Dask comparison"
+
+          if [[ "$PANDAS_DIFF" == "1" || "$DASK_DIFF" == "1" || "$USDM_NEG_DIFF" == "1" || "$USDM_POS_DIFF" == "1" ]]; then
+            echo "Differences found in one or more comparisons"
             exit 1
-          elif [[ "$PANDAS_DIFF" == "0" && "$DASK_DIFF" == "0" ]]; then
-            echo "No differences found in either comparison"
+          elif [[ "$PANDAS_DIFF" == "0" && "$DASK_DIFF" == "0" && "$USDM_NEG_DIFF" == "0" && "$USDM_POS_DIFF" == "0" ]]; then
+            echo "No differences found in any comparison"
             exit 0
           else
-            echo "Issue with comparison script"
+            echo "Issue with comparison scripts"
             exit 1
           fi

@@ -1,5 +1,6 @@
 import re
 from typing import Iterable, List, Optional, Set, Union, Tuple
+from cdisc_rules_engine.enums.rule_types import RuleTypes
 from cdisc_rules_engine.interfaces.cache_service_interface import (
     CacheServiceInterface,
 )
@@ -423,6 +424,7 @@ class RuleProcessor:
                 map=operation.get("map"),
                 term_code=operation.get("term_code"),
                 term_value=operation.get("term_value"),
+                term_pref_term=operation.get("term_pref_term"),
             )
 
             # execute operation
@@ -614,6 +616,14 @@ class RuleProcessor:
             new_conditions_dict[key] = new_conditions_list
         return new_conditions_dict
 
+    @staticmethod
+    def log_suitable_for_validation(rule_id: str, dataset_name: str):
+        logger.info(
+            f"is_suitable_for_validation. rule id={rule_id}, "
+            f"dataset={dataset_name}, result=True"
+        )
+        return True, ""
+
     def is_suitable_for_validation(
         self,
         rule: dict,
@@ -629,6 +639,11 @@ class RuleProcessor:
             reason = f"Rule skipped - invalid rule structure for rule id={rule_id}"
             logger.info(f"is_suitable_for_validation. {reason}, result=False")
             return False, reason
+        if (
+            rule.get("rule_type") == RuleTypes.JSONATA.value
+            and dataset_metadata.name == "json"
+        ):
+            return self.log_suitable_for_validation(rule_id, dataset_name)
         if not self.rule_applies_to_use_case(
             dataset_metadata, rule, standard, standard_substandard
         ):
@@ -666,11 +681,7 @@ class RuleProcessor:
             )
             logger.info(f"is_suitable_for_validation. {reason}, result=False")
             return False, reason
-        logger.info(
-            f"is_suitable_for_validation. rule id={rule_id}, "
-            f"dataset={dataset_name}, result=True"
-        )
-        return True, ""
+        return self.log_suitable_for_validation(rule_id, dataset_name)
 
     @staticmethod
     def extract_target_names_from_rule(

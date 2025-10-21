@@ -37,6 +37,7 @@ class Rule:
     @classmethod
     def from_cdisc_metadata(cls, rule_metadata: dict) -> dict:
         if cls.is_cdisc_rule_metadata(rule_metadata):
+            rule_metadata = cls.spaces_to_underscores(rule_metadata)
             authorities = rule_metadata.get("Authorities", [])
             executable_rule = {
                 "core_id": rule_metadata.get("Core", {}).get("Id"),
@@ -57,6 +58,7 @@ class Rule:
                 "data_structures": rule_metadata.get("Scope", {}).get(
                     "Data_Structures"
                 ),
+                "status": rule_metadata.get("Core", {}).get("Status", {}),
             }
 
             if "Operations" in rule_metadata:
@@ -73,6 +75,17 @@ class Rule:
             return executable_rule
         else:
             return rule_metadata
+
+    @classmethod
+    def spaces_to_underscores(cls, obj):
+        if isinstance(obj, dict):
+            return {
+                key.replace(" ", "_"): cls.spaces_to_underscores(value)
+                for key, value in obj.items()
+            }
+        if isinstance(obj, list):
+            return [cls.spaces_to_underscores(item) for item in obj]
+        return obj
 
     @classmethod
     def parse_standards(cls, authorities: List[dict]) -> List[dict]:
@@ -101,9 +114,11 @@ class Rule:
         return "Core" in rule_metadata
 
     @classmethod
-    def parse_conditions(cls, conditions: dict) -> dict:
+    def parse_conditions(cls, conditions: dict | str) -> dict | str:
         if not conditions:
             raise ValueError("No check data provided")
+        if isinstance(conditions, str):
+            return conditions
         all_conditions = conditions.get("all")
         any_conditions = conditions.get("any")
         not_condition = conditions.get("not")

@@ -49,16 +49,18 @@ def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:  # noqa
             define_version.model_package == "define_2_1"
             and len(args.controlled_terminology_package) > 0
         ):
-            raise ValueError(
+            engine_logger.error(
                 "Cannot use -ct controlled terminology package command with Define-XML2.1 submission"
             )
+            raise SystemError(2)
         elif (
             define_version.model_package == "define_2_0"
             and len(args.controlled_terminology_package) > 1
         ):
-            raise ValueError(
+            engine_logger.error(
                 "Cannot provide multiple controlled terminology packages with Define-XML2.0 submission"
             )
+            raise SystemError(2)
     standards_file = os.path.join(args.cache, "standards_details.pkl")
     models_file = os.path.join(args.cache, "standards_models.pkl")
     variables_codelist_file = os.path.join(args.cache, "variable_codelist_maps.pkl")
@@ -245,18 +247,37 @@ def load_custom_rules(custom_data, cdisc_data, standard, version, rules, standar
 
 
 def load_specified_rules(
-    rules_data, rule_ids, standard, version, standard_dict, substandard
+    rules_data,
+    rule_ids,
+    excluded_rule_ids,
+    standard,
+    version,
+    standard_dict,
+    substandard,
 ):
     key = get_rules_cache_key(standard, version, substandard)
     standard_rules = standard_dict.get(key, {})
     valid_rule_ids = set()
-    for rule in rule_ids:
-        if rule in standard_rules:
+
+    # Determine valid rules based on inclusion and exclusion lists
+    for rule in standard_rules:
+        if (not rule_ids or rule in rule_ids) and (
+            not excluded_rule_ids or rule not in excluded_rule_ids
+        ):
             valid_rule_ids.add(rule)
-        else:
-            raise ValueError(
-                f"The rule specified '{rule}' is not in the standard {standard} and version {version}"
-            )
+    # Check that all specified rules are valid
+    if rule_ids:
+        for rule in rule_ids:
+            if rule not in standard_rules:
+                raise ValueError(
+                    f"The rule specified to include '{rule}' is not in the standard {standard} and version {version}"
+                )
+    else:
+        for rule in excluded_rule_ids:
+            if rule not in standard_rules:
+                raise ValueError(
+                    f"The rule specified to exclude '{rule}' is not in the standard {standard} and version {version}"
+                )
     rules = []
     for rule_id in valid_rule_ids:
         rule_data = rules_data.get(rule_id)
@@ -329,10 +350,11 @@ def load_rules_from_cache(args) -> List[dict]:
             args.rules,
             standard_dict,
         )
-    elif args.rules:
+    elif args.rules or args.exclude_rules:
         return load_specified_rules(
             rules_data,
             args.rules,
+            args.exclude_rules,
             args.standard,
             args.version.replace(".", "-"),
             standard_dict,
@@ -352,11 +374,12 @@ def load_rules_from_cache(args) -> List[dict]:
 
 def load_rules_from_local(args) -> List[dict]:
     rules = []
-    rule_files = (
-        [os.path.join(args.local_rules, file) for file in os.listdir(args.local_rules)]
-        if os.path.isdir(args.local_rules)
-        else [args.local_rules]
-    )
+    rule_files = []
+    for path in args.local_rules:
+        if os.path.isdir(path):
+            rule_files.extend([os.path.join(path, file) for file in os.listdir(path)])
+        else:
+            rule_files.append(path)
     rule_data = {}
 
     if args.rules:
@@ -364,17 +387,25 @@ def load_rules_from_local(args) -> List[dict]:
             get_rules_cache_key(args.standard, args.version.replace(".", "-"), rule)
             for rule in args.rules
         )
+        excluded_keys = None
+    elif args.exclude_rules:
+        excluded_keys = set(
+            get_rules_cache_key(args.standard, args.version.replace(".", "-"), rule)
+            for rule in args.exclude_rules
+        )
+        keys = None
     else:
         engine_logger.info(
-            "No rules specified with -r rules flag. "
+            "No rules specified with -r or -er rules flags. "
             "Validating with rules in local directory"
         )
+        excluded_keys = None
         keys = None
 
     for rule_file in rule_files:
         rule = load_and_parse_rule(rule_file)
         if rule:
-            process_rule(rule, args, rule_data, rules, keys)
+            process_rule(rule, args, rule_data, rules, keys, excluded_keys)
 
     missing_keys = set()
     if keys:
@@ -427,21 +458,26 @@ def rule_matches_standard_version(rule, standard, version, substandard=None):
     return False
 
 
-def process_rule(rule, args, rule_data, rules, keys):
+def process_rule(rule, args, rule_data, rules, keys, excluded_keys):
     """Process a rule and add it to the rules list if applicable."""
     core_id = rule.get("core_id")
     if not core_id:
         engine_logger.error("Rule missing core_id. Skipping...")
         return
-
     rule_identifier = get_rules_cache_key(
         args.standard, args.version.replace(".", "-"), core_id
     )
     if rule_identifier in rule_data:
         engine_logger.error(f"Duplicate rule {core_id} in local directory. Skipping...")
         return
-
-    if args.standard and args.version:
+    if (
+        rule.get("status", "").lower() == "draft"
+        and (keys is None or rule_identifier in keys)
+        and (excluded_keys is None or rule_identifier not in excluded_keys)
+    ):
+        rule_data[rule_identifier] = rule
+        rules.append(rule)
+    elif rule.get("status", None).lower() == "published":
         if not rule_matches_standard_version(
             rule, args.standard, args.version, args.substandard
         ):
@@ -453,14 +489,16 @@ def process_rule(rule, args, rule_data, rules, keys):
                 f"version '{args.version}'{substandard_msg}. Skipping..."
             )
             return
-    if keys is None or rule_identifier in keys:
-        rule_data[rule_identifier] = rule
-        rules.append(rule)
-    else:
-        engine_logger.info(
-            f"Rule {core_id} not specified with "
-            "-r rule flag and in local directory. Skipping..."
-        )
+        if (keys is None or rule_identifier in keys) and (
+            excluded_keys is None or rule_identifier not in excluded_keys
+        ):
+            rule_data[rule_identifier] = rule
+            rules.append(rule)
+        else:
+            engine_logger.info(
+                f"Rule {core_id} not specified with "
+                "-r rule flag or excluded with -er rule flag and in local directory. Skipping..."
+            )
 
 
 def get_max_dataset_size(dataset_paths: Iterable[str]):
@@ -482,3 +520,25 @@ def replace_yml_spaces(data):
         return [replace_yml_spaces(item) for item in data]
     else:
         return data
+
+
+def set_max_errors_per_rule(args):
+    env_value = (
+        int(os.getenv("MAX_ERRORS_PER_RULE"))
+        if os.getenv("MAX_ERRORS_PER_RULE")
+        else None
+    )
+    cli_limit, cli_per_dataset = args.max_errors_per_rule
+    if env_value is not None and cli_limit > 0:
+        max_errors_per_rule = max(env_value, cli_limit)
+    elif env_value is not None:
+        max_errors_per_rule = env_value
+    elif cli_limit > 0:
+        max_errors_per_rule = cli_limit
+    else:
+        max_errors_per_rule = None
+
+    if max_errors_per_rule is not None and max_errors_per_rule <= 0:
+        max_errors_per_rule = None
+
+    return max_errors_per_rule, cli_per_dataset
