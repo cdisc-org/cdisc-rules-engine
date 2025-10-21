@@ -54,6 +54,7 @@ jobs:
           cd artifacts/core-ubuntu-22.04
           tar -czf ../../core-ubuntu-22.04.tar.gz .
           cd ../..
+          mv artifacts/core-ubuntu-22.04 artifacts/core-ubuntu-22.04.tar.gz
 
       - name: Upload Ubuntu Latest Release Asset
         uses: actions/upload-release-asset@v1
@@ -64,7 +65,7 @@ jobs:
           asset_path: ./core-ubuntu-latest.zip
           asset_name: core-ubuntu-latest.zip
           asset_content_type: application/zip
-      - name: Upload Ubuntu 22.04 Release Asset
+      - name: Upload Ubuntu 22.04 Google Collab Release Asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}

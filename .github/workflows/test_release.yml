@@ -53,16 +53,7 @@ jobs:
           cd artifacts/core-ubuntu-22.04
           tar -czf ../../core-ubuntu-22.04.tar.gz .
           cd ../..
-      - name: Upload Release Assets
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-artifacts
-          path: |
-            core-ubuntu-latest.zip
-            core-mac-intel.zip
-            core-mac-apple-silicon.zip
-            core-windows.zip
-            core-ubuntu-22.04.tar.gz
+          mv artifacts/core-ubuntu-22.04 artifacts/core-ubuntu-22.04.tar.gz
   deploy-PyPi:
     needs: create-release-assets
     runs-on: ubuntu-latest
