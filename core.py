@@ -14,7 +14,6 @@ from cdisc_rules_engine.config import config
 from cdisc_rules_engine.enums.default_file_paths import DefaultFilePaths
 from cdisc_rules_engine.enums.progress_parameter_options import ProgressParameterOptions
 from cdisc_rules_engine.enums.report_types import ReportTypes
-from cdisc_rules_engine.enums.dataformat_types import DataFormatTypes
 from cdisc_rules_engine.models.validation_args import Validation_args
 from scripts.run_validation import run_validation
 from cdisc_rules_engine.services.cache.cache_populator_service import CachePopulator
@@ -31,20 +30,40 @@ from cdisc_rules_engine.utilities.utils import (
 from scripts.list_dataset_metadata_handler import list_dataset_metadata_handler
 from version import __version__
 
+# Formats supported for validation (must have metadata readers in local_data_service.py)
+VALIDATION_SUPPORTED_FORMATS = ["XPT", "JSON", "NDJSON"]
+# User-friendly format description
+VALIDATION_FORMATS_MESSAGE = "SAS V5 XPT or Dataset-JSON (JSON or NDJSON)"
+
 
 def valid_data_file(data_path: list) -> tuple[list, set]:
-    allowed_formats = [format.value for format in DataFormatTypes]
+    allowed_formats = VALIDATION_SUPPORTED_FORMATS
     found_formats = set()
     file_list = []
+    ignored_files = []
+
     for file in data_path:
         file_extension = os.path.splitext(file)[1][1:].upper()
         if file_extension in allowed_formats:
             found_formats.add(file_extension)
             file_list.append(file)
+        elif file_extension:  # Has an extension but not supported
+            ignored_files.append(os.path.basename(file))
+
+    # Log ignored files if any
+    if ignored_files:
+        logger = logging.getLogger("validator")
+        logger.warning(
+            f"Ignoring {len(ignored_files)} file(s) with unsupported formats: {', '.join(ignored_files[:5])}"
+            + ("..." if len(ignored_files) > 5 else "")
+        )
+
     if len(found_formats) > 1:
         return [], found_formats
-    elif len(found_formats) == 1:
+    elif len(found_formats) >= 1:
         return file_list, found_formats
+    else:
+        return [], set()
 
 
 @click.group()
@@ -70,14 +89,14 @@ def cli():
     "-d",
     "--data",
     required=False,
-    help="Path to directory containing data files",
+    help=f"Path to directory containing data files ({VALIDATION_FORMATS_MESSAGE})",
 )
 @click.option(
     "-dp",
     "--dataset-path",
     required=False,
     multiple=True,
-    help="Absolute path to dataset file",
+    help=f"Absolute path to dataset file ({VALIDATION_FORMATS_MESSAGE})",
 )
 @click.option(
     "-l",
@@ -243,7 +262,7 @@ def cli():
     ),
 )
 @click.pass_context
-def validate(
+def validate(  # noqa: C901
     ctx,
     cache: str,
     pool_size: int,
@@ -336,11 +355,25 @@ def validate(
                 f"Argument --data contains more than one allowed file format ({', '.join(found_formats)})."  # noqa: E501
             )
             ctx.exit(2)
+        if not dataset_paths:
+            logger.error(
+                f"No valid dataset files found in directory: {data}\n"
+                f"Supported formats: {VALIDATION_FORMATS_MESSAGE}\n"
+                f"Please ensure your directory contains files in one of these formats."
+            )
+            ctx.exit(2)
     elif dataset_path:
         dataset_paths, found_formats = valid_data_file([dp for dp in dataset_path])
         if len(found_formats) > 1:
             logger.error(
                 f"Argument --dataset-path contains more than one allowed file format ({', '.join(found_formats)})."  # noqa: E501
+            )
+            ctx.exit(2)
+        if not dataset_paths:
+            logger.error(
+                f"No valid dataset files provided.\n"
+                f"Supported formats: {VALIDATION_FORMATS_MESSAGE}\n"
+                f"Please ensure your files are in one of these formats."
             )
             ctx.exit(2)
     else:
