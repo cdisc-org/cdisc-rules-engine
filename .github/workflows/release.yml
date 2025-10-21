@@ -51,9 +51,18 @@ jobs:
           dest: core-windows.zip
       - name: Create Ubuntu 22.04 tar.gz
         run: |
-          cd artifacts/core-ubuntu-22.04-tar/core
+          cd artifacts/core-ubuntu-22.04-tar
           tar -czf ../../core-ubuntu-22.04.tar.gz .
           cd ../..
+      - name: Delete original Ubuntu 22.04 artifact
+        uses: geekyeggo/delete-artifact@v5
+        with:
+          name: core-ubuntu-22.04-tar
+      - name: Upload Ubuntu 22.04 tar.gz
+        uses: actions/upload-artifact@v4
+        with:
+          name: core-ubuntu-22.04-tarball
+          path: core-ubuntu-22.04.tar.gz
 
       - name: Upload Ubuntu Latest Release Asset
         uses: actions/upload-release-asset@v1

@@ -153,4 +153,4 @@ Organization_Custom.json
 #ignore custom build artifacts
 /build-output
 .github/workflows/build_version.yml
-dockerfile.build
+Dockerfile.build
