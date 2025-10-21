@@ -52,8 +52,8 @@ jobs:
       - name: Create Ubuntu 22.04 tar.gz
         run: |
           cd artifacts/core-ubuntu-22.04-tar/core
-          tar -czf ../../../core-ubuntu-22.04.tar.gz .
-          cd ../../..
+          tar -czf ../../core-ubuntu-22.04.tar.gz .
+          cd ../..
 
       - name: Upload Ubuntu Latest Release Asset
         uses: actions/upload-release-asset@v1
