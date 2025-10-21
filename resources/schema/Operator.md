@@ -11,6 +11,7 @@ Has optional parameter:
 
 - 'value_is_reference' when true, the value parameter specifies a column name whose content determines which column to compare against dynamically.
 - 'type_insensitive' when true, both values are converted to strings before comparison to handle type mismatches between string and numeric data.
+- 'round_values' when true, both the target and value will be rounded to the nearest integer
 
 > --OCCUR = N
 
@@ -40,7 +41,7 @@ Has optional parameter:
 
 ### not_equal_to
 
-Complement of `equal_to`. Also has the optional parameters 'value_is_reference' and 'type_insensitive'.
+Complement of `equal_to`. Also has the optional parameters 'value_is_reference'. 'round_values' and 'type_insensitive'.
 
 > --OCCUR ^= Y
 

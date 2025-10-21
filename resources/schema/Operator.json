@@ -932,10 +932,13 @@
       ]
     },
     "value_is_literal": {
-      "const": true
+      "type": "boolean"
     },
     "value_is_reference": {
-      "const": true
+      "type": "boolean"
+    },
+    "round_values": {
+      "type": "boolean"
     },
     "type_insensitive": {
       "const": true
