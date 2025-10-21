@@ -12,7 +12,7 @@ jobs:
           - os: "ubuntu-latest"
             name: "core-ubuntu-latest"
           - os: "ubuntu-22.04"
-            name: "core-ubuntu-22.04"
+            name: "core-ubuntu-22.04-tar"
           - os: "macos-latest"
             name: "core-mac-apple-silicon"
           - os: "windows-latest"
@@ -51,10 +51,9 @@ jobs:
           dest: core-windows.zip
       - name: Create Ubuntu 22.04 tar.gz
         run: |
-          cd artifacts/core-ubuntu-22.04
-          tar -czf ../../core-ubuntu-22.04.tar.gz .
-          cd ../..
-          mv artifacts/core-ubuntu-22.04 artifacts/core-ubuntu-22.04.tar.gz
+          cd artifacts/core-ubuntu-22.04-tar/core
+          tar -czf ../../../core-ubuntu-22.04.tar.gz .
+          cd ../../..
 
       - name: Upload Ubuntu Latest Release Asset
         uses: actions/upload-release-asset@v1
