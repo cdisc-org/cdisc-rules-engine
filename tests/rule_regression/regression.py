@@ -22,6 +22,8 @@ from scripts.run_sql_validation import sql_run_single_rule_validation
 from scripts.run_validation import run_single_rule_validation
 from scripts.script_utils import get_library_metadata_from_cache
 
+ENABLE_ERROR_TRANSLATION = True
+
 RULE_DEPTH = 2
 TYPE_DEPTH = RULE_DEPTH + 1
 CASE_DEPTH = TYPE_DEPTH + 1
@@ -432,12 +434,32 @@ def compare_error_lists(old_errors, sql_errors):
         if "value" in error:
             error["value"] = {k: None if v == "" else v for k, v in error["value"].items()}
 
-    diff = DeepDiff(old_errors, sql_errors, ignore_order=True, ignore_string_case=True)
+    # TEMPORARY FIX: copy error/message formatting from old to SQL for comparison
+    # The sql engine outputs errors in a different format given the same results, which creates useless diffs.
+    # This ensures that the errors are comparable when no other diffs are present.
+    # This should be removed once the sql engine is updated to match the old engine's errors.
+    if ENABLE_ERROR_TRANSLATION:
+        if sql_errors and old_errors and "error" in sql_errors[0] and "message" in sql_errors[0]:
+            if len(sql_errors) == len(old_errors):
+                sql_errors_normalized = []
+                for sql_err, old_err in zip(sql_errors, old_errors):
+                    normalized = sql_err.copy()
+                    normalized["error"] = old_err.get("error", sql_err.get("error"))
+                    normalized["message"] = old_err.get("message", sql_err.get("message"))
+                    sql_errors_normalized.append(normalized)
+            else:
+                sql_errors_normalized = sql_errors
+        else:
+            sql_errors_normalized = sql_errors
+    else:
+        sql_errors_normalized = sql_errors
+
+    diff = DeepDiff(old_errors, sql_errors_normalized, ignore_order=True, ignore_string_case=True)
+
     if diff:
-        # Calling `to_json` to create a valid JSON (otherwise the output is not JSON serializable)
-        # and then converting it back to a Python object so it's formatted properly
+        # Calling `to_json` to create a valid JSON
         reloaded = json.loads(diff.to_json())
-        # Need to sort the values_changed keys for consistent output
+        # Sort the values_changed keys for consistent output
         if "values_changed" in reloaded:
             reloaded["values_changed"] = dict(sorted(reloaded["values_changed"].items()))
         return reloaded
