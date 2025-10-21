@@ -98,11 +98,16 @@ class RulesEngine:
             kwargs.get("jsonata_custom_functions", ())
         )
         self.max_errors_per_rule: int = kwargs.get("max_errors_per_rule")
+        self.errors_per_dataset_flag: bool = kwargs.get(
+            "errors_per_dataset_flag", False
+        )
 
     def get_schema(self):
         return export_rule_data(DatasetVariable, COREActions)
 
-    def validate_single_rule(self, rule: dict, datasets: Iterable[SDTMDatasetMetadata]):
+    def validate_single_rule(  # noqa
+        self, rule: dict, datasets: Iterable[SDTMDatasetMetadata]
+    ):
         results = {}
         rule["conditions"] = ConditionCompositeFactory.get_condition_composite(
             rule["conditions"]
@@ -118,6 +123,7 @@ class RulesEngine:
             for dataset_metadata in datasets:
                 if (
                     self.max_errors_per_rule
+                    and not self.errors_per_dataset_flag
                     and total_errors >= self.max_errors_per_rule
                 ):
                     logger.info(
@@ -134,20 +140,33 @@ class RulesEngine:
                     datasets,
                     dataset_metadata,
                 )
+                if self.errors_per_dataset_flag and self.max_errors_per_rule:
+                    for result in dataset_results:
+                        if result.get("executionStatus") == "success":
+                            errors = result.get("errors", [])
+                            if len(errors) > self.max_errors_per_rule:
+                                result["errors"] = errors[: self.max_errors_per_rule]
+                                logger.info(
+                                    f"Rule {rule.get('core_id')}: Truncated {len(errors)} errors to "
+                                    f"{self.max_errors_per_rule} for dataset {dataset_metadata.name}."
+                                )
+
                 results[dataset_metadata.unsplit_name] = dataset_results
-                for result in dataset_results:
-                    if result.get("executionStatus") == "success":
-                        total_errors += len(result.get("errors"))
-                        if (
-                            self.max_errors_per_rule
-                            and total_errors >= self.max_errors_per_rule
-                        ):
-                            logger.info(
-                                f"Rule {rule.get('core_id')}: Error limit ({self.max_errors_per_rule}) "
-                                f"reached after processing {dataset_metadata.name}. "
-                                f"Execution halted at {total_errors} total errors."
-                            )
-                            break
+
+                if not self.errors_per_dataset_flag:
+                    for result in dataset_results:
+                        if result.get("executionStatus") == "success":
+                            total_errors += len(result.get("errors"))
+                            if (
+                                self.max_errors_per_rule
+                                and total_errors >= self.max_errors_per_rule
+                            ):
+                                logger.info(
+                                    f"Rule {rule.get('core_id')}: Error limit ({self.max_errors_per_rule}) "
+                                    f"reached after processing {dataset_metadata.name}. "
+                                    f"Execution halted at {total_errors} total errors."
+                                )
+                                break
         return results
 
     def validate_single_dataset(
