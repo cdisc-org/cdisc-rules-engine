@@ -723,7 +723,7 @@ def test_validate():
             define_xml_path = None
             validate_xml = False
             max_report_rows = None
-            max_report_errors = None
+            max_report_errors = (0, False)
             json_output = os.path.join(temp_dir, "json_validation_output")
             jsonata_custom_functions = ()
             run_validation(
