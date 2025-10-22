@@ -197,24 +197,20 @@ class RuleProcessor:
         excluded_datastructures = datastructures.get("Exclude", [])
         is_included = True
         is_excluded = False
+        if not included_datastructures and not excluded_datastructures:
+            return True
         if included_datastructures:
             if ALL_KEYWORD in included_datastructures:
                 return True
-            ds = self.data_service.get_data_structure(
-                dataset_metadata.full_path,
-                datasets,
-                dataset_metadata,
-            )
-            if ds not in included_datastructures:
-                is_included = False
-        if excluded_datastructures:
-            ds = self.data_service.get_data_structure(
-                dataset_metadata.full_path,
-                datasets,
-                dataset_metadata,
-            )
-            if ds and (ds in excluded_datastructures):
-                is_excluded = True
+        ds = self.data_service.get_data_structure(
+            dataset_metadata.full_path,
+            datasets,
+            dataset_metadata,
+        )
+        if ds and (ds not in included_datastructures):
+            is_included = False
+        if ds and (ds in excluded_datastructures):
+            is_excluded = True
         return is_included and not is_excluded
 
     def rule_applies_to_class(

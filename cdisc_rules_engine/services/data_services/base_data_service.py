@@ -19,6 +19,14 @@ from cdisc_rules_engine.constants.classes import (
     INTERVENTIONS,
     RELATIONSHIP,
 )
+from cdisc_rules_engine.constants.data_structures import (
+    ADSL,
+    BDS,
+    OCCDS,
+    OTHER,
+    bds_indicators,
+    occds_indicators,
+)
 from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
 from cdisc_rules_engine.models.dataset_types import DatasetTypes
 from cdisc_rules_engine.services import logger
@@ -185,19 +193,19 @@ class BaseDataService(DataServiceInterface, ABC):
         datasets: Iterable[SDTMDatasetMetadata],
         dataset_metadata: SDTMDatasetMetadata,
     ) -> Optional[str]:
-        if self.library_metadata.standard_metadata:
-            data_structures = self.library_metadata.standard_metadata.get(
-                "dataStructures", []
-            )
-            if data_structures:
-                for data_structure in data_structures:
-                    if (
-                        data_structure.get("name").lower()
-                        == dataset_metadata.name.lower()
-                    ):
-                        return data_structure.get("class")
-                return ""
-        return ""
+        # TODO: look at defineXML if applicable for more accurate data structure detection
+        if dataset_metadata.name.upper() == "ADSL":
+            return ADSL
+        columns = dataset_metadata.data.columns.tolist()
+        columns_upper = [col.upper() for col in columns]
+        if any(indicator in columns_upper for indicator in bds_indicators):
+            return BDS
+        occds_suffixes = [indicator.replace("--", "") for indicator in occds_indicators]
+        if any(
+            col.endswith(suffix) for col in columns_upper for suffix in occds_suffixes
+        ):
+            return OCCDS
+        return OTHER
 
     @cached_dataset(DatasetTypes.METADATA.value)
     def get_dataset_metadata(
