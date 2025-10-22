@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema targetNamespace="http://www.w3.org/1999/xhtml"
+           xmlns="http://www.w3.org/1999/xhtml"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:usdm="http://www.cdisc.org/ns/usdm/xhtml/v1.0"
+           xmlns:svg="http://www.w3.org/2000/svg"
+           xmlns:math="http://www.w3.org/1998/Math/MathML"
+           elementFormDefault="qualified" attributeFormDefault="unqualified"
+           version="1.0">
+
+    <xs:annotation>
+        <xs:documentation>USDM-XHTML 1.0 schema as developed by the CDISC USDM Team</xs:documentation>
+    </xs:annotation>
+
+    <!-- include USDM-XHTML extensions to core XHTML -->
+    <xs:include schemaLocation="usdm-xhtml-extension.xsd"/>
+    
+</xs:schema>
