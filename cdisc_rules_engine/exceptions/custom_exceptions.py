@@ -10,11 +10,6 @@ class DatasetNotFoundError(EngineError):
     description = "Dataset not found"
 
 
-class ColumnNotFoundError(EngineError):
-    code = 404
-    description = "Provided column is not found in the given dataset"
-
-
 class ReferentialIntegrityError(EngineError):
     description = "This action violates referential integrity"
 
