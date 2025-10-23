@@ -431,11 +431,6 @@
       "type": "object"
     },
     {
-      "properties": { "operator": { "const": "starts_with" } },
-      "required": ["operator", "value"],
-      "type": "object"
-    },
-    {
       "properties": {
         "operator": { "const": "split_parts_have_equal_length" }
       },
@@ -447,6 +442,11 @@
         "operator": { "const": "split_parts_have_unequal_length" }
       },
       "required": ["operator"],
+      "type": "object"
+    },
+    {
+      "properties": { "operator": { "const": "starts_with" } },
+      "required": ["operator", "value"],
       "type": "object"
     },
     {
