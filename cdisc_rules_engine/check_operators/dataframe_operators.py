@@ -278,6 +278,7 @@ class DataframeType(BaseType):
         value_is_literal = other_value.get("value_is_literal", False)
         type_insensitive = other_value.get("type_insensitive", False)
         round_values = other_value.get("round_values", False)
+        value_is_reference = other_value.get("value_is_reference", False)
         comparator = (
             self.replace_prefix(other_value.get("comparator"))
             if not value_is_literal
@@ -289,6 +290,7 @@ class DataframeType(BaseType):
                 target,
                 comparator,
                 value_is_literal,
+                value_is_reference,
                 case_insensitive=True,
                 type_insensitive=type_insensitive,
                 round_values=round_values,
@@ -303,6 +305,7 @@ class DataframeType(BaseType):
         value_is_literal = other_value.get("value_is_literal", False)
         type_insensitive = other_value.get("type_insensitive", False)
         round_values = other_value.get("round_values", False)
+        value_is_reference = other_value.get("value_is_reference", False)
         comparator = (
             self.replace_prefix(other_value.get("comparator"))
             if not value_is_literal
@@ -314,6 +317,7 @@ class DataframeType(BaseType):
                 target,
                 comparator,
                 value_is_literal,
+                value_is_reference,
                 case_insensitive=True,
                 type_insensitive=type_insensitive,
                 round_values=round_values,

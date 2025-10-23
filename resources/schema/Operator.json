@@ -205,6 +205,15 @@
       "properties": {
         "operator": {
           "const": "equal_to"
+        },
+        "round_values": {
+          "type": "boolean"
+        },
+        "value_is_reference": {
+          "type": "boolean"
+        },
+        "type_insensitive": {
+          "type": "boolean"
         }
       },
       "required": ["operator", "value"],
@@ -214,6 +223,15 @@
       "properties": {
         "operator": {
           "const": "equal_to_case_insensitive"
+        },
+        "round_values": {
+          "type": "boolean"
+        },
+        "value_is_reference": {
+          "type": "boolean"
+        },
+        "type_insensitive": {
+          "type": "boolean"
         }
       },
       "required": ["operator", "value"],
@@ -547,6 +565,15 @@
       "properties": {
         "operator": {
           "const": "not_equal_to"
+        },
+        "round_values": {
+          "type": "boolean"
+        },
+        "value_is_reference": {
+          "type": "boolean"
+        },
+        "type_insensitive": {
+          "type": "boolean"
         }
       },
       "required": ["operator", "value"],
@@ -556,6 +583,15 @@
       "properties": {
         "operator": {
           "const": "not_equal_to_case_insensitive"
+        },
+        "round_values": {
+          "type": "boolean"
+        },
+        "value_is_reference": {
+          "type": "boolean"
+        },
+        "type_insensitive": {
+          "type": "boolean"
         }
       },
       "required": ["operator", "value"],
@@ -933,15 +969,6 @@
     },
     "value_is_literal": {
       "type": "boolean"
-    },
-    "value_is_reference": {
-      "type": "boolean"
-    },
-    "round_values": {
-      "type": "boolean"
-    },
-    "type_insensitive": {
-      "const": true
     },
     "within": {
       "$ref": "CORE-base.json#/$defs/VariableName"
