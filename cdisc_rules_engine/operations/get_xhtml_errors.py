@@ -48,7 +48,7 @@ class GetXhtmlErrors(BaseOperation):
         except Exception as e:
             # TODO: Raise a custom exception or handle etree exceptions
             #  specifically in RulesEngine.handle_validation_exceptions
-            raise f"Failed to parse XMLSchema: {e.error_log}"
+            raise Exception(f"Failed to parse XMLSchema: {e.error_log}")
 
         # TODO: Generate from namespaces provided in config / operation parameters
         self.nsdec = (
