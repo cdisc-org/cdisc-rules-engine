@@ -11,6 +11,7 @@ Has optional parameter:
 
 - 'value_is_reference' when true, the value parameter specifies a column name whose content determines which column to compare against dynamically.
 - 'type_insensitive' when true, both values are converted to strings before comparison to handle type mismatches between string and numeric data.
+- 'round_values' when true, both the target and value will be rounded to the nearest integer
 
 > --OCCUR = N
 
@@ -30,6 +31,17 @@ Has optional parameter:
   type_insensitive: true
 ```
 
+> --STRESC = --STRESN with rounded values and ignoring the char/num type differences
+> between the two columns
+
+```yaml
+- name: --STRESC
+  operator: equal_to
+  type_insensitive: true
+  value: --STRESN
+  round_values: true
+```
+
 > EXDOSE EQ 0
 
 ```yaml
@@ -40,7 +52,7 @@ Has optional parameter:
 
 ### not_equal_to
 
-Complement of `equal_to`. Also has the optional parameters 'value_is_reference' and 'type_insensitive'.
+Complement of `equal_to`. Also has the optional parameters 'value_is_reference'. 'round_values' and 'type_insensitive'.
 
 > --OCCUR ^= Y
 
@@ -52,7 +64,7 @@ Complement of `equal_to`. Also has the optional parameters 'value_is_reference' 
 
 ### equal_to_case_insensitive
 
-Case insensitive `equal_to`
+Case insensitive `equal_to`. Also has the optional parameters 'value_is_reference'. 'round_values' and 'type_insensitive'.
 
 > DSTERM is "Informed consent obtained"
 
@@ -64,7 +76,7 @@ Case insensitive `equal_to`
 
 ### not_equal_to_case_insensitive
 
-Complement of `equal_to_case_insensitive`
+Complement of `equal_to_case_insensitive`. Also has the optional parameters 'value_is_reference'. 'round_values' and 'type_insensitive'.
 
 ### greater_than
 
