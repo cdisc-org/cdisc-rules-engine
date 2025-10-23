@@ -47,6 +47,8 @@ class JSONataProcessor:
             )
         errors = defaultdict(list)
         if results:
+            if isinstance(results, dict):
+                results = [results]
             if not isinstance(results, list):
                 raise RuleFormatError(
                     f"\n  Error in return type of JSONata Rule with Core Id: {rule.get('core_id')}"
