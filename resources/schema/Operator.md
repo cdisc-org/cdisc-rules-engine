@@ -31,6 +31,17 @@ Has optional parameter:
   type_insensitive: true
 ```
 
+> --STRESC = --STRESN with rounded values and ignoring the char/num type differences
+> between the two columns
+
+```yaml
+- name: --STRESC
+  operator: equal_to
+  type_insensitive: true
+  value: --STRESN
+  round_values: true
+```
+
 > EXDOSE EQ 0
 
 ```yaml
@@ -53,7 +64,7 @@ Complement of `equal_to`. Also has the optional parameters 'value_is_reference'.
 
 ### equal_to_case_insensitive
 
-Case insensitive `equal_to`
+Case insensitive `equal_to`. Also has the optional parameters 'value_is_reference'. 'round_values' and 'type_insensitive'.
 
 > DSTERM is "Informed consent obtained"
 
@@ -65,7 +76,7 @@ Case insensitive `equal_to`
 
 ### not_equal_to_case_insensitive
 
-Complement of `equal_to_case_insensitive`
+Complement of `equal_to_case_insensitive`. Also has the optional parameters 'value_is_reference'. 'round_values' and 'type_insensitive'.
 
 ### greater_than
 
