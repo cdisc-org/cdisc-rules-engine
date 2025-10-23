@@ -1,18 +1,20 @@
 from datetime import datetime
+from os import listdir
+from os.path import dirname, join
 from pathlib import Path
 from typing import BinaryIO, Iterable
+from cdisc_rules_engine.constants.define_xml_constants import DEFINE_XML_FILE_NAME
 from cdisc_rules_engine.enums.default_file_paths import DefaultFilePaths
 from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 from cdisc_rules_engine.models.dictionaries.dictionary_types import DictionaryTypes
+from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import (
+    DefineXMLReaderFactory,
+)
 from cdisc_rules_engine.services.reporting.base_report_data import (
     BaseReportData,
 )
 from cdisc_rules_engine.services.reporting.report_metadata_item import (
     ReportMetadataItem,
-)
-from cdisc_rules_engine.utilities.reporting_utilities import (
-    get_define_ct,
-    get_define_version,
 )
 from version import __version__
 from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
@@ -49,17 +51,17 @@ class SDTMReportData(BaseReportData):
         define_xml_path = args.define_xml_path
         dictionary_versions = self._dictionary_versions or {}
         if define_xml_path:
-            define_version = get_define_version([define_xml_path])
+            define_version = self.get_define_version([define_xml_path])
         else:
             define_version: str = self._args.define_version
         controlled_terminology = self._args.controlled_terminology_package
         if not controlled_terminology and define_version:
             if define_xml_path and define_version:
-                controlled_terminology = get_define_ct(
+                controlled_terminology = self.get_define_ct(
                     [define_xml_path], define_version
                 )
             else:
-                controlled_terminology = get_define_ct(
+                controlled_terminology = self.get_define_ct(
                     self._args.dataset_paths, define_version
                 )
         substandard = (
@@ -298,3 +300,43 @@ class SDTMReportData(BaseReportData):
             rules_report,
             key=lambda x: x["core_id"],
         )
+
+    @staticmethod
+    def get_define_version(dataset_paths: list[str]) -> str | None:
+        """
+        Method used to extract define version from xml file located
+        in the same directory with datasets
+        """
+        if not dataset_paths:
+            return None
+        if dataset_paths[0].endswith(".xml"):
+            define_xml_reader = DefineXMLReaderFactory.from_filename(dataset_paths[0])
+            return define_xml_reader.get_define_version()
+        path_to_data = dirname(dataset_paths[0])
+        if not path_to_data or DEFINE_XML_FILE_NAME not in listdir(path_to_data):
+            return None
+        path_to_define = join(path_to_data, DEFINE_XML_FILE_NAME)
+        define_xml_reader = DefineXMLReaderFactory.from_filename(path_to_define)
+        version = define_xml_reader.get_define_version()
+        return version
+
+    @staticmethod
+    def get_define_ct(dataset_paths: list[str], define_version) -> str | None:
+        """
+        Method used to extract CT version from define xml file located
+        in the same directory with datasets
+        """
+        if not dataset_paths:
+            return None
+        ct = None
+        if dataset_paths[0].endswith(".xml") and define_version == "2.1.0":
+            define_xml_reader = DefineXMLReaderFactory.from_filename(dataset_paths[0])
+            return define_xml_reader.get_ct_version()
+        path_to_data = dirname(dataset_paths[0])
+        if not path_to_data or DEFINE_XML_FILE_NAME not in listdir(path_to_data):
+            return None
+        path_to_define = join(path_to_data, DEFINE_XML_FILE_NAME)
+        define_xml_reader = DefineXMLReaderFactory.from_filename(path_to_define)
+        if define_version == "2.1.0":
+            ct = define_xml_reader.get_ct_version()
+        return ct

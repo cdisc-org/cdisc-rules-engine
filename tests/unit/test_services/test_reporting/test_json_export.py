@@ -7,7 +7,7 @@ from cdisc_rules_engine.services.reporting.json_report import JsonReport
 
 
 @patch.object(
-    sdtm_report_data,
+    sdtm_report_data.SDTMReportData,
     "get_define_version",
     return_value="2.1",
 )

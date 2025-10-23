@@ -15,7 +15,7 @@ test_report_template: str = (
 
 
 @patch.object(
-    sdtm_report_data,
+    sdtm_report_data.SDTMReportData,
     "get_define_version",
     return_value="2.1",
 )
