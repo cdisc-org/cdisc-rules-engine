@@ -3,6 +3,7 @@ import re
 import unittest
 import openpyxl
 from test_utils import run_command, tearDown
+from cdisc_rules_engine.enums.default_file_paths import DefaultFilePaths
 
 
 class TestValidate(unittest.TestCase):
@@ -145,7 +146,7 @@ class TestValidate(unittest.TestCase):
             "-l",
             "debug",
             "-rt",
-            os.path.join("resources", "templates", "report-template.xlsx"),
+            DefaultFilePaths.EXCEL_TEMPLATE_FILE.value,
             "-s",
             "sdtmig",
             "-v",

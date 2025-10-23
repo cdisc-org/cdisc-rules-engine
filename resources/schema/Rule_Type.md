@@ -278,10 +278,13 @@ Mapping of Result property names to Report Issue Details Column Names:
 | row                 | row                  | Record       |
 | SEQ                 | SEQ                  | Sequence     |
 | USUBJID             | USUBJID              | USUBJID      |
+| entity              | entity               | Entity       |
+| instance_id         | instance_id          | Instance ID  |
+| path                | path                 | Path         |
 
 ### Scope
 
-A JSONata rule will always run once for the entire JSON file, regardless of the Scope. The `Dataset` determination must come from the rule's JSONata result property.
+A JSONata rule will always run once for the entire JSON file, regardless of the Scope. The `Entity` determination must come from the rule's JSONata result property.
 
 ## Record Data
 

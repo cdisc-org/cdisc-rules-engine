@@ -1,0 +1,300 @@
+from datetime import datetime
+from pathlib import Path
+from typing import BinaryIO, Iterable
+from cdisc_rules_engine.enums.default_file_paths import DefaultFilePaths
+from cdisc_rules_engine.enums.execution_status import ExecutionStatus
+from cdisc_rules_engine.models.dictionaries.dictionary_types import DictionaryTypes
+from cdisc_rules_engine.services.reporting.base_report_data import (
+    BaseReportData,
+)
+from cdisc_rules_engine.services.reporting.report_metadata_item import (
+    ReportMetadataItem,
+)
+from cdisc_rules_engine.utilities.reporting_utilities import (
+    get_define_ct,
+    get_define_version,
+)
+from version import __version__
+from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
+from cdisc_rules_engine.models.validation_args import Validation_args
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
+
+
+class SDTMReportData(BaseReportData):
+    """
+    Report details specific to DDF
+    """
+
+    TEMPLATE_FILE_PATH = DefaultFilePaths.EXCEL_TEMPLATE_FILE.value
+
+    def __init__(
+        self,
+        datasets: Iterable[SDTMDatasetMetadata],
+        dataset_paths: Iterable[str],
+        validation_results: list[RuleValidationResult],
+        elapsed_time: float,
+        args: Validation_args,
+        template: BinaryIO | None = None,
+        **kwargs,
+    ):
+        super().__init__(
+            datasets,
+            dataset_paths,
+            validation_results,
+            elapsed_time,
+            args,
+            template,
+            **kwargs,
+        )
+        define_xml_path = args.define_xml_path
+        dictionary_versions = self._dictionary_versions or {}
+        if define_xml_path:
+            define_version = get_define_version([define_xml_path])
+        else:
+            define_version: str = self._args.define_version
+        controlled_terminology = self._args.controlled_terminology_package
+        if not controlled_terminology and define_version:
+            if define_xml_path and define_version:
+                controlled_terminology = get_define_ct(
+                    [define_xml_path], define_version
+                )
+            else:
+                controlled_terminology = get_define_ct(
+                    self._args.dataset_paths, define_version
+                )
+        substandard = (
+            self._args.substandard if hasattr(self._args, "substandard") else None
+        )
+        self.data_sheets = {
+            "Conformance Details": self.get_conformance_details_data(
+                define_version,
+                controlled_terminology,
+                dictionary_versions,
+                substandard=substandard,
+            ),
+            "Dataset Details": self.get_dataset_details_data(),
+            "Issue Summary": self.get_summary_data(),
+            "Issue Details": self.get_detailed_data(),
+            "Rules Report": self.get_rules_report_data(),
+        }
+
+    def get_conformance_details_data(
+        self,
+        define_version,
+        cdiscCt,
+        dictionary_versions,
+        file_part: int = None,
+        total_parts: int = None,
+        **kwargs,
+    ):
+        timestamp = datetime.now().replace(microsecond=0).isoformat()
+        if file_part and total_parts:
+            timestamp += f" (Part {file_part} of {total_parts})"
+        conformance_details = []
+        conformance_details.append(
+            ReportMetadataItem("Report Generation", 2, timestamp)
+        )
+        conformance_details.append(
+            ReportMetadataItem(
+                "Total Runtime", 3, f"{round(self._elapsed_time, 2)} seconds"
+            )
+        )
+        conformance_details.append(
+            ReportMetadataItem("CORE Engine Version", 4, __version__)
+        )
+        conformance_details.append(ReportMetadataItem("Standard", 7, self._standard))
+        if "substandard" in kwargs and kwargs["substandard"] is not None:
+            conformance_details.append(
+                ReportMetadataItem("Sub-Standard", 8, kwargs["substandard"])
+            )
+        conformance_details.append(
+            ReportMetadataItem("Version", 9, f"V{self._version}")
+        )
+        if cdiscCt:
+            conformance_details.append(
+                ReportMetadataItem(
+                    "CT Version",
+                    10,
+                    (
+                        ", ".join(cdiscCt)
+                        if isinstance(cdiscCt, (list, tuple, set))
+                        else str(cdiscCt)
+                    ),
+                )
+            )
+        else:
+            conformance_details.append(ReportMetadataItem("CT Version", 10, ""))
+        conformance_details.append(
+            ReportMetadataItem("Define-XML Version", 11, define_version)
+        )
+        # Populate external dictionary versions
+        unii_version = dictionary_versions.get(DictionaryTypes.UNII.value)
+        if unii_version is not None:
+            conformance_details.append(
+                ReportMetadataItem("UNII Version", 12, unii_version)
+            )
+        medrt_version = dictionary_versions.get(DictionaryTypes.MEDRT.value)
+        if medrt_version is not None:
+            conformance_details.append(
+                ReportMetadataItem("Med-RT Version", 13, medrt_version)
+            )
+        meddra_version = dictionary_versions.get(DictionaryTypes.MEDDRA.value)
+        if meddra_version is not None:
+            conformance_details.append(
+                ReportMetadataItem("MedDRA Version", 14, meddra_version)
+            )
+        whodrug_version = dictionary_versions.get(DictionaryTypes.WHODRUG.value)
+        if whodrug_version is not None:
+            conformance_details.append(
+                ReportMetadataItem("WHODRUG Version", 15, whodrug_version)
+            )
+        snomed_version = dictionary_versions.get(DictionaryTypes.SNOMED.value)
+        if snomed_version is not None:
+            conformance_details.append(
+                ReportMetadataItem("SNOMED Version", 16, snomed_version)
+            )
+        loinc_version = dictionary_versions.get(DictionaryTypes.LOINC.value)
+        if loinc_version is not None:
+            conformance_details.append(
+                ReportMetadataItem("LOINC Version", 17, loinc_version)
+            )
+        return conformance_details
+
+    def get_dataset_details_data(self) -> list[dict]:
+        return [
+            {
+                "filename": dataset.filename,
+                "label": dataset.label,
+                "path": str(Path(dataset.full_path or "").parent),
+                "modification_date": dataset.modification_date,
+                "size_kb": (dataset.file_size or 0) / 1000,
+                "length": dataset.record_count,
+            }
+            for dataset in self._datasets
+        ]
+
+    def get_summary_data(self) -> list[dict]:
+        """
+        Generates the Issue Summary data that goes into the export.
+        Each row is represented by a list or a dict containing the following
+        information:
+        return [
+            "Dataset",
+            "CORE-ID",
+            "Message",
+            "Issues",
+            "Explanation"
+        ]
+        """
+        summary_data = []
+        for validation_result in self._results:
+            if validation_result.execution_status == "success":
+                for result in validation_result.results or []:
+                    dataset = result.get("dataset")
+                    if (
+                        result.get("errors")
+                        and result.get("executionStatus") == "success"
+                    ):
+                        summary_item = {
+                            "dataset": dataset,
+                            "core_id": validation_result.id,
+                            "message": result.get("message"),
+                            "issues": len(result.get("errors")),
+                        }
+                        summary_data.append(summary_item)
+
+        return sorted(
+            summary_data,
+            key=lambda x: (x["dataset"], x["core_id"]),
+        )
+
+    def get_detailed_data(self, excel=False) -> list[dict]:
+        detailed_data = []
+        for validation_result in self._results:
+            detailed_data = detailed_data + self._generate_error_details(
+                validation_result, excel
+            )
+        return sorted(
+            detailed_data,
+            key=lambda x: (x["core_id"], x["dataset"]),
+        )
+
+    def _generate_error_details(
+        self, validation_result: RuleValidationResult, excel
+    ) -> list[dict]:
+        """
+        Generates the Issue details data that goes into the excel export.
+        Each row is represented by a list or a dict containing the following
+        information:
+        return [
+            "CORE-ID",
+            "Message",
+            "Executability",
+            "Dataset Name"
+            "USUBJID",
+            "Record",
+            "Sequence",
+            "Variable(s)",
+            "Value(s)"
+        ]
+        """
+        errors = []
+        for result in validation_result.results or []:
+            if result.get("errors", []) and result.get("executionStatus") == "success":
+                variables = result.get("variables", [])
+                for error in result.get("errors"):
+                    error_item = {
+                        "core_id": validation_result.id,
+                        "message": result.get("message"),
+                        "executability": validation_result.executability,
+                        "dataset": error.get("dataset"),
+                        "USUBJID": error.get("USUBJID", ""),
+                        "row": error.get("row", ""),
+                        "SEQ": error.get("SEQ", ""),
+                    }
+                    values = []
+                    for variable in variables:
+                        raw_value = error.get("value", {}).get(variable)
+                        if raw_value is None:
+                            values.append(None)
+                        else:
+                            values.append(str(raw_value))
+                    error_item["variables"] = variables
+                    error_item["values"] = self.process_values(values)
+                    errors.append(error_item)
+        return errors
+
+    def get_rules_report_data(self) -> list[dict]:
+        """
+        Generates the rules report data that goes into the excel export.
+        Each row is represented by a list or a dict containing the following
+        information:
+        [
+            "CORE-ID",
+            "Version",
+            "CDISC RuleID",
+            "FDA RuleID",
+            "Message",
+            "Status"
+        ]
+        """
+        rules_report = []
+        for validation_result in self._results:
+            rules_item = {
+                "core_id": validation_result.id,
+                "version": "1",
+                "cdisc_rule_id": validation_result.cdisc_rule_id,
+                "fda_rule_id": validation_result.fda_rule_id,
+                "message": validation_result.message,
+                "status": (
+                    ExecutionStatus.SUCCESS.value.upper()
+                    if validation_result.execution_status
+                    == ExecutionStatus.SUCCESS.value
+                    else ExecutionStatus.SKIPPED.value.upper()
+                ),
+            }
+            rules_report.append(rules_item)
+        return sorted(
+            rules_report,
+            key=lambda x: x["core_id"],
+        )

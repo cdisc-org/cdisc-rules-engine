@@ -1,4 +1,5 @@
 from types import SimpleNamespace
+from os import path
 
 import pytest
 
@@ -65,9 +66,12 @@ def test_load_specified_rules_exclude(standard_context):
 def test_load_rules_from_local_include(monkeypatch, standard_context):
     standard, version, substandard, _ = standard_context
     rule_paths = [
-        "/rules/CORE.Local.0001.yml",
-        "/rules/CORE.Local.0002.yml",
-        "/rules/CORE.Local.0003.yml",
+        path.join("/rules", file)
+        for file in [
+            "CORE.Local.0001.yml",
+            "CORE.Local.0002.yml",
+            "CORE.Local.0003.yml",
+        ]
     ]
 
     args = SimpleNamespace(
@@ -128,9 +132,12 @@ def test_load_rules_from_local_include(monkeypatch, standard_context):
 def test_load_rules_from_local_exclude(monkeypatch, standard_context):
     standard, version, substandard, _ = standard_context
     rule_paths = [
-        "/rules/CORE.Local.0001.yml",
-        "/rules/CORE.Local.0002.yml",
-        "/rules/CORE.Local.0003.yml",
+        path.join("/rules", file)
+        for file in [
+            "CORE.Local.0001.yml",
+            "CORE.Local.0002.yml",
+            "CORE.Local.0003.yml",
+        ]
     ]
 
     args = SimpleNamespace(

@@ -102,6 +102,15 @@ class RulesEngine:
     def get_schema(self):
         return export_rule_data(DatasetVariable, COREActions)
 
+    def get_first_dataset_path(self) -> str | None:
+        if hasattr(self.data_service, "dataset_path"):
+            return self.data_service.dataset_path
+        elif (
+            hasattr(self.data_service, "dataset_paths")
+            and len(self.data_service.dataset_paths) == 1
+        ):
+            return self.data_service.dataset_paths[0]
+
     def validate_single_rule(self, rule: dict, datasets: Iterable[SDTMDatasetMetadata]):
         results = {}
         rule["conditions"] = ConditionCompositeFactory.get_condition_composite(
@@ -111,7 +120,9 @@ class RulesEngine:
             results["json"] = self.validate_single_dataset(
                 rule,
                 datasets,
-                SDTMDatasetMetadata(name="json"),
+                SDTMDatasetMetadata(
+                    name="json", full_path=self.get_first_dataset_path()
+                ),
             )
         else:
             total_errors = 0

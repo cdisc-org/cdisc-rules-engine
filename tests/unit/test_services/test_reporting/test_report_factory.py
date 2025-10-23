@@ -14,8 +14,13 @@ def test_get_report_services():
         datasets=[],
         results=[],
         elapsed_time=10.5,
-        args=MagicMock(output_format=ReportTypes.values(), max_report_rows=None),
+        args=MagicMock(
+            output_format=ReportTypes.values(),
+            max_report_rows=None,
+            define_xml_path=None,
+        ),
         data_service=MagicMock(),
+        dictionary_versions={},
     )
     services = factory.get_report_services()
     assert len(services) == 2

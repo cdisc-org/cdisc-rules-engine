@@ -59,6 +59,15 @@ class JSONataProcessor:
                     row=result.get("row"),
                     USUBJID=result.get("USUBJID"),
                     SEQ=result.get("SEQ"),
+                    entity=result.get("entity")
+                    # For backwards compatibility. To be removed in the future:
+                    or result.get("dataset"),
+                    instance_id=result.get("instance_id")
+                    # For backwards compatibility. To be removed in the future:
+                    or result.get("iid") or result.get("USUBJID"),
+                    path=result.get("path")
+                    # For backwards compatibility. To be removed in the future:
+                    or result.get("_path") or result.get("row"),
                 )
                 errors[result.get("dataset")].append(error_entity)
         validation_error_container = [
@@ -75,6 +84,7 @@ class JSONataProcessor:
                     if results
                     else ExecutionStatus.EXECUTION_ERROR.value
                 ),
+                entity=dataset,
             ).to_representation()
             for dataset, error in errors.items()
         ]

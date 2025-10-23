@@ -322,6 +322,8 @@ class COREActions(BaseActions):
                 if self._sequence_exists(sequence, df_row.name)
                 else None
             ),
+            instance_id=filtered_dict.get("id"),
+            path=filtered_dict.get("_path"),
         )
         return error_object
 
