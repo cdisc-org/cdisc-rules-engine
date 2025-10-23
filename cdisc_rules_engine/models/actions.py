@@ -284,6 +284,8 @@ class COREActions(BaseActions):
         sequence: Optional[pd.Series] = data.get(
             f"{self.dataset_metadata.domain or ''}SEQ"
         )
+        json_path: Optional[pd.Series] = data.get("_path")
+        instance_id: Optional[pd.Series] = data.get("id")
         source_row_number: Optional[pd.Series] = data.get(SOURCE_ROW_NUMBER)
         source_filename: Optional[pd.Series] = data.get(SOURCE_FILENAME)
         row_dict = df_row.to_dict()
@@ -322,8 +324,16 @@ class COREActions(BaseActions):
                 if self._sequence_exists(sequence, df_row.name)
                 else None
             ),
-            instance_id=filtered_dict.get("id"),
-            path=filtered_dict.get("_path"),
+            instance_id=(
+                str(instance_id[df_row.name])
+                if isinstance(instance_id, pd.Series)
+                else None
+            ),
+            path=(
+                str(json_path[df_row.name])
+                if isinstance(json_path, pd.Series)
+                else None
+            ),
         )
         return error_object
 
