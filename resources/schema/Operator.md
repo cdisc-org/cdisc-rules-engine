@@ -990,7 +990,7 @@ Check:
       operator: target_is_sorted_by
       value:
         - name: --STDTC
-          order: asc
+          sort_order: asc
           null_position: last
 ```
 
