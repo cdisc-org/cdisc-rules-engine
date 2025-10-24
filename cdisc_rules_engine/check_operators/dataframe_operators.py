@@ -1550,7 +1550,7 @@ class DataframeType(BaseType):
         pandas = isinstance(self.value, PandasDataset)
         for col in columns:
             comparator: str = self.replace_prefix(col["name"])
-            ascending: bool = col["sort_order"].lower() != "desc"
+            ascending: bool = col["order"].lower() != "desc"
             na_pos: str = col["null_position"]
             sorted_df = self.value[[target, within, comparator]].sort_values(
                 by=[within, comparator], ascending=ascending, na_position=na_pos
