@@ -2,6 +2,10 @@ import os
 from lxml import etree
 import re
 
+from cdisc_rules_engine.exceptions.custom_exceptions import (
+    SchemaNotFoundError,
+    InvalidSchemaProvidedError,
+)
 from cdisc_rules_engine.operations.base_operation import BaseOperation
 
 
@@ -45,10 +49,12 @@ class GetXhtmlErrors(BaseOperation):
                     "usdm-xhtml-1.0.xsd",
                 )
             )
-        except Exception as e:
-            # TODO: Raise a custom exception or handle etree exceptions
-            #  specifically in RulesEngine.handle_validation_exceptions
-            raise Exception(f"Failed to parse XMLSchema: {e.error_log}")
+        except OSError as e:
+            raise SchemaNotFoundError(f"XSD file could not be found: {e}")
+        except (etree.XMLSchemaParseError, etree.XMLSyntaxError) as e:
+            raise InvalidSchemaProvidedError(
+                f"Failed to parse XMLSchema: {getattr(e, 'error_log', str(e))}"
+            )
 
         # TODO: Generate from namespaces provided in config / operation parameters
         self.nsdec = (
