@@ -124,12 +124,38 @@
       "type": "object"
     },
     {
-      "properties": { "operator": { "const": "equal_to" } },
+      "properties": {
+        "operator": {
+          "const": "equal_to"
+        },
+        "round_values": {
+          "type": "boolean"
+        },
+        "value_is_reference": {
+          "type": "boolean"
+        },
+        "type_insensitive": {
+          "type": "boolean"
+        }
+      },
       "required": ["operator", "value"],
       "type": "object"
     },
     {
-      "properties": { "operator": { "const": "equal_to_case_insensitive" } },
+      "properties": {
+        "operator": {
+          "const": "equal_to_case_insensitive"
+        },
+        "round_values": {
+          "type": "boolean"
+        },
+        "value_is_reference": {
+          "type": "boolean"
+        },
+        "type_insensitive": {
+          "type": "boolean"
+        }
+      },
       "required": ["operator", "value"],
       "type": "object"
     },
@@ -326,13 +352,37 @@
       "type": "object"
     },
     {
-      "properties": { "operator": { "const": "not_equal_to" } },
+      "properties": {
+        "operator": {
+          "const": "not_equal_to"
+        },
+        "round_values": {
+          "type": "boolean"
+        },
+        "value_is_reference": {
+          "type": "boolean"
+        },
+        "type_insensitive": {
+          "type": "boolean"
+        }
+      },
       "required": ["operator", "value"],
       "type": "object"
     },
     {
       "properties": {
-        "operator": { "const": "not_equal_to_case_insensitive" }
+        "operator": {
+          "const": "not_equal_to_case_insensitive"
+        },
+        "round_values": {
+          "type": "boolean"
+        },
+        "value_is_reference": {
+          "type": "boolean"
+        },
+        "type_insensitive": {
+          "type": "boolean"
+        }
       },
       "required": ["operator", "value"],
       "type": "object"
@@ -569,11 +619,15 @@
         }
       ]
     },
-    "value_is_literal": { "const": true },
-    "value_is_reference": { "const": true },
-    "type_insensitive": { "const": true },
-    "within": { "$ref": "CORE-base.json#/$defs/VariableName" },
-    "regex": { "type": "string" }
+    "value_is_literal": {
+      "type": "boolean"
+    },
+    "within": {
+      "$ref": "CORE-base.json#/$defs/VariableName"
+    },
+    "regex": {
+      "type": "string"
+    }
   },
   "required": ["operator"],
   "type": "object"

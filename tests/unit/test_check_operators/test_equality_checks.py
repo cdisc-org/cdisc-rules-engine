@@ -360,3 +360,81 @@ def test_not_equal_to_null_values(data, comparator, dataset_type, expected_resul
     dataframe_type = DataframeType({"value": df})
     result = dataframe_type.not_equal_to({"target": "target", "comparator": comparator})
     assert result.equals(df.convert_to_series(expected_result))
+
+
+@pytest.mark.parametrize(
+    "data,comparator,dataset_type,expected_result",
+    [
+        (
+            {"target": [5.4, 2.6, 3.1], "VAR2": [5.0, 3.0, 3.0]},
+            "VAR2",
+            PandasDataset,
+            [True, True, True],
+        ),
+        (
+            {"target": [5.4, 2.4, 3.6], "VAR2": [6.0, 2.0, 4.0]},
+            "VAR2",
+            PandasDataset,
+            [False, True, True],
+        ),
+        (
+            {"target": [5.4, 2.6, 3.1], "VAR2": [5.0, 3.0, 3.0]},
+            "VAR2",
+            DaskDataset,
+            [True, True, True],
+        ),
+        (
+            {"target": [1.7, 2.2, 3.5], "VAR2": [2.0, 2.0, 4.0]},
+            "VAR2",
+            DaskDataset,
+            [True, True, True],
+        ),
+    ],
+)
+def test_equal_to_with_rounding(data, comparator, dataset_type, expected_result):
+    """Test equal_to operator with round_values=True."""
+    df = dataset_type.from_dict(data)
+    dataframe_type = DataframeType({"value": df})
+    result = dataframe_type.equal_to(
+        {"target": "target", "comparator": comparator, "round_values": True}
+    )
+    assert result.equals(df.convert_to_series(expected_result))
+
+
+@pytest.mark.parametrize(
+    "data,comparator,dataset_type,expected_result",
+    [
+        (
+            {"target": [5.4, 2.6, 3.1], "VAR2": [6.0, 2.0, 4.0]},
+            "VAR2",
+            PandasDataset,
+            [True, True, True],
+        ),
+        (
+            {"target": [5.4, 2.6, 3.1], "VAR2": [5.0, 3.0, 3.0]},
+            "VAR2",
+            PandasDataset,
+            [False, False, False],
+        ),
+        (
+            {"target": [5.4, 2.6, 3.1], "VAR2": [6.0, 2.0, 4.0]},
+            "VAR2",
+            DaskDataset,
+            [True, True, True],
+        ),
+        (
+            {"target": [1.7, 2.2, 3.5], "VAR2": [2.0, 2.0, 3.0]},
+            "VAR2",
+            DaskDataset,
+            [False, False, True],
+        ),
+    ],
+)
+def test_not_equal_to_with_rounding(data, comparator, dataset_type, expected_result):
+    """Test not_equal_to operator with round_values=True."""
+    df = dataset_type.from_dict(data)
+    dataframe_type = DataframeType({"value": df})
+    result = dataframe_type.not_equal_to(
+        {"target": "target", "comparator": comparator, "round_values": True}
+    )
+    assert result.equals(df.convert_to_series(expected_result))
