@@ -3,11 +3,8 @@
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
     xmlns:usdm="http://www.cdisc.org/ns/usdm/xhtml/v1.0"
-    xmlns:svg="http://www.w3.org/2000/svg"
-    xmlns:math="http://www.w3.org/1998/Math/MathML"
     elementFormDefault="qualified" attributeFormDefault="unqualified"
     version="1.0">
-
 
     <!--
       USDM-XHTML 1.0 usdm-xhtml-extension schema draft
@@ -19,17 +16,12 @@
             Team</xs:documentation>
     </xs:annotation>
 
-    <xs:import namespace="http://www.w3.org/2000/svg" schemaLocation="../svg-1.1/svg.xsd"/>
-    <xs:import namespace="http://www.w3.org/1998/Math/MathML"
-        schemaLocation="../mathml2/mathml2.xsd" />
     <xs:import namespace="http://www.cdisc.org/ns/usdm/xhtml/v1.0"
         schemaLocation="usdm-xhtml-ns.xsd" />
     <xs:redefine schemaLocation="../xhtml-1.1/xhtml11.xsd">
         <xs:group name="xhtml.Misc.extra">
             <xs:choice>
                 <xs:group ref="xhtml.Misc.extra" />
-                <xs:element ref="svg:svg" />
-                <xs:element ref="math:math" />
                 <xs:element ref="usdm:ref" />
                 <xs:element ref="usdm:tag" />
             </xs:choice>

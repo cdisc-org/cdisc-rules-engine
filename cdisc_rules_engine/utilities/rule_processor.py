@@ -398,6 +398,7 @@ class RuleProcessor:
                 term_code=operation.get("term_code"),
                 term_value=operation.get("term_value"),
                 term_pref_term=operation.get("term_pref_term"),
+                namespace=operation.get("namespace"),
             )
 
             # execute operation

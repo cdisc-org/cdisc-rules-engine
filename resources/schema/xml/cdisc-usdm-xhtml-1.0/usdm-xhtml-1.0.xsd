@@ -3,8 +3,6 @@
            xmlns="http://www.w3.org/1999/xhtml"
            xmlns:xs="http://www.w3.org/2001/XMLSchema"
            xmlns:usdm="http://www.cdisc.org/ns/usdm/xhtml/v1.0"
-           xmlns:svg="http://www.w3.org/2000/svg"
-           xmlns:math="http://www.w3.org/1998/Math/MathML"
            elementFormDefault="qualified" attributeFormDefault="unqualified"
            version="1.0">
 
