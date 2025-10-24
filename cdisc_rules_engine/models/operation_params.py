@@ -57,3 +57,5 @@ class OperationParams:
     original_target: str = None
     returntype: str = None
     target: str = None
+    xsd_path: str = None
+    namespaces: List[dict] = None

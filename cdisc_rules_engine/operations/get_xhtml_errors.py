@@ -25,7 +25,6 @@ class GetXhtmlErrors(BaseOperation):
         target = self.params.target
         if target not in dataset:
             raise KeyError(target)
-        # TODO: It would be good to make the XSD path configurable via config and the XSD itself an operation parameter.
         # The XSD should be referenced as specified in DOCTYPE (so that external entities can be resolved correctly).
         # For example:
         #
@@ -40,15 +39,7 @@ class GetXhtmlErrors(BaseOperation):
         #
         # The schemaLocation values would probably needed to be configurable as well.
         try:
-            self.schema = etree.XMLSchema(
-                file=os.path.join(
-                    "resources",
-                    "schema",
-                    "xml",
-                    "cdisc-usdm-xhtml-1.0",
-                    "usdm-xhtml-1.0.xsd",
-                )
-            )
+            self.schema = etree.XMLSchema(file=os.path.abspath(self.params.xsd_path))
         except OSError as e:
             raise SchemaNotFoundError(f"XSD file could not be found: {e}")
         except (etree.XMLSchemaParseError, etree.XMLSyntaxError) as e:
@@ -56,18 +47,17 @@ class GetXhtmlErrors(BaseOperation):
                 f"Failed to parse XMLSchema: {getattr(e, 'error_log', str(e))}"
             )
 
-        # TODO: Generate from namespaces provided in config / operation parameters
-        self.nsdec = (
-            'xmlns="http://www.w3.org/1999/xhtml" xmlns:usdm="http://www.cdisc.org/ns/usdm/xhtml/v1.0" '
-            + 'xmlns:svg="http://www.w3.org/2000/svg" xmlns:math="http://www.w3.org/1998/Math/MathML" '
-            + 'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="'
-            + "http://www.w3.org/1999/xhtml ../resources/schema/xml/xhtml-1.1/xhtml1-loose.xsd "
-            + "http://www.w3.org/1998/Math/MathML ../resources/schema/xml/mathml2/mathml2.xsd "
-            + "http://www.w3.org/2000/svg ../resources/schema/xml/svg-1.1/svg.xsd "
-            + "http://www.cdisc.org/ns/usdm/xhtml/v1.0 "
-            + "../resources/schema/xml/cdisc-usdm-xhtml-1.0/usdm-xhtml-extension.xsd "
-            + 'http://www.w3.org/1999/xlink ../resources/schema/xml/xlink/xlink.xsd"'
-        )
+        # Build namespace declaration string from self.params.namespaces
+        ns_list = getattr(self.params, "namespaces", [])
+        nsdec_parts = []
+        for ns in ns_list:
+            uri = ns.get("uri")
+            prefix = ns.get("prefix")
+            if prefix:
+                nsdec_parts.append(f'xmlns:{prefix}="{uri}"')
+            else:
+                nsdec_parts.append(f'xmlns="{uri}"')
+        self.nsdec = " ".join(nsdec_parts)
         self.line_pattern = re.compile(r"line (\d+)")
 
         return dataset[target].apply(self._ensure_dataset_is_valid_xhtml)
