@@ -237,7 +237,7 @@ class TestValidate(unittest.TestCase):
             "error",
         ]
         exit_code, stdout, stderr = run_command(args, False)
-        self.assertEqual(exit_code, 0)
+        self.assertEqual(exit_code, 2)
         self.assertIn(
             "cannot use both --rules and --exclude-rules flags together.", stderr
         )
@@ -539,7 +539,7 @@ class TestValidate(unittest.TestCase):
             f"-l error"
         )
         exit_code, stdout, stderr = run_command(args, True)
-        self.assertEqual(exit_code, 0)
+        self.assertEqual(exit_code, 2)
         self.assertFalse(self.error_keyword in stdout)
         self.assertFalse(self.error_keyword in stdout)
         expected_pattern = (
@@ -563,7 +563,7 @@ class TestValidate(unittest.TestCase):
             f"-v 3.4 "
         )
         exit_code, stdout, stderr = run_command(args, True)
-        self.assertEqual(exit_code, 0)
+        self.assertEqual(exit_code, 2)
         expected_pattern = (
             r"\[error \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3} - "
             r"core\.py:\d+\] - you must pass one of the following arguments: "
@@ -616,7 +616,7 @@ class TestValidate(unittest.TestCase):
         self.assertNotEqual(exit_code, 0)
         self.assertNotEqual(stderr, "")
 
-    def test_validate_dummy_without_vx(self):
+    def test_validate_dummy_with_vx_as_no(self):
         args = (
             f"python core.py validate "
             f"-s sendig "
@@ -624,11 +624,12 @@ class TestValidate(unittest.TestCase):
             f"-dv 2.1 "
             f"-lr {os.path.join('tests', 'resources', 'CoreIssue295', 'SEND4.json')} "
             f"-dp {os.path.join('tests', 'resources', 'CoreIssue295', 'dm.json')} "
+            f"-vx no"
         )
         exit_code, stdout, stderr = run_command(args, True)
         self.assertNotIn("error", stdout)
 
-    def test_validate_dummy_with_vx(self):
+    def test_validate_dummy_with_vx_as_yes(self):
         args = (
             f"python core.py validate "
             f"-s sendig "
@@ -636,7 +637,7 @@ class TestValidate(unittest.TestCase):
             f"-dv 2.1 "
             f"-lr {os.path.join('tests', 'resources', 'CoreIssue295', 'SEND4.json')} "
             f"-dp {os.path.join('tests', 'resources', 'CoreIssue295', 'dm.json')} "
-            f"-vx"
+            f"-vx y"
         )
         exit_code, stdout, stderr = run_command(args, True)
         self.assertEqual(exit_code, 0)

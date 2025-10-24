@@ -206,8 +206,8 @@ def cli():
 @click.option(
     "-vx",
     "--validate-xml",
-    is_flag=True,
-    help="This flag enables XML validation against a Define-XML schema.",
+    default="y",
+    help="Enable XML validation (default 'y' to enable, otherwise disable)",
 )
 @click.option(
     "-jcf",
@@ -266,7 +266,7 @@ def validate(
     custom_standard: bool,
     progress: str,
     define_xml_path: str,
-    validate_xml: bool,
+    validate_xml: str,
     jsonata_custom_functions: tuple[()] | tuple[tuple[str, str], ...],
     max_report_rows: int,
     max_errors_per_rule: int,
@@ -288,7 +288,11 @@ def validate(
             logger.error(
                 "Flag --raw-report can be used only when --output-format is JSON"
             )
-            ctx.exit()
+            ctx.exit(2)
+
+    if exclude_rules and rules:
+        logger.error("Cannot use both --rules and --exclude-rules flags together.")
+        ctx.exit(2)
 
     if exclude_rules and rules:
         logger.error("Cannot use both --rules and --exclude-rules flags together.")
@@ -316,7 +320,7 @@ def validate(
             logger.error(
                 "Argument --dataset-path cannot be used together with argument --data"
             )
-            ctx.exit()
+            ctx.exit(2)
         dataset_paths, found_formats = valid_data_file(
             [str(Path(data).joinpath(fn)) for fn in os.listdir(data)]
         )
@@ -324,20 +328,21 @@ def validate(
             logger.error(
                 f"Argument --data contains more than one allowed file format ({', '.join(found_formats)})."  # noqa: E501
             )
-            ctx.exit()
+            ctx.exit(2)
     elif dataset_path:
         dataset_paths, found_formats = valid_data_file([dp for dp in dataset_path])
         if len(found_formats) > 1:
             logger.error(
                 f"Argument --dataset-path contains more than one allowed file format ({', '.join(found_formats)})."  # noqa: E501
             )
-            ctx.exit()
+            ctx.exit(2)
     else:
         logger.error(
             "You must pass one of the following arguments: --dataset-path, --data"
         )
         # no need to define dataset_paths here, the program execution will stop
-        ctx.exit()
+        ctx.exit(2)
+    validate_xml_bool = True if validate_xml.lower() in ("y", "yes") else False
     run_validation(
         Validation_args(
             cache_path,
@@ -360,7 +365,7 @@ def validate(
             custom_standard,
             progress,
             define_xml_path,
-            validate_xml,
+            validate_xml_bool,
             jsonata_custom_functions,
             max_report_rows,
             max_errors_per_rule,
