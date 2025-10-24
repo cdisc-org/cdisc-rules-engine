@@ -172,6 +172,6 @@ class OperationsFactory(FactoryInterface):
                 kwargs.get("library_metadata"),
             )
         raise ValueError(
-            f"Operation name must be in  {list(self._operations_map.keys())}, "
+            f"Operation name must be in {list(self._operations_map.keys())}, "
             f"given operation name is {name}"
         )
