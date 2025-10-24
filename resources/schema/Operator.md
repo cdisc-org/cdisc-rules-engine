@@ -11,6 +11,7 @@ Has optional parameter:
 
 - 'value_is_reference' when true, the value parameter specifies a column name whose content determines which column to compare against dynamically.
 - 'type_insensitive' when true, both values are converted to strings before comparison to handle type mismatches between string and numeric data.
+- 'round_values' when true, both the target and value will be rounded to the nearest integer
 
 > --OCCUR = N
 
@@ -30,6 +31,17 @@ Has optional parameter:
   type_insensitive: true
 ```
 
+> --STRESC = --STRESN with rounded values and ignoring the char/num type differences
+> between the two columns
+
+```yaml
+- name: --STRESC
+  operator: equal_to
+  type_insensitive: true
+  value: --STRESN
+  round_values: true
+```
+
 > EXDOSE EQ 0
 
 ```yaml
@@ -40,7 +52,7 @@ Has optional parameter:
 
 ### not_equal_to
 
-Complement of `equal_to`. Also has the optional parameters 'value_is_reference' and 'type_insensitive'.
+Complement of `equal_to`. Also has the optional parameters 'value_is_reference'. 'round_values' and 'type_insensitive'.
 
 > --OCCUR ^= Y
 
@@ -52,7 +64,7 @@ Complement of `equal_to`. Also has the optional parameters 'value_is_reference' 
 
 ### equal_to_case_insensitive
 
-Case insensitive `equal_to`
+Case insensitive `equal_to`. Also has the optional parameters 'value_is_reference'. 'round_values' and 'type_insensitive'.
 
 > DSTERM is "Informed consent obtained"
 
@@ -64,7 +76,7 @@ Case insensitive `equal_to`
 
 ### not_equal_to_case_insensitive
 
-Complement of `equal_to_case_insensitive`
+Complement of `equal_to_case_insensitive`. Also has the optional parameters 'value_is_reference'. 'round_values' and 'type_insensitive'.
 
 ### greater_than
 
@@ -850,7 +862,7 @@ Checking for consistent values across groups and validating that variables maint
 
 ### is_inconsistent_across_dataset
 
-Checks if a variable maintains consistent values within groups defined by one or more grouping variables. Groups records by specified value(s) and validates that the target variable maintains the same value within each unique combination of grouping variables.
+Checks if a variable maintains consistent values within groups defined by one or more grouping variables. Groups records by specified value(s) and validates that the target variable maintains the same value within each unique combination of grouping variables. It reports based on majority--if is equal it will report all issues when it finds an inconcistency and if it finds a majority value that is concistent, it will report the minority value that is inconcistent.
 
 Single grouping variable - true if the values of BGSTRESU differ within USUBJID:
 
@@ -978,7 +990,7 @@ Check:
       operator: target_is_sorted_by
       value:
         - name: --STDTC
-          order: asc
+          sort_order: asc
           null_position: last
 ```
 

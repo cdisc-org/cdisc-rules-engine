@@ -11,6 +11,8 @@ jobs:
         include:
           - os: "ubuntu-latest"
             name: "core-ubuntu-latest"
+          - os: "ubuntu-22.04"
+            name: "core-ubuntu-22.04-tar"
           - os: "macos-latest"
             name: "core-mac-apple-silicon"
           - os: "windows-latest"
@@ -47,6 +49,20 @@ jobs:
         with:
           files: artifacts/core-windows/
           dest: core-windows.zip
+      - name: Create Ubuntu 22.04 tar.gz
+        run: |
+          cd artifacts/core-ubuntu-22.04-tar
+          tar -czf ../../core-ubuntu-22.04.tar.gz .
+          cd ../..
+      - name: Delete original Ubuntu 22.04 artifact
+        uses: geekyeggo/delete-artifact@v5
+        with:
+          name: core-ubuntu-22.04-tar
+      - name: Upload Ubuntu 22.04 tar.gz
+        uses: actions/upload-artifact@v4
+        with:
+          name: core-ubuntu-22.04-tarball
+          path: core-ubuntu-22.04.tar.gz
 
       - name: Upload Ubuntu Latest Release Asset
         uses: actions/upload-release-asset@v1
@@ -57,6 +73,15 @@ jobs:
           asset_path: ./core-ubuntu-latest.zip
           asset_name: core-ubuntu-latest.zip
           asset_content_type: application/zip
+      - name: Upload Ubuntu 22.04 Google Collab Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./core-ubuntu-22.04.tar.gz
+          asset_name: core-ubuntu-22.04.tar.gz
+          asset_content_type: application/gzip
       - name: Upload Mac Intel Release Asset
         uses: actions/upload-release-asset@v1
         env:

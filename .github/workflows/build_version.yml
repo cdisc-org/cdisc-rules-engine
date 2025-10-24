@@ -1,4 +1,4 @@
-name: Build Custom Executable
+name: Build Custom Executable (Ubuntu 22.04)
 on:
   workflow_dispatch:
   # schedule:
@@ -49,4 +49,100 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: cdisc-core-ubuntu-22.04
-          path: dist/output/core-ubuntu-22.04/core/cdisc-core-*
+          path: dist/output/core-ubuntu-22.04/core/
+# name: Build Custom Executable (Windows)
+# on:
+#   workflow_dispatch:
+#   # schedule:
+#   #   - cron: '0 2 * * 0'  # Weekly on Sunday at 2 AM UTC
+#   #   - cron: '0 2 * * *'  # Daily at 2 AM UTC
+# jobs:
+#   custom-executable-build-windows:
+#     runs-on: windows-latest
+#     steps:
+#       - uses: actions/checkout@v4
+#         with:
+#           repository: cdisc-org/cdisc-rules-engine
+#           ref: main
+#       - name: Set up Python
+#         uses: actions/setup-python@v5
+#         with:
+#           python-version: "3.12"
+#       - name: Install dependencies
+#         run: |
+#           python -m pip install --upgrade pip
+#           pip install setuptools wheel twine
+#           pip install --no-deps -r requirements.txt
+#           pip install -r requirements.txt --no-cache-dir
+#       - name: Update CDISC standards cache
+#         env:
+#           CDISC_LIBRARY_API_KEY: ${{ secrets.CDISC_LIBRARY_API_KEY }}
+#         run: |
+#           python core.py update-cache
+#       - name: Build Binary (Windows)
+#         run: pyinstaller --onedir --contents-directory "." core.py --dist ./dist/output/core-windows --collect-submodules pyreadstat --add-data="resources/cache;resources/cache" --add-data="resources/templates;resources/templates" --add-data="resources/schema;resources/schema" --add-data="tests/resources/datasets;tests/resources/datasets"
+#       - name: Prepare executable (Windows)
+#         shell: pwsh
+#         run: |
+#           cd dist/output/core-windows/core
+#           $date = Get-Date -Format "yyyyMMdd"
+#           Rename-Item core.exe "cdisc-core-$date.exe"
+#           Write-Output "Executable ready: $(Get-ChildItem cdisc-core-*)"
+#       - name: Upload Artifact
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: cdisc-core-windows
+#           path: dist/output/core-windows/core/
+
+# name: Build Custom Executable (macOS)
+# on:
+#   workflow_dispatch:
+#   # schedule:
+#   #   - cron: '0 2 * * 0'  # Weekly on Sunday at 2 AM UTC
+#   #   - cron: '0 2 * * *'  # Daily at 2 AM UTC
+# jobs:
+#   custom-executable-build-macos:
+#     runs-on: macos-latest
+#     steps:
+#       - uses: actions/checkout@v4
+#         with:
+#           repository: cdisc-org/cdisc-rules-engine
+#           ref: main
+#       - name: Set up Python
+#         uses: actions/setup-python@v5
+#         with:
+#           python-version: "3.12"
+#       - name: Install dependencies
+#         run: |
+#           python -m pip install --upgrade pip
+#           pip install setuptools wheel twine
+#           pip install --no-deps -r requirements.txt
+#           pip install -r requirements.txt --no-cache-dir
+#       - name: Update CDISC standards cache
+#         env:
+#           CDISC_LIBRARY_API_KEY: ${{ secrets.CDISC_LIBRARY_API_KEY }}
+#         run: |
+#           python core.py update-cache
+#       - name: Build Binary (macOS)
+#         run: |
+#           pyinstaller --onedir \
+#             --contents-directory "." \
+#             core.py \
+#             --dist ./dist/output/core-macos \
+#             --collect-submodules pyreadstat \
+#             --add-data="resources/cache:resources/cache" \
+#             --add-data="resources/templates:resources/templates" \
+#             --add-data="resources/schema:resources/schema" \
+#             --add-data="tests/resources/datasets:tests/resources/datasets"
+#       - name: Prepare executable (macOS)
+#         run: |
+#           cd dist/output/core-macos/core
+#           chmod +x core
+#           file core  # Verify architecture
+#           mv core cdisc-core-$(date +%Y%m%d)
+#           echo "Executable ready: $(ls cdisc-core-*)"
+#       - name: Upload Artifact
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: cdisc-core-macos
+#           path: dist/output/core-macos/core/

@@ -204,6 +204,20 @@ def apply_regex(regex: str, val: str):
         return None
 
 
+def apply_rounding(target_val, comparison_val):
+    try:
+        rounded_target = round(float(target_val)) if target_val is not None else None
+    except (ValueError, TypeError):
+        rounded_target = target_val
+    try:
+        rounded_comparison = (
+            round(float(comparison_val)) if comparison_val is not None else None
+        )
+    except (ValueError, TypeError):
+        rounded_comparison = comparison_val
+    return rounded_target, rounded_comparison
+
+
 def flatten_list(data, items):
     for item in items:
         if isinstance(item, list):
