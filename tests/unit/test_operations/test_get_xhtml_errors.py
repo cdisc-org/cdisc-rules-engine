@@ -4,13 +4,14 @@ from unittest.mock import MagicMock
 import pandas as pd
 import pytest
 
+from cdisc_rules_engine.exceptions.custom_exceptions import SchemaNotFoundError
 from cdisc_rules_engine.models.dataset import PandasDataset
 from cdisc_rules_engine.models.operation_params import OperationParams
 from cdisc_rules_engine.operations.get_xhtml_errors import GetXhtmlErrors
 
 
 @pytest.mark.parametrize(
-    "target_column, dataset, expected",
+    "target_column, dataset, namespace, expected",
     [
         (  # column is not in the dataset
             "target",
@@ -21,6 +22,7 @@ from cdisc_rules_engine.operations.get_xhtml_errors import GetXhtmlErrors
                     {"column": ""},
                 ]
             ),
+            "http://www.cdisc.org/ns/usdm/xhtml/v1.0",
             KeyError,
         ),
         (  # schema violation
@@ -32,13 +34,14 @@ from cdisc_rules_engine.operations.get_xhtml_errors import GetXhtmlErrors
                     },
                 ]
             ),
+            "http://www.cdisc.org/ns/usdm/xhtml/v1.0",
             [
                 [
                     "Invalid XHTML line 3 [ERROR]: Element 'style': This element is not expected."
                 ]
             ],
         ),
-        (  # valid schema
+        (  # valid dataset
             "target",
             PandasDataset.from_records(
                 [
@@ -47,18 +50,33 @@ from cdisc_rules_engine.operations.get_xhtml_errors import GetXhtmlErrors
                     },
                 ]
             ),
+            "http://www.cdisc.org/ns/usdm/xhtml/v1.0",
             [[]],
+        ),
+        (  # invalid namespace
+            "target",
+            PandasDataset.from_records(
+                [
+                    {
+                        "target": '<div xmlns="http://www.w3.org/1999/xhtml"><p>Table LZZT.1 lists the clinical laboratory tests that will be performed at Visit 1.</p>\r\n<p><b>Table LZZT.1. Laboratory Tests Performed at Admission (Visit 1)</b></p>\r\n<p><b>Safety Laboratory Tests</b></p>\r\n<table class="table">\r\n<tr>\r\n<td>\r\n<p><b>Hematology:</b></p>\r\n<p></p>\r\n<p><b>Urinalysis:</b></p>\r\n<p></p>\r\n</td>\r\n<td>\r\n<p><b>Clinical Chemistry - Serum Concentration of:</b></p>\r\n<p></p>\r\n<p><b>Thyroid Function Test (Visit 1 only):</b></p>\r\n<p><b>Other Tests (Visit 1 only):</b></p>\r\n</td>\r\n</tr>\r\n</table>\r\n<p>Laboratory values that fall outside a clinically accepted reference range or values that differ significantly from previous values must be evaluated and commented on by the investigator by marking CS (for clinically significant) or NCS (for not clinically significant) next to the values. Any clinically significant laboratory values that are outside a clinically acceptable range or differ importantly from a previous value should be further commented on in the clinical report form comments page.</p>\r\n<p>Hematology, and clinical chemistry will also be performed at Visits 4, 5, 7, 8, 9, 10, 11, 12, and 13. Patients that experience a rash and/or eosinophilia may have additional hematology samples obtained as described in 3.9.3.4 (Other Safety Measures).</p>\r\n<p>Urinalysis will also be performed at Visits 4, 9, and 12. The following criteria have been developed to monitor hepatic function.</p>\r\n</div>'  # noqa: E501
+                    },
+                ]
+            ),
+            "invalid-namespace",
+            SchemaNotFoundError,
         ),
     ],
 )
 def test_get_xhtml_errors(
     target_column: str,
     dataset: PandasDataset,
+    namespace: str,
     expected: Any,
     operation_params: OperationParams,
 ):
     operation_id = "$get_xhtml_errors"
     operation_params.operation_id = operation_id
+    operation_params.namespace = namespace
     operation = GetXhtmlErrors(
         params=operation_params,
         original_dataset=dataset,

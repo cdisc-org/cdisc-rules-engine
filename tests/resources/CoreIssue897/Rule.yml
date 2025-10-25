@@ -26,6 +26,7 @@ Operations:
   - id: $xhtml_errors
     name: text
     operator: get_xhtml_errors
+    namespace: http://www.cdisc.org/ns/usdm/xhtml/v1.0
 Outcome:
   Message: "The narrative content item text contains non-conformant XHTML."
   Output Variables:
