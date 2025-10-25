@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema targetNamespace="http://www.cdisc.org/ns/usdm/xhtml/v1.0"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:xh11d="http://www.w3.org/1999/xhtml/datatypes/"
+           xmlns:usdm="http://www.cdisc.org/ns/usdm/xhtml/v1.0"
+           elementFormDefault="qualified" attributeFormDefault="unqualified"
+           version="1.0">
+
+  <!--
+      USDM-XHTML 1.0 usdm-xhtml-ns schema draft
+      as developed by the CDISC USDM Team
+  -->
+  
+  <xs:annotation>
+    <xs:documentation>USDM-XHTML 1.0 usdm-xhtml-ns schema as developed by the CDISC USDM Team</xs:documentation>
+  </xs:annotation>
+ 
+  <xs:import namespace="http://www.w3.org/1999/xhtml/datatypes/"     schemaLocation="http://www.w3.org/MarkUp/SCHEMA/xhtml-datatypes-1.xsd"/>
+
+  <!--
+         Ref
+     -->
+  <xs:element name="ref" type="usdm:USDMcomplexTypeDefinition-ref"/>
+  <xs:complexType name="USDMcomplexTypeDefinition-ref">
+    <xs:annotation><xs:documentation>A reference to content held within the remainder of the model.</xs:documentation></xs:annotation>
+    <xs:attribute name="klass" type="xh11d:CDATA" use="required">
+      <xs:annotation><xs:documentation>The name of the class that holds the referenced data element.</xs:documentation></xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="id" type="xh11d:CDATA"  use="required">
+      <xs:annotation><xs:documentation>The id value of the referenced instance of the referenced class.</xs:documentation></xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="attribute" type="xh11d:CDATA"  use="required">
+      <xs:annotation><xs:documentation>The attribute name of the referenced data element within the referenced instance of the referenced class.</xs:documentation></xs:annotation>
+    </xs:attribute>
+  </xs:complexType>   
+  
+  <!--
+         Tag
+     -->
+  <xs:element name="tag" type="usdm:USDMcomplexTypeDefinition-tag"/>
+  <xs:complexType name="USDMcomplexTypeDefinition-tag">
+    <xs:annotation><xs:documentation>A reference to a parameter that is mapped to a value.</xs:documentation></xs:annotation>
+    <xs:attribute name="name" type="xh11d:CDATA" use="required">
+      <xs:annotation><xs:documentation>The name of the referenced parameter.</xs:documentation></xs:annotation>
+    </xs:attribute>
+  </xs:complexType>   
+  
+</xs:schema>    

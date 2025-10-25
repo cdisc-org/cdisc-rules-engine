@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema
+ xmlns:xs="http://www.w3.org/2001/XMLSchema"
+ elementFormDefault="qualified"
+ xmlns:xh11d="http://www.w3.org/1999/xhtml/datatypes/"
+>
+    <xs:import namespace="http://www.w3.org/1999/xhtml/datatypes/" 
+               schemaLocation="xhtml-datatypes-1.xsd" />
+
+    <xs:annotation>
+        <xs:documentation>
+      This is the XML Schema module for XHTML Access
+      $Id: xhtml-access-1.xsd,v 1.1 2008/05/17 16:21:57 smccarro Exp $
+    </xs:documentation>
+        <xs:documentation source="xhtml-copyright-1.xsd"/>
+        <xs:documentation source="http://www.w3.org/TR/xhtml-role#A_role"/>
+    </xs:annotation>
+    <xs:attributeGroup name="xhtml.access.attlist">
+        <xs:attributeGroup ref="xhtml.Common.attrib"/>
+        <xs:attribute name="activate" default="no">
+            <xs:simpleType>
+                <xs:restriction base="xs:NMTOKEN">
+                    <xs:enumeration value="yes"/>
+                    <xs:enumeration value="no"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="key" type="xh11d:Character"/>
+        <xs:attribute name="targetid">
+            <xs:simpleType>
+                <xs:list itemType="xs:IDREF"/>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="targetrole" type="xh11d:CURIEs"/>
+    </xs:attributeGroup>
+    <xs:group name="xhtml.access.content">
+        <xs:sequence/>
+    </xs:group>
+    <xs:complexType name="xhtml.access.type">
+        <xs:group ref="xhtml.access.content"/>
+        <xs:attributeGroup ref="xhtml.access.attlist"/>
+    </xs:complexType>
+</xs:schema>

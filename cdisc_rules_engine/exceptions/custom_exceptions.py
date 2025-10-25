@@ -78,3 +78,13 @@ class UnsupportedDictionaryType(EngineError):
 
 class FailedSchemaValidation(EngineError):
     description = "Error Occured in Schema Validation"
+
+
+class SchemaNotFoundError(EngineError):
+    code = 404
+    description = "XSD file could not be found"
+
+
+class InvalidSchemaProvidedError(EngineError):
+    code = 400
+    description = "Failed to parse XMLSchema"

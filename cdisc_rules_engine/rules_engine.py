@@ -15,6 +15,8 @@ from cdisc_rules_engine.exceptions.custom_exceptions import (
     VariableMetadataNotFoundError,
     FailedSchemaValidation,
     DomainNotFoundError,
+    InvalidSchemaProvidedError,
+    SchemaNotFoundError,
 )
 from cdisc_rules_engine.interfaces import (
     CacheServiceInterface,
@@ -458,6 +460,20 @@ class RulesEngine:
             error_obj = FailedValidationEntity(
                 dataset=os.path.basename(dataset_path),
                 error=DomainNotFoundInDefineXMLError.description,
+                message=exception.args[0],
+            )
+            message = "rule execution error"
+        elif isinstance(exception, SchemaNotFoundError):
+            error_obj = FailedValidationEntity(
+                dataset=os.path.basename(dataset_path),
+                error=SchemaNotFoundError.description,
+                message=exception.args[0],
+            )
+            message = "rule execution error"
+        elif isinstance(exception, InvalidSchemaProvidedError):
+            error_obj = FailedValidationEntity(
+                dataset=os.path.basename(dataset_path),
+                error=InvalidSchemaProvidedError.description,
                 message=exception.args[0],
             )
             message = "rule execution error"

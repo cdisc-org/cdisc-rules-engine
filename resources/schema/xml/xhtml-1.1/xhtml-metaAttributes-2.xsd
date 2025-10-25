@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema 
+    xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+    xmlns:xh11d="http://www.w3.org/1999/xhtml/datatypes/"
+    elementFormDefault="qualified" 
+>
+  <xs:import namespace="http://www.w3.org/1999/xhtml/datatypes/" 
+             schemaLocation="xhtml-datatypes-1.xsd" />
+  <xs:annotation>
+    <xs:documentation>
+      This is the XML Schema Metainformation Attributes module for XHTML
+
+      $Id: xhtml-metaAttributes-2.xsd,v 1.5 2015/11/24 13:10:17 smccarro Exp $
+    </xs:documentation>
+    <xs:documentation source="xhtml-rdfa-copyright-1.xsd"/>
+  </xs:annotation>
+
+  <xs:annotation>
+    <xs:documentation>
+      XHTML Metainformation Attributes
+    </xs:documentation>
+  </xs:annotation>
+
+  <xs:attribute name="about" type="xh11d:SafeCURIEorCURIEorIRI"/>
+  <xs:attribute name="content" type="xh11d:CDATA"/>
+  <xs:attribute name="datatype" type="xh11d:TERMorCURIEorAbsIRI"/>
+  <xs:attribute name="inlist" type="xh11d:CDATA"/>
+  <xs:attribute name="typeof" type="xh11d:TERMorCURIEorAbsIRIs"/>
+  <xs:attribute name="prefix" type="xh11d:PREFIXes"/>
+  <xs:attribute name="property" type="xh11d:TERMorCURIEorAbsIRIs"/>
+  <xs:attribute name="rel" type="xh11d:TERMorCURIEorAbsIRIs"/>
+  <xs:attribute name="resource" type="xh11d:SafeCURIEorCURIEorIRI"/>
+  <xs:attribute name="rev" type="xh11d:TERMorCURIEorAbsIRIs"/>
+  <xs:attribute name="vocab" type="xs:anyURI"/>
+
+  <xs:attributeGroup name="xhtml.metaAttributes.attrib">
+    <xs:attribute name="about"/>
+    <xs:attribute name="content"/>
+    <xs:attribute name="datatype"/>
+    <xs:attribute name="inlist"/>
+    <xs:attribute name="typeof"/>
+    <xs:attribute name="prefix"/>
+    <xs:attribute name="property"/>
+    <xs:attribute name="rel"/>
+    <xs:attribute name="resource"/>
+    <xs:attribute name="rev"/>
+    <xs:attribute name="vocab"/>
+  </xs:attributeGroup>
+
+</xs:schema>

@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema 
+    targetNamespace="http://www.w3.org/2001/xml-events" 
+    xmlns="http://www.w3.org/2001/xml-events" 
+    xmlns:xh11d="http://www.w3.org/1999/xhtml/datatypes/"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xsi:schemaLocation="http://www.w3.org/2001/XMLSchema 
+                        http://www.w3.org/2001/XMLSchema.xsd" 
+    elementFormDefault="unqualified" 
+    blockDefault="#all" 
+    finalDefault="#all" 
+    attributeFormDefault="unqualified">
+
+  <xs:annotation>
+    <xs:documentation>
+      This is the XML Schema for XML Handlers
+
+      URI: http://www.w3.org/MarkUp/SCHEMA/xml-handlers-1.xsd
+      $Id: xml-handlers-1.xsd,v 1.1 2008/06/25 14:36:29 smccarro Exp $
+    </xs:documentation>
+    <xs:documentation source="xml-events-copyright-2.xsd"/>
+  </xs:annotation>
+
+  <xs:attributeGroup name="action.attlist">
+    <xs:attribute name="event" use="required" type="xs:QName"/>
+    <xs:attribute name="targetid" type="xs:IDREF"/>
+    <xs:attribute name="declare">
+        <xs:simpleType>
+            <xs:restriction base="xs:NMTOKEN">
+                <xs:enumeration value="declare"/>
+            </xs:restriction>
+        </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="if" type="xs:normalizedString"/>
+    <xs:attribute name="while" type="xs:normalizedString"/>
+    <xs:attribute name="id" type="xs:ID"/>
+  </xs:attributeGroup>
+
+  <xs:complexType name="action.type">
+    <xs:attributeGroup ref="action.attlist"/>
+  </xs:complexType>
+
+  <xs:element name="action" type="action.type"/>
+
+  <xs:attributeGroup name="dispatchEvent.attlist">
+    <xs:attribute name="raise" type="xs:QName"/>
+    <xs:attribute name="to" type="xs:IDREF"/>
+    <xs:attribute name="bubbles">
+        <xs:simpleType>
+            <xs:restriction base="xs:NMTOKEN">
+                <xs:enumeration value="bubbles"/>
+            </xs:restriction>
+        </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="cancelable">
+        <xs:simpleType>
+            <xs:restriction base="xs:NMTOKEN">
+                <xs:enumeration value="cancelable"/>
+            </xs:restriction>
+        </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="id" type="xs:ID"/>
+  </xs:attributeGroup>
+
+  <xs:complexType name="dispatchEvent.type">
+    <xs:attributeGroup ref="dispatchEvent.attlist"/>
+  </xs:complexType>
+
+  <xs:element name="dispatchEvent" type="dispatchEvent.type"/>
+
+  <xs:attributeGroup name="addEventListener.attlist">
+    <xs:attribute name="event" use="required" type="xs:QName"/>
+    <xs:attribute name="handler" use="required" type="xs:IDREF"/>
+    <xs:attribute name="phase" default="default">
+        <xs:simpleType>
+            <xs:restriction base="xs:NMTOKEN">
+                <xs:enumeration value="bubble"/>
+                <xs:enumeration value="capture"/>
+                <xs:enumeration value="default"/>
+                <xs:enumeration value="target"/>
+            </xs:restriction>
+        </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="id" type="xs:ID"/>
+  </xs:attributeGroup>
+
+  <xs:complexType name="addEventListener.type">
+    <xs:attributeGroup ref="addEventListener.attlist"/>
+  </xs:complexType>
+
+  <xs:element name="addEventListener" type="addEventListener.type"/>
+
+  <xs:attributeGroup name="removeEventListener.attlist">
+    <xs:attribute name="event" use="required" type="xs:QName"/>
+    <xs:attribute name="handler" use="required" type="xs:IDREF"/>
+    <xs:attribute name="phase" default="default">
+        <xs:simpleType>
+            <xs:restriction base="xs:NMTOKEN">
+                <xs:enumeration value="bubble"/>
+                <xs:enumeration value="capture"/>
+                <xs:enumeration value="default"/>
+                <xs:enumeration value="target"/>
+            </xs:restriction>
+        </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="id" type="xs:ID"/>
+  </xs:attributeGroup>
+  <xs:complexType name="removeEventListener.type">
+    <xs:attributeGroup ref="removeEventListener.attlist"/>
+  </xs:complexType>
+
+  <xs:element name="removeEventListener" type="removeEventListener.type"/>
+
+  <xs:attributeGroup name="stopPropagation.attlist">
+    <xs:attribute name="event" use="required" type="xs:QName"/>
+    <xs:attribute name="id" type="xs:ID"/>
+  </xs:attributeGroup>
+
+  <xs:complexType name="stopPropagation.type">
+    <xs:attributeGroup ref="stopPropagation.attlist"/>
+  </xs:complexType>
+
+  <xs:element name="stopPropagation" type="stopPropagation.type"/>
+
+  <xs:attributeGroup name="preventDefault.attlist">
+    <xs:attribute name="event" use="required" type="xs:QName"/>
+    <xs:attribute name="id" type="xs:ID"/>
+  </xs:attributeGroup>
+
+  <xs:complexType name="preventDefault.type">
+    <xs:attributeGroup ref="preventDefault.attlist"/>
+  </xs:complexType>
+
+  <xs:element name="preventDefault" type="stopPropagation.type"/>
+</xs:schema>

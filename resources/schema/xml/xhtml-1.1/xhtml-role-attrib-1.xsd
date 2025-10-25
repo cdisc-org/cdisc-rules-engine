@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema
+ xmlns:xs="http://www.w3.org/2001/XMLSchema"
+ elementFormDefault="qualified"
+ xmlns:xh11d="http://www.w3.org/1999/xhtml/datatypes/"
+>
+    <xs:import namespace="http://www.w3.org/1999/xhtml/datatypes/" 
+               schemaLocation="xhtml-datatypes-1.xsd" />
+
+    <xs:annotation>
+        <xs:documentation>
+      This is the XML Schema attribute module for XHTML Role
+      $Id: xhtml-role-attrib-1.xsd,v 1.2 2010/04/20 19:31:48 smccarro Exp $
+    </xs:documentation>
+        <xs:documentation source="xhtml-copyright-1.xsd"/>
+        <xs:documentation source="http://www.w3.org/TR/role-attribute#A_role"/>
+    </xs:annotation>
+    <xs:attribute name="role" type="xh11d:TERMorURIorCURIEs"/>
+</xs:schema>
