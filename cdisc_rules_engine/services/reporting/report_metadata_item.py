@@ -5,4 +5,4 @@ from dataclasses import dataclass
 class ReportMetadataItem:
     name: str
     row: int
-    value: str
+    value: str | None = None

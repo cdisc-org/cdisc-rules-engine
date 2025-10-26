@@ -9,9 +9,7 @@ def test_get_rules_report_data(mock_validation_results):
         ["test"],
         mock_validation_results,
         10.1,
-        MagicMock(
-            define_xml_path=None,
-        ),
+        MagicMock(define_xml_path=None, max_errors_per_rule=(None, False)),
     )
     report_data = report.get_rules_report_data()
     expected_reports = []
@@ -40,6 +38,7 @@ def test_get_detailed_data(mock_validation_results):
         10.1,
         MagicMock(
             define_xml_path=None,
+            max_errors_per_rule=(None, False),
         ),
     )
     detailed_data = report.get_detailed_data()
@@ -92,6 +91,7 @@ def test_get_summary_data(mock_validation_results):
         10.1,
         MagicMock(
             define_xml_path=None,
+            max_errors_per_rule=(None, False),
         ),
     )
     summary_data = report.get_summary_data()

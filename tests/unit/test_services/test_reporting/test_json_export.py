@@ -13,6 +13,7 @@ from cdisc_rules_engine.services.reporting.json_report import JsonReport
 )
 def test_get_export(_, mock_validation_results):
     mock_args = MagicMock()
+    mock_args.max_errors_per_rule = (None, False)
     mock_args.controlled_terminology_package = ["sdtmct-03-2021"]
     mock_args.standard = "sdtmig"
     mock_args.version = "3.4"
@@ -31,6 +32,8 @@ def test_get_export(_, mock_validation_results):
     assert export["Conformance_Details"]["Version"] == "V3.4"
     assert export["Conformance_Details"]["CT_Version"] == "sdtmct-03-2021"
     assert export["Conformance_Details"]["Define_XML_Version"] == "2.1"
+    assert export["Conformance_Details"]["Issue_Limit_Per_Rule"] is None
+    assert export["Conformance_Details"]["Issue_Limit_Per_Dataset"] == "None"
     assert "Dataset_Details" in export
     assert isinstance(export["Dataset_Details"], list)
 

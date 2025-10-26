@@ -77,7 +77,7 @@ def validate_single_rule(
         rule["conditions"]
     )
     max_dataset_size = max(datasets, key=lambda x: x.file_size).file_size
-    max_errors_per_rule = set_max_errors_per_rule(args)
+    max_errors_per_rule, per_dataset_flag = set_max_errors_per_rule(args)
     # call rule engine
     engine = RulesEngine(
         cache=cache,
@@ -93,6 +93,7 @@ def validate_single_rule(
         validate_xml=args.validate_xml,
         jsonata_custom_functions=args.jsonata_custom_functions,
         max_errors_per_rule=max_errors_per_rule,
+        errors_per_dataset_flag=per_dataset_flag,
     )
     results = engine.validate_single_rule(rule, datasets)
     results = list(itertools.chain(*results.values()))
@@ -186,6 +187,7 @@ def run_validation(args: Validation_args):
     # build all desired reports
     end = time.time()
     elapsed_time = end - start
+    engine_logger.info("Done Rule execution, creating reports")
     reporting_factory = ReportFactory(
         datasets, results, elapsed_time, args, data_service, dictionary_versions
     )
@@ -193,7 +195,7 @@ def run_validation(args: Validation_args):
     for reporting_service in reporting_services:
         reporting_service.write_report()
     print(f"Output: {args.output}")
-    engine_logger.info("Cleaning up intermediate files")
+    engine_logger.info(" Report generated, Cleaning up intermediate files")
     for file in created_files:
         engine_logger.info(f"Deleting file {file}")
         os.remove(file)

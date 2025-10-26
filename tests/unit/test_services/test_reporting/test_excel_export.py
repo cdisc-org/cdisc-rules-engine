@@ -25,6 +25,7 @@ def test_get_export(mock_validation_results):
         mock_args.meddra = "test"
         mock_args.whodrug = "test"
         mock_args.max_report_rows = None
+        mock_args.max_errors_per_rule = (None, False)
         mock_args.controlled_terminology_package = ["sdtmct-03-2021"]
         mock_args.standard = "sdtmig"
         mock_args.substandard = None
@@ -46,21 +47,16 @@ def test_get_export(mock_validation_results):
             datasets, ["test"], mock_validation_results, 10.1, mock_args
         )
         report: ExcelReport = ExcelReport(report_standard, mock_args, f)
-        f.seek(0)
-        template_buffer = f.read()
-        workbooks = report.get_export(
-            template_buffer=template_buffer,
-        )
-        wb = workbooks[0]
+        wb = report.get_export()
         assert wb["Conformance Details"]["B3"].value == "10.1 seconds"
         assert wb["Conformance Details"]["B4"].value == __version__
-        assert wb["Conformance Details"]["B7"].value == "SDTMIG"
-        assert wb["Conformance Details"]["B8"].value == "NAP"
-        assert wb["Conformance Details"]["B9"].value == "V3.4"
-        assert wb["Conformance Details"]["B10"].value == ", ".join(
+        assert wb["Conformance Details"]["B9"].value == "SDTMIG"
+        assert wb["Conformance Details"]["B10"].value == "NAP"
+        assert wb["Conformance Details"]["B11"].value == "V3.4"
+        assert wb["Conformance Details"]["B12"].value == ", ".join(
             mock_args.controlled_terminology_package
         )
-        assert wb["Conformance Details"]["B11"].value == "2.1"
+        assert wb["Conformance Details"]["B13"].value == "2.1"
 
         # Check dataset details tab
         assert wb["Dataset Details"]["A2"].value == "test.xpt"  # filename

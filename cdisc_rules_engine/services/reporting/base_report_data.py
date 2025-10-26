@@ -33,6 +33,7 @@ class BaseReportData(ABC):
         self._template = template
         self._standard = args.standard.upper()
         self._version = args.version.replace("-", ".")
+        self._max_errors_limit, self._errors_per_dataset_flag = args.max_errors_per_rule
 
     @staticmethod
     def process_values(values: list[str]) -> list[str]:

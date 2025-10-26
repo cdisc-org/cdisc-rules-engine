@@ -226,14 +226,22 @@ def cli():
     "--max-report-rows",
     type=int,
     default=None,
+    required=False,
     help="Maximum number of rows per report sheet.",
 )
 @click.option(
     "-me",
     "--max-errors-per-rule",
-    type=int,
-    default=None,
-    help="Maximum number of errors across all datasets for a given rule.",
+    type=(int, bool),
+    default=(0, False),
+    required=False,
+    help=(
+        "Maximum number of errors per rule. "
+        "Usage: -me <limit> <per_dataset_flag>. "
+        "Example: -me 100 true. "
+        "If per_dataset_flag is false (default), applies cumulative limit across datasets. "
+        "If true, limits reported issues per dataset per rule."
+    ),
 )
 @click.pass_context
 def validate(
@@ -269,7 +277,7 @@ def validate(
     validate_xml: str,
     jsonata_custom_functions: tuple[()] | tuple[tuple[str, str], ...],
     max_report_rows: int,
-    max_errors_per_rule: int,
+    max_errors_per_rule: tuple[int, bool],
 ):
     """
     Validate data using CDISC Rules Engine
@@ -716,7 +724,7 @@ def test_validate():
             define_xml_path = None
             validate_xml = False
             max_report_rows = None
-            max_report_errors = None
+            max_report_errors = (0, False)
             json_output = os.path.join(temp_dir, "json_validation_output")
             jsonata_custom_functions = ()
             run_validation(

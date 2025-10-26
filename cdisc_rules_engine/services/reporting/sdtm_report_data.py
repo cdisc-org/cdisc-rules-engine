@@ -104,19 +104,39 @@ class SDTMReportData(BaseReportData):
         conformance_details.append(
             ReportMetadataItem("CORE Engine Version", 4, __version__)
         )
-        conformance_details.append(ReportMetadataItem("Standard", 7, self._standard))
+        conformance_details.append(
+            ReportMetadataItem("Issue Limit Per Rule", 5, self._max_errors_limit)
+        )
+        conformance_details.append(
+            ReportMetadataItem(
+                "Issue Limit Per Dataset",
+                6,
+                (
+                    "None"
+                    if self._errors_per_dataset_flag == 0
+                    else str(self._errors_per_dataset_flag)
+                ),
+            )
+        )
+        conformance_details.append(
+            ReportMetadataItem(
+                name="Issue Limit Per Sheet",
+                row=7,
+            )
+        )
+        conformance_details.append(ReportMetadataItem("Standard", 9, self._standard))
         if "substandard" in kwargs and kwargs["substandard"] is not None:
             conformance_details.append(
-                ReportMetadataItem("Sub-Standard", 8, kwargs["substandard"])
+                ReportMetadataItem("Sub-Standard", 10, kwargs["substandard"])
             )
         conformance_details.append(
-            ReportMetadataItem("Version", 9, f"V{self._version}")
+            ReportMetadataItem("Version", 11, f"V{self._version}")
         )
         if cdiscCt:
             conformance_details.append(
                 ReportMetadataItem(
                     "CT Version",
-                    10,
+                    12,
                     (
                         ", ".join(cdiscCt)
                         if isinstance(cdiscCt, (list, tuple, set))
@@ -125,40 +145,41 @@ class SDTMReportData(BaseReportData):
                 )
             )
         else:
-            conformance_details.append(ReportMetadataItem("CT Version", 10, ""))
+            conformance_details.append(ReportMetadataItem("CT Version", 12, ""))
         conformance_details.append(
-            ReportMetadataItem("Define-XML Version", 11, define_version)
+            ReportMetadataItem("Define-XML Version", 13, define_version)
         )
+
         # Populate external dictionary versions
         unii_version = dictionary_versions.get(DictionaryTypes.UNII.value)
         if unii_version is not None:
             conformance_details.append(
-                ReportMetadataItem("UNII Version", 12, unii_version)
+                ReportMetadataItem("UNII Version", 16, unii_version)
             )
         medrt_version = dictionary_versions.get(DictionaryTypes.MEDRT.value)
         if medrt_version is not None:
             conformance_details.append(
-                ReportMetadataItem("Med-RT Version", 13, medrt_version)
+                ReportMetadataItem("Med-RT Version", 17, medrt_version)
             )
         meddra_version = dictionary_versions.get(DictionaryTypes.MEDDRA.value)
         if meddra_version is not None:
             conformance_details.append(
-                ReportMetadataItem("MedDRA Version", 14, meddra_version)
+                ReportMetadataItem("MedDRA Version", 18, meddra_version)
             )
         whodrug_version = dictionary_versions.get(DictionaryTypes.WHODRUG.value)
         if whodrug_version is not None:
             conformance_details.append(
-                ReportMetadataItem("WHODRUG Version", 15, whodrug_version)
+                ReportMetadataItem("WHODRUG Version", 19, whodrug_version)
             )
         snomed_version = dictionary_versions.get(DictionaryTypes.SNOMED.value)
         if snomed_version is not None:
             conformance_details.append(
-                ReportMetadataItem("SNOMED Version", 16, snomed_version)
+                ReportMetadataItem("SNOMED Version", 20, snomed_version)
             )
         loinc_version = dictionary_versions.get(DictionaryTypes.LOINC.value)
         if loinc_version is not None:
             conformance_details.append(
-                ReportMetadataItem("LOINC Version", 17, loinc_version)
+                ReportMetadataItem("LOINC Version", 21, loinc_version)
             )
         return conformance_details
 

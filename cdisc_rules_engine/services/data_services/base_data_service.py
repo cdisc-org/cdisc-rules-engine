@@ -19,6 +19,14 @@ from cdisc_rules_engine.constants.classes import (
     INTERVENTIONS,
     RELATIONSHIP,
 )
+from cdisc_rules_engine.constants.data_structures import (
+    ADSL,
+    BDS,
+    OCCDS,
+    OTHER,
+    bds_indicators,
+    occds_indicators,
+)
 from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
 from cdisc_rules_engine.models.dataset_types import DatasetTypes
 from cdisc_rules_engine.services import logger
@@ -56,7 +64,7 @@ def cached_dataset(dataset_type: str):
             instance: BaseDataService = args[0]
             dataset_name: str = kwargs["dataset_name"]
             logger.info(
-                f"Downloading dataset from storage. dataset_name={dataset_name},"
+                f"Downloading dataset from storage. dataset_name={dataset_name}, "
                 f" wrapped function={func.__name__}"
             )
             cache_key: str = get_dataset_cache_key_from_path(dataset_name, dataset_type)
@@ -178,6 +186,26 @@ class BaseDataService(DataServiceInterface, ABC):
         return self._handle_special_cases(
             dataset, dataset_metadata, file_path, datasets
         )
+
+    def get_data_structure(
+        self,
+        file_path: str,
+        datasets: Iterable[SDTMDatasetMetadata],
+        dataset_metadata: SDTMDatasetMetadata,
+    ) -> Optional[str]:
+        # TODO: look at defineXML if applicable for more accurate data structure detection
+        if dataset_metadata.name.upper() == "ADSL":
+            return ADSL
+        columns = dataset_metadata.data.columns.tolist()
+        columns_upper = [col.upper() for col in columns]
+        if any(indicator in columns_upper for indicator in bds_indicators):
+            return BDS
+        occds_suffixes = [indicator.replace("--", "") for indicator in occds_indicators]
+        if any(
+            col.endswith(suffix) for col in columns_upper for suffix in occds_suffixes
+        ):
+            return OCCDS
+        return OTHER
 
     @cached_dataset(DatasetTypes.METADATA.value)
     def get_dataset_metadata(
