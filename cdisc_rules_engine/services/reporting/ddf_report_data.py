@@ -72,24 +72,20 @@ class DDFReportData(BaseReportData):
             ReportMetadataItem("CORE Engine Version", 4, __version__)
         )
         conformance_details.append(ReportMetadataItem("Standard", 7, self._standard))
-        if "substandard" in kwargs and kwargs["substandard"] is not None:
-            conformance_details.append(
-                ReportMetadataItem("Sub-Standard", 8, kwargs["substandard"])
-            )
         conformance_details.append(
-            ReportMetadataItem("Version", 9, f"V{self._version}")
+            ReportMetadataItem("Version", 8, f"V{self._version}")
         )
         if self._datasets:
             conformance_details.append(
                 ReportMetadataItem(
                     "JSON file name",
-                    10,
+                    9,
                     os.path.basename(os.path.dirname(self._datasets[0].full_path)),
                 )
             )
             conformance_details.append(
                 ReportMetadataItem(
-                    "Modified Time Stamp", 11, self._datasets[0].modification_date
+                    "Modified Time Stamp", 10, self._datasets[0].modification_date
                 )
             )
         return conformance_details
