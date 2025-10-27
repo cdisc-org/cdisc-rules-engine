@@ -57,3 +57,4 @@ class OperationParams:
     original_target: str = None
     returntype: str = None
     target: str = None
+    value_is_reference: bool = False

@@ -176,3 +176,108 @@ def test_filtered_grouped_distinct(
     assert grouping_column in result
     for _, val in result.iterrows():
         assert val[operation_params.operation_id] == expected.get(val[grouping_column])
+
+
+@pytest.mark.parametrize(
+    "data, expected",
+    [
+        (
+            PandasDataset.from_dict(
+                {
+                    "column_ref": ["result", "baseline", "result", "baseline"],
+                    "result": [10, 20, 30, 40],
+                    "baseline": [5, 15, 25, 35],
+                }
+            ),
+            {10, 15, 30, 35},
+        ),
+        (
+            DaskDataset.from_dict(
+                {
+                    "column_ref": ["result", "baseline", "result", "baseline"],
+                    "result": [10, 20, 30, 40],
+                    "baseline": [5, 15, 25, 35],
+                }
+            ),
+            {10, 15, 30, 35},
+        ),
+    ],
+)
+def test_distinct_value_is_reference(data, expected, operation_params: OperationParams):
+    config = ConfigService()
+    cache = CacheServiceFactory(config).get_cache_service()
+    data_service = DataServiceFactory(config, cache).get_data_service()
+    operation_params.dataframe = data
+    operation_params.target = "column_ref"
+    operation_params.value_is_reference = True
+    result = Distinct(operation_params, data, cache, data_service).execute()
+    assert operation_params.operation_id in result
+    assert len(result[operation_params.operation_id]) > 0
+    for val in result[operation_params.operation_id]:
+        assert val == expected
+
+
+@pytest.mark.parametrize(
+    "data, expected, grouping_aliases",
+    [
+        (
+            PandasDataset.from_dict(
+                {
+                    "column_ref": [
+                        "result",
+                        "baseline",
+                        "result",
+                        "baseline",
+                        "result",
+                        "baseline",
+                    ],
+                    "result": [10, 20, 30, 40, 50, 60],
+                    "baseline": [5, 15, 25, 35, 45, 55],
+                    "patient": [1, 1, 2, 2, 1, 2],
+                    "subject": [1, 1, 2, 2, 1, 2],
+                }
+            ),
+            {1: {10, 15, 50}, 2: {30, 35, 55}},
+            ["subject"],
+        ),
+        (
+            DaskDataset.from_dict(
+                {
+                    "column_ref": [
+                        "result",
+                        "baseline",
+                        "result",
+                        "baseline",
+                        "result",
+                        "baseline",
+                    ],
+                    "result": [10, 20, 30, 40, 50, 60],
+                    "baseline": [5, 15, 25, 35, 45, 55],
+                    "patient": [1, 1, 2, 2, 1, 2],
+                    "subject": [1, 1, 2, 2, 1, 2],
+                }
+            ),
+            {1: {10, 15, 50}, 2: {30, 35, 55}},
+            ["subject"],
+        ),
+    ],
+)
+def test_grouped_distinct_value_is_reference(
+    data, expected, grouping_aliases, operation_params: OperationParams
+):
+    config = ConfigService()
+    cache = CacheServiceFactory(config).get_cache_service()
+    data_service = DataServiceFactory(config, cache).get_data_service()
+    operation_params.dataframe = data
+    operation_params.target = "column_ref"
+    operation_params.value_is_reference = True
+    operation_params.grouping = ["patient"]
+    operation_params.grouping_aliases = grouping_aliases
+    result = Distinct(operation_params, data, cache, data_service).execute()
+    grouping_column = "".join(
+        operation_params.grouping_aliases or operation_params.grouping
+    )
+    assert operation_params.operation_id in result
+    assert grouping_column in result
+    for _, val in result.iterrows():
+        assert val[operation_params.operation_id] == expected.get(val[grouping_column])
