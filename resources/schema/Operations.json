@@ -527,6 +527,9 @@
     "name": {
       "type": "string"
     },
+    "namespace": {
+      "type": "string"
+    },
     "operator": {
       "type": "string"
     },
