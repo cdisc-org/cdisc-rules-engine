@@ -1233,3 +1233,15 @@ Operations:
     name: USUBJID
     id: $aeterm_is_null
 ```
+
+### get_xhtml_errors
+
+Validates XHTML fragments in the target column against the defined XSD schema.
+
+```yaml
+Operations:
+  - id: $xhtml_errors
+    name: text
+    operator: get_xhtml_errors
+    namespace: http://www.cdisc.org/ns/usdm/xhtml/v1.0
+```

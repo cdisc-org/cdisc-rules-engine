@@ -398,7 +398,7 @@
       "properties": {
         "operator": { "const": "get_xhtml_errors" }
       },
-      "required": ["id", "operator", "name"],
+      "required": ["id", "operator", "name", "namespace"],
       "type": "object"
     }
   ],
