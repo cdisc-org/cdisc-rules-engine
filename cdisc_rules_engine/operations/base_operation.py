@@ -37,6 +37,8 @@ from cdisc_rules_engine.exceptions.custom_exceptions import (
     InvalidDictionaryVariable,
     UnsupportedDictionaryType,
     FailedSchemaValidation,
+    SchemaNotFoundError,
+    InvalidSchemaProvidedError,
 )
 
 
@@ -85,6 +87,8 @@ class BaseOperation:
             InvalidDictionaryVariable,
             UnsupportedDictionaryType,
             FailedSchemaValidation,
+            SchemaNotFoundError,
+            InvalidSchemaProvidedError,
         ) as e:
             logger.debug(f"error in operation {self.params.operation_name}: {str(e)}")
             raise
