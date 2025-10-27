@@ -393,6 +393,13 @@
       },
       "required": ["id", "operator"],
       "type": "object"
+    },
+    {
+      "properties": {
+        "operator": { "const": "get_xhtml_errors" }
+      },
+      "required": ["id", "operator", "name", "namespace"],
+      "type": "object"
     }
   ],
   "properties": {
@@ -518,6 +525,9 @@
       }
     },
     "name": {
+      "type": "string"
+    },
+    "namespace": {
       "type": "string"
     },
     "operator": {
