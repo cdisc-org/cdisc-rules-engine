@@ -91,7 +91,6 @@ def test_targeted_error_object_with_dataset_sensitivity():
 
 
 def test_targeted_error_object_with_group_sensitivity():
-    """Test that GROUP sensitivity reports one error per group"""
     dummy_rule = {
         "core_id": "FB4607",
         "sensitivity": "Group",

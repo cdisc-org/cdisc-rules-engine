@@ -628,5 +628,13 @@
     "Scope",
     "Sensitivity"
   ],
+  "if": {
+    "properties": {
+      "Sensitivity": { "const": "Group" }
+    }
+  },
+  "then": {
+    "required": ["Grouping_Variables"]
+  },
   "type": "object"
 }

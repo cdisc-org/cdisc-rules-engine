@@ -167,19 +167,17 @@ class COREActions(BaseActions):
                 data, targets_not_in_dataset, all_targets_missing, errors_df
             )
         elif self.rule.get("sensitivity") == Sensitivity.GROUP.value:
-            # Handle GROUP sensitivity
             grouping_variables = self.rule.get("grouping_variables", [])
 
             if not grouping_variables:
-                # Error: Group sensitivity requires Grouping_Variables
                 error_entity = ValidationErrorEntity(
-                    dataset=self._get_dataset_name(data),
+                    dataset="N/A",
                     row=0,
                     value={
                         "ERROR": "Group sensitivity requires Grouping_Variables to be specified"
                     },
-                    USUBJID=None,
-                    SEQ=None,
+                    USUBJID="N/A",
+                    SEQ=0,
                 )
                 return ValidationErrorContainer(
                     domain=(
@@ -191,6 +189,32 @@ class COREActions(BaseActions):
                     ),
                     targets=sorted(targets),
                     message="Group sensitivity requires Grouping_Variables to be specified",
+                    errors=[error_entity],
+                )
+
+            missing_grouping_vars = [
+                var for var in grouping_variables if var not in data.columns
+            ]
+            if missing_grouping_vars:
+                error_entity = ValidationErrorEntity(
+                    dataset="N/A",
+                    row=0,
+                    value={
+                        "ERROR": f"Grouping variables not found in dataset: {missing_grouping_vars}"
+                    },
+                    USUBJID="N/A",
+                    SEQ=0,
+                )
+                return ValidationErrorContainer(
+                    domain=(
+                        f"SUPP{self.dataset_metadata.rdomain}"
+                        if self.dataset_metadata.is_supp
+                        else (
+                            self.dataset_metadata.domain or self.dataset_metadata.name
+                        )
+                    ),
+                    targets=sorted(targets),
+                    message=f"Grouping variables not found in dataset: {missing_grouping_vars}",
                     errors=[error_entity],
                 )
 
@@ -326,59 +350,14 @@ class COREActions(BaseActions):
         missing_vars = {target: "Not in dataset" for target in targets_not_in_dataset}
         errors_list = []
 
-        # Validate grouping variables exist
-        available_grouping_vars = [
-            var for var in grouping_variables if var in data.columns
-        ]
+        grouped_data = data.groupby(grouping_variables, dropna=False)
 
-        if not available_grouping_vars:
-            # Fall back to dataset sensitivity if no grouping variables available
-            if not all_targets_missing and len(errors_df) > 0:
-                raw_error_dict = errors_df.iloc[0].to_dict()
-                error_value = {}
-                for key, value in raw_error_dict.items():
-                    if isinstance(value, list):
-                        error_value[key] = [
-                            None if (val in NULL_FLAVORS or pd.isna(val)) else val
-                            for val in value
-                        ]
-                    else:
-                        error_value[key] = (
-                            None if (value in NULL_FLAVORS or pd.isna(value)) else value
-                        )
-            else:
-                error_value = {}
-
-            if missing_vars:
-                error_value = {**error_value, **missing_vars}
-
-            return [
-                ValidationErrorEntity(
-                    value=error_value,
-                    dataset=self._get_dataset_name(data),
-                )
-            ]
-
-        # Group by the specified variables
-        if all_targets_missing:
-            grouped_data = data.groupby(available_grouping_vars, dropna=False)
-        else:
-            # Merge data with errors_df to preserve grouping info
-            # Use inner join to only get rows that have errors
-            merged_data = data.loc[errors_df.index].copy()
-            for col in errors_df.columns:
-                if col not in merged_data.columns:
-                    merged_data[col] = errors_df[col]
-            grouped_data = merged_data.groupby(available_grouping_vars, dropna=False)
-
-        # Create one error per group
         for group_keys, group_df in grouped_data:
             if all_targets_missing:
                 error_value = {
                     target: "Not in dataset" for target in targets_not_in_dataset
                 }
             else:
-                # Take the first row of the group as representative
                 first_row_idx = group_df.index[0]
                 if first_row_idx in errors_df.index:
                     raw_error_dict = errors_df.loc[first_row_idx].to_dict()
@@ -398,18 +377,15 @@ class COREActions(BaseActions):
                 else:
                     error_value = {}
 
-            # Add grouping variables to the error value for identification
             if isinstance(group_keys, tuple):
-                for i, var in enumerate(available_grouping_vars):
+                for i, var in enumerate(grouping_variables):
                     error_value[var] = group_keys[i]
             else:
-                error_value[available_grouping_vars[0]] = group_keys
+                error_value[grouping_variables[0]] = group_keys
 
-            # Add missing variables
             if missing_vars:
                 error_value = {**error_value, **missing_vars}
 
-            # Get representative row for USUBJID and SEQ
             first_row = group_df.iloc[0]
 
             error = ValidationErrorEntity(
