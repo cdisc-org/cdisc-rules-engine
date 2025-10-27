@@ -708,30 +708,22 @@ def test_not_matches_regex(data, comparator, dataset_type, expected_result):
 @pytest.mark.parametrize(
     "data,separator,dataset_type,expected_result",
     [
-        # PandasDataset tests with "/" separator
-        # Combines SENDIG examples, invalid cases, edge cases, and multiple separators
         (
-            {
-                "target": [
-                    # SENDIG rule examples - valid interval date/times with equal precision
-                    "2003-12-15T10:00/2003-12-15T10:30",
-                    "2003-12-01/2003-12-10",
-                    "2003-01-01/2003-06-30",
-                    # Invalid example - different precision/length (16 chars vs 19 chars)
-                    "2003-12-15T10:00/2003-12-15T10:30:15",
-                    # Edge cases
-                    "ABC/DEF",  # Equal length (3 each) - valid
-                    "AB/CD",  # Equal length (2 each) - valid
-                    "A/ABC",  # Different length (1 vs 3) - invalid
-                    "ABC/",  # Has separator but empty second part - invalid
-                    "/ABC",  # Has separator but empty first part - invalid
-                    "ABCDEF",  # No separator - valid (no violation)
-                    "",  # Empty string - valid (no violation)
-                    None,  # Null value - valid (no violation)
-                    # Multiple separators case
-                    "2003-12-15/2003-12-16/2003-12-17",  # Multiple separators - invalid
-                ]
-            },
+            [
+                "2003-12-15T10:00/2003-12-15T10:30",
+                "2003-12-01/2003-12-10",
+                "2003-01-01/2003-06-30",
+                "2003-12-15T10:00/2003-12-15T10:30:15",
+                "ABC/DEF",
+                "AB/CD",
+                "A/ABC",
+                "ABC/",
+                "/ABC",
+                "ABCDEF",
+                "",
+                None,
+                "2003-12-15/2003-12-16/2003-12-17",
+            ],
             "/",
             PandasDataset,
             [
@@ -750,29 +742,23 @@ def test_not_matches_regex(data, comparator, dataset_type, expected_result):
                 False,
             ],
         ),
-        # Custom separator test
         (
-            {
-                "target": [
-                    "ABC-DEF",  # Equal length with dash separator
-                    "AB-CDE",  # Different length with dash separator
-                ]
-            },
+            [
+                "ABC-DEF",
+                "AB-CDE",
+            ],
             "-",
             PandasDataset,
             [True, False],
         ),
-        # DaskDataset tests with "/" separator - combining all Dask test cases
         (
-            {
-                "target": [
-                    "2003-12-15T10:00/2003-12-15T10:30",
-                    "2003-12-01/2003-12-10",
-                    "ABC/DEF",
-                    "2003-12-15T10:00/2003-12-15T10:30:15",
-                    "A/ABC",
-                ]
-            },
+            [
+                "2003-12-15T10:00/2003-12-15T10:30",
+                "2003-12-01/2003-12-10",
+                "ABC/DEF",
+                "2003-12-15T10:00/2003-12-15T10:30:15",
+                "A/ABC",
+            ],
             "/",
             DaskDataset,
             [True, True, True, False, False],
@@ -784,7 +770,7 @@ def test_split_parts_have_equal_length(data, separator, dataset_type, expected_r
     Test for split_parts_have_equal_length operator.
     Validates that both parts of a split string have equal length (e.g., for interval dates).
     """
-    df = dataset_type.from_dict(data)
+    df = dataset_type.from_dict({"target": data})
     dataframe_type = DataframeType({"value": df})
     result = dataframe_type.split_parts_have_equal_length(
         {"target": "target", "separator": separator}
@@ -795,25 +781,20 @@ def test_split_parts_have_equal_length(data, separator, dataset_type, expected_r
 @pytest.mark.parametrize(
     "data,separator,dataset_type,expected_result",
     [
-        # Test complement operator - should be opposite of split_parts_have_equal_length
         (
-            {
-                "target": [
-                    "2003-12-15T10:00/2003-12-15T10:30",  # Equal - returns False
-                    "2003-12-15T10:00/2003-12-15T10:30:15",  # Unequal - returns True
-                ]
-            },
+            [
+                "2003-12-15T10:00/2003-12-15T10:30",
+                "2003-12-15T10:00/2003-12-15T10:30:15",
+            ],
             "/",
             PandasDataset,
             [False, True],
         ),
         (
-            {
-                "target": [
-                    "ABC/DEF",  # Equal - returns False
-                    "A/ABC",  # Unequal - returns True
-                ]
-            },
+            [
+                "ABC/DEF",
+                "A/ABC",
+            ],
             "/",
             DaskDataset,
             [False, True],
@@ -827,7 +808,7 @@ def test_split_parts_have_unequal_length(
     Test for split_parts_have_unequal_length operator (complement).
     Returns True when parts have unequal length (violation case).
     """
-    df = dataset_type.from_dict(data)
+    df = dataset_type.from_dict({"target": data})
     dataframe_type = DataframeType({"value": df})
     result = dataframe_type.split_parts_have_unequal_length(
         {"target": "target", "separator": separator}

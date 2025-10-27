@@ -897,31 +897,21 @@ class DataframeType(BaseType):
         target = self.replace_prefix(other_value.get("target"))
         separator = other_value.get("separator", "/")
 
-        # Get the target column as string, preserving nulls
         target_series = self.value[target]
-
-        # Handle nulls and empty strings - they should return True (no violation)
         is_null_or_empty = target_series.isna() | (target_series == "")
-
-        # Convert to string for processing
         target_str = target_series.astype(str)
-
-        # Split by separator (only split once, into max 2 parts)
         split_series = target_str.str.split(separator, expand=False)
 
-        # Vectorized length check
         def validate_split(parts):
             if not isinstance(parts, list):
                 return True
             if len(parts) == 1:
-                return True  # No separator
+                return True
             if len(parts) == 2:
-                return len(parts[0]) == len(parts[1])  # Check equal length
-            return False  # More than 2 parts (multiple separators)
+                return len(parts[0]) == len(parts[1])
+            return False
 
         results = split_series.apply(validate_split)
-
-        # Ensure nulls/empties are marked as valid (True)
         results = results | is_null_or_empty
 
         return results
