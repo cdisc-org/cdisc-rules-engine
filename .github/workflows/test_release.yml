@@ -10,6 +10,8 @@ jobs:
         include:
           - os: "ubuntu-latest"
             name: "core-ubuntu-latest"
+          - os: "ubuntu-22.04"
+            name: "core-ubuntu-22.04-tar"
           - os: "macos-latest"
             name: "core-mac-apple-silicon"
           - os: "macos-13"
@@ -46,15 +48,21 @@ jobs:
         with:
           files: artifacts/core-windows/
           dest: core-windows.zip
-      - name: Upload Release Assets
+      - name: Create Ubuntu 22.04 tar.gz
+        run: |
+          cd artifacts/core-ubuntu-22.04-tar
+          tar -czf ../../core-ubuntu-22.04.tar.gz .
+          cd ../..
+      - name: Delete original Ubuntu 22.04 artifact
+        uses: geekyeggo/delete-artifact@v5
+        with:
+          name: core-ubuntu-22.04-tar
+      - name: Upload Ubuntu 22.04 tar.gz
         uses: actions/upload-artifact@v4
         with:
-          name: release-artifacts
-          path: |
-            core-ubuntu-latest.zip
-            core-mac-intel.zip
-            core-mac-apple-silicon.zip
-            core-windows.zip
+          name: core-ubuntu-22.04-tarball
+          path: core-ubuntu-22.04.tar.gz
+
   deploy-PyPi:
     needs: create-release-assets
     runs-on: ubuntu-latest

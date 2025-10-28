@@ -243,6 +243,7 @@ def cli():
     "--max-report-rows",
     type=int,
     default=None,
+    required=False,
     help="Maximum number of rows per report sheet.",
 )
 @click.option(
@@ -250,6 +251,7 @@ def cli():
     "--max-errors-per-rule",
     type=(int, bool),
     default=(0, False),
+    required=False,
     help=(
         "Maximum number of errors per rule. "
         "Usage: -me <limit> <per_dataset_flag>. "
@@ -753,7 +755,7 @@ def test_validate():
             define_xml_path = None
             validate_xml = False
             max_report_rows = None
-            max_report_errors = None
+            max_report_errors = (0, False)
             json_output = os.path.join(temp_dir, "json_validation_output")
             jsonata_custom_functions = ()
             run_validation(
