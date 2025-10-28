@@ -757,43 +757,50 @@ def test_is_incomplete_date(target, dataset_type, expected_result):
     [
         # Date vs datetime - should compare at day level
         (
-            {"target": ["2025-06-25", "2025-06-24", "2025-06-25", "2025-06-26"]},
+            ["2025-06-25", "2025-06-24", "2025-06-25", "2025-06-26"],
             "2025-06-25T17:22",
             PandasDataset,
             [True, False, True, False],
         ),
         # Partial date (year-month) vs complete date - should compare at month level
         (
-            {"target": ["2025-06", "2025-07", "2025-06", "2025-05"]},
+            ["2025-06", "2025-07", "2025-06", "2025-05"],
             "2025-06-25",
             DaskDataset,
             [True, False, True, False],
         ),
         # Year only vs complete date - should compare at year level
         (
-            {"target": ["2025", "2024", "2025", "2026"]},
+            ["2025", "2024", "2025", "2026"],
             "2025-06-25T17:22:30",
             PandasDataset,
             [True, False, True, False],
         ),
         # Both have same precision - should work normally
         (
-            {"target": ["2025-06-25", "2025-06-24", "2025-06-26", "2025-06-25"]},
+            ["2025-06-25", "2025-06-24", "2025-06-26", "2025-06-25"],
             "2025-06-25",
             DaskDataset,
             [True, False, False, True],
         ),
         # Datetime vs datetime with different time precision
         (
-            {"target": ["2025-06-25T17:22", "2025-06-25T17:21", "2025-06-25T17:22"]},
+            ["2025-06-25T17:22", "2025-06-25T17:21", "2025-06-25T17:22"],
             "2025-06-25T17:22:30",
+            PandasDataset,
+            [True, False, True],
+        ),
+        # Empty time component edge case
+        (
+            ["2025-06-25T", "2025-06-24T", "2025-06-25T"],
+            "2025-06-25",
             PandasDataset,
             [True, False, True],
         ),
     ],
 )
 def test_date_equal_to_auto_precision(data, comparator, dataset_type, expected_result):
-    df = dataset_type.from_dict(data)
+    df = dataset_type.from_dict({"target": data})
     dataframe_type = DataframeType({"value": df})
     result = dataframe_type.date_equal_to(
         {"target": "target", "comparator": comparator, "date_component": "auto"}
@@ -806,21 +813,21 @@ def test_date_equal_to_auto_precision(data, comparator, dataset_type, expected_r
     [
         # Date vs datetime at day level
         (
-            {"target": ["2025-06-26", "2025-06-24", "2025-06-25"]},
+            ["2025-06-26", "2025-06-24", "2025-06-25"],
             "2025-06-25T17:22",
             PandasDataset,
             [True, False, False],
         ),
         # Year-month vs complete date at month level
         (
-            {"target": ["2025-07", "2025-05", "2025-06"]},
+            ["2025-07", "2025-05", "2025-06"],
             "2025-06-25",
             DaskDataset,
             [True, False, False],
         ),
         # Year only vs datetime
         (
-            {"target": ["2026", "2024", "2025"]},
+            ["2026", "2024", "2025"],
             "2025-06-25T17:22",
             PandasDataset,
             [True, False, False],
@@ -830,7 +837,7 @@ def test_date_equal_to_auto_precision(data, comparator, dataset_type, expected_r
 def test_date_greater_than_auto_precision(
     data, comparator, dataset_type, expected_result
 ):
-    df = dataset_type.from_dict(data)
+    df = dataset_type.from_dict({"target": data})
     dataframe_type = DataframeType({"value": df})
     result = dataframe_type.date_greater_than(
         {"target": "target", "comparator": comparator, "date_component": "auto"}
@@ -843,14 +850,14 @@ def test_date_greater_than_auto_precision(
     [
         # Date vs datetime at day level
         (
-            {"target": ["2025-06-26", "2025-06-24", "2025-06-25"]},
+            ["2025-06-26", "2025-06-24", "2025-06-25"],
             "2025-06-25T17:22",
             DaskDataset,
             [True, False, True],
         ),
         # Year-month vs complete date at month level
         (
-            {"target": ["2025-07", "2025-05", "2025-06"]},
+            ["2025-07", "2025-05", "2025-06"],
             "2025-06-25",
             PandasDataset,
             [True, False, True],
@@ -860,7 +867,7 @@ def test_date_greater_than_auto_precision(
 def test_date_greater_than_or_equal_to_auto_precision(
     data, comparator, dataset_type, expected_result
 ):
-    df = dataset_type.from_dict(data)
+    df = dataset_type.from_dict({"target": data})
     dataframe_type = DataframeType({"value": df})
     result = dataframe_type.date_greater_than_or_equal_to(
         {"target": "target", "comparator": comparator, "date_component": "auto"}
@@ -873,21 +880,21 @@ def test_date_greater_than_or_equal_to_auto_precision(
     [
         # Date vs datetime at day level
         (
-            {"target": ["2025-06-24", "2025-06-26", "2025-06-25"]},
+            ["2025-06-24", "2025-06-26", "2025-06-25"],
             "2025-06-25T17:22",
             PandasDataset,
             [True, False, False],
         ),
         # Year-month vs complete date at month level
         (
-            {"target": ["2025-05", "2025-07", "2025-06"]},
+            ["2025-05", "2025-07", "2025-06"],
             "2025-06-25",
             DaskDataset,
             [True, False, False],
         ),
         # Year only vs datetime
         (
-            {"target": ["2024", "2026", "2025"]},
+            ["2024", "2026", "2025"],
             "2025-06-25T17:22",
             PandasDataset,
             [True, False, False],
@@ -895,7 +902,7 @@ def test_date_greater_than_or_equal_to_auto_precision(
     ],
 )
 def test_date_less_than_auto_precision(data, comparator, dataset_type, expected_result):
-    df = dataset_type.from_dict(data)
+    df = dataset_type.from_dict({"target": data})
     dataframe_type = DataframeType({"value": df})
     result = dataframe_type.date_less_than(
         {"target": "target", "comparator": comparator, "date_component": "auto"}
@@ -908,14 +915,14 @@ def test_date_less_than_auto_precision(data, comparator, dataset_type, expected_
     [
         # Date vs datetime at day level
         (
-            {"target": ["2025-06-24", "2025-06-26", "2025-06-25"]},
+            ["2025-06-24", "2025-06-26", "2025-06-25"],
             "2025-06-25T17:22",
             DaskDataset,
             [True, False, True],
         ),
         # Year-month vs complete date at month level
         (
-            {"target": ["2025-05", "2025-07", "2025-06"]},
+            ["2025-05", "2025-07", "2025-06"],
             "2025-06-25",
             PandasDataset,
             [True, False, True],
@@ -925,7 +932,7 @@ def test_date_less_than_auto_precision(data, comparator, dataset_type, expected_
 def test_date_less_than_or_equal_to_auto_precision(
     data, comparator, dataset_type, expected_result
 ):
-    df = dataset_type.from_dict(data)
+    df = dataset_type.from_dict({"target": data})
     dataframe_type = DataframeType({"value": df})
     result = dataframe_type.date_less_than_or_equal_to(
         {"target": "target", "comparator": comparator, "date_component": "auto"}
@@ -938,14 +945,14 @@ def test_date_less_than_or_equal_to_auto_precision(
     [
         # Date vs datetime at day level
         (
-            {"target": ["2025-06-24", "2025-06-25", "2025-06-26"]},
+            ["2025-06-24", "2025-06-25", "2025-06-26"],
             "2025-06-25T17:22",
             PandasDataset,
             [True, False, True],
         ),
         # Year-month vs complete date at month level
         (
-            {"target": ["2025-05", "2025-06", "2025-07"]},
+            ["2025-05", "2025-06", "2025-07"],
             "2025-06-25",
             DaskDataset,
             [True, False, True],
@@ -955,7 +962,7 @@ def test_date_less_than_or_equal_to_auto_precision(
 def test_date_not_equal_to_auto_precision(
     data, comparator, dataset_type, expected_result
 ):
-    df = dataset_type.from_dict(data)
+    df = dataset_type.from_dict({"target": data})
     dataframe_type = DataframeType({"value": df})
     result = dataframe_type.date_not_equal_to(
         {"target": "target", "comparator": comparator, "date_component": "auto"}

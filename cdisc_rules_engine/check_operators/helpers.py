@@ -118,11 +118,9 @@ def get_microsecond(date_string: str):
 
 def _detect_time_precision(time_part: str) -> str:
     """Helper to detect time precision from time component."""
-    # Check for fractional seconds
     if "." in time_part:
         return "microsecond"
 
-    # Count colons to determine time precision
     colon_count = time_part.count(":")
     if colon_count >= 2:
         return "second"
@@ -136,37 +134,25 @@ def detect_date_precision(date_str: str) -> str:
     """
     Detect the precision level of an ISO-8601 date string.
 
-    Args:
-        date_str: ISO-8601 formatted date/datetime string
-
-    Returns:
-        One of: "year", "month", "day", "hour", "minute", "second", "microsecond"
-        Returns None if date_str is empty or invalid
-
-    Examples:
-        "2025" -> "year"
-        "2025-06" -> "month"
-        "2025-06-25" -> "day"
-        "2025-06-25T17:22" -> "minute"
-        "2025-06--" -> "month" (handles CDISC uncertainty markers)
+    Returns precision level or None if invalid. Handles CDISC uncertainty markers.
     """
     if not date_str or not isinstance(date_str, str):
         return None
 
-    # Handle CDISC uncertainty markers
     if "--" in date_str or "-:" in date_str:
         date_str = date_str.split("--")[0].split("-:")[0]
         if not date_str or date_str.endswith("-"):
             date_str = date_str.rstrip("-")
 
-    # Check if datetime (has time component)
     if "T" in date_str:
         time_part = date_str.split("T")[1]
-        # Remove timezone (+HH:MM or Z)
+
+        if not time_part:
+            return "day"
+
         time_part = time_part.split("+")[0].split("-")[-1].split("Z")[0]
         return _detect_time_precision(time_part)
 
-    # Date only - count dashes to determine precision
     date_parts = [p for p in date_str.split("-") if p]
 
     if len(date_parts) >= 3:
@@ -182,18 +168,6 @@ def detect_date_precision(date_str: str) -> str:
 def get_common_precision(dt1: str, dt2: str) -> str:
     """
     Determine the common (less precise) precision level between two date strings.
-
-    Args:
-        dt1: First date string
-        dt2: Second date string
-
-    Returns:
-        The less precise precision level, or None if either date is invalid
-
-    Examples:
-        ("2025-06-25", "2025-06-25T17:22") -> "day"
-        ("2025-06", "2025-06-25") -> "month"
-        ("2025", "2025-06-25T17:22:30") -> "year"
     """
     precision_order = [
         "year",
@@ -211,7 +185,6 @@ def get_common_precision(dt1: str, dt2: str) -> str:
     if not p1 or not p2:
         return None
 
-    # Return the less precise of the two
     idx1 = precision_order.index(p1)
     idx2 = precision_order.index(p2)
 
@@ -289,20 +262,15 @@ def case_insensitive_is_in(value, values):
 
 def compare_dates(component, target, comparator, operator):
     if not target or not comparator:
-        # Comparison should return false if either is empty or None
         return False
-    else:
-        # Handle automatic precision detection
-        if component == "auto":
-            component = get_common_precision(target, comparator)
-            # If precision detection fails, fall back to full comparison
-            if component is None:
-                component = None  # Will trigger get_date() in get_date_component
 
-        return operator(
-            get_date_component(component, target),
-            get_date_component(component, comparator),
-        )
+    if component == "auto":
+        component = get_common_precision(target, comparator)
+
+    return operator(
+        get_date_component(component, target),
+        get_date_component(component, comparator),
+    )
 
 
 def apply_regex(regex: str, val: str):
