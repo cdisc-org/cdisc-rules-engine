@@ -16,6 +16,21 @@ from cdisc_rules_engine.constants.metadata_columns import (
 )
 
 
+def _create_test_dataframe_and_metadata(data_dict, domain="TX", filename="tx.xpt"):
+    """Helper to create test DataFrame and metadata."""
+    df = pd.DataFrame(data_dict)
+    variable = DatasetVariable(PandasDataset(df))
+    dataset_metadata = SDTMDatasetMetadata(
+        first_record={"DOMAIN": domain}, filename=filename
+    )
+    return df, variable, dataset_metadata
+
+
+def _create_test_action(rule, df, variable, dataset_metadata):
+    """Helper to create COREActions instance."""
+    return COREActions([], variable, dataset_metadata, rule)
+
+
 def test_targeted_error_object_with_partial_missing_targets():
     dummy_rule = {
         "core_id": "MockRule",
@@ -181,12 +196,10 @@ def test_group_sensitivity_missing_grouping_variables():
         "output_variables": ["TXPARMCD"],
     }
 
-    df = pd.DataFrame({"TXPARMCD": ["VALUE"]})
-    variable = DatasetVariable(PandasDataset(df))
-    dataset_metadata = SDTMDatasetMetadata(
-        first_record={"DOMAIN": "TX"}, filename="tx.xpt"
+    df, variable, dataset_metadata = _create_test_dataframe_and_metadata(
+        {"TXPARMCD": ["VALUE"]}
     )
-    action = COREActions([], variable, dataset_metadata, dummy_rule)
+    action = _create_test_action(dummy_rule, df, variable, dataset_metadata)
 
     result = action.generate_targeted_error_object(set(), df, "Test message")
 
@@ -205,12 +218,10 @@ def test_group_sensitivity_invalid_grouping_variables():
         "output_variables": ["TXPARMCD"],
     }
 
-    df = pd.DataFrame({"TXPARMCD": ["VALUE"]})
-    variable = DatasetVariable(PandasDataset(df))
-    dataset_metadata = SDTMDatasetMetadata(
-        first_record={"DOMAIN": "TX"}, filename="tx.xpt"
+    df, variable, dataset_metadata = _create_test_dataframe_and_metadata(
+        {"TXPARMCD": ["VALUE"]}
     )
-    action = COREActions([], variable, dataset_metadata, dummy_rule)
+    action = _create_test_action(dummy_rule, df, variable, dataset_metadata)
 
     result = action.generate_targeted_error_object(set(), df, "Test message")
 
@@ -229,18 +240,14 @@ def test_group_sensitivity_multiple_grouping_variables():
         "output_variables": ["TXPARMCD"],
     }
 
-    df = pd.DataFrame(
+    df, variable, dataset_metadata = _create_test_dataframe_and_metadata(
         {
             "TXPARMCD": ["VALUE1", "VALUE2", "VALUE3"],
             "SETCD": ["SET1", "SET1", "SET2"],
             "USUBJID": ["001", "002", "001"],
         }
     )
-    variable = DatasetVariable(PandasDataset(df))
-    dataset_metadata = SDTMDatasetMetadata(
-        first_record={"DOMAIN": "TX"}, filename="tx.xpt"
-    )
-    action = COREActions([], variable, dataset_metadata, dummy_rule)
+    action = _create_test_action(dummy_rule, df, variable, dataset_metadata)
 
     result = action.generate_targeted_error_object(set(), df, "Test message")
 
