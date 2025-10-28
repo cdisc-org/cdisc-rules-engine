@@ -913,15 +913,6 @@ class DataframeType(BaseType):
     def split_parts_have_equal_length(self, other_value: dict):
         """
         Splits string values by a separator and checks if both parts have equal length.
-        Generic string comparison operator useful for validating paired data formats
-        where both parts must have the same level of detail or precision.
-
-        Parameters:
-            target: Column name to check
-            separator: String to split on (default: "/")
-
-        Returns:
-            Boolean series where True means both parts have equal length
         """
         target = self.replace_prefix(other_value.get("target"))
         separator = other_value.get("separator", "/")
@@ -950,7 +941,6 @@ class DataframeType(BaseType):
     def split_parts_have_unequal_length(self, other_value: dict):
         """
         Complement of split_parts_have_equal_length.
-        Returns True when the parts have unequal length (violation case).
         """
         return ~self.split_parts_have_equal_length(other_value)
 

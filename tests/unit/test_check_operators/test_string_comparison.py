@@ -768,7 +768,6 @@ def test_not_matches_regex(data, comparator, dataset_type, expected_result):
 def test_split_parts_have_equal_length(data, separator, dataset_type, expected_result):
     """
     Test for split_parts_have_equal_length operator.
-    Validates that both parts of a split string have equal length (e.g., for interval dates).
     """
     df = dataset_type.from_dict({"target": data})
     dataframe_type = DataframeType({"value": df})
@@ -806,7 +805,6 @@ def test_split_parts_have_unequal_length(
 ):
     """
     Test for split_parts_have_unequal_length operator (complement).
-    Returns True when parts have unequal length (violation case).
     """
     df = dataset_type.from_dict({"target": data})
     dataframe_type = DataframeType({"value": df})
