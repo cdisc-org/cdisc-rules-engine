@@ -433,11 +433,39 @@ def compare_error_lists(old_errors, sql_errors):
     for error in old_errors:
         if "value" in error:
             error["value"] = {k: None if v == "" else v for k, v in error["value"].items()}
+            if "$study_domains" in error["value"] and isinstance(error["value"]["$study_domains"], list):
+                error["value"]["$study_domains"] = sorted(error["value"]["$study_domains"])
 
-    # TEMPORARY FIX: copy error/message formatting from old to SQL for comparison
-    # The sql engine outputs errors in a different format given the same results, which creates useless diffs.
-    # This ensures that the errors are comparable when no other diffs are present.
-    # This should be removed once the sql engine is updated to match the old engine's errors.
+    for error in sql_errors:
+        if (
+            "value" in error
+            and "$study_domains" in error["value"]
+            and isinstance(error["value"]["$study_domains"], list)
+        ):
+            error["value"]["$study_domains"] = sorted(error["value"]["$study_domains"])
+
+    sql_errors_normalized = error_translation(old_errors, sql_errors)
+
+    diff = DeepDiff(old_errors, sql_errors_normalized, ignore_order=True, ignore_string_case=True)
+
+    if diff:
+        # Calling `to_json` to create a valid JSON
+        reloaded = json.loads(diff.to_json())
+        # Sort the values_changed keys for consistent output
+        if "values_changed" in reloaded:
+            reloaded["values_changed"] = dict(sorted(reloaded["values_changed"].items()))
+        return reloaded
+    else:
+        return []
+
+
+def error_translation(old_errors, sql_errors):
+    """
+    TEMPORARY FIX: copy error/message formatting from old to SQL for comparison
+    The sql engine outputs errors in a different format given the same results, which creates useless diffs.
+    This ensures that the errors are comparable when no other diffs are present.
+    This should be removed once the sql engine is updated to match the old engine's errors.
+    """
     if ENABLE_ERROR_TRANSLATION:
         if sql_errors and old_errors and "error" in sql_errors[0] and "message" in sql_errors[0]:
             if len(sql_errors) == len(old_errors):
@@ -453,18 +481,7 @@ def compare_error_lists(old_errors, sql_errors):
             sql_errors_normalized = sql_errors
     else:
         sql_errors_normalized = sql_errors
-
-    diff = DeepDiff(old_errors, sql_errors_normalized, ignore_order=True, ignore_string_case=True)
-
-    if diff:
-        # Calling `to_json` to create a valid JSON
-        reloaded = json.loads(diff.to_json())
-        # Sort the values_changed keys for consistent output
-        if "values_changed" in reloaded:
-            reloaded["values_changed"] = dict(sorted(reloaded["values_changed"].items()))
-        return reloaded
-    else:
-        return []
+    return sql_errors_normalized
 
 
 def extract_results_regression(results):
