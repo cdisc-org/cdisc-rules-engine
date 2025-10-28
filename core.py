@@ -27,15 +27,22 @@ from cdisc_rules_engine.utilities.utils import (
     generate_report_filename,
     get_rules_cache_key,
 )
+from cdisc_rules_engine.enums.dataformat_types import DataFormatTypes
 from scripts.list_dataset_metadata_handler import list_dataset_metadata_handler
 from version import __version__
 
-VALIDATION_SUPPORTED_FORMATS = ["XPT", "JSON", "NDJSON"]
-VALIDATION_FORMATS_MESSAGE = "SAS V5 XPT or Dataset-JSON (JSON or NDJSON)"
+VALIDATION_FORMATS_MESSAGE = (
+    "SAS V5 XPT, Dataset-JSON (JSON or NDJSON), or Excel (XLSX)"
+)
 
 
 def valid_data_file(data_path: list) -> tuple[list, set]:
-    allowed_formats = VALIDATION_SUPPORTED_FORMATS
+    allowed_formats = [
+        DataFormatTypes.XPT.value,
+        DataFormatTypes.JSON.value,
+        DataFormatTypes.NDJSON.value,
+        DataFormatTypes.XLSX.value,
+    ]
     found_formats = set()
     file_list = []
     ignored_files = []
@@ -55,7 +62,11 @@ def valid_data_file(data_path: list) -> tuple[list, set]:
             + ("..." if len(ignored_files) > 5 else "")
         )
 
-    if len(found_formats) > 1:
+    if "XLSX" in found_formats and len(found_formats) > 1:
+        return [], found_formats
+    elif "XLSX" in found_formats and len(file_list) > 1:
+        return [], found_formats
+    elif len(found_formats) > 1:
         return [], found_formats
     elif len(found_formats) >= 1:
         return file_list, found_formats
@@ -260,8 +271,74 @@ def cli():
         "If true, limits reported issues per dataset per rule."
     ),
 )
+def _validate_data_directory(data: str, logger) -> tuple[list, set]:
+    """Validate data directory and return dataset paths and found formats."""
+    dataset_paths, found_formats = valid_data_file(
+        [str(Path(data).joinpath(fn)) for fn in os.listdir(data)]
+    )
+
+    if len(found_formats) > 1:
+        logger.error(
+            f"Argument --data contains more than one allowed file format ({', '.join(found_formats)})."  # noqa: E501
+        )
+        return None, None
+
+    if not dataset_paths:
+        if "XLSX" in found_formats and len(found_formats) == 1:
+            logger.error(
+                f"Multiple XLSX files found in directory: {data}\n"
+                f"Excel format (XLSX) validation only supports single files.\n"
+                f"Please provide either a single XLSX file or use other supported formats: "
+                f"{VALIDATION_FORMATS_MESSAGE}"
+            )
+        else:
+            logger.error(
+                f"No valid dataset files found in directory: {data}\n"
+                f"Supported formats: {VALIDATION_FORMATS_MESSAGE}\n"
+                f"Please ensure your directory contains files in one of these formats."
+            )
+        return None, None
+
+    return dataset_paths, found_formats
+
+
+def _validate_dataset_paths(dataset_path: tuple[str], logger) -> tuple[list, set]:
+    """Validate dataset paths and return dataset paths and found formats."""
+    dataset_paths, found_formats = valid_data_file([dp for dp in dataset_path])
+
+    if len(found_formats) > 1:
+        logger.error(
+            f"Argument --dataset-path contains more than one allowed file format ({', '.join(found_formats)})."  # noqa: E501
+        )
+        return None, None
+
+    if not dataset_paths:
+        if "XLSX" in found_formats and len(found_formats) == 1:
+            logger.error(
+                f"Multiple XLSX files provided.\n"
+                f"Excel format (XLSX) validation only supports single files.\n"
+                f"Please provide either a single XLSX file or use other supported formats: "
+                f"{VALIDATION_FORMATS_MESSAGE}"
+            )
+        else:
+            logger.error(
+                f"No valid dataset files provided.\n"
+                f"Supported formats: {VALIDATION_FORMATS_MESSAGE}\n"
+                f"Please ensure your files are in one of these formats."
+            )
+        return None, None
+
+    return dataset_paths, found_formats
+
+
+def _validate_no_arguments(logger) -> None:
+    """Validate that at least one dataset argument is provided."""
+    logger.error("You must pass one of the following arguments: --dataset-path, --data")
+
+
+@click.command()
 @click.pass_context
-def validate(  # noqa: C901
+def validate(
     ctx,
     cache: str,
     pool_size: int,
@@ -340,46 +417,22 @@ def validate(  # noqa: C901
             },
         }
     )
+    # Validate dataset arguments
     if data:
         if dataset_path:
             logger.error(
                 "Argument --dataset-path cannot be used together with argument --data"
             )
             ctx.exit(2)
-        dataset_paths, found_formats = valid_data_file(
-            [str(Path(data).joinpath(fn)) for fn in os.listdir(data)]
-        )
-        if len(found_formats) > 1:
-            logger.error(
-                f"Argument --data contains more than one allowed file format ({', '.join(found_formats)})."  # noqa: E501
-            )
-            ctx.exit(2)
-        if not dataset_paths:
-            logger.error(
-                f"No valid dataset files found in directory: {data}\n"
-                f"Supported formats: {VALIDATION_FORMATS_MESSAGE}\n"
-                f"Please ensure your directory contains files in one of these formats."
-            )
+        dataset_paths, found_formats = _validate_data_directory(data, logger)
+        if dataset_paths is None:
             ctx.exit(2)
     elif dataset_path:
-        dataset_paths, found_formats = valid_data_file([dp for dp in dataset_path])
-        if len(found_formats) > 1:
-            logger.error(
-                f"Argument --dataset-path contains more than one allowed file format ({', '.join(found_formats)})."  # noqa: E501
-            )
-            ctx.exit(2)
-        if not dataset_paths:
-            logger.error(
-                f"No valid dataset files provided.\n"
-                f"Supported formats: {VALIDATION_FORMATS_MESSAGE}\n"
-                f"Please ensure your files are in one of these formats."
-            )
+        dataset_paths, found_formats = _validate_dataset_paths(dataset_path, logger)
+        if dataset_paths is None:
             ctx.exit(2)
     else:
-        logger.error(
-            "You must pass one of the following arguments: --dataset-path, --data"
-        )
-        # no need to define dataset_paths here, the program execution will stop
+        _validate_no_arguments(logger)
         ctx.exit(2)
     validate_xml_bool = True if validate_xml.lower() in ("y", "yes") else False
     run_validation(

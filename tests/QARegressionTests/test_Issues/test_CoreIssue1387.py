@@ -6,7 +6,8 @@ from conftest import get_python_executable
 
 
 @pytest.mark.regression
-def test_folder_with_xlsx_files_shows_helpful_error():
+def test_multiple_xlsx_files_shows_helpful_error():
+    """Test that multiple XLSX files show a helpful error message about single file limitation"""
     with tempfile.TemporaryDirectory() as temp_dir:
         xlsx_files = ["ae.xlsx", "dm.xlsx"]
 
@@ -34,8 +35,99 @@ def test_folder_with_xlsx_files_shows_helpful_error():
         stderr_text = stderr.decode()
         stdout_text = stdout.decode()
 
-        assert process.returncode != 0, "Expected non-zero exit code for invalid files"
+        assert (
+            process.returncode != 0
+        ), "Expected non-zero exit code for multiple XLSX files"
+        assert "KeyError" not in stderr_text, "Should not show KeyError crash"
+        assert (
+            "Failed to execute script" not in stderr_text
+        ), "Should not show script execution failure"
+        assert (
+            "Multiple XLSX files found" in stderr_text
+            or "Multiple XLSX files found" in stdout_text
+        ), f"Expected helpful error message about multiple XLSX files. stderr: {stderr_text}, stdout: {stdout_text}"
+        assert (
+            "Excel format (XLSX) validation only supports single files" in stderr_text
+            or "Excel format (XLSX) validation only supports single files"
+            in stdout_text
+        ), "Expected explanation of XLSX limitation"
+
+
+@pytest.mark.regression
+def test_folder_with_xlsx_files_works_with_excel_service():
+    """Test that a folder with a single XLSX file now works with ExcelDataService"""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        xlsx_files = ["ae.xlsx"]
+
+        for filename in xlsx_files:
+            open(os.path.join(temp_dir, filename), "w").close()
+
+        command = [
+            get_python_executable(),
+            "-m",
+            "core",
+            "validate",
+            "-s",
+            "sdtmig",
+            "-v",
+            "3.4",
+            "-d",
+            temp_dir,
+        ]
+
+        process = subprocess.Popen(
+            command, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
+        stdout, stderr = process.communicate()
+
+        stderr_text = stderr.decode()
+        stdout_text = stdout.decode()
+
         assert "KeyError: 'XLSX'" not in stderr_text, "Should not show KeyError crash"
+        assert (
+            "Failed to execute script" not in stderr_text
+        ), "Should not show script execution failure"
+
+        assert (
+            "No valid dataset files found" not in stderr_text
+            and "No valid dataset files found" not in stdout_text
+        ), "XLSX files should now be recognized as valid"
+
+
+@pytest.mark.regression
+def test_folder_with_unsupported_formats_shows_helpful_error():
+    """Test that folders with truly unsupported formats (like PDF) show helpful error messages"""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        unsupported_files = ["ae.pdf", "dm.txt"]
+
+        for filename in unsupported_files:
+            open(os.path.join(temp_dir, filename), "w").close()
+
+        command = [
+            get_python_executable(),
+            "-m",
+            "core",
+            "validate",
+            "-s",
+            "sdtmig",
+            "-v",
+            "3.4",
+            "-d",
+            temp_dir,
+        ]
+
+        process = subprocess.Popen(
+            command, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
+        stdout, stderr = process.communicate()
+
+        stderr_text = stderr.decode()
+        stdout_text = stdout.decode()
+
+        assert (
+            process.returncode != 0
+        ), "Expected non-zero exit code for unsupported files"
+        assert "KeyError" not in stderr_text, "Should not show KeyError crash"
         assert (
             "Failed to execute script" not in stderr_text
         ), "Should not show script execution failure"
@@ -44,8 +136,8 @@ def test_folder_with_xlsx_files_shows_helpful_error():
             or "No valid dataset files found" in stdout_text
         ), f"Expected helpful error message. stderr: {stderr_text}, stdout: {stdout_text}"
         assert (
-            "SAS V5 XPT or Dataset-JSON" in stderr_text
-            or "SAS V5 XPT or Dataset-JSON" in stdout_text
+            "SAS V5 XPT, Dataset-JSON" in stderr_text
+            or "SAS V5 XPT, Dataset-JSON" in stdout_text
         ), "Expected format guidance in error message"
 
 
@@ -140,8 +232,9 @@ def test_mixed_folder_processes_valid_files():
             stderr_text = stderr.decode()
             stdout_text = stdout.decode()
 
-            assert "KeyError: 'XLSX'" not in stderr_text, "Should not crash on XLSX"
+            assert "KeyError" not in stderr_text, "Should not crash on any files"
             assert "Failed to execute script" not in stderr_text, "Should not crash"
+
             assert (
                 "No valid dataset files found" not in stderr_text
                 and "No valid dataset files found" not in stdout_text

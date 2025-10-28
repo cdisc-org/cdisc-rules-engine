@@ -236,10 +236,10 @@ CORE supports the following dataset file formats for validation:
 - **XPT** - SAS Transport Format (version 5)
 - **JSON** - Dataset-JSON (CDISC standard format)
 - **NDJSON** - Newline Delimited JSON datasets
+- **XLSX** - Excel format (Microsoft Excel files)
 
 **Important Notes:**
 
-- XLSX files are used for report output templates but are **not supported** as input datasets for validation.
 - Define-XML files should be provided via the `--define-xml-path` (or `-dxp`) option, not through the dataset directory (`-d` or `-dp`).
 - If you point to a folder containing unsupported file formats, CORE will display an error message indicating which formats are supported.
 
