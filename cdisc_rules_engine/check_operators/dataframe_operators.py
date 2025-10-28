@@ -89,7 +89,7 @@ class DataframeType(BaseType):
             if isinstance(x, int):
                 return str(x).strip()
             elif isinstance(x, float):
-                return f"{x:.0f}" if x.is_integer() else str(x).strip()
+                return f"{x:.0f}" if x.is_integer() else str(x).strip()  # noqa: E231
         return x
 
     def convert_string_data_to_lower(self, data):
@@ -196,6 +196,7 @@ class DataframeType(BaseType):
         if case_insensitive:
             target_val = target_val.lower() if target_val else None
             comparison_val = comparison_val.lower() if comparison_val else None
+            return target_val == comparison_val
         return target_val == comparison_val
 
     def _check_inequality(
@@ -242,6 +243,7 @@ class DataframeType(BaseType):
         if case_insensitive:
             target_val = target_val.lower() if target_val else None
             comparison_val = comparison_val.lower() if comparison_val else None
+            return target_val != comparison_val
         return target_val != comparison_val
 
     @log_operator_execution
@@ -276,9 +278,9 @@ class DataframeType(BaseType):
     def equal_to_case_insensitive(self, other_value):
         target = self.replace_prefix(other_value.get("target"))
         value_is_literal = other_value.get("value_is_literal", False)
+        value_is_reference = other_value.get("value_is_reference", False)
         type_insensitive = other_value.get("type_insensitive", False)
         round_values = other_value.get("round_values", False)
-        value_is_reference = other_value.get("value_is_reference", False)
         comparator = (
             self.replace_prefix(other_value.get("comparator"))
             if not value_is_literal
@@ -303,9 +305,9 @@ class DataframeType(BaseType):
     def not_equal_to_case_insensitive(self, other_value):
         target = self.replace_prefix(other_value.get("target"))
         value_is_literal = other_value.get("value_is_literal", False)
+        value_is_reference = other_value.get("value_is_reference", False)
         type_insensitive = other_value.get("type_insensitive", False)
         round_values = other_value.get("round_values", False)
-        value_is_reference = other_value.get("value_is_reference", False)
         comparator = (
             self.replace_prefix(other_value.get("comparator"))
             if not value_is_literal
@@ -905,6 +907,42 @@ class DataframeType(BaseType):
     @type_operator(FIELD_DATAFRAME)
     def shorter_than_or_equal_to(self, other_value: dict):
         return ~self.longer_than(other_value)
+
+    @log_operator_execution
+    @type_operator(FIELD_DATAFRAME)
+    def split_parts_have_equal_length(self, other_value: dict):
+        """
+        Splits string values by a separator and checks if both parts have equal length.
+        """
+        target = self.replace_prefix(other_value.get("target"))
+        separator = other_value.get("separator", "/")
+
+        target_series = self.value[target]
+        is_null_or_empty = target_series.isna() | (target_series == "")
+        target_str = target_series.astype(str)
+        split_series = target_str.str.split(separator, expand=False)
+
+        def validate_split(parts):
+            if not isinstance(parts, list):
+                return True
+            if len(parts) == 1:
+                return True
+            if len(parts) == 2:
+                return len(parts[0]) == len(parts[1])
+            return False
+
+        results = split_series.apply(validate_split)
+        results = results | is_null_or_empty
+
+        return results
+
+    @log_operator_execution
+    @type_operator(FIELD_DATAFRAME)
+    def split_parts_have_unequal_length(self, other_value: dict):
+        """
+        Complement of split_parts_have_equal_length.
+        """
+        return ~self.split_parts_have_equal_length(other_value)
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
