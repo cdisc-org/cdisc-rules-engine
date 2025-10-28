@@ -30,9 +30,7 @@ from cdisc_rules_engine.utilities.utils import (
 from scripts.list_dataset_metadata_handler import list_dataset_metadata_handler
 from version import __version__
 
-# Formats supported for validation (must have metadata readers in local_data_service.py)
 VALIDATION_SUPPORTED_FORMATS = ["XPT", "JSON", "NDJSON"]
-# User-friendly format description
 VALIDATION_FORMATS_MESSAGE = "SAS V5 XPT or Dataset-JSON (JSON or NDJSON)"
 
 
@@ -47,10 +45,9 @@ def valid_data_file(data_path: list) -> tuple[list, set]:
         if file_extension in allowed_formats:
             found_formats.add(file_extension)
             file_list.append(file)
-        elif file_extension:  # Has an extension but not supported
+        elif file_extension:
             ignored_files.append(os.path.basename(file))
 
-    # Log ignored files if any
     if ignored_files:
         logger = logging.getLogger("validator")
         logger.warning(

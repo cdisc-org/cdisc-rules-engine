@@ -8,35 +8,13 @@ from cdisc_rules_engine.services.data_services import DataServiceFactory
 
 
 def list_dataset_metadata_handler(dataset_paths: Tuple[str]) -> List[dict]:
-    """
-    Lists metadata of given datasets like:
-    [
-       {
-          "domain":"AE",
-          "filename":"ae.xpt",
-          "full_path":"/Users/Aleksei_Furmenkov/PycharmProjects/cdisc-rules-engine/resources/data/ae.xpt",
-          "file_size":"38000",
-          "label":"Adverse Events",
-          "modification_date":"2020-08-21T09:14:26"
-       },
-       {
-          "domain":"EX",
-          "filename":"ex.xpt",
-          "full_path":"/Users/Aleksei_Furmenkov/PycharmProjects/cdisc-rules-engine/resources/data/ex.xpt",
-          "file_size":"78050",
-          "label":"Exposure",
-          "modification_date":"2021-09-17T09:23:22"
-       },
-       ...
-    ]
-    """
-    # Validate file formats before processing
-    supported_formats = ["XPT", "JSON", "NDJSON"]
+    from core import VALIDATION_SUPPORTED_FORMATS
+
     invalid_files = []
 
     for path in dataset_paths:
         file_ext = path.split(".")[-1].upper()
-        if file_ext not in supported_formats:
+        if file_ext not in VALIDATION_SUPPORTED_FORMATS:
             invalid_files.append((path, file_ext))
 
     if invalid_files:
