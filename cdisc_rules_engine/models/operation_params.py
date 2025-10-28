@@ -57,3 +57,4 @@ class OperationParams:
     original_target: str = None
     returntype: str = None
     target: str = None
+    namespace: str = None
