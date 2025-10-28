@@ -268,50 +268,16 @@ The possible rule run statuses are:
 
 ## Date Comparison with Automatic Precision Detection
 
-When writing validation rules that compare dates or datetimes with different precision levels, you can use the `date_component: "auto"` parameter to automatically compare at the common precision level. This feature is particularly useful in clinical trial data validation where date fields may have varying levels of precision.
-
-### How It Works
-
-The system automatically detects the precision of both dates being compared (year, month, day, hour, minute, second, or microsecond) and performs the comparison at the less precise (common) level.
-
-### Example Usage
+Use `date_component: "auto"` to automatically compare dates at their common precision level.
 
 ```yaml
-Check:
-  all:
-    - name: "AESTDTC"
-      operator: "date_greater_than_or_equal_to"
-      value: "RFSTDTC"
-      date_component: "auto"
+- name: "AESTDTC"
+  operator: "date_greater_than_or_equal_to"
+  value: "RFSTDTC"
+  date_component: "auto"
 ```
 
-### Common Scenarios
-
-- **Date vs Datetime**: Comparing `RFSTDTC` (date only, e.g., "2025-06-25") with `AESTDTC` (datetime, e.g., "2025-06-25T17:22") → compared at day precision
-- **Partial Dates**: Comparing `"2025-06"` (year-month) with `"2025-06-25"` (complete date) → compared at month precision
-- **Mixed Precision Data**: Comparing `"2025"` (year only) with `"2025-06-25T17:22:30"` (full datetime) → compared at year precision
-
-### When to Use
-
-This feature is useful when:
-
-- Comparing date-only fields (like `RFSTDTC`) with datetime fields (like `AESTDTC`)
-- Working with partial dates where precision varies (year-only or year-month formats)
-- Handling data with varying precision across different records
-- Dealing with CDISC uncertainty markers (e.g., `"2025-06--"` for unknown day)
-
-### Supported Operators
-
-All date comparison operators support the `auto` precision parameter:
-
-- `date_equal_to`
-- `date_not_equal_to`
-- `date_greater_than`
-- `date_greater_than_or_equal_to`
-- `date_less_than`
-- `date_less_than_or_equal_to`
-
-For more details on date operators, see the [Operator documentation](resources/schema/Operator.md#date).
+This compares `"2025-06-25"` with `"2025-06-25T17:22"` at day precision, `"2025-06"` with `"2025-06-25"` at month precision, etc.
 
 # Additional Core Commands
 

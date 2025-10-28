@@ -399,11 +399,9 @@ Date and time specific operations for comparing dates, validating date completen
 
 Date comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified.
 
-The `date_component` parameter accepts specific precision levels: `"year"`, `"month"`, `"day"`, `"hour"`, `"minute"`, `"second"`, `"microsecond"`, or `"auto"`.
+The `date_component` parameter accepts: `"year"`, `"month"`, `"day"`, `"hour"`, `"minute"`, `"second"`, `"microsecond"`, or `"auto"`.
 
-When `date_component: "auto"` is used, the operator automatically detects the precision of both dates being compared and performs the comparison at the common (less precise) level. This is useful when comparing dates with different precision levels, such as a date-only field with a datetime field.
-
-> Compare AESTDTC with RFSTDTC at automatically detected common precision
+When `date_component: "auto"` is used, the operator automatically detects the precision of both dates and compares at the common (less precise) level.
 
 ```yaml
 - name: "AESTDTC"
@@ -412,21 +410,15 @@ When `date_component: "auto"` is used, the operator automatically detects the pr
   date_component: "auto"
 ```
 
-Examples of auto precision detection:
-
-- `"2025-06-25"` compared with `"2025-06-25T17:22"` → compared at day precision
-- `"2025-06"` compared with `"2025-06-25"` → compared at month precision
-- `"2025"` compared with `"2025-06-25T17:22:30"` → compared at year precision
-
 ### date_not_equal_to
 
 Complement of `date_equal_to`
 
-Date comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified. Also supports `date_component: "auto"` for automatic precision detection (see `date_equal_to` for details).
+Date comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified. Supports `date_component: "auto"`.
 
 ### date_greater_than
 
-Date comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified. Also supports `date_component: "auto"` for automatic precision detection (see `date_equal_to` for details).
+Date comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified. Supports `date_component: "auto"`.
 
 > Year part of BRTHDTC > 2021
 
@@ -439,7 +431,7 @@ Date comparison. Compare `name` to `value`. Compares partial dates if `date_comp
 
 ### date_greater_than_or_equal_to
 
-Date comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified. Also supports `date_component: "auto"` for automatic precision detection (see `date_equal_to` for details).
+Date comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified. Supports `date_component: "auto"`.
 
 > Year part of BRTHDTC >= 2021
 
@@ -452,7 +444,7 @@ Date comparison. Compare `name` to `value`. Compares partial dates if `date_comp
 
 ### date_less_than
 
-Date comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified. Also supports `date_component: "auto"` for automatic precision detection (see `date_equal_to` for details).
+Date comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified. Supports `date_component: "auto"`.
 
 > AEENDTC < AESTDTC
 
@@ -482,7 +474,7 @@ Operations:
 
 ### date_less_than_or_equal_to
 
-Date comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified. Also supports `date_component: "auto"` for automatic precision detection (see `date_equal_to` for details).
+Date comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified. Supports `date_component: "auto"`.
 
 > AEENDTC <= AESTDTC
 
