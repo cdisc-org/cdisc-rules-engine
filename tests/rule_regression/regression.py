@@ -31,6 +31,8 @@ DATA_DEPTH = CASE_DEPTH + 2
 
 METADATA_CACHE = {}
 
+WHITELISTED_RULES = {"CORE-000711", "CORE-000713", "CORE-000714", "CORE-000737", "CORE-000741", "CORE-000784"}
+
 
 def run_single_rule_regression(row: pd.Series, get_core_rule, target_case: Optional[str] = None) -> list:
     try:
@@ -98,7 +100,14 @@ def run_single_rule_regression_impl(row: pd.Series, get_core_rule, target_case: 
                 case_path = base_case_path / case
                 if case_path.exists():
                     run_test_cases(
-                        rule_regression, case, str(case_path), ig_specs, rule, target_case, is_nested_structure
+                        rule_regression,
+                        case,
+                        str(case_path),
+                        ig_specs,
+                        rule,
+                        target_case,
+                        is_nested_structure,
+                        cur_core_id,
                     )
         elif len(paths) < 1:
             rule_regression["rule_in_mltple_standards"] = []
@@ -132,6 +141,7 @@ def run_test_cases(
     rule,
     target_case: Optional[str] = None,
     is_nested_structure: bool = False,
+    cur_core_id: str = None,
 ):
     two_digit_pattern = re.compile(r"^\d{2}$")
     path_depth = TYPE_DEPTH + 1 if is_nested_structure else TYPE_DEPTH
@@ -162,6 +172,7 @@ def run_test_cases(
                 engine_regression,
                 ig_specs,
                 rule,
+                cur_core_id,
             )
             test_case_regression.append(
                 {
@@ -190,6 +201,7 @@ def run_regression_on_test_case(
     regression_errors: dict,
     ig_specs: IGSpecification,
     rule,
+    cur_core_id: Optional[str] = None,
 ):
     can_process_dataset = False
     data_test_datasets = None
@@ -237,6 +249,7 @@ def run_regression_on_test_case(
             ig_specs,
             rule,
             test_case_folder_path,
+            cur_core_id,
         )
 
         # Uncomment to produce reports for CDISC to use
@@ -297,6 +310,7 @@ def process_test_case_dataset(
     ig_specs: IGSpecification,
     rule: dict,
     test_case_folder_path: str,
+    cur_core_id: Optional[str] = None,
 ):
     try:
         metadata = get_metadata(ig_specs, define_xml_file_path)
@@ -330,6 +344,8 @@ def process_test_case_dataset(
         regression_errors["results_old"] = old_regression
 
         regression_errors["old_vs_sql"] = old_vs_sql_regression_comparison(old_regression, sql_regression)
+
+        regression_errors["whitelisted"] = True if cur_core_id in WHITELISTED_RULES else False
 
         regression_errors["sql_overall_result"] = extract_overall_result(sql_regression)
         regression_errors["old_overall_result"] = extract_overall_result(old_regression)
@@ -391,7 +407,9 @@ def validate_engine_result(engine_result: list[dict], validated_result: list[dic
         return "valid"
 
 
-def old_vs_sql_regression_comparison(old_results: list[dict], sql_results: list[dict]):
+def old_vs_sql_regression_comparison(
+    old_results: list[dict], sql_results: list[dict], cur_core_id: Optional[str] = None
+) -> dict:
     dataset_mismatch = False
     execution_status_mismatch = False
     number_of_errors_mismatch = False
