@@ -5,6 +5,7 @@ from dateutil.parser import parse, isoparse
 import pytz
 from cdisc_rules_engine.services import logger
 import traceback
+from functools import lru_cache
 
 
 # Date regex pattern for validation
@@ -127,14 +128,24 @@ def _detect_time_precision(time_part: str) -> str:
         return "hour"
 
 
-def detect_date_precision(date_str: str) -> str:
-    """
-    Detect the precision level of an ISO-8601 date string.
+def _detect_date_precision_simple(date_str: str) -> str:
+    date_parts = [p for p in date_str.split("-") if p]
+    if len(date_parts) >= 3:
+        return "day"
+    elif len(date_parts) == 2:
+        return "month"
+    elif len(date_parts) == 1:
+        return "year"
+    return None
 
-    Returns precision level or None if invalid. Handles CDISC uncertainty markers.
-    """
+
+@lru_cache(maxsize=1000)
+def detect_date_precision(date_str: str) -> str:
     if not date_str or not isinstance(date_str, str):
         return None
+
+    if "T" not in date_str and "--" not in date_str and "-:" not in date_str:
+        return _detect_date_precision_simple(date_str)
 
     if "--" in date_str or "-:" in date_str:
         date_str = date_str.split("--")[0].split("-:")[0]
@@ -143,49 +154,44 @@ def detect_date_precision(date_str: str) -> str:
 
     if "T" in date_str:
         time_part = date_str.split("T")[1]
-
         if not time_part:
             return "day"
-
         time_part = time_part.split("+")[0].split("-")[-1].split("Z")[0]
         return _detect_time_precision(time_part)
 
-    date_parts = [p for p in date_str.split("-") if p]
+    return _detect_date_precision_simple(date_str)
 
-    if len(date_parts) >= 3:
-        return "day"
-    elif len(date_parts) == 2:
-        return "month"
-    elif len(date_parts) == 1:
-        return "year"
 
-    return None
+PRECISION_ORDER = {
+    "year": 0,
+    "month": 1,
+    "day": 2,
+    "hour": 3,
+    "minute": 4,
+    "second": 5,
+    "microsecond": 6,
+}
+
+PRECISION_LEVELS = [
+    "year",
+    "month",
+    "day",
+    "hour",
+    "minute",
+    "second",
+    "microsecond",
+]
 
 
 def get_common_precision(dt1: str, dt2: str) -> str:
-    """
-    Determine the common (less precise) precision level between two date strings.
-    """
-    precision_order = [
-        "year",
-        "month",
-        "day",
-        "hour",
-        "minute",
-        "second",
-        "microsecond",
-    ]
-
     p1 = detect_date_precision(dt1)
     p2 = detect_date_precision(dt2)
 
     if not p1 or not p2:
         return None
 
-    idx1 = precision_order.index(p1)
-    idx2 = precision_order.index(p2)
-
-    return precision_order[min(idx1, idx2)]
+    min_idx = min(PRECISION_ORDER[p1], PRECISION_ORDER[p2])
+    return PRECISION_LEVELS[min_idx]
 
 
 def get_date_component(component: str, date_string: str):

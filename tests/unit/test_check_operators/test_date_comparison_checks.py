@@ -750,203 +750,126 @@ def test_is_incomplete_date(target, dataset_type, expected_result):
 
 
 @pytest.mark.parametrize(
-    "data,comparator,dataset_type,expected_result",
+    "operator_name,data,comparator,expected_result",
     [
         (
+            "date_equal_to",
             ["2025-06-25", "2025-06-24", "2025-06-25", "2025-06-26"],
             "2025-06-25T17:22",
-            PandasDataset,
             [True, False, True, False],
         ),
         (
+            "date_equal_to",
             ["2025-06", "2025-07", "2025-06", "2025-05"],
             "2025-06-25",
-            DaskDataset,
             [True, False, True, False],
         ),
         (
+            "date_equal_to",
             ["2025", "2024", "2025", "2026"],
             "2025-06-25T17:22:30",
-            PandasDataset,
             [True, False, True, False],
         ),
         (
+            "date_equal_to",
             ["2025-06-25", "2025-06-24", "2025-06-26", "2025-06-25"],
             "2025-06-25",
-            DaskDataset,
             [True, False, False, True],
         ),
         (
+            "date_equal_to",
             ["2025-06-25T17:22", "2025-06-25T17:21", "2025-06-25T17:22"],
             "2025-06-25T17:22:30",
-            PandasDataset,
             [True, False, True],
         ),
         (
+            "date_equal_to",
             ["2025-06-25T", "2025-06-24T", "2025-06-25T"],
             "2025-06-25",
-            PandasDataset,
             [True, False, True],
         ),
-    ],
-)
-def test_date_equal_to_auto_precision(data, comparator, dataset_type, expected_result):
-    df = dataset_type.from_dict({"target": data})
-    dataframe_type = DataframeType({"value": df})
-    result = dataframe_type.date_equal_to(
-        {"target": "target", "comparator": comparator, "date_component": "auto"}
-    )
-    assert result.equals(df.convert_to_series(expected_result))
-
-
-@pytest.mark.parametrize(
-    "data,comparator,dataset_type,expected_result",
-    [
         (
+            "date_greater_than",
             ["2025-06-26", "2025-06-24", "2025-06-25"],
             "2025-06-25T17:22",
-            PandasDataset,
             [True, False, False],
         ),
         (
+            "date_greater_than",
             ["2025-07", "2025-05", "2025-06"],
             "2025-06-25",
-            DaskDataset,
             [True, False, False],
         ),
         (
+            "date_greater_than",
             ["2026", "2024", "2025"],
             "2025-06-25T17:22",
-            PandasDataset,
             [True, False, False],
         ),
-    ],
-)
-def test_date_greater_than_auto_precision(
-    data, comparator, dataset_type, expected_result
-):
-    df = dataset_type.from_dict({"target": data})
-    dataframe_type = DataframeType({"value": df})
-    result = dataframe_type.date_greater_than(
-        {"target": "target", "comparator": comparator, "date_component": "auto"}
-    )
-    assert result.equals(df.convert_to_series(expected_result))
-
-
-@pytest.mark.parametrize(
-    "data,comparator,dataset_type,expected_result",
-    [
         (
+            "date_greater_than_or_equal_to",
             ["2025-06-26", "2025-06-24", "2025-06-25"],
             "2025-06-25T17:22",
-            DaskDataset,
             [True, False, True],
         ),
         (
+            "date_greater_than_or_equal_to",
             ["2025-07", "2025-05", "2025-06"],
             "2025-06-25",
-            PandasDataset,
             [True, False, True],
         ),
-    ],
-)
-def test_date_greater_than_or_equal_to_auto_precision(
-    data, comparator, dataset_type, expected_result
-):
-    df = dataset_type.from_dict({"target": data})
-    dataframe_type = DataframeType({"value": df})
-    result = dataframe_type.date_greater_than_or_equal_to(
-        {"target": "target", "comparator": comparator, "date_component": "auto"}
-    )
-    assert result.equals(df.convert_to_series(expected_result))
-
-
-@pytest.mark.parametrize(
-    "data,comparator,dataset_type,expected_result",
-    [
         (
+            "date_less_than",
             ["2025-06-24", "2025-06-26", "2025-06-25"],
             "2025-06-25T17:22",
-            PandasDataset,
             [True, False, False],
         ),
         (
+            "date_less_than",
             ["2025-05", "2025-07", "2025-06"],
             "2025-06-25",
-            DaskDataset,
             [True, False, False],
         ),
         (
+            "date_less_than",
             ["2024", "2026", "2025"],
             "2025-06-25T17:22",
-            PandasDataset,
             [True, False, False],
         ),
-    ],
-)
-def test_date_less_than_auto_precision(data, comparator, dataset_type, expected_result):
-    df = dataset_type.from_dict({"target": data})
-    dataframe_type = DataframeType({"value": df})
-    result = dataframe_type.date_less_than(
-        {"target": "target", "comparator": comparator, "date_component": "auto"}
-    )
-    assert result.equals(df.convert_to_series(expected_result))
-
-
-@pytest.mark.parametrize(
-    "data,comparator,dataset_type,expected_result",
-    [
         (
+            "date_less_than_or_equal_to",
             ["2025-06-24", "2025-06-26", "2025-06-25"],
             "2025-06-25T17:22",
-            DaskDataset,
             [True, False, True],
         ),
         (
+            "date_less_than_or_equal_to",
             ["2025-05", "2025-07", "2025-06"],
             "2025-06-25",
-            PandasDataset,
             [True, False, True],
         ),
-    ],
-)
-def test_date_less_than_or_equal_to_auto_precision(
-    data, comparator, dataset_type, expected_result
-):
-    df = dataset_type.from_dict({"target": data})
-    dataframe_type = DataframeType({"value": df})
-    result = dataframe_type.date_less_than_or_equal_to(
-        {"target": "target", "comparator": comparator, "date_component": "auto"}
-    )
-    assert result.equals(df.convert_to_series(expected_result))
-
-
-@pytest.mark.parametrize(
-    "data,comparator,dataset_type,expected_result",
-    [
         (
+            "date_not_equal_to",
             ["2025-06-24", "2025-06-25", "2025-06-26"],
             "2025-06-25T17:22",
-            PandasDataset,
             [True, False, True],
         ),
         (
+            "date_not_equal_to",
             ["2025-05", "2025-06", "2025-07"],
             "2025-06-25",
-            DaskDataset,
             [True, False, True],
         ),
     ],
 )
-def test_date_not_equal_to_auto_precision(
-    data, comparator, dataset_type, expected_result
+@pytest.mark.parametrize("dataset_type", [PandasDataset, DaskDataset])
+def test_auto_precision_operators(
+    operator_name, data, comparator, expected_result, dataset_type
 ):
     df = dataset_type.from_dict({"target": data})
     dataframe_type = DataframeType({"value": df})
-    result = dataframe_type.date_not_equal_to(
+    operator_method = getattr(dataframe_type, operator_name)
+    result = operator_method(
         {"target": "target", "comparator": comparator, "date_component": "auto"}
     )
     assert result.equals(df.convert_to_series(expected_result))
-
-
-""
