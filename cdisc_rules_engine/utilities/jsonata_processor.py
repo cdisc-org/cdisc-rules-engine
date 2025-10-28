@@ -63,13 +63,9 @@ class JSONataProcessor:
                     SEQ=result.get("SEQ"),
                     entity=result.get("entity")
                     # For backwards compatibility. To be removed in the future:
-                    or result.get("dataset"),
-                    instance_id=result.get("instance_id")
-                    # For backwards compatibility. To be removed in the future:
-                    or result.get("iid") or result.get("USUBJID"),
-                    path=result.get("path")
-                    # For backwards compatibility. To be removed in the future:
-                    or result.get("_path") or result.get("row"),
+                    or result.get("dataset") or result.get("instanceType"),
+                    instance_id=result.get("instance_id") or result.get("id"),
+                    path=result.get("path") or result.get("_path"),
                 )
                 errors[result.get("dataset")].append(error_entity)
         validation_error_container = [

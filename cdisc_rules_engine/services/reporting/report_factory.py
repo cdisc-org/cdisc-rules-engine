@@ -8,7 +8,7 @@ from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.services.reporting.base_report_data import (
     BaseReportData,
 )
-from cdisc_rules_engine.services.reporting.ddf_report_data import DDFReportData
+from cdisc_rules_engine.services.reporting.usdm_report_data import USDMReportData
 from cdisc_rules_engine.services.reporting.sdtm_report_data import SDTMReportData
 
 from .base_report import BaseReport
@@ -50,7 +50,7 @@ class ReportFactory:
             ReportTypes.JSON.value: JsonReport,
         }
         self._standard_type_map: dict[str, Type[BaseReportData]] = {
-            "usdm": DDFReportData,
+            "usdm": USDMReportData,
             "default": SDTMReportData,
         }
 

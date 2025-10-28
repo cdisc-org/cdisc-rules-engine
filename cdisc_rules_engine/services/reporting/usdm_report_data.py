@@ -16,12 +16,12 @@ from cdisc_rules_engine.models.validation_args import Validation_args
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 
 
-class DDFReportData(BaseReportData):
+class USDMReportData(BaseReportData):
     """
-    Report details specific to DDF
+    Report details specific to USDM
     """
 
-    TEMPLATE_FILE_PATH = DefaultFilePaths.DDF_EXCEL_TEMPLATE_FILE.value
+    TEMPLATE_FILE_PATH = DefaultFilePaths.USDM_EXCEL_TEMPLATE_FILE.value
 
     def __init__(
         self,
@@ -126,7 +126,7 @@ class DDFReportData(BaseReportData):
                     ):
                         summary_item = {
                             "entity": result.get("entity")
-                            or result.get("dataset", "").replace(".json", ""),
+                            or (result.get("dataset", "") or "").replace(".json", ""),
                             "core_id": validation_result.id,
                             "message": result.get("message"),
                             "issues": len(result.get("errors")),

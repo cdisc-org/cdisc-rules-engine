@@ -1,10 +1,10 @@
 from unittest.mock import MagicMock
 from cdisc_rules_engine.enums.execution_status import ExecutionStatus
-from cdisc_rules_engine.services.reporting.ddf_report_data import DDFReportData
+from cdisc_rules_engine.services.reporting.usdm_report_data import USDMReportData
 
 
 def test_get_rules_report_data(mock_validation_results):
-    report = DDFReportData(
+    report = USDMReportData(
         [],
         ["test"],
         mock_validation_results,
@@ -30,7 +30,7 @@ def test_get_rules_report_data(mock_validation_results):
 
 
 def test_get_detailed_data(mock_validation_results):
-    report = DDFReportData(
+    report = USDMReportData(
         [],
         ["test"],
         mock_validation_results,
@@ -83,7 +83,7 @@ def test_get_detailed_data(mock_validation_results):
 
 
 def test_get_summary_data(mock_validation_results):
-    report = DDFReportData(
+    report = USDMReportData(
         [],
         ["test"],
         mock_validation_results,

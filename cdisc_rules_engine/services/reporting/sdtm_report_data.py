@@ -24,7 +24,7 @@ from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 
 class SDTMReportData(BaseReportData):
     """
-    Report details specific to DDF
+    Report details specific to SDTM
     """
 
     TEMPLATE_FILE_PATH = DefaultFilePaths.EXCEL_TEMPLATE_FILE.value
