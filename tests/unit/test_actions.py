@@ -170,6 +170,90 @@ def test_targeted_error_object_with_group_sensitivity():
         assert "TXPARMCD" in error_repr["value"]
 
 
+def test_group_sensitivity_missing_grouping_variables():
+    """Test that Group sensitivity requires Grouping_Variables."""
+    dummy_rule = {
+        "core_id": "FB4607",
+        "sensitivity": "Group",
+        "grouping_variables": [],
+        "conditions": {"all": []},
+        "actions": [{"name": "generate_dataset_error_objects"}],
+        "output_variables": ["TXPARMCD"],
+    }
+
+    df = pd.DataFrame({"TXPARMCD": ["VALUE"]})
+    variable = DatasetVariable(PandasDataset(df))
+    dataset_metadata = SDTMDatasetMetadata(
+        first_record={"DOMAIN": "TX"}, filename="tx.xpt"
+    )
+    action = COREActions([], variable, dataset_metadata, dummy_rule)
+
+    result = action.generate_targeted_error_object(set(), df, "Test message")
+
+    assert len(result.errors) == 1
+    assert "Group sensitivity requires Grouping_Variables" in result.message
+
+
+def test_group_sensitivity_invalid_grouping_variables():
+    """Test that Group sensitivity validates grouping variables exist in dataset."""
+    dummy_rule = {
+        "core_id": "FB4607",
+        "sensitivity": "Group",
+        "grouping_variables": ["INVALID_VAR"],
+        "conditions": {"all": []},
+        "actions": [{"name": "generate_dataset_error_objects"}],
+        "output_variables": ["TXPARMCD"],
+    }
+
+    df = pd.DataFrame({"TXPARMCD": ["VALUE"]})
+    variable = DatasetVariable(PandasDataset(df))
+    dataset_metadata = SDTMDatasetMetadata(
+        first_record={"DOMAIN": "TX"}, filename="tx.xpt"
+    )
+    action = COREActions([], variable, dataset_metadata, dummy_rule)
+
+    result = action.generate_targeted_error_object(set(), df, "Test message")
+
+    assert len(result.errors) == 1
+    assert "Grouping variables not found in dataset" in result.message
+
+
+def test_group_sensitivity_multiple_grouping_variables():
+    """Test Group sensitivity with multiple grouping variables."""
+    dummy_rule = {
+        "core_id": "FB4607",
+        "sensitivity": "Group",
+        "grouping_variables": ["SETCD", "USUBJID"],
+        "conditions": {"all": []},
+        "actions": [{"name": "generate_dataset_error_objects"}],
+        "output_variables": ["TXPARMCD"],
+    }
+
+    df = pd.DataFrame(
+        {
+            "TXPARMCD": ["VALUE1", "VALUE2", "VALUE3"],
+            "SETCD": ["SET1", "SET1", "SET2"],
+            "USUBJID": ["001", "002", "001"],
+        }
+    )
+    variable = DatasetVariable(PandasDataset(df))
+    dataset_metadata = SDTMDatasetMetadata(
+        first_record={"DOMAIN": "TX"}, filename="tx.xpt"
+    )
+    action = COREActions([], variable, dataset_metadata, dummy_rule)
+
+    result = action.generate_targeted_error_object(set(), df, "Test message")
+
+    # Should have 3 groups: (SET1,001), (SET1,002), (SET2,001)
+    assert len(result.errors) == 3
+
+    # Check that each error has both grouping variables
+    for error in result.errors:
+        error_repr = error.to_representation()
+        assert "SETCD" in error_repr["value"]
+        assert "USUBJID" in error_repr["value"]
+
+
 def test_empty_sequential():
     dummy_rule = {
         "core_id": "MockRule",

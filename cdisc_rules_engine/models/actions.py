@@ -138,17 +138,10 @@ class COREActions(BaseActions):
             # Create the initial error
             if not all_targets_missing:
                 raw_error_dict = errors_df.iloc[0].to_dict()
-                error_value = {}
-                for key, value in raw_error_dict.items():
-                    if isinstance(value, list):
-                        error_value[key] = [
-                            None if (val in NULL_FLAVORS or pd.isna(val)) else val
-                            for val in value
-                        ]
-                    else:
-                        error_value[key] = (
-                            None if (value in NULL_FLAVORS or pd.isna(value)) else value
-                        )
+                error_value = {
+                    key: self._filter_null_values(value)
+                    for key, value in raw_error_dict.items()
+                }
             else:
                 error_value = {}
 
@@ -326,7 +319,37 @@ class COREActions(BaseActions):
                     error.value = {**error.value, **missing_vars}
         return errors_list
 
-    def _generate_errors_by_group(  # noqa: C901
+    def _filter_null_values(self, value):
+        """Filter null values from a single value or list of values."""
+        if isinstance(value, list):
+            return [
+                None if (val in NULL_FLAVORS or pd.isna(val)) else val for val in value
+            ]
+        else:
+            return None if (value in NULL_FLAVORS or pd.isna(value)) else value
+
+    def _build_error_value_from_row(self, first_row_idx, errors_df):
+        """Build error value dictionary from a row index."""
+        if first_row_idx in errors_df.index:
+            raw_error_dict = errors_df.loc[first_row_idx].to_dict()
+            return {
+                key: self._filter_null_values(value)
+                for key, value in raw_error_dict.items()
+            }
+        return {}
+
+    def _add_group_keys_to_error_value(
+        self, error_value, group_keys, grouping_variables
+    ):
+        """Add group key values to the error value dictionary."""
+        if isinstance(group_keys, tuple):
+            for i, var in enumerate(grouping_variables):
+                error_value[var] = group_keys[i]
+        else:
+            error_value[grouping_variables[0]] = group_keys
+        return error_value
+
+    def _generate_errors_by_group(
         self,
         data: pd.DataFrame,
         targets_not_in_dataset: Set[str],
@@ -334,19 +357,6 @@ class COREActions(BaseActions):
         errors_df: pd.DataFrame,
         grouping_variables: List[str],
     ) -> List[ValidationErrorEntity]:
-        """
-        Generate one error per group of records.
-
-        Args:
-            data: The original dataframe
-            targets_not_in_dataset: Set of target variables not found in the dataset
-            all_targets_missing: Boolean indicating if all targets are missing
-            errors_df: DataFrame subset with only the target variables (if any exist)
-            grouping_variables: List of variables to group by
-
-        Returns:
-            List of ValidationErrorEntity objects (one per group)
-        """
         missing_vars = {target: "Not in dataset" for target in targets_not_in_dataset}
         errors_list = []
 
@@ -359,29 +369,11 @@ class COREActions(BaseActions):
                 }
             else:
                 first_row_idx = group_df.index[0]
-                if first_row_idx in errors_df.index:
-                    raw_error_dict = errors_df.loc[first_row_idx].to_dict()
-                    error_value = {}
-                    for key, value in raw_error_dict.items():
-                        if isinstance(value, list):
-                            error_value[key] = [
-                                None if (val in NULL_FLAVORS or pd.isna(val)) else val
-                                for val in value
-                            ]
-                        else:
-                            error_value[key] = (
-                                None
-                                if (value in NULL_FLAVORS or pd.isna(value))
-                                else value
-                            )
-                else:
-                    error_value = {}
+                error_value = self._build_error_value_from_row(first_row_idx, errors_df)
 
-            if isinstance(group_keys, tuple):
-                for i, var in enumerate(grouping_variables):
-                    error_value[var] = group_keys[i]
-            else:
-                error_value[grouping_variables[0]] = group_keys
+            error_value = self._add_group_keys_to_error_value(
+                error_value, group_keys, grouping_variables
+            )
 
             if missing_vars:
                 error_value = {**error_value, **missing_vars}
@@ -439,15 +431,7 @@ class COREActions(BaseActions):
         row_dict = df_row.to_dict()
         filtered_dict = {}
         for key, value in row_dict.items():
-            if isinstance(value, list):
-                filtered_dict[key] = [
-                    None if (val in NULL_FLAVORS or pd.isna(val)) else val
-                    for val in value
-                ]
-            else:
-                filtered_dict[key] = (
-                    None if (value in NULL_FLAVORS or pd.isna(value)) else value
-                )
+            filtered_dict[key] = self._filter_null_values(value)
         error_object = ValidationErrorEntity(
             dataset=(
                 path.basename(source_filename[df_row.name])
