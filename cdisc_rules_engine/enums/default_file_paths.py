@@ -15,3 +15,10 @@ class DefaultFilePaths(BaseEnum):
     CODELIST_TERM_MAP_CACHE_FILE = "codelist_term_maps.pkl"
     CUSTOM_RULES_CACHE_FILE = "custom_rules.pkl"
     CUSTOM_RULES_DICTIONARY = "custom_rules_dictionary.pkl"
+    LOCAL_XSD_FILE_DIR = join("resources", "schema", "xml")
+    LOCAL_XSD_FILE_MAP = {
+        "http://www.cdisc.org/ns/usdm/xhtml/v1.0": join(
+            "cdisc-usdm-xhtml-1.0", "usdm-xhtml-1.0.xsd"
+        ),
+        "http://www.w3.org/1999/xhtml": join("xhtml-1.1", "xhtml11.xsd"),
+    }

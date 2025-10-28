@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema targetNamespace="http://www.w3.org/1999/xhtml"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:usdm="http://www.cdisc.org/ns/usdm/xhtml/v1.0"
+    elementFormDefault="qualified" attributeFormDefault="unqualified"
+    version="1.0">
+
+    <!--
+      USDM-XHTML 1.0 usdm-xhtml-extension schema draft
+      as developed by the CDISC USDM Team
+  -->
+
+    <xs:annotation>
+        <xs:documentation>USDM-XHTML 1.0 usdm-xhtml-extension schema as developed by the CDISC USDM
+            Team</xs:documentation>
+    </xs:annotation>
+
+    <xs:import namespace="http://www.cdisc.org/ns/usdm/xhtml/v1.0"
+        schemaLocation="usdm-xhtml-ns.xsd" />
+    <xs:redefine schemaLocation="../xhtml-1.1/xhtml11.xsd">
+        <xs:group name="xhtml.Misc.extra">
+            <xs:choice>
+                <xs:group ref="xhtml.Misc.extra" />
+                <xs:element ref="usdm:ref" />
+                <xs:element ref="usdm:tag" />
+            </xs:choice>
+        </xs:group>
+    </xs:redefine>
+</xs:schema>

@@ -2,6 +2,7 @@ import azure.functions as func
 from cdisc_rules_engine.services.cache.in_memory_cache_service import (
     InMemoryCacheService,
 )
+from cdisc_rules_engine.utilities.utils import normalize_adam_input
 from cdisc_rules_engine.services.cdisc_library_service import CDISCLibraryService
 from cdisc_rules_engine.services.cache.cache_populator_service import CachePopulator
 from scripts.run_validation import run_single_rule_validation
@@ -85,6 +86,7 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:  # 
         standard = standards_data.get("product")
         standard_version = standards_data.get("version")
         standard_substandard = standards_data.get("substandard")
+        standard, standard_version = normalize_adam_input(standard, standard_version)
         codelists = json_data.get("codelists", [])
         cache = InMemoryCacheService()
         library_service = CDISCLibraryService(api_key, cache)

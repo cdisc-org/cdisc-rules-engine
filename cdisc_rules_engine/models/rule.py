@@ -56,6 +56,9 @@ class Rule:
                 "conditions": cls.parse_conditions(rule_metadata.get("Check")),
                 "actions": cls.parse_actions(rule_metadata.get("Outcome")),
                 "use_case": rule_metadata.get("Scope", {}).get("Use_Case"),
+                "data_structures": rule_metadata.get("Scope", {}).get(
+                    "Data_Structures"
+                ),
                 "status": rule_metadata.get("Core", {}).get("Status", {}),
             }
 
