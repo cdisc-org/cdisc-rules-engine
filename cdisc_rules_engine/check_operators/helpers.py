@@ -115,7 +115,6 @@ def get_microsecond(date_string: str):
 
 
 def _detect_time_precision(time_part: str) -> str:
-    """Helper to detect time precision from time component."""
     if "." in time_part:
         return "microsecond"
 

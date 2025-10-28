@@ -8,43 +8,39 @@ from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
     "data,dataset_type,expected_result",
     [
         (
-            {"target": ["2021", "2099", "2022", "2023"]},
+            ["2021", "2099", "2022", "2023"],
             PandasDataset,
             [False, False, False, False],
         ),
         (
-            {"target": ["90999", "20999", "2022", "2023"]},
+            ["90999", "20999", "2022", "2023"],
             DaskDataset,
             [True, True, False, False],
         ),
         (
-            {
-                "target": [
-                    "2022-03-11T092030",
-                    "2022-03-11T09,20,30",
-                    "2022-03-11T09@20@30",
-                    "2022-03-11T09!20:30",
-                ]
-            },
+            [
+                "2022-03-11T092030",
+                "2022-03-11T09,20,30",
+                "2022-03-11T09@20@30",
+                "2022-03-11T09!20:30",
+            ],
             PandasDataset,
             [True, True, True, True],
         ),
         (
-            {
-                "target": [
-                    "1997-07",
-                    "1997-07-16",
-                    "1997-07-16T19:20:30.45+01:00",
-                    "2022-05-08T13:44:66",
-                ]
-            },
+            [
+                "1997-07",
+                "1997-07-16",
+                "1997-07-16T19:20:30.45+01:00",
+                "2022-05-08T13:44:66",
+            ],
             DaskDataset,
             [False, False, False, True],
         ),
     ],
 )
 def test_invalid_date(data, dataset_type, expected_result):
-    df = dataset_type.from_dict(data)
+    df = dataset_type.from_dict({"target": data})
     dataframe_type = DataframeType({"value": df})
     result = dataframe_type.invalid_date({"target": "target"})
     assert result.equals(df.convert_to_series(expected_result))
