@@ -1,17 +1,15 @@
 import json
-from datetime import datetime
-from typing import BinaryIO, List, Optional, Iterable
+from typing import BinaryIO, override
 
 from cdisc_rules_engine.enums.report_types import ReportTypes
-from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
 from cdisc_rules_engine.models.validation_args import Validation_args
-from cdisc_rules_engine.utilities.reporting_utilities import (
-    get_define_version,
-    get_define_ct,
+from cdisc_rules_engine.services.reporting.base_report_data import (
+    BaseReportData,
+)
+from cdisc_rules_engine.services.reporting.report_metadata_item import (
+    ReportMetadataItem,
 )
 from .base_report import BaseReport
-from version import __version__
-from cdisc_rules_engine.models.external_dictionaries_container import DictionaryTypes
 
 
 class JsonReport(BaseReport):
@@ -21,112 +19,52 @@ class JsonReport(BaseReport):
 
     def __init__(
         self,
-        datasets: Iterable[dict],
-        dataset_paths: Iterable[str],
-        validation_results: List[RuleValidationResult],
-        elapsed_time: float,
+        report_standard: BaseReportData,
         args: Validation_args,
-        template: Optional[BinaryIO] = None,
+        template: BinaryIO | None = None,
     ):
         super().__init__(
-            datasets, dataset_paths, validation_results, elapsed_time, args, template
+            report_standard,
+            args,
+            template,
         )
-        self._item_type = "dict"
 
     @property
-    def _file_format(self) -> str:
+    @override
+    def _file_ext(self) -> str:
         return ReportTypes.JSON.value.lower()
+
+    @staticmethod
+    def _get_property_name(name: str) -> str:
+        return name.replace(" ", "_").replace("-", "_")
 
     def get_export(
         self,
-        define_version,
-        cdiscCt,
-        standard,
-        version,
-        dictionary_versions={},
-        **kwargs,
+        raw_report=False,
     ) -> dict:
-        conformance_details = {
-            "CORE_Engine_Version": __version__,
-            "Report_Generation": datetime.now().replace(microsecond=0).isoformat(),
-            "Total_Runtime": f"{round(self._elapsed_time, 2)} seconds",
-            "Standard": standard.upper(),
-            "Version": f"V{version}",
-            "Substandard": kwargs.get("substandard"),
-            "CT_Version": ", ".join(cdiscCt),
-            "Define_XML_Version": define_version,
-            "Issue_Limit_Per_Rule": self._max_errors_limit,
-            "Issue_Limit_Per_Dataset": True if self._errors_per_dataset_flag else False,
-        }
-        conformance_details["UNII_Version"] = dictionary_versions.get(
-            DictionaryTypes.UNII.value
-        )
-        conformance_details["Med-RT_Version"] = dictionary_versions.get(
-            DictionaryTypes.MEDRT.value
-        )
-        conformance_details["Meddra_Version"] = dictionary_versions.get(
-            DictionaryTypes.MEDDRA.value
-        )
-        conformance_details["WHODRUG_Version"] = dictionary_versions.get(
-            DictionaryTypes.WHODRUG.value
-        )
-        conformance_details["LOINC_Version"] = dictionary_versions.get(
-            DictionaryTypes.LOINC.value
-        )
-        conformance_details["SNOMED_Version"] = None
-
-        json_export = {
-            "Conformance_Details": conformance_details,
-            "Dataset_Details": [
-                {
-                    "filename": dataset.filename,
-                    "label": dataset.label,
-                    "path": dataset.full_path,
-                    "modification_date": dataset.modification_date,
-                    "size_kb": (dataset.file_size or 0) / 1000,
-                    "length": dataset.record_count,
+        json_export = {}
+        for sheet_name, data_sheet in self._report_standard.data_sheets.items():
+            if (
+                isinstance(data_sheet, list)
+                and data_sheet
+                and isinstance(data_sheet[0], ReportMetadataItem)
+            ):
+                json_export[self._get_property_name(sheet_name)] = {
+                    self._get_property_name(item.name): item.value
+                    for item in data_sheet
                 }
-                for dataset in self._datasets
-            ],
-        }
-
-        if kwargs.get("raw_report") is True:
+            else:
+                json_export[self._get_property_name(sheet_name)] = data_sheet
+        if raw_report:
             json_export["results_data"] = [
                 rule_result.to_representation() for rule_result in self._results
             ]
-        else:
-            json_export["Issue_Summary"] = self.get_summary_data()
-            json_export["Issue_Details"] = self.get_detailed_data()
-            json_export["Rules_Report"] = self.get_rules_report_data()
         return json_export
 
-    def write_report(self, **kwargs):
-        define_xml_path = kwargs.get("define_xml_path")
-        dictionary_versions = kwargs.get("dictionary_versions", {})
-        if define_xml_path:
-            define_version = get_define_version([define_xml_path])
-        else:
-            define_version: str = self._args.define_version
-        controlled_terminology = self._args.controlled_terminology_package
-        if not controlled_terminology and define_version:
-            if define_xml_path and define_version:
-                controlled_terminology = get_define_ct(
-                    [define_xml_path], define_version
-                )
-            else:
-                controlled_terminology = get_define_ct(
-                    self._args.dataset_paths, define_version
-                )
+    @override
+    def write_report(self):
         report_data = self.get_export(
-            define_version,
-            list(controlled_terminology) if controlled_terminology is not None else [],
-            self._args.standard,
-            self._args.version.replace("-", "."),
             raw_report=self._args.raw_report,
-            dictionary_versions=dictionary_versions,
-            substandard=(
-                self._args.substandard if hasattr(self._args, "substandard") else None
-            ),
         )
         with open(self._output_name, "w") as f:
             json.dump(report_data, f)

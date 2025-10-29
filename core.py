@@ -188,7 +188,6 @@ def _validate_no_arguments(logger) -> None:
 @click.option(
     "-rt",
     "--report-template",
-    default=DefaultFilePaths.EXCEL_TEMPLATE_FILE.value,
     help="File path of report template to use for excel output",
 )
 @click.option(
@@ -795,7 +794,7 @@ def test_validate():
             cache_path = DefaultFilePaths.CACHE.value
             pool_size = 10
             log_level = "disabled"
-            report_template = DefaultFilePaths.EXCEL_TEMPLATE_FILE.value
+            report_template = None
             standard = "sdtmig"
             version = "3.4"
             substandard = None
