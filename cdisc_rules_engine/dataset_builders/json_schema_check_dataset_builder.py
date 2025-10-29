@@ -27,93 +27,81 @@ class JsonSchemaCheckDatasetBuilder(BaseDatasetBuilder):
             "validator": [],
             "validator_value": [],
             "message": [],
-            "output_vars": [],
-            "type": [],
-            "context_level": [],
-            "parent": [],
-            "relative_path": [],
+            "instanceType": [],
+            "id": [],
+            "_path": [],
         }
 
-        self.list_errors(errtree, errlist, self.data_service.json)
+        self.list_errors(errtree, errlist)
 
         # Build dataset with the detected implementation (Pandas / Dask)
         return self.dataset_implementation.from_dict(errlist)
 
-    def list_errors(
-        self, tree: exceptions.ErrorTree, errlist: dict[str, list], errctx: dict = None
-    ):
-        for ve in tree.errors.values():
-            self.parse_error(ve, errlist, errctx, "_contents")
-            self.list_context_errors(ve, errlist, errctx, 1)
+    def list_errors(self, tree: exceptions.ErrorTree, errlist: dict[str, list]):
+        if tree.errors:
+            for ve in tree.errors.values():
+                self.parse_error(
+                    error=ve,
+                    errlist=errlist,
+                    errctx=self.get_instance_by_path(
+                        self.data_service.json, self.get_parent_path(ve.absolute_path)
+                    ),
+                )
+                self.list_context_errors(error=ve, errlist=errlist)
 
         if len(tree._contents) > 0:
             for k, v in tree._contents.items():
                 self.list_errors(
-                    tree=v, errlist=errlist, errctx=self.get_context(errctx, [k])
+                    tree=v,
+                    errlist=errlist,
                 )
+
+    def get_instance_by_path(self, instance: dict, path_list: list) -> dict:
+        _inst = deepcopy(instance)
+        for p in path_list:
+            _inst = _inst[p]
+        return _inst
+
+    def get_parent_path(self, path_list: list):
+        return list(path_list)[0 : (-1 - int(isinstance(path_list[-1], int)))]
 
     def parse_error(
         self,
         error: exceptions.ValidationError,
         errlist: dict[str, list],
         errctx: dict,
-        errtyp: str,
-        ctxlvl: int = 0,
     ):
-        errlist["json_path"].append(error.json_path)
-        errlist["error_context"].append(errctx if errctx else "")
-        errlist["error_attribute"].append(
+        errattr = (
             "{}[{}]".format(error.absolute_path[-2], error.absolute_path[-1])
             if isinstance(error.absolute_path[-1], int)
             else error.absolute_path[-1]
         )
+        errlist["json_path"].append(error.json_path)
+        errlist["error_context"].append(errctx if errctx else "")
+        errlist["error_attribute"].append(errattr)
         errlist["error_value"].append(error.instance)
         errlist["validator"].append(error.validator)
         errlist["validator_value"].append(str(error.validator_value))
         errlist["message"].append(
-            error.message.replace(str(error.instance), f"[Value of {error.json_path}]")
+            error.message.replace(str(error.instance), f"[Value of {errattr}]")
             if len(str(error.instance)) > len(error.json_path) + 11
             and str(error.instance) in error.message
             else error.message
         )
-        errlist["output_vars"].append(
-            {ov: errctx.get(iv, None) for ov, iv in self.output_vars.items()}
-        )
-        errlist["type"].append(errtyp)
-        errlist["context_level"].append(ctxlvl)
-        errlist["parent"].append(error.parent.relative_path if error.parent else "")
-        errlist["relative_path"].append(error.relative_path)
+        errlist["instanceType"].append(errctx.get("instanceType", "") if errctx else "")
+        errlist["id"].append(errctx.get("id", "") if errctx else "")
+        errlist["_path"].append(errctx.get("_path", "") if errctx else "")
 
     def list_context_errors(
-        self,
-        error: exceptions.ValidationError,
-        errlist: dict[str, list],
-        errctx: dict,
-        ctxlvl: int = 0,
+        self, error: exceptions.ValidationError, errlist: dict[str, list]
     ):
         if error.context:
-            for item in error.context:
+            for vec in error.context:
                 self.parse_error(
-                    item,
-                    errlist,
-                    self.get_context(errctx, item.relative_path, allow_list=False),
-                    "context",
-                    ctxlvl,
+                    error=vec,
+                    errlist=errlist,
+                    errctx=self.get_instance_by_path(
+                        self.data_service.json, self.get_parent_path(vec.absolute_path)
+                    ),
                 )
-                self.list_context_errors(
-                    item,
-                    errlist,
-                    self.get_context(errctx, item.relative_path, allow_list=False),
-                    ctxlvl + 1,
-                )
-
-    def get_context(self, ctx: dict, key_list: list, allow_list: bool = True) -> dict:
-        ctx_copy = deepcopy(ctx)
-        for i, k in enumerate(key_list):
-            if not isinstance(ctx_copy[k], dict | list):
-                return ctx_copy
-            if isinstance(ctx_copy[k], list):
-                if not (allow_list or i < len(key_list) - 1):
-                    return ctx_copy
-            ctx_copy = ctx_copy[k]
-        return ctx_copy
+                self.list_context_errors(vec, errlist)
