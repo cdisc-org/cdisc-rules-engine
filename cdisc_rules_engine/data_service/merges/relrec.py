@@ -331,33 +331,37 @@ class SqlRelrecMerge:
                 f"o.{original.get_column_hash('USUBJID')} = r.{right_table.get_column_hash('USUBJID')}",
             ]
 
-            where_filters = []
-            if rel["idvarval_left"] and rel["idvarval_right"]:
+            where_filters = [f"UPPER(o.{original.get_column_hash('STUDYID')}::text) = UPPER('{rel['studyid']}')"]
+
+            if rel.get("usubjid") and rel["usubjid"].strip():
+                where_filters.append(
+                    f"UPPER(o.{original.get_column_hash('USUBJID')}::text) = UPPER('{rel['usubjid']}')"
+                )
+
+            if rel.get("idvarval_left") and rel["idvarval_left"]:
                 if original.has_column(rel["idvar_left"]):
                     where_filters.append(
                         f"o.{original.get_column_hash(rel['idvar_left'])}::text = '{rel['idvarval_left']}'"
                     )
-                if right_table.has_column(rel["idvar_right"]):
-                    right_col_hash = right_table.get_column_hash(rel["idvar_right"])
-                    where_filters.append(f"r.{right_col_hash}::text = '{rel['idvarval_right']}'")
+                if right_table.has_column(rel.get("idvar_right", "")):
+                    join_conditions.append(
+                        f"r.{right_table.get_column_hash(rel['idvar_right'])}::text = '{rel['idvarval_right']}'"
+                    )
             else:
-                if original.has_column(rel["idvar_left"]) and right_table.has_column(rel["idvar_right"]):
-                    left_hash = original.get_column_hash(rel["idvar_left"])
-                    right_hash = right_table.get_column_hash(rel["idvar_right"])
-                    join_conditions.append(f"o.{left_hash}::text = r.{right_hash}::text")
+                if rel.get("idvar_left") and rel.get("idvar_right"):
+                    if original.has_column(rel["idvar_left"]) and right_table.has_column(rel["idvar_right"]):
+                        left_hash = original.get_column_hash(rel["idvar_left"])
+                        right_hash = right_table.get_column_hash(rel["idvar_right"])
+                        join_conditions.append(f"o.{left_hash}::text = r.{right_hash}::text")
 
-            all_selects = original_selects.copy()
-            if right_selects:
-                all_selects.extend(right_selects)
+            where_clause = f"WHERE {' AND '.join(where_filters)}"
 
-            where_clause = f"WHERE {' AND '.join(where_filters)}" if where_filters else ""
-
-            subquery = f"""
-                SELECT {', '.join(all_selects)}
+            union_part = f"""
+                SELECT {', '.join(original_selects + right_selects)}
                 FROM {original.hash} o
                 INNER JOIN {right_table.hash} r ON {' AND '.join(join_conditions)}
                 {where_clause}
             """
-            union_parts.append(subquery)
+            union_parts.append(union_part)
 
         return union_parts
