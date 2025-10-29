@@ -5,6 +5,7 @@ from dateutil.parser import parse, isoparse
 import pytz
 from cdisc_rules_engine.services import logger
 import traceback
+from functools import lru_cache
 
 
 # Date regex pattern for validation
@@ -26,8 +27,6 @@ def is_valid_date(date_string: str) -> bool:
     except Exception as e:
         uncertainty_substrings = ["/", "--", "-:"]
         if any([substr in date_string for substr in uncertainty_substrings]):
-            # date_string contains uncertainty
-            # will not parse with isoparse
             return date_regex.match(date_string) is not None
         else:
             logger.error(
@@ -70,7 +69,6 @@ def is_valid_duration(duration: str, negative) -> bool:
         if c is not None
     ]
 
-    # Check if decimal is only in the smallest unit
     decimal_found = False
     for i, component in enumerate(components):
         if "." in component or "," in component:
@@ -116,6 +114,85 @@ def get_microsecond(date_string: str):
     return timestamp.microsecond
 
 
+def _detect_time_precision(time_part: str) -> str:
+    if "." in time_part:
+        return "microsecond"
+
+    colon_count = time_part.count(":")
+    if colon_count >= 2:
+        return "second"
+    elif colon_count == 1:
+        return "minute"
+    else:
+        return "hour"
+
+
+def _detect_date_precision_simple(date_str: str) -> str:
+    date_parts = [p for p in date_str.split("-") if p]
+    if len(date_parts) >= 3:
+        return "day"
+    elif len(date_parts) == 2:
+        return "month"
+    elif len(date_parts) == 1:
+        return "year"
+    return None
+
+
+@lru_cache(maxsize=1000)
+def detect_date_precision(date_str: str) -> str:
+    if not date_str or not isinstance(date_str, str):
+        return None
+
+    if "T" not in date_str and "--" not in date_str and "-:" not in date_str:
+        return _detect_date_precision_simple(date_str)
+
+    if "--" in date_str or "-:" in date_str:
+        date_str = date_str.split("--")[0].split("-:")[0]
+        if not date_str or date_str.endswith("-"):
+            date_str = date_str.rstrip("-")
+
+    if "T" in date_str:
+        time_part = date_str.split("T")[1]
+        if not time_part:
+            return "day"
+        time_part = time_part.split("+")[0].split("-")[-1].split("Z")[0]
+        return _detect_time_precision(time_part)
+
+    return _detect_date_precision_simple(date_str)
+
+
+PRECISION_ORDER = {
+    "year": 0,
+    "month": 1,
+    "day": 2,
+    "hour": 3,
+    "minute": 4,
+    "second": 5,
+    "microsecond": 6,
+}
+
+PRECISION_LEVELS = [
+    "year",
+    "month",
+    "day",
+    "hour",
+    "minute",
+    "second",
+    "microsecond",
+]
+
+
+def get_common_precision(dt1: str, dt2: str) -> str:
+    p1 = detect_date_precision(dt1)
+    p2 = detect_date_precision(dt2)
+
+    if not p1 or not p2:
+        return None
+
+    min_idx = min(PRECISION_ORDER[p1], PRECISION_ORDER[p2])
+    return PRECISION_LEVELS[min_idx]
+
+
 def get_date_component(component: str, date_string: str):
     component_func_map = {
         "year": get_year,
@@ -140,7 +217,6 @@ def get_date(date_string: str):
     date = parse(date_string, default=datetime(1970, 1, 1))
     utc = pytz.UTC
     if date.tzinfo is not None and date.tzinfo.utcoffset(date) is not None:
-        # timezone aware
         return date.astimezone(utc)
     else:
         return utc.localize(date)
@@ -187,13 +263,15 @@ def case_insensitive_is_in(value, values):
 
 def compare_dates(component, target, comparator, operator):
     if not target or not comparator:
-        # Comparison should return false if either is empty or None
         return False
-    else:
-        return operator(
-            get_date_component(component, target),
-            get_date_component(component, comparator),
-        )
+
+    if component == "auto":
+        component = get_common_precision(target, comparator)
+
+    return operator(
+        get_date_component(component, target),
+        get_date_component(component, comparator),
+    )
 
 
 def apply_regex(regex: str, val: str):
