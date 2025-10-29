@@ -18,6 +18,9 @@ class ValidationErrorEntity(BaseValidationEntity):
     USUBJID: str | None = None
     SEQ: int | None = None
     status: ExecutionStatus = ExecutionStatus.SUCCESS
+    entity: str | None = None
+    instance_id: str | None = None
+    path: str | None = None
 
     def _format_values(self) -> dict:
         """
@@ -45,4 +48,10 @@ class ValidationErrorEntity(BaseValidationEntity):
             representation["USUBJID"] = self.USUBJID
         if self.SEQ is not None:
             representation["SEQ"] = self.SEQ
+        if self.entity is not None:
+            representation["entity"] = self.entity
+        if self.instance_id is not None:
+            representation["instance_id"] = self.instance_id
+        if self.path is not None:
+            representation["path"] = self.path
         return representation

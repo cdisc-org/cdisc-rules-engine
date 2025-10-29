@@ -189,14 +189,11 @@ def run_validation(args: Validation_args):
     elapsed_time = end - start
     engine_logger.info("Done Rule execution, creating reports")
     reporting_factory = ReportFactory(
-        datasets, results, elapsed_time, args, data_service
+        datasets, results, elapsed_time, args, data_service, dictionary_versions
     )
     reporting_services: List[BaseReport] = reporting_factory.get_report_services()
     for reporting_service in reporting_services:
-        reporting_service.write_report(
-            define_xml_path=args.define_xml_path,
-            dictionary_versions=dictionary_versions,
-        )
+        reporting_service.write_report()
     print(f"Output: {args.output}")
     engine_logger.info(" Report generated, Cleaning up intermediate files")
     for file in created_files:

@@ -2,6 +2,7 @@ import os
 from datetime import datetime
 from unittest.mock import MagicMock
 
+from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 from cdisc_rules_engine.models.dataset import PandasDataset
 import pytest
 import sys
@@ -13,6 +14,7 @@ from cdisc_rules_engine.models.dictionaries.whodrug import WhoDrugTermsFactory
 from cdisc_rules_engine.models.dictionaries.meddra import MedDRATermsFactory
 from cdisc_rules_engine.models.operation_params import OperationParams
 from cdisc_rules_engine.models.rule_conditions import ConditionCompositeFactory
+from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
 from cdisc_rules_engine.services.cache import (
     InMemoryCacheService,
 )
@@ -977,6 +979,124 @@ def dataset_rule_inconsistent_enumerated_columns() -> dict:
             }
         ],
     }
+
+
+@pytest.fixture
+def mock_validation_results() -> list[RuleValidationResult]:
+    return [
+        RuleValidationResult(
+            rule={
+                "core_id": "CORE1",
+                "executability": "Fully Executable",
+                "actions": [{"params": {"message": "TEST RULE 1"}}],
+                "authorities": [
+                    {
+                        "Organization": "CDISC",
+                        "Standards": [
+                            {
+                                "References": [
+                                    {"Rule_Identifier": {"Id": "CDISCRuleID4"}},
+                                    {"Rule_Identifier": {"Id": "CDISCRuleID3"}},
+                                ]
+                            },
+                            {
+                                "References": [
+                                    {"Rule_Identifier": {"Id": "CDISCRuleID2"}},
+                                    {"Rule_Identifier": {"Id": "CDISCRuleID1"}},
+                                ]
+                            },
+                        ],
+                    },
+                    {
+                        "Organization": "FDA",
+                        "Standards": [
+                            {
+                                "References": [
+                                    {"Rule_Identifier": {"Id": "FDARuleID1"}},
+                                    {"Rule_Identifier": {"Id": "FDARuleID2"}},
+                                ]
+                            }
+                        ],
+                    },
+                ],
+            },
+            results=[
+                {
+                    "domain": "AE",
+                    "variables": ["AESTDY", "DOMAIN"],
+                    "executionStatus": ExecutionStatus.SUCCESS.value,
+                    "errors": [
+                        {
+                            "row": 1,
+                            "value": {"AESTDY": "test", "DOMAIN": "test"},
+                            "USUBJID": "CDISC002",
+                            "SEQ": 2,
+                        },
+                        {
+                            "row": 9,
+                            "value": {"AESTDY": "test", "DOMAIN": "test"},
+                            "USUBJID": "CDISC003",
+                            "SEQ": 10,
+                        },
+                    ],
+                    "message": "AESTDY and DOMAIN are equal to test",
+                }
+            ],
+        ),
+        RuleValidationResult(
+            rule={
+                "core_id": "CORE2",
+                "executability": "Partially Executable",
+                "actions": [{"params": {"message": "TEST RULE 2"}}],
+                "authorities": [
+                    {
+                        "Organization": "CDISC",
+                        "Standards": [
+                            {
+                                "References": [
+                                    {"Rule_Identifier": {"Id": "CDISCRuleID4"}},
+                                    {"Rule_Identifier": {"Id": "CDISCRuleID3"}},
+                                ]
+                            },
+                            {
+                                "References": [
+                                    {"Rule_Identifier": {"Id": "CDISCRuleID2"}},
+                                    {"Rule_Identifier": {"Id": "CDISCRuleID1"}},
+                                ]
+                            },
+                        ],
+                    },
+                    {
+                        "Organization": "FDA",
+                        "Standards": [
+                            {
+                                "References": [
+                                    {"Rule_Identifier": {"Id": "FDARuleID1"}},
+                                    {"Rule_Identifier": {"Id": "FDARuleID2"}},
+                                ]
+                            }
+                        ],
+                    },
+                ],
+            },
+            results=[
+                {
+                    "domain": "TT",
+                    "variables": ["TTVAR1", "TTVAR2"],
+                    "executionStatus": ExecutionStatus.SUCCESS.value,
+                    "errors": [
+                        {
+                            "row": 1,
+                            "value": {"TTVAR1": "test", "TTVAR2": "test"},
+                            "USUBJID": "CDISC002",
+                            "SEQ": 2,
+                        }
+                    ],
+                    "message": "TTVARs are wrong",
+                }
+            ],
+        ),
+    ]
 
 
 @pytest.fixture(scope="function")
