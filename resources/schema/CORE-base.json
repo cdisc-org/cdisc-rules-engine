@@ -605,6 +605,13 @@
     },
     "Sensitivity": {
       "$ref": "Sensitivity.json"
+    },
+    "Grouping_Variables": {
+      "items": {
+        "$ref": "#/$defs/VariableReference"
+      },
+      "type": "array",
+      "markdownDescription": "Variables to group by when using Group sensitivity. Required when Sensitivity is set to Group."
     }
   },
   "required": [
@@ -618,5 +625,13 @@
     "Scope",
     "Sensitivity"
   ],
+  "if": {
+    "properties": {
+      "Sensitivity": { "const": "Group" }
+    }
+  },
+  "then": {
+    "required": ["Grouping_Variables"]
+  },
   "type": "object"
 }
