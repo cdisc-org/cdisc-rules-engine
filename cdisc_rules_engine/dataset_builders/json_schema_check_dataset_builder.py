@@ -2,12 +2,16 @@ from copy import deepcopy
 
 from jsonschema import validators, exceptions
 from cdisc_rules_engine.dataset_builders.base_dataset_builder import BaseDatasetBuilder
+from cdisc_rules_engine.models.dataset import DatasetInterface
 
 
 class JsonSchemaCheckDatasetBuilder(BaseDatasetBuilder):
     output_vars = {"dataset": "instanceType", "row": "_path", "USUBJID": "id"}
 
-    def get_dataset(self):
+    def build(self, **kwargs) -> DatasetInterface:
+        return self.get_dataset()
+
+    def get_dataset(self) -> DatasetInterface:
         """Return a dataset where each row represents a JSON Schema validation error.
         Columns: path, message, validator, validator_value, schema_path.
         Returns an empty dataset (with headers) if there are no errors.
