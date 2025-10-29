@@ -674,7 +674,7 @@ class DataframeType(BaseType):
         elif self.is_column_of_iterables(comparison_data):
             results = vectorized_is_in(target_data, comparison_data)
         else:
-            results = target_data.is_in(comparison_data)
+            results = target_data.isin(comparison_data)
         return self.value.convert_to_series(results)
 
     @log_operator_execution
