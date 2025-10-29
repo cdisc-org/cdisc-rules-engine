@@ -47,6 +47,8 @@ class JSONataProcessor:
             )
         errors = defaultdict(list)
         if results:
+            if isinstance(results, dict):
+                results = [results]
             if not isinstance(results, list):
                 raise RuleFormatError(
                     f"\n  Error in return type of JSONata Rule with Core Id: {rule.get('core_id')}"
@@ -59,6 +61,11 @@ class JSONataProcessor:
                     row=result.get("row"),
                     USUBJID=result.get("USUBJID"),
                     SEQ=result.get("SEQ"),
+                    entity=result.get("entity")
+                    # For backwards compatibility. To be removed in the future:
+                    or result.get("dataset") or result.get("instanceType"),
+                    instance_id=result.get("instance_id") or result.get("id"),
+                    path=result.get("path") or result.get("_path"),
                 )
                 errors[result.get("dataset")].append(error_entity)
         validation_error_container = [
@@ -75,6 +82,7 @@ class JSONataProcessor:
                     if results
                     else ExecutionStatus.EXECUTION_ERROR.value
                 ),
+                entity=dataset,
             ).to_representation()
             for dataset, error in errors.items()
         ]

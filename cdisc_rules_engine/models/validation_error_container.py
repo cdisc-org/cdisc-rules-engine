@@ -17,6 +17,7 @@ class ValidationErrorContainer(BaseValidationEntity):
     )
     message: str | None = None
     status: str | None = None
+    entity: str | None = None
 
     @property
     def executionStatus(self):
@@ -30,4 +31,5 @@ class ValidationErrorContainer(BaseValidationEntity):
             "variables": sorted(self.targets),
             "message": self.message,
             "errors": [error.to_representation() for error in self.errors],
+            **({"entity": self.entity} if self.entity else {}),
         }
