@@ -13,6 +13,7 @@ from cdisc_rules_engine.check_operators.helpers import (
     apply_regex,
     vectorized_compare_dates,
     apply_rounding,
+    is_in,
 )
 
 from cdisc_rules_engine.constants import NULL_FLAVORS
@@ -654,10 +655,26 @@ class DataframeType(BaseType):
             # column name provided
             comparator = self.replace_prefix(comparator)
         comparison_data = self.get_comparator_data(comparator, value_is_literal)
-        if self.is_column_of_iterables(comparison_data):
-            results = vectorized_is_in(self.value[target], comparison_data)
+        target_data = self.value[target]
+        if self.is_column_of_iterables(target_data):
+            results = []
+            for i in range(len(target_data)):
+                target_val = target_data.iloc[i]
+                comp_val = (
+                    comparison_data.iloc[i]
+                    if hasattr(comparison_data, "iloc")
+                    else comparison_data
+                )
+                if isinstance(target_val, list):
+                    result = any(is_in(item, comp_val) for item in target_val)
+                else:
+                    result = is_in(target_val, comp_val)
+                results.append(result)
+            results = pd.Series(results)
+        elif self.is_column_of_iterables(comparison_data):
+            results = vectorized_is_in(target_data, comparison_data)
         else:
-            results = self.value[target].isin(comparison_data)
+            results = target_data.is_in(comparison_data)
         return self.value.convert_to_series(results)
 
     @log_operator_execution
