@@ -1,8 +1,6 @@
 import os
 
-from cdisc_rules_engine.utilities.reporting_utilities import (
-    get_define_version,
-)
+from cdisc_rules_engine.services.reporting.sdtm_report_data import SDTMReportData
 
 path_to_dataset = (
     f"{os.path.dirname(__file__)}/"
@@ -11,5 +9,5 @@ path_to_dataset = (
 
 
 def test_get_version_from_define():
-    version = get_define_version([path_to_dataset])
+    version = SDTMReportData.get_define_version([path_to_dataset])
     assert version == "2.1.0"
