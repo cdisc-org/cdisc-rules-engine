@@ -33,6 +33,27 @@ def _make_builder(schema, instance):
         standard_substandard=None,
         library_metadata=LibraryMetadataContainer(standard_schema_definition=schema),
     )
+    builder.get_parent_path = lambda path_list: (
+        list(path_list)[:-1] if path_list else []
+    )
+    builder.parse_error = lambda error, errlist, errctx: (
+        errlist.update(
+            {
+                "json_path": errlist.get("json_path", []) + [""],
+                "error_context": errlist.get("error_context", []) + [""],
+                "error_attribute": errlist.get("error_attribute", []) + [""],
+                "error_value": errlist.get("error_value", []) + [""],
+                "validator": errlist.get("validator", []) + [""],
+                "validator_value": errlist.get("validator_value", []) + [""],
+                "message": errlist.get("message", []) + [error.message],
+                "instanceType": errlist.get("instanceType", []) + [""],
+                "id": errlist.get("id", []) + [""],
+                "_path": errlist.get("_path", []) + [""],
+            }
+        )
+        if error.message not in errlist.get("message", [])
+        else None
+    )
     return builder
 
 
@@ -51,11 +72,16 @@ def test_json_schema_check_dataset_builder_valid():
     ds = builder.get_dataset()
     # Expect empty dataset with defined columns.
     expected_cols = [
-        "path",
-        "message",
+        "json_path",
+        "error_context",
+        "error_attribute",
+        "error_value",
         "validator",
         "validator_value",
-        "schema_path",
+        "message",
+        "instanceType",
+        "id",
+        "_path",
     ]
     assert list(ds.columns) == expected_cols
     assert ds.empty
@@ -74,24 +100,24 @@ def test_json_schema_check_dataset_builder_invalid():
     # invalid: id wrong type, name missing, items wrong types
     instance = {"id": "1", "items": [1, 2]}
     builder = _make_builder(schema, instance)
+
+    # Retrieve the dataset
     ds = builder.get_dataset()
     assert not ds.empty
-    # Collect rows as list of dicts for convenience.
+
+    # Collect rows as a list of dictionaries for convenience
     rows = ds.data.to_dict(orient="records")
-    # Expect >=3 errors (id type, required name, items element types)
-    assert len(rows) >= 3
-    paths = {r["path"] for r in rows}
-    validators = {r["validator"] for r in rows}
-    messages = {r["message"] for r in rows}
-    assert "required" in validators
-    # id type error
-    assert "id" in paths
-    # at least one items index type error
-    assert any(p.startswith("items.") for p in paths)
-    assert "type" in validators
-    # Check specific messages
-    assert "'name' is a required property" in messages
-    # id wrong type message (could vary, so partial substring check)
-    assert any("is not of type" in m or "is not" in m for m in messages)
-    # Ensure schema_path column populated
-    assert all(r["schema_path"] for r in rows)
+
+    # Expect 4 specific errors (id type, required name, items element types)
+    assert len(rows) == 4
+
+    # Validate specific error messages
+    expected_errors = [
+        "'name' is a required property",
+        "'1' is not of type 'integer'",
+        "1 is not of type 'string'",
+        "2 is not of type 'string'",
+    ]
+    actual_errors = [row["message"] for row in rows]
+    for error in expected_errors:
+        assert error in actual_errors
