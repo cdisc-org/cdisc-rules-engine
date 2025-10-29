@@ -191,7 +191,7 @@ class LocalDataService(BaseDataService):
             raise ValueError(
                 f"Unsupported file format '{file_extension}' in file '{file_name}'.\n"
                 f"Supported formats: {supported_formats}\n"
-                f"Please provide dataset files in SAS V5 XPT or Dataset-JSON (JSON or NDJSON) format."
+                f"Please provide dataset files in SAS V5 XPT, Dataset-JSON (JSON or NDJSON), or Excel (XLSX) format."
             )
 
         contents_metadata = _metadata_reader_map[file_extension](
