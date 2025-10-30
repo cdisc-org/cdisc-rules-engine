@@ -636,7 +636,8 @@ class RuleProcessor:
             logger.info(f"is_suitable_for_validation. {reason}, result=False")
             return False, reason
         if (
-            rule.get("rule_type") == RuleTypes.JSONATA.value
+            rule.get("rule_type")
+            in (RuleTypes.JSONATA.value, RuleTypes.JSON_SCHEMA_CHECK.value)
             and dataset_metadata.name == "json"
         ):
             return self.log_suitable_for_validation(rule_id, dataset_name)
