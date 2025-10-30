@@ -276,6 +276,7 @@
                 "enum": ["SDTM", "SEND", "ADaM", "CDASH"]
               }
             },
+            "required": ["Name", "Version", "Substandard"],
             "type": "object"
           },
           {

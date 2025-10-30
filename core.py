@@ -585,7 +585,6 @@ def list_rule_sets(ctx: click.Context, cache_path: str, custom: bool):
         rules_file = DefaultFilePaths.RULES_DICTIONARY.value
     with open(os.path.join(cache_path, rules_file), "rb") as f:
         rules_data = pickle.load(f)
-
     rule_sets = {}
     for key in rules_data.keys():
         if "/" in key:
@@ -593,18 +592,16 @@ def list_rule_sets(ctx: click.Context, cache_path: str, custom: bool):
             standard = parts[0]
             version = parts[1]
             substandard = parts[2] if len(parts) > 2 else None
-            if substandard:
-                version_key = f"{version}/{substandard}"
-            else:
-                version_key = version
             if standard not in rule_sets:
                 rule_sets[standard] = set()
-            rule_sets[standard].add(version_key)
-
+            rule_sets[standard].add((version, substandard))
     for standard in sorted(rule_sets.keys()):
-        versions = sorted(rule_sets[standard])
-        for version in versions:
-            print(f"{standard}, {version}")
+        versions = sorted(rule_sets[standard], key=lambda x: (x[0], x[1] or ""))
+        for version, substandard in versions:
+            if substandard:
+                print(f"{standard}, {version}, {substandard}")
+            else:
+                print(f"{standard}, {version}")
 
 
 @click.command()

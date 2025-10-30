@@ -111,7 +111,7 @@ class CachePopulator:
         rules_directory, rules_by_core_id = self.process_rules_lists(
             rules_directory, rules_by_core_id, rules_lists
         )
-
+        rules_directory.pop("tig/1-0", None)
         with open(
             os.path.join(self.cache_path, DefaultFilePaths.RULES_CACHE_FILE.value), "wb"
         ) as f:
@@ -168,7 +168,13 @@ class CachePopulator:
                                 rules_directory[sub_key] = []
                             if core_id not in rules_directory[sub_key]:
                                 rules_directory[sub_key].append(core_id)
-
+                        else:
+                            key = f"{std_name}/{std_version}"
+                            if (
+                                key in rules_directory
+                                and core_id not in rules_directory[key]
+                            ):
+                                rules_directory[key].append(core_id)
                 rules_by_core_id[core_id] = rule
         return rules_directory, rules_by_core_id
 
