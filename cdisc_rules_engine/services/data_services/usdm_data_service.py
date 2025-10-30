@@ -262,7 +262,13 @@ class USDMDataService(BaseDataService):
         # Native node: just return node itself
         return node
 
-    def __get_record_metadata(self, node) -> dict:
+    @staticmethod
+    def jsonpath_to_pointer(path_expr: str) -> str:
+        pointer = path_expr.replace("$.", "/").replace(".", "/")
+        pointer = re.sub(r"\[(\d+)\]", r"/\1", pointer)
+        return f"/{pointer}"
+
+    def __get_record_metadata(self, node: Node) -> dict:
         # Walk up the parent chain to find the closest ancestor with instanceType and id
         parent = getattr(node, "parent", None)
         parent_entity = ""
@@ -304,6 +310,7 @@ class USDMDataService(BaseDataService):
             "parent_id": parent_id,
             "parent_rel": parent_rel,
             "rel_type": rel_type,
+            "_path": self.jsonpath_to_pointer(path),
         }
         return record
 
