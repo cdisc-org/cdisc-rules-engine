@@ -26,7 +26,15 @@ Operations:
 Outcome:
   Message: "The narrative content dataset is expected to be USDM JSON compliant."
   Output Variables:
+    - json_path
+    - error_attribute
+    - error_value
+    - validator
+    - validator_value
     - message
+    - instanceType
+    - id
+    - _path
 Rule Type: JSON Schema Check
 Scope:
   Entities:

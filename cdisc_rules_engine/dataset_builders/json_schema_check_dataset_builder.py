@@ -1,3 +1,4 @@
+import json
 from copy import deepcopy
 
 from jsonschema import validators, exceptions
@@ -25,7 +26,6 @@ class JsonSchemaCheckDatasetBuilder(BaseDatasetBuilder):
 
         errlist = {
             "json_path": [],
-            "error_context": [],
             "error_attribute": [],
             "error_value": [],
             "validator": [],
@@ -81,9 +81,8 @@ class JsonSchemaCheckDatasetBuilder(BaseDatasetBuilder):
             else error.absolute_path[-1]
         )
         errlist["json_path"].append(error.json_path)
-        errlist["error_context"].append(errctx if errctx else "")
         errlist["error_attribute"].append(errattr)
-        errlist["error_value"].append(error.instance)
+        errlist["error_value"].append(json.dumps(error.instance))
         errlist["validator"].append(error.validator)
         errlist["validator_value"].append(str(error.validator_value))
         errlist["message"].append(
