@@ -10,7 +10,7 @@ Value comparison. Works for both string and number.
 Has optional parameter:
 
 - 'value_is_reference' when true, the value parameter specifies a column name whose content determines which column to compare against dynamically.
-- 'type_insensitive' when true, both values are converted to strings before comparison to handle type mismatches between string and numeric data.
+- 'type_insensitive' when true, both values are converted to strings before comparison to handle type mismatches between string and numeric data. NOTE: all trailing zeroes will be removed in both strings and floats.
 - 'round_values' when true, both the target and value will be rounded to the nearest integer
 
 > --OCCUR = N

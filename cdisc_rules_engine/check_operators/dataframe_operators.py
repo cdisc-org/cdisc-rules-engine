@@ -86,10 +86,19 @@ class DataframeType(BaseType):
 
     def _custom_str_conversion(self, x):
         if pd.notna(x):
-            if isinstance(x, int):
+            if isinstance(x, str):
+                try:
+                    float_val = float(x)
+                    if float_val.is_integer():
+                        return str(int(float_val)).strip()
+                    else:
+                        return str(float_val).strip()
+                except (ValueError, TypeError):
+                    return x.strip()
+            elif isinstance(x, int):
                 return str(x).strip()
             elif isinstance(x, float):
-                return f"{x:.0f}" if x.is_integer() else str(x).strip()  # noqa: E231
+                return f"{x:.0f}" if x.is_integer() else str(x).strip()
         return x
 
     def convert_string_data_to_lower(self, data):
