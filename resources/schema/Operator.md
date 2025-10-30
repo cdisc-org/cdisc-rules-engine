@@ -52,7 +52,7 @@ Has optional parameter:
 
 ### not_equal_to
 
-Complement of `equal_to`. Also has the optional parameters 'value_is_reference'. 'round_values' and 'type_insensitive'.
+Complement of `equal_to`. Also has the optional parameters 'value_is_reference', 'round_values' and 'type_insensitive'.
 
 > --OCCUR ^= Y
 
@@ -64,7 +64,7 @@ Complement of `equal_to`. Also has the optional parameters 'value_is_reference'.
 
 ### equal_to_case_insensitive
 
-Case insensitive `equal_to`. Also has the optional parameters 'value_is_reference'. 'round_values' and 'type_insensitive'.
+Case insensitive `equal_to`. Also has the optional parameters 'value_is_reference', 'round_values' and 'type_insensitive'.
 
 > DSTERM is "Informed consent obtained"
 
@@ -76,7 +76,7 @@ Case insensitive `equal_to`. Also has the optional parameters 'value_is_referenc
 
 ### not_equal_to_case_insensitive
 
-Complement of `equal_to_case_insensitive`. Also has the optional parameters 'value_is_reference'. 'round_values' and 'type_insensitive'.
+Complement of `equal_to_case_insensitive`. Also has the optional parameters 'value_is_reference', 'round_values' and 'type_insensitive'.
 
 ### greater_than
 
@@ -402,6 +402,43 @@ Length comparison
 ### has_not_equal_length
 
 Complement of `has_equal_length`
+
+### split_parts_have_equal_length
+
+Splits a string by a separator and checks if both parts have equal length. Generic operator for validating paired data formats where both parts must have the same level of detail or precision.
+
+Parameters:
+
+- `separator`: The delimiter to split on (default: "/")
+
+> Check that string parts separated by a delimiter have equal length
+
+```yaml
+- name: --DTC
+  operator: split_parts_have_equal_length
+  separator: "/"
+```
+
+Use cases:
+
+- **Date/time intervals**: `2003-12-15T10:00/2003-12-15T10:30` → True (both 16 characters)
+- **Date ranges**: `2003-12-01/2003-12-10` → True (both 10 characters)
+- **Version ranges**: `1.2.3/2.0.0` → True (both 5 characters)
+- **Product codes**: `ABC-123/XYZ-789` → True (both 7 characters)
+
+Invalid example:
+
+- `2003-12-15T10:00/2003-12-15T10:30:15` → False (16 vs 19 characters - different precision)
+
+### split_parts_have_unequal_length
+
+Complement of `split_parts_have_equal_length`. Returns True when parts have unequal lengths (indicates a violation).
+
+```yaml
+- name: --DTC
+  operator: split_parts_have_unequal_length
+  separator: "/"
+```
 
 ## Date
 
@@ -862,7 +899,7 @@ Checking for consistent values across groups and validating that variables maint
 
 ### is_inconsistent_across_dataset
 
-Checks if a variable maintains consistent values within groups defined by one or more grouping variables. Groups records by specified value(s) and validates that the target variable maintains the same value within each unique combination of grouping variables. It reports based on majority--if is equal it will report all issues when it finds an inconcistency and if it finds a majority value that is concistent, it will report the minority value that is inconcistent.
+Checks if a variable maintains consistent values within groups defined by one or more grouping variables. Groups records by specified value(s) and validates that the target variable maintains the same value within each unique combination of grouping variables.
 
 Single grouping variable - true if the values of BGSTRESU differ within USUBJID:
 
@@ -990,7 +1027,7 @@ Check:
       operator: target_is_sorted_by
       value:
         - name: --STDTC
-          sort_order: asc
+          order: asc
           null_position: last
 ```
 

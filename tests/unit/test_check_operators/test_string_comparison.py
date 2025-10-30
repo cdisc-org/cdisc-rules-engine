@@ -703,3 +703,112 @@ def test_not_matches_regex(data, comparator, dataset_type, expected_result):
         {"target": "target", "comparator": comparator}
     )
     assert result.equals(df.convert_to_series(expected_result))
+
+
+@pytest.mark.parametrize(
+    "data,separator,dataset_type,expected_result",
+    [
+        (
+            [
+                "2003-12-15T10:00/2003-12-15T10:30",
+                "2003-12-01/2003-12-10",
+                "2003-01-01/2003-06-30",
+                "2003-12-15T10:00/2003-12-15T10:30:15",
+                "ABC/DEF",
+                "AB/CD",
+                "A/ABC",
+                "ABC/",
+                "/ABC",
+                "ABCDEF",
+                "",
+                None,
+                "2003-12-15/2003-12-16/2003-12-17",
+            ],
+            "/",
+            PandasDataset,
+            [
+                True,
+                True,
+                True,
+                False,
+                True,
+                True,
+                False,
+                False,
+                False,
+                True,
+                True,
+                True,
+                False,
+            ],
+        ),
+        (
+            [
+                "ABC-DEF",
+                "AB-CDE",
+            ],
+            "-",
+            PandasDataset,
+            [True, False],
+        ),
+        (
+            [
+                "2003-12-15T10:00/2003-12-15T10:30",
+                "2003-12-01/2003-12-10",
+                "ABC/DEF",
+                "2003-12-15T10:00/2003-12-15T10:30:15",
+                "A/ABC",
+            ],
+            "/",
+            DaskDataset,
+            [True, True, True, False, False],
+        ),
+    ],
+)
+def test_split_parts_have_equal_length(data, separator, dataset_type, expected_result):
+    """
+    Test for split_parts_have_equal_length operator.
+    """
+    df = dataset_type.from_dict({"target": data})
+    dataframe_type = DataframeType({"value": df})
+    result = dataframe_type.split_parts_have_equal_length(
+        {"target": "target", "separator": separator}
+    )
+    assert result.equals(df.convert_to_series(expected_result))
+
+
+@pytest.mark.parametrize(
+    "data,separator,dataset_type,expected_result",
+    [
+        (
+            [
+                "2003-12-15T10:00/2003-12-15T10:30",
+                "2003-12-15T10:00/2003-12-15T10:30:15",
+            ],
+            "/",
+            PandasDataset,
+            [False, True],
+        ),
+        (
+            [
+                "ABC/DEF",
+                "A/ABC",
+            ],
+            "/",
+            DaskDataset,
+            [False, True],
+        ),
+    ],
+)
+def test_split_parts_have_unequal_length(
+    data, separator, dataset_type, expected_result
+):
+    """
+    Test for split_parts_have_unequal_length operator (complement).
+    """
+    df = dataset_type.from_dict({"target": data})
+    dataframe_type = DataframeType({"value": df})
+    result = dataframe_type.split_parts_have_unequal_length(
+        {"target": "target", "separator": separator}
+    )
+    assert result.equals(df.convert_to_series(expected_result))
