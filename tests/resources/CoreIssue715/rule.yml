@@ -1,0 +1,43 @@
+Authorities:
+  - Organization: CDISC
+    Standards:
+      - Name: USDM
+        References:
+          - Citations:
+              - Cited Guidance: "Narrative content dataset is expected to be USDM JSON compliant."
+                Document: "USDM_CORE_Rules.xlsx"
+            Origin: "USDM Conformance Rules"
+            Rule Identifier:
+              Id: "DDF00187"
+              Version: "1"
+            Version: "1.0"
+        Version: "4.0"
+Check:
+  all:
+    - name: message
+      operator: non_empty
+Core:
+  Id: "CORE-000409"
+  Status: Draft
+  Version: "1"
+Description: "Narrative content dataset is expected to be USDM JSON compliant."
+Executability: Partially Executable - Possible Overreporting
+Operations:
+Outcome:
+  Message: "The narrative content dataset is expected to be USDM JSON compliant."
+  Output Variables:
+    - json_path
+    - error_attribute
+    - error_value
+    - validator
+    - validator_value
+    - message
+    - instanceType
+    - id
+    - _path
+Rule Type: JSON Schema Check
+Scope:
+  Entities:
+    Include:
+      - "NarrativeContentItem"
+Sensitivity: Record
