@@ -19,11 +19,9 @@ from cdisc_rules_engine.exceptions.custom_exceptions import (
     UnsupportedDictionaryType,
     VariableMetadataNotFoundError,
 )
-from cdisc_rules_engine.models.library_metadata_container import LibraryMetadataContainer
 from cdisc_rules_engine.models.sql_operation_params import SqlOperationParams
 from cdisc_rules_engine.models.sql_operation_result import SqlOperationResult
 from cdisc_rules_engine.services import logger
-from cdisc_rules_engine.utilities import sdtm_utilities
 from cdisc_rules_engine.utilities.utils import convert_library_class_name_to_ct_class
 from cdisc_rules_engine.utilities.sdtm_utilities import get_class_and_domain_metadata
 from typing import List, Optional
@@ -43,14 +41,12 @@ class SqlBaseOperation:
         self,
         params: SqlOperationParams,
         data_service: PostgresQLDataService,
-        library_metadata=LibraryMetadataContainer(),
     ):
         """
         Initialize the SQL base operation.
         """
         self.params = params
         self.data_service = data_service
-        self.library_metadata = library_metadata
 
     @abstractmethod
     def _execute_operation(self):
@@ -208,52 +204,7 @@ class SqlBaseOperation:
         """
         # TODO: Update to handle multiple standard types.
 
-        # For SQL operations, use a simplified version that works with available metadata
-        model_details = self.library_metadata.model_metadata
-
-        # Handle SUPP domain normalization like the original function
-        if domain and (domain.upper().startswith("SUPP") or domain.upper().startswith("SQ")) and len(domain) > 2:
-            domain = "SUPPQUAL"
-
-        domain_details = sdtm_utilities.get_model_domain_metadata(model_details, domain)
-        variables_metadata = []
-        class_name = None
-
-        if domain_details:
-            # Domain found in the model
-            class_name = convert_library_class_name_to_ct_class(domain_details["_links"]["parentClass"]["title"])
-            class_details = sdtm_utilities.get_class_metadata(model_details, class_name)
-            variables_metadata = domain_details.get("datasetVariables", [])
-            if variables_metadata:
-                variables_metadata.sort(key=lambda item: int(item["ordinal"]))
-        else:
-            # Domain not found in the model. Use the new get_dataset_class method
-            class_name = self.get_dataset_class(domain)
-
-            if class_name is None:
-                # Fall back to General Observations class for unknown domains
-                from cdisc_rules_engine.constants.classes import GENERAL_OBSERVATIONS_CLASS
-
-                class_name = GENERAL_OBSERVATIONS_CLASS
-
-            class_details = sdtm_utilities.get_class_metadata(model_details, class_name)
-
-        # Apply class-specific logic for detectable classes
-        from cdisc_rules_engine.constants.classes import DETECTABLE_CLASSES
-
-        if class_name and class_name in DETECTABLE_CLASSES:
-            (
-                identifiers_metadata,
-                class_variables_metadata,
-                timing_metadata,
-            ) = sdtm_utilities.get_allowed_class_variables(model_details, class_details)
-            # Identifiers are added to the beginning and Timing to the end
-            variables_metadata = class_variables_metadata
-            if identifiers_metadata:
-                variables_metadata = identifiers_metadata + variables_metadata
-            if timing_metadata:
-                variables_metadata = variables_metadata + timing_metadata
-
+        variables_metadata = self.params.standards_context.get_domain_variables(domain)
         return variables_metadata
 
     @staticmethod

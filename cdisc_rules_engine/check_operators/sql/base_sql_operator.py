@@ -244,6 +244,10 @@ class BaseSqlOperator:
         # TODO: Throwing this temporarily, so we can determine which errors
         # are actually postgres errors and which are just rules which run on
         # optional variables without checking
+
+        # Discussed moving this to above `if alias:` with Aaron as it is failing
+        # to catch any None queries that have an alias, but doing so caused loads
+        # of regression changes, so for now just logging
         if query is None:
             raise KeyError(column)
 

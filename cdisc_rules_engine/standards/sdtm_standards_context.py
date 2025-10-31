@@ -92,7 +92,14 @@ class SdtmStandardsContext(BaseStandardsContext):
         return variable
 
     def get_domain_variables(self, domain: str):
-        # TODO: Fetch from metadata
+        standard_data = self.library_metadata.standard_metadata
+        for c in standard_data.get("classes", []):
+            domain_details = search_in_list_of_dicts(c.get("datasets", []), lambda item: item["name"] == domain)
+            if domain_details:
+                variables_metadata = domain_details.get("datasetVariables", [])
+                if variables_metadata:
+                    variables_metadata.sort(key=lambda item: int(item["ordinal"]))
+                    return variables_metadata
         return []
 
     def get_domain_label(self, domain: str):
