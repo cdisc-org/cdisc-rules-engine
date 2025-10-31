@@ -121,10 +121,7 @@ class RulesEngine:
         rule["conditions"] = ConditionCompositeFactory.get_condition_composite(
             rule["conditions"]
         )
-        if rule.get("rule_type") in (
-            RuleTypes.JSONATA.value,
-            RuleTypes.JSON_SCHEMA_CHECK.value,
-        ):
+        if rule.get("rule_type") == RuleTypes.JSONATA.value:
             results["json"] = self.validate_single_dataset(
                 rule,
                 datasets,
