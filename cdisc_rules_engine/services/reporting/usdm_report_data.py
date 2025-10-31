@@ -111,6 +111,7 @@ class USDMReportData(BaseReportData):
         return [
             "Entity",
             "CORE-ID",
+            "CDISC RuleID",
             "Message",
             "Issues",
             "Explanation"
@@ -128,6 +129,7 @@ class USDMReportData(BaseReportData):
                             "entity": result.get("entity")
                             or (result.get("dataset", "") or "").replace(".json", ""),
                             "core_id": validation_result.id,
+                            "cdisc_rule_id": validation_result.cdisc_rule_id,
                             "message": result.get("message"),
                             "issues": len(result.get("errors")),
                         }
@@ -164,7 +166,7 @@ class USDMReportData(BaseReportData):
             "Entity",
             "Instance ID",
             "Path",
-            "Variable(s)",
+            "Attributes",
             "Value(s)"
         ]
         """
@@ -173,6 +175,13 @@ class USDMReportData(BaseReportData):
             if result.get("errors", []) and result.get("executionStatus") == "success":
                 variables = result.get("variables", [])
                 for error in result.get("errors"):
+                    values = []
+                    for variable in variables:
+                        raw_value = error.get("value", {}).get(variable)
+                        if raw_value is None:
+                            values.append(None)
+                        else:
+                            values.append(str(raw_value))
                     error_item = {
                         "core_id": validation_result.id,
                         "cdisc_rule_id": validation_result.cdisc_rule_id,
@@ -182,16 +191,9 @@ class USDMReportData(BaseReportData):
                         or error.get("dataset", "").replace(".json", ""),
                         "instance_id": error.get("instance_id"),
                         "path": error.get("path"),
+                        "attributes": variables,
+                        "values": self.process_values(values),
                     }
-                    values = []
-                    for variable in variables:
-                        raw_value = error.get("value", {}).get(variable)
-                        if raw_value is None:
-                            values.append(None)
-                        else:
-                            values.append(str(raw_value))
-                    error_item["variables"] = variables
-                    error_item["values"] = self.process_values(values)
                     errors.append(error_item)
         return errors
 

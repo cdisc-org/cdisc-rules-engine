@@ -55,23 +55,26 @@ class JSONataProcessor:
                     f"\n  Expected a list, but got: {results}"
                 )
             for result in results:
+                entity = (
+                    result.get("entity")
+                    or result.get("dataset")
+                    or result.get("instanceType")
+                )
                 error_entity = ValidationErrorEntity(
                     value=result,
-                    dataset=result.get("dataset") or "",
+                    dataset=entity,
                     row=result.get("row"),
                     USUBJID=result.get("USUBJID"),
                     SEQ=result.get("SEQ"),
-                    entity=result.get("entity")
-                    # For backwards compatibility. To be removed in the future:
-                    or result.get("dataset") or result.get("instanceType"),
+                    entity=entity,
                     instance_id=result.get("instance_id") or result.get("id"),
                     path=result.get("path") or result.get("_path"),
                 )
-                errors[result.get("dataset")].append(error_entity)
+                errors[entity].append(error_entity)
         validation_error_container = [
             ValidationErrorContainer(
-                dataset=dataset,
-                domain=dataset,
+                dataset=entity,
+                domain=entity,
                 targets=rule.get("output_variables"),
                 errors=error,
                 message=next(iter(rule.get("actions", [])), {})
@@ -82,9 +85,9 @@ class JSONataProcessor:
                     if results
                     else ExecutionStatus.EXECUTION_ERROR.value
                 ),
-                entity=dataset,
+                entity=entity,
             ).to_representation()
-            for dataset, error in errors.items()
+            for entity, error in errors.items()
         ]
         return validation_error_container
 

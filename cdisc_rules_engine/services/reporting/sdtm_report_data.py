@@ -266,6 +266,13 @@ class SDTMReportData(BaseReportData):
             if result.get("errors", []) and result.get("executionStatus") == "success":
                 variables = result.get("variables", [])
                 for error in result.get("errors"):
+                    values = []
+                    for variable in variables:
+                        raw_value = error.get("value", {}).get(variable)
+                        if raw_value is None:
+                            values.append(None)
+                        else:
+                            values.append(str(raw_value))
                     error_item = {
                         "core_id": validation_result.id,
                         "message": result.get("message"),
@@ -274,16 +281,9 @@ class SDTMReportData(BaseReportData):
                         "USUBJID": error.get("USUBJID", ""),
                         "row": error.get("row", ""),
                         "SEQ": error.get("SEQ", ""),
+                        "variables": variables,
+                        "values": self.process_values(values),
                     }
-                    values = []
-                    for variable in variables:
-                        raw_value = error.get("value", {}).get(variable)
-                        if raw_value is None:
-                            values.append(None)
-                        else:
-                            values.append(str(raw_value))
-                    error_item["variables"] = variables
-                    error_item["values"] = self.process_values(values)
                     errors.append(error_item)
         return errors
 

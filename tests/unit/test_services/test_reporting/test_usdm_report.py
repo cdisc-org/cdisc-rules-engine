@@ -50,7 +50,7 @@ def test_get_detailed_data(mock_validation_results):
             "entity": "",
             "instance_id": None,
             "path": None,
-            "variables": ["AESTDY", "DOMAIN"],
+            "attributes": ["AESTDY", "DOMAIN"],
             "values": ["test", "test"],
         },
         {
@@ -61,7 +61,7 @@ def test_get_detailed_data(mock_validation_results):
             "entity": "",
             "instance_id": None,
             "path": None,
-            "variables": ["AESTDY", "DOMAIN"],
+            "attributes": ["AESTDY", "DOMAIN"],
             "values": ["test", "test"],
         },
         {
@@ -72,7 +72,7 @@ def test_get_detailed_data(mock_validation_results):
             "entity": "",
             "instance_id": None,
             "path": None,
-            "variables": ["TTVAR1", "TTVAR2"],
+            "attributes": ["TTVAR1", "TTVAR2"],
             "values": ["test", "test"],
         },
     ]
@@ -98,12 +98,14 @@ def test_get_summary_data(mock_validation_results):
         {
             "entity": "",
             "core_id": mock_validation_results[0].id,
+            "cdisc_rule_id": mock_validation_results[0].cdisc_rule_id,
             "message": "AESTDY and DOMAIN are equal to test",
             "issues": 2,
         },
         {
             "entity": "",
             "core_id": mock_validation_results[1].id,
+            "cdisc_rule_id": mock_validation_results[1].cdisc_rule_id,
             "message": "TTVARs are wrong",
             "issues": 1,
         },
