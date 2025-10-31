@@ -2,10 +2,15 @@ import pandas as pd
 from cdisc_rules_engine.operations.base_operation import BaseOperation
 
 
-def _get_value_from_reference(row, target_col_name):
-    ref_col_name = row[target_col_name]
-    if pd.notna(ref_col_name) and ref_col_name in row.index:
-        return row[ref_col_name]
+def _check_column_exists_in_dataset(row, target_col_name, referenced_datasets):
+    col_name = row[target_col_name]
+    referenced_domain = row.get("RDOMAIN")
+    if referenced_domain not in referenced_datasets:
+        return None
+    referenced_dataset = referenced_datasets[referenced_domain]
+    columns = referenced_dataset.columns
+    if col_name in columns:
+        return col_name
     return None
 
 
@@ -18,8 +23,12 @@ class Distinct(BaseOperation):
         if not self.params.grouping:
             if value_is_reference:
                 target = self.params.target
+                referenced_datasets = self._get_referenced_datasets()
                 data = result.apply(
-                    lambda row: _get_value_from_reference(row, target), axis=1
+                    lambda row: _check_column_exists_in_dataset(
+                        row, target, referenced_datasets
+                    ),
+                    axis=1,
                 )
                 data = data.dropna().unique()
             else:
@@ -34,14 +43,18 @@ class Distinct(BaseOperation):
             if value_is_reference:
                 target = self.params.target
                 operation_id = self.params.operation_id
+                referenced_datasets = self._get_referenced_datasets()
 
-                def get_referenced_unique_values(group):
+                def get_existing_column_names(group):
                     values = group.apply(
-                        lambda row: _get_value_from_reference(row, target), axis=1
+                        lambda row: _check_column_exists_in_dataset(
+                            row, target, referenced_datasets
+                        ),
+                        axis=1,
                     )
                     return pd.Series({operation_id: set(values.dropna().unique())})
 
-                result = grouped.apply(get_referenced_unique_values).reset_index()
+                result = grouped.apply(get_existing_column_names).reset_index()
             elif isinstance(result.data, pd.DataFrame):
                 result = grouped.data[self.params.target].agg(
                     self._unique_values_for_column
@@ -54,6 +67,13 @@ class Distinct(BaseOperation):
                 )
                 result = result.apply(set).to_frame().reset_index()
         return result
+
+    def _get_referenced_datasets(self):
+        referenced_datasets = {}
+        for dataset_meta in self.data_service.data:
+            dataset = self.data_service.get_dataset(dataset_meta.filename)
+            referenced_datasets[dataset_meta.name] = dataset
+        return referenced_datasets
 
     def _unique_values_for_column(self, column):
         return pd.Series({self.params.operation_id: set(column.unique())})

@@ -179,36 +179,62 @@ def test_filtered_grouped_distinct(
 
 
 @pytest.mark.parametrize(
-    "data, expected",
+    "data, referenced_data, expected",
     [
         (
             PandasDataset.from_dict(
                 {
-                    "column_ref": ["result", "baseline", "result", "baseline"],
-                    "result": [10, 20, 30, 40],
-                    "baseline": [5, 15, 25, 35],
+                    "RDOMAIN": ["LB", "LB", "LB", "LB"],
+                    "IDVAR": ["LBTEST", "LBSEQ", "LBTEST", "INVALID_COL"],
                 }
             ),
-            {10, 15, 30, 35},
+            PandasDataset.from_dict(
+                {
+                    "LBTEST": ["TEST1", "TEST2"],
+                    "LBSEQ": [1, 2],
+                    "LBCAT": ["CAT1", "CAT2"],
+                }
+            ),
+            {"LBTEST", "LBSEQ"},
         ),
         (
             DaskDataset.from_dict(
                 {
-                    "column_ref": ["result", "baseline", "result", "baseline"],
-                    "result": [10, 20, 30, 40],
-                    "baseline": [5, 15, 25, 35],
+                    "RDOMAIN": ["LB", "LB", "LB", "LB"],
+                    "IDVAR": ["LBTEST", "LBSEQ", "LBTEST", "INVALID_COL"],
                 }
             ),
-            {10, 15, 30, 35},
+            DaskDataset.from_dict(
+                {
+                    "LBTEST": ["TEST1", "TEST2"],
+                    "LBSEQ": [1, 2],
+                    "LBCAT": ["CAT1", "CAT2"],
+                }
+            ),
+            {"LBTEST", "LBSEQ"},
         ),
     ],
 )
-def test_distinct_value_is_reference(data, expected, operation_params: OperationParams):
+def test_distinct_value_is_reference(
+    data, referenced_data, expected, operation_params: OperationParams
+):
     config = ConfigService()
     cache = CacheServiceFactory(config).get_cache_service()
     data_service = DataServiceFactory(config, cache).get_data_service()
+
+    class MockDataset:
+        def __init__(self, name, filename):
+            self.name = name
+            self.filename = filename
+
+    data_service.data = [MockDataset("LB", "lb.xpt")]
+
+    def mock_get_dataset(filename):
+        return referenced_data
+
+    data_service.get_dataset = mock_get_dataset
     operation_params.dataframe = data
-    operation_params.target = "column_ref"
+    operation_params.target = "IDVAR"
     operation_params.value_is_reference = True
     result = Distinct(operation_params, data, cache, data_service).execute()
     assert operation_params.operation_id in result
@@ -218,58 +244,68 @@ def test_distinct_value_is_reference(data, expected, operation_params: Operation
 
 
 @pytest.mark.parametrize(
-    "data, expected, grouping_aliases",
+    "data, referenced_data, expected, grouping_aliases",
     [
         (
             PandasDataset.from_dict(
                 {
-                    "column_ref": [
-                        "result",
-                        "baseline",
-                        "result",
-                        "baseline",
-                        "result",
-                        "baseline",
-                    ],
-                    "result": [10, 20, 30, 40, 50, 60],
-                    "baseline": [5, 15, 25, 35, 45, 55],
+                    "RDOMAIN": ["LB", "LB", "LB", "LB", "LB", "LB"],
+                    "IDVAR": ["LBTEST", "LBSEQ", "LBTEST", "LBSEQ", "INVALID", "LBCAT"],
                     "patient": [1, 1, 2, 2, 1, 2],
                     "subject": [1, 1, 2, 2, 1, 2],
                 }
             ),
-            {1: {10, 15, 50}, 2: {30, 35, 55}},
+            PandasDataset.from_dict(
+                {
+                    "LBTEST": ["TEST1", "TEST2"],
+                    "LBSEQ": [1, 2],
+                    "LBCAT": ["CAT1", "CAT2"],
+                }
+            ),
+            {1: {"LBTEST", "LBSEQ"}, 2: {"LBTEST", "LBSEQ", "LBCAT"}},
             ["subject"],
         ),
         (
             DaskDataset.from_dict(
                 {
-                    "column_ref": [
-                        "result",
-                        "baseline",
-                        "result",
-                        "baseline",
-                        "result",
-                        "baseline",
-                    ],
-                    "result": [10, 20, 30, 40, 50, 60],
-                    "baseline": [5, 15, 25, 35, 45, 55],
+                    "RDOMAIN": ["LB", "LB", "LB", "LB", "LB", "LB"],
+                    "IDVAR": ["LBTEST", "LBSEQ", "LBTEST", "LBSEQ", "INVALID", "LBCAT"],
                     "patient": [1, 1, 2, 2, 1, 2],
                     "subject": [1, 1, 2, 2, 1, 2],
                 }
             ),
-            {1: {10, 15, 50}, 2: {30, 35, 55}},
+            DaskDataset.from_dict(
+                {
+                    "LBTEST": ["TEST1", "TEST2"],
+                    "LBSEQ": [1, 2],
+                    "LBCAT": ["CAT1", "CAT2"],
+                }
+            ),
+            {1: {"LBTEST", "LBSEQ"}, 2: {"LBTEST", "LBSEQ", "LBCAT"}},
             ["subject"],
         ),
     ],
 )
 def test_grouped_distinct_value_is_reference(
-    data, expected, grouping_aliases, operation_params: OperationParams
+    data, referenced_data, expected, grouping_aliases, operation_params: OperationParams
 ):
     config = ConfigService()
     cache = CacheServiceFactory(config).get_cache_service()
     data_service = DataServiceFactory(config, cache).get_data_service()
+
+    class MockDataset:
+        def __init__(self, name, filename):
+            self.name = name
+            self.filename = filename
+
+    data_service.data = [MockDataset("LB", "lb.xpt")]
+
+    def mock_get_dataset(filename):
+        return referenced_data
+
+    data_service.get_dataset = mock_get_dataset
     operation_params.dataframe = data
-    operation_params.target = "column_ref"
+    operation_params.target = "IDVAR"
     operation_params.value_is_reference = True
     operation_params.grouping = ["patient"]
     operation_params.grouping_aliases = grouping_aliases
