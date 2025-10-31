@@ -9,7 +9,6 @@ from cdisc_rules_engine.models.dataset import DatasetInterface
 
 
 class JsonSchemaCheckDatasetBuilder(BaseDatasetBuilder):
-    output_vars = {"dataset": "instanceType", "row": "_path", "USUBJID": "id"}
     dataset_template = {
         "json_path": [],
         "error_attribute": [],
@@ -57,14 +56,7 @@ class JsonSchemaCheckDatasetBuilder(BaseDatasetBuilder):
     def list_errors(self, tree: exceptions.ErrorTree, errlist: dict[str, list]):
         if tree.errors:
             for ve in tree.errors.values():
-                self.parse_error(
-                    error=ve,
-                    errlist=errlist,
-                    errctx=self.get_instance_by_path(
-                        self.data_service.json, self.get_parent_path(ve.absolute_path)
-                    ),
-                )
-                self.list_context_errors(error=ve, errlist=errlist)
+                self.process_error(error=ve, errlist=errlist)
 
         if len(tree._contents) > 0:
             for k, v in tree._contents.items():
@@ -109,15 +101,49 @@ class JsonSchemaCheckDatasetBuilder(BaseDatasetBuilder):
         errlist["_path"].append(errctx.get("_path", "") if errctx else "")
 
     def list_context_errors(
-        self, error: exceptions.ValidationError, errlist: dict[str, list]
+        self,
+        error: exceptions.ValidationError,
+        errlist: dict[str, list],
+        skip_subschemas: list = [],
     ):
         if error.context:
             for vec in error.context:
-                self.parse_error(
-                    error=vec,
-                    errlist=errlist,
-                    errctx=self.get_instance_by_path(
-                        self.data_service.json, self.get_parent_path(vec.absolute_path)
-                    ),
-                )
-                self.list_context_errors(vec, errlist)
+                if (
+                    skip_subschemas == []
+                    or list(vec.schema_path)[0] not in skip_subschemas
+                ):
+                    self.process_error(error=vec, errlist=errlist)
+
+    def process_error(
+        self, error: exceptions.ValidationError, errlist: dict[str, list]
+    ):
+        if error.validator == "anyOf":
+            skip_ssi = []
+            refs = [
+                ss["$ref"].split("/")[-1]
+                for ss in error.schema["anyOf"]
+                if "$ref" in ss
+            ]
+            for vec in error.context:
+                if (
+                    list(vec.relative_path) == ["instanceType"]
+                    and vec.validator == "const"
+                    and vec.instance in refs
+                ) or (
+                    list(vec.relative_path) == []
+                    and vec.validator == "type"
+                    and vec.validator_value == "null"
+                ):
+                    skip_ssi.append(list(vec.schema_path)[0])
+            self.list_context_errors(
+                error=error, errlist=errlist, skip_subschemas=skip_ssi
+            )
+        else:
+            self.parse_error(
+                error=error,
+                errlist=errlist,
+                errctx=self.get_instance_by_path(
+                    self.data_service.json, self.get_parent_path(error.absolute_path)
+                ),
+            )
+            self.list_context_errors(error=error, errlist=errlist)
