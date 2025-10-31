@@ -1,5 +1,7 @@
+import copy
 import json
 from copy import deepcopy
+from functools import lru_cache
 
 from jsonschema import validators, exceptions
 from cdisc_rules_engine.dataset_builders.base_dataset_builder import BaseDatasetBuilder
@@ -8,15 +10,23 @@ from cdisc_rules_engine.models.dataset import DatasetInterface
 
 class JsonSchemaCheckDatasetBuilder(BaseDatasetBuilder):
     output_vars = {"dataset": "instanceType", "row": "_path", "USUBJID": "id"}
+    dataset_template = {
+        "json_path": [],
+        "error_attribute": [],
+        "error_value": [],
+        "validator": [],
+        "validator_value": [],
+        "message": [],
+        "dataset": [],
+        "id": [],
+        "_path": [],
+    }
 
     def build(self, **kwargs) -> DatasetInterface:
         return self.get_dataset()
 
-    def get_dataset(self) -> DatasetInterface:
-        """Return a dataset where each row represents a JSON Schema validation error.
-        Columns: path, message, validator, validator_value, schema_path.
-        Returns an empty dataset (with headers) if there are no errors.
-        """
+    @lru_cache
+    def _get_cached_dataset(self):
         schema = self.library_metadata.standard_schema_definition
         cls = validators.validator_for(schema)
         cls.check_schema(schema)
@@ -24,22 +34,25 @@ class JsonSchemaCheckDatasetBuilder(BaseDatasetBuilder):
 
         errtree = exceptions.ErrorTree(validator.iter_errors(self.data_service.json))
 
-        errlist = {
-            "json_path": [],
-            "error_attribute": [],
-            "error_value": [],
-            "validator": [],
-            "validator_value": [],
-            "message": [],
-            "instanceType": [],
-            "id": [],
-            "_path": [],
-        }
-
+        errlist = copy.deepcopy(self.dataset_template)
         self.list_errors(errtree, errlist)
 
-        # Build dataset with the detected implementation (Pandas / Dask)
-        return self.dataset_implementation.from_dict(errlist)
+        return errlist
+
+    def get_dataset(self) -> DatasetInterface:
+        dataset = self._get_cached_dataset()
+        records = [
+            {key: dataset[key][i] for key in dataset}
+            for i in range(len(next(iter(dataset.values()))))
+        ]
+        filtered = [
+            row for row in records if row["dataset"] == self.dataset_metadata.name
+        ]
+        return (
+            self.dataset_implementation.from_records(filtered)
+            if filtered
+            else self.dataset_implementation.from_dict(self.dataset_template)
+        )
 
     def list_errors(self, tree: exceptions.ErrorTree, errlist: dict[str, list]):
         if tree.errors:
@@ -91,7 +104,7 @@ class JsonSchemaCheckDatasetBuilder(BaseDatasetBuilder):
             and str(error.instance) in error.message
             else error.message
         )
-        errlist["instanceType"].append(errctx.get("instanceType", "") if errctx else "")
+        errlist["dataset"].append(errctx.get("instanceType", "") if errctx else "")
         errlist["id"].append(errctx.get("id", "") if errctx else "")
         errlist["_path"].append(errctx.get("_path", "") if errctx else "")
 
