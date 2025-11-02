@@ -1,7 +1,6 @@
 import copy
 import json
 from copy import deepcopy
-from functools import lru_cache
 
 from jsonschema import validators, exceptions
 from cdisc_rules_engine.dataset_builders.base_dataset_builder import BaseDatasetBuilder
@@ -25,8 +24,13 @@ class JsonSchemaCheckDatasetBuilder(BaseDatasetBuilder):
     def build(self, **kwargs) -> DatasetInterface:
         return self.get_dataset()
 
-    @lru_cache
-    def _get_cached_dataset(self):
+    def _get_cached_dataset(self) -> dict[str, list[str]]:
+        cache_key: str = (
+            f"json_schema_validation_result_{self.data_service.dataset_path}"
+        )
+        if cached := self.cache.get(cache_key):
+            return cached
+
         schema = self.library_metadata.standard_schema_definition
         cls = validators.validator_for(schema)
         cls.check_schema(schema)
@@ -36,6 +40,8 @@ class JsonSchemaCheckDatasetBuilder(BaseDatasetBuilder):
 
         errlist = copy.deepcopy(self.dataset_template)
         self.list_errors(errtree, errlist)
+
+        self.cache.add(cache_key, errlist)
 
         return errlist
 
