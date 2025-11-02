@@ -6,6 +6,7 @@ from functools import lru_cache
 from jsonschema import validators, exceptions
 from cdisc_rules_engine.dataset_builders.base_dataset_builder import BaseDatasetBuilder
 from cdisc_rules_engine.models.dataset import DatasetInterface
+from cdisc_rules_engine.utilities.utils import tag_source
 
 
 class JsonSchemaCheckDatasetBuilder(BaseDatasetBuilder):
@@ -38,7 +39,7 @@ class JsonSchemaCheckDatasetBuilder(BaseDatasetBuilder):
 
         return errlist
 
-    def get_dataset(self) -> DatasetInterface:
+    def get_dataset(self, **kwargs) -> DatasetInterface:
         dataset = self._get_cached_dataset()
         records = [
             {key: dataset[key][i] for key in dataset}
@@ -47,10 +48,15 @@ class JsonSchemaCheckDatasetBuilder(BaseDatasetBuilder):
         filtered = [
             row for row in records if row["dataset"] == self.dataset_metadata.name
         ]
-        return (
-            self.dataset_implementation.from_records(filtered)
-            if filtered
-            else self.dataset_implementation.from_dict(self.dataset_template)
+        return tag_source(
+            (
+                self.dataset_implementation.from_records(filtered, **kwargs)
+                if filtered
+                else self.dataset_implementation.from_dict(
+                    self.dataset_template, **kwargs
+                )
+            ),
+            self.dataset_metadata,
         )
 
     def list_errors(self, tree: exceptions.ErrorTree, errlist: dict[str, list]):
@@ -92,13 +98,15 @@ class JsonSchemaCheckDatasetBuilder(BaseDatasetBuilder):
         errlist["validator_value"].append(str(error.validator_value))
         errlist["message"].append(
             error.message.replace(str(error.instance), f"[Value of {errattr}]")
-            if len(str(error.instance)) > len(error.json_path) + 11
+            if len(str(error.instance)) > len(errattr) + 11
             and str(error.instance) in error.message
             else error.message
         )
         errlist["dataset"].append(errctx.get("instanceType", "") if errctx else "")
         errlist["id"].append(errctx.get("id", "") if errctx else "")
-        errlist["_path"].append(errctx.get("_path", "") if errctx else "")
+        errlist["_path"].append(
+            "/" + "/".join(map(str, self.get_parent_path(error.absolute_path)))
+        )
 
     def list_context_errors(
         self,
