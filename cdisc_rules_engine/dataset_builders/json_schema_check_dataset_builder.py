@@ -1,6 +1,7 @@
 import copy
 import json
 from copy import deepcopy
+import re
 
 from jsonschema import validators, exceptions
 from cdisc_rules_engine.dataset_builders.base_dataset_builder import BaseDatasetBuilder
@@ -90,12 +91,17 @@ class JsonSchemaCheckDatasetBuilder(BaseDatasetBuilder):
         self,
         error: exceptions.ValidationError,
         errlist: dict[str, list],
-        errctx: dict,
+        errpath: list,
     ):
+        errctx = self.get_instance_by_path(self.data_service.json, errpath)
         errattr = (
-            "{}[{}]".format(error.absolute_path[-2], error.absolute_path[-1])
-            if isinstance(error.absolute_path[-1], int)
-            else error.absolute_path[-1]
+            self.get_attributes_from_message(error.message)
+            if error.validator in ["required", "additionalProperties"]
+            else (
+                "{}[{}]".format(error.absolute_path[-2], error.absolute_path[-1])
+                if isinstance(error.absolute_path[-1], int)
+                else error.absolute_path[-1]
+            )
         )
         errlist["json_path"].append(error.json_path)
         errlist["error_attribute"].append(errattr)
@@ -110,9 +116,7 @@ class JsonSchemaCheckDatasetBuilder(BaseDatasetBuilder):
         )
         errlist["dataset"].append(errctx.get("instanceType", "") if errctx else "")
         errlist["id"].append(errctx.get("id", "") if errctx else "")
-        errlist["_path"].append(
-            "/" + "/".join(map(str, self.get_parent_path(error.absolute_path)))
-        )
+        errlist["_path"].append("/" + "/".join(map(str, errpath)))
 
     def list_context_errors(
         self,
@@ -156,8 +160,13 @@ class JsonSchemaCheckDatasetBuilder(BaseDatasetBuilder):
             self.parse_error(
                 error=error,
                 errlist=errlist,
-                errctx=self.get_instance_by_path(
-                    self.data_service.json, self.get_parent_path(error.absolute_path)
+                errpath=(
+                    error.absolute_path
+                    if error.validator in ["required", "additionalProperties"]
+                    else self.get_parent_path(error.absolute_path)
                 ),
             )
             self.list_context_errors(error=error, errlist=errlist)
+
+    def get_attributes_from_message(self, message: str) -> list[str]:
+        return re.findall(r"'([^, ]+)'", message)
