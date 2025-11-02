@@ -20,16 +20,9 @@ def add_json_pointer_paths(node, path=""):
 class JSONataDatasetBuilder(BaseDatasetBuilder):
 
     def get_dataset(self, **kwargs):
-        if hasattr(self.data_service, "dataset_path"):
-            dataset_path = self.data_service.dataset_path
-        elif (
-            hasattr(self.data_service, "dataset_paths")
-            and len(self.data_service.dataset_paths) == 1
-        ):
-            dataset_path = self.data_service.dataset_paths[0]
-        else:
+        if not self.dataset_metadata.full_path:
             return None
-        with self.data_service.read_data(dataset_path) as fp:
+        with self.data_service.read_data(self.dataset_metadata.full_path) as fp:
             json = load(fp)
         add_json_pointer_paths(json)
         return json
