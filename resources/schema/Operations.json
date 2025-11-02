@@ -546,6 +546,9 @@
     "term_pref_term": {
       "type": "string"
     },
+    "value_is_reference": {
+      "type": "boolean"
+    },
     "version": {
       "type": "string"
     }
