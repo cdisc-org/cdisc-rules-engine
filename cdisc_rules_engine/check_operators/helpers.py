@@ -27,6 +27,8 @@ def is_valid_date(date_string: str) -> bool:
     except Exception as e:
         uncertainty_substrings = ["/", "--", "-:"]
         if any([substr in date_string for substr in uncertainty_substrings]):
+            # date_string contains uncertainty
+            # will not parse with isoparse
             return date_regex.match(date_string) is not None
         else:
             logger.error(
@@ -69,6 +71,7 @@ def is_valid_duration(duration: str, negative) -> bool:
         if c is not None
     ]
 
+    # Check if decimal is only in the smallest unit
     decimal_found = False
     for i, component in enumerate(components):
         if "." in component or "," in component:
@@ -217,6 +220,7 @@ def get_date(date_string: str):
     date = parse(date_string, default=datetime(1970, 1, 1))
     utc = pytz.UTC
     if date.tzinfo is not None and date.tzinfo.utcoffset(date) is not None:
+        # timezone aware
         return date.astimezone(utc)
     else:
         return utc.localize(date)
