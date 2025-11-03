@@ -68,7 +68,7 @@ class TestCoreIssue715(unittest.TestCase):
         ][1:]
         rules_values = [row for row in rules_values if any(row)]
         # Perform the assertion
-        assert rules_values[0][0] == "CORE-000409"
+        assert rules_values[0][0] == "DDF00081"
         assert "SUCCESS" in rules_values[0]
         assert len(record_values) == 0
         assert len(variables_values) == 0
@@ -109,34 +109,31 @@ class TestCoreIssue715(unittest.TestCase):
             1:
         ]
         summary_values = [r for r in summary_values if any(r)]
-        assert summary_values and summary_values[0][1] == "CORE-000409"
+        assert summary_values and summary_values[0][1] == "DDF00081"
         assert summary_values[0][3] == 1
 
         # Issue Details strict checks: now expect one row per error
         issue_details_sheet = workbook[issue_datails_sheet]
         details_rows = [r for r in issue_details_sheet.iter_rows(values_only=True)][1:]
         details_rows = [r for r in details_rows if any(r)]
-        # Expect exactly 1 row
-        assert len(details_rows) == 1
+        # Expect exactly 15 rows
+        assert len(details_rows) == 15
 
         # Expected exact strings
         for row in details_rows:
-            assert row[0] == "CORE-000409"
+            assert row[0] == "DDF00081"
             assert (
-                row[1]
-                == "The narrative content dataset is expected to be USDM JSON compliant."
+                row[2]
+                == "The class relationship does not conform with the USDM schema."
             )
-            assert row[7] == (
-                "_path, error_attribute, error_context, error_value, id, "
-                "instanceType, json_path, message, validator, validator_value"
-            )
+            assert row[7] == ("json_path, message")
 
         # Rules Report
         rules_rows = [
             r for r in workbook[rules_report_sheet].iter_rows(values_only=True)
         ][1:]
         rules_rows = [r for r in rules_rows if any(r)]
-        assert rules_rows and rules_rows[0][0] == "CORE-000409"
+        assert rules_rows and rules_rows[0][0] == "DDF00081"
         assert "SUCCESS" in rules_rows[0]
         if os.path.exists(excel_file_path):
             os.remove(excel_file_path)
