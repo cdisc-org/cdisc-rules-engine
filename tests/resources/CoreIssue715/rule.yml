@@ -4,11 +4,26 @@ Authorities:
       - Name: USDM
         References:
           - Citations:
-              - Cited Guidance: "Narrative content dataset is expected to be USDM JSON compliant."
+              - Cited Guidance:
+                  "Class relationships must conform with the USDM schema based on
+                  the API specification."
                 Document: "USDM_CORE_Rules.xlsx"
             Origin: "USDM Conformance Rules"
             Rule Identifier:
-              Id: "DDF00187"
+              Id: "DDF00081"
+              Version: "1"
+            Version: "1.0"
+        Version: "3.0"
+      - Name: USDM
+        References:
+          - Citations:
+              - Cited Guidance:
+                  "Class relationships must conform with the USDM schema based on
+                  the API specification."
+                Document: "USDM_CORE_Rules.xlsx"
+            Origin: "USDM Conformance Rules"
+            Rule Identifier:
+              Id: "DDF00081"
               Version: "1"
             Version: "1.0"
         Version: "4.0"
@@ -17,27 +32,20 @@ Check:
     - name: message
       operator: non_empty
 Core:
-  Id: "CORE-000409"
+  Id: "DDF00081"
   Status: Draft
   Version: "1"
-Description: "Narrative content dataset is expected to be USDM JSON compliant."
-Executability: Partially Executable - Possible Overreporting
+Description: "Class relationships must conform with the USDM schema based on the API specification."
+Executability: Fully Executable
 Operations:
 Outcome:
-  Message: "The narrative content dataset is expected to be USDM JSON compliant."
+  Message: "The class relationship does not conform with the USDM schema."
   Output Variables:
     - json_path
-    - error_attribute
-    - error_value
-    - validator
-    - validator_value
     - message
-    - instanceType
-    - id
-    - _path
 Rule Type: JSON Schema Check
 Scope:
   Entities:
     Include:
-      - "NarrativeContentItem"
+      - "ALL"
 Sensitivity: Record

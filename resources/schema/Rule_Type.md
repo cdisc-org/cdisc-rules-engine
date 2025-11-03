@@ -556,3 +556,17 @@ Attach define xml metadata at variable level
 - `library_variable_data_type`
 - `library_variable_ccode`
 - `variable_has_empty_values`
+
+## JSON Schema Check
+
+#### Columns:
+
+- `json_path`
+- `error_attribute`
+- `error_value`
+- `validator`
+- `validator_value`
+- `message`
+- `dataset`
+- `id`
+- \_`path`
