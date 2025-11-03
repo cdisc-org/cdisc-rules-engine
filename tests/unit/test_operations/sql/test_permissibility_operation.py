@@ -58,16 +58,27 @@ test_set1_variables = [
 
 
 @pytest.mark.parametrize(
-    "mock_variables, expected",
+    "mock_variables, op, expected",
     [
         (
             test_set1_variables,
+            "required_variables",
             ["STUDYID", "DOMAIN", "USUBJID"],
+        ),
+        (
+            test_set1_variables,
+            "expected_variables",
+            ["AESTDTC", "AETERM"],
+        ),
+        (
+            test_set1_variables,
+            "permissible_variables",
+            ["AESCAN", "AESCONG"],
         ),
     ],
 )
-def test_required_variables(mock_variables, expected):
-    """Test required_variables operation with different filter criteria"""
+def test_permissibility_operation(mock_variables, op, expected):
+    """Test permissibility operations with different filter criteria"""
     data_service = PostgresQLDataService.instance()
     standards_context = DefaultStandardsContext()
 
@@ -84,7 +95,7 @@ def test_required_variables(mock_variables, expected):
 
     params = SqlOperationParams(domain="AE", target=None, standards_context=standards_context)
 
-    operation = SqlOperationsFactory.get_service("required_variables", params, data_service)
+    operation = SqlOperationsFactory.get_service(op, params, data_service)
 
     # Mock the metadata retrieval method on the operation instance
     with patch.object(
@@ -96,8 +107,16 @@ def test_required_variables(mock_variables, expected):
         assert_operation_collection(operation, result, expected)
 
 
-def test_required_variables_exception_handling():
-    """Test required_variables when metadata retrieval fails"""
+@pytest.mark.parametrize(
+    "op",
+    [
+        ("required_variables"),
+        ("expected_variables"),
+        ("permissible_variables"),
+    ],
+)
+def test_permissibility_operation_exception_handling(op):
+    """Test permissibility operations when metadata retrieval fails"""
     data_service = PostgresQLDataService.instance()
     standards_context = DefaultStandardsContext()
 
@@ -114,7 +133,7 @@ def test_required_variables_exception_handling():
 
     params = SqlOperationParams(domain="AE", target=None, standards_context=standards_context)
 
-    operation = SqlOperationsFactory.get_service("required_variables", params, data_service)
+    operation = SqlOperationsFactory.get_service(op, params, data_service)
 
     # Mock the metadata method to raise an exception
     with patch.object(

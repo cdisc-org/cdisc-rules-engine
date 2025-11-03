@@ -1,3 +1,7 @@
+from cdisc_rules_engine.data_service.postgresql_data_service import (
+    PostgresQLDataService,
+)
+from cdisc_rules_engine.models.sql_operation_params import SqlOperationParams
 from cdisc_rules_engine.models.sql_operation_result import SqlOperationResult
 from cdisc_rules_engine.sql_operations.sql_base_operation import SqlBaseOperation
 from cdisc_rules_engine.constants.permissibility import (
@@ -10,15 +14,20 @@ from cdisc_rules_engine.constants.permissibility import (
 from typing import List
 
 
-class SqlRequiredVariables(SqlBaseOperation):
+class SqlPermissibilityOperation(SqlBaseOperation):
+
+    def __init__(self, params: SqlOperationParams, data_service: PostgresQLDataService, permissibility: str):
+        super().__init__(params, data_service)
+        self.permissibility = permissibility
+
     def _execute_operation(self):
 
-        required_variables = self._get_required_variables()
+        perm_variables = self._get_perm_variables()
 
         # Convert the list to individual rows in SQL
-        if required_variables and isinstance(required_variables, list):
+        if perm_variables and isinstance(perm_variables, list):
             # Format variable names for SQL VALUES clause, escaping single quotes
-            formatted_vars = [f"('{var.replace(chr(39), chr(39) + chr(39))}')" for var in required_variables]
+            formatted_vars = [f"('{var.replace(chr(39), chr(39) + chr(39))}')" for var in perm_variables]
             values_clause = ", ".join(formatted_vars)
             query = f"SELECT column1 AS value FROM (VALUES {values_clause}) AS t(column1)"
         else:
@@ -27,19 +36,17 @@ class SqlRequiredVariables(SqlBaseOperation):
 
         return SqlOperationResult(query=query, type="collection", subtype="Char")
 
-    def _get_required_variables(self):
-        """
-        Get variables metadata from standard model and filter by 'required' permissibility.
-        """
+    def _get_perm_variables(self):
         try:
-            # Use the new SQL base operation method
             model_variables: List[dict] = self._get_variables_metadata_from_standard_model(self.params.domain)
 
-            # Filter variables by 'required' permissibility
-            req_model = [var for var in model_variables if self.get_allowed_variable_permissibility(var) == REQUIRED]
+            # Filter variables by permissibility
+            perm_model = [
+                var for var in model_variables if self._get_allowed_variable_permissibility(var) == self.permissibility
+            ]
 
             # Replace wildcards and extract variable names
-            variable_names_list = self._replace_variable_wildcards(req_model, self.params.domain)
+            variable_names_list = self._replace_variable_wildcards(perm_model, self.params.domain)
 
             # Extract just the variable names from the processed metadata
             return variable_names_list
@@ -48,7 +55,7 @@ class SqlRequiredVariables(SqlBaseOperation):
             # If the metadata retrieval fails, the rule can't run, so throwing error
             raise Exception(f"Metadata retrieval failed due to error: {str(e)}")
 
-    def get_allowed_variable_permissibility(self, variable_metadata: dict):
+    def _get_allowed_variable_permissibility(self, variable_metadata: dict):
         """
         Returns the permissibility value of a variable allowed in the current domain
         """
