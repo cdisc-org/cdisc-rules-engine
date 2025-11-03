@@ -74,7 +74,7 @@ def test_json_schema_check_dataset_builder_valid():
     data_service = MagicMock()
     data_service.json = instance
     data_service.dataset_implementation = PandasDataset
-    data_service.dataset_path = "dummy.xpt"
+    data_service.dataset_path = "dummy.json"
 
     cache_service = MagicMock()
     # Ensure cache returns None to simulate empty cache
@@ -165,3 +165,6 @@ def test_json_schema_check_dataset_builder_invalid():
     actual_errors = [row["message"] for row in rows]
     for error in expected_errors:
         assert error in actual_errors
+
+    # Verify that the cache_service.add method was called
+    cache_service.add.assert_called_once()
