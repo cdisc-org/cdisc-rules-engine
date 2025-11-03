@@ -1,6 +1,5 @@
 from cdisc_rules_engine.models.sql_operation_result import SqlOperationResult
 from cdisc_rules_engine.sql_operations.sql_base_operation import SqlBaseOperation
-from cdisc_rules_engine.utilities import sdtm_utilities
 from typing import List
 
 
@@ -45,18 +44,15 @@ class SqlGetModelFilteredVariables(SqlBaseOperation):
             return []
 
         try:
-            # Use the new SQL base operation method
             model_variables: List[dict] = self._get_variables_metadata_from_standard_model(self.params.domain)
 
             # Filter variables by the specified key/value criteria
             filtered_model = [var for var in model_variables if var.get(key) == val]
 
             # Replace wildcards and extract variable names
-            variable_names_list = []
-            sdtm_utilities.replace_variable_wildcards(filtered_model, self.params.domain, variable_names_list)
+            variable_names_list = self._replace_variable_wildcards(filtered_model, self.params.domain)
 
-            # Extract just the variable names from the processed metadata
-            return [var["name"] for var in variable_names_list]
+            return variable_names_list
 
         except Exception:
             # Return empty list on error (SQL operations should not return error strings)
