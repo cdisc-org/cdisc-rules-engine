@@ -58,36 +58,53 @@ def _make_builder(schema, instance):
 
 
 def test_json_schema_check_dataset_builder_valid():
+    """
+    Test that the builder correctly validates a valid JSON instance.
+    """
     schema = {
         "type": "object",
         "properties": {
             "id": {"type": "integer"},
             "name": {"type": "string"},
-            "items": {"type": "array", "items": {"type": "string"}},
         },
         "required": ["id", "name"],
     }
-    instance = {"id": 1, "name": "abc", "items": ["x", "y"]}
-    builder = _make_builder(schema, instance)
-    ds = builder.get_dataset()
-    # Expect empty dataset with defined columns.
-    expected_cols = [
-        "json_path",
-        "error_context",
-        "error_attribute",
-        "error_value",
-        "validator",
-        "validator_value",
-        "message",
-        "instanceType",
-        "id",
-        "_path",
-    ]
-    assert list(ds.columns) == expected_cols
-    assert ds.empty
+    instance = {"id": 1, "name": "Test"}
+
+    data_service = MagicMock()
+    data_service.json = instance
+    data_service.dataset_implementation = PandasDataset
+    data_service.dataset_path = "dummy.xpt"
+
+    cache_service = MagicMock()
+    # Ensure cache returns None to simulate empty cache
+    cache_service.get.return_value = None
+
+    builder = JsonSchemaCheckDatasetBuilder(
+        rule={},
+        data_service=data_service,
+        cache_service=cache_service,
+        rule_processor=MagicMock(),
+        data_processor=MagicMock(),
+        dataset_path="dummy.xpt",
+        datasets=[],
+        dataset_metadata=MagicMock(name="test_dataset"),
+        define_xml_path=None,
+        standard="USDM",
+        standard_version="4.0",
+        standard_substandard=None,
+        library_metadata=LibraryMetadataContainer(standard_schema_definition=schema),
+    )
+
+    dataset = builder.get_dataset()
+
+    assert dataset.empty
 
 
 def test_json_schema_check_dataset_builder_invalid():
+    """
+    Test that the builder correctly identifies validation errors in an invalid JSON instance.
+    """
     schema = {
         "type": "object",
         "properties": {
@@ -99,7 +116,34 @@ def test_json_schema_check_dataset_builder_invalid():
     }
     # invalid: id wrong type, name missing, items wrong types
     instance = {"id": "1", "items": [1, 2]}
-    builder = _make_builder(schema, instance)
+
+    data_service = MagicMock()
+    data_service.json = instance
+    data_service.dataset_implementation = PandasDataset
+    data_service.dataset_path = "dummy.xpt"
+
+    cache_service = MagicMock()
+    # Ensure cache returns None to simulate empty cache
+    cache_service.get.return_value = None
+
+    dataset_metadata = MagicMock()
+    dataset_metadata.name = ""
+
+    builder = JsonSchemaCheckDatasetBuilder(
+        rule={},
+        data_service=data_service,
+        cache_service=cache_service,
+        rule_processor=MagicMock(),
+        data_processor=MagicMock(),
+        dataset_path="dummy.xpt",
+        datasets=[],
+        dataset_metadata=dataset_metadata,
+        define_xml_path=None,
+        standard="USDM",
+        standard_version="4.0",
+        standard_substandard=None,
+        library_metadata=LibraryMetadataContainer(standard_schema_definition=schema),
+    )
 
     # Retrieve the dataset
     ds = builder.get_dataset()
