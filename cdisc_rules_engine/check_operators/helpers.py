@@ -18,6 +18,26 @@ date_regex = re.compile(
     r":[0-5][0-9]))?)?)?)?)?)?))?$"
 )
 
+PRECISION_ORDER = {
+    "year": 0,
+    "month": 1,
+    "day": 2,
+    "hour": 3,
+    "minute": 4,
+    "second": 5,
+    "microsecond": 6,
+}
+
+PRECISION_LEVELS = [
+    "year",
+    "month",
+    "day",
+    "hour",
+    "minute",
+    "second",
+    "microsecond",
+]
+
 
 def is_valid_date(date_string: str) -> bool:
     if date_string is None:
@@ -162,27 +182,6 @@ def detect_date_precision(date_str: str) -> str:
         return _detect_time_precision(time_part)
 
     return _detect_date_precision_simple(date_str)
-
-
-PRECISION_ORDER = {
-    "year": 0,
-    "month": 1,
-    "day": 2,
-    "hour": 3,
-    "minute": 4,
-    "second": 5,
-    "microsecond": 6,
-}
-
-PRECISION_LEVELS = [
-    "year",
-    "month",
-    "day",
-    "hour",
-    "minute",
-    "second",
-    "microsecond",
-]
 
 
 def get_common_precision(dt1: str, dt2: str) -> str:
