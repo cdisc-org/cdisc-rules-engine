@@ -2,7 +2,6 @@ import os
 from io import IOBase
 from typing import List, Sequence, Any
 from dataclasses import dataclass
-from json import load
 from jsonpath_ng import DatumInContext
 from jsonpath_ng.ext import parse
 from datetime import datetime
@@ -18,9 +17,11 @@ from cdisc_rules_engine.models.dataset_types import DatasetTypes
 from cdisc_rules_engine.models.variable_metadata_container import (
     VariableMetadataContainer,
 )
+
 from cdisc_rules_engine.services.data_readers.data_reader_factory import (
     DataReaderFactory,
 )
+from cdisc_rules_engine.services.data_readers.json_reader import JSONReader
 from cdisc_rules_engine.utilities.utils import (
     extract_file_name_from_path_string,
 )
@@ -261,7 +262,13 @@ class USDMDataService(BaseDataService):
         # Native node: just return node itself
         return node
 
-    def __get_record_metadata(self, node) -> dict:
+    @staticmethod
+    def jsonpath_to_pointer(path_expr: str) -> str:
+        pointer = path_expr.replace("$.", "/").replace(".", "/")
+        pointer = re.sub(r"\[(\d+)\]", r"/\1", pointer)
+        return f"/{pointer}"
+
+    def __get_record_metadata(self, node: Node) -> dict:
         # Walk up the parent chain to find the closest ancestor with instanceType and id
         parent = getattr(node, "parent", None)
         parent_entity = ""
@@ -303,6 +310,7 @@ class USDMDataService(BaseDataService):
             "parent_id": parent_id,
             "parent_rel": parent_rel,
             "rel_type": rel_type,
+            "_path": self.jsonpath_to_pointer(path),
         }
         return record
 
@@ -475,7 +483,6 @@ class USDMDataService(BaseDataService):
             and len(dataset_paths) == 1
             and dataset_paths[0].lower().endswith(".json")
         ):
-            with open(dataset_paths[0]) as fp:
-                json = load(fp)
-                return "study" in json and "datasetJSONVersion" not in json
+            json = JSONReader().from_file(dataset_paths[0])
+            return "study" in json and "datasetJSONVersion" not in json
         return False

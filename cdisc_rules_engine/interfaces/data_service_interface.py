@@ -116,6 +116,17 @@ class DataServiceInterface(ABC):
         """
 
     @abstractmethod
+    def get_data_structure(
+        self,
+        file_path: str,
+        datasets: Iterable[SDTMDatasetMetadata],
+        dataset_metadata: SDTMDatasetMetadata,
+    ) -> Optional[str]:
+        """
+        Returns data structure based on its contents
+        """
+
+    @abstractmethod
     def to_parquet(self, file_path: str) -> str:
         """
         Converts a given file_path to parquet. Returns path to new file

@@ -1,0 +1,34 @@
+{
+    "sift_tree" : function($tree,$find_val,$include,$prefix)
+                    {
+                        (
+                            $iter := function($t)
+                                    {
+                                        $type($t) = "array"
+                                        ?   [
+                                                $map($t,function($v)
+                                                    {
+                                                        $v.**.[$find_val in $]
+                                                        ? $iter($v)
+                                                    }
+                                                )
+                                            ]
+                                        :   $type($t) = "object"
+                                            ?   $t ~> 
+                                                $sift(function($v,$k)
+                                                    {
+                                                        $k in $include or $v.**.[$find_val in $]
+                                                    }
+                                                ) ~>
+                                                $each(function($v, $k)
+                                                    {
+                                                        $k in $include
+                                                        ?   {$join([$prefix ? $t.instanceType,$k],"."): $v}
+                                                        :   {$join([$prefix ? $t.instanceType,$k],"."): $iter($v)}
+                                                    }) ~> $merge
+                                            :   $t
+                                    };
+                            $iter($tree)
+                        )
+                    }
+}

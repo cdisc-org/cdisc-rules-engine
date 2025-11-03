@@ -1,17 +1,19 @@
 from datetime import datetime
 from io import IOBase
-from json import load
 from typing import List, Optional, Iterable, Sequence
 
 import os
 import pandas as pd
 
 from cdisc_rules_engine.dummy_models.dummy_dataset import DummyDataset
-from cdisc_rules_engine.exceptions.custom_exceptions import DatasetNotFoundError
+from cdisc_rules_engine.exceptions.custom_exceptions import (
+    DatasetNotFoundError,
+)
 from cdisc_rules_engine.interfaces import CacheServiceInterface, ConfigInterface
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.models.dataset_types import DatasetTypes
 from cdisc_rules_engine.services.data_readers import DataReaderFactory
+from cdisc_rules_engine.services.data_readers.json_reader import JSONReader
 from cdisc_rules_engine.services.data_services import BaseDataService
 from cdisc_rules_engine.models.dataset import PandasDataset
 
@@ -161,9 +163,8 @@ class DummyDataService(BaseDataService):
 
     @staticmethod
     def get_data(dataset_paths: Sequence[str]):
-        with open(dataset_paths[0]) as fp:
-            json = load(fp)
-            return [DummyDataset(data) for data in json.get("datasets", [])]
+        json = JSONReader().from_file(dataset_paths[0])
+        return [DummyDataset(data) for data in json.get("datasets", [])]
 
     @staticmethod
     def is_valid_data(dataset_paths: Sequence[str]):
@@ -172,7 +173,6 @@ class DummyDataService(BaseDataService):
             and len(dataset_paths) == 1
             and dataset_paths[0].lower().endswith(".json")
         ):
-            with open(dataset_paths[0]) as fp:
-                json = load(fp)
-                return "datasets" in json
+            json = JSONReader().from_file(dataset_paths[0])
+            return "datasets" in json
         return False

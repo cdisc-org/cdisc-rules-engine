@@ -31,9 +31,26 @@ class DatasetXPTMetadataReader:
         """
         Extracts metadata from binary contents of .xpt file.
         """
-        dataset, metadata = pyreadstat.read_xport(
-            self._file_path, row_limit=self.row_limit
-        )
+        try:
+            dataset, metadata = pyreadstat.read_xport(
+                self._file_path, row_limit=self.row_limit
+            )
+        except pyreadstat.ReadstatError:
+            return {
+                "variable_labels": [],
+                "variable_names": [],
+                "variable_formats": [],
+                "variable_name_to_label_map": {},
+                "variable_name_to_data_type_map": {},
+                "variable_name_to_size_map": {},
+                "number_of_variables": 0,
+                "dataset_label": "",
+                "dataset_length": 0,
+                "first_record": {},
+                "dataset_name": "",
+                "dataset_modification_date": "",
+            }
+
         self._first_record = self._extract_first_record(dataset)
         self._metadata_container = {
             "variable_labels": list(metadata.column_labels),
@@ -54,9 +71,11 @@ class DatasetXPTMetadataReader:
         }
 
         if self._estimate_dataset_length:
-            self._metadata_container["dataset_length"] = (
-                self._calculate_dataset_length()
-            )
+            try:
+                dataset_length: int = self._calculate_dataset_length()
+            except ValueError:
+                dataset_length = 0
+            self._metadata_container["dataset_length"] = dataset_length
         self._convert_variable_types()
         self._metadata_container["adam_info"] = self._extract_adam_info(
             self._metadata_container["variable_names"]

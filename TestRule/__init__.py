@@ -2,12 +2,14 @@ import azure.functions as func
 from cdisc_rules_engine.services.cache.in_memory_cache_service import (
     InMemoryCacheService,
 )
+from cdisc_rules_engine.utilities.utils import normalize_adam_input
 from cdisc_rules_engine.services.cdisc_library_service import CDISCLibraryService
 from cdisc_rules_engine.services.cache.cache_populator_service import CachePopulator
 from scripts.run_validation import run_single_rule_validation
 import json
 import os
 import asyncio
+import numpy as np
 
 
 class BadRequestError(Exception):
@@ -55,6 +57,26 @@ def handle_exception(e: Exception):
         )
 
 
+def convert_numpy_types(obj):
+    """Recursively convert numpy types to native Python types"""
+    if isinstance(obj, dict):
+        return {key: convert_numpy_types(value) for key, value in obj.items()}
+    elif isinstance(obj, list):
+        return [convert_numpy_types(item) for item in obj]
+    elif isinstance(obj, (np.integer, np.int64, np.int32, np.int16, np.int8)):
+        return int(obj)
+    elif isinstance(obj, (np.floating, np.float64, np.float32, np.float16)):
+        return float(obj)
+    elif isinstance(obj, np.bool_):
+        return bool(obj)
+    elif isinstance(obj, np.ndarray):
+        return obj.tolist()
+    elif hasattr(obj, "item"):
+        return obj.item()
+    else:
+        return obj
+
+
 def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:  # noqa
     try:
         json_data = req.get_json()
@@ -64,6 +86,7 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:  # 
         standard = standards_data.get("product")
         standard_version = standards_data.get("version")
         standard_substandard = standards_data.get("substandard")
+        standard, standard_version = normalize_adam_input(standard, standard_version)
         codelists = json_data.get("codelists", [])
         cache = InMemoryCacheService()
         library_service = CDISCLibraryService(api_key, cache)
@@ -94,6 +117,7 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:  # 
             standard_substandard,
             codelists,
         )
+        result = convert_numpy_types(result)
         result_json = json.dumps(result)
         return func.HttpResponse(result_json)
     except Exception as e:

@@ -173,6 +173,11 @@ def get_dict_key_val(dict_to_get: dict, key):
 def is_in(value, values):
     if values is None:
         return False
+    if value is None:
+        return False
+    if isinstance(value, (float)):
+        if np.isnan(value):
+            return False
     return value in values
 
 
@@ -197,6 +202,20 @@ def apply_regex(regex: str, val: str):
         return result[0]
     else:
         return None
+
+
+def apply_rounding(target_val, comparison_val):
+    try:
+        rounded_target = round(float(target_val)) if target_val is not None else None
+    except (ValueError, TypeError):
+        rounded_target = target_val
+    try:
+        rounded_comparison = (
+            round(float(comparison_val)) if comparison_val is not None else None
+        )
+    except (ValueError, TypeError):
+        rounded_comparison = comparison_val
+    return rounded_target, rounded_comparison
 
 
 def flatten_list(data, items):

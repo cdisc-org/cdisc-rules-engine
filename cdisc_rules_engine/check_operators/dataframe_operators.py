@@ -12,6 +12,8 @@ from cdisc_rules_engine.check_operators.helpers import (
     vectorized_case_insensitive_is_in,
     apply_regex,
     vectorized_compare_dates,
+    apply_rounding,
+    is_in,
 )
 
 from cdisc_rules_engine.constants import NULL_FLAVORS
@@ -88,7 +90,7 @@ class DataframeType(BaseType):
             if isinstance(x, int):
                 return str(x).strip()
             elif isinstance(x, float):
-                return f"{x:.0f}" if x.is_integer() else str(x).strip()
+                return f"{x:.0f}" if x.is_integer() else str(x).strip()  # noqa: E231
         return x
 
     def convert_string_data_to_lower(self, data):
@@ -97,6 +99,15 @@ class DataframeType(BaseType):
         else:
             data = data.lower()
         return data
+
+    def _is_null_or_empty(self, value):
+        try:
+            result = pd.isna(value) | (value == "") | (value is None)
+            if hasattr(result, "all"):
+                return result.all()  # True only if ALL elements are null/empty
+            return result
+        except (ValueError, TypeError):
+            return pd.isna(value) or value is None or value == ""
 
     def replace_prefix(self, value: str) -> Union[str, Any]:
         if isinstance(value, str):
@@ -151,6 +162,7 @@ class DataframeType(BaseType):
         value_is_reference: bool = False,
         case_insensitive: bool = False,
         type_insensitive: bool = False,
+        round_values: bool = False,
     ) -> bool:
         """
         Equality checks work slightly differently for clinical datasets.
@@ -170,20 +182,21 @@ class DataframeType(BaseType):
                 if comparator not in row or value_is_literal
                 else row[comparator]
             )
-        both_null = (comparison_data == "" or comparison_data is None) & (
-            row[target] == "" or row[target] is None
+        both_null = self._is_null_or_empty(comparison_data) & self._is_null_or_empty(
+            row[target]
         )
         if both_null:
             return False
+        target_val = row[target]
+        comparison_val = comparison_data
+        if round_values:
+            target_val, comparison_val = apply_rounding(target_val, comparison_val)
         if type_insensitive:
-            target_val = self._custom_str_conversion(row[target])
-            comparison_val = self._custom_str_conversion(comparison_data)
-        else:
-            target_val = row[target]
-            comparison_val = comparison_data
+            target_val = self._custom_str_conversion(target_val)
+            comparison_val = self._custom_str_conversion(comparison_val)
         if case_insensitive:
-            target_val = row[target].lower() if row[target] else None
-            comparison_val = comparison_data.lower() if comparison_data else None
+            target_val = target_val.lower() if target_val else None
+            comparison_val = comparison_val.lower() if comparison_val else None
             return target_val == comparison_val
         return target_val == comparison_val
 
@@ -196,6 +209,7 @@ class DataframeType(BaseType):
         value_is_reference: bool = False,
         case_insensitive: bool = False,
         type_insensitive: bool = False,
+        round_values: bool = False,
     ) -> bool:
         """
         Equality checks work slightly differently for clinical datasets.
@@ -215,20 +229,21 @@ class DataframeType(BaseType):
                 if comparator not in row or value_is_literal
                 else row[comparator]
             )
-        both_null = (comparison_data == "" or comparison_data is None) & (
-            row[target] == "" or row[target] is None
+        both_null = self._is_null_or_empty(comparison_data) & self._is_null_or_empty(
+            row[target]
         )
         if both_null:
             return False
+        target_val = row[target]
+        comparison_val = comparison_data
+        if round_values:
+            target_val, comparison_val = apply_rounding(target_val, comparison_val)
         if type_insensitive:
-            target_val = self._custom_str_conversion(row[target])
-            comparison_val = self._custom_str_conversion(comparison_data)
-        else:
-            target_val = row[target]
-            comparison_val = comparison_data
+            target_val = self._custom_str_conversion(target_val)
+            comparison_val = self._custom_str_conversion(comparison_val)
         if case_insensitive:
-            target_val = row[target].lower() if row[target] else None
-            comparison_val = comparison_data.lower() if comparison_data else None
+            target_val = target_val.lower() if target_val else None
+            comparison_val = comparison_val.lower() if comparison_val else None
             return target_val != comparison_val
         return target_val != comparison_val
 
@@ -239,6 +254,7 @@ class DataframeType(BaseType):
         value_is_literal = other_value.get("value_is_literal", False)
         value_is_reference = other_value.get("value_is_reference", False)
         type_insensitive = other_value.get("type_insensitive", False)
+        round_values = other_value.get("round_values", False)
         comparator = (
             self.replace_prefix(other_value.get("comparator"))
             if not value_is_literal
@@ -252,6 +268,7 @@ class DataframeType(BaseType):
                 value_is_literal,
                 value_is_reference,
                 type_insensitive=type_insensitive,
+                round_values=round_values,
             ),
             axis=1,
             meta=(None, "bool"),
@@ -262,6 +279,9 @@ class DataframeType(BaseType):
     def equal_to_case_insensitive(self, other_value):
         target = self.replace_prefix(other_value.get("target"))
         value_is_literal = other_value.get("value_is_literal", False)
+        value_is_reference = other_value.get("value_is_reference", False)
+        type_insensitive = other_value.get("type_insensitive", False)
+        round_values = other_value.get("round_values", False)
         comparator = (
             self.replace_prefix(other_value.get("comparator"))
             if not value_is_literal
@@ -269,7 +289,14 @@ class DataframeType(BaseType):
         )
         return self.value.apply(
             lambda row: self._check_equality(
-                row, target, comparator, value_is_literal, case_insensitive=True
+                row,
+                target,
+                comparator,
+                value_is_literal,
+                value_is_reference,
+                case_insensitive=True,
+                type_insensitive=type_insensitive,
+                round_values=round_values,
             ),
             axis=1,
         )
@@ -279,6 +306,9 @@ class DataframeType(BaseType):
     def not_equal_to_case_insensitive(self, other_value):
         target = self.replace_prefix(other_value.get("target"))
         value_is_literal = other_value.get("value_is_literal", False)
+        value_is_reference = other_value.get("value_is_reference", False)
+        type_insensitive = other_value.get("type_insensitive", False)
+        round_values = other_value.get("round_values", False)
         comparator = (
             self.replace_prefix(other_value.get("comparator"))
             if not value_is_literal
@@ -286,7 +316,14 @@ class DataframeType(BaseType):
         )
         return self.value.apply(
             lambda row: self._check_inequality(
-                row, target, comparator, value_is_literal, case_insensitive=True
+                row,
+                target,
+                comparator,
+                value_is_literal,
+                value_is_reference,
+                case_insensitive=True,
+                type_insensitive=type_insensitive,
+                round_values=round_values,
             ),
             axis=1,
         )
@@ -298,6 +335,7 @@ class DataframeType(BaseType):
         value_is_literal = other_value.get("value_is_literal", False)
         value_is_reference = other_value.get("value_is_reference", False)
         type_insensitive = other_value.get("type_insensitive", False)
+        round_values = other_value.get("round_values", False)
         comparator = (
             self.replace_prefix(other_value.get("comparator"))
             if not value_is_literal
@@ -311,6 +349,7 @@ class DataframeType(BaseType):
                 value_is_literal,
                 value_is_reference,
                 type_insensitive=type_insensitive,
+                round_values=round_values,
             ),
             axis=1,
             meta=(None, "bool"),
@@ -616,10 +655,26 @@ class DataframeType(BaseType):
             # column name provided
             comparator = self.replace_prefix(comparator)
         comparison_data = self.get_comparator_data(comparator, value_is_literal)
-        if self.is_column_of_iterables(comparison_data):
-            results = vectorized_is_in(self.value[target], comparison_data)
+        target_data = self.value[target]
+        if self.is_column_of_iterables(target_data):
+            results = []
+            for i in range(len(target_data)):
+                target_val = target_data.iloc[i]
+                comp_val = (
+                    comparison_data.iloc[i]
+                    if hasattr(comparison_data, "iloc")
+                    else comparison_data
+                )
+                if isinstance(target_val, list):
+                    result = any(is_in(item, comp_val) for item in target_val)
+                else:
+                    result = is_in(target_val, comp_val)
+                results.append(result)
+            results = pd.Series(results)
+        elif self.is_column_of_iterables(comparison_data):
+            results = vectorized_is_in(target_data, comparison_data)
         else:
-            results = self.value[target].isin(comparison_data)
+            results = target_data.isin(comparison_data)
         return self.value.convert_to_series(results)
 
     @log_operator_execution
@@ -869,6 +924,42 @@ class DataframeType(BaseType):
     @type_operator(FIELD_DATAFRAME)
     def shorter_than_or_equal_to(self, other_value: dict):
         return ~self.longer_than(other_value)
+
+    @log_operator_execution
+    @type_operator(FIELD_DATAFRAME)
+    def split_parts_have_equal_length(self, other_value: dict):
+        """
+        Splits string values by a separator and checks if both parts have equal length.
+        """
+        target = self.replace_prefix(other_value.get("target"))
+        separator = other_value.get("separator", "/")
+
+        target_series = self.value[target]
+        is_null_or_empty = target_series.isna() | (target_series == "")
+        target_str = target_series.astype(str)
+        split_series = target_str.str.split(separator, expand=False)
+
+        def validate_split(parts):
+            if not isinstance(parts, list):
+                return True
+            if len(parts) == 1:
+                return True
+            if len(parts) == 2:
+                return len(parts[0]) == len(parts[1])
+            return False
+
+        results = split_series.apply(validate_split)
+        results = results | is_null_or_empty
+
+        return results
+
+    @log_operator_execution
+    @type_operator(FIELD_DATAFRAME)
+    def split_parts_have_unequal_length(self, other_value: dict):
+        """
+        Complement of split_parts_have_equal_length.
+        """
+        return ~self.split_parts_have_equal_length(other_value)
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)

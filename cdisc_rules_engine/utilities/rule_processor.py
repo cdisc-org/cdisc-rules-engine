@@ -1,5 +1,6 @@
 import re
 from typing import Iterable, List, Optional, Set, Union, Tuple
+from cdisc_rules_engine.enums.rule_types import RuleTypes
 from cdisc_rules_engine.interfaces.cache_service_interface import (
     CacheServiceInterface,
 )
@@ -188,6 +189,30 @@ class RuleProcessor:
             )
         )
 
+    def rule_applies_to_data_structure(
+        self, rule, datasets, dataset_metadata: SDTMDatasetMetadata
+    ):
+        datastructures = rule.get("data_structures") or {}
+        included_datastructures = datastructures.get("Include", [])
+        excluded_datastructures = datastructures.get("Exclude", [])
+        is_included = True
+        is_excluded = False
+        if not included_datastructures and not excluded_datastructures:
+            return True
+        if included_datastructures:
+            if ALL_KEYWORD in included_datastructures:
+                return True
+        ds = self.data_service.get_data_structure(
+            dataset_metadata.full_path,
+            datasets,
+            dataset_metadata,
+        )
+        if ds and (ds not in included_datastructures):
+            is_included = False
+        if ds and (ds in excluded_datastructures):
+            is_excluded = True
+        return is_included and not is_excluded
+
     def rule_applies_to_class(
         self,
         rule,
@@ -231,7 +256,6 @@ class RuleProcessor:
                 class_name == FINDINGS_ABOUT and FINDINGS in included_classes
             ):
                 is_included = False
-
         if excluded_classes:
             variables = self.data_service.get_variables_metadata(
                 dataset_name=dataset_metadata.full_path, datasets=datasets
@@ -396,6 +420,9 @@ class RuleProcessor:
                 map=operation.get("map"),
                 term_code=operation.get("term_code"),
                 term_value=operation.get("term_value"),
+                term_pref_term=operation.get("term_pref_term"),
+                namespace=operation.get("namespace"),
+                value_is_reference=operation.get("value_is_reference", False),
             )
 
             # execute operation
@@ -444,7 +471,13 @@ class RuleProcessor:
             # download other domain
             domain_details: dict = search_in_list_of_dicts(
                 operation_params.datasets,
-                lambda item: item.unsplit_name == operation_params.domain,
+                lambda item: (
+                    item.unsplit_name == operation_params.domain
+                    or (
+                        operation_params.domain.endswith("--")
+                        and item.unsplit_name.startswith(operation_params.domain[:-2])
+                    )
+                ),
             )
             if domain_details is None:
                 raise DomainNotFoundError(
@@ -587,6 +620,14 @@ class RuleProcessor:
             new_conditions_dict[key] = new_conditions_list
         return new_conditions_dict
 
+    @staticmethod
+    def log_suitable_for_validation(rule_id: str, dataset_name: str):
+        logger.info(
+            f"is_suitable_for_validation. rule id={rule_id}, "
+            f"dataset={dataset_name}, result=True"
+        )
+        return True, ""
+
     def is_suitable_for_validation(
         self,
         rule: dict,
@@ -602,11 +643,23 @@ class RuleProcessor:
             reason = f"Rule skipped - invalid rule structure for rule id={rule_id}"
             logger.info(f"is_suitable_for_validation. {reason}, result=False")
             return False, reason
+        if (
+            rule.get("rule_type") == RuleTypes.JSONATA.value
+            and dataset_metadata.name == "json"
+        ):
+            return self.log_suitable_for_validation(rule_id, dataset_name)
         if not self.rule_applies_to_use_case(
             dataset_metadata, rule, standard, standard_substandard
         ):
             reason = (
                 f"Rule skipped - doesn't apply to use case for "
+                f"rule id={rule_id}, dataset={dataset_name}"
+            )
+            logger.info(f"is_suitable_for_validation. {reason}, result=False")
+            return False, reason
+        if not self.rule_applies_to_data_structure(rule, datasets, dataset_metadata):
+            reason = (
+                f"Rule skipped - doesn't apply to data structure for "
                 f"rule id={rule_id}, dataset={dataset_name}"
             )
             logger.info(f"is_suitable_for_validation. {reason}, result=False")
@@ -632,11 +685,7 @@ class RuleProcessor:
             )
             logger.info(f"is_suitable_for_validation. {reason}, result=False")
             return False, reason
-        logger.info(
-            f"is_suitable_for_validation. rule id={rule_id}, "
-            f"dataset={dataset_name}, result=True"
-        )
-        return True, ""
+        return self.log_suitable_for_validation(rule_id, dataset_name)
 
     @staticmethod
     def extract_target_names_from_rule(
