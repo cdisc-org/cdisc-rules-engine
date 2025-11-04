@@ -479,7 +479,7 @@ class RuleProcessor:
                 ),
             )
             if domain_details is None:
-                logger.warning(
+                logger.info(
                     f"Domain {operation_params.domain} doesn't exist in the dataset"
                 )
                 operation_params.dataframe[operation_params.operation_id] = None
