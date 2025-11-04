@@ -422,6 +422,7 @@ class RuleProcessor:
                 term_value=operation.get("term_value"),
                 term_pref_term=operation.get("term_pref_term"),
                 namespace=operation.get("namespace"),
+                value_is_reference=operation.get("value_is_reference", False),
             )
 
             # execute operation
@@ -470,7 +471,13 @@ class RuleProcessor:
             # download other domain
             domain_details: dict = search_in_list_of_dicts(
                 operation_params.datasets,
-                lambda item: item.unsplit_name == operation_params.domain,
+                lambda item: (
+                    item.unsplit_name == operation_params.domain
+                    or (
+                        operation_params.domain.endswith("--")
+                        and item.unsplit_name.startswith(operation_params.domain[:-2])
+                    )
+                ),
             )
             if domain_details is None:
                 raise DomainNotFoundError(
