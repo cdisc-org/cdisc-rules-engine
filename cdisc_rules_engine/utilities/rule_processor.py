@@ -394,7 +394,7 @@ class RuleProcessor:
                 ct_package_type=RuleProcessor._ct_package_type_api_name(
                     operation.get("ct_package_type")
                 ),
-                ct_attribute=operation.get("attribute"),
+                ct_attribute=operation.get("ct_attribute"),
                 ct_package_types=[
                     RuleProcessor._ct_package_type_api_name(ct_package_type)
                     for ct_package_type in operation.get("ct_package_types", [])
