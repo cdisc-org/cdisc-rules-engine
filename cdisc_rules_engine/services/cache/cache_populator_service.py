@@ -168,13 +168,6 @@ class CachePopulator:
                                 rules_directory[sub_key] = []
                             if core_id not in rules_directory[sub_key]:
                                 rules_directory[sub_key].append(core_id)
-                        else:
-                            key = f"{std_name}/{std_version}"
-                            if (
-                                key in rules_directory
-                                and core_id not in rules_directory[key]
-                            ):
-                                rules_directory[key].append(core_id)
                 rules_by_core_id[core_id] = rule
         return rules_directory, rules_by_core_id
 
