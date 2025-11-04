@@ -58,7 +58,6 @@ class TestJSONataProcessor(TestCase):
             "errors": [
                 {
                     "value": {"row": "", "A": "same value 1", "B": "same value 1"},
-                    "dataset": "",
                     "row": "",
                 },
                 {
@@ -67,7 +66,6 @@ class TestJSONataProcessor(TestCase):
                         "A": "same value 2",
                         "B": "same value 2",
                     },
-                    "dataset": "",
                     "row": "/C/C",
                 },
             ],
