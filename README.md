@@ -548,3 +548,17 @@ Then run normally: `core.exe validate -rest -of -config -commands
 ---
 
 **Note:** Setting `DATASET_SIZE_THRESHOLD=0` tells the engine to use Dask processing for all datasets regardless of size, size threshold defaults to 1/4 of available RAM so datasets larger than this will use Dask. See env.example to see what the CLI .env file should look like
+
+## Updating USDM JSON Schema
+
+Currently, the engine supports USDM JSON Schema validation against versions 3.0 and 4.0. The schema definition files are located at:
+
+- `resources/cache/usdm-3-0-schema.pkl`
+- `resources/cache/usdm-4-0-schema.pkl`
+
+These schema definitions were derived from the OpenAPI specs located in the `https://github.com/cdisc-org/DDF-RA` repo, so in order to update the existing schemas or create a new one, run:
+
+1. `git --no-pager --git-dir DDF-RA.git show --format=format:"%B" {required tag (example: v3.0.0)}:Deliverables/API/USDM_API.json > USDM_API_{required version}.json`
+2. Use `scripts/openapi-to-json.py` script to convert the OpenAPI spec to JSON schema definition
+3. Use `scripts/json_pkl_converter.py` script to convert the JSON file to `.pkl`
+4. Place the `.pkl` file to `resources/cache`
