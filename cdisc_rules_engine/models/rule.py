@@ -33,10 +33,12 @@ class Rule:
         self.conditions: dict = record_params["conditions"]
         self.actions: dict = record_params["actions"]
         self.output_variables: dict = record_params.get("output_variables")
+        self.grouping_variables: List[str] = record_params.get("grouping_variables", [])
 
     @classmethod
     def from_cdisc_metadata(cls, rule_metadata: dict) -> dict:
         if cls.is_cdisc_rule_metadata(rule_metadata):
+            rule_metadata = cls.spaces_to_underscores(rule_metadata)
             authorities = rule_metadata.get("Authorities", [])
             executable_rule = {
                 "core_id": rule_metadata.get("Core", {}).get("Id"),
@@ -54,6 +56,10 @@ class Rule:
                 "conditions": cls.parse_conditions(rule_metadata.get("Check")),
                 "actions": cls.parse_actions(rule_metadata.get("Outcome")),
                 "use_case": rule_metadata.get("Scope", {}).get("Use_Case"),
+                "data_structures": rule_metadata.get("Scope", {}).get(
+                    "Data_Structures"
+                ),
+                "status": rule_metadata.get("Core", {}).get("Status", {}),
             }
 
             if "Operations" in rule_metadata:
@@ -67,9 +73,24 @@ class Rule:
                 executable_rule["output_variables"] = rule_metadata.get("Outcome", {})[
                     "Output_Variables"
                 ]
+            if "Grouping_Variables" in rule_metadata:
+                executable_rule["grouping_variables"] = rule_metadata.get(
+                    "Grouping_Variables"
+                )
             return executable_rule
         else:
             return rule_metadata
+
+    @classmethod
+    def spaces_to_underscores(cls, obj):
+        if isinstance(obj, dict):
+            return {
+                key.replace(" ", "_"): cls.spaces_to_underscores(value)
+                for key, value in obj.items()
+            }
+        if isinstance(obj, list):
+            return [cls.spaces_to_underscores(item) for item in obj]
+        return obj
 
     @classmethod
     def parse_standards(cls, authorities: List[dict]) -> List[dict]:
@@ -98,9 +119,11 @@ class Rule:
         return "Core" in rule_metadata
 
     @classmethod
-    def parse_conditions(cls, conditions: dict) -> dict:
+    def parse_conditions(cls, conditions: dict | str) -> dict | str:
         if not conditions:
             raise ValueError("No check data provided")
+        if isinstance(conditions, str):
+            return conditions
         all_conditions = conditions.get("all")
         any_conditions = conditions.get("any")
         not_condition = conditions.get("not")

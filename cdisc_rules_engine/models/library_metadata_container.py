@@ -7,6 +7,7 @@ class LibraryMetadataContainer:
     def __init__(
         self,
         standard_metadata={},
+        standard_schema_definition={},
         model_metadata={},
         ct_package_metadata={},
         variable_codelist_map={},
@@ -15,6 +16,7 @@ class LibraryMetadataContainer:
         cache_path: str = "",
     ):
         self._standard_metadata = standard_metadata
+        self._standard_schema_definition = standard_schema_definition
         self._model_metadata = model_metadata
         self._ct_package_metadata = ct_package_metadata
         self._variable_codelist_map = variable_codelist_map
@@ -29,6 +31,14 @@ class LibraryMetadataContainer:
     @standard_metadata.setter
     def standard_metadata(self, value):
         self._standard_metadata = value
+
+    @property
+    def standard_schema_definition(self):
+        return self._standard_schema_definition
+
+    @standard_schema_definition.setter
+    def standard_schema_definition(self, value):
+        self._standard_schema_definition = value
 
     @property
     def variable_codelist_map(self):
@@ -110,6 +120,7 @@ class LibraryMetadataContainer:
             "codelist_code": [],
             "term_code": [],
             "term_value": [],
+            "term_pref_term": [],
         }
         for version in {*versions}:
             ct_package_data = self._load_ct_package_data(ct_package_type, version)
@@ -122,4 +133,5 @@ class LibraryMetadataContainer:
                     ct_terms["codelist_code"].append(codelist_code)
                     ct_terms["term_code"].append(term["conceptId"])
                     ct_terms["term_value"].append(term["submissionValue"])
+                    ct_terms["term_pref_term"].append(term.get("preferredTerm"))
         return ct_terms

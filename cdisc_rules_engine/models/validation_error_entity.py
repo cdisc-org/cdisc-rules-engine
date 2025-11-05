@@ -1,28 +1,26 @@
+from dataclasses import dataclass, field
+
 from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 from cdisc_rules_engine.enums.base_enum import BaseEnum
 from .base_validation_entity import BaseValidationEntity
 
 
+@dataclass
 class ValidationErrorEntity(BaseValidationEntity):
     """
     The entity describes an error that been flagged because
     a dataset violates a rule in a certain row.
     """
 
-    def __init__(
-        self,
-        value: dict,
-        dataset: str = None,
-        row: int = None,
-        usubjid: str = None,
-        sequence: int = None,
-    ):
-        self._dataset: str = dataset
-        self._row: int = row
-        self.value: dict = value
-        self._usubjid: str = usubjid
-        self._sequence: int = sequence
-        self.status: ExecutionStatus = ExecutionStatus.SUCCESS
+    value: dict = field(default_factory=dict)
+    dataset: str | None = None
+    row: int | None = None
+    USUBJID: str | None = None
+    SEQ: int | None = None
+    status: ExecutionStatus = ExecutionStatus.SUCCESS
+    entity: str | None = None
+    instance_id: str | None = None
+    path: str | None = None
 
     def _format_values(self) -> dict:
         """
@@ -42,12 +40,18 @@ class ValidationErrorEntity(BaseValidationEntity):
         representation: dict = {
             "value": self._format_values(),
         }
-        if self._dataset is not None:
-            representation["dataset"] = self._dataset
-        if self._row is not None:
-            representation["row"] = self._row
-        if self._usubjid:
-            representation["USUBJID"] = self._usubjid
-        if self._sequence:
-            representation["SEQ"] = self._sequence
+        if self.dataset is not None:
+            representation["dataset"] = self.dataset
+        if self.row is not None:
+            representation["row"] = self.row
+        if self.USUBJID is not None:
+            representation["USUBJID"] = self.USUBJID
+        if self.SEQ is not None:
+            representation["SEQ"] = self.SEQ
+        if self.entity is not None:
+            representation["entity"] = self.entity
+        if self.instance_id is not None:
+            representation["instance_id"] = self.instance_id
+        if self.path is not None:
+            representation["path"] = self.path
         return representation

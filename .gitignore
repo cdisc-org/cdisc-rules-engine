@@ -149,3 +149,8 @@ resources/cache/custom_rules.pkl
 *.swp
 
 Organization_Custom.json
+
+#ignore custom build artifacts
+/build-output
+.github/workflows/build_version.yml
+Dockerfile.build

@@ -6,7 +6,7 @@ import pickle
 import tempfile
 from datetime import datetime
 from multiprocessing import freeze_support
-from typing import Tuple
+from dotenv import load_dotenv
 
 import click
 from pathlib import Path
@@ -14,7 +14,6 @@ from cdisc_rules_engine.config import config
 from cdisc_rules_engine.enums.default_file_paths import DefaultFilePaths
 from cdisc_rules_engine.enums.progress_parameter_options import ProgressParameterOptions
 from cdisc_rules_engine.enums.report_types import ReportTypes
-from cdisc_rules_engine.enums.dataformat_types import DataFormatTypes
 from cdisc_rules_engine.models.validation_args import Validation_args
 from scripts.run_validation import run_validation
 from cdisc_rules_engine.services.cache.cache_populator_service import CachePopulator
@@ -28,28 +27,128 @@ from cdisc_rules_engine.utilities.utils import (
     generate_report_filename,
     get_rules_cache_key,
 )
+from cdisc_rules_engine.enums.dataformat_types import DataFormatTypes
 from scripts.list_dataset_metadata_handler import list_dataset_metadata_handler
 from version import __version__
 
+VALIDATION_FORMATS_MESSAGE = (
+    "SAS V5 XPT, Dataset-JSON (JSON or NDJSON), or Excel (XLSX)"
+)
 
-def valid_data_file(data_path: list) -> Tuple[list, set]:
-    allowed_formats = [format.value for format in DataFormatTypes]
+
+def valid_data_file(data_path: list) -> tuple[list, set]:
+    allowed_formats = [
+        DataFormatTypes.XPT.value,
+        DataFormatTypes.JSON.value,
+        DataFormatTypes.NDJSON.value,
+        DataFormatTypes.XLSX.value,
+    ]
     found_formats = set()
     file_list = []
+    ignored_files = []
+
     for file in data_path:
         file_extension = os.path.splitext(file)[1][1:].upper()
         if file_extension in allowed_formats:
             found_formats.add(file_extension)
             file_list.append(file)
-    if len(found_formats) > 1:
-        return [], found_formats
-    elif len(found_formats) == 1:
+        elif file_extension:
+            ignored_files.append(os.path.basename(file))
+
+    if ignored_files:
+        logger = logging.getLogger("validator")
+        logger.warning(
+            f"Ignoring {len(ignored_files)} file(s) with unsupported formats: {', '.join(ignored_files[:5])}"
+            + ("..." if len(ignored_files) > 5 else "")
+        )
+
+    if DataFormatTypes.XLSX.value in found_formats:
+        if len(found_formats) > 1:
+            return [], found_formats
+        elif len(file_list) > 1:
+            return [], found_formats
+        else:
+            return file_list, found_formats
+    if len(found_formats) >= 1:
         return file_list, found_formats
+    else:
+        return [], set()
 
 
 @click.group()
 def cli():
     pass
+
+
+def _validate_data_directory(data: str, logger) -> tuple[list, set]:
+    """Validate data directory and return dataset paths and found formats."""
+    dataset_paths, found_formats = valid_data_file(
+        [str(p) for p in Path(data).rglob("*") if p.is_file()]
+    )
+
+    if DataFormatTypes.XLSX.value in found_formats and len(found_formats) > 1:
+        logger.error(
+            f"Argument --data contains XLSX files mixed with other formats ({', '.join(found_formats)}).\n"
+            f"Excel format (XLSX) validation only supports single files.\n"
+            f"Please provide either a single XLSX file or use other supported formats: "
+            f"{VALIDATION_FORMATS_MESSAGE}"
+        )
+        return None, None
+
+    if not dataset_paths:
+        if DataFormatTypes.XLSX.value in found_formats and len(found_formats) == 1:
+            logger.error(
+                f"Multiple XLSX files found in directory: {data}\n"
+                f"Excel format (XLSX) validation only supports single files.\n"
+                f"Please provide either a single XLSX file or use other supported formats: "
+                f"{VALIDATION_FORMATS_MESSAGE}"
+            )
+        else:
+            logger.error(
+                f"No valid dataset files found in directory: {data}\n"
+                f"Supported formats: {VALIDATION_FORMATS_MESSAGE}\n"
+                f"Please ensure your directory contains files in one of these formats."
+            )
+        return None, None
+
+    return dataset_paths, found_formats
+
+
+def _validate_dataset_paths(dataset_path: tuple[str], logger) -> tuple[list, set]:
+    """Validate dataset paths and return dataset paths and found formats."""
+    dataset_paths, found_formats = valid_data_file([dp for dp in dataset_path])
+
+    if DataFormatTypes.XLSX.value in found_formats and len(found_formats) > 1:
+        logger.error(
+            f"Argument --dataset-path contains XLSX files mixed with other formats ({', '.join(found_formats)}).\n"
+            f"Excel format (XLSX) validation only supports single files.\n"
+            f"Please provide either a single XLSX file or use other supported formats: "
+            f"{VALIDATION_FORMATS_MESSAGE}"
+        )
+        return None, None
+
+    if not dataset_paths:
+        if DataFormatTypes.XLSX.value in found_formats and len(found_formats) == 1:
+            logger.error(
+                f"Multiple XLSX files provided.\n"
+                f"Excel format (XLSX) validation only supports single files.\n"
+                f"Please provide either a single XLSX file or use other supported formats: "
+                f"{VALIDATION_FORMATS_MESSAGE}"
+            )
+        else:
+            logger.error(
+                f"No valid dataset files provided.\n"
+                f"Supported formats: {VALIDATION_FORMATS_MESSAGE}\n"
+                f"Please ensure your files are in one of these formats."
+            )
+        return None, None
+
+    return dataset_paths, found_formats
+
+
+def _validate_no_arguments(logger) -> None:
+    """Validate that at least one dataset argument is provided."""
+    logger.error("You must pass one of the following arguments: --dataset-path, --data")
 
 
 @click.command()
@@ -70,14 +169,14 @@ def cli():
     "-d",
     "--data",
     required=False,
-    help="Path to directory containing data files",
+    help=f"Path to directory containing data files ({VALIDATION_FORMATS_MESSAGE})",
 )
 @click.option(
     "-dp",
     "--dataset-path",
     required=False,
     multiple=True,
-    help="Absolute path to dataset file",
+    help=f"Absolute path to dataset file ({VALIDATION_FORMATS_MESSAGE})",
 )
 @click.option(
     "-l",
@@ -89,7 +188,6 @@ def cli():
 @click.option(
     "-rt",
     "--report-template",
-    default=DefaultFilePaths.EXCEL_TEMPLATE_FILE.value,
     help="File path of report template to use for excel output",
 )
 @click.option(
@@ -168,22 +266,29 @@ def cli():
     "--rules",
     "-r",
     multiple=True,
-    help="specify rule core ID ex. CORE-000001. Can be specified multiple times",
+    help="Specify rule core ID ex. CORE-000001. Can be specified multiple times",
 )
 @click.option(
-    "--local_rules",
+    "--exclude-rules",
+    "-er",
+    multiple=True,
+    help="Specify rule core ID to exclude, ex. CORE-000001. Can be specified multiple times",
+)
+@click.option(
+    "--local-rules",
     "-lr",
     required=False,
     type=click.Path(exists=True, readable=True, resolve_path=True),
-    help="path to directory containing local rules.",
+    help="Path to directory containing local rules.",
+    multiple=True,
 )
 @click.option(
-    "--custom_standard",
+    "--custom-standard",
     "-cs",
     required=False,
     is_flag=True,
     default=False,
-    help=("flag to run a validation using a custom_standard from the cache"),
+    help=("Flag to run a validation using a custom standard from the cache"),
 )
 @click.option(
     "-p",
@@ -203,21 +308,55 @@ def cli():
     default="y",
     help="Enable XML validation (default 'y' to enable, otherwise disable)",
 )
+@click.option(
+    "-jcf",
+    "--jsonata-custom-functions",
+    default=[],
+    multiple=True,
+    required=False,
+    type=(
+        str,
+        click.Path(exists=True, file_okay=False, readable=True, resolve_path=True),
+    ),
+    help="Variable Name and Path to directory containing a set of custom JSONata functions.",
+)
+@click.option(
+    "-mr",
+    "--max-report-rows",
+    type=int,
+    default=None,
+    required=False,
+    help="Maximum number of rows per report sheet.",
+)
+@click.option(
+    "-me",
+    "--max-errors-per-rule",
+    type=(int, bool),
+    default=(0, False),
+    required=False,
+    help=(
+        "Maximum number of errors per rule. "
+        "Usage: -me <limit> <per_dataset_flag>. "
+        "Example: -me 100 true. "
+        "If per_dataset_flag is false (default), applies cumulative limit across datasets. "
+        "If true, limits reported issues per dataset per rule."
+    ),
+)
 @click.pass_context
 def validate(
     ctx,
     cache: str,
     pool_size: int,
     data: str,
-    dataset_path: Tuple[str],
+    dataset_path: tuple[str],
     log_level: str,
     report_template: str,
     standard: str,
     version: str,
     substandard: str,
-    controlled_terminology_package: Tuple[str],
+    controlled_terminology_package: tuple[str],
     output: str,
-    output_format: Tuple[str],
+    output_format: tuple[str],
     raw_report: bool,
     define_version: str,
     whodrug: str,
@@ -228,12 +367,16 @@ def validate(
     snomed_version: str,
     snomed_edition: str,
     snomed_url: str,
-    rules: Tuple[str],
+    rules: tuple[str],
+    exclude_rules: tuple[str],
     local_rules: str,
     custom_standard: bool,
     progress: str,
     define_xml_path: str,
     validate_xml: str,
+    jsonata_custom_functions: tuple[()] | tuple[tuple[str, str], ...],
+    max_report_rows: int,
+    max_errors_per_rule: tuple[int, bool],
 ):
     """
     Validate data using CDISC Rules Engine
@@ -245,13 +388,22 @@ def validate(
 
     # Validate conditional options
     logger = logging.getLogger("validator")
+    load_dotenv()
 
     if raw_report is True:
         if not (len(output_format) == 1 and output_format[0] == ReportTypes.JSON.value):
             logger.error(
                 "Flag --raw-report can be used only when --output-format is JSON"
             )
-            ctx.exit()
+            ctx.exit(2)
+
+    if exclude_rules and rules:
+        logger.error("Cannot use both --rules and --exclude-rules flags together.")
+        ctx.exit(2)
+
+    if exclude_rules and rules:
+        logger.error("Cannot use both --rules and --exclude-rules flags together.")
+        ctx.exit()
 
     cache_path: str = os.path.join(os.path.dirname(__file__), cache)
 
@@ -270,33 +422,23 @@ def validate(
             },
         }
     )
+    # Validate dataset arguments
     if data:
         if dataset_path:
             logger.error(
                 "Argument --dataset-path cannot be used together with argument --data"
             )
-            ctx.exit()
-        dataset_paths, found_formats = valid_data_file(
-            [str(Path(data).joinpath(fn)) for fn in os.listdir(data)]
-        )
-        if len(found_formats) > 1:
-            logger.error(
-                f"Argument --data contains more than one allowed file format ({', '.join(found_formats)})."  # noqa: E501
-            )
-            ctx.exit()
+            ctx.exit(2)
+        dataset_paths, found_formats = _validate_data_directory(data, logger)
+        if dataset_paths is None:
+            ctx.exit(2)
     elif dataset_path:
-        dataset_paths, found_formats = valid_data_file([dp for dp in dataset_path])
-        if len(found_formats) > 1:
-            logger.error(
-                f"Argument --dataset_path contains more than one allowed file format ({', '.join(found_formats)})."  # noqa: E501
-            )
-            ctx.exit()
+        dataset_paths, found_formats = _validate_dataset_paths(dataset_path, logger)
+        if dataset_paths is None:
+            ctx.exit(2)
     else:
-        logger.error(
-            "You must pass one of the following arguments: --dataset-path, --data"
-        )
-        # no need to define dataset_paths here, the program execution will stop
-        ctx.exit()
+        _validate_no_arguments(logger)
+        ctx.exit(2)
     validate_xml_bool = True if validate_xml.lower() in ("y", "yes") else False
     run_validation(
         Validation_args(
@@ -315,11 +457,15 @@ def validate(
             define_version,
             external_dictionaries,
             rules,
+            exclude_rules,
             local_rules,
             custom_standard,
             progress,
             define_xml_path,
             validate_xml_bool,
+            jsonata_custom_functions,
+            max_report_rows,
+            max_errors_per_rule,
         )
     )
 
@@ -327,7 +473,7 @@ def validate(
 @click.command()
 @click.option(
     "-c",
-    "--cache_path",
+    "--cache-path",
     default=DefaultFilePaths.CACHE.value,
     help="Relative path to cache files containing pre loaded metadata and rules",
 )
@@ -343,7 +489,7 @@ def validate(
 )
 @click.option(
     "-crd",
-    "--custom_rules_directory",
+    "--custom-rules-directory",
     help=(
         "Relative path to directory containing local rules in yaml or JSON formats"
         "to be added to the cache. "
@@ -351,7 +497,7 @@ def validate(
 )
 @click.option(
     "-cr",
-    "--custom_rule",
+    "--custom-rule",
     multiple=True,
     help=(
         "Relative path to rule file in yaml or JSON formats"
@@ -360,7 +506,7 @@ def validate(
 )
 @click.option(
     "-rcr",
-    "--remove_custom_rules",
+    "--remove-custom-rules",
     help=(
         "Remove rules from the cache. Can be a single rule ID, a comma-separated list of IDs, "
         "or 'ALL' to remove all custom rules."
@@ -368,7 +514,7 @@ def validate(
 )
 @click.option(
     "-ucr",
-    "--update_custom_rule",
+    "--update-custom-rule",
     help=(
         "Relative path to rule file in yaml or JSON formats"
         "Rule will be updated in cache with this file. "
@@ -376,7 +522,7 @@ def validate(
 )
 @click.option(
     "-cs",
-    "--custom_standard",
+    "--custom-standard",
     help=(
         "Relative path to JSON file containing custom standard details."
         "Will update the standard if it already exists."
@@ -384,8 +530,8 @@ def validate(
 )
 @click.option(
     "-rcs",
-    "--remove_custom_standard",
-    help=("removes a custom standard and version from the cache. "),
+    "--remove-custom-standard",
+    help=("Removes a custom standard and version from the cache. "),
     multiple=True,
 )
 @click.pass_context
@@ -432,7 +578,7 @@ def update_cache(
 @click.command()
 @click.option(
     "-c",
-    "--cache_path",
+    "--cache-path",
     default=DefaultFilePaths.CACHE.value,
     help="Relative path to cache files containing pre loaded metadata and rules",
 )
@@ -451,15 +597,15 @@ def update_cache(
 )
 @click.option(
     "-cr",
-    "--custom_rules",
+    "--custom-rules",
     is_flag=True,
     default=False,
     required=False,
-    help="flag to list custom rules in the cache",
+    help="Flag to list custom rules in the cache",
 )
 @click.option(
     "-r",
-    "--rule_id",
+    "--rule-id",
     required=False,
     help="Rule ID to get rule for.",
     multiple=True,
@@ -508,7 +654,7 @@ def list_rules(
 @click.command()
 @click.option(
     "-c",
-    "--cache_path",
+    "--cache-path",
     default=DefaultFilePaths.CACHE.value,
     help="Relative path to cache files containing pre loaded metadata and rules",
 )
@@ -528,7 +674,6 @@ def list_rule_sets(ctx: click.Context, cache_path: str, custom: bool):
         rules_file = DefaultFilePaths.RULES_DICTIONARY.value
     with open(os.path.join(cache_path, rules_file), "rb") as f:
         rules_data = pickle.load(f)
-
     rule_sets = {}
     for key in rules_data.keys():
         if "/" in key:
@@ -536,18 +681,16 @@ def list_rule_sets(ctx: click.Context, cache_path: str, custom: bool):
             standard = parts[0]
             version = parts[1]
             substandard = parts[2] if len(parts) > 2 else None
-            if substandard:
-                version_key = f"{version}/{substandard}"
-            else:
-                version_key = version
             if standard not in rule_sets:
                 rule_sets[standard] = set()
-            rule_sets[standard].add(version_key)
-
+            rule_sets[standard].add((version, substandard))
     for standard in sorted(rule_sets.keys()):
-        versions = sorted(rule_sets[standard])
-        for version in versions:
-            print(f"{standard.upper()}, {version}")
+        versions = sorted(rule_sets[standard], key=lambda x: (x[0], x[1] or ""))
+        for version, substandard in versions:
+            if substandard:
+                print(f"{standard}, {version}, {substandard}")
+            else:
+                print(f"{standard}, {version}")
 
 
 @click.command()
@@ -558,7 +701,7 @@ def list_rule_sets(ctx: click.Context, cache_path: str, custom: bool):
     multiple=True,
 )
 @click.pass_context
-def list_dataset_metadata(ctx: click.Context, dataset_path: Tuple[str]):
+def list_dataset_metadata(ctx: click.Context, dataset_path: tuple[str]):
     """
     Command that lists metadata of given datasets.
 
@@ -596,7 +739,7 @@ def version():
 @click.command()
 @click.option(
     "-c",
-    "--cache_path",
+    "--cache-path",
     default=DefaultFilePaths.CACHE.value,
     help="Relative path to cache files containing pre loaded metadata and rules",
 )
@@ -607,7 +750,7 @@ def version():
     required=False,
     multiple=True,
 )
-def list_ct(cache_path: str, subsets: Tuple[str]):
+def list_ct(cache_path: str, subsets: tuple[str]):
     """
     Command to list the ct packages available in the cache.
     """
@@ -648,7 +791,7 @@ def test_validate():
             cache_path = DefaultFilePaths.CACHE.value
             pool_size = 10
             log_level = "disabled"
-            report_template = DefaultFilePaths.EXCEL_TEMPLATE_FILE.value
+            report_template = None
             standard = "sdtmig"
             version = "3.4"
             substandard = None
@@ -660,12 +803,16 @@ def test_validate():
             define_version = None
             external_dictionaries = ExternalDictionariesContainer({})
             rules = []
+            exclude_rules = []
             local_rules = None
             custom_standard = False
             progress = ProgressParameterOptions.BAR.value
             define_xml_path = None
             validate_xml = False
+            max_report_rows = None
+            max_report_errors = (0, False)
             json_output = os.path.join(temp_dir, "json_validation_output")
+            jsonata_custom_functions = ()
             run_validation(
                 Validation_args(
                     cache_path,
@@ -683,11 +830,15 @@ def test_validate():
                     define_version,
                     external_dictionaries,
                     rules,
+                    exclude_rules,
                     local_rules,
                     custom_standard,
                     progress,
                     define_xml_path,
                     validate_xml,
+                    jsonata_custom_functions,
+                    max_report_rows,
+                    max_report_errors,
                 )
             )
             print("JSON validation completed successfully!")
@@ -709,11 +860,15 @@ def test_validate():
                     define_version,
                     external_dictionaries,
                     rules,
+                    exclude_rules,
                     local_rules,
                     custom_standard,
                     progress,
                     define_xml_path,
                     validate_xml,
+                    jsonata_custom_functions,
+                    max_report_rows,
+                    max_report_errors,
                 )
             )
             print("XPT validation completed successfully!")

@@ -1,0 +1,30 @@
+{
+    "parse_refs":   function($from,$to,$within)
+                        {
+                            (
+                                $iter := function($dict)
+                                            {
+                                                $count($dict.**[$from in $keys($)]) > 0
+                                                ?   (
+                                                        $d := $dict ~> |**[$from in $keys($)]|
+                                                                {
+                                                                    $to: 
+                                                                        (
+                                                                            $refs:=$lookup($,$from);
+                                                                            $map($refs,function($v)
+                                                                                {
+                                                                                    $v in $dict[id=$v].**.$lookup($,$from)
+                                                                                    ? {"circularReference": $v}
+                                                                                    : $dict[id=$v]
+                                                                                }
+                                                                            )
+                                                                        )
+                                                                },[$from]|;
+                                                        $iter($d)
+                                                    )
+                                                : $dict
+                                            };
+                                $iter($within)
+                            )
+                        }
+}

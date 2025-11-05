@@ -10,6 +10,7 @@ from cdisc_rules_engine.operations.define_dictionary_version_validator import (
 )
 from cdisc_rules_engine.operations.distinct import Distinct
 from cdisc_rules_engine.operations.extract_metadata import ExtractMetadata
+from cdisc_rules_engine.operations.get_xhtml_errors import GetXhtmlErrors
 from cdisc_rules_engine.operations.library_column_order import LibraryColumnOrder
 from cdisc_rules_engine.operations.library_model_column_order import (
     LibraryModelColumnOrder,
@@ -55,9 +56,6 @@ from cdisc_rules_engine.operations.whodrug_references_validator import (
 )
 from cdisc_rules_engine.operations.whodrug_hierarchy_validator import (
     WhodrugHierarchyValidator,
-)
-from cdisc_rules_engine.operations.variable_library_metadata import (
-    VariableLibraryMetadata,
 )
 from cdisc_rules_engine.operations.variable_count import VariableCount
 from cdisc_rules_engine.operations.variable_is_null import VariableIsNull
@@ -117,7 +115,6 @@ class OperationsFactory(FactoryInterface):
         "valid_meddra_code_term_pairs": MedDRACodeTermPairsValidator,
         "variable_exists": VariableExists,
         "variable_names": VariableNames,
-        "variable_library_metadata": VariableLibraryMetadata,
         "variable_value_count": VariableValueCount,
         "variable_count": VariableCount,
         "variable_is_null": VariableIsNull,
@@ -136,6 +133,7 @@ class OperationsFactory(FactoryInterface):
         "valid_external_dictionary_code_term_pair": ValidExternalDictionaryCodeTermPair,
         "valid_define_external_dictionary_version": DefineDictionaryVersionValidator,
         "get_dataset_filtered_variables": GetDatasetFilteredVariables,
+        "get_xhtml_errors": GetXhtmlErrors,
     }
 
     @classmethod
@@ -176,6 +174,6 @@ class OperationsFactory(FactoryInterface):
                 kwargs.get("library_metadata"),
             )
         raise ValueError(
-            f"Operation name must be in  {list(self._operations_map.keys())}, "
+            f"Operation name must be in {list(self._operations_map.keys())}, "
             f"given operation name is {name}"
         )

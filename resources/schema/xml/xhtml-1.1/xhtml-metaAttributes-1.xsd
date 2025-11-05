@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema 
+    xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+    xmlns:xh11d="http://www.w3.org/1999/xhtml/datatypes/"
+    elementFormDefault="qualified" 
+>
+  <xs:import namespace="http://www.w3.org/1999/xhtml/datatypes/" 
+             schemaLocation="xhtml-datatypes-1.xsd" />
+  <xs:annotation>
+    <xs:documentation>
+      This is the XML Schema Metainformation Attributes module for XHTML
+
+      $Id: xhtml-metaAttributes-1.xsd,v 1.6 2008/07/05 04:15:30 smccarro Exp $
+    </xs:documentation>
+    <xs:documentation source="xhtml-rdfa-copyright-1.xsd"/>
+  </xs:annotation>
+
+  <xs:annotation>
+    <xs:documentation>
+      XHTML Metainformation Attributes
+    </xs:documentation>
+  </xs:annotation>
+
+  <xs:attribute name="about" type="xh11d:URIorSafeCURIE"/>
+  <xs:attribute name="content" type="xh11d:CDATA"/>
+  <xs:attribute name="datatype" type="xh11d:CURIE"/>
+  <xs:attribute name="typeof" type="xh11d:CURIEs"/>
+  <xs:attribute name="property" type="xh11d:CURIEs"/>
+  <xs:attribute name="rel" type="xh11d:CURIEs"/>
+  <xs:attribute name="resource" type="xh11d:URIorSafeCURIE"/>
+  <xs:attribute name="rev" type="xh11d:CURIEs"/>
+
+  <xs:attributeGroup name="xhtml.metaAttributes.attrib">
+    <xs:attribute name="about"/>
+    <xs:attribute name="content"/>
+    <xs:attribute name="datatype"/>
+    <xs:attribute name="typeof"/>
+    <xs:attribute name="property"/>
+    <xs:attribute name="rel"/>
+    <xs:attribute name="resource"/>
+    <xs:attribute name="rev"/>
+  </xs:attributeGroup>
+
+</xs:schema>

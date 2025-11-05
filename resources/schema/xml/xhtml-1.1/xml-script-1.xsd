@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema 
+    targetNamespace="http://www.w3.org/2001/xml-events" 
+    xmlns="http://www.w3.org/2001/xml-events" 
+    xmlns:xh11d="http://www.w3.org/1999/xhtml/datatypes/"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xsi:schemaLocation="http://www.w3.org/2001/XMLSchema 
+                        http://www.w3.org/2001/XMLSchema.xsd" 
+    elementFormDefault="unqualified" 
+    blockDefault="#all" 
+    finalDefault="#all" 
+    attributeFormDefault="unqualified">
+
+  <xs:annotation>
+    <xs:documentation>
+      This is the XML Schema for XML Scripting
+
+      URI: http://www.w3.org/MarkUp/SCHEMA/xml-script-1.xsd
+      $Id: xml-script-1.xsd,v 1.1 2008/06/25 14:36:34 smccarro Exp $
+    </xs:documentation>
+    <xs:documentation source="xml-events-copyright-2.xsd"/>
+  </xs:annotation>
+
+  <xs:attributeGroup name="script.attlist">
+    <xs:attribute name="encoding" type="xh11d:Charset"/>
+    <xs:attribute name="implements" type="xh11d:URIorSafeCURIEs"/>
+    <xs:attribute name="src" type="xs:anyURI"/>
+    <xs:attribute name="type" type="xh11d:ContentTypes"/>
+    <xs:attribute name="id" type="xs:ID"/>
+  </xs:attributeGroup>
+
+  <xs:complexType name="script.type">
+    <xs:attributeGroup ref="script.attlist"/>
+  </xs:complexType>
+
+  <xs:element name="script" type="script.type"/>
+</xs:schema>

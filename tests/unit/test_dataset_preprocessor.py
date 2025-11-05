@@ -52,6 +52,281 @@ def test_preprocess_no_datasets_in_rule(dataset_rule_equal_to_error_objects: dic
     assert preprocessed_dataset.data.equals(dataset.data)
 
 
+@patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset")
+def test_rdomain_supplemental_dataset_idvar_matching(mock_get_dataset: MagicMock):
+    supp_data = {
+        "USUBJID": ["CDISC001", "CDISC002"],
+        "RDOMAIN": ["LB", "LB"],
+        "IDVAR": ["LBSEQ", "LBSEQ"],
+        "IDVARVAL": ["321", "456"],
+        "QNAM": ["LBSPID", "LBSPID"],
+        "QVAL": ["SP001", "SP002"],
+    }
+    lb_data = {
+        "USUBJID": ["CDISC001", "CDISC002", "CDISC003"],
+        "LBSEQ": [321.0, 456.0, 789.0],
+        "LBTEST": ["Glucose", "Cholesterol", "Hemoglobin"],
+        "LBSTRESN": [95.5, 180.2, 14.1],
+    }
+    supp_dataset = PandasDataset(pd.DataFrame(supp_data))
+    lb_dataset = PandasDataset(pd.DataFrame(lb_data))
+    lb_dataset.data["LBSEQ"] = lb_dataset.data["LBSEQ"].astype(object)
+    mock_get_dataset.return_value = lb_dataset
+    rule = {
+        "core_id": "TestSupplementalIDVAR",
+        "datasets": [
+            {
+                "domain_name": "SUPPLB",
+                "child": True,
+                "match_key": ["USUBJID", "IDVAR", "IDVARVAL"],
+            }
+        ],
+        "conditions": ConditionCompositeFactory.get_condition_composite(
+            {
+                "all": [
+                    {
+                        "name": "get_dataset",
+                        "operator": "equal_to",
+                        "value": {"target": "QVAL", "comparator": "test_value"},
+                    }
+                ]
+            }
+        ),
+    }
+    data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
+    preprocessor = DatasetPreprocessor(
+        supp_dataset,
+        SDTMDatasetMetadata(
+            name="SUPPLB",
+            first_record={"RDOMAIN": "LB"},
+            full_path=os.path.join("path", "supplb.xpt"),
+        ),
+        data_service,
+        InMemoryCacheService(),
+    )
+    datasets = [
+        SDTMDatasetMetadata(
+            first_record={"DOMAIN": "LB"},
+            filename="lb.xpt",
+        )
+    ]
+    result = preprocessor.preprocess(rule, datasets)
+    assert len(result.data) == 2
+    assert "USUBJID" in result.data.columns
+    assert "QVAL" in result.data.columns
+    assert "LBTEST" in result.data.columns
+    matched_records = result.data[result.data["LBTEST"].notna()]
+    assert len(matched_records) == 2
+    assert "Glucose" in matched_records["LBTEST"].values
+    assert "Cholesterol" in matched_records["LBTEST"].values
+
+
+@patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset")
+def test_rdomain_integer_idvar_matching(mock_get_dataset: MagicMock):
+    supp_data = {
+        "USUBJID": ["CDISC001", "CDISC002"],
+        "RDOMAIN": ["VS", "VS"],
+        "IDVAR": ["VSSEQ", "VSSEQ"],
+        "IDVARVAL": ["1", "2"],
+        "QNAM": ["VSSPID", "VSSPID"],
+        "QVAL": ["VITAL001", "VITAL002"],
+    }
+    vs_data = {
+        "USUBJID": ["CDISC001", "CDISC002", "CDISC003"],
+        "VSSEQ": [1, 2, 3],
+        "VSTEST": ["Weight", "Height", "BMI"],
+        "VSSTRESN": [70.5, 175.0, 23.0],
+    }
+    supp_dataset = PandasDataset(pd.DataFrame(supp_data))
+    vs_dataset = PandasDataset(pd.DataFrame(vs_data))
+    mock_get_dataset.return_value = vs_dataset
+    rule = {
+        "core_id": "TestIntegerIDVAR",
+        "datasets": [
+            {
+                "domain_name": "SUPPVS",  # Match child dataset name
+                "child": True,
+                "match_key": ["USUBJID", "IDVAR", "IDVARVAL"],
+            }
+        ],
+        "conditions": ConditionCompositeFactory.get_condition_composite(
+            {
+                "all": [
+                    {
+                        "name": "get_dataset",
+                        "operator": "equal_to",
+                        "value": {"target": "QVAL", "comparator": "test"},
+                    }
+                ]
+            }
+        ),
+    }
+    data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
+    preprocessor = DatasetPreprocessor(
+        supp_dataset,
+        SDTMDatasetMetadata(
+            name="SUPPVS",
+            first_record={"RDOMAIN": "VS"},
+            full_path=os.path.join("path", "suppvs.xpt"),
+        ),
+        data_service,
+        InMemoryCacheService(),
+    )
+    datasets = [
+        SDTMDatasetMetadata(
+            first_record={"DOMAIN": "VS"},
+            filename="vs.xpt",
+        )
+    ]
+    result = preprocessor.preprocess(rule, datasets)
+    assert len(result.data) == 2
+    assert "QVAL" in result.data.columns
+    assert "VSTEST" in result.data.columns
+    matched_records = result.data[result.data["VSTEST"].notna()]
+    assert len(matched_records) == 2
+    assert "Weight" in matched_records["VSTEST"].values
+    assert "Height" in matched_records["VSTEST"].values
+
+
+@patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset")
+def test_rdomain_no_matches_found(mock_get_dataset: MagicMock):
+    supp_data = {
+        "USUBJID": ["CDISC001"],
+        "RDOMAIN": ["AE"],
+        "IDVAR": ["AESEQ"],
+        "IDVARVAL": ["999"],
+        "QNAM": ["AESPID"],
+        "QVAL": ["AE999"],
+    }
+    ae_data = {
+        "USUBJID": ["CDISC001", "CDISC001", "CDISC001"],
+        "AESEQ": [1, 2, 3],
+        "AETERM": ["Headache", "Nausea", "Dizziness"],
+    }
+    supp_dataset = PandasDataset(pd.DataFrame(supp_data))
+    ae_dataset = PandasDataset(pd.DataFrame(ae_data))
+    mock_get_dataset.return_value = ae_dataset
+    rule = {
+        "core_id": "TestNoMatches",
+        "datasets": [
+            {
+                "domain_name": "SUPPAE",  # Match child dataset name
+                "child": True,
+                "match_key": ["USUBJID", "IDVAR", "IDVARVAL"],
+            }
+        ],
+        "conditions": ConditionCompositeFactory.get_condition_composite(
+            {
+                "all": [
+                    {
+                        "name": "get_dataset",
+                        "operator": "equal_to",
+                        "value": {"target": "QVAL", "comparator": "test"},
+                    }
+                ]
+            }
+        ),
+    }
+    data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
+    preprocessor = DatasetPreprocessor(
+        supp_dataset,
+        SDTMDatasetMetadata(
+            name="SUPPAE",
+            first_record={"RDOMAIN": "AE"},
+            full_path=os.path.join("path", "suppae.xpt"),
+        ),
+        data_service,
+        InMemoryCacheService(),
+    )
+    datasets = [
+        SDTMDatasetMetadata(
+            first_record={"DOMAIN": "AE"},
+            filename="ae.xpt",
+        )
+    ]
+    result = preprocessor.preprocess(rule, datasets)
+    assert len(result.data) == 1
+    assert result.data.iloc[0]["USUBJID"] == "CDISC001"
+    assert result.data.iloc[0]["QVAL"] == "AE999"
+    assert "AETERM" in result.data.columns
+    assert pd.isna(result.data.iloc[0]["AETERM"])
+
+
+@patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset")
+def test_rdomain_combined_standard_and_idvar_matching(mock_get_dataset: MagicMock):
+    supp_data = {
+        "USUBJID": ["CDISC001", "CDISC002", "CDISC003"],
+        "STUDYID": ["STUDY01", "STUDY01", "STUDY01"],
+        "RDOMAIN": ["LB", "LB", "LB"],
+        "IDVAR": ["LBSEQ", "LBSEQ", "LBSEQ"],
+        "IDVARVAL": ["1", "2", "3"],
+        "QNAM": ["LBSPID", "LBSPID", "LBSPID"],
+        "QVAL": ["LAB001", "LAB002", "LAB003"],
+    }
+    lb_data = {
+        "USUBJID": ["CDISC001", "CDISC001", "CDISC002", "CDISC003"],
+        "STUDYID": ["STUDY01", "STUDY01", "STUDY01", "STUDY01"],
+        "LBSEQ": [1, 2, 2, 3],
+        "LBTEST": ["Glucose", "Insulin", "Cholesterol", "Hemoglobin"],
+        "LBSTRESN": [95.5, 12.3, 180.2, 14.1],
+    }
+    supp_dataset = PandasDataset(pd.DataFrame(supp_data))
+    lb_dataset = PandasDataset(pd.DataFrame(lb_data))
+    mock_get_dataset.return_value = lb_dataset
+    rule = {
+        "core_id": "TestCombinedMatching",
+        "datasets": [
+            {
+                "domain_name": "SUPPLB",  # Match child dataset name
+                "child": True,
+                "match_key": ["STUDYID", "USUBJID", "IDVAR", "IDVARVAL"],
+            }
+        ],
+        "conditions": ConditionCompositeFactory.get_condition_composite(
+            {
+                "all": [
+                    {
+                        "name": "get_dataset",
+                        "operator": "equal_to",
+                        "value": {"target": "QVAL", "comparator": "test"},
+                    }
+                ]
+            }
+        ),
+    }
+    data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
+    preprocessor = DatasetPreprocessor(
+        supp_dataset,
+        SDTMDatasetMetadata(
+            name="SUPPLB",
+            first_record={"RDOMAIN": "LB"},
+            full_path=os.path.join("path", "supplb.xpt"),
+        ),
+        data_service,
+        InMemoryCacheService(),
+    )
+    datasets = [
+        SDTMDatasetMetadata(
+            first_record={"DOMAIN": "LB"},
+            filename="lb.xpt",
+        )
+    ]
+    result = preprocessor.preprocess(rule, datasets)
+    assert len(result.data) == 3
+    assert "LBTEST" in result.data.columns
+    matched_records = result.data[result.data["LBTEST"].notna()]
+    assert len(matched_records) == 3
+    result_sorted = matched_records.sort_values(["USUBJID", "IDVARVAL"]).reset_index(
+        drop=True
+    )
+    assert result_sorted.iloc[0]["USUBJID"] == "CDISC001"
+    assert result_sorted.iloc[0]["LBTEST"] == "Glucose"
+    assert result_sorted.iloc[1]["USUBJID"] == "CDISC002"
+    assert result_sorted.iloc[1]["LBTEST"] == "Cholesterol"
+    assert result_sorted.iloc[2]["USUBJID"] == "CDISC003"
+    assert result_sorted.iloc[2]["LBTEST"] == "Hemoglobin"
+
+
 @pytest.mark.parametrize(
     "join_type, expected_dataset",
     [

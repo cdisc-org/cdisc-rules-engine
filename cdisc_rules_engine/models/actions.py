@@ -1,5 +1,4 @@
 from typing import List, Optional, Set, Hashable
-
 from os import path
 import pandas as pd
 from business_rules.actions import BaseActions, rule_action
@@ -81,7 +80,7 @@ class COREActions(BaseActions):
         )
         return expanded_target_names
 
-    def generate_targeted_error_object(
+    def generate_targeted_error_object(  # noqa: C901
         self, targets: Set[str], data: pd.DataFrame, message: str
     ) -> ValidationErrorContainer:
         """
@@ -96,22 +95,22 @@ class COREActions(BaseActions):
                   "dataset": "ae.xpt",
                   "row": 0,
                   "value": {"STUDYID": "Not in dataset"},
-                  "uSubjId": "2",
-                  "seq": 1,
+                  "USUBJID": "2",
+                  "SEQ": 1,
                 },
                 {
                   "dataset": "ae.xpt",
                   "row": 1,
                   "value": {"AESTDY": "test", "DOMAIN": "test"},
-                  "uSubjId": 7,
-                  "seq": 2,
+                  "USUBJID": 7,
+                  "SEQ": 2,
                 },
                 {
                   "dataset": "ae.xpt",
                   "row": 9,
                   "value": {"AESTDY": "test", "DOMAIN": "test"},
-                  "uSubjId": 12,
-                  "seq": 10,
+                  "USUBJID": 12,
+                  "SEQ": 10,
                 },
             ],
             "message": "AESTDY and DOMAIN are equal to test",
@@ -137,9 +136,14 @@ class COREActions(BaseActions):
             }
 
             # Create the initial error
-            error_value = (
-                dict(errors_df.iloc[0].to_dict()) if not all_targets_missing else {}
-            )
+            if not all_targets_missing:
+                raw_error_dict = errors_df.iloc[0].to_dict()
+                error_value = {
+                    key: self._filter_null_values(value)
+                    for key, value in raw_error_dict.items()
+                }
+            else:
+                error_value = {}
 
             # Add missing variables to the error value
             if missing_vars:
@@ -155,17 +159,40 @@ class COREActions(BaseActions):
             errors_list = self._generate_errors_by_target_presence(
                 data, targets_not_in_dataset, all_targets_missing, errors_df
             )
+        elif self.rule.get("sensitivity") == Sensitivity.GROUP.value:
+            grouping_variables = self.rule.get("grouping_variables", [])
+
+            if not grouping_variables:
+                return self._create_configuration_error(
+                    "Group sensitivity requires Grouping_Variables to be specified",
+                    targets,
+                )
+
+            missing_grouping_vars = [
+                var for var in grouping_variables if var not in data.columns
+            ]
+            if missing_grouping_vars:
+                return self._create_configuration_error(
+                    f"Grouping variables not found in dataset: {missing_grouping_vars}",
+                    targets,
+                )
+
+            errors_list = self._generate_errors_by_group(
+                data,
+                targets_not_in_dataset,
+                all_targets_missing,
+                errors_df,
+                grouping_variables,
+            )
         elif (
             self.rule.get("sensitivity") is not None
         ):  # rule sensitivity is incorrectly defined
             error_entity = ValidationErrorEntity(
-                {
-                    "dataset": "N/A",
-                    "row": 0,
-                    "value": {"ERROR": "Invalid or undefined sensitivity in the rule"},
-                    "uSubjId": "N/A",
-                    "SEQ": 0,
-                }
+                dataset="N/A",
+                row=0,
+                value={"ERROR": "Invalid or undefined sensitivity in the rule"},
+                USUBJID="N/A",
+                SEQ=0,
             )
             return ValidationErrorContainer(
                 domain=(
@@ -182,19 +209,17 @@ class COREActions(BaseActions):
                 data, targets_not_in_dataset, all_targets_missing, errors_df
             )
         return ValidationErrorContainer(
-            **{
-                "domain": (
-                    f"SUPP{self.dataset_metadata.rdomain}"
-                    if self.dataset_metadata.is_supp
-                    else (self.dataset_metadata.domain or self.dataset_metadata.name)
-                ),
-                "dataset": ", ".join(
-                    sorted(set(error._dataset or "" for error in errors_list))
-                ),
-                "targets": sorted(targets),
-                "errors": errors_list,
-                "message": message.replace("--", self.dataset_metadata.domain or ""),
-            }
+            domain=(
+                f"SUPP{self.dataset_metadata.rdomain}"
+                if self.dataset_metadata.is_supp
+                else (self.dataset_metadata.domain or self.dataset_metadata.name)
+            ),
+            dataset=", ".join(
+                sorted(set(error.dataset or "" for error in errors_list))
+            ),
+            targets=sorted(targets),
+            errors=errors_list,
+            message=message.replace("--", self.dataset_metadata.domain or ""),
         )
 
     def _generate_errors_by_target_presence(
@@ -228,12 +253,12 @@ class COREActions(BaseActions):
                     },
                     dataset=self._get_dataset_name(pd.DataFrame([row])),
                     row=int(row.get(SOURCE_ROW_NUMBER, idx + 1)),
-                    usubjid=(
+                    USUBJID=(
                         str(row.get("USUBJID"))
                         if "USUBJID" in row and not pd.isna(row["USUBJID"])
                         else None
                     ),
-                    sequence=(
+                    SEQ=(
                         int(row.get(f"{self.dataset_metadata.domain or ''}SEQ"))
                         if f"{self.dataset_metadata.domain or ''}SEQ" in row
                         and self._sequence_exists(
@@ -260,6 +285,144 @@ class COREActions(BaseActions):
                     error.value = {**error.value, **missing_vars}
         return errors_list
 
+    def _filter_null_values(self, value):
+        """Filter null values from a single value or list of values."""
+        if isinstance(value, list):
+            return [
+                None if (val in NULL_FLAVORS or pd.isna(val)) else val for val in value
+            ]
+        else:
+            return None if (value in NULL_FLAVORS or pd.isna(value)) else value
+
+    def _build_error_value_from_row(self, first_row_idx, errors_df):
+        """Build error value dictionary from a row index."""
+        if first_row_idx in errors_df.index:
+            raw_error_dict = errors_df.loc[first_row_idx].to_dict()
+            return {
+                key: self._filter_null_values(value)
+                for key, value in raw_error_dict.items()
+            }
+        return {}
+
+    def _add_group_keys_to_error_value(
+        self, error_value, group_keys, grouping_variables
+    ):
+        """Add group key values to the error value dictionary."""
+        if isinstance(group_keys, tuple):
+            for i, var in enumerate(grouping_variables):
+                error_value[var] = group_keys[i]
+        else:
+            error_value[grouping_variables[0]] = group_keys
+        return error_value
+
+    def _create_configuration_error(self, message, targets):
+        """Create standardized configuration error."""
+        error_entity = ValidationErrorEntity(
+            dataset="N/A",
+            row=0,
+            value={"ERROR": message},
+            USUBJID="N/A",
+            SEQ=0,
+        )
+        return ValidationErrorContainer(
+            domain=(
+                f"SUPP{self.dataset_metadata.rdomain}"
+                if self.dataset_metadata.is_supp
+                else (self.dataset_metadata.domain or self.dataset_metadata.name)
+            ),
+            targets=sorted(targets),
+            message=message,
+            errors=[error_entity],
+        )
+
+    def _extract_usubjid_and_seq(self, first_row):
+        """Extract USUBJID and SEQ from first row."""
+        usubjid = (
+            str(first_row.get("USUBJID"))
+            if "USUBJID" in first_row and not pd.isna(first_row["USUBJID"])
+            else None
+        )
+
+        seq = (
+            int(first_row.get(f"{self.dataset_metadata.domain or ''}SEQ"))
+            if f"{self.dataset_metadata.domain or ''}SEQ" in first_row
+            and self._sequence_exists(
+                pd.Series(
+                    {
+                        first_row.name: first_row.get(
+                            f"{self.dataset_metadata.domain or ''}SEQ"
+                        )
+                    }
+                ),
+                first_row.name,
+            )
+            else None
+        )
+        return usubjid, seq
+
+    def _build_complete_error_value(
+        self,
+        group_keys,
+        grouping_variables,
+        targets_not_in_dataset,
+        all_targets_missing,
+        first_row_idx,
+        errors_df,
+    ):
+        """Build complete error value with all components."""
+        if all_targets_missing:
+            error_value = {
+                target: "Not in dataset" for target in targets_not_in_dataset
+            }
+        else:
+            error_value = self._build_error_value_from_row(first_row_idx, errors_df)
+        error_value = self._add_group_keys_to_error_value(
+            error_value, group_keys, grouping_variables
+        )
+
+        missing_vars = {target: "Not in dataset" for target in targets_not_in_dataset}
+        if missing_vars:
+            error_value = {**error_value, **missing_vars}
+
+        return error_value
+
+    def _generate_errors_by_group(
+        self,
+        data: pd.DataFrame,
+        targets_not_in_dataset: Set[str],
+        all_targets_missing: bool,
+        errors_df: pd.DataFrame,
+        grouping_variables: List[str],
+    ) -> List[ValidationErrorEntity]:
+        errors_list = []
+
+        grouped_data = data.groupby(grouping_variables, dropna=False)
+
+        for group_keys, group_df in grouped_data:
+            first_row_idx = group_df.index[0]
+            error_value = self._build_complete_error_value(
+                group_keys,
+                grouping_variables,
+                targets_not_in_dataset,
+                all_targets_missing,
+                first_row_idx,
+                errors_df,
+            )
+
+            first_row = group_df.iloc[0]
+            usubjid, seq = self._extract_usubjid_and_seq(first_row)
+
+            error = ValidationErrorEntity(
+                value=error_value,
+                dataset=self._get_dataset_name(group_df),
+                row=int(first_row.get(SOURCE_ROW_NUMBER, first_row.name + 1)),
+                USUBJID=usubjid,
+                SEQ=seq,
+            )
+            errors_list.append(error)
+
+        return errors_list
+
     def _get_dataset_name(self, data: pd.DataFrame) -> str:
         source_pathnames = data.get(SOURCE_FILENAME, [])
         source_filenames = [
@@ -277,20 +440,14 @@ class COREActions(BaseActions):
         sequence: Optional[pd.Series] = data.get(
             f"{self.dataset_metadata.domain or ''}SEQ"
         )
+        json_path: Optional[pd.Series] = data.get("_path")
+        instance_id: Optional[pd.Series] = data.get("id")
         source_row_number: Optional[pd.Series] = data.get(SOURCE_ROW_NUMBER)
         source_filename: Optional[pd.Series] = data.get(SOURCE_FILENAME)
         row_dict = df_row.to_dict()
         filtered_dict = {}
         for key, value in row_dict.items():
-            if isinstance(value, list):
-                filtered_dict[key] = [
-                    None if (val in NULL_FLAVORS or pd.isna(val)) else val
-                    for val in value
-                ]
-            else:
-                filtered_dict[key] = (
-                    None if (value in NULL_FLAVORS or pd.isna(value)) else value
-                )
+            filtered_dict[key] = self._filter_null_values(value)
         error_object = ValidationErrorEntity(
             dataset=(
                 path.basename(source_filename[df_row.name])
@@ -298,17 +455,31 @@ class COREActions(BaseActions):
                 else ""
             ),
             row=(
-                int(source_row_number[df_row.name])
-                if isinstance(source_row_number, pd.Series)
-                else (int(df_row.name) + 1)
+                int(data.loc[df_row.name]["row_number"])
+                if "row_number" in data.columns
+                else (
+                    int(source_row_number[df_row.name])
+                    if isinstance(source_row_number, pd.Series)
+                    else (int(df_row.name) + 1)
+                )
             ),  # record number should start at 1, not 0
             value=filtered_dict,
-            usubjid=(
+            USUBJID=(
                 str(usubjid[df_row.name]) if isinstance(usubjid, pd.Series) else None
             ),
-            sequence=(
+            SEQ=(
                 int(sequence[df_row.name])
                 if self._sequence_exists(sequence, df_row.name)
+                else None
+            ),
+            instance_id=(
+                str(instance_id[df_row.name])
+                if isinstance(instance_id, pd.Series)
+                else None
+            ),
+            path=(
+                str(json_path[df_row.name])
+                if isinstance(json_path, pd.Series)
                 else None
             ),
         )

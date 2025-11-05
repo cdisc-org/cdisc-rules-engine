@@ -15,25 +15,42 @@ class CodelistTerms(BaseOperation):
             and self.params.ct_version
             and self.params.codelist_code
             and self.params.ct_version in self.evaluation_dataset
-            and (self.params.term_code or self.params.term_value)
+            and (
+                self.params.term_code
+                or self.params.term_value
+                or self.params.term_pref_term
+            )
         ):
             return self._handle_multiple_versions()
         elif self.params.codelists:
             return self._handle_single_version()
 
     def _handle_multiple_versions(self) -> pd.Series:
-        if self.params.term_code and self.params.term_value:
+        params_count: int = sum(
+            1
+            for x in (
+                self.params.term_code,
+                self.params.term_value,
+                self.params.term_pref_term,
+            )
+            if x
+        )
+        if params_count > 1:
             raise RuleExecutionError(
-                "Both term_code and term_value cannot be specified at the same time."
+                "More than one of term_code, term_pref_term and term_value cannot be specified at the same time."
             )
         elif self.params.term_code:
             left_on = self.params.term_code
             right_on = "term_code"
-            target = "term_value"
+            target = f"term_{self.params.returntype or 'value'}"
         elif self.params.term_value:
             left_on = self.params.term_value
             right_on = "term_value"
-            target = "term_code"
+            target = f"term_{self.params.returntype or 'code'}"
+        elif self.params.term_pref_term:
+            left_on = self.params.term_pref_term  # column from dataset
+            right_on = "term_pref_term"  # column from lib metadata
+            target = f"term_{self.params.returntype or 'code'}"
 
         ct_versions = self.evaluation_dataset[self.params.ct_version]
         unique_ct_versions = ct_versions.unique()
@@ -86,9 +103,18 @@ class CodelistTerms(BaseOperation):
             ct_packages = self.library_metadata._ct_package_metadata
             if "define_XML_merged_CT" in ct_packages:
                 ct_package_data = ct_packages["define_XML_merged_CT"]
+            elif not ct_packages:
+                raise MissingDataError(
+                    "CT package data is not populated. "
+                    "A valid define.xml file or -ct command is required to execute."
+                )
             else:
                 ct_package_data = next(
-                    (pkg for name, pkg in ct_packages.items() if name != "extensible")
+                    (
+                        pkg
+                        for name, pkg in ct_packages.items()
+                        if name != "extensible" and not name.startswith("define-xml")
+                    )
                 )
         except AttributeError as e:
             logger.warning(
@@ -126,6 +152,8 @@ class CodelistTerms(BaseOperation):
                 if code_obj.get("term") == "N/A":
                     if check == "code":
                         values.append(codelist_id)
+                    elif check == "pref_term":
+                        values.append(codelist_info["preferredTerm"])
                     else:
                         values.append(codelist_info["submissionValue"])
             elif codelist_level == "term":
@@ -133,6 +161,8 @@ class CodelistTerms(BaseOperation):
                 for term in terms:
                     if check == "value":
                         values.append(term["submissionValue"])
+                    elif check == "pref_term":
+                        values.append(term["preferredTerm"])
                     else:
                         values.append(term["conceptId"])
         return values

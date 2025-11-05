@@ -1,26 +1,19 @@
 import logging
-from datetime import datetime
-from typing import BinaryIO, List, Optional, Iterable
+from typing import BinaryIO, override
+import os
 
 from openpyxl import Workbook
-
-from version import __version__
 from cdisc_rules_engine.enums.report_types import ReportTypes
-from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
-from cdisc_rules_engine.models.external_dictionaries_container import DictionaryTypes
 from cdisc_rules_engine.models.validation_args import Validation_args
+from cdisc_rules_engine.services.reporting.base_report_data import (
+    BaseReportData,
+)
 from .base_report import BaseReport
 from .excel_writer import (
     excel_open_workbook,
     excel_update_worksheet,
     excel_workbook_to_stream,
 )
-from cdisc_rules_engine.utilities.reporting_utilities import (
-    get_define_version,
-    get_define_ct,
-)
-from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
-from pathlib import Path
 
 
 class ExcelReport(BaseReport):
@@ -28,131 +21,75 @@ class ExcelReport(BaseReport):
     Generates an excel report for a given set of validation results.
     """
 
+    DEFAULT_MAX_ROWS = 10000
+
     def __init__(
         self,
-        datasets: Iterable[SDTMDatasetMetadata],
-        dataset_paths: Iterable[str],
-        validation_results: List[RuleValidationResult],
-        elapsed_time: float,
+        report_standard: BaseReportData,
         args: Validation_args,
-        template: Optional[BinaryIO] = None,
+        template: BinaryIO | None = None,
     ):
         super().__init__(
-            datasets, dataset_paths, validation_results, elapsed_time, args, template
+            report_standard,
+            args,
+            template,
         )
-        self._item_type = "list"
+        env_max_rows = (
+            int(os.getenv("MAX_REPORT_ROWS")) if os.getenv("MAX_REPORT_ROWS") else None
+        )
+        if env_max_rows is not None and args.max_report_rows is not None:
+            result = max(env_max_rows, args.max_report_rows)
+        elif env_max_rows is not None:
+            result = env_max_rows
+        elif args.max_report_rows is not None:
+            result = args.max_report_rows
+        else:
+            result = self.DEFAULT_MAX_ROWS
+        if result == 0:
+            result = None
+        elif result < 0:
+            result = self.DEFAULT_MAX_ROWS
+        self.max_rows_per_sheet = result
+        for report_metadata_item in report_standard.data_sheets["Conformance Details"]:
+            if report_metadata_item.name == "Issue Limit Per Sheet":
+                report_metadata_item.value = str(self.max_rows_per_sheet)
+                break
 
     @property
-    def _file_format(self):
+    @override
+    def _file_ext(self):
         return ReportTypes.XLSX.value.lower()
 
     def get_export(
-        self, define_version, cdiscCt, standard, version, dictionary_versions, **kwargs
+        self,
     ) -> Workbook:
-        wb = excel_open_workbook(self._template.read())
-        summary_data = self.get_summary_data()
-        detailed_data = self.get_detailed_data(excel=True)
-        rules_report_data = self.get_rules_report_data()
-        excel_update_worksheet(wb["Issue Summary"], summary_data, dict(wrap_text=True))
-        excel_update_worksheet(wb["Issue Details"], detailed_data, dict(wrap_text=True))
-        excel_update_worksheet(
-            wb["Rules Report"], rules_report_data, dict(wrap_text=True)
-        )
-        # write conformance data
-        wb["Conformance Details"]["B2"] = (
-            datetime.now().replace(microsecond=0).isoformat()
-        )
-        wb["Conformance Details"]["B3"] = f"{round(self._elapsed_time, 2)} seconds"
-        wb["Conformance Details"]["B4"] = __version__
-
-        # write dataset metadata
-        datasets_data = [
-            [
-                dataset.filename,
-                dataset.label,
-                str(Path(dataset.full_path or "").parent),
-                dataset.modification_date,
-                (dataset.file_size or 0) / 1000,
-                dataset.record_count,
-            ]
-            for dataset in self._datasets
-        ]
-        excel_update_worksheet(
-            wb["Dataset Details"], datasets_data, dict(wrap_text=True)
-        )
-
-        # write standards details
-        wb["Conformance Details"]["B7"] = standard.upper()
-        if "substandard" in kwargs and kwargs["substandard"] is not None:
-            wb["Conformance Details"]["B8"] = kwargs["substandard"]
-        wb["Conformance Details"]["B9"] = f"V{version}"
-        if cdiscCt:
-            wb["Conformance Details"]["B10"] = (
-                ", ".join(cdiscCt)
-                if isinstance(cdiscCt, (list, tuple, set))
-                else str(cdiscCt)
-            )
-        else:
-            wb["Conformance Details"]["B10"] = ""
-        wb["Conformance Details"]["B11"] = define_version
-
-        # Populate external dictionary versions
-        unii_version = dictionary_versions.get(DictionaryTypes.UNII.value)
-        if unii_version is not None:
-            wb["Conformance Details"]["B12"] = unii_version
-
-        medrt_version = dictionary_versions.get(DictionaryTypes.MEDRT.value)
-        if medrt_version is not None:
-            wb["Conformance Details"]["B13"] = medrt_version
-
-        meddra_version = dictionary_versions.get(DictionaryTypes.MEDDRA.value)
-        if meddra_version is not None:
-            wb["Conformance Details"]["B14"] = meddra_version
-
-        whodrug_version = dictionary_versions.get(DictionaryTypes.WHODRUG.value)
-        if whodrug_version is not None:
-            wb["Conformance Details"]["B15"] = whodrug_version
-
-        snomed_version = dictionary_versions.get(DictionaryTypes.SNOMED.value)
-        if snomed_version is not None:
-            wb["Conformance Details"]["B16"] = snomed_version
+        logger = logging.getLogger("validator")
+        template_buffer = self._template.read()
+        wb = excel_open_workbook(template_buffer)
+        for sheet_name, data_sheet in self._report_standard.data_sheets.items():
+            total_rows = len(data_sheet)
+            if (
+                self.max_rows_per_sheet is not None
+                and total_rows > self.max_rows_per_sheet
+            ):
+                data_sheet = data_sheet[: self.max_rows_per_sheet]
+                logger.warning(
+                    f"{sheet_name} truncated to limit of {self.max_rows_per_sheet} rows. "
+                    f"Total issues found: {total_rows}"
+                )
+            excel_update_worksheet(wb[sheet_name], data_sheet, {"wrap_text": True})
         return wb
 
-    def write_report(self, **kwargs):
+    @override
+    def write_report(self):
         logger = logging.getLogger("validator")
-        define_xml_path = kwargs.get("define_xml_path")
-        dictionary_versions = kwargs.get("dictionary_versions", {})
         try:
-            if define_xml_path:
-                define_version = get_define_version([define_xml_path])
-            else:
-                define_version: str = self._args.define_version
-            controlled_terminology = self._args.controlled_terminology_package
-            if not controlled_terminology and define_version:
-                if define_xml_path and define_version:
-                    controlled_terminology = get_define_ct(
-                        [define_xml_path], define_version
-                    )
-                else:
-                    controlled_terminology = get_define_ct(
-                        self._args.dataset_paths, define_version
-                    )
-            report_data = self.get_export(
-                define_version,
-                controlled_terminology,
-                self._args.standard,
-                self._args.version.replace("-", "."),
-                dictionary_versions,
-                substandard=(
-                    self._args.substandard
-                    if hasattr(self._args, "substandard")
-                    else None
-                ),
-            )
+            report_data = self.get_export()
             with open(self._output_name, "wb") as f:
                 f.write(excel_workbook_to_stream(report_data))
+            logger.debug(f"Report written to: {self._output_name}")
         except Exception as e:
-            logger.error(e)
+            logger.error(f"Error writing report: {e}")
             raise e
         finally:
             self._template.close()

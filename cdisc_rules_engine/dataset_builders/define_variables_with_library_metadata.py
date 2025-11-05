@@ -21,6 +21,7 @@ class DefineVariablesWithLibraryMetadataDatasetBuilder(BaseDatasetBuilder):
         "define_variable_order_number",
         "define_variable_has_codelist",
         "define_variable_codelist_coded_values",
+        "define_variable_codelist_coded_codes",
         "define_variable_mandatory",
         "define_variable_has_comment",
         "library_variable_name",
@@ -36,9 +37,18 @@ class DefineVariablesWithLibraryMetadataDatasetBuilder(BaseDatasetBuilder):
             self.get_define_xml_variables_metadata()
         )
         library_variables_metadata = self.get_library_variables_metadata()
+        column_name_mapping = {
+            "library_variable_ordinal": "library_variable_order_number",
+            "library_variable_simpleDatatype": "library_variable_data_type",
+        }
+        if hasattr(library_variables_metadata, "data"):
+            library_data = library_variables_metadata.data
+        else:
+            library_data = library_variables_metadata._data
+        library_data = library_data.rename(columns=column_name_mapping)
 
         data = variable_metadata.merge(
-            library_variables_metadata.data,
+            library_data,
             how="left",
             left_on="define_variable_name",
             right_on="library_variable_name",

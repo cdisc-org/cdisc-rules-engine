@@ -39,6 +39,7 @@ class DayDataValidator(BaseOperation):
         delta = (dtc_value - new_dataset[rfstdtc_value].map(self.parse_timestamp)).map(
             self.get_day_difference
         )
+
         return self.evaluation_dataset.convert_to_series(delta.replace(np.nan, ""))
 
     def parse_timestamp(self, timestamp: str) -> datetime:

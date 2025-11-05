@@ -100,9 +100,6 @@
         "ADAM OTHER",
         "ALL",
         "BASIC DATA STRUCTURE",
-        "DEVICE LEVEL ANALYSIS DATASET",
-        "MEDICAL DEVICE BASIC DATA STRUCTURE",
-        "MEDICAL DEVICE OCCURRENCE DATA STRUCTURE",
         "OCCURRENCE DATA STRUCTURE",
         "SUBJECT LEVEL ANALYSIS DATASET"
       ],
@@ -167,6 +164,7 @@
           "ALL",
           "MEDICAL DEVICE TIME-TO-EVENT",
           "NON-COMPARTMENTAL ANALYSIS",
+          "POPULATION PHARMACOKINETIC ANALYSIS",
           "TIME-TO-EVENT"
         ],
         "type": "string"
@@ -359,7 +357,14 @@
       "type": "array"
     },
     "Check": {
-      "$ref": "#/$defs/Boolean"
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Boolean"
+        },
+        {
+          "type": "string"
+        }
+      ]
     },
     "Core": {
       "properties": {
@@ -600,6 +605,13 @@
     },
     "Sensitivity": {
       "$ref": "Sensitivity.json"
+    },
+    "Grouping_Variables": {
+      "items": {
+        "$ref": "#/$defs/VariableReference"
+      },
+      "type": "array",
+      "markdownDescription": "Variables to group by when using Group sensitivity. Required when Sensitivity is set to Group."
     }
   },
   "required": [
@@ -613,5 +625,13 @@
     "Scope",
     "Sensitivity"
   ],
+  "if": {
+    "properties": {
+      "Sensitivity": { "const": "Group" }
+    }
+  },
+  "then": {
+    "required": ["Grouping_Variables"]
+  },
   "type": "object"
 }

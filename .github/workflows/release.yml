@@ -11,10 +11,14 @@ jobs:
         include:
           - os: "ubuntu-latest"
             name: "core-ubuntu-latest"
+          - os: "ubuntu-22.04"
+            name: "core-ubuntu-22.04-tar"
           - os: "macos-latest"
-            name: "core-mac"
+            name: "core-mac-apple-silicon"
           - os: "windows-latest"
             name: "core-windows"
+          - os: "macos-13"
+            name: "core-mac-intel"
     uses: ./.github/workflows/build-binary.yml
     with:
       os: ${{ matrix.os }}
@@ -23,6 +27,8 @@ jobs:
   create-release-assets:
     needs: build-binaries
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
@@ -35,40 +41,40 @@ jobs:
           dest: core-ubuntu-latest.zip
       - uses: vimtor/action-zip@v1
         with:
-          files: artifacts/core-mac/
-          dest: core-mac.zip
+          files: artifacts/core-mac-intel/
+          dest: core-mac-intel.zip
+      - uses: vimtor/action-zip@v1
+        with:
+          files: artifacts/core-mac-apple-silicon/
+          dest: core-mac-apple-silicon.zip
       - uses: vimtor/action-zip@v1
         with:
           files: artifacts/core-windows/
           dest: core-windows.zip
+      - name: Create Ubuntu 22.04 tar.gz
+        run: |
+          cd artifacts/core-ubuntu-22.04-tar
+          tar -czf ../../core-ubuntu-22.04.tar.gz .
+          cd ../..
+      - name: Delete original Ubuntu 22.04 artifact
+        uses: geekyeggo/delete-artifact@v5
+        with:
+          name: core-ubuntu-22.04-tar
+      - name: Upload Ubuntu 22.04 tar.gz
+        uses: actions/upload-artifact@v4
+        with:
+          name: core-ubuntu-22.04-tarball
+          path: core-ubuntu-22.04.tar.gz
 
-      - name: Upload Ubuntu Latest Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+      - name: Upload Release Assets
+        uses: softprops/action-gh-release@v2
         with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./core-ubuntu-latest.zip
-          asset_name: core-ubuntu-latest.zip
-          asset_content_type: application/zip
-      - name: Upload Mac Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./core-mac.zip
-          asset_name: core-mac.zip
-          asset_content_type: application/zip
-      - name: Upload Windows Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./core-windows.zip
-          asset_name: core-windows.zip
-          asset_content_type: application/zip
+          files: |
+            core-ubuntu-latest.zip
+            core-ubuntu-22.04.tar.gz
+            core-mac-intel.zip
+            core-mac-apple-silicon.zip
+            core-windows.zip
 
       # Upload zips as artifact for the PyPI job
       - name: Upload Release Assets for PyPI
@@ -77,7 +83,8 @@ jobs:
           name: release-artifacts
           path: |
             core-ubuntu-latest.zip
-            core-mac.zip
+            core-mac-intel.zip
+            core-mac-apple-silicon.zip
             core-windows.zip
   deploy-PyPi:
     needs: create-release-assets
@@ -108,3 +115,10 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           verbose: true
+
+  build-and-push-docker:
+    needs: [create-release-assets, deploy-PyPi]
+    uses: ./.github/workflows/docker_release.yml
+    with:
+      version: ${{ github.event.release.tag_name }}
+    secrets: inherit
