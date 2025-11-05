@@ -1,6 +1,7 @@
 from typing import Tuple, List
 
 from cdisc_rules_engine.config import config
+from cdisc_rules_engine.enums.dataformat_types import DataFormatTypes
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.serializers import DatasetMetadataSerializer
 from cdisc_rules_engine.services.cache import CacheServiceFactory
@@ -30,6 +31,25 @@ def list_dataset_metadata_handler(dataset_paths: Tuple[str]) -> List[dict]:
        ...
     ]
     """
+    invalid_files = []
+
+    for path in dataset_paths:
+        file_ext = path.split(".")[-1].upper()
+        if file_ext not in [
+            DataFormatTypes.XPT.value,
+            DataFormatTypes.JSON.value,
+            DataFormatTypes.NDJSON.value,
+            DataFormatTypes.XLSX.value,
+        ]:
+            invalid_files.append((path, file_ext))
+
+    if invalid_files:
+        error_msg = "Unsupported file format(s) detected:\n"
+        for file, ext in invalid_files:
+            error_msg += f"  - {file} (format: {ext})\n"
+        error_msg += "\nSupported formats: SAS V5 XPT, Dataset-JSON (JSON or NDJSON), or Excel (XLSX)"
+        raise ValueError(error_msg)
+
     cache_service = CacheServiceFactory(config).get_service()
     data_service = DataServiceFactory(config, cache_service).get_service()
     metadata: List[SDTMDatasetMetadata] = [
