@@ -62,7 +62,7 @@ def valid_data_file(data_path: list) -> tuple[list, set]:
             + ("..." if len(ignored_files) > 5 else "")
         )
 
-    if "XLSX" in found_formats:
+    if DataFormatTypes.XLSX.value in found_formats:
         if len(found_formats) > 1:
             return [], found_formats
         elif len(file_list) > 1:
@@ -83,10 +83,10 @@ def cli():
 def _validate_data_directory(data: str, logger) -> tuple[list, set]:
     """Validate data directory and return dataset paths and found formats."""
     dataset_paths, found_formats = valid_data_file(
-        [str(Path(data).joinpath(fn)) for fn in os.listdir(data)]
+        [str(p) for p in Path(data).rglob("*") if p.is_file()]
     )
 
-    if "XLSX" in found_formats and len(found_formats) > 1:
+    if DataFormatTypes.XLSX.value in found_formats and len(found_formats) > 1:
         logger.error(
             f"Argument --data contains XLSX files mixed with other formats ({', '.join(found_formats)}).\n"
             f"Excel format (XLSX) validation only supports single files.\n"
@@ -96,7 +96,7 @@ def _validate_data_directory(data: str, logger) -> tuple[list, set]:
         return None, None
 
     if not dataset_paths:
-        if "XLSX" in found_formats and len(found_formats) == 1:
+        if DataFormatTypes.XLSX.value in found_formats and len(found_formats) == 1:
             logger.error(
                 f"Multiple XLSX files found in directory: {data}\n"
                 f"Excel format (XLSX) validation only supports single files.\n"
@@ -118,7 +118,7 @@ def _validate_dataset_paths(dataset_path: tuple[str], logger) -> tuple[list, set
     """Validate dataset paths and return dataset paths and found formats."""
     dataset_paths, found_formats = valid_data_file([dp for dp in dataset_path])
 
-    if "XLSX" in found_formats and len(found_formats) > 1:
+    if DataFormatTypes.XLSX.value in found_formats and len(found_formats) > 1:
         logger.error(
             f"Argument --dataset-path contains XLSX files mixed with other formats ({', '.join(found_formats)}).\n"
             f"Excel format (XLSX) validation only supports single files.\n"
@@ -128,7 +128,7 @@ def _validate_dataset_paths(dataset_path: tuple[str], logger) -> tuple[list, set
         return None, None
 
     if not dataset_paths:
-        if "XLSX" in found_formats and len(found_formats) == 1:
+        if DataFormatTypes.XLSX.value in found_formats and len(found_formats) == 1:
             logger.error(
                 f"Multiple XLSX files provided.\n"
                 f"Excel format (XLSX) validation only supports single files.\n"

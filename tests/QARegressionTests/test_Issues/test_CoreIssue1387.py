@@ -1,6 +1,7 @@
 import subprocess
 import os
 import tempfile
+import shutil
 import pytest
 from conftest import get_python_executable
 
@@ -202,8 +203,6 @@ def test_valid_xpt_files_work_normally():
 @pytest.mark.regression
 def test_mixed_folder_processes_valid_files():
     with tempfile.TemporaryDirectory() as temp_dir:
-        import shutil
-
         valid_xpt = os.path.join("tests", "resources", "test_dataset.xpt")
         if os.path.exists(valid_xpt):
             shutil.copy(valid_xpt, os.path.join(temp_dir, "ae.xpt"))
