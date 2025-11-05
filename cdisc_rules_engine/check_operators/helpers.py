@@ -6,6 +6,8 @@ import pytz
 from cdisc_rules_engine.services import logger
 import traceback
 from functools import lru_cache
+from enum import IntEnum
+import operator
 
 
 # Date regex pattern for validation
@@ -18,25 +20,19 @@ date_regex = re.compile(
     r":[0-5][0-9]))?)?)?)?)?)?))?$"
 )
 
-PRECISION_ORDER = {
-    "year": 0,
-    "month": 1,
-    "day": 2,
-    "hour": 3,
-    "minute": 4,
-    "second": 5,
-    "microsecond": 6,
-}
 
-PRECISION_LEVELS = [
-    "year",
-    "month",
-    "day",
-    "hour",
-    "minute",
-    "second",
-    "microsecond",
-]
+class DatePrecision(IntEnum):
+    year = 0
+    month = 1
+    day = 2
+    hour = 3
+    minute = 4
+    second = 5
+    microsecond = 6
+
+    @classmethod
+    def get_name_by_index(cls, index: int) -> str:
+        return list(cls.__members__.keys())[index]
 
 
 def is_valid_date(date_string: str) -> bool:
@@ -137,62 +133,124 @@ def get_microsecond(date_string: str):
     return timestamp.microsecond
 
 
-def _detect_time_precision(time_part: str) -> str:
-    if "." in time_part:
-        return "microsecond"
-
-    colon_count = time_part.count(":")
-    if colon_count >= 2:
-        return "second"
-    elif colon_count == 1:
-        return "minute"
-    else:
-        return "hour"
-
-
-def _detect_date_precision_simple(date_str: str) -> str:
-    date_parts = [p for p in date_str.split("-") if p]
-    if len(date_parts) >= 3:
-        return "day"
-    elif len(date_parts) == 2:
-        return "month"
-    elif len(date_parts) == 1:
-        return "year"
-    return None
-
-
-@lru_cache(maxsize=1000)
-def detect_date_precision(date_str: str) -> str:
+def _extract_datetime_components(date_str: str) -> dict:
+    """Extract datetime components using regex pattern matching."""
     if not date_str or not isinstance(date_str, str):
-        return None
+        return {}
 
-    if "T" not in date_str and "--" not in date_str and "-:" not in date_str:
-        return _detect_date_precision_simple(date_str)
+    if not date_regex.match(date_str):
+        return {}
 
     if "--" in date_str or "-:" in date_str:
         date_str = date_str.split("--")[0].split("-:")[0]
         if not date_str or date_str.endswith("-"):
             date_str = date_str.rstrip("-")
 
-    if "T" in date_str:
-        time_part = date_str.split("T")[1]
-        if not time_part:
-            return "day"
-        time_part = time_part.split("+")[0].split("-")[-1].split("Z")[0]
-        return _detect_time_precision(time_part)
+    has_time = "T" in date_str
+    if has_time:
+        parts = date_str.split("T", 1)
+        date_part = parts[0]
+        time_part = (
+            parts[1].split("+")[0].split("-")[0].split("Z")[0]
+            if len(parts) > 1 and parts[1]
+            else ""
+        )
+    else:
+        date_part = date_str
+        time_part = ""
 
-    return _detect_date_precision_simple(date_str)
+    date_components = date_part.split("-")
+    year = (
+        date_components[0]
+        if len(date_components) > 0 and date_components[0] and date_components[0] != "-"
+        else None
+    )
+    month = (
+        date_components[1]
+        if len(date_components) > 1 and date_components[1] and date_components[1] != "-"
+        else None
+    )
+    day = (
+        date_components[2]
+        if len(date_components) > 2 and date_components[2] and date_components[2] != "-"
+        else None
+    )
+
+    hour = None
+    minute = None
+    second = None
+    microsecond = None
+
+    if time_part:
+        time_components = time_part.split(":")
+        hour = (
+            time_components[0]
+            if len(time_components) > 0
+            and time_components[0]
+            and time_components[0] != "-"
+            else None
+        )
+        minute = (
+            time_components[1]
+            if len(time_components) > 1
+            and time_components[1]
+            and time_components[1] != "-"
+            else None
+        )
+        if len(time_components) > 2:
+            second_part = time_components[2]
+            if "." in second_part:
+                second, microsecond_part = second_part.split(".", 1)
+                second = second if second and second != "-" else None
+                microsecond = microsecond_part if microsecond_part else None
+            else:
+                second = second_part if second_part and second_part != "-" else None
+
+    return {
+        "year": year,
+        "month": month,
+        "day": day,
+        "hour": hour,
+        "minute": minute,
+        "second": second,
+        "microsecond": microsecond,
+    }
+
+
+@lru_cache(maxsize=1000)
+def detect_datetime_precision(date_str: str) -> str:
+    if not date_str or not isinstance(date_str, str):
+        return None
+
+    components = _extract_datetime_components(date_str)
+    if not components:
+        return None
+
+    precision_names = list(DatePrecision.__members__.keys())
+    last_precision = None
+
+    for precision_name in precision_names:
+        if components.get(precision_name) is not None:
+            last_precision = precision_name
+        else:
+            if precision_name == "hour" and components.get("day") is not None:
+                return "day"
+            if precision_name == "hour" and components.get("year") is None:
+                return None
+            return last_precision if last_precision else precision_name
+
+    return "microsecond"
 
 
 def get_common_precision(dt1: str, dt2: str) -> str:
-    p1 = detect_date_precision(dt1)
-    p2 = detect_date_precision(dt2)
+    p1 = detect_datetime_precision(dt1)
+    p2 = detect_datetime_precision(dt2)
 
     if not p1 or not p2:
         return None
 
-    min_idx = min(PRECISION_ORDER[p1], PRECISION_ORDER[p2])
-    return PRECISION_LEVELS[min_idx]
+    min_idx = min(DatePrecision[p1].value, DatePrecision[p2].value)
+    return DatePrecision.get_name_by_index(min_idx)
 
 
 def get_date_component(component: str, date_string: str):
@@ -264,14 +322,18 @@ def case_insensitive_is_in(value, values):
     return str(value).lower() in str(values).lower()
 
 
-def compare_dates(component, target, comparator, operator):
+def compare_dates(component, target, comparator, operator_func):
     if not target or not comparator:
         return False
 
+    is_strict_comparison = operator_func in (operator.lt, operator.gt)
+
     if component == "auto":
         component = get_common_precision(target, comparator)
+    elif is_strict_comparison and component is None:
+        component = get_common_precision(target, comparator)
 
-    return operator(
+    return operator_func(
         get_date_component(component, target),
         get_date_component(component, comparator),
     )
