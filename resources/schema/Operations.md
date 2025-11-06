@@ -699,6 +699,102 @@ Operations:
     operator: get_column_order_from_dataset
 ```
 
+### label_referenced_variable_metadata
+
+Generates a dataframe where each record in the dataframe is the library ig variable metadata corresponding with the variable label found in the column provided in name. The metadata column names are prefixed with the string provided in `id`.
+
+Input
+
+Target Dataset: SUPPLB
+
+Product: sdtmig
+
+Version: 3-4
+
+Dataset:
+
+```
+{
+  "STUDYID": ["STUDY1", "STUDY1", "STUDY1"],
+  "USUBJID": ["SUBJ1", "SUBJ1", "SUBJ1"],
+  "QLABEL": ["Toxicity", "Viscosity", "Analysis Method"]
+}
+```
+
+Rule:
+
+```yaml
+- operator: label_referenced_variable_metadata
+  id: $qlabel_referenced_variable_metadata
+  name: "QLABEL"
+```
+
+Output
+
+```
+{
+  "STUDYID": ["STUDY1", "STUDY1", "STUDY1"],
+  "USUBJID": ["SUBJ1", "SUBJ1", "SUBJ1"],
+  "QLABEL": ["Toxicity", "Viscosity", "Analysis Method"],
+  "$qlabel_referenced_variable_metadata_name": ["LBTOX", null, "LBANMETH"],
+  "$qlabel_referenced_variable_metadata_role": [
+    "Variable Qualifier",
+    null,
+    "Record Qualifier"
+  ],
+  "$qlabel_referenced_variable_metadata_ordinal": [44, null, 38],
+  "$qlabel_referenced_variable_metadata_label": ["Toxicity", null, "Analysis Method"]
+}
+```
+
+### name_referenced_variable_metadata
+
+Generates a dataframe where each record in the dataframe is the library ig variable metadata corresponding with the variable name found in the column provided in name. The metadata column names are prefixed with the string provided in `id`.
+
+Input
+
+Target Dataset: SUPPLB
+
+Product: sdtmig
+
+Version: 3-4
+
+Dataset:
+
+```
+{
+  "STUDYID": ["STUDY1", "STUDY1", "STUDY1"],
+  "USUBJID": ["SUBJ1", "SUBJ1", "SUBJ1"],
+  "QNAM": ["Toxicity", "LBVISCOS", "Analysis Method"]
+}
+```
+
+Rule:
+
+```yaml
+- operator: name_referenced_variable_metadata
+  id: $qnam_referenced_variable_metadata
+  name: "QNAM"
+```
+
+Output
+
+```
+{
+  "STUDYID": ["STUDY1", "STUDY1", "STUDY1"],
+  "USUBJID": ["SUBJ1", "SUBJ1", "SUBJ1"],
+  "QNAM": ["LBTOX", "LBVISCOS", "LBANMETH"],
+  "$qnam_referenced_variable_metadata_name": ["LBTOX", null, "LBANMETH"],
+  "$qnam_referenced_variable_metadata_role": [
+    "Variable Qualifier",
+    null,
+    "Record Qualifier"
+  ],
+  "$qnam_referenced_variable_metadata_ordinal": [44, null, 38],
+  "$qnam_referenced_variable_metadata_label": ["Toxicity", null, "Analysis Method"]
+}
+```
+
 ## Define.XML Metadata Operations
 
 Operations for working with Define.XML metadata and variable references.
@@ -740,102 +836,6 @@ Output
   "USUBJID": "Unique Subject Identifier",
   "LBTESTCD": "Laboratory Test Code",
   "...": "..."
-}
-```
-
-### label_referenced_variable_metadata
-
-Generates a dataframe where each record in the dataframe is the library ig variable metadata corresponding with the variable label found in the column provided in name
-
-Input
-
-Target Dataset: SUPPLB
-
-Product: sdtmig
-
-Version: 3-4
-
-Dataset:
-
-```
-{
-  "STUDYID": ["STUDY1", "STUDY1", "STUDY1"],
-  "USUBJID": ["SUBJ1", "SUBJ1", "SUBJ1"],
-  "QLABEL": ["Toxicity", "Viscosity", "Analysis Method"]
-}
-```
-
-Rule:
-
-```yaml
-- operator: label_referenced_variable_metadata
-  id: $label_referenced_variable_metadata
-  name: "QLABEL"
-```
-
-Output
-
-```
-{
-  "STUDYID": ["STUDY1", "STUDY1", "STUDY1"],
-  "USUBJID": ["SUBJ1", "SUBJ1", "SUBJ1"],
-  "QLABEL": ["Toxicity", "Viscosity", "Analysis Method"],
-  "$label_referenced_variable_name": ["LBTOX", null, "LBANMETH"],
-  "$label_referenced_variable_role": [
-    "Variable Qualifier",
-    null,
-    "Record Qualifier"
-  ],
-  "$label_referenced_variable_ordinal": [44, null, 38],
-  "$label_referenced_variable_label": ["Toxicity", null, "Analysis Method"]
-}
-```
-
-### name_referenced_variable_metadata
-
-Generates a dataframe where each record in the dataframe is the library ig variable metadata corresponding with the variable name found in the column provided in name
-
-Input
-
-Target Dataset: SUPPLB
-
-Product: sdtmig
-
-Version: 3-4
-
-Dataset:
-
-```
-{
-  "STUDYID": ["STUDY1", "STUDY1", "STUDY1"],
-  "USUBJID": ["SUBJ1", "SUBJ1", "SUBJ1"],
-  "QNAM": ["Toxicity", "LBVISCOS", "Analysis Method"]
-}
-```
-
-Rule:
-
-```yaml
-- operator: name_referenced_variable_metadata
-  id: $name_referenced_variable_metadata
-  name: "QNAM"
-```
-
-Output
-
-```
-{
-  "STUDYID": ["STUDY1", "STUDY1", "STUDY1"],
-  "USUBJID": ["SUBJ1", "SUBJ1", "SUBJ1"],
-  "QNAM": ["LBTOX", "LBVISCOS", "LBANMETH"],
-  "$label_referenced_variable_name": ["LBTOX", null, "LBANMETH"],
-  "$label_referenced_variable_role": [
-    "Variable Qualifier",
-    null,
-    "Record Qualifier"
-  ],
-  "$label_referenced_variable_ordinal": [44, null, 38],
-  "$label_referenced_variable_label": ["Toxicity", null, "Analysis Method"]
 }
 ```
 
