@@ -3,6 +3,7 @@ from typing import Union, Any, List, Tuple
 from business_rules.fields import FIELD_DATAFRAME
 from cdisc_rules_engine.check_operators.helpers import (
     flatten_list,
+    get_date,
     is_valid_date,
     vectorized_is_valid,
     vectorized_is_valid_duration,
@@ -1169,15 +1170,32 @@ class DataframeType(BaseType):
     def is_unique_set(self, other_value):
         target = self.replace_prefix(other_value.get("target"))
         comparator = other_value.get("comparator")
+        just_date = other_value.get("just_date", False)
         values = [target, comparator]
         target_data = flatten_list(self.value, values)
         target_names = []
         for target_name in target_data:
             target_name = self.replace_prefix(target_name)
             if target_name in self.value.columns:
-                target_names.append(target_name)
+                if target_name.startswith("$"):
+                    list_val = self.value[target_name].iloc[0]
+                    if isinstance(list_val, (list, tuple)):
+                        target_names.extend(list_val)
+                    else:
+                        target_names.append(list_val)
+                else:
+                    target_names.append(target_name)
         target_names = list(set(target_names))
         df_group = self.value[target_names].copy()
+        if just_date:
+            for col in df_group.columns:
+                df_group[col] = df_group[col].apply(
+                    lambda x: (
+                        get_date(x).date()
+                        if isinstance(x, str) and x and is_valid_date(x)
+                        else x
+                    )
+                )
         df_group = df_group.fillna("_NaN_")
         group_sizes = df_group.groupby(target_names).size()
         counts = df_group.apply(tuple, axis=1).map(group_sizes)

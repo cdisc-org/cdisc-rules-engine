@@ -822,12 +822,16 @@ Relationship Integrity Check
 
 > `name` can be a variable containing a list of columns and `value` does not need to be present
 
+> The `just_date` parameter (default: `false`) controls how datetime comparisons are performed when checking for uniqueness. Below, with `just_date: true`, records with the same subject, test code, and timing variables on the same **date** but different **times** are considered duplicates and must have `--REPNUM` populated to differentiate them.
+
 ```yaml
-Rule Type: Dataset Contents Check against Define XML
-Check:
-  all:
-    - name: define_dataset_key_sequence # contains list of dataset key columns
-      operator: is_unique_set
+- name: "--REPNUM"
+      operator: is_not_unique_set
+      value:
+        - "USUBJID"
+        - "--TESTCD"
+        - "$TIMING_VARIABLES"
+      just_date: true
 ```
 
 ### is_not_unique_set

@@ -592,7 +592,8 @@
     "type_insensitive": { "type": "boolean" },
     "round_values": { "type": "boolean" },
     "within": { "$ref": "CORE-base.json#/$defs/VariableName" },
-    "regex": { "type": "string" }
+    "regex": { "type": "string" },
+    "just_date": { "type": "boolean" }
   },
   "required": ["operator"],
   "type": "object"
