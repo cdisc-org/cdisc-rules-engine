@@ -12,6 +12,7 @@ from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
 
+import copy
 import os
 from cdisc_rules_engine.constants.classes import (
     FINDINGS_ABOUT,
@@ -465,33 +466,33 @@ class RuleProcessor:
         if result is not None:
             return result
 
-        if not self.is_current_domain(
-            operation_params.dataframe, operation_params.domain
-        ):
-            # download other domain
-            domain_details: dict = search_in_list_of_dicts(
-                operation_params.datasets,
-                lambda item: (
-                    item.unsplit_name == operation_params.domain
-                    or (
-                        operation_params.domain.endswith("--")
-                        and item.unsplit_name.startswith(operation_params.domain[:-2])
-                    )
-                ),
-            )
-            if domain_details is None:
-                raise DomainNotFoundError(
-                    f"Operation {operation_params.operation_name} requires Domain "
-                    f"{operation_params.domain} but Domain not found in dataset"
+        # download other domain
+        domain_details: dict = search_in_list_of_dicts(
+            operation_params.datasets,
+            lambda item: (
+                item.unsplit_name == operation_params.domain
+                or (
+                    operation_params.domain.endswith("--")
+                    and item.unsplit_name.startswith(operation_params.domain[:-2])
                 )
-            filename = get_dataset_name_from_details(domain_details)
-            file_path: str = os.path.join(
-                get_directory_path(operation_params.dataset_path),
-                filename,
+            ),
+        )
+        if domain_details is None:
+            raise DomainNotFoundError(
+                f"Operation {operation_params.operation_name} requires Domain "
+                f"{operation_params.domain} but Domain not found in dataset"
             )
-            operation_params.dataframe = self.data_service.get_dataset(
-                dataset_name=file_path
-            )
+        filename = get_dataset_name_from_details(domain_details)
+        file_path: str = os.path.join(
+            get_directory_path(operation_params.dataset_path),
+            filename,
+        )
+        operation_params.dataframe = self.data_service.get_dataset(
+            dataset_name=file_path
+        )
+        operation_params = self._preprocess_operation_params(
+            operation_params, domain_details=domain_details
+        )
 
         # call the operation
         operation = operations_factory.get_service(
@@ -598,6 +599,50 @@ class RuleProcessor:
             f"Added comparator to rule conditions. "
             f"comparator={comparator}, conditions={rule['conditions']}"
         )
+
+    def _preprocess_operation_params(
+        self, operation_params: OperationParams, domain_details: dict = None
+    ) -> OperationParams:
+        # uses shallow copy to not overwrite for subsequent
+        # operations and avoids costly deepcopy of dataframe
+        params_copy = copy.copy(operation_params)
+        current_domain = params_copy.domain
+        if domain_details.is_supp:
+            current_domain = domain_details.rdomain
+        for param_name in vars(params_copy):
+            if param_name == ("datasets" or "dataframe"):
+                continue
+            param_value = getattr(params_copy, param_name)
+            updated_value = self._replace_wildcards_in_value(
+                param_value, current_domain
+            )
+            if updated_value is not param_value:
+                updated_value = copy.deepcopy(updated_value)
+                setattr(params_copy, param_name, updated_value)
+        return params_copy
+
+    def _replace_wildcards_in_value(self, value, domain: str):
+        if value is None:
+            return value
+        if isinstance(value, str):
+            return value.replace("--", domain)
+        elif isinstance(value, list):
+            return [self._replace_wildcards_in_value(item, domain) for item in value]
+        elif isinstance(value, set):
+            return {self._replace_wildcards_in_value(item, domain) for item in value}
+        elif isinstance(value, dict):
+            return {
+                self._replace_wildcards_in_value(
+                    k, domain
+                ): self._replace_wildcards_in_value(v, domain)
+                for k, v in value.items()
+            }
+        elif isinstance(value, tuple):
+            return tuple(
+                self._replace_wildcards_in_value(item, domain) for item in value
+            )
+        else:
+            return value
 
     @staticmethod
     def duplicate_conditions_for_all_targets(
