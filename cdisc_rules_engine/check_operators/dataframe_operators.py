@@ -683,6 +683,12 @@ class DataframeType(BaseType):
         elif self.is_column_of_iterables(comparison_data):
             results = vectorized_is_in(target_data, comparison_data)
         else:
+            if isinstance(comparison_data, pd.Series):
+                comparison_data = comparison_data.apply(
+                    lambda x: list(x) if isinstance(x, set) else x
+                )
+            elif isinstance(comparison_data, set):
+                comparison_data = list(comparison_data)
             results = target_data.isin(comparison_data)
         return self.value.convert_to_series(results)
 
