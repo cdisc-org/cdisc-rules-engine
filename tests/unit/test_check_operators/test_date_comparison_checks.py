@@ -1,7 +1,28 @@
 from cdisc_rules_engine.check_operators.dataframe_operators import DataframeType
+from cdisc_rules_engine.check_operators.helpers import (
+    detect_datetime_precision,
+    is_valid_date,
+)
 import pytest
 from cdisc_rules_engine.models.dataset.dask_dataset import DaskDataset
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
+
+
+@pytest.mark.parametrize(
+    "value,expected_precision",
+    [
+        ("2003-12-15T13:14:17.123", "microsecond"),
+        ("2003-12-15T13:14:17", "second"),
+        ("2003-12-15T13:14", "minute"),
+        ("2003-12-15T13", "hour"),
+        ("2003-12-15", "day"),
+        ("2003-12", "month"),
+        ("2003", "year"),
+    ],
+)
+def test_detect_datetime_precision_with_truncated_values(value, expected_precision):
+    assert is_valid_date(value)
+    assert detect_datetime_precision(value) == expected_precision
 
 
 @pytest.mark.parametrize(
@@ -48,6 +69,19 @@ def test_invalid_date(data, dataset_type, expected_result):
     dataframe_type = DataframeType({"value": df})
     result = dataframe_type.invalid_date({"target": "target"})
     assert result.equals(df.convert_to_series(expected_result))
+
+
+@pytest.mark.parametrize(
+    "value,expected_precision",
+    [
+        ("2003---15", "day"),
+        ("--12-15", "day"),
+        ("-----T07:15", "minute"),
+    ],
+)
+def test_detect_datetime_precision_with_uncertain_components(value, expected_precision):
+    assert is_valid_date(value)
+    assert detect_datetime_precision(value) == expected_precision
 
 
 @pytest.mark.parametrize(
@@ -223,6 +257,7 @@ def test_date_equal_to_date_components(
 )
 def test_date_less_than(data, comparator, dataset_type, expected_result):
     df = dataset_type.from_dict(data)
+
     dataframe_type = DataframeType({"value": df})
     result = dataframe_type.date_less_than(
         {"target": "target", "comparator": comparator}
@@ -749,98 +784,83 @@ def test_is_incomplete_date(target, dataset_type, expected_result):
     )
 
 
+AUTO_PRECISION_CASES = {
+    "date_equal_to": [
+        ("2025-06-25", "2025-06-25T17:22", "auto", True),
+        ("2025-06-24", "2025-06-25T17:22", "auto", False),
+        ("2025-06-26", "2025-06-25T17:22", "auto", False),
+        ("2025-06", "2025-06-25", "auto", True),
+        ("2025-07", "2025-06-25", "auto", False),
+        ("2025-05", "2025-06-25", "auto", False),
+        ("2025", "2025-06-25T17:22:30", "auto", True),
+        ("2024", "2025-06-25T17:22:30", "auto", False),
+        ("2026", "2025-06-25T17:22:30", "auto", False),
+        ("2025-06-25", "2025-06-25", "auto", True),
+        ("2025-06-24", "2025-06-25", "auto", False),
+        ("2025-06-26", "2025-06-25", "auto", False),
+        ("2025-06-25T17:22", "2025-06-25T17:22:30", "auto", True),
+        ("2025-06-25T17:21", "2025-06-25T17:22:30", "auto", False),
+        ("2025-06-25T", "2025-06-25", "auto", False),
+        ("2025-06-24T", "2025-06-25", "auto", False),
+    ],
+    "date_greater_than": [
+        ("2025-06-26", "2025-06-25T17:22", None, True),
+        ("2025-06-24", "2025-06-25T17:22", None, False),
+        ("2025-06-25", "2025-06-25T17:22", None, False),
+        ("2025-07", "2025-06-25", None, True),
+        ("2025-05", "2025-06-25", None, False),
+        ("2025-06", "2025-06-25", None, False),
+        ("2026", "2025-06-25T17:22", None, True),
+        ("2024", "2025-06-25T17:22", None, False),
+        ("2025", "2025-06-25T17:22", None, False),
+    ],
+    "date_greater_than_or_equal_to": [
+        ("2025-06-26", "2025-06-25T17:22", "auto", True),
+        ("2025-06-24", "2025-06-25T17:22", "auto", False),
+        ("2025-06-25", "2025-06-25T17:22", "auto", True),
+        ("2025-07", "2025-06-25", "auto", True),
+        ("2025-05", "2025-06-25", "auto", False),
+        ("2025-06", "2025-06-25", "auto", True),
+    ],
+    "date_less_than": [
+        ("2025-06-24", "2025-06-25T17:22", None, True),
+        ("2025-06-26", "2025-06-25T17:22", None, False),
+        ("2025-06-25", "2025-06-25T17:22", None, False),
+        ("2025-05", "2025-06-25", None, True),
+        ("2025-07", "2025-06-25", None, False),
+        ("2025-06", "2025-06-25", None, False),
+        ("2024", "2025-06-25T17:22", None, True),
+        ("2026", "2025-06-25T17:22", None, False),
+        ("2025", "2025-06-25T17:22", None, False),
+    ],
+    "date_less_than_or_equal_to": [
+        ("2025-06-24", "2025-06-25T17:22", "auto", True),
+        ("2025-06-26", "2025-06-25T17:22", "auto", False),
+        ("2025-06-25", "2025-06-25T17:22", "auto", True),
+        ("2025-05", "2025-06-25", "auto", True),
+        ("2025-07", "2025-06-25", "auto", False),
+        ("2025-06", "2025-06-25", "auto", True),
+    ],
+    "date_not_equal_to": [
+        ("2025-06-24", "2025-06-25T17:22", "auto", True),
+        ("2025-06-25", "2025-06-25T17:22", "auto", False),
+        ("2025-06-26", "2025-06-25T17:22", "auto", True),
+        ("2025-05", "2025-06-25", "auto", True),
+        ("2025-06", "2025-06-25", "auto", False),
+        ("2025-07", "2025-06-25", "auto", True),
+    ],
+}
+
+AUTO_PRECISION_PARAMS = [
+    (operator_name, target, comparator, date_component, expected_result)
+    for operator_name, scenarios in AUTO_PRECISION_CASES.items()
+    for target, comparator, date_component, expected_result in scenarios
+]
+
+
 @pytest.mark.parametrize(
     "operator_name,target,comparator,date_component,expected_result",
-    [
-        ("date_equal_to", "2025-06-25", "2025-06-25T17:22", "auto", True),
-        ("date_equal_to", "2025-06-24", "2025-06-25T17:22", "auto", False),
-        ("date_equal_to", "2025-06-26", "2025-06-25T17:22", "auto", False),
-        ("date_equal_to", "2025-06", "2025-06-25", "auto", True),
-        ("date_equal_to", "2025-07", "2025-06-25", "auto", False),
-        ("date_equal_to", "2025-05", "2025-06-25", "auto", False),
-        ("date_equal_to", "2025", "2025-06-25T17:22:30", "auto", True),
-        ("date_equal_to", "2024", "2025-06-25T17:22:30", "auto", False),
-        ("date_equal_to", "2026", "2025-06-25T17:22:30", "auto", False),
-        ("date_equal_to", "2025-06-25", "2025-06-25", "auto", True),
-        ("date_equal_to", "2025-06-24", "2025-06-25", "auto", False),
-        ("date_equal_to", "2025-06-26", "2025-06-25", "auto", False),
-        ("date_equal_to", "2025-06-25T17:22", "2025-06-25T17:22:30", "auto", True),
-        ("date_equal_to", "2025-06-25T17:21", "2025-06-25T17:22:30", "auto", False),
-        ("date_equal_to", "2025-06-25T", "2025-06-25", "auto", True),
-        ("date_equal_to", "2025-06-24T", "2025-06-25", "auto", False),
-        ("date_greater_than", "2025-06-26", "2025-06-25T17:22", "auto", True),
-        ("date_greater_than", "2025-06-26", "2025-06-25T17:22", None, True),
-        ("date_greater_than", "2025-06-24", "2025-06-25T17:22", "auto", False),
-        ("date_greater_than", "2025-06-24", "2025-06-25T17:22", None, False),
-        ("date_greater_than", "2025-06-25", "2025-06-25T17:22", "auto", False),
-        ("date_greater_than", "2025-06-25", "2025-06-25T17:22", None, False),
-        ("date_greater_than", "2025-07", "2025-06-25", "auto", True),
-        ("date_greater_than", "2025-07", "2025-06-25", None, True),
-        ("date_greater_than", "2025-05", "2025-06-25", "auto", False),
-        ("date_greater_than", "2025-05", "2025-06-25", None, False),
-        ("date_greater_than", "2025-06", "2025-06-25", "auto", False),
-        ("date_greater_than", "2025-06", "2025-06-25", None, False),
-        ("date_greater_than", "2026", "2025-06-25T17:22", "auto", True),
-        ("date_greater_than", "2026", "2025-06-25T17:22", None, True),
-        ("date_greater_than", "2024", "2025-06-25T17:22", "auto", False),
-        ("date_greater_than", "2024", "2025-06-25T17:22", None, False),
-        ("date_greater_than", "2025", "2025-06-25T17:22", "auto", False),
-        ("date_greater_than", "2025", "2025-06-25T17:22", None, False),
-        (
-            "date_greater_than_or_equal_to",
-            "2025-06-26",
-            "2025-06-25T17:22",
-            "auto",
-            True,
-        ),
-        (
-            "date_greater_than_or_equal_to",
-            "2025-06-24",
-            "2025-06-25T17:22",
-            "auto",
-            False,
-        ),
-        (
-            "date_greater_than_or_equal_to",
-            "2025-06-25",
-            "2025-06-25T17:22",
-            "auto",
-            True,
-        ),
-        ("date_greater_than_or_equal_to", "2025-07", "2025-06-25", "auto", True),
-        ("date_greater_than_or_equal_to", "2025-05", "2025-06-25", "auto", False),
-        ("date_greater_than_or_equal_to", "2025-06", "2025-06-25", "auto", True),
-        ("date_less_than", "2025-06-24", "2025-06-25T17:22", "auto", True),
-        ("date_less_than", "2025-06-24", "2025-06-25T17:22", None, True),
-        ("date_less_than", "2025-06-26", "2025-06-25T17:22", "auto", False),
-        ("date_less_than", "2025-06-26", "2025-06-25T17:22", None, False),
-        ("date_less_than", "2025-06-25", "2025-06-25T17:22", "auto", False),
-        ("date_less_than", "2025-06-25", "2025-06-25T17:22", None, False),
-        ("date_less_than", "2025-05", "2025-06-25", "auto", True),
-        ("date_less_than", "2025-05", "2025-06-25", None, True),
-        ("date_less_than", "2025-07", "2025-06-25", "auto", False),
-        ("date_less_than", "2025-07", "2025-06-25", None, False),
-        ("date_less_than", "2025-06", "2025-06-25", "auto", False),
-        ("date_less_than", "2025-06", "2025-06-25", None, False),
-        ("date_less_than", "2024", "2025-06-25T17:22", "auto", True),
-        ("date_less_than", "2024", "2025-06-25T17:22", None, True),
-        ("date_less_than", "2026", "2025-06-25T17:22", "auto", False),
-        ("date_less_than", "2026", "2025-06-25T17:22", None, False),
-        ("date_less_than", "2025", "2025-06-25T17:22", "auto", False),
-        ("date_less_than", "2025", "2025-06-25T17:22", None, False),
-        ("date_less_than_or_equal_to", "2025-06-24", "2025-06-25T17:22", "auto", True),
-        ("date_less_than_or_equal_to", "2025-06-26", "2025-06-25T17:22", "auto", False),
-        ("date_less_than_or_equal_to", "2025-06-25", "2025-06-25T17:22", "auto", True),
-        ("date_less_than_or_equal_to", "2025-05", "2025-06-25", "auto", True),
-        ("date_less_than_or_equal_to", "2025-07", "2025-06-25", "auto", False),
-        ("date_less_than_or_equal_to", "2025-06", "2025-06-25", "auto", True),
-        ("date_not_equal_to", "2025-06-24", "2025-06-25T17:22", "auto", True),
-        ("date_not_equal_to", "2025-06-25", "2025-06-25T17:22", "auto", False),
-        ("date_not_equal_to", "2025-06-26", "2025-06-25T17:22", "auto", True),
-        ("date_not_equal_to", "2025-05", "2025-06-25", "auto", True),
-        ("date_not_equal_to", "2025-06", "2025-06-25", "auto", False),
-        ("date_not_equal_to", "2025-07", "2025-06-25", "auto", True),
-    ],
+    AUTO_PRECISION_PARAMS,
 )
 @pytest.mark.parametrize("dataset_type", [PandasDataset, DaskDataset])
 def test_auto_precision_operators(

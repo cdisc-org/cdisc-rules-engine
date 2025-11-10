@@ -280,19 +280,6 @@ The possible rule run statuses are:
 - `SUCCESS` - The rule ran and data was validated against the rule. May or may not produce results
 - `SKIPPED` - The rule was unable to be run. Usually due to missing required data, but could also be cause by rule execution errors.
 
-## Date Comparison with Automatic Precision Detection
-
-Use `date_component: "auto"` to automatically compare dates at their common precision level.
-
-```yaml
-- name: "AESTDTC"
-  operator: "date_greater_than_or_equal_to"
-  value: "RFSTDTC"
-  date_component: "auto"
-```
-
-This compares `"2025-06-25"` with `"2025-06-25T17:22"` at day precision, `"2025-06"` with `"2025-06-25"` at month precision, etc.
-
 # Additional Core Commands
 
 **- update-cache** - update locally stored cache data (Requires an environment variable - `CDISC_LIBRARY_API_KEY`) This is stored in the .env folder in the root directory, the API key does not need quotations around it.

@@ -9,15 +9,21 @@ from functools import lru_cache
 from enum import IntEnum
 import operator
 
-
 # Date regex pattern for validation
 date_regex = re.compile(
-    r"^((-?[0-9]{4}|-)(-(1[0-2]|0[1-9]|-)(-(3[01]|0[1-9]|[12][0-9]|-)"
-    r"(T(2[0-3]|[01][0-9]|-)(:([0-5][0-9]|-)((:([0-5][0-9]|-))?(\.[0-9]+)?"
-    r"((Z|[+-](:2[0-3]|[01][0-9]):[0-5][0-9]))?)?)?)?)?)?)(\/((-?[0-9]{4}|-)"
-    r"(-(1[0-2]|0[1-9]|-)(-(3[01]|0[1-9]|[12][0-9]|-)(T(2[0-3]|[01][0-9]|-)"
-    r"(:([0-5][0-9]|-)((:([0-5][0-9]|-))?(\.[0-9]+)?((Z|[+-](:2[0-3]|[01][0-9])"
-    r":[0-5][0-9]))?)?)?)?)?)?))?$"
+    r"^("
+    r"(-?[0-9]{4}|-)(-{1,2}(1[0-2]|0[1-9]|-))?(-{1,2}(3[01]|0[1-9]|[12][0-9]|-))?"
+    r"(T(2[0-3]|[01][0-9]|-)(:(([0-5][0-9]|-))(:(([0-5][0-9]|-))?(\.[0-9]+)?)?)?"
+    r"(Z|[+-](2[0-3]|[01][0-9]):[0-5][0-9])?)?"
+    r"(\/"
+    r"(-?[0-9]{4}|-)(-{1,2}(1[0-2]|0[1-9]|-))?(-{1,2}(3[01]|0[1-9]|[12][0-9]|-))?"
+    r"(T(2[0-3]|[01][0-9]|-)(:(([0-5][0-9]|-))(:(([0-5][0-9]|-))?(\.[0-9]+)?)?)?"
+    r"(Z|[+-](2[0-3]|[01][0-9]):[0-5][0-9])?)?"
+    r")?"
+    r"|"
+    r"-{4,8}T(2[0-3]|[01][0-9]|-)(:(([0-5][0-9]|-))(:(([0-5][0-9]|-))?(\.[0-9]+)?)?)?"
+    r"(Z|[+-](2[0-3]|[01][0-9]):[0-5][0-9])?"
+    r")$"
 )
 
 
@@ -33,6 +39,10 @@ class DatePrecision(IntEnum):
     @classmethod
     def get_name_by_index(cls, index: int) -> str:
         return list(cls.__members__.keys())[index]
+
+    @classmethod
+    def names(cls) -> list:
+        return list(cls.__members__.keys())
 
 
 def is_valid_date(date_string: str) -> bool:
@@ -73,20 +83,16 @@ def is_valid_duration(duration: str, negative) -> bool:
     match = re.match(pattern, duration)
     if not match:
         return False
-
     years, months, days, time_designator, hours, minutes, seconds, weeks = (
         match.groups()
     )
-
     if time_designator and not any([hours, minutes, seconds]):
         return False
-
     components = [
         c
         for c in [years, months, weeks, days, hours, minutes, seconds]
         if c is not None
     ]
-
     # Check if decimal is only in the smallest unit
     decimal_found = False
     for i, component in enumerate(components):
@@ -94,7 +100,6 @@ def is_valid_duration(duration: str, negative) -> bool:
             if decimal_found or i != len(components) - 1:
                 return False
             decimal_found = True
-
     return True
 
 
@@ -133,122 +138,258 @@ def get_microsecond(date_string: str):
     return timestamp.microsecond
 
 
+def _empty_datetime_components() -> dict:
+    return {
+        "year": None,
+        "month": None,
+        "day": None,
+        "hour": None,
+        "minute": None,
+        "second": None,
+        "microsecond": None,
+    }
+
+
+def _assign_date_components(components: dict, date_parts: list) -> None:
+    if not date_parts:
+        return
+    keys = ("year", "month", "day")
+    for index, key in enumerate(keys):
+        if len(date_parts) > index and date_parts[index] not in (None, "-"):
+            components[key] = date_parts[index]
+
+
+def _assign_time_components(components: dict, time_part: str) -> None:
+    if not time_part:
+        return
+    tokens = time_part.split(":", 2)
+    if tokens and tokens[0] not in ("", "-"):
+        components["hour"] = tokens[0]
+    if len(tokens) > 1 and tokens[1] not in ("", "-"):
+        components["minute"] = tokens[1]
+    if len(tokens) == 3 and tokens[2]:
+        second_part = tokens[2]
+        if "." in second_part:
+            second_val, micro_val = second_part.split(".", 1)
+            if second_val not in ("", "-"):
+                components["second"] = second_val
+            if micro_val:
+                components["microsecond"] = micro_val
+        elif second_part not in ("", "-"):
+            components["second"] = second_part
+
+
 def _extract_datetime_components(date_str: str) -> dict:
     """Extract datetime components using regex pattern matching."""
+    components = _empty_datetime_components()
     if not date_str or not isinstance(date_str, str):
-        return {}
-
+        return components
     if not date_regex.match(date_str):
-        return {}
+        return components
+    date_parts, time_part, has_time = _parse_datetime_string(date_str)
+    _assign_date_components(components, date_parts)
+    if has_time:
+        _assign_time_components(components, time_part)
+    return components
 
-    if "--" in date_str or "-:" in date_str:
-        date_str = date_str.split("--")[0].split("-:")[0]
-        if not date_str or date_str.endswith("-"):
-            date_str = date_str.rstrip("-")
+
+def _parse_datetime_string(date_str: str):
+    if not date_str or not isinstance(date_str, str):
+        return [], "", False
 
     has_time = "T" in date_str
+
     if has_time:
-        parts = date_str.split("T", 1)
-        date_part = parts[0]
-        time_part = (
-            parts[1].split("+")[0].split("-")[0].split("Z")[0]
-            if len(parts) > 1 and parts[1]
-            else ""
-        )
+        date_part, time_part = date_str.split("T", 1)
+        time_part = re.sub(r"(Z|[+\-]\d{2}:\d{2})$", "", time_part)
     else:
         date_part = date_str
         time_part = ""
 
-    date_components = date_part.split("-")
-    year = (
-        date_components[0]
-        if len(date_components) > 0 and date_components[0] and date_components[0] != "-"
-        else None
-    )
-    month = (
-        date_components[1]
-        if len(date_components) > 1 and date_components[1] and date_components[1] != "-"
-        else None
-    )
-    day = (
-        date_components[2]
-        if len(date_components) > 2 and date_components[2] and date_components[2] != "-"
-        else None
-    )
+    if not date_part or all(c == "-" for c in date_part):
+        return ["-", "-", "-"], time_part, has_time
 
-    hour = None
-    minute = None
-    second = None
-    microsecond = None
+    segments = date_part.split("-")
+    components = []
+    i = 0
 
-    if time_part:
-        time_components = time_part.split(":")
-        hour = (
-            time_components[0]
-            if len(time_components) > 0
-            and time_components[0]
-            and time_components[0] != "-"
-            else None
-        )
-        minute = (
-            time_components[1]
-            if len(time_components) > 1
-            and time_components[1]
-            and time_components[1] != "-"
-            else None
-        )
-        if len(time_components) > 2:
-            second_part = time_components[2]
-            if "." in second_part:
-                second, microsecond_part = second_part.split(".", 1)
-                second = second if second and second != "-" else None
-                microsecond = microsecond_part if microsecond_part else None
-            else:
-                second = second_part if second_part and second_part != "-" else None
+    while i < len(segments) and len(components) < 3:
+        segment = segments[i]
 
-    return {
-        "year": year,
-        "month": month,
-        "day": day,
-        "hour": hour,
-        "minute": minute,
-        "second": second,
-        "microsecond": microsecond,
-    }
+        if segment:
+            components.append(segment)
+            i += 1
+        else:
+            empty_start = i
+            while i < len(segments) and not segments[i]:
+                i += 1
+
+            empty_count = i - empty_start
+            if empty_count >= 2:
+                components.append("-")
+
+    while len(components) < 3:
+        components.append("-")
+
+    if len(components) > 3:
+        components = components[:3]
+
+    return components, time_part, has_time
+
+
+def _check_date_component(date_components, index, precision_name):
+    if len(date_components) <= index:
+        if precision_name == "year":
+            return None
+        precision_names = DatePrecision.names()
+        prev_index = precision_names.index(precision_name) - 1
+        return precision_names[prev_index] if prev_index >= 0 else None
+
+    component = date_components[index]
+
+    if not component or component == "-":
+        has_later_component = False
+        for later_idx in range(index + 1, min(3, len(date_components))):
+            if later_idx < len(date_components):
+                later_comp = date_components[later_idx]
+                if later_comp and later_comp != "-":
+                    has_later_component = True
+                    break
+
+        if has_later_component:
+            return None
+
+        if precision_name == "year":
+            return None
+        precision_names = DatePrecision.names()
+        prev_index = precision_names.index(precision_name) - 1
+        return precision_names[prev_index] if prev_index >= 0 else None
+
+    return None
+
+
+def _check_time_component(time_part, has_time, component_index):
+    if not has_time or not time_part:
+        return "day"
+    time_components = time_part.split(":")
+    if len(time_components) <= component_index:
+        precision_names = DatePrecision.names()
+        prev_index = precision_names.index("hour") + component_index - 1
+        return precision_names[prev_index] if prev_index >= 0 else "day"
+    component = time_components[component_index]
+    if not component or component == "-":
+        precision_names = DatePrecision.names()
+        prev_index = precision_names.index("hour") + component_index - 1
+        return precision_names[prev_index] if prev_index >= 0 else "day"
+    return None
+
+
+def _check_second_component(time_part, has_time):
+    if not has_time or not time_part:
+        return "day"
+    time_components = time_part.split(":")
+    if len(time_components) <= 2:
+        return "minute"
+    second_part = time_components[2]
+    second = second_part.split(".", 1)[0] if "." in second_part else second_part
+    if not second or second == "-":
+        return "minute"
+    return None
+
+
+def _check_microsecond_component(time_part, has_time):
+    if not has_time or not time_part:
+        return "day"
+    time_components = time_part.split(":")
+    if len(time_components) <= 2:
+        return "minute"
+    second_part = time_components[2]
+    if "." not in second_part:
+        return "second"
+    microsecond_part = second_part.split(".", 1)[1]
+    if not microsecond_part:
+        return "second"
+    return None
 
 
 @lru_cache(maxsize=1000)
 def detect_datetime_precision(date_str: str) -> str:
-    if not date_str or not isinstance(date_str, str):
+    if not _datestring_is_valid(date_str):
         return None
 
-    components = _extract_datetime_components(date_str)
-    if not components:
+    date_components, time_part, has_time = _parse_datetime_string(date_str)
+
+    if _is_time_only_precision(date_components, has_time):
+        return _time_only_precision(time_part)
+
+    return _date_and_time_precision(date_components, time_part, has_time)
+
+
+def _datestring_is_valid(date_str: str) -> bool:
+    return bool(date_str and isinstance(date_str, str) and date_regex.match(date_str))
+
+
+def _is_time_only_precision(date_components: list, has_time: bool) -> bool:
+    return has_time and all(component == "-" for component in date_components)
+
+
+def _time_only_precision(time_part: str) -> str:
+    if not time_part:
         return None
 
-    precision_names = list(DatePrecision.__members__.keys())
-    last_precision = None
+    time_components = time_part.split(":")
+    if not time_components or not time_components[0] or time_components[0] == "-":
+        return None
+    if len(time_components) <= 1 or not time_components[1] or time_components[1] == "-":
+        return "hour"
+    if len(time_components) <= 2:
+        return "minute"
 
-    for precision_name in precision_names:
-        if components.get(precision_name) is not None:
-            last_precision = precision_name
-        else:
-            if precision_name == "hour" and components.get("day") is not None:
-                return "day"
-            if precision_name == "hour" and components.get("year") is None:
-                return None
-            return last_precision if last_precision else precision_name
+    return _precision_from_second_component(time_components[2])
+
+
+def _precision_from_second_component(second_part: str) -> str:
+    if "." in second_part:
+        second, microsecond = second_part.split(".", 1)
+        if not second or second == "-":
+            return "minute"
+        return "second" if not microsecond else "microsecond"
+
+    if not second_part or second_part == "-":
+        return "minute"
+    return "second"
+
+
+def _date_and_time_precision(date_components, time_part, has_time) -> str:
+    precision_checks = _precision_check_functions(date_components, time_part, has_time)
+
+    for index, precision_name in enumerate(DatePrecision.names()):
+        result = precision_checks[precision_name](index, precision_name)
+        if result is not None:
+            return result
 
     return "microsecond"
+
+
+def _precision_check_functions(date_components, time_part, has_time):
+    return {
+        "year": lambda i, name: _check_date_component(date_components, i, name),
+        "month": lambda i, name: _check_date_component(date_components, i, name),
+        "day": lambda i, name: _check_date_component(date_components, i, name),
+        "hour": lambda i, name: _check_time_component(time_part, has_time, 0),
+        "minute": lambda i, name: _check_time_component(time_part, has_time, 1),
+        "second": lambda i, name: _check_second_component(time_part, has_time),
+        "microsecond": lambda i, name: _check_microsecond_component(
+            time_part, has_time
+        ),
+    }
 
 
 def get_common_precision(dt1: str, dt2: str) -> str:
     p1 = detect_datetime_precision(dt1)
     p2 = detect_datetime_precision(dt2)
-
     if not p1 or not p2:
         return None
-
     min_idx = min(DatePrecision[p1].value, DatePrecision[p2].value)
     return DatePrecision.get_name_by_index(min_idx)
 
@@ -322,20 +463,115 @@ def case_insensitive_is_in(value, values):
     return str(value).lower() in str(values).lower()
 
 
-def compare_dates(component, target, comparator, operator_func):
+def truncate_datetime_to_precision(date_string: str, precision: str):
+    dt = get_date(date_string)
+    if precision == "year":
+        return dt.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
+    if precision == "month":
+        return dt.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    if precision == "day":
+        return dt.replace(hour=0, minute=0, second=0, microsecond=0)
+    if precision == "hour":
+        return dt.replace(minute=0, second=0, microsecond=0)
+    if precision == "minute":
+        return dt.replace(second=0, microsecond=0)
+    if precision == "second":
+        return dt.replace(microsecond=0)
+    return dt
+
+
+def _dates_are_comparable(target: str, comparator: str) -> bool:
     if not target or not comparator:
         return False
+    return is_valid_date(target) and is_valid_date(comparator)
 
-    is_strict_comparison = operator_func in (operator.lt, operator.gt)
 
-    if component == "auto":
-        component = get_common_precision(target, comparator)
-    elif is_strict_comparison and component is None:
-        component = get_common_precision(target, comparator)
+def _has_explicit_component(component) -> bool:
+    return component not in (None, "auto")
 
+
+def _compare_with_component(component, target, comparator, operator_func):
     return operator_func(
         get_date_component(component, target),
         get_date_component(component, comparator),
+    )
+
+
+def _build_precision_context(target: str, comparator: str) -> dict:
+    return {
+        "target_precision": detect_datetime_precision(target),
+        "comparator_precision": detect_datetime_precision(comparator),
+        "precision": get_common_precision(target, comparator),
+    }
+
+
+def _truncate_by_precision(target: str, comparator: str, precision: str) -> tuple:
+    return (
+        truncate_datetime_to_precision(target, precision),
+        truncate_datetime_to_precision(comparator, precision),
+    )
+
+
+def _compare_with_inferred_precision(
+    operator_func,
+    target: str,
+    comparator: str,
+    truncated_target,
+    truncated_comparator,
+    context: dict,
+):
+    target_precision = context["target_precision"]
+    comparator_precision = context["comparator_precision"]
+
+    if operator_func is operator.eq:
+        if target_precision != comparator_precision:
+            return False
+        return truncated_target == truncated_comparator
+
+    if operator_func is operator.ne:
+        if target_precision != comparator_precision:
+            return True
+        return truncated_target != truncated_comparator
+
+    result = operator_func(truncated_target, truncated_comparator)
+
+    if truncated_target == truncated_comparator:
+        if target_precision and comparator_precision:
+            target_value = DatePrecision[target_precision].value
+            comparator_value = DatePrecision[comparator_precision].value
+            if target_value > comparator_value:
+                return operator_func(get_date(target), get_date(comparator))
+        return result
+
+    return result
+
+
+def compare_dates(component, target, comparator, operator_func):
+    if not _dates_are_comparable(target, comparator):
+        return False
+
+    if _has_explicit_component(component):
+        return _compare_with_component(component, target, comparator, operator_func)
+
+    context = _build_precision_context(target, comparator)
+    precision = context["precision"]
+    if precision is None:
+        return False
+
+    truncated_target, truncated_comparator = _truncate_by_precision(
+        target, comparator, precision
+    )
+
+    if component == "auto":
+        return operator_func(truncated_target, truncated_comparator)
+
+    return _compare_with_inferred_precision(
+        operator_func,
+        target,
+        comparator,
+        truncated_target,
+        truncated_comparator,
+        context,
     )
 
 
