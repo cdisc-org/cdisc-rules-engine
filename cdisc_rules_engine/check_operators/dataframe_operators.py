@@ -1632,42 +1632,43 @@ class DataframeType(BaseType):
         within_columns = self._normalize_grouping_columns(other_value.get("within"))
         columns = other_value["comparator"]
         result = pd.Series([True] * len(self.value), index=self.value.index)
-        pandas = isinstance(self.value, PandasDataset)
+        is_pandas_dataset = isinstance(self.value, PandasDataset)
         for col in columns:
             comparator: str = self.replace_prefix(col["name"])
             ascending: bool = col["sort_order"].lower() != "desc"
             na_pos: str = col["null_position"]
-            selected_columns = [target, comparator, *within_columns]
-            sorted_df = self.value[list(dict.fromkeys(selected_columns))].sort_values(
+            selected_columns = list(
+                dict.fromkeys([target, comparator, *within_columns])
+            )
+            sorted_df = self.value[selected_columns].sort_values(
                 by=[*within_columns, comparator],
                 ascending=ascending,
                 na_position=na_pos,
             )
             grouped_df = sorted_df.groupby(within_columns)
-
             basic_sort_check = grouped_df.apply(
                 lambda x: self.check_basic_sort_order(x, target, comparator, ascending)
             )
-            if pandas:
-                basic_sort_check = basic_sort_check.reset_index(
-                    level=within_columns, drop=True
+            if is_pandas_dataset and isinstance(basic_sort_check.index, pd.MultiIndex):
+                basic_sort_check = basic_sort_check.droplevel(
+                    list(range(len(within_columns)))
                 )
             else:
                 basic_sort_check = basic_sort_check.reset_index(drop=True)
-            result = result & basic_sort_check
 
             date_overlap_check = grouped_df.apply(
                 lambda x: self.check_date_overlaps(x, target, comparator)
             )
-            if pandas:
-                date_overlap_check = date_overlap_check.reset_index(
-                    level=within_columns, drop=True
+            if is_pandas_dataset and isinstance(
+                date_overlap_check.index, pd.MultiIndex
+            ):
+                date_overlap_check = date_overlap_check.droplevel(
+                    list(range(len(within_columns)))
                 )
             else:
                 date_overlap_check = date_overlap_check.reset_index(drop=True)
-            result = result & date_overlap_check
+            result = result & basic_sort_check & date_overlap_check
 
-            # handle edge case where a dataframe is returned
             if isinstance(result, (pd.DataFrame, dd.DataFrame)):
                 if isinstance(result, dd.DataFrame):
                     result = result.compute()
