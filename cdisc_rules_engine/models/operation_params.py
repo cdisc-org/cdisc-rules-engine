@@ -59,3 +59,4 @@ class OperationParams:
     target: str = None
     value_is_reference: bool = False
     namespace: str = None
+    delimiter: str = None
