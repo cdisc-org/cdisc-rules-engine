@@ -65,7 +65,7 @@ class CodeListAttributes(BaseOperation):
         # Get controlled term attribute column name specified in rule
         ct_attribute = self.params.ct_attribute
         ct_target = self.params.target
-        ct_version = self.params.ct_version
+        ct_version = self.params.version
         ct_packages = self.params.ct_packages
         df = self.params.dataframe
         # 2.0 build codelist from cache
@@ -167,7 +167,7 @@ class CodeListAttributes(BaseOperation):
         ct_attribute = self.params.ct_attribute
 
         ct_target = self.params.target  # target variable specified in rule
-        ct_version = self.params.ct_version  # controlled term version
+        ct_version = self.params.version  # controlled term version
         if ct_attribute == "Term CCODE":
             ct_attribute = "TSVALCD"
         sel_cols = [ct_target, ct_version, ct_attribute, ct_key]

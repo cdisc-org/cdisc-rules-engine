@@ -467,7 +467,7 @@ def test_get_codelist_attributes(
     operation_params.standard = "sdtmig"
     operation_params.standard_version = "3-4"
     operation_params.ct_attribute = "Term CCODE"  # Changed from TSVALCD
-    operation_params.ct_version = "TSVCDVER"
+    operation_params.version = "TSVCDVER"
     operation_params.target = "TSVCDREF"
     operation_params.ct_packages = ct_packages
 
