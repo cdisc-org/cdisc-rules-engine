@@ -93,7 +93,7 @@
         "name",
         "ct_attribute",
         "ct_packages",
-        "ct_version"
+        "version"
       ],
       "type": "object"
     },
