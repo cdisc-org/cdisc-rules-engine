@@ -1,5 +1,5 @@
 from business_rules.operators import BaseType, type_operator
-from typing import Union, Any, List, Tuple
+from typing import Union, Any, List, Tuple, Sequence
 from business_rules.fields import FIELD_DATAFRAME
 from cdisc_rules_engine.check_operators.helpers import (
     flatten_list,
@@ -129,6 +129,21 @@ class DataframeType(BaseType):
         for i in range(len(values)):
             values[i] = self.replace_prefix(values[i])
         return values
+
+    def _normalize_grouping_columns(
+        self, within: Union[str, Sequence[str]]
+    ) -> List[str]:
+        if within is None:
+            raise ValueError("within parameter is required")
+        if isinstance(within, (list, tuple)):
+            columns = [self.replace_prefix(column) for column in within]
+        else:
+            columns = [self.replace_prefix(within)]
+        if not columns or any(
+            not isinstance(column, str) or not column for column in columns
+        ):
+            raise ValueError("within must contain valid column names")
+        return list(dict.fromkeys(columns))
 
     def get_comparator_data(self, comparator, value_is_literal: bool = False):
         if value_is_literal:
@@ -1614,7 +1629,7 @@ class DataframeType(BaseType):
         Checking the sort order based on comparators, including date overlap checks
         """
         target: str = self.replace_prefix(other_value.get("target"))
-        within: str = self.replace_prefix(other_value.get("within"))
+        within_columns = self._normalize_grouping_columns(other_value.get("within"))
         columns = other_value["comparator"]
         result = pd.Series([True] * len(self.value), index=self.value.index)
         pandas = isinstance(self.value, PandasDataset)
@@ -1622,27 +1637,32 @@ class DataframeType(BaseType):
             comparator: str = self.replace_prefix(col["name"])
             ascending: bool = col["sort_order"].lower() != "desc"
             na_pos: str = col["null_position"]
-            sorted_df = self.value[[target, within, comparator]].sort_values(
-                by=[within, comparator], ascending=ascending, na_position=na_pos
+            selected_columns = [target, comparator, *within_columns]
+            sorted_df = self.value[list(dict.fromkeys(selected_columns))].sort_values(
+                by=[*within_columns, comparator],
+                ascending=ascending,
+                na_position=na_pos,
             )
-            grouped_df = sorted_df.groupby(within)
+            grouped_df = sorted_df.groupby(within_columns)
 
-            # Check basic sort order, remove multiindex from series
             basic_sort_check = grouped_df.apply(
                 lambda x: self.check_basic_sort_order(x, target, comparator, ascending)
             )
             if pandas:
-                basic_sort_check = basic_sort_check.reset_index(level=0, drop=True)
+                basic_sort_check = basic_sort_check.reset_index(
+                    level=within_columns, drop=True
+                )
             else:
                 basic_sort_check = basic_sort_check.reset_index(drop=True)
             result = result & basic_sort_check
 
-            # Check date overlaps, remove multiindex from series
             date_overlap_check = grouped_df.apply(
                 lambda x: self.check_date_overlaps(x, target, comparator)
             )
             if pandas:
-                date_overlap_check = date_overlap_check.reset_index(level=0, drop=True)
+                date_overlap_check = date_overlap_check.reset_index(
+                    level=within_columns, drop=True
+                )
             else:
                 date_overlap_check = date_overlap_check.reset_index(drop=True)
             result = result & date_overlap_check
