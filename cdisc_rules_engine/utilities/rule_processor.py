@@ -389,7 +389,7 @@ class RuleProcessor:
                 standard_version=standard_version,
                 standard_substandard=standard_substandard,
                 external_dictionaries=external_dictionaries,
-                ct_version=operation.get("ct_version"),
+                ct_version=operation.get("version"),
                 ct_package_type=RuleProcessor._ct_package_type_api_name(
                     operation.get("ct_package_type")
                 ),
