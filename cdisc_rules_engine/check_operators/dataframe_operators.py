@@ -1048,16 +1048,26 @@ class DataframeType(BaseType):
     @type_operator(FIELD_DATAFRAME)
     def contains_all(self, other_value: dict):
         target = self.replace_prefix(other_value.get("target"))
+        value_is_literal: bool = other_value.get("value_is_literal", False)
         comparator = other_value.get("comparator")
-        if isinstance(comparator, list):
-            # get column as array of values
-            values = flatten_list(self.value, comparator)
+        if self.is_column_of_iterables(
+            self.value[target]
+        ) and self.is_column_of_iterables(self.value[comparator]):
+            comparison_data = self.get_comparator_data(comparator, value_is_literal)
+            results = []
+            for i in range(len(self.value[target])):
+                target_val = self.value[target].iloc[i]
+                comp_val = comparison_data.iloc[i]
+                results.append(all(is_in(item, comp_val) for item in target_val))
         else:
-            comparator = self.replace_prefix(comparator)
-            values = self.value[comparator].unique()
-        return self.value.convert_to_series(
-            set(values).issubset(set(self.value[target].unique()))
-        )
+            if isinstance(comparator, list):
+                # get column as array of values
+                values = flatten_list(self.value, comparator)
+            else:
+                comparator = self.replace_prefix(comparator)
+                values = self.value[comparator].unique()
+            results = set(values).issubset(set(self.value[target].unique()))
+        return self.value.convert_to_series(results)
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)

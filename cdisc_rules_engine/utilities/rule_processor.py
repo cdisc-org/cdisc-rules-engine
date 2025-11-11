@@ -422,6 +422,7 @@ class RuleProcessor:
                 term_pref_term=operation.get("term_pref_term"),
                 namespace=operation.get("namespace"),
                 value_is_reference=operation.get("value_is_reference", False),
+                delimiter=operation.get("delimiter"),
             )
 
             # execute operation
