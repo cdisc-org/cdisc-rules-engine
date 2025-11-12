@@ -1,5 +1,7 @@
 # Check Operator
 
+NOTE: Complementary operators have access to the same paremeter arguments unless otherwise stated.
+
 ## Relational
 
 Basic value comparisons and presence checks for evaluating equality, inequality, ranges, and whether values exist or are empty.
@@ -822,21 +824,34 @@ Relationship Integrity Check
 
 > `name` can be a variable containing a list of columns and `value` does not need to be present
 
-> The `just_date` parameter (default: `false`) controls how datetime comparisons are performed when checking for uniqueness. Below, with `just_date: true`, records with the same subject, test code, and timing variables on the same **date** but different **times** are considered duplicates and must have `--REPNUM` populated to differentiate them.
+> The `regex` parameter allows you to extract portions of values using a regex pattern before checking uniqueness.
+
+> Compare date only (YYYY-MM-DD) for uniqueness
 
 ```yaml
 - name: "--REPNUM"
-      operator: is_not_unique_set
-      value:
-        - "USUBJID"
-        - "--TESTCD"
-        - "$TIMING_VARIABLES"
-      just_date: true
+  operator: is_not_unique_set
+  value:
+    - "USUBJID"
+    - "--TESTCD"
+    - "$TIMING_VARIABLES"
+  regex: '^\d{4}-\d{2}-\d{2}'
+```
+
+> Compare by first N characters of a string
+
+```yaml
+- name: "ITEM_ID"
+  operator: is_not_unique_set
+  value:
+    - "USUBJID"
+    - "CATEGORY"
+  regex: "^.{2}"
 ```
 
 ### is_not_unique_set
 
-Complement of `is_unique_set`
+Complement of `is_unique_set`.
 
 > --SEQ is not unique within DOMAIN, USUBJID, and --TESTCD
 

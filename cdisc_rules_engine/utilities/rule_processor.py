@@ -609,7 +609,7 @@ class RuleProcessor:
         if domain_details.is_supp:
             current_domain = domain_details.rdomain
         for param_name in vars(params_copy):
-            if param_name == ("datasets" or "dataframe"):
+            if param_name in ("datasets", "dataframe"):
                 continue
             param_value = getattr(params_copy, param_name)
             updated_value = self._replace_wildcards_in_value(
