@@ -6,7 +6,6 @@ from cdisc_rules_engine.models.library_metadata_container import (
 )
 import pandas as pd
 import pytest
-from typing import List
 
 from cdisc_rules_engine.models.operation_params import OperationParams
 
@@ -30,15 +29,91 @@ test_set1 = (
     [
         {
             "package": "sdtmct-2020-03-27",
-            "C49487": {"extensible": False, "allowed_terms": ["A", "B", "C"]},
-            "C25473": {"extensible": False, "allowed_terms": ["X", "Y", "Z"]},
-            "C141663": {"extensible": False, "allowed_terms": []},
+            "submission_lookup": {
+                "N": {"codelist": "C49487", "term": "C49487"},
+                "Y": {"codelist": "C25473", "term": "C25473"},
+                "MAYBE": {"codelist": "C141663", "term": "C141663"},
+            },
+            "C49487": {
+                "extensible": False,
+                "preferredTerm": "No",
+                "submissionValue": "N",
+                "terms": [
+                    {
+                        "conceptId": "C49487",
+                        "submissionValue": "N",
+                        "preferredTerm": "No",
+                    }
+                ],
+            },
+            "C25473": {
+                "extensible": False,
+                "preferredTerm": "Yes",
+                "submissionValue": "Y",
+                "terms": [
+                    {
+                        "conceptId": "C25473",
+                        "submissionValue": "Y",
+                        "preferredTerm": "Yes",
+                    }
+                ],
+            },
+            "C141663": {
+                "extensible": False,
+                "preferredTerm": "Maybe",
+                "submissionValue": "MAYBE",
+                "terms": [
+                    {
+                        "conceptId": "C141663",
+                        "submissionValue": "MAYBE",
+                        "preferredTerm": "Maybe",
+                    }
+                ],
+            },
         },
         {
             "package": "sdtmct-2022-12-16",
-            "C141657": {"extensible": False, "allowed_terms": ["A", "B", "C"]},
-            "C141656": {"extensible": False, "allowed_terms": ["X", "Y", "Z"]},
-            "C141663": {"extensible": False, "allowed_terms": []},
+            "submission_lookup": {
+                "A": {"codelist": "C141657", "term": "C141657"},
+                "B": {"codelist": "C141656", "term": "C141656"},
+                "C": {"codelist": "C141663", "term": "C141663"},
+            },
+            "C141657": {
+                "extensible": False,
+                "preferredTerm": "Option A",
+                "submissionValue": "A",
+                "terms": [
+                    {
+                        "conceptId": "C141657",
+                        "submissionValue": "A",
+                        "preferredTerm": "Option A",
+                    }
+                ],
+            },
+            "C141656": {
+                "extensible": False,
+                "preferredTerm": "Option B",
+                "submissionValue": "B",
+                "terms": [
+                    {
+                        "conceptId": "C141656",
+                        "submissionValue": "B",
+                        "preferredTerm": "Option B",
+                    }
+                ],
+            },
+            "C141663": {
+                "extensible": False,
+                "preferredTerm": "Option C",
+                "submissionValue": "C",
+                "terms": [
+                    {
+                        "conceptId": "C141663",
+                        "submissionValue": "C",
+                        "preferredTerm": "Option C",
+                    }
+                ],
+            },
         },
     ],
     PandasDataset,
@@ -64,20 +139,97 @@ test_set2 = (
     [
         {
             "package": "sdtmct-2020-03-27",
-            "C49487": {"extensible": False, "allowed_terms": ["A", "B", "C"]},
-            "C25473": {"extensible": False, "allowed_terms": ["X", "Y", "Z"]},
-            "C141663": {"extensible": False, "allowed_terms": []},
+            "submission_lookup": {
+                "N": {"codelist": "C49487", "term": "C49487"},
+                "Y": {"codelist": "C25473", "term": "C25473"},
+                "MAYBE": {"codelist": "C141663", "term": "C141663"},
+            },
+            "C49487": {
+                "extensible": False,
+                "preferredTerm": "No",
+                "submissionValue": "N",
+                "terms": [
+                    {
+                        "conceptId": "C49487",
+                        "submissionValue": "N",
+                        "preferredTerm": "No",
+                    }
+                ],
+            },
+            "C25473": {
+                "extensible": False,
+                "preferredTerm": "Yes",
+                "submissionValue": "Y",
+                "terms": [
+                    {
+                        "conceptId": "C25473",
+                        "submissionValue": "Y",
+                        "preferredTerm": "Yes",
+                    }
+                ],
+            },
+            "C141663": {
+                "extensible": False,
+                "preferredTerm": "Maybe",
+                "submissionValue": "MAYBE",
+                "terms": [
+                    {
+                        "conceptId": "C141663",
+                        "submissionValue": "MAYBE",
+                        "preferredTerm": "Maybe",
+                    }
+                ],
+            },
         },
         {
             "package": "sdtmct-2022-12-16",
-            "C141657": {"extensible": False, "allowed_terms": ["A", "B", "C"]},
-            "C141656": {"extensible": False, "allowed_terms": ["X", "Y", "Z"]},
-            "C141663": {"extensible": False, "allowed_terms": []},
+            "submission_lookup": {
+                "A": {"codelist": "C141657", "term": "C141657"},
+                "B": {"codelist": "C141656", "term": "C141656"},
+                "C": {"codelist": "C141663", "term": "C141663"},
+            },
+            "C141657": {
+                "extensible": False,
+                "preferredTerm": "Option A",
+                "submissionValue": "A",
+                "terms": [
+                    {
+                        "conceptId": "C141657",
+                        "submissionValue": "A",
+                        "preferredTerm": "Option A",
+                    }
+                ],
+            },
+            "C141656": {
+                "extensible": False,
+                "preferredTerm": "Option B",
+                "submissionValue": "B",
+                "terms": [
+                    {
+                        "conceptId": "C141656",
+                        "submissionValue": "B",
+                        "preferredTerm": "Option B",
+                    }
+                ],
+            },
+            "C141663": {
+                "extensible": False,
+                "preferredTerm": "Option C",
+                "submissionValue": "C",
+                "terms": [
+                    {
+                        "conceptId": "C141663",
+                        "submissionValue": "C",
+                        "preferredTerm": "Option C",
+                    }
+                ],
+            },
         },
     ],
     PandasDataset,
     {"C141656", "C141663", "C141657"},
 )
+
 test_set3 = (
     ["sdtmct-2020-03-27"],
     {
@@ -91,15 +243,91 @@ test_set3 = (
     [
         {
             "package": "sdtmct-2020-03-27",
-            "C49487": {"extensible": False, "allowed_terms": ["A", "B", "C"]},
-            "C25473": {"extensible": False, "allowed_terms": ["X", "Y", "Z"]},
-            "C141663": {"extensible": False, "allowed_terms": []},
+            "submission_lookup": {
+                "N": {"codelist": "C49487", "term": "C49487"},
+                "Y": {"codelist": "C25473", "term": "C25473"},
+                "MAYBE": {"codelist": "C141663", "term": "C141663"},
+            },
+            "C49487": {
+                "extensible": False,
+                "preferredTerm": "No",
+                "submissionValue": "N",
+                "terms": [
+                    {
+                        "conceptId": "C49487",
+                        "submissionValue": "N",
+                        "preferredTerm": "No",
+                    }
+                ],
+            },
+            "C25473": {
+                "extensible": False,
+                "preferredTerm": "Yes",
+                "submissionValue": "Y",
+                "terms": [
+                    {
+                        "conceptId": "C25473",
+                        "submissionValue": "Y",
+                        "preferredTerm": "Yes",
+                    }
+                ],
+            },
+            "C141663": {
+                "extensible": False,
+                "preferredTerm": "Maybe",
+                "submissionValue": "MAYBE",
+                "terms": [
+                    {
+                        "conceptId": "C141663",
+                        "submissionValue": "MAYBE",
+                        "preferredTerm": "Maybe",
+                    }
+                ],
+            },
         },
         {
             "package": "sdtmct-2022-12-16",
-            "C141657": {"extensible": False, "allowed_terms": ["A", "B", "C"]},
-            "C141656": {"extensible": False, "allowed_terms": ["X", "Y", "Z"]},
-            "C141663": {"extensible": False, "allowed_terms": []},
+            "submission_lookup": {
+                "A": {"codelist": "C141657", "term": "C141657"},
+                "B": {"codelist": "C141656", "term": "C141656"},
+                "C": {"codelist": "C141663", "term": "C141663"},
+            },
+            "C141657": {
+                "extensible": False,
+                "preferredTerm": "Option A",
+                "submissionValue": "A",
+                "terms": [
+                    {
+                        "conceptId": "C141657",
+                        "submissionValue": "A",
+                        "preferredTerm": "Option A",
+                    }
+                ],
+            },
+            "C141656": {
+                "extensible": False,
+                "preferredTerm": "Option B",
+                "submissionValue": "B",
+                "terms": [
+                    {
+                        "conceptId": "C141656",
+                        "submissionValue": "B",
+                        "preferredTerm": "Option B",
+                    }
+                ],
+            },
+            "C141663": {
+                "extensible": False,
+                "preferredTerm": "Option C",
+                "submissionValue": "C",
+                "terms": [
+                    {
+                        "conceptId": "C141663",
+                        "submissionValue": "C",
+                        "preferredTerm": "Option C",
+                    }
+                ],
+            },
         },
     ],
     DaskDataset,
@@ -125,15 +353,91 @@ test_set4 = (
     [
         {
             "package": "sdtmct-2020-03-27",
-            "C49487": {"extensible": False, "allowed_terms": ["A", "B", "C"]},
-            "C25473": {"extensible": False, "allowed_terms": ["X", "Y", "Z"]},
-            "C141663": {"extensible": False, "allowed_terms": []},
+            "submission_lookup": {
+                "N": {"codelist": "C49487", "term": "C49487"},
+                "Y": {"codelist": "C25473", "term": "C25473"},
+                "MAYBE": {"codelist": "C141663", "term": "C141663"},
+            },
+            "C49487": {
+                "extensible": False,
+                "preferredTerm": "No",
+                "submissionValue": "N",
+                "terms": [
+                    {
+                        "conceptId": "C49487",
+                        "submissionValue": "N",
+                        "preferredTerm": "No",
+                    }
+                ],
+            },
+            "C25473": {
+                "extensible": False,
+                "preferredTerm": "Yes",
+                "submissionValue": "Y",
+                "terms": [
+                    {
+                        "conceptId": "C25473",
+                        "submissionValue": "Y",
+                        "preferredTerm": "Yes",
+                    }
+                ],
+            },
+            "C141663": {
+                "extensible": False,
+                "preferredTerm": "Maybe",
+                "submissionValue": "MAYBE",
+                "terms": [
+                    {
+                        "conceptId": "C141663",
+                        "submissionValue": "MAYBE",
+                        "preferredTerm": "Maybe",
+                    }
+                ],
+            },
         },
         {
             "package": "sdtmct-2022-12-16",
-            "C141657": {"extensible": False, "allowed_terms": ["A", "B", "C"]},
-            "C141656": {"extensible": False, "allowed_terms": ["X", "Y", "Z"]},
-            "C141663": {"extensible": False, "allowed_terms": []},
+            "submission_lookup": {
+                "A": {"codelist": "C141657", "term": "C141657"},
+                "B": {"codelist": "C141656", "term": "C141656"},
+                "C": {"codelist": "C141663", "term": "C141663"},
+            },
+            "C141657": {
+                "extensible": False,
+                "preferredTerm": "Option A",
+                "submissionValue": "A",
+                "terms": [
+                    {
+                        "conceptId": "C141657",
+                        "submissionValue": "A",
+                        "preferredTerm": "Option A",
+                    }
+                ],
+            },
+            "C141656": {
+                "extensible": False,
+                "preferredTerm": "Option B",
+                "submissionValue": "B",
+                "terms": [
+                    {
+                        "conceptId": "C141656",
+                        "submissionValue": "B",
+                        "preferredTerm": "Option B",
+                    }
+                ],
+            },
+            "C141663": {
+                "extensible": False,
+                "preferredTerm": "Option C",
+                "submissionValue": "C",
+                "terms": [
+                    {
+                        "conceptId": "C141663",
+                        "submissionValue": "C",
+                        "preferredTerm": "Option C",
+                    }
+                ],
+            },
         },
     ],
     DaskDataset,
@@ -154,18 +458,18 @@ def test_get_codelist_attributes(
     ct_list,
 ):
     """
-    Unit test for DataProcessor.get_column_order_from_library.
-    Mocks cache call to return metadata.
+    Unit test for CodeListAttributes operation.
+    Tests that the operation returns the correct term codes based on CT version.
     """
     # 1.0 set parameters
     operation_params.dataframe = dataset_type.from_dict(ts_data)
     operation_params.domain = "TS"
     operation_params.standard = "sdtmig"
     operation_params.standard_version = "3-4"
-    operation_params.ct_attribute: str = "TSVALCD"
-    operation_params.ct_version: str = "TSVCDVER"
+    operation_params.ct_attribute = "Term CCODE"  # Changed from TSVALCD
+    operation_params.ct_version = "TSVCDVER"
     operation_params.target = "TSVCDREF"
-    operation_params.ct_packages: list = ct_packages
+    operation_params.ct_packages = ct_packages
 
     # 2.0 add CT data to cache
     cache = InMemoryCacheService.get_instance()
@@ -187,16 +491,28 @@ def test_get_codelist_attributes(
         library_metadata,
     )
 
-    result: pd.DataFrame = operation.execute()
+    result = operation.execute()
 
-    variables: List[str] = ct_list
-    expected: pd.Series = pd.Series(
-        [
-            variables,
-            variables,
-            variables,
-            variables,
-            variables,
-        ]
-    )
-    assert result[operation_params.operation_id].equals(expected)
+    # Extract the operation_id column which contains the sets
+    result_series = result[operation_params.operation_id]
+
+    # Expected: Each row gets the ct_list only if its version matches ct_packages
+    # For test_set1 and test_set3: All rows with version 2020-03-27 should get ct_list
+    # For test_set2 and test_set4: Only rows 3 and 4 with version 2022-12-16 should get ct_list
+
+    if ct_packages == ["sdtmct-2020-03-27"]:
+        # Rows 0, 1, 2 have version 2020-03-27 (match)
+        # Rows 3, 4 have empty version (no match)
+        expected = pd.Series([ct_list, ct_list, ct_list, set(), set()])
+    else:  # ct_packages == ["sdtmct-2022-12-16"]
+        # Rows 0, 1, 2 have version 2020-03-27 (no match)
+        # Rows 3, 4 have version 2022-12-16 (match)
+        expected = pd.Series([set(), set(), set(), ct_list, ct_list])
+
+    # Compare the series - each element should already be a set
+    assert len(result_series) == len(expected)
+    for i in range(len(result_series)):
+        # Both result_series.iloc[i] and expected.iloc[i] should be sets already
+        assert (
+            result_series.iloc[i] == expected.iloc[i]
+        ), f"Row {i}: {result_series.iloc[i]} != {expected.iloc[i]}"

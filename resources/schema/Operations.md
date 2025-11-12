@@ -152,16 +152,25 @@ Returns a list of valid extensible codelist term's submission values. Used for e
 
 ### get_codelist_attributes
 
-Fetches attribute values for a codelist specified in a dataset (like TS)
+Fetches controlled terminology attribute values from CT packages based on row-specific CT package and version references.
+
+**Required Parameters:**
+
+- `ct_attribute`: Attribute to extract - `"Term CCODE"`, `"Codelist CCODE"`, `"Term Value"`, `"Codelist Value"`, or `"Term Preferred Term"`
+- `target`: Column containing CT reference (e.g., "TSVCDREF")
+- `version`: Column containing CT version (e.g., "TSVCDVER")
+- `ct_packages`: List of CT packages to search (e.g., `["sdtmct-2020-03-27"]`)
 
 ```yaml
-- id: $TERM_CCODES
+- id: $VALID_TERM_CODES
   name: TSVCDREF
   operator: get_codelist_attributes
   ct_attribute: Term CCODE
-  ct_version: TSVCDVER
+  version: TSVCDVER
+  target: TSVCDREF
   ct_packages:
     - sdtmct-2020-03-27
+    - sdtmct-2022-12-16
 ```
 
 ### valid_codelist_dates

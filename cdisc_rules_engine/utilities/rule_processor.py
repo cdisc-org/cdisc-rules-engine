@@ -395,13 +395,12 @@ class RuleProcessor:
                 ct_package_type=RuleProcessor._ct_package_type_api_name(
                     operation.get("ct_package_type")
                 ),
-                ct_attribute=operation.get("attribute"),
+                ct_attribute=operation.get("ct_attribute"),
                 ct_package_types=[
                     RuleProcessor._ct_package_type_api_name(ct_package_type)
                     for ct_package_type in operation.get("ct_package_types", [])
                 ],
-                ct_packages=kwargs.get("ct_packages"),
-                ct_package=kwargs.get("codelist_term_maps"),
+                ct_packages=operation.get("ct_packages", kwargs.get("ct_packages", [])),
                 attribute_name=operation.get("attribute_name", ""),
                 key_name=operation.get("key_name", ""),
                 key_value=operation.get("key_value", ""),
