@@ -1,0 +1,149 @@
+{
+  "datasets": [
+    {
+      "filename": "dm.xpt",
+      "label": "Demographics",
+      "domain": "DM",
+      "variables": [
+        {
+          "name": "STUDYID",
+          "label": "Study Identifier",
+          "type": "Char",
+          "length": 12
+        },
+        {
+          "name": "DOMAIN",
+          "label": "Domain Abbreviation",
+          "type": "Char",
+          "length": 2
+        },
+        {
+          "name": "USUBJID",
+          "label": "Unique Subject Identifier",
+          "type": "Char",
+          "length": 20
+        },
+        {
+          "name": "SUBJID",
+          "label": "Subject Identifier for the Study",
+          "type": "Char",
+          "length": 12
+        },
+        {
+          "name": "RFSTDTC",
+          "label": "Subject Reference Start Date/Time",
+          "type": "Char",
+          "length": 10
+        },
+        {
+          "name": "RFENDTC",
+          "label": "Subject Reference End Date/Time",
+          "type": "Char",
+          "length": 10
+        },
+        {
+          "name": "RFXSTDTC",
+          "label": "Date/Time of First Study Treatment",
+          "type": "Char",
+          "length": 10
+        },
+        {
+          "name": "RFXENDTC",
+          "label": "Date/Time of Last Study Treatment",
+          "type": "Char",
+          "length": 10
+        },
+        {
+          "name": "ARMCD",
+          "label": "Planned Arm Code",
+          "type": "Char",
+          "length": 8
+        },
+        {
+          "name": "ARM",
+          "label": "Description of Planned Arm",
+          "type": "Char",
+          "length": 28
+        },
+        {
+          "name": "SETCD",
+          "label": "Set Code",
+          "type": "Char",
+          "length": 8
+        }
+      ],
+      "records": {
+        "STUDYID": ["CDISCCORE01", "CDISCCORE01", "CDISCCORE01", "CDISCCORE01"],
+        "DOMAIN": ["DM", "DM", "DM", "DM"],
+        "USUBJID": [
+          "015246-099-0000-00000",
+          "015246-099-0000-00001",
+          "015246-099-0000-00002",
+          "015246-099-0000-00003"
+        ],
+        "SUBJID": [
+          "099000000000",
+          "099000000001",
+          "099000000002",
+          "099000000003"
+        ],
+        "RFSTDTC": ["", "", "", "2018-05-08T11:20"],
+        "RFENDTC": ["", "", "", "2018-08-29T10:35"],
+        "RFXSTDTC": ["", "", "", "2018-05-08T11:20"],
+        "RFXENDTC": ["", "", "", "2018-08-29T10:35"],
+        "ARMCD": ["", "", "", "IKD"],
+        "ARM": ["IKd", "", "", "IKd"],
+        "SETCD": ["SET1", "SET22", "SET333", "SET12345"]
+      }
+    },
+    {
+      "filename": "ts.xpt",
+      "label": "Trial Summary",
+      "domain": "TS",
+      "variables": [
+        {
+          "name": "STUDYID",
+          "label": "Study Identifier",
+          "type": "Char",
+          "length": 12
+        },
+        {
+          "name": "DOMAIN",
+          "label": "Domain Abbreviation",
+          "type": "Char",
+          "length": 2
+        },
+        {
+          "name": "TSSEQ",
+          "label": "Sequence Number ",
+          "type": "Char",
+          "length": 8
+        },
+        {
+          "name": "TSGRPID",
+          "label": "Group Identifier",
+          "type": "Char",
+          "length": 8
+        },
+        {
+          "name": "TSPARMCD",
+          "label": "Trial Summary Parameter Short Name ",
+          "type": "Char",
+          "length": 8
+        }
+      ],
+      "records": {
+        "STUDYID": ["CDISCCORE01", "CDISCCORE01", "CDISCCORE01", "CDISCCORE01"],
+        "DOMAIN": ["TS", "TS", "TS", "TS"],
+        "TSSEQ": ["1", "2", "3", "4"],
+        "TSGRPID": ["", "", "", ""],
+        "TSPARMCD": ["SSTYP", "SPECIESS", "ROUTE", "STITLE"]
+      }
+    }
+  ],
+  "standard": {
+    "product": "sendig",
+    "version": "3-1"
+  },
+  "codelists": []
+}

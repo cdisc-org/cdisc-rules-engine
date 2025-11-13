@@ -44,7 +44,6 @@ from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.interfaces.data_service_interface import (
     DataServiceInterface,
 )
-from cdisc_rules_engine.exceptions.custom_exceptions import DomainNotFoundError
 
 
 class RuleProcessor:
@@ -479,10 +478,9 @@ class RuleProcessor:
                 ),
             )
             if domain_details is None:
-                raise DomainNotFoundError(
-                    f"Operation {operation_params.operation_name} requires Domain "
-                    f"{operation_params.domain} but Domain not found in dataset"
-                )
+                logger.info(f"Domain {operation_params.domain} doesn't exist")
+                operation_params.dataframe[operation_params.operation_id] = None
+                return operation_params.dataframe
             filename = get_dataset_name_from_details(domain_details)
             file_path: str = os.path.join(
                 get_directory_path(operation_params.dataset_path),
