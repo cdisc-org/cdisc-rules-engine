@@ -1268,3 +1268,15 @@ Operations:
 ```
 
 Note that a local XSD file is required for validation. The file must be stored in the folder indicated by the value of the `LOCAL_XSD_FILE_DIR` default file path and the mapping between the namespace and the local XSD file's `sub-folder/name` must be included in the value of the `LOCAL_XSD_FILE_MAP` default file path.
+
+### split_by
+
+Splits a dataset column by a given delimiter
+
+```yaml
+Operations:
+  - name: PPSPEC
+    delimiter: ;
+    id: $ppspec_value
+    operator: split_by
+```

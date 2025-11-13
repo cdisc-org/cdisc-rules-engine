@@ -1,0 +1,132 @@
+Authorities:
+  - Organization: CDISC
+    Standards:
+      - Name: SENDIG
+        References:
+          - Citations:
+              - Cited Guidance:
+                  "Defines the type of specimen used for a measurement. Examples:
+                  SERUM, PLASMA, URINE. If multiple specimen types are used for
+                  a calculation (e.g., serum and urine for creatinine
+                  clearance), then refer to Section 4.3.6.2 for guidance on how
+                  to populate."
+                Document: IG v3.1
+                Item: PPSPEC CDISC Notes
+                Section: 6.3.12
+            Origin: SEND Conformance Rules
+            Rule Identifier:
+              Id: "SEND282"
+              Version: "1"
+            Version: "5.0"
+        Version: "3.1"
+      - Name: SENDIG
+        References:
+          - Citations:
+              - Cited Guidance:
+                  "Defines the type of specimen used for a measurement. Examples:
+                  SERUM, PLASMA, URINE. If multiple specimen types are used for
+                  a calculation (e.g., serum and urine for creatinine
+                  clearance), then refer to Section 4.3.6.2 for guidance on how
+                  to populate."
+                Document: IG v3.1.1
+                Item: PPSPEC CDISC Notes
+                Section: 6.3.12
+            Origin: SEND Conformance Rules
+            Rule Identifier:
+              Id: "SEND282"
+              Version: "1"
+            Version: "5.0"
+        Version: "3.1.1"
+      - Name: SENDIG-DART
+        References:
+          - Citations:
+              - Cited Guidance:
+                  "Defines the type of specimen used for a measurement. Examples:
+                  SERUM, PLASMA, URINE. If multiple specimen types are used for
+                  a calculation (e.g., serum and urine for creatinine
+                  clearance), then refer to Section 4.3.6.2 for guidance on how
+                  to populate."
+                Document: IG v3.1
+                Item: PPSPEC CDISC Notes
+                Section: 6.3.12
+            Origin: SEND Conformance Rules
+            Rule Identifier:
+              Id: "SEND282"
+              Version: "1"
+            Version: "5.0"
+        Version: "1.1"
+      - Name: SENDIG-DART
+        References:
+          - Citations:
+              - Cited Guidance:
+                  "Defines the type of specimen used for a measurement. Examples:
+                  SERUM, PLASMA, URINE. If multiple specimen types are used for
+                  a calculation (e.g., serum and urine for creatinine
+                  clearance), then refer to Section 4.3.6.2 for guidance on how
+                  to populate."
+                Document: IG v3.1.1
+                Item: PPSPEC CDISC Notes
+                Section: 6.3.12
+            Origin: SEND Conformance Rules
+            Rule Identifier:
+              Id: "SEND282"
+              Version: "1"
+            Version: "5.0"
+        Version: "1.2"
+      - Name: SENDIG-GENETOX
+        References:
+          - Citations:
+              - Cited Guidance:
+                  "Defines the type of specimen used for a measurement. Examples:
+                  SERUM, PLASMA, URINE. If multiple specimen types are used for
+                  a calculation (e.g., serum and urine for creatinine
+                  clearance), then refer to Section 4.3.6.2 for guidance on how
+                  to populate."
+                Document: IG v3.1.1
+                Item: PPSPEC CDISC Notes
+                Section: 6.3.12
+            Origin: SEND Conformance Rules
+            Rule Identifier:
+              Id: "SEND282"
+              Version: "1"
+            Version: "5.0"
+        Version: "1.0"
+Check:
+  all:
+    - name: $spec_codelist
+      operator: not_contains_all
+      value: $ppspec_value
+Core:
+  Id: CDISC.SENDIG.SEND282
+  Status: Draft
+  Version: "1"
+Operations:
+  - codelists:
+      - SPEC
+    level: term
+    id: $spec_codelist
+    operator: codelist_terms
+    returntype: value
+  - name: PPSPEC
+    delimiter: ;
+    id: $ppspec_value
+    operator: split_by
+Description: If multiple specimen types are used for a calculation (e.g., serum
+  and urine for creatinine clearance), then this field should be populated with
+  values from the (SPEC) Controlled Terminology codelist delimited by a
+  semicolon.
+Executability: Fully Executable
+Outcome:
+  Message: The multiple specimens are not correctly separated by a semicolon
+  Output Variables:
+    - $ppspec_value
+    - $spec_codelist
+Rule Type: Record Data
+Scope:
+  Classes:
+    Include:
+      - ALL
+  Domains:
+    Include:
+      - ALL
+Sensitivity: Record

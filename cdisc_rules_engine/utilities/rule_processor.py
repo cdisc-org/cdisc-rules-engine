@@ -12,6 +12,7 @@ from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
 
+import copy
 import os
 from cdisc_rules_engine.constants.classes import (
     FINDINGS_ABOUT,
@@ -44,7 +45,6 @@ from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.interfaces.data_service_interface import (
     DataServiceInterface,
 )
-from cdisc_rules_engine.exceptions.custom_exceptions import DomainNotFoundError
 
 
 class RuleProcessor:
@@ -422,6 +422,7 @@ class RuleProcessor:
                 term_pref_term=operation.get("term_pref_term"),
                 namespace=operation.get("namespace"),
                 value_is_reference=operation.get("value_is_reference", False),
+                delimiter=operation.get("delimiter"),
             )
 
             # execute operation
@@ -479,10 +480,9 @@ class RuleProcessor:
                 ),
             )
             if domain_details is None:
-                raise DomainNotFoundError(
-                    f"Operation {operation_params.operation_name} requires Domain "
-                    f"{operation_params.domain} but Domain not found in dataset"
-                )
+                logger.info(f"Domain {operation_params.domain} doesn't exist")
+                operation_params.dataframe[operation_params.operation_id] = None
+                return operation_params.dataframe
             filename = get_dataset_name_from_details(domain_details)
             file_path: str = os.path.join(
                 get_directory_path(operation_params.dataset_path),
@@ -597,6 +597,50 @@ class RuleProcessor:
             f"Added comparator to rule conditions. "
             f"comparator={comparator}, conditions={rule['conditions']}"
         )
+
+    def _preprocess_operation_params(
+        self, operation_params: OperationParams, domain_details: dict = None
+    ) -> OperationParams:
+        # uses shallow copy to not overwrite for subsequent
+        # operations and avoids costly deepcopy of dataframe
+        params_copy = copy.copy(operation_params)
+        current_domain = params_copy.domain
+        if domain_details.is_supp:
+            current_domain = domain_details.rdomain
+        for param_name in vars(params_copy):
+            if param_name in ("datasets", "dataframe"):
+                continue
+            param_value = getattr(params_copy, param_name)
+            updated_value = self._replace_wildcards_in_value(
+                param_value, current_domain
+            )
+            if updated_value is not param_value:
+                updated_value = copy.deepcopy(updated_value)
+                setattr(params_copy, param_name, updated_value)
+        return params_copy
+
+    def _replace_wildcards_in_value(self, value, domain: str):
+        if value is None:
+            return value
+        if isinstance(value, str):
+            return value.replace("--", domain)
+        elif isinstance(value, list):
+            return [self._replace_wildcards_in_value(item, domain) for item in value]
+        elif isinstance(value, set):
+            return {self._replace_wildcards_in_value(item, domain) for item in value}
+        elif isinstance(value, dict):
+            return {
+                self._replace_wildcards_in_value(
+                    k, domain
+                ): self._replace_wildcards_in_value(v, domain)
+                for k, v in value.items()
+            }
+        elif isinstance(value, tuple):
+            return tuple(
+                self._replace_wildcards_in_value(item, domain) for item in value
+            )
+        else:
+            return value
 
     @staticmethod
     def duplicate_conditions_for_all_targets(
