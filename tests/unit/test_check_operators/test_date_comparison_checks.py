@@ -1,5 +1,6 @@
 from cdisc_rules_engine.check_operators.dataframe_operators import DataframeType
 from cdisc_rules_engine.check_operators.helpers import (
+    DatePrecision,
     detect_datetime_precision,
     is_valid_date,
 )
@@ -11,13 +12,13 @@ from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 @pytest.mark.parametrize(
     "value,expected_precision",
     [
-        ("2003-12-15T13:14:17.123", "microsecond"),
-        ("2003-12-15T13:14:17", "second"),
-        ("2003-12-15T13:14", "minute"),
-        ("2003-12-15T13", "hour"),
-        ("2003-12-15", "day"),
-        ("2003-12", "month"),
-        ("2003", "year"),
+        ("2003-12-15T13:14:17.123", DatePrecision.microsecond),
+        ("2003-12-15T13:14:17", DatePrecision.second),
+        ("2003-12-15T13:14", DatePrecision.minute),
+        ("2003-12-15T13", DatePrecision.hour),
+        ("2003-12-15", DatePrecision.day),
+        ("2003-12", DatePrecision.month),
+        ("2003", DatePrecision.year),
     ],
 )
 def test_detect_datetime_precision_with_truncated_values(value, expected_precision):
@@ -74,9 +75,19 @@ def test_invalid_date(data, dataset_type, expected_result):
 @pytest.mark.parametrize(
     "value,expected_precision",
     [
-        ("2003---15", "day"),
-        ("--12-15", "day"),
-        ("-----T07:15", "minute"),
+        ("2003-12-15T13:15:17", DatePrecision.second),
+        ("2003-12-15T13:15", DatePrecision.minute),
+        ("2003-12-15T-:15", DatePrecision.day),
+        ("2003-12-15T13:-:17", DatePrecision.hour),
+        ("2003---15", DatePrecision.year),
+        ("--12-15", None),
+        ("-----T07:15", None),
+        ("-----T07:15:30", None),
+        ("-----T-:15", None),
+        ("-----T07:-:30", None),
+        ("2003-12-15T-:-:17", DatePrecision.day),
+        ("2003-12--", DatePrecision.month),
+        ("2003--", DatePrecision.year),
     ],
 )
 def test_detect_datetime_precision_with_uncertain_components(value, expected_precision):
@@ -802,6 +813,14 @@ AUTO_PRECISION_CASES = {
         ("2025-06-25T17:21", "2025-06-25T17:22:30", "auto", False),
         ("2025-06-25T", "2025-06-25", "auto", False),
         ("2025-06-24T", "2025-06-25", "auto", False),
+        ("2003---15", "2003-12-15", "auto", True),
+        ("2003---15", "2003-11-15", "auto", True),
+        ("2003---15", "2004-12-15", "auto", False),
+        ("2003-12-15T-:15", "2003-12-15T13:15", "auto", True),
+        ("2003-12-15T-:15", "2003-12-15T14:15", "auto", True),
+        ("2003-12-15T-:15", "2003-12-16T13:15", "auto", False),
+        ("2003-12-15T13:-:17", "2003-12-15T13:30:17", "auto", True),
+        ("2003-12-15T13:-:17", "2003-12-15T14:30:17", "auto", False),
     ],
     "date_greater_than": [
         ("2025-06-26", "2025-06-25T17:22", None, True),

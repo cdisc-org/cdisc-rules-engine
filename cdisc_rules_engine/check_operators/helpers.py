@@ -12,17 +12,22 @@ import operator
 # Date regex pattern for validation
 date_regex = re.compile(
     r"^("
-    r"(-?[0-9]{4}|-)(-{1,2}(1[0-2]|0[1-9]|-))?(-{1,2}(3[01]|0[1-9]|[12][0-9]|-))?"
-    r"(T(2[0-3]|[01][0-9]|-)(:(([0-5][0-9]|-))(:(([0-5][0-9]|-))?(\.[0-9]+)?)?)?"
-    r"(Z|[+-](2[0-3]|[01][0-9]):[0-5][0-9])?)?"
+    r"(?P<year>-?[0-9]{4}|-)(-{1,2}(?P<month>1[0-2]|0[1-9]|-))?"
+    r"(-{1,2}(?P<day>3[01]|0[1-9]|[12][0-9]|-))?"
+    r"(T(?P<hour>2[0-3]|[01][0-9]|-)(:((?P<minute>[0-5][0-9]|-))"
+    r"(:((?P<second>[0-5][0-9]|-))?(\.(?P<microsecond>[0-9]+))?)?)?"
+    r"(?P<timezone>Z|[+-](2[0-3]|[01][0-9]):[0-5][0-9])?)?"
     r"(\/"
-    r"(-?[0-9]{4}|-)(-{1,2}(1[0-2]|0[1-9]|-))?(-{1,2}(3[01]|0[1-9]|[12][0-9]|-))?"
-    r"(T(2[0-3]|[01][0-9]|-)(:(([0-5][0-9]|-))(:(([0-5][0-9]|-))?(\.[0-9]+)?)?)?"
-    r"(Z|[+-](2[0-3]|[01][0-9]):[0-5][0-9])?)?"
+    r"(?P<interval_year>-?[0-9]{4}|-)(-{1,2}(?P<interval_month>1[0-2]|0[1-9]|-))?"
+    r"(-{1,2}(?P<interval_day>3[01]|0[1-9]|[12][0-9]|-))?"
+    r"(T(?P<interval_hour>2[0-3]|[01][0-9]|-)(:((?P<interval_minute>[0-5][0-9]|-))"
+    r"(:((?P<interval_second>[0-5][0-9]|-))?(\.(?P<interval_microsecond>[0-9]+))?)?)?"
+    r"(?P<interval_timezone>Z|[+-](2[0-3]|[01][0-9]):[0-5][0-9])?)?"
     r")?"
     r"|"
-    r"-{4,8}T(2[0-3]|[01][0-9]|-)(:(([0-5][0-9]|-))(:(([0-5][0-9]|-))?(\.[0-9]+)?)?)?"
-    r"(Z|[+-](2[0-3]|[01][0-9]):[0-5][0-9])?"
+    r"-{4,8}T(?P<timeonly_hour>2[0-3]|[01][0-9]|-)(:((?P<timeonly_minute>[0-5][0-9]|-))"
+    r"(:((?P<timeonly_second>[0-5][0-9]|-))?(\.(?P<timeonly_microsecond>[0-9]+))?)?)?"
+    r"(?P<timeonly_timezone>Z|[+-](2[0-3]|[01][0-9]):[0-5][0-9])?"
     r")$"
 )
 
@@ -150,179 +155,212 @@ def _empty_datetime_components() -> dict:
     }
 
 
-def _assign_date_components(components: dict, date_parts: list) -> None:
-    if not date_parts:
-        return
-    keys = ("year", "month", "day")
-    for index, key in enumerate(keys):
-        if len(date_parts) > index and date_parts[index] not in (None, "-"):
-            components[key] = date_parts[index]
-
-
-def _assign_time_components(components: dict, time_part: str) -> None:
-    if not time_part:
-        return
-    tokens = time_part.split(":", 2)
-    if tokens and tokens[0] not in ("", "-"):
-        components["hour"] = tokens[0]
-    if len(tokens) > 1 and tokens[1] not in ("", "-"):
-        components["minute"] = tokens[1]
-    if len(tokens) == 3 and tokens[2]:
-        second_part = tokens[2]
-        if "." in second_part:
-            second_val, micro_val = second_part.split(".", 1)
-            if second_val not in ("", "-"):
-                components["second"] = second_val
-            if micro_val:
-                components["microsecond"] = micro_val
-        elif second_part not in ("", "-"):
-            components["second"] = second_part
-
-
 def _extract_datetime_components(date_str: str) -> dict:
     """Extract datetime components using regex pattern matching."""
     components = _empty_datetime_components()
     if not date_str or not isinstance(date_str, str):
         return components
-    if not date_regex.match(date_str):
+
+    match = date_regex.match(date_str)
+    if not match:
         return components
-    date_parts, time_part, has_time = _parse_datetime_string(date_str)
-    _assign_date_components(components, date_parts)
-    if has_time:
-        _assign_time_components(components, time_part)
+
+    year = match.group("year") or match.group("interval_year")
+    month = match.group("month") or match.group("interval_month")
+    day = match.group("day") or match.group("interval_day")
+    hour = (
+        match.group("hour")
+        or match.group("interval_hour")
+        or match.group("timeonly_hour")
+    )
+    minute = (
+        match.group("minute")
+        or match.group("interval_minute")
+        or match.group("timeonly_minute")
+    )
+    second = (
+        match.group("second")
+        or match.group("interval_second")
+        or match.group("timeonly_second")
+    )
+    microsecond = (
+        match.group("microsecond")
+        or match.group("interval_microsecond")
+        or match.group("timeonly_microsecond")
+    )
+
+    if year and year != "-":
+        components["year"] = year
+    if month and month != "-":
+        components["month"] = month
+    if day and day != "-":
+        components["day"] = day
+    if hour and hour != "-":
+        components["hour"] = hour
+    if minute and minute != "-":
+        components["minute"] = minute
+    if second and second != "-":
+        components["second"] = second
+    if microsecond:
+        components["microsecond"] = microsecond
+
     return components
 
 
 def _parse_datetime_string(date_str: str):
     if not date_str or not isinstance(date_str, str):
-        return [], "", False
+        return [], (None, None, None, None), False
 
-    has_time = "T" in date_str
+    match = date_regex.match(date_str)
+    if not match:
+        return [], (None, None, None, None), False
 
-    if has_time:
-        date_part, time_part = date_str.split("T", 1)
-        time_part = re.sub(r"(Z|[+\-]\d{2}:\d{2})$", "", time_part)
-    else:
-        date_part = date_str
-        time_part = ""
+    year = match.group("year") or match.group("interval_year")
+    month = match.group("month") or match.group("interval_month")
+    day = match.group("day") or match.group("interval_day")
+    hour = (
+        match.group("hour")
+        or match.group("interval_hour")
+        or match.group("timeonly_hour")
+    )
+    minute = (
+        match.group("minute")
+        or match.group("interval_minute")
+        or match.group("timeonly_minute")
+    )
+    second = (
+        match.group("second")
+        or match.group("interval_second")
+        or match.group("timeonly_second")
+    )
+    microsecond = (
+        match.group("microsecond")
+        or match.group("interval_microsecond")
+        or match.group("timeonly_microsecond")
+    )
 
-    if not date_part or all(c == "-" for c in date_part):
-        return ["-", "-", "-"], time_part, has_time
+    date_components = [
+        year if year and year != "-" else "-",
+        month if month and month != "-" else "-",
+        day if day and day != "-" else "-",
+    ]
 
-    segments = date_part.split("-")
-    components = []
-    i = 0
+    has_time = (
+        hour is not None
+        or minute is not None
+        or second is not None
+        or microsecond is not None
+    )
 
-    while i < len(segments) and len(components) < 3:
-        segment = segments[i]
+    # Return time components directly instead of rebuilding string
+    time_components = (
+        hour if hour and hour != "-" else None,
+        minute if minute and minute != "-" else None,
+        second if second and second != "-" else None,
+        microsecond if microsecond else None,
+    )
 
-        if segment:
-            components.append(segment)
-            i += 1
-        else:
-            empty_start = i
-            while i < len(segments) and not segments[i]:
-                i += 1
+    return date_components, time_components, has_time
 
-            empty_count = i - empty_start
-            if empty_count >= 2:
-                components.append("-")
 
-    while len(components) < 3:
-        components.append("-")
+def _normalize_precision(precision_name):
+    """Convert string to DatePrecision enum if needed."""
+    if isinstance(precision_name, str):
+        try:
+            return DatePrecision[precision_name]
+        except (KeyError, ValueError):
+            return None
+    return precision_name
 
-    if len(components) > 3:
-        components = components[:3]
 
-    return components, time_part, has_time
+def _has_later_date_component(date_components, index):
+    """Check if there are valid components after the given index."""
+    for later_idx in range(index + 1, min(3, len(date_components))):
+        if later_idx < len(date_components):
+            later_comp = date_components[later_idx]
+            if later_comp and later_comp != "-":
+                return True
+    return False
+
+
+def _get_precision_before_missing(precision):
+    """Get precision before the missing component."""
+    if precision == DatePrecision.year:
+        return None
+    prev_index = precision.value - 1
+    return DatePrecision(prev_index) if prev_index >= 0 else None
 
 
 def _check_date_component(date_components, index, precision_name):
+    precision = _normalize_precision(precision_name)
+    if precision is None:
+        return None
+
     if len(date_components) <= index:
-        if precision_name == "year":
-            return None
-        precision_names = DatePrecision.names()
-        prev_index = precision_names.index(precision_name) - 1
-        return precision_names[prev_index] if prev_index >= 0 else None
+        return _get_precision_before_missing(precision)
 
     component = date_components[index]
-
     if not component or component == "-":
-        has_later_component = False
-        for later_idx in range(index + 1, min(3, len(date_components))):
-            if later_idx < len(date_components):
-                later_comp = date_components[later_idx]
-                if later_comp and later_comp != "-":
-                    has_later_component = True
-                    break
-
-        if has_later_component:
+        if _has_later_date_component(date_components, index):
             return None
-
-        if precision_name == "year":
-            return None
-        precision_names = DatePrecision.names()
-        prev_index = precision_names.index(precision_name) - 1
-        return precision_names[prev_index] if prev_index >= 0 else None
+        return _get_precision_before_missing(precision)
 
     return None
 
 
-def _check_time_component(time_part, has_time, component_index):
-    if not has_time or not time_part:
-        return "day"
-    time_components = time_part.split(":")
-    if len(time_components) <= component_index:
-        precision_names = DatePrecision.names()
-        prev_index = precision_names.index("hour") + component_index - 1
-        return precision_names[prev_index] if prev_index >= 0 else "day"
-    component = time_components[component_index]
+def _check_time_component(time_components, has_time, component_index):
+    if not has_time or not time_components:
+        return DatePrecision.day
+    hour, minute, second, microsecond = time_components
+    components = [hour, minute, second]
+    if len(components) <= component_index or components[component_index] is None:
+        prev_index = DatePrecision.hour.value + component_index - 1
+        return DatePrecision(prev_index) if prev_index >= 0 else DatePrecision.day
+    component = components[component_index]
     if not component or component == "-":
-        precision_names = DatePrecision.names()
-        prev_index = precision_names.index("hour") + component_index - 1
-        return precision_names[prev_index] if prev_index >= 0 else "day"
+        prev_index = DatePrecision.hour.value + component_index - 1
+        return DatePrecision(prev_index) if prev_index >= 0 else DatePrecision.day
     return None
 
 
-def _check_second_component(time_part, has_time):
-    if not has_time or not time_part:
-        return "day"
-    time_components = time_part.split(":")
-    if len(time_components) <= 2:
-        return "minute"
-    second_part = time_components[2]
-    second = second_part.split(".", 1)[0] if "." in second_part else second_part
+def _check_second_component(time_components, has_time):
+    if not has_time or not time_components:
+        return DatePrecision.day
+    hour, minute, second, microsecond = time_components
+    if second is None:
+        return DatePrecision.minute
     if not second or second == "-":
-        return "minute"
+        return DatePrecision.minute
     return None
 
 
-def _check_microsecond_component(time_part, has_time):
-    if not has_time or not time_part:
-        return "day"
-    time_components = time_part.split(":")
-    if len(time_components) <= 2:
-        return "minute"
-    second_part = time_components[2]
-    if "." not in second_part:
-        return "second"
-    microsecond_part = second_part.split(".", 1)[1]
-    if not microsecond_part:
-        return "second"
+def _check_microsecond_component(time_components, has_time):
+    if not has_time or not time_components:
+        return DatePrecision.day
+    hour, minute, second, microsecond = time_components
+    if second is None:
+        return DatePrecision.minute
+    if microsecond is None:
+        return DatePrecision.second
+    if not microsecond:
+        return DatePrecision.second
     return None
 
 
 @lru_cache(maxsize=1000)
-def detect_datetime_precision(date_str: str) -> str:
+def detect_datetime_precision(date_str: str) -> DatePrecision | None:
     if not _datestring_is_valid(date_str):
         return None
 
-    date_components, time_part, has_time = _parse_datetime_string(date_str)
+    date_components, time_components, has_time = _parse_datetime_string(date_str)
 
-    if _is_time_only_precision(date_components, has_time):
-        return _time_only_precision(time_part)
+    if all(
+        component == "-" or component is None or component == ""
+        for component in date_components
+    ):
+        return None
 
-    return _date_and_time_precision(date_components, time_part, has_time)
+    return _date_and_time_precision(date_components, time_components, has_time)
 
 
 def _datestring_is_valid(date_str: str) -> bool:
@@ -333,92 +371,184 @@ def _is_time_only_precision(date_components: list, has_time: bool) -> bool:
     return has_time and all(component == "-" for component in date_components)
 
 
-def _time_only_precision(time_part: str) -> str:
-    if not time_part:
+def _time_only_precision(time_components) -> DatePrecision | None:
+    if not time_components:
         return None
-
-    time_components = time_part.split(":")
-    if not time_components or not time_components[0] or time_components[0] == "-":
+    hour, minute, second, microsecond = time_components
+    if not hour or hour == "-":
         return None
-    if len(time_components) <= 1 or not time_components[1] or time_components[1] == "-":
-        return "hour"
-    if len(time_components) <= 2:
-        return "minute"
+    if not minute or minute == "-":
+        return DatePrecision.hour
+    if second is None:
+        return DatePrecision.minute
+    second_part = second
+    if microsecond:
+        second_part = f"{second}.{microsecond}"
+    return _precision_from_second_component(second_part)
 
-    return _precision_from_second_component(time_components[2])
 
-
-def _precision_from_second_component(second_part: str) -> str:
+def _precision_from_second_component(second_part: str) -> DatePrecision:
     if "." in second_part:
         second, microsecond = second_part.split(".", 1)
         if not second or second == "-":
-            return "minute"
-        return "second" if not microsecond else "microsecond"
+            return DatePrecision.minute
+        return DatePrecision.second if not microsecond else DatePrecision.microsecond
 
     if not second_part or second_part == "-":
-        return "minute"
-    return "second"
+        return DatePrecision.minute
+    return DatePrecision.second
 
 
-def _date_and_time_precision(date_components, time_part, has_time) -> str:
-    precision_checks = _precision_check_functions(date_components, time_part, has_time)
-
-    for index, precision_name in enumerate(DatePrecision.names()):
-        result = precision_checks[precision_name](index, precision_name)
-        if result is not None:
-            return result
-
-    return "microsecond"
+def _check_date_component_missing(component) -> bool:
+    return component is None or component == "-" or component == ""
 
 
-def _precision_check_functions(date_components, time_part, has_time):
+def _get_precision_before(precision: DatePrecision) -> DatePrecision | None:
+    if precision == DatePrecision.year:
+        return None
+    prev_index = precision.value - 1
+    if prev_index >= 0:
+        return DatePrecision(prev_index)
+    return None
+
+
+def _check_date_precision(date_components) -> tuple:
+    date_component_map = {
+        DatePrecision.year: 0,
+        DatePrecision.month: 1,
+        DatePrecision.day: 2,
+    }
+    for precision in [DatePrecision.year, DatePrecision.month, DatePrecision.day]:
+        index = date_component_map[precision]
+        component = date_components[index] if index < len(date_components) else None
+        if _check_date_component_missing(component):
+            result = _get_precision_before(precision)
+            return (True, result)
+    return (False, None)
+
+
+def _check_time_precision(time_components) -> DatePrecision:
+    if not time_components:
+        return DatePrecision.day
+    hour, minute, second, microsecond = time_components
+    if _check_date_component_missing(hour):
+        return DatePrecision.day
+    if _check_date_component_missing(minute):
+        return DatePrecision.hour
+    if second is None:
+        return DatePrecision.minute
+    if _check_date_component_missing(second):
+        return DatePrecision.minute
+    if microsecond is None:
+        return DatePrecision.second
+    if not microsecond or microsecond == "":
+        return DatePrecision.second
+    return DatePrecision.microsecond
+
+
+def _date_and_time_precision(
+    date_components, time_components, has_time
+) -> DatePrecision | None:
+    found_missing, date_result = _check_date_precision(date_components)
+    if found_missing:
+        return date_result
+    if not has_time or not time_components:
+        return DatePrecision.day
+    return _check_time_precision(time_components)
+
+
+def _precision_check_functions(date_components, time_components, has_time):
     return {
-        "year": lambda i, name: _check_date_component(date_components, i, name),
-        "month": lambda i, name: _check_date_component(date_components, i, name),
-        "day": lambda i, name: _check_date_component(date_components, i, name),
-        "hour": lambda i, name: _check_time_component(time_part, has_time, 0),
-        "minute": lambda i, name: _check_time_component(time_part, has_time, 1),
-        "second": lambda i, name: _check_second_component(time_part, has_time),
-        "microsecond": lambda i, name: _check_microsecond_component(
-            time_part, has_time
+        DatePrecision.year: lambda i, name: _check_date_component(
+            date_components, i, name
+        ),
+        DatePrecision.month: lambda i, name: _check_date_component(
+            date_components, i, name
+        ),
+        DatePrecision.day: lambda i, name: _check_date_component(
+            date_components, i, name
+        ),
+        DatePrecision.hour: lambda i, name: _check_time_component(
+            time_components, has_time, 0
+        ),
+        DatePrecision.minute: lambda i, name: _check_time_component(
+            time_components, has_time, 1
+        ),
+        DatePrecision.second: lambda i, name: _check_second_component(
+            time_components, has_time
+        ),
+        DatePrecision.microsecond: lambda i, name: _check_microsecond_component(
+            time_components, has_time
         ),
     }
 
 
-def get_common_precision(dt1: str, dt2: str) -> str:
+def get_common_precision(dt1: str, dt2: str) -> DatePrecision | None:
     p1 = detect_datetime_precision(dt1)
     p2 = detect_datetime_precision(dt2)
-    if not p1 or not p2:
+    if p1 is None or p2 is None:
         return None
-    min_idx = min(DatePrecision[p1].value, DatePrecision[p2].value)
-    return DatePrecision.get_name_by_index(min_idx)
+    min_idx = min(p1.value, p2.value)
+    return DatePrecision(min_idx)
 
 
 def get_date_component(component: str, date_string: str):
+    # Convert string to DatePrecision enum for internal use
+    try:
+        precision = DatePrecision[component]
+    except (KeyError, ValueError):
+        return get_date(date_string)
+
     component_func_map = {
-        "year": get_year,
-        "month": get_month,
-        "day": get_day,
-        "hour": get_hour,
-        "minute": get_minute,
-        "microsecond": get_microsecond,
-        "second": get_second,
+        DatePrecision.year: get_year,
+        DatePrecision.month: get_month,
+        DatePrecision.day: get_day,
+        DatePrecision.hour: get_hour,
+        DatePrecision.minute: get_minute,
+        DatePrecision.microsecond: get_microsecond,
+        DatePrecision.second: get_second,
     }
-    component_function = component_func_map.get(component)
+    component_function = component_func_map.get(precision)
     if component_function:
         return component_function(date_string)
     else:
         return get_date(date_string)
 
 
+def _parse_uncertain_date(date_string: str) -> datetime | None:
+    """Parse uncertain dates with missing components using regex groups."""
+    components = _extract_datetime_components(date_string)
+
+    year = int(components.get("year") or 1970)
+    month = int(components.get("month") or 1)
+    day = int(components.get("day") or 1)
+    hour = int(components.get("hour") or 0)
+    minute = int(components.get("minute") or 0)
+    second = int(components.get("second") or 0)
+    microsecond = int(components.get("microsecond") or 0)
+
+    try:
+        return datetime(year, month, day, hour, minute, second, microsecond)
+    except (ValueError, TypeError):
+        return None
+
+
 def get_date(date_string: str):
     """
     Returns a utc timestamp for comparison
     """
+    uncertainty_substrings = ["/", "--", "-:"]
+    has_uncertainty = any([substr in date_string for substr in uncertainty_substrings])
+
+    if has_uncertainty:
+        uncertain_date = _parse_uncertain_date(date_string)
+        if uncertain_date is not None:
+            utc = pytz.UTC
+            return utc.localize(uncertain_date)
+
     date = parse(date_string, default=datetime(1970, 1, 1))
     utc = pytz.UTC
     if date.tzinfo is not None and date.tzinfo.utcoffset(date) is not None:
-        # timezone aware
         return date.astimezone(utc)
     else:
         return utc.localize(date)
@@ -463,21 +593,25 @@ def case_insensitive_is_in(value, values):
     return str(value).lower() in str(values).lower()
 
 
-def truncate_datetime_to_precision(date_string: str, precision: str):
+def truncate_datetime_to_precision(date_string: str, precision: DatePrecision):
     dt = get_date(date_string)
-    if precision == "year":
-        return dt.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
-    if precision == "month":
-        return dt.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-    if precision == "day":
-        return dt.replace(hour=0, minute=0, second=0, microsecond=0)
-    if precision == "hour":
-        return dt.replace(minute=0, second=0, microsecond=0)
-    if precision == "minute":
-        return dt.replace(second=0, microsecond=0)
-    if precision == "second":
-        return dt.replace(microsecond=0)
-    return dt
+    match precision:
+        case DatePrecision.year:
+            return dt.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
+        case DatePrecision.month:
+            return dt.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        case DatePrecision.day:
+            return dt.replace(hour=0, minute=0, second=0, microsecond=0)
+        case DatePrecision.hour:
+            return dt.replace(minute=0, second=0, microsecond=0)
+        case DatePrecision.minute:
+            return dt.replace(second=0, microsecond=0)
+        case DatePrecision.second:
+            return dt.replace(microsecond=0)
+        case DatePrecision.microsecond:
+            return dt
+        case _:
+            return dt
 
 
 def _dates_are_comparable(target: str, comparator: str) -> bool:
@@ -505,7 +639,11 @@ def _build_precision_context(target: str, comparator: str) -> dict:
     }
 
 
-def _truncate_by_precision(target: str, comparator: str, precision: str) -> tuple:
+def _truncate_by_precision(
+    target: str, comparator: str, precision: DatePrecision | None
+) -> tuple:
+    if precision is None:
+        return get_date(target), get_date(comparator)
     return (
         truncate_datetime_to_precision(target, precision),
         truncate_datetime_to_precision(comparator, precision),
@@ -537,9 +675,7 @@ def _compare_with_inferred_precision(
 
     if truncated_target == truncated_comparator:
         if target_precision and comparator_precision:
-            target_value = DatePrecision[target_precision].value
-            comparator_value = DatePrecision[comparator_precision].value
-            if target_value > comparator_value:
+            if target_precision.value > comparator_precision.value:
                 return operator_func(get_date(target), get_date(comparator))
         return result
 
