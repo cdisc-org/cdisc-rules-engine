@@ -1058,7 +1058,7 @@ class DataframeType(BaseType):
             for i in range(len(self.value[target])):
                 target_val = self.value[target].iloc[i]
                 comp_val = comparison_data.iloc[i]
-                results.append(all(is_in(item, comp_val) for item in target_val))
+                results.append(all(is_in(item, target_val) for item in comp_val))
         else:
             if isinstance(comparator, list):
                 # get column as array of values

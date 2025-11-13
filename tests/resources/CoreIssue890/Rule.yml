@@ -93,9 +93,9 @@ Authorities:
         Version: "1.0"
 Check:
   all:
-    - name: $ppspec_value
+    - name: $spec_codelist
       operator: not_contains_all
-      value: $spec_codelist
+      value: $ppspec_value
 Core:
   Id: CDISC.SENDIG.SEND282
   Status: Draft
