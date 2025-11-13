@@ -59,6 +59,42 @@ def test_is_not_unique_set(target, comparator, dataset_type, expected_result):
 
 
 @pytest.mark.parametrize(
+    "target, comparator, regex, dataset_type, expected_result",
+    [
+        (
+            "ARM",
+            "DTC",
+            r"^\d{4}-\d{2}-\d{2}",
+            PandasDataset,
+            [False, False, False, False],
+        ),
+        ("ARM", "TAE", None, PandasDataset, [False, False, True, True]),
+    ],
+)
+def test_is_unique_set_with_regex(
+    target, comparator, regex, dataset_type, expected_result
+):
+    data = {
+        "ARM": ["PLACEBO", "PLACEBO", "ACTIVE", "ACTIVE"],
+        "TAE": [1, 1, 1, 2],
+        "DTC": [
+            "2024-01-15T10:30:00",
+            "2024-01-15T14:45:00",
+            "2024-01-16T10:30:00",
+            "2024-01-16T14:45:00",
+        ],
+    }
+    df = dataset_type.from_dict(data)
+    params = {"target": target, "comparator": comparator}
+    if regex is not None:
+        params["regex"] = regex
+    result = DataframeType(
+        {"value": df, "column_prefix_map": {"--": "AR"}}
+    ).is_unique_set(params)
+    assert result.equals(df.convert_to_series(expected_result))
+
+
+@pytest.mark.parametrize(
     "target, comparator, dataset_type, expected_result",
     [
         ("SESEQ", "USUBJID", PandasDataset, True),

@@ -191,51 +191,35 @@ class BaseOperation:
         )
 
     def _get_grouping_columns(self) -> List[str]:
-        if any(item.startswith("$") for item in self.params.grouping):
-            return self._expand_operation_results_in_grouping(self.params.grouping)
+        expanded = self._expand_operation_results_in_grouping(self.params.grouping)
+        if not self.params.grouping_aliases:
+            return expanded
         else:
-            return (
-                self.params.grouping
-                if not self.params.grouping_aliases
-                else [
-                    (
-                        self.params.grouping_aliases[i]
-                        if 0 <= i < len(self.params.grouping_aliases)
-                        else v
-                    )
-                    for i, v in enumerate(self.params.grouping)
-                ]
-            )
+            return [
+                (
+                    self.params.grouping_aliases[i]
+                    if 0 <= i < len(self.params.grouping_aliases)
+                    else v
+                )
+                for i, v in enumerate(expanded)
+            ]
 
     def _expand_operation_results_in_grouping(self, grouping_list):
         expanded = []
         for item in grouping_list:
-            if item.startswith("$") and item in self.evaluation_dataset.columns:
+            if item in self.evaluation_dataset.columns:
                 operation_col = self.evaluation_dataset[item]
                 first_val = operation_col.iloc[0]
-                if operation_col.astype(str).nunique() == 1:
-                    if isinstance(first_val, (list, tuple)):
-                        expanded.extend(first_val)
-                    else:
-                        expanded.append(item)
+                if (
+                    isinstance(first_val, (list, tuple))
+                    and operation_col.astype(str).nunique() == 1
+                ):
+                    expanded.extend(first_val)
                 else:
-                    expanded.extend(self._collect_values_from_column(operation_col))
+                    expanded.append(item)
             else:
                 expanded.append(item)
         return list(dict.fromkeys(expanded))
-
-    def _collect_values_from_column(self, operation_col):
-        seen = []
-        for val in operation_col:
-            if val is not None:
-                if isinstance(val, (list, tuple)):
-                    for v in val:
-                        if v not in seen:
-                            seen.append(v)
-                else:
-                    if val not in seen:
-                        seen.append(val)
-        return seen
 
     def _get_variables_metadata_from_standard(self) -> List[dict]:
         # TODO: Update to handle other standard types: adam, cdash, etc.

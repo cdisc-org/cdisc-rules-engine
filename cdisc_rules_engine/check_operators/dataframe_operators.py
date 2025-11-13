@@ -1200,6 +1200,7 @@ class DataframeType(BaseType):
     def is_unique_set(self, other_value):
         target = self.replace_prefix(other_value.get("target"))
         comparator = other_value.get("comparator")
+        regex_pattern = other_value.get("regex")
         values = [target, comparator]
         target_data = flatten_list(self.value, values)
         target_names = []
@@ -1209,6 +1210,13 @@ class DataframeType(BaseType):
                 target_names.append(target_name)
         target_names = list(set(target_names))
         df_group = self.value[target_names].copy()
+        if regex_pattern:
+            for col in df_group.columns:
+                df_group[col] = df_group[col].apply(
+                    lambda x: (
+                        apply_regex(regex_pattern, x) if isinstance(x, str) and x else x
+                    )
+                )
         df_group = df_group.fillna("_NaN_")
         group_sizes = df_group.groupby(target_names).size()
         counts = df_group.apply(tuple, axis=1).map(group_sizes)

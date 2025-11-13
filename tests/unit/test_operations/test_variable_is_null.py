@@ -42,7 +42,7 @@ def test_variable_is_null(
     config = ConfigService()
     cache = CacheServiceFactory(config).get_cache_service()
     operation_params.dataframe = data
-    operation_params.target = "--VAR"
+    operation_params.target = "AEVAR"
     operation_params.domain = "AE"
     mock_data_service.get_dataset.return_value = data
     mock_data_service.dataset_implementation = data.__class__

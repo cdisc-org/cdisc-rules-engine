@@ -14,7 +14,7 @@ class VariableIsNull(BaseOperation):
             ]
             return self.data_service.dataset_implementation().convert_to_series(result)
         else:
-            target_variable = self.params.target.replace("--", self.params.domain, 1)
+            target_variable = self.params.target
             return self._is_target_variable_null(dataframe, target_variable)
 
     def _is_target_variable_null(self, dataframe, target_variable: str) -> bool:
