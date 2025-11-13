@@ -60,6 +60,7 @@ class SQLRuleProcessor:
                 filter=operation.get("filter"),
                 key_name=operation.get("key_name"),
                 key_value=operation.get("key_value"),
+                ct_package_types=operation.get("ct_package_types"),
             )
 
             operation = SqlOperationsFactory.get_service(rule_name, params=params, data_service=data_service)

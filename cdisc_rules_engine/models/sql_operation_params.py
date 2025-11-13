@@ -21,6 +21,7 @@ class SqlOperationParams:
     filter: dict = None
     key_name: str = None
     key_value: str = None
+    ct_package_types: List[str] = None
 
     # standard_substandard: str = None
     # attribute_name: str = None

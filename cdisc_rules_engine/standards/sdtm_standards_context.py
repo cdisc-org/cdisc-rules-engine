@@ -35,6 +35,11 @@ class SdtmStandardsContext(BaseStandardsContext):
         super().__init__()
         self.library_metadata = library_metadata
 
+    @property
+    def standard(self):
+        """Process standard metadata to get standard name"""
+        return self.library_metadata.standard_metadata.get("name", "").split(" ")[0]
+
     def transform_dataset_metadata(self, source: DatasetMetadata2) -> SdtmDatasetMetadata2:
         domain = self.derive_domain(source.name)
         return SdtmDatasetMetadata2(
@@ -109,6 +114,10 @@ class SdtmStandardsContext(BaseStandardsContext):
             if domain_details:
                 return domain_details.get("label", "")
         return ""
+
+    def get_ct_packages(self):
+        ct_packages = self.library_metadata.published_ct_packages
+        return ct_packages
 
     def get_domain_metadata(self, domain: str):
         standard_data = self.library_metadata.standard_metadata

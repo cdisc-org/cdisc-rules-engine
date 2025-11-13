@@ -25,6 +25,9 @@ class DefaultStandardsContext(BaseStandardsContext):
     def get_domain_label(self, domain: str):
         return ""
 
+    def get_ct_packages(self):
+        return []
+
     def get_domain_metadata(self, domain: str):
         return []
 

@@ -25,6 +25,7 @@ from cdisc_rules_engine.constants.permissibility import (
     PERMISSIBLE,
 )
 from cdisc_rules_engine.sql_operations.study_domains import SqlStudyDomainsOperation
+from cdisc_rules_engine.sql_operations.valid_codelist_dates import SqlValidCodelistDates
 from cdisc_rules_engine.sql_operations.extract_metadata import SqlExtractMetadataOperation
 
 
@@ -67,7 +68,7 @@ class SqlOperationsFactory:
         "expected_variables": lambda params, ds: SqlPermissibilityOperation(params, ds, EXPECTED),
         "permissible_variables": lambda params, ds: SqlPermissibilityOperation(params, ds, PERMISSIBLE),
         "study_domains": SqlStudyDomainsOperation,
-        "valid_codelist_dates": None,
+        "valid_codelist_dates": SqlValidCodelistDates,
         "label_referenced_variable_metadata": None,
         "name_referenced_variable_metadata": None,
         "define_variable_metadata": None,
