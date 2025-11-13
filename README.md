@@ -1,27 +1,20 @@
-### Supported python versions
+[![](https://www.cdisc.org/themes/custom/cdiscd8/logo.svg)](https://www.cdisc.org)
 
-[![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3120)
-
-### Windows Command Compatibility
-
-Note: The Windows commands provided in this README are written for PowerShell. While most commands are compatible with both PowerShell and Command Prompt, some adjustments may be necessary when using Command Prompt. If you encounter any issues running these commands in Command Prompt, try using PowerShell or consult the Command Prompt documentation for equivalent commands.
+[![](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3120) [![](https://img.shields.io/pypi/v/cdisc-rules-engine.svg)](https://pypi.org/project/cdisc-rules-engine) [![](https://img.shields.io/docker/v/cdiscdocker/cdisc-rules-engine?label=docker)](https://hub.docker.com/r/cdiscdocker/cdisc-rules-engine)
 
 # cdisc-rules-engine
 
 Open source offering of the CDISC Rules Engine, a tool designed for validating clinical trial data against data standards.
-To learn more, visit our official CDISC website or for other implementation options, see our DockerHub repository:  
-<br>  
-[CDISC Website](https://www.cdisc.org/)  
-<br>  
-[CDISC Rules Engine on DockerHub](https://hub.docker.com/repository/docker/cdiscdocker/cdisc-rules-engine/general)
 
-### **Quick start**
+## Quick start
 
-To quickly get up and running with CORE, users can download the latest executable version of the engine for their operating system from here: <https://github.com/cdisc-org/cdisc-rules-engine/releases>
+Note: The Windows commands provided in this README are written for PowerShell. While most commands are compatible with both PowerShell and Command Prompt, some adjustments may be necessary when using Command Prompt. If you encounter any issues running these commands in Command Prompt, try using PowerShell or consult the Command Prompt documentation for equivalent commands.
+
+To quickly get up and running with CORE, users can download the latest executable version of the engine for their operating system from the [Releases](https://github.com/cdisc-org/cdisc-rules-engine/releases)
 
 Once downloaded, simply unzip the file and run the following command based on your Operating System:
 
-Windows:
+### Windows:
 
 ```
 .\core.exe validate -s <standard> -v <standard_version> -d path/to/datasets
@@ -29,7 +22,7 @@ Windows:
 # ex: .\core.exe validate -s sdtmig -v 3-4 -d .\xpt\
 ```
 
-Linux/Mac:
+### Linux/Mac:
 
 ```
 ./core validate -s <standard> -v <standard_version> -d path/to/datasets
@@ -50,68 +43,9 @@ Linux/Mac:
 > chmod +x ./core
 > ```
 
-### **Command-line Interface**
+## Command-line Interface
 
-### **Getting Started**
-
-In the terminal, navigate to the directory you intend to install CORE rules engine in
-
-1. Clone the repository:
-
-   ```
-   git clone https://github.com/cdisc-org/cdisc-rules-engine
-   ```
-
-2. Ensure you have Python 3.12 installed:
-   You can check your Python version with:
-   ```
-   python --version
-   ```
-   If you don't have Python 3.12, please download and install it from [python.org](https://www.python.org/downloads/) or using your system's package manager.
-
-### **Code formatter**
-
-This project uses the `black` code formatter, `flake8` linter for python and `prettier` for JSON, YAML and MD.
-It also uses `pre-commit` to run `black`, `flake8` and `prettier` when you commit.
-Both dependencies are added to _requirements-dev.txt_.
-
-**Required**
-
-Setting up `pre-commit` requires one extra step. After installing it you have to run
-
-`pre-commit install`
-
-This installs `pre-commit` in your `.git/hooks` directory.
-
-### **Installing dependencies**
-
-These steps should be run before running any tests or core commands using the non compiled version.
-
-- Create a virtual environment:
-
-  `python -m venv <virtual_environment_name>`
-
-NOTE: if you have multiple versions of python on your machine, you can call python 3.12 for the virtual environment's creation instead of the above command:
-`python3.12 -m venv <virtual_environment_name>`
-
-- Activate the virtual environment:
-
-`./<virtual_environment_name>/bin/activate` -- on linux/mac </br>
-`.\<virtual_environment_name>\Scripts\Activate` -- on windows
-
-- Install the requirements.
-
-`python -m pip install -r requirements-dev.txt` # From the root directory
-
-### **Running The Tests**
-
-From the root of the project run the following command (this will run both the unit and regression tests):
-
-`python -m pytest tests`
-
-### **Running a validation**
-
-#### From the command line
+### Running a validation (`validate`)
 
 Clone the repository and run `python core.py --help` to see the full list of commands.
 
@@ -213,7 +147,7 @@ Run `python core.py validate --help` to see the list of validation options.
   --help                          Show this message and exit.
 ```
 
-##### Available log levels
+#### Available log levels
 
 - `debug` - Display all logs
 - `info` - Display info, warnings, and error logs
@@ -221,7 +155,7 @@ Run `python core.py validate --help` to see the list of validation options.
 - `error` - Display only error logs
 - `critical` - Display critical logs
 
-##### **Validate folder**
+#### Validate folder
 
 To validate a folder using rules for SDTM-IG version 3.4 use the following command:
 
@@ -243,9 +177,10 @@ CORE supports the following dataset file formats for validation:
 - Define-XML files should be provided via the `--define-xml-path` (or `-dxp`) option, not through the dataset directory (`-d` or `-dp`).
 - If you point to a folder containing unsupported file formats, CORE will display an error message indicating which formats are supported.
 
-##### **Validate single rule**
+#### Validate single rule
 
 `python core.py validate -s sdtmig -v 3-4 -dp <path to dataset json file> -lr <path to rule json file> --meddra ./meddra/ --whodrug ./whodrug/`
+
 Note: JSON dataset should match the format provided by the rule editor:
 
 ```json
@@ -271,7 +206,7 @@ Note: JSON dataset should match the format provided by the rule editor:
 }
 ```
 
-##### **Understanding the Rules Report**
+#### **Understanding the Rules Report**
 
 The rules report tab displays the run status of each rule selected for validation
 
@@ -280,9 +215,45 @@ The possible rule run statuses are:
 - `SUCCESS` - The rule ran and data was validated against the rule. May or may not produce results
 - `SKIPPED` - The rule was unable to be run. Usually due to missing required data, but could also be cause by rule execution errors.
 
-# Additional Core Commands
+#### Setting DATASET_SIZE_THRESHOLD for Large Datasets
 
-**- update-cache** - update locally stored cache data (Requires an environment variable - `CDISC_LIBRARY_API_KEY`) This is stored in the .env folder in the root directory, the API key does not need quotations around it.
+The CDISC Rules Engine respects the `DATASET_SIZE_THRESHOLD` environment variable to determine when to use Dask for large dataset processing. Setting this to 0 coerces Dask usage over Pandas. A .env in the root directory with this variable set will cause this implementation coercion for the CLI. This can also be done with the executable releases via multiple methods:
+
+##### Windows (Command Prompt)
+
+```cmd
+set DATASET_SIZE_THRESHOLD=0 && core.exe validate -rest -of -config -commands
+```
+
+##### Windows (PowerShell)
+
+```powershell
+$env:DATASET_SIZE_THRESHOLD=0; core.exe validate -rest -of -config -commands
+```
+
+##### Linux/Mac (Bash)
+
+```bash
+DATASET_SIZE_THRESHOLD=0 ./core -rest -of -config -commands
+```
+
+##### .env File (Alternative)
+
+Create a `.env` file in the root directory of the release containing:
+
+```
+DATASET_SIZE_THRESHOLD=0
+```
+
+Then run normally: `core.exe validate -rest -of -config -commands
+
+---
+
+**Note:** Setting `DATASET_SIZE_THRESHOLD=0` tells the engine to use Dask processing for all datasets regardless of size, size threshold defaults to 1/4 of available RAM so datasets larger than this will use Dask. See env.example to see what the CLI .env file should look like
+
+### Updating the Cache (`update-cache`)
+
+Update locally stored cache data (Requires an environment variable - `CDISC_LIBRARY_API_KEY`) This is stored in the .env folder in the root directory, the API key does not need quotations around it.
 
 ```bash
   python core.py update-cache
@@ -292,14 +263,14 @@ The possible rule run statuses are:
 
 To obtain an api key, please follow the instructions found here: <https://wiki.cdisc.org/display/LIBSUPRT/Getting+Started%3A+Access+to+CDISC+Library+API+using+API+Key+Authentication>. Please note it can take up to an hour after sign up to have an api key issued
 
-# Custom Standards and Rules
+##### Custom Standards and Rules
 
-## Custom Rules Management
+###### Custom Rules Management
 
 - **Custom rules** are stored in a flat file in the cache, indexed by their core ID (e.g., 'COMPANY-000123' or 'CUSTOM-000123').
 - Each rule is stored independently in this file, allowing for efficient lookup and management.
 
-## Custom Standards Management
+###### Custom Standards Management
 
 - **Custom standards** act as a lookup mechanism that maps a standard identifier to a list of applicable rule IDs.
 - When adding a custom standard, you need to provide a JSON file with the following structure:
@@ -345,13 +316,13 @@ To obtain an api key, please follow the instructions found here: <https://wiki.c
 
   This rule will get metadata from SDTMIG version 3.4 but utilize the custom rules listed in the custom standard that need this library metadata.
 
-## Relationship Between Custom Rules and Standards
+##### Relationship Between Custom Rules and Standards
 
 - You should first add your custom rules to the cache, then create a custom standard that references those rules.
 - Custom standards can reference both core CDISC rules and your own custom rules in the same standard definition.
 - This two-level architecture allows for flexible rule reuse across multiple standards.
 
-## Custom Rules Management
+##### Custom Rules Management
 
 - **Add custom rules**: Use the `--custom-rules-directory` or `-crd` flag to specify a directory containing local rules, or `--custom-rule` or `-cr` flag to specify a single rule file:
   ```bash
@@ -371,9 +342,9 @@ To obtain an api key, please follow the instructions found here: <https://wiki.c
   python core.py update-cache --remove-custom-rules ALL
   ```
 
-## List Rules
+### List Rules (`list-rules`)
 
-**- list-rules** - list published rules available in the cache
+List published rules available in the cache
 
 - list all published rules:
 
@@ -402,7 +373,9 @@ To obtain an api key, please follow the instructions found here: <https://wiki.c
   python core.py list-rules --custom-rules -s custom_standard -v 1-0
   ```
 
-**- list-rule-sets** - lists all standards and versions for which rules are available:
+### List Rule Sets (`list-rule-sets`)
+
+Lists all standards and versions for which rules are available:
 
 ```bash
 python core.py list-rule-sets
@@ -421,7 +394,9 @@ python core.py list-rule-sets -o
 - `-c, --cache-path` - Relative path to cache files containing pre-loaded metadata and rules
 - `-o, --custom` - Flag to list all custom standards and versions in the cache instead of CDISC standards & rules
 
-**- list-ct** - list ct packages available in the cache
+### List CT (`list-ct`)
+
+List ct packages available in the cache
 
 ```
 Usage: python core.py list-ct [OPTIONS]
@@ -436,7 +411,9 @@ Options:
   --help                 Show this message and exit.
 ```
 
-## PyPI Integration
+## Development
+
+### PyPI Integration
 
 The CDISC Rules Engine is available as a Python package through PyPI. This allows you to:
 
@@ -450,7 +427,44 @@ pip install cdisc-rules-engine
 
 For implementation instructions, see [PYPI.md](PYPI.md).
 
-### **Creating an executable version**
+### Cloning
+
+In the terminal, navigate to the directory you intend to install CORE rules engine in
+
+1. Clone the repository:
+
+   ```
+   git clone https://github.com/cdisc-org/cdisc-rules-engine
+   ```
+
+2. Ensure you have Python 3.12 installed:
+   You can check your Python version with:
+   ```
+   python --version
+   ```
+   If you don't have Python 3.12, please download and install it from [python.org](https://www.python.org/downloads/) or using your system's package manager.
+
+### Installing dependencies
+
+These steps should be run before running any tests or core commands using the non compiled version.
+
+- Create a virtual environment:
+
+  `python -m venv <virtual_environment_name>`
+
+NOTE: if you have multiple versions of python on your machine, you can call python 3.12 for the virtual environment's creation instead of the above command:
+`python3.12 -m venv <virtual_environment_name>`
+
+- Activate the virtual environment:
+
+`./<virtual_environment_name>/bin/activate` -- on linux/mac </br>
+`.\<virtual_environment_name>\Scripts\Activate` -- on windows
+
+- Install the requirements.
+
+`python -m pip install -r requirements-dev.txt` # From the root directory
+
+### Creating an executable version
 
 **Note:** Further directions to create your own executable are contained in [README_Build_Executable.md](README_Build_Executable.md) if you wish to build an unofficial release executable for your own use.
 
@@ -467,7 +481,7 @@ _Note .venv should be replaced with path to python installation or virtual envir
 This will create an executable version in the `dist` folder. The version does not require having Python installed and
 can be launched by running `core` script with all necessary CLI arguments.
 
-### **Creating .whl file**
+### Creating .whl file
 
 All non-python files should be listed in `MANIFEST.in` to be included in the distribution.
 Files must be in python package.
@@ -498,7 +512,27 @@ To upload built distributive to pypi
 `py -m pip install --upgrade twine`
 `py -m twine upload --repository {repository_name} dist/*`
 
-## Submit an Issue
+## Contributing
+
+### Code formatter
+
+This project uses the `black` code formatter, `flake8` linter for python and `prettier` for JSON, YAML and MD.
+It also uses `pre-commit` to run `black`, `flake8` and `prettier` when you commit.
+Both dependencies are added to _requirements-dev.txt_.
+
+Setting up `pre-commit` requires one extra step. After installing it you have to run
+
+`pre-commit install`
+
+This installs `pre-commit` in your `.git/hooks` directory.
+
+### Running The Tests
+
+From the root of the project run the following command (this will run both the unit and regression tests):
+
+`python -m pytest tests`
+
+### Submit an Issue
 
 If you encounter any bugs, have feature requests, or need assistance, please submit an issue on our GitHub repository:
 
@@ -511,45 +545,7 @@ When submitting an issue, please include:
 - Your operating system and environment details
 - Any relevant logs or error messages
 
-# Setting DATASET_SIZE_THRESHOLD for Large Datasets
-
-The CDISC Rules Engine respects the `DATASET_SIZE_THRESHOLD` environment variable to determine when to use Dask for large dataset processing. Setting this to 0 coerces Dask usage over Pandas. A .env in the root directory with this variable set will cause this implementation coercion for the CLI. This can also be done with the executable releases via multiple methods:
-
-## Quick Commands
-
-### Windows (Command Prompt)
-
-```cmd
-set DATASET_SIZE_THRESHOLD=0 && core.exe validate -rest -of -config -commands
-```
-
-### Windows (PowerShell)
-
-```powershell
-$env:DATASET_SIZE_THRESHOLD=0; core.exe validate -rest -of -config -commands
-```
-
-### Linux/Mac (Bash)
-
-```bash
-DATASET_SIZE_THRESHOLD=0 ./core -rest -of -config -commands
-```
-
-## .env File (Alternative)
-
-Create a `.env` file in the root directory of the release containing:
-
-```
-DATASET_SIZE_THRESHOLD=0
-```
-
-Then run normally: `core.exe validate -rest -of -config -commands
-
----
-
-**Note:** Setting `DATASET_SIZE_THRESHOLD=0` tells the engine to use Dask processing for all datasets regardless of size, size threshold defaults to 1/4 of available RAM so datasets larger than this will use Dask. See env.example to see what the CLI .env file should look like
-
-## Updating USDM JSON Schema
+### Updating USDM JSON Schema
 
 Currently, the engine supports USDM JSON Schema validation against versions 3.0 and 4.0. The schema definition files are located at:
 
