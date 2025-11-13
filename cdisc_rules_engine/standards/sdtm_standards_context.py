@@ -110,6 +110,14 @@ class SdtmStandardsContext(BaseStandardsContext):
                 return domain_details.get("label", "")
         return ""
 
+    def get_domain_metadata(self, domain: str):
+        standard_data = self.library_metadata.standard_metadata
+        for c in standard_data.get("classes", []):
+            domain_details = search_in_list_of_dicts(c.get("datasets", []), lambda item: item["name"] == domain)
+            if domain_details:
+                return domain_details
+        return {}
+
     def within_rule_scope(self, rule: dict, metadata: DatasetMetadata2):
         """Check if rule is suitable and return reason if not"""
         rule_id = rule.get("core_id", "unknown")

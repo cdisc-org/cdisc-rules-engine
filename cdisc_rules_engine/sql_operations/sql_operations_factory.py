@@ -25,6 +25,7 @@ from cdisc_rules_engine.constants.permissibility import (
     PERMISSIBLE,
 )
 from cdisc_rules_engine.sql_operations.study_domains import SqlStudyDomainsOperation
+from cdisc_rules_engine.sql_operations.extract_metadata import SqlExtractMetadataOperation
 
 
 class SqlOperationsFactory:
@@ -35,7 +36,7 @@ class SqlOperationsFactory:
         "define_extensible_codelists": None,
         "distinct": SqlDistinctOperation,
         "dy": SqlDayDataValidatorOperation,
-        "extract_metadata": None,
+        "extract_metadata": SqlExtractMetadataOperation,
         "get_column_order_from_dataset": SqlDatasetColumnOrderOperation,
         "get_column_order_from_library": None,
         "get_codelist_attributes": None,

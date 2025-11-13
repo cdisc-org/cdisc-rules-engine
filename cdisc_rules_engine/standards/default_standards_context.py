@@ -25,6 +25,9 @@ class DefaultStandardsContext(BaseStandardsContext):
     def get_domain_label(self, domain: str):
         return ""
 
+    def get_domain_metadata(self, domain: str):
+        return []
+
     def within_rule_scope(self, scope: dict[str, Any], metadata: DatasetMetadata2):
         # TODO: Should do a domain check
         return True
