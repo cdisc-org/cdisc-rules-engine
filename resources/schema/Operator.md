@@ -748,6 +748,22 @@ True if all values in `value` are contained within the variable `name`.
     - "Unplanned Treatment"
 ```
 
+The operator also supports lists:
+
+```yaml
+- name: "$spec_codelist"
+  operator: "contains_all"
+  value: "$ppspec_value"
+```
+
+Where:
+
+| $spec_codelist              |   $ppspec_value    |
+| :-------------------------- | :----------------: |
+| ["CODE1", "CODE2", "CODE3"] | ["CODE1", "CODE2"] |
+| ["CODE1", "CODE2", "CODE3"] | ["CODE2", "CODE3"] |
+| ["CODE1", "CODE2", "CODE3"] |     ["CODE1"]      |
+
 ### not_contains_all
 
 Complement of `contains_all`
@@ -763,6 +779,22 @@ Complement of `contains_all`
     - "Not Treated"
     - "Unplanned Treatment"
 ```
+
+The operator also supports lists:
+
+```yaml
+- name: "$spec_codelist"
+  operator: "not_contains_all"
+  value: "$ppspec_value"
+```
+
+Where:
+
+| $spec_codelist              |   $ppspec_value    |
+| :-------------------------- | :----------------: |
+| ["CODE1", "CODE2", "CODE3"] | ["CODE1", "CODE2"] |
+| ["CODE1", "CODE2", "CODE3"] | ["CODE2", "CODE3"] |
+| ["CODE1", "CODE2", "CODE3"] |     ["CODE1"]      |
 
 ### shares_at_least_one_element_with
 
@@ -1036,13 +1068,15 @@ Complement of `is_ordered_by`
 
 ### target_is_sorted_by
 
-True if the values in `name` are ordered according to the values specified by `value` grouped by the values in `within`. Each `value` requires a variable `name`, ordering specified by `order`, and the null position specified by `null_position`.
+True if the values in `name` are ordered according to the values specified by `value` grouped by the values in `within`. Each `value` requires a variable `name`, ordering specified by `order`, and the null position specified by `null_position`. `within` accepts either a single column or an ordered list of columns.
 
 ```yaml
 Check:
   all:
     - name: --SEQ
-      within: USUBJID
+      within:
+        - USUBJID
+        - MIDSTYPE
       operator: target_is_sorted_by
       value:
         - name: --STDTC

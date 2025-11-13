@@ -45,7 +45,6 @@ from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.interfaces.data_service_interface import (
     DataServiceInterface,
 )
-from cdisc_rules_engine.exceptions.custom_exceptions import DomainNotFoundError
 
 
 class RuleProcessor:
@@ -423,6 +422,7 @@ class RuleProcessor:
                 term_pref_term=operation.get("term_pref_term"),
                 namespace=operation.get("namespace"),
                 value_is_reference=operation.get("value_is_reference", False),
+                delimiter=operation.get("delimiter"),
             )
 
             # execute operation
@@ -465,33 +465,32 @@ class RuleProcessor:
         if result is not None:
             return result
 
-        # download other domain
-        domain_details: dict = search_in_list_of_dicts(
-            operation_params.datasets,
-            lambda item: (
-                item.unsplit_name == operation_params.domain
-                or (
-                    operation_params.domain.endswith("--")
-                    and item.unsplit_name.startswith(operation_params.domain[:-2])
-                )
-            ),
-        )
-        if domain_details is None:
-            raise DomainNotFoundError(
-                f"Operation {operation_params.operation_name} requires Domain "
-                f"{operation_params.domain} but Domain not found in dataset"
+        if not self.is_current_domain(
+            operation_params.dataframe, operation_params.domain
+        ):
+            # download other domain
+            domain_details: dict = search_in_list_of_dicts(
+                operation_params.datasets,
+                lambda item: (
+                    item.unsplit_name == operation_params.domain
+                    or (
+                        operation_params.domain.endswith("--")
+                        and item.unsplit_name.startswith(operation_params.domain[:-2])
+                    )
+                ),
             )
-        filename = get_dataset_name_from_details(domain_details)
-        file_path: str = os.path.join(
-            get_directory_path(operation_params.dataset_path),
-            filename,
-        )
-        operation_params.dataframe = self.data_service.get_dataset(
-            dataset_name=file_path
-        )
-        operation_params = self._preprocess_operation_params(
-            operation_params, domain_details=domain_details
-        )
+            if domain_details is None:
+                logger.info(f"Domain {operation_params.domain} doesn't exist")
+                operation_params.dataframe[operation_params.operation_id] = None
+                return operation_params.dataframe
+            filename = get_dataset_name_from_details(domain_details)
+            file_path: str = os.path.join(
+                get_directory_path(operation_params.dataset_path),
+                filename,
+            )
+            operation_params.dataframe = self.data_service.get_dataset(
+                dataset_name=file_path
+            )
 
         # call the operation
         operation = operations_factory.get_service(

@@ -1245,3 +1245,41 @@ def test_duplicate_for_targets():
         assert (
             len([cond for cond in check[1] if cond["value"]["target"] == target]) == 1
         )
+
+
+def test_operation_nonexistent_domain_sets_none(mock_data_service, caplog):
+    """Operation on a domain not present in datasets should create a column with None values
+    and log domain-missing message."""
+    caplog.set_level("INFO")
+    df = PandasDataset.from_dict({"DOMAIN": ["LB", "LB"], "LBSEQ": [1, 2]})
+    rule = {
+        "operations": [
+            {"operator": "distinct", "domain": "AE", "name": "AESEQ", "id": "$ae_ids"}
+        ]
+    }
+    processor = RuleProcessor(mock_data_service, InMemoryCacheService())
+    # Use SDTMDatasetMetadata objects (dict caused AttributeError: unsplit_name)
+    datasets_metadata = [
+        SDTMDatasetMetadata(name="LB", filename="lb.xpt", first_record={"DOMAIN": "LB"})
+    ]
+    result = processor.perform_rule_operations(
+        rule=rule,
+        dataset=df.copy(),
+        domain="LB",
+        datasets=datasets_metadata,
+        dataset_path="lb.xpt",
+        standard="sdtmig",
+        standard_version="3-1-2",
+        standard_substandard=None,
+    )
+    # Assert new column created
+    assert "$ae_ids" in result.columns
+    # All values should be None
+    assert result["$ae_ids"].isnull().all()
+    # Original data preserved
+    assert result["LBSEQ"].tolist() == [1, 2]
+    # Log contains domain missing message
+    assert any(
+        "Domain AE" in rec.message and "doesn't exist" in rec.message
+        for rec in caplog.records
+    )
