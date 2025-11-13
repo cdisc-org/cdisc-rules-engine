@@ -479,9 +479,7 @@ class RuleProcessor:
                 ),
             )
             if domain_details is None:
-                logger.info(
-                    f"Domain {operation_params.domain} doesn't exist in the dataset"
-                )
+                logger.info(f"Domain {operation_params.domain} doesn't exist")
                 operation_params.dataframe[operation_params.operation_id] = None
                 return operation_params.dataframe
             filename = get_dataset_name_from_details(domain_details)
