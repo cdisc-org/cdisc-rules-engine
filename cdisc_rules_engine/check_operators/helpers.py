@@ -252,7 +252,6 @@ def _parse_datetime_string(date_str: str):
         or microsecond is not None
     )
 
-    # Return time components directly instead of rebuilding string
     time_components = (
         hour if hour and hour != "-" else None,
         minute if minute and minute != "-" else None,
