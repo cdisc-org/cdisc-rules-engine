@@ -746,6 +746,22 @@ True if all values in `value` are contained within the variable `name`.
     - "Unplanned Treatment"
 ```
 
+The operator also supports lists:
+
+```yaml
+- name: "$spec_codelist"
+  operator: "contains_all"
+  value: "$ppspec_value"
+```
+
+Where:
+
+| $spec_codelist              |   $ppspec_value    |
+| :-------------------------- | :----------------: |
+| ["CODE1", "CODE2", "CODE3"] | ["CODE1", "CODE2"] |
+| ["CODE1", "CODE2", "CODE3"] | ["CODE2", "CODE3"] |
+| ["CODE1", "CODE2", "CODE3"] |     ["CODE1"]      |
+
 ### not_contains_all
 
 Complement of `contains_all`
@@ -761,6 +777,22 @@ Complement of `contains_all`
     - "Not Treated"
     - "Unplanned Treatment"
 ```
+
+The operator also supports lists:
+
+```yaml
+- name: "$spec_codelist"
+  operator: "not_contains_all"
+  value: "$ppspec_value"
+```
+
+Where:
+
+| $spec_codelist              |   $ppspec_value    |
+| :-------------------------- | :----------------: |
+| ["CODE1", "CODE2", "CODE3"] | ["CODE1", "CODE2"] |
+| ["CODE1", "CODE2", "CODE3"] | ["CODE2", "CODE3"] |
+| ["CODE1", "CODE2", "CODE3"] |     ["CODE1"]      |
 
 ### shares_at_least_one_element_with
 

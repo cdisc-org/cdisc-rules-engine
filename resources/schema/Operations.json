@@ -236,6 +236,13 @@
     },
     {
       "properties": {
+        "operator": { "const": "split_by" }
+      },
+      "required": ["id", "operator", "delimiter", "name"],
+      "type": "object"
+    },
+    {
+      "properties": {
         "operator": { "const": "study_domains" }
       },
       "required": ["id", "operator"],
