@@ -45,6 +45,8 @@ Once downloaded, simply unzip the file and run the following command based on yo
 
 ## Command-line Interface
 
+**Note**: the following examples are applicable to the source code and have references to "`python core.py`". When using the executable version as described in the [Quick Start](#quick-start) above, instances of "`python cored.py`" should be replaced with "`.\core.exe`" (Windows) or "`./core`" (Linux/Mac). You can also run directly on the source code by following the [Cloning](#cloning) instructions.
+
 ### Running a validation (`validate`)
 
 Clone the repository and run `python core.py --help` to see the full list of commands.
