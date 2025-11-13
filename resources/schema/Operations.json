@@ -93,7 +93,7 @@
         "name",
         "ct_attribute",
         "ct_packages",
-        "ct_version"
+        "version"
       ],
       "type": "object"
     },
@@ -232,6 +232,13 @@
         "operator": { "const": "required_variables" }
       },
       "required": ["id", "operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": { "const": "split_by" }
+      },
+      "required": ["id", "operator", "delimiter", "name"],
       "type": "object"
     },
     {

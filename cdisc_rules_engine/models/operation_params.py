@@ -36,7 +36,6 @@ class OperationParams:
     codelists: list = None
     ct_attribute: str = None
     ct_package_types: List[str] = None
-    ct_package: list = None
     ct_packages: list = None
     ct_version: str = None
     ct_package_type: str = None
@@ -59,3 +58,4 @@ class OperationParams:
     target: str = None
     value_is_reference: bool = False
     namespace: str = None
+    delimiter: str = None

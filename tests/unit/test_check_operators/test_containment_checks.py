@@ -124,6 +124,54 @@ def test_does_not_contain_case_insensitive(
             DaskDataset,
             False,
         ),
+        (
+            {
+                "target": [
+                    ["TISSUE", "ADIPOSE TISSUE", "BROWN", "AIR SAC"],
+                    ["TISSUE", "ADIPOSE TISSUE", "BROWN", "AIR SAC"],
+                    ["TISSUE", "ADIPOSE TISSUE", "BROWN", "AIR SAC"],
+                    ["TISSUE", "ADIPOSE TISSUE", "BROWN", "AIR SAC"],
+                ],
+                "VAR2": [
+                    ["TISSUE"],
+                    ["TISSUE", "BROWN"],
+                    ["TISSUE", "BROWN", "AIR SAC"],
+                    ["ADIPOSE TISSUE", "AIR SAC"],
+                ],
+            },
+            "VAR2",
+            PandasDataset,
+            [
+                True,
+                True,
+                True,
+                True,
+            ],
+        ),
+        (
+            {
+                "target": [
+                    ["TISSUE", "ADIPOSE TISSUE", "BROWN", "AIR SAC"],
+                    ["TISSUE", "ADIPOSE TISSUE", "BROWN", "AIR SAC"],
+                    ["TISSUE", "ADIPOSE TISSUE", "BROWN", "AIR SAC"],
+                    ["TISSUE", "ADIPOSE TISSUE", "BROWN", "AIR SAC"],
+                ],
+                "VAR2": [
+                    ["TISSUE"],
+                    ["TISSUE", "BROWNNNN"],
+                    ["TISSUE", "BROWN", "AIR SAC"],
+                    ["ADIPOSE TISSUE", "AIR SAC", "UNKNOWN"],
+                ],
+            },
+            "VAR2",
+            PandasDataset,
+            [
+                True,
+                False,
+                True,
+                False,
+            ],
+        ),
     ],
 )
 def test_contains_all(data, comparator, dataset_type, expected_result):
@@ -149,6 +197,54 @@ def test_contains_all(data, comparator, dataset_type, expected_result):
             "VAR2",
             PandasDataset,
             True,
+        ),
+        (
+            {
+                "target": [
+                    ["TISSUE", "ADIPOSE TISSUE", "BROWN", "AIR SAC"],
+                    ["TISSUE", "ADIPOSE TISSUE", "BROWN", "AIR SAC"],
+                    ["TISSUE", "ADIPOSE TISSUE", "BROWN", "AIR SAC"],
+                    ["TISSUE", "ADIPOSE TISSUE", "BROWN", "AIR SAC"],
+                ],
+                "VAR2": [
+                    ["TISSUE"],
+                    ["TISSUE", "BROWN"],
+                    ["TISSUE", "BROWN", "AIR SAC"],
+                    ["ADIPOSE TISSUE", "AIR SAC"],
+                ],
+            },
+            "VAR2",
+            PandasDataset,
+            [
+                False,
+                False,
+                False,
+                False,
+            ],
+        ),
+        (
+            {
+                "target": [
+                    ["TISSUE", "ADIPOSE TISSUE", "BROWN", "AIR SAC"],
+                    ["TISSUE", "ADIPOSE TISSUE", "BROWN", "AIR SAC"],
+                    ["TISSUE", "ADIPOSE TISSUE", "BROWN", "AIR SAC"],
+                    ["TISSUE", "ADIPOSE TISSUE", "BROWN", "AIR SAC"],
+                ],
+                "VAR2": [
+                    ["TISSUE"],
+                    ["TISSUE", "BROWNNNN"],
+                    ["TISSUE", "BROWN", "AIR SAC"],
+                    ["ADIPOSE TISSUE", "AIR SAC", "UNKNOWN"],
+                ],
+            },
+            "VAR2",
+            PandasDataset,
+            [
+                False,
+                True,
+                False,
+                True,
+            ],
         ),
     ],
 )

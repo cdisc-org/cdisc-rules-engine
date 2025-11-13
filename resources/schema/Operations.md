@@ -152,16 +152,25 @@ Returns a list of valid extensible codelist term's submission values. Used for e
 
 ### get_codelist_attributes
 
-Fetches attribute values for a codelist specified in a dataset (like TS)
+Fetches controlled terminology attribute values from CT packages based on row-specific CT package and version references.
+
+**Required Parameters:**
+
+- `ct_attribute`: Attribute to extract - `"Term CCODE"`, `"Codelist CCODE"`, `"Term Value"`, `"Codelist Value"`, or `"Term Preferred Term"`
+- `target`: Column containing CT reference (e.g., "TSVCDREF")
+- `version`: Column containing CT version (e.g., "TSVCDVER")
+- `ct_packages`: List of CT packages to search (e.g., `["sdtmct-2020-03-27"]`)
 
 ```yaml
-- id: $TERM_CCODES
+- id: $VALID_TERM_CODES
   name: TSVCDREF
   operator: get_codelist_attributes
   ct_attribute: Term CCODE
-  ct_version: TSVCDVER
+  version: TSVCDVER
+  target: TSVCDREF
   ct_packages:
     - sdtmct-2020-03-27
+    - sdtmct-2022-12-16
 ```
 
 ### valid_codelist_dates
@@ -1259,3 +1268,15 @@ Operations:
 ```
 
 Note that a local XSD file is required for validation. The file must be stored in the folder indicated by the value of the `LOCAL_XSD_FILE_DIR` default file path and the mapping between the namespace and the local XSD file's `sub-folder/name` must be included in the value of the `LOCAL_XSD_FILE_MAP` default file path.
+
+### split_by
+
+Splits a dataset column by a given delimiter
+
+```yaml
+Operations:
+  - name: PPSPEC
+    delimiter: ;
+    id: $ppspec_value
+    operator: split_by
+```
