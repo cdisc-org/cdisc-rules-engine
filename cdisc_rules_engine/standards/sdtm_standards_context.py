@@ -103,9 +103,21 @@ class SdtmStandardsContext(BaseStandardsContext):
             if domain_details:
                 variables_metadata = domain_details.get("datasetVariables", [])
                 if variables_metadata:
-                    variables_metadata.sort(key=lambda item: int(item["ordinal"]))
+                    variables_metadata.sort(
+                        key=lambda item: (
+                            int(item.get("ordinal")) if item.get("ordinal") else int(item.get("order_number"))
+                        )
+                    )
                     return variables_metadata
         return []
+
+    def get_model_metadata(self):
+        model_metadata = self.library_metadata.model_metadata
+        return model_metadata
+
+    def get_standard_metadata(self):
+        standard_metadata = self.library_metadata.standard_metadata
+        return standard_metadata
 
     def get_domain_label(self, domain: str):
         standard_data = self.library_metadata.standard_metadata

@@ -38,7 +38,7 @@ class SqlPermissibilityOperation(SqlBaseOperation):
 
     def _get_perm_variables(self):
         try:
-            model_variables: List[dict] = self._get_variables_metadata_from_standard_model(self.params.domain)
+            model_variables: List[dict] = self._get_variables_metadata_from_standard(self.params.domain)
 
             # Filter variables by permissibility
             perm_model = [

@@ -25,6 +25,7 @@ from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.utilities.utils import convert_library_class_name_to_ct_class
 from cdisc_rules_engine.utilities.sdtm_utilities import get_class_and_domain_metadata
 from typing import List, Optional
+from cdisc_rules_engine.utilities import sdtm_utilities
 
 
 class SqlOperationError(Exception):
@@ -113,9 +114,10 @@ class SqlBaseOperation:
         Get the dataset class for a given domain, similar to BaseDataService.get_dataset_class
         but adapted for SQL operations without requiring a dataset parameter.
         """
-        if self.library_metadata.standard_metadata:
+        standard_metadata = self.params.standards_context.get_standard_metadata()
+        if standard_metadata:
             class_data, _ = get_class_and_domain_metadata(
-                self.library_metadata.standard_metadata,
+                standard_metadata,
                 domain,
             )
             name = class_data.get("name")
@@ -178,7 +180,7 @@ class SqlBaseOperation:
         except Exception:
             return False
 
-    def _get_variables_metadata_from_standard_model(self, domain: str) -> List[dict]:
+    def _get_variables_metadata_from_standard(self, domain: str) -> List[dict]:
         """
         Gets variables metadata for the given class and domain from cache.
         The cache stores CDISC Library metadata.
@@ -205,6 +207,68 @@ class SqlBaseOperation:
         # TODO: Update to handle multiple standard types.
 
         variables_metadata = self.params.standards_context.get_domain_variables(domain)
+        return variables_metadata
+
+    def _get_variables_metadata_from_standard_model(self, domain: str) -> List[dict]:
+
+        # Need to investigate to understand difference between _get_variables_metadata_from_standard and
+        # _get_variables_metadata_from_standard_model - they appear to be doing very similar things
+        # and yet the output of each is slightly different
+
+        # Also need to think about where to put this - to what extent are standards and
+        # models correlated?
+
+        # For now, reverting to previous implementation of _get_variables_metadata_from_standard_model
+        # and keeping implementation of _get_variables_metadata_from_standard
+
+        # Will look to rewrite this function to be less standard-dependent soon
+
+        # For SQL operations, use a simplified version that works with available metadata
+        model_details = self.params.standards_context.get_model_metadata()
+
+        # Handle SUPP domain normalization like the original function
+        if domain and (domain.upper().startswith("SUPP") or domain.upper().startswith("SQ")) and len(domain) > 2:
+            domain = "SUPPQUAL"
+
+        domain_details = sdtm_utilities.get_model_domain_metadata(model_details, domain)
+        variables_metadata = []
+        class_name = None
+
+        if domain_details:
+            # Domain found in the model
+            class_name = convert_library_class_name_to_ct_class(domain_details["_links"]["parentClass"]["title"])
+            class_details = sdtm_utilities.get_class_metadata(model_details, class_name)
+            variables_metadata = domain_details.get("datasetVariables", [])
+            if variables_metadata:
+                variables_metadata.sort(key=lambda item: int(item["ordinal"]))
+        else:
+            # Domain not found in the model. Use the new get_dataset_class method
+            class_name = self.get_dataset_class(domain)
+
+            if class_name is None:
+                # Fall back to General Observations class for unknown domains
+                from cdisc_rules_engine.constants.classes import GENERAL_OBSERVATIONS_CLASS
+
+                class_name = GENERAL_OBSERVATIONS_CLASS
+
+            class_details = sdtm_utilities.get_class_metadata(model_details, class_name)
+
+        # Apply class-specific logic for detectable classes
+        from cdisc_rules_engine.constants.classes import DETECTABLE_CLASSES
+
+        if class_name and class_name in DETECTABLE_CLASSES:
+            (
+                identifiers_metadata,
+                class_variables_metadata,
+                timing_metadata,
+            ) = sdtm_utilities.get_allowed_class_variables(model_details, class_details)
+            # Identifiers are added to the beginning and Timing to the end
+            variables_metadata = class_variables_metadata
+            if identifiers_metadata:
+                variables_metadata = identifiers_metadata + variables_metadata
+            if timing_metadata:
+                variables_metadata = variables_metadata + timing_metadata
+
         return variables_metadata
 
     @staticmethod

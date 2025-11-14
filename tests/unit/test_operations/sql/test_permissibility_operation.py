@@ -100,7 +100,7 @@ def test_permissibility_operation(mock_variables, op, expected):
     # Mock the metadata retrieval method on the operation instance
     with patch.object(
         operation,
-        "_get_variables_metadata_from_standard_model",
+        "_get_variables_metadata_from_standard",
         return_value=mock_variables,
     ):
         result = operation.execute()
@@ -138,7 +138,7 @@ def test_permissibility_operation_exception_handling(op):
     # Mock the metadata method to raise an exception
     with patch.object(
         operation,
-        "_get_variables_metadata_from_standard_model",
+        "_get_variables_metadata_from_standard",
         side_effect=Exception("Metadata retrieval failed"),
     ):
 

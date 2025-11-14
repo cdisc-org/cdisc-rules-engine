@@ -22,6 +22,12 @@ class DefaultStandardsContext(BaseStandardsContext):
     def get_domain_variables(self, domain: str):
         return []
 
+    def get_model_metadata(self):
+        return []
+
+    def get_standard_metadata(self):
+        return []
+
     def get_domain_label(self, domain: str):
         return ""
 

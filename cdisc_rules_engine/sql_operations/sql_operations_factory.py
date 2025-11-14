@@ -26,6 +26,7 @@ from cdisc_rules_engine.constants.permissibility import (
     PERMISSIBLE,
 )
 from cdisc_rules_engine.sql_operations.study_domains import SqlStudyDomainsOperation
+from cdisc_rules_engine.sql_operations.get_model_column_order import SqlGetModelColumnOrder
 from cdisc_rules_engine.sql_operations.valid_codelist_dates import SqlValidCodelistDates
 from cdisc_rules_engine.sql_operations.extract_metadata import SqlExtractMetadataOperation
 
@@ -42,7 +43,7 @@ class SqlOperationsFactory:
         "get_column_order_from_dataset": SqlDatasetColumnOrderOperation,
         "get_column_order_from_library": None,
         "get_codelist_attributes": None,
-        "get_model_column_order": None,
+        "get_model_column_order": SqlGetModelColumnOrder,
         "get_model_filtered_variables": SqlGetModelFilteredVariables,
         "get_parent_model_column_order": None,
         "map": None,

@@ -23,6 +23,14 @@ class BaseStandardsContext(ABC):
         pass
 
     @abstractmethod
+    def get_model_metadata(self):
+        pass
+
+    @abstractmethod
+    def get_standard_metadata(self):
+        pass
+
+    @abstractmethod
     def get_domain_label(self, domain: str) -> str:
         pass
 

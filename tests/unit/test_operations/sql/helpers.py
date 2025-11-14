@@ -12,12 +12,18 @@ from cdisc_rules_engine.sql_operations.sql_operations_factory import (
 from cdisc_rules_engine.standards.default_standards_context import (
     DefaultStandardsContext,
 )
+from cdisc_rules_engine.standards.sdtm_standards_context import SdtmStandardsContext, LibraryMetadataContainer
 
 TEST_TABLE_NAME = "test_table"
 
 
 def setup_sql_operations(
-    operation: str, target: str, column_data: dict, extra_operation_variables: dict = {}, extra_config: dict = {}
+    operation: str,
+    target: str,
+    column_data: dict,
+    standards_context="default",
+    extra_operation_variables: dict = {},
+    extra_config: dict = {},
 ):
     """Create PostgresQLOperators instance with test data.
 
@@ -32,14 +38,21 @@ def setup_sql_operations(
         PostgresQLOperators instance configured for testing
     """
     data_service = PostgresQLDataService.instance()
+    standards_context_dict = {
+        "default": DefaultStandardsContext(),
+        "sdtm": SdtmStandardsContext(LibraryMetadataContainer),
+    }
     PostgresQLDataService.add_test_dataset(
-        data_service, table_name=TEST_TABLE_NAME, column_data=column_data, standards_context=DefaultStandardsContext()
+        data_service,
+        table_name=TEST_TABLE_NAME,
+        column_data=column_data,
+        standards_context=standards_context_dict.get(standards_context, DefaultStandardsContext()),
     )
 
     params = SqlOperationParams(
         domain=TEST_TABLE_NAME,
         target=target,
-        standards_context=DefaultStandardsContext(),
+        standards_context=standards_context_dict.get(standards_context, DefaultStandardsContext()),
         **extra_config,
     )
 
