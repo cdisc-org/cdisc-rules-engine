@@ -439,14 +439,9 @@ class DataProcessor:
 
         # Process each IDVAR group separately
         for idvar_value in right_dataset["IDVAR"].unique():
-            # Filter to just this IDVAR group
             group_data = right_dataset.data[
                 right_dataset.data["IDVAR"] == idvar_value
             ].copy()
-
-            print(f"\n=== Processing IDVAR: {idvar_value} ===")
-            print(f"Group has {len(group_data)} rows")
-
             # Pivot QNAM/QVAL into columns (mimicking process_supp for this group)
             group_qnam_list = group_data["QNAM"].unique()
             for qnam in group_qnam_list:
