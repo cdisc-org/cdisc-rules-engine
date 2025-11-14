@@ -495,7 +495,7 @@ class DatasetPreprocessor:
                 dataset_preprocessor=self,
                 wildcard=right_dataset_domain_details.get("wildcard"),
             )
-        elif right_dataset_domain_name == "SUPP--":
+        elif right_dataset_domain_name.startswith("SUPP"):
             result: DatasetInterface = DataProcessor.merge_pivot_supp_dataset(
                 dataset_implementation=self._data_service.dataset_implementation,
                 left_dataset=left_dataset,

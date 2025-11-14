@@ -389,9 +389,9 @@ class DataProcessor:
 
         static_keys = ["STUDYID", "USUBJID", "APID", "POOLID", "SPDEVID"]
         qnam_list = right_dataset["QNAM"].unique()
-        right_dataset = DataProcessor.process_supp(right_dataset)
         unique_idvar_values = right_dataset["IDVAR"].unique()
         if len(unique_idvar_values) == 1:
+            right_dataset = DataProcessor.process_supp(right_dataset)
             dynamic_key = right_dataset["IDVAR"].iloc[0]
             # Determine the common keys present in both datasets
             common_keys = [
@@ -435,39 +435,108 @@ class DataProcessor:
         static_keys: List[str],
         qnam_list: list,
     ) -> DatasetInterface:
-        idvar_groups = right_dataset.groupby("IDVAR")
         result_dataset = left_dataset
-        for idvar_value, group_data in idvar_groups:
+
+        # Process each IDVAR group separately
+        for idvar_value in right_dataset["IDVAR"].unique():
+            # Filter to just this IDVAR group
+            group_data = right_dataset.data[
+                right_dataset.data["IDVAR"] == idvar_value
+            ].copy()
+
+            print(f"\n=== Processing IDVAR: {idvar_value} ===")
+            print(f"Group has {len(group_data)} rows")
+
+            # Pivot QNAM/QVAL into columns (mimicking process_supp for this group)
+            group_qnam_list = group_data["QNAM"].unique()
+            for qnam in group_qnam_list:
+                group_data[qnam] = pd.NA
+
+            for index, row in group_data.iterrows():
+                group_data.at[index, row["QNAM"]] = row["QVAL"]
+
+            # NOW drop the columns (fixing the process_supp bug)
+            group_data = group_data.drop(columns=["QNAM", "QVAL", "QLABEL", "IDVAR"])
+
+            # Rename IDVARVAL to the actual merge key
+            group_data = group_data.rename(columns={"IDVARVAL": idvar_value})
+
+            print(f"Unique QNAM columns: {list(group_qnam_list)}")
+
+            # Determine merge keys (same as single IDVAR case)
             common_keys = [
                 key
                 for key in static_keys
                 if key in result_dataset.columns and key in group_data.columns
             ]
             common_keys.append(idvar_value)
-            current_supp = group_data.rename(columns={"IDVARVAL": idvar_value})
-            current_supp = current_supp.drop(columns=["IDVAR"])
+
+            # Handle multiple rows with same merge key (e.g., ECENDY=7 with ECLOC + ECSITE)
+            # Aggregate: take first non-null value for each column
+            agg_dict = {
+                col: lambda x: x.dropna().iloc[0] if not x.dropna().empty else pd.NA
+                for col in group_data.columns
+                if col not in common_keys
+            }
+
+            group_data = group_data.groupby(
+                common_keys, as_index=False, dropna=False
+            ).agg(agg_dict)
+
+            print(f"After aggregation: {len(group_data)} unique rows")
+
+            # Drop columns that already exist in result (except merge keys)
+            # This prevents RDOMAIN_supp, QORIG_supp, QEVAL_supp duplicates
+            cols_to_drop = [
+                col
+                for col in group_data.columns
+                if col in result_dataset.columns and col not in common_keys
+            ]
+
+            if cols_to_drop:
+                print(f"Dropping already-present columns: {cols_to_drop}")
+                group_data = group_data.drop(columns=cols_to_drop)
+
+            # Type conversion
             result_dataset[idvar_value] = result_dataset[idvar_value].astype(str)
-            current_supp[idvar_value] = current_supp[idvar_value].astype(str)
+            group_data[idvar_value] = group_data[idvar_value].astype(str)
+
+            # Merge (exactly like single IDVAR case)
             result_dataset = PandasDataset(
                 pd.merge(
                     result_dataset.data,
-                    current_supp.data,
+                    group_data,
                     how="left",
                     on=common_keys,
                     suffixes=("", "_supp"),
                 )
             )
+
+        # Validation logic
         for qnam in qnam_list:
+            if qnam not in result_dataset.columns:
+                continue
+
             qnam_check = result_dataset.data.dropna(subset=[qnam])
+            if len(qnam_check) == 0:
+                continue
+
+            # Find the merge keys for this QNAM
+            idvar_for_qnam = right_dataset.data[right_dataset.data["QNAM"] == qnam][
+                "IDVAR"
+            ].iloc[0]
+
             validation_keys = [
                 key for key in static_keys if key in result_dataset.columns
             ]
-            for idvar_value in right_dataset["IDVAR"].unique():
-                if idvar_value in result_dataset.columns:
-                    validation_keys.append(idvar_value)
+            validation_keys.append(idvar_for_qnam)
 
+            print(f"\nValidating QNAM '{qnam}' with keys: {validation_keys}")
             grouped = qnam_check.groupby(validation_keys).size()
+
             if (grouped > 1).any():
+                print(f"DUPLICATES FOUND for {qnam}:")
+                print(grouped[grouped > 1])
                 raise ValueError(
                     f"Multiple records with the same QNAM '{qnam}' match a single parent record"
                 )
@@ -483,7 +552,7 @@ class DataProcessor:
         # Set the value of the new columns only in their respective rows
         for index, row in supp_dataset.iterrows():
             supp_dataset.at[index, row["QNAM"]] = row["QVAL"]
-        supp_dataset.drop(labels=["QNAM", "QVAL", "QLABEL"], axis=1)
+        supp_dataset = supp_dataset.drop(labels=["QNAM", "QVAL", "QLABEL"], axis=1)
         return supp_dataset
 
     @staticmethod
