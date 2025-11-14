@@ -41,14 +41,6 @@ class DatePrecision(IntEnum):
     second = 5
     microsecond = 6
 
-    @classmethod
-    def get_name_by_index(cls, index: int) -> str:
-        return list(cls.__members__.keys())[index]
-
-    @classmethod
-    def names(cls) -> list:
-        return list(cls.__members__.keys())
-
 
 def is_valid_date(date_string: str) -> bool:
     if date_string is None:
@@ -262,90 +254,6 @@ def _parse_datetime_string(date_str: str):
     return date_components, time_components, has_time
 
 
-def _normalize_precision(precision_name):
-    """Convert string to DatePrecision enum if needed."""
-    if isinstance(precision_name, str):
-        try:
-            return DatePrecision[precision_name]
-        except (KeyError, ValueError):
-            return None
-    return precision_name
-
-
-def _has_later_date_component(date_components, index):
-    """Check if there are valid components after the given index."""
-    for later_idx in range(index + 1, min(3, len(date_components))):
-        if later_idx < len(date_components):
-            later_comp = date_components[later_idx]
-            if later_comp and later_comp != "-":
-                return True
-    return False
-
-
-def _get_precision_before_missing(precision):
-    """Get precision before the missing component."""
-    if precision == DatePrecision.year:
-        return None
-    prev_index = precision.value - 1
-    return DatePrecision(prev_index) if prev_index >= 0 else None
-
-
-def _check_date_component(date_components, index, precision_name):
-    precision = _normalize_precision(precision_name)
-    if precision is None:
-        return None
-
-    if len(date_components) <= index:
-        return _get_precision_before_missing(precision)
-
-    component = date_components[index]
-    if not component or component == "-":
-        if _has_later_date_component(date_components, index):
-            return None
-        return _get_precision_before_missing(precision)
-
-    return None
-
-
-def _check_time_component(time_components, has_time, component_index):
-    if not has_time or not time_components:
-        return DatePrecision.day
-    hour, minute, second, microsecond = time_components
-    components = [hour, minute, second]
-    if len(components) <= component_index or components[component_index] is None:
-        prev_index = DatePrecision.hour.value + component_index - 1
-        return DatePrecision(prev_index) if prev_index >= 0 else DatePrecision.day
-    component = components[component_index]
-    if not component or component == "-":
-        prev_index = DatePrecision.hour.value + component_index - 1
-        return DatePrecision(prev_index) if prev_index >= 0 else DatePrecision.day
-    return None
-
-
-def _check_second_component(time_components, has_time):
-    if not has_time or not time_components:
-        return DatePrecision.day
-    hour, minute, second, microsecond = time_components
-    if second is None:
-        return DatePrecision.minute
-    if not second or second == "-":
-        return DatePrecision.minute
-    return None
-
-
-def _check_microsecond_component(time_components, has_time):
-    if not has_time or not time_components:
-        return DatePrecision.day
-    hour, minute, second, microsecond = time_components
-    if second is None:
-        return DatePrecision.minute
-    if microsecond is None:
-        return DatePrecision.second
-    if not microsecond:
-        return DatePrecision.second
-    return None
-
-
 @lru_cache(maxsize=1000)
 def detect_datetime_precision(date_str: str) -> DatePrecision | None:
     if not _datestring_is_valid(date_str):
@@ -364,38 +272,6 @@ def detect_datetime_precision(date_str: str) -> DatePrecision | None:
 
 def _datestring_is_valid(date_str: str) -> bool:
     return bool(date_str and isinstance(date_str, str) and date_regex.match(date_str))
-
-
-def _is_time_only_precision(date_components: list, has_time: bool) -> bool:
-    return has_time and all(component == "-" for component in date_components)
-
-
-def _time_only_precision(time_components) -> DatePrecision | None:
-    if not time_components:
-        return None
-    hour, minute, second, microsecond = time_components
-    if not hour or hour == "-":
-        return None
-    if not minute or minute == "-":
-        return DatePrecision.hour
-    if second is None:
-        return DatePrecision.minute
-    second_part = second
-    if microsecond:
-        second_part = f"{second}.{microsecond}"
-    return _precision_from_second_component(second_part)
-
-
-def _precision_from_second_component(second_part: str) -> DatePrecision:
-    if "." in second_part:
-        second, microsecond = second_part.split(".", 1)
-        if not second or second == "-":
-            return DatePrecision.minute
-        return DatePrecision.second if not microsecond else DatePrecision.microsecond
-
-    if not second_part or second_part == "-":
-        return DatePrecision.minute
-    return DatePrecision.second
 
 
 def _check_date_component_missing(component) -> bool:
@@ -456,32 +332,6 @@ def _date_and_time_precision(
     return _check_time_precision(time_components)
 
 
-def _precision_check_functions(date_components, time_components, has_time):
-    return {
-        DatePrecision.year: lambda i, name: _check_date_component(
-            date_components, i, name
-        ),
-        DatePrecision.month: lambda i, name: _check_date_component(
-            date_components, i, name
-        ),
-        DatePrecision.day: lambda i, name: _check_date_component(
-            date_components, i, name
-        ),
-        DatePrecision.hour: lambda i, name: _check_time_component(
-            time_components, has_time, 0
-        ),
-        DatePrecision.minute: lambda i, name: _check_time_component(
-            time_components, has_time, 1
-        ),
-        DatePrecision.second: lambda i, name: _check_second_component(
-            time_components, has_time
-        ),
-        DatePrecision.microsecond: lambda i, name: _check_microsecond_component(
-            time_components, has_time
-        ),
-    }
-
-
 def get_common_precision(dt1: str, dt2: str) -> DatePrecision | None:
     p1 = detect_datetime_precision(dt1)
     p2 = detect_datetime_precision(dt2)
@@ -492,7 +342,6 @@ def get_common_precision(dt1: str, dt2: str) -> DatePrecision | None:
 
 
 def get_date_component(component: str, date_string: str):
-    # Convert string to DatePrecision enum for internal use
     try:
         precision = DatePrecision[component]
     except (KeyError, ValueError):
