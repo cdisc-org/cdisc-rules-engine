@@ -592,7 +592,16 @@
     "value_is_reference": { "type": "boolean" },
     "type_insensitive": { "type": "boolean" },
     "round_values": { "type": "boolean" },
-    "within": { "$ref": "CORE-base.json#/$defs/VariableName" },
+    "within": {
+      "oneOf": [
+        { "$ref": "CORE-base.json#/$defs/VariableName" },
+        {
+          "items": { "$ref": "CORE-base.json#/$defs/VariableName" },
+          "minItems": 1,
+          "type": "array"
+        }
+      ]
+    },
     "regex": { "type": "string" }
   },
   "required": ["operator"],
