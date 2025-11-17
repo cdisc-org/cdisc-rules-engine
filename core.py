@@ -34,6 +34,9 @@ from version import __version__
 VALIDATION_FORMATS_MESSAGE = (
     "SAS V5 XPT, Dataset-JSON (JSON or NDJSON), or Excel (XLSX)"
 )
+DEFAULT_CACHE_PATH = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), DefaultFilePaths.CACHE.value
+)
 
 
 def valid_data_file(data_path: list) -> tuple[list, set]:
@@ -155,7 +158,7 @@ def _validate_no_arguments(logger) -> None:
 @click.option(
     "-ca",
     "--cache",
-    default=DefaultFilePaths.CACHE.value,
+    default=DEFAULT_CACHE_PATH,
     help="Relative path to cache files containing pre loaded metadata and rules",
 )
 @click.option(
@@ -474,7 +477,7 @@ def validate(
 @click.option(
     "-c",
     "--cache-path",
-    default=DefaultFilePaths.CACHE.value,
+    default=DEFAULT_CACHE_PATH,
     help="Relative path to cache files containing pre loaded metadata and rules",
 )
 @click.option(
@@ -579,7 +582,7 @@ def update_cache(
 @click.option(
     "-c",
     "--cache-path",
-    default=DefaultFilePaths.CACHE.value,
+    default=DEFAULT_CACHE_PATH,
     help="Relative path to cache files containing pre loaded metadata and rules",
 )
 @click.option(
@@ -655,7 +658,7 @@ def list_rules(
 @click.option(
     "-c",
     "--cache-path",
-    default=DefaultFilePaths.CACHE.value,
+    default=DEFAULT_CACHE_PATH,
     help="Relative path to cache files containing pre loaded metadata and rules",
 )
 @click.option(
@@ -740,7 +743,7 @@ def version():
 @click.option(
     "-c",
     "--cache-path",
-    default=DefaultFilePaths.CACHE.value,
+    default=DEFAULT_CACHE_PATH,
     help="Relative path to cache files containing pre loaded metadata and rules",
 )
 @click.option(
@@ -777,7 +780,6 @@ def test_validate():
         from cdisc_rules_engine.enums.progress_parameter_options import (
             ProgressParameterOptions,
         )
-        from cdisc_rules_engine.enums.default_file_paths import DefaultFilePaths
 
         base_path = os.path.join("tests", "resources", "datasets")
         ts_path = os.path.join(base_path, "TS.json")
@@ -788,7 +790,7 @@ def test_validate():
             )
 
         with tempfile.TemporaryDirectory() as temp_dir:
-            cache_path = DefaultFilePaths.CACHE.value
+            cache_path = DEFAULT_CACHE_PATH
             pool_size = 10
             log_level = "disabled"
             report_template = None
