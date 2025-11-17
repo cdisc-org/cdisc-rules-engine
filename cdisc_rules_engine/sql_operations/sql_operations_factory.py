@@ -27,6 +27,7 @@ from cdisc_rules_engine.constants.permissibility import (
 )
 from cdisc_rules_engine.sql_operations.study_domains import SqlStudyDomainsOperation
 from cdisc_rules_engine.sql_operations.get_model_column_order import SqlGetModelColumnOrder
+from cdisc_rules_engine.sql_operations.domain_is_custom import SqlDomainIsCustomOperation
 from cdisc_rules_engine.sql_operations.valid_codelist_dates import SqlValidCodelistDates
 from cdisc_rules_engine.sql_operations.extract_metadata import SqlExtractMetadataOperation
 
@@ -64,7 +65,7 @@ class SqlOperationsFactory:
         "variable_value_count": None,
         "variable_count": SqlVariableCountOperation,
         "variable_is_null": None,
-        "domain_is_custom": None,
+        "domain_is_custom": SqlDomainIsCustomOperation,
         "domain_label": SqlDomainLabelOperation,
         "required_variables": lambda params, ds: SqlPermissibilityOperation(params, ds, REQUIRED),
         "expected_variables": lambda params, ds: SqlPermissibilityOperation(params, ds, EXPECTED),
