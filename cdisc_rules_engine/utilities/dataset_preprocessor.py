@@ -495,19 +495,13 @@ class DatasetPreprocessor:
                 dataset_preprocessor=self,
                 wildcard=right_dataset_domain_details.get("wildcard"),
             )
-        elif right_dataset_domain_name.startswith("SUPP"):
-            result: DatasetInterface = DataProcessor.merge_pivot_supp_dataset(
+        elif right_dataset_domain_name.startswith(
+            "SUPP"
+        ) or right_dataset_domain_name.startswith("SQ"):
+            result = DataProcessor.merge_pivot_supp_dataset(
                 dataset_implementation=self._data_service.dataset_implementation,
                 left_dataset=left_dataset,
                 right_dataset=right_dataset,
-            )
-        elif self._rule_processor.is_relationship_dataset(right_dataset_domain_name):
-            result: DatasetInterface = DataProcessor.merge_relationship_datasets(
-                left_dataset=left_dataset,
-                left_dataset_match_keys=left_dataset_match_keys,
-                right_dataset=right_dataset,
-                right_dataset_match_keys=right_dataset_match_keys,
-                right_dataset_domain=right_dataset_domain_details,
             )
         else:
             result: DatasetInterface = DataProcessor.merge_sdtm_datasets(

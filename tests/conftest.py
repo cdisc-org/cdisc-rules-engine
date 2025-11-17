@@ -876,10 +876,6 @@ def dataset_rule_record_in_parent_domain_equal_to() -> dict:
             {
                 "domain_name": "SUPPEC",
                 "match_key": ["USUBJID"],
-                "relationship_columns": {
-                    "column_with_names": "IDVAR",
-                    "column_with_values": "IDVARVAL",
-                },
             }
         ],
         "conditions": ConditionCompositeFactory.get_condition_composite(
@@ -888,7 +884,7 @@ def dataset_rule_record_in_parent_domain_equal_to() -> dict:
                     {
                         "name": "get_dataset",
                         "operator": "equal_to",
-                        "value": {"target": "QNAM", "comparator": "ECREASOC"},
+                        "value": {"target": "ECREASOC", "comparator": "Some Value 1"},
                     },
                     {
                         "name": "get_dataset",
@@ -905,7 +901,7 @@ def dataset_rule_record_in_parent_domain_equal_to() -> dict:
             }
         ],
         "output_variables": [
-            "QNAM",
+            "ECREASOC",
             "ECPRESP",
         ],
     }
