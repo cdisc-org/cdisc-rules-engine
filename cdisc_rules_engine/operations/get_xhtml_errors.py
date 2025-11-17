@@ -70,7 +70,6 @@ class GetXhtmlErrors(BaseOperation):
         return dataset[target].apply(self._ensure_dataset_is_valid_xhtml)
 
     def _ensure_dataset_is_valid_xhtml(self, value: str) -> list[str]:
-        value: str = value.strip()
         if not value:
             return []
 
