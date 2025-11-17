@@ -223,27 +223,40 @@ class DataProcessor:
                     col for col in ["IDVAR", "IDVARVAL"] if col in right_dataset.columns
                 ]
                 current_supp = right_dataset.drop(columns=columns_to_drop)
-            left_dataset = PandasDataset(
-                pd.merge(
-                    left_dataset.data,
-                    current_supp.data,
-                    how="left",
-                    on=common_keys,
-                    suffixes=("", "_supp"),
-                )
-            )
-            for qnam in qnam_list:
-                qnam_check = left_dataset.data.dropna(subset=[qnam])
-                grouped = qnam_check.groupby(common_keys).size()
-                if (grouped > 1).any():
-                    raise ValueError(
-                        f"Multiple records with the same QNAM '{qnam}' match a single parent record"
+            if isinstance(left_dataset, DaskDataset):
+                left_pandas = PandasDataset(left_dataset.data.compute())
+                merged_pandas = PandasDataset(
+                    pd.merge(
+                        left_pandas.data,
+                        current_supp.data,
+                        how="left",
+                        on=common_keys,
+                        suffixes=("", "_supp"),
                     )
+                )
+                DataProcessor._validate_qnam(merged_pandas.data, qnam_list, common_keys)
+                left_dataset = DaskDataset(merged_pandas.data)
+            else:
+                left_dataset = PandasDataset(
+                    pd.merge(
+                        left_dataset.data,
+                        current_supp.data,
+                        how="left",
+                        on=common_keys,
+                        suffixes=("", "_supp"),
+                    )
+                )
+                DataProcessor._validate_qnam(left_dataset.data, qnam_list, common_keys)
         else:
+            if dataset_implementation == DaskDataset:
+                left_dataset = PandasDataset(left_dataset.data.compute())
+                right_dataset = PandasDataset(right_dataset.data.compute())
             left_dataset = DataProcessor._merge_supp_with_multiple_idvars(
                 left_dataset, right_dataset, static_keys, qnam_list
             )
-        if dataset_implementation == DaskDataset:
+        if dataset_implementation == DaskDataset and not isinstance(
+            left_dataset, DaskDataset
+        ):
             left_dataset = DaskDataset(left_dataset.data)
         return left_dataset
 
@@ -266,7 +279,12 @@ class DataProcessor:
                 group_data[qnam] = pd.NA
             for index, row in group_data.iterrows():
                 group_data.at[index, row["QNAM"]] = row["QVAL"]
-            group_data = group_data.drop(columns=["QNAM", "QVAL", "QLABEL", "IDVAR"])
+            columns_to_drop = [
+                col
+                for col in ["QNAM", "QVAL", "QLABEL", "IDVAR"]
+                if col in group_data.columns
+            ]
+            group_data = group_data.drop(columns=columns_to_drop)
             group_data = group_data.rename(columns={"IDVARVAL": idvar_value})
             common_keys = [
                 key
@@ -326,6 +344,9 @@ class DataProcessor:
     def process_supp(supp_dataset):
         # TODO: QLABEL is not added to the new columns.  This functionality is not supported directly in pandas.
         # initialize new columns for each unique QNAM in the dataset with NaN
+        is_dask = isinstance(supp_dataset, DaskDataset)
+        if is_dask:
+            supp_dataset = PandasDataset(supp_dataset.data.compute())
         for qnam in supp_dataset["QNAM"].unique():
             supp_dataset.data[qnam] = pd.NA
         # Set the value of the new columns only in their respective rows
@@ -337,6 +358,24 @@ class DataProcessor:
         if columns_to_drop:
             supp_dataset = supp_dataset.drop(labels=columns_to_drop, axis=1)
         return supp_dataset
+
+    @staticmethod
+    def _validate_qnam(
+        data: pd.DataFrame,
+        qnam_list: list,
+        common_keys: List[str],
+    ):
+        for qnam in qnam_list:
+            if qnam not in data.columns:
+                continue
+            qnam_check = data.dropna(subset=[qnam])
+            if len(qnam_check) == 0:
+                continue
+            grouped = qnam_check.groupby(common_keys).size()
+            if (grouped > 1).any():
+                raise ValueError(
+                    f"Multiple records with the same QNAM '{qnam}' match a single parent record"
+                )
 
     @staticmethod
     def merge_sdtm_datasets(
