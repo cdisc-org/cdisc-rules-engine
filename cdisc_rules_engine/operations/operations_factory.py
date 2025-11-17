@@ -42,6 +42,7 @@ from cdisc_rules_engine.operations.meddra_term_references_validator import (
 from cdisc_rules_engine.operations.min_date import MinDate
 from cdisc_rules_engine.operations.minimum import Minimum
 from cdisc_rules_engine.operations.record_count import RecordCount
+from cdisc_rules_engine.operations.split_by import SplitBy
 from cdisc_rules_engine.operations.valid_external_dictionary_code import (
     ValidExternalDictionaryCode,
 )
@@ -121,6 +122,7 @@ class OperationsFactory(FactoryInterface):
         "domain_is_custom": DomainIsCustom,
         "domain_label": DomainLabel,
         "required_variables": RequiredVariables,
+        "split_by": SplitBy,
         "expected_variables": ExpectedVariables,
         "permissible_variables": PermissibleVariables,
         "study_domains": StudyDomains,
