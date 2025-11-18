@@ -27,7 +27,7 @@ def test_non_existing_dataset_shows_helpful_error():
     stderr_text = stderr.decode()
     stdout_text = stdout.decode()
 
-    assert process.returncode == 1, "Expected non-zero exit code"
+    assert process.returncode == 2, "Expected non-zero exit code"
     assert (
         "FileNotFoundError" not in stderr_text
     ), "Should not show FileNotFoundError crash"

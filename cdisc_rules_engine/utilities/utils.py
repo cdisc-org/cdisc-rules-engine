@@ -450,4 +450,4 @@ def validate_dataset_files_exist(dataset_path: tuple[str], logger, ctx):
     ]
     if non_existing_files:
         logger.error(f'Files {", ".join(non_existing_files)} are not found')
-        ctx.exit(1)
+        ctx.exit(2)
