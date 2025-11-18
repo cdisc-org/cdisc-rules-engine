@@ -41,6 +41,19 @@ class DatePrecision(IntEnum):
     second = 5
     microsecond = 6
 
+    @property
+    def default_value(self):
+        default_values = {
+            DatePrecision.year: 1970,
+            DatePrecision.month: 1,
+            DatePrecision.day: 1,
+            DatePrecision.hour: 0,
+            DatePrecision.minute: 0,
+            DatePrecision.second: 0,
+            DatePrecision.microsecond: 0,
+        }
+        return default_values[self]
+
 
 def is_valid_date(date_string: str) -> bool:
     if date_string is None:
@@ -100,157 +113,61 @@ def is_valid_duration(duration: str, negative) -> bool:
     return True
 
 
-def get_year(date_string: str):
-    timestamp = get_date(date_string)
-    return timestamp.year
-
-
-def get_month(date_string: str):
-    timestamp = get_date(date_string)
-    return timestamp.month
-
-
-def get_day(date_string: str):
-    timestamp = get_date(date_string)
-    return timestamp.day
-
-
-def get_hour(date_string: str):
-    timestamp = get_date(date_string)
-    return timestamp.hour
-
-
-def get_minute(date_string: str):
-    timestamp = get_date(date_string)
-    return timestamp.minute
-
-
-def get_second(date_string: str):
-    timestamp = get_date(date_string)
-    return timestamp.second
-
-
-def get_microsecond(date_string: str):
-    timestamp = get_date(date_string)
-    return timestamp.microsecond
-
-
-def _empty_datetime_components() -> dict:
-    return {
-        "year": None,
-        "month": None,
-        "day": None,
-        "hour": None,
-        "minute": None,
-        "second": None,
-        "microsecond": None,
-    }
+def _empty_datetime_components():
+    return {precision: None for precision in DatePrecision}
 
 
 def _extract_datetime_components(date_str: str) -> dict:
     """Extract datetime components using regex pattern matching."""
-    components = _empty_datetime_components()
     if not date_str or not isinstance(date_str, str):
-        return components
-
+        return _empty_datetime_components()
     match = date_regex.match(date_str)
     if not match:
-        return components
+        return _empty_datetime_components()
 
-    year = match.group("year") or match.group("interval_year")
-    month = match.group("month") or match.group("interval_month")
-    day = match.group("day") or match.group("interval_day")
-    hour = (
-        match.group("hour")
-        or match.group("interval_hour")
-        or match.group("timeonly_hour")
-    )
-    minute = (
-        match.group("minute")
-        or match.group("interval_minute")
-        or match.group("timeonly_minute")
-    )
-    second = (
-        match.group("second")
-        or match.group("interval_second")
-        or match.group("timeonly_second")
-    )
-    microsecond = (
-        match.group("microsecond")
-        or match.group("interval_microsecond")
-        or match.group("timeonly_microsecond")
-    )
-
-    if year and year != "-":
-        components["year"] = year
-    if month and month != "-":
-        components["month"] = month
-    if day and day != "-":
-        components["day"] = day
-    if hour and hour != "-":
-        components["hour"] = hour
-    if minute and minute != "-":
-        components["minute"] = minute
-    if second and second != "-":
-        components["second"] = second
-    if microsecond:
-        components["microsecond"] = microsecond
-
+    matches = {
+        DatePrecision.year: match.group("year") or match.group("interval_year"),
+        DatePrecision.month: match.group("month") or match.group("interval_month"),
+        DatePrecision.day: match.group("day") or match.group("interval_day"),
+        DatePrecision.hour: (
+            match.group("hour")
+            or match.group("interval_hour")
+            or match.group("timeonly_hour")
+        ),
+        DatePrecision.minute: (
+            match.group("minute")
+            or match.group("interval_minute")
+            or match.group("timeonly_minute")
+        ),
+        DatePrecision.second: (
+            match.group("second")
+            or match.group("interval_second")
+            or match.group("timeonly_second")
+        ),
+        DatePrecision.microsecond: (
+            match.group("microsecond")
+            or match.group("interval_microsecond")
+            or match.group("timeonly_microsecond")
+        ),
+    }
+    components = {
+        precision: None if _check_date_component_missing(component) else component
+        for precision, component in matches.items()
+    }
     return components
 
 
 def _parse_datetime_string(date_str: str):
     if not date_str or not isinstance(date_str, str):
         return [], (None, None, None, None), False
-
-    match = date_regex.match(date_str)
-    if not match:
-        return [], (None, None, None, None), False
-
-    year = match.group("year") or match.group("interval_year")
-    month = match.group("month") or match.group("interval_month")
-    day = match.group("day") or match.group("interval_day")
-    hour = (
-        match.group("hour")
-        or match.group("interval_hour")
-        or match.group("timeonly_hour")
-    )
-    minute = (
-        match.group("minute")
-        or match.group("interval_minute")
-        or match.group("timeonly_minute")
-    )
-    second = (
-        match.group("second")
-        or match.group("interval_second")
-        or match.group("timeonly_second")
-    )
-    microsecond = (
-        match.group("microsecond")
-        or match.group("interval_microsecond")
-        or match.group("timeonly_microsecond")
-    )
-
-    date_components = [
-        year if year and year != "-" else "-",
-        month if month and month != "-" else "-",
-        day if day and day != "-" else "-",
+    components = _extract_datetime_components(date_str)
+    date_components = list(components.values())[
+        DatePrecision.year : DatePrecision.day + 1
     ]
-
-    has_time = (
-        hour is not None
-        or minute is not None
-        or second is not None
-        or microsecond is not None
-    )
-
-    time_components = (
-        hour if hour and hour != "-" else None,
-        minute if minute and minute != "-" else None,
-        second if second and second != "-" else None,
-        microsecond if microsecond else None,
-    )
-
+    time_components = list(components.values())[
+        DatePrecision.hour : DatePrecision.microsecond + 1
+    ]
+    has_time = any(component is not None for component in time_components)
     return date_components, time_components, has_time
 
 
@@ -258,15 +175,9 @@ def _parse_datetime_string(date_str: str):
 def detect_datetime_precision(date_str: str) -> DatePrecision | None:
     if not _datestring_is_valid(date_str):
         return None
-
     date_components, time_components, has_time = _parse_datetime_string(date_str)
-
-    if all(
-        component == "-" or component is None or component == ""
-        for component in date_components
-    ):
+    if all(_check_date_component_missing(component) for component in date_components):
         return None
-
     return _date_and_time_precision(date_components, time_components, has_time)
 
 
@@ -288,14 +199,12 @@ def _get_precision_before(precision: DatePrecision) -> DatePrecision | None:
 
 
 def _check_date_precision(date_components) -> tuple:
-    date_component_map = {
-        DatePrecision.year: 0,
-        DatePrecision.month: 1,
-        DatePrecision.day: 2,
-    }
     for precision in [DatePrecision.year, DatePrecision.month, DatePrecision.day]:
-        index = date_component_map[precision]
-        component = date_components[index] if index < len(date_components) else None
+        component = (
+            date_components[precision.value]
+            if precision.value < len(date_components)
+            else None
+        )
         if _check_date_component_missing(component):
             result = _get_precision_before(precision)
             return (True, result)
@@ -342,41 +251,22 @@ def get_common_precision(dt1: str, dt2: str) -> DatePrecision | None:
 
 
 def get_date_component(component: str, date_string: str):
+    date = get_date(date_string)
     try:
-        precision = DatePrecision[component]
+        return getattr(date, DatePrecision[component].name)
     except (KeyError, ValueError):
-        return get_date(date_string)
-
-    component_func_map = {
-        DatePrecision.year: get_year,
-        DatePrecision.month: get_month,
-        DatePrecision.day: get_day,
-        DatePrecision.hour: get_hour,
-        DatePrecision.minute: get_minute,
-        DatePrecision.microsecond: get_microsecond,
-        DatePrecision.second: get_second,
-    }
-    component_function = component_func_map.get(precision)
-    if component_function:
-        return component_function(date_string)
-    else:
-        return get_date(date_string)
+        return date
 
 
 def _parse_uncertain_date(date_string: str) -> datetime | None:
     """Parse uncertain dates with missing components using regex groups."""
     components = _extract_datetime_components(date_string)
-
-    year = int(components.get("year") or 1970)
-    month = int(components.get("month") or 1)
-    day = int(components.get("day") or 1)
-    hour = int(components.get("hour") or 0)
-    minute = int(components.get("minute") or 0)
-    second = int(components.get("second") or 0)
-    microsecond = int(components.get("microsecond") or 0)
-
+    component_ints = [
+        int(components.get(precision) or precision.default_value)
+        for precision in DatePrecision
+    ]
     try:
-        return datetime(year, month, day, hour, minute, second, microsecond)
+        return datetime(*component_ints)
     except (ValueError, TypeError):
         return None
 
@@ -394,7 +284,17 @@ def get_date(date_string: str):
             utc = pytz.UTC
             return utc.localize(uncertain_date)
 
-    date = parse(date_string, default=datetime(1970, 1, 1))
+    date = parse(
+        date_string,
+        default=datetime(
+            *[
+                precision.default_value
+                for precision in list(DatePrecision)[
+                    DatePrecision.year : DatePrecision.day + 1
+                ]
+            ]
+        ),
+    )
     utc = pytz.UTC
     if date.tzinfo is not None and date.tzinfo.utcoffset(date) is not None:
         return date.astimezone(utc)
@@ -443,23 +343,13 @@ def case_insensitive_is_in(value, values):
 
 def truncate_datetime_to_precision(date_string: str, precision: DatePrecision):
     dt = get_date(date_string)
-    match precision:
-        case DatePrecision.year:
-            return dt.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
-        case DatePrecision.month:
-            return dt.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-        case DatePrecision.day:
-            return dt.replace(hour=0, minute=0, second=0, microsecond=0)
-        case DatePrecision.hour:
-            return dt.replace(minute=0, second=0, microsecond=0)
-        case DatePrecision.minute:
-            return dt.replace(second=0, microsecond=0)
-        case DatePrecision.second:
-            return dt.replace(microsecond=0)
-        case DatePrecision.microsecond:
-            return dt
-        case _:
-            return dt
+    if precision is None:
+        return dt
+    replacements = {
+        precision.name: precision.default_value
+        for precision in list(DatePrecision)[precision.value + 1 :]
+    }
+    return dt.replace(**replacements)
 
 
 def _dates_are_comparable(target: str, comparator: str) -> bool:
