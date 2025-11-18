@@ -442,3 +442,12 @@ def replace_nan_values_in_df(df, columns):
             if mask.any():
                 df.loc[mask, col] = None
     return df
+
+
+def validate_dataset_files_exist(dataset_path: tuple[str], logger, ctx):
+    non_existing_files: list[str] = [
+        path for path in dataset_path if not os.path.exists(path)
+    ]
+    if non_existing_files:
+        logger.error(f'Files {", ".join(non_existing_files)} are not found')
+        ctx.exit(1)
