@@ -223,19 +223,15 @@ class DataProcessor:
                     col for col in ["IDVAR", "IDVARVAL"] if col in right_dataset.columns
                 ]
                 current_supp = right_dataset.drop(columns=columns_to_drop)
-            if isinstance(left_dataset, DaskDataset):
-                left_pandas = PandasDataset(left_dataset.data.compute())
-                merged_pandas = PandasDataset(
-                    pd.merge(
-                        left_pandas.data,
-                        current_supp.data,
-                        how="left",
-                        on=common_keys,
-                        suffixes=("", "_supp"),
-                    )
+            if dataset_implementation == DaskDataset:
+                current_supp = DaskDataset(current_supp.data)
+                left_dataset = left_dataset.merge(
+                    other=current_supp.data,
+                    how="left",
+                    on=common_keys,
+                    suffixes=("", "_supp"),
                 )
-                DataProcessor._validate_qnam(merged_pandas.data, qnam_list, common_keys)
-                left_dataset = DaskDataset(merged_pandas.data)
+                DataProcessor._validate_qnam_dask(left_dataset, qnam_list, common_keys)
             else:
                 left_dataset = PandasDataset(
                     pd.merge(
@@ -250,14 +246,15 @@ class DataProcessor:
         else:
             if dataset_implementation == DaskDataset:
                 left_dataset = PandasDataset(left_dataset.data.compute())
-                right_dataset = PandasDataset(right_dataset.data.compute())
-            left_dataset = DataProcessor._merge_supp_with_multiple_idvars(
-                left_dataset, right_dataset, static_keys, qnam_list
-            )
-        if dataset_implementation == DaskDataset and not isinstance(
-            left_dataset, DaskDataset
-        ):
-            left_dataset = DaskDataset(left_dataset.data)
+                right_pandas = PandasDataset(right_dataset.data.compute())
+                left_dataset = DataProcessor._merge_supp_with_multiple_idvars(
+                    left_dataset, right_pandas, static_keys, qnam_list
+                )
+                left_dataset = DaskDataset(left_dataset.data)
+            else:
+                left_dataset = DataProcessor._merge_supp_with_multiple_idvars(
+                    left_dataset, right_dataset, static_keys, qnam_list
+                )
         return left_dataset
 
     @staticmethod
@@ -375,6 +372,26 @@ class DataProcessor:
             if (grouped > 1).any():
                 raise ValueError(
                     f"Multiple records with the same QNAM '{qnam}' match a single parent record"
+                )
+
+    @staticmethod
+    def _validate_qnam_dask(
+        left_dataset: DaskDataset,
+        qnam_list: list,
+        common_keys: List[str],
+    ):
+        for qnam in qnam_list:
+            if qnam not in left_dataset.columns:
+                continue
+            qnam_check = left_dataset.data[~left_dataset.data[qnam].isna()]
+            if len(qnam_check) == 0:
+                continue
+            grouped_counts = qnam_check.groupby(common_keys).size()
+            problem_groups = grouped_counts[grouped_counts > 1]
+            problem_groups_computed = problem_groups.compute()
+            if len(problem_groups_computed) > 0:
+                raise ValueError(
+                    f"Multiple records with the same QNAM '{qnam}' match a single parent record. "
                 )
 
     @staticmethod
