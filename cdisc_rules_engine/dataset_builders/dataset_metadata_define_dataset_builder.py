@@ -2,7 +2,6 @@ from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.dataset_builders.base_dataset_builder import BaseDatasetBuilder
 import os
 import numpy as np
-import pandas as pd
 
 
 class DatasetMetadataDefineDatasetBuilder(BaseDatasetBuilder):
@@ -109,10 +108,7 @@ class DatasetMetadataDefineDatasetBuilder(BaseDatasetBuilder):
                     if datasets.data.empty:
                         datasets.data = ds_metadata.data.copy()
                     else:
-                        datasets.data = pd.concat(
-                            [datasets.data, ds_metadata.data], ignore_index=True
-                        )
-
+                        datasets.data = datasets.concat(ds_metadata).data
             if datasets.data.empty or len(datasets.data) == 0:
                 dataset_df = self.dataset_implementation(columns=dataset_col_order)
                 logger.info(f"No datasets metadata is provided for {__name__}.")

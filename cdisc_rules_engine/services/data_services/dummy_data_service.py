@@ -4,7 +4,7 @@ from typing import List, Optional, Iterable, Sequence
 
 import os
 import pandas as pd
-
+import tempfile
 from cdisc_rules_engine.dummy_models.dummy_dataset import DummyDataset
 from cdisc_rules_engine.exceptions.custom_exceptions import (
     DatasetNotFoundError,
@@ -156,7 +156,22 @@ class DummyDataService(BaseDataService):
         return metadata_to_return
 
     def to_parquet(self, file_path: str) -> str:
-        return ""
+        """
+        Save the dataset with full_path == file_path to a parquet file.
+        Returns the number of rows and the path to the saved parquet file, or (0, "") if not found.
+        """
+        for dataset in self.data:
+            if hasattr(dataset, "full_path") and dataset.full_path == file_path:
+                # Convert the DummyDataset's data (assumed to be a DataFrame or dict-like) to a pandas DataFrame
+                if hasattr(dataset, "data"):
+                    df = pd.DataFrame(dataset.data)
+                else:
+                    # fallback: try to convert the whole object to dict
+                    df = pd.DataFrame([dataset.__dict__])
+                temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".parquet")
+                df.to_parquet(temp_file.name)
+                return len(df.index), temp_file.name
+        return 0, ""
 
     def get_datasets(self) -> Iterable[SDTMDatasetMetadata]:
         return self.data
