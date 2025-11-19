@@ -60,6 +60,7 @@ class DatasetMetadataDefineDatasetBuilder(BaseDatasetBuilder):
             merged_cleaned["dataset_location"].str.lower() == dataset_filename
         ]
         if matching_row.empty:
+            # when using DASK dataset_filename refers to temp parquet filename
             matching_row: DatasetInterface = merged_cleaned[
                 merged_cleaned["dataset_domain"].str.upper()
                 == self.dataset_metadata.domain.upper()
