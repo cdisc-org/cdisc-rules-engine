@@ -1,3 +1,4 @@
+from cdisc_rules_engine.models.dataset import DatasetInterface
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.dataset_builders.base_dataset_builder import BaseDatasetBuilder
 import os
@@ -55,9 +56,14 @@ class DatasetMetadataDefineDatasetBuilder(BaseDatasetBuilder):
             if self.dataset_metadata.full_path
             else None
         )
-        matching_row = merged_cleaned[
+        matching_row: DatasetInterface = merged_cleaned[
             merged_cleaned["dataset_location"].str.lower() == dataset_filename
         ]
+        if matching_row.empty:
+            matching_row: DatasetInterface = merged_cleaned[
+                merged_cleaned["dataset_domain"].str.upper()
+                == self.dataset_metadata.domain.upper()
+            ]
         for column in merged.columns:
             merged[column] = matching_row[column].iloc[0]
         return merged
