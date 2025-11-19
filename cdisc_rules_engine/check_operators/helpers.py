@@ -220,8 +220,6 @@ def _date_and_time_precision(
     ]
     for i, precision in enumerate(time_precisions):
         component = time_components[i] if i < len(time_components) else None
-        if component is None:
-            return _get_precision_before(precision)
         if _check_date_component_missing(component):
             return _get_precision_before(precision)
 
