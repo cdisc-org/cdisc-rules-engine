@@ -198,47 +198,34 @@ def _get_precision_before(precision: DatePrecision) -> DatePrecision | None:
     return None
 
 
-def _check_date_precision(date_components) -> tuple:
-    for precision in [DatePrecision.year, DatePrecision.month, DatePrecision.day]:
+def _date_and_time_precision(
+    date_components, time_components, has_time
+) -> DatePrecision | None:
+    date_precisions = list(DatePrecision)[DatePrecision.year : DatePrecision.day + 1]
+
+    for precision in date_precisions:
         component = (
             date_components[precision.value]
             if precision.value < len(date_components)
             else None
         )
         if _check_date_component_missing(component):
-            result = _get_precision_before(precision)
-            return (True, result)
-    return (False, None)
+            return _get_precision_before(precision)
 
-
-def _check_time_precision(time_components) -> DatePrecision:
-    if not time_components:
-        return DatePrecision.day
-    hour, minute, second, microsecond = time_components
-    if _check_date_component_missing(hour):
-        return DatePrecision.day
-    if _check_date_component_missing(minute):
-        return DatePrecision.hour
-    if second is None:
-        return DatePrecision.minute
-    if _check_date_component_missing(second):
-        return DatePrecision.minute
-    if microsecond is None:
-        return DatePrecision.second
-    if not microsecond or microsecond == "":
-        return DatePrecision.second
-    return DatePrecision.microsecond
-
-
-def _date_and_time_precision(
-    date_components, time_components, has_time
-) -> DatePrecision | None:
-    found_missing, date_result = _check_date_precision(date_components)
-    if found_missing:
-        return date_result
     if not has_time or not time_components:
         return DatePrecision.day
-    return _check_time_precision(time_components)
+
+    time_precisions = list(DatePrecision)[
+        DatePrecision.hour : DatePrecision.microsecond + 1
+    ]
+    for i, precision in enumerate(time_precisions):
+        component = time_components[i] if i < len(time_components) else None
+        if component is None:
+            return _get_precision_before(precision)
+        if _check_date_component_missing(component):
+            return _get_precision_before(precision)
+
+    return DatePrecision.microsecond
 
 
 def get_common_precision(dt1: str, dt2: str) -> DatePrecision | None:
