@@ -88,3 +88,11 @@ class SchemaNotFoundError(EngineError):
 class InvalidSchemaProvidedError(EngineError):
     code = 400
     description = "Failed to parse XMLSchema"
+
+
+class PreprocessingError(EngineError):
+    description = "Error occurred during dataset preprocessing"
+
+
+class OperationError(EngineError):
+    description = "Error occurred during operation execution"

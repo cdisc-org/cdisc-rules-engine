@@ -20,6 +20,16 @@ import os
 import pandas as pd
 
 
+class PreprocessingError(Exception):
+    """
+    Custom exception for preprocessing failures that should trigger rule skipping.
+    This exception is caught by rules_engine.handle_validation_exceptions() and
+    returns a SKIPPED status with the exception message shown to the user.
+    """
+
+    pass
+
+
 class DatasetPreprocessor:
     """
     The class is responsible for preprocessing the dataset
@@ -49,10 +59,6 @@ class DatasetPreprocessor:
     def preprocess(  # noqa
         self, rule: dict, datasets: Iterable[SDTMDatasetMetadata]
     ) -> DatasetInterface:
-        """
-        Preprocesses the dataset by merging it with the
-        datasets from the provided rule.
-        """
         rule_datasets: List[dict] = rule.get("datasets")
         if not rule_datasets:
             return self._dataset  # nothing to preprocess
@@ -107,11 +113,27 @@ class DatasetPreprocessor:
                         )
                     )
                 ]
+
+            if not file_infos:
+                raise PreprocessingError(
+                    f"Required dataset '{domain_name}' not found for merging with "
+                    f"{self._dataset_metadata.domain}. Rule is not applicable to this study."
+                )
+
             for file_info in file_infos:
                 if file_info.domain in merged_domains:
                     continue
+
                 filename = get_dataset_name_from_details(file_info)
-                other_dataset: DatasetInterface = self._download_dataset(filename)
+
+                # Try to download the dataset
+                try:
+                    other_dataset: DatasetInterface = self._download_dataset(filename)
+                except Exception as e:
+                    raise PreprocessingError(
+                        f"Failed to load required dataset '{filename}' for merging: {str(e)}"
+                    )
+
                 referenced_targets = set(
                     [
                         target.replace(f"{domain_name}.", "")

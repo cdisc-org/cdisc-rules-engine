@@ -17,6 +17,8 @@ from cdisc_rules_engine.exceptions.custom_exceptions import (
     DomainNotFoundError,
     InvalidSchemaProvidedError,
     SchemaNotFoundError,
+    PreprocessingError,
+    OperationError,
 )
 from cdisc_rules_engine.interfaces import (
     CacheServiceInterface,
@@ -516,6 +518,35 @@ class RulesEngine:
                 message=exception.args[0],
             )
             message = "rule execution error"
+        elif isinstance(exception, PreprocessingError):
+            error_obj = FailedValidationEntity(
+                dataset=os.path.basename(dataset_path),
+                error="Preprocessing failed",
+                message=str(exception),  # All structured info in the message
+            )
+            message = "rule evaluation skipped - preprocessing failed"
+            errors = [error_obj]
+            return ValidationErrorContainer(
+                dataset=os.path.basename(dataset_path),
+                errors=errors,
+                message=message,
+                status=ExecutionStatus.SKIPPED.value,
+            )
+
+        elif isinstance(exception, OperationError):
+            error_obj = FailedValidationEntity(
+                dataset=os.path.basename(dataset_path),
+                error="Operation execution failed",
+                message=str(exception),  # All structured info in the message
+            )
+            message = "rule evaluation skipped - operation failed"
+            errors = [error_obj]
+            return ValidationErrorContainer(
+                dataset=os.path.basename(dataset_path),
+                errors=errors,
+                message=message,
+                status=ExecutionStatus.SKIPPED.value,
+            )
         elif isinstance(exception, FailedSchemaValidation):
             if self.validate_xml:
                 error_obj = FailedValidationEntity(
