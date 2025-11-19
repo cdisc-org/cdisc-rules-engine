@@ -12,6 +12,18 @@ from cdisc_rules_engine.sql_dataset_builders.sql_variables_metadata_builder impo
 from cdisc_rules_engine.sql_dataset_builders.sql_domain_list_builder import (
     SqlDomainListDatasetBuilder,
 )
+from cdisc_rules_engine.sql_dataset_builders.sql_dataset_metadata_builder import (
+    SqlDatasetMetadataBuilder,
+)
+from cdisc_rules_engine.sql_dataset_builders.sql_variables_metadata_with_library_builder import (
+    SqlVariablesMetadataWithLibraryBuilder,
+)
+from cdisc_rules_engine.sql_dataset_builders.sql_value_check_with_dataset_metadata_builder import (
+    SqlValueCheckWithDatasetMetadataBuilder,
+)
+from cdisc_rules_engine.sql_dataset_builders.sql_value_check_with_variable_metadata_builder import (
+    SqlValueCheckWithVariableMetadataBuilder,
+)
 
 
 class SqlDatasetBuilderFactory:
@@ -23,11 +35,15 @@ class SqlDatasetBuilderFactory:
     _builders_map = {
         RuleTypes.VARIABLE_METADATA_CHECK.value: SqlVariablesMetadataBuilder,
         RuleTypes.DOMAIN_PRESENCE_CHECK.value: SqlDomainListDatasetBuilder,
+        RuleTypes.DATASET_METADATA_CHECK.value: SqlDatasetMetadataBuilder,
+        RuleTypes.VARIABLE_METADATA_CHECK_AGAINST_LIBRARY.value: SqlVariablesMetadataWithLibraryBuilder,
+        RuleTypes.VALUE_CHECK_WITH_DATASET_METADATA.value: SqlValueCheckWithDatasetMetadataBuilder,
+        RuleTypes.VALUE_CHECK_WITH_VARIABLE_METADATA.value: SqlValueCheckWithVariableMetadataBuilder,
     }
 
     # List of rule types that are not yet implemented
     _unimplemented_types = {
-        RuleTypes.DATASET_METADATA_CHECK.value,
+        # define-XML dependent types (not implemented yet)
         RuleTypes.DATASET_CONTENTS_CHECK_AGAINST_DEFINE_AND_LIBRARY.value,
         RuleTypes.DATASET_CONTENTS_CHECK_AGAINST_DEFINE.value,
         RuleTypes.DATASET_METADATA_CHECK_AGAINST_DEFINE.value,
@@ -36,12 +52,9 @@ class SqlDatasetBuilderFactory:
         RuleTypes.VALUE_LEVEL_METADATA_CHECK_AGAINST_DEFINE.value,
         RuleTypes.VARIABLE_METADATA_CHECK_AGAINST_DEFINE.value,
         RuleTypes.VARIABLE_METADATA_CHECK_AGAINST_DEFINE_XML_AND_LIBRARY.value,
-        RuleTypes.VARIABLE_METADATA_CHECK_AGAINST_LIBRARY.value,
         RuleTypes.VALUE_CHECK_AGAINST_DEFINE_XML_VARIABLE.value,
         RuleTypes.VALUE_CHECK_AGAINST_DEFINE_XML_VLM.value,
         RuleTypes.DEFINE_ITEM_METADATA_CHECK_AGAINST_LIBRARY.value,
-        RuleTypes.VALUE_CHECK_WITH_DATASET_METADATA.value,
-        RuleTypes.VALUE_CHECK_WITH_VARIABLE_METADATA.value,
     }
 
     @classmethod

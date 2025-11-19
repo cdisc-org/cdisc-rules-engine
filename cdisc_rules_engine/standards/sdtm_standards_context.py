@@ -23,7 +23,10 @@ from cdisc_rules_engine.models.library_metadata_container import (
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.standards.base_standards_context import BaseStandardsContext
 from cdisc_rules_engine.standards.sdtm_dataset_metadata import SdtmDatasetMetadata2
-from cdisc_rules_engine.utilities.sdtm_utilities import get_class_and_domain_metadata
+from cdisc_rules_engine.utilities.sdtm_utilities import (
+    get_class_and_domain_metadata,
+    get_variables_metadata_from_standard,
+)
 from cdisc_rules_engine.utilities.utils import (
     convert_library_class_name_to_ct_class,
     search_in_list_of_dicts,
@@ -138,6 +141,33 @@ class SdtmStandardsContext(BaseStandardsContext):
             if domain_details:
                 return domain_details
         return {}
+
+    def get_library_variables_metadata(self, dataset_metadata: SdtmDatasetMetadata2) -> list:
+        if not dataset_metadata.domain and dataset_metadata.is_supp and dataset_metadata.rdomain:
+            domain = "SUPPQUAL"
+        elif not dataset_metadata.domain and not dataset_metadata.rdomain and "rel" in dataset_metadata.name.lower():
+            if dataset_metadata.name.lower().startswith("ap") and dataset_metadata.name.lower()[2:].startswith("rel"):
+                domain = dataset_metadata.name[2:]
+            else:
+                domain = dataset_metadata.name
+        else:
+            domain = dataset_metadata.domain
+
+        variables = get_variables_metadata_from_standard(domain=domain, library_metadata=self.library_metadata)
+
+        column_name_mapping = {
+            "ordinal": "order_number",
+            "simpleDatatype": "data_type",
+        }
+
+        for var in variables:
+            # Replace -- with domain code if it exists
+            var["name"] = var["name"].replace("--", dataset_metadata.domain or "")
+            for key, new_key in column_name_mapping.items():
+                if key in var:
+                    var[new_key] = var.pop(key)
+
+        return variables
 
     def within_rule_scope(self, rule: dict, metadata: DatasetMetadata2):
         """Check if rule is suitable and return reason if not"""

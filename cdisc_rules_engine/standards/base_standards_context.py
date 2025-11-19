@@ -43,6 +43,10 @@ class BaseStandardsContext(ABC):
         pass
 
     @abstractmethod
+    def get_library_variables_metadata(self, dataset_metadata: BaseDatasetMetadata) -> list:
+        pass
+
+    @abstractmethod
     def within_rule_scope(self, scope: dict[str, Any], metadata: DatasetMetadata2):
         pass
 
