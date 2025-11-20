@@ -96,3 +96,7 @@ class PreprocessingError(EngineError):
 
 class OperationError(EngineError):
     description = "Error occurred during operation execution"
+
+
+class DatasetBuilderError(EngineError):
+    description = "Error occurred during dataset building"

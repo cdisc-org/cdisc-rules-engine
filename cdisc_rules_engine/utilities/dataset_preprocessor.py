@@ -107,7 +107,7 @@ class DatasetPreprocessor:
 
             if not file_infos:
                 raise PreprocessingError(
-                    f"Required dataset '{domain_name}' not found for {self._dataset_metadata.name}"
+                    f"Failed to find related dataset for '{domain_name}' in preprocessor"
                 )
 
             for file_info in file_infos:
@@ -121,7 +121,7 @@ class DatasetPreprocessor:
                     other_dataset: DatasetInterface = self._download_dataset(filename)
                 except Exception as e:
                     raise PreprocessingError(
-                        f"Failed to load dataset '{filename}': {str(e)}"
+                        f"Failed to download dataset '{filename}' for preprocessing: {str(e)}"
                     )
 
                 referenced_targets = set(
@@ -158,26 +158,35 @@ class DatasetPreprocessor:
                         right_dataset_domain_details=domain_details,
                         datasets=datasets,
                     )
+                    merged_domains.add(file_info.domain)
         return result
 
     def _find_parent_dataset(
         self, datasets: Iterable[SDTMDatasetMetadata], domain_details: dict
     ) -> SDTMDatasetMetadata:
         matching_datasets = []
-        if "RDOMAIN" in self._dataset.columns:
-            rdomain_column = self._dataset.data["RDOMAIN"]
-            unique_domains = set(rdomain_column.unique())
-            for dataset in datasets:
-                if dataset.domain in unique_domains:
-                    matching_datasets.append(dataset)
-        else:
-            match_keys = domain_details.get("match_key")
-            for dataset in datasets:
-                has_all_match_keys = all(
-                    match_key in dataset.first_record for match_key in match_keys
-                )
-                if has_all_match_keys:
-                    matching_datasets.append(dataset)
+        try:
+            if "RDOMAIN" in self._dataset.columns:
+                rdomain_column = self._dataset.data["RDOMAIN"]
+                unique_domains = set(rdomain_column.unique())
+                for dataset in datasets:
+                    if dataset.domain in unique_domains:
+                        matching_datasets.append(dataset)
+            else:
+                match_keys = domain_details.get("match_key")
+                for dataset in datasets:
+                    has_all_match_keys = all(
+                        match_key in dataset.first_record for match_key in match_keys
+                    )
+                    if has_all_match_keys:
+                        matching_datasets.append(dataset)
+        except Exception as e:
+            raise PreprocessingError(
+                f"Error during parent dataset search. "
+                f"Current dataset: {self._dataset_metadata.name}, "
+                f"Match keys: {domain_details.get('match_key')}, "
+                f"Error: {str(e)}"
+            )
         if not matching_datasets:
             logger.warning(
                 f"Child specified in match but no parent datasets found for: {domain_details}"
@@ -226,14 +235,22 @@ class DatasetPreprocessor:
                 "--",
                 right_dataset_domain_name,
             )
-            result = left_dataset.merge(
-                right_dataset.data,
-                how="left",
-                left_on=left_dataset_match_keys,
-                right_on=right_dataset_match_keys,
-                suffixes=("", f".{right_dataset_domain_name}"),
-            )
-            return result
+            try:
+                result = left_dataset.merge(
+                    right_dataset.data,
+                    how="left",
+                    left_on=left_dataset_match_keys,
+                    right_on=right_dataset_match_keys,
+                    suffixes=("", f".{right_dataset_domain_name}"),
+                )
+                return result
+            except Exception as e:
+                raise PreprocessingError(
+                    f"Merge operation failed during child merge. "
+                    f"Left dataset: {left_dataset_domain_name}, "
+                    f"Right dataset: {right_dataset_domain_name}, "
+                    f"Error: {str(e)}"
+                )
 
     def _classify_dataset(
         self, dataset: DatasetInterface, metadata: SDTMDatasetMetadata
@@ -251,19 +268,28 @@ class DatasetPreprocessor:
         right_dataset_domain_name: str,
         match_keys: List[str],
     ) -> DatasetInterface:
-        relevant_child_records = self._get_relevant_child_records(
-            left_dataset, right_dataset_domain_name
-        )
-        merged_records = self._merge_with_idvar_logic(
-            relevant_child_records,
-            right_dataset,
-            left_dataset_domain_name,
-            right_dataset_domain_name,
-            match_keys,
-        )
-        return self._update_dataset_with_merged_records(
-            left_dataset, relevant_child_records, merged_records
-        )
+        try:
+            relevant_child_records = self._get_relevant_child_records(
+                left_dataset, right_dataset_domain_name
+            )
+            merged_records = self._merge_with_idvar_logic(
+                relevant_child_records,
+                right_dataset,
+                left_dataset_domain_name,
+                right_dataset_domain_name,
+                match_keys,
+            )
+            return self._update_dataset_with_merged_records(
+                left_dataset, relevant_child_records, merged_records
+            )
+        except Exception as e:
+            raise PreprocessingError(
+                f"Failed to merge with IDVAR logic. "
+                f"Left dataset: {left_dataset_domain_name}, "
+                f"Right dataset: {right_dataset_domain_name}, "
+                f"Match keys: {match_keys}, "
+                f"Error: {str(e)}"
+            )
 
     def _get_relevant_child_records(
         self, left_dataset: DatasetInterface, parent_domain: str
@@ -469,7 +495,7 @@ class DatasetPreprocessor:
         updated_data = pd.concat([remaining_records, merged_records], ignore_index=True)
         return self._dataset.__class__(data=updated_data)
 
-    def _merge_datasets(
+    def _merge_datasets(  # noqa
         self,
         left_dataset: DatasetInterface,
         left_dataset_domain_name: str,
@@ -499,37 +525,70 @@ class DatasetPreprocessor:
 
         # merge datasets based on their type
         if right_dataset_domain_name == "RELREC":
-            result: DatasetInterface = DataProcessor.merge_relrec_datasets(
-                left_dataset=left_dataset,
-                left_dataset_domain_name=left_dataset_domain_name,
-                relrec_dataset=right_dataset,
-                datasets=datasets,
-                dataset_preprocessor=self,
-                wildcard=right_dataset_domain_details.get("wildcard"),
-            )
+            try:
+                result: DatasetInterface = DataProcessor.merge_relrec_datasets(
+                    left_dataset=left_dataset,
+                    left_dataset_domain_name=left_dataset_domain_name,
+                    relrec_dataset=right_dataset,
+                    datasets=datasets,
+                    dataset_preprocessor=self,
+                    wildcard=right_dataset_domain_details.get("wildcard"),
+                )
+            except Exception as e:
+                raise PreprocessingError(
+                    f"Failed to merge RELREC dataset in preprocessing. "
+                    f"Left dataset: {left_dataset_domain_name}, "
+                    f"RELREC dataset: {right_dataset_domain_name}, "
+                    f"Wildcard: {right_dataset_domain_details.get('wildcard')}, "
+                    f"Match keys: {match_keys}, "
+                    f"Error: {str(e)}"
+                )
         elif right_dataset_domain_name == "SUPP--":
-            result: DatasetInterface = DataProcessor.merge_pivot_supp_dataset(
-                dataset_implementation=self._data_service.dataset_implementation,
-                left_dataset=left_dataset,
-                right_dataset=right_dataset,
-            )
+            try:
+                result: DatasetInterface = DataProcessor.merge_pivot_supp_dataset(
+                    dataset_implementation=self._data_service.dataset_implementation,
+                    left_dataset=left_dataset,
+                    right_dataset=right_dataset,
+                )
+            except Exception as e:
+                raise PreprocessingError(
+                    f"Failed to merge supplemental/qualifier dataset. "
+                    f"Left dataset: {left_dataset_domain_name} ({len(left_dataset)} rows), "
+                    f"SUPP/SQ dataset: {right_dataset_domain_name} ({len(right_dataset)} rows), "
+                    f"Error: {str(e)}"
+                )
         elif self._rule_processor.is_relationship_dataset(right_dataset_domain_name):
-            result: DatasetInterface = DataProcessor.merge_relationship_datasets(
-                left_dataset=left_dataset,
-                left_dataset_match_keys=left_dataset_match_keys,
-                right_dataset=right_dataset,
-                right_dataset_match_keys=right_dataset_match_keys,
-                right_dataset_domain=right_dataset_domain_details,
-            )
+            try:
+                result: DatasetInterface = DataProcessor.merge_relationship_datasets(
+                    left_dataset=left_dataset,
+                    left_dataset_match_keys=left_dataset_match_keys,
+                    right_dataset=right_dataset,
+                    right_dataset_match_keys=right_dataset_match_keys,
+                    right_dataset_domain=right_dataset_domain_details,
+                )
+            except Exception as e:
+                raise PreprocessingError(
+                    f"Failed to merge relationship dataset. "
+                    f"Left dataset: {left_dataset_domain_name} ({len(left_dataset)} rows), "
+                    f"SUPP/SQ dataset: {right_dataset_domain_name} ({len(right_dataset)} rows), "
+                    f"Error: {str(e)}"
+                )
         else:
-            result: DatasetInterface = DataProcessor.merge_sdtm_datasets(
-                left_dataset=left_dataset,
-                right_dataset=right_dataset,
-                left_dataset_match_keys=left_dataset_match_keys,
-                right_dataset_match_keys=right_dataset_match_keys,
-                right_dataset_domain_name=right_dataset_domain_name,
-                join_type=JoinTypes(
-                    right_dataset_domain_details.get("join_type", "inner")
-                ),
-            )
+            try:
+                result: DatasetInterface = DataProcessor.merge_sdtm_datasets(
+                    left_dataset=left_dataset,
+                    right_dataset=right_dataset,
+                    left_dataset_match_keys=left_dataset_match_keys,
+                    right_dataset_match_keys=right_dataset_match_keys,
+                    right_dataset_domain_name=right_dataset_domain_name,
+                    join_type=JoinTypes(
+                        right_dataset_domain_details.get("join_type", "inner")
+                    ),
+                )
+            except Exception as e:
+                raise PreprocessingError(
+                    f"Failed to merge datasets. "
+                    f"Left dataset: {left_dataset_domain_name}, Right dataset: {right_dataset_domain_name}, "
+                    f"Error: {str(e)}"
+                )
         return result
