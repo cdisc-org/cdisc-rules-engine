@@ -255,13 +255,13 @@ Then run normally: `core.exe validate -rest -of -config -commands
 
 ### Updating the Cache (`update-cache`)
 
-Update locally stored cache data (Requires an environment variable - `CDISC_LIBRARY_API_KEY`) This is stored in the .env folder in the root directory, the API key does not need quotations around it.
+Update locally stored cache data (Requires an environment variable - `CDISC_LIBRARY_API_KEY`) This is stored in the .env folder in the root directory, the API key does not need quotations around it. When running a validation, CORE uses rules in the cache unless -lr is specified. Running the above command populates the cache with controlled terminology, rules, metadata, etc.
 
 ```bash
   python core.py update-cache
 ```
 
-**NOTE:** When running a validation, CORE uses rules in the cache unless -lr is specified. Running the above command populates the cache with controlled terminology, rules, metadata, etc.
+**Firewall Note:** If you encounter an SSL certificate verification error (e.g., `[SSL: CERTIFICATE_VERIFY_FAILED]`), this is typically caused by corporate firewall/proxy SSL inspection. The application connects to `api.library.cdisc.org` on port 443. Contact your IT department to request either the corporate CA certificate bundle or whitelisting for this hostname.
 
 To obtain an api key, please follow the instructions found here: <https://wiki.cdisc.org/display/LIBSUPRT/Getting+Started%3A+Access+to+CDISC+Library+API+using+API+Key+Authentication>. Please note it can take up to an hour after sign up to have an api key issued
 
