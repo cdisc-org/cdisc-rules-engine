@@ -492,13 +492,13 @@ def test_does_not_contain_with_none_first_row(
             {"target": ["A", "B", "C"], "comparison": [None, ["A", "B"], ["C", "D"]]},
             "comparison",
             PandasDataset,
-            [False, True, True],
+            [False, False, False],
         ),
         (
             {"target": ["A", "B", "C"], "comparison": [["A", "B"], None, ["C", "D"]]},
             "comparison",
             PandasDataset,
-            [True, False, True],
+            [False, False, False],
         ),
     ],
 )
