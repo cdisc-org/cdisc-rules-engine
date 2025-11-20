@@ -56,8 +56,8 @@ class RecordCount(BaseOperation):
         )
         effective_grouping = []
         for col in grouping_cols:
-            if col in self.params.dataframe.columns:
-                sample_val = self.params.dataframe[col].iloc[0]
+            if col in self.evaluation_dataset.data.columns:
+                sample_val = self.evaluation_dataset[col].iloc[0]
                 if isinstance(sample_val, (list, tuple)):
                     # This is an operation result - expand the list
                     effective_grouping.extend(sample_val)

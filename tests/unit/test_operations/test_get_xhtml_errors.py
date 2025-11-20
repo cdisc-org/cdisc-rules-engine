@@ -65,6 +65,16 @@ from cdisc_rules_engine.operations.get_xhtml_errors import GetXhtmlErrors
             "invalid-namespace",
             SchemaNotFoundError,
         ),
+        (  # null value
+            "target",
+            PandasDataset.from_records(
+                [
+                    {"target": None},  # noqa: E501
+                ]
+            ),
+            "http://www.cdisc.org/ns/usdm/xhtml/v1.0",
+            [[]],
+        ),
     ],
 )
 def test_get_xhtml_errors(

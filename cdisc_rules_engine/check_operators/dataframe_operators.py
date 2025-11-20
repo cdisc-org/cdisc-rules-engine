@@ -1063,16 +1063,26 @@ class DataframeType(BaseType):
     @type_operator(FIELD_DATAFRAME)
     def contains_all(self, other_value: dict):
         target = self.replace_prefix(other_value.get("target"))
+        value_is_literal: bool = other_value.get("value_is_literal", False)
         comparator = other_value.get("comparator")
-        if isinstance(comparator, list):
-            # get column as array of values
-            values = flatten_list(self.value, comparator)
+        if self.is_column_of_iterables(
+            self.value[target]
+        ) and self.is_column_of_iterables(self.value[comparator]):
+            comparison_data = self.get_comparator_data(comparator, value_is_literal)
+            results = []
+            for i in range(len(self.value[target])):
+                target_val = self.value[target].iloc[i]
+                comp_val = comparison_data.iloc[i]
+                results.append(all(is_in(item, target_val) for item in comp_val))
         else:
-            comparator = self.replace_prefix(comparator)
-            values = self.value[comparator].unique()
-        return self.value.convert_to_series(
-            set(values).issubset(set(self.value[target].unique()))
-        )
+            if isinstance(comparator, list):
+                # get column as array of values
+                values = flatten_list(self.value, comparator)
+            else:
+                comparator = self.replace_prefix(comparator)
+                values = self.value[comparator].unique()
+            results = set(values).issubset(set(self.value[target].unique()))
+        return self.value.convert_to_series(results)
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
@@ -1190,6 +1200,7 @@ class DataframeType(BaseType):
     def is_unique_set(self, other_value):
         target = self.replace_prefix(other_value.get("target"))
         comparator = other_value.get("comparator")
+        regex_pattern = other_value.get("regex")
         values = [target, comparator]
         target_data = flatten_list(self.value, values)
         target_names = []
@@ -1199,6 +1210,13 @@ class DataframeType(BaseType):
                 target_names.append(target_name)
         target_names = list(set(target_names))
         df_group = self.value[target_names].copy()
+        if regex_pattern:
+            for col in df_group.columns:
+                df_group[col] = df_group[col].apply(
+                    lambda x: (
+                        apply_regex(regex_pattern, x) if isinstance(x, str) and x else x
+                    )
+                )
         df_group = df_group.fillna("_NaN_")
         group_sizes = df_group.groupby(target_names).size()
         counts = df_group.apply(tuple, axis=1).map(group_sizes)
