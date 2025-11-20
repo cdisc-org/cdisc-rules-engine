@@ -563,6 +563,7 @@ class RulesEngine:
                 message=str(exception),
             )
             message = "rule evaluation error - evaluation dataset failed to build"
+            errors = [error_obj]
             return ValidationErrorContainer(
                 dataset=os.path.basename(dataset_path),
                 errors=errors,
