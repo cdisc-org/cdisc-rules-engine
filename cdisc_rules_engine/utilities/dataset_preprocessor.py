@@ -16,18 +16,9 @@ from cdisc_rules_engine.utilities.utils import (
     get_sided_match_keys,
     get_dataset_name_from_details,
 )
+from cdisc_rules_engine.exceptions.custom_exceptions import PreprocessingError
 import os
 import pandas as pd
-
-
-class PreprocessingError(Exception):
-    """
-    Custom exception for preprocessing failures that should trigger rule skipping.
-    This exception is caught by rules_engine.handle_validation_exceptions() and
-    returns a SKIPPED status with the exception message shown to the user.
-    """
-
-    pass
 
 
 class DatasetPreprocessor:
@@ -116,8 +107,7 @@ class DatasetPreprocessor:
 
             if not file_infos:
                 raise PreprocessingError(
-                    f"Required dataset '{domain_name}' not found for merging with "
-                    f"{self._dataset_metadata.domain}. Rule is not applicable to this study."
+                    f"Required dataset '{domain_name}' not found for {self._dataset_metadata.name}"
                 )
 
             for file_info in file_infos:
@@ -131,7 +121,7 @@ class DatasetPreprocessor:
                     other_dataset: DatasetInterface = self._download_dataset(filename)
                 except Exception as e:
                     raise PreprocessingError(
-                        f"Failed to load required dataset '{filename}' for merging: {str(e)}"
+                        f"Failed to load dataset '{filename}': {str(e)}"
                     )
 
                 referenced_targets = set(
