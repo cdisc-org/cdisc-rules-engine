@@ -485,6 +485,28 @@ Output
 Laboratory Test Results
 ```
 
+### standard_domains
+
+Returns a list of valid SDTM domain names from the standard metadata. This can be used to compare extracted suffixes from DOMAIN values or dataset names.
+
+Input
+
+Product: sdtmig
+
+Version: 3-4
+
+```yaml
+Operations:
+  - operator: standard_domains
+    id: $valid_domain_names
+```
+
+Output
+
+```
+["AE", "CM", "DM", "FA", "LB", "QS", ...]
+```
+
 ### extract_metadata
 
 Returns the requested dataset level metadata value for the current dataset. Possible name values are:
@@ -493,6 +515,7 @@ Returns the requested dataset level metadata value for the current dataset. Poss
 - dataset_location
 - dataset_name
 - dataset_label
+- domain_suffix
 
 Example
 
@@ -510,6 +533,26 @@ Output:
 
 ```
 Laboratory Test Results
+```
+
+Example: domain_suffix
+
+Extracts the domain suffix (characters 3-4) from AP-related domains. For example, "FA" from "APFA" dataset name or DOMAIN value.
+
+Input:
+
+Target domain: APFA
+
+```yaml
+- name: domain_suffix
+  operator: extract_metadata
+  id: $domain_suffix
+```
+
+Output:
+
+```
+FA
 ```
 
 ## IG & Model Variable Operations
