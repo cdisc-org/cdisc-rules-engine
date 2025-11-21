@@ -299,6 +299,8 @@ Complement of `suffix_equal_to`
 
 Will return True if the value in `value` is contained within the collection/iterable in the target column, or if there's an exact match for non-iterable data.
 
+The operator determines if a column contains iterables by checking that **all** values in the column are iterables (lists or sets), not `None`, and not `NaN`. If all values are iterables, the operator performs row-by-row comparison. If the column has mixed types (e.g., `None` and lists), the column is not treated as iterables and the operator uses value vs all column values logic.
+
 Example:
 
 ```yaml
@@ -310,6 +312,8 @@ Example:
 ### does_not_contain
 
 Complement of `contains`. Returns True when the value is NOT contained within the target collection.
+
+The operator uses the same iterable detection logic as `contains`: all values must be iterables for the column to be treated as iterables.
 
 ```yaml
 - name: "--TOXGR"
@@ -637,6 +641,8 @@ Testing whether individual values or string parts belong to specific lists or se
 ### is_contained_by
 
 Value in `name` compared against a list in `value`. The list can have literal values or be a reference to a `$variable`.
+
+When the `value` parameter references a column variable (e.g., `$variable`), the operator determines if that column contains iterables by checking that **all** values in the column are iterables (lists or sets), not `None`, and not `NaN`. If all values are iterables, the operator performs row-by-row comparison. If the column has mixed types, the operator uses value vs all column values logic.
 
 > ACTARM in ('Screen Failure', 'Not Assigned', 'Not Treated', 'Unplanned Treatment')
 
