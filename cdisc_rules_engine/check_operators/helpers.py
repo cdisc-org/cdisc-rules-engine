@@ -296,8 +296,8 @@ def truncate_datetime_to_precision(date_string: str, precision: DatePrecision):
     if precision is None:
         return dt
     replacements = {
-        precision.name: precision.default_value
-        for precision in list(DatePrecision)[precision.value + 1 :]
+        precision_component.name: precision_component.default_value
+        for precision_component in list(DatePrecision)[precision.value + 1 :]
     }
     return dt.replace(**replacements)
 
