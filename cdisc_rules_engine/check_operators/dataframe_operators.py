@@ -1608,16 +1608,27 @@ class DataframeType(BaseType):
                 return "9999-12-31" if ascending else "0001-01-01"
             return x
 
-        expected_order = sorted(
+        sorted_indices = sorted(
             range(len(comparator_values)),
             key=lambda k: safe_compare(comparator_values[k], group.index[k]),
             reverse=not ascending,
         )
-        actual_order = sorted(range(len(target_values)), key=lambda k: target_values[k])
+        sorted_target_values = [target_values[i] for i in sorted_indices]
 
-        for i, (exp, act) in enumerate(zip(expected_order, actual_order)):
-            if exp != act:
-                is_sorted.iloc[i] = False
+        for i in range(len(sorted_target_values) - 1):
+            current = sorted_target_values[i]
+            next_val = sorted_target_values[i + 1]
+            if pd.isna(current) or pd.isna(next_val):
+                is_sorted.iloc[sorted_indices[i]] = False
+                is_sorted.iloc[sorted_indices[i + 1]] = False
+            elif ascending:
+                if current >= next_val:
+                    is_sorted.iloc[sorted_indices[i]] = False
+                    is_sorted.iloc[sorted_indices[i + 1]] = False
+            else:
+                if current <= next_val:
+                    is_sorted.iloc[sorted_indices[i]] = False
+                    is_sorted.iloc[sorted_indices[i + 1]] = False
 
         return is_sorted
 
@@ -1667,25 +1678,57 @@ class DataframeType(BaseType):
             basic_sort_check = grouped_df.apply(
                 lambda x: self.check_basic_sort_order(x, target, comparator, ascending)
             )
+            if isinstance(basic_sort_check, pd.DataFrame):
+                basic_sort_check = basic_sort_check.iloc[:, 0]
             if is_pandas_dataset and isinstance(basic_sort_check.index, pd.MultiIndex):
-                basic_sort_check = basic_sort_check.droplevel(
-                    list(range(len(within_columns)))
-                )
+                if len(within_columns) < basic_sort_check.index.nlevels:
+                    basic_sort_check = basic_sort_check.droplevel(
+                        list(range(len(within_columns)))
+                    )
+                else:
+                    row_indices = basic_sort_check.index.get_level_values(-1)
+                    basic_sort_check = pd.Series(
+                        basic_sort_check.to_list(), index=row_indices
+                    )
             else:
                 basic_sort_check = basic_sort_check.reset_index(drop=True)
+                basic_sort_check = pd.Series(
+                    basic_sort_check.values, index=sorted_df.index
+                )
 
             date_overlap_check = grouped_df.apply(
                 lambda x: self.check_date_overlaps(x, target, comparator)
             )
+            if isinstance(date_overlap_check, pd.DataFrame):
+                date_overlap_check = date_overlap_check.iloc[:, 0]
             if is_pandas_dataset and isinstance(
                 date_overlap_check.index, pd.MultiIndex
             ):
-                date_overlap_check = date_overlap_check.droplevel(
-                    list(range(len(within_columns)))
-                )
+                if len(within_columns) < date_overlap_check.index.nlevels:
+                    date_overlap_check = date_overlap_check.droplevel(
+                        list(range(len(within_columns)))
+                    )
+                else:
+                    row_indices = date_overlap_check.index.get_level_values(-1)
+                    date_overlap_check = pd.Series(
+                        date_overlap_check.to_list(), index=row_indices
+                    )
             else:
                 date_overlap_check = date_overlap_check.reset_index(drop=True)
-            result = result & basic_sort_check & date_overlap_check
+                date_overlap_check = pd.Series(
+                    date_overlap_check.values, index=sorted_df.index
+                )
+
+            basic_sort_check = basic_sort_check.reindex(
+                sorted_df.index, fill_value=True
+            )
+            date_overlap_check = date_overlap_check.reindex(
+                sorted_df.index, fill_value=True
+            )
+            combined_check = basic_sort_check & date_overlap_check
+            result = result.reindex(sorted_df.index, fill_value=True)
+            result = result & combined_check
+            result = result.reindex(self.value.index, fill_value=True)
 
             if isinstance(result, (pd.DataFrame, dd.DataFrame)):
                 if isinstance(result, dd.DataFrame):
