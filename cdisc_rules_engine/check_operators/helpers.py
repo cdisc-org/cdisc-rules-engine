@@ -157,28 +157,14 @@ def _extract_datetime_components(date_str: str) -> dict:
     return components
 
 
-def _parse_datetime_string(date_str: str):
-    if not date_str or not isinstance(date_str, str):
-        return [], (None, None, None, None), False
-    components = _extract_datetime_components(date_str)
-    date_components = list(components.values())[
-        DatePrecision.year : DatePrecision.day + 1
-    ]
-    time_components = list(components.values())[
-        DatePrecision.hour : DatePrecision.microsecond + 1
-    ]
-    has_time = any(component is not None for component in time_components)
-    return date_components, time_components, has_time
-
-
 @lru_cache(maxsize=1000)
 def detect_datetime_precision(date_str: str) -> DatePrecision | None:
     if not _datestring_is_valid(date_str):
         return None
-    date_components, time_components, has_time = _parse_datetime_string(date_str)
-    if all(_check_date_component_missing(component) for component in date_components):
+    components = _extract_datetime_components(date_str)
+    if all(_check_date_component_missing(component) for component in components):
         return None
-    return _date_and_time_precision(date_components, time_components, has_time)
+    return _date_and_time_precision(components)
 
 
 def _datestring_is_valid(date_str: str) -> bool:
@@ -190,36 +176,15 @@ def _check_date_component_missing(component) -> bool:
 
 
 def _get_precision_before(precision: DatePrecision) -> DatePrecision | None:
-    if precision == DatePrecision.year:
-        return None
     prev_index = precision.value - 1
-    if prev_index >= 0:
-        return DatePrecision(prev_index)
-    return None
+    return DatePrecision(prev_index) if prev_index >= 0 else None
 
 
 def _date_and_time_precision(
-    date_components, time_components, has_time
+    components: dict,
 ) -> DatePrecision | None:
-    date_precisions = list(DatePrecision)[DatePrecision.year : DatePrecision.day + 1]
-
-    for precision in date_precisions:
-        component = (
-            date_components[precision.value]
-            if precision.value < len(date_components)
-            else None
-        )
-        if _check_date_component_missing(component):
-            return _get_precision_before(precision)
-
-    if not has_time or not time_components:
-        return DatePrecision.day
-
-    time_precisions = list(DatePrecision)[
-        DatePrecision.hour : DatePrecision.microsecond + 1
-    ]
-    for i, precision in enumerate(time_precisions):
-        component = time_components[i] if i < len(time_components) else None
+    for precision in DatePrecision:
+        component = components[precision] if precision in components else None
         if _check_date_component_missing(component):
             return _get_precision_before(precision)
 
