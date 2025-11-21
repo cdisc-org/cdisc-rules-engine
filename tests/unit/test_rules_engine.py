@@ -1278,31 +1278,38 @@ def test_validate_single_dataset_not_equal_to(
             PandasDataset(
                 pd.DataFrame.from_dict(
                     {
-                        "dataset_name": [
-                            "AE",
-                        ],
-                        "dataset_label": [
-                            "Adverse Events",
-                        ],
-                        "dataset_location": [
-                            "te.xpt",
-                        ],
+                        "dataset_name": ["AE"],
+                        "dataset_label": ["Adverse Events"],
+                        "dataset_location": ["te.xpt"],
                     }
                 )
             ),
             [
                 {
-                    "executionStatus": "execution_error",
+                    "executionStatus": "success",
                     "dataset": "ae.xpt",
                     "domain": "AE",
-                    "variables": [],
-                    "message": "rule execution error",
+                    "variables": ["dataset_label", "dataset_location", "dataset_name"],
+                    "message": "Dataset metadata does not correspond to Define XML",
                     "errors": [
                         {
+                            "value": {
+                                "dataset_name": "AE",
+                                "dataset_location": "te.xpt",
+                                "dataset_label": "Adverse Events",
+                            },
                             "dataset": "ae.xpt",
-                            "error": "An unknown exception has occurred",
-                            "message": "single positional indexer is out-of-bounds",
-                        }
+                            "row": 1,
+                        },
+                        {
+                            "value": {
+                                "dataset_name": "AE",
+                                "dataset_location": "te.xpt",
+                                "dataset_label": "Adverse Events",
+                            },
+                            "dataset": "ae.xpt",
+                            "row": 2,
+                        },
                     ],
                 }
             ],
@@ -1318,15 +1325,9 @@ def test_validate_single_dataset_not_equal_to(
             PandasDataset(
                 pd.DataFrame.from_dict(
                     {
-                        "dataset_name": [
-                            "AE",
-                        ],
-                        "dataset_label": [
-                            "Adverse Events",
-                        ],
-                        "dataset_location": [
-                            "ae.xpt",
-                        ],
+                        "dataset_name": ["AE"],
+                        "dataset_label": ["Adverse Events"],
+                        "dataset_location": ["ae.xpt"],
                     }
                 )
             ),
