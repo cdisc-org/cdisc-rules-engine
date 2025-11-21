@@ -184,12 +184,6 @@ class Rule:
 
     @classmethod
     def parse_datasets(cls, match_key_data: List[dict]) -> List[dict]:
-        # Defaulting to IDVAR and IDVARVAL as relationship columns.
-        # May change in the future as more standard rules are written.
-        relationship_columns = {
-            "column_with_names": "IDVAR",
-            "column_with_values": "IDVARVAL",
-        }
         if not match_key_data:
             return None
         datasets = []
@@ -206,8 +200,6 @@ class Rule:
                 ],
                 "wildcard": data.get("Wildcard", "**"),
             }
-            if data.get("Is_Relationship", False):
-                join_data["relationship_columns"] = relationship_columns
             if "Join_Type" in data:
                 join_data["join_type"] = data.get("Join_Type")
             if "Child" in data:
