@@ -1691,9 +1691,8 @@ class DataframeType(BaseType):
                         basic_sort_check.to_list(), index=row_indices
                     )
             else:
-                basic_sort_check = basic_sort_check.reset_index(drop=True)
-                basic_sort_check = pd.Series(
-                    basic_sort_check.values, index=sorted_df.index
+                basic_sort_check = basic_sort_check.reindex(
+                    sorted_df.index, fill_value=True
                 )
 
             date_overlap_check = grouped_df.apply(
@@ -1714,9 +1713,8 @@ class DataframeType(BaseType):
                         date_overlap_check.to_list(), index=row_indices
                     )
             else:
-                date_overlap_check = date_overlap_check.reset_index(drop=True)
-                date_overlap_check = pd.Series(
-                    date_overlap_check.values, index=sorted_df.index
+                date_overlap_check = date_overlap_check.reindex(
+                    sorted_df.index, fill_value=True
                 )
 
             basic_sort_check = basic_sort_check.reindex(
