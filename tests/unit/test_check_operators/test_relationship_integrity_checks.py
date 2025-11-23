@@ -643,11 +643,11 @@ def test_target_is_sorted_by(dataset_class):
     assert result.equals(
         pd.Series(
             [
-                True,
-                True,
-                True,
-                True,
-                True,
+                False,
+                False,
+                False,
+                False,
+                False,
             ]
         )
     )
@@ -680,7 +680,7 @@ def test_target_is_sorted_by_multiple_within(dataset_class):
             {"name": "SMSTDTC", "sort_order": "ASC", "null_position": "last"}
         ],
     }
-    expected = [True] * len(usubjid)
+    expected = [False] * len(usubjid)
     result = DataframeType({"value": df}).target_is_sorted_by(other_value)
     assert result.equals(df.convert_to_series(expected))
 
@@ -712,7 +712,7 @@ def test_target_is_sorted_by_multiple_within_not_sorted(dataset_class):
             {"name": "SMSTDTC", "sort_order": "ASC", "null_position": "last"}
         ],
     }
-    expected = [False, False, True, True, True, True]
+    expected = [True, True, False, False, False, False]
     result = DataframeType({"value": df}).target_is_sorted_by(other_value)
     assert result.equals(df.convert_to_series(expected))
 
@@ -743,11 +743,11 @@ def test_target_is_sorted_by_multiple_within_not_sorted(dataset_class):
     assert result.equals(
         pd.Series(
             [
-                True,
-                True,
-                True,
-                True,
-                True,
+                False,
+                False,
+                False,
+                False,
+                False,
             ]
         )
     )
@@ -778,11 +778,11 @@ def test_target_is_sorted_by_multiple_within_not_sorted(dataset_class):
     assert result.equals(
         pd.Series(
             [
-                True,
-                True,
-                True,
-                True,
-                True,
+                False,
+                False,
+                False,
+                False,
+                False,
             ]
         )
     )
@@ -813,11 +813,11 @@ def test_target_is_sorted_by_multiple_within_not_sorted(dataset_class):
     assert result.equals(
         pd.Series(
             [
-                True,
-                True,
-                True,
-                True,
-                True,
+                False,
+                False,
+                False,
+                False,
+                False,
             ]
         )
     )
@@ -849,11 +849,11 @@ def test_target_is_sorted_by_multiple_within_not_sorted(dataset_class):
     assert result.equals(
         pd.Series(
             [
-                True,
-                False,
                 False,
                 True,
                 True,
+                False,
+                False,
             ]
         )
     )
@@ -900,11 +900,11 @@ def test_target_is_sorted_by_multiple_within_not_sorted(dataset_class):
     assert result.equals(
         pd.Series(
             [
-                True,
-                True,
-                True,
-                True,
-                True,
+                False,
+                False,
+                False,
+                False,
+                False,
             ]
         )
     )
@@ -951,11 +951,11 @@ def test_target_is_sorted_by_multiple_within_not_sorted(dataset_class):
     assert result.equals(
         pd.Series(
             [
-                True,
-                False,
                 False,
                 True,
                 True,
+                False,
+                False,
             ]
         )
     )
@@ -1002,11 +1002,11 @@ def test_target_is_sorted_by_multiple_within_not_sorted(dataset_class):
     assert result.equals(
         pd.Series(
             [
-                True,
-                True,
-                True,
-                True,
-                True,
+                False,
+                False,
+                False,
+                False,
+                False,
             ]
         )
     )
@@ -1053,11 +1053,11 @@ def test_target_is_sorted_by_multiple_within_not_sorted(dataset_class):
     assert result.equals(
         pd.Series(
             [
-                True,
-                True,
-                True,
                 False,
                 False,
+                False,
+                True,
+                True,
             ]
         )
     )
@@ -1083,11 +1083,11 @@ def test_target_is_sorted_by_multiple_within_not_sorted(dataset_class):
     assert result.equals(
         pd.Series(
             [
-                False,
-                False,
+                True,
                 True,
                 False,
-                False,
+                True,
+                True,
             ]
         )
     )
@@ -1113,11 +1113,11 @@ def test_target_is_sorted_by_multiple_within_not_sorted(dataset_class):
     assert result.equals(
         pd.Series(
             [
-                False,
-                False,
-                False,
-                False,
-                False,
+                True,
+                True,
+                True,
+                True,
+                True,
             ]
         )
     )
@@ -1155,11 +1155,11 @@ def test_target_is_sorted_by_datetime(dataset_class):
     assert result.equals(
         pd.Series(
             [
-                True,
-                True,
-                True,
-                True,
-                True,
+                False,
+                False,
+                False,
+                False,
+                False,
             ]
         )
     )
@@ -1205,12 +1205,12 @@ def test_target_is_sorted_by_partial_dates(dataset_class):
     assert result.equals(
         pd.Series(
             [
-                False,
+                True,
+                True,
                 False,
                 True,
                 False,
-                True,
-                True,
+                False,
             ]
         )
     )
