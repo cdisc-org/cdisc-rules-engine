@@ -57,9 +57,9 @@ class BaseDataReader(ABC):
     def _cleanup_missing_values(self, df: pd.DataFrame, metadata: DatasetMetadata2) -> pd.DataFrame:
         """Clean up missing values based on column type, modifies the input dataframe."""
         for column in metadata.variables:
-            df[column] = df[column].where(df[column].notna(), None)
+            df[column.name] = df[column.name].where(df[column.name].notna(), None)
             if column.type == "Char":
-                df[column] = df[column].apply(lambda x: "" if pd.isna(x) or x is None else x)
+                df[column.name] = df[column.name].apply(lambda x: "" if pd.isna(x) or x is None else x)
 
         return df
 

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+from io import IOBase
 from typing import TYPE_CHECKING, List, Union
 
 from cdisc_rules_engine.data_service.loading.load_datasets import SqlDatasetLoader
@@ -90,9 +91,11 @@ class PostgresQLDataService:
     ) -> "PostgresQLDataService":
         instance = cls.instance()
 
-        instance.datasets += standards_context.transform_dataset_metadata(
-            SqlDatasetLoader.load_datasets(instance.pgi, dataset_paths)
+        instance.datasets.extend(
+            standards_context.transform_dataset_metadata(ds)
+            for ds in SqlDatasetLoader.load_datasets(instance.pgi, dataset_paths)
         )
+
         return instance
 
     @staticmethod
@@ -136,6 +139,5 @@ class PostgresQLDataService:
 
         return left_id
 
-    # Temporarily adding this method to get the report to output
-    def read_data(self, path: str):
-        return None
+    def read_data(self, file_path: str) -> IOBase:
+        return open(file_path, "rb")

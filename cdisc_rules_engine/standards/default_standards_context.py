@@ -42,7 +42,7 @@ class DefaultStandardsContext(BaseStandardsContext):
 
     def within_rule_scope(self, scope: dict[str, Any], metadata: DatasetMetadata2):
         # TODO: Should do a domain check
-        return True
+        return True, ""
 
     def perform_merge(
         self,

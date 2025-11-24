@@ -37,31 +37,23 @@ class ExcelReport(BaseReport):
         args: Validation_args,
         template: Optional[BinaryIO] = None,
     ):
-        super().__init__(
-            datasets, dataset_paths, validation_results, elapsed_time, args, template
-        )
+        super().__init__(datasets, dataset_paths, validation_results, elapsed_time, args, template)
         self._item_type = "list"
 
     @property
     def _file_format(self):
         return ReportTypes.XLSX.value.lower()
 
-    def get_export(
-        self, define_version, cdiscCt, standard, version, dictionary_versions, **kwargs
-    ) -> Workbook:
+    def get_export(self, define_version, cdiscCt, standard, version, dictionary_versions, **kwargs) -> Workbook:
         wb = excel_open_workbook(self._template.read())
         summary_data = self.get_summary_data()
         detailed_data = self.get_detailed_data(excel=True)
         rules_report_data = self.get_rules_report_data()
         excel_update_worksheet(wb["Issue Summary"], summary_data, dict(wrap_text=True))
         excel_update_worksheet(wb["Issue Details"], detailed_data, dict(wrap_text=True))
-        excel_update_worksheet(
-            wb["Rules Report"], rules_report_data, dict(wrap_text=True)
-        )
+        excel_update_worksheet(wb["Rules Report"], rules_report_data, dict(wrap_text=True))
         # write conformance data
-        wb["Conformance Details"]["B2"] = (
-            datetime.now().replace(microsecond=0).isoformat()
-        )
+        wb["Conformance Details"]["B2"] = datetime.now().replace(microsecond=0).isoformat()
         wb["Conformance Details"]["B3"] = f"{round(self._elapsed_time, 2)} seconds"
         wb["Conformance Details"]["B4"] = __version__
 
@@ -70,16 +62,15 @@ class ExcelReport(BaseReport):
             [
                 dataset.filename,
                 dataset.label,
-                str(Path(dataset.full_path or "").parent),
-                dataset.modification_date,
-                (dataset.file_size or 0) / 1000,
-                dataset.record_count,
+                # we don't currently store the below attributes in our metadata, so populating as blank for now
+                str(Path(getattr(dataset, "full_path", "")).parent),
+                getattr(dataset, "modification_date", ""),
+                getattr(dataset, "file_size", 0) / 1000,
+                getattr(dataset, "record_count", ""),
             ]
             for dataset in self._datasets
         ]
-        excel_update_worksheet(
-            wb["Dataset Details"], datasets_data, dict(wrap_text=True)
-        )
+        excel_update_worksheet(wb["Dataset Details"], datasets_data, dict(wrap_text=True))
 
         # write standards details
         wb["Conformance Details"]["B7"] = standard.upper()
@@ -88,9 +79,7 @@ class ExcelReport(BaseReport):
         wb["Conformance Details"]["B9"] = f"V{version}"
         if cdiscCt:
             wb["Conformance Details"]["B10"] = (
-                ", ".join(cdiscCt)
-                if isinstance(cdiscCt, (list, tuple, set))
-                else str(cdiscCt)
+                ", ".join(cdiscCt) if isinstance(cdiscCt, (list, tuple, set)) else str(cdiscCt)
             )
         else:
             wb["Conformance Details"]["B10"] = ""
@@ -130,24 +119,16 @@ class ExcelReport(BaseReport):
             controlled_terminology = self._args.controlled_terminology_package
             if not controlled_terminology and define_version:
                 if define_xml_path and define_version:
-                    controlled_terminology = get_define_ct(
-                        [define_xml_path], define_version
-                    )
+                    controlled_terminology = get_define_ct([define_xml_path], define_version)
                 else:
-                    controlled_terminology = get_define_ct(
-                        self._args.dataset_paths, define_version
-                    )
+                    controlled_terminology = get_define_ct(self._args.dataset_paths, define_version)
             report_data = self.get_export(
                 define_version,
                 controlled_terminology,
                 self._args.standard,
                 self._args.version.replace("-", "."),
                 dictionary_versions,
-                substandard=(
-                    self._args.substandard
-                    if hasattr(self._args, "substandard")
-                    else None
-                ),
+                substandard=(self._args.substandard if hasattr(self._args, "substandard") else None),
             )
             with open(self._output_name, "wb") as f:
                 f.write(excel_workbook_to_stream(report_data))

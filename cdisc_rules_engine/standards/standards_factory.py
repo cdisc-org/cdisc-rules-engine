@@ -17,4 +17,7 @@ class StandardsFactory:
         standard: str, standard_version: str, standard_substandard: str, library_metadata: LibraryMetadataContainer
     ) -> BaseStandardsContext:
         constructor = StandardsFactory._lookup.get(standard.upper(), DefaultStandardsContext)
-        return constructor(library_metadata)
+        if constructor == DefaultStandardsContext:
+            return constructor()
+        else:
+            return constructor(library_metadata)

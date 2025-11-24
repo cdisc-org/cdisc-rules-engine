@@ -654,56 +654,58 @@ def test_validate():
             define_xml_path = None
             validate_xml = False
             json_output = os.path.join(temp_dir, "json_validation_output")
-            run_validation(
-                Validation_args(
-                    cache_path,
-                    pool_size,
-                    [ts_path],
-                    log_level,
-                    report_template,
-                    standard,
-                    version,
-                    substandard,
-                    controlled_terminology_package,
-                    json_output,
-                    output_format,
-                    raw_report,
-                    define_version,
-                    external_dictionaries,
-                    rules,
-                    local_rules,
-                    custom_standard,
-                    progress,
-                    define_xml_path,
-                    validate_xml,
-                )
-            )
-            print("JSON validation completed successfully!")
             xpt_output = os.path.join(temp_dir, "xpt_validation_output")
-            run_validation(
-                Validation_args(
-                    cache_path,
-                    pool_size,
-                    [ae_path],
-                    log_level,
-                    report_template,
-                    standard,
-                    version,
-                    substandard,
-                    controlled_terminology_package,
-                    xpt_output,
-                    output_format,
-                    raw_report,
-                    define_version,
-                    external_dictionaries,
-                    rules,
-                    local_rules,
-                    custom_standard,
-                    progress,
-                    define_xml_path,
-                    validate_xml,
-                )
+
+            json_args = Validation_args(
+                cache_path,
+                pool_size,
+                [ts_path],
+                log_level,
+                report_template,
+                standard,
+                version,
+                substandard,
+                controlled_terminology_package,
+                json_output,
+                output_format,
+                raw_report,
+                define_version,
+                external_dictionaries,
+                rules,
+                local_rules,
+                custom_standard,
+                progress,
+                define_xml_path,
+                validate_xml,
             )
+
+            xpt_args = Validation_args(
+                cache_path,
+                pool_size,
+                [ae_path],
+                log_level,
+                report_template,
+                standard,
+                version,
+                substandard,
+                controlled_terminology_package,
+                xpt_output,
+                output_format,
+                raw_report,
+                define_version,
+                external_dictionaries,
+                rules,
+                local_rules,
+                custom_standard,
+                progress,
+                define_xml_path,
+                validate_xml,
+            )
+
+            run_validation(json_args)
+            print("JSON validation completed successfully!")
+
+            run_validation(xpt_args)
             print("XPT validation completed successfully!")
         print("All validation tests completed successfully!")
         sys.exit(0)
