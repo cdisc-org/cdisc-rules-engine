@@ -417,3 +417,97 @@ def test_is_not_contained_by_case_insensitive(
         {"target": "target", "comparator": comparator}
     )
     assert result.equals(df.convert_to_series(expected_result))
+
+
+@pytest.mark.parametrize(
+    "data,comparator,dataset_type,expected_result",
+    [
+        (
+            {"target": [None, ["A", "B"], ["C", "D"]]},
+            "A",
+            PandasDataset,
+            [False, True, False],
+        ),
+        (
+            {"target": [None, ["A", "B"], ["C", "D"]]},
+            "C",
+            PandasDataset,
+            [False, False, True],
+        ),
+        (
+            {"target": [["A", "B"], None, ["C", "D"]]},
+            "A",
+            PandasDataset,
+            [True, False, False],
+        ),
+        (
+            {"target": [["A", "B"], ["C", "D"], None]},
+            "A",
+            PandasDataset,
+            [True, False, False],
+        ),
+    ],
+)
+def test_contains_with_none_first_row(data, comparator, dataset_type, expected_result):
+    df = dataset_type.from_dict(data)
+    dataframe_operator = DataframeType({"value": df})
+    result = dataframe_operator.contains(
+        {"target": "target", "comparator": comparator, "value_is_literal": True}
+    )
+    assert result.equals(df.convert_to_series(expected_result))
+
+
+@pytest.mark.parametrize(
+    "data,comparator,dataset_type,expected_result",
+    [
+        (
+            {"target": [None, ["A", "B"], ["C", "D"]]},
+            "A",
+            PandasDataset,
+            [True, False, True],
+        ),
+        (
+            {"target": [None, ["A", "B"], ["C", "D"]]},
+            "C",
+            PandasDataset,
+            [True, True, False],
+        ),
+    ],
+)
+def test_does_not_contain_with_none_first_row(
+    data, comparator, dataset_type, expected_result
+):
+    df = dataset_type.from_dict(data)
+    dataframe_operator = DataframeType({"value": df})
+    result = dataframe_operator.does_not_contain(
+        {"target": "target", "comparator": comparator, "value_is_literal": True}
+    )
+    assert result.equals(df.convert_to_series(expected_result))
+
+
+@pytest.mark.parametrize(
+    "data,comparator,dataset_type,expected_result",
+    [
+        (
+            {"target": ["A", "B", "C"], "comparison": [None, ["A", "B"], ["C", "D"]]},
+            "comparison",
+            PandasDataset,
+            [False, False, False],
+        ),
+        (
+            {"target": ["A", "B", "C"], "comparison": [["A", "B"], None, ["C", "D"]]},
+            "comparison",
+            PandasDataset,
+            [False, False, False],
+        ),
+    ],
+)
+def test_is_contained_by_with_none_in_comparison(
+    data, comparator, dataset_type, expected_result
+):
+    df = dataset_type.from_dict(data)
+    dataframe_operator = DataframeType({"value": df})
+    result = dataframe_operator.is_contained_by(
+        {"target": "target", "comparator": comparator}
+    )
+    assert result.equals(df.convert_to_series(expected_result))
