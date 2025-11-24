@@ -26,6 +26,7 @@ from cdisc_rules_engine.models.external_dictionaries_container import (
 from cdisc_rules_engine.utilities.utils import (
     generate_report_filename,
     get_rules_cache_key,
+    validate_dataset_files_exist,
 )
 from cdisc_rules_engine.enums.dataformat_types import DataFormatTypes
 from scripts.list_dataset_metadata_handler import list_dataset_metadata_handler
@@ -392,6 +393,8 @@ def validate(
     # Validate conditional options
     logger = logging.getLogger("validator")
     load_dotenv()
+
+    validate_dataset_files_exist(dataset_path, logger, ctx)
 
     if raw_report is True:
         if not (len(output_format) == 1 and output_format[0] == ReportTypes.JSON.value):
