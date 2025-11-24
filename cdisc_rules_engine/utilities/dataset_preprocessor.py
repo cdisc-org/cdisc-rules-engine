@@ -50,6 +50,10 @@ class DatasetPreprocessor:
     def preprocess(  # noqa
         self, rule: dict, datasets: Iterable[SDTMDatasetMetadata]
     ) -> DatasetInterface:
+        """
+        Preprocesses the dataset by merging it with the
+        datasets from the provided rule.
+        """
         rule_datasets: List[dict] = rule.get("datasets")
         if not rule_datasets:
             return self._dataset  # nothing to preprocess
@@ -543,7 +547,9 @@ class DatasetPreprocessor:
                     f"Match keys: {match_keys}, "
                     f"Error: {str(e)}"
                 )
-        elif right_dataset_domain_name == "SUPP--":
+        elif right_dataset_domain_name.startswith(
+            "SUPP"
+        ) or right_dataset_domain_name.startswith("SQ"):
             try:
                 result: DatasetInterface = DataProcessor.merge_pivot_supp_dataset(
                     dataset_implementation=self._data_service.dataset_implementation,
@@ -557,38 +563,6 @@ class DatasetPreprocessor:
                     f"SUPP/SQ dataset: {right_dataset_domain_name} ({len(right_dataset)} rows), "
                     f"Error: {str(e)}"
                 )
-        elif self._rule_processor.is_relationship_dataset(right_dataset_domain_name):
-            try:
-                result: DatasetInterface = DataProcessor.merge_relationship_datasets(
-                    left_dataset=left_dataset,
-                    left_dataset_match_keys=left_dataset_match_keys,
-                    right_dataset=right_dataset,
-                    right_dataset_match_keys=right_dataset_match_keys,
-                    right_dataset_domain=right_dataset_domain_details,
-                )
-            except Exception as e:
-                raise PreprocessingError(
-                    f"Failed to merge relationship dataset. "
-                    f"Left dataset: {left_dataset_domain_name} ({len(left_dataset)} rows), "
-                    f"SUPP/SQ dataset: {right_dataset_domain_name} ({len(right_dataset)} rows), "
-                    f"Error: {str(e)}"
-                )
-            result: DatasetInterface = DataProcessor.merge_relrec_datasets(
-                left_dataset=left_dataset,
-                left_dataset_domain_name=left_dataset_domain_name,
-                relrec_dataset=right_dataset,
-                datasets=datasets,
-                dataset_preprocessor=self,
-                wildcard=right_dataset_domain_details.get("wildcard"),
-            )
-        elif right_dataset_domain_name.startswith(
-            "SUPP"
-        ) or right_dataset_domain_name.startswith("SQ"):
-            result = DataProcessor.merge_pivot_supp_dataset(
-                dataset_implementation=self._data_service.dataset_implementation,
-                left_dataset=left_dataset,
-                right_dataset=right_dataset,
-            )
         else:
             try:
                 result: DatasetInterface = DataProcessor.merge_sdtm_datasets(
