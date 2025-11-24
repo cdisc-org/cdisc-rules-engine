@@ -1752,7 +1752,59 @@ class DataframeType(BaseType):
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
     def target_is_not_sorted_by(self, other_value: dict):
-        return ~self.target_is_sorted_by(other_value)
+        target: str = self.replace_prefix(other_value.get("target"))
+        within_columns = self._normalize_grouping_columns(other_value.get("within"))
+        columns = other_value["comparator"]
+        result = pd.Series([False] * len(self.value), index=self.value.index)
+        is_pandas_dataset = isinstance(self.value, PandasDataset)
+        for col in columns:
+            comparator: str = self.replace_prefix(col["name"])
+            ascending: bool = col["sort_order"].lower() != "desc"
+            na_pos: str = col["null_position"]
+            selected_columns = list(
+                dict.fromkeys([target, comparator, *within_columns])
+            )
+            sorted_df = self.value[selected_columns].sort_values(
+                by=[*within_columns, comparator],
+                ascending=ascending,
+                na_position=na_pos,
+            )
+            grouped_df = sorted_df.groupby(within_columns)
+            basic_sort_check = grouped_df.apply(
+                lambda x: self.check_basic_sort_order(x, target, comparator, ascending)
+            )
+            basic_sort_check = self._process_grouped_result(
+                basic_sort_check,
+                grouped_df,
+                within_columns,
+                sorted_df,
+                is_pandas_dataset,
+                lambda group: self.check_basic_sort_order(
+                    group, target, comparator, ascending
+                ),
+            )
+
+            date_overlap_check = grouped_df.apply(
+                lambda x: self.check_date_overlaps(x, target, comparator)
+            )
+            date_overlap_check = self._process_grouped_result(
+                date_overlap_check,
+                grouped_df,
+                within_columns,
+                sorted_df,
+                is_pandas_dataset,
+                lambda group: self.check_date_overlaps(group, target, comparator),
+            )
+            combined_check = basic_sort_check & date_overlap_check
+            result = result.reindex(sorted_df.index, fill_value=False)
+            result = result | ~combined_check
+            result = result.reindex(self.value.index, fill_value=False)
+
+            if isinstance(result, (pd.DataFrame, dd.DataFrame)):
+                if isinstance(result, dd.DataFrame):
+                    result = result.compute()
+                result = result.squeeze()
+        return result
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
