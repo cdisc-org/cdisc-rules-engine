@@ -299,6 +299,8 @@ Complement of `suffix_equal_to`
 
 Will return True if the value in `value` is contained within the collection/iterable in the target column, or if there's an exact match for non-iterable data.
 
+The operator checks if every value in a column is a list or set. If yes, it compares row-by-row. If any value is blank or a different type (like a string or number), it compares each value against the entire column instead.
+
 Example:
 
 ```yaml
@@ -648,6 +650,8 @@ Testing whether individual values or string parts belong to specific lists or se
 ### is_contained_by
 
 Value in `name` compared against a list in `value`. The list can have literal values or be a reference to a `$variable`.
+
+This operator behaves similarly to `contains`. The key distinction: `contains` checks if comparator ∈ target, while `is_contained_by` checks if target ∈ comparator.
 
 > ACTARM in ('Screen Failure', 'Not Assigned', 'Not Treated', 'Unplanned Treatment')
 
