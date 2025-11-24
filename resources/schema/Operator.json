@@ -545,7 +545,8 @@
         "hour",
         "minute",
         "second",
-        "microsecond"
+        "microsecond",
+        "auto"
       ],
       "type": "string"
     },

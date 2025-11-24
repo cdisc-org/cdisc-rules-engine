@@ -972,7 +972,7 @@ def test_preprocess_with_merge_comparison(
 def test_preprocess_supp_with_blank_idvar_idvarval(mock_get_dataset):
     """
     Test preprocessing when SUPP dataset has blank IDVAR and IDVARVAL.
-    Should merge successfully without attempting float conversion.
+    Should pivot and merge on static keys.
     """
     main_data = {
         "USUBJID": ["CDISC001", "CDISC002"],
@@ -984,8 +984,8 @@ def test_preprocess_supp_with_blank_idvar_idvarval(mock_get_dataset):
     supp_data = {
         "USUBJID": ["CDISC001", "CDISC002"],
         "RDOMAIN": ["AE", "AE"],
-        "IDVAR": ["", ""],  # Blank IDVAR
-        "IDVARVAL": ["", ""],  # Blank IDVARVAL
+        "IDVAR": ["", ""],
+        "IDVARVAL": ["", ""],
         "QNAM": ["AESPID", "AESPID"],
         "QVAL": ["SCREENING", "BASELINE"],
     }
@@ -1005,10 +1005,6 @@ def test_preprocess_supp_with_blank_idvar_idvarval(mock_get_dataset):
             {
                 "domain_name": "SUPPAE",
                 "match_key": ["USUBJID"],
-                "relationship_columns": {
-                    "column_with_names": "IDVAR",
-                    "column_with_values": "IDVARVAL",
-                },
             }
         ],
         "conditions": ConditionCompositeFactory.get_condition_composite(
@@ -1017,7 +1013,7 @@ def test_preprocess_supp_with_blank_idvar_idvarval(mock_get_dataset):
                     {
                         "name": "get_dataset",
                         "operator": "equal_to",
-                        "value": {"target": "QVAL", "comparator": "SCREENING"},
+                        "value": {"target": "AESPID", "comparator": "SCREENING"},
                     }
                 ]
             }
@@ -1030,9 +1026,17 @@ def test_preprocess_supp_with_blank_idvar_idvarval(mock_get_dataset):
     ]
     result = preprocessor.preprocess(rule, datasets)
     assert len(result.data) == 2
-    assert "QNAM" in result.data.columns
-    assert "QVAL" in result.data.columns
-    assert all(qnam == "AESPID" for qnam in result.data["QNAM"])
+    assert "AESPID" in result.data.columns
+    assert "QNAM" not in result.data.columns
+    assert "QVAL" not in result.data.columns
+    assert (
+        result.data[result.data["USUBJID"] == "CDISC001"]["AESPID"].values[0]
+        == "SCREENING"
+    )
+    assert (
+        result.data[result.data["USUBJID"] == "CDISC002"]["AESPID"].values[0]
+        == "BASELINE"
+    )
 
 
 @patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset")
@@ -1155,10 +1159,6 @@ def test_preprocess_specific_suppae_dataset(
             {
                 "domain_name": "SUPPAE",
                 "match_key": ["USUBJID"],
-                "relationship_columns": {
-                    "column_with_names": "IDVAR",
-                    "column_with_values": "IDVARVAL",
-                },
             }
         ],
         "conditions": ConditionCompositeFactory.get_condition_composite(
@@ -1167,7 +1167,7 @@ def test_preprocess_specific_suppae_dataset(
                     {
                         "name": "get_dataset",
                         "operator": "equal_to",
-                        "value": {"target": "QVAL", "comparator": "SP001"},
+                        "value": {"target": "AESPID", "comparator": "SP001"},
                     }
                 ]
             }
@@ -1184,20 +1184,15 @@ def test_preprocess_specific_suppae_dataset(
     data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
     preprocessor = DatasetPreprocessor(
         ae_dataset,
-        SDTMDatasetMetadata(
-            first_record={"DOMAIN": "AE"}, full_path=os.path.join("path", "ae.xpt")
-        ),
+        SDTMDatasetMetadata(first_record={"DOMAIN": "AE"}, full_path="path"),
         data_service,
         InMemoryCacheService(),
     )
 
     result = preprocessor.preprocess(rule_with_specific_supp, datasets)
-    assert len(result.data) >= 1
-    assert "USUBJID" in result.data.columns
-    assert "AETERM" in result.data.columns
-    assert "QNAM" in result.data.columns
-    assert "QVAL" in result.data.columns
-    qval_values = result.data["QVAL"].dropna().tolist()
-    assert "SP001" in qval_values
-    expected_path = os.path.join("path", "suppae.xpt")
-    mock_get_dataset.assert_called_with(dataset_name=expected_path)
+
+    assert len(result.data) == 1
+    assert "AESPID" in result.data.columns
+    assert result.data["AESPID"].values[0] == "SP001"
+    assert "QNAM" not in result.data.columns
+    assert "QVAL" not in result.data.columns
