@@ -271,6 +271,22 @@ class SqlBaseOperation:
 
         return variables_metadata
 
+    def _format_variable_list_to_query(self, vars, unique: bool = False, ordered: bool = False) -> str:
+        if vars and isinstance(vars, list):
+            if unique:
+                vars = list(set(vars))
+            # Format variable names for SQL VALUES clause, escaping single quotes
+            formatted_vars = [f"('{var.replace(chr(39), chr(39) + chr(39))}')" for var in vars]
+            values_clause = ", ".join(formatted_vars)
+            query = f"SELECT column1 AS value FROM (VALUES {values_clause}) AS t(column1)"
+            if ordered:
+                query += " ORDER BY column1"
+        else:
+            # Return empty result set using VALUES with no rows - this is a valid empty table
+            query = "SELECT column1 AS value FROM (VALUES (NULL)) AS t(column1) WHERE FALSE"
+
+        return query
+
     @staticmethod
     def _replace_variable_wildcards(variables_metadata, domain):
         return [var["name"].replace("--", domain) for var in variables_metadata]

@@ -42,14 +42,8 @@ class SqlValidCodelistDates(SqlBaseOperation):
                 )
             )
         )
-        print(sorted_ct_packages)
 
-        if sorted_ct_packages and isinstance(sorted_ct_packages, list):
-            table_values_clause = ", ".join([f"('{pkg}')" for pkg in set(sorted_ct_packages)])
-            query = f"SELECT column1 AS value FROM (VALUES {table_values_clause}) AS t(column1) ORDER BY column1"
-        else:
-            # Return empty result set using VALUES with no rows - this is a valid empty table
-            query = "SELECT column1 AS value FROM (VALUES (NULL)) AS t(column1) WHERE FALSE"
+        query = self._format_variable_list_to_query(vars=sorted_ct_packages, unique=True, ordered=True)
 
         return SqlOperationResult(query=query, type="collection", subtype="Char")
 

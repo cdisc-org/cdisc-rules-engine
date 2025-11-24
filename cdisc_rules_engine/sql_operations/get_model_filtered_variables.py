@@ -18,15 +18,7 @@ class SqlGetModelFilteredVariables(SqlBaseOperation):
         # Get model variables and filter them (even if key/val are empty, this will return empty list)
         model_variables = self._get_model_filtered_variables()
 
-        # Convert the list to individual rows in SQL
-        if model_variables and isinstance(model_variables, list):
-            # Format variable names for SQL VALUES clause, escaping single quotes
-            formatted_vars = [f"('{var.replace(chr(39), chr(39) + chr(39))}')" for var in model_variables]
-            values_clause = ", ".join(formatted_vars)
-            query = f"SELECT column1 AS value FROM (VALUES {values_clause}) AS t(column1)"
-        else:
-            # Return empty result set using VALUES with no rows - this is a valid empty table
-            query = "SELECT column1 AS value FROM (VALUES (NULL)) AS t(column1) WHERE FALSE"
+        query = self._format_variable_list_to_query(vars=model_variables)
 
         return SqlOperationResult(query=query, type="collection", subtype="Char")
 

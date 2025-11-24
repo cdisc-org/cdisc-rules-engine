@@ -24,15 +24,7 @@ class SqlPermissibilityOperation(SqlBaseOperation):
 
         perm_variables = self._get_perm_variables()
 
-        # Convert the list to individual rows in SQL
-        if perm_variables and isinstance(perm_variables, list):
-            # Format variable names for SQL VALUES clause, escaping single quotes
-            formatted_vars = [f"('{var.replace(chr(39), chr(39) + chr(39))}')" for var in perm_variables]
-            values_clause = ", ".join(formatted_vars)
-            query = f"SELECT column1 AS value FROM (VALUES {values_clause}) AS t(column1)"
-        else:
-            # Return empty result set using VALUES with no rows - this is a valid empty table
-            query = "SELECT column1 AS value FROM (VALUES (NULL)) AS t(column1) WHERE FALSE"
+        query = self._format_variable_list_to_query(vars=perm_variables)
 
         return SqlOperationResult(query=query, type="collection", subtype="Char")
 
@@ -48,7 +40,6 @@ class SqlPermissibilityOperation(SqlBaseOperation):
             # Replace wildcards and extract variable names
             variable_names_list = self._replace_variable_wildcards(perm_model, self.params.domain)
 
-            # Extract just the variable names from the processed metadata
             return variable_names_list
 
         except Exception as e:

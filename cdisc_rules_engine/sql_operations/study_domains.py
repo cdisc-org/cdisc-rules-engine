@@ -8,13 +8,7 @@ class SqlStudyDomainsOperation(SqlBaseOperation):
         dataset_metadata = self._get_full_dataset_metadata()
         domains = [(dm.domain or "") for dm in dataset_metadata]
 
-        # Convert the list to individual rows in SQL
-        if domains and isinstance(domains, list):
-            table_values_clause = ", ".join([f"('{domain}')" for domain in set(domains)])
-            query = f"SELECT column1 AS value FROM (VALUES {table_values_clause}) AS t(column1)"
-        else:
-            # Return empty result set using VALUES with no rows - this is a valid empty table
-            query = "SELECT column1 AS value FROM (VALUES (NULL)) AS t(column1) WHERE FALSE"
+        query = self._format_variable_list_to_query(vars=domains, unique=True)
 
         return SqlOperationResult(query=query, type="collection", subtype="Char")
 

@@ -6,7 +6,6 @@ class SqlDatasetNamesOperation(SqlBaseOperation):
     def _execute_operation(self):
         all_tables = self.data_service.pgi.schema.get_tables()
         source_tables = [name for name, schema in all_tables if schema.source == "data"]
-        table_values_clause = ", ".join([f"('{name}')" for name in source_tables])
-        return SqlOperationResult(
-            f"SELECT column1 AS value FROM (VALUES {table_values_clause})", type="collection", subtype="Char"
-        )
+        query = self._format_variable_list_to_query(vars=source_tables)
+
+        return SqlOperationResult(query=query, type="collection", subtype="Char")

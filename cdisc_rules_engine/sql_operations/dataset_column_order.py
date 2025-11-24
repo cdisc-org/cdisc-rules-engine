@@ -18,13 +18,6 @@ class SqlDatasetColumnOrderOperation(SqlBaseOperation):
         # Filter out metadata columns and 'id' column
         column_names = [col[0].upper() for col in columns if col[0] not in METADATA_COLUMNS and col[0] != "id"]
 
-        if column_names:
-            # Format column names for SQL VALUES clause to return individual rows
-            formatted_cols = [f"('{name}')" for name in column_names]
-            values_clause = ", ".join(formatted_cols)
-            query = f"SELECT column1 AS value FROM (VALUES {values_clause}) AS t(column1)"
-        else:
-            # Return empty result set using VALUES with no rows
-            query = "SELECT column1 AS value FROM (VALUES (NULL)) AS t(column1) WHERE FALSE"
+        query = self._format_variable_list_to_query(vars=column_names)
 
         return SqlOperationResult(query, type="collection", subtype="Char")
