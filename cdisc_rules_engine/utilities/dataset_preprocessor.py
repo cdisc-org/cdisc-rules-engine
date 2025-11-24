@@ -573,6 +573,22 @@ class DatasetPreprocessor:
                     f"SUPP/SQ dataset: {right_dataset_domain_name} ({len(right_dataset)} rows), "
                     f"Error: {str(e)}"
                 )
+            result: DatasetInterface = DataProcessor.merge_relrec_datasets(
+                left_dataset=left_dataset,
+                left_dataset_domain_name=left_dataset_domain_name,
+                relrec_dataset=right_dataset,
+                datasets=datasets,
+                dataset_preprocessor=self,
+                wildcard=right_dataset_domain_details.get("wildcard"),
+            )
+        elif right_dataset_domain_name.startswith(
+            "SUPP"
+        ) or right_dataset_domain_name.startswith("SQ"):
+            result = DataProcessor.merge_pivot_supp_dataset(
+                dataset_implementation=self._data_service.dataset_implementation,
+                left_dataset=left_dataset,
+                right_dataset=right_dataset,
+            )
         else:
             try:
                 result: DatasetInterface = DataProcessor.merge_sdtm_datasets(

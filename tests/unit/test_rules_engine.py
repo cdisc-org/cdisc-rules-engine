@@ -1973,13 +1973,14 @@ def test_validate_record_in_parent_domain(
                     "ECREASOC",
                     "ECREASOS",
                 ],
+                "QVAL": ["Some Value 1", "Some Value 2"],
                 "IDVAR": [
                     "ECSEQ",
                     "ECSEQ",
                 ],
                 "IDVARVAL": [
-                    "4.0",
-                    "5.0",
+                    "4",
+                    "5",
                 ],
             }
         )
@@ -2019,13 +2020,13 @@ def test_validate_record_in_parent_domain(
                 "executionStatus": "success",
                 "domain": "EC",
                 "dataset": "ec.xpt",
-                "variables": ["ECPRESP", "QNAM"],
+                "variables": ["ECPRESP", "ECREASOC"],
                 "message": "Dataset contents is wrong.",
                 "errors": [
                     {
                         "dataset": "ec.xpt",
                         "row": 4,
-                        "value": {"ECPRESP": "Y", "QNAM": "ECREASOC"},
+                        "value": {"ECPRESP": "Y", "ECREASOC": "Some Value 1"},
                         "USUBJID": "CDISC005",
                         "SEQ": 4,
                     }

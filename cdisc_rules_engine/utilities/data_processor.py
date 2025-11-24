@@ -45,162 +45,6 @@ class DataProcessor:
         return series.astype(float, errors="ignore").astype(str)
 
     @staticmethod
-    def filter_dataset_by_match_keys_of_other_dataset(
-        dataset: DatasetInterface,
-        dataset_match_keys: List[str],
-        other_dataset: DatasetInterface,
-        other_dataset_match_keys: List[str],
-    ) -> DatasetInterface:
-        """
-        Returns a DataFrame where values of match keys of
-        dataset are equal to values of match keys of other dataset.
-        Example:
-            dataset = USUBJID  DOMAIN
-                      CDISC001 AE
-                      CDISC001 AE
-                      CDISC009 AE
-            dataset_match_keys = ["USUBJID"]
-            other_dataset = USUBJID  DOMAIN
-                            CDISC009 AE
-            other_dataset_match_keys = ["USUBJID"]
-
-            The result will be: USUBJID  DOMAIN
-                                CDISC009 AE
-        """
-        dataset_w_ind = dataset.set_index(dataset_match_keys)
-        other_dataset_w_ind = other_dataset.set_index(other_dataset_match_keys)
-        condition = dataset_w_ind.index.isin(other_dataset_w_ind.index)
-        return dataset_w_ind[condition].reset_index()
-
-    @staticmethod
-    def filter_parent_dataset_by_supp_dataset(
-        parent_dataset: DatasetInterface,
-        supp_dataset: DatasetInterface,
-        column_with_names: str,
-        column_with_values: str,
-    ) -> DatasetInterface:
-        """
-        A wrapper function for convenient filtering of parent dataset by supp dataset.
-        Does two things:
-        1. Filters parent dataset by RDOMAIN column of supp dataset.
-        2. Filters parent dataset by columns of supp dataset
-           that describe their relation.
-        """
-        parent_dataset = DataProcessor.filter_parent_dataset_by_supp_dataset_rdomain(
-            parent_dataset, supp_dataset
-        )
-        return DataProcessor.filter_dataset_by_nested_columns_of_other_dataset(
-            parent_dataset, supp_dataset, column_with_names, column_with_values
-        )
-
-    @staticmethod
-    def filter_parent_dataset_by_supp_dataset_rdomain(
-        parent_dataset: DatasetInterface, supp_dataset: DatasetInterface
-    ) -> DatasetInterface:
-        """
-        Leaves only those rows in parent dataset
-        where DOMAIN is the same as RDOMAIN of supp dataset.
-        """
-        parent_domain_values: pd.Series = parent_dataset.get("DOMAIN", pd.Series())
-        supp_domain_values: pd.Series = supp_dataset.get("RDOMAIN", pd.Series())
-        if parent_domain_values.empty or supp_domain_values.empty:
-            return parent_dataset
-
-        return parent_dataset[parent_domain_values.isin(supp_domain_values)]
-
-    @staticmethod
-    def filter_dataset_by_nested_columns_of_other_dataset(
-        dataset: DatasetInterface,
-        other_dataset: DatasetInterface,
-        column_with_names: str,
-        column_with_values: str,
-    ) -> DatasetInterface:
-        """
-        other_dataset has two columns:
-            1. list of column names which exist in dataset - column_with_names.
-            2. list of values of the aforementioned columns - column_with_values.
-
-        The function filters columns name of dataset by their respective column values.
-
-        Example:
-            other_dataset = IDVAR IDVARVAL
-                            ECSEQ 100
-                            ECSEQ 101
-                            ECNUM 105
-            column_with_names = "IDVAR"
-            column_with_values = "IDVARVAL"
-
-            We need to leave only those rows in dataset
-            where dataset["ECSEQ"] is equal to 100 or 101
-            AND dataset["ECNUM"] is equal to 105.
-        """
-        if (
-            other_dataset[column_with_names].str.strip().eq("").all()
-            and other_dataset[column_with_values].str.strip().eq("").all()
-        ):
-            return dataset
-        grouped = other_dataset.groupby(column_with_names, group_keys=False)
-
-        def filter_dataset_by_group_values(group) -> DatasetInterface:
-            decimal_group_values: pd.Series = DataProcessor.convert_float_merge_keys(
-                group[column_with_values]
-            )
-            decimal_dataset_values: pd.Series = DataProcessor.convert_float_merge_keys(
-                dataset[group.name]
-            )
-            condition: pd.Series = decimal_dataset_values.isin(decimal_group_values)
-            return dataset[condition]
-
-        result = grouped.apply(lambda group: filter_dataset_by_group_values(group))
-        # grouping breaks sorting, need to sort once again
-        return dataset.__class__(result.sort_values(list(grouped.groups.keys())))
-
-    @staticmethod
-    def merge_datasets_on_relationship_columns(
-        left_dataset: DatasetInterface,
-        left_dataset_match_keys: List[str],
-        right_dataset: DatasetInterface,
-        right_dataset_match_keys: List[str],
-        right_dataset_domain_name: str,
-        column_with_names: str,
-        column_with_values: str,
-    ) -> DatasetInterface:
-        """
-        Uses full join to merge given datasets on the
-        columns that describe their relation.
-        """
-        # right dataset holds column names of left dataset.
-        # all values in the column are the same
-        if (
-            right_dataset[column_with_names].str.strip().eq("").all()
-            and right_dataset[column_with_values].str.strip().eq("").all()
-        ):
-            return left_dataset.merge(
-                other=right_dataset.data,
-                left_on=left_dataset_match_keys,
-                right_on=right_dataset_match_keys,
-                how="outer",
-                suffixes=("", f".{right_dataset_domain_name}"),
-            )
-        left_ds_col_name: str = right_dataset[column_with_names][0]
-
-        # convert numeric columns to one data type to avoid merging errors
-        # there is no point in converting string cols since their data type is the same
-        DataProcessor.cast_numeric_cols_to_same_data_type(
-            right_dataset, column_with_values, left_dataset, left_ds_col_name
-        )
-        left_dataset_match_keys.append(left_ds_col_name)
-        right_dataset_match_keys.append(column_with_values)
-
-        return left_dataset.merge(
-            other=right_dataset.data,
-            left_on=left_dataset_match_keys,
-            right_on=right_dataset_match_keys,
-            how="outer",
-            suffixes=("", f".{right_dataset_domain_name}"),
-        )
-
-    @staticmethod
     def filter_if_present(df: DatasetInterface, col: str, filter_value):
         """
         If a filter value is provided, filter the dataframe on that value.
@@ -349,38 +193,6 @@ class DataProcessor:
         return result
 
     @staticmethod
-    def merge_relationship_datasets(
-        left_dataset: DatasetInterface,
-        left_dataset_match_keys: List[str],
-        right_dataset: DatasetInterface,
-        right_dataset_match_keys: List[str],
-        right_dataset_domain: dict,
-    ) -> DatasetInterface:
-        result = DataProcessor.filter_dataset_by_match_keys_of_other_dataset(
-            left_dataset,
-            left_dataset_match_keys,
-            right_dataset,
-            right_dataset_match_keys,
-        )
-        result = DataProcessor.filter_parent_dataset_by_supp_dataset(
-            result,
-            right_dataset,
-            **right_dataset_domain["relationship_columns"],
-        )
-
-        # convert result back to DatasetInterface class
-        result = left_dataset.__class__(result.reset_index(drop=True))
-        result = DataProcessor.merge_datasets_on_relationship_columns(
-            left_dataset=result,
-            left_dataset_match_keys=left_dataset_match_keys,
-            right_dataset=right_dataset,
-            right_dataset_match_keys=right_dataset_match_keys,
-            right_dataset_domain_name=right_dataset_domain.get("domain"),
-            **right_dataset_domain["relationship_columns"],
-        )
-        return result
-
-    @staticmethod
     def merge_pivot_supp_dataset(
         dataset_implementation: DatasetInterface,
         left_dataset: DatasetInterface,
@@ -389,51 +201,198 @@ class DataProcessor:
 
         static_keys = ["STUDYID", "USUBJID", "APID", "POOLID", "SPDEVID"]
         qnam_list = right_dataset["QNAM"].unique()
-        right_dataset = DataProcessor.process_supp(right_dataset)
-        dynamic_key = right_dataset["IDVAR"].iloc[0]
+        unique_idvar_values = right_dataset["IDVAR"].unique()
+        if len(unique_idvar_values) == 1:
+            right_dataset = DataProcessor.process_supp(right_dataset)
+            dynamic_key = right_dataset["IDVAR"].iloc[0]
+            is_blank = pd.isna(dynamic_key) or str(dynamic_key).strip() == ""
+            # Determine the common keys present in both datasets
+            common_keys = [
+                key
+                for key in static_keys
+                if key in left_dataset.columns and key in right_dataset.columns
+            ]
+            if not is_blank:
+                common_keys.append(dynamic_key)
+                current_supp = right_dataset.rename(columns={"IDVARVAL": dynamic_key})
+                current_supp = current_supp.drop(columns=["IDVAR"])
+                left_dataset[dynamic_key] = left_dataset[dynamic_key].astype(str)
+                current_supp[dynamic_key] = current_supp[dynamic_key].astype(str)
+            else:
+                columns_to_drop = [
+                    col for col in ["IDVAR", "IDVARVAL"] if col in right_dataset.columns
+                ]
+                current_supp = right_dataset.drop(columns=columns_to_drop)
+            if dataset_implementation == DaskDataset:
+                current_supp = DaskDataset(current_supp.data)
+                left_dataset = left_dataset.merge(
+                    other=current_supp.data,
+                    how="left",
+                    on=common_keys,
+                    suffixes=("", "_supp"),
+                )
+                DataProcessor._validate_qnam_dask(left_dataset, qnam_list, common_keys)
+            else:
+                left_dataset = PandasDataset(
+                    pd.merge(
+                        left_dataset.data,
+                        current_supp.data,
+                        how="left",
+                        on=common_keys,
+                        suffixes=("", "_supp"),
+                    )
+                )
+                DataProcessor._validate_qnam(left_dataset.data, qnam_list, common_keys)
+        else:
+            if dataset_implementation == DaskDataset:
+                left_dataset = PandasDataset(left_dataset.data.compute())
+                right_pandas = PandasDataset(right_dataset.data.compute())
+                left_dataset = DataProcessor._merge_supp_with_multiple_idvars(
+                    left_dataset, right_pandas, static_keys, qnam_list
+                )
+                left_dataset = DaskDataset(left_dataset.data)
+            else:
+                left_dataset = DataProcessor._merge_supp_with_multiple_idvars(
+                    left_dataset, right_dataset, static_keys, qnam_list
+                )
+        return left_dataset
 
-        # Determine the common keys present in both datasets
-        common_keys = [
-            key
-            for key in static_keys
-            if key in left_dataset.columns and key in right_dataset.columns
-        ]
-        common_keys.append(dynamic_key)
-        current_supp = right_dataset.rename(columns={"IDVARVAL": dynamic_key})
-        current_supp = current_supp.drop(columns=["IDVAR"])
-        left_dataset[dynamic_key] = left_dataset[dynamic_key].astype(str)
-        current_supp[dynamic_key] = current_supp[dynamic_key].astype(str)
-        left_dataset = PandasDataset(
-            pd.merge(
-                left_dataset.data,
-                current_supp.data,
-                how="left",
-                on=common_keys,
-                suffixes=("", "_supp"),
+    @staticmethod
+    def _merge_supp_with_multiple_idvars(
+        left_dataset: DatasetInterface,
+        right_dataset: DatasetInterface,
+        static_keys: List[str],
+        qnam_list: list,
+    ) -> DatasetInterface:
+        result_dataset = left_dataset
+
+        # Process each IDVAR group separately
+        for idvar_value in right_dataset["IDVAR"].unique():
+            group_data = right_dataset.data[
+                right_dataset.data["IDVAR"] == idvar_value
+            ].copy()
+            group_qnam_list = group_data["QNAM"].unique()
+            for qnam in group_qnam_list:
+                group_data[qnam] = pd.NA
+            for index, row in group_data.iterrows():
+                group_data.at[index, row["QNAM"]] = row["QVAL"]
+            columns_to_drop = [
+                col
+                for col in ["QNAM", "QVAL", "QLABEL", "IDVAR"]
+                if col in group_data.columns
+            ]
+            group_data = group_data.drop(columns=columns_to_drop)
+            group_data = group_data.rename(columns={"IDVARVAL": idvar_value})
+            common_keys = [
+                key
+                for key in static_keys
+                if key in result_dataset.columns and key in group_data.columns
+            ]
+            common_keys.append(idvar_value)
+
+            agg_dict = {
+                col: lambda x: x.dropna().iloc[0] if not x.dropna().empty else pd.NA
+                for col in group_data.columns
+                if col not in common_keys
+            }
+            group_data = group_data.groupby(
+                common_keys, as_index=False, dropna=False
+            ).agg(agg_dict)
+            cols_to_drop = [
+                col
+                for col in group_data.columns
+                if col in result_dataset.columns and col not in common_keys
+            ]
+            if cols_to_drop:
+                group_data = group_data.drop(columns=cols_to_drop)
+            result_dataset[idvar_value] = result_dataset[idvar_value].astype(str)
+            group_data[idvar_value] = group_data[idvar_value].astype(str)
+
+            result_dataset = PandasDataset(
+                pd.merge(
+                    result_dataset.data,
+                    group_data,
+                    how="left",
+                    on=common_keys,
+                    suffixes=("", "_supp"),
+                )
             )
-        )
         for qnam in qnam_list:
-            qnam_check = left_dataset.data.dropna(subset=[qnam])
-            grouped = qnam_check.groupby(common_keys).size()
+            if qnam not in result_dataset.columns:
+                continue
+            qnam_check = result_dataset.data.dropna(subset=[qnam])
+            if len(qnam_check) == 0:
+                continue
+            idvar_for_qnam = right_dataset.data[right_dataset.data["QNAM"] == qnam][
+                "IDVAR"
+            ].iloc[0]
+            validation_keys = [
+                key for key in static_keys if key in result_dataset.columns
+            ]
+            validation_keys.append(idvar_for_qnam)
+            grouped = qnam_check.groupby(validation_keys).size()
             if (grouped > 1).any():
                 raise ValueError(
                     f"Multiple records with the same QNAM '{qnam}' match a single parent record"
                 )
-        if dataset_implementation == DaskDataset:
-            left_dataset = DaskDataset(left_dataset.data)
-        return left_dataset
+        return result_dataset
 
     @staticmethod
     def process_supp(supp_dataset):
         # TODO: QLABEL is not added to the new columns.  This functionality is not supported directly in pandas.
         # initialize new columns for each unique QNAM in the dataset with NaN
+        is_dask = isinstance(supp_dataset, DaskDataset)
+        if is_dask:
+            supp_dataset = PandasDataset(supp_dataset.data.compute())
         for qnam in supp_dataset["QNAM"].unique():
             supp_dataset.data[qnam] = pd.NA
         # Set the value of the new columns only in their respective rows
         for index, row in supp_dataset.iterrows():
             supp_dataset.at[index, row["QNAM"]] = row["QVAL"]
-        supp_dataset.drop(labels=["QNAM", "QVAL", "QLABEL"], axis=1)
+        columns_to_drop = [
+            col for col in ["QNAM", "QVAL", "QLABEL"] if col in supp_dataset.columns
+        ]
+        if columns_to_drop:
+            supp_dataset = supp_dataset.drop(labels=columns_to_drop, axis=1)
         return supp_dataset
+
+    @staticmethod
+    def _validate_qnam(
+        data: pd.DataFrame,
+        qnam_list: list,
+        common_keys: List[str],
+    ):
+        for qnam in qnam_list:
+            if qnam not in data.columns:
+                continue
+            qnam_check = data.dropna(subset=[qnam])
+            if len(qnam_check) == 0:
+                continue
+            grouped = qnam_check.groupby(common_keys).size()
+            if (grouped > 1).any():
+                raise ValueError(
+                    f"Multiple records with the same QNAM '{qnam}' match a single parent record"
+                )
+
+    @staticmethod
+    def _validate_qnam_dask(
+        left_dataset: DaskDataset,
+        qnam_list: list,
+        common_keys: List[str],
+    ):
+        for qnam in qnam_list:
+            if qnam not in left_dataset.columns:
+                continue
+            qnam_check = left_dataset.data[~left_dataset.data[qnam].isna()]
+            if len(qnam_check) == 0:
+                continue
+            grouped_counts = qnam_check.groupby(common_keys).size()
+            problem_groups = grouped_counts[grouped_counts > 1]
+            problem_groups_computed = problem_groups.compute()
+            if len(problem_groups_computed) > 0:
+                raise ValueError(
+                    f"Multiple records with the same QNAM '{qnam}' match a single parent record. "
+                )
 
     @staticmethod
     def merge_sdtm_datasets(
@@ -470,54 +429,6 @@ class DataProcessor:
                     ),
                 ] = None
         return result
-
-    @staticmethod
-    def cast_numeric_cols_to_same_data_type(
-        left_dataset: DatasetInterface,
-        left_dataset_column: str,
-        right_dataset: DatasetInterface,
-        right_dataset_column: str,
-    ):
-        """
-        Casts given columns to one data type (float)
-        ONLY if they are numeric.
-        Before casting, the method ensures that both of the
-        columns hold numeric values and performs conversion
-        only if both of them are.
-
-        Example 1:
-            left_dataset[left_dataset_column] = [1, 2, 3, 4, ]
-            right_dataset[right_dataset_column] = ["1.0", "2.0", "3.0", "4.0", ]
-
-        Example 2:
-            left_dataset[left_dataset_column] = ["1", "2", "3", "4", ]
-            right_dataset[right_dataset_column] = ["1.0", "2.0", "3.0", "4.0", ]
-
-        Example 3:
-            left_dataset[left_dataset_column] = ["1", "2", "3", "4", ]
-            right_dataset[right_dataset_column] = [1, 2, 3, 4, ]
-        """
-        # check if both columns are numeric
-        left_is_numeric: bool = DataProcessor.column_contains_numeric(
-            left_dataset[left_dataset_column]
-        )
-        right_is_numeric: bool = DataProcessor.column_contains_numeric(
-            right_dataset[right_dataset_column]
-        )
-        if left_is_numeric and right_is_numeric:
-            # convert to float
-            right_dataset[right_dataset_column] = right_dataset[
-                right_dataset_column
-            ].astype(float)
-            left_dataset[left_dataset_column] = left_dataset[
-                left_dataset_column
-            ].astype(float)
-
-    @staticmethod
-    def column_contains_numeric(column: pd.Series) -> bool:
-        if not pd.api.types.is_numeric_dtype(column):
-            return column.str.replace(".", "").str.isdigit().all()
-        return True
 
     @staticmethod
     def filter_dataset_columns_by_metadata_and_rule(
