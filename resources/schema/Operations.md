@@ -515,7 +515,9 @@ Returns the requested dataset level metadata value for the current dataset. Poss
 - dataset_location
 - dataset_name
 - dataset_label
-- domain_suffix
+- domain
+- is_ap
+- ap_suffix
 
 Example
 
@@ -535,18 +537,18 @@ Output:
 Laboratory Test Results
 ```
 
-Example: domain_suffix
+Example: ap_suffix
 
-Extracts the domain suffix (characters 3-4) from AP-related domains. For example, "FA" from "APFA" dataset name or DOMAIN value.
+Extracts the domain suffix (characters 3-4) from AP-related domains. For example, "FA" from "APFA" DOMAIN value.
 
 Input:
 
 Target domain: APFA
 
 ```yaml
-- name: domain_suffix
+- name: ap_suffix
   operator: extract_metadata
-  id: $domain_suffix
+  id: $ap_suffix
 ```
 
 Output:

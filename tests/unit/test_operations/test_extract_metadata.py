@@ -49,21 +49,20 @@ def _create_mock_service(dataset_name, first_record=None):
     mock_service.get_dataset_metadata.return_value = pd.DataFrame.from_dict(
         {"dataset_name": [dataset_name]}
     )
-    if first_record is not None:
-        raw_metadata = SDTMDatasetMetadata(
-            name=dataset_name,
-            first_record=first_record,
-        )
-        mock_service.get_raw_dataset_metadata = MagicMock(return_value=raw_metadata)
+    raw_metadata = SDTMDatasetMetadata(
+        name=dataset_name,
+        first_record=first_record,
+    )
+    mock_service.get_raw_dataset_metadata = MagicMock(return_value=raw_metadata)
     return mock_service
 
 
 @pytest.mark.parametrize(
     "dataset_name, first_record, expected_suffix",
     [
-        ("APFA", None, "FA"),
-        ("APXX", None, "XX"),
-        ("APLB", None, "LB"),
+        ("APFA", None, ""),
+        ("APXX", None, ""),
+        ("APLB", None, ""),
         ("", {"DOMAIN": "APFA"}, "FA"),
         ("AE", {"DOMAIN": "APFA"}, "FA"),
         ("AP", {"DOMAIN": "APFA"}, "FA"),
@@ -82,7 +81,7 @@ def test_extract_metadata_domain_suffix_valid_cases(
     operation_params.dataframe = dataset_type.from_dict(
         {"STUDYID": ["TEST_STUDY"], "DOMAIN": ["APFA"]}
     )
-    operation_params.target = "domain_suffix"
+    operation_params.target = "ap_suffix"
     cache = InMemoryCacheService.get_instance()
     operation = ExtractMetadata(
         operation_params, operation_params.dataframe, cache, mock_data_service
@@ -120,7 +119,7 @@ def test_extract_metadata_domain_suffix_returns_empty_for_invalid(
     operation_params.dataframe = dataset_type.from_dict(
         {"STUDYID": ["TEST_STUDY"], "DOMAIN": ["AE"]}
     )
-    operation_params.target = "domain_suffix"
+    operation_params.target = "ap_suffix"
     cache = InMemoryCacheService.get_instance()
     operation = ExtractMetadata(
         operation_params, operation_params.dataframe, cache, mock_data_service
@@ -131,33 +130,33 @@ def test_extract_metadata_domain_suffix_returns_empty_for_invalid(
 
 
 @pytest.mark.parametrize("dataset_type", [PandasDataset, DaskDataset])
-def test_extract_metadata_domain_suffix_dataset_name_priority(
+def test_extract_metadata_domain_suffix_uses_domain(
     operation_params: OperationParams, dataset_type
 ):
     mock_data_service = _create_mock_service("APFA", {"DOMAIN": "APXX"})
     operation_params.dataframe = dataset_type.from_dict(
         {"STUDYID": ["TEST_STUDY"], "DOMAIN": ["APXX"]}
     )
-    operation_params.target = "domain_suffix"
+    operation_params.target = "ap_suffix"
     cache = InMemoryCacheService.get_instance()
     operation = ExtractMetadata(
         operation_params, operation_params.dataframe, cache, mock_data_service
     )
     result = operation.execute()
     assert operation_params.operation_id in result
-    assert all(item == "FA" for item in result[operation_params.operation_id])
+    assert all(item == "XX" for item in result[operation_params.operation_id])
 
 
 @pytest.mark.parametrize("dataset_type", [PandasDataset, DaskDataset])
 def test_extract_metadata_domain_suffix_empty_metadata(
     operation_params: OperationParams, dataset_type
 ):
-    mock_data_service = Mock(LocalDataService)
+    mock_data_service = _create_mock_service("APFA", None)
     mock_data_service.get_dataset_metadata.return_value = pd.DataFrame()
     operation_params.dataframe = dataset_type.from_dict(
         {"STUDYID": ["TEST_STUDY"], "DOMAIN": ["APFA"]}
     )
-    operation_params.target = "domain_suffix"
+    operation_params.target = "ap_suffix"
     cache = InMemoryCacheService.get_instance()
     operation = ExtractMetadata(
         operation_params, operation_params.dataframe, cache, mock_data_service

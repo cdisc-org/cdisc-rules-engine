@@ -223,6 +223,9 @@ class BaseDataService(DataServiceInterface, ABC):
             "dataset_name": [dataset_metadata.name],
             "dataset_label": [dataset_metadata.label],
             "record_count": [dataset_metadata.record_count],
+            "is_ap": [dataset_metadata.is_ap],
+            "ap_suffix": [dataset_metadata.ap_suffix],
+            "domain": [dataset_metadata.domain],
         }
         return self.dataset_implementation.from_dict(metadata_to_return)
 

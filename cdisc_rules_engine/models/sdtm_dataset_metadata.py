@@ -12,21 +12,21 @@ class SDTMDatasetMetadata(DatasetMetadata):
 
     """
     Examples
-    | name     | unsplit_name | is_supp | domain | rdomain |
-    | -------- | ------------ | ------- | ------ | ------- |
-    | QS       | QS           | False   | QS     | None    |
-    | QSX      | QS           | False   | QS     | None    |
-    | QSXX     | QS           | False   | QS     | None    |
-    | SUPPQS   | SUPPQS       | True    | None   | QS      |
-    | SUPPQSX  | SUPPQS       | True    | None   | QS      |
-    | SUPPQSXX | SUPPQS       | True    | None   | QS      |
-    | APQS     | APQS         | False   | APQS   | None    |
-    | APQSX    | APQS         | False   | APQS   | None    |
-    | APQSXX   | APQS         | False   | APQS   | None    |
-    | SQAPQS   | SQAPQS       | True    | None   | APQS    |
-    | SQAPQSX  | SQAPQS       | True    | None   | APQS    |
-    | SQAPQSXX | SQAPQS       | True    | None   | APQS    |
-    | RELREC   | RELREC       | False   | None   | None    |
+    | name     | unsplit_name | is_supp | domain | rdomain | is_ap | ap_suffix |
+    | -------- | ------------ | ------- | ------ | ------- | ----- | --------- |
+    | QS       | QS           | False   | QS     | None    | False |           |
+    | QSX      | QS           | False   | QS     | None    | False |           |
+    | QSXX     | QS           | False   | QS     | None    | False |           |
+    | SUPPQS   | SUPPQS       | True    | None   | QS      | False |           |
+    | SUPPQSX  | SUPPQS       | True    | None   | QS      | False |           |
+    | SUPPQSXX | SUPPQS       | True    | None   | QS      | False |           |
+    | APQS     | APQS         | False   | APQS   | None    | True  | QS        |
+    | APQSX    | APQS         | False   | APQS   | None    | True  | QS        |
+    | APQSXX   | APQS         | False   | APQS   | None    | True  | QS        |
+    | SQAPQS   | SQAPQS       | True    | None   | APQS    | False |           |
+    | SQAPQSX  | SQAPQS       | True    | None   | APQS    | False |           |
+    | SQAPQSXX | SQAPQS       | True    | None   | APQS    | False |           |
+    | RELREC   | RELREC       | False   | None   | None    | False |           |
     """
 
     @property
@@ -57,3 +57,24 @@ class SDTMDatasetMetadata(DatasetMetadata):
     @property
     def is_split(self) -> bool:
         return self.name != self.unsplit_name
+
+    @property
+    def is_ap(self) -> bool:
+        """
+        Returns true if domain starts with AP and is at least 4 characters long
+        """
+        return (
+            isinstance(self.domain, str)
+            and len(self.domain) >= 4
+            and self.domain.startswith("AP")
+        )
+
+    @property
+    def ap_suffix(self) -> str:
+        """
+        Returns the 2-character suffix (characters 3-4) from AP domains.
+        Returns empty string if not an AP domain.
+        """
+        if self.is_ap:
+            return self.domain[2:4]
+        return ""

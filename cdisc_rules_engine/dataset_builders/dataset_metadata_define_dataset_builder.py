@@ -16,6 +16,8 @@ class DatasetMetadataDefineDatasetBuilder(BaseDatasetBuilder):
         dataset_name - Name of the dataset
         dataset_label - Label for the dataset
         dataset_domain - Domain of the dataset
+        is_ap - Whether the domain is an AP domain
+        ap_suffix - The 2-character suffix from AP domains
 
         Columns from Define XML:
         define_dataset_name - dataset name from define_xml
@@ -85,6 +87,8 @@ class DatasetMetadataDefineDatasetBuilder(BaseDatasetBuilder):
             "dataset_name",
             "dataset_label",
             "dataset_domain",
+            "is_ap",
+            "ap_suffix",
         ]
 
         if len(self.datasets) == 0:

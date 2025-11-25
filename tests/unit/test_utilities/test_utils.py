@@ -45,6 +45,53 @@ def test_is_supp_dataset(mock_dataset, expected):
     ), f"Expected {expected} but got {result} for datasets {mock_datasets}"
 
 
+is_ap_tests = [
+    ({"first_record": {"DOMAIN": "APFA"}}, True),
+    ({"first_record": {"DOMAIN": "APXX"}}, True),
+    ({"first_record": {"DOMAIN": "APQS"}}, True),
+    ({"first_record": {"DOMAIN": "APFAMH"}}, True),
+    ({"first_record": {"DOMAIN": "AE"}}, False),
+    ({"first_record": {"DOMAIN": "LB"}}, False),
+    ({"first_record": {"DOMAIN": "AP"}}, False),
+    ({"first_record": {"DOMAIN": "APF"}}, False),
+    ({"first_record": None}, False),
+    ({"first_record": {}}, False),
+    ({}, False),
+]
+
+
+@pytest.mark.parametrize("mock_dataset, expected", is_ap_tests)
+def test_is_ap_dataset(mock_dataset, expected):
+    result = SDTMDatasetMetadata(**mock_dataset).is_ap
+    assert (
+        result == expected
+    ), f"Expected {expected} but got {result} for dataset {mock_dataset}"
+
+
+ap_suffix_tests = [
+    ({"first_record": {"DOMAIN": "APFA"}}, "FA"),
+    ({"first_record": {"DOMAIN": "APXX"}}, "XX"),
+    ({"first_record": {"DOMAIN": "APQS"}}, "QS"),
+    ({"first_record": {"DOMAIN": "APLB"}}, "LB"),
+    ({"first_record": {"DOMAIN": "APFAMH"}}, "FA"),
+    ({"first_record": {"DOMAIN": "AE"}}, ""),
+    ({"first_record": {"DOMAIN": "LB"}}, ""),
+    ({"first_record": {"DOMAIN": "AP"}}, ""),
+    ({"first_record": {"DOMAIN": "APF"}}, ""),
+    ({"first_record": None}, ""),
+    ({"first_record": {}}, ""),
+    ({}, ""),
+]
+
+
+@pytest.mark.parametrize("mock_dataset, expected", ap_suffix_tests)
+def test_ap_suffix_property(mock_dataset, expected):
+    result = SDTMDatasetMetadata(**mock_dataset).ap_suffix
+    assert (
+        result == expected
+    ), f"Expected {expected} but got {result} for dataset {mock_dataset}"
+
+
 datasets = [
     SDTMDatasetMetadata(**dataset)
     for dataset in [

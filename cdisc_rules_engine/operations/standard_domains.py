@@ -5,9 +5,7 @@ class StandardDomains(BaseOperation):
     def _execute_operation(self):
         standard_data: dict = self.library_metadata.standard_metadata
         domains = standard_data.get("domains", set())
-        if isinstance(domains, set):
-            return sorted(list(domains))
-        elif isinstance(domains, (list, tuple)):
+        if isinstance(domains, (set, list, tuple)):
             return sorted(list(domains))
         elif domains is None:
             return []
