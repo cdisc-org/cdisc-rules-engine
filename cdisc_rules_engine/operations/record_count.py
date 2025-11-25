@@ -56,6 +56,7 @@ class RecordCount(BaseOperation):
         )
         effective_grouping = []
         for col in grouping_cols:
+            col = self._resolve_variable_name(col, self.params.domain)
             if col in self.evaluation_dataset.data.columns:
                 sample_val = self.evaluation_dataset[col].iloc[0]
                 if isinstance(sample_val, (list, tuple)):
