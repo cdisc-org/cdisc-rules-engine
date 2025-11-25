@@ -54,6 +54,7 @@ class OperationParams:
     level: str = None
     map: List[dict] = None
     original_target: str = None
+    regex: str = None
     returntype: str = None
     target: str = None
     value_is_reference: bool = False

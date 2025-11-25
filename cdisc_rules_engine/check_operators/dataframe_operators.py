@@ -1215,11 +1215,23 @@ class DataframeType(BaseType):
         df_group = self.value[target_names].copy()
         if regex_pattern:
             for col in df_group.columns:
-                df_group[col] = df_group[col].apply(
-                    lambda x: (
-                        apply_regex(regex_pattern, x) if isinstance(x, str) and x else x
-                    )
+                sample_value = (
+                    df_group[col].dropna().iloc[0]
+                    if not df_group[col].dropna().empty
+                    else None
                 )
+                if (
+                    sample_value
+                    and isinstance(sample_value, str)
+                    and re.match(regex_pattern, sample_value)
+                ):
+                    df_group[col] = df_group[col].apply(
+                        lambda x: (
+                            apply_regex(regex_pattern, x)
+                            if isinstance(x, str) and x
+                            else x
+                        )
+                    )
         df_group = df_group.fillna("_NaN_")
         group_sizes = df_group.groupby(target_names).size()
         counts = df_group.apply(tuple, axis=1).map(group_sizes)

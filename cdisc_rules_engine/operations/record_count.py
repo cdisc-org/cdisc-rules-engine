@@ -1,4 +1,5 @@
 import pandas as pd
+import re
 from numpy import int64
 
 from cdisc_rules_engine.operations.base_operation import BaseOperation
@@ -23,14 +24,50 @@ class RecordCount(BaseOperation):
         if self.params.grouping:
             self.params.target = "size"
             effective_grouping, all_na_cols = self._build_effective_grouping()
-            group_df = self.params.dataframe.get_grouped_size(
-                effective_grouping, as_index=False, dropna=False
-            )
+            if self.params.regex:
+                group_df_for_grouping = self._apply_regex_to_grouping_columns(
+                    self.params.dataframe, effective_grouping
+                )
+                grouped_counts = group_df_for_grouping.groupby(
+                    effective_grouping, as_index=False, dropna=False
+                ).size()
+                # Ensure data types match then merge to get counts with original values
+                for col in effective_grouping:
+                    if (
+                        col in grouped_counts.columns
+                        and col in group_df_for_grouping.columns
+                    ):
+                        grouped_counts[col] = grouped_counts[col].astype(
+                            group_df_for_grouping[col].dtype
+                        )
+                group_df_transformed = group_df_for_grouping.merge(
+                    grouped_counts, on=effective_grouping, how="left"
+                )
+                group_df = self.params.dataframe[effective_grouping].copy()
+                group_df["size"] = group_df_transformed["size"].values
+                group_df = group_df.drop_duplicates(
+                    subset=effective_grouping
+                ).reset_index(drop=True)
+            else:
+                group_df = self.params.dataframe.get_grouped_size(
+                    effective_grouping, as_index=False, dropna=False
+                )
             if filtered is not None:
+                if hasattr(self.params, "regex") and self.params.regex:
+                    filtered_for_grouping = self._apply_regex_to_grouping_columns(
+                        filtered, effective_grouping
+                    )
+                    filtered_grouped = filtered_for_grouping.groupby(
+                        effective_grouping, as_index=False, dropna=False
+                    ).size()
+                else:
+                    filtered_grouped = filtered.get_grouped_size(
+                        effective_grouping, as_index=False
+                    )
                 group_df = (
                     group_df[effective_grouping]
                     .merge(
-                        filtered.get_grouped_size(effective_grouping, as_index=False),
+                        filtered_grouped,
                         on=effective_grouping,
                         how="left",
                     )
@@ -40,8 +77,40 @@ class RecordCount(BaseOperation):
             for col, original_value in all_na_cols.items():
                 group_df[col] = original_value
                 group_df[col] = group_df[col].astype(self.params.dataframe[col].dtype)
-            return group_df
+            result_df = self.params.dataframe.merge(
+                group_df[effective_grouping + [self.params.target]],
+                on=effective_grouping,
+                how="left",
+            )
+            return result_df[self.params.target]
         return result
+
+    def _apply_regex_to_grouping_columns(
+        self, dataframe: pd.DataFrame, grouping_columns: list
+    ) -> pd.DataFrame:
+        df_subset = dataframe[grouping_columns].copy()
+        for col in grouping_columns:
+            if col in df_subset.columns:
+                sample_values = df_subset[col].dropna()
+                if not sample_values.empty:
+                    sample_value = sample_values.iloc[0]
+                    if isinstance(sample_value, str):
+                        try:
+                            if re.match(self.params.regex, sample_value):
+                                df_subset[col] = df_subset[col].apply(
+                                    lambda x: (
+                                        self._apply_regex_pattern(x)
+                                        if isinstance(x, str) and x
+                                        else x
+                                    )
+                                )
+                        except re.error:
+                            pass
+        return df_subset
+
+    def _apply_regex_pattern(self, value: str) -> str:
+        match = re.match(self.params.regex, value)
+        return match.group(0) if match else value
 
     def _build_effective_grouping(self) -> tuple[list, dict]:
         """
