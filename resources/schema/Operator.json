@@ -561,6 +561,7 @@
     "negative": { "type": "boolean" },
     "codelistcheck": { "enum": ["code", "value"], "type": "string" },
     "codelistlevel": { "enum": ["term", "codelist"], "type": "string" },
+    "delimiter": { "type": "string" },
     "operator": { "type": "string" },
     "order": { "enum": ["asc", "dsc"], "type": "string" },
     "ordering": { "$ref": "CORE-base.json#/$defs/VariableName" },
