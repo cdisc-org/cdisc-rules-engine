@@ -123,5 +123,9 @@ class DatasetMetadataDefineDatasetBuilder(BaseDatasetBuilder):
                 dataset_df = datasets.rename(columns=data_col_mapping)
                 if "dataset_size" not in dataset_df.columns:
                     dataset_df["dataset_size"] = None
+                if "is_ap" not in dataset_df.columns:
+                    dataset_df["is_ap"] = False
+                if "ap_suffix" not in dataset_df.columns:
+                    dataset_df["ap_suffix"] = ""
                 dataset_df = self.dataset_implementation(dataset_df[dataset_col_order])
         return dataset_df
