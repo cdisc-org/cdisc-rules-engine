@@ -14,7 +14,7 @@ class DatasetXPTMetadataReader:
 
     # TODO. Maybe in future it is worth having multiple constructors
     #  like from_bytes, from_file etc. But now there is no immediate need for that.
-    def __init__(self, file_path: str, file_name: str):
+    def __init__(self, file_path: str, file_name: str, encoding: str = None):
         file_size = os.path.getsize(file_path)
         if file_size > config.get_dataset_size_threshold():
             self._estimate_dataset_length = True
@@ -26,16 +26,15 @@ class DatasetXPTMetadataReader:
         self._first_record = None
         self._dataset_name = file_name.split(".")[0].upper()
         self._file_path = file_path
+        self.encoding = encoding
 
     def read(self) -> dict:
         """
         Extracts metadata from binary contents of .xpt file.
         """
         try:
-            dataset, metadata = pyreadstat.read_xport(
-                self._file_path, row_limit=self.row_limit
-            )
-        except pyreadstat.ReadstatError:
+            dataset, metadata = self._read_xport_with_encoding()
+        except (pyreadstat.ReadstatError, UnicodeDecodeError):
             return {
                 "variable_labels": [],
                 "variable_names": [],
@@ -94,7 +93,7 @@ class DatasetXPTMetadataReader:
         return None
 
     def _calculate_dataset_length(self):
-        df, meta = pyreadstat.read_xport(self._file_path, metadataonly=True)
+        df, meta = self._read_xport_with_encoding_metadata_only()
         row_size = sum(meta.variable_storage_width.values())
         total_size = os.path.getsize(self._file_path)
         start = self._read_header(self._file_path)
@@ -199,3 +198,72 @@ class DatasetXPTMetadataReader:
             "selection_algorithm": ad.selection_algorithm,
         }
         return adam_info_dict
+
+    def _try_read_xport_with_encoding(
+        self, encoding, row_limit=None, metadataonly=False
+    ):
+        try:
+            if metadataonly:
+                return pyreadstat.read_xport(
+                    self._file_path, metadataonly=True, encoding=encoding
+                )
+            return pyreadstat.read_xport(
+                self._file_path, row_limit=row_limit, encoding=encoding
+            )
+        except TypeError:
+            if metadataonly:
+                return pyreadstat.read_xport(self._file_path, metadataonly=True)
+            return pyreadstat.read_xport(self._file_path, row_limit=row_limit)
+
+    def _read_xport_with_encoding(self):
+        if self.encoding:
+            return self._try_read_xport_with_encoding(
+                self.encoding, row_limit=self.row_limit
+            )
+
+        encodings_to_try = ["utf-8", "utf-16", "utf-32", "cp1252", "latin-1"]
+        last_error = None
+
+        for encoding in encodings_to_try:
+            try:
+                return self._try_read_xport_with_encoding(
+                    encoding, row_limit=self.row_limit
+                )
+            except UnicodeDecodeError as e:
+                last_error = e
+                logger.debug(
+                    f"Failed to read {self._file_path} with encoding {encoding}, trying next"
+                )
+                continue
+            except pyreadstat.ReadstatError as e:
+                last_error = e
+                raise
+        else:
+            if last_error:
+                raise last_error
+            raise UnicodeDecodeError(
+                "utf-8", b"", 0, 1, "Could not decode XPT file with any encoding"
+            )
+
+    def _read_xport_with_encoding_metadata_only(self):
+        if self.encoding:
+            return self._try_read_xport_with_encoding(self.encoding, metadataonly=True)
+
+        encodings_to_try = ["utf-8", "utf-16", "utf-32", "cp1252", "latin-1"]
+        last_error = None
+
+        for encoding in encodings_to_try:
+            try:
+                return self._try_read_xport_with_encoding(encoding, metadataonly=True)
+            except UnicodeDecodeError as e:
+                last_error = e
+                continue
+            except pyreadstat.ReadstatError as e:
+                last_error = e
+                raise
+        else:
+            if last_error:
+                raise last_error
+            raise UnicodeDecodeError(
+                "utf-8", b"", 0, 1, "Could not decode XPT file with any encoding"
+            )

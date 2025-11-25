@@ -45,6 +45,7 @@ class LocalDataService(BaseDataService):
             cache_service, reader_factory, config, **kwargs
         )
         self.dataset_paths: Iterable[str] = kwargs.get("dataset_paths", [])
+        self.encoding: str = kwargs.get("encoding")
 
     @classmethod
     def get_instance(
@@ -59,7 +60,8 @@ class LocalDataService(BaseDataService):
                 reader_factory=DataReaderFactory(
                     dataset_implementation=kwargs.get(
                         "dataset_implementation", PandasDataset
-                    )
+                    ),
+                    encoding=kwargs.get("encoding"),
                 ),
                 config=config,
                 **kwargs,
@@ -195,7 +197,7 @@ class LocalDataService(BaseDataService):
             )
 
         contents_metadata = _metadata_reader_map[file_extension](
-            file_metadata["path"], file_name
+            file_metadata["path"], file_name, encoding=self.encoding
         ).read()
         return {
             "file_metadata": file_metadata,

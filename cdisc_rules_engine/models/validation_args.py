@@ -27,5 +27,6 @@ Validation_args = namedtuple(
         "jsonata_custom_functions",
         "max_report_rows",
         "max_errors_per_rule",
+        "encoding",
     ],
 )

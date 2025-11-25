@@ -15,11 +15,12 @@ class DatasetNDJSONMetadataReader:
     from .ndjson file.
     """
 
-    def __init__(self, file_path: str, file_name: str):
+    def __init__(self, file_path: str, file_name: str, encoding: str = None):
         self._metadata_container = {}
         self._file_path = file_path
         self._first_record = None
         self._dataset_name = file_name.split(".")[0].upper()
+        self.encoding = encoding
 
     def read(self) -> dict:
         """
@@ -30,8 +31,24 @@ class DatasetNDJSONMetadataReader:
             os.path.join("resources", "schema", "dataset-ndjson-schema.json")
         )
 
-        with open(self._file_path, "r") as file:
-            lines = file.readlines()
+        if self.encoding:
+            with open(self._file_path, "r", encoding=self.encoding) as file:
+                lines = file.readlines()
+        else:
+            encodings_to_try = ["utf-8", "utf-16", "utf-32"]
+            last_error = None
+
+            for enc in encodings_to_try:
+                try:
+                    with open(self._file_path, "r", encoding=enc) as file:
+                        lines = file.readlines()
+                    break
+                except (UnicodeDecodeError, UnicodeError) as e:
+                    last_error = e
+                    continue
+            else:
+                if last_error:
+                    raise last_error
 
         metadatandjson = json.loads(lines[0])
 

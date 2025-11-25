@@ -54,7 +54,8 @@ class ExcelDataService(BaseDataService):
                 reader_factory=DataReaderFactory(
                     dataset_implementation=kwargs.get(
                         "dataset_implementation", PandasDataset
-                    )
+                    ),
+                    encoding=kwargs.get("encoding"),
                 ),
                 config=config,
                 **kwargs,

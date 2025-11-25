@@ -26,9 +26,15 @@ class DataReaderFactory(FactoryInterface):
         DataFormatTypes.USDM.value: JSONReader,
     }
 
-    def __init__(self, service_name: str = None, dataset_implementation=PandasDataset):
+    def __init__(
+        self,
+        service_name: str = None,
+        dataset_implementation=PandasDataset,
+        encoding: str = None,
+    ):
         self._default_service_name = service_name
         self.dataset_implementation = dataset_implementation
+        self.encoding = encoding
 
     @classmethod
     def register_service(cls, name: str, service: Type[DataReaderInterface]):
@@ -47,7 +53,18 @@ class DataReaderFactory(FactoryInterface):
         """
         service_name = name or self._default_service_name
         if service_name in self._reader_map:
-            return self._reader_map[service_name](self.dataset_implementation)
+            reader_class = self._reader_map[service_name]
+            if service_name in [
+                DataFormatTypes.JSON.value,
+                DataFormatTypes.NDJSON.value,
+            ]:
+                return reader_class(self.dataset_implementation, encoding=self.encoding)
+            elif service_name == DataFormatTypes.USDM.value:
+                return reader_class()
+            elif service_name == DataFormatTypes.XPT.value:
+                return reader_class(self.dataset_implementation, encoding=self.encoding)
+            else:
+                return reader_class(self.dataset_implementation)
         raise ValueError(
             f"Service name must be in {list(self._reader_map.keys())}, "
             f"given service name is {service_name}"

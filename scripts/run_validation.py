@@ -144,6 +144,7 @@ def run_validation(args: Validation_args):
         standard_version=standard_version,
         standard_substandard=standard_substandard,
         library_metadata=library_metadata,
+        encoding=args.encoding,
     ).get_data_service(args.dataset_paths)
     # install dictionaries if needed
     dictionary_versions = fill_cache_with_dictionaries(shared_cache, args, data_service)
