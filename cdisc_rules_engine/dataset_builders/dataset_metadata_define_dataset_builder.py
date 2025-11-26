@@ -61,16 +61,10 @@ class DatasetMetadataDefineDatasetBuilder(BaseDatasetBuilder):
         ]
         if matching_row.empty:
             # when using DASK dataset_filename refers to temp parquet filename
-            if self.dataset_metadata.original_path:
-                matching_row: DatasetInterface = merged_cleaned[
-                    merged_cleaned["dataset_location"].str.lower()
-                    == self.dataset_metadata.original_path.lower()
-                ]
-            else:
-                matching_row: DatasetInterface = merged_cleaned[
-                    merged_cleaned["dataset_domain"].str.upper()
-                    == self.dataset_metadata.domain.upper()
-                ]
+            matching_row: DatasetInterface = merged_cleaned[
+                merged_cleaned["dataset_location"].str.lower()
+                == self.dataset_metadata.original_path.lower()
+            ]
         for column in merged.columns:
             merged[column] = matching_row[column].iloc[0]
         return merged
