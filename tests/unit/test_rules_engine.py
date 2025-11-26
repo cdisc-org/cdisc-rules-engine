@@ -1292,16 +1292,18 @@ def test_validate_single_dataset_not_equal_to(
             ),
             [
                 {
-                    "executionStatus": "execution_error",
+                    "executionStatus": "skipped",
                     "dataset": "ae.xpt",
                     "domain": "AE",
                     "variables": [],
-                    "message": "rule execution error",
+                    "message": "rule evaluation error - evaluation dataset failed to build",
                     "errors": [
                         {
                             "dataset": "ae.xpt",
-                            "error": "An unknown exception has occurred",
-                            "message": "single positional indexer is out-of-bounds",
+                            "error": "Error occurred during dataset building",
+                            "message": "Failed to build dataset for rule validation. Builder: "
+                            "DatasetMetadataDefineDatasetBuilder, Dataset: AE, "
+                            "Error: single positional indexer is out-of-bounds",
                         }
                     ],
                 }
