@@ -246,38 +246,37 @@ class BaseDataService(DataServiceInterface, ABC):
             if self._contains_topic_variable(dataset, dataset_metadata.domain, "OBJ"):
                 return FINDINGS_ABOUT
             return FINDINGS
-        if self._is_associated_persons(dataset):
+        if dataset_metadata.is_ap and not dataset_metadata.is_supp:
             return self._get_associated_persons_inherit_class(
-                file_path, datasets, dataset_metadata.domain
+                file_path, datasets, dataset_metadata
             )
         return None
 
-    def _is_associated_persons(self, dataset) -> bool:
-        """
-        Check if AP-- domain.
-        """
-        return "APID" in dataset
-
     def _get_associated_persons_inherit_class(
-        self, file_path, datasets: Iterable[SDTMDatasetMetadata], domain: str
+        self,
+        file_path,
+        datasets: Iterable[SDTMDatasetMetadata],
+        dataset_metadata: SDTMDatasetMetadata,
     ):
         """
         Check with inherit class AP-- belongs to.
         """
-        ap_suffix = domain[2:]
+        ap_suffix = dataset_metadata.ap_suffix
+        if not ap_suffix:
+            return None
         directory_path = get_directory_path(file_path)
         if len(datasets) > 1:
             domain_details: SDTMDatasetMetadata = search_in_list_of_dicts(
                 datasets, lambda item: item.domain == ap_suffix
             )
             if domain_details:
+                if domain_details.is_ap:
+                    raise ValueError("Nested Associated Persons domain reference")
                 file_name = domain_details.filename
                 new_file_path = os.path.join(directory_path, file_name)
                 new_domain_dataset = self.get_dataset(dataset_name=new_file_path)
             else:
                 raise ValueError("Filename for domain doesn't exist")
-            if self._is_associated_persons(new_domain_dataset):
-                raise ValueError("Nested Associated Persons domain reference")
             return self.get_dataset_class(
                 new_domain_dataset,
                 new_file_path,

@@ -46,12 +46,17 @@ def test_extract_metadata_get_dataset_name(
 
 def _create_mock_service(dataset_name, first_record=None):
     mock_service = Mock(LocalDataService)
-    mock_service.get_dataset_metadata.return_value = pd.DataFrame.from_dict(
-        {"dataset_name": [dataset_name]}
-    )
     raw_metadata = SDTMDatasetMetadata(
         name=dataset_name,
         first_record=first_record,
+    )
+    mock_service.get_dataset_metadata.return_value = pd.DataFrame.from_dict(
+        {
+            "dataset_name": [dataset_name],
+            "ap_suffix": [raw_metadata.ap_suffix],
+            "is_ap": [raw_metadata.is_ap],
+            "domain": [raw_metadata.domain],
+        }
     )
     mock_service.get_raw_dataset_metadata = MagicMock(return_value=raw_metadata)
     return mock_service
@@ -63,10 +68,10 @@ def _create_mock_service(dataset_name, first_record=None):
         ("APFA", None, ""),
         ("APXX", None, ""),
         ("APLB", None, ""),
-        ("", {"DOMAIN": "APFA"}, "FA"),
-        ("AE", {"DOMAIN": "APFA"}, "FA"),
-        ("AP", {"DOMAIN": "APFA"}, "FA"),
-        ("APF", {"DOMAIN": "APFA"}, "FA"),
+        ("", {"DOMAIN": "APFA", "APID": "AP001"}, "FA"),
+        ("AE", {"DOMAIN": "APFA", "APID": "AP001"}, "FA"),
+        ("AP", {"DOMAIN": "APFA", "APID": "AP001"}, "FA"),
+        ("APF", {"DOMAIN": "APFA", "APID": "AP001"}, "FA"),
     ],
 )
 @pytest.mark.parametrize("dataset_type", [PandasDataset, DaskDataset])
@@ -133,7 +138,9 @@ def test_extract_metadata_domain_suffix_returns_empty_for_invalid(
 def test_extract_metadata_domain_suffix_uses_domain(
     operation_params: OperationParams, dataset_type
 ):
-    mock_data_service = _create_mock_service("APFA", {"DOMAIN": "APXX"})
+    mock_data_service = _create_mock_service(
+        "APFA", {"DOMAIN": "APXX", "APID": "AP001"}
+    )
     operation_params.dataframe = dataset_type.from_dict(
         {"STUDYID": ["TEST_STUDY"], "DOMAIN": ["APXX"]}
     )

@@ -46,10 +46,10 @@ def test_is_supp_dataset(mock_dataset, expected):
 
 
 is_ap_tests = [
-    ({"first_record": {"DOMAIN": "APFA"}}, True),
-    ({"first_record": {"DOMAIN": "APXX"}}, True),
-    ({"first_record": {"DOMAIN": "APQS"}}, True),
-    ({"first_record": {"DOMAIN": "APFAMH"}}, True),
+    ({"first_record": {"DOMAIN": "APFA", "APID": "AP001"}}, True),
+    ({"first_record": {"DOMAIN": "APXX", "APID": "AP002"}}, True),
+    ({"first_record": {"DOMAIN": "APQS", "APID": "AP003"}}, True),
+    ({"first_record": {"DOMAIN": "APFAMH", "APID": "AP004"}}, True),
     ({"first_record": {"DOMAIN": "AE"}}, False),
     ({"first_record": {"DOMAIN": "LB"}}, False),
     ({"first_record": {"DOMAIN": "AP"}}, False),
@@ -57,6 +57,15 @@ is_ap_tests = [
     ({"first_record": None}, False),
     ({"first_record": {}}, False),
     ({}, False),
+    ({"name": "SQAPQS", "first_record": {"RDOMAIN": "APQS"}}, True),
+    ({"name": "SQAPQSX", "first_record": {"RDOMAIN": "APQS"}}, True),
+    ({"name": "SQAPQSXX", "first_record": {"RDOMAIN": "APQS"}}, True),
+    ({"name": "SUPPQS", "first_record": {"RDOMAIN": "QS"}}, False),
+    ({"name": "SQAPQS", "first_record": {"RDOMAIN": "AP"}}, False),
+    ({"name": "SQAPQS", "first_record": {"RDOMAIN": "APF"}}, False),
+    ({"first_record": {"APID": "AP001"}}, True),
+    ({"first_record": {"DOMAIN": "AP", "APID": "AP001"}}, True),
+    ({"first_record": {"DOMAIN": "APF", "APID": "AP001"}}, True),
 ]
 
 
@@ -69,11 +78,11 @@ def test_is_ap_dataset(mock_dataset, expected):
 
 
 ap_suffix_tests = [
-    ({"first_record": {"DOMAIN": "APFA"}}, "FA"),
-    ({"first_record": {"DOMAIN": "APXX"}}, "XX"),
-    ({"first_record": {"DOMAIN": "APQS"}}, "QS"),
-    ({"first_record": {"DOMAIN": "APLB"}}, "LB"),
-    ({"first_record": {"DOMAIN": "APFAMH"}}, "FA"),
+    ({"first_record": {"DOMAIN": "APFA", "APID": "AP001"}}, "FA"),
+    ({"first_record": {"DOMAIN": "APXX", "APID": "AP002"}}, "XX"),
+    ({"first_record": {"DOMAIN": "APQS", "APID": "AP003"}}, "QS"),
+    ({"first_record": {"DOMAIN": "APLB", "APID": "AP004"}}, "LB"),
+    ({"first_record": {"DOMAIN": "APFAMH", "APID": "AP005"}}, "FA"),
     ({"first_record": {"DOMAIN": "AE"}}, ""),
     ({"first_record": {"DOMAIN": "LB"}}, ""),
     ({"first_record": {"DOMAIN": "AP"}}, ""),
@@ -81,6 +90,12 @@ ap_suffix_tests = [
     ({"first_record": None}, ""),
     ({"first_record": {}}, ""),
     ({}, ""),
+    ({"name": "SQAPQS", "first_record": {"RDOMAIN": "APQS"}}, ""),
+    ({"name": "SQAPQSX", "first_record": {"RDOMAIN": "APQS"}}, ""),
+    ({"name": "SQAPQSXX", "first_record": {"RDOMAIN": "APQS"}}, ""),
+    ({"first_record": {"APID": "AP001"}}, ""),
+    ({"first_record": {"DOMAIN": "AP", "APID": "AP001"}}, ""),
+    ({"first_record": {"DOMAIN": "APF", "APID": "AP001"}}, ""),
 ]
 
 

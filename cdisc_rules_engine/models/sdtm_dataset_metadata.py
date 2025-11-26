@@ -23,9 +23,9 @@ class SDTMDatasetMetadata(DatasetMetadata):
     | APQS     | APQS         | False   | APQS   | None    | True  | QS        |
     | APQSX    | APQS         | False   | APQS   | None    | True  | QS        |
     | APQSXX   | APQS         | False   | APQS   | None    | True  | QS        |
-    | SQAPQS   | SQAPQS       | True    | None   | APQS    | False |           |
-    | SQAPQSX  | SQAPQS       | True    | None   | APQS    | False |           |
-    | SQAPQSXX | SQAPQS       | True    | None   | APQS    | False |           |
+    | SQAPQS   | SQAPQS       | True    | None   | APQS    | True  |           |
+    | SQAPQSX  | SQAPQS       | True    | None   | APQS    | True  |           |
+    | SQAPQSXX | SQAPQS       | True    | None   | APQS    | True  |           |
     | RELREC   | RELREC       | False   | None   | None    | False |           |
     """
 
@@ -61,20 +61,28 @@ class SDTMDatasetMetadata(DatasetMetadata):
     @property
     def is_ap(self) -> bool:
         """
-        Returns true if domain starts with AP and is at least 4 characters long
+        Returns true if APID variable exists in first_record for non-supp datasets,
+        or if rdomain is exactly 4 characters and starts with AP for supp datasets.
         """
-        return (
-            isinstance(self.domain, str)
-            and len(self.domain) >= 4
-            and self.domain.startswith("AP")
-        )
+        if self.is_supp:
+            return (
+                isinstance(self.rdomain, str)
+                and len(self.rdomain) == 4
+                and self.rdomain.startswith("AP")
+            )
+        first_record = self.first_record or {}
+        return "APID" in first_record
 
     @property
     def ap_suffix(self) -> str:
         """
         Returns the 2-character suffix (characters 3-4) from AP domains.
-        Returns empty string if not an AP domain.
+        Returns empty string if not an AP domain or for supp datasets.
         """
-        if self.is_ap:
+        if not self.is_ap:
+            return ""
+        if self.is_supp:
+            return ""
+        if isinstance(self.domain, str) and len(self.domain) >= 4:
             return self.domain[2:4]
         return ""
