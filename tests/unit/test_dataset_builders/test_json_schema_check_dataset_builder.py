@@ -1,4 +1,5 @@
 from unittest.mock import MagicMock
+import pandas as pd
 
 from cdisc_rules_engine.dataset_builders.json_schema_check_dataset_builder import (
     JsonSchemaCheckDatasetBuilder,
@@ -98,7 +99,15 @@ def test_json_schema_check_dataset_builder_valid():
 
     dataset = builder.get_dataset()
 
-    assert dataset.empty
+    # Now expect a single row with all columns as empty strings or NaN,
+    # except source_row_number
+    rows = dataset.data.to_dict(orient="records")
+    assert len(rows) == 1
+    for key, value in rows[0].items():
+        if key == "source_row_number":
+            assert value == 1
+        else:
+            assert value == "" or pd.isna(value)
 
 
 def test_json_schema_check_dataset_builder_invalid():
