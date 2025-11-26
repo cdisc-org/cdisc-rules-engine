@@ -31,7 +31,16 @@ DATA_DEPTH = CASE_DEPTH + 2
 
 METADATA_CACHE = {}
 
-WHITELISTED_RULES = {"CORE-000711", "CORE-000713", "CORE-000714", "CORE-000737", "CORE-000741", "CORE-000784"}
+WHITELISTED_RULES = {
+    "CORE-000206",
+    "CORE-000711",
+    "CORE-000713",
+    "CORE-000714",
+    "CORE-000737",
+    "CORE-000741",
+    "CORE-000783",
+    "CORE-000784",
+}
 
 
 def run_single_rule_regression(row: pd.Series, get_core_rule, target_case: Optional[str] = None) -> list:

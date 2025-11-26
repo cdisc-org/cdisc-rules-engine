@@ -157,6 +157,9 @@ class EqualToOperator(BaseSqlOperator):
             for c in comparison_values:
                 sql += f"WHEN LOWER({pivot_col}) = '{c.lower()}' THEN ({single_comparison_sql(c)}) "
             sql += "ELSE FALSE END"
+            # Getting SQL syntax errors if comparison_values is empty, so catching here and returning False
+            if sql == "CASE ELSE FALSE END":
+                sql = "CASE WHEN 1=1 THEN FALSE END"
             return sql
 
         return self._do_check_operator(

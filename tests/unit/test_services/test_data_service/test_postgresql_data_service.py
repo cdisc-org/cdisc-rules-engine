@@ -20,7 +20,7 @@ def test_get_dataset_metadata_sql(get_sample_lb_dataset, get_sample_supp_dataset
     ds_metadata = sql_data_service.get_dataset_metadata("suppdm")
     assert 9 == len(ds_metadata.variables)
     assert ds_metadata.name == "suppdm"
-    assert ds_metadata.domain == "SUPPQUAL"
+    assert ds_metadata.domain == "SUPPDM"
     assert "DM" == ds_metadata.rdomain
     assert ds_metadata.is_supp
 

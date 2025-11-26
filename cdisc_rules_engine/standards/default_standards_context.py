@@ -12,12 +12,19 @@ class DefaultStandardsContext(BaseStandardsContext):
     def transform_dataset_metadata(self, source: DatasetMetadata2) -> BaseDatasetMetadata:
         return BaseDatasetMetadata(**source.__dict__, domain=self.derive_domain(source.name))
 
+    def derive_rdomain(self, name: str) -> str:
+        """The default implementation can return a NOOP"""
+        return name
+
     def replace_domain_code(self, dataset_metadata: BaseDatasetMetadata, variable: str) -> str:
         """The default implementation can return a NOOP"""
         return variable
 
     def derive_domain(self, filename: str):
         return filename.upper()
+
+    def get_domain_metadata(self, domain: str) -> dict:
+        return {}
 
     def get_domain_variables(self, domain: str):
         return []
@@ -34,7 +41,7 @@ class DefaultStandardsContext(BaseStandardsContext):
     def get_ct_packages(self):
         return []
 
-    def get_domain_metadata(self, domain: str):
+    def get_model_variables(self, domain: str):
         return []
 
     def get_library_variables_metadata(self, dataset_metadata: BaseDatasetMetadata) -> list:
