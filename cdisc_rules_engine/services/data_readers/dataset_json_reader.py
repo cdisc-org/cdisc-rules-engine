@@ -15,7 +15,8 @@ from cdisc_rules_engine.services.data_readers.json_reader import JSONReader
 
 
 class DatasetJSONReader(DataReaderInterface):
-    def __init__(self, encoding: str = None):
+    def __init__(self, dataset_implementation=PandasDataset, encoding: str = None):
+        self.dataset_implementation = dataset_implementation
         self.encoding = encoding
 
     def get_schema(self) -> dict:
