@@ -1279,8 +1279,8 @@ def test_validate_single_dataset_not_equal_to(
                 pd.DataFrame.from_dict(
                     {
                         "dataset_name": ["AE"],
-                        "dataset_label": ["Adverse Events"],
-                        "dataset_location": ["te.xpt"],
+                        "dataset_label": ["Adverse"],
+                        "dataset_location": ["ae.xpt"],
                     }
                 )
             ),
@@ -1295,20 +1295,11 @@ def test_validate_single_dataset_not_equal_to(
                         {
                             "value": {
                                 "dataset_name": "AE",
-                                "dataset_location": "te.xpt",
-                                "dataset_label": "Adverse Events",
+                                "dataset_location": "ae.xpt",
+                                "dataset_label": "Adverse",
                             },
                             "dataset": "ae.xpt",
                             "row": 1,
-                        },
-                        {
-                            "value": {
-                                "dataset_name": "AE",
-                                "dataset_location": "te.xpt",
-                                "dataset_label": "Adverse Events",
-                            },
-                            "dataset": "ae.xpt",
-                            "row": 2,
                         },
                     ],
                 }
