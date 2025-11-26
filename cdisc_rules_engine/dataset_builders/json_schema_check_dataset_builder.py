@@ -55,16 +55,12 @@ class JsonSchemaCheckDatasetBuilder(BaseDatasetBuilder):
         filtered = [
             row for row in records if row["dataset"] == self.dataset_metadata.name
         ]
-        return tag_source(
-            (
-                self.dataset_implementation.from_records(filtered, **kwargs)
-                if filtered
-                else self.dataset_implementation.from_dict(
-                    self.dataset_template, **kwargs
-                )
-            ),
-            self.dataset_metadata,
-        )
+        if filtered:
+            result = self.dataset_implementation.from_records(filtered, **kwargs)
+        else:
+            empty_row = {key: "" for key in self.dataset_template.keys()}
+            result = self.dataset_implementation.from_records([empty_row], **kwargs)
+        return tag_source(result, self.dataset_metadata)
 
     def list_errors(self, tree: exceptions.ErrorTree, errlist: dict[str, list]):
         if tree.errors:
