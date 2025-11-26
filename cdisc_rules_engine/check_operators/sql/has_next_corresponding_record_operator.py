@@ -4,7 +4,7 @@ from .base_sql_operator import BaseSqlOperator
 class HasNextCorrespondingRecordOperator(BaseSqlOperator):
     """Operator for checking if record has next corresponding record."""
 
-    def execute_operator(self, other_value):
+    def _execute_operator_impl(self, other_value):
         """
         Checks if the current record's target value matches the next record's comparator value.
 
@@ -66,3 +66,6 @@ class HasNextCorrespondingRecordOperator(BaseSqlOperator):
             """
 
         return self._do_complex_check_operator(cache_key, sql)
+
+    def get_result_for_missing_columns(self):
+        return "FALSE"

@@ -6,7 +6,7 @@ COMPLETE_DATE_REGEX = "^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}(:\\d{2})?(\\.\\d+)?(
 class IsCompleteDateOperator(BaseSqlOperator):
     """Operator for checking if date is complete."""
 
-    def execute_operator(self, other_value):
+    def _execute_operator_impl(self, other_value):
         target = self.replace_prefix(other_value.get("target"))
         op_name = f"{target}_is_complete_date"
 
@@ -19,3 +19,6 @@ class IsCompleteDateOperator(BaseSqlOperator):
                 END"""
 
         return self._do_check_operator(op_name, sql)
+
+    def get_result_for_missing_columns(self):
+        return "FALSE"

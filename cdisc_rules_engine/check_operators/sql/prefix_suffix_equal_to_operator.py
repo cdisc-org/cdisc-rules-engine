@@ -6,7 +6,7 @@ from .base_sql_operator import BaseSqlOperator
 class PrefixSuffixEqualToOperator(BaseSqlOperator):
     """Operator for checking if prefix or suffix equals to expected value."""
 
-    def execute_operator(self, other_value):
+    def _execute_operator_impl(self, other_value):
         if "prefix" in other_value:
             mode = "prefix"
         elif "suffix" in other_value:
@@ -71,3 +71,6 @@ class PrefixSuffixEqualToOperator(BaseSqlOperator):
                       )"""
 
         return self._do_check_operator(cache_key, sql)
+
+    def get_result_for_missing_columns(self):
+        return "FALSE"

@@ -8,7 +8,7 @@ class NumericComparisonOperator(BaseSqlOperator):
         super().__init__(data)
         self.operator = operator
 
-    def execute_operator(self, other_value):
+    def _execute_operator_impl(self, other_value):
         target = self.replace_prefix(other_value.get("target"))
         comparator = self.replace_prefix(other_value.get("comparator"))
         target_column = self._sql(target)
@@ -23,3 +23,6 @@ class NumericComparisonOperator(BaseSqlOperator):
                         """
 
         return self._do_check_operator(f"{target_column}{self.operator}{comparator}", sql)
+
+    def get_result_for_missing_columns(self):
+        return "FALSE"

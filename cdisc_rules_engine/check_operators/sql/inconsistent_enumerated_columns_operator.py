@@ -5,7 +5,7 @@ from .base_sql_operator import BaseSqlOperator
 class InconsistentEnumeratedColumnsOperator(BaseSqlOperator):
     """Operator for checking inconsistent enumerated columns."""
 
-    def execute_operator(self, other_value):
+    def _execute_operator_impl(self, other_value):
         """
         Check for inconsistencies in enumerated columns of a DataFrame.
 
@@ -121,3 +121,6 @@ class InconsistentEnumeratedColumnsOperator(BaseSqlOperator):
             return f"({col_sql} IS NOT NULL)"
         else:
             return f"({col_sql} IS NOT NULL AND {col_sql} != '')"
+
+    def get_result_for_missing_columns(self):
+        return "FALSE"

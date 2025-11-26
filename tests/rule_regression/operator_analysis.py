@@ -64,8 +64,8 @@ def check_operator_implementation_status() -> Dict[str, bool]:
             }
 
             operator_instance = operator_factory(dummy_data)
-            if hasattr(operator_instance, "execute_operator"):
-                method = operator_instance.execute_operator
+            if hasattr(operator_instance, "_execute_operator_impl"):
+                method = operator_instance._execute_operator_impl
 
                 try:
                     source = inspect.getsource(method)

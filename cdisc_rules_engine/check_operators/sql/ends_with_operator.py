@@ -4,7 +4,7 @@ from .base_sql_operator import BaseSqlOperator
 class EndsWithOperator(BaseSqlOperator):
     """Operator for checking if target ends with comparator."""
 
-    def execute_operator(self, other_value):
+    def _execute_operator_impl(self, other_value):
 
         target_column = self.replace_prefix(other_value.get("target"))
         value_is_literal = other_value.get("value_is_literal", False)
@@ -50,3 +50,6 @@ class EndsWithOperator(BaseSqlOperator):
                       )"""
 
         return self._do_check_operator(cache_key, sql)
+
+    def get_result_for_missing_columns(self):
+        return "FALSE"

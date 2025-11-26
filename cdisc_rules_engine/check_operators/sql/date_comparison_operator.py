@@ -8,7 +8,7 @@ class DateComparisonOperator(BaseSqlOperator):
         super().__init__(data)
         self.operator = operator
 
-    def execute_operator(self, other_value):
+    def _execute_operator_impl(self, other_value):
         """
         Performs date comparison operations in PostgreSQL.
         Handles date component extraction and comparison.
@@ -59,3 +59,6 @@ class DateComparisonOperator(BaseSqlOperator):
                 END"""
 
         return self._do_check_operator(cache_key, sql)
+
+    def get_result_for_missing_columns(self):
+        return "FALSE"

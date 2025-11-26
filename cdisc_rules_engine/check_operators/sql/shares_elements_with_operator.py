@@ -14,7 +14,7 @@ class SharesElementsWithOperator(BaseSqlOperator):
         super().__init__(data)
         self.operation_type = operation_type
 
-    def execute_operator(self, other_value):
+    def _execute_operator_impl(self, other_value):
         """
         Checks if values share elements according to the operation type.
 
@@ -339,3 +339,6 @@ class SharesElementsWithOperator(BaseSqlOperator):
                 AND collection_values.value = {column_sql}
             ) = 1
             """
+
+    def get_result_for_missing_columns(self):
+        return "TRUE" if self.operation_type == "no_elements" else "FALSE"

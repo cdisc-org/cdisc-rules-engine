@@ -2,7 +2,7 @@ import hashlib
 import traceback
 from abc import abstractmethod
 from functools import wraps
-from typing import Any, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -28,6 +28,23 @@ class SqlOperatorError(Exception):
         self.original_exception = original_exception
         self.operator_name = operator_name
         super().__init__(f"{operator_name}: {str(original_exception)}")
+
+
+class ColumnNotFoundError(Exception):
+    """Raised when a required column is not found in the dataset."""
+
+    def __init__(self, column_name: str, table_id: str = None, message: str = None):
+        self.column_name = column_name
+        self.table_id = table_id
+
+        if message:
+            self.message = message
+        elif table_id:
+            self.message = f"Column '{column_name}' not found in table '{table_id}'"
+        else:
+            self.message = f"Column '{column_name}' not found in dataset"
+
+        super().__init__(self.message)
 
 
 def log_operator_execution(operator_name):
@@ -87,9 +104,29 @@ class BaseSqlOperator:
         self.operation_variables: dict[str, SqlOperationResult] = data.get("operation_variables", {})
         self.dataset_metadata: BaseDatasetMetadata = data.get("dataset_metadata", None)
 
+    def execute_operator(self, other_value: Dict[str, Any]):
+        """
+        Execute the operator logic.
+        If the required columns are missing, it will return a default sql result specific to the operator.
+        """
+        try:
+            return self._execute_operator_impl(other_value)
+        except ColumnNotFoundError as e:
+            result_sql = self.get_result_for_missing_columns()
+            cache_key = f"{e.column_name}_missing_column_default"
+            return self._do_check_operator(cache_key, lambda: result_sql)
+
     @abstractmethod
-    def execute_operator(self, other_value):
+    def _execute_operator_impl(self, other_value: Dict[str, Any]):
         """Execute the specific operator logic. Must be implemented by each operator."""
+        pass
+
+    @abstractmethod
+    def get_result_for_missing_columns(self) -> str:
+        """
+        Return the SQL result value when required columns are missing.
+        Must be implemented by each operator.
+        """
         pass
 
     def _assert_valid_value_and_cast(self, value):
@@ -227,12 +264,6 @@ class BaseSqlOperator:
         suffix: Optional[int] = None,
         alias: bool = True,
     ) -> str:
-        query = self.sql_data_service.pgi.schema.get_column_hash(self.table_id, column)
-
-        # Prepend the table alias
-        if alias:
-            query = f"{CHECK_OPERATOR_TABLE_ALIAS}.{query}"
-
         if column == DATASET_NAME:
             dataset_name = self.dataset_metadata.name
             if prefix is not None:
@@ -240,6 +271,19 @@ class BaseSqlOperator:
             elif suffix is not None:
                 dataset_name = dataset_name[-int(suffix) :] if int(suffix) > 0 else ""
             return self._constant_sql(dataset_name, lowercase=lowercase)
+
+        if not self._exists(column):
+            raise ColumnNotFoundError(
+                column_name=column,
+                table_id=self.table_id,
+                message=f"Column '{column}' not found in table '{self.table_id}'",
+            )
+
+        query = self.sql_data_service.pgi.schema.get_column_hash(self.table_id, column)
+
+        # Prepend the table alias
+        if alias:
+            query = f"{CHECK_OPERATOR_TABLE_ALIAS}.{query}"
 
         # TODO: Throwing this temporarily, so we can determine which errors
         # are actually postgres errors and which are just rules which run on

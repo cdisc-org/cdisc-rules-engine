@@ -10,7 +10,7 @@ class IsOrderedSetOperator(BaseSqlOperator):
         super().__init__(data)
         self.invert = invert
 
-    def execute_operator(self, other_value):
+    def _execute_operator_impl(self, other_value):
         name = self.replace_prefix(other_value.get("target"))
         value = other_value.get("comparator")
         value_is_literal = other_value.get("value_is_literal", False)
@@ -58,3 +58,6 @@ class IsOrderedSetOperator(BaseSqlOperator):
                 """
 
         return self._do_check_operator(operator_name, sql)
+
+    def get_result_for_missing_columns(self):
+        return "FALSE"

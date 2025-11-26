@@ -3,7 +3,7 @@ from .base_sql_operator import BaseSqlOperator
 
 class InvalidDurationOperator(BaseSqlOperator):
 
-    def execute_operator(self, other_value):
+    def _execute_operator_impl(self, other_value):
         target = self.replace_prefix(other_value.get("target"))
         target_column = self._column_sql(target)
         negative = other_value.get("negative", False)
@@ -43,3 +43,6 @@ class InvalidDurationOperator(BaseSqlOperator):
             """
 
         return self._do_check_operator(operation_column, sql_subquery)
+
+    def get_result_for_missing_columns(self):
+        return "TRUE"

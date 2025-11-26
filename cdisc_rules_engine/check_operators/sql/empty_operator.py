@@ -4,7 +4,7 @@ from .base_sql_operator import BaseSqlOperator
 class EmptyOperator(BaseSqlOperator):
     """Operator for checking if values are empty/null."""
 
-    def execute_operator(self, other_value):
+    def _execute_operator_impl(self, other_value):
         column = self.replace_prefix(other_value.get("target"))
 
         def sql():
@@ -14,3 +14,6 @@ class EmptyOperator(BaseSqlOperator):
             return self._is_empty_sql(column)
 
         return self._do_check_operator(f"{column}_empty", sql)
+
+    def get_result_for_missing_columns(self):
+        return "TRUE"  # matches the behaviour above but method is required for consistency

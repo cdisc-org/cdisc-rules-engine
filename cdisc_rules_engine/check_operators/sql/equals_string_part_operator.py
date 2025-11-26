@@ -8,7 +8,7 @@ class EqualsStringPartOperator(BaseSqlOperator):
         super().__init__(data)
         self.invert = invert
 
-    def execute_operator(self, other_value):
+    def _execute_operator_impl(self, other_value):
         """
         Checks that the values in the target column
         equal the result of parsing the value in the comparison
@@ -53,3 +53,6 @@ class EqualsStringPartOperator(BaseSqlOperator):
                         END"""
 
         return self._do_check_operator(operator_name, sql)
+
+    def get_result_for_missing_columns(self):
+        return "FALSE"

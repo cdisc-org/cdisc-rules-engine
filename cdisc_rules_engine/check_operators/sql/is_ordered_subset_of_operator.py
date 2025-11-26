@@ -4,7 +4,7 @@ from .base_sql_operator import BaseSqlOperator
 class IsOrderedSubsetOfOperator(BaseSqlOperator):
     """Operator for checking if value is an ordered subset of another value."""
 
-    def execute_operator(self, other_value):
+    def _execute_operator_impl(self, other_value):
         """target = self.replace_prefix(other_value.get("target"))
         comparator = self.replace_prefix(other_value.get("comparator"))
         missing_columns = set()
@@ -30,4 +30,7 @@ class IsOrderedSubsetOfOperator(BaseSqlOperator):
         if missing_columns:
             logger.info(f"Columns not found in comparator list {comparator}: {', '.join(sorted(missing_columns))}")
         return results"""
+        raise NotImplementedError("is_ordered_subset_of check_operator not implemented")
+
+    def get_result_for_missing_columns(self):
         raise NotImplementedError("is_ordered_subset_of check_operator not implemented")

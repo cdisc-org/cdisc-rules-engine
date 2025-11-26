@@ -24,7 +24,7 @@ class TargetIsSortedByOperator(BaseSqlOperator):
                 {date_column} ~ '^[0-9]{{4}}----$'
             )"""
 
-    def execute_operator(self, other_value):
+    def _execute_operator_impl(self, other_value):
         """
         Checks if target values are sorted correctly based on comparator columns.
 
@@ -204,3 +204,6 @@ class TargetIsSortedByOperator(BaseSqlOperator):
             """
 
         return self._do_complex_check_operator(cache_key, sql)
+
+    def get_result_for_missing_columns(self):
+        return "FALSE"
