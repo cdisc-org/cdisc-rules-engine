@@ -1371,6 +1371,7 @@ def test_validate_dataset_metadata_against_define_xml(
         first_record={"DOMAIN": "AE"},
         full_path="CDISC01/test/ae.xpt",
         filename="ae.xpt",
+        original_path="ae.xpt",
     )
     validation_result: List[dict] = RulesEngine(
         standard="sdtmig"
