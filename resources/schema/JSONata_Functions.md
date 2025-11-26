@@ -31,7 +31,7 @@ This function returns a copy of the object or array specified in `$within`, with
 
 #### Input
 
-```json
+```
 (
     $ordered_objects :=
         [
@@ -111,7 +111,7 @@ This function returns a copy of the input `$tree` object that has been "trimmed"
 
 #### Input
 
-```json
+```
 (
     $example_study :=
         {
