@@ -1,3 +1,4 @@
+from cdisc_rules_engine.models.dataset import DatasetInterface
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.dataset_builders.base_dataset_builder import BaseDatasetBuilder
 import os
@@ -55,9 +56,15 @@ class DatasetMetadataDefineDatasetBuilder(BaseDatasetBuilder):
             if self.dataset_metadata.full_path
             else None
         )
-        matching_row = merged_cleaned[
+        matching_row: DatasetInterface = merged_cleaned[
             merged_cleaned["dataset_location"].str.lower() == dataset_filename
         ]
+        if matching_row.empty:
+            # when using DASK dataset_filename refers to temp parquet filename
+            matching_row: DatasetInterface = merged_cleaned[
+                merged_cleaned["dataset_location"].str.lower()
+                == self.dataset_metadata.original_path.lower()
+            ]
         for column in merged.columns:
             merged[column] = matching_row[column].iloc[0]
         return merged
@@ -93,20 +100,22 @@ class DatasetMetadataDefineDatasetBuilder(BaseDatasetBuilder):
         else:
             datasets = self.dataset_implementation()
             for dataset in self.datasets:
+                ds_metadata = None
                 try:
                     ds_metadata = self.data_service.get_dataset_metadata(
-                        dataset.filename
+                        dataset_name=dataset.filename
                     )
-                    ds_metadata.data["dataset_domain"] = dataset.domain
+                    ds_metadata.data["dataset_domain"] = getattr(
+                        dataset, "domain", None
+                    )
                 except Exception as e:
                     logger.trace(e)
                     logger.error(f"Error: {e}. Error message: {str(e)}")
-                datasets.data = (
-                    ds_metadata.data
-                    if datasets.data.empty
-                    else datasets.data.append(ds_metadata.data)
-                )
-
+                if ds_metadata:
+                    if datasets.data.empty:
+                        datasets.data = ds_metadata.data.copy()
+                    else:
+                        datasets.data = datasets.concat(ds_metadata).data
             if datasets.data.empty or len(datasets.data) == 0:
                 dataset_df = self.dataset_implementation(columns=dataset_col_order)
                 logger.info(f"No datasets metadata is provided for {__name__}.")
