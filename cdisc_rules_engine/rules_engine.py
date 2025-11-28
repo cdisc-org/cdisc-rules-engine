@@ -324,8 +324,6 @@ class RulesEngine:
         elif (
             rule.get("rule_type")
             == RuleTypes.VARIABLE_METADATA_CHECK_AGAINST_DEFINE.value
-            or rule.get("rule_type")
-            == RuleTypes.VARIABLE_METADATA_CHECK_AGAINST_DEFINE_XML_AND_LIBRARY.value
         ):
             self.rule_processor.add_comparator_to_rule_conditions(
                 rule, comparator=None, target_prefix="define_"
