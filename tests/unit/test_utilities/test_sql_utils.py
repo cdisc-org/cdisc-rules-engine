@@ -11,7 +11,7 @@ from cdisc_rules_engine.standards.default_standards_context import (
 
 def test_invalid_table_name():
     """Test that an exception is raised when an invalid table name is used."""
-    data_service = PostgresQLDataService.instance()
+    data_service = PostgresQLDataService.instance(sql_namespace="")
     with pytest.raises(Exception) as e:
         PostgresQLDataService.add_test_dataset(
             data_service, table_name="SELECT", column_data={"key": [1]}, standards_context=DefaultStandardsContext()

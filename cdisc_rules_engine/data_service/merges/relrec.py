@@ -151,7 +151,7 @@ class SqlRelrecMerge:
         """
         Build the output schema including original columns and renamed relationship columns.
         """
-        schema = SqlTableSchema.from_join(name)
+        schema = SqlTableSchema.from_join(name, pgi)
 
         # Add all original columns including id
         for _, column in original.get_columns():

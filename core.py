@@ -212,7 +212,7 @@ def cli():
 @click.option(
     "-ns",
     "--sql-namespace",
-    default="",
+    default="uid",
     help="A prefix for all tables in the database when using the SQL engine",
 )
 @click.pass_context
@@ -325,6 +325,7 @@ def validate(
         progress,
         define_xml_path,
         validate_xml_bool,
+        sql_namespace,
     )
     if sql_engine:
         run_sql_validation(args)
@@ -655,6 +656,7 @@ def test_validate():
             validate_xml = False
             json_output = os.path.join(temp_dir, "json_validation_output")
             xpt_output = os.path.join(temp_dir, "xpt_validation_output")
+            sql_namespace = None
 
             json_args = Validation_args(
                 cache_path,
@@ -677,6 +679,7 @@ def test_validate():
                 progress,
                 define_xml_path,
                 validate_xml,
+                sql_namespace,
             )
 
             xpt_args = Validation_args(
@@ -700,6 +703,7 @@ def test_validate():
                 progress,
                 define_xml_path,
                 validate_xml,
+                sql_namespace,
             )
 
             run_validation(json_args)

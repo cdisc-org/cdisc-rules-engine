@@ -30,7 +30,7 @@ class SqlTestDatasetLoader:
         for idx, row in enumerate(row_dicts, start=1):
             row[SOURCE_ROW_NUMBER] = idx
 
-        schema = SqlTableSchema.from_metadata(test_dataset)
+        schema = SqlTableSchema.from_metadata(test_dataset, pgi)
         source_row_column = SqlColumnSchema(name=SOURCE_ROW_NUMBER, hash=SOURCE_ROW_NUMBER, type="Num")
         schema.add_column(source_row_column)
 

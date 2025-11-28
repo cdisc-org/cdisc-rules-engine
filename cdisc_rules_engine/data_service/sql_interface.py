@@ -1,3 +1,5 @@
+import random
+import string
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
@@ -17,12 +19,16 @@ from cdisc_rules_engine.services import logger
 class PostgresQLInterface:
     """Main interface for database operations"""
 
-    def __init__(self, config: Optional[DatabaseConfigPostgres] = None):
+    def __init__(self, config: Optional[DatabaseConfigPostgres] = None, sql_namespace: Optional[str] = None):
         self.config = config or DatabaseConfigPostgres()
         self.db: Optional[DatabasePostgres] = None
         self.compiler = SQLCompiler()
         self._last_results: List[Any] = []
         self.schema = SqlDbSchema()
+        if sql_namespace is None or sql_namespace == "uid":
+            self.sql_namespace = f"{self._get_unique_prefix_uid()}_"
+        else:
+            self.sql_namespace = sql_namespace
 
     def init_database(self):
         """Initialise the database connection"""
@@ -38,6 +44,7 @@ class PostgresQLInterface:
 
             # drop all previously generated analysis tables
             self.execute_sql_file(str(Path(__file__).parent / "schemas" / "drop_analysis_tables.sql"))
+            self._drop_prefixed_tables()
 
         except Exception as e:
             logger.error(f"Failed to initialise database: {e}")
@@ -216,7 +223,58 @@ class PostgresQLInterface:
             logger.error(f"Failed to execute schema file: {e}")
             raise
 
+    def _drop_prefixed_tables(self):
+        """Drop all tables that start with the configured sql_namespace"""
+        static_tables = [
+            "codelists",
+            "ig_datasets",
+            "ig_variables",
+            "standards",
+        ]
+        # TODO: these names probably need to go in their own constants file along
+        # with the constants at the top of "data_service/startup/populate_standards.py"
+
+        exclusion_list = ", ".join([f"'{table}'" for table in static_tables])
+
+        if self.sql_namespace:
+            prefix_condition = f"AND tablename LIKE '{self.sql_namespace}%'"
+        else:
+            prefix_condition = ""
+
+        drop_query = f"""
+            DO $$
+            DECLARE
+                r RECORD;
+            BEGIN
+                FOR r IN
+                    SELECT tablename
+                    FROM pg_tables
+                    WHERE schemaname = 'public'
+                    {prefix_condition}
+                    AND tablename NOT IN ({exclusion_list})
+                LOOP
+                    EXECUTE format('DROP TABLE IF EXISTS %I CASCADE;', r.tablename);
+                END LOOP;
+            END $$;
+        """
+        self.execute_sql(drop_query)
+
+        # TODO: maybe we cycle through the schema too and drop all tables that are not in the static list
+
+        logger.info(
+            f"Dropped all tables with prefix '{self.sql_namespace}'"
+            if self.sql_namespace
+            else "Dropped all non-static tables"
+        )
+
     def close(self):
         """Close database connections"""
         if self.db:
             self.db.close_pool()
+
+    @staticmethod
+    def _get_unique_prefix_uid() -> str:
+        len = 8
+        first_char = random.choice(string.ascii_letters)
+        rest = "".join(random.choices(string.ascii_letters + string.digits, k=len - 1))
+        return first_char + rest

@@ -57,6 +57,7 @@ class SqlJoinMerge:
             right=right,
             pivot_left=pivot_left,
             pivot_right=pivot_right,
+            pgi=pgi,
         )
 
         if len(right_columns) == 0:
@@ -91,12 +92,13 @@ class SqlJoinMerge:
         right: SqlTableSchema,
         pivot_left: list[str],
         pivot_right: list[str],
+        pgi: PostgresQLInterface,
     ) -> Tuple[SqlTableSchema, List[Tuple[str, str]], List[Tuple[str, str]]]:
         """Join two SQL table schemas based on specified pivot columns."""
         if len(pivot_left) != len(pivot_right):
             raise ValueError("Pivot columns must have the same length.")
 
-        joined_schema = SqlTableSchema.from_join(name)
+        joined_schema = SqlTableSchema.from_join(name, pgi)
         left_output_columns = []
         right_output_columns = []
 

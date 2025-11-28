@@ -22,6 +22,7 @@ class IsOrderedSetOperator(BaseSqlOperator):
             operator_name = f"{name}_is_ordered_set_within_{value}"
 
         def sql():
+            table_hash = self.sql_data_service.pgi.schema.get_table_hash(self.table_id)
             name_hash = self.sql_data_service.pgi.schema.get_column_hash(self.table_id, name)
             value_hash = (
                 self.sql_data_service.pgi.schema.get_column_hash(self.table_id, value)
@@ -31,17 +32,17 @@ class IsOrderedSetOperator(BaseSqlOperator):
             value_column = self._column_sql(value) if not value_is_literal else self._constant_sql(value)
 
             dataset_is_ordered = f"""
-            NOT EXISTS (
-                SELECT 1
-                FROM {self.table_id} t1
-                INNER JOIN {self.table_id} t2 ON t1.{value_hash} = t2.{value_hash}
-                WHERE t1.{value_hash} = {value_column}
-                AND t1.{name_hash} IS NOT NULL
-                AND t2.{name_hash} IS NOT NULL
-                AND t1.ctid < t2.ctid
-                AND t1.{name_hash} > t2.{name_hash}
-            )
-            """
+                NOT EXISTS (
+                    SELECT 1
+                    FROM {table_hash} t1
+                    INNER JOIN {table_hash} t2 ON t1.{value_hash} = t2.{value_hash}
+                    WHERE t1.{value_hash} = {value_column}
+                    AND t1.{name_hash} IS NOT NULL
+                    AND t2.{name_hash} IS NOT NULL
+                    AND t1.ctid < t2.ctid
+                    AND t1.{name_hash} > t2.{name_hash}
+                )
+                """
             if self.invert:
                 return f"""
                 CASE

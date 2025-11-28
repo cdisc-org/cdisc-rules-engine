@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 from io import IOBase
-from typing import TYPE_CHECKING, List, Union
+from typing import TYPE_CHECKING, List, Union, Optional
 
 from cdisc_rules_engine.data_service.loading.load_datasets import SqlDatasetLoader
 from cdisc_rules_engine.data_service.loading.load_test_datasets import (
@@ -55,12 +55,12 @@ class PostgresQLDataService:
         self.datasets: List[BaseDatasetMetadata] = []
 
     @classmethod
-    def instance(cls) -> "PostgresQLDataService":
+    def instance(cls, sql_namespace: Optional[str] = None) -> "PostgresQLDataService":
         """
         Create a PostgresQLDataService instance with an initialized database.
         """
         # PostgresDB setup
-        pgi = PostgresQLInterface()
+        pgi = PostgresQLInterface(sql_namespace=sql_namespace)
         pgi.init_database()
 
         instance = cls(postgres_interface=pgi)
@@ -87,9 +87,9 @@ class PostgresQLDataService:
 
     @classmethod
     def from_dataset_paths(
-        cls, dataset_paths: List[str], standards_context: BaseStandardsContext
+        cls, dataset_paths, standards_context, sql_namespace: Optional[str] = None
     ) -> "PostgresQLDataService":
-        instance = cls.instance()
+        instance = cls.instance(sql_namespace=sql_namespace)
 
         instance.datasets.extend(
             standards_context.transform_dataset_metadata(ds)

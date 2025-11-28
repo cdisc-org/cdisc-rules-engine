@@ -307,6 +307,7 @@ def get_metadata(ig_specs: IGSpecification, define_xml_path: str):
                 progress=None,
                 define_xml_path=define_xml_path,
                 validate_xml=None,
+                sql_namespace=None,
             )
         )
     return METADATA_CACHE[key]

@@ -34,7 +34,8 @@ class SqlValueCheckWithDatasetMetadataBuilder(SqlBaseDatasetBuilder):
         columns_list = source_schema.get_columns()
         column_names = [name for name, _ in columns_list if name != "id"]  # skip the id column
 
-        count_query = f"SELECT COUNT(*) as count FROM {source_table_id};"
+        source_table_hash = self.data_service.pgi.schema.get_table_hash(source_table_id)
+        count_query = f"SELECT COUNT(*) as count FROM {source_table_hash};"
         self.data_service.pgi.execute_sql(count_query)
         count_result = self.data_service.pgi.fetch_all()
         record_count = count_result[0]["count"] if count_result else 0
@@ -69,7 +70,7 @@ class SqlValueCheckWithDatasetMetadataBuilder(SqlBaseDatasetBuilder):
                         '{dataset_name}' as dataset_name,
                         '{dataset_label}' as dataset_label,
                         {record_count} as record_count
-                    FROM {source_table_id}
+                    FROM {source_table_hash}
                 """
                 )
 

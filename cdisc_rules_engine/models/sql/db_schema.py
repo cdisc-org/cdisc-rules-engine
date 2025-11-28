@@ -1,5 +1,4 @@
 from typing import Tuple, Union
-
 from cdisc_rules_engine.models.sql.column_schema import SqlColumnSchema
 from cdisc_rules_engine.models.sql.table_schema import SqlTableSchema
 

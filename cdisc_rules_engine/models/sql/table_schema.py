@@ -1,9 +1,12 @@
 from collections import OrderedDict
-from typing import Any, Literal, Tuple, Union
+from typing import Any, Literal, Tuple, Union, TYPE_CHECKING
 
 from cdisc_rules_engine.data_service.util import generate_hash
 from cdisc_rules_engine.models.dataset_metadata2 import DatasetMetadata2
 from cdisc_rules_engine.models.sql.column_schema import SqlColumnSchema
+
+if TYPE_CHECKING:
+    from cdisc_rules_engine.data_service.sql_interface import PostgresQLInterface
 
 
 class SqlTableSchema:
@@ -40,36 +43,42 @@ class SqlTableSchema:
         return list(self._columns.items())
 
     @classmethod
-    def from_data(cls, table_name: str, data: dict[str, Any]) -> "SqlTableSchema":
+    def from_data(cls, table_name: str, data: dict[str, Any], pgi: "PostgresQLInterface") -> "SqlTableSchema":
         """Create a SqlTableSchema from a dictionary."""
         # Check for reserved column names in user data
         for column in data.keys():
             if column.lower() == "id":
                 raise ValueError("Column name 'id' is reserved for primary key in SQL tables.")
 
-        instance = cls(table_name.lower(), table_name.lower(), source="data")
+        prefix = pgi.sql_namespace
+        hash_name = f"{prefix}_{table_name.lower()}" if prefix else table_name.lower()
+        instance = cls(table_name.lower(), hash_name, source="data")
         for column, value in data.items():
             instance.add_column(SqlColumnSchema.from_data(column, value))
         return instance
 
     @classmethod
-    def from_metadata(cls, metadata: DatasetMetadata2) -> "SqlTableSchema":
+    def from_metadata(cls, metadata: DatasetMetadata2, pgi: "PostgresQLInterface") -> "SqlTableSchema":
         """Create a SqlTableSchema from its metadata."""
         # Check for reserved column names in user data
         for column in metadata.variables:
             if column.name.lower() == "id":
                 raise ValueError("Column name 'id' is reserved for primary key in SQL tables.")
 
-        instance = cls(metadata.name.lower(), metadata.name.lower(), source="data")
+        prefix = pgi.sql_namespace
+        hash_name = f"{prefix}_{metadata.name.lower()}" if prefix else metadata.name.lower()
+        instance = cls(metadata.name.lower(), hash_name, source="data")
         for variable_metadata in metadata.variables:
             instance.add_column(SqlColumnSchema.from_metadata(variable_metadata))
         return instance
 
     @classmethod
-    def from_join(cls, name: str) -> "SqlTableSchema":
+    def from_join(cls, name: str, pgi: "PostgresQLInterface") -> "SqlTableSchema":
         """Create a SqlTableSchema for a join operation."""
         hash = generate_hash(name.lower())
-        return cls(name.lower(), hash, source="derived")
+        prefix = pgi.sql_namespace
+        hash_name = f"{prefix}_{hash}" if prefix else hash
+        return cls(name.lower(), hash_name, source="derived")
 
     @classmethod
     def static(cls, name: str) -> "SqlTableSchema":

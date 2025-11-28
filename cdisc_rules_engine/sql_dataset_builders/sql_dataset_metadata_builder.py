@@ -32,7 +32,8 @@ class SqlDatasetMetadataBuilder(SqlBaseDatasetBuilder):
 
         self.data_service.pgi.create_table(schema)
 
-        count_query = f"SELECT COUNT(*) as count FROM {self.dataset_metadata.name};"
+        table_hash = self.data_service.pgi.schema.get_table_hash(self.dataset_metadata.name)
+        count_query = f"SELECT COUNT(*) as count FROM {table_hash};"
         self.data_service.pgi.execute_sql(count_query)
         count_result = self.data_service.pgi.fetch_all()
         record_count = count_result[0]["count"] if count_result else 0

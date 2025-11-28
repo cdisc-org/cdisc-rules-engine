@@ -34,7 +34,7 @@ class SqlDatasetLoader:
 
             logger.info(f"Loading dataset {file_path.name} into table {table_name}")
 
-            schema = SqlTableSchema.from_metadata(metadata)
+            schema = SqlTableSchema.from_metadata(metadata, pgi)
             source_row_column = SqlColumnSchema(name=SOURCE_ROW_NUMBER, hash=SOURCE_ROW_NUMBER, type="Num")
             schema.add_column(source_row_column)
 
@@ -63,3 +63,4 @@ class SqlDatasetLoader:
             return metadata
         except Exception as e:
             logger.error(f"Failed to load {file_path.name}: {e}")
+            raise

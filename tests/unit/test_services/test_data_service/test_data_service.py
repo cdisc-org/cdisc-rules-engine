@@ -37,30 +37,22 @@ def test_get_dataset_metadata(mock_read_metadata: MagicMock, dataset_metadata: d
     cache_mock.get = lambda cache_key: None
 
     data_service = LocalDataService(cache_mock, MagicMock(), MagicMock())
-    actual_metadata: PandasDataset = data_service.get_dataset_metadata(
-        dataset_name="dataset_name"
-    )
+    actual_metadata: PandasDataset = data_service.get_dataset_metadata(dataset_name="dataset_name")
     assert actual_metadata.equals(
         PandasDataset.from_dict(
             {
                 "dataset_size": [dataset_metadata["file_metadata"]["file_size"]],
                 "dataset_location": [dataset_metadata["file_metadata"]["name"]],
                 "dataset_name": [dataset_metadata["contents_metadata"]["dataset_name"]],
-                "dataset_label": [
-                    dataset_metadata["contents_metadata"]["dataset_label"]
-                ],
-                "record_count": [
-                    dataset_metadata["contents_metadata"]["dataset_length"]
-                ],
+                "dataset_label": [dataset_metadata["contents_metadata"]["dataset_label"]],
+                "record_count": [dataset_metadata["contents_metadata"]["dataset_length"]],
             }
         )
     )
 
 
 @patch("cdisc_rules_engine.services.data_services.LocalDataService.read_metadata")
-def test_get_raw_dataset_metadata(
-    mock_read_metadata: MagicMock, dataset_metadata: dict
-):
+def test_get_raw_dataset_metadata(mock_read_metadata: MagicMock, dataset_metadata: dict):
     # mock file read
     mock_read_metadata.return_value = dataset_metadata
 
@@ -69,16 +61,12 @@ def test_get_raw_dataset_metadata(
     cache_mock.get_dataset = lambda cache_key: None
 
     data_service = LocalDataService(cache_mock, MagicMock(), MagicMock())
-    actual_metadata: SDTMDatasetMetadata = data_service.get_raw_dataset_metadata(
-        dataset_name="dataset_name"
-    )
+    actual_metadata: SDTMDatasetMetadata = data_service.get_raw_dataset_metadata(dataset_name="dataset_name")
     expected_metadata = SDTMDatasetMetadata(
         name=dataset_metadata["contents_metadata"]["dataset_name"],
         first_record=dataset_metadata["contents_metadata"]["first_record"],
         label=dataset_metadata["contents_metadata"]["dataset_label"],
-        modification_date=dataset_metadata["contents_metadata"][
-            "dataset_modification_date"
-        ],
+        modification_date=dataset_metadata["contents_metadata"]["dataset_modification_date"],
         filename=dataset_metadata["file_metadata"]["name"],
         full_path=dataset_metadata["file_metadata"]["path"],
         file_size=dataset_metadata["file_metadata"]["file_size"],
@@ -202,6 +190,7 @@ def test_get_dataset_class(dataset_metadata, data, expected_class):
             "",
             None,
             False,
+            "",
         )
     )
     data_service = LocalDataService(
@@ -224,17 +213,11 @@ def test_get_dataset_class(dataset_metadata, data, expected_class):
 def test_get_dataset_class_without_standard_and_version():
     df = PandasDataset.from_dict({"UNKNOWN": ["test"]})
     mock_cache_service = MagicMock()
-    mock_cache_service.get.return_value = {
-        "classes": [{"name": "SPECIAL PURPOSE", "datasets": [{"name": "DM"}]}]
-    }
+    mock_cache_service.get.return_value = {"classes": [{"name": "SPECIAL PURPOSE", "datasets": [{"name": "DM"}]}]}
     data_service = LocalDataService(mock_cache_service, MagicMock(), MagicMock())
-    dataset_metadata = SDTMDatasetMetadata(
-        first_record={"DOMAIN": "DM"}, filename="dm.xpt"
-    )
+    dataset_metadata = SDTMDatasetMetadata(first_record={"DOMAIN": "DM"}, filename="dm.xpt")
     with pytest.raises(Exception):
-        data_service.get_dataset_class(
-            df, "dm.xpt", [dataset_metadata], dataset_metadata
-        )
+        data_service.get_dataset_class(df, "dm.xpt", [dataset_metadata], dataset_metadata)
 
 
 def test_get_dataset_class_associated_domains():
@@ -279,6 +262,7 @@ def test_get_dataset_class_associated_domains():
                 "",
                 None,
                 False,
+                "",
             )
         )
         data_service = LocalDataService(
@@ -314,9 +298,7 @@ def test_cached_data_cache_exists():
 
     # mock cache get() method to return a dataset
     test_dataset_name: str = "CDISC01/test/ae.xpt"
-    cache_key: str = get_dataset_cache_key_from_path(
-        test_dataset_name, DatasetTypes.CONTENTS.value
-    )
+    cache_key: str = get_dataset_cache_key_from_path(test_dataset_name, DatasetTypes.CONTENTS.value)
     test_cache_data: dict = {cache_key: PandasDataset()}
     instance_to_pass = Mock()
     instance_to_pass.cache_service.get_dataset = lambda x: test_cache_data[x]
@@ -345,15 +327,11 @@ def test_cached_data_empty_cache():
     instance_to_pass = Mock()
     instance_to_pass.cache_service.get_dataset = lambda x: None
     mock_db = {}
-    instance_to_pass.cache_service.add_dataset = lambda key, dataset: mock_db.update(
-        {key: dataset}
-    )
+    instance_to_pass.cache_service.add_dataset = lambda key, dataset: mock_db.update({key: dataset})
 
     result = to_be_decorated(instance_to_pass, dataset_name=test_dataset_name)
 
     assert result.equals(test_df)
     assert mock_db == {
-        get_dataset_cache_key_from_path(
-            test_dataset_name, DatasetTypes.CONTENTS.value
-        ): test_df
+        get_dataset_cache_key_from_path(test_dataset_name, DatasetTypes.CONTENTS.value): test_df
     }, "New dataset was not added to the cache"
