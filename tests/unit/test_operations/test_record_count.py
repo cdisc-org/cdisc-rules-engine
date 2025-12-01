@@ -608,3 +608,227 @@ def test_wildcard_grouped_record_count(
     for group_col in grouping:
         assert group_col in result
     assert result.equals(expected)
+
+
+@pytest.mark.parametrize(
+    "data, expected, regex",
+    [
+        (
+            PandasDataset.from_dict(
+                {
+                    "STUDYID": ["STUDY1", "STUDY1", "STUDY1", "STUDY2", "STUDY2"],
+                    "RFSTDTC": [
+                        "2023-01-15T10:30:00",
+                        "2023-01-15T14:20:00",
+                        "2023-01-16T09:15:00",
+                        "2023-01-15T11:45:00",
+                        "2023-01-17T16:30:00",
+                    ],
+                    "USUBJID": ["SUBJ1", "SUBJ2", "SUBJ3", "SUBJ4", "SUBJ5"],
+                }
+            ),
+            PandasDataset.from_dict(
+                {
+                    "STUDYID": ["STUDY1", "STUDY1", "STUDY1", "STUDY2", "STUDY2"],
+                    "RFSTDTC": [
+                        "2023-01-15T10:30:00",
+                        "2023-01-15T14:20:00",
+                        "2023-01-16T09:15:00",
+                        "2023-01-15T11:45:00",
+                        "2023-01-17T16:30:00",
+                    ],
+                    "USUBJID": ["SUBJ1", "SUBJ2", "SUBJ3", "SUBJ4", "SUBJ5"],
+                    "operation_id": [3, 3, 1, 3, 1],
+                }
+            ),
+            r"^\d{4}-\d{2}-\d{2}",
+        ),
+        (
+            PandasDataset.from_dict(
+                {
+                    "STUDYID": ["STUDY1", "STUDY1", "STUDY1", "STUDY1"],
+                    "AESTDTC": [
+                        "2023-01-15",
+                        "2023-01-20",
+                        "2023-02-10",
+                        "2023-02-25",
+                    ],
+                    "USUBJID": ["SUBJ1", "SUBJ2", "SUBJ3", "SUBJ4"],
+                }
+            ),
+            PandasDataset.from_dict(
+                {
+                    "STUDYID": ["STUDY1", "STUDY1", "STUDY1", "STUDY1"],
+                    "AESTDTC": [
+                        "2023-01-15",
+                        "2023-01-20",
+                        "2023-02-10",
+                        "2023-02-25",
+                    ],
+                    "USUBJID": ["SUBJ1", "SUBJ2", "SUBJ3", "SUBJ4"],
+                    "operation_id": [2, 2, 2, 2],
+                }
+            ),
+            r"^\d{4}-\d{2}",
+        ),
+    ],
+)
+def test_regex_grouped_record_count(
+    data, expected, regex, operation_params: OperationParams
+):
+    config = ConfigService()
+    cache = CacheServiceFactory(config).get_cache_service()
+    data_service = DataServiceFactory(config, cache).get_data_service()
+    operation_params.dataframe = data
+    operation_params.grouping = (
+        ["RFSTDTC"] if "RFSTDTC" in data.columns else ["AESTDTC"]
+    )
+    operation_params.regex = regex
+    result = RecordCount(operation_params, data, cache, data_service).execute()
+    assert operation_params.operation_id in result
+    assert result.data.equals(expected.data)
+
+
+@pytest.mark.parametrize(
+    "data, expected, regex, grouping_aliases",
+    [
+        (
+            PandasDataset.from_dict(
+                {
+                    "STUDYID": ["STUDY1", "STUDY1", "STUDY1"],
+                    "STUDYID2": ["STUDY1", "STUDY1", "STUDY2"],
+                    "RFSTDTC": [
+                        "2023-01-15T10:30:00",
+                        "2023-01-15T14:20:00",
+                        "2023-01-16T09:15:00",
+                    ],
+                    "USUBJID": ["SUBJ1", "SUBJ2", "SUBJ3"],
+                }
+            ),
+            PandasDataset.from_dict(
+                {
+                    "STUDYID": ["STUDY1", "STUDY1", "STUDY1"],
+                    "STUDYID2": ["STUDY1", "STUDY1", "STUDY2"],
+                    "RFSTDTC": [
+                        "2023-01-15T10:30:00",
+                        "2023-01-15T14:20:00",
+                        "2023-01-16T09:15:00",
+                    ],
+                    "USUBJID": ["SUBJ1", "SUBJ2", "SUBJ3"],
+                    "operation_id": [3, 3, None],
+                }
+            ),
+            r"^\d{4}-\d{2}-\d{2}",
+            ["STUDYID2"],
+        ),
+        (
+            PandasDataset.from_dict(
+                {
+                    "STUDYID": ["STUDY1", "STUDY1", "STUDY2", "STUDY2"],
+                    "STUDYID2": ["STUDY1", "STUDY2", "STUDY2", "STUDY3"],
+                    "DOMAIN": ["AE", "AE", "AE", "AE"],
+                    "AESTDTC": [
+                        "2023-01-15",
+                        "2023-01-15",
+                        "2023-01-15",
+                        "2023-02-10",
+                    ],
+                    "USUBJID": ["SUBJ1", "SUBJ2", "SUBJ3", "SUBJ4"],
+                }
+            ),
+            PandasDataset.from_dict(
+                {
+                    "STUDYID": ["STUDY1", "STUDY1", "STUDY2", "STUDY2"],
+                    "STUDYID2": ["STUDY1", "STUDY2", "STUDY2", "STUDY3"],
+                    "DOMAIN": ["AE", "AE", "AE", "AE"],
+                    "AESTDTC": [
+                        "2023-01-15",
+                        "2023-01-15",
+                        "2023-01-15",
+                        "2023-02-10",
+                    ],
+                    "USUBJID": ["SUBJ1", "SUBJ2", "SUBJ3", "SUBJ4"],
+                    "operation_id": [
+                        2,
+                        2,
+                        2,
+                        None,
+                    ],  # Groups by STUDYID+DOMAIN+date, STUDY3 has no match
+                }
+            ),
+            r"^\d{4}-\d{2}-\d{2}",
+            ["STUDYID2", "DOMAIN"],
+        ),
+    ],
+)
+def test_regex_grouped_with_aliases_record_count(
+    data, expected, regex, grouping_aliases, operation_params: OperationParams
+):
+    config = ConfigService()
+    cache = CacheServiceFactory(config).get_cache_service()
+    data_service = DataServiceFactory(config, cache).get_data_service()
+    operation_params.dataframe = data
+    operation_params.grouping = (
+        ["STUDYID", "DOMAIN"] if len(grouping_aliases) > 1 else ["STUDYID"]
+    )
+    operation_params.grouping_aliases = grouping_aliases
+    operation_params.regex = regex
+    result = RecordCount(operation_params, data, cache, data_service).execute()
+    assert operation_params.operation_id in result
+    for alias in grouping_aliases:
+        assert alias in result, f"Alias column '{alias}' should be in result"
+    assert result.data.equals(expected.data)
+
+
+@pytest.mark.parametrize(
+    "data, expected, regex, filter_dict",
+    [
+        (
+            PandasDataset.from_dict(
+                {
+                    "STUDYID": ["STUDY1", "STUDY1", "STUDY1", "STUDY2", "STUDY2"],
+                    "AESTDTC": [
+                        "2023-01-15",
+                        "2023-01-15",
+                        "2023-01-16",
+                        "2023-01-15",
+                        "2023-01-16",
+                    ],
+                    "AESEV": ["MILD", "SEVERE", "MILD", "MILD", "MILD"],
+                    "USUBJID": ["SUBJ1", "SUBJ2", "SUBJ3", "SUBJ4", "SUBJ5"],
+                }
+            ),
+            PandasDataset.from_dict(
+                {
+                    "STUDYID": ["STUDY1", "STUDY1", "STUDY1", "STUDY2", "STUDY2"],
+                    "AESTDTC": [
+                        "2023-01-15",
+                        "2023-01-15",
+                        "2023-01-16",
+                        "2023-01-15",
+                        "2023-01-16",
+                    ],
+                    "AESEV": ["MILD", "SEVERE", "MILD", "MILD", "MILD"],
+                    "USUBJID": ["SUBJ1", "SUBJ2", "SUBJ3", "SUBJ4", "SUBJ5"],
+                    "operation_id": [2, 2, 2, 2, 2],
+                }
+            ),
+            r"^\d{4}-\d{2}-\d{2}",
+            {"AESEV": "MILD"},
+        ),
+    ],
+)
+def test_regex_filtered_grouped_record_count(
+    data, expected, regex, filter_dict, operation_params: OperationParams
+):
+    config = ConfigService()
+    cache = CacheServiceFactory(config).get_cache_service()
+    data_service = DataServiceFactory(config, cache).get_data_service()
+    operation_params.dataframe = data
+    operation_params.grouping = ["AESTDTC"]
+    operation_params.regex = regex
+    operation_params.filter = filter_dict
+    result = RecordCount(operation_params, data, cache, data_service).execute()
+    assert operation_params.operation_id in result
+    assert "AESTDTC" in result
+    assert result.data.equals(expected.data)

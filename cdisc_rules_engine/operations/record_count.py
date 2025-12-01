@@ -1,7 +1,6 @@
 import pandas as pd
 import re
 from numpy import int64
-
 from cdisc_rules_engine.operations.base_operation import BaseOperation
 
 
@@ -24,51 +23,43 @@ class RecordCount(BaseOperation):
         if self.params.grouping:
             self.params.target = "size"
             effective_grouping, all_na_cols = self._build_effective_grouping()
+            grouping_for_operations = (
+                self._get_grouping_for_operations()
+                if self.params.regex
+                else effective_grouping
+            )
             if self.params.regex:
-                group_df_for_grouping = self._apply_regex_to_grouping_columns(
-                    self.params.dataframe, effective_grouping
+                group_df = self._get_regex_grouped_counts(
+                    self.params.dataframe, grouping_for_operations
                 )
-                grouped_counts = group_df_for_grouping.groupby(
-                    effective_grouping, as_index=False, dropna=False
-                ).size()
-                # Ensure data types match then merge to get counts with original values
-                for col in effective_grouping:
-                    if (
-                        col in grouped_counts.columns
-                        and col in group_df_for_grouping.columns
-                    ):
-                        grouped_counts[col] = grouped_counts[col].astype(
-                            group_df_for_grouping[col].dtype
-                        )
-                group_df_transformed = group_df_for_grouping.merge(
-                    grouped_counts, on=effective_grouping, how="left"
-                )
-                group_df = self.params.dataframe[effective_grouping].copy()
-                group_df["size"] = group_df_transformed["size"].values
-                group_df = group_df.drop_duplicates(
-                    subset=effective_grouping
-                ).reset_index(drop=True)
             else:
                 group_df = self.params.dataframe.get_grouped_size(
                     effective_grouping, as_index=False, dropna=False
                 )
             if filtered is not None:
-                if hasattr(self.params, "regex") and self.params.regex:
-                    filtered_for_grouping = self._apply_regex_to_grouping_columns(
-                        filtered, effective_grouping
+                if self.params.regex:
+                    filtered_grouped = self._get_regex_grouped_counts(
+                        filtered, grouping_for_operations
                     )
-                    filtered_grouped = filtered_for_grouping.groupby(
-                        effective_grouping, as_index=False, dropna=False
-                    ).size()
                 else:
                     filtered_grouped = filtered.get_grouped_size(
                         effective_grouping, as_index=False
                     )
                 group_df = (
-                    group_df[effective_grouping]
+                    group_df[
+                        (
+                            grouping_for_operations
+                            if self.params.regex
+                            else effective_grouping
+                        )
+                    ]
                     .merge(
                         filtered_grouped,
-                        on=effective_grouping,
+                        on=(
+                            grouping_for_operations
+                            if self.params.regex
+                            else effective_grouping
+                        ),
                         how="left",
                     )
                     .fillna(0)
@@ -77,12 +68,53 @@ class RecordCount(BaseOperation):
             for col, original_value in all_na_cols.items():
                 group_df[col] = original_value
                 group_df[col] = group_df[col].astype(self.params.dataframe[col].dtype)
-            result_df = self.params.dataframe.merge(
-                group_df[effective_grouping + [self.params.target]],
-                on=effective_grouping,
-                how="left",
-            )
-            return result_df[self.params.target]
+            return group_df
+        return result
+
+    def _get_grouping_for_operations(self) -> list:
+        grouping_cols = (
+            self.params.grouping
+            if isinstance(self.params.grouping, list)
+            else [self.params.grouping]
+        )
+        effective_grouping = []
+        for col in grouping_cols:
+            col = self._resolve_variable_name(col, self.params.domain)
+            if col in self.evaluation_dataset.data.columns:
+                sample_val = self.evaluation_dataset[col].iloc[0]
+                if isinstance(sample_val, (list, tuple)):
+                    effective_grouping.extend(sample_val)
+                else:
+                    effective_grouping.append(col)
+            else:
+                effective_grouping.append(col)
+        return list(dict.fromkeys(effective_grouping))
+
+    def _get_regex_grouped_counts(self, dataframe, grouping_columns):
+        df_for_grouping = self._apply_regex_to_grouping_columns(
+            dataframe, grouping_columns
+        )
+        grouped_counts = df_for_grouping.groupby(
+            grouping_columns, as_index=False, dropna=False
+        ).size()
+        for col in grouping_columns:
+            if col in grouped_counts.columns and col in df_for_grouping.columns:
+                grouped_counts[col] = grouped_counts[col].astype(
+                    df_for_grouping[col].dtype
+                )
+        original_with_idx = dataframe[grouping_columns].copy()
+        original_with_idx["_idx"] = range(len(original_with_idx))
+        transformed_with_idx = df_for_grouping.copy()
+        transformed_with_idx["_idx"] = range(len(transformed_with_idx))
+        transformed_with_counts = transformed_with_idx.merge(
+            grouped_counts, on=grouping_columns, how="left"
+        )
+        original_with_idx["size"] = transformed_with_counts["size"].values
+        result = (
+            original_with_idx.drop(columns=["_idx"])
+            .groupby(grouping_columns, as_index=False, dropna=False)
+            .first()
+        )
         return result
 
     def _apply_regex_to_grouping_columns(
