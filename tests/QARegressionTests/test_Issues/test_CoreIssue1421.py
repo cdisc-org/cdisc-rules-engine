@@ -55,7 +55,7 @@ def test_validate_define_xml_against_lib_metadata():
     variables_values = [
         cell.value for cell in variables_values_column[1:] if cell.value is not None
     ]
-    assert len(variables_values) == 1  # Ожидаем одну строку, как в реальном результате
+    assert len(variables_values) == 1
     for value in variables_values:
         assert len(value.split(",")) == 6
 
