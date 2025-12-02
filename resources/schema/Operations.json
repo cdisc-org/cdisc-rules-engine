@@ -462,6 +462,9 @@
     "ct_version": {
       "type": "string"
     },
+    "delimiter": {
+      "type": "string"
+    },
     "dictionary_term_type": {
       "enum": ["LLT", "PT", "HLT", "HLGT", "SOC"]
     },

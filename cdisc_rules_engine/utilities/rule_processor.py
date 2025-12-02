@@ -1,4 +1,7 @@
 import re
+import copy
+import os
+
 from typing import Iterable, List, Optional, Set, Union, Tuple
 from cdisc_rules_engine.enums.rule_types import RuleTypes
 from cdisc_rules_engine.interfaces.cache_service_interface import (
@@ -11,9 +14,6 @@ from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
-
-import copy
-import os
 from cdisc_rules_engine.constants.classes import (
     FINDINGS_ABOUT,
     FINDINGS,
@@ -28,6 +28,7 @@ from cdisc_rules_engine.constants.use_cases import USE_CASE_DOMAINS
 from cdisc_rules_engine.interfaces import ConditionInterface
 from cdisc_rules_engine.models.operation_params import OperationParams
 from cdisc_rules_engine.models.rule_conditions import AllowedConditionsKeys
+from cdisc_rules_engine.exceptions.custom_exceptions import OperationError
 from cdisc_rules_engine.operations import operations_factory
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.utilities.data_processor import DataProcessor
@@ -424,11 +425,18 @@ class RuleProcessor:
                 value_is_reference=operation.get("value_is_reference", False),
                 delimiter=operation.get("delimiter"),
             )
-
-            # execute operation
-            dataset_copy = self._execute_operation(
-                operation_params, dataset_copy, previous_operations
-            )
+            try:
+                # execute operation
+                dataset_copy = self._execute_operation(
+                    operation_params, dataset_copy, previous_operations
+                )
+            except Exception as e:
+                raise OperationError(
+                    f"Failed to execute rule operation. "
+                    f"Operation: {operation_params.operation_name}, "
+                    f"Target: {target}, Domain: {domain}, "
+                    f"Error: {str(e)}"
+                )
             previous_operations.append(operation_params.operation_name)
 
             logger.info(
