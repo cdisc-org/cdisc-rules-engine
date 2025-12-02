@@ -34,6 +34,7 @@ def test_get_export(mock_validation_results):
         datasets = [
             SDTMDatasetMetadata(
                 **{
+                    "name": "test",
                     "filename": "test.xpt",
                     "label": "Test Data",
                     "full_path": str(Path("tests/unit/text.xpt")),
@@ -59,7 +60,7 @@ def test_get_export(mock_validation_results):
         assert wb["Conformance Details"]["B13"].value == "2.1"
 
         # Check dataset details tab
-        assert wb["Dataset Details"]["A2"].value == "test.xpt"  # filename
+        assert wb["Dataset Details"]["A2"].value == "test"  # filename
         assert wb["Dataset Details"]["B2"].value == "Test Data"  # label
         assert wb["Dataset Details"]["C2"].value == str(
             Path("tests/unit/text.xpt").parent
