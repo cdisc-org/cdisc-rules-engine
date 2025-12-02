@@ -57,7 +57,7 @@ class CodelistExtensible(BaseOperation):
                 iter(
                     [
                         codelist
-                        for codelist in ct_package_data.values()
+                        for codelist in ct_package_data.get("codelists", [])
                         if codelist.get("submissionValue") == codelist_name
                     ]
                 )

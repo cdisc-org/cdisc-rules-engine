@@ -278,7 +278,8 @@ class CachePopulator:
         2. Full codelist data: Complete metadata and terms keyed by codelist ID
         {
             "package": "adamct-2024-03-29",
-            "C172334": {
+            "codelists": [{
+                "conceptId": "C172334",
                 "definition": "A parameter code codelist for the Generalized Anxiety Disorder - 7 Version 2
                 Questionnaire (GAD-7 V2) to support the calculation of total score in ADaM.",
                 "extensible": False,
@@ -295,7 +296,7 @@ class CachePopulator:
                     "synonyms": ["GAD02-Total Score - Analysis"],
                     "extensible": False
                 }]
-            }
+            }]
         }
         """
         packages = self.library_service.get_all_ct_packages()

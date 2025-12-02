@@ -1,6 +1,7 @@
 import pandas as pd
 from cdisc_rules_engine.operations.base_operation import BaseOperation
 from cdisc_rules_engine.models.dataset import DaskDataset
+from jsonpath_ng.ext import parse
 
 
 def _get_ct_package_dask(
@@ -207,47 +208,22 @@ class CodeListAttributes(BaseOperation):
     def _extract_codes_by_attribute(
         self, ct_package_data: dict, ct_attribute: str
     ) -> set:
-        codelists = {
-            codelistId: codelist
-            for codelistId, codelist in ct_package_data.items()
-            if isinstance(codelist, dict)
+        attribute_name_map = {
+            "Codelist CCODE": "$.codelists[*].conceptId",
+            "Codelist Value": "$.codelists[*].submissionValue",
+            "Term CCODE": "$.codelists[*].terms[*].conceptId",
+            "Term Value": "$.codelists[*].terms[*].submissionValue",
+            "Term Submission Value": "$.codelists[*].terms[*].submissionValue",
+            "Term Preferred Term": "$.codelists[*].terms[*].preferredTerm",
         }
-        if ct_attribute == "Codelist CCODE":
-            return self._extract_codelist_codes(codelists)
-        elif ct_attribute == "Codelist Value":
-            return self._extract_codelist_values(codelists)
-        elif ct_attribute == "Term CCODE":
-            return self._extract_term_codes(codelists)
-        elif ct_attribute in ("Term Value", "Term Submission Value"):
-            return self._extract_term_values(codelists)
-        elif ct_attribute == "Term Preferred Term":
-            return self._extract_preferred_terms(codelists)
-        else:
+        if ct_attribute not in attribute_name_map:
             raise ValueError(f"Unsupported ct_attribute: {ct_attribute}")
-
-    def _extract_codelist_codes(self, codelists: dict) -> set:
-        return set(codelists.keys())
-
-    def _extract_codelist_values(self, codelists: dict) -> set:
-        return set(codelist["submissionValue"] for codelist in codelists.values())
-
-    def _extract_term_codes(self, codelists: dict) -> set:
-        return set(
-            term["conceptId"]
-            for codelist in codelists.values()
-            for term in codelist["terms"]
+        attributes = set(
+            [
+                node.value
+                for node in parse(attribute_name_map[ct_attribute]).find(
+                    ct_package_data
+                )
+            ]
         )
-
-    def _extract_term_values(self, codelists: dict) -> set:
-        return set(
-            term["submissionValue"]
-            for codelist in codelists.values()
-            for term in codelist["terms"]
-        )
-
-    def _extract_preferred_terms(self, codelists: dict) -> set:
-        return set(
-            term["preferredTerm"]
-            for codelist in codelists.values()
-            for term in codelist["terms"]
-        )
+        return attributes

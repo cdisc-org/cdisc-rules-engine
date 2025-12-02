@@ -17,36 +17,40 @@ from cdisc_rules_engine.exceptions.custom_exceptions import (
 def mock_metadata():
     return {
         "mock_package": {
-            "C1": {
-                "submissionValue": "CL1",
-                "terms": [
-                    {
-                        "conceptId": "T1",
-                        "submissionValue": "Term1",
-                        "preferredTerm": "prefTerm1",
-                    },
-                    {
-                        "conceptId": "T2",
-                        "submissionValue": "Term2",
-                        "preferredTerm": "prefTerm9",
-                    },
-                ],
-            },
-            "C2": {
-                "submissionValue": "CL2",
-                "terms": [
-                    {
-                        "conceptId": "T3",
-                        "submissionValue": "Term3",
-                        "preferredTerm": "prefTerm3",
-                    },
-                    {
-                        "conceptId": "T4",
-                        "submissionValue": "Term4",
-                        "preferredTerm": "prefTerm4",
-                    },
-                ],
-            },
+            "codelists": [
+                {
+                    "conceptId": "C1",
+                    "submissionValue": "CL1",
+                    "terms": [
+                        {
+                            "conceptId": "T1",
+                            "submissionValue": "Term1",
+                            "preferredTerm": "prefTerm1",
+                        },
+                        {
+                            "conceptId": "T2",
+                            "submissionValue": "Term2",
+                            "preferredTerm": "prefTerm9",
+                        },
+                    ],
+                },
+                {
+                    "conceptId": "C2",
+                    "submissionValue": "CL2",
+                    "terms": [
+                        {
+                            "conceptId": "T3",
+                            "submissionValue": "Term3",
+                            "preferredTerm": "prefTerm3",
+                        },
+                        {
+                            "conceptId": "T4",
+                            "submissionValue": "Term4",
+                            "preferredTerm": "prefTerm4",
+                        },
+                    ],
+                },
+            ]
         }
     }
 
@@ -183,7 +187,9 @@ def test_empty_terms(operation_params):
     library_metadata = LibraryMetadataContainer()
     library_metadata._ct_package_metadata = {
         "mock_package": {
-            "C1": {"submissionValue": "CL1", "terms": []},
+            "codelists": [
+                {"conceptId": "C1", "submissionValue": "CL1", "terms": []},
+            ]
         }
     }
 

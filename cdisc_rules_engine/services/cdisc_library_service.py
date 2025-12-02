@@ -156,29 +156,31 @@ class CDISCLibraryService:
     def get_codelist_terms_map(self, package_version: str) -> dict:
         uri = f"/mdr/ct/packages/{package_version}"
         package = self._client.get_api_json(uri)
-        codelist_map = {"package": package_version}
-        for codelist in package.get("codelists"):
-            codelist_id = codelist.get("conceptId")
-            codelist_map[codelist_id] = {
-                "definition": codelist.get("definition"),
-                "extensible": codelist.get("extensible", "").lower() == "true",
-                "name": codelist.get("name"),
-                "preferredTerm": codelist.get("preferredTerm"),
-                "submissionValue": codelist.get("submissionValue"),
-                "synonyms": codelist.get("synonyms", []),
-                "terms": [],
-            }
-            for term in codelist.get("terms", []):
-                term_id = term.get("conceptId")
-                term_info = {
-                    "conceptId": term_id,
-                    "definition": term.get("definition"),
-                    "preferredTerm": term.get("preferredTerm"),
-                    "submissionValue": term.get("submissionValue"),
-                    "synonyms": term.get("synonyms", []),
+        codelist_map = {
+            "package": package_version,
+            "codelists": [
+                {
+                    "conceptId": codelist.get("conceptId"),
+                    "definition": codelist.get("definition"),
                     "extensible": codelist.get("extensible", "").lower() == "true",
+                    "name": codelist.get("name"),
+                    "preferredTerm": codelist.get("preferredTerm"),
+                    "submissionValue": codelist.get("submissionValue"),
+                    "synonyms": codelist.get("synonyms", []),
+                    "terms": [
+                        {
+                            "conceptId": term.get("conceptId"),
+                            "definition": term.get("definition"),
+                            "preferredTerm": term.get("preferredTerm"),
+                            "submissionValue": term.get("submissionValue"),
+                            "synonyms": term.get("synonyms", []),
+                        }
+                        for term in codelist.get("terms", [])
+                    ],
                 }
-                codelist_map[codelist_id]["terms"].append(term_info)
+                for codelist in package.get("codelists")
+            ],
+        }
         return codelist_map
 
     def get_variable_codelists_map(

@@ -12,23 +12,27 @@ from cdisc_rules_engine.exceptions.custom_exceptions import MissingDataError
 def mock_metadata():
     return {
         "mock_package": {
-            "C1": {
-                "submissionValue": "CL1",
-                "extensible": True,
-                "terms": [
-                    {"conceptId": "T1", "submissionValue": "Term1"},
-                    {"conceptId": "T2", "submissionValue": "Term2"},
-                ],
-            },
-            "C2": {
-                "submissionValue": "CL2",
-                "extensible": False,
-                "terms": [
-                    {"conceptId": "T3", "submissionValue": "Term3"},
-                    {"conceptId": "T4", "submissionValue": "Term4"},
-                ],
-            },
-            "C3": {"submissionValue": "CL3", "terms": []},
+            "codelists": [
+                {
+                    "conceptId": "C1",
+                    "submissionValue": "CL1",
+                    "extensible": True,
+                    "terms": [
+                        {"conceptId": "T1", "submissionValue": "Term1"},
+                        {"conceptId": "T2", "submissionValue": "Term2"},
+                    ],
+                },
+                {
+                    "conceptId": "C2",
+                    "submissionValue": "CL2",
+                    "extensible": False,
+                    "terms": [
+                        {"conceptId": "T3", "submissionValue": "Term3"},
+                        {"conceptId": "T4", "submissionValue": "Term4"},
+                    ],
+                },
+                {"conceptId": "C3", "submissionValue": "CL3", "terms": []},
+            ]
         }
     }
 

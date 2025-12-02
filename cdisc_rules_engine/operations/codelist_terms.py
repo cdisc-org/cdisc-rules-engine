@@ -123,11 +123,8 @@ class CodelistTerms(BaseOperation):
                 e,
             )
         submission_lookup = {
-            codelist["submissionValue"].lower(): {
-                "codelist_id": codelist_id,
-                **codelist,
-            }
-            for codelist_id, codelist in ct_package_data.items()
+            codelist["submissionValue"].lower(): codelist
+            for codelist in ct_package_data.get("codelists", [])
             if "submissionValue" in codelist
         }
         for codelist_name in codelist_names:
@@ -151,7 +148,7 @@ class CodelistTerms(BaseOperation):
         values = []
         if codelist_level == "codelist":
             if check == "code":
-                values.append(codelist["codelist_id"])
+                values.append(codelist["conceptId"])
             elif check == "pref_term":
                 values.append(codelist["preferredTerm"])
             else:
