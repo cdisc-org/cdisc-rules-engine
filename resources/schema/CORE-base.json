@@ -423,9 +423,6 @@
               }
             ]
           },
-          "Is Relationship": {
-            "const": true
-          },
           "Child": {
             "const": true
           },
