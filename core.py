@@ -856,6 +856,7 @@ def test_validate():
                     jsonata_custom_functions,
                     max_report_rows,
                     max_report_errors,
+                    None,
                 )
             )
             print("JSON validation completed successfully!")
@@ -886,6 +887,7 @@ def test_validate():
                     jsonata_custom_functions,
                     max_report_rows,
                     max_report_errors,
+                    None,
                 )
             )
             print("XPT validation completed successfully!")

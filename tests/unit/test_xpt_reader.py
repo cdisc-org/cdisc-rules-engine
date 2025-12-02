@@ -1,5 +1,6 @@
 import os
 
+from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.services.data_readers.xpt_reader import XPTReader
 
 
@@ -9,8 +10,6 @@ def test_read():
     )
     with open(test_dataset_path, "rb") as f:
         data = f.read()
-
-    from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 
     reader = XPTReader(PandasDataset)
     dataframe = reader.read(data)
