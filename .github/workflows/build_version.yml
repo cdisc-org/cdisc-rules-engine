@@ -37,7 +37,7 @@ jobs:
             --add-data="resources/cache:resources/cache" \
             --add-data="resources/templates:resources/templates" \
             --add-data="resources/schema:resources/schema" \
-            --add-data="tests/resources/datasets:tests/resources/datasets"
+            --add-data="resources/jsonata:resources/jsonata"
       - name: Prepare executable
         run: |
           cd dist/output/core-ubuntu-22.04/core
@@ -80,7 +80,7 @@ jobs:
 #         run: |
 #           python core.py update-cache
 #       - name: Build Binary (Windows)
-#         run: pyinstaller --onedir --contents-directory "." core.py --dist ./dist/output/core-windows --collect-submodules pyreadstat --add-data="resources/cache;resources/cache" --add-data="resources/templates;resources/templates" --add-data="resources/schema;resources/schema" --add-data="tests/resources/datasets;tests/resources/datasets"
+#         run: pyinstaller --onedir --contents-directory "." core.py --dist ./dist/output/core-windows --collect-submodules pyreadstat --add-data="resources/cache;resources/cache" --add-data="resources/templates;resources/templates" --add-data="resources/schema;resources/schema" --add-data="tests/resources/datasets;tests/resources/datasets" --add-data="resources/jsonata;resources/jsonata"
 #       - name: Prepare executable (Windows)
 #         shell: pwsh
 #         run: |
@@ -134,6 +134,7 @@ jobs:
 #             --add-data="resources/templates:resources/templates" \
 #             --add-data="resources/schema:resources/schema" \
 #             --add-data="tests/resources/datasets:tests/resources/datasets"
+#             --add-data="resources/jsonata:resources/jsonata"
 #       - name: Prepare executable (macOS)
 #         run: |
 #           cd dist/output/core-macos/core
