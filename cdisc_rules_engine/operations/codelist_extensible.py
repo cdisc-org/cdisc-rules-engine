@@ -44,7 +44,7 @@ class CodelistExtensible(BaseOperation):
         return is_extensible["extensible"]
 
     def _handle_single_version(self) -> pd.Series:
-        codelist = self.params.codelist
+        codelist_name = self.params.codelist
         ct_packages = self.library_metadata._ct_package_metadata
         if "define_XML_merged_CT" in ct_packages:
             ct_package_data = ct_packages["define_XML_merged_CT"]
@@ -52,12 +52,17 @@ class CodelistExtensible(BaseOperation):
             ct_package_data = next(
                 (pkg for name, pkg in ct_packages.items() if name != "extensible")
             )
-        code_obj = ct_package_data["submission_lookup"].get(codelist, None)
-        if code_obj is None:
-            raise MissingDataError(f"Codelist '{codelist}' not found in metadata")
-        codelist_id = code_obj.get("codelist")
-        is_extensible = False
-        if codelist_id in ct_package_data:
-            codelist_info = ct_package_data[codelist_id]
-            is_extensible = codelist_info.get("extensible")
+        try:
+            codelist = next(
+                iter(
+                    [
+                        codelist
+                        for codelist in ct_package_data.values()
+                        if codelist.get("submissionValue") == codelist_name
+                    ]
+                )
+            )
+        except StopIteration:
+            raise MissingDataError(f"Codelist '{codelist_name}' not found in metadata")
+        is_extensible = codelist.get("extensible")
         return is_extensible

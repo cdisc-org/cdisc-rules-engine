@@ -29,11 +29,6 @@ test_set1 = (
     [
         {
             "package": "sdtmct-2020-03-27",
-            "submission_lookup": {
-                "N": {"codelist": "C49487", "term": "C49487"},
-                "Y": {"codelist": "C25473", "term": "C25473"},
-                "MAYBE": {"codelist": "C141663", "term": "C141663"},
-            },
             "C49487": {
                 "extensible": False,
                 "preferredTerm": "No",
@@ -73,11 +68,6 @@ test_set1 = (
         },
         {
             "package": "sdtmct-2022-12-16",
-            "submission_lookup": {
-                "A": {"codelist": "C141657", "term": "C141657"},
-                "B": {"codelist": "C141656", "term": "C141656"},
-                "C": {"codelist": "C141663", "term": "C141663"},
-            },
             "C141657": {
                 "extensible": False,
                 "preferredTerm": "Option A",
@@ -139,11 +129,6 @@ test_set2 = (
     [
         {
             "package": "sdtmct-2020-03-27",
-            "submission_lookup": {
-                "N": {"codelist": "C49487", "term": "C49487"},
-                "Y": {"codelist": "C25473", "term": "C25473"},
-                "MAYBE": {"codelist": "C141663", "term": "C141663"},
-            },
             "C49487": {
                 "extensible": False,
                 "preferredTerm": "No",
@@ -183,11 +168,6 @@ test_set2 = (
         },
         {
             "package": "sdtmct-2022-12-16",
-            "submission_lookup": {
-                "A": {"codelist": "C141657", "term": "C141657"},
-                "B": {"codelist": "C141656", "term": "C141656"},
-                "C": {"codelist": "C141663", "term": "C141663"},
-            },
             "C141657": {
                 "extensible": False,
                 "preferredTerm": "Option A",
@@ -243,11 +223,6 @@ test_set3 = (
     [
         {
             "package": "sdtmct-2020-03-27",
-            "submission_lookup": {
-                "N": {"codelist": "C49487", "term": "C49487"},
-                "Y": {"codelist": "C25473", "term": "C25473"},
-                "MAYBE": {"codelist": "C141663", "term": "C141663"},
-            },
             "C49487": {
                 "extensible": False,
                 "preferredTerm": "No",
@@ -287,11 +262,6 @@ test_set3 = (
         },
         {
             "package": "sdtmct-2022-12-16",
-            "submission_lookup": {
-                "A": {"codelist": "C141657", "term": "C141657"},
-                "B": {"codelist": "C141656", "term": "C141656"},
-                "C": {"codelist": "C141663", "term": "C141663"},
-            },
             "C141657": {
                 "extensible": False,
                 "preferredTerm": "Option A",
@@ -353,11 +323,6 @@ test_set4 = (
     [
         {
             "package": "sdtmct-2020-03-27",
-            "submission_lookup": {
-                "N": {"codelist": "C49487", "term": "C49487"},
-                "Y": {"codelist": "C25473", "term": "C25473"},
-                "MAYBE": {"codelist": "C141663", "term": "C141663"},
-            },
             "C49487": {
                 "extensible": False,
                 "preferredTerm": "No",
@@ -397,11 +362,6 @@ test_set4 = (
         },
         {
             "package": "sdtmct-2022-12-16",
-            "submission_lookup": {
-                "A": {"codelist": "C141657", "term": "C141657"},
-                "B": {"codelist": "C141656", "term": "C141656"},
-                "C": {"codelist": "C141663", "term": "C141663"},
-            },
             "C141657": {
                 "extensible": False,
                 "preferredTerm": "Option A",

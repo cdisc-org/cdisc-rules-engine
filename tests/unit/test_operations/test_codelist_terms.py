@@ -17,12 +17,8 @@ from cdisc_rules_engine.exceptions.custom_exceptions import (
 def mock_metadata():
     return {
         "mock_package": {
-            "submission_lookup": {
-                "CL1": {"codelist": "C1", "term": "N/A"},
-                "CL2": {"codelist": "C2", "term": "Term1"},
-            },
             "C1": {
-                "submissionValue": "Codelist1",
+                "submissionValue": "CL1",
                 "terms": [
                     {
                         "conceptId": "T1",
@@ -37,7 +33,7 @@ def mock_metadata():
                 ],
             },
             "C2": {
-                "submissionValue": "Codelist2",
+                "submissionValue": "CL2",
                 "terms": [
                     {
                         "conceptId": "T3",
@@ -76,7 +72,7 @@ def test_codelist_level_code(operation_params, mock_metadata):
 
 
 def test_codelist_level_value(operation_params, mock_metadata):
-    operation_params.codelists = ["CL1"]
+    operation_params.codelists = ["cl1"]
     operation_params.level = "codelist"
     operation_params.returntype = "value"
 
@@ -92,7 +88,7 @@ def test_codelist_level_value(operation_params, mock_metadata):
     )
 
     result = operation._execute_operation()
-    assert result == ["Codelist1"]
+    assert result == ["CL1"]
 
 
 def test_term_level_code(operation_params, mock_metadata):
@@ -163,7 +159,6 @@ def test_missing_codelist(operation_params):
     library_metadata = LibraryMetadataContainer()
     library_metadata._ct_package_metadata = {
         "mock_package": {
-            "submission_lookup": {},
             "C1": {"submissionValue": "Codelist1", "terms": []},
         }
     }
@@ -188,8 +183,7 @@ def test_empty_terms(operation_params):
     library_metadata = LibraryMetadataContainer()
     library_metadata._ct_package_metadata = {
         "mock_package": {
-            "submission_lookup": {"CL1": {"codelist": "C1", "term": "N/A"}},
-            "C1": {"submissionValue": "Codelist1", "terms": []},
+            "C1": {"submissionValue": "CL1", "terms": []},
         }
     }
 

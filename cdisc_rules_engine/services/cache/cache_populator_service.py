@@ -278,26 +278,24 @@ class CachePopulator:
         2. Full codelist data: Complete metadata and terms keyed by codelist ID
         {
             "package": "adamct-2024-03-29",
-            "submission_lookup": {
-                "GAD02PC": {"codelist": "C172334", "term": "N/A"},     # this is at codelist level
-                "GAD02TS": {"codelist": "C172334", "term": "C172451"}, # this is at term level
             "C172334": {
-            "definition": "A parameter code codelist for the Generalized Anxiety Disorder - 7 Version 2 Questionnaire
-            (GAD-7 V2) to support the calculation of total score in ADaM.",
-            "extensible": False,
-            "name": "Generalized Anxiety Disorder - 7 Version 2 Questionnaire Parameter Code",
-            "preferredTerm": "CDISC ADaM Generalized Anxiety Disorder-7 Version 2 Questionnaire Parameter
-            Code Terminology",
-            "submissionValue": "GAD02PC",
-            "synonyms": ["Generalized Anxiety Disorder - 7 Version 2 Questionnaire Parameter Code"],
-            "terms": [{
-                "conceptId": "C172451",
-                "definition": "Generalized Anxiety Disorder - 7 Version 2 - Total score used for analysis.",
-                "preferredTerm": "Generalized Anxiety Disorder - 7 Version 2 - Total Score for Analysis",
-                "submissionValue": "GAD02TS",
-                "synonyms": ["GAD02-Total Score - Analysis"],
-                "extensible": False
-        }]
+                "definition": "A parameter code codelist for the Generalized Anxiety Disorder - 7 Version 2
+                Questionnaire (GAD-7 V2) to support the calculation of total score in ADaM.",
+                "extensible": False,
+                "name": "Generalized Anxiety Disorder - 7 Version 2 Questionnaire Parameter Code",
+                "preferredTerm": "CDISC ADaM Generalized Anxiety Disorder-7 Version 2 Questionnaire Parameter
+                Code Terminology",
+                "submissionValue": "GAD02PC",
+                "synonyms": ["Generalized Anxiety Disorder - 7 Version 2 Questionnaire Parameter Code"],
+                "terms": [{
+                    "conceptId": "C172451",
+                    "definition": "Generalized Anxiety Disorder - 7 Version 2 - Total score used for analysis.",
+                    "preferredTerm": "Generalized Anxiety Disorder - 7 Version 2 - Total Score for Analysis",
+                    "submissionValue": "GAD02TS",
+                    "synonyms": ["GAD02-Total Score - Analysis"],
+                    "extensible": False
+                }]
+            }
         }
         """
         packages = self.library_service.get_all_ct_packages()

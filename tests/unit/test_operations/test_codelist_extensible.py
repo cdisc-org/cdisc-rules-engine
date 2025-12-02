@@ -12,13 +12,8 @@ from cdisc_rules_engine.exceptions.custom_exceptions import MissingDataError
 def mock_metadata():
     return {
         "mock_package": {
-            "submission_lookup": {
-                "CL1": {"codelist": "C1", "term": "N/A"},
-                "CL2": {"codelist": "C2", "term": "Term1"},
-                "CL3": {"codelist": "C3", "term": "N/A"},
-            },
             "C1": {
-                "submissionValue": "Codelist1",
+                "submissionValue": "CL1",
                 "extensible": True,
                 "terms": [
                     {"conceptId": "T1", "submissionValue": "Term1"},
@@ -26,14 +21,14 @@ def mock_metadata():
                 ],
             },
             "C2": {
-                "submissionValue": "Codelist2",
+                "submissionValue": "CL2",
                 "extensible": False,
                 "terms": [
                     {"conceptId": "T3", "submissionValue": "Term3"},
                     {"conceptId": "T4", "submissionValue": "Term4"},
                 ],
             },
-            "C3": {"submissionValue": "Codelist3", "terms": []},
+            "C3": {"submissionValue": "CL3", "terms": []},
         }
     }
 
@@ -92,7 +87,6 @@ def test_missing_codelist(operation_params):
     library_metadata = LibraryMetadataContainer()
     library_metadata._ct_package_metadata = {
         "mock_package": {
-            "submission_lookup": {},
             "C1": {"submissionValue": "Codelist1", "extensible": True, "terms": []},
         }
     }

@@ -156,7 +156,7 @@ class CDISCLibraryService:
     def get_codelist_terms_map(self, package_version: str) -> dict:
         uri = f"/mdr/ct/packages/{package_version}"
         package = self._client.get_api_json(uri)
-        codelist_map = {"package": package_version, "submission_lookup": {}}
+        codelist_map = {"package": package_version}
         for codelist in package.get("codelists"):
             codelist_id = codelist.get("conceptId")
             codelist_map[codelist_id] = {
@@ -167,10 +167,6 @@ class CDISCLibraryService:
                 "submissionValue": codelist.get("submissionValue"),
                 "synonyms": codelist.get("synonyms", []),
                 "terms": [],
-            }
-            codelist_map["submission_lookup"][codelist.get("submissionValue")] = {
-                "codelist": codelist_id,
-                "term": "N/A",
             }
             for term in codelist.get("terms", []):
                 term_id = term.get("conceptId")
@@ -183,11 +179,6 @@ class CDISCLibraryService:
                     "extensible": codelist.get("extensible", "").lower() == "true",
                 }
                 codelist_map[codelist_id]["terms"].append(term_info)
-                if term.get("submissionValue"):
-                    codelist_map["submission_lookup"][term["submissionValue"]] = {
-                        "codelist": codelist_id,
-                        "term": term_id,
-                    }
         return codelist_map
 
     def get_variable_codelists_map(

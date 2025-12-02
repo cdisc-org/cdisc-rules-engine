@@ -207,72 +207,47 @@ class CodeListAttributes(BaseOperation):
     def _extract_codes_by_attribute(
         self, ct_package_data: dict, ct_attribute: str
     ) -> set:
-        submission_lookup = ct_package_data.get("submission_lookup", {})
-
-        if ct_attribute == "Term CCODE":
-            return self._extract_term_codes(submission_lookup)
-        elif ct_attribute == "Codelist CCODE":
-            return self._extract_codelist_codes(submission_lookup)
-        elif ct_attribute in ("Term Value", "Term Submission Value"):
-            return self._extract_term_values(submission_lookup)
+        codelists = {
+            codelistId: codelist
+            for codelistId, codelist in ct_package_data.items()
+            if isinstance(codelist, dict)
+        }
+        if ct_attribute == "Codelist CCODE":
+            return self._extract_codelist_codes(codelists)
         elif ct_attribute == "Codelist Value":
-            return self._extract_codelist_values(submission_lookup)
+            return self._extract_codelist_values(codelists)
+        elif ct_attribute == "Term CCODE":
+            return self._extract_term_codes(codelists)
+        elif ct_attribute in ("Term Value", "Term Submission Value"):
+            return self._extract_term_values(codelists)
         elif ct_attribute == "Term Preferred Term":
-            return self._extract_preferred_terms(submission_lookup, ct_package_data)
+            return self._extract_preferred_terms(codelists)
         else:
             raise ValueError(f"Unsupported ct_attribute: {ct_attribute}")
 
-    def _extract_codelist_values(self, submission_lookup: dict) -> set:
-        codes = set()
-        for term_name, term_data in submission_lookup.items():
-            term_code = term_data.get("term")
-            if term_code and term_code == "N/A":
-                codes.add(term_name)
-        return codes
+    def _extract_codelist_codes(self, codelists: dict) -> set:
+        return set(codelists.keys())
 
-    def _extract_term_codes(self, submission_lookup: dict) -> set:
-        codes = set()
-        for term_data in submission_lookup.values():
-            term_code = term_data.get("term")
-            if term_code and term_code != "N/A":
-                codes.add(term_code)
-        return codes
+    def _extract_codelist_values(self, codelists: dict) -> set:
+        return set(codelist["submissionValue"] for codelist in codelists.values())
 
-    def _extract_codelist_codes(self, submission_lookup: dict) -> set:
-        codes = set()
-        for term_data in submission_lookup.values():
-            codelist_code = term_data.get("codelist")
-            if codelist_code:
-                codes.add(codelist_code)
-        return codes
+    def _extract_term_codes(self, codelists: dict) -> set:
+        return set(
+            term["conceptId"]
+            for codelist in codelists.values()
+            for term in codelist["terms"]
+        )
 
-    def _extract_term_values(self, submission_lookup: dict) -> set:
-        codes = set()
-        for term_name, term_data in submission_lookup.items():
-            term_code = term_data.get("term")
-            if term_code and term_code != "N/A":
-                codes.add(term_name)
-        return codes
+    def _extract_term_values(self, codelists: dict) -> set:
+        return set(
+            term["submissionValue"]
+            for codelist in codelists.values()
+            for term in codelist["terms"]
+        )
 
-    def _extract_preferred_terms(
-        self, submission_lookup: dict, ct_package_data: dict
-    ) -> set:
-        codes = set()
-        for term_name, term_data in submission_lookup.items():
-            if not isinstance(term_data, dict):
-                continue
-            term_code = term_data.get("term")
-            if not term_code or term_code == "N/A":
-                continue
-            codelist_id = term_data.get("codelist")
-            if not codelist_id or codelist_id not in ct_package_data:
-                continue
-            codelist_info = ct_package_data[codelist_id]
-            terms = codelist_info.get("terms", [])
-            for term in terms:
-                if term.get("conceptId") == term_code:
-                    pref_term = term.get("preferredTerm")
-                    if pref_term:
-                        codes.add(pref_term)
-                    break
-        return codes
+    def _extract_preferred_terms(self, codelists: dict) -> set:
+        return set(
+            term["preferredTerm"]
+            for codelist in codelists.values()
+            for term in codelist["terms"]
+        )
