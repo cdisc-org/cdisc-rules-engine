@@ -246,7 +246,7 @@ class BaseDataService(DataServiceInterface, ABC):
             if self._contains_topic_variable(dataset, dataset_metadata.domain, "OBJ"):
                 return FINDINGS_ABOUT
             return FINDINGS
-        if dataset_metadata.is_ap and not dataset_metadata.is_supp:
+        if dataset_metadata.is_ap:
             return self._get_associated_persons_inherit_class(
                 file_path, datasets, dataset_metadata
             )
