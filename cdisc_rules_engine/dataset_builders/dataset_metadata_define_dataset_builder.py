@@ -87,6 +87,15 @@ class DatasetMetadataDefineDatasetBuilder(BaseDatasetBuilder):
             return self.dataset_implementation(columns=define_col_order)
         return self.dataset_implementation.from_records(define_metadata)
 
+    def _ensure_required_columns(self, dataset_df, dataset_col_order):
+        if "dataset_size" not in dataset_df.columns:
+            dataset_df["dataset_size"] = None
+        if "is_ap" not in dataset_df.columns:
+            dataset_df["is_ap"] = False
+        if "ap_suffix" not in dataset_df.columns:
+            dataset_df["ap_suffix"] = ""
+        return self.dataset_implementation(dataset_df[dataset_col_order])
+
     def _get_dataset_dataframe(self):
         dataset_col_order = [
             "dataset_size",
@@ -130,11 +139,7 @@ class DatasetMetadataDefineDatasetBuilder(BaseDatasetBuilder):
                     "domain": "dataset_name",
                 }
                 dataset_df = datasets.rename(columns=data_col_mapping)
-                if "dataset_size" not in dataset_df.columns:
-                    dataset_df["dataset_size"] = None
-                if "is_ap" not in dataset_df.columns:
-                    dataset_df["is_ap"] = False
-                if "ap_suffix" not in dataset_df.columns:
-                    dataset_df["ap_suffix"] = ""
-                dataset_df = self.dataset_implementation(dataset_df[dataset_col_order])
+                dataset_df = self._ensure_required_columns(
+                    dataset_df, dataset_col_order
+                )
         return dataset_df
