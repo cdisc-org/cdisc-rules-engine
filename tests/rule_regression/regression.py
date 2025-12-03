@@ -43,16 +43,25 @@ WHITELISTED_RULES = {
 }
 
 
-def run_single_rule_regression(row: pd.Series, get_core_rule, target_case: Optional[str] = None) -> list:
+def run_single_rule_regression(
+    row: pd.Series, get_core_rule, target_case: Optional[str] = None, use_pgserver: bool = False
+) -> list:
     try:
-        return run_single_rule_regression_impl(row, get_core_rule, target_case)
+        return run_single_rule_regression_impl(
+            row,
+            get_core_rule,
+            target_case,
+            use_pgserver=use_pgserver,
+        )
     except Exception as e:
         regression = initialize_regression_dict(row)
         regression["error"] = str(e)
         return regression
 
 
-def run_single_rule_regression_impl(row: pd.Series, get_core_rule, target_case: Optional[str] = None) -> list:
+def run_single_rule_regression_impl(
+    row: pd.Series, get_core_rule, target_case: Optional[str] = None, use_pgserver: bool = False
+) -> list:
     ig_specs = {
         "standard": "sdtmig",
         "standard_version": "3.4",
@@ -117,6 +126,7 @@ def run_single_rule_regression_impl(row: pd.Series, get_core_rule, target_case: 
                         target_case,
                         is_nested_structure,
                         cur_core_id,
+                        use_pgserver=use_pgserver,
                     )
         elif len(paths) < 1:
             rule_regression["rule_in_mltple_standards"] = []
@@ -151,6 +161,7 @@ def run_test_cases(
     target_case: Optional[str] = None,
     is_nested_structure: bool = False,
     cur_core_id: str = None,
+    use_pgserver: bool = False,
 ):
     two_digit_pattern = re.compile(r"^\d{2}$")
     path_depth = TYPE_DEPTH + 1 if is_nested_structure else TYPE_DEPTH
@@ -182,6 +193,7 @@ def run_test_cases(
                 ig_specs,
                 rule,
                 cur_core_id,
+                use_pgserver=use_pgserver,
             )
             test_case_regression.append(
                 {
@@ -211,6 +223,7 @@ def run_regression_on_test_case(
     ig_specs: IGSpecification,
     rule,
     cur_core_id: Optional[str] = None,
+    use_pgserver: bool = False,
 ):
     can_process_dataset = False
     data_test_datasets = None
@@ -259,6 +272,7 @@ def run_regression_on_test_case(
             rule,
             test_case_folder_path,
             cur_core_id,
+            use_pgserver=use_pgserver,
         )
 
         # Uncomment to produce reports for CDISC to use
@@ -321,6 +335,7 @@ def process_test_case_dataset(
     rule: dict,
     test_case_folder_path: str,
     cur_core_id: Optional[str] = None,
+    use_pgserver: bool = False,
 ):
     try:
         metadata = get_metadata(ig_specs, define_xml_file_path)
@@ -332,7 +347,9 @@ def process_test_case_dataset(
             ig_specs.get("standard_substandard"),
             library_metadata=metadata,
         )
-        ds = PostgresQLDataService.from_list_of_testdatasets(data_test_datasets, standards_context)
+        ds = PostgresQLDataService.from_list_of_testdatasets(
+            data_test_datasets, standards_context, use_pgserver=use_pgserver
+        )
         regression_errors["datasets_import_sql"] = "SUCCESS"
         sql_results = sql_run_single_rule_validation(data_service=ds, rule=rule, standards_context=standards_context)
         regression_errors["results_present_sql"] = True

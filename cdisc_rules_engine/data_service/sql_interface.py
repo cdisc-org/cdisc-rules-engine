@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 from cdisc_rules_engine.constants.rule_constants import COMPLETE_DATE_REGEX, YEAR_MONTH_REGEX, YEAR_REGEX
 from cdisc_rules_engine.data_service.database import (
     DatabaseConfigPostgres,
+    DatabaseConfigPGServer,
     DatabasePostgres,
 )
 from cdisc_rules_engine.data_service.sql_compiler import SQLCompiler
@@ -19,7 +20,11 @@ from cdisc_rules_engine.services import logger
 class PostgresQLInterface:
     """Main interface for database operations"""
 
-    def __init__(self, config: Optional[DatabaseConfigPostgres] = None, sql_namespace: Optional[str] = None):
+    def __init__(
+        self,
+        config: Optional[DatabaseConfigPostgres | DatabaseConfigPGServer] = None,
+        sql_namespace: Optional[str] = None,
+    ):
         self.config = config or DatabaseConfigPostgres()
         self.db: Optional[DatabasePostgres] = None
         self.compiler = SQLCompiler()
