@@ -1,4 +1,5 @@
 import asyncio
+import codecs
 import json
 import logging
 import os
@@ -38,6 +39,19 @@ VALIDATION_FORMATS_MESSAGE = (
 DEFAULT_CACHE_PATH = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), DefaultFilePaths.CACHE.value
 )
+
+
+def validate_encoding(ctx, param, value):
+    if value is None:
+        return value
+    try:
+        codecs.lookup(value)
+        return value
+    except LookupError:
+        raise click.BadParameter(
+            f"Invalid encoding '{value}'. Please provide a valid encoding name "
+            f"(e.g., utf-8, utf-16, utf-32, cp1252, latin-1)."
+        )
 
 
 def valid_data_file(data_path: list) -> tuple[list, set]:
@@ -347,9 +361,11 @@ def _validate_no_arguments(logger) -> None:
     ),
 )
 @click.option(
+    "-e",
     "--encoding",
     default=None,
     required=False,
+    callback=validate_encoding,
     help=(
         "File encoding for reading datasets. "
         "If not specified, automatically detects encoding (UTF-8 for JSON, UTF-8 with cp1252 fallback for XPT). "
