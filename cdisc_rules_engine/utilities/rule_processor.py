@@ -35,7 +35,6 @@ from cdisc_rules_engine.utilities.data_processor import DataProcessor
 from cdisc_rules_engine.utilities.utils import (
     get_directory_path,
     get_operations_cache_key,
-    is_ap_domain,
     search_in_list_of_dicts,
     get_dataset_name_from_details,
 )
@@ -182,12 +181,7 @@ class RuleProcessor:
         supp_ap_domains.update({f"{AP_DOMAIN}--", f"{APFA_DOMAIN}--"})
 
         return any(set(domains_to_check).intersection(supp_ap_domains)) and (
-            dataset_metadata.is_supp
-            or is_ap_domain(
-                dataset_metadata.domain
-                or dataset_metadata.rdomain
-                or dataset_metadata.name
-            )
+            dataset_metadata.is_supp or dataset_metadata.is_ap
         )
 
     def rule_applies_to_data_structure(

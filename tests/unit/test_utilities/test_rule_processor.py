@@ -60,8 +60,13 @@ from cdisc_rules_engine.models.operation_params import OperationParams
 )
 def test_rule_applies_to_domain(mock_data_service, name, rule_metadata, outcome):
     processor = RuleProcessor(mock_data_service, InMemoryCacheService())
+    first_record = None
+    if name in ("APTE", "APFASU", "APRELSUB"):
+        first_record = {"DOMAIN": name, "APID": "AP001"}
     assert (
-        processor.rule_applies_to_domain(SDTMDatasetMetadata(name=name), rule_metadata)
+        processor.rule_applies_to_domain(
+            SDTMDatasetMetadata(name=name, first_record=first_record), rule_metadata
+        )
         == outcome
     )
 

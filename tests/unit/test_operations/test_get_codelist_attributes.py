@@ -29,91 +29,91 @@ test_set1 = (
     [
         {
             "package": "sdtmct-2020-03-27",
-            "submission_lookup": {
-                "N": {"codelist": "C49487", "term": "C49487"},
-                "Y": {"codelist": "C25473", "term": "C25473"},
-                "MAYBE": {"codelist": "C141663", "term": "C141663"},
-            },
-            "C49487": {
-                "extensible": False,
-                "preferredTerm": "No",
-                "submissionValue": "N",
-                "terms": [
-                    {
-                        "conceptId": "C49487",
-                        "submissionValue": "N",
-                        "preferredTerm": "No",
-                    }
-                ],
-            },
-            "C25473": {
-                "extensible": False,
-                "preferredTerm": "Yes",
-                "submissionValue": "Y",
-                "terms": [
-                    {
-                        "conceptId": "C25473",
-                        "submissionValue": "Y",
-                        "preferredTerm": "Yes",
-                    }
-                ],
-            },
-            "C141663": {
-                "extensible": False,
-                "preferredTerm": "Maybe",
-                "submissionValue": "MAYBE",
-                "terms": [
-                    {
-                        "conceptId": "C141663",
-                        "submissionValue": "MAYBE",
-                        "preferredTerm": "Maybe",
-                    }
-                ],
-            },
+            "codelists": [
+                {
+                    "conceptId": "C49487",
+                    "extensible": False,
+                    "preferredTerm": "No",
+                    "submissionValue": "N",
+                    "terms": [
+                        {
+                            "conceptId": "C49487",
+                            "submissionValue": "N",
+                            "preferredTerm": "No",
+                        }
+                    ],
+                },
+                {
+                    "conceptId": "C25473",
+                    "extensible": False,
+                    "preferredTerm": "Yes",
+                    "submissionValue": "Y",
+                    "terms": [
+                        {
+                            "conceptId": "C25473",
+                            "submissionValue": "Y",
+                            "preferredTerm": "Yes",
+                        }
+                    ],
+                },
+                {
+                    "conceptId": "C141663",
+                    "extensible": False,
+                    "preferredTerm": "Maybe",
+                    "submissionValue": "MAYBE",
+                    "terms": [
+                        {
+                            "conceptId": "C141663",
+                            "submissionValue": "MAYBE",
+                            "preferredTerm": "Maybe",
+                        }
+                    ],
+                },
+            ],
         },
         {
             "package": "sdtmct-2022-12-16",
-            "submission_lookup": {
-                "A": {"codelist": "C141657", "term": "C141657"},
-                "B": {"codelist": "C141656", "term": "C141656"},
-                "C": {"codelist": "C141663", "term": "C141663"},
-            },
-            "C141657": {
-                "extensible": False,
-                "preferredTerm": "Option A",
-                "submissionValue": "A",
-                "terms": [
-                    {
-                        "conceptId": "C141657",
-                        "submissionValue": "A",
-                        "preferredTerm": "Option A",
-                    }
-                ],
-            },
-            "C141656": {
-                "extensible": False,
-                "preferredTerm": "Option B",
-                "submissionValue": "B",
-                "terms": [
-                    {
-                        "conceptId": "C141656",
-                        "submissionValue": "B",
-                        "preferredTerm": "Option B",
-                    }
-                ],
-            },
-            "C141663": {
-                "extensible": False,
-                "preferredTerm": "Option C",
-                "submissionValue": "C",
-                "terms": [
-                    {
-                        "conceptId": "C141663",
-                        "submissionValue": "C",
-                        "preferredTerm": "Option C",
-                    }
-                ],
-            },
+            "codelists": [
+                {
+                    "conceptId": "C141657",
+                    "extensible": False,
+                    "preferredTerm": "Option A",
+                    "submissionValue": "A",
+                    "terms": [
+                        {
+                            "conceptId": "C141657",
+                            "submissionValue": "A",
+                            "preferredTerm": "Option A",
+                        }
+                    ],
+                },
+                {
+                    "conceptId": "C141656",
+                    "extensible": False,
+                    "preferredTerm": "Option B",
+                    "submissionValue": "B",
+                    "terms": [
+                        {
+                            "conceptId": "C141656",
+                            "submissionValue": "B",
+                            "preferredTerm": "Option B",
+                        }
+                    ],
+                },
+                {
+                    "conceptId": "C141663",
+                    "extensible": False,
+                    "preferredTerm": "Option C",
+                    "submissionValue": "C",
+                    "terms": [
+                        {
+                            "conceptId": "C141663",
+                            "submissionValue": "C",
+                            "preferredTerm": "Option C",
+                        }
+                    ],
+                },
+            ],
         },
     ],
     PandasDataset,
@@ -139,91 +139,91 @@ test_set2 = (
     [
         {
             "package": "sdtmct-2020-03-27",
-            "submission_lookup": {
-                "N": {"codelist": "C49487", "term": "C49487"},
-                "Y": {"codelist": "C25473", "term": "C25473"},
-                "MAYBE": {"codelist": "C141663", "term": "C141663"},
-            },
-            "C49487": {
-                "extensible": False,
-                "preferredTerm": "No",
-                "submissionValue": "N",
-                "terms": [
-                    {
-                        "conceptId": "C49487",
-                        "submissionValue": "N",
-                        "preferredTerm": "No",
-                    }
-                ],
-            },
-            "C25473": {
-                "extensible": False,
-                "preferredTerm": "Yes",
-                "submissionValue": "Y",
-                "terms": [
-                    {
-                        "conceptId": "C25473",
-                        "submissionValue": "Y",
-                        "preferredTerm": "Yes",
-                    }
-                ],
-            },
-            "C141663": {
-                "extensible": False,
-                "preferredTerm": "Maybe",
-                "submissionValue": "MAYBE",
-                "terms": [
-                    {
-                        "conceptId": "C141663",
-                        "submissionValue": "MAYBE",
-                        "preferredTerm": "Maybe",
-                    }
-                ],
-            },
+            "codelists": [
+                {
+                    "conceptId": "C49487",
+                    "extensible": False,
+                    "preferredTerm": "No",
+                    "submissionValue": "N",
+                    "terms": [
+                        {
+                            "conceptId": "C49487",
+                            "submissionValue": "N",
+                            "preferredTerm": "No",
+                        }
+                    ],
+                },
+                {
+                    "conceptId": "C25473",
+                    "extensible": False,
+                    "preferredTerm": "Yes",
+                    "submissionValue": "Y",
+                    "terms": [
+                        {
+                            "conceptId": "C25473",
+                            "submissionValue": "Y",
+                            "preferredTerm": "Yes",
+                        }
+                    ],
+                },
+                {
+                    "conceptId": "C141663",
+                    "extensible": False,
+                    "preferredTerm": "Maybe",
+                    "submissionValue": "MAYBE",
+                    "terms": [
+                        {
+                            "conceptId": "C141663",
+                            "submissionValue": "MAYBE",
+                            "preferredTerm": "Maybe",
+                        }
+                    ],
+                },
+            ],
         },
         {
             "package": "sdtmct-2022-12-16",
-            "submission_lookup": {
-                "A": {"codelist": "C141657", "term": "C141657"},
-                "B": {"codelist": "C141656", "term": "C141656"},
-                "C": {"codelist": "C141663", "term": "C141663"},
-            },
-            "C141657": {
-                "extensible": False,
-                "preferredTerm": "Option A",
-                "submissionValue": "A",
-                "terms": [
-                    {
-                        "conceptId": "C141657",
-                        "submissionValue": "A",
-                        "preferredTerm": "Option A",
-                    }
-                ],
-            },
-            "C141656": {
-                "extensible": False,
-                "preferredTerm": "Option B",
-                "submissionValue": "B",
-                "terms": [
-                    {
-                        "conceptId": "C141656",
-                        "submissionValue": "B",
-                        "preferredTerm": "Option B",
-                    }
-                ],
-            },
-            "C141663": {
-                "extensible": False,
-                "preferredTerm": "Option C",
-                "submissionValue": "C",
-                "terms": [
-                    {
-                        "conceptId": "C141663",
-                        "submissionValue": "C",
-                        "preferredTerm": "Option C",
-                    }
-                ],
-            },
+            "codelists": [
+                {
+                    "conceptId": "C141657",
+                    "extensible": False,
+                    "preferredTerm": "Option A",
+                    "submissionValue": "A",
+                    "terms": [
+                        {
+                            "conceptId": "C141657",
+                            "submissionValue": "A",
+                            "preferredTerm": "Option A",
+                        }
+                    ],
+                },
+                {
+                    "conceptId": "C141656",
+                    "extensible": False,
+                    "preferredTerm": "Option B",
+                    "submissionValue": "B",
+                    "terms": [
+                        {
+                            "conceptId": "C141656",
+                            "submissionValue": "B",
+                            "preferredTerm": "Option B",
+                        }
+                    ],
+                },
+                {
+                    "conceptId": "C141663",
+                    "extensible": False,
+                    "preferredTerm": "Option C",
+                    "submissionValue": "C",
+                    "terms": [
+                        {
+                            "conceptId": "C141663",
+                            "submissionValue": "C",
+                            "preferredTerm": "Option C",
+                        }
+                    ],
+                },
+            ],
         },
     ],
     PandasDataset,
@@ -243,91 +243,91 @@ test_set3 = (
     [
         {
             "package": "sdtmct-2020-03-27",
-            "submission_lookup": {
-                "N": {"codelist": "C49487", "term": "C49487"},
-                "Y": {"codelist": "C25473", "term": "C25473"},
-                "MAYBE": {"codelist": "C141663", "term": "C141663"},
-            },
-            "C49487": {
-                "extensible": False,
-                "preferredTerm": "No",
-                "submissionValue": "N",
-                "terms": [
-                    {
-                        "conceptId": "C49487",
-                        "submissionValue": "N",
-                        "preferredTerm": "No",
-                    }
-                ],
-            },
-            "C25473": {
-                "extensible": False,
-                "preferredTerm": "Yes",
-                "submissionValue": "Y",
-                "terms": [
-                    {
-                        "conceptId": "C25473",
-                        "submissionValue": "Y",
-                        "preferredTerm": "Yes",
-                    }
-                ],
-            },
-            "C141663": {
-                "extensible": False,
-                "preferredTerm": "Maybe",
-                "submissionValue": "MAYBE",
-                "terms": [
-                    {
-                        "conceptId": "C141663",
-                        "submissionValue": "MAYBE",
-                        "preferredTerm": "Maybe",
-                    }
-                ],
-            },
+            "codelists": [
+                {
+                    "conceptId": "C49487",
+                    "extensible": False,
+                    "preferredTerm": "No",
+                    "submissionValue": "N",
+                    "terms": [
+                        {
+                            "conceptId": "C49487",
+                            "submissionValue": "N",
+                            "preferredTerm": "No",
+                        }
+                    ],
+                },
+                {
+                    "conceptId": "C25473",
+                    "extensible": False,
+                    "preferredTerm": "Yes",
+                    "submissionValue": "Y",
+                    "terms": [
+                        {
+                            "conceptId": "C25473",
+                            "submissionValue": "Y",
+                            "preferredTerm": "Yes",
+                        }
+                    ],
+                },
+                {
+                    "conceptId": "C141663",
+                    "extensible": False,
+                    "preferredTerm": "Maybe",
+                    "submissionValue": "MAYBE",
+                    "terms": [
+                        {
+                            "conceptId": "C141663",
+                            "submissionValue": "MAYBE",
+                            "preferredTerm": "Maybe",
+                        }
+                    ],
+                },
+            ],
         },
         {
             "package": "sdtmct-2022-12-16",
-            "submission_lookup": {
-                "A": {"codelist": "C141657", "term": "C141657"},
-                "B": {"codelist": "C141656", "term": "C141656"},
-                "C": {"codelist": "C141663", "term": "C141663"},
-            },
-            "C141657": {
-                "extensible": False,
-                "preferredTerm": "Option A",
-                "submissionValue": "A",
-                "terms": [
-                    {
-                        "conceptId": "C141657",
-                        "submissionValue": "A",
-                        "preferredTerm": "Option A",
-                    }
-                ],
-            },
-            "C141656": {
-                "extensible": False,
-                "preferredTerm": "Option B",
-                "submissionValue": "B",
-                "terms": [
-                    {
-                        "conceptId": "C141656",
-                        "submissionValue": "B",
-                        "preferredTerm": "Option B",
-                    }
-                ],
-            },
-            "C141663": {
-                "extensible": False,
-                "preferredTerm": "Option C",
-                "submissionValue": "C",
-                "terms": [
-                    {
-                        "conceptId": "C141663",
-                        "submissionValue": "C",
-                        "preferredTerm": "Option C",
-                    }
-                ],
-            },
+            "codelists": [
+                {
+                    "conceptId": "C141657",
+                    "extensible": False,
+                    "preferredTerm": "Option A",
+                    "submissionValue": "A",
+                    "terms": [
+                        {
+                            "conceptId": "C141657",
+                            "submissionValue": "A",
+                            "preferredTerm": "Option A",
+                        }
+                    ],
+                },
+                {
+                    "conceptId": "C141656",
+                    "extensible": False,
+                    "preferredTerm": "Option B",
+                    "submissionValue": "B",
+                    "terms": [
+                        {
+                            "conceptId": "C141656",
+                            "submissionValue": "B",
+                            "preferredTerm": "Option B",
+                        }
+                    ],
+                },
+                {
+                    "conceptId": "C141663",
+                    "extensible": False,
+                    "preferredTerm": "Option C",
+                    "submissionValue": "C",
+                    "terms": [
+                        {
+                            "conceptId": "C141663",
+                            "submissionValue": "C",
+                            "preferredTerm": "Option C",
+                        }
+                    ],
+                },
+            ],
         },
     ],
     DaskDataset,
@@ -353,91 +353,91 @@ test_set4 = (
     [
         {
             "package": "sdtmct-2020-03-27",
-            "submission_lookup": {
-                "N": {"codelist": "C49487", "term": "C49487"},
-                "Y": {"codelist": "C25473", "term": "C25473"},
-                "MAYBE": {"codelist": "C141663", "term": "C141663"},
-            },
-            "C49487": {
-                "extensible": False,
-                "preferredTerm": "No",
-                "submissionValue": "N",
-                "terms": [
-                    {
-                        "conceptId": "C49487",
-                        "submissionValue": "N",
-                        "preferredTerm": "No",
-                    }
-                ],
-            },
-            "C25473": {
-                "extensible": False,
-                "preferredTerm": "Yes",
-                "submissionValue": "Y",
-                "terms": [
-                    {
-                        "conceptId": "C25473",
-                        "submissionValue": "Y",
-                        "preferredTerm": "Yes",
-                    }
-                ],
-            },
-            "C141663": {
-                "extensible": False,
-                "preferredTerm": "Maybe",
-                "submissionValue": "MAYBE",
-                "terms": [
-                    {
-                        "conceptId": "C141663",
-                        "submissionValue": "MAYBE",
-                        "preferredTerm": "Maybe",
-                    }
-                ],
-            },
+            "codelists": [
+                {
+                    "conceptId": "C49487",
+                    "extensible": False,
+                    "preferredTerm": "No",
+                    "submissionValue": "N",
+                    "terms": [
+                        {
+                            "conceptId": "C49487",
+                            "submissionValue": "N",
+                            "preferredTerm": "No",
+                        }
+                    ],
+                },
+                {
+                    "conceptId": "C25473",
+                    "extensible": False,
+                    "preferredTerm": "Yes",
+                    "submissionValue": "Y",
+                    "terms": [
+                        {
+                            "conceptId": "C25473",
+                            "submissionValue": "Y",
+                            "preferredTerm": "Yes",
+                        }
+                    ],
+                },
+                {
+                    "conceptId": "C141663",
+                    "extensible": False,
+                    "preferredTerm": "Maybe",
+                    "submissionValue": "MAYBE",
+                    "terms": [
+                        {
+                            "conceptId": "C141663",
+                            "submissionValue": "MAYBE",
+                            "preferredTerm": "Maybe",
+                        }
+                    ],
+                },
+            ],
         },
         {
             "package": "sdtmct-2022-12-16",
-            "submission_lookup": {
-                "A": {"codelist": "C141657", "term": "C141657"},
-                "B": {"codelist": "C141656", "term": "C141656"},
-                "C": {"codelist": "C141663", "term": "C141663"},
-            },
-            "C141657": {
-                "extensible": False,
-                "preferredTerm": "Option A",
-                "submissionValue": "A",
-                "terms": [
-                    {
-                        "conceptId": "C141657",
-                        "submissionValue": "A",
-                        "preferredTerm": "Option A",
-                    }
-                ],
-            },
-            "C141656": {
-                "extensible": False,
-                "preferredTerm": "Option B",
-                "submissionValue": "B",
-                "terms": [
-                    {
-                        "conceptId": "C141656",
-                        "submissionValue": "B",
-                        "preferredTerm": "Option B",
-                    }
-                ],
-            },
-            "C141663": {
-                "extensible": False,
-                "preferredTerm": "Option C",
-                "submissionValue": "C",
-                "terms": [
-                    {
-                        "conceptId": "C141663",
-                        "submissionValue": "C",
-                        "preferredTerm": "Option C",
-                    }
-                ],
-            },
+            "codelists": [
+                {
+                    "conceptId": "C141657",
+                    "extensible": False,
+                    "preferredTerm": "Option A",
+                    "submissionValue": "A",
+                    "terms": [
+                        {
+                            "conceptId": "C141657",
+                            "submissionValue": "A",
+                            "preferredTerm": "Option A",
+                        }
+                    ],
+                },
+                {
+                    "conceptId": "C141656",
+                    "extensible": False,
+                    "preferredTerm": "Option B",
+                    "submissionValue": "B",
+                    "terms": [
+                        {
+                            "conceptId": "C141656",
+                            "submissionValue": "B",
+                            "preferredTerm": "Option B",
+                        }
+                    ],
+                },
+                {
+                    "conceptId": "C141663",
+                    "extensible": False,
+                    "preferredTerm": "Option C",
+                    "submissionValue": "C",
+                    "terms": [
+                        {
+                            "conceptId": "C141663",
+                            "submissionValue": "C",
+                            "preferredTerm": "Option C",
+                        }
+                    ],
+                },
+            ],
         },
     ],
     DaskDataset,
