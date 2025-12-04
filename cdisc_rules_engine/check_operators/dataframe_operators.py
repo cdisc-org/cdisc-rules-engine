@@ -25,7 +25,6 @@ import re
 import operator
 from uuid import uuid4
 from cdisc_rules_engine.models.dataset.dask_dataset import DaskDataset
-from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from pandas.api.types import is_integer_dtype
 from cdisc_rules_engine.services import logger
@@ -1621,17 +1620,14 @@ class DataframeType(BaseType):
         for i in range(len(sorted_target_values) - 1):
             current = sorted_target_values[i]
             next_val = sorted_target_values[i + 1]
-            if pd.isna(current) or pd.isna(next_val):
+            if (
+                pd.isna(current)
+                or pd.isna(next_val)
+                or (ascending and current >= next_val)
+                or (not ascending and current <= next_val)
+            ):
                 is_sorted.iloc[sorted_indices[i]] = False
                 is_sorted.iloc[sorted_indices[i + 1]] = False
-            elif ascending:
-                if current >= next_val:
-                    is_sorted.iloc[sorted_indices[i]] = False
-                    is_sorted.iloc[sorted_indices[i + 1]] = False
-            else:
-                if current <= next_val:
-                    is_sorted.iloc[sorted_indices[i]] = False
-                    is_sorted.iloc[sorted_indices[i + 1]] = False
 
         return is_sorted
 
@@ -1660,16 +1656,23 @@ class DataframeType(BaseType):
         grouped_df,
         within_columns,
         sorted_df,
-        is_pandas_dataset,
         check_func=None,
     ):
+        """
+        Converts groupby().apply() results back to a Series aligned with the original dataframe.
+
+        Handles MultiIndex edge cases when grouping column count doesn't match MultiIndex levels:
+        fewer levels (drop excess), equal levels (reset index), or more levels (reconstruct manually).
+        """
         if isinstance(grouped_result, pd.DataFrame):
             grouped_result = grouped_result.iloc[:, 0]
-        if is_pandas_dataset and isinstance(grouped_result.index, pd.MultiIndex):
+        if isinstance(grouped_result.index, pd.MultiIndex):
             if len(within_columns) < grouped_result.index.nlevels:
                 grouped_result = grouped_result.droplevel(
                     list(range(len(within_columns)))
                 )
+            elif len(within_columns) == grouped_result.index.nlevels:
+                grouped_result = grouped_result.reset_index(drop=True)
             else:
                 result_list = []
                 index_list = []
@@ -1685,8 +1688,6 @@ class DataframeType(BaseType):
                     result_list.extend(group_result.tolist())
                     index_list.extend(group.index.tolist())
                 grouped_result = pd.Series(result_list, index=index_list)
-        else:
-            grouped_result = grouped_result.reindex(sorted_df.index, fill_value=True)
         return grouped_result.reindex(sorted_df.index, fill_value=True)
 
     @log_operator_execution
@@ -1699,7 +1700,6 @@ class DataframeType(BaseType):
         within_columns = self._normalize_grouping_columns(other_value.get("within"))
         columns = other_value["comparator"]
         result = pd.Series([True] * len(self.value), index=self.value.index)
-        is_pandas_dataset = isinstance(self.value, PandasDataset)
         for col in columns:
             comparator: str = self.replace_prefix(col["name"])
             ascending: bool = col["sort_order"].lower() != "desc"
@@ -1721,7 +1721,6 @@ class DataframeType(BaseType):
                 grouped_df,
                 within_columns,
                 sorted_df,
-                is_pandas_dataset,
                 lambda group: self.check_basic_sort_order(
                     group, target, comparator, ascending
                 ),
@@ -1735,7 +1734,6 @@ class DataframeType(BaseType):
                 grouped_df,
                 within_columns,
                 sorted_df,
-                is_pandas_dataset,
                 lambda group: self.check_date_overlaps(group, target, comparator),
             )
             combined_check = basic_sort_check & date_overlap_check
@@ -1747,64 +1745,12 @@ class DataframeType(BaseType):
                 if isinstance(result, dd.DataFrame):
                     result = result.compute()
                 result = result.squeeze()
-        return ~result
+        return result
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
     def target_is_not_sorted_by(self, other_value: dict):
-        target: str = self.replace_prefix(other_value.get("target"))
-        within_columns = self._normalize_grouping_columns(other_value.get("within"))
-        columns = other_value["comparator"]
-        result = pd.Series([False] * len(self.value), index=self.value.index)
-        is_pandas_dataset = isinstance(self.value, PandasDataset)
-        for col in columns:
-            comparator: str = self.replace_prefix(col["name"])
-            ascending: bool = col["sort_order"].lower() != "desc"
-            na_pos: str = col["null_position"]
-            selected_columns = list(
-                dict.fromkeys([target, comparator, *within_columns])
-            )
-            sorted_df = self.value[selected_columns].sort_values(
-                by=[*within_columns, comparator],
-                ascending=ascending,
-                na_position=na_pos,
-            )
-            grouped_df = sorted_df.groupby(within_columns)
-            basic_sort_check = grouped_df.apply(
-                lambda x: self.check_basic_sort_order(x, target, comparator, ascending)
-            )
-            basic_sort_check = self._process_grouped_result(
-                basic_sort_check,
-                grouped_df,
-                within_columns,
-                sorted_df,
-                is_pandas_dataset,
-                lambda group: self.check_basic_sort_order(
-                    group, target, comparator, ascending
-                ),
-            )
-
-            date_overlap_check = grouped_df.apply(
-                lambda x: self.check_date_overlaps(x, target, comparator)
-            )
-            date_overlap_check = self._process_grouped_result(
-                date_overlap_check,
-                grouped_df,
-                within_columns,
-                sorted_df,
-                is_pandas_dataset,
-                lambda group: self.check_date_overlaps(group, target, comparator),
-            )
-            combined_check = basic_sort_check & date_overlap_check
-            result = result.reindex(sorted_df.index, fill_value=False)
-            result = result | ~combined_check
-            result = result.reindex(self.value.index, fill_value=False)
-
-            if isinstance(result, (pd.DataFrame, dd.DataFrame)):
-                if isinstance(result, dd.DataFrame):
-                    result = result.compute()
-                result = result.squeeze()
-        return result
+        return ~self.target_is_sorted_by(other_value)
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
