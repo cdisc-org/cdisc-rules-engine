@@ -215,6 +215,13 @@ def cli():
     default="uid",
     help="A prefix for all tables in the database when using the SQL engine",
 )
+@click.option(
+    "-mem",
+    "--in-memory-postgres",
+    is_flag=True,
+    default=False,
+    help="Run validation using an in-memory Postgres instance",
+)
 @click.pass_context
 def validate(
     ctx,
@@ -248,6 +255,7 @@ def validate(
     validate_xml: str,
     sql_engine: bool,
     sql_namespace: str,
+    in_memory_postgres: bool,
 ):
     """
     Validate data using CDISC Rules Engine
@@ -328,7 +336,7 @@ def validate(
         sql_namespace,
     )
     if sql_engine:
-        run_sql_validation(args)
+        run_sql_validation(args, in_memory_postgres=in_memory_postgres)
     else:
         run_validation(args)
 

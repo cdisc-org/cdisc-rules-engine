@@ -74,7 +74,7 @@ def initialize_logger(disabled, log_level):
         engine_logger.setLevel(log_level)
 
 
-def run_sql_validation(args: Validation_args):
+def run_sql_validation(args: Validation_args, in_memory_postgres: bool = False):
     set_log_level(args)
 
     rules = get_rules(args)
@@ -91,7 +91,7 @@ def run_sql_validation(args: Validation_args):
         args.dataset_paths,
         standards_context=standards_context,
         sql_namespace=args.sql_namespace,
-        use_pgserver=args.use_pgserver if hasattr(args, "use_pgserver") else False,
+        use_pgserver=in_memory_postgres,
     )
 
     engine = SQLRulesEngine(data_service=data_service, standards_context=standards_context)

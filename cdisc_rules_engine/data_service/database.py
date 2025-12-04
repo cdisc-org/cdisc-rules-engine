@@ -11,7 +11,7 @@ import logging
 from cdisc_rules_engine.services import logger
 
 import pgserver
-from tempfile import mkdtemp
+import tempfile
 
 load_dotenv()
 
@@ -31,16 +31,16 @@ class DatabaseConfigPostgres:
 
 @dataclass
 class DatabaseConfigPGServer:
-    logging.getLogger("pgserver").setLevel(logging.WARNING)
-    temp_pg_data = mkdtemp()
-    srv = pgserver.get_server(temp_pg_data, cleanup_mode="delete")
-    dburi = srv.get_uri()
     min_connections: int = 1
     max_connections: int = 10
 
 
 class DatabasePostgres:
     """Database connection management with connection pooling"""
+
+    _pgserver_instance = None
+    _pgserver_tempdir = None
+    _pgserver_dburi = None
 
     def __init__(self, config: DatabaseConfigPostgres | DatabaseConfigPGServer = DatabaseConfigPostgres()):
         self.config = config
@@ -51,10 +51,15 @@ class DatabasePostgres:
         """Initialise connection pool"""
         try:
             if isinstance(self.config, DatabaseConfigPGServer):
+                logging.getLogger("pgserver").setLevel(logging.WARNING)
+                if DatabasePostgres._pgserver_instance is None:
+                    self.setup_pg_server()
+                else:
+                    self.dburi = DatabasePostgres._pgserver_dburi
                 self._pool = psycopg2.pool.SimpleConnectionPool(
                     self.config.min_connections,
                     self.config.max_connections,
-                    self.config.dburi,
+                    self.dburi,
                 )
             elif isinstance(self.config, DatabaseConfigPostgres):
                 self._pool = psycopg2.pool.SimpleConnectionPool(
@@ -70,6 +75,14 @@ class DatabasePostgres:
         except Exception as e:
             logger.error(f"Failed to initialise connection pool: {e}")
             raise
+
+    def setup_pg_server(self):
+        DatabasePostgres._pgserver_tempdir = tempfile.mkdtemp()
+        DatabasePostgres._pgserver_instance = pgserver.get_server(
+            DatabasePostgres._pgserver_tempdir, cleanup_mode="delete"
+        )
+        DatabasePostgres._pgserver_dburi = DatabasePostgres._pgserver_instance.get_uri()
+        self.dburi = DatabasePostgres._pgserver_dburi
 
     @contextmanager
     def get_connection_and_cursor(self, dict_cursor: bool = True):
