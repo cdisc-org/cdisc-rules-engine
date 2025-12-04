@@ -1,6 +1,7 @@
 import pandas as pd
 from cdisc_rules_engine.operations.base_operation import BaseOperation
 from cdisc_rules_engine.models.dataset import DaskDataset
+from jsonpath_ng.ext import parse
 
 
 def _get_ct_package_dask(
@@ -207,72 +208,22 @@ class CodeListAttributes(BaseOperation):
     def _extract_codes_by_attribute(
         self, ct_package_data: dict, ct_attribute: str
     ) -> set:
-        submission_lookup = ct_package_data.get("submission_lookup", {})
-
-        if ct_attribute == "Term CCODE":
-            return self._extract_term_codes(submission_lookup)
-        elif ct_attribute == "Codelist CCODE":
-            return self._extract_codelist_codes(submission_lookup)
-        elif ct_attribute in ("Term Value", "Term Submission Value"):
-            return self._extract_term_values(submission_lookup)
-        elif ct_attribute == "Codelist Value":
-            return self._extract_codelist_values(submission_lookup)
-        elif ct_attribute == "Term Preferred Term":
-            return self._extract_preferred_terms(submission_lookup, ct_package_data)
-        else:
+        attribute_name_map = {
+            "Codelist CCODE": "$.codelists[*].conceptId",
+            "Codelist Value": "$.codelists[*].submissionValue",
+            "Term CCODE": "$.codelists[*].terms[*].conceptId",
+            "Term Value": "$.codelists[*].terms[*].submissionValue",
+            "Term Submission Value": "$.codelists[*].terms[*].submissionValue",
+            "Term Preferred Term": "$.codelists[*].terms[*].preferredTerm",
+        }
+        if ct_attribute not in attribute_name_map:
             raise ValueError(f"Unsupported ct_attribute: {ct_attribute}")
-
-    def _extract_codelist_values(self, submission_lookup: dict) -> set:
-        codes = set()
-        for term_name, term_data in submission_lookup.items():
-            term_code = term_data.get("term")
-            if term_code and term_code == "N/A":
-                codes.add(term_name)
-        return codes
-
-    def _extract_term_codes(self, submission_lookup: dict) -> set:
-        codes = set()
-        for term_data in submission_lookup.values():
-            term_code = term_data.get("term")
-            if term_code and term_code != "N/A":
-                codes.add(term_code)
-        return codes
-
-    def _extract_codelist_codes(self, submission_lookup: dict) -> set:
-        codes = set()
-        for term_data in submission_lookup.values():
-            codelist_code = term_data.get("codelist")
-            if codelist_code:
-                codes.add(codelist_code)
-        return codes
-
-    def _extract_term_values(self, submission_lookup: dict) -> set:
-        codes = set()
-        for term_name, term_data in submission_lookup.items():
-            term_code = term_data.get("term")
-            if term_code and term_code != "N/A":
-                codes.add(term_name)
-        return codes
-
-    def _extract_preferred_terms(
-        self, submission_lookup: dict, ct_package_data: dict
-    ) -> set:
-        codes = set()
-        for term_name, term_data in submission_lookup.items():
-            if not isinstance(term_data, dict):
-                continue
-            term_code = term_data.get("term")
-            if not term_code or term_code == "N/A":
-                continue
-            codelist_id = term_data.get("codelist")
-            if not codelist_id or codelist_id not in ct_package_data:
-                continue
-            codelist_info = ct_package_data[codelist_id]
-            terms = codelist_info.get("terms", [])
-            for term in terms:
-                if term.get("conceptId") == term_code:
-                    pref_term = term.get("preferredTerm")
-                    if pref_term:
-                        codes.add(pref_term)
-                    break
-        return codes
+        attributes = set(
+            [
+                node.value
+                for node in parse(attribute_name_map[ct_attribute]).find(
+                    ct_package_data
+                )
+            ]
+        )
+        return attributes

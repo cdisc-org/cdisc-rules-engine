@@ -245,7 +245,10 @@ def test_get_dataset_class_associated_domains():
     datasets = [
         SDTMDatasetMetadata(**dataset)
         for dataset in [
-            {"first_record": {"DOMAIN": "APDM"}, "filename": "apdm.xpt"},
+            {
+                "first_record": {"DOMAIN": "APDM", "APID": "AP001"},
+                "filename": "apdm.xpt",
+            },
             {"first_record": {"DOMAIN": "DM"}, "filename": "dm.xpt"},
         ]
     ]
