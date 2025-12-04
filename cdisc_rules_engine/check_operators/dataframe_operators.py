@@ -153,11 +153,15 @@ class DataframeType(BaseType):
 
     @log_operator_execution
     def is_column_of_iterables(self, column):
-        return self.value.is_series(column) and all(
-            val is not None
-            and not (isinstance(val, float) and pd.isna(val))
-            and isinstance(val, (list, set))
+        if not self.value.is_series(column):
+            return False
+        non_null_values = [
+            val
             for val in column
+            if not (val is None or (isinstance(val, float) and pd.isna(val)))
+        ]
+        return len(non_null_values) > 0 and all(
+            isinstance(val, (list, set)) for val in non_null_values
         )
 
     @log_operator_execution

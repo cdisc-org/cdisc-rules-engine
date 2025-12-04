@@ -492,13 +492,13 @@ def test_does_not_contain_with_none_first_row(
             {"target": ["A", "B", "C"], "comparison": [None, ["A", "B"], ["C", "D"]]},
             "comparison",
             PandasDataset,
-            [False, False, False],
+            [False, True, True],
         ),
         (
             {"target": ["A", "B", "C"], "comparison": [["A", "B"], None, ["C", "D"]]},
             "comparison",
             PandasDataset,
-            [False, False, False],
+            [True, False, True],
         ),
     ],
 )
@@ -511,3 +511,27 @@ def test_is_contained_by_with_none_in_comparison(
         {"target": "target", "comparator": comparator}
     )
     assert result.equals(df.convert_to_series(expected_result))
+
+
+@pytest.mark.parametrize(
+    "column_data,expected",
+    [
+        ([["A", "B"], ["C", "D"], ["E", "F"]], True),
+        ([None, ["A", "B"], ["C", "D"]], True),
+        ([["A", "B"], None, ["C", "D"]], True),
+        ([["A", "B"], ["C", "D"], None], True),
+        ([None, None, ["A", "B"]], True),
+        ([{"A", "B"}, {"C", "D"}], True),
+        ([None, {"A", "B"}, {"C", "D"}], True),
+        (["A", "B", "C"], False),
+        ([None, "A", "B"], False),
+        ([["A", "B"], "C", ["D", "E"]], False),
+        ([None, None, None], False),
+        ([], False),
+    ],
+)
+def test_is_column_of_iterables(column_data, expected):
+    df = PandasDataset.from_dict({"col": column_data})
+    dataframe_operator = DataframeType({"value": df})
+    result = dataframe_operator.is_column_of_iterables(df["col"])
+    assert result == expected
