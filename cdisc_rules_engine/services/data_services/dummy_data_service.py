@@ -42,7 +42,12 @@ class DummyDataService(BaseDataService):
     ):
         return cls(
             cache_service=cache_service,
-            reader_factory=DataReaderFactory(encoding=kwargs.get("encoding")),
+            reader_factory=DataReaderFactory(
+                dataset_implementation=kwargs.get(
+                    "dataset_implementation", PandasDataset
+                ),
+                encoding=kwargs.get("encoding"),
+            ),
             config=config,
             **kwargs,
         )

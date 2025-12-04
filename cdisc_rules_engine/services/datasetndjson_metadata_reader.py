@@ -49,6 +49,9 @@ class DatasetNDJSONMetadataReader:
             else:
                 if last_error:
                     raise last_error
+                raise ValueError(
+                    f"Could not decode NDJSON file {self._file_path} with UTF-8, UTF-16, or UTF-32 encoding"
+                )
 
         metadatandjson = json.loads(lines[0])
 
