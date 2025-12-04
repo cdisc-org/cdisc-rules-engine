@@ -832,3 +832,70 @@ def test_regex_filtered_grouped_record_count(
     assert operation_params.operation_id in result
     assert "AESTDTC" in result
     assert result.data.equals(expected.data)
+
+
+@pytest.mark.parametrize(
+    "data, expected, grouping, filter_dict, regex",
+    [
+        (
+            DaskDataset.from_dict(
+                {
+                    "STUDYID": ["CDISC01", "CDISC01", "CDISC02", "CDISC02"],
+                    "DOMAIN": ["AE", "AE", "AE", "AE"],
+                    "AESTDTC": [
+                        "2023-01-15T10:30:00",
+                        "2023-01-15T14:20:00",
+                        "2023-01-16T09:15:00",
+                        "2023-01-16T11:30:00",
+                    ],
+                    "AESEV": ["MILD", "SEVERE", "MILD", "MILD"],
+                    "USUBJID": ["TEST1", "TEST1", "TEST2", "TEST2"],
+                }
+            ),
+            PandasDataset.from_dict(
+                {
+                    "STUDYID": ["CDISC01", "CDISC01", "CDISC02", "CDISC02"],
+                    "DOMAIN": ["AE", "AE", "AE", "AE"],
+                    "AESTDTC": [
+                        "2023-01-15T10:30:00",
+                        "2023-01-15T14:20:00",
+                        "2023-01-16T09:15:00",
+                        "2023-01-16T11:30:00",
+                    ],
+                    "AESEV": ["MILD", "SEVERE", "MILD", "MILD"],
+                    "USUBJID": ["TEST1", "TEST1", "TEST2", "TEST2"],
+                    "operation_id": [1, 0, 2, 2],
+                }
+            ),
+            ["AESTDTC"],
+            {"AESEV": "MILD"},
+            r"^\d{4}-\d{2}-\d{2}",
+        ),
+    ],
+)
+def test_dask_regex_filtered_grouped_record_count(
+    data, expected, grouping, filter_dict, regex, operation_params: OperationParams
+):
+    config = ConfigService()
+    cache = CacheServiceFactory(config).get_cache_service()
+    data_service = DataServiceFactory(config, cache).get_data_service()
+    operation_params.dataframe = data
+    operation_params.grouping = grouping
+    operation_params.regex = regex
+    operation_params.filter = filter_dict
+    result = RecordCount(operation_params, data, cache, data_service).execute()
+    assert operation_params.operation_id in result
+    for group_col in grouping:
+        assert group_col in result
+
+    result_df = (
+        result.data.compute() if hasattr(result.data, "compute") else result.data
+    )
+    expected_df = expected.data
+
+    result_df = result_df.reset_index(drop=True)
+    expected_df = expected_df.reset_index(drop=True)
+
+    assert result_df.equals(
+        expected_df
+    ), f"\nActual:\n{result_df}\n\nExpected:\n{expected_df}"
