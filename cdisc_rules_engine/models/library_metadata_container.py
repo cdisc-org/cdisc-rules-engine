@@ -102,12 +102,14 @@ class LibraryMetadataContainer:
             "extensible": [],
         }
         for version in {*versions}:
-            ct_package_data = self._load_ct_package_data(ct_package_type, version)
-            for codelist_code, codelist in ct_package_data.items():
+            ct_package_data = self._load_ct_package_data(ct_package_type, version).get(
+                "codelists", []
+            )
+            for codelist in ct_package_data:
                 if isinstance(codelist, dict) and "terms" in codelist:
                     ct_lists["ct_package_type"].append(ct_package_type)
                     ct_lists["version"].append(version)
-                    ct_lists["codelist_code"].append(codelist_code)
+                    ct_lists["codelist_code"].append(codelist.get("conceptId"))
                     ct_lists["extensible"].append(codelist.get("extensible"))
         return ct_lists
 
@@ -123,14 +125,16 @@ class LibraryMetadataContainer:
             "term_pref_term": [],
         }
         for version in {*versions}:
-            ct_package_data = self._load_ct_package_data(ct_package_type, version)
-            for codelist_code, codelist in ct_package_data.items():
+            ct_package_data = self._load_ct_package_data(ct_package_type, version).get(
+                "codelists", []
+            )
+            for codelist in ct_package_data:
                 for term in (
                     codelist.get("terms", []) if isinstance(codelist, dict) else []
                 ):
                     ct_terms["ct_package_type"].append(ct_package_type)
                     ct_terms["version"].append(version)
-                    ct_terms["codelist_code"].append(codelist_code)
+                    ct_terms["codelist_code"].append(codelist.get("conceptId"))
                     ct_terms["term_code"].append(term["conceptId"])
                     ct_terms["term_value"].append(term["submissionValue"])
                     ct_terms["term_pref_term"].append(term.get("preferredTerm"))
