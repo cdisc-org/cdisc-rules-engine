@@ -1278,31 +1278,29 @@ def test_validate_single_dataset_not_equal_to(
             PandasDataset(
                 pd.DataFrame.from_dict(
                     {
-                        "dataset_name": [
-                            "AE",
-                        ],
-                        "dataset_label": [
-                            "Adverse Events",
-                        ],
-                        "dataset_location": [
-                            "te.xpt",
-                        ],
+                        "dataset_name": ["AE"],
+                        "dataset_label": ["Adverse"],
+                        "dataset_location": ["ae.xpt"],
                     }
                 )
             ),
             [
                 {
-                    "executionStatus": "execution_error",
+                    "executionStatus": "success",
                     "dataset": "ae.xpt",
                     "domain": "AE",
-                    "variables": [],
-                    "message": "rule execution error",
+                    "variables": ["dataset_label", "dataset_location", "dataset_name"],
+                    "message": "Dataset metadata does not correspond to Define XML",
                     "errors": [
                         {
+                            "value": {
+                                "dataset_name": "AE",
+                                "dataset_location": "ae.xpt",
+                                "dataset_label": "Adverse",
+                            },
                             "dataset": "ae.xpt",
-                            "error": "An unknown exception has occurred",
-                            "message": "single positional indexer is out-of-bounds",
-                        }
+                            "row": 1,
+                        },
                     ],
                 }
             ],
@@ -1318,15 +1316,9 @@ def test_validate_single_dataset_not_equal_to(
             PandasDataset(
                 pd.DataFrame.from_dict(
                     {
-                        "dataset_name": [
-                            "AE",
-                        ],
-                        "dataset_label": [
-                            "Adverse Events",
-                        ],
-                        "dataset_location": [
-                            "ae.xpt",
-                        ],
+                        "dataset_name": ["AE"],
+                        "dataset_label": ["Adverse Events"],
+                        "dataset_location": ["ae.xpt"],
                     }
                 )
             ),
@@ -1370,6 +1362,7 @@ def test_validate_dataset_metadata_against_define_xml(
         first_record={"DOMAIN": "AE"},
         full_path="CDISC01/test/ae.xpt",
         filename="ae.xpt",
+        original_path="ae.xpt",
     )
     validation_result: List[dict] = RulesEngine(
         standard="sdtmig"

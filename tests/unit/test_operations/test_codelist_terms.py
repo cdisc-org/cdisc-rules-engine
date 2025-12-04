@@ -17,40 +17,40 @@ from cdisc_rules_engine.exceptions.custom_exceptions import (
 def mock_metadata():
     return {
         "mock_package": {
-            "submission_lookup": {
-                "CL1": {"codelist": "C1", "term": "N/A"},
-                "CL2": {"codelist": "C2", "term": "Term1"},
-            },
-            "C1": {
-                "submissionValue": "Codelist1",
-                "terms": [
-                    {
-                        "conceptId": "T1",
-                        "submissionValue": "Term1",
-                        "preferredTerm": "prefTerm1",
-                    },
-                    {
-                        "conceptId": "T2",
-                        "submissionValue": "Term2",
-                        "preferredTerm": "prefTerm9",
-                    },
-                ],
-            },
-            "C2": {
-                "submissionValue": "Codelist2",
-                "terms": [
-                    {
-                        "conceptId": "T3",
-                        "submissionValue": "Term3",
-                        "preferredTerm": "prefTerm3",
-                    },
-                    {
-                        "conceptId": "T4",
-                        "submissionValue": "Term4",
-                        "preferredTerm": "prefTerm4",
-                    },
-                ],
-            },
+            "codelists": [
+                {
+                    "conceptId": "C1",
+                    "submissionValue": "CL1",
+                    "terms": [
+                        {
+                            "conceptId": "T1",
+                            "submissionValue": "Term1",
+                            "preferredTerm": "prefTerm1",
+                        },
+                        {
+                            "conceptId": "T2",
+                            "submissionValue": "Term2",
+                            "preferredTerm": "prefTerm9",
+                        },
+                    ],
+                },
+                {
+                    "conceptId": "C2",
+                    "submissionValue": "CL2",
+                    "terms": [
+                        {
+                            "conceptId": "T3",
+                            "submissionValue": "Term3",
+                            "preferredTerm": "prefTerm3",
+                        },
+                        {
+                            "conceptId": "T4",
+                            "submissionValue": "Term4",
+                            "preferredTerm": "prefTerm4",
+                        },
+                    ],
+                },
+            ]
         }
     }
 
@@ -76,7 +76,7 @@ def test_codelist_level_code(operation_params, mock_metadata):
 
 
 def test_codelist_level_value(operation_params, mock_metadata):
-    operation_params.codelists = ["CL1"]
+    operation_params.codelists = ["cl1"]
     operation_params.level = "codelist"
     operation_params.returntype = "value"
 
@@ -92,7 +92,7 @@ def test_codelist_level_value(operation_params, mock_metadata):
     )
 
     result = operation._execute_operation()
-    assert result == ["Codelist1"]
+    assert result == ["CL1"]
 
 
 def test_term_level_code(operation_params, mock_metadata):
@@ -163,7 +163,6 @@ def test_missing_codelist(operation_params):
     library_metadata = LibraryMetadataContainer()
     library_metadata._ct_package_metadata = {
         "mock_package": {
-            "submission_lookup": {},
             "C1": {"submissionValue": "Codelist1", "terms": []},
         }
     }
@@ -188,8 +187,9 @@ def test_empty_terms(operation_params):
     library_metadata = LibraryMetadataContainer()
     library_metadata._ct_package_metadata = {
         "mock_package": {
-            "submission_lookup": {"CL1": {"codelist": "C1", "term": "N/A"}},
-            "C1": {"submissionValue": "Codelist1", "terms": []},
+            "codelists": [
+                {"conceptId": "C1", "submissionValue": "CL1", "terms": []},
+            ]
         }
     }
 

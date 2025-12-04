@@ -257,6 +257,13 @@
     },
     {
       "properties": {
+        "operator": { "const": "standard_domains" }
+      },
+      "required": ["id", "operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
         "operator": {
           "const": "valid_codelist_dates"
         }
@@ -460,6 +467,9 @@
       "type": "array"
     },
     "ct_version": {
+      "type": "string"
+    },
+    "delimiter": {
       "type": "string"
     },
     "dictionary_term_type": {
