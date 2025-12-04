@@ -37,6 +37,7 @@ jobs:
             --add-data="resources/cache:resources/cache" \
             --add-data="resources/templates:resources/templates" \
             --add-data="resources/schema:resources/schema" \
+            --add-data="tests/resources/datasets:tests/resources/datasets" \
             --add-data="resources/jsonata:resources/jsonata"
       - name: Prepare executable
         run: |
@@ -133,7 +134,7 @@ jobs:
 #             --add-data="resources/cache:resources/cache" \
 #             --add-data="resources/templates:resources/templates" \
 #             --add-data="resources/schema:resources/schema" \
-#             --add-data="tests/resources/datasets:tests/resources/datasets"
+#             --add-data="tests/resources/datasets:tests/resources/datasets" \
 #             --add-data="resources/jsonata:resources/jsonata"
 #       - name: Prepare executable (macOS)
 #         run: |
