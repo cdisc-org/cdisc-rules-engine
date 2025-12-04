@@ -52,7 +52,6 @@ class SDTMDatasetMetadata(DatasetMetadata):
     def unsplit_name(self) -> str:
         if self.domain:
             return self.domain_cleaned
-            # return self.domain
         if self.name.startswith("SUPP"):
             return f"SUPP{self.rdomain}"
         if self.name.startswith("SQ"):
