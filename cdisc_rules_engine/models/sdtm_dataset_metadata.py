@@ -34,6 +34,10 @@ class SDTMDatasetMetadata(DatasetMetadata):
         return (self.first_record or {}).get("DOMAIN", None)
 
     @property
+    def domain_cleaned(self) -> Union[str, None]:
+        return self.domain.replace("AP", "") if self.domain else None
+
+    @property
     def rdomain(self) -> Union[str, None]:
         return (self.first_record or {}).get("RDOMAIN", None) if self.is_supp else None
 
@@ -47,7 +51,8 @@ class SDTMDatasetMetadata(DatasetMetadata):
     @property
     def unsplit_name(self) -> str:
         if self.domain:
-            return self.domain
+            return self.domain_cleaned
+            # return self.domain
         if self.name.startswith("SUPP"):
             return f"SUPP{self.rdomain}"
         if self.name.startswith("SQ"):
