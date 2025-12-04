@@ -18,7 +18,7 @@ class XPTReader(DataReaderInterface):
         if self.encoding:
             df = pd.read_sas(BytesIO(data), format="xport", encoding=self.encoding)
         else:
-            encodings_to_try = ["utf-8", "utf-16", "utf-32", "cp1252", "latin-1"]
+            encodings_to_try = ["utf-8", "cp1252", "latin-1", "utf-16", "utf-32"]
             last_error = None
 
             for encoding in encodings_to_try:
@@ -42,7 +42,7 @@ class XPTReader(DataReaderInterface):
         if self.encoding:
             data = pd.read_sas(file_path, format="xport", encoding=self.encoding)
         else:
-            encodings_to_try = ["utf-8", "utf-16", "utf-32", "cp1252", "latin-1"]
+            encodings_to_try = ["utf-8", "cp1252", "latin-1", "utf-16", "utf-32"]
             last_error = None
 
             for encoding in encodings_to_try:
@@ -65,7 +65,7 @@ class XPTReader(DataReaderInterface):
         if self.encoding:
             return pd.read_sas(file_path, chunksize=chunksize, encoding=self.encoding)
 
-        encodings_to_try = ["utf-8", "utf-16", "utf-32", "cp1252", "latin-1"]
+        encodings_to_try = ["utf-8", "cp1252", "latin-1", "utf-16", "utf-32"]
         last_error = None
 
         for encoding in encodings_to_try:

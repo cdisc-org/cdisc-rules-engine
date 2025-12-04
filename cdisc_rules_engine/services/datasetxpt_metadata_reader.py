@@ -221,7 +221,7 @@ class DatasetXPTMetadataReader:
                 self.encoding, row_limit=self.row_limit
             )
 
-        encodings_to_try = ["utf-8", "utf-16", "utf-32", "cp1252", "latin-1"]
+        encodings_to_try = ["utf-8", "cp1252", "latin-1", "utf-16", "utf-32"]
         last_error = None
 
         for encoding in encodings_to_try:
@@ -237,7 +237,10 @@ class DatasetXPTMetadataReader:
                 continue
             except pyreadstat.ReadstatError as e:
                 last_error = e
-                raise
+                logger.debug(
+                    f"Failed to read {self._file_path} with encoding {encoding}, trying next"
+                )
+                continue
         else:
             if last_error:
                 raise last_error
@@ -249,7 +252,7 @@ class DatasetXPTMetadataReader:
         if self.encoding:
             return self._try_read_xport_with_encoding(self.encoding, metadataonly=True)
 
-        encodings_to_try = ["utf-8", "utf-16", "utf-32", "cp1252", "latin-1"]
+        encodings_to_try = ["utf-8", "cp1252", "latin-1", "utf-16", "utf-32"]
         last_error = None
 
         for encoding in encodings_to_try:
@@ -260,7 +263,10 @@ class DatasetXPTMetadataReader:
                 continue
             except pyreadstat.ReadstatError as e:
                 last_error = e
-                raise
+                logger.debug(
+                    f"Failed to read {self._file_path} with encoding {encoding}, trying next"
+                )
+                continue
         else:
             if last_error:
                 raise last_error
