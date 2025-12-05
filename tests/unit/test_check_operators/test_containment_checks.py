@@ -517,17 +517,37 @@ def test_is_contained_by_with_none_in_comparison(
     "column_data,expected",
     [
         ([["A", "B"], ["C", "D"], ["E", "F"]], True),
+        ([{"A", "B"}, {"C", "D"}], True),
         ([None, ["A", "B"], ["C", "D"]], True),
         ([["A", "B"], None, ["C", "D"]], True),
         ([["A", "B"], ["C", "D"], None], True),
         ([None, None, ["A", "B"]], True),
-        ([{"A", "B"}, {"C", "D"}], True),
         ([None, {"A", "B"}, {"C", "D"}], True),
+        ([[]], True),
+        ([set()], True),
+        ([None, []], True),
+        ([None, set()], True),
+        ([["A"], []], True),
+        ([["A"], set()], True),
+        ([{"A"}, []], True),
+        ([["A"]], True),
+        ([{"A"}], True),
+        ([None, ["A"]], True),
+        ([["A"], {"B"}], True),
+        ([None, ["A"], {"B"}], True),
+        ([float("nan")], False),
+        ([None, float("nan")], False),
+        ([None, float("nan"), ["A"]], True),
+        ([float("nan"), ["A"]], True),
+        # Negative cases - not iterables
         (["A", "B", "C"], False),
         ([None, "A", "B"], False),
         ([["A", "B"], "C", ["D", "E"]], False),
         ([None, None, None], False),
         ([], False),
+        ([("A", "B")], False),
+        ([None, ("A", "B")], False),
+        ([["A"], ("B", "C")], False),
     ],
 )
 def test_is_column_of_iterables(column_data, expected):
@@ -535,3 +555,24 @@ def test_is_column_of_iterables(column_data, expected):
     dataframe_operator = DataframeType({"value": df})
     result = dataframe_operator.is_column_of_iterables(df["col"])
     assert result == expected
+
+
+def test_is_column_of_iterables_with_pd_na():
+    """Test pd.NA handling (pandas NA value)"""
+    import pandas as pd
+
+    test_cases = [
+        ([pd.NA], False),
+        ([None, pd.NA], False),
+        ([None, pd.NA, ["A"]], True),
+        ([pd.NA, ["A"]], True),
+        ([None, pd.NA, ["A"], ["B"]], True),
+    ]
+
+    for column_data, expected in test_cases:
+        df = PandasDataset.from_dict({"col": column_data})
+        dataframe_operator = DataframeType({"value": df})
+        result = dataframe_operator.is_column_of_iterables(df["col"])
+        assert (
+            result == expected
+        ), f"Failed for {column_data}: got {result}, expected {expected}"
