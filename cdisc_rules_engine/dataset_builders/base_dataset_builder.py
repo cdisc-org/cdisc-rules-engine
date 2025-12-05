@@ -9,7 +9,7 @@ from cdisc_rules_engine.utilities.utils import (
     get_corresponding_datasets,
     tag_source,
 )
-from typing import List, Iterable
+from typing import List, Iterable, Optional
 from cdisc_rules_engine.utilities import sdtm_utilities
 from cdisc_rules_engine.utilities.rule_processor import RuleProcessor
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
@@ -205,13 +205,16 @@ class BaseDatasetBuilder:
         variables: List[dict] = sdtm_utilities.get_variables_metadata_from_standard(
             domain=domain, library_metadata=self.library_metadata
         )
+        variables_metadata: dict = self.library_metadata.variables_metadata.get(
+            domain, {}
+        )
         for variable in variables:
             variable["ccode"] = ""
-            if variable.get("codelistSubmissionValues"):
+            variable_metadata: Optional[dict] = variables_metadata.get(variable["name"])
+            if variable_metadata:
                 if "_links" in variable and "codelist" in variable["_links"]:
                     first_codelist = variable["_links"]["codelist"][0]
-                    href = first_codelist["href"]
-                    codelist_code = href.split("/")[-1]
+                    codelist_code = first_codelist["href"].split("/")[-1]
                     variable["ccode"] = codelist_code
             if "role" not in variable:
                 variable["role"] = ""
