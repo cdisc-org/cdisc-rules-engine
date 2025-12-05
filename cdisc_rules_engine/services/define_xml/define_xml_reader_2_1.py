@@ -85,7 +85,7 @@ class DefineXMLReader21(BaseDefineXMLReader):
             return standards, {}, {}, False
 
     def get_multiple_standards_ct_mappings(self, metadata, standards):
-        combined_CT_package = {"submission_lookup": {}}
+        combined_CT_package = {}
         standard_oids = {standard.oid: standard for standard in standards}
         extensible = {}
         for codelist in metadata.CodeList:
@@ -105,10 +105,6 @@ class DefineXMLReader21(BaseDefineXMLReader):
                     "codelist": codelist_code,
                     "extended_values": extended_values,
                 }
-            combined_CT_package["submission_lookup"][codelist_value] = {
-                "codelist": codelist_code,
-                "term": "N/A",
-            }
 
             for item in codelist.CodeListItem:
                 nci_code = None
@@ -123,10 +119,6 @@ class DefineXMLReader21(BaseDefineXMLReader):
                         "submissionValue": item.CodedValue,
                         "extensible": item.ExtendedValue,
                         "standard": standard_key,
-                    }
-                    combined_CT_package["submission_lookup"][item.CodedValue] = {
-                        "codelist": codelist_code,
-                        "term": nci_code,
                     }
 
         return combined_CT_package, extensible
