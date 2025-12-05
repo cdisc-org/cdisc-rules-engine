@@ -8,6 +8,8 @@ Open source offering of the CDISC Rules Engine, a tool designed for validating c
 
 ## Quick start
 
+**Need help?** Jump to [Troubleshooting & Support](#troubleshooting--support)
+
 Note: The Windows commands provided in this README are written for PowerShell. While most commands are compatible with both PowerShell and Command Prompt, some adjustments may be necessary when using Command Prompt. If you encounter any issues running these commands in Command Prompt, try using PowerShell or consult the Command Prompt documentation for equivalent commands.
 
 To quickly get up and running with CORE, users can download the latest executable version of the engine for their operating system from the [Releases](https://github.com/cdisc-org/cdisc-rules-engine/releases)
@@ -472,11 +474,11 @@ NOTE: if you have multiple versions of python on your machine, you can call pyth
 
 **Linux**
 
-`pyinstaller core.py --add-data=venv/lib/python3.12/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates`
+`pyinstaller core.py --add-data=venv/lib/python3.12/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates --add-data=resources/jsonata:resources/jsonata`
 
 **Windows**
 
-`pyinstaller core.py --add-data=".venv/Lib/site-packages/xmlschema/schemas;xmlschema/schemas" --add-data="resources/cache;resources/cache" --add-data="resources/templates;resources/templates"`
+`pyinstaller core.py --add-data=".venv/Lib/site-packages/xmlschema/schemas;xmlschema/schemas" --add-data="resources/cache;resources/cache" --add-data="resources/templates;resources/templates" --add-data="resources/jsonata;resources/jsonata"`
 
 _Note .venv should be replaced with path to python installation or virtual environment_
 
@@ -534,19 +536,6 @@ From the root of the project run the following command (this will run both the u
 
 `python -m pytest tests`
 
-### Submit an Issue
-
-If you encounter any bugs, have feature requests, or need assistance, please submit an issue on our GitHub repository:
-
-[https://github.com/cdisc-org/cdisc-rules-engine/issues](https://github.com/cdisc-org/cdisc-rules-engine/issues)
-
-When submitting an issue, please include:
-
-- A clear description of the problem or request
-- Steps to reproduce the issue (for bugs)
-- Your operating system and environment details
-- Any relevant logs or error messages
-
 ### Updating USDM JSON Schema
 
 Currently, the engine supports USDM JSON Schema validation against versions 3.0 and 4.0. The schema definition files are located at:
@@ -560,3 +549,21 @@ These schema definitions were derived from the OpenAPI specs located in the `htt
 2. Use `scripts/openapi-to-json.py` script to convert the OpenAPI spec to JSON schema definition
 3. Use `scripts/json_pkl_converter.py` script to convert the JSON file to `.pkl`
 4. Place the `.pkl` file to `resources/cache`
+
+## Troubleshooting & Support
+
+### Questions or Need Help?
+
+If you need any assistance or encounter errors during setup, check or reach out via our [Q&A](https://github.com/cdisc-org/cdisc-rules-engine/discussions/categories/q-a?discussions_q=) board
+
+### Submit an Issue
+
+If you encounter any bugs or have feature requests please submit an issue on our GitHub repository:
+[https://github.com/cdisc-org/cdisc-rules-engine/issues](https://github.com/cdisc-org/cdisc-rules-engine/issues)
+
+When submitting an issue, please include:
+
+- A clear description of the problem or request
+- Steps to reproduce the issue (for bugs)
+- Your operating system and environment details
+- Any relevant logs or error messages
