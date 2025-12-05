@@ -143,6 +143,10 @@ class BaseOperation:
             result = self._rename_grouping_columns(result)
         grouping_columns = self._get_grouping_columns()
         target_columns = grouping_columns + [self.params.operation_id]
+        target_columns = self._resolve_variable_name(target_columns, self.params.domain)
+        grouping_columns = self._resolve_variable_name(
+            grouping_columns, self.params.domain
+        )
         result = result.reset_index()
         merged = self.evaluation_dataset.merge(
             result[target_columns], on=grouping_columns, how="left"
@@ -315,3 +319,16 @@ class BaseOperation:
     @staticmethod
     def _replace_variable_wildcards(variables_metadata, domain):
         return [var["name"].replace("--", domain) for var in variables_metadata]
+
+    @staticmethod
+    def _resolve_variable_name(variable_name, domain: str):
+        if isinstance(variable_name, list):
+            return [
+                var.replace("--", domain) if "--" in var else var
+                for var in variable_name
+            ]
+        return (
+            variable_name.replace("--", domain)
+            if "--" in variable_name
+            else variable_name
+        )

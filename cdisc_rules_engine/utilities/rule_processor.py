@@ -418,6 +418,7 @@ class RuleProcessor:
                 namespace=operation.get("namespace"),
                 value_is_reference=operation.get("value_is_reference", False),
                 delimiter=operation.get("delimiter"),
+                regex=operation.get("regex"),
             )
             try:
                 # execute operation
