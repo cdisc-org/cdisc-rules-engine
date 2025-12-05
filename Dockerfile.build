@@ -32,7 +32,8 @@ RUN pyinstaller --onedir \
     --add-data="resources/cache:resources/cache" \
     --add-data="resources/templates:resources/templates" \
     --add-data="resources/schema:resources/schema" \
-    --add-data="tests/resources/datasets:tests/resources/datasets"
+    --add-data="tests/resources/datasets:tests/resources/datasets" \
+    --add-data="resources/jsonata:resources/jsonata"
 
 # Set permissions and verify
 RUN chmod +x /app/dist/output/core-ubuntu-22.04/core/core && \
