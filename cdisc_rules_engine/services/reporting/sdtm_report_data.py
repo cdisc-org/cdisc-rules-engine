@@ -186,7 +186,7 @@ class SDTMReportData(BaseReportData):
     def get_dataset_details_data(self) -> list[dict]:
         return [
             {
-                "filename": dataset.filename,
+                "filename": dataset.name,
                 "label": dataset.label,
                 "path": str(Path(dataset.full_path or "").parent),
                 "modification_date": dataset.modification_date,
