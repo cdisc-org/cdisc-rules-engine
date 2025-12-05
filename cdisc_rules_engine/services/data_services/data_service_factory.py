@@ -37,6 +37,7 @@ class DataServiceFactory(FactoryInterface):
         standard_substandard: str = None,
         library_metadata: LibraryMetadataContainer = None,
         max_dataset_size: int = 0,
+        encoding: str = None,
     ):
         if config.getValue("DATA_SERVICE_TYPE"):
             self.data_service_name = config.getValue("DATA_SERVICE_TYPE")
@@ -51,12 +52,13 @@ class DataServiceFactory(FactoryInterface):
         self.standard_substandard = standard_substandard
         self.library_metadata = library_metadata
         self.max_dataset_size = max_dataset_size
+        self.encoding = encoding
         self.dataset_size_threshold = self.config.get_dataset_size_threshold()
 
     def get_data_service(
         self, dataset_paths: Iterable[str] = []
     ) -> DataServiceInterface:
-        if USDMDataService.is_valid_data(dataset_paths):
+        if USDMDataService.is_valid_data(dataset_paths, encoding=self.encoding):
             """Get json file tree to dataset data service"""
             return self.get_service(
                 "usdm",
@@ -66,11 +68,12 @@ class DataServiceFactory(FactoryInterface):
                 library_metadata=self.library_metadata,
                 dataset_path=dataset_paths[0],
                 dataset_implementation=self.get_dataset_implementation(),
+                encoding=self.encoding,
             )
-        elif DummyDataService.is_valid_data(dataset_paths):
+        elif DummyDataService.is_valid_data(dataset_paths, encoding=self.encoding):
             """Get dummy data service"""
             return self.get_dummy_data_service(
-                data=DummyDataService.get_data(dataset_paths)
+                data=DummyDataService.get_data(dataset_paths, encoding=self.encoding)
             )
         elif ExcelDataService.is_valid_data(dataset_paths):
             """Get Excel file to dataset data service"""
@@ -82,6 +85,7 @@ class DataServiceFactory(FactoryInterface):
                 library_metadata=self.library_metadata,
                 dataset_path=dataset_paths[0],
                 dataset_implementation=self.get_dataset_implementation(),
+                encoding=self.encoding,
             )
         else:
             """Get local Directory data service"""
@@ -93,6 +97,7 @@ class DataServiceFactory(FactoryInterface):
                 library_metadata=self.library_metadata,
                 dataset_paths=dataset_paths,
                 dataset_implementation=self.get_dataset_implementation(),
+                encoding=self.encoding,
             )
 
     def get_dummy_data_service(self, data: List[DummyDataset]) -> DataServiceInterface:
@@ -104,6 +109,7 @@ class DataServiceFactory(FactoryInterface):
             standard_substandard=self.standard_substandard,
             library_metadata=self.library_metadata,
             dataset_implementation=self.get_dataset_implementation(),
+            encoding=self.encoding,
         )
 
     def get_dataset_implementation(self):

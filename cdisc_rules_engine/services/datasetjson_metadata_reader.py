@@ -14,11 +14,12 @@ class DatasetJSONMetadataReader:
     from .json file.
     """
 
-    def __init__(self, file_path: str, file_name: str):
+    def __init__(self, file_path: str, file_name: str, encoding: str = None):
         self._metadata_container = {}
         self._file_path = file_path
         self._first_record = None
         self._dataset_name = file_name.split(".")[0].upper()
+        self.encoding = encoding
 
     def read(self) -> dict:
         """
@@ -29,7 +30,7 @@ class DatasetJSONMetadataReader:
             os.path.join("resources", "schema", "dataset.schema.json")
         )
 
-        datasetjson = JSONReader().from_file(self._file_path)
+        datasetjson = JSONReader().from_file(self._file_path, encoding=self.encoding)
 
         try:
             jsonschema.validate(datasetjson, schema)
