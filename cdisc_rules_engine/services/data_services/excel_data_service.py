@@ -81,7 +81,7 @@ class ExcelDataService(BaseDataService):
         dtype_mapping = {
             "Char": str,
             "Num": float,
-            "Boolean": bool,
+            "Boolean": "boolean",
             "Number": float,
             "String": str,
         }
@@ -102,6 +102,8 @@ class ExcelDataService(BaseDataService):
             skiprows=(1, 2, 3),
             na_values=[""],
             keep_default_na=False,
+            true_values=["True", "TRUE", "true", True, 1, "1"],
+            false_values=["False", "FALSE", "false", False, 0, "0"],
         )
         dataframe = dataframe.replace({nan: None})
         dataset = PandasDataset(dataframe)
