@@ -155,16 +155,7 @@ class DataframeType(BaseType):
     def is_column_of_iterables(self, column):
         if not self.value.is_series(column):
             return False
-        non_null_values = []
-        for val in column:
-            if val is None:
-                continue
-            try:
-                if pd.isna(val):
-                    continue
-            except (ValueError, TypeError):
-                pass
-            non_null_values.append(val)
+        non_null_values = column[column.notna()]
         return len(non_null_values) > 0 and all(
             isinstance(val, (list, set)) for val in non_null_values
         )

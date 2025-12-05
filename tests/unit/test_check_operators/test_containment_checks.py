@@ -1,5 +1,6 @@
 from cdisc_rules_engine.check_operators.dataframe_operators import DataframeType
 import pytest
+import pandas as pd
 
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.models.dataset.dask_dataset import DaskDataset
@@ -539,7 +540,11 @@ def test_is_contained_by_with_none_in_comparison(
         ([None, float("nan")], False),
         ([None, float("nan"), ["A"]], True),
         ([float("nan"), ["A"]], True),
-        # Negative cases - not iterables
+        ([pd.NA], False),
+        ([None, pd.NA], False),
+        ([None, pd.NA, ["A"]], True),
+        ([pd.NA, ["A"]], True),
+        ([None, pd.NA, ["A"], ["B"]], True),
         (["A", "B", "C"], False),
         ([None, "A", "B"], False),
         ([["A", "B"], "C", ["D", "E"]], False),
@@ -555,24 +560,3 @@ def test_is_column_of_iterables(column_data, expected):
     dataframe_operator = DataframeType({"value": df})
     result = dataframe_operator.is_column_of_iterables(df["col"])
     assert result == expected
-
-
-def test_is_column_of_iterables_with_pd_na():
-    """Test pd.NA handling (pandas NA value)"""
-    import pandas as pd
-
-    test_cases = [
-        ([pd.NA], False),
-        ([None, pd.NA], False),
-        ([None, pd.NA, ["A"]], True),
-        ([pd.NA, ["A"]], True),
-        ([None, pd.NA, ["A"], ["B"]], True),
-    ]
-
-    for column_data, expected in test_cases:
-        df = PandasDataset.from_dict({"col": column_data})
-        dataframe_operator = DataframeType({"value": df})
-        result = dataframe_operator.is_column_of_iterables(df["col"])
-        assert (
-            result == expected
-        ), f"Failed for {column_data}: got {result}, expected {expected}"
