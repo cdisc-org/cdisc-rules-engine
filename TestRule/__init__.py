@@ -10,6 +10,7 @@ import json
 import os
 import asyncio
 import numpy as np
+import traceback
 
 
 class BadRequestError(Exception):
@@ -49,11 +50,12 @@ def handle_exception(e: Exception):
         return func.HttpResponse(
             json.dumps(
                 {
-                    "errror": "Unknown Exception",
+                    "error": "Unknown Exception",
                     "message": f"An unhandled exception occurred. {str(e)}",
+                    "traceback": traceback.format_exc(),
                 }
             ),
-            status_code=500,
+            status_code=400,
         )
 
 
