@@ -4,9 +4,8 @@ from cdisc_rules_engine.models.dataset import DaskDataset
 from jsonpath_ng.ext import parse
 
 
-def _get_ct_package_dask(
-    row, ct_target, ct_version, ct_packages, standard, substandard
-):
+def _get_ct_package_dask(row, ct_target, ct_version, standard, substandard):
+    """Helper function to construct CT package name for Dask apply."""
     if pd.isna(row[ct_version]) or str(row[ct_version]).strip() == "":
         return ""
     target_val = str(row[ct_target]).strip() if pd.notna(row[ct_target]) else ""
@@ -23,12 +22,13 @@ def _get_ct_package_dask(
         pkg = f"{prefix}-{row[ct_version]}"
     else:
         pkg = f"{target_val}-{row[ct_version]}"
-    return pkg if pkg in ct_packages else ""
+    return pkg
 
 
 class CodeListAttributes(BaseOperation):
     """
     A class for fetching codelist attributes for a trial summary domain.
+    Dynamically loads CT packages based on target and version columns in the data.
     """
 
     def _execute_operation(self):
@@ -37,44 +37,33 @@ class CodeListAttributes(BaseOperation):
         summary (TS) domain.
 
         Returns:
-            pd.Series: A Series of lists containing codelist, where each list
-                represents the codelist package and version.
-                The length of the Series is equal to the length of the given
-                dataframe.
+            pd.Series: A Series of sets containing codelist attributes, where each set
+                represents the attributes for the CT package and version specified in that row.
+                The length of the Series is equal to the length of the given dataframe.
         """
         return self._get_codelist_attributes()
 
     def _get_codelist_attributes(self):
         """
-        Fetches codelist for a given codelist package and version from the TS
-        dataset.
-        Returns it as a Series of lists like:
-          0    ["STUDYID", "DOMAIN", ...]
-          1    ["STUDYID", "DOMAIN", ...]
-          2    ["STUDYID", "DOMAIN", ...]
-          ...
+        Fetches codelist attributes for CT packages dynamically determined from the data.
 
-        pd.Series: A Series of lists containing codelist, where each list
-            represents the codelist package and version.
-            The length of the Series is equal to the length of the given
-            dataframe.
+        The operation:
+        1. Constructs CT package names from target and version columns for each row
+        2. Loads only the unique CT packages referenced in the data
+        3. Returns attributes for each row based on its specific CT package
+
+        Returns:
+            pd.Series: A Series of sets containing codelist attributes, where each set
+                represents the attributes for the CT package and version specified in that row.
         """
-
-        # 1.0 get input variables
-        # -------------------------------------------------------------------
-        ct_name = "CT_PACKAGE"  # a column for controlled term package names
-        # Get controlled term attribute column name specified in rule
+        # Get input variables
+        ct_name = "CT_PACKAGE"  # column name for CT package identifiers
         ct_attribute = self.params.ct_attribute
         ct_target = self.params.target
         ct_version = self.params.ct_version
-        ct_packages = self.params.ct_packages
         df = self.params.dataframe
-        # 2.0 build codelist from cache
-        # -------------------------------------------------------------------
-        ct_cache = self._get_ct_from_library_metadata(
-            ct_key=ct_name, ct_val=ct_attribute
-        )
 
+        # Construct CT package name for each row
         def get_ct_package(row):
             if pd.isna(row[ct_version]) or str(row[ct_version]).strip() == "":
                 return ""
@@ -95,8 +84,9 @@ class CodeListAttributes(BaseOperation):
             else:
                 # Handle external codelists
                 pkg = f"{target_val}-{row[ct_version]}"
-            return pkg if pkg in ct_packages else ""
+            return pkg
 
+        # Get CT package for each row
         if isinstance(df, DaskDataset):
             row_packages = df.data.apply(
                 _get_ct_package_dask,
@@ -105,35 +95,54 @@ class CodeListAttributes(BaseOperation):
                 args=(
                     ct_target,
                     ct_version,
-                    ct_packages,
                     self.params.standard,
                     self.params.standard_substandard,
                 ),
             )
         else:
             row_packages = df.data.apply(get_ct_package, axis=1)
+
+        # Get unique CT packages that are actually referenced in the data
+        if isinstance(df, DaskDataset):
+            unique_packages = set(row_packages.compute().unique())
+        else:
+            unique_packages = set(row_packages.unique())
+
+        # Remove empty strings from the set
+        unique_packages.discard("")
+
+        # Build cache from only the packages referenced in the data
+        ct_cache = self._get_ct_from_library_metadata(
+            ct_key=ct_name, ct_val=ct_attribute, ct_packages=list(unique_packages)
+        )
+
+        # Build mapping from package to attributes
         package_to_codelist = {}
         for _, row in ct_cache.iterrows():
             package_to_codelist[row[ct_name]] = row[ct_attribute]
+
+        # Map each row's package to its attributes
         result = row_packages.apply(
             lambda pkg: package_to_codelist.get(pkg, set()) if pkg else set()
         )
         return result
 
-    def _get_ct_from_library_metadata(self, ct_key: str, ct_val: str):
+    def _get_ct_from_library_metadata(
+        self, ct_key: str, ct_val: str, ct_packages: list
+    ):
         """
         Retrieves the codelist information from the cache based on the given
-        ct_key and ct_val.
+        ct_key, ct_val, and list of CT packages to load.
 
         Args:
-            ct_key (str): The key for identifying the codelist.
-            ct_val (str): The value associated with the codelist.
+            ct_key (str): The key for identifying the codelist (column name).
+            ct_val (str): The value associated with the codelist (attribute name).
+            ct_packages (list): List of CT package names to load.
 
         Returns:
             pd.DataFrame: A DataFrame containing the codelist information
-            retrieved from the cache.
+                retrieved from the cache.
         """
-        ct_packages = self.params.ct_packages
         ct_term_maps = []
         for package in ct_packages:
             parts = package.rsplit("-", 3)
@@ -145,60 +154,13 @@ class CodeListAttributes(BaseOperation):
                 self.library_metadata.get_ct_package_metadata(package) or {}
             )
 
-        # convert codelist to dataframe
+        # Convert codelist to dataframe
         ct_result = {ct_key: [], ct_val: []}
         ct_result = self._add_codelist(ct_key, ct_val, ct_term_maps, ct_result)
         return pd.DataFrame(ct_result)
 
-    def _get_ct_from_dataset(self, ct_key: str, ct_val: str):
-        """
-        Retrieves the codelist information from the dataset based on the given
-        ct_key and ct_val.
-
-        Args:
-            ct_key (str): The key for identifying the codelist.
-            ct_val (str): The value associated with the codelist.
-
-        Returns:
-            pd.DataFrame: A DataFrame containing the codelist information
-            retrieved from the dataset.
-        """
-        ct_packages = self.params.ct_packages
-        # get attribute variable specified in rule
-        ct_attribute = self.params.ct_attribute
-
-        ct_target = self.params.target  # target variable specified in rule
-        ct_version = self.params.ct_version  # controlled term version
-        if ct_attribute == "Term CCODE":
-            ct_attribute = "TSVALCD"
-        sel_cols = [ct_target, ct_version, ct_attribute, ct_key]
-
-        # get dataframe from dataset records
-        df = self.params.dataframe
-
-        # add CT_PACKAGE column
-        df[ct_key] = df.data.apply(
-            lambda row: (
-                "sdtmct-" + row[ct_version]
-                if row[ct_target] is not None
-                and row[ct_target] in ("CDISC", "CDISC CT")
-                else row[ct_target] + "-" + row[ct_version]
-            ),
-            axis=1,
-        )
-
-        # select records
-        if isinstance(df, DaskDataset):
-            filtered_df = df.filter_by_value(ct_key, ct_packages)
-            df_sel = filtered_df.loc[:, sel_cols]
-        else:
-            df_sel = df[(df[ct_key].isin(ct_packages))].loc[:, sel_cols]
-        # group the records
-        result = df_sel.groupby(ct_key)[ct_attribute].unique().reset_index()
-        result = result.rename(columns={ct_attribute: ct_val})
-        return result
-
     def _add_codelist(self, ct_key, ct_val, ct_term_maps, ct_result):
+        """Helper to add codelist data to result dictionary."""
         for item in ct_term_maps:
             ct_result[ct_key].append(item.get("package"))
             codes = self._extract_codes_by_attribute(item, ct_val)
@@ -208,6 +170,16 @@ class CodeListAttributes(BaseOperation):
     def _extract_codes_by_attribute(
         self, ct_package_data: dict, ct_attribute: str
     ) -> set:
+        """
+        Extracts codes/values from CT package data based on the specified attribute.
+
+        Args:
+            ct_package_data (dict): CT package metadata dictionary.
+            ct_attribute (str): Attribute to extract (e.g., "Term CCODE", "Codelist Value").
+
+        Returns:
+            set: Set of attribute values extracted from the CT package.
+        """
         attribute_name_map = {
             "Codelist CCODE": "$.codelists[*].conceptId",
             "Codelist Value": "$.codelists[*].submissionValue",
