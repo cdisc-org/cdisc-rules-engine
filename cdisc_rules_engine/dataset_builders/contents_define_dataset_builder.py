@@ -15,6 +15,8 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
         dataset_name - Name of the dataset
         dataset_size - File size
         dataset_domain - Domain of the dataset
+        is_ap - Whether the domain is an AP domain
+        ap_suffix - The 2-character suffix from AP domains
         define_dataset_class - dataset class
         define_dataset_domain - dataset domain from define
         define_dataset_is_non_standard - whether a dataset is a standard
