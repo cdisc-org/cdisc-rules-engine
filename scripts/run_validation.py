@@ -94,6 +94,7 @@ def validate_single_rule(
         jsonata_custom_functions=args.jsonata_custom_functions,
         max_errors_per_rule=max_errors_per_rule,
         errors_per_dataset_flag=per_dataset_flag,
+        encoding=args.encoding,
     )
     results = engine.validate_single_rule(rule, datasets)
     results = list(itertools.chain(*results.values()))

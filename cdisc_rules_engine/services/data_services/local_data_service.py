@@ -55,14 +55,17 @@ class LocalDataService(BaseDataService):
         config: ConfigInterface = None,
         **kwargs,
     ):
-        if cls._instance is None:
+        encoding = kwargs.get("encoding")
+        if cls._instance is None or (
+            encoding is not None and cls._instance.encoding != encoding
+        ):
             service = cls(
                 cache_service=cache_service,
                 reader_factory=DataReaderFactory(
                     dataset_implementation=kwargs.get(
                         "dataset_implementation", PandasDataset
                     ),
-                    encoding=kwargs.get("encoding"),
+                    encoding=encoding,
                 ),
                 config=config,
                 **kwargs,

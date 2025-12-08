@@ -14,72 +14,21 @@ class XPTReader(DataReaderInterface):
         self.dataset_implementation = dataset_implementation
         self.encoding = encoding
 
+    @property
+    def _encoding(self):
+        return self.encoding or "utf-8"
+
     def read(self, data):
-        if self.encoding:
-            df = pd.read_sas(BytesIO(data), format="xport", encoding=self.encoding)
-        else:
-            encodings_to_try = ["utf-8", "cp1252", "latin-1", "utf-16", "utf-32"]
-            last_error = None
-
-            for encoding in encodings_to_try:
-                try:
-                    df = pd.read_sas(BytesIO(data), format="xport", encoding=encoding)
-                    break
-                except UnicodeDecodeError as e:
-                    last_error = e
-                    continue
-            else:
-                if last_error:
-                    raise last_error
-                raise UnicodeDecodeError(
-                    "utf-8", b"", 0, 1, "Could not decode XPT data with any encoding"
-                )
-
+        df = pd.read_sas(BytesIO(data), format="xport", encoding=self._encoding)
         df = self._format_floats(df)
         return df
 
     def _read_pandas(self, file_path):
-        if self.encoding:
-            data = pd.read_sas(file_path, format="xport", encoding=self.encoding)
-        else:
-            encodings_to_try = ["utf-8", "cp1252", "latin-1", "utf-16", "utf-32"]
-            last_error = None
-
-            for encoding in encodings_to_try:
-                try:
-                    data = pd.read_sas(file_path, format="xport", encoding=encoding)
-                    break
-                except UnicodeDecodeError as e:
-                    last_error = e
-                    continue
-            else:
-                if last_error:
-                    raise last_error
-                raise UnicodeDecodeError(
-                    "utf-8", b"", 0, 1, "Could not decode XPT file with any encoding"
-                )
-
+        data = pd.read_sas(file_path, format="xport", encoding=self._encoding)
         return PandasDataset(self._format_floats(data))
 
     def _read_xpt_with_encoding(self, file_path: str, chunksize: int = None):
-        if self.encoding:
-            return pd.read_sas(file_path, chunksize=chunksize, encoding=self.encoding)
-
-        encodings_to_try = ["utf-8", "cp1252", "latin-1", "utf-16", "utf-32"]
-        last_error = None
-
-        for encoding in encodings_to_try:
-            try:
-                return pd.read_sas(file_path, chunksize=chunksize, encoding=encoding)
-            except UnicodeDecodeError as e:
-                last_error = e
-                continue
-        else:
-            if last_error:
-                raise last_error
-            raise UnicodeDecodeError(
-                "utf-8", b"", 0, 1, "Could not decode XPT file with any encoding"
-            )
+        return pd.read_sas(file_path, chunksize=chunksize, encoding=self._encoding)
 
     def to_parquet(self, file_path: str) -> str:
         temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".parquet")

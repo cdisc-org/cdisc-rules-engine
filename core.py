@@ -43,7 +43,7 @@ DEFAULT_CACHE_PATH = os.path.join(
 
 def validate_encoding(ctx, param, value):
     if value is None:
-        return value
+        return None
     try:
         codecs.lookup(value)
         return value
@@ -368,7 +368,7 @@ def _validate_no_arguments(logger) -> None:
     callback=validate_encoding,
     help=(
         "File encoding for reading datasets. "
-        "If not specified, automatically detects encoding (UTF-8 for JSON, UTF-8 with cp1252 fallback for XPT). "
+        "If not specified, defaults to UTF-8. "
         "Supported encodings: utf-8, utf-16, utf-32, cp1252, latin-1, etc."
     ),
 )

@@ -20,6 +20,10 @@ class DatasetNDJSONReader(DataReaderInterface):
         self.dataset_implementation = dataset_implementation
         self.encoding = encoding
 
+    @property
+    def _encoding(self):
+        return self.encoding or "utf-8"
+
     def get_schema(self) -> dict:
         schema = JSONReader().from_file(
             os.path.join("resources", "schema", "dataset-ndjson-schema.json")
@@ -27,27 +31,14 @@ class DatasetNDJSONReader(DataReaderInterface):
         return schema
 
     def read_json_file(self, file_path: str) -> dict:
-        if self.encoding:
-            with open(file_path, "r", encoding=self.encoding) as file:
+        try:
+            with open(file_path, "r", encoding=self._encoding) as file:
                 lines = file.readlines()
             return json.loads(lines[0]), [json.loads(line) for line in lines[1:]]
-
-        encodings_to_try = ["utf-8", "utf-16", "utf-32"]
-        last_error = None
-
-        for enc in encodings_to_try:
-            try:
-                with open(file_path, "r", encoding=enc) as file:
-                    lines = file.readlines()
-                return json.loads(lines[0]), [json.loads(line) for line in lines[1:]]
-            except (UnicodeDecodeError, UnicodeError) as e:
-                last_error = e
-                continue
-        else:
-            if last_error:
-                raise last_error
+        except (UnicodeDecodeError, UnicodeError) as e:
             raise ValueError(
-                f"Could not decode NDJSON file {file_path} with UTF-8, UTF-16, or UTF-32 encoding"
+                f"Could not decode NDJSON file {file_path} with {self._encoding} encoding: {e}. "
+                f"Please specify the correct encoding using the -e flag."
             )
 
     def _raw_dataset_from_file(self, file_path) -> pd.DataFrame:
