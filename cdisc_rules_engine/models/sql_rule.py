@@ -49,19 +49,19 @@ class SQLRule:
                 "standards": cls.parse_standards(authorities),
                 "classes": rule_metadata.get("Scope", {}).get("Classes"),
                 "domains": rule_metadata.get("Scope", {}).get("Domains"),
-                "rule_type": rule_metadata.get("Rule_Type"),
+                "rule_type": rule_metadata.get("Rule Type"),
                 "conditions": cls.parse_conditions(rule_metadata.get("Check")),
                 "actions": cls.parse_actions(rule_metadata.get("Outcome")),
-                "use_case": rule_metadata.get("Scope", {}).get("Use_Case"),
+                "use_case": rule_metadata.get("Scope", {}).get("Use Case"),
             }
 
             if "Operations" in rule_metadata:
                 executable_rule["operations"] = rule_metadata.get("Operations")
 
-            if "Match_Datasets" in rule_metadata:
-                executable_rule["datasets"] = cls.parse_datasets(rule_metadata.get("Match_Datasets"))
-            if "Output_Variables" in rule_metadata.get("Outcome", {}):
-                executable_rule["output_variables"] = rule_metadata.get("Outcome", {})["Output_Variables"]
+            if "Match Datasets" in rule_metadata:
+                executable_rule["datasets"] = cls.parse_datasets(rule_metadata.get("Match Datasets"))
+            if "Output Variables" in rule_metadata.get("Outcome", {}):
+                executable_rule["output_variables"] = rule_metadata.get("Outcome", {})["Output Variables"]
             return executable_rule
         else:
             return rule_metadata
