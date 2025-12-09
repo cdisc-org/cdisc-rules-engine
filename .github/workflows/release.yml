@@ -17,7 +17,7 @@ jobs:
             name: "core-mac-apple-silicon"
           - os: "windows-latest"
             name: "core-windows"
-          - os: "macos-13"
+          - os: "macos-15-intel"
             name: "core-mac-intel"
     uses: ./.github/workflows/build-binary.yml
     with:
