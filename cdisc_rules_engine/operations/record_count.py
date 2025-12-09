@@ -28,7 +28,7 @@ class RecordCount(BaseOperation):
                 if self.params.regex
                 else effective_grouping
             )
-            if self.params.regex and not filtered:
+            if self.params.regex and filtered is None:
                 group_df = self._get_regex_grouped_counts(
                     self.params.dataframe, grouping_for_operations
                 )
