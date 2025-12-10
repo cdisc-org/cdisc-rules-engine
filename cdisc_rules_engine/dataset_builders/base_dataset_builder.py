@@ -160,6 +160,10 @@ class BaseDatasetBuilder:
         domain = self.dataset_metadata.domain
         if not domain and getattr(self.dataset_metadata, "is_supp", False):
             domain = getattr(self.dataset_metadata, "rdomain", None)
+            name = getattr(self.dataset_metadata, "name", None)
+            return define_xml_reader.extract_variables_metadata(
+                domain_name=domain, name=name
+            )
         if not domain:
             return []
         return define_xml_reader.extract_variables_metadata(domain_name=domain)
