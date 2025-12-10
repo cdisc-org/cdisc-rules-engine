@@ -12,10 +12,9 @@ class MaxDate(BaseOperation):
             else:
                 result = max_date.isoformat()
         else:
-            grouped = self.params.dataframe.groupby(
+            result = self.params.dataframe.groupby(
                 self.params.grouping, as_index=False, group_keys=False
-            )
-            result = grouped.data[self.params.target].agg(self._max_date_for_column)
+            ).max()
         if isinstance(result, pd.Series):
             result = result.apply(lambda x: x.isoformat() if pd.notna(x) else "")
         elif isinstance(result, pd.DataFrame):
@@ -25,8 +24,3 @@ class MaxDate(BaseOperation):
                         lambda x: x.isoformat() if pd.notna(x) else ""
                     )
         return result
-
-    def _max_date_for_column(self, column) -> pd.Series:
-        return pd.Series(
-            {self.params.operation_id: pd.to_datetime(column).dt.date.max().isoformat()}
-        )
