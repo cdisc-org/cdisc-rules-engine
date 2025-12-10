@@ -34,9 +34,32 @@ from cdisc_rules_engine.services.data_services.data_service_factory import (
                 "dates": ["2025-10-10", "2025-10-15", "2025-12-02", "2025-12-11"],
                 "USUBJID": ["00002", "00002", "00003", "00003"],
             },
-            pd.Series(["2025-10-15", "2025-10-15", "2025-12-11", "2025-12-11"]),
+            PandasDataset.from_records(
+                [
+                    {
+                        "dates": "2025-10-10",
+                        "USUBJID": "00002",
+                        "operation_id": "2025-10-15",
+                    },
+                    {
+                        "dates": "2025-10-15",
+                        "USUBJID": "00002",
+                        "operation_id": "2025-10-15",
+                    },
+                    {
+                        "dates": "2025-12-02",
+                        "USUBJID": "00003",
+                        "operation_id": "2025-12-11",
+                    },
+                    {
+                        "dates": "2025-12-11",
+                        "USUBJID": "00003",
+                        "operation_id": "2025-12-11",
+                    },
+                ]
+            ),
             PandasDataset,
-            "USUBJID",
+            ["USUBJID"],
         ),
     ],
 )
@@ -58,8 +81,8 @@ def test_max_date(
     ).execute()
     assert operation_params.operation_id in result
 
-    if isinstance(expected, pd.Series):
-        assert result[operation_params.operation_id].equals(expected)
+    if isinstance(expected, PandasDataset):
+        assert result.data.equals(expected.data)
     else:
         for val in result[operation_params.operation_id]:
             assert val == expected
