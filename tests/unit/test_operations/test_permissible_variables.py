@@ -339,6 +339,13 @@ def test_get_permissible_variables(
         side_effect=mock_cached_method,
     ):
         result: pd.DataFrame = operation.execute()
-    variables: List[str] = ["AETERM", "AEPERM", "TIMING_VAR"]
+    variables: List[str] = [
+        "STUDYID",
+        "DOMAIN",
+        "AETERM",
+        "AESEQ",
+        "AEPERM",
+        "TIMING_VAR",
+    ]
     for result_array in result[operation_params.operation_id]:
         assert sorted(result_array) == sorted(variables)
