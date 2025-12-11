@@ -88,5 +88,5 @@ class SDTMDatasetMetadata(DatasetMetadata):
         if self.is_supp:
             return ""
         if isinstance(self.domain, str) and len(self.domain) >= 4:
-            return self.domain[2:4]
+            return self.domain[2::]
         return ""

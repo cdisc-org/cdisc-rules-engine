@@ -291,7 +291,7 @@ def get_variables_metadata_from_standard_model(
         # Domain not found in the model. Detect class name from data
         domain_details = search_in_list_of_dicts(
             datasets,
-            lambda item: domain == (item.domain_cleaned or item.name),
+            lambda item: domain == (item.domain or item.name),
         )
         class_name = data_service.get_dataset_class(
             dataframe, dataset_path, datasets, domain_details
