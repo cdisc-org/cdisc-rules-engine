@@ -8,6 +8,7 @@ from cdisc_rules_engine.models.validation_args import Validation_args
 from cdisc_rules_engine.services.reporting.report_metadata_item import (
     ReportMetadataItem,
 )
+from cdisc_rules_engine.utilities.utils import set_max_errors_per_rule
 
 
 class BaseReportData(ABC):
@@ -33,7 +34,9 @@ class BaseReportData(ABC):
         self._template = template
         self._standard = args.standard.upper()
         self._version = args.version.replace("-", ".")
-        self._max_errors_limit, self._errors_per_dataset_flag = args.max_errors_per_rule
+        self._max_errors_limit, self._errors_per_dataset_flag = set_max_errors_per_rule(
+            args
+        )
 
     @staticmethod
     def process_values(values: list[str]) -> list[str]:
