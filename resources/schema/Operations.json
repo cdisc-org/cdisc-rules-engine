@@ -550,6 +550,9 @@
     "operator": {
       "type": "string"
     },
+    "regex": {
+      "type": "string"
+    },
     "returntype": {
       "type": "string",
       "enum": ["code", "value", "pref_term"]
