@@ -257,6 +257,13 @@
     },
     {
       "properties": {
+        "operator": { "const": "standard_domains" }
+      },
+      "required": ["id", "operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
         "operator": {
           "const": "valid_codelist_dates"
         }
@@ -541,6 +548,9 @@
       "type": "string"
     },
     "operator": {
+      "type": "string"
+    },
+    "regex": {
       "type": "string"
     },
     "returntype": {

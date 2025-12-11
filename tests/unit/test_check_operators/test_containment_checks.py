@@ -1,5 +1,6 @@
 from cdisc_rules_engine.check_operators.dataframe_operators import DataframeType
 import pytest
+import pandas as pd
 
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.models.dataset.dask_dataset import DaskDataset
@@ -492,13 +493,13 @@ def test_does_not_contain_with_none_first_row(
             {"target": ["A", "B", "C"], "comparison": [None, ["A", "B"], ["C", "D"]]},
             "comparison",
             PandasDataset,
-            [False, False, False],
+            [False, True, True],
         ),
         (
             {"target": ["A", "B", "C"], "comparison": [["A", "B"], None, ["C", "D"]]},
             "comparison",
             PandasDataset,
-            [False, False, False],
+            [True, False, True],
         ),
     ],
 )
@@ -511,3 +512,51 @@ def test_is_contained_by_with_none_in_comparison(
         {"target": "target", "comparator": comparator}
     )
     assert result.equals(df.convert_to_series(expected_result))
+
+
+@pytest.mark.parametrize(
+    "column_data,expected",
+    [
+        ([["A", "B"], ["C", "D"], ["E", "F"]], True),
+        ([{"A", "B"}, {"C", "D"}], True),
+        ([None, ["A", "B"], ["C", "D"]], True),
+        ([["A", "B"], None, ["C", "D"]], True),
+        ([["A", "B"], ["C", "D"], None], True),
+        ([None, None, ["A", "B"]], True),
+        ([None, {"A", "B"}, {"C", "D"}], True),
+        ([[]], True),
+        ([set()], True),
+        ([None, []], True),
+        ([None, set()], True),
+        ([["A"], []], True),
+        ([["A"], set()], True),
+        ([{"A"}, []], True),
+        ([["A"]], True),
+        ([{"A"}], True),
+        ([None, ["A"]], True),
+        ([["A"], {"B"}], True),
+        ([None, ["A"], {"B"}], True),
+        ([float("nan")], False),
+        ([None, float("nan")], False),
+        ([None, float("nan"), ["A"]], True),
+        ([float("nan"), ["A"]], True),
+        ([pd.NA], False),
+        ([None, pd.NA], False),
+        ([None, pd.NA, ["A"]], True),
+        ([pd.NA, ["A"]], True),
+        ([None, pd.NA, ["A"], ["B"]], True),
+        (["A", "B", "C"], False),
+        ([None, "A", "B"], False),
+        ([["A", "B"], "C", ["D", "E"]], False),
+        ([None, None, None], False),
+        ([], False),
+        ([("A", "B")], False),
+        ([None, ("A", "B")], False),
+        ([["A"], ("B", "C")], False),
+    ],
+)
+def test_is_column_of_iterables(column_data, expected):
+    df = PandasDataset.from_dict({"col": column_data})
+    dataframe_operator = DataframeType({"value": df})
+    result = dataframe_operator.is_column_of_iterables(df["col"])
+    assert result == expected
