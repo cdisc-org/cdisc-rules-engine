@@ -105,17 +105,17 @@ class SDTMReportData(BaseReportData):
             ReportMetadataItem("CORE Engine Version", 4, __version__)
         )
         conformance_details.append(
-            ReportMetadataItem("Issue Limit Per Rule", 5, self._max_errors_limit)
+            ReportMetadataItem(
+                "Issue Limit Per Rule",
+                5,
+                "None" if self._max_errors_limit is None else self._max_errors_limit,
+            )
         )
         conformance_details.append(
             ReportMetadataItem(
                 "Issue Limit Per Dataset",
                 6,
-                (
-                    "None"
-                    if self._errors_per_dataset_flag == 0
-                    else str(self._errors_per_dataset_flag)
-                ),
+                "True" if self._errors_per_dataset_flag else "None",
             )
         )
         conformance_details.append(
@@ -186,7 +186,7 @@ class SDTMReportData(BaseReportData):
     def get_dataset_details_data(self) -> list[dict]:
         return [
             {
-                "filename": dataset.filename,
+                "filename": dataset.name,
                 "label": dataset.label,
                 "path": str(Path(dataset.full_path or "").parent),
                 "modification_date": dataset.modification_date,
