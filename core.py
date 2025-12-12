@@ -1,4 +1,5 @@
 import asyncio
+import codecs
 import json
 import logging
 import os
@@ -38,6 +39,19 @@ VALIDATION_FORMATS_MESSAGE = (
 DEFAULT_CACHE_PATH = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), DefaultFilePaths.CACHE.value
 )
+
+
+def validate_encoding(ctx, param, value):
+    if value is None:
+        return None
+    try:
+        codecs.lookup(value)
+        return value
+    except LookupError:
+        raise click.BadParameter(
+            f"Invalid encoding '{value}'. Please provide a valid encoding name "
+            f"(e.g., utf-8, utf-16, utf-32, cp1252, latin-1)."
+        )
 
 
 def valid_data_file(data_path: list) -> tuple[list, set]:
@@ -346,6 +360,18 @@ def _validate_no_arguments(logger) -> None:
         "If true, limits reported issues per dataset per rule."
     ),
 )
+@click.option(
+    "-e",
+    "--encoding",
+    default=None,
+    required=False,
+    callback=validate_encoding,
+    help=(
+        "File encoding for reading datasets. "
+        "If not specified, defaults to UTF-8. "
+        "Supported encodings: utf-8, utf-16, utf-32, cp1252, latin-1, etc."
+    ),
+)
 @click.pass_context
 def validate(
     ctx,
@@ -381,6 +407,7 @@ def validate(
     jsonata_custom_functions: tuple[()] | tuple[tuple[str, str], ...],
     max_report_rows: int,
     max_errors_per_rule: tuple[int, bool],
+    encoding: str,
 ):
     """
     Validate data using CDISC Rules Engine
@@ -472,6 +499,7 @@ def validate(
             jsonata_custom_functions,
             max_report_rows,
             max_errors_per_rule,
+            encoding,
         )
     )
 
@@ -844,6 +872,7 @@ def test_validate():
                     jsonata_custom_functions,
                     max_report_rows,
                     max_report_errors,
+                    None,
                 )
             )
             print("JSON validation completed successfully!")
@@ -874,6 +903,7 @@ def test_validate():
                     jsonata_custom_functions,
                     max_report_rows,
                     max_report_errors,
+                    None,
                 )
             )
             print("XPT validation completed successfully!")

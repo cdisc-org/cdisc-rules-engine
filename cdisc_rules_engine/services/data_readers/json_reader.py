@@ -6,11 +6,18 @@ from cdisc_rules_engine.interfaces import (
 
 
 class JSONReader(DataReaderInterface):
-    def from_file(self, file_path):
+    def from_file(self, file_path, encoding: str = None):
         try:
-            with open(file_path, "rb") as fp:
-                json = load(fp)
-            return json
+            encoding = encoding or "utf-8"
+            with open(file_path, "r", encoding=encoding) as fp:
+                json_data = load(fp)
+            return json_data
+        except (UnicodeDecodeError, UnicodeError) as e:
+            raise InvalidJSONFormat(
+                f"\n  Error reading JSON from: {file_path}"
+                f"\n  Failed to decode with {encoding} encoding: {e}"
+                f"\n  Please specify the correct encoding using the -e flag."
+            )
         except Exception as e:
             raise InvalidJSONFormat(
                 f"\n  Error reading JSON from: {file_path}"
