@@ -48,13 +48,20 @@ def cached(cache_key: str):  # noqa: C901
     """
 
     def format_cache_key(
-        key: str, args=[], study_id=None, data_bundle_id=None, domain_name=None
+        key: str,
+        args=[],
+        study_id=None,
+        data_bundle_id=None,
+        domain_name=None,
+        name=None,
     ):
         """
         If a study_id and data_bundle_id are available,
         cache_key = {study_id}/{data_bundle_id}/key
         else the function just returns the provided cache key.
         """
+        if name:
+            key = f"{name}/" + key
         if domain_name:
             key = f"{domain_name}/" + key
         if data_bundle_id:
@@ -85,6 +92,7 @@ def cached(cache_key: str):  # noqa: C901
                 if hasattr(instance, "domain")
                 else kwargs.get("domain_name")
             )
+            name = instance.name if hasattr(instance, "name") else kwargs.get("name")
             if (
                 hasattr(instance, "cache_service")
                 and instance.cache_service is not None
@@ -95,6 +103,7 @@ def cached(cache_key: str):  # noqa: C901
                     study_id=study_id,
                     data_bundle_id=data_bundle_id,
                     domain_name=domain_name,
+                    name=name,
                 )
                 cached_data = instance.cache_service.get(key)
                 if cached_data is not None:
