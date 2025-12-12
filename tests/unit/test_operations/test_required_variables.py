@@ -206,6 +206,6 @@ def test_get_required_variables(operation_params: OperationParams, dataset_type)
         side_effect=mock_cached_method,
     ):
         result: pd.DataFrame = operation.execute()
-    variables: List[str] = sorted(["STUDYID", "DOMAIN", "AESEQ", "AETEST"])
+    variables: List[str] = sorted(["AETEST"])
     for result_array in result[operation_params.operation_id]:
         assert sorted(result_array) == variables
