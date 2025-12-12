@@ -4,7 +4,9 @@ from unittest.mock import MagicMock, patch
 import pandas as pd
 import pytest
 from conftest import mock_data_service
-
+from cdisc_rules_engine.exceptions.custom_exceptions import (
+    OperationError,
+)
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.models.rule_conditions import ConditionCompositeFactory
 from cdisc_rules_engine.models.rule_conditions.condition_composite import (
@@ -1252,10 +1254,7 @@ def test_duplicate_for_targets():
         )
 
 
-def test_operation_nonexistent_domain_sets_none(mock_data_service, caplog):
-    """Operation on a domain not present in datasets should create a column with None values
-    and log domain-missing message."""
-    caplog.set_level("INFO")
+def test_operation_nonexistent_domain_raises_error(mock_data_service):
     df = PandasDataset.from_dict({"DOMAIN": ["LB", "LB"], "LBSEQ": [1, 2]})
     rule = {
         "operations": [
@@ -1263,28 +1262,24 @@ def test_operation_nonexistent_domain_sets_none(mock_data_service, caplog):
         ]
     }
     processor = RuleProcessor(mock_data_service, InMemoryCacheService())
-    # Use SDTMDatasetMetadata objects (dict caused AttributeError: unsplit_name)
     datasets_metadata = [
         SDTMDatasetMetadata(name="LB", filename="lb.xpt", first_record={"DOMAIN": "LB"})
     ]
-    result = processor.perform_rule_operations(
-        rule=rule,
-        dataset=df.copy(),
-        domain="LB",
-        datasets=datasets_metadata,
-        dataset_path="lb.xpt",
-        standard="sdtmig",
-        standard_version="3-1-2",
-        standard_substandard=None,
-    )
-    # Assert new column created
-    assert "$ae_ids" in result.columns
-    # All values should be None
-    assert result["$ae_ids"].isnull().all()
-    # Original data preserved
-    assert result["LBSEQ"].tolist() == [1, 2]
-    # Log contains domain missing message
-    assert any(
-        "Domain AE" in rec.message and "doesn't exist" in rec.message
-        for rec in caplog.records
+    with pytest.raises(OperationError) as exc_info:
+        processor.perform_rule_operations(
+            rule=rule,
+            dataset=df.copy(),
+            domain="LB",
+            datasets=datasets_metadata,
+            dataset_path="lb.xpt",
+            standard="sdtmig",
+            standard_version="3-1-2",
+            standard_substandard=None,
+        )
+    error_message = str(exc_info.value)
+    assert (
+        "Failed to execute rule operation. Operation: distinct, "
+        "Target: AESEQ, Domain: AE, Error: Failed to execute rule operation. "
+        "Domain AE does not exist. Operation: distinct, Target: AESEQ, Core ID: None"
+        == error_message
     )
