@@ -159,7 +159,6 @@ Fetches controlled terminology attribute values from CT packages based on row-sp
 - `ct_attribute`: Attribute to extract - `"Term CCODE"`, `"Codelist CCODE"`, `"Term Value"`, `"Codelist Value"`, or `"Term Preferred Term"`
 - `target`: Column containing CT reference (e.g., "TSVCDREF")
 - `version`: Column containing CT version (e.g., "TSVCDVER")
-- `ct_packages`: List of CT packages to search (e.g., `["sdtmct-2020-03-27"]`)
 
 ```yaml
 - id: $VALID_TERM_CODES
@@ -168,9 +167,6 @@ Fetches controlled terminology attribute values from CT packages based on row-sp
   ct_attribute: Term CCODE
   version: TSVCDVER
   target: TSVCDREF
-  ct_packages:
-    - sdtmct-2020-03-27
-    - sdtmct-2022-12-16
 ```
 
 ### valid_codelist_dates
