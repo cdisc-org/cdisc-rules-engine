@@ -50,7 +50,7 @@ class COREActions(BaseActions):
         rows_with_error = self.variable.dataset.get_error_rows(results)
         target_names: Set[str] = RuleProcessor.extract_target_names_from_rule(
             self.rule,
-            self.dataset_metadata.domain,
+            self.dataset_metadata.domain_cleaned,
             self.variable.dataset.columns.tolist(),
         )
         target_names = self._get_target_names_from_list_values(
@@ -219,7 +219,7 @@ class COREActions(BaseActions):
             ),
             targets=sorted(targets),
             errors=errors_list,
-            message=message.replace("--", self.dataset_metadata.domain or ""),
+            message=message.replace("--", self.dataset_metadata.domain_cleaned or ""),
         )
 
     def _generate_errors_by_target_presence(
