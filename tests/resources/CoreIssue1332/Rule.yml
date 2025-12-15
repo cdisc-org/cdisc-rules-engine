@@ -1,0 +1,70 @@
+# Variable: --TERM
+# Condition:
+# Rule: DOMAIN value length = 4
+Authorities:
+  - Organization: CDISC
+    Standards:
+      - Name: SDTMIG
+        References:
+          - Citations:
+              - Cited Guidance:
+                  Each domain dataset is distinguished by a unique, two-character
+                  code
+                Document: IG v3.4
+                Section: "2.2"
+            Origin: SDTM and SDTMIG Conformance Rules
+            Rule Identifier:
+              Id: CG0309
+              Version: "1"
+            Version: "2.0"
+        Version: "3.4"
+      - Name: SDTMIG
+        References:
+          - Citations:
+              - Cited Guidance:
+                  Each domain dataset is distinguished by a unique, two-character
+                  code
+                Document: IG v3.2
+                Section: "2.2"
+            Origin: SDTM and SDTMIG Conformance Rules
+            Rule Identifier:
+              Id: CG0309
+              Version: "1"
+            Version: "2.0"
+        Version: "3.2"
+      - Name: SDTMIG
+        References:
+          - Citations:
+              - Cited Guidance:
+                  Each domain dataset is distinguished by a unique, two-character
+                  code
+                Document: IG v3.3
+                Section: "2.2"
+            Origin: SDTM and SDTMIG Conformance Rules
+            Rule Identifier:
+              Id: CG0309
+              Version: "1"
+            Version: "2.0"
+        Version: "3.3"
+Check:
+  all:
+    - name: --TERM
+      operator: has_not_equal_length
+      value: 4
+Core:
+  Id: CORE-000181
+  Status: Published
+  Version: "1"
+Description: Raise an error when AP-- domain value length is not equal to 4.
+Executability: Fully Executable
+Outcome:
+  Message: AP-- Domain value length is not equal to 4.
+Rule Type: Record Data
+Scope:
+  Classes:
+    Include:
+      - ALL
+  Domains:
+    Include:
+      - AP--
+Sensitivity: Record
