@@ -1,0 +1,66 @@
+# Variable: --
+# Condition: 
+# Rule: 
+Authorities:
+  - Organization: CDISC
+    Standards:
+      - Name: SDTMIG
+        References:
+          - Citations:
+              - Cited Guidance: xxx.
+                Document: IG v3.4
+                Item: Item 3.b.
+                Section: '2.6'
+              - Cited Guidance: yyyyyyy.
+                Document: IG v3.4
+                Section: 4.3.6
+            Origin: SDTM and SDTMIG Conformance Rules
+            Rule Identifier:
+              Id: CG0999
+              Version: '2'
+            Version: '2.0'
+        Version: '3.4'
+
+Check:
+  all:
+    - name: variable_name
+      operator: equal_to
+      value: library_variable_name
+    - name: variable_name
+      operator: equal_to
+      value: define_variable_name
+    - name: library_variable_ccode
+      operator: not_equal_to
+      value: ""
+    - name: library_variable_ccode
+      operator: non_empty
+    - name: library_variable_ccode
+      operator: not_equal_to
+      value: define_variable_ccode
+
+Core:
+  Id: CDISC.SDTMIG.CG0999
+  Status: Draft
+  Version: '1'
+Description: Testing rule type Variables Metadata Check against Define XML and
+  Library Metadata
+Executability: Fully Executable
+Outcome:
+  Message: "Issue with codelist definition in the Define-XML document."
+  Output Variables:
+    - variable_name
+    - library_variable_name
+    - library_variable_ccode
+    - library_variable_data_type
+    - define_variable_name
+    - define_variable_ccode
+
+Rule Type: Variable Metadata Check against Define XML and Library Metadata
+Scope:
+  Classes:
+    Include:
+      - ALL
+  Domains:
+    Include:
+      - ALL
+Sensitivity: Record
