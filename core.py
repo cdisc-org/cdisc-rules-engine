@@ -84,11 +84,20 @@ def cli():
     pass
 
 
-def _validate_data_directory(data: str, logger) -> tuple[list, set]:
+def _validate_data_directory(
+    data: str, logger, filetype: str = None
+) -> tuple[list, set]:
     """Validate data directory and return dataset paths and found formats."""
-    dataset_paths, found_formats = valid_data_file(
-        [str(p) for p in Path(data).rglob("*") if p.is_file()]
-    )
+    # Added filetype argument to filter files by extension if provided
+    if filetype:
+        pattern = f"*.{filetype}"
+        dataset_paths, found_formats = valid_data_file(
+            [str(p) for p in Path(data).rglob(pattern) if p.is_file()]
+        )
+    else:
+        dataset_paths, found_formats = valid_data_file(
+            [str(p) for p in Path(data).rglob("*") if p.is_file()]
+        )
 
     if DataFormatTypes.XLSX.value in found_formats and len(found_formats) > 1:
         logger.error(
@@ -174,6 +183,12 @@ def _validate_no_arguments(logger) -> None:
     "--data",
     required=False,
     help=f"Path to directory containing data files ({VALIDATION_FORMATS_MESSAGE})",
+)
+@click.option(
+    "-filetype",
+    default=None,
+    required=False,
+    help="File extension to use for input files in the data directory (e.g., 'json', 'xpt', 'xlsx', 'ndjson')",
 )
 @click.option(
     "-dp",
@@ -352,6 +367,7 @@ def validate(
     cache: str,
     pool_size: int,
     data: str,
+    filetype: str,
     dataset_path: tuple[str],
     log_level: str,
     report_template: str,
@@ -435,7 +451,7 @@ def validate(
                 "Argument --dataset-path cannot be used together with argument --data"
             )
             ctx.exit(2)
-        dataset_paths, found_formats = _validate_data_directory(data, logger)
+        dataset_paths, found_formats = _validate_data_directory(data, logger, filetype)
         if dataset_paths is None:
             ctx.exit(2)
     elif dataset_path:
