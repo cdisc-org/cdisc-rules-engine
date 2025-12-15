@@ -285,7 +285,6 @@ class RulesEngine:
             dataset_metadata=dataset_metadata,
             datasets=datasets,
             dataset_path=dataset_metadata.full_path,
-            # dataset_path=dataset_metadata.original_path or dataset_metadata.full_path,
             define_xml_path=self.define_xml_path,
             standard=self.standard,
             standard_version=self.standard_version,

@@ -61,6 +61,38 @@ from cdisc_rules_engine.services.data_services.data_service_factory import (
             PandasDataset,
             ["USUBJID"],
         ),
+        (
+            {
+                "dates": ["2025-10-10", "2025-10-15", "2025-12-02", "2025-12-11"],
+                "USUBJID": ["00002", "00002", "00003", "00003"],
+            },
+            DaskDataset.from_records(
+                [
+                    {
+                        "dates": "2025-10-10",
+                        "USUBJID": "00002",
+                        "operation_id": "2025-10-15",
+                    },
+                    {
+                        "dates": "2025-10-15",
+                        "USUBJID": "00002",
+                        "operation_id": "2025-10-15",
+                    },
+                    {
+                        "dates": "2025-12-02",
+                        "USUBJID": "00003",
+                        "operation_id": "2025-12-11",
+                    },
+                    {
+                        "dates": "2025-12-11",
+                        "USUBJID": "00003",
+                        "operation_id": "2025-12-11",
+                    },
+                ]
+            ),
+            DaskDataset,
+            ["USUBJID"],
+        ),
     ],
 )
 def test_max_date(
@@ -81,8 +113,10 @@ def test_max_date(
     ).execute()
     assert operation_params.operation_id in result
 
-    if isinstance(expected, PandasDataset):
+    if isinstance(expected, PandasDataset) and dataset_type is PandasDataset:
         assert result.data.equals(expected.data)
+    elif isinstance(expected, DaskDataset) and dataset_type is DaskDataset:
+        assert expected.equals(result)
     else:
         for val in result[operation_params.operation_id]:
             assert val == expected
