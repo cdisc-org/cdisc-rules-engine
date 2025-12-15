@@ -482,9 +482,13 @@ class RuleProcessor:
                 ),
             )
             if domain_details is None:
-                logger.info(f"Domain {operation_params.domain} doesn't exist")
-                operation_params.dataframe[operation_params.operation_id] = None
-                return operation_params.dataframe
+                raise OperationError(
+                    f"Failed to execute rule operation. "
+                    f"Domain {operation_params.domain} does not exist. "
+                    f"Operation: {operation_params.operation_name}, "
+                    f"Target: {operation_params.target}, "
+                    f"Core ID: {operation_params.core_id}"
+                )
             filename = get_dataset_name_from_details(domain_details)
             file_path: str = os.path.join(
                 get_directory_path(operation_params.dataset_path),
