@@ -82,7 +82,7 @@ ap_suffix_tests = [
     ({"first_record": {"DOMAIN": "APXX", "APID": "AP002"}}, "XX"),
     ({"first_record": {"DOMAIN": "APQS", "APID": "AP003"}}, "QS"),
     ({"first_record": {"DOMAIN": "APLB", "APID": "AP004"}}, "LB"),
-    ({"first_record": {"DOMAIN": "APFAMH", "APID": "AP005"}}, "FAMH"),
+    ({"first_record": {"DOMAIN": "APFA", "APID": "AP005"}}, "FA"),
     ({"first_record": {"DOMAIN": "AE"}}, ""),
     ({"first_record": {"DOMAIN": "LB"}}, ""),
     ({"first_record": {"DOMAIN": "AP"}}, ""),
