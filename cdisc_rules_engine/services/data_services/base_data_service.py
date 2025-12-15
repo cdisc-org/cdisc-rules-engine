@@ -104,8 +104,11 @@ class BaseDataService(DataServiceInterface, ABC):
         self.cache_service = cache_service
         self._reader_factory = reader_factory
         self._config = config
+
         self.cdisc_library_service: CDISCLibraryService = CDISCLibraryService(
-            self._config.getValue("CDISC_LIBRARY_API_KEY", ""), self.cache_service
+            self._config.getValue("CDISC_LIBRARY_API_KEY", ""),  # Default to empty string
+            self._config.getValue("CDISC_LIBRARY_API_URL", ""),  # Default to empty string
+            self.cache_service
         )
         self.standard = kwargs.get("standard")
         self.version = (kwargs.get("standard_version") or "").replace(".", "-")

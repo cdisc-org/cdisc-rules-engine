@@ -491,7 +491,19 @@ def validate(
         "Can be provided in the environment "
         "variable CDISC_LIBRARY_API_KEY"
     ),
-    required=True,
+    required=False,
+    default="",
+)
+@click.option(
+    "--apiurl",
+    envvar="CDISC_LIBRARY_API_URL",
+    help=(
+        "CDISC Library api URL (HTTPS/HTTP). Default: https://library.cdisc.org/api. "
+        "Can be provided in the environment "
+        "variable CDISC_LIBRARY_API_URL"
+    ),
+    required=False,
+    default="",
 )
 @click.option(
     "-crd",
@@ -545,6 +557,7 @@ def update_cache(
     ctx: click.Context,
     cache_path: str,
     apikey: str,
+    apiurl: str,
     custom_rules_directory: str,
     custom_rule: str,
     remove_custom_rules: str,
@@ -552,8 +565,21 @@ def update_cache(
     custom_standard: str,
     remove_custom_standard: str,
 ):
+    logger = logging.getLogger("validator")
+    
+    # Validation: Ensure at least one is provided when using default URL
+    effective_url = apiurl if apiurl else "https://library.cdisc.org/api"
+    if effective_url == "https://library.cdisc.org/api" and not apikey:
+        logger.error(
+            "CDISC_LIBRARY_API_KEY is required when using the default CDISC Library API URL.\n"
+            "Either provide --apikey or set CDISC_LIBRARY_API_KEY environment variable,\n"
+            "or specify a custom URL with --apiurl or CDISC_LIBRARY_API_URL environment variable,"
+            "which does or does not require specific API key for proxy access"
+        )
+        ctx.exit(2)
+    
     cache = CacheServiceFactory(config).get_cache_service()
-    library_service = CDISCLibraryService(apikey, cache)
+    library_service = CDISCLibraryService(apikey, apiurl, cache)
     cache_populator = CachePopulator(
         cache,
         library_service,
@@ -579,7 +605,6 @@ def update_cache(
         asyncio.run(cache_populator.update_cache())
 
     print("Cache updated successfully")
-
 
 @click.command()
 @click.option(
