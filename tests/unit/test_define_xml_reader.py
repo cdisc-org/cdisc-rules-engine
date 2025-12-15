@@ -74,6 +74,7 @@ def test_read_define_xml():
                 "define_dataset_class",
                 "define_dataset_structure",
                 "define_dataset_is_non_standard",
+                "define_dataset_has_no_data",
             ]
 
 
@@ -110,6 +111,7 @@ def test_extract_domain_metadata(filename):
                 "TSVCDVER",
             ],
             "define_dataset_key_sequence": ["STUDYID", "TSPARMCD", "TSVAL", "TSSEQ"],
+            "define_dataset_has_no_data": False,
         }
 
 
