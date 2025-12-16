@@ -751,10 +751,21 @@ class RuleProcessor:
             pattern: ^TSVAL\d+$ (starts with TSVAL and ends with number)
             additional columns: TSVAL1, TSVAL2, TSVAL3 etc.
         """
-        output_variables: List[str] = rule.get("output_variables", [])
+        output_variables = rule.get("output_variables", [])
         if output_variables:
+            flattened_vars: List[str] = []
+            for item in output_variables:
+                if isinstance(item, dict) and "compared" in item:
+                    children = item.get("compared", [])
+                    if isinstance(children, list):
+                        flattened_vars.extend(
+                            [c for c in children if isinstance(c, str)]
+                        )
+                elif isinstance(item, str):
+                    flattened_vars.append(item)
+
             target_names: List[str] = [
-                var.replace("--", domain or "", 1) for var in output_variables
+                var.replace("--", domain or "", 1) for var in flattened_vars
             ]
         else:
             target_names: List[str] = []

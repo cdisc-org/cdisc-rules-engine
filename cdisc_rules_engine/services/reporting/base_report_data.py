@@ -44,7 +44,12 @@ class BaseReportData(ABC):
             if value is None:
                 processed_values.append("null")
                 continue
-            value = value.strip()
+            if isinstance(value, str) and "\n" in value:
+                lines = value.split("\n")
+                stripped_lines = [line.rstrip() for line in lines]
+                value = "\n".join(stripped_lines).strip()
+            else:
+                value = value.strip()
             if value == "" or value.lower() == "nan":
                 processed_values.append("null")
             else:

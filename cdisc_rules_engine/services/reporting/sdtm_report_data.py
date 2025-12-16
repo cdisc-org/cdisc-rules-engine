@@ -22,6 +22,66 @@ from cdisc_rules_engine.models.validation_args import Validation_args
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 
 
+def _normalize_to_list(value):
+    """Normalize various data structures to lists."""
+    if isinstance(value, list):
+        return value
+    elif isinstance(value, set):
+        return list(value)
+    elif isinstance(value, dict):
+        return list(value.keys())
+    elif isinstance(value, tuple):
+        return list(value)
+    else:
+        return [value] if value is not None else []
+
+
+def _flatten_to_comparable(value):
+    """Flatten nested structures to comparable primitives."""
+    result = []
+    for item in value:
+        if isinstance(item, (list, tuple, set)):
+            result.extend(_flatten_to_comparable(list(item)))
+        elif isinstance(item, dict):
+            result.extend(_flatten_to_comparable(list(item.keys())))
+        else:
+            result.append(item)
+    return result
+
+
+def _compare_data_structures(value1, value2):
+    """Compare two data structures and return differences (set-based)."""
+    if value1 is None and value2 is None:
+        return {"missing_in_value2": [], "extra_in_value2": [], "common": []}
+    if value1 is None or value2 is None:
+        missing = _normalize_to_list(value1) if value1 is not None else []
+        extra = _normalize_to_list(value2) if value2 is not None else []
+        return {"missing_in_value2": missing, "extra_in_value2": extra, "common": []}
+
+    set1 = set(_flatten_to_comparable(_normalize_to_list(value1)))
+    set2 = set(_flatten_to_comparable(_normalize_to_list(value2)))
+
+    return {
+        "missing_in_value2": sorted(set1 - set2),
+        "extra_in_value2": sorted(set2 - set1),
+        "common": sorted(set1 & set2),
+    }
+
+
+def _format_comparison_result(comparison, var1_name, var2_name):
+    """Format comparison results as human-readable string."""
+    missing = comparison.get("missing_in_value2", [])
+    extra = comparison.get("extra_in_value2", [])
+
+    parts = [
+        f"Missing in {var2_name}: {', '.join(map(str, missing))}" if missing else None,
+        f"Extra in {var2_name}: {', '.join(map(str, extra))}" if extra else None,
+    ]
+    parts = [p for p in parts if p] or ["No differences found"]
+
+    return "\n".join(parts)
+
+
 class SDTMReportData(BaseReportData):
     """
     Report details specific to SDTM
@@ -242,6 +302,74 @@ class SDTMReportData(BaseReportData):
             key=lambda x: (x["core_id"], x["dataset"]),
         )
 
+    def _process_comparison_group(self, group: list, error_value: dict) -> str:
+        """Process a single comparison group and return formatted comparison string."""
+        if len(group) < 2:
+            return ""
+
+        baseline_name, baseline_value = group[0], error_value.get(group[0])
+
+        summary_lines = [
+            (
+                _format_comparison_result(
+                    _compare_data_structures(baseline_value, other_value),
+                    baseline_name,
+                    other_name,
+                )
+                if baseline_value is not None and other_value is not None
+                else f"{other_name}: null vs {baseline_name}: null"
+            )
+            for other_name in group[1:]
+            for other_value in [error_value.get(other_name)]
+        ]
+
+        raw_value_lines = [
+            (
+                f"{name}: {val}"
+                if (val := error_value.get(name)) is not None
+                else f"{name}: null"
+            )
+            for name in group
+        ]
+
+        return "\n".join(summary_lines + raw_value_lines)
+
+    def _extract_values_from_error(
+        self, error_value: dict, compare_groups: list, variables: list
+    ) -> list:
+        """Extract values from error, handling comparison groups or standard variables."""
+        if compare_groups:
+            return [
+                self._process_comparison_group(group, error_value)
+                for group in compare_groups
+                if len(group) >= 2
+            ]
+        return [
+            None if (val := error_value.get(variable)) is None else str(val)
+            for variable in variables
+        ]
+
+    def _create_error_item(
+        self,
+        validation_result: RuleValidationResult,
+        result: dict,
+        error: dict,
+        variables: list,
+        values: list,
+    ) -> dict:
+        """Create a single error item dictionary."""
+        return {
+            "core_id": validation_result.id,
+            "message": result.get("message"),
+            "executability": validation_result.executability,
+            "dataset": error.get("dataset"),
+            "USUBJID": error.get("USUBJID", ""),
+            "row": error.get("row", ""),
+            "SEQ": error.get("SEQ", ""),
+            "variables": variables,
+            "values": self.process_values(values),
+        }
+
     def _generate_error_details(
         self, validation_result: RuleValidationResult, excel
     ) -> list[dict]:
@@ -265,25 +393,16 @@ class SDTMReportData(BaseReportData):
         for result in validation_result.results or []:
             if result.get("errors", []) and result.get("executionStatus") == "success":
                 variables = result.get("variables", [])
+                compare_groups = result.get("compare_groups") or []
+
                 for error in result.get("errors"):
-                    values = []
-                    for variable in variables:
-                        raw_value = error.get("value", {}).get(variable)
-                        if raw_value is None:
-                            values.append(None)
-                        else:
-                            values.append(str(raw_value))
-                    error_item = {
-                        "core_id": validation_result.id,
-                        "message": result.get("message"),
-                        "executability": validation_result.executability,
-                        "dataset": error.get("dataset"),
-                        "USUBJID": error.get("USUBJID", ""),
-                        "row": error.get("row", ""),
-                        "SEQ": error.get("SEQ", ""),
-                        "variables": variables,
-                        "values": self.process_values(values),
-                    }
+                    error_value = error.get("value", {})
+                    values = self._extract_values_from_error(
+                        error_value, compare_groups, variables
+                    )
+                    error_item = self._create_error_item(
+                        validation_result, result, error, variables, values
+                    )
                     errors.append(error_item)
         return errors
 

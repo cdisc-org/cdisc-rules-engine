@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from dataclasses import dataclass, field
 from cdisc_rules_engine.utilities.utils import get_execution_status
 
@@ -18,13 +18,14 @@ class ValidationErrorContainer(BaseValidationEntity):
     message: str | None = None
     status: str | None = None
     entity: str | None = None
+    compare_groups: Optional[List[List[str]]] = None
 
     @property
     def executionStatus(self):
         return self.status or get_execution_status(self.errors)
 
     def to_representation(self) -> dict:
-        return {
+        result = {
             "executionStatus": self.executionStatus,
             "dataset": self.dataset,
             "domain": self.domain,
@@ -33,3 +34,6 @@ class ValidationErrorContainer(BaseValidationEntity):
             "errors": [error.to_representation() for error in self.errors],
             **({"entity": self.entity} if self.entity else {}),
         }
+        if self.compare_groups:
+            result["compare_groups"] = self.compare_groups
+        return result

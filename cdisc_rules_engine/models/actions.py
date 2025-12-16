@@ -208,6 +208,8 @@ class COREActions(BaseActions):
             errors_list = self._generate_errors_by_target_presence(
                 data, targets_not_in_dataset, all_targets_missing, errors_df
             )
+
+        compare_groups = self._extract_comparison_metadata(self.rule)
         return ValidationErrorContainer(
             domain=(
                 f"SUPP{self.dataset_metadata.rdomain}"
@@ -220,6 +222,7 @@ class COREActions(BaseActions):
             targets=sorted(targets),
             errors=errors_list,
             message=message.replace("--", self.dataset_metadata.domain or ""),
+            compare_groups=compare_groups,
         )
 
     def _generate_errors_by_target_presence(
@@ -487,6 +490,51 @@ class COREActions(BaseActions):
 
     def extract_target_names_from_value_level_metadata(self):
         return set([item["define_variable_name"] for item in self.value_level_metadata])
+
+    def _extract_comparison_metadata(self, rule: dict) -> Optional[List[List[str]]]:
+        """
+        Extract comparison metadata from rule's output_variables.
+
+        Supports mixed lists with inline `compared` blocks, e.g.:
+        Output Variables:
+          - $sibling_1
+          - compared:
+              - $child_A
+              - $child_B
+              - $child_C
+
+        Returns:
+            List of comparison groups (each group is a list of variable names),
+            or None if no comparison groups are defined.
+        """
+        if "_cached_compare_groups" in rule:
+            return rule["_cached_compare_groups"]
+
+        output_variables = rule.get("output_variables", []) or []
+
+        flattened: List[str] = []
+        comparison_groups: List[List[str]] = []
+
+        for item in output_variables:
+            if isinstance(item, dict) and "compared" in item:
+                children = item.get("compared", [])
+                if isinstance(children, list) and len(children) >= 2:
+                    valid_children = [c for c in children if isinstance(c, str)]
+                    if len(valid_children) >= 2:
+                        comparison_groups.append(valid_children)
+                        flattened.extend(valid_children)
+            elif isinstance(item, str):
+                flattened.append(item)
+
+        result = comparison_groups if comparison_groups else None
+        rule["_cached_compare_groups"] = result
+
+        if flattened:
+            current_vars = rule.get("output_variables", [])
+            if any(isinstance(item, dict) for item in current_vars):
+                rule["output_variables"] = flattened
+
+        return result
 
     @staticmethod
     def _sequence_exists(sequence: pd.Series, row_name: Hashable) -> bool:
