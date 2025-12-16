@@ -401,7 +401,7 @@ class SDTMReportData(BaseReportData):
                         error_value, compare_groups, variables
                     )
                     aligned_variables = (
-                        [", ".join(var for group in compare_groups for var in group)]
+                        [", ".join(group) for group in compare_groups]
                         if compare_groups
                         else variables
                     )
