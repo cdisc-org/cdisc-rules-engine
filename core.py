@@ -185,7 +185,8 @@ def _validate_no_arguments(logger) -> None:
     help=f"Path to directory containing data files ({VALIDATION_FORMATS_MESSAGE})",
 )
 @click.option(
-    "-filetype",
+    "-ft",
+    "--filetype",
     default=None,
     required=False,
     help="File extension to use for input files in the data directory (e.g., 'json', 'xpt', 'xlsx', 'ndjson')",
