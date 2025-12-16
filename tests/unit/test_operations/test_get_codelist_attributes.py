@@ -4,7 +4,6 @@ from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
-import pandas as pd
 import pytest
 
 from cdisc_rules_engine.models.operation_params import OperationParams
@@ -17,7 +16,6 @@ from cdisc_rules_engine.services.cache import InMemoryCacheService
 from cdisc_rules_engine.services.data_services import LocalDataService
 
 test_set1 = (
-    ["sdtmct-2020-03-27"],
     {
         "STUDYID": ["CDISC001", "CDISC001", "CDISC001", "CDISC001", "CDISC001"],
         "DOMAIN": ["TS", "TS", "TS", "TS", "TS"],
@@ -117,11 +115,16 @@ test_set1 = (
         },
     ],
     PandasDataset,
-    {"C141663", "C25473", "C49487"},
+    [
+        {"C141663", "C25473", "C49487"},
+        {"C141663", "C25473", "C49487"},
+        {"C141663", "C25473", "C49487"},
+        set(),
+        set(),
+    ],
 )
 
 test_set2 = (
-    ["sdtmct-2022-12-16"],
     {
         "STUDYID": ["CDISC001", "CDISC001", "CDISC001", "CDISC001", "CDISC001"],
         "DOMAIN": ["TS", "TS", "TS", "TS", "TS"],
@@ -227,11 +230,16 @@ test_set2 = (
         },
     ],
     PandasDataset,
-    {"C141656", "C141663", "C141657"},
+    [
+        {"C141663", "C25473", "C49487"},  # Row 0: sdtmct-2020-03-27
+        {"C141663", "C25473", "C49487"},  # Row 1: sdtmct-2020-03-27
+        {"C141663", "C25473", "C49487"},  # Row 2: sdtmct-2020-03-27
+        {"C141656", "C141663", "C141657"},  # Row 3: sdtmct-2022-12-16
+        {"C141656", "C141663", "C141657"},  # Row 4: sdtmct-2022-12-16
+    ],
 )
 
 test_set3 = (
-    ["sdtmct-2020-03-27"],
     {
         "STUDYID": ["CDISC001", "CDISC001", "CDISC001", "CDISC001", "CDISC001"],
         "DOMAIN": ["TS", "TS", "TS", "TS", "TS"],
@@ -331,11 +339,16 @@ test_set3 = (
         },
     ],
     DaskDataset,
-    {"C141663", "C25473", "C49487"},
+    [
+        {"C141663", "C25473", "C49487"},
+        {"C141663", "C25473", "C49487"},
+        {"C141663", "C25473", "C49487"},
+        set(),
+        set(),
+    ],
 )
 
 test_set4 = (
-    ["sdtmct-2022-12-16"],
     {
         "STUDYID": ["CDISC001", "CDISC001", "CDISC001", "CDISC001", "CDISC001"],
         "DOMAIN": ["TS", "TS", "TS", "TS", "TS"],
@@ -441,48 +454,42 @@ test_set4 = (
         },
     ],
     DaskDataset,
-    {"C141656", "C141663", "C141657"},
+    [
+        {"C141663", "C25473", "C49487"},
+        {"C141663", "C25473", "C49487"},
+        {"C141663", "C25473", "C49487"},
+        {"C141656", "C141663", "C141657"},
+        {"C141656", "C141663", "C141657"},
+    ],
 )
 
 
 @pytest.mark.parametrize(
-    "ct_packages, ts_data, ct_data, dataset_type, ct_list",
+    "ts_data, ct_data, dataset_type, expected_results",
     [test_set1, test_set2, test_set3, test_set4],
 )
 def test_get_codelist_attributes(
     operation_params: OperationParams,
-    ct_packages,
     ts_data: dict,
     ct_data: list,
     dataset_type,
-    ct_list,
+    expected_results: list,
 ):
-    """
-    Unit test for CodeListAttributes operation.
-    Tests that the operation returns the correct term codes based on CT version.
-    """
-    # 1.0 set parameters
     operation_params.dataframe = dataset_type.from_dict(ts_data)
     operation_params.domain = "TS"
     operation_params.standard = "sdtmig"
     operation_params.standard_version = "3-4"
-    operation_params.ct_attribute = "Term CCODE"  # Changed from TSVALCD
+    operation_params.ct_attribute = "Term CCODE"
     operation_params.ct_version = "TSVCDVER"
     operation_params.target = "TSVCDREF"
-    operation_params.ct_packages = ct_packages
-
-    # 2.0 add CT data to cache
     cache = InMemoryCacheService.get_instance()
     library_metadata = LibraryMetadataContainer()
     for pkg in ct_data:
         cp = pkg.get("package")
         library_metadata.set_ct_package_metadata(cp, pkg)
-
-    # 3.0 execute operation
     data_service = LocalDataService.get_instance(
         cache_service=cache, config=ConfigService()
     )
-
     operation = CodeListAttributes(
         operation_params,
         operation_params.dataframe,
@@ -490,29 +497,18 @@ def test_get_codelist_attributes(
         data_service,
         library_metadata,
     )
-
     result = operation.execute()
-
-    # Extract the operation_id column which contains the sets
     result_series = result[operation_params.operation_id]
-
-    # Expected: Each row gets the ct_list only if its version matches ct_packages
-    # For test_set1 and test_set3: All rows with version 2020-03-27 should get ct_list
-    # For test_set2 and test_set4: Only rows 3 and 4 with version 2022-12-16 should get ct_list
-
-    if ct_packages == ["sdtmct-2020-03-27"]:
-        # Rows 0, 1, 2 have version 2020-03-27 (match)
-        # Rows 3, 4 have empty version (no match)
-        expected = pd.Series([ct_list, ct_list, ct_list, set(), set()])
-    else:  # ct_packages == ["sdtmct-2022-12-16"]
-        # Rows 0, 1, 2 have version 2020-03-27 (no match)
-        # Rows 3, 4 have version 2022-12-16 (match)
-        expected = pd.Series([set(), set(), set(), ct_list, ct_list])
-
-    # Compare the series - each element should already be a set
-    assert len(result_series) == len(expected)
+    assert len(result_series) == len(
+        expected_results
+    ), f"Length mismatch: got {len(result_series)}, expected {len(expected_results)}"
     for i in range(len(result_series)):
-        # Both result_series.iloc[i] and expected.iloc[i] should be sets already
-        assert (
-            result_series.iloc[i] == expected.iloc[i]
-        ), f"Row {i}: {result_series.iloc[i]} != {expected.iloc[i]}"
+        actual = result_series.iloc[i]
+        expected = expected_results[i]
+        assert actual == expected, (
+            f"Row {i} mismatch:\n"
+            f"  Expected: {expected}\n"
+            f"  Got: {actual}\n"
+            f"  TSVCDREF: {ts_data['TSVCDREF'][i]}\n"
+            f"  TSVCDVER: {ts_data['TSVCDVER'][i]}"
+        )
