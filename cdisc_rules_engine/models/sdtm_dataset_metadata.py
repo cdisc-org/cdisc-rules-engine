@@ -34,6 +34,10 @@ class SDTMDatasetMetadata(DatasetMetadata):
         return (self.first_record or {}).get("DOMAIN", None)
 
     @property
+    def domain_cleaned(self) -> Union[str, None]:
+        return self.domain.replace("AP", "") if self.domain else None
+
+    @property
     def rdomain(self) -> Union[str, None]:
         return (self.first_record or {}).get("RDOMAIN", None) if self.is_supp else None
 
@@ -84,5 +88,5 @@ class SDTMDatasetMetadata(DatasetMetadata):
         if self.is_supp:
             return ""
         if isinstance(self.domain, str) and len(self.domain) >= 4:
-            return self.domain[2:4]
+            return self.domain[2::]
         return ""
