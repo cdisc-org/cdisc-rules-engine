@@ -48,7 +48,7 @@ class BaseReportData(ABC):
                 lines = value.split("\n")
                 stripped_lines = [line.rstrip() for line in lines]
                 value = "\n".join(stripped_lines).strip()
-            else:
+            elif isinstance(value, str):
                 value = value.strip()
             if value == "" or value.lower() == "nan":
                 processed_values.append("null")

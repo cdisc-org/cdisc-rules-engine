@@ -24,16 +24,11 @@ from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 
 def _normalize_to_list(value):
     """Normalize various data structures to lists."""
-    if isinstance(value, list):
-        return value
-    elif isinstance(value, set):
+    if isinstance(value, (list, tuple, set)):
         return list(value)
-    elif isinstance(value, dict):
+    if isinstance(value, dict):
         return list(value.keys())
-    elif isinstance(value, tuple):
-        return list(value)
-    else:
-        return [value] if value is not None else []
+    return [value] if value is not None else []
 
 
 def _flatten_to_comparable(value):
@@ -54,9 +49,13 @@ def _compare_data_structures(value1, value2):
     if value1 is None and value2 is None:
         return {"missing_in_value2": [], "extra_in_value2": [], "common": []}
     if value1 is None or value2 is None:
-        missing = _normalize_to_list(value1) if value1 is not None else []
-        extra = _normalize_to_list(value2) if value2 is not None else []
-        return {"missing_in_value2": missing, "extra_in_value2": extra, "common": []}
+        return {
+            "missing_in_value2": (
+                _normalize_to_list(value1) if value1 is not None else []
+            ),
+            "extra_in_value2": _normalize_to_list(value2) if value2 is not None else [],
+            "common": [],
+        }
 
     set1 = set(_flatten_to_comparable(_normalize_to_list(value1)))
     set2 = set(_flatten_to_comparable(_normalize_to_list(value2)))
@@ -73,11 +72,13 @@ def _format_comparison_result(comparison, var1_name, var2_name):
     missing = comparison.get("missing_in_value2", [])
     extra = comparison.get("extra_in_value2", [])
 
-    parts = [
-        f"Missing in {var2_name}: {', '.join(map(str, missing))}" if missing else None,
-        f"Extra in {var2_name}: {', '.join(map(str, extra))}" if extra else None,
-    ]
-    parts = [p for p in parts if p] or ["No differences found"]
+    parts = []
+    if missing:
+        parts.append(f"Missing in {var2_name}: {', '.join(map(str, missing))}")
+    if extra:
+        parts.append(f"Extra in {var2_name}: {', '.join(map(str, extra))}")
+    if not parts:
+        parts.append("No differences found")
 
     return "\n".join(parts)
 
@@ -342,7 +343,6 @@ class SDTMReportData(BaseReportData):
             return [
                 self._process_comparison_group(group, error_value)
                 for group in compare_groups
-                if len(group) >= 2
             ]
         return [
             None if (val := error_value.get(variable)) is None else str(val)
@@ -400,8 +400,13 @@ class SDTMReportData(BaseReportData):
                     values = self._extract_values_from_error(
                         error_value, compare_groups, variables
                     )
+                    aligned_variables = (
+                        [", ".join(var for group in compare_groups for var in group)]
+                        if compare_groups
+                        else variables
+                    )
                     error_item = self._create_error_item(
-                        validation_result, result, error, variables, values
+                        validation_result, result, error, aligned_variables, values
                     )
                     errors.append(error_item)
         return errors
