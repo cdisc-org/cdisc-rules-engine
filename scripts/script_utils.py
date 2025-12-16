@@ -530,25 +530,3 @@ def replace_yml_spaces(data):
         return [replace_yml_spaces(item) for item in data]
     else:
         return data
-
-
-def set_max_errors_per_rule(args):
-    env_value = (
-        int(os.getenv("MAX_ERRORS_PER_RULE"))
-        if os.getenv("MAX_ERRORS_PER_RULE")
-        else None
-    )
-    cli_limit, cli_per_dataset = args.max_errors_per_rule
-    if env_value is not None and cli_limit > 0:
-        max_errors_per_rule = max(env_value, cli_limit)
-    elif env_value is not None:
-        max_errors_per_rule = env_value
-    elif cli_limit > 0:
-        max_errors_per_rule = cli_limit
-    else:
-        max_errors_per_rule = None
-
-    if max_errors_per_rule is not None and max_errors_per_rule <= 0:
-        max_errors_per_rule = None
-
-    return max_errors_per_rule, cli_per_dataset

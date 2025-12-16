@@ -37,6 +37,7 @@ from cdisc_rules_engine.utilities.utils import (
     get_model_details_cache_key_from_ig,
     get_standard_details_cache_key,
     get_variable_codelist_map_cache_key,
+    set_max_errors_per_rule,
 )
 from scripts.script_utils import (
     fill_cache_with_dictionaries,
@@ -44,7 +45,6 @@ from scripts.script_utils import (
     get_library_metadata_from_cache,
     get_rules,
     get_max_dataset_size,
-    set_max_errors_per_rule,
 )
 from cdisc_rules_engine.services.reporting import BaseReport, ReportFactory
 from cdisc_rules_engine.utilities.progress_displayers import get_progress_displayer

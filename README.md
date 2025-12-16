@@ -100,7 +100,7 @@ Run `python core.py validate --help` to see the list of validation options.
   -me, --max-errors-per-rule INTEGER BOOLEAN
                                   Imposes a maximum number of errors per rule to enforce.
                                   Usage: -me <limit> <per_dataset_flag>
-                                  Example: -me 100 true
+                                  Example: -me 100 True (make sure to use capital for True/False)
 
                                   <limit>: Maximum number of errors (integer)
 
@@ -115,7 +115,7 @@ Run `python core.py validate --help` to see the list of validation options.
                                       the first <limit> issues per dataset are included in the report.
 
                                   Can be set via MAX_ERRORS_PER_RULE env variable;
-                                  if both .env and -me <limit> are specified, the larger value will be used.
+                                  if both .env and -me <limit> are specified, the larger value will be used.  If either sets the per_dataset_flag to true, it will be true
                                   If limit is set to 0, no maximum will be enforced.
                                   No maximum is the default behavior.
   -dv, --define-version TEXT      Define-XML version used for validation

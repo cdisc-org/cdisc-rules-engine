@@ -28,7 +28,7 @@ class RecordCount(BaseOperation):
                 if self.params.regex
                 else effective_grouping
             )
-            if self.params.regex:
+            if self.params.regex and filtered is None:
                 group_df = self._get_regex_grouped_counts(
                     self.params.dataframe, grouping_for_operations
                 )
@@ -102,19 +102,12 @@ class RecordCount(BaseOperation):
                 grouped_counts[col] = grouped_counts[col].astype(
                     df_for_grouping[col].dtype
                 )
-        original_with_idx = dataframe[grouping_columns].copy()
-        original_with_idx["_idx"] = range(len(original_with_idx))
-        transformed_with_idx = df_for_grouping.copy()
-        transformed_with_idx["_idx"] = range(len(transformed_with_idx))
-        transformed_with_counts = transformed_with_idx.merge(
+        transformed_with_counts = df_for_grouping.merge(
             grouped_counts, on=grouping_columns, how="left"
         )
-        original_with_idx["size"] = transformed_with_counts["size"].values
-        result = (
-            original_with_idx.drop(columns=["_idx"])
-            .groupby(grouping_columns, as_index=False, dropna=False)
-            .first()
-        )
+        result = dataframe[grouping_columns].copy()
+        result["size"] = transformed_with_counts["size"].values
+        result = result.groupby(grouping_columns, as_index=False, dropna=False).first()
         return result
 
     def _apply_regex_to_grouping_columns(
