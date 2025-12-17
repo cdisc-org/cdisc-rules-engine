@@ -202,11 +202,15 @@ def run_validation(args: Validation_args):
         for reporting_service in reporting_services:
             reporting_service.write_report()
         print(f"Output: {args.output}")
-        engine_logger.info(" Report generated, Cleaning up intermediate files")
-        for file in created_files:
-            engine_logger.info(f"Deleting file {file}")
-            os.remove(file)
     finally:
+        if created_files:
+            engine_logger.info(" Report generated, Cleaning up intermediate files")
+            for file in created_files:
+                try:
+                    engine_logger.info(f"Deleting file {file}")
+                    os.remove(file)
+                except Exception as e:
+                    engine_logger.warning(f"Failed to delete {file}: {e}")
         manager.shutdown()
 
 
