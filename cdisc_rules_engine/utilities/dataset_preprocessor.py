@@ -162,7 +162,9 @@ class DatasetPreprocessor:
                         right_dataset_domain_details=domain_details,
                         datasets=datasets,
                     )
-                    merged_domains.add(file_info.domain)
+                    merged_domains.add(
+                        file_info.domain if file_info.domain else file_info.name
+                    )
         return result
 
     def _find_parent_dataset(
