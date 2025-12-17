@@ -238,12 +238,20 @@ def get_variables_metadata_from_standard_model(  # noqa
     classes outside of general observation, we check the model for their definition
     if they are not there, differ to the standard definition of the domain
     """
+    add_AP = False
     if (
         domain
         and (domain.upper().startswith("SUPP") or domain.upper().startswith("SQ"))
         and len(domain) > 2
     ):
+        if domain.upper().startswith("SQ"):
+            parent_domain = domain[2:]
+            if parent_domain.upper().startswith("AP"):
+                add_AP = True
         domain = "SUPPQUAL"
+    elif domain and domain.upper().startswith("AP"):
+        domain = domain[2:]
+        add_AP = True
     standard_details = library_metadata.standard_metadata
     model_details = library_metadata.model_metadata
 
@@ -258,6 +266,15 @@ def get_variables_metadata_from_standard_model(  # noqa
             class_variables_metadata,
             timing_metadata,
         ) = get_allowed_class_variables(model_details, model_class_details)
+        if add_AP:
+            ap_class_details = get_class_metadata(model_details, "Associated Persons")
+            ap_identifiers = ap_class_details.get("classVariables", [])
+            identifiers_metadata = identifiers_metadata + ap_identifiers
+            # Remove USUBJID from identifiers and re-sort
+            identifiers_metadata = [
+                v for v in identifiers_metadata if v.get("name") != "USUBJID"
+            ]
+            identifiers_metadata.sort(key=lambda item: int(item["ordinal"]))
         variables_metadata = []
         if identifiers_metadata:
             variables_metadata = identifiers_metadata
@@ -266,9 +283,17 @@ def get_variables_metadata_from_standard_model(  # noqa
             variables_metadata = variables_metadata + timing_metadata
         return variables_metadata
     else:
-        # First, try to get class metadata and check for classVariables i.e. AP class
+        # First, try to get class metadata and check for classVariables
         class_details = get_class_metadata(model_details, class_name)
         class_variables = class_details.get("classVariables", [])
+        if add_AP:
+            ap_class_details = get_class_metadata(model_details, "Associated Persons")
+            ap_identifiers = ap_class_details.get("classVariables", [])
+            class_variables = [
+                v
+                for v in class_variables + ap_identifiers
+                if v.get("name") != "USUBJID"
+            ]
         if class_variables:
             class_variables.sort(key=lambda item: int(item["ordinal"]))
             return class_variables
@@ -277,19 +302,33 @@ def get_variables_metadata_from_standard_model(  # noqa
             domain_details = get_model_domain_metadata(model_details, domain)
             if domain_details:
                 dataset_variables = domain_details.get("datasetVariables", [])
-                if dataset_variables:
-                    dataset_variables.sort(key=lambda item: int(item["ordinal"]))
-                    return dataset_variables
+                dataset_variables.sort(key=lambda item: int(item["ordinal"]))
+                if add_AP:
+                    ap_class_details = get_class_metadata(
+                        model_details, "Associated Persons"
+                    )
+                    ap_identifiers = ap_class_details.get("classVariables", [])
+                    class_variables = [
+                        v
+                        for v in dataset_variables + ap_identifiers
+                        if v.get("name") != "USUBJID"
+                    ]
+                return dataset_variables
             # Third, fall back to standard datasets
-            for cls in standard_details.get("classes", []):
-                for dataset in cls.get("datasets", []):
-                    if dataset.get("name") == domain:
-                        dataset_variables = dataset.get("datasetVariables", [])
-                        if dataset_variables:
-                            dataset_variables.sort(
-                                key=lambda item: int(item["ordinal"])
-                            )
-                            return dataset_variables
+            if IG_domain_details:
+                dataset_variables = IG_domain_details.get("datasetVariables", [])
+                dataset_variables.sort(key=lambda item: int(item["ordinal"]))
+                if add_AP:
+                    ap_class_details = get_class_metadata(
+                        model_details, "Associated Persons"
+                    )
+                    ap_identifiers = ap_class_details.get("classVariables", [])
+                    class_variables = [
+                        v
+                        for v in dataset_variables + ap_identifiers
+                        if v.get("name") != "USUBJID"
+                    ]
+                return dataset_variables
         return None
 
 
