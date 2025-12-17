@@ -1,0 +1,454 @@
+{
+  "datasets": [
+    {
+      "filename": "ae.xpt",
+      "label": "Adverse Events",
+      "domain": "AE123",
+      "variables": [
+        {
+          "name": "STUDYID",
+          "label": "Study Identifier",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "DOMAIN",
+          "label": "Domain Abbreviation",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "USUBJID",
+          "label": "Unique Subject Identifier",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "AESEQ",
+          "label": "Sequence Number",
+          "type": "Num",
+          "length": 8
+        },
+        {
+          "name": "AETERM",
+          "label": "Reported Term for the Adverse Event",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "AEMODIFY",
+          "label": "Modified Reported Term",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "AEDECOD",
+          "label": "Dictionary-Derived Term",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "AEBODSYS",
+          "label": "Body System or Organ Class",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "AESEV",
+          "label": "Severity/Intensity",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "AESER",
+          "label": "Serious Event",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "AEACN",
+          "label": "Action Taken with Study Treatment",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "AEREL",
+          "label": "Causality",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "AEOUT",
+          "label": "Outcome of Adverse Event",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "AESCONG",
+          "label": "Congenital Anomaly or Birth Defect",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "AESDISAB",
+          "label": "Persist or Signif Disability/Incapacity",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "AESDTH",
+          "label": "Results in Death",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "AESHOSP",
+          "label": "Requires or Prolongs Hospitalization",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "AESLIFE",
+          "label": "Is Life Threatening",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "EPOCH",
+          "label": "Epoch",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "AESTDTC",
+          "label": "Start Date/Time of Adverse Event",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "AEENDTC",
+          "label": "End Date/Time of Adverse Event",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "AESTDY",
+          "label": "Study Day of Start of Adverse Event",
+          "type": "Num",
+          "length": 8
+        },
+        {
+          "name": "AEENDY",
+          "label": "Study Day of End of Adverse Event",
+          "type": "Num",
+          "length": 8
+        },
+        {
+          "name": "AEENRF",
+          "label": "End Relative to Reference Period",
+          "type": "Char",
+          "length": 50
+        }
+      ],
+      "records": {
+        "STUDYID": ["ABC123", "ABC123", "ABC123"],
+        "DOMAIN": ["AE123", "AE", "AE"],
+        "USUBJID": ["123101", "123101", "123101"],
+        "AESEQ": [1, 2, 3],
+        "AETERM": [
+          "POUNDING HEADACHE",
+          "BACK PAIN FOR 6 HOURS",
+          "PULMONARY EMBOLISM"
+        ],
+        "AEMODIFY": ["HEADACHE", "BACK PAIN", ""],
+        "AEDECOD": ["Headache", "Back pain", "Pulmonary embolism"],
+        "AEBODSYS": [
+          "Nervous system disorders",
+          "Musculoskeletal and connective tissue disorders",
+          "Vascular disorders"
+        ],
+        "AESEV": ["SEVERE", "MODERATE", "MODERATE"],
+        "AESER": ["N", "N", "Y"],
+        "AEACN": ["NOT APPLICABLE", "DOSE REDUCED", "DOSE REDUCED"],
+        "AEREL": [
+          "DEFINITELY NOT RELATED",
+          "PROBABLY RELATED",
+          "PROBABLY NOT RELATED"
+        ],
+        "AEOUT": [
+          "RECOVERED/RESOLVED",
+          "RECOVERED/RESOLVED",
+          "RECOVERING/RESOLVING"
+        ],
+        "AESCONG": ["", "", ""],
+        "AESDISAB": ["", "", ""],
+        "AESDTH": ["", "", ""],
+        "AESHOSP": ["", "", "Y"],
+        "AESLIFE": ["", "", "Y"],
+        "EPOCH": ["SCREENING", "TREATMENT", "TREATMENT"],
+        "AESTDTC": ["2005-10-12", "2005-10-13T13:05", "2005-10-21"],
+        "AEENDTC": ["2005-10-12", "2005-10-13T19:00", ""],
+        "AESTDY": [-1, 1, 9],
+        "AEENDY": [-1, 1, null],
+        "AEENRF": ["", "", "AFTER"]
+      }
+    },
+    {
+      "filename": "dm.xpt",
+      "label": "Demographics",
+      "domain": "DMAAA",
+      "variables": [
+        {
+          "name": "STUDYID",
+          "label": "Study Identifier",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "DOMAIN",
+          "label": "Domain Abbreviation",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "USUBJID",
+          "label": "Unique Subject Identifier",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "ARMCD",
+          "label": "Planned Arm Code",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "ARM",
+          "label": "Description of Planned Arm",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "ACTARMCD",
+          "label": "Actual Arm Code",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "ACTARM",
+          "label": "Description of Actual Arm",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "ARMNRS",
+          "label": "Reason Arm and/or Actual Arm is Null",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "ACTARMUD",
+          "label": "Description of Unplanned Actual Arm",
+          "type": "Char",
+          "length": 50
+        }
+      ],
+      "records": {
+        "STUDYID": ["ABC123", "ABC123", "ABC123", "ABC123", "ABC123"],
+        "DOMAIN": ["DMAAA", "DM", "DM", "DMBBB", "DM"],
+        "USUBJID": ["123101", "123102", "123103", "123104", "123105"],
+        "ARMCD": ["A", "B", "", "", "A"],
+        "ARM": ["Drug A", "Drug B", "", "", "Drug A"],
+        "ACTARMCD": ["A", "B", "", "", ""],
+        "ACTARM": ["Drug A", "Drug B", "", "", ""],
+        "ARMNRS": [
+          "",
+          "",
+          "SCREEN FAILURE",
+          "NOT ASSIGNED",
+          "ASSIGNED, NOT TREATED"
+        ],
+        "ACTARMUD": ["", "", "", "", ""]
+      }
+    },
+    {
+      "filename": "apmh.xpt",
+      "label": "Associated Persons Medical History",
+      "domain": "APMH",
+      "variables": [
+        {
+          "name": "STUDYID",
+          "label": "Study Identifier",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "DOMAIN",
+          "label": "Domain Abbreviation",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "APID",
+          "label": "Associated Persons Identifier",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "MHSEQ",
+          "label": "Sequence Number",
+          "type": "Num",
+          "length": 8
+        },
+        {
+          "name": "RSUBJID",
+          "label": "Related Subject or Pool Identifier",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "SREL",
+          "label": "Subject, Device, or Study Relationship",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "MHTERM",
+          "label": "Reported Term for the Medical History",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "MHPRESP",
+          "label": "Medical History Event Pre-Specified",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "MHOCCUR",
+          "label": "Medical History Occurrence",
+          "type": "Char",
+          "length": 50
+        }
+      ],
+      "records": {
+        "STUDYID": ["ABC123", "ABC123", "ABC123", "ABC123"],
+        "DOMAIN": ["APMH", "APMH", "APMH", "APMH"],
+        "APID": [
+          "2011-02-02-N120",
+          "2011-02-02-N121",
+          "2011-02-02-N122",
+          "2011-02-02-N123"
+        ],
+        "MHSEQ": [1, 1, 1, 1],
+        "RSUBJID": ["ABC123-01", "ABC123-01", "ABC123-01", "ABC123-01"],
+        "SREL": [
+          "MOTHER, BIOLOGICAL",
+          "FATHER, BIOLOGICAL",
+          "SIBLING, FULL",
+          "COUSIN, BIOLOGICAL"
+        ],
+        "MHTERM": [
+          "POMPE DISEASE",
+          "POMPE DISEASE",
+          "POMPE DISEASE",
+          "POMPE DISEASE"
+        ],
+        "MHPRESP": ["Y", "Y", "Y", "Y"],
+        "MHOCCUR": ["N", "Y", "N", "Y"]
+      }
+    },
+    {
+      "filename": "apsq.xpt",
+      "label": "Associated Persons SQ",
+      "domain": "APSQ",
+      "variables": [
+        {
+          "name": "STUDYID",
+          "label": "Study Identifier",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "DOMAIN",
+          "label": "Domain Abbreviation",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "APID",
+          "label": "Associated Persons Identifier",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "SQSEQ",
+          "label": "Sequence Number",
+          "type": "Num",
+          "length": 8
+        },
+        {
+          "name": "RSUBJID",
+          "label": "Related Subject or Pool Identifier",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "SREL",
+          "label": "Subject, Device, or Study Relationship",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "SQTERM",
+          "label": "Reported Term for the Medical History",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "SQPRESP",
+          "label": "Medical History Event Pre-Specified",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "SQOCCUR",
+          "label": "Medical History Occurrence",
+          "type": "Char",
+          "length": 50
+        }
+      ],
+      "records": {
+        "STUDYID": ["ABC123", "ABC123", "ABC123", "ABC123"],
+        "DOMAIN": ["APSQ", "APSQ", "APSQ", "APSQ"],
+        "APID": [
+          "2011-02-02-N120",
+          "2011-02-02-N121",
+          "2011-02-02-N122",
+          "2011-02-02-N123"
+        ],
+        "SQSEQ": [1, 1, 1, 1],
+        "RSUBJID": ["ABC123-01", "ABC123-01", "ABC123-01", "ABC123-01"],
+        "SREL": [
+          "MOTHER, BIOLOGICAL",
+          "FATHER, BIOLOGICAL",
+          "SIBLING, FULL",
+          "COUSIN, BIOLOGICAL"
+        ],
+        "SQTERM": [
+          "POMPE DISEASE",
+          "POMPE DISEASE",
+          "POMPE DISEASE",
+          "POMPE DISEASE"
+        ],
+        "SQPRESP": ["Y", "Y", "Y", "Y"],
+        "SQOCCUR": ["N", "Y", "N", "Y"]
+      }
+    }
+  ],
+  "standard": {
+    "product": "sdtmig",
+    "version": "3-4"
+  },
+  "codelists": []
+}
