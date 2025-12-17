@@ -36,7 +36,6 @@ class OperationParams:
     codelists: list = None
     ct_attribute: str = None
     ct_package_types: List[str] = None
-    ct_packages: list = None
     ct_version: str = None
     ct_package_type: str = None
     term_code: str = None
@@ -54,6 +53,7 @@ class OperationParams:
     level: str = None
     map: List[dict] = None
     original_target: str = None
+    regex: str = None
     returntype: str = None
     target: str = None
     value_is_reference: bool = False

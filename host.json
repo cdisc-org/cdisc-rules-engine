@@ -2,7 +2,7 @@
   "version": "2.0",
   "extensionBundle": {
     "id": "Microsoft.Azure.Functions.ExtensionBundle",
-    "version": "[2.*, 3.0.0)"
+    "version": "[4.0.0, 5.0.0)"
   },
   "functionTimeout": "18:00:00",
   "logger": {
@@ -22,7 +22,7 @@
   "applicationInsights": {
     "sampling": {
       "isEnabled": false,
-      "maxTelemetryItemsPerSecond" : 5
+      "maxTelemetryItemsPerSecond": 5
     }
   }
 }

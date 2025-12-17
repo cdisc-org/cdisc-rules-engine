@@ -394,7 +394,6 @@ class RuleProcessor:
                     RuleProcessor._ct_package_type_api_name(ct_package_type)
                     for ct_package_type in operation.get("ct_package_types", [])
                 ],
-                ct_packages=operation.get("ct_packages", kwargs.get("ct_packages", [])),
                 attribute_name=operation.get("attribute_name", ""),
                 key_name=operation.get("key_name", ""),
                 key_value=operation.get("key_value", ""),
@@ -418,6 +417,7 @@ class RuleProcessor:
                 namespace=operation.get("namespace"),
                 value_is_reference=operation.get("value_is_reference", False),
                 delimiter=operation.get("delimiter"),
+                regex=operation.get("regex"),
             )
             try:
                 # execute operation
@@ -482,9 +482,13 @@ class RuleProcessor:
                 ),
             )
             if domain_details is None:
-                logger.info(f"Domain {operation_params.domain} doesn't exist")
-                operation_params.dataframe[operation_params.operation_id] = None
-                return operation_params.dataframe
+                raise OperationError(
+                    f"Failed to execute rule operation. "
+                    f"Domain {operation_params.domain} does not exist. "
+                    f"Operation: {operation_params.operation_name}, "
+                    f"Target: {operation_params.target}, "
+                    f"Core ID: {operation_params.core_id}"
+                )
             filename = get_dataset_name_from_details(domain_details)
             file_path: str = os.path.join(
                 get_directory_path(operation_params.dataset_path),
