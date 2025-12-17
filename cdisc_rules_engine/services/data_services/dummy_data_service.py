@@ -42,7 +42,12 @@ class DummyDataService(BaseDataService):
     ):
         return cls(
             cache_service=cache_service,
-            reader_factory=DataReaderFactory(),
+            reader_factory=DataReaderFactory(
+                dataset_implementation=kwargs.get(
+                    "dataset_implementation", PandasDataset
+                ),
+                encoding=kwargs.get("encoding"),
+            ),
             config=config,
             **kwargs,
         )
@@ -177,17 +182,17 @@ class DummyDataService(BaseDataService):
         return self.data
 
     @staticmethod
-    def get_data(dataset_paths: Sequence[str]):
-        json = JSONReader().from_file(dataset_paths[0])
+    def get_data(dataset_paths: Sequence[str], encoding: str = None):
+        json = JSONReader().from_file(dataset_paths[0], encoding=encoding)
         return [DummyDataset(data) for data in json.get("datasets", [])]
 
     @staticmethod
-    def is_valid_data(dataset_paths: Sequence[str]):
+    def is_valid_data(dataset_paths: Sequence[str], encoding: str = None):
         if (
             dataset_paths
             and len(dataset_paths) == 1
             and dataset_paths[0].lower().endswith(".json")
         ):
-            json = JSONReader().from_file(dataset_paths[0])
+            json = JSONReader().from_file(dataset_paths[0], encoding=encoding)
             return "datasets" in json
         return False
