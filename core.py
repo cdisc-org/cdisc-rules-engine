@@ -407,10 +407,6 @@ def validate(
         logger.error("Cannot use both --rules and --exclude-rules flags together.")
         ctx.exit(2)
 
-    if exclude_rules and rules:
-        logger.error("Cannot use both --rules and --exclude-rules flags together.")
-        ctx.exit()
-
     cache_path: str = os.path.join(os.path.dirname(__file__), cache)
 
     # Construct ExternalDictionariesContainer:
