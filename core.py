@@ -772,18 +772,7 @@ def list_ct(cache_path: str, subsets: set[str]):
 def test_validate():
     """**Release Test** validate command for executable."""
     try:
-        import sys
-        import os
-        from cdisc_rules_engine.models.validation_args import Validation_args
-        from cdisc_rules_engine.models.external_dictionaries_container import (
-            ExternalDictionariesContainer,
-        )
-        from cdisc_rules_engine.enums.report_types import ReportTypes
-        from cdisc_rules_engine.enums.progress_parameter_options import (
-            ProgressParameterOptions,
-        )
-        from cdisc_rules_engine.enums.default_file_paths import DefaultFilePaths
-
+        # All imports are available at module level
         base_path = os.path.join("tests", "resources", "datasets")
         ts_path = os.path.join(base_path, "TS.json")
         ae_path = os.path.join(base_path, "ae.xpt")
