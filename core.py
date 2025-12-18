@@ -395,6 +395,9 @@ def validate(
     # Validate conditional options
     logger = logging.getLogger("validator")
     load_dotenv()
+    
+    dataset_paths: list = []
+    found_formats: set = set()
 
     if raw_report is True:
         if not (len(output_format) == 1 and output_format[0] == ReportTypes.JSON.value):
@@ -752,7 +755,7 @@ def version():
     required=False,
     multiple=True,
 )
-def list_ct(cache_path: str, subsets: tuple[str]):
+def list_ct(cache_path: str, subsets: set[str]):
     """
     Command to list the ct packages available in the cache.
     """
