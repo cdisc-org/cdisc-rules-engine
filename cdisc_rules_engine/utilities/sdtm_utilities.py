@@ -54,6 +54,21 @@ def get_tabulation_model_type_and_version(model_link: dict) -> Tuple:
 
 
 def get_variables_metadata_from_standard(domain, library_metadata):  # noqa
+    add_AP = False
+    if (
+        domain
+        and (domain.upper().startswith("SUPP") or domain.upper().startswith("SQ"))
+        and len(domain) > 2
+    ):
+        if domain.upper().startswith("SQ"):
+            parent_domain = domain[2:]
+            if parent_domain.upper().startswith("AP"):
+                add_AP = True
+        domain = "SUPPQUAL"
+    elif domain and domain.upper().startswith("AP"):
+        domain = domain[2:]
+        add_AP = True
+
     standard_details = library_metadata.standard_metadata
     model_details = library_metadata.model_metadata
     is_custom = domain not in standard_details.get("domains", {})
@@ -70,6 +85,15 @@ def get_variables_metadata_from_standard(domain, library_metadata):  # noqa
             class_variables_metadata,
             timing_metadata,
         ) = get_allowed_class_variables(model_details, model_class_details)
+        if add_AP:
+            ap_class_details = get_class_metadata(model_details, "Associated Persons")
+            ap_identifiers = ap_class_details.get("classVariables", [])
+            identifiers_metadata = [
+                v
+                for v in identifiers_metadata + ap_identifiers
+                if v.get("name") != "USUBJID"
+            ]
+            identifiers_metadata.sort(key=lambda item: int(item["ordinal"]))
         model_variables = []
         for var_list in [
             identifiers_metadata,
@@ -112,6 +136,17 @@ def get_variables_metadata_from_standard(domain, library_metadata):  # noqa
                         var["name"]: i for i, var in enumerate(variables_metadata)
                     }
         else:
+            if add_AP:
+                ap_class_details = get_class_metadata(
+                    model_details, "Associated Persons"
+                )
+                ap_identifiers = ap_class_details.get("classVariables", [])
+                ig_variables = [
+                    v
+                    for v in ig_variables + ap_identifiers
+                    if v.get("name") != "USUBJID"
+                ]
+                ig_variables.sort(key=lambda item: int(item["ordinal"]))
             variables_metadata = ig_variables
     return variables_metadata
 
