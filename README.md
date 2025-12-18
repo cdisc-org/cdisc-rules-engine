@@ -32,7 +32,8 @@ Windows:
 Linux/Mac:
 
 ```
-./core validate -s <standard> -v <standard_version> -d path/to/datasets
+cd <<root directory of the library repo>>
+./core.py validate -s <standard> -v <standard_version> -d path/to/datasets
 
 # ex: ./core validate -s sdtmig -v 3-4 -d .\xpt\
 ```
@@ -40,14 +41,14 @@ Linux/Mac:
 > **_NOTE:_** For Linux users, you will need to run this command from the executable root directory:
 >
 > ```bash
-> chmod +x ./core
+> chmod +x ./core.py
 > ```
 >
 > For Mac users, you will need to remove the Apple signature quarantine in addition to making the app executable.
 >
 > ```bash
 > xattr -rd com.apple.quarantine /path/to/core/root/dir
-> chmod +x ./core
+> chmod +x ./core.py
 > ```
 
 ### **Command-line Interface**
