@@ -805,7 +805,6 @@ def test_validate():
             validate_xml = False
             max_report_rows = None
             max_report_errors = (0, False)
-            json_output = os.path.join(temp_dir, "json_validation_output")
             jsonata_custom_functions = ()
             run_validation(
                 Validation_args(
@@ -836,7 +835,6 @@ def test_validate():
                 )
             )
             print("JSON validation completed successfully!")
-            xpt_output = os.path.join(temp_dir, "xpt_validation_output")
             run_validation(
                 Validation_args(
                     cache_path,
