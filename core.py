@@ -99,7 +99,7 @@ def _validate_data_directory(data: str, logger) -> tuple[list, set]:
             f"Please provide either a single XLSX file or use other supported formats: "
             f"{VALIDATION_FORMATS_MESSAGE}"
         )
-        return None, None
+        return [], set()
 
     if not dataset_paths:
         if DataFormatTypes.XLSX.value in found_formats and len(found_formats) == 1:
@@ -115,7 +115,7 @@ def _validate_data_directory(data: str, logger) -> tuple[list, set]:
                 f"Supported formats: {VALIDATION_FORMATS_MESSAGE}\n"
                 f"Please ensure your directory contains files in one of these formats."
             )
-        return None, None
+        return [], set()
 
     return dataset_paths, found_formats
 
@@ -131,7 +131,7 @@ def _validate_dataset_paths(dataset_path: tuple[str], logger) -> tuple[list, set
             f"Please provide either a single XLSX file or use other supported formats: "
             f"{VALIDATION_FORMATS_MESSAGE}"
         )
-        return None, None
+        return [], set()
 
     if not dataset_paths:
         if DataFormatTypes.XLSX.value in found_formats and len(found_formats) == 1:
@@ -147,7 +147,7 @@ def _validate_dataset_paths(dataset_path: tuple[str], logger) -> tuple[list, set
                 f"Supported formats: {VALIDATION_FORMATS_MESSAGE}\n"
                 f"Please ensure your files are in one of these formats."
             )
-        return None, None
+        return [], set()
 
     return dataset_paths, found_formats
 
@@ -236,7 +236,7 @@ def _validate_no_arguments(logger) -> None:
     "--output-format",
     multiple=True,
     default=[ReportTypes.XLSX.value],
-    type=click.Choice(ReportTypes.values(), case_sensitive=False),
+    type=click.Choice(list(ReportTypes.values()), case_sensitive=False),
     help="Output file format",
 )
 @click.option(
@@ -300,7 +300,7 @@ def _validate_no_arguments(logger) -> None:
     "-p",
     "--progress",
     default=ProgressParameterOptions.BAR.value,
-    type=click.Choice(ProgressParameterOptions.values()),
+    type=click.Choice(list(ProgressParameterOptions.values())),
     help=(
         "Defines how to display the validation progress. "
         'By default a progress bar like "[████████████████████████████--------]   78%"'
