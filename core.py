@@ -1,3 +1,9 @@
+#!/usr/bin/env python3
+"""
+CLI entrypoint for the CDISC Rules Engine.
+"""
+
+import sys
 import asyncio
 import json
 import logging
