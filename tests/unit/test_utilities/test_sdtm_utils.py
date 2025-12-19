@@ -80,6 +80,13 @@ def test_ap_domain(library_metadata):
     assert any(var["name"] == "DMDY" for var in variables)
 
 
+def test_sqap_domain(library_metadata):
+    variables = get_variables_metadata_from_standard("SQAP", library_metadata)
+    assert any(var["name"] == "APID" for var in variables)
+    assert not any(var["name"] == "USUBJID" for var in variables)
+    assert any(var["name"] == "RDOMAIN" for var in variables)
+
+
 def test_findings_about_domain_fa(library_metadata):
     """Test Findings About domain includes FINDINGS class variables."""
     variables = get_variables_metadata_from_standard("FA", library_metadata)
@@ -115,6 +122,21 @@ def test_supp_domain_from_model(library_metadata, mock_data_service, mock_datase
     )
     assert any(var["name"] == "RDOMAIN" for var in variables)
     assert any(var["name"] == "IDVAR" for var in variables)
+
+
+def test_sqap_domain_from_model(library_metadata, mock_data_service, mock_datasets):
+    """Test retrieving variables for SUPP domain from model."""
+    mock_dataframe = Mock()
+    variables = get_variables_metadata_from_standard_model(
+        domain="SQAP",
+        dataframe=mock_dataframe,
+        datasets=mock_datasets,
+        dataset_path="/path/to/suppae.xpt",
+        data_service=mock_data_service,
+        library_metadata=library_metadata,
+    )
+    assert any(var["name"] == "RDOMAIN" for var in variables)
+    assert any(var["name"] == "APID" for var in variables)
 
 
 def test_ap_domain_from_model(library_metadata, mock_data_service, mock_datasets):
