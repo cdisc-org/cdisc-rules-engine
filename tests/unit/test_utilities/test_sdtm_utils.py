@@ -90,7 +90,6 @@ def test_findings_about_domain_fa(library_metadata):
 # Tests for get_variables_metadata_from_standard_model
 def test_findings_domain_from_model(library_metadata, mock_data_service, mock_datasets):
     mock_dataframe = Mock()
-
     variables = get_variables_metadata_from_standard_model(
         domain="LB",
         dataframe=mock_dataframe,
@@ -106,7 +105,6 @@ def test_findings_domain_from_model(library_metadata, mock_data_service, mock_da
 def test_supp_domain_from_model(library_metadata, mock_data_service, mock_datasets):
     """Test retrieving variables for SUPP domain from model."""
     mock_dataframe = Mock()
-
     variables = get_variables_metadata_from_standard_model(
         domain="SUPPAE",
         dataframe=mock_dataframe,
