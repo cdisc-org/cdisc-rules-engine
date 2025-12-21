@@ -1,9 +1,6 @@
 from cdisc_rules_engine.models.operation_params import OperationParams
 from cdisc_rules_engine.constants.permissibility import (
-    REQUIRED,
     PERMISSIBLE,
-    REQUIRED_MODEL_VARIABLES,
-    SEQ_VARIABLE,
     PERMISSIBILITY_KEY,
 )
 from abc import abstractmethod
@@ -143,6 +140,10 @@ class BaseOperation:
             result = self._rename_grouping_columns(result)
         grouping_columns = self._get_grouping_columns()
         target_columns = grouping_columns + [self.params.operation_id]
+        target_columns = self._resolve_variable_name(target_columns, self.params.domain)
+        grouping_columns = self._resolve_variable_name(
+            grouping_columns, self.params.domain
+        )
         result = result.reset_index()
         merged = self.evaluation_dataset.merge(
             result[target_columns], on=grouping_columns, how="left"
@@ -191,51 +192,35 @@ class BaseOperation:
         )
 
     def _get_grouping_columns(self) -> List[str]:
-        if any(item.startswith("$") for item in self.params.grouping):
-            return self._expand_operation_results_in_grouping(self.params.grouping)
+        expanded = self._expand_operation_results_in_grouping(self.params.grouping)
+        if not self.params.grouping_aliases:
+            return expanded
         else:
-            return (
-                self.params.grouping
-                if not self.params.grouping_aliases
-                else [
-                    (
-                        self.params.grouping_aliases[i]
-                        if 0 <= i < len(self.params.grouping_aliases)
-                        else v
-                    )
-                    for i, v in enumerate(self.params.grouping)
-                ]
-            )
+            return [
+                (
+                    self.params.grouping_aliases[i]
+                    if 0 <= i < len(self.params.grouping_aliases)
+                    else v
+                )
+                for i, v in enumerate(expanded)
+            ]
 
     def _expand_operation_results_in_grouping(self, grouping_list):
         expanded = []
         for item in grouping_list:
-            if item.startswith("$") and item in self.evaluation_dataset.columns:
+            if item in self.evaluation_dataset.columns:
                 operation_col = self.evaluation_dataset[item]
                 first_val = operation_col.iloc[0]
-                if operation_col.astype(str).nunique() == 1:
-                    if isinstance(first_val, (list, tuple)):
-                        expanded.extend(first_val)
-                    else:
-                        expanded.append(item)
+                if (
+                    isinstance(first_val, (list, tuple))
+                    and operation_col.astype(str).nunique() == 1
+                ):
+                    expanded.extend(first_val)
                 else:
-                    expanded.extend(self._collect_values_from_column(operation_col))
+                    expanded.append(item)
             else:
                 expanded.append(item)
         return list(dict.fromkeys(expanded))
-
-    def _collect_values_from_column(self, operation_col):
-        seen = []
-        for val in operation_col:
-            if val is not None:
-                if isinstance(val, (list, tuple)):
-                    for v in val:
-                        if v not in seen:
-                            seen.append(v)
-                else:
-                    if val not in seen:
-                        seen.append(val)
-        return seen
 
     def _get_variables_metadata_from_standard(self) -> List[dict]:
         # TODO: Update to handle other standard types: adam, cdash, etc.
@@ -268,16 +253,8 @@ class BaseOperation:
         """
         Returns the permissibility value of a variable allowed in the current domain
         """
-        variable_name = variable_metadata.get("name")
         if PERMISSIBILITY_KEY in variable_metadata:
             return variable_metadata[PERMISSIBILITY_KEY]
-        elif variable_name in REQUIRED_MODEL_VARIABLES:
-            return REQUIRED
-        elif variable_name.replace("--", self.params.domain) == SEQ_VARIABLE.replace(
-            "--", self.params.domain
-        ):
-            return REQUIRED
-
         return PERMISSIBLE
 
     def _get_variable_names_list(self, domain, dataframe):
@@ -331,3 +308,16 @@ class BaseOperation:
     @staticmethod
     def _replace_variable_wildcards(variables_metadata, domain):
         return [var["name"].replace("--", domain) for var in variables_metadata]
+
+    @staticmethod
+    def _resolve_variable_name(variable_name, domain: str):
+        if isinstance(variable_name, list):
+            return [
+                var.replace("--", domain) if "--" in var else var
+                for var in variable_name
+            ]
+        return (
+            variable_name.replace("--", domain)
+            if "--" in variable_name
+            else variable_name
+        )

@@ -14,7 +14,7 @@ jobs:
             name: "core-ubuntu-22.04-tar"
           - os: "macos-latest"
             name: "core-mac-apple-silicon"
-          - os: "macos-13"
+          - os: "macos-15-intel"
             name: "core-mac-intel"
           - os: "windows-latest"
             name: "core-windows"

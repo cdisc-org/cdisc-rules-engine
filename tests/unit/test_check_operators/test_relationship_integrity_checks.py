@@ -652,6 +652,70 @@ def test_target_is_sorted_by(dataset_class):
         )
     )
 
+
+@pytest.mark.parametrize("dataset_class", [PandasDataset, DaskDataset])
+def test_target_is_sorted_by_multiple_within(dataset_class):
+    usubjid = ["CDISC001", "CDISC001", "CDISC001", "CDISC001", "CDISC002", "CDISC002"]
+    midstype = ["A", "A", "B", "B", "A", "A"]
+    mids = ["A1", "A2", "B1", "B2", "A1", "A2"]
+    smstdtc = [
+        "2006-06-01",
+        "2006-06-02",
+        "2006-06-03",
+        "2006-06-04",
+        "2007-01-01",
+        "2007-01-02",
+    ]
+    data = {
+        "USUBJID": usubjid,
+        "MIDSTYPE": midstype,
+        "MIDS": mids,
+        "SMSTDTC": smstdtc,
+    }
+    df = dataset_class.from_dict(data)
+    other_value = {
+        "target": "MIDS",
+        "within": ["USUBJID", "MIDSTYPE"],
+        "comparator": [
+            {"name": "SMSTDTC", "sort_order": "ASC", "null_position": "last"}
+        ],
+    }
+    expected = [True] * len(usubjid)
+    result = DataframeType({"value": df}).target_is_sorted_by(other_value)
+    assert result.equals(df.convert_to_series(expected))
+
+
+@pytest.mark.parametrize("dataset_class", [PandasDataset, DaskDataset])
+def test_target_is_sorted_by_multiple_within_not_sorted(dataset_class):
+    usubjid = ["CDISC001", "CDISC001", "CDISC001", "CDISC001", "CDISC002", "CDISC002"]
+    midstype = ["A", "A", "B", "B", "A", "A"]
+    mids = ["A2", "A1", "B1", "B2", "A1", "A2"]
+    smstdtc = [
+        "2006-06-01",
+        "2006-06-02",
+        "2006-06-03",
+        "2006-06-04",
+        "2007-01-01",
+        "2007-01-02",
+    ]
+    data = {
+        "USUBJID": usubjid,
+        "MIDSTYPE": midstype,
+        "MIDS": mids,
+        "SMSTDTC": smstdtc,
+    }
+    df = dataset_class.from_dict(data)
+    other_value = {
+        "target": "MIDS",
+        "within": ["USUBJID", "MIDSTYPE"],
+        "comparator": [
+            {"name": "SMSTDTC", "sort_order": "ASC", "null_position": "last"}
+        ],
+    }
+    expected = [False, False, True, True, True, True]
+    result = DataframeType({"value": df}).target_is_sorted_by(other_value)
+    assert result.equals(df.convert_to_series(expected))
+
     valid_desc_df = dataset_class.from_dict(
         {
             "USUBJID": ["CDISC001", "CDISC002", "CDISC002", "CDISC001", "CDISC001"],

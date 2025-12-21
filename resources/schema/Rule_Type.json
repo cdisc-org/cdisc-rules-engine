@@ -35,6 +35,10 @@
       "title": "Content domain presence at study level"
     },
     {
+      "const": "JSON Schema Check",
+      "title": "Apply JSON schema validation to a JSON file"
+    },
+    {
       "const": "JSONata",
       "title": "Apply a JSONata query to a JSON file"
     },

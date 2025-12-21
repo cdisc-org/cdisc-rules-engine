@@ -32,8 +32,9 @@ def test_get_export(_, mock_validation_results):
     assert export["Conformance_Details"]["Version"] == "V3.4"
     assert export["Conformance_Details"]["CT_Version"] == "sdtmct-03-2021"
     assert export["Conformance_Details"]["Define_XML_Version"] == "2.1"
-    assert export["Conformance_Details"]["Issue_Limit_Per_Rule"] is None
+    assert export["Conformance_Details"]["Issue_Limit_Per_Rule"] == "None"
     assert export["Conformance_Details"]["Issue_Limit_Per_Dataset"] == "None"
+    assert export["Conformance_Details"]["Issue_Limit_Per_Sheet"] is None
     assert "Dataset_Details" in export
     assert isinstance(export["Dataset_Details"], list)
 

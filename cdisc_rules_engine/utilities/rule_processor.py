@@ -1,4 +1,7 @@
 import re
+import copy
+import os
+
 from typing import Iterable, List, Optional, Set, Union, Tuple
 from cdisc_rules_engine.enums.rule_types import RuleTypes
 from cdisc_rules_engine.interfaces.cache_service_interface import (
@@ -11,8 +14,6 @@ from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
-
-import os
 from cdisc_rules_engine.constants.classes import (
     FINDINGS_ABOUT,
     FINDINGS,
@@ -27,13 +28,13 @@ from cdisc_rules_engine.constants.use_cases import USE_CASE_DOMAINS
 from cdisc_rules_engine.interfaces import ConditionInterface
 from cdisc_rules_engine.models.operation_params import OperationParams
 from cdisc_rules_engine.models.rule_conditions import AllowedConditionsKeys
+from cdisc_rules_engine.exceptions.custom_exceptions import OperationError
 from cdisc_rules_engine.operations import operations_factory
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.utilities.data_processor import DataProcessor
 from cdisc_rules_engine.utilities.utils import (
     get_directory_path,
     get_operations_cache_key,
-    is_ap_domain,
     search_in_list_of_dicts,
     get_dataset_name_from_details,
 )
@@ -44,7 +45,6 @@ from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.interfaces.data_service_interface import (
     DataServiceInterface,
 )
-from cdisc_rules_engine.exceptions.custom_exceptions import DomainNotFoundError
 
 
 class RuleProcessor:
@@ -181,12 +181,7 @@ class RuleProcessor:
         supp_ap_domains.update({f"{AP_DOMAIN}--", f"{APFA_DOMAIN}--"})
 
         return any(set(domains_to_check).intersection(supp_ap_domains)) and (
-            dataset_metadata.is_supp
-            or is_ap_domain(
-                dataset_metadata.domain
-                or dataset_metadata.rdomain
-                or dataset_metadata.name
-            )
+            dataset_metadata.is_supp or dataset_metadata.is_ap
         )
 
     def rule_applies_to_data_structure(
@@ -390,7 +385,7 @@ class RuleProcessor:
                 standard_version=standard_version,
                 standard_substandard=standard_substandard,
                 external_dictionaries=external_dictionaries,
-                ct_version=operation.get("ct_version"),
+                ct_version=operation.get("version"),
                 ct_package_type=RuleProcessor._ct_package_type_api_name(
                     operation.get("ct_package_type")
                 ),
@@ -399,7 +394,6 @@ class RuleProcessor:
                     RuleProcessor._ct_package_type_api_name(ct_package_type)
                     for ct_package_type in operation.get("ct_package_types", [])
                 ],
-                ct_packages=operation.get("ct_packages", kwargs.get("ct_packages", [])),
                 attribute_name=operation.get("attribute_name", ""),
                 key_name=operation.get("key_name", ""),
                 key_value=operation.get("key_value", ""),
@@ -422,12 +416,21 @@ class RuleProcessor:
                 term_pref_term=operation.get("term_pref_term"),
                 namespace=operation.get("namespace"),
                 value_is_reference=operation.get("value_is_reference", False),
+                delimiter=operation.get("delimiter"),
+                regex=operation.get("regex"),
             )
-
-            # execute operation
-            dataset_copy = self._execute_operation(
-                operation_params, dataset_copy, previous_operations
-            )
+            try:
+                # execute operation
+                dataset_copy = self._execute_operation(
+                    operation_params, dataset_copy, previous_operations
+                )
+            except Exception as e:
+                raise OperationError(
+                    f"Failed to execute rule operation. "
+                    f"Operation: {operation_params.operation_name}, "
+                    f"Target: {target}, Domain: {domain}, "
+                    f"Error: {str(e)}"
+                )
             previous_operations.append(operation_params.operation_name)
 
             logger.info(
@@ -479,9 +482,12 @@ class RuleProcessor:
                 ),
             )
             if domain_details is None:
-                raise DomainNotFoundError(
-                    f"Operation {operation_params.operation_name} requires Domain "
-                    f"{operation_params.domain} but Domain not found in dataset"
+                raise OperationError(
+                    f"Failed to execute rule operation. "
+                    f"Domain {operation_params.domain} does not exist. "
+                    f"Operation: {operation_params.operation_name}, "
+                    f"Target: {operation_params.target}, "
+                    f"Core ID: {operation_params.core_id}"
                 )
             filename = get_dataset_name_from_details(domain_details)
             file_path: str = os.path.join(
@@ -597,6 +603,50 @@ class RuleProcessor:
             f"Added comparator to rule conditions. "
             f"comparator={comparator}, conditions={rule['conditions']}"
         )
+
+    def _preprocess_operation_params(
+        self, operation_params: OperationParams, domain_details: dict = None
+    ) -> OperationParams:
+        # uses shallow copy to not overwrite for subsequent
+        # operations and avoids costly deepcopy of dataframe
+        params_copy = copy.copy(operation_params)
+        current_domain = params_copy.domain
+        if domain_details.is_supp:
+            current_domain = domain_details.rdomain
+        for param_name in vars(params_copy):
+            if param_name in ("datasets", "dataframe"):
+                continue
+            param_value = getattr(params_copy, param_name)
+            updated_value = self._replace_wildcards_in_value(
+                param_value, current_domain
+            )
+            if updated_value is not param_value:
+                updated_value = copy.deepcopy(updated_value)
+                setattr(params_copy, param_name, updated_value)
+        return params_copy
+
+    def _replace_wildcards_in_value(self, value, domain: str):
+        if value is None:
+            return value
+        if isinstance(value, str):
+            return value.replace("--", domain)
+        elif isinstance(value, list):
+            return [self._replace_wildcards_in_value(item, domain) for item in value]
+        elif isinstance(value, set):
+            return {self._replace_wildcards_in_value(item, domain) for item in value}
+        elif isinstance(value, dict):
+            return {
+                self._replace_wildcards_in_value(
+                    k, domain
+                ): self._replace_wildcards_in_value(v, domain)
+                for k, v in value.items()
+            }
+        elif isinstance(value, tuple):
+            return tuple(
+                self._replace_wildcards_in_value(item, domain) for item in value
+            )
+        else:
+            return value
 
     @staticmethod
     def duplicate_conditions_for_all_targets(

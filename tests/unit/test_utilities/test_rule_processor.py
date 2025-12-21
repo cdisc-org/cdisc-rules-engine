@@ -4,7 +4,9 @@ from unittest.mock import MagicMock, patch
 import pandas as pd
 import pytest
 from conftest import mock_data_service
-
+from cdisc_rules_engine.exceptions.custom_exceptions import (
+    OperationError,
+)
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.models.rule_conditions import ConditionCompositeFactory
 from cdisc_rules_engine.models.rule_conditions.condition_composite import (
@@ -23,6 +25,7 @@ from cdisc_rules_engine.constants.classes import (
     INTERVENTIONS,
 )
 from cdisc_rules_engine.models.dataset import PandasDataset, DaskDataset
+from cdisc_rules_engine.models.operation_params import OperationParams
 
 
 @pytest.mark.parametrize(
@@ -59,8 +62,13 @@ from cdisc_rules_engine.models.dataset import PandasDataset, DaskDataset
 )
 def test_rule_applies_to_domain(mock_data_service, name, rule_metadata, outcome):
     processor = RuleProcessor(mock_data_service, InMemoryCacheService())
+    first_record = None
+    if name in ("APTE", "APFASU", "APRELSUB"):
+        first_record = {"DOMAIN": name, "APID": "AP001"}
     assert (
-        processor.rule_applies_to_domain(SDTMDatasetMetadata(name=name), rule_metadata)
+        processor.rule_applies_to_domain(
+            SDTMDatasetMetadata(name=name, first_record=first_record), rule_metadata
+        )
         == outcome
     )
 
@@ -479,29 +487,34 @@ def test_perform_rule_operation(mock_data_service, dataset_implementation):
     df = dataset_implementation.from_dict(
         {"AESTDY": [11, 12, 40, 59, 59], "DOMAIN": ["AE", "AE", "AE", "AE", "AE"]}
     )
-    processor = RuleProcessor(mock_data_service, InMemoryCacheService())
-    with patch(
-        "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
-        return_value=df,
-    ):
-        result = processor.perform_rule_operations(
-            rule,
-            df,
-            "AE",
-            [{"domain": "AE", "filename": "ae.xpt"}],
-            "test/",
-            standard="sdtmig",
-            standard_version="3-1-2",
-            standard_substandard=None,
+    datasets = [
+        SDTMDatasetMetadata(
+            filename="ae.xpt",
+            full_path="test/ae.xpt",
+            name="AE",
+            label="Adverse Events",
         )
-        assert "$avg_aestdy" in result
-        assert "$unique_aestdy" in result
-        assert "$max_aestdy" in result
-        assert "$min_aestdy" in result
-        assert result["$max_aestdy"][0] == df["AESTDY"].max()
-        assert result["$min_aestdy"][0] == df["AESTDY"].min()
-        assert result["$avg_aestdy"][0] == df["AESTDY"].mean()
-        assert result["$unique_aestdy"].equals(pd.Series([{11, 12, 40, 59}] * len(df)))
+    ]
+    mock_data_service.get_dataset.return_value = df
+    processor = RuleProcessor(mock_data_service, InMemoryCacheService())
+    result = processor.perform_rule_operations(
+        rule,
+        df,
+        "AE",
+        datasets,
+        "test/",
+        standard="sdtmig",
+        standard_version="3-1-2",
+        standard_substandard=None,
+    )
+    assert "$avg_aestdy" in result
+    assert "$unique_aestdy" in result
+    assert "$max_aestdy" in result
+    assert "$min_aestdy" in result
+    assert result["$max_aestdy"][0] == df["AESTDY"].max()
+    assert result["$min_aestdy"][0] == df["AESTDY"].min()
+    assert result["$avg_aestdy"][0] == df["AESTDY"].mean()
+    assert result["$unique_aestdy"].equals(pd.Series([{11, 12, 40, 59}] * len(df)))
 
 
 @pytest.mark.parametrize("dataset_implementation", [PandasDataset, DaskDataset])
@@ -569,57 +582,64 @@ def test_perform_rule_operation_with_grouping(
             "DOMAIN": ["AE", "AE", "AE", "AE"],
         }
     )
+
+    datasets = [
+        SDTMDatasetMetadata(
+            filename="ae.xpt",
+            full_path="test/ae.xpt",
+            name="AE",
+            label="Adverse Events",
+        )
+    ]
+
+    mock_data_service.get_dataset.return_value = df
     processor = RuleProcessor(mock_data_service, InMemoryCacheService())
-    with patch(
-        "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
-        return_value=df,
-    ):
-        data = processor.perform_rule_operations(
-            rule,
-            df,
-            "AE",
-            [{"domain": "AE", "filename": "ae.xpt"}],
-            "test/",
-            standard="sdtmig",
-            standard_version="3-1-2",
-            standard_substandard=None,
+    data = processor.perform_rule_operations(
+        rule,
+        df,
+        "AE",
+        datasets,
+        "test/",
+        standard="sdtmig",
+        standard_version="3-1-2",
+        standard_substandard=None,
+    )
+    assert "$avg_aestdy" in data
+    assert data["$avg_aestdy"].values.tolist() == [25, 35, 25, 35]
+    assert "$max_aestdy" in data
+    assert data["$max_aestdy"].values.tolist() == [40, 59, 40, 59]
+    assert "$min_aestdy" in data
+    assert data["$min_aestdy"].values.tolist() == [10, 11, 10, 11]
+    assert data[["USUBJID", "$unique_aestdy"]].equals(
+        pd.DataFrame.from_dict(
+            {
+                "USUBJID": [
+                    1,
+                    200,
+                    1,
+                    200,
+                ],
+                "$unique_aestdy": [
+                    {
+                        10,
+                        40,
+                    },
+                    {
+                        11,
+                        59,
+                    },
+                    {
+                        10,
+                        40,
+                    },
+                    {
+                        11,
+                        59,
+                    },
+                ],
+            }
         )
-        assert "$avg_aestdy" in data
-        assert data["$avg_aestdy"].values.tolist() == [25, 35, 25, 35]
-        assert "$max_aestdy" in data
-        assert data["$max_aestdy"].values.tolist() == [40, 59, 40, 59]
-        assert "$min_aestdy" in data
-        assert data["$min_aestdy"].values.tolist() == [10, 11, 10, 11]
-        assert data[["USUBJID", "$unique_aestdy"]].equals(
-            pd.DataFrame.from_dict(
-                {
-                    "USUBJID": [
-                        1,
-                        200,
-                        1,
-                        200,
-                    ],
-                    "$unique_aestdy": [
-                        {
-                            10,
-                            40,
-                        },
-                        {
-                            11,
-                            59,
-                        },
-                        {
-                            10,
-                            40,
-                        },
-                        {
-                            11,
-                            59,
-                        },
-                    ],
-                }
-            )
-        )
+    )
 
 
 @pytest.mark.parametrize("dataset_implementation", [PandasDataset, DaskDataset])
@@ -680,27 +700,34 @@ def test_perform_rule_operation_with_multi_key_grouping(
             "STUDYID": ["A", "A", "A", "A", "B", "B"],
         }
     )
-    processor = RuleProcessor(mock_data_service, InMemoryCacheService())
-    with patch(
-        "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
-        return_value=df,
-    ):
-        data = processor.perform_rule_operations(
-            rule,
-            df,
-            "AE",
-            [{"domain": "AE", "filename": "ae.xpt"}],
-            "test/",
-            standard="sdtmig",
-            standard_version="3-1-2",
-            standard_substandard=None,
+
+    datasets = [
+        SDTMDatasetMetadata(
+            filename="ae.xpt",
+            full_path="test/ae.xpt",
+            name="AE",
+            label="Adverse Events",
         )
-        assert "$avg_aestdy" in data
-        assert data["$avg_aestdy"].values.tolist() == [25, 35, 25, 35, 30, 112]
-        assert "$max_aestdy" in data
-        assert data["$max_aestdy"].values.tolist() == [40, 59, 40, 59, 30, 112]
-        assert "$min_aestdy" in data
-        assert data["$min_aestdy"].values.tolist() == [10, 11, 10, 11, 30, 112]
+    ]
+
+    mock_data_service.get_dataset.return_value = df
+    processor = RuleProcessor(mock_data_service, InMemoryCacheService())
+    data = processor.perform_rule_operations(
+        rule,
+        df,
+        "AE",
+        datasets,
+        "test/",
+        standard="sdtmig",
+        standard_version="3-1-2",
+        standard_substandard=None,
+    )
+    assert "$avg_aestdy" in data
+    assert data["$avg_aestdy"].values.tolist() == [25, 35, 25, 35, 30, 112]
+    assert "$max_aestdy" in data
+    assert data["$max_aestdy"].values.tolist() == [40, 59, 40, 59, 30, 112]
+    assert "$min_aestdy" in data
+    assert data["$min_aestdy"].values.tolist() == [10, 11, 10, 11, 30, 112]
 
 
 @pytest.mark.parametrize("dataset_implementation", [PandasDataset, DaskDataset])
@@ -734,18 +761,88 @@ def test_perform_rule_operation_with_null_operations(
     df = dataset_implementation.from_dict(
         {"AESTDY": [11, 12, 40, 59], "USUBJID": [1, 200, 1, 200]}
     )
+    datasets = [
+        SDTMDatasetMetadata(
+            filename="ae.xpt",
+            full_path="test/ae.xpt",
+            name="AE",
+            label="Adverse Events",
+        )
+    ]
     processor = RuleProcessor(mock_data_service, InMemoryCacheService())
     new_data = processor.perform_rule_operations(
         rule,
         df,
         "AE",
-        [{"domain": "AE", "filename": "ae.xpt"}],
+        datasets,
         "test/",
         standard="sdtmig",
         standard_version="3-1-2",
         standard_substandard=None,
     )
     assert df.equals(new_data)
+
+
+def test_preprocess_operation_params_wildcard_replacement(mock_data_service):
+    processor = RuleProcessor(mock_data_service, InMemoryCacheService())
+    df = PandasDataset.from_dict({"AESEQ": [1, 2, 3]})
+    operation_params = OperationParams(
+        core_id="test_id",
+        operation_id="test_op",
+        operation_name="test_operator",
+        dataframe=df,
+        target="--SEQ",
+        original_target="--SEQ",
+        domain="AE",
+        dataset_path="test/ae.xpt",
+        directory_path="test/",
+        datasets=[],
+        standard="sdtmig",
+        standard_version="3-4",
+        grouping=["--SEQ", "--DTC", "USUBJID"],
+        filter={"--STAT": "COMPLETED"},
+    )
+    domain_details = SDTMDatasetMetadata(
+        filename="ae.xpt", full_path="test/ae.xpt", name="AE", label="Adverse Events"
+    )
+    result = processor._preprocess_operation_params(operation_params, domain_details)
+    assert result.target == "AESEQ"
+    assert result.original_target == "AESEQ"
+    assert result.grouping == ["AESEQ", "AEDTC", "USUBJID"]
+    assert result.filter == {"AESTAT": "COMPLETED"}
+    # Check that original params and dataframe are not modified
+    assert operation_params.target == "--SEQ"
+    assert operation_params.grouping == ["--SEQ", "--DTC", "USUBJID"]
+    assert result.dataframe is operation_params.dataframe
+
+
+def test_preprocess_operation_params_supp_domain_uses_rdomain(mock_data_service):
+    processor = RuleProcessor(mock_data_service, InMemoryCacheService())
+    df = PandasDataset.from_dict({"AESEQ": [1, 2, 3]})
+    operation_params = OperationParams(
+        core_id="test_id",
+        operation_id="test_op",
+        operation_name="test_operator",
+        dataframe=df,
+        target="--SEQ",
+        original_target="--SEQ",
+        domain=None,
+        dataset_path="test/suppae.xpt",
+        directory_path="test/",
+        datasets=[],
+        standard="sdtmig",
+        standard_version="3-4",
+    )
+    domain_details = SDTMDatasetMetadata(
+        filename="suppae.xpt",
+        full_path="test/suppae.xpt",
+        name="SUPPAE",
+        label="Supplemental AE",
+        first_record={"RDOMAIN": "AE"},
+    )
+    result = processor._preprocess_operation_params(operation_params, domain_details)
+    assert result.target == "AESEQ"
+    assert result.original_target == "AESEQ"
 
 
 @patch(
@@ -1155,3 +1252,34 @@ def test_duplicate_for_targets():
         assert (
             len([cond for cond in check[1] if cond["value"]["target"] == target]) == 1
         )
+
+
+def test_operation_nonexistent_domain_raises_error(mock_data_service):
+    df = PandasDataset.from_dict({"DOMAIN": ["LB", "LB"], "LBSEQ": [1, 2]})
+    rule = {
+        "operations": [
+            {"operator": "distinct", "domain": "AE", "name": "AESEQ", "id": "$ae_ids"}
+        ]
+    }
+    processor = RuleProcessor(mock_data_service, InMemoryCacheService())
+    datasets_metadata = [
+        SDTMDatasetMetadata(name="LB", filename="lb.xpt", first_record={"DOMAIN": "LB"})
+    ]
+    with pytest.raises(OperationError) as exc_info:
+        processor.perform_rule_operations(
+            rule=rule,
+            dataset=df.copy(),
+            domain="LB",
+            datasets=datasets_metadata,
+            dataset_path="lb.xpt",
+            standard="sdtmig",
+            standard_version="3-1-2",
+            standard_substandard=None,
+        )
+    error_message = str(exc_info.value)
+    assert (
+        "Failed to execute rule operation. Operation: distinct, "
+        "Target: AESEQ, Domain: AE, Error: Failed to execute rule operation. "
+        "Domain AE does not exist. Operation: distinct, Target: AESEQ, Core ID: None"
+        == error_message
+    )

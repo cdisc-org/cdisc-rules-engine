@@ -33,6 +33,7 @@ from cdisc_rules_engine.models.external_dictionaries_container import (
 from cdisc_rules_engine.utilities.utils import (
     generate_report_filename,
     get_rules_cache_key,
+    validate_dataset_files_exist,
 )
 from cdisc_rules_engine.enums.dataformat_types import DataFormatTypes
 from scripts.list_dataset_metadata_handler import list_dataset_metadata_handler
@@ -40,6 +41,9 @@ from version import __version__
 
 VALIDATION_FORMATS_MESSAGE = (
     "SAS V5 XPT, Dataset-JSON (JSON or NDJSON), or Excel (XLSX)"
+)
+DEFAULT_CACHE_PATH = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), DefaultFilePaths.CACHE.value
 )
 
 
@@ -87,11 +91,20 @@ def cli():
     pass
 
 
-def _validate_data_directory(data: str, logger) -> tuple[list, set]:
+def _validate_data_directory(
+    data: str, logger, filetype: str = None
+) -> tuple[list, set]:
     """Validate data directory and return dataset paths and found formats."""
-    dataset_paths, found_formats = valid_data_file(
-        [str(p) for p in Path(data).rglob("*") if p.is_file()]
-    )
+    # Added filetype argument to filter files by extension if provided
+    if filetype:
+        pattern = f"*.{filetype}"
+        dataset_paths, found_formats = valid_data_file(
+            [str(p) for p in Path(data).rglob(pattern) if p.is_file()]
+        )
+    else:
+        dataset_paths, found_formats = valid_data_file(
+            [str(p) for p in Path(data).rglob("*") if p.is_file()]
+        )
 
     if DataFormatTypes.XLSX.value in found_formats and len(found_formats) > 1:
         logger.error(
@@ -162,7 +175,7 @@ def _validate_no_arguments(logger) -> None:
 @click.option(
     "-ca",
     "--cache",
-    default=DefaultFilePaths.CACHE.value,
+    default=DEFAULT_CACHE_PATH,
     help="Relative path to cache files containing pre loaded metadata and rules",
 )
 @click.option(
@@ -177,6 +190,13 @@ def _validate_no_arguments(logger) -> None:
     "--data",
     required=False,
     help=f"Path to directory containing data files ({VALIDATION_FORMATS_MESSAGE})",
+)
+@click.option(
+    "-ft",
+    "--filetype",
+    default=None,
+    required=False,
+    help="File extension to use for input files in the data directory (e.g., 'json', 'xpt', 'xlsx', 'ndjson')",
 )
 @click.option(
     "-dp",
@@ -355,6 +375,7 @@ def validate(
     cache: str,
     pool_size: int,
     data: str,
+    filetype: str,
     dataset_path: tuple[str],
     log_level: str,
     report_template: str,
@@ -400,6 +421,8 @@ def validate(
     dataset_paths: list = []
     found_formats: set = set()
 
+    validate_dataset_files_exist(dataset_path, logger, ctx)
+
     if raw_report is True:
         if not (len(output_format) == 1 and output_format[0] == ReportTypes.JSON.value):
             logger.error(
@@ -435,7 +458,7 @@ def validate(
                 "Argument --dataset-path cannot be used together with argument --data"
             )
             ctx.exit(2)
-        dataset_paths, found_formats = _validate_data_directory(data, logger)
+        dataset_paths, found_formats = _validate_data_directory(data, logger, filetype)
         if dataset_paths is None:
             ctx.exit(2)
     elif dataset_path:
@@ -480,7 +503,7 @@ def validate(
 @click.option(
     "-c",
     "--cache-path",
-    default=DefaultFilePaths.CACHE.value,
+    default=DEFAULT_CACHE_PATH,
     help="Relative path to cache files containing pre loaded metadata and rules",
 )
 @click.option(
@@ -585,7 +608,7 @@ def update_cache(
 @click.option(
     "-c",
     "--cache-path",
-    default=DefaultFilePaths.CACHE.value,
+    default=DEFAULT_CACHE_PATH,
     help="Relative path to cache files containing pre loaded metadata and rules",
 )
 @click.option(
@@ -661,7 +684,7 @@ def list_rules(
 @click.option(
     "-c",
     "--cache-path",
-    default=DefaultFilePaths.CACHE.value,
+    default=DEFAULT_CACHE_PATH,
     help="Relative path to cache files containing pre loaded metadata and rules",
 )
 @click.option(
@@ -746,7 +769,7 @@ def version():
 @click.option(
     "-c",
     "--cache-path",
-    default=DefaultFilePaths.CACHE.value,
+    default=DEFAULT_CACHE_PATH,
     help="Relative path to cache files containing pre loaded metadata and rules",
 )
 @click.option(
@@ -783,7 +806,7 @@ def test_validate():
             )
 
         with tempfile.TemporaryDirectory() as temp_dir:
-            cache_path = DefaultFilePaths.CACHE.value
+            cache_path = DEFAULT_CACHE_PATH
             pool_size = 10
             log_level = "disabled"
             report_template = None

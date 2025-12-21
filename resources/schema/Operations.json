@@ -87,14 +87,7 @@
       "properties": {
         "operator": { "const": "get_codelist_attributes" }
       },
-      "required": [
-        "id",
-        "operator",
-        "name",
-        "ct_attribute",
-        "ct_packages",
-        "ct_version"
-      ],
+      "required": ["id", "operator", "name", "ct_attribute", "version"],
       "type": "object"
     },
     {
@@ -236,6 +229,13 @@
     },
     {
       "properties": {
+        "operator": { "const": "split_by" }
+      },
+      "required": ["id", "operator", "delimiter", "name"],
+      "type": "object"
+    },
+    {
+      "properties": {
         "operator": { "const": "study_domains" }
       },
       "required": ["id", "operator"],
@@ -244,6 +244,13 @@
     {
       "properties": {
         "operator": { "const": "dataset_names" }
+      },
+      "required": ["id", "operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": { "const": "standard_domains" }
       },
       "required": ["id", "operator"],
       "type": "object"
@@ -455,6 +462,9 @@
     "ct_version": {
       "type": "string"
     },
+    "delimiter": {
+      "type": "string"
+    },
     "dictionary_term_type": {
       "enum": ["LLT", "PT", "HLT", "HLGT", "SOC"]
     },
@@ -531,6 +541,9 @@
       "type": "string"
     },
     "operator": {
+      "type": "string"
+    },
+    "regex": {
       "type": "string"
     },
     "returntype": {

@@ -25,7 +25,7 @@ def test_get_export(mock_validation_results):
         mock_args.meddra = "test"
         mock_args.whodrug = "test"
         mock_args.max_report_rows = None
-        mock_args.max_errors_per_rule = (None, False)
+        mock_args.max_errors_per_rule = (10, True)
         mock_args.controlled_terminology_package = ["sdtmct-03-2021"]
         mock_args.standard = "sdtmig"
         mock_args.substandard = None
@@ -34,6 +34,7 @@ def test_get_export(mock_validation_results):
         datasets = [
             SDTMDatasetMetadata(
                 **{
+                    "name": "test",
                     "filename": "test.xpt",
                     "label": "Test Data",
                     "full_path": str(Path("tests/unit/text.xpt")),
@@ -50,6 +51,9 @@ def test_get_export(mock_validation_results):
         wb = report.get_export()
         assert wb["Conformance Details"]["B3"].value == "10.1 seconds"
         assert wb["Conformance Details"]["B4"].value == __version__
+        assert wb["Conformance Details"]["B5"].value == 10
+        assert wb["Conformance Details"]["B6"].value == "True"
+        assert wb["Conformance Details"]["B7"].value == "10000"
         assert wb["Conformance Details"]["B9"].value == "SDTMIG"
         assert wb["Conformance Details"]["B10"].value == "NAP"
         assert wb["Conformance Details"]["B11"].value == "V3.4"
@@ -59,7 +63,7 @@ def test_get_export(mock_validation_results):
         assert wb["Conformance Details"]["B13"].value == "2.1"
 
         # Check dataset details tab
-        assert wb["Dataset Details"]["A2"].value == "test.xpt"  # filename
+        assert wb["Dataset Details"]["A2"].value == "test"  # filename
         assert wb["Dataset Details"]["B2"].value == "Test Data"  # label
         assert wb["Dataset Details"]["C2"].value == str(
             Path("tests/unit/text.xpt").parent
