@@ -37,6 +37,12 @@ from cdisc_rules_engine.utilities.utils import (
 from cdisc_rules_engine.enums.dataformat_types import DataFormatTypes
 from scripts.list_dataset_metadata_handler import list_dataset_metadata_handler
 from version import __version__
+from cdisc_rules_engine.utilities.path_validator import PathValidator
+from cdisc_rules_engine.exceptions.path_validation_exceptions import (
+    PathTraversalError,
+    SystemDirectoryError,
+    InvalidPathError,
+)
 
 VALIDATION_FORMATS_MESSAGE = (
     "SAS V5 XPT, Dataset-JSON (JSON or NDJSON), or Excel (XLSX)"
@@ -89,6 +95,18 @@ def cli():
 
 def _validate_data_directory(data: str, logger) -> tuple[list, set]:
     """Validate data directory and return dataset paths and found formats."""
+    # Validate path for security - block traversal attempts
+    validator = PathValidator(block_system_dirs=False, allow_relative_paths=False)
+    try:
+        validated_data_path = validator.validate_read_path(data)
+        data = str(validated_data_path)
+    except (PathTraversalError, InvalidPathError) as e:
+        logger.error(
+            f"Invalid data directory path: {e}\n"
+            f"Please provide a valid path to your data directory."
+        )
+        return [], set()
+    
     dataset_paths, found_formats = valid_data_file(
         [str(p) for p in Path(data).rglob("*") if p.is_file()]
     )
@@ -123,7 +141,22 @@ def _validate_data_directory(data: str, logger) -> tuple[list, set]:
 
 def _validate_dataset_paths(dataset_path: tuple[str], logger) -> tuple[list, set]:
     """Validate dataset paths and return dataset paths and found formats."""
-    dataset_paths, found_formats = valid_data_file([dp for dp in dataset_path])
+    # Validate each path for security - block traversal attempts
+    validator = PathValidator(block_system_dirs=False, allow_relative_paths=False)
+    validated_paths = []
+    
+    for dp in dataset_path:
+        try:
+            validated_path = validator.validate_read_path(dp)
+            validated_paths.append(str(validated_path))
+        except (PathTraversalError, InvalidPathError) as e:
+            logger.error(
+                f"Invalid dataset path '{dp}': {e}\n"
+                f"Please provide a valid path to your dataset file."
+            )
+            return [], set()
+    
+    dataset_paths, found_formats = valid_data_file(validated_paths)
 
     if DataFormatTypes.XLSX.value in found_formats and len(found_formats) > 1:
         logger.error(
