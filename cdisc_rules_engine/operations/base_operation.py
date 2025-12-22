@@ -1,9 +1,6 @@
 from cdisc_rules_engine.models.operation_params import OperationParams
 from cdisc_rules_engine.constants.permissibility import (
-    REQUIRED,
     PERMISSIBLE,
-    REQUIRED_MODEL_VARIABLES,
-    SEQ_VARIABLE,
     PERMISSIBILITY_KEY,
 )
 from abc import abstractmethod
@@ -256,16 +253,8 @@ class BaseOperation:
         """
         Returns the permissibility value of a variable allowed in the current domain
         """
-        variable_name = variable_metadata.get("name")
         if PERMISSIBILITY_KEY in variable_metadata:
             return variable_metadata[PERMISSIBILITY_KEY]
-        elif variable_name in REQUIRED_MODEL_VARIABLES:
-            return REQUIRED
-        elif variable_name.replace("--", self.params.domain) == SEQ_VARIABLE.replace(
-            "--", self.params.domain
-        ):
-            return REQUIRED
-
         return PERMISSIBLE
 
     def _get_variable_names_list(self, domain, dataframe):
