@@ -660,6 +660,72 @@ def update_cache(
     custom_standard: str,
     remove_custom_standard: str,
 ):
+    logger = logging.getLogger("validator")
+    # Block relative paths with traversal patterns for security
+    validator = PathValidator(block_system_dirs=True, allow_relative_paths=False)
+    
+    # Validate cache path (read/write)
+    try:
+        validated_cache_path = validator.validate_read_path(cache_path)
+        cache_path = str(validated_cache_path)
+    except (PathTraversalError, InvalidPathError) as e:
+        logger.error(
+            f"Invalid cache path '{cache_path}': {e}\n"
+            f"Please provide a valid cache path."
+        )
+        ctx.exit(2)
+    
+    # Validate custom rules directory (read)
+    if custom_rules_directory:
+        try:
+            validated_dir = validator.validate_read_path(custom_rules_directory)
+            custom_rules_directory = str(validated_dir)
+        except (PathTraversalError, InvalidPathError) as e:
+            logger.error(
+                f"Invalid custom rules directory '{custom_rules_directory}': {e}\n"
+                f"Please provide a valid path to the custom rules directory."
+            )
+            ctx.exit(2)
+    
+    # Validate custom rule files (read)
+    if custom_rule:
+        validated_rules = []
+        for rule_path in custom_rule:
+            try:
+                validated_rule = validator.validate_read_path(rule_path)
+                validated_rules.append(str(validated_rule))
+            except (PathTraversalError, InvalidPathError) as e:
+                logger.error(
+                    f"Invalid custom rule path '{rule_path}': {e}\n"
+                    f"Please provide a valid path to the custom rule file."
+                )
+                ctx.exit(2)
+        custom_rule = tuple(validated_rules)
+    
+    # Validate update custom rule path (read)
+    if update_custom_rule:
+        try:
+            validated_update_rule = validator.validate_read_path(update_custom_rule)
+            update_custom_rule = str(validated_update_rule)
+        except (PathTraversalError, InvalidPathError) as e:
+            logger.error(
+                f"Invalid update custom rule path '{update_custom_rule}': {e}\n"
+                f"Please provide a valid path to the custom rule file."
+            )
+            ctx.exit(2)
+    
+    # Validate custom standard path (read)
+    if custom_standard:
+        try:
+            validated_standard = validator.validate_read_path(custom_standard)
+            custom_standard = str(validated_standard)
+        except (PathTraversalError, InvalidPathError) as e:
+            logger.error(
+                f"Invalid custom standard path '{custom_standard}': {e}\n"
+                f"Please provide a valid path to the custom standard JSON file."
+            )
+            ctx.exit(2)
+    
     cache = CacheServiceFactory(config).get_cache_service()
     library_service = CDISCLibraryService(apikey, cache)
     cache_populator = CachePopulator(
