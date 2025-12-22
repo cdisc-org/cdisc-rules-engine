@@ -430,6 +430,81 @@ def validate(
     logger = logging.getLogger("validator")
     load_dotenv()
     
+    # Initialize path validator and check user permissions
+    # Block relative paths with traversal patterns for security
+    validator = PathValidator(block_system_dirs=True, allow_relative_paths=False)
+    permissions = PathValidator.check_user_permissions()
+    if permissions["is_admin"]:
+        logger.warning(permissions["recommendation"])
+    
+    # Validate output path (write operation - highest priority)
+    if output:
+        try:
+            output_path = validator.validate_write_path(output)
+            output = str(output_path)
+        except (PathTraversalError, SystemDirectoryError, InvalidPathError) as e:
+            logger.error(
+                f"Invalid output path '{output}': {e}\n"
+                f"Please provide a valid output path that is not in a system directory."
+            )
+            ctx.exit(2)
+    
+    # Validate cache path (read/write)
+    if cache:
+        try:
+            cache_validated = validator.validate_read_path(cache)
+            cache = str(cache_validated)
+        except (PathTraversalError, InvalidPathError) as e:
+            logger.error(
+                f"Invalid cache path '{cache}': {e}\n"
+                f"Please provide a valid cache path."
+            )
+            ctx.exit(2)
+    
+    # Validate report template path (read)
+    if report_template:
+        try:
+            template_path = validator.validate_read_path(report_template)
+            report_template = str(template_path)
+        except (PathTraversalError, InvalidPathError) as e:
+            logger.error(
+                f"Invalid report template path '{report_template}': {e}\n"
+                f"Please provide a valid path to the report template file."
+            )
+            ctx.exit(2)
+    
+    # Validate define-xml path (read)
+    if define_xml_path:
+        try:
+            define_path = validator.validate_read_path(define_xml_path)
+            define_xml_path = str(define_path)
+        except (PathTraversalError, InvalidPathError) as e:
+            logger.error(
+                f"Invalid Define-XML path '{define_xml_path}': {e}\n"
+                f"Please provide a valid path to the Define-XML file."
+            )
+            ctx.exit(2)
+    
+    # Validate dictionary paths (read)
+    dictionary_paths = {
+        "whodrug": whodrug,
+        "meddra": meddra,
+        "loinc": loinc,
+        "medrt": medrt,
+        "unii": unii,
+    }
+    for dict_name, dict_path in dictionary_paths.items():
+        if dict_path:
+            try:
+                validated_dict_path = validator.validate_read_path(dict_path)
+                dictionary_paths[dict_name] = str(validated_dict_path)
+            except (PathTraversalError, InvalidPathError) as e:
+                logger.error(
+                    f"Invalid {dict_name} dictionary path '{dict_path}': {e}\n"
+                    f"Please provide a valid path to the {dict_name} dictionary directory."
+                )
+                ctx.exit(2)
+    
     dataset_paths: list = []
     found_formats: set = set()
 
@@ -449,11 +524,11 @@ def validate(
     # Construct ExternalDictionariesContainer:
     external_dictionaries = ExternalDictionariesContainer(
         {
-            DictionaryTypes.UNII.value: unii,
-            DictionaryTypes.MEDRT.value: medrt,
-            DictionaryTypes.MEDDRA.value: meddra,
-            DictionaryTypes.WHODRUG.value: whodrug,
-            DictionaryTypes.LOINC.value: loinc,
+            DictionaryTypes.UNII.value: dictionary_paths["unii"],
+            DictionaryTypes.MEDRT.value: dictionary_paths["medrt"],
+            DictionaryTypes.MEDDRA.value: dictionary_paths["meddra"],
+            DictionaryTypes.WHODRUG.value: dictionary_paths["whodrug"],
+            DictionaryTypes.LOINC.value: dictionary_paths["loinc"],
             DictionaryTypes.SNOMED.value: {
                 "edition": snomed_edition,
                 "version": snomed_version,
