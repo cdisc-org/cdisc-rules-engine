@@ -87,7 +87,14 @@
       "properties": {
         "operator": { "const": "get_codelist_attributes" }
       },
-      "required": ["id", "operator", "name", "ct_attribute", "version"],
+      "required": [
+        "id",
+        "operator",
+        "name",
+        "ct_attribute",
+        "version",
+        "target"
+      ],
       "type": "object"
     },
     {
