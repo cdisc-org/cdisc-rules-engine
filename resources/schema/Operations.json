@@ -557,6 +557,9 @@
       "type": "string",
       "enum": ["code", "value", "pref_term"]
     },
+    "target": {
+      "type": "string"
+    },
     "term_value": {
       "type": "string"
     },
