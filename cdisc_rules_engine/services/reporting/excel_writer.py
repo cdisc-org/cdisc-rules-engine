@@ -35,9 +35,17 @@ def excel_update_worksheet(ws, rows, align_params=None, fill_empty_rows=False):
             ws.cell(row=row_data.row, column=2).value = row_data.value
         else:
             for col_num, col_data in enumerate(row_data.values(), 1):
-                ws.cell(row=row_num, column=col_num).value = stringify_list(col_data)
+                cell_value = stringify_list(col_data)
+                ws.cell(row=row_num, column=col_num).value = cell_value
+                if align_params:
+                    alignment_params = align_params.copy()
+                else:
+                    alignment_params = {}
+                if isinstance(cell_value, str) and "\n" in cell_value:
+                    alignment_params["wrap_text"] = True
+                    alignment_params["vertical"] = "top"
                 ws.cell(row=row_num, column=col_num).alignment = Alignment(
-                    **align_params
+                    **alignment_params
                 )
                 if fill_empty_rows and (row_data[1] == "" or row_data[1] is None):
                     # Codelist is empty for Code Rows. Change background color
