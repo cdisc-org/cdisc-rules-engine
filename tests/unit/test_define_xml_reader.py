@@ -118,6 +118,43 @@ def test_extract_domain_metadata(filename):
 @pytest.mark.parametrize(
     "filename", [(test_define_file_path), (test_define_2_0_file_path)]
 )
+def test_extract_dataset_metadata(filename):
+    """
+    Unit test for DefineXMLReader.extract_dataset_metadata for TS dataset.
+    """
+    with open(filename, "rb") as file:
+        contents: bytes = file.read()
+        reader = DefineXMLReaderFactory.from_file_contents(contents)
+        dataset_metadata: dict = reader.extract_dataset_metadata(dataset_name="TS")
+        assert dataset_metadata == {
+            "define_dataset_name": "TS",
+            "define_dataset_label": "Trial Summary",
+            "define_dataset_location": "ts.xml",
+            "define_dataset_domain": "TS",
+            "define_dataset_class": "TRIAL DESIGN",
+            "define_dataset_structure": "One record per trial summary parameter value",
+            "define_dataset_is_non_standard": "",
+            "define_dataset_variables": [
+                "STUDYID",
+                "DOMAIN",
+                "TSSEQ",
+                "TSGRPID",
+                "TSPARMCD",
+                "TSPARM",
+                "TSVAL",
+                "TSVALNF",
+                "TSVALCD",
+                "TSVCDREF",
+                "TSVCDVER",
+            ],
+            "define_dataset_key_sequence": ["STUDYID", "TSPARMCD", "TSVAL", "TSSEQ"],
+            "define_dataset_has_no_data": False,
+        }
+
+
+@pytest.mark.parametrize(
+    "filename", [(test_define_file_path), (test_define_2_0_file_path)]
+)
 def test_extract_variable_metadata(filename):
     """
     Unit test for DefineXMLReader.extract_domain_metadata function.
