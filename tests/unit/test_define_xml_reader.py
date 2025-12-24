@@ -372,3 +372,28 @@ def test_read_dictionary_version(dictionary_type, expected_version):
         reader = DefineXMLReaderFactory.from_file_contents(contents)
         version = reader.get_external_dictionary_version(dictionary_type)
     assert version == expected_version
+
+
+@pytest.mark.parametrize(
+    "filename,has_no_data",
+    [
+        (
+            test_define_file_path,
+            True,
+        ),  # NV domain in test_defineV22-SDTM.xml has def:HasNoData="Yes"
+    ],
+)
+def test_extract_domain_metadata_nv_has_no_data(filename, has_no_data):
+    """
+    Unit test for DefineXMLReader.extract_domain_metadata for NV domain with has_no_data.
+    """
+    with open(filename, "rb") as file:
+        contents: bytes = file.read()
+        reader = DefineXMLReaderFactory.from_file_contents(contents)
+        domain_metadata: dict = reader.extract_domain_metadata(domain_name="NV")
+        assert domain_metadata["define_dataset_has_no_data"] == has_no_data
+        assert domain_metadata["define_dataset_name"] == "NV"
+        assert domain_metadata["define_dataset_domain"] == "NV"
+        # Check that at least one expected variable is present
+        for v in ["NVSEQ", "NVTESTCD", "NVTEST"]:
+            assert v in domain_metadata["define_dataset_variables"]
