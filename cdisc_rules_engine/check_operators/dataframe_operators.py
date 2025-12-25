@@ -1213,6 +1213,10 @@ class DataframeType(BaseType):
                 target_names.append(target_name)
         target_names = list(set(target_names))
         df_group = self.value[target_names].copy()
+        for col in target_names:
+            df_group[col] = df_group[col].apply(
+                lambda x: tuple(x) if isinstance(x, list) else x
+            )
         if regex_pattern:
             for col in df_group.columns:
                 sample_value = (
@@ -1235,8 +1239,7 @@ class DataframeType(BaseType):
         df_group = df_group.fillna("_NaN_")
         group_sizes = df_group.groupby(target_names).size()
         counts = df_group.apply(tuple, axis=1).map(group_sizes)
-        results = np.where(counts <= 1, True, False)
-        return self.value.convert_to_series(results)
+        return counts <= 1
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)

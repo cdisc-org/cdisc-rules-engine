@@ -198,7 +198,6 @@ class DataProcessor:
         left_dataset: DatasetInterface,
         right_dataset: DatasetInterface,
     ):
-
         static_keys = ["STUDYID", "USUBJID", "APID", "POOLID", "SPDEVID"]
         qnam_list = right_dataset["QNAM"].unique()
         unique_idvar_values = right_dataset["IDVAR"].unique()
@@ -233,15 +232,16 @@ class DataProcessor:
                 )
                 DataProcessor._validate_qnam_dask(left_dataset, qnam_list, common_keys)
             else:
-                left_dataset = PandasDataset(
-                    pd.merge(
-                        left_dataset.data,
-                        current_supp.data,
-                        how="left",
-                        on=common_keys,
-                        suffixes=("", "_supp"),
-                    )
+                merged = pd.merge(
+                    left_dataset.data,
+                    current_supp.data,
+                    how="left",
+                    on=common_keys,
+                    suffixes=("", "_supp"),
+                    indicator=True,
                 )
+                merged = merged[merged["_merge"].eq("both")].drop(columns="_merge")
+                left_dataset = PandasDataset(merged)
                 DataProcessor._validate_qnam(left_dataset.data, qnam_list, common_keys)
         else:
             if dataset_implementation == DaskDataset:
