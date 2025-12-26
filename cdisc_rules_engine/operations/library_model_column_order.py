@@ -5,6 +5,7 @@ class LibraryModelColumnOrder(BaseOperation):
     def _execute_operation(self):
         """
         Fetches column order for a given domain from the CDISC library.
+        Self.params.domain is SDTMDatasetMetadata.unsplit_name
         Returns it as a Series of lists like:
         0    ["STUDYID", "DOMAIN", ...]
         1    ["STUDYID", "DOMAIN", ...]
