@@ -82,7 +82,8 @@ def convert_numpy_types(obj):
 def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:  # noqa
     try:
         json_data = req.get_json()
-        api_key = os.environ.get("CDISC_LIBRARY_API_KEY")
+        api_key = os.environ.get("CDISC_LIBRARY_API_KEY", "")  # Default to empty string
+        api_url = os.environ.get("CDISC_LIBRARY_API_URL", "")  # Default to empty string
         rule = json_data.get("rule")
         standards_data = json_data.get("standard", {})
         standard = standards_data.get("product")
@@ -91,7 +92,7 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:  # 
         standard, standard_version = normalize_adam_input(standard, standard_version)
         codelists = json_data.get("codelists", [])
         cache = InMemoryCacheService()
-        library_service = CDISCLibraryService(api_key, cache)
+        library_service = CDISCLibraryService(api_key, api_url, cache)
         cache_populator: CachePopulator = CachePopulator(cache, library_service)
         asyncio.run(cache_populator.load_available_ct_packages())
         if standards_data or codelists:
