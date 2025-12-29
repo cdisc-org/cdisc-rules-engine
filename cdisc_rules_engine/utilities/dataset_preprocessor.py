@@ -588,6 +588,7 @@ class DatasetPreprocessor:
                     dataset_implementation=self._data_service.dataset_implementation,
                     left_dataset=left_dataset,
                     right_dataset=right_dataset,
+                    use_supp_filename=self._dataset_metadata.is_supp,
                 )
             except Exception as e:
                 raise PreprocessingError(

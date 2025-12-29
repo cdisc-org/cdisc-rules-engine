@@ -1,6 +1,10 @@
 from __future__ import annotations
 from typing import List, Optional, TYPE_CHECKING
 
+from cdisc_rules_engine.constants.metadata_columns import (
+    SOURCE_FILENAME,
+    SOURCE_FILENAME_SUPP,
+)
 from cdisc_rules_engine.models.dataset import PandasDataset, DaskDataset
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
@@ -197,6 +201,7 @@ class DataProcessor:
         dataset_implementation: DatasetInterface,
         left_dataset: DatasetInterface,
         right_dataset: DatasetInterface,
+        use_supp_filename: bool = False,
     ):
         static_keys = ["STUDYID", "USUBJID", "APID", "POOLID", "SPDEVID"]
         qnam_list = right_dataset["QNAM"].unique()
@@ -241,6 +246,13 @@ class DataProcessor:
                     indicator=True,
                 )
                 merged = merged[merged["_merge"].eq("both")].drop(columns="_merge")
+                if (
+                    use_supp_filename
+                    and SOURCE_FILENAME in merged
+                    and SOURCE_FILENAME_SUPP in merged
+                ):
+                    merged[SOURCE_FILENAME] = merged[SOURCE_FILENAME_SUPP]
+                    merged = merged.drop(columns=[SOURCE_FILENAME_SUPP])
                 left_dataset = PandasDataset(merged)
                 DataProcessor._validate_qnam(left_dataset.data, qnam_list, common_keys)
         else:
