@@ -42,6 +42,10 @@ ItemGroupDef.Domain
 
 ItemGroupDef.Structure
 
+## define_dataset_variables
+
+List of ItemGroupDef.ItemRef.ItemDef.Name, ordered by XML document order (implicit ordering, not OrderNumber)
+
 ## define_variable_allowed_terms
 
 ItemGroupDef.ItemDef.CodeList.CodeListItem.Decode.TranslatedText

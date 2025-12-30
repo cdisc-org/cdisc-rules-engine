@@ -30,6 +30,9 @@
       "const": "define_dataset_structure"
     },
     {
+      "const": "define_dataset_variables"
+    },
+    {
       "const": "define_variable_allowed_terms"
     },
     {
