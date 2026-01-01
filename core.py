@@ -508,7 +508,8 @@ def validate(
         "Can be provided in the environment "
         "variable CDISC_LIBRARY_API_KEY"
     ),
-    required=True,
+    required=False,
+    default=None,
 )
 @click.option(
     "-crd",
@@ -570,7 +571,10 @@ def update_cache(
     remove_custom_standard: str,
 ):
     cache = CacheServiceFactory(config).get_cache_service()
-    library_service = CDISCLibraryService(apikey, cache)
+    # CDISC library service should log failed requests instead of failing the
+    # cache update process
+    library_service = CDISCLibraryService(apikey, cache, raise_on_error=False)
+    update_rules_only = not apikey
     cache_populator = CachePopulator(
         cache,
         library_service,
@@ -581,7 +585,13 @@ def update_cache(
         custom_standard,
         remove_custom_standard,
         cache_path,
+        rules_only=update_rules_only
     )
+
+    if update_rules_only:
+        logger = logging.getLogger("validator")
+        logger.warning("API key was not provided. Only CORE rules will be updated.")
+
     if custom_rule or custom_rules_directory:
         cache_populator.add_custom_rules()
     elif remove_custom_rules:
@@ -595,7 +605,7 @@ def update_cache(
     else:
         asyncio.run(cache_populator.update_cache())
 
-    print("Cache updated successfully")
+    print("Cache update complete")
 
 
 @click.command()
