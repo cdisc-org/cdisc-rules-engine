@@ -13,36 +13,61 @@ from cdisc_rules_engine.utilities.utils import (
     get_rules_cache_key,
     get_variable_codelist_map_cache_key,
 )
-
+from cdisc_rules_engine.services import logger
 
 class CDISCLibraryService:
-    def __init__(self, api_key, cache_service_obj):
+    def __init__(self, api_key, cache_service_obj, raise_on_error=True):
         self._api_key = api_key
         self._client = CDISCLibraryClient(
             self._api_key, base_api_url="https://api.library.cdisc.org/api"
         )
         self.cache = cache_service_obj
+        self.raise_on_error = raise_on_error
 
+    def get_library_json(self, uri: str) -> dict:
+        """
+        Makes a library request to the provided URI
+        and returns the result 
+        """
+        try:
+            return self._client.get_api_json(uri)
+        except Exception as e:
+            logger.error(f'Failed request to {uri}. {e}')
+            if self.raise_on_error:
+                raise e
+            return {}
+        
     def cache_library_json(self, uri: str) -> dict:
         """
         Makes a library request to the provided URI,
         caches the response and returns the response
         """
-        data = self._client.get_api_json(uri)
+        data = self.get_library_json(uri)
         cache_key = get_metadata_cache_key(uri)
         self.cache.add(cache_key, data)
         return data
 
     def get_all_rule_catalogs(self) -> List[dict]:
-        catalogs = self._client.get_rule_catalogs()
-        return catalogs.values()
+        try:
+            return self._client.get_rule_catalogs().values()
+        except Exception as e:
+            logger.error(f'Failed to retrieve all rule catalogs. {e}')
+            if self.raise_on_error:
+                raise e
+            return []
 
-    def get_rules_by_catalog(self, standard, version):
-        rules = self._client.get_rules_catalog(standard, version)
-        return {
-            "key_prefix": get_rules_cache_key(standard, version),
-            "rules": [Rule.from_cdisc_metadata(rule) for rule in rules.values()],
-        }
+    def get_rules_by_catalog(self, standard, version) -> dict:
+        try:
+            rules = self._client.get_rules_catalog(standard, version)
+            return {
+                "key_prefix": get_rules_cache_key(standard, version),
+                "rules": [Rule.from_cdisc_metadata(rule) for rule in rules.values()],
+            }
+        except Exception as e:
+            logger.error(f'Failed to retrieve rules for {standard} {version}. {e}')
+            if self.raise_on_error:
+                raise e
+            return {}
 
     def get_all_ct_packages(self) -> List[dict]:
         """
@@ -61,8 +86,15 @@ class CDISCLibraryService:
             }...
         ]
         """
-        data = self._client.get_api_json(LibraryEndpoints.PACKAGES.value)
-        return data["_links"].get("packages", [])
+        try:
+            data = self.get_library_json(LibraryEndpoints.PACKAGES.value)
+            return data.get("_links", {}).get("packages", [])
+        except Exception as e:
+            logger.error(f'Failed to retrieve rules for {standard} {version}. {e}')
+            if self.raise_on_error:
+                raise e
+            return {}
+        
 
     def get_all_products(self) -> dict:
         """
@@ -74,8 +106,8 @@ class CDISCLibraryService:
             "data-tabulation": [sdtm products]
         }
         """
-        data = self._client.get_api_json(LibraryEndpoints.PRODUCTS.value)
-        return data["_links"]
+        data = self.get_library_json(LibraryEndpoints.PRODUCTS.value)
+        return data.get("_links", {})
 
     def get_all_tabulation_ig_standards(self) -> List[dict]:
         """
@@ -90,7 +122,7 @@ class CDISCLibraryService:
         ]
         """
         standards = []
-        data = self._client.get_api_json(LibraryEndpoints.DATA_TABULATION.value)
+        data = self.get_library_json(LibraryEndpoints.DATA_TABULATION.value)
         standards.extend(data.get("_links", {}).get("sdtmig", []))
         standards.extend(data.get("_links", {}).get("sendig", []))
         return standards
@@ -108,7 +140,7 @@ class CDISCLibraryService:
         ]
         """
         standards = []
-        data = self._client.get_api_json(LibraryEndpoints.DATA_COLLECTION.value)
+        data = self.get_library_json(LibraryEndpoints.DATA_COLLECTION.value)
         standards.extend(data.get("_links", {}).get("cdashig", []))
         return standards
 
@@ -125,7 +157,7 @@ class CDISCLibraryService:
         ]
         """
         standards = []
-        data = self._client.get_api_json(LibraryEndpoints.DATA_ANALYSIS.value)
+        data = self.get_library_json(LibraryEndpoints.DATA_ANALYSIS.value)
         igs = [
             ig
             for ig in data.get("_links", {}).get("adam", [])
@@ -148,14 +180,14 @@ class CDISCLibraryService:
         """
         standards = []
         for version_endpoint in get_tig_endpoints():
-            data = self._client.get_api_json(version_endpoint)
+            data = self.get_library_json(version_endpoint)
             if "_links" in data and "standards" in data["_links"]:
                 standards.extend(list(data["_links"]["standards"].values()))
         return standards
 
     def get_codelist_terms_map(self, package_version: str) -> dict:
         uri = f"/mdr/ct/packages/{package_version}"
-        package = self._client.get_api_json(uri)
+        package = self.get_library_json(uri)
         codelist_map = {
             "package": package_version,
             "codelists": [
@@ -178,7 +210,7 @@ class CDISCLibraryService:
                         for term in codelist.get("terms", [])
                     ],
                 }
-                for codelist in package.get("codelists")
+                for codelist in package.get("codelists", [])
             ],
         }
         return codelist_map
@@ -432,7 +464,7 @@ class CDISCLibraryService:
                         terms[variable.get("name")] = (
                             terms.get(variable.get("name"), []) + ccodes
                         )
-        model = data["_links"].get("model")
+        model = data.get("_links", {}).get("model")
         model_terms = {}
         if model:
             model_version = model.get("href", "").split("/")[-1]
@@ -462,7 +494,7 @@ class CDISCLibraryService:
                         terms[variable.get("name")] = (
                             terms.get(variable.get("name"), []) + ccodes
                         )
-        model = data["_links"].get("model")
+        model = data.get("_links", {}).get("model")
         model_terms = {}
         if model:
             model_version = model.get("href", "").split("/")[-1]
@@ -503,7 +535,7 @@ class CDISCLibraryService:
         }
         """
         terms = {}
-        standard = data["_links"].get("self").get("href").split("/")[-1]
+        standard = data.get("_links", {}).get("self", {}).get("href", "").split("/")[-1]
         # parse tig substandard codelists
         if standard == "adam":
             for structure in data.get("dataStructures", []):
@@ -547,7 +579,7 @@ class CDISCLibraryService:
                                 terms.get(variable.get("name"), []) + ccodes
                             )
         # get model from tig substandard and merge with tig codelists
-        model = data["_links"].get("model")
+        model = data.get("_links", {}).get("model")
         model_terms = {}
         if model:
             model_version = model.get("href", "").split("/")[-1]
