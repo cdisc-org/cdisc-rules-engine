@@ -121,9 +121,9 @@ class CachePopulator:
 
         # Prevent overwriting rules cache with empty rules
         if not rules_directory or not rules_by_core_id:
-            logger.warning('No rules found, skipping cache update for rules')
+            logger.warning("No rules found, skipping cache update for rules")
             return
-        
+
         with open(
             os.path.join(self.cache_path, DefaultFilePaths.RULES_CACHE_FILE.value), "wb"
         ) as f:

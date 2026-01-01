@@ -585,7 +585,7 @@ def update_cache(
         custom_standard,
         remove_custom_standard,
         cache_path,
-        rules_only=update_rules_only
+        rules_only=update_rules_only,
     )
 
     if update_rules_only:

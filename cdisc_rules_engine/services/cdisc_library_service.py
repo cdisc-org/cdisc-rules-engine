@@ -15,6 +15,7 @@ from cdisc_rules_engine.utilities.utils import (
 )
 from cdisc_rules_engine.services import logger
 
+
 class CDISCLibraryService:
     def __init__(self, api_key, cache_service_obj, raise_on_error=True):
         self._api_key = api_key
@@ -27,16 +28,16 @@ class CDISCLibraryService:
     def get_library_json(self, uri: str) -> dict:
         """
         Makes a library request to the provided URI
-        and returns the result 
+        and returns the result
         """
         try:
             return self._client.get_api_json(uri)
         except Exception as e:
-            logger.error(f'Failed request to {uri}. {e}')
+            logger.error(f"Failed request to {uri}. {e}")
             if self.raise_on_error:
                 raise e
             return {}
-        
+
     def cache_library_json(self, uri: str) -> dict:
         """
         Makes a library request to the provided URI,
@@ -51,7 +52,7 @@ class CDISCLibraryService:
         try:
             return self._client.get_rule_catalogs().values()
         except Exception as e:
-            logger.error(f'Failed to retrieve all rule catalogs. {e}')
+            logger.error(f"Failed to retrieve all rule catalogs. {e}")
             if self.raise_on_error:
                 raise e
             return []
@@ -64,7 +65,7 @@ class CDISCLibraryService:
                 "rules": [Rule.from_cdisc_metadata(rule) for rule in rules.values()],
             }
         except Exception as e:
-            logger.error(f'Failed to retrieve rules for {standard} {version}. {e}')
+            logger.error(f"Failed to retrieve rules for {standard} {version}. {e}")
             if self.raise_on_error:
                 raise e
             return {}
@@ -90,11 +91,10 @@ class CDISCLibraryService:
             data = self.get_library_json(LibraryEndpoints.PACKAGES.value)
             return data.get("_links", {}).get("packages", [])
         except Exception as e:
-            logger.error(f'Failed to retrieve rules for {standard} {version}. {e}')
+            logger.error(f"Failed to ct packages. {e}")
             if self.raise_on_error:
                 raise e
             return {}
-        
 
     def get_all_products(self) -> dict:
         """
