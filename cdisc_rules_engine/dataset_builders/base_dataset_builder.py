@@ -109,10 +109,10 @@ class BaseDatasetBuilder:
 
     def get_define_xml_item_group_metadata_for_dataset(
         self, dataset_metadata: SDTMDatasetMetadata
-    ) -> List[dict]:
+    ) -> dict:
         """
         Gets Define XML item group metadata
-        returns a list of dictionaries containing the following keys:
+        returns a dictionary containing the following keys:
             "define_dataset_name"
             "define_dataset_label"
             "define_dataset_location"
@@ -120,6 +120,7 @@ class BaseDatasetBuilder:
             "define_dataset_structure"
             "define_dataset_is_non_standard"
             "define_dataset_variables"
+            "define_dataset_variable_order"
             "define_dataset_key_sequence"
         """
 
@@ -141,6 +142,7 @@ class BaseDatasetBuilder:
             "define_dataset_structure"
             "define_dataset_is_non_standard"
             "define_dataset_variables"
+            "define_dataset_variable_order"
             "define_dataset_key_sequence"
         """
 

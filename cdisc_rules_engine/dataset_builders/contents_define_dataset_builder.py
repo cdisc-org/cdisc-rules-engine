@@ -26,6 +26,7 @@ class ContentsDefineDatasetBuilder(BaseDatasetBuilder):
         define_dataset_name - dataset name from define_xml
         define_dataset_structure - dataset structure
         define_dataset_variables - list of variables in the dataset
+        define_dataset_variable_order - ordered list of variables in the dataset
 
         ...,
         """
