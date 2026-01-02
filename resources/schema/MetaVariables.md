@@ -44,7 +44,7 @@ ItemGroupDef.Structure
 
 ## define_dataset_variables
 
-List of ItemGroupDef.ItemRef.ItemDef.Name, ordered by XML document order (implicit ordering, not OrderNumber)
+List of ItemGroupDef.ItemRef.ItemDef.Name, ordered by ItemRef OrderNumber (explicit) when present, otherwise by XML document order (implicit)
 
 ## define_variable_allowed_terms
 
