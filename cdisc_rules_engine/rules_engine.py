@@ -429,7 +429,7 @@ class RulesEngine:
         )
         dataset_variable = DatasetVariable(
             dataset,
-            column_prefix_map={"--": dataset_metadata.domain},
+            column_prefix_map={"--": dataset_metadata.domain_cleaned},
             value_level_metadata=value_level_metadata,
             column_codelist_map=variable_codelist_map,
             codelist_term_maps=codelist_term_maps,

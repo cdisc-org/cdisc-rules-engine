@@ -87,7 +87,14 @@
       "properties": {
         "operator": { "const": "get_codelist_attributes" }
       },
-      "required": ["id", "operator", "name", "ct_attribute", "version"],
+      "required": [
+        "id",
+        "operator",
+        "name",
+        "ct_attribute",
+        "version",
+        "target"
+      ],
       "type": "object"
     },
     {
@@ -549,6 +556,9 @@
     "returntype": {
       "type": "string",
       "enum": ["code", "value", "pref_term"]
+    },
+    "target": {
+      "type": "string"
     },
     "term_value": {
       "type": "string"
