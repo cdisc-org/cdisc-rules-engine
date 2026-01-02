@@ -85,6 +85,9 @@ class ExcelReport(BaseReport):
         logger = logging.getLogger("validator")
         try:
             report_data = self.get_export()
+            output_dir = os.path.dirname(self._output_name)
+            if output_dir:
+                os.makedirs(output_dir, exist_ok=True)
             with open(self._output_name, "wb") as f:
                 f.write(excel_workbook_to_stream(report_data))
             logger.debug(f"Report written to: {self._output_name}")
