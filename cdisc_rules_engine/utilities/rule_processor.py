@@ -269,6 +269,8 @@ class RuleProcessor:
         return is_included and not is_excluded
 
     def _is_custom_domain(self, domain: str) -> bool:
+        if self.library_metadata is None:
+            return False
         return self.library_metadata.is_domain_custom(domain)
 
     def _get_allowed_domains_for_use_cases(
