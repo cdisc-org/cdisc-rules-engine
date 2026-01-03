@@ -8,5 +8,4 @@ class DomainIsCustom(BaseOperation):
         given domain is in standard domains.
         If no -> the domain is custom.
         """
-        standard_data: dict = self.library_metadata.standard_metadata
-        return self.params.domain not in standard_data.get("domains", {})
+        return self.library_metadata.is_domain_custom(self.params.domain)
