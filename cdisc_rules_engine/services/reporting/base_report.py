@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from io import IOBase
 
+from cdisc_rules_engine.constants import KNOWN_REPORT_EXTENSIONS
 from cdisc_rules_engine.models.validation_args import Validation_args
 from cdisc_rules_engine.services.reporting.base_report_data import (
     BaseReportData,
@@ -32,8 +33,7 @@ class BaseReport(ABC):
             return f"{base_path}{expected_ext}"
 
         path_lower = output_path.lower()
-        known_extensions = [".json", ".xlsx", ".xls"]
-        for ext in known_extensions:
+        for ext in KNOWN_REPORT_EXTENSIONS:
             if path_lower.endswith(ext):
                 base_path = output_path[: -len(ext)]
                 return f"{base_path}{expected_ext}"
