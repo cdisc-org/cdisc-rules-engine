@@ -199,21 +199,11 @@ class BaseDatasetBuilder:
             and self.dataset_metadata.rdomain
         ):
             domain = "SUPPQUAL"
-        elif (
-            not self.dataset_metadata.domain
-            and not self.dataset_metadata.rdomain
-            and "rel" in self.dataset_metadata.name.lower()
-        ):
-            if self.dataset_metadata.name.lower().startswith(
-                "ap"
-            ) and self.dataset_metadata.name.lower()[2:].startswith("rel"):
-                domain = self.dataset_metadata.name[2:]
-            else:
-                domain = self.dataset_metadata.name
         else:
             domain = self.dataset_metadata.domain
         variables: List[dict] = sdtm_utilities.get_variables_metadata_from_standard(
-            domain=domain, library_metadata=self.library_metadata
+            domain=self.dataset_metadata.unsplit_name,
+            library_metadata=self.library_metadata,
         )
         variables_metadata: dict = self.library_metadata.variables_metadata.get(
             domain, {}
