@@ -563,9 +563,11 @@ Date check
 
 ### invalid_date
 
-Date check
+The operator performs date validation against complete and partial dates with uncertainty in the following order:
 
-> BRTHDTC is invalid
+1. Attempts to parse using [dateutil.parser.isoparse()](https://dateutil.readthedocs.io/en/stable/parser.html)
+2. If parsing fails and the string contains uncertainty indicators (`/`, `--`, `-:`), validates against an extended ISO 8601 dates regex pattern
+3. If parsing succeeds, dates are still validated against the regex pattern.
 
 ```yaml
 - name: "BRTHDTC"
