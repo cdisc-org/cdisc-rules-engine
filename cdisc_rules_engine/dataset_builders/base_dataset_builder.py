@@ -9,7 +9,7 @@ from cdisc_rules_engine.utilities.utils import (
     get_corresponding_datasets,
     tag_source,
 )
-from typing import List, Iterable
+from typing import List, Iterable, Optional
 from cdisc_rules_engine.utilities import sdtm_utilities
 from cdisc_rules_engine.utilities.rule_processor import RuleProcessor
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
@@ -156,9 +156,17 @@ class BaseDatasetBuilder:
         define_xml_reader = DefineXMLReaderFactory.get_define_xml_reader(
             self.dataset_path, self.define_xml_path, self.data_service, self.cache
         )
-        return define_xml_reader.extract_variables_metadata(
-            domain_name=self.dataset_metadata.domain
-        )
+        # If domain is not set and this is a SUPP domain, use rdomain
+        domain = self.dataset_metadata.domain
+        if not domain and getattr(self.dataset_metadata, "is_supp", False):
+            domain = getattr(self.dataset_metadata, "rdomain", None)
+            name = getattr(self.dataset_metadata, "name", None)
+            return define_xml_reader.extract_variables_metadata(
+                domain_name=domain, name=name
+            )
+        if not domain:
+            return []
+        return define_xml_reader.extract_variables_metadata(domain_name=domain)
 
     def get_define_xml_value_level_metadata(self) -> List[dict]:
         """
@@ -189,29 +197,22 @@ class BaseDatasetBuilder:
             and self.dataset_metadata.rdomain
         ):
             domain = "SUPPQUAL"
-        elif (
-            not self.dataset_metadata.domain
-            and not self.dataset_metadata.rdomain
-            and "rel" in self.dataset_metadata.name.lower()
-        ):
-            if self.dataset_metadata.name.lower().startswith(
-                "ap"
-            ) and self.dataset_metadata.name.lower()[2:].startswith("rel"):
-                domain = self.dataset_metadata.name[2:]
-            else:
-                domain = self.dataset_metadata.name
         else:
             domain = self.dataset_metadata.domain
         variables: List[dict] = sdtm_utilities.get_variables_metadata_from_standard(
-            domain=domain, library_metadata=self.library_metadata
+            domain=self.dataset_metadata.unsplit_name,
+            library_metadata=self.library_metadata,
+        )
+        variables_metadata: dict = self.library_metadata.variables_metadata.get(
+            domain, {}
         )
         for variable in variables:
             variable["ccode"] = ""
-            if variable.get("codelistSubmissionValues"):
+            variable_metadata: Optional[dict] = variables_metadata.get(variable["name"])
+            if variable_metadata:
                 if "_links" in variable and "codelist" in variable["_links"]:
                     first_codelist = variable["_links"]["codelist"][0]
-                    href = first_codelist["href"]
-                    codelist_code = href.split("/")[-1]
+                    codelist_code = first_codelist["href"].split("/")[-1]
                     variable["ccode"] = codelist_code
             if "role" not in variable:
                 variable["role"] = ""

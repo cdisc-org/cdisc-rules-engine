@@ -30,6 +30,8 @@ class DefineXMLReader21(BaseDefineXMLReader):
         """
         Returns metadata as dictionary.
         """
+        has_no_data: str | None = getattr(metadata, "HasNoData", "")
+        has_no_data = has_no_data or ""
         return {
             "define_dataset_name": metadata.Name,
             "define_dataset_label": str(metadata.Description.TranslatedText[0]),
@@ -38,6 +40,7 @@ class DefineXMLReader21(BaseDefineXMLReader):
             "define_dataset_class": str(metadata.Class.Name),
             "define_dataset_structure": str(metadata.Structure),
             "define_dataset_is_non_standard": str(metadata.IsNonStandard or ""),
+            "define_dataset_has_no_data": bool(has_no_data.lower() == "yes"),
         }
 
     def get_ct_version(self):
@@ -85,7 +88,7 @@ class DefineXMLReader21(BaseDefineXMLReader):
             return standards, {}, {}, False
 
     def get_multiple_standards_ct_mappings(self, metadata, standards):
-        combined_CT_package = {"submission_lookup": {}}
+        combined_CT_package = {}
         standard_oids = {standard.oid: standard for standard in standards}
         extensible = {}
         for codelist in metadata.CodeList:
@@ -105,10 +108,6 @@ class DefineXMLReader21(BaseDefineXMLReader):
                     "codelist": codelist_code,
                     "extended_values": extended_values,
                 }
-            combined_CT_package["submission_lookup"][codelist_value] = {
-                "codelist": codelist_code,
-                "term": "N/A",
-            }
 
             for item in codelist.CodeListItem:
                 nci_code = None
@@ -123,10 +122,6 @@ class DefineXMLReader21(BaseDefineXMLReader):
                         "submissionValue": item.CodedValue,
                         "extensible": item.ExtendedValue,
                         "standard": standard_key,
-                    }
-                    combined_CT_package["submission_lookup"][item.CodedValue] = {
-                        "codelist": codelist_code,
-                        "term": nci_code,
                     }
 
         return combined_CT_package, extensible

@@ -17,6 +17,9 @@ from cdisc_rules_engine.exceptions.custom_exceptions import (
     DomainNotFoundError,
     InvalidSchemaProvidedError,
     SchemaNotFoundError,
+    PreprocessingError,
+    OperationError,
+    DatasetBuilderError,
 )
 from cdisc_rules_engine.interfaces import (
     CacheServiceInterface,
@@ -302,7 +305,15 @@ class RulesEngine:
         """
         kwargs = {}
         builder = self.get_dataset_builder(rule, datasets, dataset_metadata)
-        dataset = builder.get_dataset()
+        try:
+            dataset = builder.get_dataset()
+        except Exception as e:
+            raise DatasetBuilderError(
+                f"Failed to build dataset for rule validation. "
+                f"Builder: {builder.__class__.__name__}, "
+                f"Dataset: {dataset_metadata.name}, "
+                f"Error: {str(e)}"
+            )
         # Update rule for certain rule types
         # SPECIAL CASES FOR RULE TYPES ###############################
         # TODO: Handle these special cases better.
@@ -324,8 +335,6 @@ class RulesEngine:
         elif (
             rule.get("rule_type")
             == RuleTypes.VARIABLE_METADATA_CHECK_AGAINST_DEFINE.value
-            or rule.get("rule_type")
-            == RuleTypes.VARIABLE_METADATA_CHECK_AGAINST_DEFINE_XML_AND_LIBRARY.value
         ):
             self.rule_processor.add_comparator_to_rule_conditions(
                 rule, comparator=None, target_prefix="define_"
@@ -420,7 +429,7 @@ class RulesEngine:
         )
         dataset_variable = DatasetVariable(
             dataset,
-            column_prefix_map={"--": dataset_metadata.domain},
+            column_prefix_map={"--": dataset_metadata.domain_cleaned},
             value_level_metadata=value_level_metadata,
             column_codelist_map=variable_codelist_map,
             codelist_term_maps=codelist_term_maps,
@@ -516,6 +525,49 @@ class RulesEngine:
                 message=exception.args[0],
             )
             message = "rule execution error"
+        elif isinstance(exception, PreprocessingError):
+            error_obj = FailedValidationEntity(
+                dataset=os.path.basename(dataset_path),
+                error=PreprocessingError.description,
+                message=str(exception),
+            )
+            message = "rule evaluation error - preprocessing failed"
+            errors = [error_obj]
+            return ValidationErrorContainer(
+                dataset=os.path.basename(dataset_path),
+                errors=errors,
+                message=message,
+                status=ExecutionStatus.SKIPPED.value,
+            )
+
+        elif isinstance(exception, OperationError):
+            error_obj = FailedValidationEntity(
+                dataset=os.path.basename(dataset_path),
+                error=OperationError.description,
+                message=str(exception),
+            )
+            message = "rule evaluation error - operation failed"
+            errors = [error_obj]
+            return ValidationErrorContainer(
+                dataset=os.path.basename(dataset_path),
+                errors=errors,
+                message=message,
+                status=ExecutionStatus.SKIPPED.value,
+            )
+        elif isinstance(exception, DatasetBuilderError):
+            error_obj = FailedValidationEntity(
+                dataset=os.path.basename(dataset_path),
+                error=DatasetBuilderError.description,
+                message=str(exception),
+            )
+            message = "rule evaluation error - evaluation dataset failed to build"
+            errors = [error_obj]
+            return ValidationErrorContainer(
+                dataset=os.path.basename(dataset_path),
+                errors=errors,
+                message=message,
+                status=ExecutionStatus.SKIPPED.value,
+            )
         elif isinstance(exception, FailedSchemaValidation):
             if self.validate_xml:
                 error_obj = FailedValidationEntity(

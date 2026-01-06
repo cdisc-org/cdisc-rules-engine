@@ -6,6 +6,7 @@ that can be reused.
 import copy
 import os
 import re
+import ast
 import pandas as pd
 from datetime import datetime
 from typing import Callable, Iterable, List, Optional, Union
@@ -442,3 +443,41 @@ def replace_nan_values_in_df(df, columns):
             if mask.any():
                 df.loc[mask, col] = None
     return df
+
+
+def validate_dataset_files_exist(dataset_path: tuple[str], logger, ctx):
+    non_existing_files: list[str] = [
+        path for path in dataset_path if not os.path.exists(path)
+    ]
+    if non_existing_files:
+        logger.error(f'Files {", ".join(non_existing_files)} are not found')
+        ctx.exit(2)
+
+
+def set_max_errors_per_rule(args):
+    env_value = (
+        (os.getenv("MAX_ERRORS_PER_RULE")) if os.getenv("MAX_ERRORS_PER_RULE") else None
+    )
+
+    if env_value:
+        parsed_tuple = ast.literal_eval(env_value)
+        env_max_errors = parsed_tuple[0]
+        env_per_dataset = parsed_tuple[1]
+    else:
+        env_max_errors = None
+        env_per_dataset = None
+    cli_limit, cli_per_dataset = args.max_errors_per_rule
+    if env_max_errors is not None and cli_limit > 0:
+        max_errors_per_rule = max(env_max_errors, cli_limit)
+    elif env_max_errors is not None:
+        max_errors_per_rule = env_max_errors
+    elif cli_limit and cli_limit > 0:
+        max_errors_per_rule = cli_limit
+    else:
+        max_errors_per_rule = None
+
+    if max_errors_per_rule is not None and max_errors_per_rule <= 0:
+        max_errors_per_rule = None
+
+    per_dataset = bool(env_per_dataset or cli_per_dataset)
+    return max_errors_per_rule, per_dataset

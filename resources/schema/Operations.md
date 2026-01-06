@@ -158,19 +158,15 @@ Fetches controlled terminology attribute values from CT packages based on row-sp
 
 - `ct_attribute`: Attribute to extract - `"Term CCODE"`, `"Codelist CCODE"`, `"Term Value"`, `"Codelist Value"`, or `"Term Preferred Term"`
 - `target`: Column containing CT reference (e.g., "TSVCDREF")
-- `ct_version`: Column containing CT version (e.g., "TSVCDVER")
-- `ct_packages`: List of CT packages to search (e.g., `["sdtmct-2020-03-27"]`)
+- `version`: Column containing CT version (e.g., "TSVCDVER")
 
 ```yaml
 - id: $VALID_TERM_CODES
   name: TSVCDREF
   operator: get_codelist_attributes
   ct_attribute: Term CCODE
-  ct_version: TSVCDVER
+  version: TSVCDVER
   target: TSVCDREF
-  ct_packages:
-    - sdtmct-2020-03-27
-    - sdtmct-2022-12-16
 ```
 
 ### valid_codelist_dates
@@ -485,6 +481,28 @@ Output
 Laboratory Test Results
 ```
 
+### standard_domains
+
+Returns a list of valid SDTM domain names from the standard metadata. This can be used to compare extracted suffixes from DOMAIN values or dataset names.
+
+Input
+
+Product: sdtmig
+
+Version: 3-4
+
+```yaml
+Operations:
+  - operator: standard_domains
+    id: $valid_domain_names
+```
+
+Output
+
+```
+["AE", "CM", "DM", "FA", "LB", "QS", ...]
+```
+
 ### extract_metadata
 
 Returns the requested dataset level metadata value for the current dataset. Possible name values are:
@@ -493,6 +511,9 @@ Returns the requested dataset level metadata value for the current dataset. Poss
 - dataset_location
 - dataset_name
 - dataset_label
+- domain
+- is_ap
+- ap_suffix
 
 Example
 
@@ -510,6 +531,26 @@ Output:
 
 ```
 Laboratory Test Results
+```
+
+Example: ap_suffix
+
+Extracts the domain suffix (characters 3-4) from AP-related domains. For example, "FA" from "APFA" DOMAIN value.
+
+Input:
+
+Target domain: APFA
+
+```yaml
+- name: ap_suffix
+  operator: extract_metadata
+  id: $ap_suffix
+```
+
+Output:
+
+```
+FA
 ```
 
 ## IG & Model Variable Operations
@@ -965,7 +1006,9 @@ If no filter or group is provided, returns the number of records in the dataset.
 
 If both filter and group are provided, returns the number of records in the dataset that contain the value(s) in the corresponding column(s) provided in the filter that also match each unique set of the grouping variables.
 
-Wildcard Filtering: Filter values ending with % will match any records where the column value starts with the specified prefix. For example, RACE% will match RACE1, RACE2, RACE3, etc. This is useful for matching related variables with numeric or alphabetic suffixes.
+**Wildcard Filtering:** Filter values ending with % will match any records where the column value starts with the specified prefix. For example, RACE% will match RACE1, RACE2, RACE3, etc. This is useful for matching related variables with numeric or alphabetic suffixes.
+
+**Regex Transformation:** If regex is provided along with group, the regex pattern will be applied to transform grouping column values before grouping. The regex is only applied to columns where the pattern matches the data type. For example, using regex `^\d{4}-\d{2}-\d{2}` on a column containing `2022-01-14T08:00` will extract `2022-01-14` for grouping purposes.
 
 If group is provided, group_aliases may also be provided to assign new grouping variable names so that results grouped by the values in one set of grouping variables can be merged onto a dataset according to the same grouping value(s) stored in different set of grouping variables. When both group and group_aliases are provided, columns are renamed according to corresponding list position (i.e., the 1st column in group is renamed to the 1st column in group_aliases, etc.). If there are more columns listed in group than in group_aliases, only the group columns with corresponding group_aliases columns will be renamed. If there are more columns listed in group_aliases than in group, the extra column names in group_aliases will be ignored.
 
@@ -984,6 +1027,18 @@ Example: return the number of records where STUDYID = "CDISC01" and FLAGVAR = "Y
   filter:
     STUDYID: "CDISC01"
     FLAGVAR: "Y"
+```
+
+Example: return the number of records grouped by USUBJID and timing variables, extracting only the date portion from datetime values.
+
+```yaml
+- operator: record_count
+  id: $records_per_usubjid_date
+  group:
+    - USUBJID
+    - --TESTCD
+    - $TIMING_VARIABLES
+  regex: "^\d{4}-\d{2}-\d{2}"
 ```
 
 Example: return the number of records where QNAM starts with "RACE" (matches RACE1, RACE2, RACE3, etc.) per USUBJID.
@@ -1268,3 +1323,15 @@ Operations:
 ```
 
 Note that a local XSD file is required for validation. The file must be stored in the folder indicated by the value of the `LOCAL_XSD_FILE_DIR` default file path and the mapping between the namespace and the local XSD file's `sub-folder/name` must be included in the value of the `LOCAL_XSD_FILE_MAP` default file path.
+
+### split_by
+
+Splits a dataset column by a given delimiter
+
+```yaml
+Operations:
+  - name: PPSPEC
+    delimiter: ;
+    id: $ppspec_value
+    operator: split_by
+```

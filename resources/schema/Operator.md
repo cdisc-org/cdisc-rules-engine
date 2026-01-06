@@ -1,5 +1,7 @@
 # Check Operator
 
+NOTE: Complementary operators have access to the same paremeter arguments unless otherwise stated.
+
 ## Relational
 
 Basic value comparisons and presence checks for evaluating equality, inequality, ranges, and whether values exist or are empty.
@@ -297,6 +299,8 @@ Complement of `suffix_equal_to`
 
 Will return True if the value in `value` is contained within the collection/iterable in the target column, or if there's an exact match for non-iterable data.
 
+The operator checks if every value in a column is a list or set. If yes, it compares row-by-row. If any value is blank or a different type (like a string or number), it compares each value against the entire column instead.
+
 Example:
 
 ```yaml
@@ -448,15 +452,26 @@ Date and time specific operations for comparing dates, validating date completen
 
 Date comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified.
 
+The `date_component` parameter accepts: `"year"`, `"month"`, `"day"`, `"hour"`, `"minute"`, `"second"`, `"microsecond"`, or `"auto"`.
+
+When `date_component: "auto"` is used, the operator automatically detects the precision of both dates and compares at the common (less precise) level.
+
+```yaml
+- name: "AESTDTC"
+  operator: "date_equal_to"
+  value: "RFSTDTC"
+  date_component: "auto"
+```
+
 ### date_not_equal_to
 
 Complement of `date_equal_to`
 
-Date comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified.
+Date comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified. Supports `date_component: "auto"`.
 
 ### date_greater_than
 
-Date comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified.
+Date comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified. Supports `date_component: "auto"`.
 
 > Year part of BRTHDTC > 2021
 
@@ -469,7 +484,7 @@ Date comparison. Compare `name` to `value`. Compares partial dates if `date_comp
 
 ### date_greater_than_or_equal_to
 
-Date comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified.
+Date comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified. Supports `date_component: "auto"`.
 
 > Year part of BRTHDTC >= 2021
 
@@ -482,7 +497,7 @@ Date comparison. Compare `name` to `value`. Compares partial dates if `date_comp
 
 ### date_less_than
 
-Date comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified.
+Date comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified. Supports `date_component: "auto"`.
 
 > AEENDTC < AESTDTC
 
@@ -512,7 +527,7 @@ Operations:
 
 ### date_less_than_or_equal_to
 
-Date comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified.
+Date comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified. Supports `date_component: "auto"`.
 
 > AEENDTC <= AESTDTC
 
@@ -548,9 +563,11 @@ Date check
 
 ### invalid_date
 
-Date check
+The operator performs date validation against complete and partial dates with uncertainty in the following order:
 
-> BRTHDTC is invalid
+1. Attempts to parse using [dateutil.parser.isoparse()](https://dateutil.readthedocs.io/en/stable/parser.html)
+2. If parsing fails and the string contains uncertainty indicators (`/`, `--`, `-:`), validates against an extended ISO 8601 dates regex pattern
+3. If parsing succeeds, dates are still validated against the regex pattern.
 
 ```yaml
 - name: "BRTHDTC"
@@ -635,6 +652,8 @@ Testing whether individual values or string parts belong to specific lists or se
 ### is_contained_by
 
 Value in `name` compared against a list in `value`. The list can have literal values or be a reference to a `$variable`.
+
+This operator behaves similarly to `contains`. The key distinction: `contains` checks if comparator ∈ target, while `is_contained_by` checks if target ∈ comparator.
 
 > ACTARM in ('Screen Failure', 'Not Assigned', 'Not Treated', 'Unplanned Treatment')
 
@@ -746,6 +765,22 @@ True if all values in `value` are contained within the variable `name`.
     - "Unplanned Treatment"
 ```
 
+The operator also supports lists:
+
+```yaml
+- name: "$spec_codelist"
+  operator: "contains_all"
+  value: "$ppspec_value"
+```
+
+Where:
+
+| $spec_codelist              |   $ppspec_value    |
+| :-------------------------- | :----------------: |
+| ["CODE1", "CODE2", "CODE3"] | ["CODE1", "CODE2"] |
+| ["CODE1", "CODE2", "CODE3"] | ["CODE2", "CODE3"] |
+| ["CODE1", "CODE2", "CODE3"] |     ["CODE1"]      |
+
 ### not_contains_all
 
 Complement of `contains_all`
@@ -761,6 +796,22 @@ Complement of `contains_all`
     - "Not Treated"
     - "Unplanned Treatment"
 ```
+
+The operator also supports lists:
+
+```yaml
+- name: "$spec_codelist"
+  operator: "not_contains_all"
+  value: "$ppspec_value"
+```
+
+Where:
+
+| $spec_codelist              |   $ppspec_value    |
+| :-------------------------- | :----------------: |
+| ["CODE1", "CODE2", "CODE3"] | ["CODE1", "CODE2"] |
+| ["CODE1", "CODE2", "CODE3"] | ["CODE2", "CODE3"] |
+| ["CODE1", "CODE2", "CODE3"] |     ["CODE1"]      |
 
 ### shares_at_least_one_element_with
 
@@ -822,17 +873,34 @@ Relationship Integrity Check
 
 > `name` can be a variable containing a list of columns and `value` does not need to be present
 
+> The `regex` parameter allows you to extract portions of values using a regex pattern before checking uniqueness.
+
+> Compare date only (YYYY-MM-DD) for uniqueness
+
 ```yaml
-Rule Type: Dataset Contents Check against Define XML
-Check:
-  all:
-    - name: define_dataset_key_sequence # contains list of dataset key columns
-      operator: is_unique_set
+- name: "--REPNUM"
+  operator: is_not_unique_set
+  value:
+    - "USUBJID"
+    - "--TESTCD"
+    - "$TIMING_VARIABLES"
+  regex: '^\d{4}-\d{2}-\d{2}'
+```
+
+> Compare by first N characters of a string
+
+```yaml
+- name: "ITEM_ID"
+  operator: is_not_unique_set
+  value:
+    - "USUBJID"
+    - "CATEGORY"
+  regex: "^.{2}"
 ```
 
 ### is_not_unique_set
 
-Complement of `is_unique_set`
+Complement of `is_unique_set`.
 
 > --SEQ is not unique within DOMAIN, USUBJID, and --TESTCD
 
@@ -1017,13 +1085,15 @@ Complement of `is_ordered_by`
 
 ### target_is_sorted_by
 
-True if the values in `name` are ordered according to the values specified by `value` grouped by the values in `within`. Each `value` requires a variable `name`, ordering specified by `order`, and the null position specified by `null_position`.
+True if the values in `name` are ordered according to the values specified by `value` grouped by the values in `within`. Each `value` requires a variable `name`, ordering specified by `order`, and the null position specified by `null_position`. `within` accepts either a single column or an ordered list of columns.
 
 ```yaml
 Check:
   all:
     - name: --SEQ
-      within: USUBJID
+      within:
+        - USUBJID
+        - MIDSTYPE
       operator: target_is_sorted_by
       value:
         - name: --STDTC

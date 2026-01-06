@@ -35,14 +35,14 @@ class JSONataProcessor:
             expr = Jsonata(full_string)
         except Exception as e:
             raise RuleFormatError(
-                f"\n  Error parsing JSONata Rule for Core Id: {rule.get("core_id")}"
+                f"\n  Error parsing JSONata Rule for Core Id: {rule.get('core_id')}"
                 f"\n  {type(e).__name__}: {e}"
             )
         try:
             results = expr.evaluate(dataset)
         except Exception as e:
             raise RuleExecutionError(
-                f"\n  Error evaluating JSONata Rule with Core Id: {rule.get("core_id")}"
+                f"\n  Error evaluating JSONata Rule with Core Id: {rule.get('core_id')}"
                 f"\n  {type(e).__name__}: {e}"
             )
         errors = defaultdict(list)

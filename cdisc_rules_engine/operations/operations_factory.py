@@ -30,6 +30,7 @@ from cdisc_rules_engine.operations.maximum import Maximum
 from cdisc_rules_engine.operations.mean import Mean
 from cdisc_rules_engine.operations.domain_is_custom import DomainIsCustom
 from cdisc_rules_engine.operations.domain_label import DomainLabel
+from cdisc_rules_engine.operations.standard_domains import StandardDomains
 from cdisc_rules_engine.operations.meddra_code_references_validator import (
     MedDRACodeReferencesValidator,
 )
@@ -42,6 +43,7 @@ from cdisc_rules_engine.operations.meddra_term_references_validator import (
 from cdisc_rules_engine.operations.min_date import MinDate
 from cdisc_rules_engine.operations.minimum import Minimum
 from cdisc_rules_engine.operations.record_count import RecordCount
+from cdisc_rules_engine.operations.split_by import SplitBy
 from cdisc_rules_engine.operations.valid_external_dictionary_code import (
     ValidExternalDictionaryCode,
 )
@@ -120,7 +122,9 @@ class OperationsFactory(FactoryInterface):
         "variable_is_null": VariableIsNull,
         "domain_is_custom": DomainIsCustom,
         "domain_label": DomainLabel,
+        "standard_domains": StandardDomains,
         "required_variables": RequiredVariables,
+        "split_by": SplitBy,
         "expected_variables": ExpectedVariables,
         "permissible_variables": PermissibleVariables,
         "study_domains": StudyDomains,

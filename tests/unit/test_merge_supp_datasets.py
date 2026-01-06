@@ -123,3 +123,176 @@ def test_merge_pivot_supp_dataset(
     )
     assert len(merged_dataset.data) == len(parent_dataset.data), "The"
     " length of the merged dataset should match the parent dataset."
+
+
+@patch.object(LocalDataService, "check_filepath", return_value=False)
+@patch.object(LocalDataService, "_async_get_datasets")
+def test_merge_supp_dataset_multi_idvar(mock_async_get_datasets, data_service):
+    parent_dataset = PandasDataset(
+        pd.DataFrame(
+            {
+                "STUDYID": ["STUDY1", "STUDY1", "STUDY1", "STUDY1"],
+                "USUBJID": ["001", "001", "002", "002"],
+                "ECSEQ": ["1", "2", "1", "2"],
+                "ECENDY": ["5", "7", "5", "7"],
+                "ECTRT": ["Treatment A", "Treatment B", "Treatment A", "Treatment B"],
+            }
+        )
+    )
+
+    supp_dataset = PandasDataset(
+        pd.DataFrame(
+            {
+                "STUDYID": ["STUDY1", "STUDY1", "STUDY1", "STUDY1", "STUDY1", "STUDY1"],
+                "USUBJID": ["001", "001", "001", "001", "002", "002"],
+                "RDOMAIN": ["EC", "EC", "EC", "EC", "EC", "EC"],
+                "IDVAR": ["ECSEQ", "ECSEQ", "ECENDY", "ECENDY", "ECSEQ", "ECENDY"],
+                "IDVARVAL": ["1", "2", "7", "7", "1", "5"],
+                "QNAM": ["ECLOC", "ECLOC", "ECSITE", "ECREGION", "ECLOC", "ECSITE"],
+                "QVAL": [
+                    "Left Arm",
+                    "Right Arm",
+                    "Site A",
+                    "Region 1",
+                    "Left Leg",
+                    "Site B",
+                ],
+                "QLABEL": [
+                    "Location",
+                    "Location",
+                    "Site",
+                    "Region",
+                    "Location",
+                    "Site",
+                ],
+                "QORIG": ["CRF", "CRF", "CRF", "CRF", "CRF", "CRF"],
+                "QEVAL": ["", "", "", "", "", ""],
+            }
+        )
+    )
+
+    mock_async_get_datasets.return_value = [parent_dataset, supp_dataset]
+    merged_dataset = DataProcessor.merge_pivot_supp_dataset(
+        data_service.dataset_implementation, parent_dataset, supp_dataset
+    )
+    assert "ECLOC" in merged_dataset.columns, "ECLOC column should be added from SUPP"
+    assert "ECSITE" in merged_dataset.columns, "ECSITE column should be added from SUPP"
+    assert (
+        "ECREGION" in merged_dataset.columns
+    ), "ECREGION column should be added from SUPP"
+
+    row1 = merged_dataset.data[
+        (merged_dataset.data["USUBJID"] == "001")
+        & (merged_dataset.data["ECSEQ"] == "1")
+    ].iloc[0]
+    assert row1["ECLOC"] == "Left Arm", "ECLOC should match ECSEQ=1"
+    assert pd.isna(row1["ECSITE"]), "ECSITE should be NaN for ECSEQ=1"
+
+    row2 = merged_dataset.data[
+        (merged_dataset.data["USUBJID"] == "001")
+        & (merged_dataset.data["ECSEQ"] == "2")
+    ].iloc[0]
+    assert row2["ECLOC"] == "Right Arm", "ECLOC should match ECSEQ=2"
+    assert row2["ECSITE"] == "Site A", "ECSITE should match ECENDY=7"
+    assert row2["ECREGION"] == "Region 1", "ECREGION should match ECENDY=7"
+
+    row3 = merged_dataset.data[
+        (merged_dataset.data["USUBJID"] == "002")
+        & (merged_dataset.data["ECSEQ"] == "1")
+    ].iloc[0]
+    assert row3["ECLOC"] == "Left Leg", "ECLOC should match ECSEQ=1"
+    assert row3["ECSITE"] == "Site B", "ECSITE should match ECENDY=5"
+    assert len(merged_dataset.data) == len(
+        parent_dataset.data
+    ), "Merged dataset should have same number of rows as parent"
+
+
+@patch.object(LocalDataService, "check_filepath", return_value=False)
+@patch.object(LocalDataService, "_async_get_datasets")
+def test_merge_supp_dataset_multi_idvar_aggregation(
+    mock_async_get_datasets, data_service
+):
+    parent_dataset = PandasDataset(
+        pd.DataFrame(
+            {
+                "STUDYID": ["STUDY1", "STUDY1"],
+                "USUBJID": ["001", "001"],
+                "ECSEQ": ["1", "2"],
+                "ECENDY": ["5", "7"],
+                "ECTRT": ["Treatment A", "Treatment B"],
+            }
+        )
+    )
+    supp_dataset = PandasDataset(
+        pd.DataFrame(
+            {
+                "STUDYID": ["STUDY1", "STUDY1", "STUDY1"],
+                "USUBJID": ["001", "001", "001"],
+                "RDOMAIN": ["EC", "EC", "EC"],
+                "IDVAR": ["ECENDY", "ECENDY", "ECSEQ"],
+                "IDVARVAL": ["7", "7", "1"],
+                "QNAM": ["ECLOC", "ECSITE", "ECLOC"],
+                "QVAL": ["Location A", "Site A", "Location B"],
+                "QLABEL": ["Location", "Site", "Location"],
+                "QORIG": ["CRF", "CRF", "CRF"],
+                "QEVAL": ["", "", ""],
+            }
+        )
+    )
+
+    mock_async_get_datasets.return_value = [parent_dataset, supp_dataset]
+
+    merged_dataset = DataProcessor.merge_pivot_supp_dataset(
+        data_service.dataset_implementation, parent_dataset, supp_dataset
+    )
+
+    assert len(merged_dataset.data) == len(
+        parent_dataset.data
+    ), "Should not create duplicate rows when aggregating multiple QNAM for same IDVAR/IDVARVAL"
+
+    # Both ECLOC and ECSITE from ECENDY=7 should be present in the ECSEQ=2 row
+    row = merged_dataset.data[merged_dataset.data["ECSEQ"] == "2"].iloc[0]
+    assert row["ECLOC"] == "Location A", "ECLOC from ECENDY=7 should be merged"
+    assert row["ECSITE"] == "Site A", "ECSITE from ECENDY=7 should be merged"
+
+
+@patch.object(LocalDataService, "check_filepath", return_value=False)
+@patch.object(LocalDataService, "_async_get_datasets")
+def test_merge_supp_dataset_multi_idvar_same_qnam_validation_error(
+    mock_async_get_datasets, data_service
+):
+    parent_dataset = PandasDataset(
+        pd.DataFrame(
+            {
+                "STUDYID": ["STUDY1"],
+                "USUBJID": ["001"],
+                "ECSEQ": ["1"],
+                "ECENDY": ["5"],
+                "ECTRT": ["Treatment A"],
+            }
+        )
+    )
+
+    supp_dataset = PandasDataset(
+        pd.DataFrame(
+            {
+                "STUDYID": ["STUDY1", "STUDY1"],
+                "USUBJID": ["001", "001"],
+                "RDOMAIN": ["EC", "EC"],
+                "IDVAR": ["ECSEQ", "ECSEQ"],
+                "IDVARVAL": ["1", "1"],
+                "QNAM": ["ECLOC", "ECLOC"],
+                "QVAL": ["Location A", "Location B"],
+                "QLABEL": ["Location", "Location"],
+                "QORIG": ["CRF", "CRF"],
+                "QEVAL": ["", ""],
+            }
+        )
+    )
+
+    mock_async_get_datasets.return_value = [parent_dataset, supp_dataset]
+
+    with pytest.raises(ValueError, match="Multiple records with the same QNAM"):
+        DataProcessor.merge_pivot_supp_dataset(
+            data_service.dataset_implementation, parent_dataset, supp_dataset
+        )

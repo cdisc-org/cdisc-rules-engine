@@ -1,0 +1,66 @@
+Authorities:
+  - Organization: CDISC
+    Standards:
+      - Name: SENDIG
+        References:
+          - Citations:
+              - Cited Guidance:
+                  If this variable is excluded in the DM domain, the information
+                  must be present at a higher level (either Trial Sets or Trial
+                  Summary).
+                Document: IG v3.1
+                Item: Specification
+                Section: 5.1.1
+            Origin: SEND Conformance Rules
+            Rule Identifier:
+              Id: "SEND105"
+              Version: "2"
+            Version: "5.0"
+        Version: "3.1"
+Check:
+  all:
+    - name: $distinct_tsparmcd
+      operator: does_not_contain
+      value: SPECIES
+      value_is_literal: true
+    - name: $distinct_txparmcd
+      operator: does_not_contain
+      value: SPECIES
+      value_is_literal: true
+    - name: SPECIES
+      operator: not_exists
+Core:
+  Id: CDISC.SENDIG.105
+  Status: Draft
+  Version: "1"
+Description: Raise an error when the variable SPECIES is not present in DM, and
+  there is no record TSPARMCD=SPECIES in TS and there is no record
+  TXPARMCD=SPECIES in TX
+Executability: Fully Executable
+Operations:
+  # gets the distinct values of TSPARMCD
+  - domain: TS
+    id: $distinct_tsparmcd
+    name: TSPARMCD
+    operator: distinct
+  - domain: TX
+    id: $distinct_txparmcd
+    name: TXPARMCD
+    operator: distinct
+Outcome:
+  Message:
+    SPECIES in not present in DM and there is no record TSPARMCD=SPECIES in
+    TS and there is no record TXPARMCD=SPECIES in TX
+  Output Variables:
+    - $distinct_tsparmcd
+    - $distinct_txparmcd
+    - SPECIES
+Rule Type: Record Data
+Scope:
+  Classes:
+    Include:
+      - ALL
+  Domains:
+    Include:
+      - DM
+Sensitivity: Dataset
