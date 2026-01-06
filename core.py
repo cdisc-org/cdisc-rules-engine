@@ -106,7 +106,7 @@ def _validate_data_directory(data: str, logger) -> tuple[list, set]:
             f"Please provide a valid path to your data directory."
         )
         return [], set()
-    
+
     dataset_paths, found_formats = valid_data_file(
         [str(p) for p in Path(data).rglob("*") if p.is_file()]
     )
@@ -144,7 +144,7 @@ def _validate_dataset_paths(dataset_path: tuple[str], logger) -> tuple[list, set
     # Validate each path for security - block traversal attempts
     validator = PathValidator(block_system_dirs=False, allow_relative_paths=False)
     validated_paths = []
-    
+
     for dp in dataset_path:
         try:
             validated_path = validator.validate_read_path(dp)
@@ -155,7 +155,7 @@ def _validate_dataset_paths(dataset_path: tuple[str], logger) -> tuple[list, set
                 f"Please provide a valid path to your dataset file."
             )
             return [], set()
-    
+
     dataset_paths, found_formats = valid_data_file(validated_paths)
 
     if DataFormatTypes.XLSX.value in found_formats and len(found_formats) > 1:
@@ -429,14 +429,14 @@ def validate(
     # Validate conditional options
     logger = logging.getLogger("validator")
     load_dotenv()
-    
+
     # Initialize path validator and check user permissions
     # Block relative paths with traversal patterns for security
     validator = PathValidator(block_system_dirs=True, allow_relative_paths=False)
     permissions = PathValidator.check_user_permissions()
     if permissions["is_admin"]:
         logger.warning(permissions["recommendation"])
-    
+
     # Validate output path (write operation - highest priority)
     if output:
         try:
@@ -448,7 +448,7 @@ def validate(
                 f"Please provide a valid output path that is not in a system directory."
             )
             ctx.exit(2)
-    
+
     # Validate cache path (read/write)
     if cache:
         try:
@@ -460,7 +460,7 @@ def validate(
                 f"Please provide a valid cache path."
             )
             ctx.exit(2)
-    
+
     # Validate report template path (read)
     if report_template:
         try:
@@ -472,7 +472,7 @@ def validate(
                 f"Please provide a valid path to the report template file."
             )
             ctx.exit(2)
-    
+
     # Validate define-xml path (read)
     if define_xml_path:
         try:
@@ -484,7 +484,7 @@ def validate(
                 f"Please provide a valid path to the Define-XML file."
             )
             ctx.exit(2)
-    
+
     # Validate dictionary paths (read)
     dictionary_paths = {
         "whodrug": whodrug,
@@ -504,7 +504,7 @@ def validate(
                     f"Please provide a valid path to the {dict_name} dictionary directory."
                 )
                 ctx.exit(2)
-    
+
     dataset_paths: list = []
     found_formats: set = set()
 
@@ -663,7 +663,7 @@ def update_cache(
     logger = logging.getLogger("validator")
     # Block relative paths with traversal patterns for security
     validator = PathValidator(block_system_dirs=True, allow_relative_paths=False)
-    
+
     # Validate cache path (read/write)
     try:
         validated_cache_path = validator.validate_read_path(cache_path)
@@ -674,7 +674,7 @@ def update_cache(
             f"Please provide a valid cache path."
         )
         ctx.exit(2)
-    
+
     # Validate custom rules directory (read)
     if custom_rules_directory:
         try:
@@ -686,7 +686,7 @@ def update_cache(
                 f"Please provide a valid path to the custom rules directory."
             )
             ctx.exit(2)
-    
+
     # Validate custom rule files (read)
     if custom_rule:
         validated_rules = []
@@ -701,7 +701,7 @@ def update_cache(
                 )
                 ctx.exit(2)
         custom_rule = tuple(validated_rules)
-    
+
     # Validate update custom rule path (read)
     if update_custom_rule:
         try:
@@ -713,7 +713,7 @@ def update_cache(
                 f"Please provide a valid path to the custom rule file."
             )
             ctx.exit(2)
-    
+
     # Validate custom standard path (read)
     if custom_standard:
         try:
@@ -725,7 +725,7 @@ def update_cache(
                 f"Please provide a valid path to the custom standard JSON file."
             )
             ctx.exit(2)
-    
+
     cache = CacheServiceFactory(config).get_cache_service()
     library_service = CDISCLibraryService(apikey, cache)
     cache_populator = CachePopulator(
