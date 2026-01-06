@@ -30,6 +30,8 @@ class DefineXMLReader21(BaseDefineXMLReader):
         """
         Returns metadata as dictionary.
         """
+        has_no_data: str | None = getattr(metadata, "HasNoData", "")
+        has_no_data = has_no_data or ""
         return {
             "define_dataset_name": metadata.Name,
             "define_dataset_label": str(metadata.Description.TranslatedText[0]),
@@ -38,6 +40,7 @@ class DefineXMLReader21(BaseDefineXMLReader):
             "define_dataset_class": str(metadata.Class.Name),
             "define_dataset_structure": str(metadata.Structure),
             "define_dataset_is_non_standard": str(metadata.IsNonStandard or ""),
+            "define_dataset_has_no_data": bool(has_no_data.lower() == "yes"),
         }
 
     def get_ct_version(self):
