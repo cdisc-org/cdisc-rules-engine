@@ -224,26 +224,9 @@ class BaseOperation:
 
     def _get_variables_metadata_from_standard(self) -> List[dict]:
         # TODO: Update to handle other standard types: adam, cdash, etc.
-        target_metadata = None
-        for ds in self.params.datasets:
-            if ds.unsplit_name == self.params.domain:
-                target_metadata = ds
-                break
-        if (
-            target_metadata
-            and hasattr(target_metadata, "is_supp")
-            and target_metadata.is_supp
-        ):
-            domain_for_library = "SUPPQUAL"
-        elif target_metadata and "rel" in target_metadata.name.lower():
-            if target_metadata.name.lower().startswith(
-                "ap"
-            ) and target_metadata.name.lower()[2:].startswith("rel"):
-                domain_for_library = target_metadata.name[2:]
-            else:
-                domain_for_library = target_metadata.name
-        else:
-            domain_for_library = self.params.domain
+
+        # self.params.domain is unsplit_name
+        domain_for_library = self.params.domain
         return sdtm_utilities.get_variables_metadata_from_standard(
             domain_for_library,
             self.library_metadata,
