@@ -69,6 +69,12 @@ class JsonReport(BaseReport):
         )
         output_dir = os.path.dirname(self._output_name)
         if output_dir:
-            os.makedirs(output_dir, exist_ok=True)
+            try:
+                os.makedirs(output_dir, exist_ok=True)
+            except OSError as e:
+                raise OSError(
+                    f"Cannot create output directory '{output_dir}': {e.strerror}. "
+                    f"Please provide a valid, writable path for the output file."
+                ) from e
         with open(self._output_name, "w") as f:
             json.dump(report_data, f)

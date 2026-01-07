@@ -87,10 +87,20 @@ class ExcelReport(BaseReport):
             report_data = self.get_export()
             output_dir = os.path.dirname(self._output_name)
             if output_dir:
-                os.makedirs(output_dir, exist_ok=True)
+                try:
+                    os.makedirs(output_dir, exist_ok=True)
+                except OSError as e:
+                    error_msg = (
+                        f"Cannot create output directory '{output_dir}': {e.strerror}. "
+                        f"Please provide a valid, writable path for the output file."
+                    )
+                    logger.error(error_msg)
+                    raise OSError(error_msg) from e
             with open(self._output_name, "wb") as f:
                 f.write(excel_workbook_to_stream(report_data))
             logger.debug(f"Report written to: {self._output_name}")
+        except OSError:
+            raise
         except Exception as e:
             logger.error(f"Error writing report: {e}")
             raise e
