@@ -76,6 +76,26 @@ from cdisc_rules_engine.services.data_services import LocalDataService
             True,
         ),
         (
+            DaskDataset.from_dict(
+                {
+                    "STUDYID": [
+                        "TEST_STUDY",
+                        "TEST_STUDY",
+                        "TEST_STUDY",
+                    ],
+                    "BCTERM": [
+                        "test",
+                        "test",
+                        "test",
+                    ],
+                }
+            ),
+            "BC",
+            "sdtmig",
+            "3-4",
+            True,
+        ),
+        (
             PandasDataset.from_dict(
                 {
                     "STUDYID": [
@@ -96,7 +116,47 @@ from cdisc_rules_engine.services.data_services import LocalDataService
             False,
         ),
         (
+            DaskDataset.from_dict(
+                {
+                    "STUDYID": [
+                        "TEST_STUDY",
+                        "TEST_STUDY",
+                        "TEST_STUDY",
+                    ],
+                    "AETERM": [
+                        "test",
+                        "test",
+                        "test",
+                    ],
+                }
+            ),
+            "AE",
+            "tig",
+            "1-0",
+            False,
+        ),
+        (
             PandasDataset.from_dict(
+                {
+                    "STUDYID": [
+                        "TEST_STUDY",
+                        "TEST_STUDY",
+                        "TEST_STUDY",
+                    ],
+                    "XYTERM": [
+                        "test",
+                        "test",
+                        "test",
+                    ],
+                }
+            ),
+            "XY",
+            "tig",
+            "1-0",
+            True,
+        ),
+        (
+            DaskDataset.from_dict(
                 {
                     "STUDYID": [
                         "TEST_STUDY",
