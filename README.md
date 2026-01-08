@@ -47,51 +47,13 @@ Once downloaded, simply unzip the file and run the following command based on yo
 
 ## Command-line Interface
 
-**Note**: the following examples are applicable to the source code and have references to "`python core.py`". When using the executable version as described in the [Quick Start](#quick-start) above, instances of "`.\core.exe`" (Windows) or "`./core`" (Linux/Mac) should be replaced with "`python core.py`" .
+**Note**: the following examples are applicable to the source code and have references to "`python core.py`". When using the executable version as described in the [Quick Start](#quick-start) above, instances of "`python cored.py`" should be replaced with "`.\core.exe`" (Windows) or "`./core`" (Linux/Mac). You can also run directly on the source code by following the [Cloning](#cloning) instructions.
 
 ### Running a validation (`validate`)
 
-0. You will need [git](https://git-scm.com/install/) installed.
+Clone the repository and run `python core.py --help` to see the full list of commands.
 
-1. Clone the repository:
-
-   In the terminal, navigate to the directory you intend to install CORE rules engine in
-
-   ```
-   git clone https://github.com/cdisc-org/cdisc-rules-engine
-   ```
-
-2. Ensure you have Python 3.12 installed:
-   You can check your Python version with:
-
-   ```
-   python --version
-   ```
-
-   If you don't have Python 3.12, please download and install it from [python.org](https://www.python.org/downloads/) or using your system's package manager.
-
-3. Installing dependencies
-
-   These steps should be run before running any tests or core commands using the non compiled version.
-
-   - Create a virtual environment:
-
-     `python -m venv <virtual_environment_name>`
-
-   **Note**: if you have multiple versions of python on your machine, you can call python 3.12 for the virtual environment's creation instead of the above command:
-   `python3.12 -m venv <virtual_environment_name>`
-
-   - Activate the virtual environment:
-
-   `./<virtual_environment_name>/bin/activate` -- on linux/mac </br>
-   `.\<virtual_environment_name>\Scripts\Activate` -- on windows
-
-   - Install the requirements.
-
-   `python -m pip install -r requirements-dev.txt` # From the root directory
-
-4. Validate
-   Run `python core.py validate --help` to see the list of validation options.
+Run `python core.py validate --help` to see the list of validation options.
 
 ```
   -ca, --cache TEXT               Relative path to cache files containing pre
@@ -468,6 +430,43 @@ pip install cdisc-rules-engine
 ```
 
 For implementation instructions, see [PYPI.md](PYPI.md).
+
+### Cloning
+
+In the terminal, navigate to the directory you intend to install CORE rules engine in
+
+1. Clone the repository:
+
+   ```
+   git clone https://github.com/cdisc-org/cdisc-rules-engine
+   ```
+
+2. Ensure you have Python 3.12 installed:
+   You can check your Python version with:
+   ```
+   python --version
+   ```
+   If you don't have Python 3.12, please download and install it from [python.org](https://www.python.org/downloads/) or using your system's package manager.
+
+### Installing dependencies
+
+These steps should be run before running any tests or core commands using the non compiled version.
+
+- Create a virtual environment:
+
+  `python -m venv <virtual_environment_name>`
+
+NOTE: if you have multiple versions of python on your machine, you can call python 3.12 for the virtual environment's creation instead of the above command:
+`python3.12 -m venv <virtual_environment_name>`
+
+- Activate the virtual environment:
+
+`./<virtual_environment_name>/bin/activate` -- on linux/mac </br>
+`.\<virtual_environment_name>\Scripts\Activate` -- on windows
+
+- Install the requirements.
+
+`python -m pip install -r requirements-dev.txt` # From the root directory
 
 ### Creating an executable version
 
