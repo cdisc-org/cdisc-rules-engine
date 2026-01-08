@@ -7,6 +7,10 @@
       "title": "Content data at record level, define xml metadata at variable level, and library metadata at variable level"
     },
     {
+      "const": "Dataset Contents Check against Define XML",
+      "title": "Content data at record level, dataset metadata at dataset level, and define xml metadata at dataset level"
+    },
+    {
       "const": "Dataset Metadata Check",
       "title": "Content metadata at dataset level"
     },
@@ -31,6 +35,14 @@
       "title": "Content domain presence at study level"
     },
     {
+      "const": "JSON Schema Check",
+      "title": "Apply JSON schema validation to a JSON file"
+    },
+    {
+      "const": "JSONata",
+      "title": "Apply a JSONata query to a JSON file"
+    },
+    {
       "const": "Record Data",
       "title": "Content data at record level. Most common Rule Type"
     },
@@ -46,7 +58,6 @@
       "const": "Value Level Metadata Check against Define XML",
       "title": "Content data at record level and define xml metadata at value level"
     },
-
     {
       "const": "Variable Metadata Check",
       "title": "Content metadata at variable level"
@@ -58,6 +69,18 @@
     {
       "const": "Variable Metadata Check against Library Metadata",
       "title": "Content metadata at the variable level and the corresponding library metadata"
+    },
+    {
+      "const": "Variable Metadata Check against Define XML and Library Metadata",
+      "title": "Combines metadata at the variable level with corresponding define-xml metadata at variable level and corresponding library variable metadata"
+    },
+    {
+      "const": "Value Check with Dataset Metadata",
+      "title": "Content data at value level and dataset metadata at dataset level"
+    },
+    {
+      "const": "Value Check with Variable Metadata",
+      "title": "Content data at value level and variable metadata at variable level"
     }
   ],
   "markdownDescription": "Determines how the primary dataset should be built before the rule is applied"

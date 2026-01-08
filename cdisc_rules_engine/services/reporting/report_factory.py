@@ -1,9 +1,15 @@
-from typing import Dict, List, Type, Iterable
+from typing import List, Type, Iterable
 
 from cdisc_rules_engine.enums.report_types import ReportTypes
 from cdisc_rules_engine.interfaces import DataServiceInterface
 from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
 from cdisc_rules_engine.models.validation_args import Validation_args
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
+from cdisc_rules_engine.services.reporting.base_report_data import (
+    BaseReportData,
+)
+from cdisc_rules_engine.services.reporting.usdm_report_data import USDMReportData
+from cdisc_rules_engine.services.reporting.sdtm_report_data import SDTMReportData
 
 from .base_report import BaseReport
 from .excel_report import ExcelReport
@@ -25,21 +31,27 @@ class ReportFactory:
 
     def __init__(
         self,
-        datasets: Iterable[dict],
+        datasets: Iterable[SDTMDatasetMetadata],
         results: List[RuleValidationResult],
         elapsed_time: float,
         args: Validation_args,
         data_service: DataServiceInterface,
+        dictionary_versions,
     ):
         self._datasets = datasets
-        self._dataset_paths = [dataset.get("full_path") for dataset in datasets]
+        self._dataset_paths = [dataset.full_path for dataset in datasets]
         self._results = results
         self._elapsed_time = elapsed_time
         self._args = args
         self._data_service = data_service
-        self._output_type_service_map: Dict[str, Type[BaseReport]] = {
+        self._dictionary_versions = dictionary_versions
+        self._output_type_service_map: dict[str, Type[BaseReport]] = {
             ReportTypes.XLSX.value: ExcelReport,
             ReportTypes.JSON.value: JsonReport,
+        }
+        self._standard_type_map: dict[str, Type[BaseReportData]] = {
+            "usdm": USDMReportData,
+            "default": SDTMReportData,
         }
 
     def get_report_services(self) -> List[BaseReport]:
@@ -47,13 +59,33 @@ class ReportFactory:
         for output_type in self._args.output_format:
             output_type: str = output_type.upper()
             service_class: Type[BaseReport] = self._output_type_service_map[output_type]
-            instance: BaseReport = service_class(
+            standard_class: Type[BaseReportData] = self._standard_type_map.get(
+                self._args.standard.lower(), self._standard_type_map["default"]
+            )
+            template_file_path = (
+                self._args.report_template or standard_class.TEMPLATE_FILE_PATH
+            )
+            report_standard: BaseReportData = standard_class(
                 self._datasets,
                 self._dataset_paths,
                 self._results,
                 self._elapsed_time,
                 self._args,
-                self._data_service.read_data(self._args.report_template),
+                (
+                    self._data_service.read_data(template_file_path)
+                    if template_file_path
+                    else None
+                ),
+                dictionary_versions=self._dictionary_versions,
+            )
+            instance: BaseReport = service_class(
+                report_standard,
+                self._args,
+                (
+                    self._data_service.read_data(template_file_path)
+                    if template_file_path
+                    else None
+                ),
             )
             services.append(instance)
         return services

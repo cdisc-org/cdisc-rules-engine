@@ -13,7 +13,7 @@ class DefineVariableMetadata(BaseOperation):
           for the specified target variable.
         For example:
             Input:
-                - operation: define_variable_metadata
+                - operator: define_variable_metadata
                   attribute_name: define_variable_label
                   name: LBTESTCD
             Output:
@@ -22,7 +22,7 @@ class DefineVariableMetadata(BaseOperation):
           metadata in the define for all variables.
         For example:
             Input:
-                - operation: define_variable_metadata
+                - operator: define_variable_metadata
                   attribute_name: define_variable_label
             Output:
                 {

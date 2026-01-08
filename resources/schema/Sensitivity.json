@@ -7,6 +7,9 @@
     },
     {
       "const": "Record"
+    },
+    {
+      "const": "Group"
     }
   ],
   "markdownDescription": "Determines what level of granularity issues should be generated within the report"

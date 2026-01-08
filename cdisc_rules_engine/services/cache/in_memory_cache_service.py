@@ -1,19 +1,29 @@
 import re
 from typing import List
 from pympler import asizeof
+import sys
 from cdisc_rules_engine.interfaces import (
     CacheServiceInterface,
 )
 from cdisc_rules_engine.models.dataset import DatasetInterface
 from cachetools import LRUCache
 import psutil
+from multiprocessing import Lock
+from cdisc_rules_engine.services import logger
+
+
+def cust_asizeof(obj):
+    try:
+        return asizeof.asizeof(obj)
+    except (ValueError, TypeError, AttributeError):
+        return sys.getsizeof(obj)
 
 
 def get_data_size(dataset):
     if isinstance(dataset, DatasetInterface):
         return dataset.size
     else:
-        return asizeof.asizeof(dataset)
+        return cust_asizeof(dataset)
 
 
 class InMemoryCacheService(CacheServiceInterface):
@@ -27,8 +37,10 @@ class InMemoryCacheService(CacheServiceInterface):
 
     def __init__(self, max_size=None, **kwargs):
         self.max_size = max_size or psutil.virtual_memory().available * 0.25
-        self.cache = LRUCache(maxsize=self.max_size, getsizeof=asizeof.asizeof)
+        self.cache_lock = Lock()
+        self.cache = LRUCache(maxsize=self.max_size, getsizeof=cust_asizeof)
         self.max_dataset_cache_size = psutil.virtual_memory().available * 0.5
+        self.dataset_cache_lock = Lock()
         self.dataset_cache = LRUCache(
             maxsize=self.max_dataset_cache_size, getsizeof=get_data_size
         )
@@ -36,10 +48,22 @@ class InMemoryCacheService(CacheServiceInterface):
     def add(self, cache_key, data):
         if get_data_size(data) > self.max_size:
             return
-        self.cache[cache_key] = data
+        try:
+            with self.cache_lock:
+                self.cache[cache_key] = data
+        except ValueError as e:
+            # Sometimes pympler.asizeof raises:
+            #  ValueError: invalid option: reset(base=-n)
+            # Log the cache error but continue with the operation
+            # Cache failures should not prevent rule validation
+            logger.warning(
+                f"Failed to add result to cache for key '{cache_key}': {e}. "
+                f"Continuing with operation result."
+            )
 
     def add_dataset(self, cache_key, data):
-        self.dataset_cache[cache_key] = data
+        with self.dataset_cache_lock:
+            self.dataset_cache[cache_key] = data
 
     def get_dataset(self, cache_key):
         return self.dataset_cache.get(cache_key, None)
@@ -84,7 +108,8 @@ class InMemoryCacheService(CacheServiceInterface):
         return cache_key in self.cache
 
     def clear(self, cache_key):
-        self.cache.pop(cache_key, "invalid")
+        with self.cache_lock:
+            self.cache.pop(cache_key, "invalid")
 
     def clear_all(self, prefix: str = None):
         if prefix:

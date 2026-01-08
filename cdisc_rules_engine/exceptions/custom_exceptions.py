@@ -33,11 +33,6 @@ class InvalidMatchKeyError(EngineError):
     description = "Invalid match key provided"
 
 
-class InvalidOutputVariables(EngineError):
-    code = 400
-    description = "Invalid output variables"
-
-
 class VariableMetadataNotFoundError(EngineError):
     code = 400
     description = (
@@ -45,29 +40,63 @@ class VariableMetadataNotFoundError(EngineError):
     )
 
 
-class DomainNotFoundInDefineXMLError(Exception):
+class DomainNotFoundError(EngineError):
+    """Raised when a required domain is not found in the dataset"""
+
+    code = 404
+    description = "Domain Not Found"
+
+
+class DomainNotFoundInDefineXMLError(EngineError):
     code = 400
     description = "Domain is not found in Define XML file"
 
 
-class InvalidDatasetFormat(Exception):
+class InvalidDatasetFormat(EngineError):
     code = 400
     description = "Dataset data is malformed."
 
 
-class NumberOfAttemptsExceeded(Exception):
+class InvalidJSONFormat(EngineError):
+    code = 400
+    description = "JSON data is malformed."
+
+
+class NumberOfAttemptsExceeded(EngineError):
     pass
 
 
-class InvalidDictionaryVariable(Exception):
+class InvalidDictionaryVariable(EngineError):
     description = (
         "Provided dictionary variable does not correspond to a dictionary term type"
     )
 
 
-class UnsupportedDictionaryType(Exception):
+class UnsupportedDictionaryType(EngineError):
     description = "Specified dictionary type is not supported by the rules engine."
 
 
-class FailedSchemaValidation(Exception):
+class FailedSchemaValidation(EngineError):
     description = "Error Occured in Schema Validation"
+
+
+class SchemaNotFoundError(EngineError):
+    code = 404
+    description = "XSD file could not be found"
+
+
+class InvalidSchemaProvidedError(EngineError):
+    code = 400
+    description = "Failed to parse XMLSchema"
+
+
+class PreprocessingError(EngineError):
+    description = "Error occurred during dataset preprocessing"
+
+
+class OperationError(EngineError):
+    description = "Error occurred during operation execution"
+
+
+class DatasetBuilderError(EngineError):
+    description = "Error occurred during dataset building"

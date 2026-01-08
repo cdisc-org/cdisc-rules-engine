@@ -5,9 +5,14 @@ from cdisc_rules_engine.interfaces import (
     FactoryInterface,
 )
 from cdisc_rules_engine.services.data_readers.xpt_reader import XPTReader
-from cdisc_rules_engine.services.data_readers.json_reader import DatasetJSONReader
+from cdisc_rules_engine.services.data_readers.dataset_json_reader import (
+    DatasetJSONReader,
+)
+from cdisc_rules_engine.services.data_readers.dataset_ndjson_reader import (
+    DatasetNDJSONReader,
+)
 from cdisc_rules_engine.services.data_readers.parquet_reader import ParquetReader
-from cdisc_rules_engine.services.data_readers.usdm_json_reader import USDMJSONReader
+from cdisc_rules_engine.services.data_readers.json_reader import JSONReader
 from cdisc_rules_engine.enums.dataformat_types import DataFormatTypes
 from cdisc_rules_engine.models.dataset import PandasDataset
 
@@ -17,7 +22,8 @@ class DataReaderFactory(FactoryInterface):
         DataFormatTypes.XPT.value: XPTReader,
         DataFormatTypes.PARQUET.value: ParquetReader,
         DataFormatTypes.JSON.value: DatasetJSONReader,
-        DataFormatTypes.USDM.value: USDMJSONReader,
+        DataFormatTypes.NDJSON.value: DatasetNDJSONReader,
+        DataFormatTypes.USDM.value: JSONReader,
     }
 
     def __init__(self, service_name: str = None, dataset_implementation=PandasDataset):

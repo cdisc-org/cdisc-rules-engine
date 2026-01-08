@@ -1,0 +1,40 @@
+Authorities:
+  - Organization: CDISC
+    Standards:
+      - Name: USDM
+        References:
+          - Citations:
+              - Cited Guidance: "Narrative content item text is expected to be HTML formatted."
+                Document: "USDM_CORE_Rules.xlsx"
+            Origin: "USDM Conformance Rules"
+            Rule Identifier:
+              Id: "DDF00187"
+              Version: "1"
+            Version: "1.0"
+        Version: "4.0"
+Check:
+  all:
+    - name: $xhtml_errors
+      operator: non_empty
+Core:
+  Id: "CORE-000409"
+  Status: Draft
+  Version: "1"
+Description: "Narrative content item text is expected to be HTML formatted."
+Executability: Partially Executable - Possible Overreporting
+Operations:
+  - id: $xhtml_errors
+    name: text
+    operator: get_xhtml_errors
+    namespace: http://www.cdisc.org/ns/usdm/xhtml/v1.0
+Outcome:
+  Message: "The narrative content item text contains non-conformant XHTML."
+  Output Variables:
+    - text
+    - $xhtml_errors
+Rule Type: Record Data
+Scope:
+  Entities:
+    Include:
+      - "NarrativeContentItem"
+Sensitivity: Record

@@ -2,6 +2,7 @@ import os
 from core import list_rule_sets
 import unittest
 from click.testing import CliRunner
+from test_utils import tearDown
 
 
 class TestListRuleSets(unittest.TestCase):
@@ -12,30 +13,26 @@ class TestListRuleSets(unittest.TestCase):
         result = self.runner.invoke(
             list_rule_sets, ["-c", os.path.join("resources", "cache")]
         )
-        self.assertIn("SDTMIG, 3-2", result.output)
-        self.assertIn("SDTMIG, 3-3", result.output)
-        self.assertIn("SDTMIG, 3-4", result.output)
-        self.assertIn("SENDIG, 3-1", result.output)
+        self.assertIn("sdtmig, 3-2", result.output)
+        self.assertIn("sdtmig, 3-3", result.output)
+        self.assertIn("sdtmig, 3-4", result.output)
+        self.assertIn("sendig, 3-1", result.output)
 
     def test_list_rule_sets_invalid_cache_path(self):
         result = self.runner.invoke(
-            list_rule_sets, ["--cache_path", os.path.join("resources")]
+            list_rule_sets, ["--cache-path", os.path.join("resources")]
         )
         self.assertNotEqual(result.exit_code, 0)
 
     def test_list_rule_sets_no_cache_path(self):
         result = self.runner.invoke(list_rule_sets, [])
-        self.assertIn("SDTMIG, 3-2", result.output)
-        self.assertIn("SDTMIG, 3-3", result.output)
-        self.assertIn("SDTMIG, 3-4", result.output)
-        self.assertIn("SENDIG, 3-1", result.output)
+        self.assertIn("sdtmig, 3-2", result.output)
+        self.assertIn("sdtmig, 3-3", result.output)
+        self.assertIn("sdtmig, 3-4", result.output)
+        self.assertIn("sendig, 3-1", result.output)
 
     def tearDown(self):
-        for file_name in os.listdir("."):
-            if file_name != "host.json" and (
-                file_name.endswith(".xlsx") or file_name.endswith(".json")
-            ):
-                os.remove(file_name)
+        tearDown()
 
 
 if __name__ == "__main__":

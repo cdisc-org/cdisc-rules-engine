@@ -27,6 +27,8 @@ class DefineXMLReader20(BaseDefineXMLReader):
         """
         Returns metadata as dictionary.
         """
+        has_no_data: str | None = getattr(metadata, "HasNoData", "")
+        has_no_data = has_no_data or ""
         return {
             "define_dataset_name": metadata.Name,
             "define_dataset_label": str(metadata.Description.TranslatedText[0]),
@@ -36,4 +38,25 @@ class DefineXMLReader20(BaseDefineXMLReader):
             "define_dataset_structure": str(metadata.Structure),
             # v2.0 does not support is_non_standard. Default to blank
             "define_dataset_is_non_standard": "",
+            "define_dataset_has_no_data": bool(has_no_data.lower() == "yes"),
         }
+
+    def get_extensible_codelist_mappings(self):
+        metadata = self._odm_loader.MetaDataVersion()
+        mappings = {}
+        for codelist in metadata.CodeList:
+            extended_values = []
+            items = codelist.CodeListItem
+            for item in items:
+                if hasattr(item, "ExtendedValue") and item.ExtendedValue == "Yes":
+                    extended_values.append(item.CodedValue)
+            if (
+                extended_values
+                and hasattr(codelist, "Alias")
+                and codelist.Alias is not None
+            ):
+                mappings[codelist.Name] = {
+                    "codelist": codelist.Alias[0].Name,
+                    "extended_values": extended_values,
+                }
+        return mappings

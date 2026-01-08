@@ -6,6 +6,33 @@
     {
       "properties": {
         "operator": {
+          "const": "codelist_extensible"
+        }
+      },
+      "required": ["id", "operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "codelist_terms"
+        }
+      },
+      "required": ["id", "operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "define_extensible_codelists"
+        }
+      },
+      "required": ["id", "operator", "codelists"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
           "const": "define_variable_metadata"
         }
       },
@@ -65,8 +92,8 @@
         "operator",
         "name",
         "ct_attribute",
-        "ct_packages",
-        "ct_version"
+        "version",
+        "target"
       ],
       "type": "object"
     },
@@ -118,10 +145,26 @@
     {
       "properties": {
         "operator": {
+          "const": "get_dataset_filtered_variables"
+        }
+      },
+      "required": ["id", "operator", "key_name", "key_value"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
           "const": "label_referenced_variable_metadata"
         }
       },
       "required": ["id", "operator", "name"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": { "const": "map" }
+      },
+      "required": ["id", "operator", "map"],
       "type": "object"
     },
     {
@@ -193,6 +236,13 @@
     },
     {
       "properties": {
+        "operator": { "const": "split_by" }
+      },
+      "required": ["id", "operator", "delimiter", "name"],
+      "type": "object"
+    },
+    {
+      "properties": {
         "operator": { "const": "study_domains" }
       },
       "required": ["id", "operator"],
@@ -201,6 +251,13 @@
     {
       "properties": {
         "operator": { "const": "dataset_names" }
+      },
+      "required": ["id", "operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": { "const": "standard_domains" }
       },
       "required": ["id", "operator"],
       "type": "object"
@@ -328,15 +385,6 @@
     },
     {
       "properties": {
-        "operator": {
-          "const": "variable_library_metadata"
-        }
-      },
-      "required": ["id", "operator", "name"],
-      "type": "object"
-    },
-    {
-      "properties": {
         "operator": { "const": "variable_names" }
       },
       "required": ["id", "operator"],
@@ -359,6 +407,13 @@
       },
       "required": ["id", "operator"],
       "type": "object"
+    },
+    {
+      "properties": {
+        "operator": { "const": "get_xhtml_errors" }
+      },
+      "required": ["id", "operator", "name", "namespace"],
+      "type": "object"
     }
   ],
   "properties": {
@@ -368,8 +423,42 @@
     "case_sensitive": {
       "type": "boolean"
     },
+    "codelist": {
+      "type": "string"
+    },
+    "codelist_code": {
+      "type": "string"
+    },
+    "codelists": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
     "ct_attribute": {
       "type": "string"
+    },
+    "ct_package_type": {
+      "type": "string",
+      "enum": [
+        "ADAM",
+        "CDASH",
+        "COA",
+        "DDF",
+        "DEFINE-XML",
+        "GLOSSARY",
+        "MRCT",
+        "PROTOCOL",
+        "QRS",
+        "QS-FT",
+        "SDTM",
+        "SEND",
+        "TMF"
+      ]
+    },
+    "ct_package_types": {
+      "items": { "$ref": "Operations.json#/properties/ct_package_type" },
+      "type": "array"
     },
     "ct_packages": {
       "items": {
@@ -378,6 +467,9 @@
       "type": "array"
     },
     "ct_version": {
+      "type": "string"
+    },
+    "delimiter": {
       "type": "string"
     },
     "dictionary_term_type": {
@@ -397,15 +489,21 @@
       "enum": ["meddra"]
     },
     "filter": { "type": "object" },
+    "filter_key": {
+      "type": "string"
+    },
+    "filter_value": {
+      "type": "string"
+    },
     "group": {
       "items": {
-        "$ref": "CORE-base.json#/$defs/VariableName"
+        "$ref": "CORE-base.json#/$defs/VariableReference"
       },
       "type": "array"
     },
     "group_aliases": {
       "items": {
-        "$ref": "CORE-base.json#/$defs/VariableName"
+        "$ref": "CORE-base.json#/$defs/VariableReference"
       },
       "type": "array"
     },
@@ -429,10 +527,52 @@
     "key_value": {
       "type": "string"
     },
+    "level": {
+      "type": "string",
+      "enum": ["codelist", "term"]
+    },
+    "map": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "output": { "type": "string" }
+        },
+        "required": ["output"]
+      }
+    },
     "name": {
       "type": "string"
     },
+    "namespace": {
+      "type": "string"
+    },
     "operator": {
+      "type": "string"
+    },
+    "regex": {
+      "type": "string"
+    },
+    "returntype": {
+      "type": "string",
+      "enum": ["code", "value", "pref_term"]
+    },
+    "target": {
+      "type": "string"
+    },
+    "term_value": {
+      "type": "string"
+    },
+    "term_code": {
+      "type": "string"
+    },
+    "term_pref_term": {
+      "type": "string"
+    },
+    "value_is_reference": {
+      "type": "boolean"
+    },
+    "version": {
       "type": "string"
     }
   },

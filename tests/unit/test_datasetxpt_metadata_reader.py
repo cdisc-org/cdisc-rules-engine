@@ -1,6 +1,7 @@
 """
 This module contains unit tests for DatasetMetadataReader class.
 """
+
 import os
 from unittest.mock import patch
 from cdisc_rules_engine.services.datasetxpt_metadata_reader import (
@@ -22,7 +23,7 @@ def test_read_metadata():
         metadata["dataset_name"] == "TEST_DATASET"
     ), "Wrong dataset name. Test file has been changed"
     assert (
-        metadata["domain_name"] == "EX"
+        metadata["first_record"]["DOMAIN"] == "EX"
     ), "Wrong domain name. Test file has been changed"
     assert (
         metadata["dataset_label"] == "Exposure"
@@ -67,7 +68,7 @@ def test_read_metadata_with_estimate():
             metadata["dataset_name"] == "TEST_DATASET"
         ), "Wrong dataset name. Test file has been changed"
         assert (
-            metadata["domain_name"] == "EX"
+            metadata["first_record"]["DOMAIN"] == "EX"
         ), "Wrong domain name. Test file has been changed"
         assert (
             metadata["dataset_label"] == "Exposure"
@@ -176,3 +177,31 @@ def test_calculate_dataset_length_with_mocked_header():
         dataset_length = reader._calculate_dataset_length()
 
     assert dataset_length == expected_length
+
+
+def test_read_empty_dataset_metadata():
+    """
+    Unit test for the read method.
+    Passes an empty dataset and makes sure the reader returns an object
+    with empty values instead of crashing.
+    """
+    test_dataset_path: str = (
+        f"{os.path.dirname(__file__)}/../resources/test_empty_dataset.xpt"
+    )
+    reader = DatasetXPTMetadataReader(
+        test_dataset_path, file_name="test_empty_dataset.xpt"
+    )
+    assert reader.read() == {
+        "variable_labels": [],
+        "variable_names": [],
+        "variable_formats": [],
+        "variable_name_to_label_map": {},
+        "variable_name_to_data_type_map": {},
+        "variable_name_to_size_map": {},
+        "number_of_variables": 0,
+        "dataset_label": "",
+        "dataset_length": 0,
+        "first_record": {},
+        "dataset_name": "",
+        "dataset_modification_date": "",
+    }

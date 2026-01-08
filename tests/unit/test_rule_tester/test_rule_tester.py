@@ -1,6 +1,8 @@
-from cdisc_rule_tester.models.rule_tester import RuleTester
 from os import path
 from unittest.mock import patch
+
+from scripts.run_validation import run_single_rule_validation
+from cdisc_rules_engine.rules_engine import RulesEngine
 
 test_define_file_path: str = (
     f"{path.dirname(__file__)}/../../resources/test_defineV22-SDTM.xml"
@@ -8,21 +10,36 @@ test_define_file_path: str = (
 
 
 @patch("cdisc_rules_engine.services.data_services.DummyDataService.get_dataset_class")
-def test_rule_with_errors(mock_get_dataset_class):
+@patch("scripts.run_validation.RulesEngine")
+def test_rule_with_errors(mock_rules_engine_class, mock_get_dataset_class):
+
+    def patched_init(self, *args, **kwargs):
+        kwargs["max_errors_per_rule"] = 100
+        RulesEngine.__init__(self, *args, **kwargs)
+
+    mock_rules_engine_class.side_effect = lambda *args, **kwargs: (
+        type("RulesEngine", (RulesEngine,), {"__init__": patched_init})(*args, **kwargs)
+    )
     datasets = [
         {
             "filename": "lb.xpt",
             "label": "Laboratory Test Results",
-            "domain": "LB",
             "variables": [
+                {
+                    "name": "DOMAIN",
+                    "label": "Domain Abbreviation",
+                    "type": "Char",
+                    "length": 4,
+                },
                 {
                     "name": "LBSEQ",
                     "label": "Sequence Number",
                     "type": "Num",
                     "length": 8,
-                }
+                },
             ],
             "records": {
+                "DOMAIN": ["LB", "LB"],
                 "LBSEQ": [1, 2],
             },
         }
@@ -34,6 +51,7 @@ def test_rule_with_errors(mock_get_dataset_class):
         "rule_type": "Range & Limit",
         "sensitivity": "Value",
         "severity": "error",
+        "Authorities": [{"Standards": [{"Name": "SDTMIG", "Version": "3.4"}]}],
         "standards": [{"Name": "SDTMIG", "Version": "3.4"}],
         "conditions": {
             "all": [
@@ -52,34 +70,48 @@ def test_rule_with_errors(mock_get_dataset_class):
         ],
     }
     mock_get_dataset_class.return_value = None
-    tester = RuleTester(datasets)
-    data = tester.validate(rule)
+    data = run_single_rule_validation(datasets, rule)
     assert "LB" in data
     assert len(data["LB"]) == 1
     assert len(data["LB"][0]["errors"]) == 1
-    error = data["LB"][0]["errors"][0]["value"]
+    error = data["LB"][0]["errors"][0]
     assert error["row"] == 0
     assert error["SEQ"] == 0
-    assert error["uSubjId"] == "N/A"
+    assert error["USUBJID"] == "N/A"
     assert error["value"] == {"ERROR": "Invalid or undefined sensitivity in the rule"}
 
 
 @patch("cdisc_rules_engine.services.data_services.DummyDataService.get_dataset_class")
-def test_rule_without_errors(mock_get_dataset_class):
+@patch("scripts.run_validation.RulesEngine")
+def test_rule_without_errors(mock_rules_engine_class, mock_get_dataset_class):
+
+    def patched_init(self, *args, **kwargs):
+        kwargs["max_errors_per_rule"] = 100
+        RulesEngine.__init__(self, *args, **kwargs)
+
+    mock_rules_engine_class.side_effect = lambda *args, **kwargs: (
+        type("RulesEngine", (RulesEngine,), {"__init__": patched_init})(*args, **kwargs)
+    )
     datasets = [
         {
             "filename": "lb.xpt",
             "label": "Laboratory Test Results",
-            "domain": "LB",
             "variables": [
+                {
+                    "name": "DOMAIN",
+                    "label": "Domain Abbreviation",
+                    "type": "Char",
+                    "length": 4,
+                },
                 {
                     "name": "LBSEQ",
                     "label": "Sequence Number",
                     "type": "Num",
                     "length": 8,
-                }
+                },
             ],
             "records": {
+                "DOMAIN": ["LB", "LB"],
                 "LBSEQ": [1, 2],
             },
         }
@@ -91,6 +123,7 @@ def test_rule_without_errors(mock_get_dataset_class):
         "rule_type": "Range & Limit",
         "sensitivity": "Value",
         "severity": "error",
+        "Authorities": [{"Standards": [{"Name": "SDTMIG", "Version": "3.4"}]}],
         "standards": [{"Name": "SDTMIG", "Version": "3.4"}],
         "conditions": {
             "all": [
@@ -109,8 +142,7 @@ def test_rule_without_errors(mock_get_dataset_class):
         ],
     }
     mock_get_dataset_class.return_value = None
-    tester = RuleTester(datasets)
-    data = tester.validate(rule)
+    data = run_single_rule_validation(datasets, rule)
     assert "LB" in data
     assert len(data["LB"]) == 1
     assert len(data["LB"][0]["errors"]) == 0
@@ -121,16 +153,22 @@ def test_rule_skipped():
         {
             "filename": "lb.xpt",
             "label": "Laboratory Test Results",
-            "domain": "LB",
             "variables": [
+                {
+                    "name": "DOMAIN",
+                    "label": "Domain Abbreviation",
+                    "type": "Char",
+                    "length": 4,
+                },
                 {
                     "name": "LBSEQ",
                     "label": "Sequence Number",
                     "type": "Num",
                     "length": 8,
-                }
+                },
             ],
             "records": {
+                "DOMAIN": ["LB", "LB"],
                 "LBSEQ": [1, 2],
             },
         }
@@ -142,6 +180,7 @@ def test_rule_skipped():
         "rule_type": "Range & Limit",
         "sensitivity": "Value",
         "severity": "error",
+        "Authorities": [{"Standards": [{"Name": "SDTMIG", "Version": "3.4"}]}],
         "standards": [{"Name": "SDTMIG", "Version": "3.4"}],
         "conditions": {
             "all": [
@@ -159,20 +198,38 @@ def test_rule_skipped():
             }
         ],
     }
-    tester = RuleTester(datasets)
-    data = tester.validate(rule)
+    data = run_single_rule_validation(datasets, rule)
     assert "LB" in data
     assert len(data["LB"]) == 1
     assert len(data["LB"][0]["errors"]) == 0
     assert data["LB"][0]["executionStatus"] == "skipped"
 
 
-def test_rule_with_define_xml(define_xml_variable_validation_rule: dict):
+@patch("cdisc_rules_engine.services.data_services.DummyDataService.get_dataset_class")
+@patch("scripts.run_validation.RulesEngine")
+def test_rule_with_define_xml(
+    mock_rules_engine_class,
+    mock_get_dataset_class,
+    define_xml_variable_validation_rule: dict,
+):
+
+    def patched_init(self, *args, **kwargs):
+        kwargs["max_errors_per_rule"] = 100
+        RulesEngine.__init__(self, *args, **kwargs)
+
+    mock_rules_engine_class.side_effect = lambda *args, **kwargs: (
+        type("RulesEngine", (RulesEngine,), {"__init__": patched_init})(*args, **kwargs)
+    )
     datasets = [
         {
-            "domain": "AE",
             "filename": "ae.xpt",
             "variables": [
+                {
+                    "name": "DOMAIN",
+                    "label": "Domain Abbreviation",
+                    "type": "Char",
+                    "length": 4,
+                },
                 {
                     "name": "USUBJID",
                     "label": "Unique Subject Id",
@@ -193,6 +250,7 @@ def test_rule_with_define_xml(define_xml_variable_validation_rule: dict):
                 },
             ],
             "records": {
+                "DOMAIN": ["AE", "AE", "AE", "AE", "AE"],
                 "USUBJID": [
                     1,
                     2,
@@ -211,17 +269,15 @@ def test_rule_with_define_xml(define_xml_variable_validation_rule: dict):
             },
         }
     ]
-
+    mock_get_dataset_class.return_value = None
     with open(test_define_file_path, "r") as file:
         contents: str = file.read()
-        tester = RuleTester(
-            datasets,
-            contents,
+        data = run_single_rule_validation(
+            datasets, rule=define_xml_variable_validation_rule, define_xml=contents
         )
-        data = tester.validate(define_xml_variable_validation_rule)
         assert "AE" in data
         assert len(data["AE"]) == 1
         assert len(data["AE"][0]["errors"]) > 0
-        error = data["AE"][0]["errors"][0]
-        assert error["row"] == 2
+        error = data["AE"][0]["errors"][1]
+        assert error["row"] == 3
         assert error["value"] == {"variable_size": 8}

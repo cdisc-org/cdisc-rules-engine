@@ -13,6 +13,14 @@ class MaxDate(BaseOperation):
                 result = max_date.isoformat()
         else:
             result = self.params.dataframe.groupby(
-                self.params.grouping, as_index=False
-            ).data.max()
+                self.params.grouping, as_index=False, group_keys=False
+            ).max()
+        if isinstance(result, pd.Series):
+            result = result.apply(lambda x: x.isoformat() if pd.notna(x) else "")
+        elif isinstance(result, pd.DataFrame):
+            for col in result.columns:
+                if pd.api.types.is_datetime64_any_dtype(result[col]):
+                    result[col] = result[col].apply(
+                        lambda x: x.isoformat() if pd.notna(x) else ""
+                    )
         return result

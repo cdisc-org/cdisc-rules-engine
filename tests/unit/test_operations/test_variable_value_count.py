@@ -1,6 +1,7 @@
 from cdisc_rules_engine.config.config import ConfigService
 from cdisc_rules_engine.models.dataset.dask_dataset import DaskDataset
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
+from cdisc_rules_engine.dummy_models.dummy_dataset import DummyDataset
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
@@ -41,13 +42,30 @@ def test_variable_value_count(
     }
 
     datasets = [
-        {"domain": "AE", "filename": "AE"},
-        {"domain": "EX", "filename": "EX"},
-        {"domain": "AE", "filename": "AE2"},
+        DummyDataset(
+            {
+                "filename": dataset["filename"],
+                "label": dataset["domain"],
+                "variables": [
+                    {
+                        "name": "DOMAIN",
+                        "label": "Domain Abbreviation",
+                        "type": "Char",
+                        "length": 4,
+                    },
+                ],
+                "records": {"DOMAIN": [dataset["domain"]]},
+            }
+        )
+        for dataset in [
+            {"domain": "AE", "filename": "AE"},
+            {"domain": "EX", "filename": "EX"},
+            {"domain": "AE", "filename": "AE2"},
+        ]
     ]
     mock_data_service.get_dataset.side_effect = (
         lambda *args, **kwargs: datasets_map.get(
-            os.path.split(args[0] if args else kwargs.get("dataset_name", ""))[-1]
+            os.path.split(args[0].filename if args else kwargs["dataset_name"])[-1]
         )
     )
     mock_data_service.concat_split_datasets.side_effect = (

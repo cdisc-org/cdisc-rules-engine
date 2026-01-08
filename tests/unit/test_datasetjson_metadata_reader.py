@@ -1,6 +1,7 @@
 """
 This module contains unit tests for DatasetJSONMetadataReader class.
 """
+
 import os
 
 from cdisc_rules_engine.services.datasetjson_metadata_reader import (
@@ -21,11 +22,11 @@ def test_read_metadata():
     metadata: dict = reader.read()
 
     assert metadata["dataset_name"] == "EX", "Test file has been changed"
-    assert metadata["domain_name"] == "EX", "Test file has been changed"
+    assert metadata["first_record"]["DOMAIN"] == "EX", "Test file has been changed"
     assert metadata["dataset_label"] == "Exposure", "Test file has been changed"
     assert metadata["number_of_variables"] == 18, "Test file has been changed"
     assert (
-        metadata["dataset_modification_date"] == "2023-07-31T14:44:09"
+        metadata["dataset_modification_date"] == "2025-01-28T22:06:12"
     ), "Test file has been changed"
     assert isinstance(metadata["variable_labels"], list)
     assert isinstance(metadata["variable_names"], list)

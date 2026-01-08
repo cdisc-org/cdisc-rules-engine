@@ -1,4 +1,3 @@
-from typing import List
 from unittest.mock import MagicMock, patch
 import os
 import pandas as pd
@@ -11,6 +10,7 @@ from cdisc_rules_engine.services.data_services import LocalDataService
 from cdisc_rules_engine.utilities.dataset_preprocessor import DatasetPreprocessor
 from cdisc_rules_engine.constants.rule_constants import ALL_KEYWORD
 from cdisc_rules_engine.models.rule_conditions import ConditionCompositeFactory
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.utilities import sdtm_utilities
 from cdisc_rules_engine.config import ConfigService
 from cdisc_rules_engine.models.library_metadata_container import (
@@ -38,15 +38,293 @@ def test_preprocess_no_datasets_in_rule(dataset_rule_equal_to_error_objects: dic
             }
         )
     )
-    datasets: List[dict] = [{"domain": "AE", "filename": "ae.xpt"}]
+    datasets = [SDTMDatasetMetadata(name="AE")]
     data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
     preprocessor = DatasetPreprocessor(
-        dataset, "AE", "path", data_service, InMemoryCacheService()
+        dataset,
+        SDTMDatasetMetadata(name="AE", full_path="path"),
+        data_service,
+        InMemoryCacheService(),
     )
     preprocessed_dataset: PandasDataset = preprocessor.preprocess(
         dataset_rule_equal_to_error_objects, datasets
     )
     assert preprocessed_dataset.data.equals(dataset.data)
+
+
+@patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset")
+def test_rdomain_supplemental_dataset_idvar_matching(mock_get_dataset: MagicMock):
+    supp_data = {
+        "USUBJID": ["CDISC001", "CDISC002"],
+        "RDOMAIN": ["LB", "LB"],
+        "IDVAR": ["LBSEQ", "LBSEQ"],
+        "IDVARVAL": ["321", "456"],
+        "QNAM": ["LBSPID", "LBSPID"],
+        "QVAL": ["SP001", "SP002"],
+    }
+    lb_data = {
+        "USUBJID": ["CDISC001", "CDISC002", "CDISC003"],
+        "LBSEQ": [321.0, 456.0, 789.0],
+        "LBTEST": ["Glucose", "Cholesterol", "Hemoglobin"],
+        "LBSTRESN": [95.5, 180.2, 14.1],
+    }
+    supp_dataset = PandasDataset(pd.DataFrame(supp_data))
+    lb_dataset = PandasDataset(pd.DataFrame(lb_data))
+    lb_dataset.data["LBSEQ"] = lb_dataset.data["LBSEQ"].astype(object)
+    mock_get_dataset.return_value = lb_dataset
+    rule = {
+        "core_id": "TestSupplementalIDVAR",
+        "datasets": [
+            {
+                "domain_name": "SUPPLB",
+                "child": True,
+                "match_key": ["USUBJID", "IDVAR", "IDVARVAL"],
+            }
+        ],
+        "conditions": ConditionCompositeFactory.get_condition_composite(
+            {
+                "all": [
+                    {
+                        "name": "get_dataset",
+                        "operator": "equal_to",
+                        "value": {"target": "QVAL", "comparator": "test_value"},
+                    }
+                ]
+            }
+        ),
+    }
+    data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
+    preprocessor = DatasetPreprocessor(
+        supp_dataset,
+        SDTMDatasetMetadata(
+            name="SUPPLB",
+            first_record={"RDOMAIN": "LB"},
+            full_path=os.path.join("path", "supplb.xpt"),
+        ),
+        data_service,
+        InMemoryCacheService(),
+    )
+    datasets = [
+        SDTMDatasetMetadata(
+            first_record={"DOMAIN": "LB"},
+            filename="lb.xpt",
+        )
+    ]
+    result = preprocessor.preprocess(rule, datasets)
+    assert len(result.data) == 2
+    assert "USUBJID" in result.data.columns
+    assert "QVAL" in result.data.columns
+    assert "LBTEST" in result.data.columns
+    matched_records = result.data[result.data["LBTEST"].notna()]
+    assert len(matched_records) == 2
+    assert "Glucose" in matched_records["LBTEST"].values
+    assert "Cholesterol" in matched_records["LBTEST"].values
+
+
+@patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset")
+def test_rdomain_integer_idvar_matching(mock_get_dataset: MagicMock):
+    supp_data = {
+        "USUBJID": ["CDISC001", "CDISC002"],
+        "RDOMAIN": ["VS", "VS"],
+        "IDVAR": ["VSSEQ", "VSSEQ"],
+        "IDVARVAL": ["1", "2"],
+        "QNAM": ["VSSPID", "VSSPID"],
+        "QVAL": ["VITAL001", "VITAL002"],
+    }
+    vs_data = {
+        "USUBJID": ["CDISC001", "CDISC002", "CDISC003"],
+        "VSSEQ": [1, 2, 3],
+        "VSTEST": ["Weight", "Height", "BMI"],
+        "VSSTRESN": [70.5, 175.0, 23.0],
+    }
+    supp_dataset = PandasDataset(pd.DataFrame(supp_data))
+    vs_dataset = PandasDataset(pd.DataFrame(vs_data))
+    mock_get_dataset.return_value = vs_dataset
+    rule = {
+        "core_id": "TestIntegerIDVAR",
+        "datasets": [
+            {
+                "domain_name": "SUPPVS",  # Match child dataset name
+                "child": True,
+                "match_key": ["USUBJID", "IDVAR", "IDVARVAL"],
+            }
+        ],
+        "conditions": ConditionCompositeFactory.get_condition_composite(
+            {
+                "all": [
+                    {
+                        "name": "get_dataset",
+                        "operator": "equal_to",
+                        "value": {"target": "QVAL", "comparator": "test"},
+                    }
+                ]
+            }
+        ),
+    }
+    data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
+    preprocessor = DatasetPreprocessor(
+        supp_dataset,
+        SDTMDatasetMetadata(
+            name="SUPPVS",
+            first_record={"RDOMAIN": "VS"},
+            full_path=os.path.join("path", "suppvs.xpt"),
+        ),
+        data_service,
+        InMemoryCacheService(),
+    )
+    datasets = [
+        SDTMDatasetMetadata(
+            first_record={"DOMAIN": "VS"},
+            filename="vs.xpt",
+        )
+    ]
+    result = preprocessor.preprocess(rule, datasets)
+    assert len(result.data) == 2
+    assert "QVAL" in result.data.columns
+    assert "VSTEST" in result.data.columns
+    matched_records = result.data[result.data["VSTEST"].notna()]
+    assert len(matched_records) == 2
+    assert "Weight" in matched_records["VSTEST"].values
+    assert "Height" in matched_records["VSTEST"].values
+
+
+@patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset")
+def test_rdomain_no_matches_found(mock_get_dataset: MagicMock):
+    supp_data = {
+        "USUBJID": ["CDISC001"],
+        "RDOMAIN": ["AE"],
+        "IDVAR": ["AESEQ"],
+        "IDVARVAL": ["999"],
+        "QNAM": ["AESPID"],
+        "QVAL": ["AE999"],
+    }
+    ae_data = {
+        "USUBJID": ["CDISC001", "CDISC001", "CDISC001"],
+        "AESEQ": [1, 2, 3],
+        "AETERM": ["Headache", "Nausea", "Dizziness"],
+    }
+    supp_dataset = PandasDataset(pd.DataFrame(supp_data))
+    ae_dataset = PandasDataset(pd.DataFrame(ae_data))
+    mock_get_dataset.return_value = ae_dataset
+    rule = {
+        "core_id": "TestNoMatches",
+        "datasets": [
+            {
+                "domain_name": "SUPPAE",  # Match child dataset name
+                "child": True,
+                "match_key": ["USUBJID", "IDVAR", "IDVARVAL"],
+            }
+        ],
+        "conditions": ConditionCompositeFactory.get_condition_composite(
+            {
+                "all": [
+                    {
+                        "name": "get_dataset",
+                        "operator": "equal_to",
+                        "value": {"target": "QVAL", "comparator": "test"},
+                    }
+                ]
+            }
+        ),
+    }
+    data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
+    preprocessor = DatasetPreprocessor(
+        supp_dataset,
+        SDTMDatasetMetadata(
+            name="SUPPAE",
+            first_record={"RDOMAIN": "AE"},
+            full_path=os.path.join("path", "suppae.xpt"),
+        ),
+        data_service,
+        InMemoryCacheService(),
+    )
+    datasets = [
+        SDTMDatasetMetadata(
+            first_record={"DOMAIN": "AE"},
+            filename="ae.xpt",
+        )
+    ]
+    result = preprocessor.preprocess(rule, datasets)
+    assert len(result.data) == 1
+    assert result.data.iloc[0]["USUBJID"] == "CDISC001"
+    assert result.data.iloc[0]["QVAL"] == "AE999"
+    assert "AETERM" in result.data.columns
+    assert pd.isna(result.data.iloc[0]["AETERM"])
+
+
+@patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset")
+def test_rdomain_combined_standard_and_idvar_matching(mock_get_dataset: MagicMock):
+    supp_data = {
+        "USUBJID": ["CDISC001", "CDISC002", "CDISC003"],
+        "STUDYID": ["STUDY01", "STUDY01", "STUDY01"],
+        "RDOMAIN": ["LB", "LB", "LB"],
+        "IDVAR": ["LBSEQ", "LBSEQ", "LBSEQ"],
+        "IDVARVAL": ["1", "2", "3"],
+        "QNAM": ["LBSPID", "LBSPID", "LBSPID"],
+        "QVAL": ["LAB001", "LAB002", "LAB003"],
+    }
+    lb_data = {
+        "USUBJID": ["CDISC001", "CDISC001", "CDISC002", "CDISC003"],
+        "STUDYID": ["STUDY01", "STUDY01", "STUDY01", "STUDY01"],
+        "LBSEQ": [1, 2, 2, 3],
+        "LBTEST": ["Glucose", "Insulin", "Cholesterol", "Hemoglobin"],
+        "LBSTRESN": [95.5, 12.3, 180.2, 14.1],
+    }
+    supp_dataset = PandasDataset(pd.DataFrame(supp_data))
+    lb_dataset = PandasDataset(pd.DataFrame(lb_data))
+    mock_get_dataset.return_value = lb_dataset
+    rule = {
+        "core_id": "TestCombinedMatching",
+        "datasets": [
+            {
+                "domain_name": "SUPPLB",  # Match child dataset name
+                "child": True,
+                "match_key": ["STUDYID", "USUBJID", "IDVAR", "IDVARVAL"],
+            }
+        ],
+        "conditions": ConditionCompositeFactory.get_condition_composite(
+            {
+                "all": [
+                    {
+                        "name": "get_dataset",
+                        "operator": "equal_to",
+                        "value": {"target": "QVAL", "comparator": "test"},
+                    }
+                ]
+            }
+        ),
+    }
+    data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
+    preprocessor = DatasetPreprocessor(
+        supp_dataset,
+        SDTMDatasetMetadata(
+            name="SUPPLB",
+            first_record={"RDOMAIN": "LB"},
+            full_path=os.path.join("path", "supplb.xpt"),
+        ),
+        data_service,
+        InMemoryCacheService(),
+    )
+    datasets = [
+        SDTMDatasetMetadata(
+            first_record={"DOMAIN": "LB"},
+            filename="lb.xpt",
+        )
+    ]
+    result = preprocessor.preprocess(rule, datasets)
+    assert len(result.data) == 3
+    assert "LBTEST" in result.data.columns
+    matched_records = result.data[result.data["LBTEST"].notna()]
+    assert len(matched_records) == 3
+    result_sorted = matched_records.sort_values(["USUBJID", "IDVARVAL"]).reset_index(
+        drop=True
+    )
+    assert result_sorted.iloc[0]["USUBJID"] == "CDISC001"
+    assert result_sorted.iloc[0]["LBTEST"] == "Glucose"
+    assert result_sorted.iloc[1]["USUBJID"] == "CDISC002"
+    assert result_sorted.iloc[1]["LBTEST"] == "Cholesterol"
+    assert result_sorted.iloc[2]["USUBJID"] == "CDISC003"
+    assert result_sorted.iloc[2]["LBTEST"] == "Hemoglobin"
 
 
 @pytest.mark.parametrize(
@@ -352,172 +630,124 @@ def test_preprocess(
         for ds in dataset_rule_equal_to["datasets"]:
             ds["join_type"] = join_type
 
-    datasets: List[dict] = [
-        {"domain": "AE", "filename": "ae.xpt"},
-        {"domain": "TS", "filename": "ts.xpt"},
-    ]
-
     data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
     preprocessor = DatasetPreprocessor(
         ec_dataset,
-        "EC",
-        os.path.join("path", "ec.xpt"),
+        SDTMDatasetMetadata(
+            first_record={"DOMAIN": "EC"}, full_path=os.path.join("path", "ec.xpt")
+        ),
         data_service,
         InMemoryCacheService(),
     )
     preprocessed_dataset: pd.DataFrame = preprocessor.preprocess(
-        dataset_rule_equal_to, datasets
+        dataset_rule_equal_to,
+        [
+            SDTMDatasetMetadata(first_record={"DOMAIN": "AE"}, filename="ae.xpt"),
+            SDTMDatasetMetadata(first_record={"DOMAIN": "TS"}, filename="ts.xpt"),
+        ],
     )
     assert preprocessed_dataset.data.equals(expected_dataset.data)
 
 
-@patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset")
-def test_preprocess_relationship_dataset(
-    mock_get_dataset: MagicMock, dataset_rule_record_in_parent_domain_equal_to: dict
-):
-    """
-    Unit test for preprocess method. Checks the case when
-    we are merging relationship datasets.
-    """
-    # create datasets
-    ec_dataset = PandasDataset(
-        pd.DataFrame.from_dict(
+@pytest.mark.parametrize(
+    "relrec, expected",
+    [
+        (
             {
-                "USUBJID": ["CDISC001", "CDISC005", "CDISC005", "CDISC005", "CDISC005"],
-                "DOMAIN": [
+                "RDOMAIN": [
                     "EC",
                     "AE",
-                    "EC",
-                    "EC",
-                    "EC",
                 ],
-                "ECPRESP": [
-                    "A",
-                    "Y",
-                    "Y",
-                    "Y",
-                    "B",
+                "IDVAR": [
+                    "ECSEQ",
+                    "AESEQ",
                 ],
-                "ECSEQ": [
-                    1,
-                    2,
-                    3,
-                    4,
-                    5,
+                "IDVARVAL": [
+                    "",
+                    "",
                 ],
-                "ECNUM": [
-                    1,
-                    2,
-                    3,
-                    4,
-                    5,
+                "RELID": [
+                    "ECAE",
+                    "ECAE",
                 ],
-            }
-        )
-    )
-    suppec_dataset = PandasDataset(
-        pd.DataFrame.from_dict(
-            {
+                "STUDYID": [
+                    "1",
+                    "1",
+                ],
                 "USUBJID": [
-                    "CDISC005",
-                    "CDISC005",
+                    "",
+                    "",
                 ],
-                "RDOMAIN": [
-                    "EC",
-                    "EC",
-                ],
-                "QNAM": [
-                    "ECREASOC",
-                    "ECREASOS",
-                ],
-                "IDVAR": [
-                    "ECSEQ",
-                    "ECSEQ",
-                ],
-                "IDVARVAL": [
-                    "4.0",
-                    "5.0",
-                ],
-            }
-        )
-    )
-
-    # mock blob storage call
-    path_to_dataset_map: dict = {
-        os.path.join("path", "ec.xpt"): ec_dataset,
-        os.path.join("path", "suppec.xpt"): suppec_dataset,
-    }
-    mock_get_dataset.side_effect = lambda dataset_name: path_to_dataset_map[
-        dataset_name
-    ]
-
-    # call preprocessor
-    datasets: List[dict] = [
-        {
-            "domain": "EC",
-            "filename": "ec.xpt",
-        },
-        {
-            "domain": "SUPPEC",
-            "filename": "suppec.xpt",
-        },
-    ]
-
-    data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
-    preprocessor = DatasetPreprocessor(
-        ec_dataset,
-        "EC",
-        os.path.join("path", "ec.xpt"),
-        data_service,
-        InMemoryCacheService(),
-    )
-    preprocessed_dataset: pd.DataFrame = preprocessor.preprocess(
-        dataset_rule_record_in_parent_domain_equal_to, datasets
-    )
-    expected_dataset = PandasDataset(
-        pd.DataFrame.from_dict(
+            },
             {
-                "USUBJID": ["CDISC005", "CDISC005"],
-                "DOMAIN": [
-                    "EC",
-                    "EC",
+                "ECSEQ": ["1", "2", "3", "4"],
+                "ECSTDY": [4, 5, 6, 7],
+                "STUDYID": ["1", "2", "1", "2"],
+                "USUBJID": [
+                    "CDISC001",
+                    "CDISC001",
+                    "CDISC002",
+                    "CDISC002",
                 ],
-                "ECPRESP": [
-                    "Y",
-                    "B",
+                "RELREC.__SEQ": ["1", "2", "3", "4"],
+                "RELREC.__STDY": [4, 5, 16, 17],
+                "RELREC.STUDYID": ["1", "2", "1", "2"],
+                "RELREC.USUBJID": [
+                    "CDISC001",
+                    "CDISC001",
+                    "CDISC002",
+                    "CDISC002",
                 ],
-                "ECSEQ": [
-                    4.0,
-                    5.0,
-                ],
-                "ECNUM": [
-                    4,
-                    5,
-                ],
+            },
+        ),
+        (
+            {
                 "RDOMAIN": [
                     "EC",
-                    "EC",
-                ],
-                "QNAM": [
-                    "ECREASOC",
-                    "ECREASOS",
+                    "AE",
                 ],
                 "IDVAR": [
                     "ECSEQ",
-                    "ECSEQ",
+                    "AESEQ",
                 ],
                 "IDVARVAL": [
-                    4.0,
-                    5.0,
+                    "1",
+                    "1",
                 ],
-            }
-        )
-    )
-    assert preprocessed_dataset.data.equals(expected_dataset.data)
-
-
+                "RELID": [
+                    "ECAE",
+                    "ECAE",
+                ],
+                "STUDYID": [
+                    "1",
+                    "1",
+                ],
+                "USUBJID": [
+                    "",
+                    "",
+                ],
+            },
+            {
+                "ECSEQ": ["1"],
+                "ECSTDY": [4],
+                "STUDYID": ["1"],
+                "USUBJID": [
+                    "CDISC001",
+                ],
+                "RELREC.__SEQ": ["1"],
+                "RELREC.__STDY": [4],
+                "RELREC.STUDYID": ["1"],
+                "RELREC.USUBJID": [
+                    "CDISC001",
+                ],
+            },
+        ),
+    ],
+)
 @patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset")
-def test_preprocess_relrec_dataset(mock_get_dataset: MagicMock):
+def test_preprocess_relrec_dataset(
+    mock_get_dataset: MagicMock, relrec: dict, expected: dict
+):
     """
     Unit test for preprocess method. Checks the case when
     we are merging datasets using relrec.
@@ -620,36 +850,7 @@ def test_preprocess_relrec_dataset(mock_get_dataset: MagicMock):
             }
         )
     )
-    relrec_dataset = PandasDataset(
-        pd.DataFrame.from_dict(
-            {
-                "RDOMAIN": [
-                    "EC",
-                    "AE",
-                ],
-                "IDVAR": [
-                    "ECSEQ",
-                    "AESEQ",
-                ],
-                "IDVARVAL": [
-                    "",
-                    "",
-                ],
-                "RELID": [
-                    "ECAE",
-                    "ECAE",
-                ],
-                "STUDYID": [
-                    "1",
-                    "1",
-                ],
-                "USUBJID": [
-                    "",
-                    "",
-                ],
-            }
-        )
-    )
+    relrec_dataset = PandasDataset(pd.DataFrame.from_dict(relrec))
 
     # mock blob storage call
     path_to_dataset_map: dict = {
@@ -661,11 +862,6 @@ def test_preprocess_relrec_dataset(mock_get_dataset: MagicMock):
     ]
 
     # call preprocessor
-    datasets: List[dict] = [
-        {"domain": "AE", "filename": "ae.xpt"},
-        {"domain": "RELREC", "filename": "relrec.xpt"},
-    ]
-
     # save model metadata to cache
     cache = InMemoryCacheService.get_instance()
     sdtm_utilities.get_all_model_wildcard_variables = MagicMock(
@@ -680,36 +876,21 @@ def test_preprocess_relrec_dataset(mock_get_dataset: MagicMock):
 
     preprocessor = DatasetPreprocessor(
         ec_dataset,
-        "EC",
-        os.path.join("path", "ec.xpt"),
+        SDTMDatasetMetadata(
+            first_record={"DOMAIN": "EC"},
+            full_path=os.path.join("path", "ec.xpt"),
+        ),
         data_service,
         InMemoryCacheService(),
     )
-    preprocessed_dataset: pd.DataFrame = preprocessor.preprocess(relrec_rule, datasets)
-    expected_dataset = PandasDataset(
-        pd.DataFrame.from_dict(
-            {
-                "ECSEQ": ["1", "2", "3", "4"],
-                "ECSTDY": [4, 5, 6, 7],
-                "STUDYID": ["1", "2", "1", "2"],
-                "USUBJID": [
-                    "CDISC001",
-                    "CDISC001",
-                    "CDISC002",
-                    "CDISC002",
-                ],
-                "RELREC.__SEQ": ["1", "2", "3", "4"],
-                "RELREC.__STDY": [4, 5, 16, 17],
-                "RELREC.STUDYID": ["1", "2", "1", "2"],
-                "RELREC.USUBJID": [
-                    "CDISC001",
-                    "CDISC001",
-                    "CDISC002",
-                    "CDISC002",
-                ],
-            }
-        )
+    preprocessed_dataset: pd.DataFrame = preprocessor.preprocess(
+        relrec_rule,
+        [
+            SDTMDatasetMetadata(first_record={"DOMAIN": "AE"}, filename="ae.xpt"),
+            SDTMDatasetMetadata(name="RELREC", filename="relrec.xpt"),
+        ],
     )
+    expected_dataset = PandasDataset(pd.DataFrame.from_dict(expected))
     assert preprocessed_dataset.data.equals(expected_dataset.data)
 
 
@@ -767,25 +948,251 @@ def test_preprocess_with_merge_comparison(
     data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
     preprocessor = DatasetPreprocessor(
         target_dataset,
-        "EC",
-        os.path.join("study_id", "data_bundle_id", "ec.xpt"),
+        SDTMDatasetMetadata(
+            first_record={"DOMAIN": "EC"},
+            full_path=os.path.join("study_id", "data_bundle_id", "ec.xpt"),
+        ),
         data_service,
         InMemoryCacheService(),
     )
     result: pd.DataFrame = preprocessor.preprocess(
         rule=dataset_rule_equal_to_compare_same_value,
         datasets=[
-            {
-                "domain": "AE",
-                "filename": "ae.xpt",
-            },
-            {
-                "domain": "EC",
-                "filename": "ec.xpt",
-            },
+            SDTMDatasetMetadata(first_record={"DOMAIN": "AE"}, filename="ae.xpt"),
+            SDTMDatasetMetadata(first_record={"DOMAIN": "EC"}, filename="ec.xpt"),
         ],
     )
     assert "NOTVISIT" in result
     assert result["NOTVISIT"].iloc[0] == 12
     assert "AE.VISIT" in result
     assert result["AE.VISIT"].iloc[0] == 24
+
+
+@patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset")
+def test_preprocess_supp_with_blank_idvar_idvarval(mock_get_dataset):
+    """
+    Test preprocessing when SUPP dataset has blank IDVAR and IDVARVAL.
+    Should pivot and merge on static keys.
+    """
+    main_data = {
+        "USUBJID": ["CDISC001", "CDISC002"],
+        "DOMAIN": ["AE", "AE"],
+        "AESEQ": [1, 2],
+        "AETERM": ["Headache", "Nausea"],
+    }
+    main_dataset = PandasDataset(pd.DataFrame(main_data))
+    supp_data = {
+        "USUBJID": ["CDISC001", "CDISC002"],
+        "RDOMAIN": ["AE", "AE"],
+        "IDVAR": ["", ""],
+        "IDVARVAL": ["", ""],
+        "QNAM": ["AESPID", "AESPID"],
+        "QVAL": ["SCREENING", "BASELINE"],
+    }
+    supp_dataset = PandasDataset(pd.DataFrame(supp_data))
+
+    mock_get_dataset.return_value = supp_dataset
+    data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
+    preprocessor = DatasetPreprocessor(
+        main_dataset,
+        SDTMDatasetMetadata(first_record={"DOMAIN": "AE"}, full_path="path"),
+        data_service,
+        InMemoryCacheService(),
+    )
+    rule = {
+        "core_id": "MockRule",
+        "datasets": [
+            {
+                "domain_name": "SUPPAE",
+                "match_key": ["USUBJID"],
+            }
+        ],
+        "conditions": ConditionCompositeFactory.get_condition_composite(
+            {
+                "all": [
+                    {
+                        "name": "get_dataset",
+                        "operator": "equal_to",
+                        "value": {"target": "AESPID", "comparator": "SCREENING"},
+                    }
+                ]
+            }
+        ),
+    }
+    datasets = [
+        SDTMDatasetMetadata(
+            name="SUPPAE", first_record={"RDOMAIN": "AE"}, filename="suppae.xpt"
+        )
+    ]
+    result = preprocessor.preprocess(rule, datasets)
+    assert len(result.data) == 2
+    assert "AESPID" in result.data.columns
+    assert "QNAM" not in result.data.columns
+    assert "QVAL" not in result.data.columns
+    assert (
+        result.data[result.data["USUBJID"] == "CDISC001"]["AESPID"].values[0]
+        == "SCREENING"
+    )
+    assert (
+        result.data[result.data["USUBJID"] == "CDISC002"]["AESPID"].values[0]
+        == "BASELINE"
+    )
+
+
+@patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset")
+def test_preprocess_supp_wildcard_matches_all_supp_datasets(
+    mock_get_dataset: MagicMock,
+):
+    ae_dataset = PandasDataset(
+        pd.DataFrame.from_dict(
+            {
+                "STUDYID": ["CDISC-PILOT-01", "CDISC-PILOT-01"],
+                "DOMAIN": ["AE", "AE"],
+                "USUBJID": ["S001", "S001"],
+                "AESEQ": [1, 2],
+                "AETERM": ["Headache", "Nausea"],
+                "AEDECOD": ["Headache", "Nausea"],
+            }
+        )
+    )
+    suppae_dataset = PandasDataset(
+        pd.DataFrame.from_dict(
+            {
+                "STUDYID": ["CDISC-PILOT-01", "CDISC-PILOT-01"],
+                "RDOMAIN": ["AE", "AE"],
+                "USUBJID": ["S001", "S001"],
+                "IDVAR": ["AESEQ", "AESEQ"],
+                "IDVARVAL": ["1", "2"],
+                "QNAM": ["AESPID", "AESEV"],
+                "QLABEL": ["Sponsor ID", "Severity"],
+                "QVAL": ["SP001", "MILD"],
+            }
+        )
+    )
+
+    mock_get_dataset.return_value = suppae_dataset
+    rule_with_supp_wildcard = {
+        "core_id": "TestRule",
+        "datasets": [
+            {
+                "domain_name": "SUPP--",
+                "match_key": ["USUBJID"],
+                "relationship_columns": {
+                    "column_with_names": "QNAM",
+                    "column_with_values": "QVAL",
+                },
+            }
+        ],
+        "conditions": ConditionCompositeFactory.get_condition_composite(
+            {
+                "all": [
+                    {
+                        "name": "get_dataset",
+                        "operator": "equal_to",
+                        "value": {"target": "AESEV", "comparator": "MILD"},
+                    }
+                ]
+            }
+        ),
+    }
+    datasets = [
+        SDTMDatasetMetadata(
+            name="SUPPAE",
+            first_record={"RDOMAIN": "AE"},
+            filename="suppae.xpt",
+        ),
+    ]
+    data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
+    preprocessor = DatasetPreprocessor(
+        ae_dataset,
+        SDTMDatasetMetadata(
+            first_record={"DOMAIN": "AE"}, full_path=os.path.join("path", "ae.xpt")
+        ),
+        data_service,
+        InMemoryCacheService(),
+    )
+
+    result = preprocessor.preprocess(rule_with_supp_wildcard, datasets)
+    assert len(result.data) == 2
+    assert "RDOMAIN" in result.data.columns
+    assert "AESPID" in result.data.columns
+    assert "AESEV" in result.data.columns
+    assert result.data.loc[0, "AESPID"] == "SP001"
+    assert result.data.loc[1, "AESEV"] == "MILD"
+
+
+@patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset")
+def test_preprocess_specific_suppae_dataset(
+    mock_get_dataset: MagicMock,
+):
+
+    ae_dataset = PandasDataset(
+        pd.DataFrame.from_dict(
+            {
+                "STUDYID": ["CDISC-PILOT-01"],
+                "DOMAIN": ["AE"],
+                "USUBJID": ["S001"],
+                "AESEQ": [1],
+                "AETERM": ["Headache"],
+            }
+        )
+    )
+    suppae_dataset = PandasDataset(
+        pd.DataFrame.from_dict(
+            {
+                "STUDYID": ["CDISC-PILOT-01"],
+                "RDOMAIN": ["AE"],
+                "USUBJID": ["S001"],
+                "IDVAR": [""],
+                "IDVARVAL": [""],
+                "QNAM": ["AESPID"],
+                "QLABEL": ["Sponsor ID"],
+                "QVAL": ["SP001"],
+            }
+        )
+    )
+
+    mock_get_dataset.return_value = suppae_dataset
+    rule_with_specific_supp = {
+        "core_id": "TestRule",
+        "datasets": [
+            {
+                "domain_name": "SUPPAE",
+                "match_key": ["USUBJID"],
+            }
+        ],
+        "conditions": ConditionCompositeFactory.get_condition_composite(
+            {
+                "all": [
+                    {
+                        "name": "get_dataset",
+                        "operator": "equal_to",
+                        "value": {"target": "AESPID", "comparator": "SP001"},
+                    }
+                ]
+            }
+        ),
+    }
+    datasets = [
+        SDTMDatasetMetadata(
+            name="SUPPAE",
+            first_record={"RDOMAIN": "AE"},
+            filename="suppae.xpt",
+        ),
+    ]
+
+    data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
+    preprocessor = DatasetPreprocessor(
+        ae_dataset,
+        SDTMDatasetMetadata(first_record={"DOMAIN": "AE"}, full_path="path"),
+        data_service,
+        InMemoryCacheService(),
+    )
+
+    result = preprocessor.preprocess(rule_with_specific_supp, datasets)
+
+    assert len(result.data) == 1
+    assert "AESPID" in result.data.columns
+    assert result.data["AESPID"].values[0] == "SP001"
+    assert "QNAM" not in result.data.columns
+    assert "QVAL" not in result.data.columns

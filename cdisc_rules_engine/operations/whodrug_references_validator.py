@@ -3,6 +3,7 @@ from typing import Generator
 from cdisc_rules_engine.models.dictionaries.whodrug.whodrug_record_types import (
     WhodrugRecordTypes,
 )
+from cdisc_rules_engine.models.dictionaries.dictionary_types import DictionaryTypes
 
 
 class WhodrugReferencesValidator(BaseOperation):
@@ -12,10 +13,13 @@ class WhodrugReferencesValidator(BaseOperation):
         Checks if a reference to whodrug term points
         to the existing code in Atc Text (INA) file.
         """
-        if not self.params.whodrug_path:
+        whodrug_path = self.params.external_dictionaries.get_dictionary_path(
+            DictionaryTypes.WHODRUG.value
+        )
+        if not whodrug_path:
             raise ValueError("Can't execute the operation, no whodrug path provided")
 
-        terms: dict = self.cache.get(self.params.whodrug_path)
+        terms: dict = self.cache.get(whodrug_path)
         valid_codes: Generator = (
             term.code for term in terms[WhodrugRecordTypes.ATC_TEXT.value].values()
         )

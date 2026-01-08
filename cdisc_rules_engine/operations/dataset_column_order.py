@@ -1,3 +1,4 @@
+from cdisc_rules_engine.constants.metadata_columns import METADATA_COLUMNS
 from cdisc_rules_engine.operations.base_operation import BaseOperation
 
 
@@ -12,4 +13,8 @@ class DatasetColumnOrder(BaseOperation):
 
         Length of Series is equal to the length of given dataframe.
         """
-        return self.params.dataframe.columns.to_list()
+        return [
+            column
+            for column in self.params.dataframe.columns.to_list()
+            if column not in METADATA_COLUMNS
+        ]

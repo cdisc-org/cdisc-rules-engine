@@ -1,9 +1,18 @@
 # flake8: noqa
 from typing import Type
 
+from cdisc_rules_engine.dataset_builders.json_schema_check_dataset_builder import (
+    JsonSchemaCheckDatasetBuilder,
+)
+from cdisc_rules_engine.dataset_builders.jsonata_dataset_builder import (
+    JSONataDatasetBuilder,
+)
 from cdisc_rules_engine.interfaces import FactoryInterface
 from cdisc_rules_engine.dataset_builders.contents_dataset_builder import (
     ContentsDatasetBuilder,
+)
+from cdisc_rules_engine.dataset_builders.contents_define_dataset_builder import (
+    ContentsDefineDatasetBuilder,
 )
 from cdisc_rules_engine.dataset_builders.content_metadata_dataset_builder import (
     ContentMetadataDatasetBuilder,
@@ -26,8 +35,8 @@ from cdisc_rules_engine.dataset_builders.define_item_group_dataset_builder impor
 from cdisc_rules_engine.dataset_builders.contents_define_variables_dataset_builder import (
     ContentsDefineVariablesDatasetBuilder,
 )
-from cdisc_rules_engine.dataset_builders.contents_define_dataset_builder import (
-    ContentsDefineDatasetBuilder,
+from cdisc_rules_engine.dataset_builders.dataset_metadata_define_dataset_builder import (
+    DatasetMetadataDefineDatasetBuilder,
 )
 from cdisc_rules_engine.dataset_builders.contents_define_vlm_dataset_builder import (
     ContentsDefineVLMDatasetBuilder,
@@ -38,14 +47,24 @@ from cdisc_rules_engine.dataset_builders.variables_metadata_with_library_metadat
 from cdisc_rules_engine.dataset_builders.define_variables_with_library_metadata import (
     DefineVariablesWithLibraryMetadataDatasetBuilder,
 )
+from cdisc_rules_engine.dataset_builders.variables_metadata_with_define_and_library_dataset_builder import (
+    VariablesMetadataWithDefineAndLibraryDatasetBuilder,
+)
+from cdisc_rules_engine.dataset_builders.dataset_metadata_values_builder import (
+    ValueCheckDatasetMetadataDatasetBuilder,
+)
+from cdisc_rules_engine.dataset_builders.variables_metadata_values_dataset_builder import (
+    ValueCheckVariableMetadataDatasetBuilder,
+)
 from cdisc_rules_engine.dataset_builders.base_dataset_builder import BaseDatasetBuilder
 from cdisc_rules_engine.enums.rule_types import RuleTypes
 
 
 class DatasetBuilderFactory(FactoryInterface):
     _builders_map = {
+        RuleTypes.DATASET_CONTENTS_CHECK_AGAINST_DEFINE.value: ContentsDefineDatasetBuilder,
         RuleTypes.DATASET_METADATA_CHECK.value: ContentMetadataDatasetBuilder,
-        RuleTypes.DATASET_METADATA_CHECK_AGAINST_DEFINE.value: ContentsDefineDatasetBuilder,
+        RuleTypes.DATASET_METADATA_CHECK_AGAINST_DEFINE.value: DatasetMetadataDefineDatasetBuilder,
         RuleTypes.VARIABLE_METADATA_CHECK.value: VariablesMetadataDatasetBuilder,
         RuleTypes.DOMAIN_PRESENCE_CHECK.value: DomainListDatasetBuilder,
         RuleTypes.DEFINE_ITEM_METADATA_CHECK.value: DefineVariablesDatasetBuilder,
@@ -57,6 +76,11 @@ class DatasetBuilderFactory(FactoryInterface):
         RuleTypes.VALUE_CHECK_AGAINST_DEFINE_XML_VLM.value: ContentsDefineVLMDatasetBuilder,
         RuleTypes.VARIABLE_METADATA_CHECK_AGAINST_LIBRARY.value: VariablesMetadataWithLibraryMetadataDatasetBuilder,
         RuleTypes.DEFINE_ITEM_METADATA_CHECK_AGAINST_LIBRARY.value: DefineVariablesWithLibraryMetadataDatasetBuilder,
+        RuleTypes.VARIABLE_METADATA_CHECK_AGAINST_DEFINE_XML_AND_LIBRARY.value: VariablesMetadataWithDefineAndLibraryDatasetBuilder,
+        RuleTypes.VALUE_CHECK_WITH_DATASET_METADATA.value: ValueCheckDatasetMetadataDatasetBuilder,
+        RuleTypes.VALUE_CHECK_WITH_VARIABLE_METADATA.value: ValueCheckVariableMetadataDatasetBuilder,
+        RuleTypes.JSONATA.value: JSONataDatasetBuilder,
+        RuleTypes.JSON_SCHEMA_CHECK.value: JsonSchemaCheckDatasetBuilder,
     }
 
     @classmethod
@@ -86,10 +110,11 @@ class DatasetBuilderFactory(FactoryInterface):
             kwargs.get("data_processor"),
             kwargs.get("dataset_path"),
             kwargs.get("datasets"),
-            kwargs.get("domain", ""),
+            kwargs.get("dataset_metadata", ""),
             kwargs.get("define_xml_path"),
             kwargs.get("standard"),
             kwargs.get("standard_version"),
+            kwargs.get("standard_substandard", None),
             kwargs.get("library_metadata"),
         )
         return builder

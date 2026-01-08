@@ -86,15 +86,11 @@ def test_valid_parse_actions():
             [{"domain_name": "AA", "match_key": ["USUBJID"], "wildcard": "**"}],
         ),
         (
-            [{"Name": "SUPPEC", "Keys": ["USUBJID"], "Is_Relationship": True}],
+            [{"Name": "SUPPEC", "Keys": ["USUBJID"]}],
             [
                 {
                     "domain_name": "SUPPEC",
                     "match_key": ["USUBJID"],
-                    "relationship_columns": {
-                        "column_with_names": "IDVAR",
-                        "column_with_values": "IDVARVAL",
-                    },
                     "wildcard": "**",
                 }
             ],
@@ -189,8 +185,8 @@ def test_parse_conditions_not_condition(yaml, output):
                 }
             ],
             [
-                {"Name": "SDTMIG", "Version": "3-4"},
-                {"Name": "SENDIG", "Version": "3-1"},
+                {"Name": "SDTMIG", "Version": "3-4", "Substandard": None},
+                {"Name": "SENDIG", "Version": "3-1", "Substandard": None},
             ],
         )
     ],

@@ -1,6 +1,7 @@
 import json
 import os
 from core import list_rules
+from test_utils import tearDown
 
 import unittest
 from click.testing import CliRunner
@@ -25,16 +26,6 @@ class TestListRules(unittest.TestCase):
         result = self.runner.invoke(list_rules, ["-v", "3.4"])
         self.assertEqual(result.exit_code, 0)
 
-    def test_list_rules_local_cache(self):
-        result = self.runner.invoke(list_rules, ["-lr"])
-        self.assertEqual(result.exit_code, 1)
-        self.assertEqual(result.exception.args[1], "No such file or directory")
-
-    def test_list_rules_local_cache_local_rule_id(self):
-        result = self.runner.invoke(list_rules, ["-lr", "-lri", "1"])
-        self.assertEqual(result.exit_code, 1)
-        self.assertEqual(result.exception.args[1], "No such file or directory")
-
     def test_list_rules_no_option_provided(self):
         result = self.runner.invoke(list_rules)
         self.assertEqual(result.exit_code, 0)
@@ -50,11 +41,7 @@ class TestListRules(unittest.TestCase):
         self.assertTrue(all(isinstance(rule, dict) for rule in output))
 
     def tearDown(self):
-        for file_name in os.listdir("."):
-            if file_name != "host.json" and (
-                file_name.endswith(".xlsx") or file_name.endswith(".json")
-            ):
-                os.remove(file_name)
+        tearDown()
 
 
 if __name__ == "__main__":

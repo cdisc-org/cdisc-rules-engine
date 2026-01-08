@@ -38,6 +38,13 @@ class DatasetInterface(ABC):
         Create the underlying dataset from provided list of records
         """
 
+    @classmethod
+    @abstractmethod
+    def get_series_values(cls, series) -> list:
+        """
+        Returns the values for a series.
+        """
+
     @abstractmethod
     def __getitem__(self, item: str):
         """
@@ -100,8 +107,9 @@ class DatasetInterface(ABC):
         Return iterator over all dataset rows
         """
 
+    @classmethod
     @abstractmethod
-    def is_series(self, data) -> bool:
+    def is_series(cls, data) -> bool:
         """
         Return true if the data is a series compatible with the underlying dataset
         """
@@ -163,6 +171,13 @@ class DatasetInterface(ABC):
         """
 
     @abstractmethod
+    def assign(self, **kwargs):
+        """
+        Assign new columns to the dataset.
+        This method should return a new instance of the dataset with the new columns added.
+        """
+
+    @abstractmethod
     def copy(self) -> "DatasetInterface":
         """
         Return a new instance of the dataset with the same data
@@ -184,12 +199,6 @@ class DatasetInterface(ABC):
     def where(cond, other, **kwargs):
         """
         Wrapper for dataframe where function
-        """
-
-    @abstractmethod
-    def cartesian_product(cls, left, right):
-        """
-        Return the cartesian product of two dataframes
         """
 
     @abstractmethod
@@ -228,4 +237,36 @@ class DatasetInterface(ABC):
     ):
         """
         Fill NA/NaN values using the specified method.
+        """
+
+    @abstractmethod
+    def get_grouped_size(self, by, **kwargs):
+        """
+        Returns a dataframe containing the sizes of each group in
+        the dataframe.
+        """
+
+    @abstractmethod
+    def to_dict(self, **kwargs) -> dict:
+        """
+        Convert the dataset to a dictionary.
+        """
+
+    @abstractmethod
+    def items(self, **kwargs):
+        """
+        Convert the dataset to dictionary items.
+        Returns a view object displaying a list of (key, value) tuple pairs.
+        """
+
+    @abstractmethod
+    def keys(self, **kwargs):
+        """
+        Returns a view object containing the keys in the dataset dictionary.
+        """
+
+    @abstractmethod
+    def values(self, **kwargs):
+        """
+        Returns a view object containing the values in the dataset dictionary.
         """

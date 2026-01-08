@@ -5,13 +5,17 @@ from tempfile import NamedTemporaryFile
 import openpyxl
 from openpyxl.styles import Alignment
 
+from cdisc_rules_engine.services.reporting.report_metadata_item import (
+    ReportMetadataItem,
+)
+
 
 def excel_workbook_to_stream(wb):
     stream = None
     tmp = NamedTemporaryFile(
         delete=False
-    )  # create tmp file, we'll controll when to delete it
-    # close, NamedTemporaryFile() already opended it, we need it closed for wb.save()
+    )  # create tmp file, we'll control when to delete it
+    # close, NamedTemporaryFile() already opened it, we need it closed for wb.save()
     # or we'll get permission denied errors
     tmp.close()
     wb.save(tmp.name)  # save workbook to tmp file
@@ -21,23 +25,27 @@ def excel_workbook_to_stream(wb):
     return stream
 
 
+def stringify_list(values):
+    return ", ".join(values) if isinstance(values, list) else values
+
+
 def excel_update_worksheet(ws, rows, align_params=None, fill_empty_rows=False):
     for row_num, row_data in enumerate(rows, 2):
-        for col_num, col_data in enumerate(row_data, 1):
-            if fill_empty_rows and (row_data[1] == "" or row_data[1] is None):
-                # Codelist is empty for Code Rows. Change background color
-                ws.cell(row=row_num, column=col_num).value = col_data
-                ws.cell(row=row_num, column=col_num).fill = openpyxl.styles.PatternFill(
-                    start_color="ccffff", end_color="ccffff", fill_type="solid"
-                )
+        if isinstance(row_data, ReportMetadataItem):
+            ws.cell(row=row_data.row, column=2).value = row_data.value
+        else:
+            for col_num, col_data in enumerate(row_data.values(), 1):
+                ws.cell(row=row_num, column=col_num).value = stringify_list(col_data)
                 ws.cell(row=row_num, column=col_num).alignment = Alignment(
                     **align_params
                 )
-            else:
-                ws.cell(row=row_num, column=col_num).value = col_data
-                ws.cell(row=row_num, column=col_num).alignment = Alignment(
-                    **align_params
-                )
+                if fill_empty_rows and (row_data[1] == "" or row_data[1] is None):
+                    # Codelist is empty for Code Rows. Change background color
+                    ws.cell(row=row_num, column=col_num).fill = (
+                        openpyxl.styles.PatternFill(
+                            start_color="ccffff", end_color="ccffff", fill_type="solid"
+                        )
+                    )
 
 
 def excel_open_workbook(template_buffer):

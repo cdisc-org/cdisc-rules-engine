@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+   <xs:annotation>
+      <xs:documentation>
+This is the XML Schema module for WAI-ARIA States and Properties.
+It can be incorporated in host languages to help make dynamic content accessible.
+A role attribute that accepts WAI-ARIA roles is also required.
+$Id: aria-attributes-1.xsd,v 1.1 2009/12/10 17:04:47 cooper Exp $
+				</xs:documentation>
+      <xs:documentation source="http://www.w3.org/TR/wai-aria/"/>
+   </xs:annotation>
+   <xs:attributeGroup name="ARIA.states.attrib">
+      <xs:attribute name="aria-busy" default="false" type="xs:boolean"/>
+      <xs:attribute name="aria-checked" default="undefined">
+         <xs:simpleType>
+            <xs:restriction base="xs:NMTOKEN">
+               <xs:enumeration value="true"/>
+               <xs:enumeration value="false"/>
+               <xs:enumeration value="mixed"/>
+               <xs:enumeration value="undefined"/>
+            </xs:restriction>
+         </xs:simpleType>
+      </xs:attribute>
+      <xs:attribute name="aria-disabled" default="false" type="xs:boolean"/>
+      <xs:attribute name="aria-expanded" default="undefined">
+         <xs:simpleType>
+            <xs:restriction base="xs:NMTOKEN">
+               <xs:enumeration value="true"/>
+               <xs:enumeration value="false"/>
+               <xs:enumeration value="undefined"/>
+            </xs:restriction>
+         </xs:simpleType>
+      </xs:attribute>
+      <xs:attribute name="aria-grabbed" default="undefined">
+         <xs:simpleType>
+            <xs:restriction base="xs:NMTOKEN">
+               <xs:enumeration value="true"/>
+               <xs:enumeration value="false"/>
+               <xs:enumeration value="undefined"/>
+            </xs:restriction>
+         </xs:simpleType>
+      </xs:attribute>
+      <xs:attribute name="aria-hidden" default="false" type="xs:boolean"/>
+      <xs:attribute name="aria-invalid" default="false">
+         <xs:simpleType>
+            <xs:restriction base="xs:NMTOKEN">
+               <xs:enumeration value="grammar"/>
+               <xs:enumeration value="false"/>
+               <xs:enumeration value="spelling"/>
+               <xs:enumeration value="true"/>
+            </xs:restriction>
+         </xs:simpleType>
+      </xs:attribute>
+      <xs:attribute name="aria-pressed" default="undefined">
+         <xs:simpleType>
+            <xs:restriction base="xs:NMTOKEN">
+               <xs:enumeration value="true"/>
+               <xs:enumeration value="false"/>
+               <xs:enumeration value="mixed"/>
+               <xs:enumeration value="undefined"/>
+            </xs:restriction>
+         </xs:simpleType>
+      </xs:attribute>
+      <xs:attribute name="aria-selected" default="undefined">
+         <xs:simpleType>
+            <xs:restriction base="xs:NMTOKEN">
+               <xs:enumeration value="true"/>
+               <xs:enumeration value="false"/>
+               <xs:enumeration value="undefined"/>
+            </xs:restriction>
+         </xs:simpleType>
+      </xs:attribute>
+   </xs:attributeGroup>
+   <xs:attributeGroup name="ARIA.props.attrib">
+      <xs:attribute name="aria-activedescendant" type="xs:IDREF"/>
+      <xs:attribute name="aria-atomic" default="false" type="xs:boolean"/>
+      <xs:attribute name="aria-autocomplete" default="none">
+         <xs:simpleType>
+            <xs:restriction base="xs:NMTOKEN">
+               <xs:enumeration value="inline"/>
+               <xs:enumeration value="list"/>
+               <xs:enumeration value="both"/>
+               <xs:enumeration value="none"/>
+            </xs:restriction>
+         </xs:simpleType>
+      </xs:attribute>
+      <xs:attribute name="aria-controls" type="xs:IDREFS"/>
+      <xs:attribute name="aria-describedby" type="xs:IDREFS"/>
+      <xs:attribute name="aria-dropeffect" default="none">
+         <xs:simpleType>
+            <xs:restriction base="xs:NMTOKENS">
+               <xs:enumeration value="copy"/>
+               <xs:enumeration value="move"/>
+               <xs:enumeration value="link"/>
+               <xs:enumeration value="execute"/>
+               <xs:enumeration value="popup"/>
+               <xs:enumeration value="none"/>
+            </xs:restriction>
+         </xs:simpleType>
+      </xs:attribute>
+      <xs:attribute name="aria-flowto" type="xs:IDREFS"/>
+      <xs:attribute name="aria-haspopup" default="false" type="xs:boolean"/>
+      <xs:attribute name="aria-label" type="xs:string"/>
+      <xs:attribute name="aria-labelledby" type="xs:IDREFS"/>
+      <xs:attribute name="aria-level" type="xs:integer"/>
+      <xs:attribute name="aria-live" default="off">
+         <xs:simpleType>
+            <xs:restriction base="xs:NMTOKEN">
+               <xs:enumeration value="off"/>
+               <xs:enumeration value="polite"/>
+               <xs:enumeration value="assertive"/>
+            </xs:restriction>
+         </xs:simpleType>
+      </xs:attribute>
+      <xs:attribute name="aria-multiline" default="false" type="xs:boolean"/>
+      <xs:attribute name="aria-multiselectable" default="false" type="xs:boolean"/>
+      <xs:attribute name="aria-orientation" default="vertical">
+         <xs:simpleType>
+            <xs:restriction base="xs:NMTOKEN">
+               <xs:enumeration value="horizontal"/>
+               <xs:enumeration value="vertical"/>
+            </xs:restriction>
+         </xs:simpleType>
+      </xs:attribute>
+      <xs:attribute name="aria-owns" type="xs:IDREFS"/>
+      <xs:attribute name="aria-posinset" type="xs:integer"/>
+      <xs:attribute name="aria-readonly" default="false" type="xs:boolean"/>
+      <xs:attribute name="aria-relevant" default="additions text">
+         <xs:simpleType>
+            <xs:restriction base="xs:NMTOKENS">
+               <xs:enumeration value="additions"/>
+               <xs:enumeration value="removals"/>
+               <xs:enumeration value="text"/>
+               <xs:enumeration value="all"/>
+            </xs:restriction>
+         </xs:simpleType>
+      </xs:attribute>
+      <xs:attribute name="aria-required" default="false" type="xs:boolean"/>
+      <xs:attribute name="aria-setsize" type="xs:integer"/>
+      <xs:attribute name="aria-sort" default="none">
+         <xs:simpleType>
+            <xs:restriction base="xs:NMTOKEN">
+               <xs:enumeration value="ascending"/>
+               <xs:enumeration value="descending"/>
+               <xs:enumeration value="none"/>
+               <xs:enumeration value="other"/>
+            </xs:restriction>
+         </xs:simpleType>
+      </xs:attribute>
+      <xs:attribute name="aria-valuemax" type="xs:decimal"/>
+      <xs:attribute name="aria-valuemin" type="xs:decimal"/>
+      <xs:attribute name="aria-valuenow" type="xs:decimal"/>
+      <xs:attribute name="aria-valuetext" type="xs:string"/>
+   </xs:attributeGroup>
+   <xs:attributeGroup name="ARIA.extra.attrib">
+      <xs:attribute name="tabindex" type="xs:integer"/>
+   </xs:attributeGroup>
+   <xs:attributeGroup name="ARIA.attrib">
+      <xs:attributeGroup ref="ARIA.states.attrib"/>
+      <xs:attributeGroup ref="ARIA.props.attrib"/>
+      <xs:attributeGroup ref="ARIA.extra.attrib"/>
+   </xs:attributeGroup>
+</xs:schema>

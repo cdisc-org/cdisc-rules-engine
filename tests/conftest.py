@@ -2,6 +2,7 @@ import os
 from datetime import datetime
 from unittest.mock import MagicMock
 
+from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 from cdisc_rules_engine.models.dataset import PandasDataset
 import pytest
 import sys
@@ -13,11 +14,19 @@ from cdisc_rules_engine.models.dictionaries.whodrug import WhoDrugTermsFactory
 from cdisc_rules_engine.models.dictionaries.meddra import MedDRATermsFactory
 from cdisc_rules_engine.models.operation_params import OperationParams
 from cdisc_rules_engine.models.rule_conditions import ConditionCompositeFactory
+from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
 from cdisc_rules_engine.services.cache import (
     InMemoryCacheService,
 )
+from cdisc_rules_engine.models.external_dictionaries_container import (
+    ExternalDictionariesContainer,
+    DictionaryTypes,
+)
 from cdisc_rules_engine.services.data_services import LocalDataService
 from cdisc_rules_engine.constants.rule_constants import ALL_KEYWORD
+
+meddra_path: str = f"{os.path.dirname(__file__)}/resources/dictionaries/meddra"
+whodrug_path: str = f"{os.path.dirname(__file__)}/resources/dictionaries/whodrug"
 
 
 def pytest_collection_modifyitems(config, items):
@@ -785,6 +794,7 @@ def define_xml_variable_validation_rule() -> dict:
     return {
         "core_id": "TEST1",
         "severity": "Error",
+        "Authorities": [{"Standards": [{"Name": "SDTMIG", "Version": "3.4"}]}],
         "standards": [],
         "domains": {"Include": [ALL_KEYWORD]},
         "output_variables": ["variable_size"],
@@ -866,10 +876,6 @@ def dataset_rule_record_in_parent_domain_equal_to() -> dict:
             {
                 "domain_name": "SUPPEC",
                 "match_key": ["USUBJID"],
-                "relationship_columns": {
-                    "column_with_names": "IDVAR",
-                    "column_with_values": "IDVARVAL",
-                },
             }
         ],
         "conditions": ConditionCompositeFactory.get_condition_composite(
@@ -878,7 +884,7 @@ def dataset_rule_record_in_parent_domain_equal_to() -> dict:
                     {
                         "name": "get_dataset",
                         "operator": "equal_to",
-                        "value": {"target": "QNAM", "comparator": "ECREASOC"},
+                        "value": {"target": "ECREASOC", "comparator": "Some Value 1"},
                     },
                     {
                         "name": "get_dataset",
@@ -895,7 +901,7 @@ def dataset_rule_record_in_parent_domain_equal_to() -> dict:
             }
         ],
         "output_variables": [
-            "QNAM",
+            "ECREASOC",
             "ECPRESP",
         ],
     }
@@ -969,6 +975,124 @@ def dataset_rule_inconsistent_enumerated_columns() -> dict:
             }
         ],
     }
+
+
+@pytest.fixture
+def mock_validation_results() -> list[RuleValidationResult]:
+    return [
+        RuleValidationResult(
+            rule={
+                "core_id": "CORE1",
+                "executability": "Fully Executable",
+                "actions": [{"params": {"message": "TEST RULE 1"}}],
+                "authorities": [
+                    {
+                        "Organization": "CDISC",
+                        "Standards": [
+                            {
+                                "References": [
+                                    {"Rule_Identifier": {"Id": "CDISCRuleID4"}},
+                                    {"Rule_Identifier": {"Id": "CDISCRuleID3"}},
+                                ]
+                            },
+                            {
+                                "References": [
+                                    {"Rule_Identifier": {"Id": "CDISCRuleID2"}},
+                                    {"Rule_Identifier": {"Id": "CDISCRuleID1"}},
+                                ]
+                            },
+                        ],
+                    },
+                    {
+                        "Organization": "FDA",
+                        "Standards": [
+                            {
+                                "References": [
+                                    {"Rule_Identifier": {"Id": "FDARuleID1"}},
+                                    {"Rule_Identifier": {"Id": "FDARuleID2"}},
+                                ]
+                            }
+                        ],
+                    },
+                ],
+            },
+            results=[
+                {
+                    "domain": "AE",
+                    "variables": ["AESTDY", "DOMAIN"],
+                    "executionStatus": ExecutionStatus.SUCCESS.value,
+                    "errors": [
+                        {
+                            "row": 1,
+                            "value": {"AESTDY": "test", "DOMAIN": "test"},
+                            "USUBJID": "CDISC002",
+                            "SEQ": 2,
+                        },
+                        {
+                            "row": 9,
+                            "value": {"AESTDY": "test", "DOMAIN": "test"},
+                            "USUBJID": "CDISC003",
+                            "SEQ": 10,
+                        },
+                    ],
+                    "message": "AESTDY and DOMAIN are equal to test",
+                }
+            ],
+        ),
+        RuleValidationResult(
+            rule={
+                "core_id": "CORE2",
+                "executability": "Partially Executable",
+                "actions": [{"params": {"message": "TEST RULE 2"}}],
+                "authorities": [
+                    {
+                        "Organization": "CDISC",
+                        "Standards": [
+                            {
+                                "References": [
+                                    {"Rule_Identifier": {"Id": "CDISCRuleID4"}},
+                                    {"Rule_Identifier": {"Id": "CDISCRuleID3"}},
+                                ]
+                            },
+                            {
+                                "References": [
+                                    {"Rule_Identifier": {"Id": "CDISCRuleID2"}},
+                                    {"Rule_Identifier": {"Id": "CDISCRuleID1"}},
+                                ]
+                            },
+                        ],
+                    },
+                    {
+                        "Organization": "FDA",
+                        "Standards": [
+                            {
+                                "References": [
+                                    {"Rule_Identifier": {"Id": "FDARuleID1"}},
+                                    {"Rule_Identifier": {"Id": "FDARuleID2"}},
+                                ]
+                            }
+                        ],
+                    },
+                ],
+            },
+            results=[
+                {
+                    "domain": "TT",
+                    "variables": ["TTVAR1", "TTVAR2"],
+                    "executionStatus": ExecutionStatus.SUCCESS.value,
+                    "errors": [
+                        {
+                            "row": 1,
+                            "value": {"TTVAR1": "test", "TTVAR2": "test"},
+                            "USUBJID": "CDISC002",
+                            "SEQ": 2,
+                        }
+                    ],
+                    "message": "TTVARs are wrong",
+                }
+            ],
+        ),
+    ]
 
 
 @pytest.fixture(scope="function")
@@ -1175,7 +1299,6 @@ def installed_whodrug_dictionaries(request) -> dict:
     )
     factory = WhoDrugTermsFactory(local_data_service)
 
-    whodrug_path: str = f"{os.path.dirname(__file__)}/resources/dictionaries/whodrug"
     terms: dict = factory.install_terms(whodrug_path)
     cache_service.add(whodrug_path, terms)
 
@@ -1202,7 +1325,6 @@ def installed_meddra_dictionaries(request) -> dict:
     local_data_service = LocalDataService.get_instance(cache_service=cache_service)
     factory = MedDRATermsFactory(local_data_service)
 
-    meddra_path: str = f"{os.path.dirname(__file__)}/resources/dictionaries/meddra"
     terms: dict = factory.install_terms(meddra_path)
     cache_service.add(meddra_path, terms)
 
@@ -1219,6 +1341,7 @@ def installed_meddra_dictionaries(request) -> dict:
 @pytest.fixture(scope="function")
 def operation_params() -> OperationParams:
     return OperationParams(
+        core_id="test_id",
         operation_id="operation_id",
         operation_name="operation_name",
         dataframe=PandasDataset.from_dict({}),
@@ -1226,11 +1349,15 @@ def operation_params() -> OperationParams:
         domain="domain",
         dataset_path="dataset_path",
         directory_path="directory_path",
-        datasets=[{}],
+        datasets=[],
         standard="standard",
         standard_version="standard_version",
-        meddra_path="meddra_path",
-        whodrug_path="whodrug_path",
+        external_dictionaries=ExternalDictionariesContainer(
+            {
+                DictionaryTypes.MEDDRA.value: meddra_path,
+                DictionaryTypes.WHODRUG.value: whodrug_path,
+            }
+        ),
         grouping=[],
         attribute_name="attribute_name",
     )
@@ -1242,12 +1369,12 @@ def dataset_metadata() -> dict:
         "file_metadata": {
             "path": "CDISC01/test/ae.xpt",
             "name": "ae.xpt",
-            "size": 38000,
+            "file_size": 38000,
         },
         "contents_metadata": {
             "dataset_label": "Adverse Events",
             "dataset_name": "AE",
-            "domain_name": "AE",
+            "first_record": {"DOMAIN": "AE"},
             "dataset_modification_date": datetime.now().isoformat(),
             "dataset_length": 20,
         },

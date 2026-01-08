@@ -1,0 +1,15 @@
+include resources/schema/USDM.yaml
+include resources/schema/dataset-ndjson-schema.json
+include resources/schema/dataset.schema.json
+recursive-include resources/jsonata
+recursive-include cdisc_rules_engine/services/define_xml
+exclude README.md
+
+prune tests
+prune TestRule
+prune scripts
+prune cdisc_rule_tester
+
+global-exclude __pycache__/
+global-exclude *.py[cod]
+global-exclude *$py.class

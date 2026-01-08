@@ -76,6 +76,7 @@
             "APRELSUB",
             "POOLDEF",
             "RELREC",
+            "RELREF",
             "RELSPEC",
             "RELSUB",
             "SUPP--"
@@ -83,7 +84,7 @@
           "type": "string"
         },
         {
-          "pattern": "^([A-Z]{2}|[A-Z]{4}|SUPP[A-Z]{2}|SUPP[A-Z]{4}|SQAP[A-Z]{4})$",
+          "pattern": "^((?!AP)[A-Z]{2}|[A-Z]{4}|SUPP[A-Z]{2}|SUPP[A-Z]{4}|SQAP[A-Z]{4})$",
           "type": "string"
         }
       ]
@@ -99,9 +100,6 @@
         "ADAM OTHER",
         "ALL",
         "BASIC DATA STRUCTURE",
-        "DEVICE LEVEL ANALYSIS DATASET",
-        "MEDICAL DEVICE BASIC DATA STRUCTURE",
-        "MEDICAL DEVICE OCCURRENCE DATA STRUCTURE",
         "OCCURRENCE DATA STRUCTURE",
         "SUBJECT LEVEL ANALYSIS DATASET"
       ],
@@ -118,6 +116,21 @@
         "$ref": "#/$defs/Dataset"
       },
       "type": "array"
+    },
+    "DomainStructure": {
+      "additionalProperties": false,
+      "properties": {
+        "Exclude": {
+          "$ref": "#/$defs/Domains"
+        },
+        "Include": {
+          "$ref": "#/$defs/Domains"
+        },
+        "include_split_datasets": {
+          "enum": [true]
+        }
+      },
+      "type": "object"
     },
     "JoinType": {
       "enum": ["inner", "left"],
@@ -151,6 +164,7 @@
           "ALL",
           "MEDICAL DEVICE TIME-TO-EVENT",
           "NON-COMPARTMENTAL ANALYSIS",
+          "POPULATION PHARMACOKINETIC ANALYSIS",
           "TIME-TO-EVENT"
         ],
         "type": "string"
@@ -160,6 +174,21 @@
     "VariableName": {
       "pattern": "^(--[A-Z0-9]{1,6}|[A-Z][A-Z0-9]{0,7})$",
       "type": "string"
+    },
+    "OperationResultId": {
+      "pattern": "^\\$[A-Za-z_][A-Za-z0-9_]*$",
+      "type": "string"
+    },
+    "VariableReference": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/VariableName"
+        },
+        {
+          "$ref": "#/$defs/OperationResultId"
+        }
+      ],
+      "description": "Can reference either a dataset variable name or an operation result"
     }
   },
   "$id": "https://cdisc.org/CORE-base.json",
@@ -293,6 +322,9 @@
                 },
                 "Version": {
                   "type": "string"
+                },
+                "Substandard": {
+                  "type": "string"
                 }
               },
               "required": ["Name", "References", "Version"],
@@ -300,6 +332,11 @@
             },
             "minItems": 1,
             "type": "array"
+          },
+          "Category": {
+            "type": "object",
+            "description": "Custom categorization for rule governance defined in Organization_Custom.json",
+            "additionalProperties": true
           }
         },
         "oneOf": [
@@ -310,7 +347,7 @@
             "$ref": "Organization_FDA.json"
           },
           {
-            "$ref": "Organization_PMDA.json"
+            "$ref": "Organization_Custom.json"
           }
         ],
         "required": ["Organization", "Standards"],
@@ -320,7 +357,14 @@
       "type": "array"
     },
     "Check": {
-      "$ref": "#/$defs/Boolean"
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Boolean"
+        },
+        {
+          "type": "string"
+        }
+      ]
     },
     "Core": {
       "properties": {
@@ -379,7 +423,7 @@
               }
             ]
           },
-          "Is Relationship": {
+          "Child": {
             "const": true
           },
           "Keys": {
@@ -498,19 +542,13 @@
           "type": "object"
         },
         "Domains": {
-          "additionalProperties": false,
-          "properties": {
-            "Exclude": {
-              "$ref": "#/$defs/Domains"
-            },
-            "Include": {
-              "$ref": "#/$defs/Domains"
-            },
-            "include_split_datasets": {
-              "type": "boolean"
-            }
-          },
-          "type": "object"
+          "$ref": "#/$defs/DomainStructure"
+        },
+        "Dataset or Domain or Item Group": {
+          "$ref": "#/$defs/DomainStructure"
+        },
+        "Use Case": {
+          "type": "string"
         },
         "Entities": {
           "anyOf": [
@@ -564,6 +602,13 @@
     },
     "Sensitivity": {
       "$ref": "Sensitivity.json"
+    },
+    "Grouping_Variables": {
+      "items": {
+        "$ref": "#/$defs/VariableReference"
+      },
+      "type": "array",
+      "markdownDescription": "Variables to group by when using Group sensitivity. Required when Sensitivity is set to Group."
     }
   },
   "required": [
@@ -577,5 +622,13 @@
     "Scope",
     "Sensitivity"
   ],
+  "if": {
+    "properties": {
+      "Sensitivity": { "const": "Group" }
+    }
+  },
+  "then": {
+    "required": ["Grouping_Variables"]
+  },
   "type": "object"
 }

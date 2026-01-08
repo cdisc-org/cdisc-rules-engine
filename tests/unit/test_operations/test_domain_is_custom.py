@@ -75,6 +75,106 @@ from cdisc_rules_engine.services.data_services import LocalDataService
             "3-4",
             True,
         ),
+        (
+            DaskDataset.from_dict(
+                {
+                    "STUDYID": [
+                        "TEST_STUDY",
+                        "TEST_STUDY",
+                        "TEST_STUDY",
+                    ],
+                    "BCTERM": [
+                        "test",
+                        "test",
+                        "test",
+                    ],
+                }
+            ),
+            "BC",
+            "sdtmig",
+            "3-4",
+            True,
+        ),
+        (
+            PandasDataset.from_dict(
+                {
+                    "STUDYID": [
+                        "TEST_STUDY",
+                        "TEST_STUDY",
+                        "TEST_STUDY",
+                    ],
+                    "AETERM": [
+                        "test",
+                        "test",
+                        "test",
+                    ],
+                }
+            ),
+            "AE",
+            "tig",
+            "1-0",
+            False,
+        ),
+        (
+            DaskDataset.from_dict(
+                {
+                    "STUDYID": [
+                        "TEST_STUDY",
+                        "TEST_STUDY",
+                        "TEST_STUDY",
+                    ],
+                    "AETERM": [
+                        "test",
+                        "test",
+                        "test",
+                    ],
+                }
+            ),
+            "AE",
+            "tig",
+            "1-0",
+            False,
+        ),
+        (
+            PandasDataset.from_dict(
+                {
+                    "STUDYID": [
+                        "TEST_STUDY",
+                        "TEST_STUDY",
+                        "TEST_STUDY",
+                    ],
+                    "XYTERM": [
+                        "test",
+                        "test",
+                        "test",
+                    ],
+                }
+            ),
+            "XY",
+            "tig",
+            "1-0",
+            True,
+        ),
+        (
+            DaskDataset.from_dict(
+                {
+                    "STUDYID": [
+                        "TEST_STUDY",
+                        "TEST_STUDY",
+                        "TEST_STUDY",
+                    ],
+                    "XYTERM": [
+                        "test",
+                        "test",
+                        "test",
+                    ],
+                }
+            ),
+            "XY",
+            "tig",
+            "1-0",
+            True,
+        ),
     ],
 )
 def test_domain_is_custom(
@@ -85,9 +185,14 @@ def test_domain_is_custom(
     standard_version: str,
     expected: bool,
 ):
-    standard_metadata = {
-        "domains": {"AE"},
-    }
+    if standard == "tig":
+        standard_metadata = {
+            "domains": {"AE", "DM", "CM", "LB", "VS", "EX", "DS", "MH"},
+        }
+    else:
+        standard_metadata = {
+            "domains": {"AE"},
+        }
     operation_params.dataframe = dataframe
     operation_params.domain = domain
     operation_params.standard = standard

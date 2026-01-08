@@ -1,6 +1,7 @@
 """
 This module contains unit tests for DefineXMLReader class.
 """
+
 from pathlib import Path
 from typing import List
 
@@ -73,6 +74,7 @@ def test_read_define_xml():
                 "define_dataset_class",
                 "define_dataset_structure",
                 "define_dataset_is_non_standard",
+                "define_dataset_has_no_data",
             ]
 
 
@@ -108,6 +110,45 @@ def test_extract_domain_metadata(filename):
                 "TSVCDREF",
                 "TSVCDVER",
             ],
+            "define_dataset_key_sequence": ["STUDYID", "TSPARMCD", "TSVAL", "TSSEQ"],
+            "define_dataset_has_no_data": False,
+        }
+
+
+@pytest.mark.parametrize(
+    "filename", [(test_define_file_path), (test_define_2_0_file_path)]
+)
+def test_extract_dataset_metadata(filename):
+    """
+    Unit test for DefineXMLReader.extract_dataset_metadata for TS dataset.
+    """
+    with open(filename, "rb") as file:
+        contents: bytes = file.read()
+        reader = DefineXMLReaderFactory.from_file_contents(contents)
+        dataset_metadata: dict = reader.extract_dataset_metadata(dataset_name="TS")
+        assert dataset_metadata == {
+            "define_dataset_name": "TS",
+            "define_dataset_label": "Trial Summary",
+            "define_dataset_location": "ts.xml",
+            "define_dataset_domain": "TS",
+            "define_dataset_class": "TRIAL DESIGN",
+            "define_dataset_structure": "One record per trial summary parameter value",
+            "define_dataset_is_non_standard": "",
+            "define_dataset_variables": [
+                "STUDYID",
+                "DOMAIN",
+                "TSSEQ",
+                "TSGRPID",
+                "TSPARMCD",
+                "TSPARM",
+                "TSVAL",
+                "TSVALNF",
+                "TSVALCD",
+                "TSVCDREF",
+                "TSVCDVER",
+            ],
+            "define_dataset_key_sequence": ["STUDYID", "TSPARMCD", "TSVAL", "TSSEQ"],
+            "define_dataset_has_no_data": False,
         }
 
 
@@ -368,3 +409,28 @@ def test_read_dictionary_version(dictionary_type, expected_version):
         reader = DefineXMLReaderFactory.from_file_contents(contents)
         version = reader.get_external_dictionary_version(dictionary_type)
     assert version == expected_version
+
+
+@pytest.mark.parametrize(
+    "filename,has_no_data",
+    [
+        (
+            test_define_file_path,
+            True,
+        ),  # NV domain in test_defineV22-SDTM.xml has def:HasNoData="Yes"
+    ],
+)
+def test_extract_domain_metadata_nv_has_no_data(filename, has_no_data):
+    """
+    Unit test for DefineXMLReader.extract_domain_metadata for NV domain with has_no_data.
+    """
+    with open(filename, "rb") as file:
+        contents: bytes = file.read()
+        reader = DefineXMLReaderFactory.from_file_contents(contents)
+        domain_metadata: dict = reader.extract_domain_metadata(domain_name="NV")
+        assert domain_metadata["define_dataset_has_no_data"] == has_no_data
+        assert domain_metadata["define_dataset_name"] == "NV"
+        assert domain_metadata["define_dataset_domain"] == "NV"
+        # Check that at least one expected variable is present
+        for v in ["NVSEQ", "NVTESTCD", "NVTEST"]:
+            assert v in domain_metadata["define_dataset_variables"]

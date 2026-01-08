@@ -1,28 +1,22 @@
-### Supported python versions
+[![](https://www.cdisc.org/themes/custom/cdiscd8/logo.svg)](https://www.cdisc.org)
 
-[![Python 3.9](https://img.shields.io/badge/python-3.9-green.svg)](https://www.python.org/downloads/release/python-390)
-[![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/downloads/release/python-3100)
-
-### Windows Command Compatibility
-
-Note: The Windows commands provided in this README are written for PowerShell. While most commands are compatible with both PowerShell and Command Prompt, some adjustments may be necessary when using Command Prompt. If you encounter any issues running these commands in Command Prompt, try using PowerShell or consult the Command Prompt documentation for equivalent commands.
+[![](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3120) [![](https://img.shields.io/pypi/v/cdisc-rules-engine.svg)](https://pypi.org/project/cdisc-rules-engine) [![](https://img.shields.io/docker/v/cdiscdocker/cdisc-rules-engine?label=docker)](https://hub.docker.com/r/cdiscdocker/cdisc-rules-engine)
 
 # cdisc-rules-engine
 
 Open source offering of the CDISC Rules Engine, a tool designed for validating clinical trial data against data standards.
-To learn more, visit our official CDISC website or for other implementation options, see our DockerHub repository:  
-<br>  
-[CDISC Website](https://www.cdisc.org/)  
-<br>  
-[CDISC Rules Engine on DockerHub](https://hub.docker.com/repository/docker/cdiscdocker/cdisc-rules-engine/general)
 
-### **Quick start**
+## Quick start
 
-To quickly get up and running with CORE, users can download the latest executable version of the engine for their operating system from here: <https://github.com/cdisc-org/cdisc-rules-engine/releases>
+**Need help?** Jump to [Troubleshooting & Support](#troubleshooting--support)
+
+Note: The Windows commands provided in this README are written for PowerShell. While most commands are compatible with both PowerShell and Command Prompt, some adjustments may be necessary when using Command Prompt. If you encounter any issues running these commands in Command Prompt, try using PowerShell or consult the Command Prompt documentation for equivalent commands.
+
+To quickly get up and running with CORE, users can download the latest executable version of the engine for their operating system from the [Releases](https://github.com/cdisc-org/cdisc-rules-engine/releases)
 
 Once downloaded, simply unzip the file and run the following command based on your Operating System:
 
-Windows:
+### Windows:
 
 ```
 .\core.exe validate -s <standard> -v <standard_version> -d path/to/datasets
@@ -30,7 +24,7 @@ Windows:
 # ex: .\core.exe validate -s sdtmig -v 3-4 -d .\xpt\
 ```
 
-Linux/Mac:
+### Linux/Mac:
 
 ```
 ./core validate -s <standard> -v <standard_version> -d path/to/datasets
@@ -38,44 +32,24 @@ Linux/Mac:
 # ex: ./core validate -s sdtmig -v 3-4 -d .\xpt\
 ```
 
-### **Code formatter**
+> **_NOTE:_** For Linux users, you will need to run this command from the executable root directory:
+>
+> ```bash
+> chmod +x ./core
+> ```
+>
+> For Mac users, you will need to remove the Apple signature quarantine in addition to making the app executable.
+>
+> ```bash
+> xattr -rd com.apple.quarantine /path/to/core/root/dir
+> chmod +x ./core
+> ```
 
-This project uses the `black` code formatter, `flake8` linter for python and `prettier` for JSON, YAML and MD.
-It also uses `pre-commit` to run `black`, `flake8` and `prettier` when you commit.
-Both dependencies are added to _requirements.txt_.
+## Command-line Interface
 
-**Required**
+**Note**: the following examples are applicable to the source code and have references to "`python core.py`". When using the executable version as described in the [Quick Start](#quick-start) above, instances of "`python core.py`" should be replaced with "`.\core.exe`" (Windows) or "`./core`" (Linux/Mac). You can also run directly on the source code by following the [Cloning](#cloning) instructions.
 
-Setting up `pre-commit` requires one extra step. After installing it you have to run
-
-`pre-commit install`
-
-This installs `pre-commit` in your `.git/hooks` directory.
-
-### **Installing dependencies**
-
-These steps should be run before running any tests or core commands using the non compiled version.
-
-- Create a virtual environment:
-  `python -m venv <virtual_environment_name>`
-- Activate the virtual environment:
-
-`./<virtual_environment_name>/bin/activate` -- on linux/mac </br>
-`.\<virtual_environment_name>\Scripts\Activate` -- on windows
-
-- Install the requirements.
-
-`python -m pip install -r requirements.txt` # From the root directory
-
-### **Running The Tests**
-
-From the root of the project run the following command (this will run both the unit and regression tests):
-
-`python -m pytest tests`
-
-### **Running a validation**
-
-#### From the command line
+### Running a validation (`validate`)
 
 Clone the repository and run `python core.py --help` to see the full list of commands.
 
@@ -87,7 +61,7 @@ Run `python core.py validate --help` to see the list of validation options.
   -ps, --pool-size INTEGER         Number of parallel processes for validation
   -d, --data TEXT                 Path to directory containing data files
   -dp, --dataset-path TEXT        Absolute path to dataset file. Can be specified multiple times.
-  -dxp, --define_xml_path TEXT    Path to Define-XML
+  -dxp, --define-xml-path TEXT    Path to Define-XML
   -l, --log-level [info|debug|error|critical|disabled|warn]
                                   Sets log level for engine logs, logs are
                                   disabled by default
@@ -97,22 +71,59 @@ Run `python core.py validate --help` to see the list of validation options.
                                   [required]
   -v, --version TEXT              Standard version to validate against
                                   [required]
+  -ss, --substandard TEXT         Substandard to validate against
+                                  [required for TIG]
   -ct, --controlled-terminology-package TEXT
                                   Controlled terminology package to validate
                                   against, can provide more than one
+                                  NOTE: if a defineXML is provided, if it is version 2.1
+                                  engine will use the CT laid out in the define.  If it is
+                                  version 2.0, -ct is expected to specify the CT package
   -o, --output TEXT               Report output file destination and name. Path will be
                                   relative to the validation execution directory
                                   and should end in the desired output filename
-                                  without file extension
-                                  '/user/reports/result' will be 'user/report' directory
-                                  with the filename as 'result'
+                                  without file extension. The file extension will be
+                                  automatically added based on the output format.
+                                  Example: 'reports/result' will create 'reports' directory
+                                  with the filename 'result.json' (or 'result.xlsx' for Excel).
+                                  Note: Provide a valid, writable path. Absolute paths must
+                                  be valid for your operating system.
   -of, --output-format [JSON|XLSX]
                                   Output file format
   -rr, --raw-report               Report in a raw format as it is generated by
                                   the engine. This flag must be used only with
                                   --output-format JSON.
+  -mr, --max-report-rows INTEGER  Maximum rows for 'Issue Details' per Excel report. When exceeded,
+                                  issues beyond the limit will not be reported.
+                                  Defaults to 1,000 'Issue Details' rows
+                                  Can be set via MAX_REPORT_ROWS env variable;
+                                  if both .env and -mr are specified, the larger value will be used.
+                                  If set to 0, no maximum will be enforced.
+                                  Excel row limit is 1,048,576 rows
+  -me, --max-errors-per-rule INTEGER BOOLEAN
+                                  Imposes a maximum number of errors per rule to enforce.
+                                  Usage: -me <limit> <per_dataset_flag>
+                                  Example: -me 100 True (make sure to use capital for True/False)
+
+                                  <limit>: Maximum number of errors (integer)
+
+                                  <per_dataset_flag>:
+                                    - false (default): Cumulative soft limit across all datasets.
+                                      After each dataset is validated for a single rule,
+                                      the limit is checked and if met or exceeded,
+                                      validation for that rule will cease for remaining datasets.
+                                    - true: Non-cumulative per-dataset limit.
+                                      Limits reported issues to <limit> per dataset per rule.
+                                      The rule continues to execute on all datasets, but only
+                                      the first <limit> issues per dataset are included in the report.
+
+                                  Can be set via MAX_ERRORS_PER_RULE env variable;
+                                  if both .env and -me <limit> are specified, the larger value will be used.  If either sets the per_dataset_flag to true, it will be true
+                                  If limit is set to 0, no maximum will be enforced.
+                                  No maximum is the default behavior.
   -dv, --define-version TEXT      Define-XML version used for validation
   -dxp, --define-xml-path         Path to define-xml file.
+  -vx, --validate-xml             Enable XML validation (default 'y' to enable, otherwise disable).
   --whodrug TEXT                  Path to directory with WHODrug dictionary
                                   files
   --meddra TEXT                   Path to directory with MedDRA dictionary
@@ -121,14 +132,17 @@ Run `python core.py validate --help` to see the list of validation options.
                                   files
   --medrt TEXT                  Path to directory with MEDRT dictionary
                                   files
+  --unii TEXT                  Path to directory with UNII dictionary
+                                  files
+  --snomed-version TEXT        Version of snomed to use. (ex. 2024-09-01)
+  --snomed-url TEXT            Base url of snomed api to use. (ex. https://snowstorm.snomedtools.org/snowstorm/snomed-ct)
+  --snomed-edition TEXT        Edition of snomed to use. (ex. SNOMEDCT-US)
   -r, --rules TEXT                Specify rule core ID ex. CORE-000001. Can be specified multiple times.
-  -lr, --local_rules TEXT         Specify relative path to directory containing
+  -er, --exclude-rules TEXT       Specify rule core ID to exclude, ex. CORE-000001. Can be specified multiple times.
+  -lr, --local-rules TEXT         Specify relative path to directory or file containing
                                   local rule yml and/or json rule files.
-  -lrc, --local_rules_cache       Adding this flag tells engine to use local rules
-                                  uploaded to the cache instead of published rules
-                                  in the cache for the validation run.
-  -lri, --local_rule_id TEXT      Specify ID for custom, local rules in the cache
-                                  you wish to run a validation with.
+  -cs, --custom-standard       Adding this flag tells engine to use a custom standard specified with -s and -v
+                                  that has been uploaded to the cache using update-cache
   -vo, --verbose-output           Specify this option to print rules as they
                                   are completed
   -p, --progress [verbose_output|disabled|percents|bar]
@@ -136,10 +150,11 @@ Run `python core.py validate --help` to see the list of validation options.
                                   progress. By default a progress bar like
                                   "[████████████████████████████--------]
                                   78%"is printed.
+  -jcf, --jsonata-custom-functions Pair containing a variable name and a Path to directory containing a set of custom JSONata functions. Can be specified multiple times
   --help                          Show this message and exit.
 ```
 
-##### Available log levels
+#### Available log levels
 
 - `debug` - Display all logs
 - `info` - Display info, warnings, and error logs
@@ -147,90 +162,38 @@ Run `python core.py validate --help` to see the list of validation options.
 - `error` - Display only error logs
 - `critical` - Display critical logs
 
-##### **Validate folder**
+#### Validate folder
 
 To validate a folder using rules for SDTM-IG version 3.4 use the following command:
 
-    `python core.py validate -s sdtmig -v 3-4 -d path/to/datasets`
+`python core.py validate -s sdtmig -v 3-4 -d path/to/datasets`
 
-##### **Understanding the Rules Report**
+**_NOTE:_** Before running a validation in the CLI, you must first populate the cache with rules to validate against. See the update-cache command below.
 
-The rules report tab displays the run status of each rule selected for validation
+#### Supported Dataset Formats
 
-The possible rule run statuses are:
+CORE supports the following dataset file formats for validation:
 
-- `SUCCESS` - The rule ran and data was validated against the rule. May or may not produce results
-- `SKIPPED` - The rule was unable to be run. Usually due to missing required data, but could also be cause by rule execution errors.
+- **XPT** - SAS Transport Format (version 5)
+- **JSON** - Dataset-JSON (CDISC standard format)
+- **NDJSON** - Newline Delimited JSON datasets
+- **XLSX** - Excel format (Microsoft Excel files)
 
-##### Additional Core Commands
+**Important Notes:**
 
-**- update-cache** - update locally stored cache data (Requires an environment variable - `CDISC_LIBRARY_API_KEY`)
+- Define-XML files should be provided via the `--define-xml-path` (or `-dxp`) option, not through the dataset directory (`-d` or `-dp`).
+- If you point to a folder containing unsupported file formats, CORE will display an error message indicating which formats are supported.
 
-    `python core.py update-cache`
+#### Validate single rule
 
-To obtain an api key, please follow the instructions found here: <https://wiki.cdisc.org/display/LIBSUPRT/Getting+Started%3A+Access+to+CDISC+Library+API+using+API+Key+Authentication>. Please note it can take up to an hour after sign up to have an api key issued
+`python core.py validate -s sdtmig -v 3-4 -dp <path to dataset json file> -lr <path to rule json file> --meddra ./meddra/ --whodrug ./whodrug/`
 
-- an additional local rule `-lr` flag can be added to the update-cache command that points to a directory of local rules. This adds the rules contained in the directory to the cache. It will not update the cache from library when `-lr` is specified. A `-lri` local rules ID must be given when -lr is used to ID your rules in the cache.
-  **NOTE:** local rules must contain a 'custom_id' key to be added to the cache. This should replace the Core ID field in the rule.
-
-            `python core.py update-cache -lr 'path/to/directory' -lri 'CUSTOM123'`
-
-- to remove local rules from to the cache, remove rules `-rlr` is added to update-cache to remove local rules from the cache. A previously used local_rules_id can be specified to remove all local rules with that ID from the cache or the keyword 'ALL' is reserved to remove all local rules from the cache.
-
-          `python core.py update-cache -rlr 'CUSTOM123'`
-
-**- list-rules** - list published rules available in the cache
-
-- list all published rules:
-
-      `python core.py list-rules`
-
-- list rules for standard:
-
-      `python core.py list-rules -s sdtmig -v 3-4`
-
--list all local rules:
-
-      `python core.py list-rules -lr`
-
--list local rules with a specific local rules id:
-
-      `python core.py list-rules -lr -lri 'CUSTOM1'`
-
-**- list-rule-sets** - lists all standards and versions for which rules are available:
-`python core.py list-rule-sets`
-
-**- test** - Test authored rule given dataset in json format
-
-```
-  -ca, --cache TEXT               Relative path to cache files containing pre
-                                  loaded metadata and rules
-  -dp, --dataset-path TEXT        Absolute path to dataset file
-  -s, --standard TEXT             CDISC standard to validate against
-                                  [required]
-  -v, --version TEXT              Standard version to validate against
-                                  [required]
-  -ct, --controlled-terminology-package TEXT
-                                  Controlled terminology package to validate
-                                  against, can provide more than one
-  -dv, --define-version TEXT      Define-XML version used for validation
-  --whodrug TEXT                  Path to directory with WHODrug dictionary
-                                  files
-  --meddra TEXT                   Path to directory with MedDRA dictionary
-                                  files
-  --loinc TEXT                    Path to directory with LOINC dictionary
-                                  files
-  -r, --rule TEXT                 Path to rule json file.
-  -dxp                            Path to define-xml file.
-  --help                          Show this message and exit.
-```
-
-EX: `python core.py test -s sdtmig -v 3-4 -dp <path to dataset json file> -r <path to rule json file> --meddra ./meddra/ --whodrug ./whodrug/`
 Note: JSON dataset should match the format provided by the rule editor:
 
-```
+```json
 {
-    "datasets": [{
+  "datasets": [
+    {
       "filename": "cm.xpt",
       "label": "Concomitant/Concurrent medications",
       "domain": "CM",
@@ -243,19 +206,204 @@ Note: JSON dataset should match the format provided by the rule editor:
         }
       ],
       "records": {
-        "STUDYID": [
-          "CDISC-TEST",
-          "CDISC-TEST",
-          "CDISC-TEST",
-          "CDISC-TEST"
-        ],
+        "STUDYID": ["CDISC-TEST", "CDISC-TEST", "CDISC-TEST", "CDISC-TEST"]
       }
     }
   ]
 }
 ```
 
-**- list-ct** - list ct packages available in the cache
+#### **Understanding the Rules Report**
+
+The rules report tab displays the run status of each rule selected for validation
+
+The possible rule run statuses are:
+
+- `SUCCESS` - The rule ran and data was validated against the rule. May or may not produce results
+- `SKIPPED` - The rule was unable to be run. Usually due to missing required data, but could also be cause by rule execution errors.
+
+#### Setting DATASET_SIZE_THRESHOLD for Large Datasets
+
+The CDISC Rules Engine respects the `DATASET_SIZE_THRESHOLD` environment variable to determine when to use Dask for large dataset processing. Setting this to 0 coerces Dask usage over Pandas. A .env in the root directory with this variable set will cause this implementation coercion for the CLI. This can also be done with the executable releases via multiple methods:
+
+##### Windows (Command Prompt)
+
+```cmd
+set DATASET_SIZE_THRESHOLD=0 && core.exe validate -rest -of -config -commands
+```
+
+##### Windows (PowerShell)
+
+```powershell
+$env:DATASET_SIZE_THRESHOLD=0; core.exe validate -rest -of -config -commands
+```
+
+##### Linux/Mac (Bash)
+
+```bash
+DATASET_SIZE_THRESHOLD=0 ./core -rest -of -config -commands
+```
+
+##### .env File (Alternative)
+
+Create a `.env` file in the root directory of the release containing:
+
+```
+DATASET_SIZE_THRESHOLD=0
+```
+
+Then run normally: `core.exe validate -rest -of -config -commands
+
+---
+
+**Note:** Setting `DATASET_SIZE_THRESHOLD=0` tells the engine to use Dask processing for all datasets regardless of size, size threshold defaults to 1/4 of available RAM so datasets larger than this will use Dask. See env.example to see what the CLI .env file should look like
+
+### Updating the Cache (`update-cache`)
+
+Update locally stored cache data (Requires an environment variable - `CDISC_LIBRARY_API_KEY`) This is stored in the .env folder in the root directory, the API key does not need quotations around it. When running a validation, CORE uses rules in the cache unless -lr is specified. Running the above command populates the cache with controlled terminology, rules, metadata, etc.
+
+```bash
+  python core.py update-cache
+```
+
+**Firewall Note:** If you encounter an SSL certificate verification error (e.g., `[SSL: CERTIFICATE_VERIFY_FAILED]`), this is typically caused by corporate firewall/proxy SSL inspection. The application connects to `api.library.cdisc.org` on port 443. Contact your IT department to request either the corporate CA certificate bundle or whitelisting for this hostname.
+
+To obtain an api key, please follow the instructions found here: <https://wiki.cdisc.org/display/LIBSUPRT/Getting+Started%3A+Access+to+CDISC+Library+API+using+API+Key+Authentication>. Please note it can take up to an hour after sign up to have an api key issued
+
+##### Custom Standards and Rules
+
+###### Custom Rules Management
+
+- **Custom rules** are stored in a flat file in the cache, indexed by their core ID (e.g., 'COMPANY-000123' or 'CUSTOM-000123').
+- Each rule is stored independently in this file, allowing for efficient lookup and management.
+
+###### Custom Standards Management
+
+- **Custom standards** act as a lookup mechanism that maps a standard identifier to a list of applicable rule IDs.
+- When adding a custom standard, you need to provide a JSON file with the following structure:
+
+  ```json
+  {
+    "standard_id/version": ["RULE_ID1", "RULE_ID2", "RULE_ID3", ...]
+  }
+  ```
+
+  For example:
+
+  ```json
+  {
+    "cust_standard/1-0": [
+      "CUSTOM-000123",
+      "CUSTOM-000456",
+      "CUSTOM-001",
+      "CUSTOM-002"
+    ]
+  }
+  ```
+
+- To add or update a custom standard, use:
+
+  ```bash
+  python core.py update-cache --custom-standard 'path/to/standard.json'
+  ```
+
+- To remove custom standards, use the `--remove-custom-standard` or `-rcs` flag:
+
+  ```bash
+  python core.py update-cache --remove-custom-standard 'mycustom/1-0'
+  ```
+
+- When executing validation against a custom standard, the system will use the standard as a lookup to determine which rules to apply from the rule cache. Custom standards which match CDISC standard names and versions can be used to get library metadata for the standard while still utilizing custom rules. If a custom name does not match a CDISC standard, library metadata will not be populated.
+
+  ```json
+  {
+    "sdtmig/3-4": ["CUSTOM-000123", "CUSTOM-000456", "CUSTOM-001", "CUSTOM-002"]
+  }
+  ```
+
+  This rule will get metadata from SDTMIG version 3.4 but utilize the custom rules listed in the custom standard that need this library metadata.
+
+##### Relationship Between Custom Rules and Standards
+
+- You should first add your custom rules to the cache, then create a custom standard that references those rules.
+- Custom standards can reference both core CDISC rules and your own custom rules in the same standard definition.
+- This two-level architecture allows for flexible rule reuse across multiple standards.
+
+##### Custom Rules Management
+
+- **Add custom rules**: Use the `--custom-rules-directory` or `-crd` flag to specify a directory containing local rules, or `--custom-rule` or `-cr` flag to specify a single rule file:
+  ```bash
+  python core.py update-cache --custom-rules-directory 'path/to/directory'
+  python core.py update-cache --custom-rule 'path/to/rule.json' --custom-rule 'path/to/rule.yaml'
+  ```
+- **Update a custom rule**: Use the `--update-custom-rule` or `-ucr` flag to update an existing rule in the cache:
+
+  ```bash
+  python core.py update-cache --update-custom-rule 'path/to/updated_rule.yaml'
+  ```
+
+- **Remove custom rules**: Use the `--remove-custom-rules` or `-rcr` flag to remove rules from the cache. Can be a single rule ID, a comma-separated list of IDs, or ALL to remove all custom rules:
+  ```bash
+  python core.py update-cache --remove-custom-rules 'RULE_ID'
+  python core.py update-cache --remove-custom-rules 'RULE_ID1,RULE_ID2,RULE_ID3'
+  python core.py update-cache --remove-custom-rules ALL
+  ```
+
+### List Rules (`list-rules`)
+
+List published rules available in the cache
+
+- list all published rules:
+
+      `python core.py list-rules`
+
+- list rules for standard:
+
+      `python core.py list-rules -s sdtmig -v 3-4`
+
+- list rules for integrated standard (substandard: "SDTM", "SEND", "ADaM", "CDASH"):
+
+      `python core.py list-rules -s tig -v 1-0 -ss SDTM`
+
+- list rules by ID:
+
+      `python core.py list-rules -r CORE-000351 -r CORE-000591`
+
+- List all custom rules:
+
+  ```bash
+  python core.py list-rules --custom-rules
+  ```
+
+- List custom rules with a specific ID:
+  ```bash
+  python core.py list-rules --custom-rules -s custom_standard -v 1-0
+  ```
+
+### List Rule Sets (`list-rule-sets`)
+
+Lists all standards and versions for which rules are available:
+
+```bash
+python core.py list-rule-sets
+```
+
+To list custom standards and versions instead:
+
+```bash
+python core.py list-rule-sets --custom
+# or using the short form:
+python core.py list-rule-sets -o
+```
+
+**Options:**
+
+- `-c, --cache-path` - Relative path to cache files containing pre-loaded metadata and rules
+- `-o, --custom` - Flag to list all custom standards and versions in the cache instead of CDISC standards & rules
+
+### List CT (`list-ct`)
+
+List ct packages available in the cache
 
 ```
 Usage: python core.py list-ct [OPTIONS]
@@ -263,194 +411,84 @@ Usage: python core.py list-ct [OPTIONS]
   Command to list the ct packages available in the cache.
 
 Options:
-  -c, --cache_path TEXT  Relative path to cache files containing pre loaded
+  -c, --cache-path TEXT  Relative path to cache files containing pre loaded
                          metadata and rules
   -s, --subsets TEXT     CT package subset type. Ex: sdtmct. Multiple values
                          allowed
   --help                 Show this message and exit.
 ```
 
-#### **PyPI Quickstart: Validate data within python**
+## Development
 
-An alternative to running the validation from the command line is to instead import the rules engine library in python and run rules against data directly (without needing your data to be in `.xpt` format).
+### PyPI Integration
 
-##### Step 0: Install the library
+The CDISC Rules Engine is available as a Python package through PyPI. This allows you to:
 
-```
+- Import the rules engine library directly into your Python projects
+- Validate data without requiring .xpt format files
+- Integrate rules validation into your existing data pipelines
+
+```python
 pip install cdisc-rules-engine
 ```
 
-In addition to installing the library, you'll also want to download the rules cache (found in the `resources/cache` folder of this repository) and store them somewhere in your project.
+For implementation instructions, see [PYPI.md](PYPI.md).
 
-##### Step 1: Load the Rules
+### Cloning
 
-The rules can be loaded into an in-memory cache by doing the following:
+In the terminal, navigate to the directory you intend to install CORE rules engine in
 
-```python
-import os
-import pathlib
+1. Clone the repository:
 
-from multiprocessing.managers import SyncManager
-from cdisc_rules_engine.services.cache import InMemoryCacheService
+   ```
+   git clone https://github.com/cdisc-org/cdisc-rules-engine
+   ```
 
-class CacheManager(SyncManager):
-    pass
+2. Ensure you have Python 3.12 installed:
+   You can check your Python version with:
+   ```
+   python --version
+   ```
+   If you don't have Python 3.12, please download and install it from [python.org](https://www.python.org/downloads/) or using your system's package manager.
 
-# If you're working from a terminal you may need to
-# use SyncManager directly rather than define CacheManager
-CacheManager.register("InMemoryCacheService", InMemoryCacheService)
+### Installing dependencies
 
+These steps should be run before running any tests or core commands using the non compiled version.
 
-def load_rules_cache(path_to_rules_cache):
-  cache_path = pathlib.Path(path_to_rules_cache)
-  manager = CacheManager()
-  manager.start()
-  cache = manager.InMemoryCacheService()
+- Create a virtual environment:
 
-  files = next(os.walk(cache_path), (None, None, []))[2]
+  `python -m venv <virtual_environment_name>`
 
-  for fname in files:
-      with open(cache_path / fname, "rb") as f:
-          cache.add_all(pickle.load(f))
+NOTE: if you have multiple versions of python on your machine, you can call python 3.12 for the virtual environment's creation instead of the above command:
+`python3.12 -m venv <virtual_environment_name>`
 
-  return cache
-```
+- Activate the virtual environment:
 
-Rules in this cache can be accessed by standard and version using the `get_rules_cache_key` function.
+`./<virtual_environment_name>/bin/activate` -- on linux/mac </br>
+`.\<virtual_environment_name>\Scripts\Activate` -- on windows
 
-```python
-from cdisc_rules_engine.utilities.utils import get_rules_cache_key
+- Install the requirements.
 
-cache = load_rules_cache()
-# Note that the standard version is separated by a dash, not a period
-cache_key_prefix = get_rules_cache_key("sdtmig", "3-4")
-rules = cache.get_all_by_prefix(cache_key_prefix)
-```
+`python -m pip install -r requirements-dev.txt` # From the root directory
 
-`rules` will now be a list of dictionaries the following keys
+### Creating an executable version
 
-- `core_id`
-  - e.g. "CORE-000252"
-- `domains`
-  - e.g. `{'Include': ['DM'], 'Exclude': []}` or `{'Include': ['ALL']}`
-- `author`
-- `reference`
-- `sensitivity`
-- `executability`
-- `description`
-- `authorities`
-- `standards`
-- `classes`
-- `rule_type`
-- `conditions`
-- `actions`
-- `datasets`
-- `output_variables`
-
-##### Step 2: Prepare your data
-
-In order to pass your data through the rules engine, it must be a pandas dataframe of an SDTM dataset. For example:
-
-```
->>> data
-STUDYID DOMAIN USUBJID  AESEQ AESER    AETERM    ... AESDTH AESLIFE AESHOSP
-0          AE      001     0     Y     Headache  ...     N       N       N
-
-[1 rows x 19 columns]
-```
-
-Before passing this into the rules engine, we need to wrap it in a DatasetVariable.
-
-```python
-from cdisc_rules_engine.models.dataset_variable import DatasetVariable
-
-dataset = DatasetVariable(data)
-```
-
-##### Step 3: Run the (relevant) rules
-
-Next, we need to actually run the rules. We can select which rules we want to run based on the domain of the data we're checking and the `"Include"` and `"Exclude"` domains of the rule.
-
-```python
-# Get the rules for the domain AE
-# (Note: we're ignoring ALL domain rules here)
-ae_rules = [
-  rule for rule in rules
-  if "AE" in rule["domains"].get("Include", [])
-]
-```
-
-There's one last thing we need before we can actually run the rule, and that's a `COREActions` object. This object will handle generating error messages should the rule fail.
-
-To instantiate a `COREActions` object, we need to pass in the following:
-
-- `results`: An array to which errors will be appended
-- `variable`: Our DatasetVariable
-- `domain`: e.g. "AE"
-- `rule`: Our rule
-
-```python
-from cdisc_rules_engine.models.actions import COREActions
-
-rule = ae_rules[0]
-results = []
-core_actions = COREActions(
-  results,
-  variable=dataset,
-  domain="AE",
-  rule=rule
-)
-```
-
-All that's left is to run the rule!
-
-```python
-from business_rules.engine import run
-
-was_triggered = run(
-  rule=rule,
-  defined_variables=dataset_variable,
-  defined_actions=core_actions,
-)
-```
-
-##### Step 5: Interpret the results
-
-The return value of run will tell us if the rule was triggered.
-
-- A `False` value means that there were no errors
-- A `True` value means that there were errors
-
-If there were errors, they will have been appended to the results array passed into your `COREActions` instance. Here's an example error:
-
-```python
-{
-  'executionStatus': 'success',
-  'domain': 'AE',
-  'variables': ['AESLIFE'],
-  'message': 'AESLIFE is completed, but not equal to "N" or "Y"',
-  'errors': [
-    {'value': {'AESLIFE': 'Maybe'}, 'row': 1}
-  ]
-}
-```
-
-### **Creating an executable version**
+**Note:** Further directions to create your own executable are contained in [README_Build_Executable.md](README_Build_Executable.md) if you wish to build an unofficial release executable for your own use.
 
 **Linux**
 
-`pyinstaller core.py --add-data=venv/lib/python3.9/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates`
+`pyinstaller core.py --add-data=venv/lib/python3.12/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates --add-data=resources/jsonata:resources/jsonata`
 
 **Windows**
 
-`pyinstaller core.py --add-data=".venv/Lib/site-packages/xmlschema/schemas;xmlschema/schemas" --add-data="resources/cache;resources/cache" --add-data="resources/templates;resources/templates"`
+`pyinstaller core.py --add-data=".venv/Lib/site-packages/xmlschema/schemas;xmlschema/schemas" --add-data="resources/cache;resources/cache" --add-data="resources/templates;resources/templates" --add-data="resources/jsonata;resources/jsonata"`
 
 _Note .venv should be replaced with path to python installation or virtual environment_
 
 This will create an executable version in the `dist` folder. The version does not require having Python installed and
 can be launched by running `core` script with all necessary CLI arguments.
 
-### **Creating .whl file**
+### Creating .whl file
 
 All non-python files should be listed in `MANIFEST.in` to be included in the distribution.
 Files must be in python package.
@@ -480,3 +518,55 @@ To upload built distributive to pypi
 
 `py -m pip install --upgrade twine`
 `py -m twine upload --repository {repository_name} dist/*`
+
+## Contributing
+
+### Code formatter
+
+This project uses the `black` code formatter, `flake8` linter for python and `prettier` for JSON, YAML and MD.
+It also uses `pre-commit` to run `black`, `flake8` and `prettier` when you commit.
+Both dependencies are added to _requirements-dev.txt_.
+
+Setting up `pre-commit` requires one extra step. After installing it you have to run
+
+`pre-commit install`
+
+This installs `pre-commit` in your `.git/hooks` directory.
+
+### Running The Tests
+
+From the root of the project run the following command (this will run both the unit and regression tests):
+
+`python -m pytest tests`
+
+### Updating USDM JSON Schema
+
+Currently, the engine supports USDM JSON Schema validation against versions 3.0 and 4.0. The schema definition files are located at:
+
+- `resources/cache/usdm-3-0-schema.pkl`
+- `resources/cache/usdm-4-0-schema.pkl`
+
+These schema definitions were derived from the OpenAPI specs located in the `https://github.com/cdisc-org/DDF-RA` repo, so in order to update the existing schemas or create a new one, run:
+
+1. `git --no-pager --git-dir DDF-RA.git show --format=format:"%B" {required tag (example: v3.0.0)}:Deliverables/API/USDM_API.json > USDM_API_{required version}.json`
+2. Use `scripts/openapi-to-json.py` script to convert the OpenAPI spec to JSON schema definition
+3. Use `scripts/json_pkl_converter.py` script to convert the JSON file to `.pkl`
+4. Place the `.pkl` file to `resources/cache`
+
+## Troubleshooting & Support
+
+### Questions or Need Help?
+
+If you need any assistance or encounter errors during setup, check or reach out via our [Q&A](https://github.com/cdisc-org/cdisc-rules-engine/discussions/categories/q-a?discussions_q=) board
+
+### Submit an Issue
+
+If you encounter any bugs or have feature requests please submit an issue on our GitHub repository:
+[https://github.com/cdisc-org/cdisc-rules-engine/issues](https://github.com/cdisc-org/cdisc-rules-engine/issues)
+
+When submitting an issue, please include:
+
+- A clear description of the problem or request
+- Steps to reproduce the issue (for bugs)
+- Your operating system and environment details
+- Any relevant logs or error messages

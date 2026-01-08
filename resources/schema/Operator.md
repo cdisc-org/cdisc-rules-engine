@@ -1,8 +1,19 @@
-# Relational
+# Check Operator
 
-## equal_to
+NOTE: Complementary operators have access to the same paremeter arguments unless otherwise stated.
+
+## Relational
+
+Basic value comparisons and presence checks for evaluating equality, inequality, ranges, and whether values exist or are empty.
+
+### equal_to
 
 Value comparison. Works for both string and number.
+Has optional parameter:
+
+- 'value_is_reference' when true, the value parameter specifies a column name whose content determines which column to compare against dynamically.
+- 'type_insensitive' when true, both values are converted to strings before comparison to handle type mismatches between string and numeric data. NOTE: all trailing zeroes will be removed in both strings and floats.
+- 'round_values' when true, both the target and value will be rounded to the nearest integer
 
 > --OCCUR = N
 
@@ -10,6 +21,27 @@ Value comparison. Works for both string and number.
 - name: --OCCUR
   operator: equal_to
   value: "N"
+```
+
+> IDVARVAL = the column specified in the IDVAR column for each row (type insensitive comparison).
+
+```yaml
+- name: IDVARVAL
+  operator: equal_to
+  value: "IDVAR"
+  value_is_reference: true
+  type_insensitive: true
+```
+
+> --STRESC = --STRESN with rounded values and ignoring the char/num type differences
+> between the two columns
+
+```yaml
+- name: --STRESC
+  operator: equal_to
+  type_insensitive: true
+  value: --STRESN
+  round_values: true
 ```
 
 > EXDOSE EQ 0
@@ -20,9 +52,9 @@ Value comparison. Works for both string and number.
   value: 0
 ```
 
-## not_equal_to
+### not_equal_to
 
-Complement of `equal_to`
+Complement of `equal_to`. Also has the optional parameters 'value_is_reference', 'round_values' and 'type_insensitive'.
 
 > --OCCUR ^= Y
 
@@ -32,9 +64,9 @@ Complement of `equal_to`
   value: "Y"
 ```
 
-## equal_to_case_insensitive
+### equal_to_case_insensitive
 
-Case insensitive `equal_to`
+Case insensitive `equal_to`. Also has the optional parameters 'value_is_reference', 'round_values' and 'type_insensitive'.
 
 > DSTERM is "Informed consent obtained"
 
@@ -44,11 +76,11 @@ Case insensitive `equal_to`
   value: Informed consent obtained
 ```
 
-## not_equal_to_case_insensitive
+### not_equal_to_case_insensitive
 
-Complement of `equal_to_case_insensitive`
+Complement of `equal_to_case_insensitive`. Also has the optional parameters 'value_is_reference', 'round_values' and 'type_insensitive'.
 
-## greater_than
+### greater_than
 
 Value comparison
 
@@ -60,7 +92,7 @@ Value comparison
   value: 0
 ```
 
-## greater_than_or_equal_to
+### greater_than_or_equal_to
 
 Value comparison
 
@@ -72,7 +104,7 @@ Value comparison
   value: 1
 ```
 
-## less_than
+### less_than
 
 Value comparison
 
@@ -84,7 +116,7 @@ Value comparison
   value: 1
 ```
 
-## less_than_or_equal_to
+### less_than_or_equal_to
 
 Value comparison
 
@@ -96,7 +128,7 @@ Value comparison
   value: 1
 ```
 
-## empty
+### empty
 
 Value presence
 
@@ -107,7 +139,7 @@ Value presence
   operator: empty
 ```
 
-## non_empty
+### non_empty
 
 Complement of `empty`
 
@@ -118,13 +150,15 @@ Complement of `empty`
   operator: non_empty
 ```
 
-# String
+## String
 
-## does_not_equal_string_part
+Text-based operations including regex pattern matching, substring operations, prefix/suffix comparisons, and string length validations.
+
+### does_not_equal_string_part
 
 Complement of `equals_string_part`
 
-## equals_string_part
+### equals_string_part
 
 > RDOMAIN equals characters 5 and 6 of SUPP dataset name
 
@@ -135,7 +169,7 @@ Complement of `equals_string_part`
   regex: ".{4}(..).*"
 ```
 
-## matches_regex
+### matches_regex
 
 Regular Expression value matching
 
@@ -154,7 +188,7 @@ Regular Expression value matching
   value: ^\d*\.?\d*$
 ```
 
-## not_matches_regex
+### not_matches_regex
 
 Complement of `matches_regex`
 
@@ -166,7 +200,7 @@ Complement of `matches_regex`
   value: ^[A-Z_][A-Z0-9_]{0,7}$
 ```
 
-## prefix_matches_regex
+### prefix_matches_regex
 
 True if the `prefix` number of characters beginning a string in `name` match a regular expression in `value`
 
@@ -177,11 +211,11 @@ True if the `prefix` number of characters beginning a string in `name` match a r
   value: (AP|ap)
 ```
 
-## not_prefix_matches_regex
+### not_prefix_matches_regex
 
 Complement of `prefix_matches_regex`
 
-## suffix_matches_regex
+### suffix_matches_regex
 
 True if the `suffix` number of characters ending a string in `name` match a regular expression in `value`
 
@@ -194,7 +228,7 @@ True if the `suffix` number of characters ending a string in `name` match a regu
   value: "\d\d"
 ```
 
-## not_suffix_matches_regex
+### not_suffix_matches_regex
 
 Complement of `suffix_matches_regex`
 
@@ -207,7 +241,7 @@ Complement of `suffix_matches_regex`
   value: "\d\d"
 ```
 
-## starts_with
+### starts_with
 
 Substring matching
 
@@ -219,7 +253,7 @@ Substring matching
   value: "AP"
 ```
 
-## ends_with
+### ends_with
 
 Substring matching
 
@@ -231,7 +265,7 @@ Substring matching
   value: "FOOBAR"
 ```
 
-## prefix_equal_to
+### prefix_equal_to
 
 True if the `prefix` number of characters beginning a string in `name` match the string in `value`
 
@@ -242,11 +276,11 @@ True if the `prefix` number of characters beginning a string in `name` match the
   value: DOMAIN
 ```
 
-## prefix_not_equal_to
+### prefix_not_equal_to
 
 Complement of `prefix_equal_to`
 
-## suffix_equal_to
+### suffix_equal_to
 
 True if the `suffix` number of characters ending a string in `name` match the string in `value`
 
@@ -257,51 +291,59 @@ True if the `suffix` number of characters ending a string in `name` match the st
   value: DOMAIN
 ```
 
-## suffix_not_equal_to
+### suffix_not_equal_to
 
 Complement of `suffix_equal_to`
 
-## contains
+### contains
 
-True if the value in `value` is a substring of the value in `name`
+Will return True if the value in `value` is contained within the collection/iterable in the target column, or if there's an exact match for non-iterable data.
 
-> --TOXGR contains 'GRADE'
+The operator checks if every value in a column is a list or set. If yes, it compares row-by-row. If any value is blank or a different type (like a string or number), it compares each value against the entire column instead.
+
+Example:
 
 ```yaml
-- name: "--TOXGR"
+- name: "--TOXGR" # Column containing lists like ['GRADE', 'SEVERITY', 'ONSET']
   operator: "contains"
-  value: "GRADE"
+  value: "GRADE" # True if 'GRADE' is an element in the list
 ```
 
-## does_not_contain
+### does_not_contain
 
-Complement of `contains`
-
-## contains_case_insensitive
-
-True if the value in `value` is a case insensitive substring of the value in `name`
-
-> --TOXGR contains 'GRADE', regardless of text case
+Complement of `contains`. Returns True when the value is NOT contained within the target collection.
 
 ```yaml
 - name: "--TOXGR"
-  operator: "contains_case_insentisitve"
-  value: "grade"
+  operator: "does_not_contain"
+  value: "GRADE" # True if 'GRADE' is NOT an element in the list
 ```
 
-## does_not_contain_case_insensitive
+### contains_case_insensitive
 
-Complement of `contains_case_insensitive`
+True if the value in `value` is contained within the collection/iterable in the target column, performing case-insensitive comparison.
 
-> --TOXGR does not contain 'GRADE', regardless of text case
+Example:
+
+```yaml
+- name: "--TOXGR" # Column containing lists like ['Grade', 'Severity', 'Onset']
+  operator: "contains_case_insensitive"
+  value: "grade" # True if 'Grade'/'GRADE'/'grade' exists in the list
+```
+
+### does_not_contain_case_insensitive
+
+Complement of `contains_case_insensitive`. Returns True when the value is NOT contained within the target collection (case-insensitive).
+
+Example:
 
 ```yaml
 - name: "--TOXGR"
   operator: "does_not_contain_case_insensitive"
-  value: "grade"
+  value: "grade" # True if no case variation of 'grade' exists in the list
 ```
 
-## longer_than
+### longer_than
 
 Length comparison
 
@@ -313,7 +355,7 @@ Length comparison
   value: 8
 ```
 
-## longer_than_or_equal_to
+### longer_than_or_equal_to
 
 Length comparison
 
@@ -325,7 +367,7 @@ Length comparison
   value: 201
 ```
 
-## shorter_than
+### shorter_than
 
 Length comparison
 
@@ -337,7 +379,7 @@ Length comparison
   value: 9
 ```
 
-## shorter_than_or_equal_to
+### shorter_than_or_equal_to
 
 Length comparison
 
@@ -349,7 +391,7 @@ Length comparison
   value: 201
 ```
 
-## has_equal_length
+### has_equal_length
 
 Length comparison
 
@@ -361,25 +403,75 @@ Length comparison
   value: SESTDTC
 ```
 
-## has_not_equal_length
+### has_not_equal_length
 
 Complement of `has_equal_length`
 
-# Date
+### split_parts_have_equal_length
 
-## date_equal_to
+Splits a string by a separator and checks if both parts have equal length. Generic operator for validating paired data formats where both parts must have the same level of detail or precision.
+
+Parameters:
+
+- `separator`: The delimiter to split on (default: "/")
+
+> Check that string parts separated by a delimiter have equal length
+
+```yaml
+- name: --DTC
+  operator: split_parts_have_equal_length
+  separator: "/"
+```
+
+Use cases:
+
+- **Date/time intervals**: `2003-12-15T10:00/2003-12-15T10:30` → True (both 16 characters)
+- **Date ranges**: `2003-12-01/2003-12-10` → True (both 10 characters)
+- **Version ranges**: `1.2.3/2.0.0` → True (both 5 characters)
+- **Product codes**: `ABC-123/XYZ-789` → True (both 7 characters)
+
+Invalid example:
+
+- `2003-12-15T10:00/2003-12-15T10:30:15` → False (16 vs 19 characters - different precision)
+
+### split_parts_have_unequal_length
+
+Complement of `split_parts_have_equal_length`. Returns True when parts have unequal lengths (indicates a violation).
+
+```yaml
+- name: --DTC
+  operator: split_parts_have_unequal_length
+  separator: "/"
+```
+
+## Date
+
+Date and time specific operations for comparing dates, validating date completeness, checking date formats, and validating ISO-8601 durations.
+
+### date_equal_to
 
 Date comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified.
 
-## date_not_equal_to
+The `date_component` parameter accepts: `"year"`, `"month"`, `"day"`, `"hour"`, `"minute"`, `"second"`, `"microsecond"`, or `"auto"`.
+
+When `date_component: "auto"` is used, the operator automatically detects the precision of both dates and compares at the common (less precise) level.
+
+```yaml
+- name: "AESTDTC"
+  operator: "date_equal_to"
+  value: "RFSTDTC"
+  date_component: "auto"
+```
+
+### date_not_equal_to
 
 Complement of `date_equal_to`
 
-Date comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified.
+Date comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified. Supports `date_component: "auto"`.
 
-## date_greater_than
+### date_greater_than
 
-Date comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified.
+Date comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified. Supports `date_component: "auto"`.
 
 > Year part of BRTHDTC > 2021
 
@@ -390,9 +482,9 @@ Date comparison. Compare `name` to `value`. Compares partial dates if `date_comp
   value: "2021"
 ```
 
-## date_greater_than_or_equal_to
+### date_greater_than_or_equal_to
 
-Date comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified.
+Date comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified. Supports `date_component: "auto"`.
 
 > Year part of BRTHDTC >= 2021
 
@@ -403,9 +495,9 @@ Date comparison. Compare `name` to `value`. Compares partial dates if `date_comp
   value: "2021"
 ```
 
-## date_less_than
+### date_less_than
 
-Date comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified.
+Date comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified. Supports `date_component: "auto"`.
 
 > AEENDTC < AESTDTC
 
@@ -433,9 +525,9 @@ Operations:
     id: "$max_ds_dsstdtc"
 ```
 
-## date_less_than_or_equal_to
+### date_less_than_or_equal_to
 
-Date comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified.
+Date comparison. Compare `name` to `value`. Compares partial dates if `date_component` is specified. Supports `date_component: "auto"`.
 
 > AEENDTC <= AESTDTC
 
@@ -445,7 +537,7 @@ Date comparison. Compare `name` to `value`. Compares partial dates if `date_comp
   value: "AESTDTC"
 ```
 
-## is_complete_date
+### is_complete_date
 
 Date check
 
@@ -456,7 +548,7 @@ Date check
   operator: "is_complete_date"
 ```
 
-## is_incomplete_date
+### is_incomplete_date
 
 Complement of `is_complete_date`
 
@@ -469,32 +561,36 @@ Date check
   operator: "is_incomplete_date"
 ```
 
-## invalid_date
+### invalid_date
 
-Date check
+The operator performs date validation against complete and partial dates with uncertainty in the following order:
 
-> BRTHDTC is invalid
+1. Attempts to parse using [dateutil.parser.isoparse()](https://dateutil.readthedocs.io/en/stable/parser.html)
+2. If parsing fails and the string contains uncertainty indicators (`/`, `--`, `-:`), validates against an extended ISO 8601 dates regex pattern
+3. If parsing succeeds, dates are still validated against the regex pattern.
 
 ```yaml
 - name: "BRTHDTC"
   operator: "invalid_date"
 ```
 
-## invalid_duration
+### invalid_duration
 
-Duration ISO-8601 check, returns True if a duration is not in ISO-8601 format. Parameter `negative` must be given to either allow or disallow negative durations as valid.
+Duration ISO-8601 check, returns True if a duration is not in ISO-8601 format. The negative parameter must be specified to indicate if negative durations are either allowed (True) or disallowed (False)
 
-> DURVAR is invalid
+> DURVAR is invalid (negative durations disallowed)
 
 ```yaml
-- name: "BRTHDTC"
+- name: "DURVAR"
   operator: "invalid_duration"
-  negative: "False"
+  negative: False
 ```
 
-# Metadata
+## Metadata
 
-## exists
+Column and dataset existence checks, including validating the presence of variables and checking for inconsistencies in enumerated column patterns.
+
+### exists
 
 True if the column exists in the current dataframe. (Works for datasets and variables)
 
@@ -515,7 +611,7 @@ Check:
       operator: "exists"
 ```
 
-## not_exists
+### not_exists
 
 Complement of `exists`
 
@@ -536,7 +632,7 @@ Check:
       operator: "not_exists"
 ```
 
-## inconsistent_enumerated_columns
+### inconsistent_enumerated_columns
 
 Checks for inconsistencies in enumerated columns of a DataFrame. Starting with the smallest/largest enumeration of the given variable, returns True if VARIABLE(N+1) is populated but VARIABLE(N) is not populated. Repeats for all variables belonging to the enumeration. Note that the initial variable will not have an index (VARIABLE) and the next enumerated variable has index 1 (VARIABLE1).
 
@@ -549,32 +645,15 @@ Check:
       operator: "inconsistent_enumerated_columns"
 ```
 
-## variable_metadata_equal_to
+## Set Membership
 
-Could be useful, for example, in checking variable permissibility in conjunction with the `variable_library_metadata` operation:
+Testing whether individual values or string parts belong to specific lists or sets, with support for case-sensitive and case-insensitive comparisons.
 
-```yaml
-Check:
-  all:
-    - operator: variable_metadata_equal_to
-      value: Exp
-      metadata: $permissibility
-    - operator: not_exists
-Operations:
-  - id: $permissibility
-    operator: variable_library_metadata
-    name: core
-```
-
-## variable_metadata_not_equal_to
-
-Complement of `variable_metadata_equal_to`
-
-# Relationship & Set
-
-## is_contained_by
+### is_contained_by
 
 Value in `name` compared against a list in `value`. The list can have literal values or be a reference to a `$variable`.
+
+This operator behaves similarly to `contains`. The key distinction: `contains` checks if comparator ∈ target, while `is_contained_by` checks if target ∈ comparator.
 
 > ACTARM in ('Screen Failure', 'Not Assigned', 'Not Treated', 'Unplanned Treatment')
 
@@ -588,7 +667,7 @@ Value in `name` compared against a list in `value`. The list can have literal va
     - "Unplanned Treatment"
 ```
 
-## is_not_contained_by
+### is_not_contained_by
 
 Complement of `is_contained_by`
 
@@ -602,7 +681,7 @@ Complement of `is_contained_by`
     - "Not Assigned"
 ```
 
-## is_contained_by_case_insensitive
+### is_contained_by_case_insensitive
 
 Value in `name` case insensitive compared against a list in `value`. The list can have literal values or be a reference to a `$variable`.
 
@@ -618,7 +697,7 @@ Value in `name` case insensitive compared against a list in `value`. The list ca
     - "Unplanned Treatment"
 ```
 
-## is_not_contained_by_case_insensitive
+### is_not_contained_by_case_insensitive
 
 Complement of `is_contained_by_case_insensitive`
 
@@ -632,7 +711,7 @@ Complement of `is_contained_by_case_insensitive`
     - "Not Assigned"
 ```
 
-## prefix_is_contained_by
+### prefix_is_contained_by
 
 True if the `prefix` number of characters beginning a string in `name` match one of the strings in the list in `value`
 
@@ -645,11 +724,11 @@ True if the `prefix` number of characters beginning a string in `name` match one
   value: $study_domains
 ```
 
-## prefix_is_not_contained_by
+### prefix_is_not_contained_by
 
 Complement of `prefix_is_contained_by`
 
-## suffix_is_contained_by
+### suffix_is_contained_by
 
 True if the `suffix` number of characters ending a string in `name` match one of the strings in the list in `value`
 
@@ -662,11 +741,15 @@ True if the `suffix` number of characters ending a string in `name` match one of
   value: $study_domains
 ```
 
-## suffix_is_not_contained_by
+### suffix_is_not_contained_by
 
 Complement of `suffix_is_contained_by`
 
-## contains_all
+## Set Operations
+
+Operations between collections of values, including checking if sets contain all elements, share elements, or maintain proper ordering relationships.
+
+### contains_all
 
 True if all values in `value` are contained within the variable `name`.
 
@@ -682,7 +765,23 @@ True if all values in `value` are contained within the variable `name`.
     - "Unplanned Treatment"
 ```
 
-## not_contains_all
+The operator also supports lists:
+
+```yaml
+- name: "$spec_codelist"
+  operator: "contains_all"
+  value: "$ppspec_value"
+```
+
+Where:
+
+| $spec_codelist              |   $ppspec_value    |
+| :-------------------------- | :----------------: |
+| ["CODE1", "CODE2", "CODE3"] | ["CODE1", "CODE2"] |
+| ["CODE1", "CODE2", "CODE3"] | ["CODE2", "CODE3"] |
+| ["CODE1", "CODE2", "CODE3"] |     ["CODE1"]      |
+
+### not_contains_all
 
 Complement of `contains_all`
 
@@ -698,7 +797,66 @@ Complement of `contains_all`
     - "Unplanned Treatment"
 ```
 
-## is_unique_set
+The operator also supports lists:
+
+```yaml
+- name: "$spec_codelist"
+  operator: "not_contains_all"
+  value: "$ppspec_value"
+```
+
+Where:
+
+| $spec_codelist              |   $ppspec_value    |
+| :-------------------------- | :----------------: |
+| ["CODE1", "CODE2", "CODE3"] | ["CODE1", "CODE2"] |
+| ["CODE1", "CODE2", "CODE3"] | ["CODE2", "CODE3"] |
+| ["CODE1", "CODE2", "CODE3"] |     ["CODE1"]      |
+
+### shares_at_least_one_element_with
+
+Will raise an issue if at least one of the values in `name` is the same as one of the values in `value`. See [shares_no_elements_with](#shares_no_elements_with).
+
+### shares_exactly_one_element_with
+
+Will raise an issue if exactly one of the values in `name` is the same as one of the values in `value`. See [shares_no_elements_with](#shares_no_elements_with).
+
+### shares_no_elements_with
+
+Will raise an issue if the values in `name` do not share any of the values in `value`
+
+> Check if $dataset_variables shares no elements with $timing_variables
+
+```yaml
+Rule Type: Dataset Metadata Check # One record per dataset
+Check:
+  - all:
+      name: $dataset_variables
+      operator: shares_no_elements_with
+      value: $timing_variables
+```
+
+### is_ordered_subset_of
+
+Checks if elements in the target list appear in the same relative order in the comparator list.
+
+> Check if dataset column order is a correctly ordered subset of library column order
+
+```yaml
+- name: $column_order_from_dataset
+  operator: is_ordered_subset_of
+  value: $column_order_from_library
+```
+
+### is_not_ordered_subset_of
+
+Complement of `is_ordered_subset_of`
+
+## Data Uniqueness & Integrity
+
+Ensuring data uniqueness constraints and validating relationship integrity, including unique key combinations and one-to-one relationships between variables.
+
+### is_unique_set
 
 Relationship Integrity Check
 
@@ -713,9 +871,36 @@ Relationship Integrity Check
     - "--TESTCD"
 ```
 
-## is_not_unique_set
+> `name` can be a variable containing a list of columns and `value` does not need to be present
 
-Complement of `is_unique_set`
+> The `regex` parameter allows you to extract portions of values using a regex pattern before checking uniqueness.
+
+> Compare date only (YYYY-MM-DD) for uniqueness
+
+```yaml
+- name: "--REPNUM"
+  operator: is_not_unique_set
+  value:
+    - "USUBJID"
+    - "--TESTCD"
+    - "$TIMING_VARIABLES"
+  regex: '^\d{4}-\d{2}-\d{2}'
+```
+
+> Compare by first N characters of a string
+
+```yaml
+- name: "ITEM_ID"
+  operator: is_not_unique_set
+  value:
+    - "USUBJID"
+    - "CATEGORY"
+  regex: "^.{2}"
+```
+
+### is_not_unique_set
+
+Complement of `is_unique_set`.
 
 > --SEQ is not unique within DOMAIN, USUBJID, and --TESTCD
 
@@ -728,7 +913,33 @@ Complement of `is_unique_set`
     - "--TESTCD"
 ```
 
-## present_on_multiple_rows_within
+> `name` can be a variable containing a list of columns and `value` does not need to be present
+
+```yaml
+Rule Type: Dataset Contents Check against Define XML
+Check:
+  all:
+    - name: define_dataset_key_sequence # contains list of dataset key columns
+      operator: is_not_unique_set
+```
+
+### is_unique_relationship
+
+Relationship Integrity Check looking for a 1-1 relationship between name and value. Ensures uniqueness of both name and value.
+
+> AETERM and AEDECOD has a 1-to-1 relationship
+
+```yaml
+- name: AETERM
+  operator: is_unique_relationship
+  value: AEDECOD
+```
+
+### is_not_unique_relationship
+
+Complement of `is_unique_relationship`
+
+### present_on_multiple_rows_within
 
 True if the same value of `name` is present on multiple rows, grouped by `within`. A maximum allowed number of occurrences can be specified in the value attribute. In this instance the value: 4 means that an error will be flagged if the same value appears more than 4 times within a USUBJID. By default the operator will flag any time a value appears more than once.
 
@@ -739,7 +950,7 @@ True if the same value of `name` is present on multiple rows, grouped by `within
   within: "USUBJID"
 ```
 
-## not_present_on_multiple_rows_within
+### not_present_on_multiple_rows_within
 
 Complement of `present_on_multiple_rows_within`
 
@@ -750,204 +961,36 @@ Complement of `present_on_multiple_rows_within`
   within: "USUBJID"
 ```
 
-## is_unique_relationship
+## Data Consistency
 
-Relationship Integrity Check
+Checking for consistent values across groups and validating that variables maintain uniform values within specified grouping criteria.
 
-> AETERM and AEDECOD has a 1-to-1 relationship
+### is_inconsistent_across_dataset
 
-```yaml
-- name: AETERM
-  operator: is_unique_relationship
-  value: AEDECOD
-```
+Checks if a variable maintains consistent values within groups defined by one or more grouping variables. Groups records by specified value(s) and validates that the target variable maintains the same value within each unique combination of grouping variables.
 
-## is_not_unique_relationship
-
-Complement of `is_unique_relationship`
-
-## is_valid_relationship
-
-> Records found in the domain referenced by RDOMAIN, where variable in IDVAR = value in IDVARVAL
+Single grouping variable - true if the values of BGSTRESU differ within USUBJID:
 
 ```yaml
-Scopes:
-  Domains:
-    - RELREC
-Check:
-  all:
-    - name: "IDVAR"
-      operator: is_valid_relationship
-      context: "RDOMAIN"
-      value: "IDVARVAL"
+- name: "BGSTRESU"
+  operator: is_inconsistent_across_dataset
+  value: "USUBJID"
 ```
 
-## is_not_valid_relationship
-
-Complement of `is_valid_relationship`
-
-Relationship Integrity Check
-
-> No records found in the domain referenced by RDOMAIN, where variable in IDVAR = value in IDVARVAL
+Multiple grouping variables - true if the values of --STRESU differ within each combination of --TESTCD, --CAT, --SCAT, --SPEC, and --METHOD:
 
 ```yaml
-Scopes:
-  Domains:
-    - RELREC
-Check:
-  all:
-    - name: "IDVAR"
-      operator: is_not_valid_relationship
-      context: "RDOMAIN"
-      value: "IDVARVAL"
+- name: "--STRESU"
+  operator: is_inconsistent_across_dataset
+  value:
+    - "--TESTCD"
+    - "--CAT"
+    - "--SCAT"
+    - "--SPEC"
+    - "--METHOD"
 ```
 
-## is_valid_reference
-
-Reference
-
-> IDVAR is a valid reference as specified, given the domain context in RDOMAIN
-
-```yaml
-Scopes:
-  Domains:
-    - RELREC
-Check:
-  all:
-    - name: "IDVAR"
-      operator: is_valid_reference
-      context: "RDOMAIN"
-```
-
-## is_not_valid_reference
-
-Complement of `is_valid_reference`
-
-> IDVAR is an invalid reference as specified, given the domain context in RDOMAIN
-
-```yaml
-Scopes:
-  Domains:
-    - RELREC
-Check:
-  all:
-    - name: "IDVAR"
-      operator: is_not_valid_reference
-      context: "RDOMAIN"
-```
-
-## empty_within_except_last_row
-
-> SEENDTC is not empty when it is not the last record, grouped by USUBJID, sorted by SESTDTC
-
-```yaml
-- name: SEENDTC
-  operator: empty_within_except_last_row
-  ordering: SESTDTC
-  value: USUBJID
-```
-
-## non_empty_within_except_last_row
-
-Complement of `empty_within_except_last_row`
-
-## has_next_corresponding_record
-
-Ensures that a value of a variable `name` in one record is equal to the value of another variable `value` in the next corresponding record. The rows are grouped by `within` and ordered by `ordering`.
-
-> SEENDTC is equal to the SESTDTC of the next record within a USUBJID. Ordered by SESEQ
-
-```yaml
-- name: SEENDTC
-  operator: has_next_corresponding_record
-  value: SESTDTC
-  within: USUBJID
-  ordering: SESEQ
-```
-
-## does_not_have_next_corresponding_record
-
-Complement of `has_next_corresponding_record`
-
-## is_ordered_set
-
-True if the dataset rows are in ascending order of the values within `name`, grouped by the values within `value`
-
-```yaml
-Check:
-  all:
-    - name: --SEQ
-      operator: is_ordered_set
-      value: USUBJID
-```
-
-## is_not_ordered_set
-
-Complement of `is_ordered_set`
-
-## is_ordered_by
-
-True if the dataset rows are ordered by the values within `name`, given the ordering specified by `order`
-
-```yaml
-Check:
-  all:
-    - name: --SEQ
-      operator: is_ordered_by
-      order: asc
-```
-
-## is_not_ordered_by
-
-Complement of `is_ordered_by`
-
-## target_is_not_sorted_by
-
-Complement of `target_is_sorted_by`
-
-## target_is_sorted_by
-
-True if the values in `name` are ordered according to the values specified by `value` grouped by the values in `within`. Each `value` requires a variable `name`, ordering specified by `order`, and the null position specified by `null_position`.
-
-```yaml
-Check:
-  all:
-    - name: --SEQ
-      within: USUBJID
-      operator: target_is_sorted_by
-      value:
-        - name: --STDTC
-          order: asc
-          null_position: last
-```
-
-## shares_at_least_one_element_with
-
-Will raise an issue if at least one of the values in `name` is the same as one of the values in `value`
-
-## shares_exactly_one_element_with
-
-Will raise an issue if exactly one of the values in `name` is the same as one of the values in `value`
-
-## shares_no_elements_with
-
-Will raise an issue if the values in `name` do not share any of the values in `value`
-
-> Check if $dataset_variables shares no elements with $timing_variables
-
-```yaml
-  "Check": {
-    "all": [
-      {
-        "name": "$dataset_variables",
-        "operator": "shares_no_elements_with",
-        "value": "$timing_variables"
-      }
-    ]
-  },
-```
-
-## has_same_values
+### has_same_values
 
 True if all values in `name` are the same
 
@@ -963,52 +1006,133 @@ Check:
       operator: has_same_values
 ```
 
-## has_different_values
+### has_different_values
 
 Complement of `has_same_values`
 
-## value_has_multiple_references
+### value_has_multiple_references
 
 True if the value in `name` has more than one count in the dictionary defined in `value`
 
-## value_does_not_have_multiple_references
+### value_does_not_have_multiple_references
 
 Complement of `value_has_multiple_references`
 
-# Define.XML
+## Sequential & Ordering Relationships
 
-## conformant_value_data_type
+Operations involving data ordering, sequential record relationships, and validating proper sorting within groups or across entire datasets.
+
+### empty_within_except_last_row
+
+> SEENDTC is not empty when it is not the last record, grouped by USUBJID, sorted by SESTDTC
+
+```yaml
+- name: SEENDTC
+  operator: empty_within_except_last_row
+  ordering: SESTDTC
+  value: USUBJID
+```
+
+### non_empty_within_except_last_row
+
+Complement of `empty_within_except_last_row`
+
+### has_next_corresponding_record
+
+Ensures that a value of a variable `name` in one record is equal to the value of another variable `value` in the next corresponding record. The rows are grouped by `within` and ordered by `ordering`.
+
+> SEENDTC is equal to the SESTDTC of the next record within a USUBJID. Ordered by SESEQ
+
+```yaml
+- name: SEENDTC
+  operator: has_next_corresponding_record
+  value: SESTDTC
+  within: USUBJID
+  ordering: SESEQ
+```
+
+### does_not_have_next_corresponding_record
+
+Complement of `has_next_corresponding_record`
+
+### is_ordered_set
+
+True if the dataset rows are in ascending order of the values within `name`, grouped by the values within `value`
+
+```yaml
+Check:
+  all:
+    - name: --SEQ
+      operator: is_ordered_set
+      value: USUBJID
+```
+
+### is_ordered_by
+
+True if the dataset rows are ordered by the values within `name`, given the ordering specified by `order`
+
+```yaml
+Check:
+  all:
+    - name: --SEQ
+      operator: is_ordered_by
+      order: asc
+```
+
+### is_not_ordered_by
+
+Complement of `is_ordered_by`
+
+### target_is_sorted_by
+
+True if the values in `name` are ordered according to the values specified by `value` grouped by the values in `within`. Each `value` requires a variable `name`, ordering specified by `order`, and the null position specified by `null_position`. `within` accepts either a single column or an ordered list of columns.
+
+```yaml
+Check:
+  all:
+    - name: --SEQ
+      within:
+        - USUBJID
+        - MIDSTYPE
+      operator: target_is_sorted_by
+      value:
+        - name: --STDTC
+          order: asc
+          null_position: last
+```
+
+### target_is_not_sorted_by
+
+Complement of `target_is_sorted_by`
+
+## Define.XML
+
+Validation operators specifically for checking compliance with Define.XML metadata specifications, including data type conformance, length validation, and codelist references.
+
+### conformant_value_data_type
 
 Value Level Metadata Check against Define XML
 
 True if the types in the row match the VLM types specified in the define.xml
 
-## non_conformant_value_data_type
+### non_conformant_value_data_type
 
 Complement of `conformant_value_data_type`
 
-## conformant_value_length
+### conformant_value_length
 
 Value Level Metadata Check against Define XML
 
 True if the lengths in the row match the VLM lengths specified in the define.xml
 
-## non_conformant_value_length
+### non_conformant_value_length
 
 Complement of `conformant_value_length`
 
-## references_correct_codelist
+### references_correct_codelist
 
 True if the codelist named within `value` is a valid codelist for the variable named within `name` in the define.xml.
 
-## does_not_reference_correct_codelist
+### does_not_reference_correct_codelist
 
 Complement of `references_correct_codelist`
-
-## uses_valid_codelist_terms
-
-True if the value within `value` is a valid term within the codelist named within `name` in the define.xml
-
-## does_not_use_valid_codelist_terms
-
-Complement of `uses_valid_codelist_terms`

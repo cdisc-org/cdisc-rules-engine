@@ -5,6 +5,7 @@ from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 
 import pandas as pd
 import pytest
@@ -113,11 +114,12 @@ def test_get_parent_column_order_from_library(
     model_metadata: dict,
     standard_metadata: dict,
 ):
-    datasets: List[dict] = [
-        {
-            "domain": "AE",
-            "filename": "ae.xpt",
-        }
+    datasets: List[SDTMDatasetMetadata] = [
+        SDTMDatasetMetadata(
+            first_record={"DOMAIN": "AE"},
+            filename="ae.xpt",
+            full_path="ae.xpt",  # Added full_path
+        )
     ]
     ae = PandasDataset.from_dict(
         {
@@ -131,7 +133,8 @@ def test_get_parent_column_order_from_library(
         "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
         side_effect=lambda dataset_name: path_to_dataset_map[dataset_name],
     ):
-        operation_params.dataframe = data
+        # Set evaluation_dataset instead of dataframe
+        operation_params.evaluation_dataset = data
         operation_params.domain = "SUPPAE"
         operation_params.standard = "sdtmig"
         operation_params.standard_version = "3-4"
@@ -148,7 +151,7 @@ def test_get_parent_column_order_from_library(
         )
         operation = ParentLibraryModelColumnOrder(
             operation_params,
-            operation_params.dataframe,
+            data,  # Pass data as evaluation_dataset parameter
             cache,
             data_service,
             library_metadata,
@@ -278,12 +281,14 @@ def test_get_parent_findings_class_column_order_from_library(
 ):
     datasets: List[dict] = [
         {
-            "domain": "AE",
+            "first_record": {"DOMAIN": "AE"},
             "filename": "ae.xpt",
+            "full_path": "ae.xpt",
         },
         {
-            "domain": "EC",
+            "first_record": {"DOMAIN": "EC"},
             "filename": "ec.xpt",
+            "full_path": "ec.xpt",
         },
     ]
     ae = DaskDataset.from_dict(
@@ -319,11 +324,14 @@ def test_get_parent_findings_class_column_order_from_library(
         "cdisc_rules_engine.services.data_services.LocalDataService.get_dataset",
         side_effect=lambda dataset_name: path_to_dataset_map[dataset_name],
     ):
-        operation_params.dataframe = data
+        # Set evaluation_dataset instead of dataframe
+        operation_params.evaluation_dataset = data
         operation_params.domain = "SUPPAE"
         operation_params.standard = "sdtmig"
         operation_params.standard_version = "3-4"
-        operation_params.datasets = datasets
+        operation_params.datasets = [
+            SDTMDatasetMetadata(**dataset) for dataset in datasets
+        ]
 
         # save model metadata to cache
         cache = InMemoryCacheService.get_instance()
@@ -342,7 +350,7 @@ def test_get_parent_findings_class_column_order_from_library(
         )
         operation = ParentLibraryModelColumnOrder(
             operation_params,
-            operation_params.dataframe,
+            data,
             cache,
             data_service,
             library_metadata,

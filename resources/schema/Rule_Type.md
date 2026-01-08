@@ -25,6 +25,27 @@ Attach define xml metadata at variable level and library metadata at variable le
   value: 6
 ```
 
+## Dataset Contents Check against Define XML
+
+#### Columns
+
+Columns are the columns within the original dataset along with the following columns:
+
+- `dataset_label`
+- `dataset_location`
+- `dataset_name`
+- `dataset_size`
+- `dataset_domain`
+- `define_dataset_class`
+- `define_dataset_domain`
+- `define_dataset_is_non_standard`
+- `define_dataset_key_sequence`
+- `define_dataset_label`
+- `define_dataset_location`
+- `define_dataset_name`
+- `define_dataset_structure`
+- `define_dataset_variables`
+
 ## Dataset Metadata Check against Define XML
 
 #### Columns
@@ -42,6 +63,7 @@ Attach define xml metadata at variable level and library metadata at variable le
 - `define_dataset_structure`
 - `define_dataset_is_non_standard`
 - `define_dataset_variables`
+- `define_dataset_key_sequence`
 
 #### Rule Macro
 
@@ -77,6 +99,7 @@ any:
 - `define_dataset_structure`
 - `define_dataset_is_non_standard`
 - `define_dataset_variables`
+- `define_dataset_key_sequence`
 
 ## Define Item Metadata Check
 
@@ -95,6 +118,7 @@ any:
 - `define_variable_has_no_data`
 - `define_variable_order_number`
 - `define_variable_has_codelist`
+- `define_variable_codelist_coded_values`
 - `define_variable_codelist_coded_values`
 - `define_variable_has_comment`
 
@@ -120,6 +144,8 @@ Attach variable codelist and codelist terms
 - `define_variable_order_number`
 - `define_variable_has_codelist`
 - `define_variable_codelist_coded_values`
+- `define_variable_codelist_coded_codes`
+- `define_variable_mandatory`
 - `define_variable_has_comment`
 - `library_variable_name`
 - `library_variable_order_number`
@@ -127,6 +153,7 @@ Attach variable codelist and codelist terms
 - `library_variable_data_type`
 - `library_variable_role`
 - `library_variable_core`
+- `library_variable_ccode`
 
 #### Rule Macro
 
@@ -152,6 +179,113 @@ all:
     operator: not_exists
 ```
 
+## JSONata
+
+Apply a JSONata query to a JSON file. [JSONata documentation](https://docs.jsonata.org)
+
+### Example
+
+#### Rule
+
+```yaml
+Check: |
+  **.$filter($, $myutils.equals).{"row":_path, "A":A, "B":B}
+Core:
+  Id: JSONATA Test
+  Status: Draft
+Outcome:
+  Message: "A equals B"
+  Output Variables:
+    - row
+    - A
+    - B
+Rule Type: JSONata
+Scope:
+  Entities:
+    Include:
+      - ALL
+Sensitivity: Record
+```
+
+#### Custom user function contained in external file "equals.jsonata"
+
+\* Note that in the CLI, you can pass a variable name and directory of such files using `-jcf` or `--jsonata-custom-functions`. The engine's built-in JSONata functions are accessible from the `$utils` variable (see [JSONata Functions](JSONata_Functions.md)). For example to load two more directories containing functions into `$myutils` and `$yourutils`, add the options:
+`-jcf myutils path/to/myutils -jcf yourutils path/to/yourutils`
+
+```yaml
+{
+  "equals": function($v){ $v.A=$v.B }
+}
+```
+
+#### JSON Data
+
+```json
+{
+  "A": "same value 1",
+  "B": "same value 1",
+  "C": {
+    "A": "different value 1",
+    "B": "different value 2",
+    "C": { "A": "same value 2", "B": "same value 2" }
+  }
+}
+```
+
+#### Result
+
+```json
+[
+  {
+    "executionStatus": "success",
+    "dataset": "",
+    "domain": "",
+    "variables": ["A", "B", "row"],
+    "message": "A equals B",
+    "errors": [
+      {
+        "value": { "row": "", "A": "same value 1", "B": "same value 1" },
+        "dataset": "",
+        "row": ""
+      },
+      {
+        "value": {
+          "row": "/C/C",
+          "A": "same value 2",
+          "B": "same value 2"
+        },
+        "dataset": "",
+        "row": "/C/C"
+      }
+    ]
+  }
+]
+```
+
+### Preprocessing
+
+When the JSONata Rule Type is used, the input JSON file will be preprocessed to assign a `_path` attribute to each node in the JSON tree. The syntax for this path value will use the [JSON Pointer](https://datatracker.ietf.org/doc/html/rfc6901) syntax. This `_path` attribute can be referenced throughout the JSONata query.
+
+### Output Variables and Report column mapping
+
+You can use `Outcome.Output Variables` to specify which properties to display from the result JSON. The following result property names will map to the column names in the Excel output report.
+
+Mapping of Result property names to Report Issue Details Column Names:
+
+| JSONata Result Name | JSON report property | Excel Column |
+| ------------------- | -------------------- | ------------ |
+| dataset             | dataset              | Dataset      |
+| row                 | row                  | Record       |
+| SEQ                 | SEQ                  | Sequence     |
+| USUBJID             | USUBJID              | USUBJID      |
+| entity              | entity               | Entity       |
+| instance_id         | instance_id          | Instance ID  |
+| path                | path                 | Path         |
+
+### Scope
+
+A JSONata rule will always run once for the entire JSON file, regardless of the Scope. The `Entity` determination must come from the rule's JSONata result property.
+
 ## Record Data
 
 #### Columns
@@ -167,6 +301,56 @@ all:
   - name: --SCAT
     operator: equal_to
     value: --CAT
+```
+
+## Value Check with Dataset Metadata
+
+#### Columns
+
+- `row_number`
+- `variable_name`
+- `variable_value`
+- `dataset_label`
+- `dataset_location`
+- `dataset_name`
+- `dataset_size`
+
+#### Example
+
+```yaml
+all:
+  - name: variable_name
+    operator: starts_with
+    value: "DM"
+  - name: dataset_name
+    operator: not_equal_to
+    value: "DM"
+```
+
+## Value Check with Variable Metadata
+
+#### Columns
+
+- `row_number`
+- `variable_name`
+- `variable_value`
+- `variable_order_number`
+- `variable_label`
+- `variable_size`
+- `variable_data_type`
+- `variable_format`
+- `variable_value_length`
+
+#### Example
+
+```yaml
+all:
+  - name: variable_data_type
+    operator: equal_to
+    value: char
+  - name: variable_value
+    operator: longer_than
+    value: 200
 ```
 
 ## Value Check against Define XML Variable
@@ -289,7 +473,22 @@ Attach define xml metadata at value level
 - `variable_`...
 - `define_variable_name`
 - `define_variable_label`
-- `define_variable_`...
+- `define_variable_data_type`
+- `define_variable_is_collected`
+- `define_variable_role`
+- `define_variable_size`
+- `define_variable_ccode`
+- `define_variable_format`
+- `define_variable_allowed_terms`
+- `define_variable_origin_type`
+- `define_variable_has_no_data`
+- `define_variable_order_number`
+- `define_variable_length`
+- `define_variable_has_codelist`
+- `define_variable_codelist_coded_values`
+- `define_variable_codelist_coded_codes`
+- `define_variable_mandatory`
+- `define_variable_has_comment`
 
 #### Rule Macro
 
@@ -315,8 +514,59 @@ Attach define xml metadata at variable level
 - `variable_format`
 - `variable_has_empty_values`
 - `library_variable_name`
-- `library_variable_order_number`
-- `library_variable_label`
-- `library_variable_data_type`
 - `library_variable_role`
+- `library_variable_label`
 - `library_variable_core`
+- `library_variable_order_number`
+- `library_variable_data_type`
+- `library_variable_ccode`
+
+## Variables Metadata Check against Define XML and Library Metadata
+
+#### Columns:
+
+- `variable_name`
+- `variable_label`
+- `variable_size`
+- `variable_order_number`
+- `variable_data_type`
+- `define_variable_name`
+- `define_variable_label`
+- `define_variable_data_type`
+- `define_variable_is_collected`
+- `define_variable_role`
+- `define_variable_size`
+- `define_variable_ccode`
+- `define_variable_format`
+- `define_variable_allowed_terms`
+- `define_variable_origin_type`
+- `define_variable_has_no_data`
+- `define_variable_order_number`
+- `define_variable_length`
+- `define_variable_has_codelist`
+- `define_variable_codelist_coded_values`
+- `define_variable_codelist_coded_codes`
+- `define_variable_mandatory`
+- `define_variable_has_comment`
+- `library_variable_name`
+- `library_variable_role`
+- `library_variable_label`
+- `library_variable_core`
+- `library_variable_order_number`
+- `library_variable_data_type`
+- `library_variable_ccode`
+- `variable_has_empty_values`
+
+## JSON Schema Check
+
+#### Columns:
+
+- `json_path`
+- `error_attribute`
+- `error_value`
+- `validator`
+- `validator_value`
+- `message`
+- `dataset`
+- `id`
+- `_path`

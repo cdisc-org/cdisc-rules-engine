@@ -1,16 +1,19 @@
 from datetime import datetime
 from io import IOBase
-from typing import List, Optional
+from typing import List, Optional, Iterable, Sequence
 
 import os
 import pandas as pd
-
+import tempfile
 from cdisc_rules_engine.dummy_models.dummy_dataset import DummyDataset
-from cdisc_rules_engine.exceptions.custom_exceptions import DatasetNotFoundError
+from cdisc_rules_engine.exceptions.custom_exceptions import (
+    DatasetNotFoundError,
+)
 from cdisc_rules_engine.interfaces import CacheServiceInterface, ConfigInterface
-from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.models.dataset_types import DatasetTypes
 from cdisc_rules_engine.services.data_readers import DataReaderFactory
+from cdisc_rules_engine.services.data_readers.json_reader import JSONReader
 from cdisc_rules_engine.services.data_services import BaseDataService
 from cdisc_rules_engine.models.dataset import PandasDataset
 
@@ -62,26 +65,23 @@ class DummyDataService(BaseDataService):
             df: pd.DataFrame = dataset.data
             df = df.applymap(lambda x: x.decode("utf-8") if isinstance(x, bytes) else x)
             result = PandasDataset(df)
-            self._replace_nans_in_numeric_cols_with_none(result)
             return result
         else:
             return PandasDataset.from_dict({})
 
-    def get_dataset_metadata(self, dataset_name: str, **kwargs):
+    def get_raw_dataset_metadata(
+        self, dataset_name: str, **kwargs
+    ) -> SDTMDatasetMetadata:
         dataset_metadata: dict = self.__get_dataset_metadata(dataset_name, **kwargs)
-        return PandasDataset.from_dict(dataset_metadata)
-
-    def get_raw_dataset_metadata(self, dataset_name: str, **kwargs) -> DatasetMetadata:
-        dataset_metadata: dict = self.__get_dataset_metadata(dataset_name, **kwargs)
-        return DatasetMetadata(
+        return SDTMDatasetMetadata(
             name=dataset_metadata["dataset_name"][0],
-            domain_name=dataset_metadata["dataset_name"][0],
+            first_record={"DOMAIN": dataset_metadata["dataset_name"][0]},
             label=dataset_metadata["dataset_label"][0],
             modification_date=datetime.now().isoformat(),
             filename=dataset_metadata["filename"][0],
-            size=dataset_metadata["dataset_size"][0],
+            file_size=dataset_metadata["dataset_size"][0],
             full_path=dataset_metadata["filename"][0],
-            records=dataset_metadata["length"][0],
+            record_count=dataset_metadata["record_count"][0],
         )
 
     def get_variables_metadata(self, dataset_name: str, **params) -> PandasDataset:
@@ -156,22 +156,38 @@ class DummyDataService(BaseDataService):
         return metadata_to_return
 
     def to_parquet(self, file_path: str) -> str:
-        return ""
+        """
+        Save the dataset with full_path == file_path to a parquet file.
+        Returns the number of rows and the path to the saved parquet file, or (0, "") if not found.
+        """
+        for dataset in self.data:
+            if hasattr(dataset, "full_path") and dataset.full_path == file_path:
+                # Convert the DummyDataset's data (assumed to be a DataFrame or dict-like) to a pandas DataFrame
+                if hasattr(dataset, "data"):
+                    df = pd.DataFrame(dataset.data)
+                else:
+                    # fallback: try to convert the whole object to dict
+                    df = pd.DataFrame([dataset.__dict__])
+                temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".parquet")
+                df.to_parquet(temp_file.name)
+                return len(df.index), temp_file.name
+        return 0, ""
 
-    def get_datasets(self) -> List[dict]:
-        datasets = []
-        for dataset_path in [dataset.filename for dataset in self.data]:
-            metadata = self.get_raw_dataset_metadata(dataset_name=dataset_path)
-            datasets.append(
-                {
-                    "domain": metadata.domain_name,
-                    "filename": metadata.filename,
-                    "full_path": dataset_path,
-                    "length": metadata.records,
-                    "label": metadata.label,
-                    "size": metadata.size,
-                    "modification_date": metadata.modification_date,
-                }
-            )
+    def get_datasets(self) -> Iterable[SDTMDatasetMetadata]:
+        return self.data
 
-        return datasets
+    @staticmethod
+    def get_data(dataset_paths: Sequence[str]):
+        json = JSONReader().from_file(dataset_paths[0])
+        return [DummyDataset(data) for data in json.get("datasets", [])]
+
+    @staticmethod
+    def is_valid_data(dataset_paths: Sequence[str]):
+        if (
+            dataset_paths
+            and len(dataset_paths) == 1
+            and dataset_paths[0].lower().endswith(".json")
+        ):
+            json = JSONReader().from_file(dataset_paths[0])
+            return "datasets" in json
+        return False

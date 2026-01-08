@@ -1,6 +1,6 @@
 import pandas as pd
-import os
 from cdisc_rules_engine.operations.base_operation import BaseOperation
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 import asyncio
 from collections import Counter
 from typing import List
@@ -23,7 +23,7 @@ class VariableCount(BaseOperation):
         of times that value appears as a variable in the study.
         """
         datasets_with_unique_domains = list(
-            {dataset["domain"]: dataset for dataset in self.params.datasets}.values()
+            {dataset.unsplit_name: dataset for dataset in self.params.datasets}.values()
         )
         coroutines = [
             self._get_dataset_variable_count(dataset)
@@ -32,12 +32,15 @@ class VariableCount(BaseOperation):
         dataset_variable_value_counts: List[int] = await asyncio.gather(*coroutines)
         return sum(dataset_variable_value_counts)
 
-    async def _get_dataset_variable_count(self, dataset: dict) -> Counter:
-        domain = dataset.get("domain", "")
+    async def _get_dataset_variable_count(
+        self, dataset: SDTMDatasetMetadata
+    ) -> Counter:
         data: pd.DataFrame = self.data_service.get_dataset(
-            dataset_name=os.path.join(
-                self.params.directory_path, dataset.get("filename")
-            )
+            dataset_name=dataset.full_path
         )
-        target_variable = self.params.original_target.replace("--", domain, 1)
+        target_variable = (
+            self.params.original_target.replace("--", dataset.domain, 1)
+            if dataset.domain
+            else self.params.original_target
+        )
         return 1 if target_variable in data else 0

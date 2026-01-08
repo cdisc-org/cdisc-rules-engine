@@ -1,3 +1,4 @@
+from cdisc_rules_engine.exceptions.custom_exceptions import DomainNotFoundError
 from cdisc_rules_engine.operations.library_model_column_order import (
     LibraryModelColumnOrder,
 )
@@ -27,8 +28,8 @@ class ParentLibraryModelColumnOrder(LibraryModelColumnOrder):
                     rdomain,
                     self._get_parent_variable_names_list(domain_to_datasets, rdomain),
                 )
-                for rdomain in self.params.dataframe.get(
-                    "RDOMAIN", [None] * len(self.params.dataframe)
+                for rdomain in self.evaluation_dataset.get(
+                    "RDOMAIN", [None] * len(self.evaluation_dataset)
                 )
             )
         )
@@ -36,14 +37,17 @@ class ParentLibraryModelColumnOrder(LibraryModelColumnOrder):
     def _get_domain_to_datasets(self):
         domain_to_datasets = defaultdict(list)
         for dataset in self.params.datasets:
-            domain_to_datasets[dataset["domain"]].append(dataset)
+            domain_to_datasets[dataset.domain].append(dataset)
         return domain_to_datasets
 
     def _get_parent_variable_names_list(self, domain_to_datasets: dict, rdomain: str):
         parent_datasets = domain_to_datasets.get(rdomain, [])
         if len(parent_datasets) < 1:
-            return []
+            raise DomainNotFoundError(
+                f"Operation get_parent_model_column_order requires parent Domain "
+                f"{rdomain} but Domain not found in datasets"
+            )
         parent_dataframe = self.data_service.get_dataset(
-            dataset_name=parent_datasets[0]["filename"]
+            dataset_name=parent_datasets[0].full_path
         )
         return self._get_variable_names_list(rdomain, parent_dataframe)

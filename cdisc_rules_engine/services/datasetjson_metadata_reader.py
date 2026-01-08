@@ -1,10 +1,11 @@
 import os
-import json
 import jsonschema
+import pandas as pd
 
 
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.services.adam_variable_reader import AdamVariableReader
+from cdisc_rules_engine.services.data_readers.json_reader import JSONReader
 
 
 class DatasetJSONMetadataReader:
@@ -14,8 +15,9 @@ class DatasetJSONMetadataReader:
     """
 
     def __init__(self, file_path: str, file_name: str):
+        self._metadata_container = {}
         self._file_path = file_path
-        self._domain_name = None
+        self._first_record = None
         self._dataset_name = file_name.split(".")[0].upper()
 
     def read(self) -> dict:
@@ -23,64 +25,40 @@ class DatasetJSONMetadataReader:
         Extracts metadata from .json file.
         """
         # Load Dataset-JSON Schema
-        with open(
+        schema = JSONReader().from_file(
             os.path.join("resources", "schema", "dataset.schema.json")
-        ) as schemajson:
-            schema = schemajson.read()
-        schema = json.loads(schema)
+        )
 
-        with open(self._file_path, "r") as file:
-            datasetjson = json.load(file)
+        datasetjson = JSONReader().from_file(self._file_path)
 
         try:
             jsonschema.validate(datasetjson, schema)
 
-            if "clinicalData" in datasetjson:
-                data_key = "clinicalData"
-            elif "referenceData" in datasetjson:
-                data_key = "referenceData"
-
-            items_data = next(
-                (
-                    d
-                    for d in datasetjson[data_key]["itemGroupData"].values()
-                    if "items" in d
-                ),
-                {},
-            )
-
-            self._domain_name = self._extract_domain_name(items_data)
-
+            self._first_record = self._extract_first_record(datasetjson)
             self._metadata_container = {
-                "variable_labels": [
-                    item["label"] for item in items_data.get("items", [])[1:]
-                ],
-                "variable_names": [
-                    item["name"] for item in items_data.get("items", [])[1:]
-                ],
+                "variable_labels": [item["label"] for item in datasetjson["columns"]],
+                "variable_names": [item["name"] for item in datasetjson["columns"]],
                 "variable_formats": [
-                    item.get("displayFormat", "")
-                    for item in items_data.get("items", [])[1:]
+                    item.get("displayFormat", "") for item in datasetjson["columns"]
                 ],
                 "variable_name_to_label_map": {
-                    item["name"]: item["label"]
-                    for item in items_data.get("items", [])[1:]
+                    item["name"]: item["label"] for item in datasetjson["columns"]
                 },
                 "variable_name_to_data_type_map": {
-                    item["name"]: item["type"]
-                    for item in items_data.get("items", [])[1:]
+                    item["name"]: item["dataType"] for item in datasetjson["columns"]
                 },
                 "variable_name_to_size_map": {
                     item["name"]: item.get("length", None)
-                    for item in items_data.get("items", [])[1:]
+                    for item in datasetjson["columns"]
                 },
-                "number_of_variables": len(items_data.get("items", [])[1:]),
-                "dataset_label": items_data.get("label"),
-                "dataset_length": items_data.get("records"),
-                "domain_name": self._domain_name,
-                "dataset_name": items_data.get("name"),
-                "dataset_modification_date": datasetjson["creationDateTime"],
+                "number_of_variables": len(datasetjson["columns"]),
+                "dataset_label": datasetjson.get("label"),
+                "dataset_length": datasetjson.get("records"),
+                "first_record": self._first_record,
+                "dataset_name": datasetjson.get("name"),
+                "dataset_modification_date": datasetjson["datasetJSONCreationDateTime"],
             }
+
             self._convert_variable_types()
 
             self._metadata_container["adam_info"] = self._extract_adam_info(
@@ -106,24 +84,25 @@ class DatasetJSONMetadataReader:
                 "number_of_variables": 0,
                 "dataset_label": "",
                 "dataset_length": 0,
-                "domain_name": "",
+                "first_record": {},
                 "dataset_name": "",
                 "dataset_modification_date": "",
             }
 
-    def _extract_domain_name(self, data):
-        index_domain = next(
-            (
-                index
-                for index, item in enumerate(data["items"])
-                if item.get("name") == "DOMAIN"
-            ),
-            None,
-        )
-        if index_domain is not None:
-            return data["itemData"][0][index_domain]
-        else:
-            return " "
+    def _extract_first_record(self, datasetjson):
+        try:
+            return {
+                name: value.decode("utf-8") if isinstance(value, bytes) else str(value)
+                for name, value in pd.DataFrame(
+                    [datasetjson.get("rows", [])[0]] if datasetjson.get("rows") else [],
+                    columns=[col["name"] for col in datasetjson.get("columns", [])],
+                )
+                .iloc[0]
+                .items()
+            }
+        except IndexError:
+            pass
+        return None
 
     def _convert_variable_types(self):
         """
@@ -137,13 +116,17 @@ class DatasetJSONMetadataReader:
             "float": "Num",
             "integer": "Num",
             "string": "Char",
+            "datetime": "Char",
+            "date": "Char",
+            "time": "Char",
+            "URI": "Char",
         }
         for key, value in self._metadata_container[
             "variable_name_to_data_type_map"
         ].items():
-            self._metadata_container["variable_name_to_data_type_map"][
-                key
-            ] = rule_author_type_map[value]
+            self._metadata_container["variable_name_to_data_type_map"][key] = (
+                rule_author_type_map[value]
+            )
 
     def _to_dict(self) -> dict:
         """
@@ -159,7 +142,7 @@ class DatasetJSONMetadataReader:
             "variable_name_to_size_map": self._metadata_container.variable_storage_width,  # noqa
             "number_of_variables": self._metadata_container.number_columns,
             "dataset_label": self._metadata_container.file_label,
-            "domain_name": self._domain_name,
+            "first_record": self._first_record,
             "dataset_name": self._dataset_name,
             "dataset_modification_date": self._metadata_container.dataset_modification_date,  # noqa
         }

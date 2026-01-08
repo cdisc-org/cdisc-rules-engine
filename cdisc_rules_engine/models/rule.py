@@ -27,15 +27,18 @@ class Rule:
         self.classes: dict = record_params.get("classes")
         self.domains: dict = record_params.get("domains")
         self.datasets: dict = record_params.get("datasets")
+        self.entities: dict = record_params.get("entities")
         self.rule_type: RuleTypes = record_params["rule_type"]
         self.operations: List[dict] = record_params.get("operations")
         self.conditions: dict = record_params["conditions"]
         self.actions: dict = record_params["actions"]
         self.output_variables: dict = record_params.get("output_variables")
+        self.grouping_variables: List[str] = record_params.get("grouping_variables", [])
 
     @classmethod
     def from_cdisc_metadata(cls, rule_metadata: dict) -> dict:
         if cls.is_cdisc_rule_metadata(rule_metadata):
+            rule_metadata = cls.spaces_to_underscores(rule_metadata)
             authorities = rule_metadata.get("Authorities", [])
             executable_rule = {
                 "core_id": rule_metadata.get("Core", {}).get("Id"),
@@ -48,9 +51,15 @@ class Rule:
                 "standards": cls.parse_standards(authorities),
                 "classes": rule_metadata.get("Scope", {}).get("Classes"),
                 "domains": rule_metadata.get("Scope", {}).get("Domains"),
+                "entities": rule_metadata.get("Scope", {}).get("Entities"),
                 "rule_type": rule_metadata.get("Rule_Type"),
                 "conditions": cls.parse_conditions(rule_metadata.get("Check")),
                 "actions": cls.parse_actions(rule_metadata.get("Outcome")),
+                "use_case": rule_metadata.get("Scope", {}).get("Use_Case"),
+                "data_structures": rule_metadata.get("Scope", {}).get(
+                    "Data_Structures"
+                ),
+                "status": rule_metadata.get("Core", {}).get("Status", {}),
             }
 
             if "Operations" in rule_metadata:
@@ -64,9 +73,24 @@ class Rule:
                 executable_rule["output_variables"] = rule_metadata.get("Outcome", {})[
                     "Output_Variables"
                 ]
+            if "Grouping_Variables" in rule_metadata:
+                executable_rule["grouping_variables"] = rule_metadata.get(
+                    "Grouping_Variables"
+                )
             return executable_rule
         else:
             return rule_metadata
+
+    @classmethod
+    def spaces_to_underscores(cls, obj):
+        if isinstance(obj, dict):
+            return {
+                key.replace(" ", "_"): cls.spaces_to_underscores(value)
+                for key, value in obj.items()
+            }
+        if isinstance(obj, list):
+            return [cls.spaces_to_underscores(item) for item in obj]
+        return obj
 
     @classmethod
     def parse_standards(cls, authorities: List[dict]) -> List[dict]:
@@ -74,7 +98,11 @@ class Rule:
         for authority in authorities:
             for standard in authority.get("Standards", []):
                 standards.append(
-                    {"Name": standard.get("Name"), "Version": standard.get("Version")}
+                    {
+                        "Name": standard.get("Name"),
+                        "Version": standard.get("Version"),
+                        "Substandard": standard.get("Substandard"),
+                    }
                 )
         return standards
 
@@ -91,9 +119,11 @@ class Rule:
         return "Core" in rule_metadata
 
     @classmethod
-    def parse_conditions(cls, conditions: dict) -> dict:
+    def parse_conditions(cls, conditions: dict | str) -> dict | str:
         if not conditions:
             raise ValueError("No check data provided")
+        if isinstance(conditions, str):
+            return conditions
         all_conditions = conditions.get("all")
         any_conditions = conditions.get("any")
         not_condition = conditions.get("not")
@@ -139,7 +169,7 @@ class Rule:
         if "variables" in condition:
             data["variables"] = condition["variables"]
         if "negative" in condition:
-            data["value"]["negative"] = condition.get("negative").lower() == "true"
+            data["value"]["negative"] = condition.get("negative")
         for optional_parameter in OptionalConditionParameters.values():
             if optional_parameter in condition:
                 data["value"][optional_parameter] = condition.get(optional_parameter)
@@ -154,12 +184,6 @@ class Rule:
 
     @classmethod
     def parse_datasets(cls, match_key_data: List[dict]) -> List[dict]:
-        # Defaulting to IDVAR and IDVARVAL as relationship columns.
-        # May change in the future as more standard rules are written.
-        relationship_columns = {
-            "column_with_names": "IDVAR",
-            "column_with_values": "IDVARVAL",
-        }
         if not match_key_data:
             return None
         datasets = []
@@ -167,16 +191,18 @@ class Rule:
             join_data = {
                 "domain_name": data.get("Name"),
                 "match_key": [
-                    key
-                    if isinstance(key, str)
-                    else {k.lower(): v for k, v in key.items()}
+                    (
+                        key
+                        if isinstance(key, str)
+                        else {k.lower(): v for k, v in key.items()}
+                    )
                     for key in data.get("Keys", [])
                 ],
                 "wildcard": data.get("Wildcard", "**"),
             }
-            if data.get("Is_Relationship", False):
-                join_data["relationship_columns"] = relationship_columns
             if "Join_Type" in data:
                 join_data["join_type"] = data.get("Join_Type")
+            if "Child" in data:
+                join_data["child"] = data.get("Child")
             datasets.append(join_data)
         return datasets

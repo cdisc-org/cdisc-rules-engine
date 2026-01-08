@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cdisc-rules-engine"
+dynamic = ["version", "dependencies"]
+description = "Open source offering of the cdisc rules engine"
+readme = "PYPI.md"
+requires-python = ">=3.12, <3.13"
+license = { text = "MIT" }
+authors = [{ name = "cdisc-org", email = "info@cdisc.org" }]
+
+[project.urls]
+"Homepage" = "https://github.com/cdisc-org/cdisc-rules-engine"
+"Bug Tracker" = "https://github.com/cdisc-org/cdisc-rules-engine/issues"
+
+[tool.setuptools]
+packages = { find = { exclude = [
+    "tests",
+    "scripts",
+    "TestRule",
+    "cdisc_rule_tester",
+] } }
+include-package-data = true
+py-modules = ["version"]
+
+[tool.setuptools.dynamic]
+version = { attr = "version.__version__" }
+dependencies = {file = ["requirements.txt"]}

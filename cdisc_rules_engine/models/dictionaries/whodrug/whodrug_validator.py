@@ -13,11 +13,12 @@ class WhoDrugValidator(BaseDictionaryValidator):
         self,
         data_service: DataServiceInterface = None,
         cache_service: CacheServiceInterface = None,
+        dictionary_path: str = None,
         **kwargs,
     ):
         self.cache_service = cache_service
         self.data_service = data_service
-        self.path = kwargs.get("whodrug_path")
+        self.path = dictionary_path or kwargs.get("whodrug_path")
         self.term_dictionary = kwargs.get("terms")
         self.terms_factory = WhoDrugTermsFactory(self.data_service)
 
@@ -40,7 +41,7 @@ class WhoDrugValidator(BaseDictionaryValidator):
         return self.is_valid_code(term, term_type, variable, **kwargs)
 
     def is_valid_code(
-        self, code: str, term_type: str = "", variable: str = "", **kwargs
+        self, code: str, term_type: str = "", variable: str = "", codes=[], **kwargs
     ) -> bool:
         """
         Method to identify whether a term is valid based on its term type.

@@ -3,7 +3,7 @@ from io import IOBase
 from typing import Iterable, List, Optional, Tuple
 
 from cdisc_rules_engine.interfaces import CacheServiceInterface, ConfigInterface
-from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.models.dataset_types import DatasetTypes
 from cdisc_rules_engine.models.variable_metadata_container import (
     VariableMetadataContainer,
@@ -16,6 +16,9 @@ from cdisc_rules_engine.services.datasetxpt_metadata_reader import (
 )
 from cdisc_rules_engine.services.datasetjson_metadata_reader import (
     DatasetJSONMetadataReader,
+)
+from cdisc_rules_engine.services.datasetndjson_metadata_reader import (
+    DatasetNDJSONMetadataReader,
 )
 from cdisc_rules_engine.utilities.utils import (
     convert_file_size,
@@ -88,45 +91,27 @@ class LocalDataService(BaseDataService):
             extract_file_name_from_path_string(dataset_name).split(".")[1].upper()
         )
         df = reader.from_file(dataset_name)
-        self._replace_nans_in_numeric_cols_with_none(df)
         return df
 
-    @cached_dataset(DatasetTypes.METADATA.value)
-    def get_dataset_metadata(
-        self, dataset_name: str, size_unit: str = None, **params
-    ) -> DatasetInterface:
-        """
-        Gets metadata of a dataset and returns it as a DataFrame.
-        """
-        file_metadata, contents_metadata = self.__get_dataset_metadata(
-            dataset_name, size_unit=size_unit, **params
-        )
-        metadata_to_return: dict = {
-            "dataset_size": [file_metadata["size"]],
-            "dataset_location": [file_metadata["name"]],
-            "dataset_name": [contents_metadata["dataset_name"]],
-            "dataset_label": [contents_metadata["dataset_label"]],
-        }
-        return self.dataset_implementation.from_dict(metadata_to_return)
-
     @cached_dataset(DatasetTypes.RAW_METADATA.value)
-    def get_raw_dataset_metadata(self, dataset_name: str, **kwargs) -> DatasetMetadata:
+    def get_raw_dataset_metadata(
+        self, dataset_name: str, **kwargs
+    ) -> SDTMDatasetMetadata:
         """
         Returns dataset metadata as DatasetMetadata instance.
         """
         file_metadata, contents_metadata = self.__get_dataset_metadata(
             dataset_name, **kwargs
         )
-        return DatasetMetadata(
+        return SDTMDatasetMetadata(
             name=contents_metadata["dataset_name"],
-            domain_name=contents_metadata["domain_name"]
-            or contents_metadata["dataset_name"],
+            first_record=contents_metadata["first_record"],
             label=contents_metadata["dataset_label"],
             modification_date=contents_metadata["dataset_modification_date"],
             filename=file_metadata["name"],
             full_path=file_metadata["path"],
-            size=file_metadata["size"],
-            records=contents_metadata["dataset_length"],
+            file_size=file_metadata["file_size"],
+            record_count=contents_metadata["dataset_length"],
         )
 
     @cached_dataset(DatasetTypes.VARIABLES_METADATA.value)
@@ -169,32 +154,47 @@ class LocalDataService(BaseDataService):
             dataset_name=dataset_name, **params
         )
 
-    def read_metadata(self, file_path: str, datasets: Optional[List] = None) -> dict:
+    def read_metadata(
+        self, file_path: str, datasets: Optional[Iterable[SDTMDatasetMetadata]] = None
+    ) -> dict:
         file_size = os.path.getsize(file_path)
         file_name = extract_file_name_from_path_string(file_path)
         file_metadata = {
             "path": file_path,
             "name": file_name,
-            "size": file_size,
+            "file_size": file_size,
         }
         if file_name.endswith(".parquet") and datasets:
             for obj in datasets:
-                if obj["full_path"] == file_path:
+                if obj.full_path == file_path:
                     file_metadata = {
-                        "path": obj["original_path"],
-                        "name": extract_file_name_from_path_string(
-                            obj["original_path"]
-                        ),
-                        "size": os.path.getsize(obj["original_path"]),
+                        "path": obj.original_path,
+                        "name": extract_file_name_from_path_string(obj.original_path),
+                        "file_size": os.path.getsize(obj.original_path),
                     }
-                    file_name = obj["filename"]
-                break
+                    file_name = obj.filename
+                    break
+            # If we reach this line a parquet dataset was provided without a
+            # corresponding xpt or json file. This should not happen
+            # TODO: Implement a DatasetParquetMetadataReader so we don't have to
+            # perform this check.
 
         _metadata_reader_map = {
             DataFormatTypes.XPT.value: DatasetXPTMetadataReader,
             DataFormatTypes.JSON.value: DatasetJSONMetadataReader,
+            DataFormatTypes.NDJSON.value: DatasetNDJSONMetadataReader,
         }
-        contents_metadata = _metadata_reader_map[file_name.split(".")[1].upper()](
+
+        file_extension = file_name.split(".")[1].upper()
+        if file_extension not in _metadata_reader_map:
+            supported_formats = ", ".join(_metadata_reader_map.keys())
+            raise ValueError(
+                f"Unsupported file format '{file_extension}' in file '{file_name}'.\n"
+                f"Supported formats: {supported_formats}\n"
+                f"Please provide dataset files in SAS V5 XPT, Dataset-JSON (JSON or NDJSON), or Excel (XLSX) format."
+            )
+
+        contents_metadata = _metadata_reader_map[file_extension](
             file_metadata["path"], file_name
         ).read()
         return {
@@ -210,11 +210,13 @@ class LocalDataService(BaseDataService):
         Internal method that gets dataset metadata
         and converts file size if needed.
         """
-        metadata: dict = self.read_metadata(dataset_name)
+        metadata: dict = self.read_metadata(dataset_name, kwargs.get("datasets"))
         file_metadata: dict = metadata["file_metadata"]
         size_unit: Optional[str] = kwargs.get("size_unit")
         if size_unit:  # convert file size from bytes to desired unit if needed
-            file_metadata["size"] = convert_file_size(file_metadata["size"], size_unit)
+            file_metadata["file_size"] = convert_file_size(
+                file_metadata["file_size"], size_unit
+            )
         return file_metadata, metadata["contents_metadata"]
 
     def to_parquet(self, file_path: str) -> str:
@@ -224,19 +226,15 @@ class LocalDataService(BaseDataService):
         return reader.to_parquet(file_path)
 
     def get_datasets(self) -> List[dict]:
-        datasets = []
-        for dataset_path in self.dataset_paths:
-            metadata = self.get_raw_dataset_metadata(dataset_name=dataset_path)
-            datasets.append(
-                {
-                    "domain": metadata.domain_name,
-                    "filename": metadata.filename,
-                    "full_path": dataset_path,
-                    "length": metadata.records,
-                    "label": metadata.label,
-                    "size": metadata.size,
-                    "modification_date": metadata.modification_date,
-                }
-            )
-
+        datasets = [
+            self.get_raw_dataset_metadata(dataset_name=dataset_path)
+            for dataset_path in self.dataset_paths
+        ]
         return datasets
+
+    @staticmethod
+    def is_valid_data(dataset_paths: List[str]) -> bool:
+        for dataset_path in dataset_paths:
+            if not os.path.exists(dataset_path):
+                return False
+        return len(dataset_paths) > 0

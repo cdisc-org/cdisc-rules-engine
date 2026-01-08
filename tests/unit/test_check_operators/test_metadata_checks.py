@@ -33,7 +33,7 @@ def test_conformant_value_data_type(dataset_type):
         return row["IDVAR1"] == "TEST"
 
     def type_check(row):
-        return isinstance(row["IDVAR2"], str)
+        return isinstance(row["IDVAR1"], str)
 
     data = {
         "RDOMAIN": ["LB", "LB", "AE"],
@@ -46,48 +46,4 @@ def test_conformant_value_data_type(dataset_type):
     result = DataframeType(
         {"value": df, "value_level_metadata": vlm}
     ).conformant_value_data_type({})
-    assert result.equals(df.convert_to_series([True, False, False]))
-
-
-@pytest.mark.parametrize("dataset_type", [PandasDataset, DaskDataset])
-def test_variable_metadata_equal_to(dataset_type):
-    data = {
-        "STUDYID": [1, 1, 1, 1],
-        "$CORE_VALUES": [
-            {"STUDYID": "Req", "DOMAIN": "Req"},
-            {"STUDYID": "Req", "DOMAIN": "Req"},
-            {"STUDYID": "Req", "DOMAIN": "Req"},
-            {"STUDYID": "Req", "DOMAIN": "Req"},
-        ],
-    }
-    df = dataset_type.from_dict(data)
-    result = DataframeType({"value": df}).variable_metadata_equal_to(
-        {"target": "STUDYID", "comparator": "Exp", "metadata": "$CORE_VALUES"}
-    )
-    assert result.equals(df.convert_to_series([False, False, False, False]))
-    result = DataframeType({"value": df}).variable_metadata_equal_to(
-        {"target": "STUDYID", "comparator": "Req", "metadata": "$CORE_VALUES"}
-    )
-    assert result.equals(df.convert_to_series([True, True, True, True]))
-
-
-@pytest.mark.parametrize("dataset_type", [PandasDataset, DaskDataset])
-def test_variable_metadata_not_equal_to(dataset_type):
-    data = {
-        "STUDYID": [1, 1, 1, 1],
-        "$CORE_VALUES": [
-            {"STUDYID": "Req", "DOMAIN": "Req"},
-            {"STUDYID": "Req", "DOMAIN": "Req"},
-            {"STUDYID": "Req", "DOMAIN": "Req"},
-            {"STUDYID": "Req", "DOMAIN": "Req"},
-        ],
-    }
-    df = dataset_type.from_dict(data)
-    result = DataframeType({"value": df}).variable_metadata_not_equal_to(
-        {"target": "STUDYID", "comparator": "Exp", "metadata": "$CORE_VALUES"}
-    )
-    assert result.equals(df.convert_to_series([True, True, True, True]))
-    result = DataframeType({"value": df}).variable_metadata_not_equal_to(
-        {"target": "STUDYID", "comparator": "Req", "metadata": "$CORE_VALUES"}
-    )
-    assert result.equals(df.convert_to_series([False, False, False, False]))
+    assert result.equals(df.convert_to_series([True, True, False]))

@@ -1,13 +1,16 @@
 import azure.functions as func
-from cdisc_rule_tester.models.rule_tester import RuleTester
 from cdisc_rules_engine.services.cache.in_memory_cache_service import (
     InMemoryCacheService,
 )
+from cdisc_rules_engine.utilities.utils import normalize_adam_input
 from cdisc_rules_engine.services.cdisc_library_service import CDISCLibraryService
 from cdisc_rules_engine.services.cache.cache_populator_service import CachePopulator
+from scripts.run_validation import run_single_rule_validation
 import json
 import os
 import asyncio
+import numpy as np
+import traceback
 
 
 class BadRequestError(Exception):
@@ -47,15 +50,36 @@ def handle_exception(e: Exception):
         return func.HttpResponse(
             json.dumps(
                 {
-                    "errror": "Unknown Exception",
+                    "error": "Unknown Exception",
                     "message": f"An unhandled exception occurred. {str(e)}",
+                    "traceback": traceback.format_exc(),
                 }
             ),
-            status_code=500,
+            status_code=400,
         )
 
 
-def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
+def convert_numpy_types(obj):
+    """Recursively convert numpy types to native Python types"""
+    if isinstance(obj, dict):
+        return {key: convert_numpy_types(value) for key, value in obj.items()}
+    elif isinstance(obj, list):
+        return [convert_numpy_types(item) for item in obj]
+    elif isinstance(obj, (np.integer, np.int64, np.int32, np.int16, np.int8)):
+        return int(obj)
+    elif isinstance(obj, (np.floating, np.float64, np.float32, np.float16)):
+        return float(obj)
+    elif isinstance(obj, np.bool_):
+        return bool(obj)
+    elif isinstance(obj, np.ndarray):
+        return obj.tolist()
+    elif hasattr(obj, "item"):
+        return obj.item()
+    else:
+        return obj
+
+
+def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:  # noqa
     try:
         json_data = req.get_json()
         api_key = os.environ.get("CDISC_LIBRARY_API_KEY")
@@ -63,14 +87,20 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
         standards_data = json_data.get("standard", {})
         standard = standards_data.get("product")
         standard_version = standards_data.get("version")
+        standard_substandard = standards_data.get("substandard")
+        standard, standard_version = normalize_adam_input(standard, standard_version)
         codelists = json_data.get("codelists", [])
         cache = InMemoryCacheService()
+        library_service = CDISCLibraryService(api_key, cache)
+        cache_populator: CachePopulator = CachePopulator(cache, library_service)
+        asyncio.run(cache_populator.load_available_ct_packages())
         if standards_data or codelists:
-            library_service = CDISCLibraryService(api_key, cache)
-            cache_populator: CachePopulator = CachePopulator(cache, library_service)
             if standards_data:
-                asyncio.run(cache_populator.load_standard(standard, standard_version))
-                asyncio.run(cache_populator.load_available_ct_packages())
+                asyncio.run(
+                    cache_populator.load_standard(
+                        standard, standard_version, standard_substandard
+                    )
+                )
             asyncio.run(cache_populator.load_codelists(codelists))
         if not rule:
             raise KeyError("'rule' required in request")
@@ -79,10 +109,17 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
             raise KeyError("'datasets' required in request")
         validate_datasets_payload(datasets)
         define_xml = json_data.get("define_xml")
-        tester = RuleTester(
-            datasets, define_xml, cache, standard, standard_version, codelists
+        result = run_single_rule_validation(
+            datasets,
+            rule,
+            define_xml,
+            cache,
+            standard,
+            standard_version,
+            standard_substandard,
+            codelists,
         )
-        result = tester.validate(rule)
+        result = convert_numpy_types(result)
         result_json = json.dumps(result)
         return func.HttpResponse(result_json)
     except Exception as e:

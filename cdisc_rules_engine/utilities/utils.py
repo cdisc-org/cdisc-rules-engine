@@ -2,13 +2,21 @@
 This module contains utility functions
 that can be reused.
 """
+
 import copy
 import os
 import re
+import ast
+import pandas as pd
 from datetime import datetime
-from typing import Callable, List, Optional, Set, Union
+from typing import Callable, Iterable, List, Optional, Union
 from uuid import UUID
-from cdisc_rules_engine.services import logger
+from cdisc_rules_engine.constants.metadata_columns import (
+    SOURCE_FILENAME,
+    SOURCE_ROW_NUMBER,
+)
+from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
+from cdisc_rules_engine.models.dataset_metadata import DatasetMetadata
 
 from cdisc_rules_engine.constants.domains import (
     AP_DOMAIN,
@@ -16,11 +24,13 @@ from cdisc_rules_engine.constants.domains import (
     APRELSUB_DOMAIN,
     SUPPLEMENTARY_DOMAINS,
 )
-from cdisc_rules_engine.constants.classes import SPECIAL_PURPOSE
+from cdisc_rules_engine.constants.classes import SPECIAL_PURPOSE, SPECIAL_PURPOSE_MODEL
 from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 from cdisc_rules_engine.interfaces import ConditionInterface
 from cdisc_rules_engine.models.base_validation_entity import BaseValidationEntity
-from business_rules.utils import is_valid_date
+from cdisc_rules_engine.check_operators.helpers import is_valid_date
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
+from cdisc_rules_engine.constants.adam_products import ADAM_PRODUCTS
 
 
 def convert_file_size(size_in_bytes: int, desired_unit: str) -> float:
@@ -34,14 +44,6 @@ def convert_file_size(size_in_bytes: int, desired_unit: str) -> float:
         "GB": 1024**3,
     }
     return size_in_bytes / unit_to_denominator_map[desired_unit]
-
-
-def is_domain_validated(domain: str, validated_domains: Set[str]) -> bool:
-    return domain in validated_domains
-
-
-def mark_domain_as_validated(domain: str, validated_domains: Set[str]):
-    validated_domains.add(domain)
 
 
 def get_execution_status(results):
@@ -68,6 +70,7 @@ def get_execution_status(results):
 
 
 def get_standard_codelist_cache_key(standard: str, version: str) -> str:
+    standard, version = normalize_adam_input(standard, version)
     return f"{standard.lower()}-{version.replace('.', '-')}-codelists"
 
 
@@ -153,13 +156,48 @@ def is_ap_domain(dataset_domain: str) -> bool:
 
 
 def get_library_variables_metadata_cache_key(
-    standard_type: str, standard_version: str
+    standard_type: str, standard_version: str, standard_substandard: str
 ) -> str:
-    return f"library_variables_metadata/{standard_type}/{standard_version}"
+    if not standard_substandard:
+        standard_type, standard_version = normalize_adam_input(
+            standard_type, standard_version
+        )
+        return f"library_variables_metadata/{standard_type}/{standard_version}"
+    else:
+        return f"library_variables_metadata/{standard_type}/{standard_version}/{standard_substandard}"
 
 
-def get_standard_details_cache_key(standard_type: str, standard_version: str) -> str:
-    return f"standards/{standard_type}/{standard_version}"
+def get_standard_details_cache_key(
+    standard_type: str, standard_version: str, standard_substandard: str = None
+) -> str:
+    standard_type, standard_version = normalize_adam_input(
+        standard_type, standard_version
+    )
+    if not standard_substandard:
+        return f"standards/{standard_type}/{standard_version}"
+    else:
+        return f"standards/{standard_type}/{standard_version}/{standard_substandard}"
+
+
+def normalize_adam_input(standard: str, version: str) -> tuple:
+    """
+    Normalizes ADAM user input to the expected internal format.
+    Args:
+        standard: User input like 'adamig', 'adam-adae'
+        version: User input like '1-0'
+    Returns:
+        Tuple of (normalized_standard, normalized_version)
+        Examples:
+        - ('adamig', '1-0') -> ('adam', 'adamig-1-0')
+        - ('adam-adae', '1-0') -> ('adam', 'adam-adae-1-0')
+        - ('sdtm', '3-4') -> ('sdtm', '3-4')
+    """
+    if standard:
+        standard_lower = standard.lower()
+        if standard_lower in ADAM_PRODUCTS:
+            return "adam", f"{standard_lower}-{version}"
+    # Non-ADAM standard - keep as is
+    return standard, version
 
 
 def get_model_details_cache_key(standard: str, model_version: str) -> str:
@@ -169,19 +207,26 @@ def get_model_details_cache_key(standard: str, model_version: str) -> str:
 def get_model_details_cache_key_from_ig(standard_metadata: dict) -> str:
     model_link = standard_metadata.get("_links", {}).get("model", {}).get("href", "")
     model_link_parts = model_link.split("/")
-    return get_model_details_cache_key(
-        standard=model_link_parts[2], model_version=model_link_parts[3]
-    )
+    standard = model_link_parts[2]
+    full_version = model_link_parts[3]
+    # for ADaM, there is an extra adam prefix in the version
+    if full_version.startswith(f"{standard}-"):
+        version = full_version[len(standard) + 1 :]
+    else:
+        version = full_version
+    return get_model_details_cache_key(standard=standard, model_version=version)
 
 
 def replace_pattern_in_list_of_strings(
     list_of_strings: List[str], pattern: str, value: str
 ) -> List[str]:
-    return [string.replace(pattern, value) for string in list_of_strings]
+    return [string.replace(pattern, value or "") for string in list_of_strings]
 
 
 def get_operations_cache_key(
+    core_id: str,
     directory_path: str,
+    operation_id: str,
     domain: str = None,
     operation_name: str = None,
     grouping: str = None,
@@ -191,7 +236,7 @@ def get_operations_cache_key(
     """
     Creates the cache key for operations.
     """
-    key = f"operations/{directory_path}"
+    key = f"operations/{core_id}/{directory_path}/{operation_id}"
     optional_items = [domain, operation_name, grouping, target_variable, dataset_path]
     for item in optional_items:
         if item:
@@ -203,47 +248,34 @@ def get_directory_path(dataset_path):
     return os.path.dirname(dataset_path)
 
 
-def get_corresponding_datasets(datasets: List[dict], domain: str) -> List[dict]:
-    return [dataset for dataset in datasets if dataset.get("domain") == domain]
+def tag_source(
+    dataset: DatasetInterface, dataset_metadata: DatasetMetadata
+) -> DatasetInterface:
+    """
+    For sdtm split datasets,
+    Adds source filename and row number to dataset
+    """
+    dataset[SOURCE_FILENAME] = dataset_metadata.filename
+    dataset[SOURCE_ROW_NUMBER] = list(range(1, dataset.len() + 1))
+    return dataset
 
 
-def is_split_dataset(datasets: List[dict], domain: str) -> bool:
-    corresponding_datasets = get_corresponding_datasets(datasets, domain)
-    if len(corresponding_datasets) < 2:
-        logger.info(f"Domain {domain} is not a split dataset")
-        return False
-
-    non_supp_datasets = [
-        dataset
-        for dataset in corresponding_datasets
-        if not dataset.get("filename", "").lower().startswith("supp")
+def get_corresponding_datasets(
+    datasets: Iterable[SDTMDatasetMetadata], dataset_metadata: SDTMDatasetMetadata
+) -> List[SDTMDatasetMetadata]:
+    return [
+        other
+        for other in datasets
+        if dataset_metadata.unsplit_name == other.unsplit_name
     ]
 
-    if len(non_supp_datasets) < 2:
-        logger.info(f"Domain {domain} does not have at least 2 split datasets")
-        return False
 
-    result = all(
-        (
-            dataset.get("filename", "").split(".")[0].lower().startswith(domain.lower())
-            and len(dataset.get("filename", "").split(".")[0]) >= len(domain)
-        )
-        or dataset.get("filename", "").lower().startswith("supp")
-        for dataset in corresponding_datasets
+def get_dataset_name_from_details(dataset_metadata: SDTMDatasetMetadata) -> str:
+    return (
+        os.path.split(dataset_metadata.full_path)[-1]
+        if dataset_metadata.full_path
+        else dataset_metadata.filename
     )
-    logger.info(f"{domain} is a split dataset: {result}")
-    return result
-
-
-def is_supp_dataset(datasets: List[dict], domain: str) -> bool:
-    corresponding_datasets = get_corresponding_datasets(datasets, domain)
-    # Check if there are multiple datasets for the domain and if their names match the supp naming convention
-    if len(corresponding_datasets) > 1:
-        return any(
-            dataset.get("filename", "").split(".")[0].lower().startswith("supp")
-            for dataset in corresponding_datasets
-        )
-    return False
 
 
 def serialize_rule(rule: dict) -> dict:
@@ -300,17 +332,11 @@ def generate_report_filename(generation_time: str) -> str:
     return f"CORE-Report-{timestamp}"
 
 
-def get_rules_cache_key(standard: str, version: str, rule_id: str = None) -> str:
-    key = f"rules/{standard}/{version}/"
-    if rule_id:
-        key = f"{key}{rule_id}"
-    return key
-
-
-def get_local_cache_key(local_rule_id: str, rule_id: str = None) -> str:
-    key = f"local/{local_rule_id}/"
-    if rule_id:
-        key = f"{key}{rule_id}"
+def get_rules_cache_key(standard: str, version: str, substandard: str = None) -> str:
+    if substandard:
+        key = f"{standard.lower()}/{version}/{substandard.lower()}"
+    else:
+        key = f"{standard.lower()}/{version}"
     return key
 
 
@@ -318,8 +344,12 @@ def get_metadata_cache_key(metadata_key: str):
     return f"library/metadata{metadata_key}"
 
 
-def get_variable_codelist_map_cache_key(standard: str, version: str) -> str:
-    return f"{standard}-{version}-codelists"
+def get_variable_codelist_map_cache_key(standard: str, version: str, subversion) -> str:
+    if subversion:
+        return f"{standard}-{version}-{subversion}-codelists"
+    else:
+        standard, version = normalize_adam_input(standard, version)
+        return f"{standard}-{version}-codelists"
 
 
 def get_meddra_code_term_pairs_cache_key(meddra_path: str) -> str:
@@ -327,13 +357,13 @@ def get_meddra_code_term_pairs_cache_key(meddra_path: str) -> str:
 
 
 def get_item_index_by_condition(
-    lit_of_dicts: List[dict], condition: Callable
+    list_of_dicts: List[dict], condition: Callable
 ) -> Optional[int]:
     """
     Uses linear search to return index of element
     in unsorted list which applies to the condition.
     """
-    for index, dictionary in enumerate(lit_of_dicts):
+    for index, dictionary in enumerate(list_of_dicts):
         if condition(dictionary):
             return index
 
@@ -368,7 +398,10 @@ def get_dictionary_path(directory_path: str, file_name: str) -> str:
 
 
 def convert_library_class_name_to_ct_class(class_name: str):
-    conversions = {"special-purpose": SPECIAL_PURPOSE}
+    conversions = {
+        "special-purpose": SPECIAL_PURPOSE,
+        "special-purpose datasets": SPECIAL_PURPOSE_MODEL,
+    }
     return conversions.get(class_name.lower(), class_name.upper())
 
 
@@ -401,3 +434,50 @@ def dates_overlap(date1_str, precision1, date2_str, precision2):
     more_precise = date2_str if precision1 < precision2 else date1_str
 
     return more_precise.startswith(less_precise), less_precise
+
+
+def replace_nan_values_in_df(df, columns):
+    for col in columns:
+        if col in df.columns:
+            mask = pd.isna(df[col])
+            if mask.any():
+                df.loc[mask, col] = None
+    return df
+
+
+def validate_dataset_files_exist(dataset_path: tuple[str], logger, ctx):
+    non_existing_files: list[str] = [
+        path for path in dataset_path if not os.path.exists(path)
+    ]
+    if non_existing_files:
+        logger.error(f'Files {", ".join(non_existing_files)} are not found')
+        ctx.exit(2)
+
+
+def set_max_errors_per_rule(args):
+    env_value = (
+        (os.getenv("MAX_ERRORS_PER_RULE")) if os.getenv("MAX_ERRORS_PER_RULE") else None
+    )
+
+    if env_value:
+        parsed_tuple = ast.literal_eval(env_value)
+        env_max_errors = parsed_tuple[0]
+        env_per_dataset = parsed_tuple[1]
+    else:
+        env_max_errors = None
+        env_per_dataset = None
+    cli_limit, cli_per_dataset = args.max_errors_per_rule
+    if env_max_errors is not None and cli_limit > 0:
+        max_errors_per_rule = max(env_max_errors, cli_limit)
+    elif env_max_errors is not None:
+        max_errors_per_rule = env_max_errors
+    elif cli_limit and cli_limit > 0:
+        max_errors_per_rule = cli_limit
+    else:
+        max_errors_per_rule = None
+
+    if max_errors_per_rule is not None and max_errors_per_rule <= 0:
+        max_errors_per_rule = None
+
+    per_dataset = bool(env_per_dataset or cli_per_dataset)
+    return max_errors_per_rule, per_dataset

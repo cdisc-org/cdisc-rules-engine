@@ -136,14 +136,21 @@ CORE-Report*.json
 bin
 obj
 appsettings.json
-local.settings.json
 .python_packages
 
 logs
 ~$CORE-*.xlsx
 
 # Ignore local rules
-resources/cache/local_rules.pkl
+resources/cache/custom_rules_dictionary.pkl
+resources/cache/custom_rules.pkl
 
 #ignore vim .swp files
 *.swp
+
+Organization_Custom.json
+
+#ignore custom build artifacts
+/build-output
+.github/workflows/build_version.yml
+Dockerfile.build

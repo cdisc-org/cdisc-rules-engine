@@ -21,7 +21,7 @@ class BaseDictionaryValidator:
         raise NotImplementedError
 
     def is_valid_code(
-        self, code: str, term_type: str = "", variable: str = "", **kwargs
+        self, code: str, term_type: str = "", variable: str = "", codes=[], **kwargs
     ) -> bool:
         """
         Method to identify whether a code is valid based on its term type.
@@ -41,7 +41,7 @@ class BaseDictionaryValidator:
         """
         raise NotImplementedError
 
-    def is_valid_code_term_pair(self, row, term_var, code_var) -> bool:
+    def is_valid_code_term_pair(self, row, term_var, code_var, codes=[]) -> bool:
         """
         Method to identify whether a term in a dictionary matches the code used to specify it.
 

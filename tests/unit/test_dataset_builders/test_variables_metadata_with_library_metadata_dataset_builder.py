@@ -1,7 +1,9 @@
 from unittest.mock import MagicMock, patch
+from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
+from cdisc_rules_engine.dummy_models.dummy_dataset import DummyDataset
 from cdisc_rules_engine.services.cache.in_memory_cache_service import (
     InMemoryCacheService,
 )
@@ -20,31 +22,60 @@ from cdisc_rules_engine.enums.variable_roles import VariableRoles
 @patch(
     "cdisc_rules_engine.services.data_services.LocalDataService.get_variables_metadata",
 )
+@patch(
+    "cdisc_rules_engine.dataset_builders.variables_metadata_with_library_metadata"
+    ".VariablesMetadataWithLibraryMetadataDatasetBuilder.get_library_variables_metadata"
+)
 def test_variable_metadata_with_library_metadata_dataset_builder(
-    mock_get_variables_metadata: MagicMock, mock_get_dataset: MagicMock
+    mock_get_library_variables_metadata: MagicMock,
+    mock_get_variables_metadata: MagicMock,
+    mock_get_dataset: MagicMock,
 ):
     mock_get_variables_metadata.return_value = pd.DataFrame.from_dict(
         {
-            "variable_name": ["STUDYID", "USUBJID", "AETERM"],
-            "variable_label": ["A", "B", "C"],
-            "variable_size": [16, 16, 8],
-            "variable_order_number": [1, 2, 9],
-            "variable_data_type": ["Char", "Char", "Char"],
+            "variable_name": ["STUDYID", "USUBJID", "AETERM", "AESEQ"],
+            "variable_label": ["A", "B", "C", "D"],
+            "variable_size": [16, 16, 8, 8],
+            "variable_order_number": [1, 2, 9, 8],
+            "variable_data_type": ["Char", "Char", "Char", "Num"],
         }
     )
 
-    mock_get_dataset.return_value = pd.DataFrame.from_dict(
+    library_vars_data = pd.DataFrame(
         {
-            "STUDYID": ["A", "B", "C"],
-            "USUBJID": ["", "A", "B"],
-            "AETERM": ["", "C", "A"],
+            "library_variable_name": ["STUDYID", "USUBJID", "AETERM", "AESEQ"],
+            "library_variable_role": ["Identifier", "Identifier", "Topic", "Topic"],
+            "library_variable_label": [
+                "Study Identifier",
+                "Unique Subject Identifier",
+                "Reported Term for the adverse event",
+                "Sequence Number",
+            ],
+            "library_variable_core": ["Req", "Req", "Req", "Req"],
+            "library_variable_order_number": ["1", "2", "9", "8"],
+            "library_variable_data_type": ["Char", "Char", "Char", "Num"],
+            "library_variable_ccode": ["C49487", "C69256", "C41331", "C25364"],
         }
+    )
+    mock_get_library_variables_metadata.return_value = PandasDataset(library_vars_data)
+
+    mock_get_dataset.return_value = PandasDataset(
+        pd.DataFrame.from_dict(
+            {
+                "STUDYID": ["A", "B", "C"],
+                "USUBJID": ["", "A", "B"],
+                "AETERM": ["", "C", "A"],
+                "AESEQ": [1, 2, 3],
+            }
+        )
     )
     cache = InMemoryCacheService()
     standard = "sdtmig"
     standard_version = "3-4"
+    standard_substandard = None
     standard_data = {
         "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
+        "domains": ["AE", "DM", "VS"],
         "classes": [
             {
                 "name": "Events",
@@ -100,10 +131,25 @@ def test_variable_metadata_with_library_metadata_dataset_builder(
         data_processor=None,
         dataset_path=None,
         datasets=[],
-        domain="AE",
+        dataset_metadata=DummyDataset(
+            {
+                "filename": "ae.xpt",
+                "label": "Adverse Events",
+                "variables": [
+                    {
+                        "name": "DOMAIN",
+                        "label": "Domain Abbreviation",
+                        "type": "Char",
+                        "length": 4,
+                    },
+                ],
+                "records": {"DOMAIN": ["AE"]},
+            }
+        ),
         define_xml_path=None,
         standard=standard,
         standard_version=standard_version,
+        standard_substandard=standard_substandard,
         library_metadata=library_metadata,
     ).build()
     assert result.columns.tolist() == [
@@ -113,11 +159,12 @@ def test_variable_metadata_with_library_metadata_dataset_builder(
         "variable_order_number",
         "variable_data_type",
         "library_variable_name",
-        "library_variable_role",
         "library_variable_label",
-        "library_variable_core",
-        "library_variable_order_number",
         "library_variable_data_type",
+        "library_variable_role",
+        "library_variable_core",
+        "library_variable_ccode",
+        "library_variable_order_number",
         "variable_has_empty_values",
     ]
     assert result["library_variable_name"].tolist() == [
@@ -126,8 +173,8 @@ def test_variable_metadata_with_library_metadata_dataset_builder(
         "AETERM",
         "AESEQ",
     ]
-    assert result["variable_name"].tolist() == ["STUDYID", "USUBJID", "AETERM", ""]
-    assert result["variable_has_empty_values"].tolist() == [False, True, True, True]
+    assert result["variable_name"].tolist() == ["STUDYID", "USUBJID", "AETERM", "AESEQ"]
+    assert result["variable_has_empty_values"].tolist() == [False, True, True, False]
 
 
 @patch(
@@ -136,8 +183,14 @@ def test_variable_metadata_with_library_metadata_dataset_builder(
 @patch(
     "cdisc_rules_engine.services.data_services.LocalDataService.get_variables_metadata",
 )
+@patch(
+    "cdisc_rules_engine.dataset_builders.variables_metadata_with_library_metadata"
+    ".VariablesMetadataWithLibraryMetadataDatasetBuilder.get_library_variables_metadata"
+)
 def test_variable_metadata_with_library_metadata_dataset_builder_variable_only_in_model(
-    mock_get_variables_metadata: MagicMock, mock_get_dataset: MagicMock
+    mock_get_library_variables_metadata: MagicMock,
+    mock_get_variables_metadata: MagicMock,
+    mock_get_dataset: MagicMock,
 ):
     mock_get_variables_metadata.return_value = pd.DataFrame.from_dict(
         {
@@ -148,20 +201,40 @@ def test_variable_metadata_with_library_metadata_dataset_builder_variable_only_i
             "variable_data_type": ["Char", "Char", "Char", "Num"],
         }
     )
-
-    mock_get_dataset.return_value = pd.DataFrame.from_dict(
+    library_vars_data = pd.DataFrame(
         {
-            "STUDYID": ["A", "B", "C"],
-            "USUBJID": ["", "A", "B"],
-            "AETERM": ["", "C", "A"],
-            "AEMODELVAR": ["C", "D", "A"],
+            "library_variable_name": ["STUDYID", "USUBJID", "AETERM", "AEMODELVAR"],
+            "library_variable_role": ["Identifier", "Identifier", "Topic", "Timing"],
+            "library_variable_label": [
+                "Study Identifier",
+                "Unique Subject Identifier",
+                "Reported Term for the adverse event",
+                "Model Variable",
+            ],
+            "library_variable_core": ["Req", "Req", "Req", "Perm"],
+            "library_variable_order_number": ["1", "2", "9", "2000"],
+            "library_variable_data_type": ["Char", "Char", "Char", "Num"],
+            "library_variable_ccode": ["C49487", "C69256", "C41331", "C25364"],
         }
+    )
+    mock_get_library_variables_metadata.return_value = PandasDataset(library_vars_data)
+    mock_get_dataset.return_value = PandasDataset(
+        pd.DataFrame.from_dict(
+            {
+                "STUDYID": ["A", "B", "C"],
+                "USUBJID": ["", "A", "B"],
+                "AETERM": ["", "C", "A"],
+                "AEMODELVAR": ["C", "D", "A"],
+            }
+        )
     )
     cache = InMemoryCacheService()
     standard = "sdtmig"
     standard_version = "3-4"
+    standard_substandard = None
     standard_data = {
         "_links": {"model": {"href": "/mdr/sdtm/2-0"}},
+        "domains": ["AE", "DM", "VS"],
         "classes": [
             {
                 "name": "Events",
@@ -278,10 +351,25 @@ def test_variable_metadata_with_library_metadata_dataset_builder_variable_only_i
         data_processor=None,
         dataset_path=None,
         datasets=[],
-        domain="AE",
+        dataset_metadata=DummyDataset(
+            {
+                "filename": "ae.xpt",
+                "label": "Adverse Events",
+                "variables": [
+                    {
+                        "name": "DOMAIN",
+                        "label": "Domain Abbreviation",
+                        "type": "Char",
+                        "length": 4,
+                    },
+                ],
+                "records": {"DOMAIN": ["AE"]},
+            }
+        ),
         define_xml_path=None,
         standard=standard,
         standard_version=standard_version,
+        standard_substandard=standard_substandard,
         library_metadata=library_metadata,
     ).build()
     assert set(result.columns.tolist()) == set(
@@ -297,6 +385,7 @@ def test_variable_metadata_with_library_metadata_dataset_builder_variable_only_i
             "library_variable_label",
             "library_variable_core",
             "library_variable_data_type",
+            "library_variable_ccode",
             "variable_has_empty_values",
         ]
     )
@@ -305,25 +394,16 @@ def test_variable_metadata_with_library_metadata_dataset_builder_variable_only_i
         "USUBJID",
         "AETERM",
         "AEMODELVAR",
-        "DOMAIN",
-        "AESEQ",
-        "TIMING_VAR",
     ]
     assert result["variable_name"].tolist() == [
         "STUDYID",
         "USUBJID",
         "AETERM",
         "AEMODELVAR",
-        "",
-        "",
-        "",
     ]
     assert result["variable_has_empty_values"].tolist() == [
         False,
         True,
         True,
         False,
-        True,
-        True,
-        True,
     ]

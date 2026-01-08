@@ -39,6 +39,8 @@ class RuleSerializer(BaseSerializer):
             data["output_variables"] = self.__rule.output_variables
         if self.__rule.operations:
             data["operations"] = self.__rule.operations
+        if self.__rule.grouping_variables:
+            data["grouping_variables"] = self.__rule.grouping_variables
         return data
 
     @property

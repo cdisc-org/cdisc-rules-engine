@@ -3,7 +3,10 @@ from typing import Callable, List, Set, Optional
 
 from cdisc_library_client import CDISCLibraryClient
 
-from cdisc_rules_engine.enums.library_endpoints import LibraryEndpoints
+from cdisc_rules_engine.enums.library_endpoints import (
+    LibraryEndpoints,
+    get_tig_endpoints,
+)
 from cdisc_rules_engine.models.rule import Rule
 from cdisc_rules_engine.utilities.utils import (
     get_metadata_cache_key,
@@ -131,24 +134,58 @@ class CDISCLibraryService:
         standards.extend(igs)
         return standards
 
+    def get_tig_standards(self):
+        """
+        Queries the CDISC library for all data analysis products.
+        Returns a list of link objects to adam products:
+        [
+            {
+                "href": "uri",
+                "title": "title",
+                "type": "Implementation Guide"
+            }...
+        ]
+        """
+        standards = []
+        for version_endpoint in get_tig_endpoints():
+            data = self._client.get_api_json(version_endpoint)
+            if "_links" in data and "standards" in data["_links"]:
+                standards.extend(list(data["_links"]["standards"].values()))
+        return standards
+
     def get_codelist_terms_map(self, package_version: str) -> dict:
         uri = f"/mdr/ct/packages/{package_version}"
         package = self._client.get_api_json(uri)
-        codelist_map = {"package": package_version}
-        for codelist in package.get("codelists"):
-            terms_map = {
-                "extensible": codelist.get("extensible", "").lower() == "true",
-            }
-            allowed_values = []
-            for term in codelist.get("terms", []):
-                allowed_values.append(term.get("preferredTerm"))
-                allowed_values.append(term.get("submissionValue"))
-                allowed_values.extend(term.get("synonyms", []))
-            terms_map["allowed_terms"] = allowed_values
-            codelist_map[codelist.get("conceptId")] = terms_map
+        codelist_map = {
+            "package": package_version,
+            "codelists": [
+                {
+                    "conceptId": codelist.get("conceptId"),
+                    "definition": codelist.get("definition"),
+                    "extensible": codelist.get("extensible", "").lower() == "true",
+                    "name": codelist.get("name"),
+                    "preferredTerm": codelist.get("preferredTerm"),
+                    "submissionValue": codelist.get("submissionValue"),
+                    "synonyms": codelist.get("synonyms", []),
+                    "terms": [
+                        {
+                            "conceptId": term.get("conceptId"),
+                            "definition": term.get("definition"),
+                            "preferredTerm": term.get("preferredTerm"),
+                            "submissionValue": term.get("submissionValue"),
+                            "synonyms": term.get("synonyms", []),
+                        }
+                        for term in codelist.get("terms", [])
+                    ],
+                }
+                for codelist in package.get("codelists")
+            ],
+        }
         return codelist_map
 
-    def get_variable_codelists_map(self, standard_type: str, version: str) -> dict:
+    def get_variable_codelists_map(
+        self, standard_type: str, version: str, subversion: str = None
+    ) -> dict:
         """
         Generates a map of variables -> codelists based on standard type and version
         The variables in a standard document have a "codelist"
@@ -166,17 +203,22 @@ class CDISCLibraryService:
             "sendig": self._get_tabulation_ig_codelists,
             "cdashig": self._get_collection_ig_codelists,
             "adam": self._get_analysis_ig_codelists,
+            "tig": self._get_therapeutic_ig_codelists,
         }
-        data: dict = self._get_standard(standard_type, version)
+        data: dict = self._get_standard(standard_type, version, subversion)
         terms = standard_codelist_function_map.get(
             standard_type, self._get_tabulation_ig_codelists
         )(data)
         return {
-            "name": get_variable_codelist_map_cache_key(standard_type, version),
+            "name": get_variable_codelist_map_cache_key(
+                standard_type, version, subversion
+            ),
             **terms,
         }
 
-    def get_variables_details(self, standard_type: str, version: str) -> dict:
+    def get_variables_details(
+        self, standard_type: str, version: str, substandard: str = None
+    ) -> dict:
         """
         Returns a map of variable name -> details.
         Input:
@@ -199,12 +241,16 @@ class CDISCLibraryService:
                 ...
             }
         """
-        standard_data: dict = self._get_standard(standard_type, version)
+        standard_data: dict = self._get_standard(standard_type, version, substandard)
+        if substandard:
+            standard_type = f"{standard_type}/{substandard}"
         return self._extract_variables_details_from_standard(
             standard_data, standard_type
         )
 
-    def get_standard_details(self, standard_type: str, version: str) -> dict:
+    def get_standard_details(
+        self, standard_type: str, version: str, substandard: str = None
+    ) -> dict:
         """
         Accepts standard type and version and returns details of a standard like:
         {
@@ -240,12 +286,11 @@ class CDISCLibraryService:
             }
         }
         """
-        standard_data: dict = self._get_standard(standard_type, version)
+        standard_data: dict = self._get_standard(standard_type, version, substandard)
         domains: Set[str] = self._extract_domain_names_from_tabulation_standard(
             standard_data
         )
-        if domains:
-            standard_data["domains"] = domains
+        standard_data["domains"] = domains
         return standard_data
 
     def get_model_details(self, standard_details: dict) -> Optional[dict]:
@@ -276,21 +321,24 @@ class CDISCLibraryService:
         model_data["standard_type"] = standard_type
         return model_data
 
-    def _get_standard(self, standard_type: str, version: str) -> dict:
+    def _get_standard(
+        self, standard_type: str, version: str, substandard: str = None
+    ) -> dict:
         """
         Requests a standard definition from the library.
         Internal method, not for usage in the client code.
         """
         standard_get_function_map = {
-            "sdtmig": partial(self._client.get_sdtmig, version),
-            "sendig": partial(self._client.get_sendig, version),
-            "adam": partial(self._client.get_adam, version),
-            "cdashig": partial(self._client.get_cdashig, version),
+            "sdtmig": lambda: self._client.get_sdtmig(version),
+            "sendig": lambda: self._client.get_sendig(version),
+            "adam": lambda: self._client.get_adam(version),
+            "cdashig": lambda: self._client.get_cdashig(version),
+            "tig": lambda: self._client.get_tig(version, substandard),
         }
-        function_to_call: Callable = standard_get_function_map.get(
-            standard_type, self._client.get_sdtmig
-        )
-        return function_to_call()
+        # default to sdtmig if no function is found
+        return standard_get_function_map.get(
+            standard_type, lambda: self._client.get_sdtmig(version)
+        )()
 
     def _get_model(self, standard_type: str, model_version: str) -> dict:
         """
@@ -328,6 +376,26 @@ class CDISCLibraryService:
                 "variables_key": "fields",
             },
             "adam": {
+                "classes_key": "dataStructures",
+                "datasets_key": "analysisVariableSets",
+                "variables_key": "analysisVariables",
+            },
+            "tig/sdtm": {
+                "classes_key": "classes",
+                "datasets_key": "datasets",
+                "variables_key": "datasetVariables",
+            },
+            "tig/send": {
+                "classes_key": "classes",
+                "datasets_key": "datasets",
+                "variables_key": "datasetVariables",
+            },
+            "tig/cdash": {
+                "classes_key": "classes",
+                "datasets_key": "domains",
+                "variables_key": "fields",
+            },
+            "tig/adam": {
                 "classes_key": "dataStructures",
                 "datasets_key": "analysisVariableSets",
                 "variables_key": "analysisVariables",
@@ -421,6 +489,78 @@ class CDISCLibraryService:
                         terms[variable.get("name")] = (
                             terms.get(variable.get("name"), []) + ccodes
                         )
+        return terms
+
+    def _get_therapeutic_ig_codelists(self, data: dict):  # noqa
+        """
+        Extract the codelists for each variable in a therapeutic area implementation guide.
+        Handles the TIG-specific structure where codelists appear under _links for each variable.
+        Returns a dictionary in the form:
+        {
+            "variable_name": ["C123", "C234"...],
+            ...
+        }
+        """
+        terms = {}
+        standard = data["_links"].get("self").get("href").split("/")[-1]
+        # parse tig substandard codelists
+        if standard == "adam":
+            for structure in data.get("dataStructures", []):
+                for varset in structure.get("analysisVariableSets", []):
+                    for variable in varset.get("analysisVariables", []):
+                        codelists = variable["_links"].get("codelist", [])
+                        ccodes = [
+                            codelist["href"].split("/")[-1] for codelist in codelists
+                        ]
+                        if ccodes:
+                            terms[variable.get("name")] = (
+                                terms.get(variable.get("name"), []) + ccodes
+                            )
+        elif standard in ("sdtm", "send"):
+            for cls in data.get("classes", []):
+                for variable in cls.get("classVariables", []):
+                    codelists = variable["_links"].get("codelist", [])
+                    ccodes = [codelist["href"].split("/")[-1] for codelist in codelists]
+                    if ccodes:
+                        terms[variable.get("name")] = (
+                            terms.get(variable.get("name"), []) + ccodes
+                        )
+            for dataset in data.get("datasets", []):
+                for variable in dataset.get("datasetVariables", []):
+                    codelists = variable["_links"].get("codelist", [])
+                    ccodes = [codelist["href"].split("/")[-1] for codelist in codelists]
+                    if ccodes:
+                        terms[variable.get("name")] = (
+                            terms.get(variable.get("name"), []) + ccodes
+                        )
+        elif standard == "cdash":
+            for cls in data.get("classes", []):
+                for dataset in cls.get("domains", []):
+                    for variable in dataset.get("fields", []):
+                        codelists = variable["_links"].get("codelist", [])
+                        ccodes = [
+                            codelist["href"].split("/")[-1] for codelist in codelists
+                        ]
+                        if ccodes:
+                            terms[variable.get("name")] = (
+                                terms.get(variable.get("name"), []) + ccodes
+                            )
+        # get model from tig substandard and merge with tig codelists
+        model = data["_links"].get("model")
+        model_terms = {}
+        if model:
+            model_version = model.get("href", "").split("/")[-1]
+            model = model.get("href", "").split("/")[-2]
+            model_map = {
+                "sdtm": self._client.get_sdtm,
+                "cdash": self._client.get_cdash,
+                "send": self._client.get_sdtm,
+            }
+            if model in model_map:
+                get_model_fn = model_map[model]
+                model_data = get_model_fn(model_version)
+                model_terms = self._get_collection_model_codelists(model_data)
+                terms = self._merge_codelist_maps(terms, model_terms)
         return terms
 
     def _get_tabulation_model_codelists(self, data: dict) -> dict:
@@ -538,5 +678,11 @@ class CDISCLibraryService:
         domain_names: Set[str] = set()
         for cls in standard_data.get("classes", []):
             for dataset in cls.get("datasets", []):
-                domain_names.add(dataset.get("name"))
+                domain_name = dataset.get("name")
+                if domain_name:
+                    domain_names.add(domain_name)
+        for dataset in standard_data.get("datasets", []):
+            domain_name = dataset.get("name")
+            if domain_name:
+                domain_names.add(domain_name)
         return domain_names

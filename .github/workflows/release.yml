@@ -5,145 +5,120 @@ on:
     types: [created]
 
 jobs:
-  build-ubuntu-latest:
+  build-binaries:
+    strategy:
+      matrix:
+        include:
+          - os: "ubuntu-latest"
+            name: "core-ubuntu-latest"
+          - os: "ubuntu-22.04"
+            name: "core-ubuntu-22.04-tar"
+          - os: "macos-latest"
+            name: "core-mac-apple-silicon"
+          - os: "windows-latest"
+            name: "core-windows"
+          - os: "macos-15-intel"
+            name: "core-mac-intel"
+    uses: ./.github/workflows/build-binary.yml
+    with:
+      os: ${{ matrix.os }}
+      name: ${{ matrix.name }}
+
+  create-release-assets:
+    needs: build-binaries
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        id: pysetup
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
         with:
-          python-version: "3.9"
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install setuptools wheel twine
-          pip install -r requirements.txt
-      - name: Build Binary
-        run: pyinstaller core.py --dist ./dist/output/ubuntu-latest --add-data=$pythonLocation/lib/python3.9/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates --add-data=resources/schema:resources/schema
-      - name: Archive Artifacts
+          path: artifacts
+      - name: Create release zip files
         uses: vimtor/action-zip@v1
         with:
-          files: dist/output/ubuntu-latest/core/
+          files: artifacts/core-ubuntu-latest/
           dest: core-ubuntu-latest.zip
-      - name: Upload Ubuntu Latest Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+      - uses: vimtor/action-zip@v1
         with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./core-ubuntu-latest.zip
-          asset_name: core-ubuntu-latest.zip
-          asset_content_type: application/zip
-  build-ubuntu-20-04:
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        id: pysetup
+          files: artifacts/core-mac-intel/
+          dest: core-mac-intel.zip
+      - uses: vimtor/action-zip@v1
         with:
-          python-version: "3.9"
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install setuptools wheel twine
-          pip install -r requirements.txt
-      - name: Build Binary
-        run: pyinstaller core.py --dist ./dist/output/ubuntu-20-04 --add-data=$pythonLocation/lib/python3.9/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates --add-data=resources/schema:resources/schema
-      - name: Archive Artifacts
-        uses: vimtor/action-zip@v1
+          files: artifacts/core-mac-apple-silicon/
+          dest: core-mac-apple-silicon.zip
+      - uses: vimtor/action-zip@v1
         with:
-          files: dist/output/ubuntu-20-04/core/
-          dest: core-ubuntu-20-04.zip
-      - name: Upload Ubuntu 20.04 Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./core-ubuntu-20-04.zip
-          asset_name: core-ubuntu-20-04.zip
-          asset_content_type: application/zip
-  build-mac:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        id: pysetup
-        with:
-          python-version: "3.9"
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install setuptools wheel twine
-          pip install -r requirements.txt
-      - name: Build Binary
-        run: pyinstaller core.py --dist ./dist/output/mac --add-data=$pythonLocation/lib/python3.9/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates --add-data=resources/schema:resources/schema
-      - name: Archive Artifacts
-        uses: vimtor/action-zip@v1
-        with:
-          files: dist/output/mac/core/
-          dest: core-mac.zip
-      - name: Upload Mac Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./core-mac.zip
-          asset_name: core-mac.zip
-          asset_content_type: application/zip
-  build-windows:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        id: pysetup
-        with:
-          python-version: "3.9"
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install setuptools wheel twine
-          pip install -r requirements.txt
-      - name: Build Binary
-        run: pyinstaller core.py --dist ./dist/output/windows --add-data="$env:pythonLocation\Lib\site-packages\xmlschema\schemas;xmlschema/schemas" --add-data="resources/cache;resources/cache" --add-data="resources/templates;resources/templates" --add-data="resources/schema;resources/schema"
-      - name: Archive Windows Artifacts
-        uses: vimtor/action-zip@v1
-        with:
-          files: dist/output/windows/core/
+          files: artifacts/core-windows/
           dest: core-windows.zip
-      - name: Upload Windows Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+      - name: Create Ubuntu 22.04 tar.gz
+        run: |
+          cd artifacts/core-ubuntu-22.04-tar
+          tar -czf ../../core-ubuntu-22.04.tar.gz .
+          cd ../..
+      - name: Delete original Ubuntu 22.04 artifact
+        uses: geekyeggo/delete-artifact@v5
         with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./core-windows.zip
-          asset_name: core-windows.zip
-          asset_content_type: application/zip
-  deploy-package:
+          name: core-ubuntu-22.04-tar
+      - name: Upload Ubuntu 22.04 tar.gz
+        uses: actions/upload-artifact@v4
+        with:
+          name: core-ubuntu-22.04-tarball
+          path: core-ubuntu-22.04.tar.gz
+
+      - name: Upload Release Assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            core-ubuntu-latest.zip
+            core-ubuntu-22.04.tar.gz
+            core-mac-intel.zip
+            core-mac-apple-silicon.zip
+            core-windows.zip
+
+      # Upload zips as artifact for the PyPI job
+      - name: Upload Release Assets for PyPI
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-artifacts
+          path: |
+            core-ubuntu-latest.zip
+            core-mac-intel.zip
+            core-mac-apple-silicon.zip
+            core-windows.zip
+  deploy-PyPi:
+    needs: create-release-assets
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
+      id-token: write
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v4
       - name: Set up Python
-        uses: actions/setup-python@v2
-        id: pysetup
+        uses: actions/setup-python@v4
         with:
-          python-version: "3.9"
+          python-version: "3.12"
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install setuptools wheel twine
+          pip install build setuptools wheel twine
           pip install -r requirements.txt
-      - name: Publish
-        env:
-          TWINE_USERNAME: ${{ vars.PYPI_USERNAME }}
-          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+      - name: Build package
         run: |
-          python setup.py sdist bdist_wheel
-          twine upload dist/* --skip-existing
+          python -m build
+      - name: Check package size
+        run: |
+          echo "Package size:"
+          ls -lh dist/*.whl
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          verbose: true
+
+  build-and-push-docker:
+    needs: [create-release-assets, deploy-PyPi]
+    uses: ./.github/workflows/docker_release.yml
+    with:
+      version: ${{ github.event.release.tag_name }}
+    secrets: inherit
