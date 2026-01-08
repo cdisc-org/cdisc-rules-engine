@@ -46,21 +46,29 @@ jobs:
             if ./core --help; then echo "test passed"; else echo "test failed"; exit 1; fi
           fi
         shell: bash
-      - name: Test Binary test-validate command
+      - name: Test Binary test-validate commands
         run: |
           cd dist/output/${{ inputs.name }}/core
           if [ "${{ runner.os }}" = "Windows" ]; then
-            ./core.exe test-validate
+            ./core.exe test-validate-json
+            json_exit=$?
+            ./core.exe test-validate-xpt
+            xpt_exit=$?
           else
             chmod +x core
             chmod -R 755 .
             chmod -R +r resources/
-            ./core test-validate
+            ./core test-validate-json
+            json_exit=$?
+            ./core test-validate-xpt
+            xpt_exit=$?
           fi
-          exit_code=$?
-          if [ $exit_code -eq 0 ]; then
-            echo "Test validate succeeded"
+
+          if [ $json_exit -eq 0 ] && [ $xpt_exit -eq 0 ]; then
+            echo "All validation tests succeeded"
+            exit 0
           else
-            echo "Test validate failed with exit code $exit_code"
+            echo "Validation tests failed (JSON: $json_exit, XPT: $xpt_exit)"
+            exit 1
           fi
         shell: bash
