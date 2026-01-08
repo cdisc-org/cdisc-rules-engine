@@ -128,6 +128,7 @@ def run_validation(args: Validation_args):
     CacheManager.register("InMemoryCacheService", InMemoryCacheService)
     manager = CacheManager()
     manager.start()
+    created_files = []
     try:
         shared_cache = get_cache_service(manager)
         engine_logger.info(f"Populating cache, cache path: {args.cache}")
@@ -156,7 +157,6 @@ def run_validation(args: Validation_args):
             data_service.dataset_implementation != PandasDataset
         )
         datasets = data_service.get_datasets()
-        created_files = []
         if large_dataset_validation and data_service.standard != "usdm":
             # convert all files to parquet temp files
             engine_logger.warning(
