@@ -50,17 +50,17 @@ jobs:
         run: |
           cd dist/output/${{ inputs.name }}/core
           if [ "${{ runner.os }}" = "Windows" ]; then
-            ./core.exe test-validate-json
+            ./core.exe test-validate json
             json_exit=$?
-            ./core.exe test-validate-xpt
+            ./core.exe test-validate xpt
             xpt_exit=$?
           else
             chmod +x core
             chmod -R 755 .
             chmod -R +r resources/
-            ./core test-validate-json
+            ./core test-validate json
             json_exit=$?
-            ./core test-validate-xpt
+            ./core test-validate xpt
             xpt_exit=$?
           fi
 
