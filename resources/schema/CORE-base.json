@@ -467,7 +467,25 @@
         },
         "Output Variables": {
           "items": {
-            "$ref": "Operator.json#/properties/name"
+            "oneOf": [
+              {
+                "$ref": "Operator.json#/properties/name"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "compared": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "Operator.json#/properties/name"
+                    },
+                    "minItems": 2
+                  }
+                },
+                "required": ["compared"],
+                "additionalProperties": false
+              }
+            ]
           },
           "type": "array"
         }
