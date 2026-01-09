@@ -479,6 +479,10 @@ NOTE: if you have multiple versions of python on your machine, you can call pyth
 
 `pyinstaller core.py --icon=resources/assets/CORE_logo_sm.ico --add-data=venv/lib/python3.12/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates --add-data=resources/jsonata:resources/jsonata`
 
+**Mac**
+
+`pyinstaller core.py --icon=resources/assets/CORE_logo_sm.icns --add-data=venv/lib/python3.12/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates --add-data=resources/jsonata:resources/jsonata`
+
 **Windows**
 
 `pyinstaller core.py --icon=resources/assets/CORE_logo_sm.ico --add-data=".venv/Lib/site-packages/xmlschema/schemas;xmlschema/schemas" --add-data="resources/cache;resources/cache" --add-data="resources/templates;resources/templates" --add-data="resources/jsonata;resources/jsonata"`
