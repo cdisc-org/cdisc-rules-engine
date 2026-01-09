@@ -1,4 +1,4 @@
-[![](https://www.cdisc.org/themes/custom/cdiscd8/logo.svg)](https://www.cdisc.org)
+[![](./resources/assets/CORE_logo_sm.png)](https://www.cdisc.org)
 
 [![](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3120) [![](https://img.shields.io/pypi/v/cdisc-rules-engine.svg)](https://pypi.org/project/cdisc-rules-engine) [![](https://img.shields.io/docker/v/cdiscdocker/cdisc-rules-engine?label=docker)](https://hub.docker.com/r/cdiscdocker/cdisc-rules-engine)
 
@@ -477,11 +477,15 @@ NOTE: if you have multiple versions of python on your machine, you can call pyth
 
 **Linux**
 
-`pyinstaller core.py --add-data=venv/lib/python3.12/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates --add-data=resources/jsonata:resources/jsonata`
+`pyinstaller core.py --icon=resources/assets/CORE_logo_sm.ico --add-data=venv/lib/python3.12/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates --add-data=resources/jsonata:resources/jsonata`
+
+**Mac**
+
+`pyinstaller core.py --icon=resources/assets/CORE_logo_sm.icns --add-data=venv/lib/python3.12/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates --add-data=resources/jsonata:resources/jsonata`
 
 **Windows**
 
-`pyinstaller core.py --add-data=".venv/Lib/site-packages/xmlschema/schemas;xmlschema/schemas" --add-data="resources/cache;resources/cache" --add-data="resources/templates;resources/templates" --add-data="resources/jsonata;resources/jsonata"`
+`pyinstaller core.py --icon=resources/assets/CORE_logo_sm.ico --add-data=".venv/Lib/site-packages/xmlschema/schemas;xmlschema/schemas" --add-data="resources/cache;resources/cache" --add-data="resources/templates;resources/templates" --add-data="resources/jsonata;resources/jsonata"`
 
 _Note .venv should be replaced with path to python installation or virtual environment_
 

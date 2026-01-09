@@ -25,12 +25,15 @@ jobs:
           pip install --no-deps -r requirements.txt
           pip install -r requirements.txt --no-cache-dir
 
-      - name: Build Binary (Linux/Mac)
-        if: runner.os != 'Windows'
-        run: pyinstaller --onedir --contents-directory "." core.py --dist ./dist/output/${{ inputs.name }} --collect-submodules pyreadstat --add-data=$pythonLocation/lib/python3.12/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates --add-data=resources/schema:resources/schema --add-data=tests/resources/datasets:tests/resources/datasets --add-data=resources/jsonata:resources/jsonata
+      - name: Build Binary (Linux)
+        if: runner.os == 'Linux'
+        run: pyinstaller --onedir --contents-directory "." core.py --icon=resources/assets/CORE_logo_sm.ico --dist ./dist/output/${{ inputs.name }} --collect-submodules pyreadstat --add-data=$pythonLocation/lib/python3.12/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates --add-data=resources/schema:resources/schema --add-data=tests/resources/datasets:tests/resources/datasets --add-data=resources/jsonata:resources/jsonata
+      - name: Build Binary (Mac)
+        if: runner.os == 'macOS'
+        run: pyinstaller --onedir --contents-directory "." core.py --icon=resources/assets/CORE_logo_sm.icns --dist ./dist/output/${{ inputs.name }} --collect-submodules pyreadstat --add-data=$pythonLocation/lib/python3.12/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates --add-data=resources/schema:resources/schema --add-data=tests/resources/datasets:tests/resources/datasets --add-data=resources/jsonata:resources/jsonata
       - name: Build Binary (Windows)
         if: runner.os == 'Windows'
-        run: pyinstaller --onedir --contents-directory "." core.py --dist ./dist/output/${{ inputs.name }} --collect-submodules pyreadstat --add-data="$env:pythonLocation\Lib\site-packages\xmlschema\schemas;xmlschema/schemas" --hidden-import numpy --hidden-import numpy.core._methods --hidden-import numpy.lib.format --add-data="resources/cache;resources/cache" --add-data="resources/templates;resources/templates" --add-data="resources/schema;resources/schema"  --add-data="tests/resources/datasets;tests/resources/datasets" --add-data="resources/jsonata;resources/jsonata"
+        run: pyinstaller --onedir --contents-directory "." core.py --icon=resources/assets/CORE_logo_sm.ico --dist ./dist/output/${{ inputs.name }} --collect-submodules pyreadstat --add-data="$env:pythonLocation\Lib\site-packages\xmlschema\schemas;xmlschema/schemas" --hidden-import numpy --hidden-import numpy.core._methods --hidden-import numpy.lib.format --add-data="resources/cache;resources/cache" --add-data="resources/templates;resources/templates" --add-data="resources/schema;resources/schema"  --add-data="tests/resources/datasets;tests/resources/datasets" --add-data="resources/jsonata;resources/jsonata"
       - name: Archive Binary
         uses: actions/upload-artifact@v4
         with:
