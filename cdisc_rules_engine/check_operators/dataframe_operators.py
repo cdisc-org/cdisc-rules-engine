@@ -1613,33 +1613,25 @@ class DataframeType(BaseType):
 
     def check_basic_sort_order(self, group, target, comparator, ascending):
         target_values = group[target].tolist()
-        comparator_values = group[comparator].tolist()
         is_sorted = pd.Series(True, index=group.index)
 
-        def safe_compare(x, index):
-            if pd.isna(x):
-                is_sorted[index] = False
-                return "9999-12-31" if ascending else "0001-01-01"
-            return x
-
-        sorted_indices = sorted(
-            range(len(comparator_values)),
-            key=lambda k: safe_compare(comparator_values[k], group.index[k]),
-            reverse=not ascending,
+        target_is_numeric = all(
+            isinstance(v, (int, float)) and not pd.isna(v) for v in target_values
         )
-        sorted_target_values = [target_values[i] for i in sorted_indices]
 
-        for i in range(len(sorted_target_values) - 1):
-            current = sorted_target_values[i]
-            next_val = sorted_target_values[i + 1]
-            if (
-                pd.isna(current)
-                or pd.isna(next_val)
-                or (ascending and current >= next_val)
-                or (not ascending and current <= next_val)
-            ):
-                is_sorted.iloc[sorted_indices[i]] = False
-                is_sorted.iloc[sorted_indices[i + 1]] = False
+        if target_is_numeric:
+            for pos, idx in enumerate(group.index):
+                expected_seq = pos + 1
+                actual_seq = target_values[pos]
+                if pd.isna(actual_seq) or actual_seq != expected_seq:
+                    is_sorted.loc[idx] = False
+        else:
+            for i in range(len(target_values) - 1):
+                current = target_values[i]
+                next_val = target_values[i + 1]
+                if pd.isna(current) or pd.isna(next_val) or current >= next_val:
+                    is_sorted.iloc[i] = False
+                    is_sorted.iloc[i + 1] = False
 
         return is_sorted
 

@@ -743,11 +743,11 @@ def test_target_is_sorted_by_multiple_within_not_sorted(dataset_class):
     assert result.equals(
         pd.Series(
             [
+                False,
+                False,
+                False,
                 True,
-                True,
-                True,
-                True,
-                True,
+                False,
             ]
         )
     )
@@ -813,10 +813,10 @@ def test_target_is_sorted_by_multiple_within_not_sorted(dataset_class):
     assert result.equals(
         pd.Series(
             [
-                True,
-                True,
-                True,
-                True,
+                False,
+                False,
+                False,
+                False,
                 True,
             ]
         )
@@ -952,10 +952,10 @@ def test_target_is_sorted_by_multiple_within_not_sorted(dataset_class):
         pd.Series(
             [
                 True,
-                False,
-                False,
                 True,
                 True,
+                False,
+                False,
             ]
         )
     )
@@ -1002,11 +1002,11 @@ def test_target_is_sorted_by_multiple_within_not_sorted(dataset_class):
     assert result.equals(
         pd.Series(
             [
+                False,
+                False,
                 True,
-                True,
-                True,
-                True,
-                True,
+                False,
+                False,
             ]
         )
     )
@@ -1083,11 +1083,11 @@ def test_target_is_sorted_by_multiple_within_not_sorted(dataset_class):
     assert result.equals(
         pd.Series(
             [
-                False,
+                True,
                 False,
                 True,
                 False,
-                False,
+                True,
             ]
         )
     )
@@ -1113,11 +1113,11 @@ def test_target_is_sorted_by_multiple_within_not_sorted(dataset_class):
     assert result.equals(
         pd.Series(
             [
+                True,
                 False,
                 False,
                 False,
-                False,
-                False,
+                True,
             ]
         )
     )
