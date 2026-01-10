@@ -25,6 +25,7 @@ class ConfigService(ConfigInterface):
                 "REDIS_HOST_NAME",
                 "REDIS_ACCESS_KEY",
                 "CDISC_LIBRARY_API_KEY",
+                "CDISC_LIBRARY_API_URL",
                 "DATA_SERVICE_TYPE",
                 "DATASET_SIZE_THRESHOLD",
             ]
