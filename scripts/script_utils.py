@@ -275,26 +275,31 @@ def load_specified_rules(
             not excluded_rule_ids or rule not in excluded_rule_ids
         ):
             valid_rule_ids.add(rule)
-    # Check that all specified rules are valid
+
+    # Log and skip any explicitly included rules that are not in the standard
     if rule_ids:
         for rule in rule_ids:
             if rule not in standard_rules:
-                raise ValueError(
-                    f"The rule specified to include '{rule}' is not in the standard {standard} and version {version}"
+                engine_logger.error(
+                    f"The rule specified to include '{rule}' is not in the standard {standard} and version {version}. "
+                    "It will be skipped from validation."
                 )
     else:
         for rule in excluded_rule_ids:
             if rule not in standard_rules:
-                raise ValueError(
-                    f"The rule specified to exclude '{rule}' is not in the standard {standard} and version {version}"
+                engine_logger.error(
+                    f"The rule specified to exclude '{rule}' is not in the standard {standard} and version {version}. "
+                    "It is not present and will be ignored."
                 )
+
     rules = []
     for rule_id in valid_rule_ids:
         rule_data = rules_data.get(rule_id)
         rules.append(rule_data)
-    # If no valid rules were found, raise an error
+    # If no valid rules were found, log an error but do not raise to avoid
+    # failing the whole run; the caller will receive an empty rules list.
     if not rules:
-        raise ValueError(
+        engine_logger.error(
             f"All specified rules were excluded because they are not in the standard {standard} and version {version}"
         )
     return rules
