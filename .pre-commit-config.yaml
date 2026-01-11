@@ -9,7 +9,16 @@ repos:
     hooks:
       - id: flake8
         language_version: python3
+        args: ['--select=E9,F63,F7,F82,W293,W391', '--ignore=E203,W503']
   - repo: https://github.com/pre-commit/mirrors-prettier
     rev: v2.7.1
     hooks:
       - id: prettier
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files

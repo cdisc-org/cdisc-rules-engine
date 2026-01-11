@@ -1,3 +1,9 @@
+#!/usr/bin/env python3
+"""
+CLI entrypoint for the CDISC Rules Engine.
+"""
+
+import sys
 import asyncio
 import json
 import logging
@@ -6,6 +12,7 @@ import pickle
 import tempfile
 from datetime import datetime
 from multiprocessing import freeze_support
+from typing import Union
 from dotenv import load_dotenv
 
 import click
@@ -31,6 +38,12 @@ from cdisc_rules_engine.utilities.utils import (
 from cdisc_rules_engine.enums.dataformat_types import DataFormatTypes
 from scripts.list_dataset_metadata_handler import list_dataset_metadata_handler
 from version import __version__
+from cdisc_rules_engine.utilities.path_validator import PathValidator
+from cdisc_rules_engine.exceptions.path_validation_exceptions import (
+    PathTraversalError,
+    SystemDirectoryError,
+    InvalidPathError,
+)
 
 VALIDATION_FORMATS_MESSAGE = (
     "SAS V5 XPT, Dataset-JSON (JSON or NDJSON), or Excel (XLSX)"
@@ -88,16 +101,21 @@ def _validate_data_directory(
     data: str, logger, filetype: str = None
 ) -> tuple[list, set]:
     """Validate data directory and return dataset paths and found formats."""
-    # Added filetype argument to filter files by extension if provided
-    if filetype:
-        pattern = f"*.{filetype}"
-        dataset_paths, found_formats = valid_data_file(
-            [str(p) for p in Path(data).rglob(pattern) if p.is_file()]
+    # Validate path for security - block traversal attempts
+    validator = PathValidator(block_system_dirs=False, allow_relative_paths=False)
+    try:
+        validated_data_path = validator.validate_read_path(data)
+        data = str(validated_data_path)
+    except (PathTraversalError, InvalidPathError) as e:
+        logger.error(
+            f"Invalid data directory path: {e}\n"
+            f"Please provide a valid path to your data directory."
         )
-    else:
-        dataset_paths, found_formats = valid_data_file(
-            [str(p) for p in Path(data).rglob("*") if p.is_file()]
-        )
+        return [], set()
+
+    dataset_paths, found_formats = valid_data_file(
+        [str(p) for p in Path(data).rglob("*") if p.is_file()]
+    )
 
     if DataFormatTypes.XLSX.value in found_formats and len(found_formats) > 1:
         logger.error(
@@ -106,7 +124,7 @@ def _validate_data_directory(
             f"Please provide either a single XLSX file or use other supported formats: "
             f"{VALIDATION_FORMATS_MESSAGE}"
         )
-        return None, None
+        return [], set()
 
     if not dataset_paths:
         if DataFormatTypes.XLSX.value in found_formats and len(found_formats) == 1:
@@ -122,14 +140,29 @@ def _validate_data_directory(
                 f"Supported formats: {VALIDATION_FORMATS_MESSAGE}\n"
                 f"Please ensure your directory contains files in one of these formats."
             )
-        return None, None
+        return [], set()
 
     return dataset_paths, found_formats
 
 
 def _validate_dataset_paths(dataset_path: tuple[str], logger) -> tuple[list, set]:
     """Validate dataset paths and return dataset paths and found formats."""
-    dataset_paths, found_formats = valid_data_file([dp for dp in dataset_path])
+    # Validate each path for security - block traversal attempts
+    validator = PathValidator(block_system_dirs=False, allow_relative_paths=False)
+    validated_paths = []
+
+    for dp in dataset_path:
+        try:
+            validated_path = validator.validate_read_path(dp)
+            validated_paths.append(str(validated_path))
+        except (PathTraversalError, InvalidPathError) as e:
+            logger.error(
+                f"Invalid dataset path '{dp}': {e}\n"
+                f"Please provide a valid path to your dataset file."
+            )
+            return [], set()
+
+    dataset_paths, found_formats = valid_data_file(validated_paths)
 
     if DataFormatTypes.XLSX.value in found_formats and len(found_formats) > 1:
         logger.error(
@@ -138,7 +171,7 @@ def _validate_dataset_paths(dataset_path: tuple[str], logger) -> tuple[list, set
             f"Please provide either a single XLSX file or use other supported formats: "
             f"{VALIDATION_FORMATS_MESSAGE}"
         )
-        return None, None
+        return [], set()
 
     if not dataset_paths:
         if DataFormatTypes.XLSX.value in found_formats and len(found_formats) == 1:
@@ -154,7 +187,7 @@ def _validate_dataset_paths(dataset_path: tuple[str], logger) -> tuple[list, set
                 f"Supported formats: {VALIDATION_FORMATS_MESSAGE}\n"
                 f"Please ensure your files are in one of these formats."
             )
-        return None, None
+        return [], set()
 
     return dataset_paths, found_formats
 
@@ -250,7 +283,7 @@ def _validate_no_arguments(logger) -> None:
     "--output-format",
     multiple=True,
     default=[ReportTypes.XLSX.value],
-    type=click.Choice(ReportTypes.values(), case_sensitive=False),
+    type=click.Choice(list(ReportTypes.values()), case_sensitive=False),
     help="Output file format",
 )
 @click.option(
@@ -314,7 +347,7 @@ def _validate_no_arguments(logger) -> None:
     "-p",
     "--progress",
     default=ProgressParameterOptions.BAR.value,
-    type=click.Choice(ProgressParameterOptions.values()),
+    type=click.Choice(list(ProgressParameterOptions.values())),
     help=(
         "Defines how to display the validation progress. "
         'By default a progress bar like "[████████████████████████████--------]   78%"'
@@ -395,7 +428,7 @@ def validate(
     progress: str,
     define_xml_path: str,
     validate_xml: str,
-    jsonata_custom_functions: tuple[()] | tuple[tuple[str, str], ...],
+    jsonata_custom_functions: Union[tuple[()], tuple[tuple[str, str], ...]],
     max_report_rows: int,
     max_errors_per_rule: tuple[int, bool],
 ):
@@ -411,7 +444,83 @@ def validate(
     logger = logging.getLogger("validator")
     load_dotenv()
 
-    validate_dataset_files_exist(dataset_path, logger, ctx)
+    # Initialize path validator and check user permissions
+    # Block relative paths with traversal patterns for security
+    validator = PathValidator(block_system_dirs=True, allow_relative_paths=False)
+    permissions = PathValidator.check_user_permissions()
+    if permissions["is_admin"]:
+        logger.warning(permissions["recommendation"])
+
+    # Validate output path (write operation - highest priority)
+    if output:
+        try:
+            output_path = validator.validate_write_path(output)
+            output = str(output_path)
+        except (PathTraversalError, SystemDirectoryError, InvalidPathError) as e:
+            logger.error(
+                f"Invalid output path '{output}': {e}\n"
+                f"Please provide a valid output path that is not in a system directory."
+            )
+            ctx.exit(2)
+
+    # Validate cache path (read/write)
+    if cache:
+        try:
+            cache_validated = validator.validate_read_path(cache)
+            cache = str(cache_validated)
+        except (PathTraversalError, InvalidPathError) as e:
+            logger.error(
+                f"Invalid cache path '{cache}': {e}\n"
+                f"Please provide a valid cache path."
+            )
+            ctx.exit(2)
+
+    # Validate report template path (read)
+    if report_template:
+        try:
+            template_path = validator.validate_read_path(report_template)
+            report_template = str(template_path)
+        except (PathTraversalError, InvalidPathError) as e:
+            logger.error(
+                f"Invalid report template path '{report_template}': {e}\n"
+                f"Please provide a valid path to the report template file."
+            )
+            ctx.exit(2)
+
+    # Validate define-xml path (read)
+    if define_xml_path:
+        try:
+            define_path = validator.validate_read_path(define_xml_path)
+            define_xml_path = str(define_path)
+        except (PathTraversalError, InvalidPathError) as e:
+            logger.error(
+                f"Invalid Define-XML path '{define_xml_path}': {e}\n"
+                f"Please provide a valid path to the Define-XML file."
+            )
+            ctx.exit(2)
+
+    # Validate dictionary paths (read)
+    dictionary_paths = {
+        "whodrug": whodrug,
+        "meddra": meddra,
+        "loinc": loinc,
+        "medrt": medrt,
+        "unii": unii,
+    }
+    for dict_name, dict_path in dictionary_paths.items():
+        if dict_path:
+            try:
+                validated_dict_path = validator.validate_read_path(dict_path)
+                dictionary_paths[dict_name] = str(validated_dict_path)
+            except (PathTraversalError, InvalidPathError) as e:
+                logger.error(
+                    f"Invalid {dict_name} dictionary path '{dict_path}': {e}\n"
+                    f"Please provide a valid path to the {dict_name} dictionary directory."
+                )
+                ctx.exit(2)
+
+    dataset_paths: list = []
+    found_formats: set = set()
 
     if raw_report is True:
         if not (len(output_format) == 1 and output_format[0] == ReportTypes.JSON.value):
@@ -424,20 +533,16 @@ def validate(
         logger.error("Cannot use both --rules and --exclude-rules flags together.")
         ctx.exit(2)
 
-    if exclude_rules and rules:
-        logger.error("Cannot use both --rules and --exclude-rules flags together.")
-        ctx.exit()
-
     cache_path: str = os.path.join(os.path.dirname(__file__), cache)
 
     # Construct ExternalDictionariesContainer:
     external_dictionaries = ExternalDictionariesContainer(
         {
-            DictionaryTypes.UNII.value: unii,
-            DictionaryTypes.MEDRT.value: medrt,
-            DictionaryTypes.MEDDRA.value: meddra,
-            DictionaryTypes.WHODRUG.value: whodrug,
-            DictionaryTypes.LOINC.value: loinc,
+            DictionaryTypes.UNII.value: dictionary_paths["unii"],
+            DictionaryTypes.MEDRT.value: dictionary_paths["medrt"],
+            DictionaryTypes.MEDDRA.value: dictionary_paths["meddra"],
+            DictionaryTypes.WHODRUG.value: dictionary_paths["whodrug"],
+            DictionaryTypes.LOINC.value: dictionary_paths["loinc"],
             DictionaryTypes.SNOMED.value: {
                 "edition": snomed_edition,
                 "version": snomed_version,
@@ -569,6 +674,72 @@ def update_cache(
     custom_standard: str,
     remove_custom_standard: str,
 ):
+    logger = logging.getLogger("validator")
+    # Block relative paths with traversal patterns for security
+    validator = PathValidator(block_system_dirs=True, allow_relative_paths=False)
+
+    # Validate cache path (read/write)
+    try:
+        validated_cache_path = validator.validate_read_path(cache_path)
+        cache_path = str(validated_cache_path)
+    except (PathTraversalError, InvalidPathError) as e:
+        logger.error(
+            f"Invalid cache path '{cache_path}': {e}\n"
+            f"Please provide a valid cache path."
+        )
+        ctx.exit(2)
+
+    # Validate custom rules directory (read)
+    if custom_rules_directory:
+        try:
+            validated_dir = validator.validate_read_path(custom_rules_directory)
+            custom_rules_directory = str(validated_dir)
+        except (PathTraversalError, InvalidPathError) as e:
+            logger.error(
+                f"Invalid custom rules directory '{custom_rules_directory}': {e}\n"
+                f"Please provide a valid path to the custom rules directory."
+            )
+            ctx.exit(2)
+
+    # Validate custom rule files (read)
+    if custom_rule:
+        validated_rules = []
+        for rule_path in custom_rule:
+            try:
+                validated_rule = validator.validate_read_path(rule_path)
+                validated_rules.append(str(validated_rule))
+            except (PathTraversalError, InvalidPathError) as e:
+                logger.error(
+                    f"Invalid custom rule path '{rule_path}': {e}\n"
+                    f"Please provide a valid path to the custom rule file."
+                )
+                ctx.exit(2)
+        custom_rule = tuple(validated_rules)
+
+    # Validate update custom rule path (read)
+    if update_custom_rule:
+        try:
+            validated_update_rule = validator.validate_read_path(update_custom_rule)
+            update_custom_rule = str(validated_update_rule)
+        except (PathTraversalError, InvalidPathError) as e:
+            logger.error(
+                f"Invalid update custom rule path '{update_custom_rule}': {e}\n"
+                f"Please provide a valid path to the custom rule file."
+            )
+            ctx.exit(2)
+
+    # Validate custom standard path (read)
+    if custom_standard:
+        try:
+            validated_standard = validator.validate_read_path(custom_standard)
+            custom_standard = str(validated_standard)
+        except (PathTraversalError, InvalidPathError) as e:
+            logger.error(
+                f"Invalid custom standard path '{custom_standard}': {e}\n"
+                f"Please provide a valid path to the custom standard JSON file."
+            )
+            ctx.exit(2)
+
     cache = CacheServiceFactory(config).get_cache_service()
     library_service = CDISCLibraryService(apikey, cache)
     cache_populator = CachePopulator(
@@ -773,7 +944,7 @@ def version():
     required=False,
     multiple=True,
 )
-def list_ct(cache_path: str, subsets: tuple[str]):
+def list_ct(cache_path: str, subsets: set[str]):
     """
     Command to list the ct packages available in the cache.
     """
@@ -791,17 +962,7 @@ def list_ct(cache_path: str, subsets: tuple[str]):
 def test_validate(filetype):
     """**Release Test** validate command for executable."""
     try:
-        import sys
-        import os
-        from cdisc_rules_engine.models.validation_args import Validation_args
-        from cdisc_rules_engine.models.external_dictionaries_container import (
-            ExternalDictionariesContainer,
-        )
-        from cdisc_rules_engine.enums.report_types import ReportTypes
-        from cdisc_rules_engine.enums.progress_parameter_options import (
-            ProgressParameterOptions,
-        )
-
+        # All imports are available at module level
         base_path = os.path.join("tests", "resources", "datasets")
         if filetype.lower() == "json":
             test_file = os.path.join(base_path, "TS.json")
@@ -822,7 +983,59 @@ def test_validate(filetype):
         max_report_errors = (0, False)
 
         with tempfile.TemporaryDirectory() as temp_dir:
-            output = os.path.join(temp_dir, output_name)
+            cache_path = DEFAULT_CACHE_PATH
+            pool_size = 10
+            log_level = "disabled"
+            report_template = None
+            standard = "sdtmig"
+            version = "3.4"
+            substandard = None
+            controlled_terminology_package = set()
+            json_output = os.path.join(temp_dir, "json_validation_output")
+            xpt_output = os.path.join(temp_dir, "xpt_validation_output")
+            output_format = {ReportTypes.XLSX.value}
+            raw_report = False
+            define_version = None
+            external_dictionaries = ExternalDictionariesContainer({})
+            rules = []
+            exclude_rules = []
+            local_rules = None
+            custom_standard = False
+            progress = ProgressParameterOptions.BAR.value
+            define_xml_path = None
+            validate_xml = False
+            max_report_rows = None
+            max_report_errors = (0, False)
+            jsonata_custom_functions = ()
+            run_validation(
+                Validation_args(
+                    cache_path,
+                    pool_size,
+                    [ts_path],
+                    log_level,
+                    report_template,
+                    standard,
+                    version,
+                    substandard,
+                    controlled_terminology_package,
+                    json_output,
+                    output_format,
+                    raw_report,
+                    define_version,
+                    external_dictionaries,
+                    rules,
+                    exclude_rules,
+                    local_rules,
+                    custom_standard,
+                    progress,
+                    define_xml_path,
+                    validate_xml,
+                    jsonata_custom_functions,
+                    max_report_rows,
+                    max_report_errors,
+                )
+            )
+            print("JSON validation completed successfully!")
             run_validation(
                 Validation_args(
                     cache_path,
