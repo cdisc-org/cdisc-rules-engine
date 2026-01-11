@@ -998,8 +998,19 @@ class DataframeType(BaseType):
     @type_operator(FIELD_DATAFRAME)
     def empty(self, other_value: dict):
         target = self.replace_prefix(other_value.get("target"))
+        series = self.value[target]
+
+        def check_empty(x):
+            return isinstance(x, (set, list, dict)) and len(x) == 0
+
+        if hasattr(series, "map_partitions"):
+            is_empty_collection = series.map(check_empty, meta=("x", "bool"))
+        else:
+            is_empty_collection = series.map(check_empty)
         results = np.where(
-            self.value[target].isin(NULL_FLAVORS) | pd.isna(self.value[target]),
+            self.value[target].isin(NULL_FLAVORS)
+            | pd.isna(self.value[target])
+            | is_empty_collection,
             True,
             False,
         )
