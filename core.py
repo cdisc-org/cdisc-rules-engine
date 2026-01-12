@@ -787,7 +787,8 @@ def list_ct(cache_path: str, subsets: tuple[str]):
 
 
 @click.command()
-def test_validate():
+@click.argument("filetype", type=click.Choice(["json", "xpt"], case_sensitive=False))
+def test_validate(filetype):
     """**Release Test** validate command for executable."""
     try:
         import sys
@@ -802,102 +803,61 @@ def test_validate():
         )
 
         base_path = os.path.join("tests", "resources", "datasets")
-        ts_path = os.path.join(base_path, "TS.json")
-        ae_path = os.path.join(base_path, "ae.xpt")
-        if not all(os.path.exists(path) for path in [ts_path, ae_path]):
-            raise FileNotFoundError(
-                "Test datasets not found in tests/resources/datasets"
-            )
+        if filetype.lower() == "json":
+            test_file = os.path.join(base_path, "TS.json")
+            output_name = "json_validation_output"
+        else:
+            test_file = os.path.join(base_path, "ae.xpt")
+            output_name = "xpt_validation_output"
+        if not os.path.exists(test_file):
+            raise FileNotFoundError(f"Test dataset not found: {test_file}")
+        cache_path = DEFAULT_CACHE_PATH
+        pool_size = 10
+        log_level = "disabled"
+        standard = "sdtmig"
+        version = "3.4"
+        output_format = {ReportTypes.XLSX.value}
+        external_dictionaries = ExternalDictionariesContainer({})
+        progress = ProgressParameterOptions.BAR.value
+        max_report_errors = (0, False)
 
         with tempfile.TemporaryDirectory() as temp_dir:
-            cache_path = DEFAULT_CACHE_PATH
-            pool_size = 10
-            log_level = "disabled"
-            report_template = None
-            standard = "sdtmig"
-            version = "3.4"
-            substandard = None
-            controlled_terminology_package = set()
-            json_output = os.path.join(temp_dir, "json_validation_output")
-            xpt_output = os.path.join(temp_dir, "xpt_validation_output")
-            output_format = {ReportTypes.XLSX.value}
-            raw_report = False
-            define_version = None
-            external_dictionaries = ExternalDictionariesContainer({})
-            rules = []
-            exclude_rules = []
-            local_rules = None
-            custom_standard = False
-            progress = ProgressParameterOptions.BAR.value
-            define_xml_path = None
-            validate_xml = False
-            max_report_rows = None
-            max_report_errors = (0, False)
-            json_output = os.path.join(temp_dir, "json_validation_output")
-            jsonata_custom_functions = ()
+            output = os.path.join(temp_dir, output_name)
             run_validation(
                 Validation_args(
                     cache_path,
                     pool_size,
-                    [ts_path],
+                    [test_file],
                     log_level,
-                    report_template,
+                    None,
                     standard,
                     version,
-                    substandard,
-                    controlled_terminology_package,
-                    json_output,
+                    None,
+                    set(),
+                    output,
                     output_format,
-                    raw_report,
-                    define_version,
+                    False,
+                    None,
                     external_dictionaries,
-                    rules,
-                    exclude_rules,
-                    local_rules,
-                    custom_standard,
+                    [],
+                    [],
+                    None,
+                    False,
                     progress,
-                    define_xml_path,
-                    validate_xml,
-                    jsonata_custom_functions,
-                    max_report_rows,
+                    None,
+                    False,
+                    (),
+                    None,
                     max_report_errors,
                 )
             )
-            print("JSON validation completed successfully!")
-            xpt_output = os.path.join(temp_dir, "xpt_validation_output")
-            run_validation(
-                Validation_args(
-                    cache_path,
-                    pool_size,
-                    [ae_path],
-                    log_level,
-                    report_template,
-                    standard,
-                    version,
-                    substandard,
-                    controlled_terminology_package,
-                    xpt_output,
-                    output_format,
-                    raw_report,
-                    define_version,
-                    external_dictionaries,
-                    rules,
-                    exclude_rules,
-                    local_rules,
-                    custom_standard,
-                    progress,
-                    define_xml_path,
-                    validate_xml,
-                    jsonata_custom_functions,
-                    max_report_rows,
-                    max_report_errors,
-                )
-            )
-            print("XPT validation completed successfully!")
-        print("All validation tests completed successfully!")
+            print(f"{filetype.upper()} validation completed successfully!")
         sys.exit(0)
     except Exception as e:
-        print(f"Validation test failed: {str(e)}")
+        import traceback
+
+        print(f"{filetype.upper()} validation test failed: {str(e)}")
+        print(traceback.format_exc())
         sys.exit(1)
 
 
