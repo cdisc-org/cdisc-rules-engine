@@ -139,3 +139,10 @@ class LibraryMetadataContainer:
                     ct_terms["term_value"].append(term["submissionValue"])
                     ct_terms["term_pref_term"].append(term.get("preferredTerm"))
         return ct_terms
+
+    def is_domain_custom(self, domain: str) -> bool:
+        standard_data = self._standard_metadata or {}
+        domains = standard_data.get("domains", set())
+        if not isinstance(domains, (set, list, tuple)):
+            domains = set()
+        return domain not in domains
