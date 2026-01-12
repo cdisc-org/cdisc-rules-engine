@@ -72,7 +72,7 @@ Run `python core.py validate --help` to see the list of validation options.
   -v, --version TEXT              Standard version to validate against
                                   [required]
   -ss, --substandard TEXT         Substandard to validate against
-                                  [required for TIG]
+                                  [required for TIG]  
   -ct, --controlled-terminology-package TEXT
                                   Controlled terminology package to validate
                                   against, can provide more than one
