@@ -1,5 +1,9 @@
 name: Deploy Rule Tester Endpoint
 
+concurrency:
+  group: deploy-dev-slot
+  cancel-in-progress: false
+
 on:
   workflow_call:
     inputs:
