@@ -1,5 +1,9 @@
 name: Run Tests on Preview Deployment
 
+concurrency:
+  group: deploy-dev-slot
+  cancel-in-progress: false
+
 on:
   workflow_call:
     inputs:
@@ -13,10 +17,6 @@ on:
         description: "PR number to test (leave empty for current branch)"
         required: false
         type: string
-
-concurrency:
-  group: deploy-dev-slot
-  cancel-in-progress: false
 
 jobs:
   end_to_end_test:
