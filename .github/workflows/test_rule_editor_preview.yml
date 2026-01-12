@@ -1,9 +1,5 @@
 name: Run Tests on Preview Deployment
 
-concurrency:
-  group: deploy-dev-slot
-  cancel-in-progress: false
-
 on:
   workflow_call:
     inputs:
