@@ -12,6 +12,8 @@ on:
         description: "PR number to test (leave empty for current branch)"
         required: false
         type: string
+  pull_request_target:
+    types: [opened, synchronize, reopened]
 env:
   DATASET_SIZE_THRESHOLD: 1000000000
 jobs:
@@ -21,7 +23,7 @@ jobs:
       - name: Get Engine Changes
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.pr_ref || (inputs.pr_number && format('refs/pull/{0}/head', inputs.pr_number)) || github.ref }}
+          ref: ${{ inputs.pr_ref || (inputs.pr_number && format('refs/pull/{0}/head', inputs.pr_number)) || github.event.pull_request.head.sha || github.ref }}
       - name: Get Test Suite Repository
         uses: actions/checkout@v4
         with:
