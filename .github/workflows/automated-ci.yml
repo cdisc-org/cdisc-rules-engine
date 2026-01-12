@@ -11,18 +11,12 @@ jobs:
     with:
       pr_ref: ${{ github.event.pull_request.head.sha }}
   rule_tester:
-    concurrency:
-      group: deploy-dev-slot
-      cancel-in-progress: false
     uses: ./.github/workflows/rule-tester.yml
     secrets: inherit
     with:
       environment: DEV
   test_rule_editor_preview:
     needs: rule_tester
-    concurrency:
-      group: deploy-dev-slot
-      cancel-in-progress: false
     uses: ./.github/workflows/test_rule_editor_preview.yml
     secrets: inherit
     with:
