@@ -1,7 +1,7 @@
 [![](./resources/assets/CORE_logo_sm.png)](https://www.cdisc.org)
 
 [![](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3120) [![](https://img.shields.io/pypi/v/cdisc-rules-engine.svg)](https://pypi.org/project/cdisc-rules-engine) [![](https://img.shields.io/docker/v/cdiscdocker/cdisc-rules-engine?label=docker)](https://hub.docker.com/r/cdiscdocker/cdisc-rules-engine)
-
+test
 # cdisc-rules-engine
 
 Open source offering of the CDISC Rules Engine, a tool designed for validating clinical trial data against data standards.
@@ -72,7 +72,7 @@ Run `python core.py validate --help` to see the list of validation options.
   -v, --version TEXT              Standard version to validate against
                                   [required]
   -ss, --substandard TEXT         Substandard to validate against
-                                  [required for TIG]
+                                  [required for TIG]  
   -ct, --controlled-terminology-package TEXT
                                   Controlled terminology package to validate
                                   against, can provide more than one
