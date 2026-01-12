@@ -128,6 +128,7 @@ def run_validation(args: Validation_args):
     CacheManager.register("InMemoryCacheService", InMemoryCacheService)
     manager = CacheManager()
     manager.start()
+    created_files = []
     try:
         created_files = []
         shared_cache = get_cache_service(manager)
@@ -207,9 +208,14 @@ def run_validation(args: Validation_args):
             datasets, results, elapsed_time, args, data_service, dictionary_versions
         )
         reporting_services: List[BaseReport] = reporting_factory.get_report_services()
+        output_files = []
         for reporting_service in reporting_services:
             reporting_service.write_report()
-        print(f"Output: {args.output}")
+            output_files.append(reporting_service._output_name)
+        if len(output_files) == 1:
+            print(f"Output: {output_files[0]}")
+        else:
+            print(f"Output: {', '.join(output_files)}")
     finally:
         if created_files:
             engine_logger.info(" Report generated, Cleaning up intermediate files")
