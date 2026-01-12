@@ -3,10 +3,6 @@ name: Test Release CORE Rules Engine
 on:
   workflow_dispatch:
 
-concurrency:
-  group: deploy-dev-slot
-  cancel-in-progress: false
-
 jobs:
   build-binaries:
     strategy:
