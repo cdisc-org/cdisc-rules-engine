@@ -19,5 +19,3 @@ jobs:
     needs: rule_tester
     uses: ./.github/workflows/test_rule_editor_preview.yml
     secrets: inherit
-    with:
-      pr_ref: ${{ github.event.pull_request.head.sha }}
