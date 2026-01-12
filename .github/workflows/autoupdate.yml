@@ -5,6 +5,10 @@ on:
     branches:
       - main
 
+permissions:
+  pull-requests: write
+  contents: write
+
 jobs:
   autoupdate:
     name: autoupdate
