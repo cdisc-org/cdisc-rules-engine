@@ -8,7 +8,7 @@ from cdisc_rules_engine.interfaces.data_service_interface import DataServiceInte
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
-from typing import List, Iterable
+from typing import List, Iterable, Tuple
 from cdisc_rules_engine.config import config
 from cdisc_rules_engine.services import logger as engine_logger
 import os
@@ -211,10 +211,15 @@ def get_cache_service(manager):
         return manager.InMemoryCacheService()
 
 
-def get_rules(args) -> List[dict]:
-    return (
+def get_rules(args) -> Tuple[List[dict], List[str]]:
+    rules_result = (
         load_rules_from_local(args) if args.local_rules else load_rules_from_cache(args)
     )
+    if isinstance(rules_result, tuple) and len(rules_result) == 2:
+        rules, skipped_rule_ids = rules_result
+    else:
+        rules, skipped_rule_ids = rules_result, []
+    return rules, skipped_rule_ids
 
 
 def rule_cache_file(args) -> str:
@@ -268,6 +273,7 @@ def load_specified_rules(
     key = get_rules_cache_key(standard, version, substandard)
     standard_rules = standard_dict.get(key, {})
     valid_rule_ids = set()
+    skipped_rule_ids = []
 
     # Determine valid rules based on inclusion and exclusion lists
     for rule in standard_rules:
@@ -276,7 +282,7 @@ def load_specified_rules(
         ):
             valid_rule_ids.add(rule)
 
-    # Log and skip any explicitly included rules that are not in the standard
+    # Log and collect any explicitly included rules that are not in the standard
     if rule_ids:
         for rule in rule_ids:
             if rule not in standard_rules:
@@ -284,7 +290,10 @@ def load_specified_rules(
                     f"The rule specified to include '{rule}' is not in the standard {standard} and version {version}. "
                     "It will be skipped from validation."
                 )
-    else:
+                skipped_rule_ids.append(rule)
+
+    # Log and skip any explicitly excluded rules that are not in the standard
+    if excluded_rule_ids:
         for rule in excluded_rule_ids:
             if rule not in standard_rules:
                 engine_logger.error(
@@ -302,7 +311,7 @@ def load_specified_rules(
         engine_logger.error(
             f"All specified rules were excluded because they are not in the standard {standard} and version {version}"
         )
-    return rules
+    return rules, skipped_rule_ids
 
 
 def load_all_rules_for_standard(
@@ -337,7 +346,7 @@ def load_all_rules(rules_data):
     return rules
 
 
-def load_rules_from_cache(args) -> List[dict]:
+def load_rules_from_cache(args) -> list[dict] | tuple[list[dict], list[str]]:
     rules_file, cdisc_file, standard_dict = rule_cache_file(args)
     rules_data = {}
     try:
@@ -356,6 +365,7 @@ def load_rules_from_cache(args) -> List[dict]:
     except Exception as e:
         engine_logger.error(f"Error loading rules file: {e}")
         return []
+
     if args.custom_standard:
         return load_custom_rules(
             rules_data,
@@ -366,7 +376,7 @@ def load_rules_from_cache(args) -> List[dict]:
             standard_dict,
         )
     elif args.rules or args.exclude_rules:
-        return load_specified_rules(
+        rules, skipped_rule_ids = load_specified_rules(
             rules_data,
             args.rules,
             args.exclude_rules,
@@ -375,6 +385,7 @@ def load_rules_from_cache(args) -> List[dict]:
             standard_dict,
             args.substandard,
         )
+        return rules, skipped_rule_ids
     elif args.standard and args.version:
         return load_all_rules_for_standard(
             rules_data,
