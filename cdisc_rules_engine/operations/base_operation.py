@@ -1,9 +1,6 @@
 from cdisc_rules_engine.models.operation_params import OperationParams
 from cdisc_rules_engine.constants.permissibility import (
-    REQUIRED,
     PERMISSIBLE,
-    REQUIRED_MODEL_VARIABLES,
-    SEQ_VARIABLE,
     PERMISSIBILITY_KEY,
 )
 from abc import abstractmethod
@@ -227,26 +224,9 @@ class BaseOperation:
 
     def _get_variables_metadata_from_standard(self) -> List[dict]:
         # TODO: Update to handle other standard types: adam, cdash, etc.
-        target_metadata = None
-        for ds in self.params.datasets:
-            if ds.unsplit_name == self.params.domain:
-                target_metadata = ds
-                break
-        if (
-            target_metadata
-            and hasattr(target_metadata, "is_supp")
-            and target_metadata.is_supp
-        ):
-            domain_for_library = "SUPPQUAL"
-        elif target_metadata and "rel" in target_metadata.name.lower():
-            if target_metadata.name.lower().startswith(
-                "ap"
-            ) and target_metadata.name.lower()[2:].startswith("rel"):
-                domain_for_library = target_metadata.name[2:]
-            else:
-                domain_for_library = target_metadata.name
-        else:
-            domain_for_library = self.params.domain
+
+        # self.params.domain is unsplit_name
+        domain_for_library = self.params.domain
         return sdtm_utilities.get_variables_metadata_from_standard(
             domain_for_library,
             self.library_metadata,
@@ -256,16 +236,8 @@ class BaseOperation:
         """
         Returns the permissibility value of a variable allowed in the current domain
         """
-        variable_name = variable_metadata.get("name")
         if PERMISSIBILITY_KEY in variable_metadata:
             return variable_metadata[PERMISSIBILITY_KEY]
-        elif variable_name in REQUIRED_MODEL_VARIABLES:
-            return REQUIRED
-        elif variable_name.replace("--", self.params.domain) == SEQ_VARIABLE.replace(
-            "--", self.params.domain
-        ):
-            return REQUIRED
-
         return PERMISSIBLE
 
     def _get_variable_names_list(self, domain, dataframe):
