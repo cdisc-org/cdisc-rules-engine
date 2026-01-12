@@ -1,10 +1,6 @@
 name: CI
 on: pull_request
 
-concurrency:
-  group: deploy-dev-slot
-  cancel-in-progress: false
-
 jobs:
   lint_format:
     uses: ./.github/workflows/lint_format.yml
