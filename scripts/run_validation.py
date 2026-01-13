@@ -192,13 +192,11 @@ def run_validation(args: Validation_args):
             progress_handler: Callable = get_progress_displayer(args)
             results = progress_handler(rules, validation_results, results)
 
-        for skipped_rule_id in skipped_rule_ids or []:
-            msg = (
-                f"Rule '{skipped_rule_id}' was requested but is not available for "
-                f"standard {args.standard} version {args.version.replace('.', '-')}"
+        for skipped_rule_id, message in skipped_rule_ids or []:
+            engine_logger.info(message)
+            results.append(
+                RuleValidationResult.from_skipped_rule(skipped_rule_id, message)
             )
-            engine_logger.info(msg)
-            results.append(RuleValidationResult.from_skipped_rule(skipped_rule_id, msg))
 
         # build all desired reports
         end = time.time()

@@ -211,7 +211,7 @@ def get_cache_service(manager):
         return manager.InMemoryCacheService()
 
 
-def get_rules(args) -> Tuple[List[dict], List[str]]:
+def get_rules(args) -> Tuple[List[dict], List[Tuple[str, str]]]:
     rules_result = (
         load_rules_from_local(args) if args.local_rules else load_rules_from_cache(args)
     )
@@ -273,7 +273,7 @@ def load_specified_rules(
     key = get_rules_cache_key(standard, version, substandard)
     standard_rules = standard_dict.get(key, {})
     valid_rule_ids = set()
-    skipped_rule_ids = []
+    skipped_rule_ids: List[Tuple[str, str]] = []
 
     # Determine valid rules based on inclusion and exclusion lists
     for rule in standard_rules:
@@ -290,7 +290,11 @@ def load_specified_rules(
                     f"The rule specified to include '{rule}' is not in the standard {standard} and version {version}. "
                     "It will be skipped from validation."
                 )
-                skipped_rule_ids.append(rule)
+                message = (
+                    f"Rule '{rule}' was requested but is not available for "
+                    f"standard {standard} version {version}"
+                )
+                skipped_rule_ids.append((rule, message))
 
     # Log and skip any explicitly excluded rules that are not in the standard
     if excluded_rule_ids:
@@ -346,7 +350,9 @@ def load_all_rules(rules_data):
     return rules
 
 
-def load_rules_from_cache(args) -> list[dict] | tuple[list[dict], list[str]]:
+def load_rules_from_cache(
+    args,
+) -> list[dict] | tuple[list[dict], List[Tuple[str, str]]]:
     rules_file, cdisc_file, standard_dict = rule_cache_file(args)
     rules_data = {}
     try:
