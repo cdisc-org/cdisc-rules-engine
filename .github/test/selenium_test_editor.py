@@ -20,20 +20,29 @@ if not RULE_EDITOR_URL:
 
 print(f"Running tests on: {RULE_EDITOR_URL}")
 
-# Configure Chrome options
 chrome_options = Options()
 chrome_options.add_argument("--ignore-certificate-errors")
 chrome_options.add_argument("--window-size=1920,1080")
 chrome_options.add_argument("--disable-blink-features=AutomationControlled")
-chrome_options.add_argument("--headless=new")  # Headless mode
+chrome_options.add_argument("--headless=new")
 chrome_options.add_argument("--disable-gpu")
 chrome_options.add_argument("--no-sandbox")
 chrome_options.add_argument("--disable-dev-shm-usage")
+chrome_options.add_argument("--disable-software-rasterizer")
+chrome_options.add_argument("--disable-extensions")
+seleniumwire_options = {
+    "disable_encoding": False,
+    "suppress_connection_errors": True,
+    "request_storage": "memory",
+    "request_storage_max_size": 100,
+}
 
 # Initialize driver using selenium-wire
 service = Service(ChromeDriverManager().install())
-driver = webdriver.Chrome(service=service, options=chrome_options)
-wait = WebDriverWait(driver, 20)
+driver = webdriver.Chrome(
+    service=service, options=chrome_options, seleniumwire_options=seleniumwire_options
+)
+wait = WebDriverWait(driver, 30)
 
 username = os.getenv("RULE_EDITOR_USERNAME")
 password = os.getenv("RULE_EDITOR_PASSWORD")
@@ -142,7 +151,7 @@ try:
     file_input.send_keys(file_path)
 
     print("Waiting for error result to appear...")
-    error_result = wait.until(
+    error_result = WebDriverWait(driver, 30).until(
         EC.visibility_of_element_located(
             (By.XPATH, '//*[@id="tabpanel-1"]/div[6]/div[1]/div[1]/span/div/span')
         )
@@ -150,7 +159,7 @@ try:
     print("Error result displayed.")
 
     # Give a few seconds for the POST request to complete
-    time.sleep(3)
+    time.sleep(5)
 
     screenshot_path = "login_screenshot.png"
     driver.save_screenshot(screenshot_path)
