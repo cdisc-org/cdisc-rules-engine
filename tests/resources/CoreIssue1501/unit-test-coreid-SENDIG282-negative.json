@@ -1,0 +1,82 @@
+{
+  "datasets": [
+    {
+      "filename": "pp.xpt",
+      "label": "Pharmacokinetics Parameters",
+      "domain": "PP",
+      "variables": [
+        {
+          "name": "STUDYID",
+          "label": "Study Identifier",
+          "type": "Char",
+          "length": 12
+        },
+        {
+          "name": "DOMAIN",
+          "label": "Domain Abbreviation",
+          "type": "Char",
+          "length": 2
+        },
+        {
+          "name": "USUBJID",
+          "label": "Unique Subject Identifier",
+          "type": "Char",
+          "length": 20
+        },
+        {
+          "name": "PPSEQ",
+          "label": "Sequence Number",
+          "type": "Num",
+          "length": 20
+        },
+        {
+          "name": "PPTESTCD",
+          "label": "Parameter Short Name",
+          "type": "Char",
+          "length": 20
+        },
+        {
+          "name": "PPTEST",
+          "label": "Parameter Name",
+          "type": "Char",
+          "length": 20
+        },
+        {
+          "name": "PPSPEC",
+          "label": "Specimen Material Type",
+          "type": "Char",
+          "length": 20
+        }
+      ],
+      "records": {
+        "STUDYID": [
+          "CDISCPILOT01",
+          "CDISCPILOT01",
+          "CDISCPILOT01",
+          "CDISCPILOT01"
+        ],
+        "DOMAIN": ["PP", "PP", "PP", "PP"],
+        "USUBJID": ["CDISC001", "CDISC001", "CDISC001", "CDISC001"],
+        "PPSEQ": [1, 2, 3, 4],
+        "PPTESTCD": ["TMAX", "TMAX", "TMAX", "TMAX"],
+        "PPTEST": [
+          "Time of CMAX ",
+          "Time of CMAX ",
+          "Time of CMAX ",
+          "Time of CMAX "
+        ],
+        "PPSPEC": [
+          "ABDOMINAL WALL",
+          "ADIPOSE TISSUE, BROWN",
+          "ABDOMINAL WALL|ADIPOSE TISSUE, BROWN",
+          "ABDOMINAL WALL;ADIPOSE TISSUE, BROWN&AIR SAC"
+        ]
+      }
+    }
+  ],
+  "standard": {
+    "product": "sendig",
+    "version": "3-1"
+  },
+  "codelists": []
+}
