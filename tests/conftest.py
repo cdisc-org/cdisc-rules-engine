@@ -908,42 +908,6 @@ def dataset_rule_record_in_parent_domain_equal_to() -> dict:
 
 
 @pytest.fixture
-def define_xml_allowed_terms_check_rule() -> dict:
-    return {
-        "core_id": "MockRule",
-        "rule_type": "Define-XML",
-        "standards": [{"Name": "SDTMIG", "Version": "3.3"}],
-        "classes": {"Include": [ALL_KEYWORD]},
-        "domains": {"Include": [ALL_KEYWORD]},
-        "conditions": ConditionCompositeFactory.get_condition_composite(
-            {
-                "all": [
-                    {
-                        "name": "get_dataset",
-                        "operator": "does_not_use_valid_codelist_terms",
-                        "value": {
-                            "target": "define_variable_ccode",
-                            "comparator": "define_variable_allowed_terms",
-                        },
-                    }
-                ]
-            }
-        ),
-        "actions": [
-            {
-                "name": "generate_dataset_error_objects",
-                "params": {"message": "Define specifies invalid codelist terms"},
-            }
-        ],
-        "output_variables": [
-            "define_variable_ccode",
-            "define_variable_name",
-            "define_variable_allowed_terms",
-        ],
-    }
-
-
-@pytest.fixture
 def dataset_rule_inconsistent_enumerated_columns() -> dict:
     """
     A sample rule that checks for inconsistencies in enumerated columns.
