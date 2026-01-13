@@ -48,3 +48,31 @@ def test_get_export(_, mock_validation_results):
     assert len(export["Issue_Summary"]) > 0
     assert len(export["Issue_Details"]) > 0
     assert len(export["Rules_Report"]) > 0
+
+
+@patch.object(
+    sdtm_report_data.SDTMReportData,
+    "get_define_version",
+    return_value="2.1",
+)
+def test_get_raw_export(_, mock_validation_results):
+    mock_args = MagicMock()
+    mock_args.max_errors_per_rule = (None, False)
+    mock_args.controlled_terminology_package = ["sdtmct-03-2021"]
+    mock_args.standard = "sdtmig"
+    mock_args.version = "3.4"
+    mock_args.dictionary_versions = {}
+    mock_args.whodrug = "test"
+    report_standard = SDTMReportData(
+        [], ["test"], mock_validation_results, 10.1, mock_args
+    )
+    report: JsonReport = JsonReport(report_standard, mock_args, None)
+    export = report.get_export(
+        raw_report=True,
+    )
+    assert ({'Conformance_Details', 'Dataset_Details', 'Issue_Summary', 'Issue_Details', 'Rules_Report'}
+            .issubset(export.keys()))
+    assert len(export["Issue_Summary"]) > 0
+    assert len(export["Issue_Details"]) > 0
+    assert len(export["Rules_Report"]) > 0
+    assert 'results_data' in export
