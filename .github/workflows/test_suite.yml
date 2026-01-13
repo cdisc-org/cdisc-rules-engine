@@ -1,7 +1,19 @@
 name: CORE Test Suite Validation
 on:
   workflow_call:
+    inputs:
+      pr_ref:
+        description: "Git reference to checkout (for PRs)"
+        required: false
+        type: string
   workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "PR number to test (leave empty for current branch)"
+        required: false
+        type: string
+  pull_request_target:
+    types: [opened, synchronize, reopened]
 env:
   DATASET_SIZE_THRESHOLD: 1000000000
 jobs:
@@ -10,7 +22,8 @@ jobs:
     steps:
       - name: Get Engine Changes
         uses: actions/checkout@v4
-
+        with:
+          ref: ${{ inputs.pr_ref || (inputs.pr_number && format('refs/pull/{0}/head', inputs.pr_number)) || github.event.pull_request.head.sha || github.ref }}
       - name: Get Test Suite Repository
         uses: actions/checkout@v4
         with:
