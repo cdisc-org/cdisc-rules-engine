@@ -70,9 +70,14 @@ def test_get_raw_export(_, mock_validation_results):
     export = report.get_export(
         raw_report=True,
     )
-    assert ({'Conformance_Details', 'Dataset_Details', 'Issue_Summary', 'Issue_Details', 'Rules_Report'}
-            .issubset(export.keys()))
+    assert {
+        "Conformance_Details",
+        "Dataset_Details",
+        "Issue_Summary",
+        "Issue_Details",
+        "Rules_Report",
+    }.issubset(export.keys())
     assert len(export["Issue_Summary"]) > 0
     assert len(export["Issue_Details"]) > 0
     assert len(export["Rules_Report"]) > 0
-    assert 'results_data' in export
+    assert "results_data" in export

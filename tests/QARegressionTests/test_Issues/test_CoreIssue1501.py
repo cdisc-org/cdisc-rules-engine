@@ -21,9 +21,14 @@ class TestCoreIssue1501(unittest.TestCase):
             "-v",
             "1-0",
             "-dp",
-            "tests/resources/CoreIssue1501/unit-test-coreid-SENDIG282-negative.json",
+            os.path.join(
+                "tests",
+                "resources",
+                "CoreIssue1501",
+                "unit-test-coreid-SENDIG282-negative.json",
+            ),
             "-lr",
-            "tests/resources/CoreIssue1501/Rule.yml",
+            os.path.join("tests", "resources", "CoreIssue1501", "Rule.yml"),
             "-ps",
             "1",
             "-of",
@@ -50,7 +55,7 @@ class TestCoreIssue1501(unittest.TestCase):
             "Rules_Report",
         }.issubset(json_report.keys())
 
-        if not "results_data" in json_report.keys():
+        if "results_data" not in json_report.keys():
             assert (
                 False
             ), "'results_data' key not found in report. Expected while using -rr, --raw_report flag"
