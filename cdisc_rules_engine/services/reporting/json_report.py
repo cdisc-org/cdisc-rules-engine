@@ -58,7 +58,8 @@ class JsonReport(BaseReport):
                 json_export[self._get_property_name(sheet_name)] = data_sheet
         if raw_report:
             json_export["results_data"] = [
-                rule_result.to_representation() for rule_result in self._results
+                rule_result.to_representation()
+                for rule_result in self._report_standard._results
             ]
         return json_export
 
