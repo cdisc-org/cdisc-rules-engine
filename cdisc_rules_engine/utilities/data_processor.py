@@ -198,7 +198,6 @@ class DataProcessor:
         left_dataset: DatasetInterface,
         right_dataset: DatasetInterface,
     ):
-
         static_keys = ["STUDYID", "USUBJID", "APID", "POOLID", "SPDEVID"]
         qnam_list = right_dataset["QNAM"].unique()
         unique_idvar_values = right_dataset["IDVAR"].unique()
@@ -232,7 +231,7 @@ class DataProcessor:
                     suffixes=("", "_supp"),
                 )
                 DataProcessor._validate_qnam_dask(left_dataset, qnam_list, common_keys)
-            else:
+            else:  # TODO if SUPPDM -> merge different RACE columns into one row (in data processor)
                 left_dataset = PandasDataset(
                     pd.merge(
                         left_dataset.data,

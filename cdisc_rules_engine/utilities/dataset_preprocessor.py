@@ -109,7 +109,9 @@ class DatasetPreprocessor:
                     )
                 ]
 
-            if not file_infos:
+            if not file_infos and not (
+                self._dataset_metadata.is_supp and domain_name == "SUPP--"
+            ):
                 raise PreprocessingError(
                     f"Failed to find related dataset for '{domain_name}' in preprocessor"
                 )
