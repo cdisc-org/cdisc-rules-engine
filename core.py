@@ -416,9 +416,6 @@ def validate(
     # Validate conditional options
     logger = logging.getLogger("validator")
     load_dotenv()
-    
-    dataset_paths: list = []
-    found_formats: set = set()
 
     validate_dataset_files_exist(dataset_path, logger, ctx)
 
