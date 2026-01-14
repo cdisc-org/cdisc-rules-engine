@@ -12,7 +12,6 @@ import pickle
 import tempfile
 from datetime import datetime
 from multiprocessing import freeze_support
-from typing import Union
 from dotenv import load_dotenv
 
 import click
@@ -402,7 +401,7 @@ def validate(
     progress: str,
     define_xml_path: str,
     validate_xml: str,
-    jsonata_custom_functions: Union[tuple[()], tuple[tuple[str, str], ...]],
+    jsonata_custom_functions: tuple[()] | tuple[tuple[str, str], ...],
     max_report_rows: int,
     max_errors_per_rule: tuple[int, bool],
 ):
