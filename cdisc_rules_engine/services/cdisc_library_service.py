@@ -322,7 +322,8 @@ class CDISCLibraryService:
         domains: Set[str] = self._extract_domain_names_from_tabulation_standard(
             standard_data
         )
-        standard_data["domains"] = domains
+        if domains:
+            standard_data["domains"] = domains
         return standard_data
 
     def get_model_details(self, standard_details: dict) -> Optional[dict]:
@@ -710,11 +711,5 @@ class CDISCLibraryService:
         domain_names: Set[str] = set()
         for cls in standard_data.get("classes", []):
             for dataset in cls.get("datasets", []):
-                domain_name = dataset.get("name")
-                if domain_name:
-                    domain_names.add(domain_name)
-        for dataset in standard_data.get("datasets", []):
-            domain_name = dataset.get("name")
-            if domain_name:
-                domain_names.add(domain_name)
+                domain_names.add(dataset.get("name"))
         return domain_names
