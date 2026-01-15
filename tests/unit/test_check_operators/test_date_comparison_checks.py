@@ -525,7 +525,7 @@ def test_date_less_than_or_equal_to_date_components(
             },
             "1997-07",
             PandasDataset,
-            [False, True, True, True, True],
+            [False, False, False, False, False],
         ),
     ],
 )
