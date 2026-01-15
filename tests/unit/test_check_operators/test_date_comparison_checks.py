@@ -380,7 +380,7 @@ def test_date_less_than_date_components(
             },
             "comparator",
             PandasDataset,
-            [True, False, False, False, False],
+            [True, True, True, True, True],
         ),
         (
             {
