@@ -204,7 +204,7 @@ class DataProcessor:
         if len(unique_idvar_values) == 1:
             right_dataset = DataProcessor.process_supp(right_dataset)
             dynamic_key = right_dataset["IDVAR"].iloc[0]
-            is_blank = pd.isna(dynamic_key) or str(dynamic_key).strip() == ""
+            is_blank: bool = pd.isna(dynamic_key) or str(dynamic_key).strip() == ""
             # Determine the common keys present in both datasets
             common_keys = [
                 key
@@ -232,6 +232,17 @@ class DataProcessor:
                 )
                 DataProcessor._validate_qnam_dask(left_dataset, qnam_list, common_keys)
             else:  # TODO if SUPPDM -> merge different RACE columns into one row (in data processor)
+                if current_supp["RDOMAIN"][0] == "DM":
+                    group_cols = [c for c in current_supp.columns if c not in qnam_list]
+                    current_supp = PandasDataset(
+                        current_supp.data.groupby(
+                            group_cols, dropna=False, as_index=False
+                        ).agg(
+                            lambda x: (
+                                x.dropna().iloc[0] if not x.dropna().empty else pd.NA
+                            )
+                        )
+                    )
                 left_dataset = PandasDataset(
                     pd.merge(
                         left_dataset.data,
