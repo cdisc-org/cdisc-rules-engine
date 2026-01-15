@@ -380,7 +380,7 @@ def test_date_less_than_date_components(
             },
             "comparator",
             PandasDataset,
-            [True, True, True, True, True],
+            [True, False, False, False, False],
         ),
         (
             {
@@ -394,7 +394,7 @@ def test_date_less_than_date_components(
             },
             "1997-07",
             DaskDataset,
-            [True, False, False, False, False],
+            [True, True, True, True, True],
         ),
     ],
 )
