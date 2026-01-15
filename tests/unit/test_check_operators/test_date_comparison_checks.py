@@ -893,3 +893,61 @@ def test_auto_precision_operators(
         params["date_component"] = date_component
     result = operator_method(params)
     assert result.equals(df.convert_to_series([expected_result]))
+
+
+@pytest.mark.parametrize(
+    "target,comparator,dataset_type,expected_result",
+    [
+        (
+            {"target": ["2013-01-23T05:10"]},
+            "2013-01-23",
+            PandasDataset,
+            [False],
+        ),
+        (
+            {"target": ["2013-01-23T05:10"]},
+            "2013-01-23",
+            DaskDataset,
+            [False],
+        ),
+        (
+            {"target": ["2025-01-10T14:30:45"]},
+            "2025-01-10",
+            PandasDataset,
+            [False],
+        ),
+        (
+            {"target": ["2025-01-10T00:00:00"]},
+            "2025-01-10",
+            DaskDataset,
+            [False],
+        ),
+        (
+            {"target": ["2025-01-11T05:10"]},
+            "2025-01-10",
+            PandasDataset,
+            [True],
+        ),
+        (
+            {"target": ["2025-01-10"]},
+            "2025",
+            DaskDataset,
+            [False],
+        ),
+        (
+            {"target": ["2025-01-15T12:30"]},
+            "2025-01",
+            PandasDataset,
+            [False],
+        ),
+    ],
+)
+def test_date_greater_than_same_date_different_precision(
+    target, comparator, dataset_type, expected_result
+):
+    df = dataset_type.from_dict(target)
+    dataframe_type = DataframeType({"value": df})
+    result = dataframe_type.date_greater_than(
+        {"target": "target", "comparator": comparator}
+    )
+    assert result.equals(df.convert_to_series(expected_result))
