@@ -261,6 +261,70 @@ def load_custom_rules(custom_data, cdisc_data, standard, version, rules, standar
     return list(rules_dict.values())
 
 
+def _determine_valid_rule_ids(
+    standard_rules: dict,
+    rule_ids: Iterable[str] | None,
+    excluded_rule_ids: Iterable[str] | None,
+) -> set:
+    include_filter = set(rule_ids) if rule_ids else None
+    exclude_filter = set(excluded_rule_ids) if excluded_rule_ids else None
+    valid_rule_ids = set()
+    for rule in standard_rules:
+        if include_filter and rule not in include_filter:
+            continue
+        if exclude_filter and rule in exclude_filter:
+            continue
+        valid_rule_ids.add(rule)
+    return valid_rule_ids
+
+
+def _collect_missing_includes(
+    rule_ids: Iterable[str] | None,
+    standard_rules: dict,
+    standard: str,
+    version: str,
+) -> List[Tuple[str, str]]:
+    if not rule_ids:
+        return []
+    available_rules = set(standard_rules)
+    skipped_rule_ids: List[Tuple[str, str]] = []
+    for rule in rule_ids:
+        if rule in available_rules:
+            continue
+        engine_logger.error(
+            f"The rule specified to include '{rule}' is not in the standard {standard} and version {version}. "
+            "It will be skipped from validation."
+        )
+        message = (
+            f"Rule '{rule}' was requested but is not available for "
+            f"standard {standard} version {version}"
+        )
+        skipped_rule_ids.append((rule, message))
+    return skipped_rule_ids
+
+
+def _log_invalid_excludes(
+    excluded_rule_ids: Iterable[str] | None,
+    standard_rules: dict,
+    standard: str,
+    version: str,
+) -> None:
+    if not excluded_rule_ids:
+        return
+    available_rules = set(standard_rules)
+    for rule in excluded_rule_ids:
+        if rule in available_rules:
+            continue
+        engine_logger.error(
+            f"The rule specified to exclude '{rule}' is not in the standard {standard} and version {version}. "
+            "It is not present and will be ignored."
+        )
+
+
+def _build_rules_from_ids(valid_rule_ids: set, rules_data) -> List[dict]:
+    return [rules_data.get(rule_id) for rule_id in valid_rule_ids]
+
+
 def load_specified_rules(
     rules_data,
     rule_ids,
@@ -272,45 +336,14 @@ def load_specified_rules(
 ):
     key = get_rules_cache_key(standard, version, substandard)
     standard_rules = standard_dict.get(key, {})
-    valid_rule_ids = set()
-    skipped_rule_ids: List[Tuple[str, str]] = []
-
-    # Determine valid rules based on inclusion and exclusion lists
-    for rule in standard_rules:
-        if (not rule_ids or rule in rule_ids) and (
-            not excluded_rule_ids or rule not in excluded_rule_ids
-        ):
-            valid_rule_ids.add(rule)
-
-    # Log and collect any explicitly included rules that are not in the standard
-    if rule_ids:
-        for rule in rule_ids:
-            if rule not in standard_rules:
-                engine_logger.error(
-                    f"The rule specified to include '{rule}' is not in the standard {standard} and version {version}. "
-                    "It will be skipped from validation."
-                )
-                message = (
-                    f"Rule '{rule}' was requested but is not available for "
-                    f"standard {standard} version {version}"
-                )
-                skipped_rule_ids.append((rule, message))
-
-    # Log and skip any explicitly excluded rules that are not in the standard
-    if excluded_rule_ids:
-        for rule in excluded_rule_ids:
-            if rule not in standard_rules:
-                engine_logger.error(
-                    f"The rule specified to exclude '{rule}' is not in the standard {standard} and version {version}. "
-                    "It is not present and will be ignored."
-                )
-
-    rules = []
-    for rule_id in valid_rule_ids:
-        rule_data = rules_data.get(rule_id)
-        rules.append(rule_data)
-    # If no valid rules were found, log an error but do not raise to avoid
-    # failing the whole run; the caller will receive an empty rules list.
+    valid_rule_ids = _determine_valid_rule_ids(
+        standard_rules, rule_ids, excluded_rule_ids
+    )
+    skipped_rule_ids = _collect_missing_includes(
+        rule_ids, standard_rules, standard, version
+    )
+    _log_invalid_excludes(excluded_rule_ids, standard_rules, standard, version)
+    rules = _build_rules_from_ids(valid_rule_ids, rules_data)
     if not rules:
         engine_logger.error(
             f"All specified rules were excluded because they are not in the standard {standard} and version {version}"
