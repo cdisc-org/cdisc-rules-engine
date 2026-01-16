@@ -83,7 +83,7 @@ class USDMDataService(BaseDataService):
             self.entity_dict: dict = safe_load(entity_dict)
 
         self.json = self._reader_factory.get_service("USDM").from_file(
-            self.dataset_path, encoding=self.encoding
+            self.dataset_path
         )
 
         # Build the id lookup dict once for fast reference resolution
