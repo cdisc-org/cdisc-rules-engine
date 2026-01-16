@@ -1,0 +1,292 @@
+{
+  "datasets": [
+    {
+      "filename": "ce.xpt",
+      "label": "Clinical Events",
+      "domain": "CE",
+      "variables": [
+        {
+          "name": "STUDYID",
+          "label": "Study Identifier",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "DOMAIN",
+          "label": "Domain Abbreviation",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "USUBJID",
+          "label": "Unique Subject Identifier",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "CESEQ",
+          "label": "Sequence Number",
+          "type": "Num",
+          "length": 8
+        },
+        {
+          "name": "CETERM",
+          "label": "Reported Term for the Clinical Event",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "EPOCH",
+          "label": "Epoch",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "CEDTC",
+          "label": "Start Date/Time of\r\nClinical Event",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "CESTDTC",
+          "label": "Start Date/Time of Clinical Event",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "CEENDTC",
+          "label": "End Date/Time of Clinical Event",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "CEDY",
+          "label": "Study Day of Event\r\nCollection",
+          "type": "Num",
+          "length": 8
+        },
+        {
+          "name": "CESTDY",
+          "label": "Study Day of Start of Clinical Event",
+          "type": "Num",
+          "length": 8
+        },
+        {
+          "name": "CEENDY",
+          "label": "Study Day of End of Clinical Event",
+          "type": "Num",
+          "length": 8
+        }
+      ],
+      "records": {
+        "STUDYID": ["CDISCPILOT01", "CDISCPILOT01"],
+        "DOMAIN": ["CE", "CE"],
+        "USUBJID": ["CDISC001", "CDISC008"],
+        "CESEQ": [1, 1],
+        "CETERM": ["COMPLETED SUICIDE", "CAR CRASH"],
+        "EPOCH": ["TREATMENT", "TREATMENT"],
+        "CEDTC": ["2014-10", "2014-10-31"],
+        "CESTDTC": ["2014-10-31", "2014-10-31"],
+        "CEENDTC": ["2014-10-31", "2014-10-31"],
+        "CEDY": [174, 174],
+        "CESTDY": [174, 174],
+        "CEENDY": [174, 174]
+      }
+    },
+    {
+      "filename": "dm.xpt",
+      "label": "Demographics",
+      "domain": "DM",
+      "variables": [
+        {
+          "name": "STUDYID",
+          "label": "Study Identifier",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "DOMAIN",
+          "label": "Domain Abbreviation",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "USUBJID",
+          "label": "Unique Subject Identifier",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "SUBJID",
+          "label": "Subject Identifier for the Study",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "RFSTDTC",
+          "label": "Subject Reference Start Date/Time",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "RFENDTC",
+          "label": "Subject Reference End Date/Time",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "RFXSTDTC",
+          "label": "Date/Time of First Study Treatment",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "RFXENDTC",
+          "label": "Date/Time of Last Study Treatment",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "RFICDTC",
+          "label": "Date/Time of Informed Consent",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "RFPENDTC",
+          "label": "Date/Time of End of Participation",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "DTHDTC",
+          "label": "Date/Time of Death",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "DTHFL",
+          "label": "Subject Death Flag",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "SITEID",
+          "label": "Study Site Identifier",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "BRTHDTC",
+          "label": "Date/Time of Birth",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "AGE",
+          "label": "Age",
+          "type": "Num",
+          "length": 8
+        },
+        {
+          "name": "AGEU",
+          "label": "Age Units",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "SEX",
+          "label": "Sex",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "RACE",
+          "label": "Race",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "ETHNIC",
+          "label": "Ethnicity",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "ARMCD",
+          "label": "Planned Arm Code",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "ARM",
+          "label": "Description of Planned Arm",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "ACTARMCD",
+          "label": "Actual Arm Code",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "ACTARM",
+          "label": "Description of Actual Arm",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "ARMNRS",
+          "label": "Reason Arm and/or Actual Arm is Null",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "ACTARMUD",
+          "label": "Description of Unplanned Actual Arm",
+          "type": "Char",
+          "length": 50
+        },
+        {
+          "name": "COUNTRY",
+          "label": "Country",
+          "type": "Char",
+          "length": 50
+        }
+      ],
+      "records": {
+        "STUDYID": ["CDISCPILOT01", "CDISCPILOT01"],
+        "DOMAIN": ["DM", "DM"],
+        "USUBJID": ["CDISC001", "CDISC008"],
+        "SUBJID": ["1115", "1116"],
+        "RFSTDTC": ["2012-11-30", "2012-11"],
+        "RFENDTC": ["2013-01-23", "2013-01-23"],
+        "RFXSTDTC": ["2012-11-30", "2012-11-30"],
+        "RFXENDTC": ["2013-01-23", "2013-01-23"],
+        "RFICDTC": ["2012-11-23", "2012-11-23"],
+        "RFPENDTC": ["2013-05-20", "2013-05-20"],
+        "DTHDTC": ["", ""],
+        "DTHFL": ["", ""],
+        "SITEID": ["701", "701"],
+        "BRTHDTC": ["1928", "1928"],
+        "AGE": [84, 84],
+        "AGEU": ["YEARS", "YEARS"],
+        "SEX": ["M", "M"],
+        "RACE": ["WHITE", "WHITE"],
+        "ETHNIC": ["NOT HISPANIC OR LATINO", "NOT HISPANIC OR LATINO"],
+        "ARMCD": ["ZAN_LOW", "ZAN_LOW"],
+        "ARM": ["Zanomaline Low Dose (54 mg)", "Zanomaline Low Dose (54 mg)"],
+        "ACTARMCD": ["ZAN_LOW", "ZAN_LOW"],
+        "ACTARM": [
+          "Zanomaline Low Dose (54 mg)",
+          "Zanomaline Low Dose (54 mg)"
+        ],
+        "ARMNRS": ["", ""],
+        "ACTARMUD": ["", ""],
+        "COUNTRY": ["USA", "USA"]
+      }
+    }
+  ],
+  "codelists": []
+}
