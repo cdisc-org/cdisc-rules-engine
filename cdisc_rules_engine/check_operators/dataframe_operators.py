@@ -1633,8 +1633,6 @@ class DataframeType(BaseType):
                 return "9999-12-31" if ascending else "0001-01-01"
             return x
 
-        # Use permutation matching: check if the permutation of target indices (sorted by target values)
-        # matches the expected permutation (sorted by comparator values)
         expected_order = sorted(
             range(len(comparator_values)),
             key=lambda k: safe_compare(comparator_values[k], group.index[k]),
@@ -1642,9 +1640,8 @@ class DataframeType(BaseType):
         )
         actual_order = sorted(range(len(target_values)), key=lambda k: target_values[k])
 
-        for i, (exp, act) in enumerate(zip(expected_order, actual_order)):
-            if exp != act:
-                is_sorted.iloc[i] = False
+        mismatches = np.array(expected_order) != np.array(actual_order)
+        is_sorted.iloc[mismatches] = False
 
         return is_sorted
 
@@ -1675,14 +1672,7 @@ class DataframeType(BaseType):
         sorted_df,
         check_func=None,
     ):
-        """
-        Converts groupby().apply() results back to a Series aligned with the original dataframe.
-
-        Handles MultiIndex edge cases when grouping column count doesn't match MultiIndex levels:
-        fewer levels (drop excess), equal levels (reset index), or more levels (reconstruct manually).
-        """
         if isinstance(grouped_result, pd.DataFrame):
-            # Flatten DataFrame: stack columns into a Series
             grouped_result = grouped_result.stack()
         if isinstance(grouped_result.index, pd.MultiIndex):
             if len(within_columns) < grouped_result.index.nlevels:
