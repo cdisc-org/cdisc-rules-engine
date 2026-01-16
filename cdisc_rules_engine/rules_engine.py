@@ -336,8 +336,6 @@ class RulesEngine:
         elif (
             rule.get("rule_type")
             == RuleTypes.VARIABLE_METADATA_CHECK_AGAINST_DEFINE.value
-            or rule.get("rule_type")
-            == RuleTypes.VARIABLE_METADATA_CHECK_AGAINST_DEFINE_XML_AND_LIBRARY.value
         ):
             self.rule_processor.add_comparator_to_rule_conditions(
                 rule, comparator=None, target_prefix="define_"
@@ -432,7 +430,7 @@ class RulesEngine:
         )
         dataset_variable = DatasetVariable(
             dataset,
-            column_prefix_map={"--": dataset_metadata.domain},
+            column_prefix_map={"--": dataset_metadata.domain_cleaned},
             value_level_metadata=value_level_metadata,
             column_codelist_map=variable_codelist_map,
             codelist_term_maps=codelist_term_maps,

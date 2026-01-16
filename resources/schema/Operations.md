@@ -152,14 +152,13 @@ Returns a list of valid extensible codelist term's submission values. Used for e
 
 ### get_codelist_attributes
 
-Fetches controlled terminology attribute values from CT packages based on row-specific CT package and version references.
+Fetches controlled terminology attribute values from CT packages based on row-specific CT package and version references. The operation constructs CT package names based on the standard being validated and the values in the `name` and `version` columns (e.g., SDTMIG → "sdtmct-{version}"). When the `name` column contains "CDISC" or "CDISC CT", it uses the validation run's standard to determine the package prefix and the version found in the cell of the specified column. The operation extracts all codes matching the specified ct_attribute from the package.
 
 **Required Parameters:**
 
 - `ct_attribute`: Attribute to extract - `"Term CCODE"`, `"Codelist CCODE"`, `"Term Value"`, `"Codelist Value"`, or `"Term Preferred Term"`
-- `target`: Column containing CT reference (e.g., "TSVCDREF")
+- `name`: Column containing CT reference (e.g., "TSVCDREF") - identifies which terminology system is referenced
 - `version`: Column containing CT version (e.g., "TSVCDVER")
-- `ct_packages`: List of CT packages to search (e.g., `["sdtmct-2020-03-27"]`)
 
 ```yaml
 - id: $VALID_TERM_CODES
@@ -167,11 +166,9 @@ Fetches controlled terminology attribute values from CT packages based on row-sp
   operator: get_codelist_attributes
   ct_attribute: Term CCODE
   version: TSVCDVER
-  target: TSVCDREF
-  ct_packages:
-    - sdtmct-2020-03-27
-    - sdtmct-2022-12-16
 ```
+
+**Note:** due to editor not containing the cache, if using this operator in rule editor, you must put the ctpackage versions contained within your data in the library tab for it work properly in editor.
 
 ### valid_codelist_dates
 

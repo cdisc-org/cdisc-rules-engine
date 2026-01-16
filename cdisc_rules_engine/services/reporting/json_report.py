@@ -1,4 +1,5 @@
 import json
+import os
 from typing import BinaryIO, override
 
 from cdisc_rules_engine.enums.report_types import ReportTypes
@@ -57,7 +58,8 @@ class JsonReport(BaseReport):
                 json_export[self._get_property_name(sheet_name)] = data_sheet
         if raw_report:
             json_export["results_data"] = [
-                rule_result.to_representation() for rule_result in self._results
+                rule_result.to_representation()
+                for rule_result in self._report_standard._results
             ]
         return json_export
 
@@ -66,5 +68,14 @@ class JsonReport(BaseReport):
         report_data = self.get_export(
             raw_report=self._args.raw_report,
         )
+        output_dir = os.path.dirname(self._output_name)
+        if output_dir:
+            try:
+                os.makedirs(output_dir, exist_ok=True)
+            except OSError as e:
+                raise OSError(
+                    f"Cannot create output directory '{output_dir}': {e.strerror}. "
+                    f"Please provide a valid, writable path for the output file."
+                ) from e
         with open(self._output_name, "w") as f:
             json.dump(report_data, f)

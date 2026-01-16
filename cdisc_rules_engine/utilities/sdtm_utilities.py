@@ -54,6 +54,23 @@ def get_tabulation_model_type_and_version(model_link: dict) -> Tuple:
 
 
 def get_variables_metadata_from_standard(domain, library_metadata):  # noqa
+    add_AP = False
+    original_domain = domain
+    if (
+        domain
+        and (domain.upper().startswith("SUPP") or domain.upper().startswith("SQ"))
+        and len(domain) > 2
+    ):
+        if domain.upper().startswith("SQ"):
+            parent_domain = domain[2:]
+            if parent_domain.upper().startswith("AP"):
+                add_AP = True
+        domain = "SUPPQUAL"
+    elif domain and domain.upper().startswith("AP"):
+        domain = domain[2:]
+        original_domain = domain
+        add_AP = True
+
     standard_details = library_metadata.standard_metadata
     model_details = library_metadata.model_metadata
     is_custom = domain not in standard_details.get("domains", {})
@@ -70,13 +87,22 @@ def get_variables_metadata_from_standard(domain, library_metadata):  # noqa
             class_variables_metadata,
             timing_metadata,
         ) = get_allowed_class_variables(model_details, model_class_details)
+        if add_AP:
+            ap_class_details = get_class_metadata(model_details, "ASSOCIATED PERSONS")
+            ap_identifiers = ap_class_details.get("classVariables", [])
+            identifiers_metadata = [
+                v
+                for v in identifiers_metadata + ap_identifiers
+                if v.get("name") != "USUBJID"
+            ]
+            identifiers_metadata.sort(key=lambda item: int(item["ordinal"]))
         model_variables = []
         for var_list in [
             identifiers_metadata,
             class_variables_metadata,
             timing_metadata,
         ]:
-            replace_variable_wildcards(var_list, domain, model_variables)
+            replace_variable_wildcards(var_list, original_domain, model_variables)
     # Custom domains only pull from model hierarchy
     if is_custom:
         variables_metadata = model_variables
@@ -90,13 +116,21 @@ def get_variables_metadata_from_standard(domain, library_metadata):  # noqa
                 var["name"]: i for i, var in enumerate(variables_metadata)
             }
             for ig_var in ig_variables:
-                ig_var_name = ig_var["name"]
+                if "--" in ig_var["name"]:
+                    ig_var_copy = copy.deepcopy(ig_var)
+                    ig_var_copy["name"] = ig_var_copy["name"].replace(
+                        "--", original_domain
+                    )
+                    ig_var_to_use = ig_var_copy
+                else:
+                    ig_var_to_use = ig_var
+                ig_var_name = ig_var_to_use["name"]
                 if ig_var_name in model_vars_by_name:
-                    variables_metadata[model_vars_by_name[ig_var_name]] = ig_var
+                    variables_metadata[model_vars_by_name[ig_var_name]] = ig_var_to_use
                 else:
                     # if a variable exists in the IG but not in the model,
                     # insert it at the end of the its section
-                    ig_var_role = ig_var.get("role")
+                    ig_var_role = ig_var_to_use.get("role")
                     if ig_var_role == "Identifier":
                         identifiers_length = len(identifiers_metadata)
                         insertion_point = identifiers_length
@@ -107,12 +141,28 @@ def get_variables_metadata_from_standard(domain, library_metadata):  # noqa
                         insertion_point = (
                             len(variables_metadata) - timing_metadata_length
                         )
-                    variables_metadata.insert(insertion_point, ig_var)
+                    variables_metadata.insert(insertion_point, ig_var_to_use)
                     model_vars_by_name = {
                         var["name"]: i for i, var in enumerate(variables_metadata)
                     }
         else:
-            variables_metadata = ig_variables
+            if add_AP:
+                ap_class_details = get_class_metadata(
+                    model_details, "ASSOCIATED PERSONS"
+                )
+                ap_identifiers = ap_class_details.get("classVariables", [])
+                ig_variables = [
+                    v
+                    for v in ig_variables + ap_identifiers
+                    if v.get("name") != "USUBJID"
+                ]
+                ig_variables.sort(key=lambda item: int(item["ordinal"]))
+                variables_metadata = []
+                replace_variable_wildcards(
+                    ig_variables, original_domain, variables_metadata
+                )
+            else:
+                variables_metadata = ig_variables
     return variables_metadata
 
 
@@ -225,7 +275,7 @@ def group_class_variables_by_role(
     return identifier_vars, timing_vars
 
 
-def get_variables_metadata_from_standard_model(
+def get_variables_metadata_from_standard_model(  # noqa
     domain: str,
     dataframe,
     datasets: Iterable[SDTMDatasetMetadata],
@@ -234,84 +284,120 @@ def get_variables_metadata_from_standard_model(
     library_metadata: LibraryMetadataContainer,
 ) -> List[dict]:
     """
-    Gets variables metadata for the given class and domain from cache.
-    The cache stores CDISC Library metadata.
-    Retrieves variables metadata from IG,
-    unless the dataset class is a GENERAL OBSERVATIONS domain.
-    In this case variables metadata is pulled from the model.
-
-    Args:
-        standard: Standard to validate against
-        standard_version: Version of the standard to validate against
-        domain: The domain being validated
-        dataframe: The dataset being a evaluated.
-        datasets: List of all datasets in the study
-        dataset_path: File path of the target dataset
-        cache: Cache service for retrieving previously cached library data
-        data_service: Data service instance
-    Returns:
-    [
-        {
-            "label":"Study Identifier",
-            "name":"STUDYID",
-            "ordinal":"1",
-            "role":"Identifier",
-               ...
-        },
-        {
-            "label":"Domain Abbreviation",
-            "name":"DOMAIN",
-            "ordinal":"2",
-            "role":"Identifier"
-        },
-            ...
-    ]
+    gets class via the IG then uses the class to get the variables via the model
+    classes outside of general observation, we check the model for their definition
+    if they are not there, differ to the standard definition of the domain
     """
-    # get model details from cache
-    model_details = library_metadata.model_metadata
+    add_AP = False
+    original_domain = domain
     if (
         domain
         and (domain.upper().startswith("SUPP") or domain.upper().startswith("SQ"))
         and len(domain) > 2
     ):
+        if domain.upper().startswith("SQ"):
+            parent_domain = domain[2:]
+            if parent_domain.upper().startswith("AP"):
+                add_AP = True
         domain = "SUPPQUAL"
-    domain_details = get_model_domain_metadata(model_details, domain)
-    variables_metadata = []
+    elif domain and domain.upper().startswith("AP"):
+        domain = domain[2:]
+        original_domain = domain
+        add_AP = True
+    standard_details = library_metadata.standard_metadata
+    model_details = library_metadata.model_metadata
 
-    if domain_details:
-        # Domain found in the model
-        class_name = convert_library_class_name_to_ct_class(
-            domain_details["_links"]["parentClass"]["title"]
-        )
-        class_details = get_class_metadata(model_details, class_name)
-        variables_metadata = domain_details.get("datasetVariables", [])
-        if variables_metadata:
-            variables_metadata.sort(key=lambda item: int(item["ordinal"]))
-    else:
-        # Domain not found in the model. Detect class name from data
-        domain_details = search_in_list_of_dicts(
-            datasets,
-            lambda item: domain == (item.domain or item.name),
-        )
-        class_name = data_service.get_dataset_class(
-            dataframe, dataset_path, datasets, domain_details
-        )
-        class_name = convert_library_class_name_to_ct_class(class_name)
-        class_details = get_class_metadata(model_details, class_name)
-
+    IG_class_details, IG_domain_details = get_class_and_domain_metadata(
+        standard_details, domain
+    )
+    class_name = convert_library_class_name_to_ct_class(IG_class_details.get("name"))
     if class_name in DETECTABLE_CLASSES:
+        model_class_details = get_class_metadata(model_details, class_name)
         (
             identifiers_metadata,
-            variables_metadata,
+            class_variables_metadata,
             timing_metadata,
-        ) = get_allowed_class_variables(model_details, class_details)
-        # Identifiers are added to the beginning and Timing to the end
-        if identifiers_metadata:
-            variables_metadata = identifiers_metadata + variables_metadata
-        if timing_metadata:
-            variables_metadata = variables_metadata + timing_metadata
-
-    return variables_metadata
+        ) = get_allowed_class_variables(model_details, model_class_details)
+        if add_AP:
+            ap_class_details = get_class_metadata(model_details, "ASSOCIATED PERSONS")
+            ap_identifiers = ap_class_details.get("classVariables", [])
+            identifiers_metadata = identifiers_metadata + ap_identifiers
+            # Remove USUBJID from identifiers and re-sort
+            identifiers_metadata = [
+                v for v in identifiers_metadata if v.get("name") != "USUBJID"
+            ]
+            identifiers_metadata.sort(key=lambda item: int(item["ordinal"]))
+        variables_metadata = []
+        for var_list in [
+            identifiers_metadata,
+            class_variables_metadata,
+            timing_metadata,
+        ]:
+            replace_variable_wildcards(var_list, original_domain, variables_metadata)
+        return variables_metadata
+    else:
+        # First, try to get class metadata and check for classVariables
+        class_details = get_class_metadata(model_details, class_name)
+        class_variables = class_details.get("classVariables", [])
+        if class_variables:
+            if add_AP:
+                ap_class_details = get_class_metadata(
+                    model_details, "ASSOCIATED PERSONS"
+                )
+                ap_identifiers = ap_class_details.get("classVariables", [])
+                # Filter out USUBJID from AP identifiers only, then add to class_variables
+                filtered_ap_identifiers = [
+                    v for v in ap_identifiers if v.get("name") != "USUBJID"
+                ]
+                class_variables = class_variables + filtered_ap_identifiers
+            class_variables.sort(key=lambda item: int(item["ordinal"]))
+            variables_metadata = []
+            replace_variable_wildcards(
+                class_variables, original_domain, variables_metadata
+            )
+            return variables_metadata
+        else:
+            # Second, check if domain exists in model datasets
+            domain_details = get_model_domain_metadata(model_details, domain)
+            if domain_details:
+                dataset_variables = domain_details.get("datasetVariables", [])
+                dataset_variables.sort(key=lambda item: int(item["ordinal"]))
+                if add_AP:
+                    ap_class_details = get_class_metadata(
+                        model_details, "ASSOCIATED PERSONS"
+                    )
+                    ap_identifiers = ap_class_details.get("classVariables", [])
+                    dataset_variables = [
+                        v
+                        for v in dataset_variables + ap_identifiers
+                        if v.get("name") != "USUBJID"
+                    ]
+                variables_metadata = []
+                replace_variable_wildcards(
+                    dataset_variables, original_domain, variables_metadata
+                )
+                variables_metadata.sort(key=lambda item: int(item["ordinal"]))
+                return variables_metadata
+            # Third, fall back to standard datasets
+            if IG_domain_details:
+                dataset_variables = IG_domain_details.get("datasetVariables", [])
+                dataset_variables.sort(key=lambda item: int(item["ordinal"]))
+                if add_AP:
+                    ap_class_details = get_class_metadata(
+                        model_details, "ASSOCIATED PERSONS"
+                    )
+                    ap_identifiers = ap_class_details.get("classVariables", [])
+                    dataset_variables = [
+                        v
+                        for v in dataset_variables + ap_identifiers
+                        if v.get("name") != "USUBJID"
+                    ]
+                variables_metadata = []
+                replace_variable_wildcards(
+                    dataset_variables, original_domain, variables_metadata
+                )
+                return variables_metadata
+        return None
 
 
 def get_model_domain_metadata(model_details: dict, domain_name: str) -> dict:
