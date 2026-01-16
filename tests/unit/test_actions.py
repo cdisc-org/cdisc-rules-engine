@@ -335,6 +335,130 @@ def test_json_serializable_value(data):
     json.dumps(result.to_representation())
 
 
+def test_extract_comparison_metadata():
+    """Test extraction of comparison metadata from output_variables."""
+    dummy_rule = {
+        "core_id": "ComparisonTest",
+        "output_variables": [
+            "$VAR1",
+            {"compared": ["$VAR2", "$VAR3", "$VAR4"]},
+            "$VAR5",
+        ],
+    }
+    df = pd.DataFrame({"VAR1": [1], "VAR2": [2], "VAR3": [3], "VAR4": [4], "VAR5": [5]})
+    variable = DatasetVariable(df)
+    dataset_metadata = SDTMDatasetMetadata(
+        first_record={"DOMAIN": "AE"}, filename="ae.xpt"
+    )
+    action = COREActions([], variable, dataset_metadata, dummy_rule)
+
+    compare_groups = action._extract_comparison_metadata(dummy_rule)
+    assert compare_groups == [["$VAR2", "$VAR3", "$VAR4"]]
+    assert dummy_rule["output_variables"] == [
+        "$VAR1",
+        "$VAR2",
+        "$VAR3",
+        "$VAR4",
+        "$VAR5",
+    ]
+
+
+def test_extract_comparison_metadata_multiple_groups():
+    """Test extraction with multiple compared blocks."""
+    dummy_rule = {
+        "core_id": "ComparisonTest",
+        "output_variables": [
+            "$VAR1",
+            {"compared": ["$VAR2", "$VAR3"]},
+            {"compared": ["$VAR4", "$VAR5", "$VAR6"]},
+        ],
+    }
+    df = pd.DataFrame(
+        {"VAR1": [1], "VAR2": [2], "VAR3": [3], "VAR4": [4], "VAR5": [5], "VAR6": [6]}
+    )
+    variable = DatasetVariable(df)
+    dataset_metadata = SDTMDatasetMetadata(
+        first_record={"DOMAIN": "AE"}, filename="ae.xpt"
+    )
+    action = COREActions([], variable, dataset_metadata, dummy_rule)
+
+    compare_groups = action._extract_comparison_metadata(dummy_rule)
+    assert compare_groups == [["$VAR2", "$VAR3"], ["$VAR4", "$VAR5", "$VAR6"]]
+
+
+def test_extract_comparison_metadata_caching():
+    """Test that comparison metadata is cached in rule dict."""
+    dummy_rule = {
+        "core_id": "ComparisonTest",
+        "output_variables": [{"compared": ["$VAR1", "$VAR2"]}],
+    }
+    df = pd.DataFrame({"VAR1": [1], "VAR2": [2]})
+    variable = DatasetVariable(df)
+    dataset_metadata = SDTMDatasetMetadata(
+        first_record={"DOMAIN": "AE"}, filename="ae.xpt"
+    )
+    action = COREActions([], variable, dataset_metadata, dummy_rule)
+
+    compare_groups1 = action._extract_comparison_metadata(dummy_rule)
+    compare_groups2 = action._extract_comparison_metadata(dummy_rule)
+
+    assert compare_groups1 == compare_groups2 == [["$VAR1", "$VAR2"]]
+    assert "_cached_compare_groups" in dummy_rule
+
+
+def test_extract_comparison_metadata_no_compared():
+    """Test that None is returned when no compared blocks exist."""
+    dummy_rule = {
+        "core_id": "NoComparisonTest",
+        "output_variables": ["$VAR1", "$VAR2"],
+    }
+    df = pd.DataFrame({"VAR1": [1], "VAR2": [2]})
+    variable = DatasetVariable(df)
+    dataset_metadata = SDTMDatasetMetadata(
+        first_record={"DOMAIN": "AE"}, filename="ae.xpt"
+    )
+    action = COREActions([], variable, dataset_metadata, dummy_rule)
+
+    compare_groups = action._extract_comparison_metadata(dummy_rule)
+    assert compare_groups is None
+
+
+def test_generate_targeted_error_object_with_compare_groups():
+    """Test that compare_groups are included in ValidationErrorContainer."""
+    dummy_rule = {
+        "core_id": "ComparisonTest",
+        "actions": [
+            {
+                "name": "generate_targeted_error_objects",
+                "params": {"message": "Comparison test"},
+            }
+        ],
+        "output_variables": [{"compared": ["$VAR1", "$VAR2"]}],
+    }
+    df = pd.DataFrame(
+        {
+            "VAR1": [1, 2],
+            "VAR2": [2, 3],
+            "USUBJID": ["SUBJ-001", "SUBJ-002"],
+        }
+    )
+    df[SOURCE_FILENAME] = "test.xpt"
+    df[SOURCE_ROW_NUMBER] = [1, 2]
+    variable = DatasetVariable(df)
+    dataset_metadata = SDTMDatasetMetadata(
+        first_record={"DOMAIN": "AE"}, filename="test.xpt"
+    )
+    action = COREActions([], variable, dataset_metadata, dummy_rule)
+
+    result = action.generate_targeted_error_object(
+        {"VAR1", "VAR2"}, df, "Comparison test"
+    )
+    assert result.compare_groups == [["$VAR1", "$VAR2"]]
+    representation = result.to_representation()
+    assert "compare_groups" in representation
+    assert representation["compare_groups"] == [["$VAR1", "$VAR2"]]
+
+
 def test_nan_handling_in_error_object():
     dummy_rule = {
         "core_id": "NaNTest",
