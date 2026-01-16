@@ -1,4 +1,11 @@
+import json
+from pathlib import Path
+from unittest.mock import MagicMock
+
+import pandas as pd
 import pytest
+from conftest import mock_data_service
+
 from cdisc_rules_engine.constants.metadata_columns import (
     SOURCE_FILENAME,
     SOURCE_ROW_NUMBER,
@@ -6,23 +13,21 @@ from cdisc_rules_engine.constants.metadata_columns import (
 from cdisc_rules_engine.dataset_builders.contents_dataset_builder import (
     ContentsDatasetBuilder,
 )
-from unittest.mock import MagicMock
+from cdisc_rules_engine.dummy_models.dummy_dataset import DummyDataset
+from cdisc_rules_engine.models.dataset import PandasDataset
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
-from cdisc_rules_engine.services.data_services import DummyDataService
-from cdisc_rules_engine.dummy_models.dummy_dataset import DummyDataset
 from cdisc_rules_engine.models.rule_conditions import ConditionCompositeFactory
-from conftest import mock_data_service
-from cdisc_rules_engine.utilities.rule_processor import RuleProcessor
 from cdisc_rules_engine.services.cache.in_memory_cache_service import (
     InMemoryCacheService,
 )
-from cdisc_rules_engine.models.dataset import PandasDataset
-import pandas as pd
-import json
+from cdisc_rules_engine.services.data_services import DummyDataService
+from cdisc_rules_engine.utilities.rule_processor import RuleProcessor
 
-with open(r"tests/resources/CoreIssue499/data.json", "r") as file:
+# Use path relative to test file for portability
+test_data_path = Path(__file__).parent.parent.parent / "resources" / "CoreIssue499" / "data.json"
+with open(test_data_path, "r") as file:
     test_data = json.load(file)
 
 

@@ -1,15 +1,18 @@
-from typing import List
-from unittest.mock import patch, MagicMock
-from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
-from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
-from cdisc_rules_engine.rules_engine import RulesEngine
-import unittest
-from click.testing import CliRunner
-from core import list_dataset_metadata
+import json
 import os
-from cdisc_rules_engine.config.config import ConfigService
-from cdisc_rules_engine.services.data_services import USDMDataService
+import unittest
+from typing import List
+from unittest.mock import MagicMock, patch
+
+from click.testing import CliRunner
 from pytest import mark
+
+from cdisc_rules_engine.config.config import ConfigService
+from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
+from cdisc_rules_engine.rules_engine import RulesEngine
+from cdisc_rules_engine.services.data_services import USDMDataService
+from core import list_dataset_metadata
 
 dataset_file = "USDM_EliLilly_NCT03421379_Diabetes.json"
 dataset_path = f"{os.path.dirname(__file__)}/../resources/{dataset_file}"
@@ -20,19 +23,37 @@ class TestListDatasetMetadata(unittest.TestCase):
         self.runner = CliRunner()
 
     def test_list_dataset_metadata_with_valid_paths(self):
+        # Use absolute path based on test file location for portability
+        test_dataset_path = os.path.join(
+            os.path.dirname(__file__), "..", "resources", dataset_file
+        )
         result = self.runner.invoke(
             list_dataset_metadata,
-            [
-                "-dp",
-                os.path.join("tests", "resources", dataset_file),
-            ],
+            ["-dp", test_dataset_path],
         )
-        expected_output = """[
-    {
-        "domain": null,
-        "filename": "USDM_EliLilly_NCT03421379_Diabetes.json","""
+
         self.assertEqual(result.exit_code, 0)
-        self.assertIn(expected_output, result.output)
+
+        # Parse and validate JSON output
+        output_data = json.loads(result.output)
+        self.assertIsInstance(output_data, list)
+        self.assertGreater(len(output_data), 0)
+
+        # Find metadata for our test file
+        test_filename = os.path.basename(test_dataset_path)
+        metadata = next(
+            (m for m in output_data if m.get("filename") == test_filename),
+            None
+        )
+        self.assertIsNotNone(metadata, f"Metadata for {test_filename} not found")
+
+        # Verify required attributes
+        self.assertEqual(metadata["filename"], test_filename)
+        self.assertIsNone(metadata["domain"])  # USDM datasets have domain=None
+        self.assertIn("full_path", metadata)
+        self.assertIn("file_size", metadata)
+        self.assertIn("label", metadata)
+        self.assertIn("modification_date", metadata)
 
 
 def test_get_datasets():
