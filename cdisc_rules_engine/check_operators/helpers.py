@@ -203,8 +203,8 @@ def get_common_precision(dt1: str, dt2: str) -> DatePrecision | None:
 def get_date_component(component: str, date_string: str):
     date = get_date(date_string)
     try:
-        return getattr(date, DatePrecision[component].name)
-    except (KeyError, ValueError):
+        return getattr(date, component)
+    except AttributeError:
         return date
 
 
@@ -255,7 +255,7 @@ def get_date(date_string: str):
 def is_complete_date(date_string: str) -> bool:
     try:
         datetime.fromisoformat(date_string)
-    except Exception as e:
+    except Exception:
         try:
             datetime.fromisoformat(date_string.replace("Z", "+00:00"))
         except Exception as e:
@@ -264,10 +264,6 @@ def is_complete_date(date_string: str) -> bool:
                 f"traceback: {traceback.format_exc()}"
             )
             return False
-        logger.error(
-            f"Error with date parsing: {str(e)}, "
-            f"traceback: {traceback.format_exc()}"
-        )
         return True
     return True
 
@@ -360,12 +356,6 @@ def _compare_with_inferred_precision(
         return truncated_target != truncated_comparator
 
     result = operator_func(truncated_target, truncated_comparator)
-
-    if truncated_target == truncated_comparator:
-        if target_precision and comparator_precision:
-            if target_precision.value > comparator_precision.value:
-                return operator_func(get_date(target), get_date(comparator))
-        return result
 
     return result
 
