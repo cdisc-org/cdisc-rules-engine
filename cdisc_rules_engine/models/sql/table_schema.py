@@ -73,8 +73,8 @@ class SqlTableSchema:
         return instance
 
     @classmethod
-    def from_join(cls, name: str, pgi: "PostgresQLInterface") -> "SqlTableSchema":
-        """Create a SqlTableSchema for a join operation."""
+    def derived(cls, name: str, pgi: "PostgresQLInterface") -> "SqlTableSchema":
+        """Create a SqlTableSchema for a join operation or non-record dataset builder."""
         hash = generate_hash(name.lower())
         prefix = pgi.sql_namespace
         hash_name = f"{prefix}_{hash}" if prefix else hash

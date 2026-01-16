@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from pathlib import Path
 from io import IOBase
 from typing import TYPE_CHECKING, List, Union, Optional
 
@@ -28,9 +27,6 @@ from cdisc_rules_engine.data_service.database import DatabaseConfigPostgres, Dat
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from cdisc_rules_engine.standards.base_standards_context import BaseStandardsContext
-
-
-SCHEMA_PATH = Path(__file__).parent / "schemas"
 
 
 @dataclass
@@ -67,7 +63,6 @@ class PostgresQLDataService:
         pgi.init_database()
 
         instance = cls(postgres_interface=pgi)
-        pgi.execute_sql_file(str(SCHEMA_PATH / "clinical_data_metadata_schema.sql"))
         populate_terminology(pgi)
         populate_codelists(pgi)
         populate_standards(pgi)

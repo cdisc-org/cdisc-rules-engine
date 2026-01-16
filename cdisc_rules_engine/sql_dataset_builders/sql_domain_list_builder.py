@@ -37,7 +37,7 @@ class SqlDomainListDatasetBuilder(SqlBaseDatasetBuilder):
                 domain_dict[ds.domain] = []
             domain_dict[ds.domain].append(ds.filename)
 
-        schema = SqlTableSchema.static(table_name)
+        schema = SqlTableSchema.derived(table_name, self.data_service.pgi)
 
         if domain_dict:
             for domain in domain_dict.keys():

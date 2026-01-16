@@ -21,14 +21,18 @@ def test_regression_all_rules(pytestconfig, get_core_rules_df, get_core_rule):
     regression_json = []
     all_check_operators = set()
 
-    for _, row in regression_df.iterrows():
-        rule_reg = run_single_rule_regression(row, get_core_rule)
-        regression_json.append(rule_reg)
+    data_service = PostgresQLDataService.instance()
+    try:
+        for _, row in regression_df.iterrows():
+            rule_reg = run_single_rule_regression(row, get_core_rule, data_service=data_service)
+            regression_json.append(rule_reg)
 
-        # Extract and add check operators to the set
-        check_operators = rule_reg.get("check_operators", [])
-        if check_operators:
-            all_check_operators.update(check_operators)
+            # Extract and add check operators to the set
+            check_operators = rule_reg.get("check_operators", [])
+            if check_operators:
+                all_check_operators.update(check_operators)
+    finally:
+        data_service.pgi.close()
 
     # Generate and save the operators analysis report
     generate_operators_analysis_report(all_check_operators)
@@ -91,14 +95,18 @@ def test_regression_all_rules_pgserver(pytestconfig, get_core_rules_df, get_core
     regression_json = []
     all_check_operators = set()
 
-    for _, row in regression_df.iterrows():
-        rule_reg = run_single_rule_regression(row, get_core_rule, use_pgserver=True)
-        regression_json.append(rule_reg)
+    data_service = PostgresQLDataService.instance(use_pgserver=True)
+    try:
+        for _, row in regression_df.iterrows():
+            rule_reg = run_single_rule_regression(row, get_core_rule, use_pgserver=True, data_service=data_service)
+            regression_json.append(rule_reg)
 
-        # Extract and add check operators to the set
-        check_operators = rule_reg.get("check_operators", [])
-        if check_operators:
-            all_check_operators.update(check_operators)
+            # Extract and add check operators to the set
+            check_operators = rule_reg.get("check_operators", [])
+            if check_operators:
+                all_check_operators.update(check_operators)
+    finally:
+        data_service.pgi.close()
 
     # Generate and save the operators analysis report
     generate_operators_analysis_report(all_check_operators)

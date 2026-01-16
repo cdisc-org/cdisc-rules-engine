@@ -28,7 +28,7 @@ class SqlVariablesMetadataBuilder(SqlBaseDatasetBuilder):
             return table_name
 
         # Create table schema with required columns
-        schema = SqlTableSchema.static(table_name)
+        schema = SqlTableSchema.derived(table_name, self.data_service.pgi)
         schema.add_column(SqlColumnSchema.generated("variable_name", "Char"))
         schema.add_column(SqlColumnSchema.generated("variable_order_number", "Num"))
         schema.add_column(SqlColumnSchema.generated("variable_label", "Char"))

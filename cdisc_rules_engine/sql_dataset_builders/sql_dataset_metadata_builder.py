@@ -24,7 +24,7 @@ class SqlDatasetMetadataBuilder(SqlBaseDatasetBuilder):
         if self.data_service.pgi.schema.get_table(table_name) is not None:
             return table_name
 
-        schema = SqlTableSchema.static(table_name)
+        schema = SqlTableSchema.derived(table_name, self.data_service.pgi)
         schema.add_column(SqlColumnSchema.generated("dataset_location", "Char"))
         schema.add_column(SqlColumnSchema.generated("dataset_name", "Char"))
         schema.add_column(SqlColumnSchema.generated("dataset_label", "Char"))

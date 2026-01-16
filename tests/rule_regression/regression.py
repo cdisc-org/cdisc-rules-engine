@@ -11,6 +11,9 @@ from psycopg2 import errors
 from cdisc_rules_engine.data_service.postgresql_data_service import (
     PostgresQLDataService,
 )
+from cdisc_rules_engine.data_service.loading.load_test_datasets import (
+    SqlTestDatasetLoader,
+)
 from cdisc_rules_engine.enums.default_file_paths import DefaultFilePaths
 from cdisc_rules_engine.models.dataset_metadata2 import VariableMetadata
 from cdisc_rules_engine.models.test_dataset import TestDataset
@@ -44,7 +47,11 @@ WHITELISTED_RULES = {
 
 
 def run_single_rule_regression(
-    row: pd.Series, get_core_rule, target_case: Optional[str] = None, use_pgserver: bool = False
+    row: pd.Series,
+    get_core_rule,
+    target_case: Optional[str] = None,
+    use_pgserver: bool = False,
+    data_service: Optional[PostgresQLDataService] = None,
 ) -> list:
     try:
         return run_single_rule_regression_impl(
@@ -52,6 +59,7 @@ def run_single_rule_regression(
             get_core_rule,
             target_case,
             use_pgserver=use_pgserver,
+            data_service=data_service,
         )
     except Exception as e:
         regression = initialize_regression_dict(row)
@@ -60,7 +68,11 @@ def run_single_rule_regression(
 
 
 def run_single_rule_regression_impl(
-    row: pd.Series, get_core_rule, target_case: Optional[str] = None, use_pgserver: bool = False
+    row: pd.Series,
+    get_core_rule,
+    target_case: Optional[str] = None,
+    use_pgserver: bool = False,
+    data_service: Optional[PostgresQLDataService] = None,
 ) -> list:
     ig_specs = {
         "standard": "sdtmig",
@@ -127,6 +139,7 @@ def run_single_rule_regression_impl(
                         is_nested_structure,
                         cur_core_id,
                         use_pgserver=use_pgserver,
+                        data_service=data_service,
                     )
         elif len(paths) < 1:
             rule_regression["rule_in_mltple_standards"] = []
@@ -162,6 +175,7 @@ def run_test_cases(
     is_nested_structure: bool = False,
     cur_core_id: str = None,
     use_pgserver: bool = False,
+    data_service: Optional[PostgresQLDataService] = None,
 ):
     two_digit_pattern = re.compile(r"^\d{2}$")
     path_depth = TYPE_DEPTH + 1 if is_nested_structure else TYPE_DEPTH
@@ -194,6 +208,7 @@ def run_test_cases(
                 rule,
                 cur_core_id,
                 use_pgserver=use_pgserver,
+                data_service=data_service,
             )
             test_case_regression.append(
                 {
@@ -224,6 +239,7 @@ def run_regression_on_test_case(
     rule,
     cur_core_id: Optional[str] = None,
     use_pgserver: bool = False,
+    data_service: Optional[PostgresQLDataService] = None,
 ):
     can_process_dataset = False
     data_test_datasets = None
@@ -273,6 +289,7 @@ def run_regression_on_test_case(
             test_case_folder_path,
             cur_core_id,
             use_pgserver=use_pgserver,
+            data_service=data_service,
         )
 
         # Uncomment to produce reports for CDISC to use
@@ -327,8 +344,68 @@ def get_metadata(ig_specs: IGSpecification, define_xml_path: str):
     return METADATA_CACHE[key]
 
 
+def _initialize_data_service(
+    data_test_datasets: list,
+    standards_context,
+    use_pgserver: bool,
+    data_service: Optional[PostgresQLDataService] = None,
+) -> PostgresQLDataService:
+    """Helper to handle persistent or new data service initialization."""
+    if data_service:
+        ds = data_service
+        ds.pgi._drop_prefixed_tables()
+        ds.datasets = []
+        for test_ds in data_test_datasets:
+            ds_metadata = standards_context.transform_dataset_metadata(
+                SqlTestDatasetLoader.load_test_dataset(ds.pgi, test_ds)
+            )
+            ds.datasets.append(ds_metadata)
+        return ds
+
+    return PostgresQLDataService.from_list_of_testdatasets(
+        data_test_datasets, standards_context, use_pgserver=use_pgserver
+    )
+
+
+def _validate_against_file(
+    regression_errors: dict, test_case_folder_path: str, old_regression: list, sql_regression: list
+):
+    """Helper to handle comparison against validated_results files."""
+    test_case_path = Path(test_case_folder_path)
+    validated_results_folder = test_case_path / "validated_results"
+
+    if not validated_results_folder.exists():
+        regression_errors["validated_results_folder_exists"] = False
+        regression_errors["validation_file"] = ""
+        regression_errors["validation_file_validation"] = ""
+        regression_errors["old_result_validation"] = "invalid"
+        regression_errors["sql_results_validation"] = "invalid"
+        return
+
+    regression_errors["validated_results_folder_exists"] = True
+    validation_file_path = find_data_file(str(validated_results_folder))
+    if not validation_file_path:
+        regression_errors["validation_file"] = ""
+        regression_errors["validation_file_validation"] = ""
+        regression_errors["old_result_validation"] = "invalid"
+        regression_errors["sql_results_validation"] = "invalid"
+        return
+
+    regression_errors["validation_file"] = extract_final_path(validation_file_path, DATA_DEPTH)
+    try:
+        with open(validation_file_path, "r", encoding="utf-8") as f:
+            validated_result = json.load(f)
+            regression_errors["validation_file_validation"] = "valid"
+            regression_errors["old_result_validation"] = validate_engine_result(old_regression, validated_result)
+            regression_errors["sql_results_validation"] = validate_engine_result(sql_regression, validated_result)
+    except (json.decoder.JSONDecodeError, KeyError) as e:
+        regression_errors["validation_file_validation"] = str(e)
+        regression_errors["old_result_validation"] = "invalid"
+        regression_errors["sql_results_validation"] = "invalid"
+
+
 def process_test_case_dataset(
-    regression_errors: list,
+    regression_errors: dict,
     define_xml_file_path: str,
     data_test_datasets: list,
     ig_specs: IGSpecification,
@@ -336,6 +413,7 @@ def process_test_case_dataset(
     test_case_folder_path: str,
     cur_core_id: Optional[str] = None,
     use_pgserver: bool = False,
+    data_service: Optional[PostgresQLDataService] = None,
 ):
     try:
         metadata = get_metadata(ig_specs, define_xml_file_path)
@@ -347,9 +425,7 @@ def process_test_case_dataset(
             ig_specs.get("standard_substandard"),
             library_metadata=metadata,
         )
-        ds = PostgresQLDataService.from_list_of_testdatasets(
-            data_test_datasets, standards_context, use_pgserver=use_pgserver
-        )
+        ds = _initialize_data_service(data_test_datasets, standards_context, use_pgserver, data_service)
         regression_errors["datasets_import_sql"] = "SUCCESS"
         sql_results = sql_run_single_rule_validation(data_service=ds, rule=rule, standards_context=standards_context)
         regression_errors["results_present_sql"] = True
@@ -372,44 +448,12 @@ def process_test_case_dataset(
 
         regression_errors["old_vs_sql"] = old_vs_sql_regression_comparison(old_regression, sql_regression)
 
-        regression_errors["whitelisted"] = True if cur_core_id in WHITELISTED_RULES else False
+        regression_errors["whitelisted"] = cur_core_id in WHITELISTED_RULES
 
         regression_errors["sql_overall_result"] = extract_overall_result(sql_regression)
         regression_errors["old_overall_result"] = extract_overall_result(old_regression)
 
-        # does validated_results path exist:
-        test_case_path = Path(test_case_folder_path)
-        validated_results_folder = test_case_path / "validated_results"
-        if not validated_results_folder.exists():
-            regression_errors["validated_results_folder_exists"] = False
-            regression_errors["validation_file"] = ""
-            regression_errors["validation_file_validation"] = ""
-            regression_errors["old_result_validation"] = "invalid"
-            regression_errors["sql_results_validation"] = "invalid"
-        else:
-            regression_errors["validated_results_folder_exists"] = True
-            validation_file_path = find_data_file(str(validated_results_folder))
-            if not validation_file_path:
-                regression_errors["validation_file"] = ""
-                regression_errors["validation_file_validation"] = ""
-                regression_errors["old_result_validation"] = "invalid"
-                regression_errors["sql_results_validation"] = "invalid"
-            else:
-                regression_errors["validation_file"] = extract_final_path(validation_file_path, DATA_DEPTH)
-                try:
-                    with open(validation_file_path, "r", encoding="utf-8") as f:
-                        validated_result = json.load(f)
-                        regression_errors["validation_file_validation"] = "valid"
-                        regression_errors["old_result_validation"] = validate_engine_result(
-                            old_regression, validated_result
-                        )
-                        regression_errors["sql_results_validation"] = validate_engine_result(
-                            sql_regression, validated_result
-                        )
-                except json.decoder.JSONDecodeError as e:
-                    regression_errors["validation_file_validation"] = e
-                    regression_errors["old_result_validation"] = "invalid"
-                    regression_errors["sql_results_validation"] = "invalid"
+        _validate_against_file(regression_errors, test_case_folder_path, old_regression, sql_regression)
 
         return sql_results, old_results
 

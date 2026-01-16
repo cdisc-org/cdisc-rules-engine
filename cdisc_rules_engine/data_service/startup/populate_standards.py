@@ -1,20 +1,15 @@
 from pathlib import Path
 
 from cdisc_rules_engine.data_service.sql_interface import PostgresQLInterface
+from cdisc_rules_engine.enums.static_tables import StaticTables
 from cdisc_rules_engine.models.sql.column_schema import SqlColumnSchema
 from cdisc_rules_engine.models.sql.table_schema import SqlTableSchema
 from cdisc_rules_engine.readers.metadata_standards_reader import MetadataStandardsReader
 from cdisc_rules_engine.services import logger
 
-# TODO: Put this somewhere sensible
-IG_DATASETS_TABLE_NAME = "ig_datasets"
-IG_VARIABLES_TABLE_NAME = "ig_variables"
-
-SCHEMA_PATH = Path(__file__).parent / "schemas"
-
 
 def _dataset_schema():
-    table = SqlTableSchema.static(IG_DATASETS_TABLE_NAME)
+    table = SqlTableSchema.static(StaticTables.IG_DATASETS_TABLE_NAME.value)
     table.add_column(SqlColumnSchema(name="standard_type", hash="standard_type", type="Char"))
     table.add_column(SqlColumnSchema(name="version", hash="version", type="Char"))
     table.add_column(SqlColumnSchema(name="class", hash="class", type="Char"))
@@ -29,7 +24,7 @@ def _dataset_schema():
 
 
 def _variable_schema():
-    table = SqlTableSchema.static(IG_VARIABLES_TABLE_NAME)
+    table = SqlTableSchema.static(StaticTables.IG_VARIABLES_TABLE_NAME.value)
     table.add_column(SqlColumnSchema(name="standard_type", hash="standard_type", type="Char"))
     table.add_column(SqlColumnSchema(name="version", hash="version", type="Char"))
     table.add_column(SqlColumnSchema(name="variable_order", hash="variable_order", type="Num"))

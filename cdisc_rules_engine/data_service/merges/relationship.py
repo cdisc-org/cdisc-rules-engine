@@ -208,7 +208,7 @@ class SqlRelationshipMerge:
         pgi: PostgresQLInterface,
     ) -> SqlTableSchema:
         """Build merged schema with domain suffixes."""
-        schema = SqlTableSchema.from_join(name, pgi)
+        schema = SqlTableSchema.derived(name, pgi)
 
         for col_name, column in original.get_columns():
             if col_name == "id":

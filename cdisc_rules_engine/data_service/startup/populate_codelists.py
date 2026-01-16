@@ -1,19 +1,15 @@
 from pathlib import Path
 
 from cdisc_rules_engine.data_service.sql_interface import PostgresQLInterface
+from cdisc_rules_engine.enums.static_tables import StaticTables
 from cdisc_rules_engine.models.sql.column_schema import SqlColumnSchema
 from cdisc_rules_engine.models.sql.table_schema import SqlTableSchema
 from cdisc_rules_engine.readers.codelist_reader import CodelistReader
 from cdisc_rules_engine.services import logger
 
-# TODO: Put this somewhere sensible
-CODELIST_TABLE_NAME = "ig_codelists"
-
-SCHEMA_PATH = Path(__file__).parent / "schemas"
-
 
 def _schema():
-    table = SqlTableSchema.static(CODELIST_TABLE_NAME)
+    table = SqlTableSchema.static(StaticTables.IG_CODELIST_TABLE_NAME.value)
     table.add_column(SqlColumnSchema(name="standard_type", hash="standard_type", type="Char"))
     table.add_column(SqlColumnSchema(name="version_date", hash="version_date", type="Date"))
     table.add_column(SqlColumnSchema(name="item_code", hash="item_code", type="Char"))

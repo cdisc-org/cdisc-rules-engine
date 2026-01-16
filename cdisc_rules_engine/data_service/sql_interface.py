@@ -11,6 +11,7 @@ from cdisc_rules_engine.data_service.database import (
 )
 from cdisc_rules_engine.data_service.sql_compiler import SQLCompiler
 from cdisc_rules_engine.data_service.sql_serialiser import SQLSerialiser
+from cdisc_rules_engine.enums.static_tables import StaticTables
 from cdisc_rules_engine.models.sql.column_schema import SqlColumnSchema
 from cdisc_rules_engine.models.sql.db_schema import SqlDbSchema
 from cdisc_rules_engine.models.sql.table_schema import SqlTableSchema
@@ -31,7 +32,7 @@ class PostgresQLInterface:
         self._last_results: List[Any] = []
         self.schema = SqlDbSchema()
         if sql_namespace is None or sql_namespace == "uid":
-            self.sql_namespace = f"{self._get_unique_prefix_uid()}_"
+            self.sql_namespace = self._get_unique_prefix_uid()
         else:
             self.sql_namespace = sql_namespace
 
@@ -49,7 +50,7 @@ class PostgresQLInterface:
 
             # drop all previously generated analysis tables
             self.execute_sql_file(str(Path(__file__).parent / "schemas" / "drop_analysis_tables.sql"))
-            self._drop_prefixed_tables()
+            self._drop_non_static_tables()
 
         except Exception as e:
             logger.error(f"Failed to initialise database: {e}")
@@ -230,21 +231,34 @@ class PostgresQLInterface:
 
     def _drop_prefixed_tables(self):
         """Drop all tables that start with the configured sql_namespace"""
-        static_tables = [
-            "codelists",
-            "ig_datasets",
-            "ig_variables",
-            "standards",
-        ]
-        # TODO: these names probably need to go in their own constants file along
-        # with the constants at the top of "data_service/startup/populate_standards.py"
+        drop_query = f"""
+            DO $$
+            DECLARE
+                r RECORD;
+            BEGIN
+                FOR r IN
+                    SELECT tablename
+                    FROM pg_tables
+                    WHERE schemaname = 'public'
+                    AND tablename LIKE '{self.sql_namespace}%'
+                LOOP
+                    EXECUTE format('DROP TABLE IF EXISTS %I CASCADE;', r.tablename);
+                END LOOP;
+            END $$;
+        """
+        self.execute_sql(drop_query)
 
-        exclusion_list = ", ".join([f"'{table}'" for table in static_tables])
+        self.schema._tables = {
+            table: schema
+            for table, schema in list(self.schema._tables.items())
+            if not schema.hash.startswith(self.sql_namespace)
+        }
 
-        if self.sql_namespace:
-            prefix_condition = f"AND tablename LIKE '{self.sql_namespace}%'"
-        else:
-            prefix_condition = ""
+        logger.info(f"Dropped all tables with prefix '{self.sql_namespace}'")
+
+    def _drop_non_static_tables(self):
+        """Drop all non-static tables"""
+        exclusion_list = ", ".join([f"'{table}'" for table in StaticTables.values()])
 
         drop_query = f"""
             DO $$
@@ -255,7 +269,6 @@ class PostgresQLInterface:
                     SELECT tablename
                     FROM pg_tables
                     WHERE schemaname = 'public'
-                    {prefix_condition}
                     AND tablename NOT IN ({exclusion_list})
                 LOOP
                     EXECUTE format('DROP TABLE IF EXISTS %I CASCADE;', r.tablename);
@@ -264,13 +277,11 @@ class PostgresQLInterface:
         """
         self.execute_sql(drop_query)
 
-        # TODO: maybe we cycle through the schema too and drop all tables that are not in the static list
+        self.schema._tables = {
+            table: schema for table, schema in list(self.schema._tables.items()) if table in StaticTables.values()
+        }
 
-        logger.info(
-            f"Dropped all tables with prefix '{self.sql_namespace}'"
-            if self.sql_namespace
-            else "Dropped all non-static tables"
-        )
+        logger.info("Dropped all non-static tables")
 
     def close(self):
         """Close database connections"""
@@ -280,6 +291,6 @@ class PostgresQLInterface:
     @staticmethod
     def _get_unique_prefix_uid() -> str:
         len = 8
-        first_char = random.choice(string.ascii_letters)
-        rest = "".join(random.choices(string.ascii_letters + string.digits, k=len - 1))
+        first_char = random.choice(string.ascii_lowercase)
+        rest = "".join(random.choices(string.ascii_lowercase + string.digits, k=len - 1))
         return first_char + rest

@@ -21,7 +21,7 @@ class SqlVariablesMetadataWithLibraryBuilder(SqlBaseDatasetBuilder):
 
         library_metadata = self.standards_context.get_library_variables_metadata(self.dataset_metadata)
 
-        schema = SqlTableSchema.static(table_name)
+        schema = SqlTableSchema.derived(table_name, self.data_service.pgi)
 
         schema.add_column(SqlColumnSchema.generated("variable_name", "Char"))
         schema.add_column(SqlColumnSchema.generated("variable_order_number", "Num"))

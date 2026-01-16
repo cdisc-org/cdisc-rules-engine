@@ -98,7 +98,7 @@ class SqlJoinMerge:
         if len(pivot_left) != len(pivot_right):
             raise ValueError("Pivot columns must have the same length.")
 
-        joined_schema = SqlTableSchema.from_join(name, pgi)
+        joined_schema = SqlTableSchema.derived(name, pgi)
         left_output_columns = []
         right_output_columns = []
 

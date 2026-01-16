@@ -42,7 +42,7 @@ class SqlValueCheckWithVariableMetadataBuilder(SqlBaseDatasetBuilder):
             for var in self.dataset_metadata.variables
         }
 
-        schema = SqlTableSchema.static(table_name)
+        schema = SqlTableSchema.derived(table_name, self.data_service.pgi)
         schema.add_column(SqlColumnSchema.generated("row_number", "Num"))
         schema.add_column(SqlColumnSchema.generated("variable_name", "Char"))
         schema.add_column(SqlColumnSchema.generated("variable_value", "Char"))

@@ -28,7 +28,7 @@ class SqlSuppMerge:
         SqlSuppMerge._validate_merge(original, supp, required_original_columns, required_supp_columns, new_columns)
 
         name = f"{original.name}_SUPP"
-        schema = SqlTableSchema.from_join(name, pgi)
+        schema = SqlTableSchema.derived(name, pgi)
 
         # Check if the table already exists
         if pgi.schema.get_table(name) is not None:
@@ -78,7 +78,7 @@ class SqlSuppMerge:
     ) -> SqlTableSchema:
         """Build the output schema."""
 
-        joined_schema = SqlTableSchema.from_join(name, pgi)
+        joined_schema = SqlTableSchema.derived(name, pgi)
 
         # Add all of the original table's columns
         for name, column in original.get_columns():
