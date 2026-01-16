@@ -3,47 +3,47 @@
 CLI entrypoint for the CDISC Rules Engine.
 """
 
-import sys
 import asyncio
 import json
 import logging
 import os
 import pickle
+import sys
 import tempfile
 from datetime import datetime
 from multiprocessing import freeze_support
-from typing import Union
-from dotenv import load_dotenv
+from pathlib import Path
 
 import click
-from pathlib import Path
+from dotenv import load_dotenv
+
 from cdisc_rules_engine.config import config
+from cdisc_rules_engine.enums.dataformat_types import DataFormatTypes
 from cdisc_rules_engine.enums.default_file_paths import DefaultFilePaths
 from cdisc_rules_engine.enums.progress_parameter_options import ProgressParameterOptions
 from cdisc_rules_engine.enums.report_types import ReportTypes
+from cdisc_rules_engine.exceptions.path_validation_exceptions import (
+    InvalidPathError,
+    PathTraversalError,
+    SystemDirectoryError,
+)
+from cdisc_rules_engine.models.external_dictionaries_container import (
+    DictionaryTypes,
+    ExternalDictionariesContainer,
+)
 from cdisc_rules_engine.models.validation_args import Validation_args
-from scripts.run_validation import run_validation
 from cdisc_rules_engine.services.cache.cache_populator_service import CachePopulator
 from cdisc_rules_engine.services.cache.cache_service_factory import CacheServiceFactory
 from cdisc_rules_engine.services.cdisc_library_service import CDISCLibraryService
-from cdisc_rules_engine.models.external_dictionaries_container import (
-    ExternalDictionariesContainer,
-    DictionaryTypes,
-)
+from cdisc_rules_engine.utilities.path_validator import PathValidator
 from cdisc_rules_engine.utilities.utils import (
     generate_report_filename,
     get_rules_cache_key,
     validate_dataset_files_exist,
 )
-from cdisc_rules_engine.enums.dataformat_types import DataFormatTypes
 from scripts.list_dataset_metadata_handler import list_dataset_metadata_handler
+from scripts.run_validation import run_validation
 from version import __version__
-from cdisc_rules_engine.utilities.path_validator import PathValidator
-from cdisc_rules_engine.exceptions.path_validation_exceptions import (
-    PathTraversalError,
-    SystemDirectoryError,
-    InvalidPathError,
-)
 
 VALIDATION_FORMATS_MESSAGE = (
     "SAS V5 XPT, Dataset-JSON (JSON or NDJSON), or Excel (XLSX)"
