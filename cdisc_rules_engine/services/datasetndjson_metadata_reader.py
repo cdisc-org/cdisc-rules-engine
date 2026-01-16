@@ -15,23 +15,34 @@ class DatasetNDJSONMetadataReader:
     from .ndjson file.
     """
 
-    def __init__(self, file_path: str, file_name: str):
+    def __init__(self, file_path: str, file_name: str, encoding: str = None):
         self._metadata_container = {}
         self._file_path = file_path
         self._first_record = None
         self._dataset_name = file_name.split(".")[0].upper()
+        self.encoding = encoding
+
+    @property
+    def _encoding(self):
+        return self.encoding or "utf-8"
 
     def read(self) -> dict:
         """
         Extracts metadata from .ndjson file.
         """
         # Load Dataset-NDJSON Schema
-        schema = JSONReader().from_file(
+        schema = JSONReader(encoding=self._encoding).from_file(
             os.path.join("resources", "schema", "dataset-ndjson-schema.json")
         )
 
-        with open(self._file_path, "r") as file:
-            lines = file.readlines()
+        try:
+            with open(self._file_path, "r", encoding=self._encoding) as file:
+                lines = file.readlines()
+        except (UnicodeDecodeError, UnicodeError) as e:
+            raise ValueError(
+                f"Could not decode NDJSON file {self._file_path} with {self._encoding} encoding: {e}. "
+                f"Please specify the correct encoding using the -e flag."
+            )
 
         metadatandjson = json.loads(lines[0])
 

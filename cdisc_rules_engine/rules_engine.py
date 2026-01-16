@@ -82,6 +82,7 @@ class RulesEngine:
             standard_substandard=self.standard_substandard,
             library_metadata=self.library_metadata,
             max_dataset_size=self.max_dataset_size,
+            encoding=kwargs.get("encoding"),
         )
         self.dataset_implementation = data_service_factory.get_dataset_implementation()
         kwargs["dataset_implementation"] = self.dataset_implementation
