@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from cdisc_rules_engine.interfaces import RepresentationInterface
 from cdisc_rules_engine.utilities.utils import get_execution_status
 from cdisc_rules_engine.models.rule import Rule
+from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 
 
 @dataclass
@@ -26,6 +27,22 @@ class RuleValidationResult(RepresentationInterface):
             self.message = actions[0].get("params", {}).get("message")
         self.execution_status = get_execution_status(results)
         self.results = results
+
+    @classmethod
+    def from_skipped_rule(
+        cls,
+        rule_id: str,
+        message: str | None = None,
+    ) -> "RuleValidationResult":
+        instance = cls.__new__(cls)
+        instance.id = rule_id
+        instance.cdisc_rule_id = None
+        instance.fda_rule_id = None
+        instance.executability = None
+        instance.message = message
+        instance.execution_status = ExecutionStatus.SKIPPED.value
+        instance.results = []
+        return instance
 
     def _get_rule_ids(self, rule: Rule, org: str) -> str:
         return ", ".join(

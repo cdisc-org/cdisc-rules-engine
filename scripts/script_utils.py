@@ -8,7 +8,7 @@ from cdisc_rules_engine.interfaces.data_service_interface import DataServiceInte
 from cdisc_rules_engine.models.library_metadata_container import (
     LibraryMetadataContainer,
 )
-from typing import List, Iterable
+from typing import List, Iterable, Tuple
 from cdisc_rules_engine.config import config
 from cdisc_rules_engine.services import logger as engine_logger
 import os
@@ -211,10 +211,15 @@ def get_cache_service(manager):
         return manager.InMemoryCacheService()
 
 
-def get_rules(args) -> List[dict]:
-    return (
+def get_rules(args) -> Tuple[List[dict], List[Tuple[str, str]]]:
+    rules_result = (
         load_rules_from_local(args) if args.local_rules else load_rules_from_cache(args)
     )
+    if isinstance(rules_result, tuple) and len(rules_result) == 2:
+        rules, skipped_rule_ids = rules_result
+    else:
+        rules, skipped_rule_ids = rules_result, []
+    return rules, skipped_rule_ids
 
 
 def rule_cache_file(args) -> str:
@@ -256,6 +261,70 @@ def load_custom_rules(custom_data, cdisc_data, standard, version, rules, standar
     return list(rules_dict.values())
 
 
+def _determine_valid_rule_ids(
+    standard_rules: dict,
+    rule_ids: Iterable[str] | None,
+    excluded_rule_ids: Iterable[str] | None,
+) -> set:
+    include_filter = set(rule_ids) if rule_ids else None
+    exclude_filter = set(excluded_rule_ids) if excluded_rule_ids else None
+    valid_rule_ids = set()
+    for rule in standard_rules:
+        if include_filter and rule not in include_filter:
+            continue
+        if exclude_filter and rule in exclude_filter:
+            continue
+        valid_rule_ids.add(rule)
+    return valid_rule_ids
+
+
+def _collect_missing_includes(
+    rule_ids: Iterable[str] | None,
+    standard_rules: dict,
+    standard: str,
+    version: str,
+) -> List[Tuple[str, str]]:
+    if not rule_ids:
+        return []
+    available_rules = set(standard_rules)
+    skipped_rule_ids: List[Tuple[str, str]] = []
+    for rule in rule_ids:
+        if rule in available_rules:
+            continue
+        engine_logger.error(
+            f"The rule specified to include '{rule}' is not in the standard {standard} and version {version}. "
+            "It will be skipped from validation."
+        )
+        message = (
+            f"Rule '{rule}' was requested but is not available for "
+            f"standard {standard} version {version}"
+        )
+        skipped_rule_ids.append((rule, message))
+    return skipped_rule_ids
+
+
+def _log_invalid_excludes(
+    excluded_rule_ids: Iterable[str] | None,
+    standard_rules: dict,
+    standard: str,
+    version: str,
+) -> None:
+    if not excluded_rule_ids:
+        return
+    available_rules = set(standard_rules)
+    for rule in excluded_rule_ids:
+        if rule in available_rules:
+            continue
+        engine_logger.error(
+            f"The rule specified to exclude '{rule}' is not in the standard {standard} and version {version}. "
+            "It is not present and will be ignored."
+        )
+
+
+def _build_rules_from_ids(valid_rule_ids: set, rules_data) -> List[dict]:
+    return [rules_data.get(rule_id) for rule_id in valid_rule_ids]
+
+
 def load_specified_rules(
     rules_data,
     rule_ids,
@@ -267,37 +336,19 @@ def load_specified_rules(
 ):
     key = get_rules_cache_key(standard, version, substandard)
     standard_rules = standard_dict.get(key, {})
-    valid_rule_ids = set()
-
-    # Determine valid rules based on inclusion and exclusion lists
-    for rule in standard_rules:
-        if (not rule_ids or rule in rule_ids) and (
-            not excluded_rule_ids or rule not in excluded_rule_ids
-        ):
-            valid_rule_ids.add(rule)
-    # Check that all specified rules are valid
-    if rule_ids:
-        for rule in rule_ids:
-            if rule not in standard_rules:
-                raise ValueError(
-                    f"The rule specified to include '{rule}' is not in the standard {standard} and version {version}"
-                )
-    else:
-        for rule in excluded_rule_ids:
-            if rule not in standard_rules:
-                raise ValueError(
-                    f"The rule specified to exclude '{rule}' is not in the standard {standard} and version {version}"
-                )
-    rules = []
-    for rule_id in valid_rule_ids:
-        rule_data = rules_data.get(rule_id)
-        rules.append(rule_data)
-    # If no valid rules were found, raise an error
+    valid_rule_ids = _determine_valid_rule_ids(
+        standard_rules, rule_ids, excluded_rule_ids
+    )
+    skipped_rule_ids = _collect_missing_includes(
+        rule_ids, standard_rules, standard, version
+    )
+    _log_invalid_excludes(excluded_rule_ids, standard_rules, standard, version)
+    rules = _build_rules_from_ids(valid_rule_ids, rules_data)
     if not rules:
-        raise ValueError(
+        engine_logger.error(
             f"All specified rules were excluded because they are not in the standard {standard} and version {version}"
         )
-    return rules
+    return rules, skipped_rule_ids
 
 
 def load_all_rules_for_standard(
@@ -332,7 +383,9 @@ def load_all_rules(rules_data):
     return rules
 
 
-def load_rules_from_cache(args) -> List[dict]:
+def load_rules_from_cache(
+    args,
+) -> list[dict] | tuple[list[dict], List[Tuple[str, str]]]:
     rules_file, cdisc_file, standard_dict = rule_cache_file(args)
     rules_data = {}
     try:
@@ -351,6 +404,7 @@ def load_rules_from_cache(args) -> List[dict]:
     except Exception as e:
         engine_logger.error(f"Error loading rules file: {e}")
         return []
+
     if args.custom_standard:
         return load_custom_rules(
             rules_data,
@@ -361,7 +415,7 @@ def load_rules_from_cache(args) -> List[dict]:
             standard_dict,
         )
     elif args.rules or args.exclude_rules:
-        return load_specified_rules(
+        rules, skipped_rule_ids = load_specified_rules(
             rules_data,
             args.rules,
             args.exclude_rules,
@@ -370,6 +424,7 @@ def load_rules_from_cache(args) -> List[dict]:
             standard_dict,
             args.substandard,
         )
+        return rules, skipped_rule_ids
     elif args.standard and args.version:
         return load_all_rules_for_standard(
             rules_data,
