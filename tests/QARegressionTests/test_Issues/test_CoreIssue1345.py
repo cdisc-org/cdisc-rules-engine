@@ -9,7 +9,7 @@ from conftest import get_python_executable
 
 @pytest.mark.regression
 class TestCoreIssue1501(unittest.TestCase):
-    def test_no_duplicates_in_supp_dm(self):
+    def test_engine_correctly_merges_datasets_and_flags_row_uniqueness_issues(self):
         # Run the command in the terminal
         command = [
             f"{get_python_executable()}",
@@ -27,14 +27,19 @@ class TestCoreIssue1501(unittest.TestCase):
                 "tests",
                 "resources",
                 "CoreIssue1345",
-                "subset",
                 "define_msg20_testsupp_core.xml",
             ),
             "-d",
-            os.path.join("tests", "resources", "CoreIssue1345", "subset"),
+            os.path.join(
+                "tests",
+                "resources",
+                "CoreIssue1345",
+            ),
             "-lr",
             os.path.join(
-                "tests", "resources", "CoreIssue1345", "subset", "draft_rules"
+                "tests",
+                "resources",
+                "CoreIssue1345",
             ),
             "-r",
             "CDISC.SDTMIG.CG0019",
@@ -87,3 +92,29 @@ class TestCoreIssue1501(unittest.TestCase):
             "Found issue summary entries related to DM/SUPPDM:\n"
             f"{dm_related_summary}"
         )
+
+        ec_detail_issues = [
+            i
+            for i in json_report.get("Issue_Details", [])
+            if i.get("dataset", "").lower() == "ec.json"
+        ]
+
+        assert (
+            ec_detail_issues
+        ), "Expected EC-related issues in Issue_Details, but none found"
+        assert (
+            len(ec_detail_issues) == 2
+        ), f"Expected 2 issues for EC dataset, but {len(ec_detail_issues)} found in Issue_Details"
+
+        ec_summary_issues = [
+            s
+            for s in json_report.get("Issue_Summary", [])
+            if s.get("dataset", "").lower() == "ec.json"
+        ]
+
+        assert (
+            ec_summary_issues
+        ), "Expected issues for EC dataset, but none found in Issue_Summary"
+
+        if os.path.exists(json_report_path):
+            os.remove(json_report_path)
