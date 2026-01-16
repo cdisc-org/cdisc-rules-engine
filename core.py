@@ -455,11 +455,11 @@ def validate(
             )
             ctx.exit(2)
         dataset_paths, found_formats = _validate_data_directory(data, logger, filetype)
-        if dataset_paths is None:
+        if not dataset_paths:
             ctx.exit(2)
     elif dataset_path:
         dataset_paths, found_formats = _validate_dataset_paths(dataset_path, logger)
-        if dataset_paths is None:
+        if not dataset_paths:
             ctx.exit(2)
     else:
         _validate_no_arguments(logger)
