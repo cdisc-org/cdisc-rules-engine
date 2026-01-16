@@ -102,13 +102,6 @@
       "type": "object"
     },
     {
-      "properties": {
-        "operator": { "const": "does_not_use_valid_codelist_terms" }
-      },
-      "required": ["operator", "value", "codelistlevel", "codelistcheck"],
-      "type": "object"
-    },
-    {
       "properties": { "operator": { "const": "empty" } },
       "required": ["operator"],
       "type": "object"

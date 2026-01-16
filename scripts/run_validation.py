@@ -128,10 +128,12 @@ def run_validation(args: Validation_args):
     CacheManager.register("InMemoryCacheService", InMemoryCacheService)
     manager = CacheManager()
     manager.start()
+    created_files = []
     try:
+        created_files = []
         shared_cache = get_cache_service(manager)
         engine_logger.info(f"Populating cache, cache path: {args.cache}")
-        rules = get_rules(args)
+        rules, skipped_rule_ids = get_rules(args)
         library_metadata: LibraryMetadataContainer = get_library_metadata_from_cache(
             args
         )
@@ -156,7 +158,6 @@ def run_validation(args: Validation_args):
             data_service.dataset_implementation != PandasDataset
         )
         datasets = data_service.get_datasets()
-        created_files = []
         if large_dataset_validation and data_service.standard != "usdm":
             # convert all files to parquet temp files
             engine_logger.warning(
@@ -191,6 +192,12 @@ def run_validation(args: Validation_args):
             progress_handler: Callable = get_progress_displayer(args)
             results = progress_handler(rules, validation_results, results)
 
+        for skipped_rule_id, message in skipped_rule_ids or []:
+            engine_logger.info(message)
+            results.append(
+                RuleValidationResult.from_skipped_rule(skipped_rule_id, message)
+            )
+
         # build all desired reports
         end = time.time()
         elapsed_time = end - start
@@ -199,9 +206,14 @@ def run_validation(args: Validation_args):
             datasets, results, elapsed_time, args, data_service, dictionary_versions
         )
         reporting_services: List[BaseReport] = reporting_factory.get_report_services()
+        output_files = []
         for reporting_service in reporting_services:
             reporting_service.write_report()
-        print(f"Output: {args.output}")
+            output_files.append(reporting_service._output_name)
+        if len(output_files) == 1:
+            print(f"Output: {output_files[0]}")
+        else:
+            print(f"Output: {', '.join(output_files)}")
     finally:
         if created_files:
             engine_logger.info(" Report generated, Cleaning up intermediate files")
