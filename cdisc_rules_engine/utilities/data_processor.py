@@ -351,7 +351,7 @@ class DataProcessor:
         columns_to_drop = [
             col for col in ["QNAM", "QVAL", "QLABEL"] if col in supp_dataset.columns
         ]
-        if supp_dataset["RDOMAIN"][0] == "DM":
+        if "RDOMAIN" in supp_dataset.columns and supp_dataset["RDOMAIN"][0] == "DM":
             excluded_columns = list(supp_dataset["QNAM"].unique()) + columns_to_drop
             group_cols = [c for c in supp_dataset.columns if c not in excluded_columns]
             supp_dataset = PandasDataset(
