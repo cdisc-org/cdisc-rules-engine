@@ -102,7 +102,8 @@ def _validate_data_directory(
 ) -> tuple[list, set]:
     """Validate data directory and return dataset paths and found formats."""
     # Validate path for security - block traversal attempts
-    validator = PathValidator(block_system_dirs=False, allow_relative_paths=False)
+    # Allow relative paths for CLI usage (tests and users often use relative paths)
+    validator = PathValidator(block_system_dirs=False, allow_relative_paths=True)
     try:
         validated_data_path = validator.validate_read_path(data)
         data = str(validated_data_path)
@@ -148,7 +149,8 @@ def _validate_data_directory(
 def _validate_dataset_paths(dataset_path: tuple[str], logger) -> tuple[list, set]:
     """Validate dataset paths and return dataset paths and found formats."""
     # Validate each path for security - block traversal attempts
-    validator = PathValidator(block_system_dirs=False, allow_relative_paths=False)
+    # Allow relative paths for CLI usage (tests and users often use relative paths)
+    validator = PathValidator(block_system_dirs=False, allow_relative_paths=True)
     validated_paths = []
 
     for dp in dataset_path:
