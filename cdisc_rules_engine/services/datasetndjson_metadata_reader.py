@@ -31,7 +31,7 @@ class DatasetNDJSONMetadataReader:
         Extracts metadata from .ndjson file.
         """
         # Load Dataset-NDJSON Schema
-        schema = JSONReader().from_file(
+        schema = JSONReader(encoding=self._encoding).from_file(
             os.path.join("resources", "schema", "dataset-ndjson-schema.json")
         )
 

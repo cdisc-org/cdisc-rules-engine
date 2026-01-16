@@ -26,11 +26,11 @@ class DatasetJSONMetadataReader:
         Extracts metadata from .json file.
         """
         # Load Dataset-JSON Schema
-        schema = JSONReader().from_file(
+        schema = JSONReader(encoding=self.encoding).from_file(
             os.path.join("resources", "schema", "dataset.schema.json")
         )
 
-        datasetjson = JSONReader().from_file(self._file_path, encoding=self.encoding)
+        datasetjson = JSONReader(encoding=self.encoding).from_file(self._file_path)
 
         try:
             jsonschema.validate(datasetjson, schema)

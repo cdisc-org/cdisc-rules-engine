@@ -485,6 +485,6 @@ class USDMDataService(BaseDataService):
             and len(dataset_paths) == 1
             and dataset_paths[0].lower().endswith(".json")
         ):
-            json = JSONReader().from_file(dataset_paths[0], encoding=encoding)
+            json = JSONReader(encoding=encoding).from_file(dataset_paths[0])
             return "study" in json and "datasetJSONVersion" not in json
         return False

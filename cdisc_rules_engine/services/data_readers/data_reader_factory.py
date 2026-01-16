@@ -54,16 +54,8 @@ class DataReaderFactory(FactoryInterface):
         service_name = name or self._default_service_name
         if service_name in self._reader_map:
             reader_class = self._reader_map[service_name]
-            if service_name == DataFormatTypes.USDM.value:
-                return reader_class()
-            elif service_name in [
-                DataFormatTypes.JSON.value,
-                DataFormatTypes.NDJSON.value,
-                DataFormatTypes.XPT.value,
-            ]:
-                return reader_class(self.dataset_implementation, encoding=self.encoding)
-            else:
-                return reader_class(self.dataset_implementation)
+            encoding = self.encoding or "utf-8"
+            return reader_class(self.dataset_implementation, encoding=encoding)
         raise ValueError(
             f"Service name must be in {list(self._reader_map.keys())}, "
             f"given service name is {service_name}"

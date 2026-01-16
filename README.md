@@ -151,7 +151,7 @@ Run `python core.py validate --help` to see the list of validation options.
                                   "[████████████████████████████--------]
                                   78%"is printed.
   -jcf, --jsonata-custom-functions Pair containing a variable name and a Path to directory containing a set of custom JSONata functions. Can be specified multiple times
-  -e, --encoding TEXT            File encoding for reading datasets. If not specified, defaults to UTF-8. Supported encodings: utf-8, utf-16, utf-32, cp1252, latin-1, etc.
+  -e, --encoding TEXT            File encoding for reading datasets. If not specified, defaults to utf-8. Supported encodings: utf-8, utf-16, utf-32, cp1252, latin-1, etc.
   --help                          Show this message and exit.
 ```
 
@@ -187,7 +187,7 @@ CORE supports the following dataset file formats for validation:
 
 #### File Encoding
 
-CORE defaults to UTF-8 encoding when reading datasets. If your files use a different encoding, you must specify it using the `-e` or `--encoding` flag:
+CORE defaults to utf-8 encoding when reading datasets. If your files use a different encoding, you must specify it using the `-e` or `--encoding` flag:
 
 ```bash
 python core.py validate -s sdtmig -v 3-4 -dp path/to/dataset.xpt -e cp1252

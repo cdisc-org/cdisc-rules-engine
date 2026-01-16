@@ -183,7 +183,7 @@ class DummyDataService(BaseDataService):
 
     @staticmethod
     def get_data(dataset_paths: Sequence[str], encoding: str = None):
-        json = JSONReader().from_file(dataset_paths[0], encoding=encoding)
+        json = JSONReader(encoding=encoding).from_file(dataset_paths[0])
         return [DummyDataset(data) for data in json.get("datasets", [])]
 
     @staticmethod
@@ -193,6 +193,6 @@ class DummyDataService(BaseDataService):
             and len(dataset_paths) == 1
             and dataset_paths[0].lower().endswith(".json")
         ):
-            json = JSONReader().from_file(dataset_paths[0], encoding=encoding)
+            json = JSONReader(encoding=encoding).from_file(dataset_paths[0])
             return "datasets" in json
         return False
