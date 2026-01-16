@@ -231,18 +231,7 @@ class DataProcessor:
                     suffixes=("", "_supp"),
                 )
                 DataProcessor._validate_qnam_dask(left_dataset, qnam_list, common_keys)
-            else:  # TODO if SUPPDM -> merge different RACE columns into one row (in data processor)
-                if current_supp["RDOMAIN"][0] == "DM":
-                    group_cols = [c for c in current_supp.columns if c not in qnam_list]
-                    current_supp = PandasDataset(
-                        current_supp.data.groupby(
-                            group_cols, dropna=False, as_index=False
-                        ).agg(
-                            lambda x: (
-                                x.dropna().iloc[0] if not x.dropna().empty else pd.NA
-                            )
-                        )
-                    )
+            else:
                 left_dataset = PandasDataset(
                     pd.merge(
                         left_dataset.data,
@@ -362,6 +351,14 @@ class DataProcessor:
         columns_to_drop = [
             col for col in ["QNAM", "QVAL", "QLABEL"] if col in supp_dataset.columns
         ]
+        if supp_dataset["RDOMAIN"][0] == "DM":
+            excluded_columns = list(supp_dataset["QNAM"].unique()) + columns_to_drop
+            group_cols = [c for c in supp_dataset.columns if c not in excluded_columns]
+            supp_dataset = PandasDataset(
+                supp_dataset.data.groupby(group_cols, dropna=False, as_index=False).agg(
+                    lambda x: (x.dropna().iloc[0] if not x.dropna().empty else pd.NA)
+                )
+            )
         if columns_to_drop:
             supp_dataset = supp_dataset.drop(labels=columns_to_drop, axis=1)
         return supp_dataset
