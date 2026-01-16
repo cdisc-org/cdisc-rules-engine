@@ -924,7 +924,18 @@ def list_dataset_metadata(ctx: click.Context, dataset_path: tuple[str]):
            ...
         ]
     """
-    print(json.dumps(list_dataset_metadata_handler(dataset_path), indent=4))
+    # Resolve relative paths to absolute for consistency across environments (CI vs local)
+    # This fixes issues where tests run from different working directories
+    validator = PathValidator(block_system_dirs=False, allow_relative_paths=True)
+    try:
+        resolved_paths = [
+            str(validator.validate_read_path(dp)) for dp in dataset_path
+        ]
+        print(json.dumps(list_dataset_metadata_handler(tuple(resolved_paths)), indent=4))
+    except Exception as e:
+        logger = logging.getLogger("validator")
+        logger.error(f"Error listing dataset metadata: {e}")
+        ctx.exit(1)
 
 
 @click.command()
