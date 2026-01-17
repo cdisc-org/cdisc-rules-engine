@@ -268,44 +268,6 @@ class RuleProcessor:
                 is_excluded = True
         return is_included and not is_excluded
 
-    def _is_custom_domain(self, domain: str) -> bool:
-        if self.library_metadata is None:
-            return False
-        return self.library_metadata.is_domain_custom(domain)
-
-    def _get_allowed_domains_for_use_cases(
-        self, use_cases: List[str], substandard: str
-    ) -> set:
-        allowed_domains = set()
-        for use_case in use_cases:
-            if use_case in USE_CASE_DOMAINS[substandard]:
-                allowed_domains.update(USE_CASE_DOMAINS[substandard][use_case])
-        return allowed_domains
-
-    def _get_domain_to_check(self, dataset_metadata: SDTMDatasetMetadata) -> str:
-        if dataset_metadata.is_supp and dataset_metadata.rdomain:
-            return dataset_metadata.rdomain
-        return dataset_metadata.domain
-
-    def _check_adam_domain(
-        self, domain: str, substandard: str, use_cases: List[str]
-    ) -> bool:
-        if substandard == "ADAM" and domain.startswith("AD"):
-            return "ANALYSIS" in use_cases
-        return False
-
-    def _check_domain_in_use_case(
-        self, domain: str, use_cases: List[str], substandard: str
-    ) -> bool:
-        allowed_domains = self._get_allowed_domains_for_use_cases(
-            use_cases, substandard
-        )
-        if domain in allowed_domains:
-            return True
-        if self._is_custom_domain(domain):
-            return True
-        return False
-
     def rule_applies_to_use_case(
         self,
         dataset_metadata: SDTMDatasetMetadata,
@@ -323,10 +285,21 @@ class RuleProcessor:
         if substandard not in USE_CASE_DOMAINS:
             return False
 
-        domain_to_check = self._get_domain_to_check(dataset_metadata)
-        if self._check_adam_domain(domain_to_check, substandard, use_cases):
+        domain_to_check = dataset_metadata.domain
+        if dataset_metadata.is_supp and dataset_metadata.rdomain:
+            domain_to_check = dataset_metadata.rdomain
+
+        # Handle ADaM datasets with AD prefix
+        if substandard == "ADAM" and domain_to_check.startswith("AD"):
+            return "ANALYSIS" in use_cases
+
+        allowed_domains = set()
+        for use_case in use_cases:
+            if use_case in USE_CASE_DOMAINS[substandard]:
+                allowed_domains.update(USE_CASE_DOMAINS[substandard][use_case])
+        if domain_to_check in allowed_domains:
             return True
-        return self._check_domain_in_use_case(domain_to_check, use_cases, substandard)
+        return False
 
     @classmethod
     def rule_applies_to_entity(

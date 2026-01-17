@@ -1,5 +1,6 @@
 name: CI
 on: pull_request
+
 jobs:
   lint_format:
     uses: ./.github/workflows/lint_format.yml
@@ -8,12 +9,18 @@ jobs:
   test_suite:
     uses: ./.github/workflows/test_suite.yml
     secrets: inherit
+    with:
+      pr_ref: ${{ github.event.pull_request.head.sha }}
   rule_tester:
+    if: github.event.action == 'opened'
     uses: ./.github/workflows/rule-tester.yml
     secrets: inherit
     with:
       environment: DEV
   test_rule_editor_preview:
+    if: github.event.action == 'opened'
     needs: rule_tester
     uses: ./.github/workflows/test_rule_editor_preview.yml
     secrets: inherit
+    with:
+      pr_ref: ${{ github.event.pull_request.head.sha }}
