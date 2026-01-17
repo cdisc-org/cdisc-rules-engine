@@ -278,7 +278,7 @@ set DATASET_SIZE_THRESHOLD=0 && core.exe validate -rest -of -config -commands
 
 ##### Windows (PowerShell)
 
-```powershell
+```bash
 $env:DATASET_SIZE_THRESHOLD=0; core.exe validate -rest -of -config -commands
 ```
 
@@ -296,7 +296,11 @@ Create a `.env` file in the root directory of the release containing:
 DATASET_SIZE_THRESHOLD=0
 ```
 
-Then run normally: `core.exe validate -rest -of -config -commands
+Then run normally:
+
+```bash
+core.exe validate -rest -of -config -commands
+```
 
 ---
 
@@ -501,31 +505,53 @@ These steps should be run before running any tests or core commands using the no
 
 - Create a virtual environment:
 
-  `python -m venv <virtual_environment_name>`
+  ```bash
+  python -m venv <virtual_environment_name>
+  ```
 
-NOTE: if you have multiple versions of python on your machine, you can call python 3.12 for the virtual environment's creation instead of the above command:
-`python3.12 -m venv <virtual_environment_name>`
+  NOTE: if you have multiple versions of python on your machine, you can call python 3.12 for the virtual environment's creation instead of the above command:
+
+  ```bash
+  python3.12 -m venv <virtual_environment_name>
+  ```
 
 - Activate the virtual environment:
 
-`./<virtual_environment_name>/bin/activate` -- on linux/mac </br>
-`.\<virtual_environment_name>\Scripts\Activate` -- on windows
+  **Linux/Mac:**
 
-- Install the requirements.
+  ```bash
+  ./<virtual_environment_name>/bin/activate
+  ```
 
-`python -m pip install -r requirements-dev.txt` # From the root directory
+  **Windows:**
+
+  ```bash
+  .\<virtual_environment_name>\Scripts\Activate
+  ```
+
+- Install the requirements:
+
+  ```bash
+  python -m pip install -r requirements-dev.txt
+  ```
+
+  Run this from the root directory.
 
 ### Creating an executable version
 
 **Note:** Further directions to create your own executable are contained in [README_Build_Executable.md](README_Build_Executable.md) if you wish to build an unofficial release executable for your own use.
 
-**Linux**
+**Linux:**
 
-`pyinstaller core.py --add-data=venv/lib/python3.12/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates --add-data=resources/jsonata:resources/jsonata`
+```bash
+pyinstaller core.py --add-data=venv/lib/python3.12/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates --add-data=resources/jsonata:resources/jsonata
+```
 
-**Windows**
+**Windows:**
 
-`pyinstaller core.py --add-data=".venv/Lib/site-packages/xmlschema/schemas;xmlschema/schemas" --add-data="resources/cache;resources/cache" --add-data="resources/templates;resources/templates" --add-data="resources/jsonata;resources/jsonata"`
+```bash
+pyinstaller core.py --add-data=".venv/Lib/site-packages/xmlschema/schemas;xmlschema/schemas" --add-data="resources/cache;resources/cache" --add-data="resources/templates;resources/templates" --add-data="resources/jsonata;resources/jsonata"
+```
 
 _Note .venv should be replaced with path to python installation or virtual environment_
 
@@ -537,31 +563,45 @@ can be launched by running `core` script with all necessary CLI arguments.
 All non-python files should be listed in `MANIFEST.in` to be included in the distribution.
 Files must be in python package.
 
-**Unix/MacOS**
+**Unix/MacOS:**
 
-`python3 -m pip install --upgrade build`
-`python3 -m build`
+```bash
+python3 -m pip install --upgrade build
+python3 -m build
+```
 
-To install from dist folder
-`pip3 install {path_to_file}/cdisc_rules_engine-{version}-py3-none-any.whl`
+To install from dist folder:
 
-To upload built distributive to pypi
+```bash
+pip3 install {path_to_file}/cdisc_rules_engine-{version}-py3-none-any.whl
+```
 
-`python3 -m pip install --upgrade twine`
-`python3 -m twine upload --repository {repository_name} dist/*`
+To upload built distributive to pypi:
 
-**Windows(Untested)**
+```bash
+python3 -m pip install --upgrade twine
+python3 -m twine upload --repository {repository_name} dist/*
+```
 
-`py -m pip install --upgrade build`
-`py -m build`
+**Windows (Untested):**
 
-To install from dist folder
-`pip install {path_to_file}/cdisc_rules_engine-{version}-py3-none-any.whl`
+```bash
+py -m pip install --upgrade build
+py -m build
+```
 
-To upload built distributive to pypi
+To install from dist folder:
 
-`py -m pip install --upgrade twine`
-`py -m twine upload --repository {repository_name} dist/*`
+```bash
+pip install {path_to_file}/cdisc_rules_engine-{version}-py3-none-any.whl
+```
+
+To upload built distributive to pypi:
+
+```bash
+py -m pip install --upgrade twine
+py -m twine upload --repository {repository_name} dist/*
+```
 
 ## Contributing
 
@@ -571,9 +611,11 @@ This project uses the `black` code formatter, `flake8` linter for python and `pr
 It also uses `pre-commit` to run `black`, `flake8` and `prettier` when you commit.
 Both dependencies are added to _requirements-dev.txt_.
 
-Setting up `pre-commit` requires one extra step. After installing it you have to run
+Setting up `pre-commit` requires one extra step. After installing it you have to run:
 
-`pre-commit install`
+```bash
+pre-commit install
+```
 
 This installs `pre-commit` in your `.git/hooks` directory.
 
@@ -581,7 +623,9 @@ This installs `pre-commit` in your `.git/hooks` directory.
 
 From the root of the project run the following command (this will run both the unit and regression tests):
 
-`python -m pytest tests`
+```bash
+python -m pytest tests
+```
 
 ### Updating USDM JSON Schema
 
