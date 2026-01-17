@@ -1,8 +1,18 @@
 import os
-from core import list_rule_sets
+import sys
 import unittest
+from pathlib import Path
+
 from click.testing import CliRunner
-from test_utils import tearDown
+
+# Add project root to path so we can import core
+project_root = Path(__file__).parent.parent.parent.parent
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
+
+from test_utils import tearDown  # noqa: E402
+
+from core import list_rule_sets  # noqa: E402
 
 
 class TestListRuleSets(unittest.TestCase):

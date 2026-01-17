@@ -1,29 +1,35 @@
 import os
+import sys
 from datetime import datetime
+from pathlib import Path
 from unittest.mock import MagicMock
 
-from cdisc_rules_engine.enums.execution_status import ExecutionStatus
-from cdisc_rules_engine.models.dataset import PandasDataset
 import pytest
-import sys
-from cdisc_rules_engine.config.config import ConfigService
 
+# Add project root to path for core module imports
+project_root = Path(__file__).parent.parent
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
+
+from cdisc_rules_engine.config.config import ConfigService
+from cdisc_rules_engine.constants.rule_constants import ALL_KEYWORD
+from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 from cdisc_rules_engine.enums.rule_types import RuleTypes
 from cdisc_rules_engine.enums.sensitivity import Sensitivity
-from cdisc_rules_engine.models.dictionaries.whodrug import WhoDrugTermsFactory
+from cdisc_rules_engine.models.dataset import PandasDataset
 from cdisc_rules_engine.models.dictionaries.meddra import MedDRATermsFactory
+from cdisc_rules_engine.models.dictionaries.whodrug import WhoDrugTermsFactory
+from cdisc_rules_engine.models.external_dictionaries_container import (
+    DictionaryTypes,
+    ExternalDictionariesContainer,
+)
 from cdisc_rules_engine.models.operation_params import OperationParams
 from cdisc_rules_engine.models.rule_conditions import ConditionCompositeFactory
 from cdisc_rules_engine.models.rule_validation_result import RuleValidationResult
 from cdisc_rules_engine.services.cache import (
     InMemoryCacheService,
 )
-from cdisc_rules_engine.models.external_dictionaries_container import (
-    ExternalDictionariesContainer,
-    DictionaryTypes,
-)
 from cdisc_rules_engine.services.data_services import LocalDataService
-from cdisc_rules_engine.constants.rule_constants import ALL_KEYWORD
 
 meddra_path: str = f"{os.path.dirname(__file__)}/resources/dictionaries/meddra"
 whodrug_path: str = f"{os.path.dirname(__file__)}/resources/dictionaries/whodrug"

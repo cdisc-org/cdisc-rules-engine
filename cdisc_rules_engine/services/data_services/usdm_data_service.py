@@ -1,23 +1,24 @@
 import os
-from io import IOBase
-from typing import List, Sequence, Any
+import re
 from dataclasses import dataclass
+from datetime import datetime
+from io import IOBase
+from pathlib import Path
+from typing import Any, List, Sequence
+
 from jsonpath_ng import DatumInContext
 from jsonpath_ng.ext import parse
-from datetime import datetime
-from yaml import safe_load
 from numpy import empty, vectorize
-import re
+from yaml import safe_load
 
 from cdisc_rules_engine.interfaces import CacheServiceInterface, ConfigInterface
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
-from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.models.dataset_types import DatasetTypes
+from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.models.variable_metadata_container import (
     VariableMetadataContainer,
 )
-
 from cdisc_rules_engine.services.data_readers.data_reader_factory import (
     DataReaderFactory,
 )
@@ -25,6 +26,7 @@ from cdisc_rules_engine.services.data_readers.json_reader import JSONReader
 from cdisc_rules_engine.utilities.utils import (
     extract_file_name_from_path_string,
 )
+
 from .base_data_service import BaseDataService, cached_dataset
 
 
@@ -78,7 +80,11 @@ class USDMDataService(BaseDataService):
         )
         self.dataset_path: str = kwargs.get("dataset_path", "")
 
-        with open(os.path.join("resources", "schema", "USDM.yaml")) as entity_dict:
+        # Use absolute path based on package location for portability
+        # This ensures the schema file is found regardless of working directory
+        package_root = Path(__file__).parent.parent.parent.parent
+        usdm_schema_path = package_root / "resources" / "schema" / "USDM.yaml"
+        with open(usdm_schema_path, "r") as entity_dict:
             self.entity_dict: dict = safe_load(entity_dict)
 
         self.json = self._reader_factory.get_service("USDM").from_file(
