@@ -90,6 +90,16 @@ class SDTMReportData(BaseReportData):
 
     TEMPLATE_FILE_PATH = DefaultFilePaths.EXCEL_TEMPLATE_FILE.value
 
+    _SPECIAL_ERROR_FIELDS = {
+        "USUBJID",
+        "dataset",
+        "row",
+        "SEQ",
+        "entity",
+        "instance_id",
+        "path",
+    }
+
     def __init__(
         self,
         datasets: Iterable[SDTMDatasetMetadata],
@@ -335,19 +345,46 @@ class SDTMReportData(BaseReportData):
 
         return "\n".join(summary_lines + raw_value_lines)
 
+    def _extract_value_for_variable(
+        self, variable: str, error: dict, error_value: dict
+    ) -> str | None:
+        """Extract value for a variable, checking special fields first."""
+        if variable in self._SPECIAL_ERROR_FIELDS:
+            val = error.get(variable)
+            if val is None:
+                val = error_value.get(variable)
+        else:
+            val = error_value.get(variable)
+        return None if val is None else str(val)
+
     def _extract_values_from_error(
-        self, error_value: dict, compare_groups: list, variables: list
+        self, error: dict, error_value: dict, compare_groups: list, variables: list
     ) -> list:
         """Extract values from error, handling comparison groups or standard variables."""
-        if compare_groups:
+        if not compare_groups:
             return [
-                self._process_comparison_group(group, error_value)
-                for group in compare_groups
+                self._extract_value_for_variable(v, error, error_value)
+                for v in variables
             ]
-        return [
-            None if (val := error_value.get(variable)) is None else str(val)
-            for variable in variables
-        ]
+
+        compare_group_vars = {var for group in compare_groups for var in group}
+        var_to_group = {var: group for group in compare_groups for var in group}
+        processed_groups = set()
+
+        result = []
+        for variable in variables:
+            if variable in compare_group_vars:
+                group = var_to_group[variable]
+                group_key = tuple(sorted(group))
+                if group_key not in processed_groups:
+                    result.append(self._process_comparison_group(group, error_value))
+                    processed_groups.add(group_key)
+            else:
+                result.append(
+                    self._extract_value_for_variable(variable, error, error_value)
+                )
+
+        return result
 
     def _create_error_item(
         self,
@@ -398,13 +435,28 @@ class SDTMReportData(BaseReportData):
                 for error in result.get("errors"):
                     error_value = error.get("value", {})
                     values = self._extract_values_from_error(
-                        error_value, compare_groups, variables
+                        error, error_value, compare_groups, variables
                     )
-                    aligned_variables = (
-                        [", ".join(group) for group in compare_groups]
-                        if compare_groups
-                        else variables
-                    )
+                    if compare_groups:
+                        compare_group_vars = {
+                            var for group in compare_groups for var in group
+                        }
+                        var_to_group = {
+                            var: group for group in compare_groups for var in group
+                        }
+                        processed_groups = set()
+                        aligned_variables = []
+                        for variable in variables:
+                            if variable in compare_group_vars:
+                                group = var_to_group[variable]
+                                group_key = tuple(sorted(group))
+                                if group_key not in processed_groups:
+                                    aligned_variables.append(", ".join(group))
+                                    processed_groups.add(group_key)
+                            else:
+                                aligned_variables.append(variable)
+                    else:
+                        aligned_variables = variables
                     error_item = self._create_error_item(
                         validation_result, result, error, aligned_variables, values
                     )

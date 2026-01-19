@@ -10,6 +10,7 @@ from cdisc_rules_engine.constants.metadata_columns import (
     SOURCE_ROW_NUMBER,
 )
 from cdisc_rules_engine.enums.sensitivity import Sensitivity
+from cdisc_rules_engine.enums.rule_types import RuleTypes
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.models.dataset_variable import DatasetVariable
 from cdisc_rules_engine.models.validation_error_container import (
@@ -80,6 +81,21 @@ class COREActions(BaseActions):
         )
         return expanded_target_names
 
+    def _get_missing_variable_message(self) -> str:
+        """Get appropriate message for missing variables based on rule type."""
+        rule_type = self.rule.get("rule_type", "")
+        metadata_check_types = [
+            RuleTypes.VARIABLE_METADATA_CHECK.value,
+            RuleTypes.VARIABLE_METADATA_CHECK_AGAINST_DEFINE.value,
+            RuleTypes.VARIABLE_METADATA_CHECK_AGAINST_DEFINE_XML_AND_LIBRARY.value,
+            RuleTypes.VARIABLE_METADATA_CHECK_AGAINST_LIBRARY.value,
+            RuleTypes.DATASET_METADATA_CHECK.value,
+            RuleTypes.DATASET_METADATA_CHECK_AGAINST_DEFINE.value,
+        ]
+        if rule_type in metadata_check_types:
+            return "not available in metadata context"
+        return "Not in dataset"
+
     def generate_targeted_error_object(  # noqa: C901
         self, targets: Set[str], data: pd.DataFrame, message: str
     ) -> ValidationErrorContainer:
@@ -131,8 +147,9 @@ class COREActions(BaseActions):
 
         if self.rule.get("sensitivity") == Sensitivity.DATASET.value:
             # Only generate one error for rules with dataset sensitivity
+            missing_var_msg = self._get_missing_variable_message()
             missing_vars = {
-                target: "Not in dataset" for target in targets_not_in_dataset
+                target: missing_var_msg for target in targets_not_in_dataset
             }
 
             # Create the initial error
@@ -210,6 +227,11 @@ class COREActions(BaseActions):
             )
 
         compare_groups = self._extract_comparison_metadata(self.rule)
+        ordered_variables = (
+            self.rule.get("output_variables")
+            if isinstance(self.rule.get("output_variables"), list)
+            else None
+        )
         return ValidationErrorContainer(
             domain=(
                 f"SUPP{self.dataset_metadata.rdomain}"
@@ -223,6 +245,7 @@ class COREActions(BaseActions):
             errors=errors_list,
             message=message.replace("--", self.dataset_metadata.domain_cleaned or ""),
             compare_groups=compare_groups,
+            ordered_variables=ordered_variables,
         )
 
     def _generate_errors_by_target_presence(
@@ -245,14 +268,15 @@ class COREActions(BaseActions):
         Returns:
             List of ValidationErrorEntity objects
         """
-        missing_vars = {target: "Not in dataset" for target in targets_not_in_dataset}
+        missing_var_msg = self._get_missing_variable_message()
+        missing_vars = {target: missing_var_msg for target in targets_not_in_dataset}
 
         if all_targets_missing:
             errors_list = []
             for idx, row in data.iterrows():
                 error = ValidationErrorEntity(
                     value={
-                        target: "Not in dataset" for target in targets_not_in_dataset
+                        target: missing_var_msg for target in targets_not_in_dataset
                     },
                     dataset=self._get_dataset_name(pd.DataFrame([row])),
                     row=int(row.get(SOURCE_ROW_NUMBER, idx + 1)),
@@ -373,17 +397,16 @@ class COREActions(BaseActions):
         errors_df,
     ):
         """Build complete error value with all components."""
+        missing_var_msg = self._get_missing_variable_message()
         if all_targets_missing:
-            error_value = {
-                target: "Not in dataset" for target in targets_not_in_dataset
-            }
+            error_value = {target: missing_var_msg for target in targets_not_in_dataset}
         else:
             error_value = self._build_error_value_from_row(first_row_idx, errors_df)
         error_value = self._add_group_keys_to_error_value(
             error_value, group_keys, grouping_variables
         )
 
-        missing_vars = {target: "Not in dataset" for target in targets_not_in_dataset}
+        missing_vars = {target: missing_var_msg for target in targets_not_in_dataset}
         if missing_vars:
             error_value = {**error_value, **missing_vars}
 

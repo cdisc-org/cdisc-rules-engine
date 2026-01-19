@@ -282,6 +282,8 @@ Mapping of Result property names to Report Issue Details Column Names:
 | instance_id         | instance_id          | Instance ID  |
 | path                | path                 | Path         |
 
+**Note:** Output variables must match their respective rule types. If an output variable is not available for a specific rule type, the report will display an appropriate message. For Variable Metadata Check rules (and their variants) and Dataset Metadata Check rules (and their variants), if an output variable is not available in the metadata context, the report will display "not available in metadata context" instead of the variable value.
+
 #### Output Variable Comparison
 
 You can use the `compared` syntax to compare multiple output variables. When using `compared`, the reporting engine will perform a set-based (order-independent) comparison between the variables and display formatted comparison results showing missing and extra items.
