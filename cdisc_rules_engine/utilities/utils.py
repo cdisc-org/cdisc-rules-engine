@@ -25,7 +25,7 @@ from cdisc_rules_engine.constants.domains import (
     SUPPLEMENTARY_DOMAINS,
 )
 from cdisc_rules_engine.constants.classes import SPECIAL_PURPOSE, SPECIAL_PURPOSE_MODEL
-from cdisc_rules_engine.enums.execution_status import ExecutionStatus
+from cdisc_rules_engine.enums.execution_status import ExecutionError, ExecutionStatus
 from cdisc_rules_engine.interfaces import ConditionInterface
 from cdisc_rules_engine.models.base_validation_entity import BaseValidationEntity
 from cdisc_rules_engine.check_operators.helpers import is_valid_date
@@ -48,25 +48,74 @@ def convert_file_size(size_in_bytes: int, desired_unit: str) -> float:
 
 def get_execution_status(results):
     """
-    If all results have skipped status, return skipped.
-    Else return success
+    If any result has an execution error, return execution error
+    Else if any result has an issue reported, return issue reported
+    Else if any result is successful, return issue successful
+    Else, result should have all skips, return issue skipped
     """
     if len(results) == 0:
         return ExecutionStatus.SUCCESS.value
-    if isinstance(results[0], BaseValidationEntity):
-        successful_results = [
-            entity for entity in results if entity.status == ExecutionStatus.SUCCESS
-        ]
-    else:
-        successful_results = [
-            result
-            for result in results
-            if result.get("executionStatus") == ExecutionStatus.SUCCESS.value
-        ]
-    if successful_results:
+    status = (
+        {
+            ExecutionStatus.SUCCESS: [],
+            ExecutionStatus.EXECUTION_ERROR: [],
+            ExecutionStatus.ISSUE_REPORTED: results,
+            ExecutionStatus.SKIPPED: [],
+        }
+        if isinstance(results[0], BaseValidationEntity)
+        else {
+            ExecutionStatus.SUCCESS: [
+                result
+                for result in results
+                if result.get("executionStatus") == ExecutionStatus.SUCCESS.value
+            ],
+            ExecutionStatus.EXECUTION_ERROR: [
+                result
+                for result in results
+                if result.get("executionStatus")
+                == ExecutionStatus.EXECUTION_ERROR.value
+                and [
+                    error
+                    for error in result.get("errors", [])
+                    if error.get("error")
+                    == ExecutionError.AN_UNKNOWN_EXCEPTION_HAS_OCCURRED.value
+                ]
+            ],
+            ExecutionStatus.ISSUE_REPORTED: [
+                result
+                for result in results
+                if result.get("executionStatus") == ExecutionStatus.ISSUE_REPORTED.value
+            ],
+            ExecutionStatus.SKIPPED: [
+                result
+                for result in results
+                if result.get("executionStatus") == ExecutionStatus.SKIPPED.value
+                or [
+                    error
+                    for error in result.get("errors", [])
+                    if error.get("error")
+                    == ExecutionError.COLUMN_NOT_FOUND_IN_DATA.value
+                ]
+            ],
+        }
+    )
+    if len(results) != (
+        len(status[ExecutionStatus.SUCCESS])
+        + len(status[ExecutionStatus.EXECUTION_ERROR])
+        + len(status[ExecutionStatus.ISSUE_REPORTED])
+        + len(status[ExecutionStatus.SKIPPED])
+    ):
+        return ExecutionStatus.UNKNOWN_STATUS.value
+    elif status[ExecutionStatus.EXECUTION_ERROR]:
+        return ExecutionStatus.EXECUTION_ERROR.value
+    elif status[ExecutionStatus.ISSUE_REPORTED]:
+        return ExecutionStatus.ISSUE_REPORTED.value
+    elif status[ExecutionStatus.SUCCESS]:
         return ExecutionStatus.SUCCESS.value
-    else:
+    elif status[ExecutionStatus.SKIPPED]:
         return ExecutionStatus.SKIPPED.value
+    else:
+        return ExecutionStatus.UNKNOWN_STATUS.value
 
 
 def get_standard_codelist_cache_key(standard: str, version: str) -> str:

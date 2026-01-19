@@ -5,7 +5,7 @@ from business_rules import export_rule_data
 from business_rules.engine import run
 import os
 from cdisc_rules_engine.config import config as default_config
-from cdisc_rules_engine.enums.execution_status import ExecutionStatus
+from cdisc_rules_engine.enums.execution_status import ExecutionError, ExecutionStatus
 from cdisc_rules_engine.enums.rule_types import RuleTypes
 from cdisc_rules_engine.exceptions.custom_exceptions import (
     DatasetNotFoundError,
@@ -486,7 +486,7 @@ class RulesEngine:
         elif isinstance(exception, (KeyError, ParserError)):
             error_obj = FailedValidationEntity(
                 dataset=os.path.basename(dataset_path),
-                error="Column not found in data",
+                error=ExecutionError.COLUMN_NOT_FOUND_IN_DATA.value,
                 message=exception.args[0],
             )
             message = "rule execution error"
@@ -630,7 +630,7 @@ class RulesEngine:
         else:
             error_obj = FailedValidationEntity(
                 dataset=os.path.basename(dataset_path),
-                error="An unknown exception has occurred",
+                error=ExecutionError.AN_UNKNOWN_EXCEPTION_HAS_OCCURRED.value,
                 message=str(exception),
             )
             message = "rule execution error"
