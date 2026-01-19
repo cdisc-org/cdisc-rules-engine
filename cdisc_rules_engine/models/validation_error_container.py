@@ -19,23 +19,17 @@ class ValidationErrorContainer(BaseValidationEntity):
     status: str | None = None
     entity: str | None = None
     compare_groups: Optional[List[List[str]]] = None
-    ordered_variables: Optional[List[str]] = None
 
     @property
     def executionStatus(self):
         return self.status or get_execution_status(self.errors)
 
     def to_representation(self) -> dict:
-        variables = (
-            self.ordered_variables
-            if self.ordered_variables is not None
-            else sorted(self.targets)
-        )
         result = {
             "executionStatus": self.executionStatus,
             "dataset": self.dataset,
             "domain": self.domain,
-            "variables": variables,
+            "variables": sorted(self.targets),
             "message": self.message,
             "errors": [error.to_representation() for error in self.errors],
             **({"entity": self.entity} if self.entity else {}),

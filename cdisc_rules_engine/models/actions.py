@@ -227,11 +227,6 @@ class COREActions(BaseActions):
             )
 
         compare_groups = self._extract_comparison_metadata(self.rule)
-        ordered_variables = (
-            self.rule.get("output_variables")
-            if isinstance(self.rule.get("output_variables"), list)
-            else None
-        )
         return ValidationErrorContainer(
             domain=(
                 f"SUPP{self.dataset_metadata.rdomain}"
@@ -245,7 +240,6 @@ class COREActions(BaseActions):
             errors=errors_list,
             message=message.replace("--", self.dataset_metadata.domain_cleaned or ""),
             compare_groups=compare_groups,
-            ordered_variables=ordered_variables,
         )
 
     def _generate_errors_by_target_presence(
