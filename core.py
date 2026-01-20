@@ -39,7 +39,6 @@ from cdisc_rules_engine.utilities.path_validator import PathValidator
 from cdisc_rules_engine.utilities.utils import (
     generate_report_filename,
     get_rules_cache_key,
-    validate_dataset_files_exist,
 )
 from scripts.list_dataset_metadata_handler import list_dataset_metadata_handler
 from scripts.run_validation import run_validation
