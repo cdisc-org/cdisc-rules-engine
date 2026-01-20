@@ -143,6 +143,13 @@ Run `python core.py validate --help` to see the list of validation options.
                                   local rule yml and/or json rule files.
   -cs, --custom-standard       Adding this flag tells engine to use a custom standard specified with -s and -v
                                   that has been uploaded to the cache using update-cache
+  -cse, --custom-standard-encoding TEXT
+                                  Explicitly specify the file encoding to use
+                                  when reading custom standard files (JSON).
+                                  If not provided, the engine will attempt to
+                                  automatically detect the encoding by trying
+                                  common options (utf-8-sig, utf-8, system
+                                  default).
   -vo, --verbose-output           Specify this option to print rules as they
                                   are completed
   -p, --progress [verbose_output|disabled|percents|bar]
