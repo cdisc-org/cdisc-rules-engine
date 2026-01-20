@@ -7,6 +7,7 @@ import copy
 import os
 import re
 import ast
+import sys
 import pandas as pd
 from datetime import datetime
 from typing import Callable, Iterable, List, Optional, Union
@@ -31,6 +32,7 @@ from cdisc_rules_engine.models.base_validation_entity import BaseValidationEntit
 from cdisc_rules_engine.check_operators.helpers import is_valid_date
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.constants.adam_products import ADAM_PRODUCTS
+from cdisc_rules_engine.services import logger
 
 
 def convert_file_size(size_in_bytes: int, desired_unit: str) -> float:
@@ -481,3 +483,14 @@ def set_max_errors_per_rule(args):
 
     per_dataset = bool(env_per_dataset or cli_per_dataset)
     return max_errors_per_rule, per_dataset
+
+
+def python_version_check():
+    python_version = sys.version_info
+    if python_version.major != 3 or python_version.minor != 12:
+        logger.warning(
+            f"This tool is designed for the Python version outlined in the top of the readme."
+            f"You are using Python {python_version.major}.{python_version.minor}.{python_version.micro} "
+            f"You may experience unexpected errors or issues with the validation"
+        )
+    return
