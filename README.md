@@ -72,7 +72,7 @@ Run `python core.py validate --help` to see the list of validation options.
   -v, --version TEXT              Standard version to validate against
                                   [required]
   -ss, --substandard TEXT         Substandard to validate against
-                                  [required for TIG]  
+                                  [required for TIG]
   -ct, --controlled-terminology-package TEXT
                                   Controlled terminology package to validate
                                   against, can provide more than one
@@ -434,7 +434,7 @@ pip install cdisc-rules-engine
 
 For implementation instructions, see [PYPI.md](PYPI.md).
 
-### Cloning
+### Source Code
 
 In the terminal, navigate to the directory you intend to install CORE rules engine in
 
@@ -444,11 +444,16 @@ In the terminal, navigate to the directory you intend to install CORE rules engi
    git clone https://github.com/cdisc-org/cdisc-rules-engine
    ```
 
-2. Ensure you have Python 3.12 installed:
-   You can check your Python version with:
+2. **IMPORTANT: Python 3.12 is required**
+
+   CORE Rules Engine requires Python 3.12. Other versions are not supported and may cause unexpected errors or incorrect validation results.
+
+   Check your Python version:
+
    ```
    python --version
    ```
+
    If you don't have Python 3.12, please download and install it from [python.org](https://www.python.org/downloads/) or using your system's package manager.
 
 ### Installing dependencies

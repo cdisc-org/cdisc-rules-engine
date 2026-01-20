@@ -4,7 +4,6 @@ import logging
 import os
 import pickle
 import tempfile
-import sys
 from datetime import datetime
 from multiprocessing import freeze_support
 from dotenv import load_dotenv
@@ -364,7 +363,7 @@ def _validate_no_arguments(logger) -> None:
     ),
 )
 @click.pass_context
-def validate(  # noqa
+def validate(
     ctx,
     cache: str,
     pool_size: int,
@@ -407,14 +406,7 @@ def validate(  # noqa
 
     python core.py -s SDTM -v 3.4 -d /path/to/datasets
     """
-    python_version = sys.version_info
-    if python_version.major != 3 or python_version.minor != 12:
-        logger = logging.getLogger("validator")
-        logger.warning(
-            f"Warning: This tool is designed for Python 3.12. "
-            f"You are using Python {python_version.major}.{python_version.minor}.{python_version.micro}. "
-            f"Executable: {sys.executable}"
-        )
+
     # Validate conditional options
     logger = logging.getLogger("validator")
     load_dotenv()
