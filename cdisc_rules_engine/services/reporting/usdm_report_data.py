@@ -3,7 +3,7 @@ from typing import BinaryIO, Iterable
 import os
 
 from cdisc_rules_engine.enums.default_file_paths import DefaultFilePaths
-from cdisc_rules_engine.enums.execution_status import ExecutionError, ExecutionStatus
+from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 from cdisc_rules_engine.services.reporting.base_report_data import (
     BaseReportData,
 )
@@ -175,11 +175,7 @@ class USDMReportData(BaseReportData):
         for error in [
             error
             for error in result.get("errors")
-            if error.get("error")
-            not in [
-                ExecutionError.AN_UNKNOWN_EXCEPTION_HAS_OCCURRED.value,
-                ExecutionError.COLUMN_NOT_FOUND_IN_DATA.value,
-            ]
+            if result.get("executionStatus") == ExecutionStatus.ISSUE_REPORTED.value
         ]:
             values = []
             for variable in variables:
@@ -208,8 +204,7 @@ class USDMReportData(BaseReportData):
         for error in [
             error
             for error in result.get("errors")
-            if error.get("error")
-            == ExecutionError.AN_UNKNOWN_EXCEPTION_HAS_OCCURRED.value
+            if result.get("executionStatus") == ExecutionStatus.EXECUTION_ERROR.value
         ]:
             error_item = {
                 "core_id": validation_result.id,

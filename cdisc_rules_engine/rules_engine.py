@@ -490,6 +490,13 @@ class RulesEngine:
                 message=exception.args[0],
             )
             message = "rule execution error"
+            errors = [error_obj]
+            return ValidationErrorContainer(
+                dataset=os.path.basename(dataset_path),
+                errors=errors,
+                message=message,
+                status=ExecutionStatus.SKIPPED.value,
+            )
         elif isinstance(exception, DomainNotFoundInDefineXMLError):
             error_obj = FailedValidationEntity(
                 dataset=os.path.basename(dataset_path),
@@ -537,7 +544,7 @@ class RulesEngine:
                 dataset=os.path.basename(dataset_path),
                 errors=errors,
                 message=message,
-                status=ExecutionStatus.SKIPPED.value,
+                status=ExecutionStatus.EXECUTION_ERROR.value,
             )
 
         elif isinstance(exception, OperationError):
@@ -552,7 +559,7 @@ class RulesEngine:
                 dataset=os.path.basename(dataset_path),
                 errors=errors,
                 message=message,
-                status=ExecutionStatus.SKIPPED.value,
+                status=ExecutionStatus.EXECUTION_ERROR.value,
             )
         elif isinstance(exception, DatasetBuilderError):
             error_obj = FailedValidationEntity(

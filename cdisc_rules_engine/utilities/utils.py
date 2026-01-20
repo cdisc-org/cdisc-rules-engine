@@ -25,7 +25,7 @@ from cdisc_rules_engine.constants.domains import (
     SUPPLEMENTARY_DOMAINS,
 )
 from cdisc_rules_engine.constants.classes import SPECIAL_PURPOSE, SPECIAL_PURPOSE_MODEL
-from cdisc_rules_engine.enums.execution_status import ExecutionError, ExecutionStatus
+from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 from cdisc_rules_engine.interfaces import ConditionInterface
 from cdisc_rules_engine.models.base_validation_entity import BaseValidationEntity
 from cdisc_rules_engine.check_operators.helpers import is_valid_date
@@ -74,12 +74,6 @@ def get_execution_status(results):
                 for result in results
                 if result.get("executionStatus")
                 == ExecutionStatus.EXECUTION_ERROR.value
-                and [
-                    error
-                    for error in result.get("errors", [])
-                    if error.get("error")
-                    == ExecutionError.AN_UNKNOWN_EXCEPTION_HAS_OCCURRED.value
-                ]
             ],
             ExecutionStatus.ISSUE_REPORTED: [
                 result
@@ -90,12 +84,6 @@ def get_execution_status(results):
                 result
                 for result in results
                 if result.get("executionStatus") == ExecutionStatus.SKIPPED.value
-                or [
-                    error
-                    for error in result.get("errors", [])
-                    if error.get("error")
-                    == ExecutionError.COLUMN_NOT_FOUND_IN_DATA.value
-                ]
             ],
         }
     )
