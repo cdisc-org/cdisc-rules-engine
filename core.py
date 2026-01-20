@@ -798,10 +798,8 @@ def test_validate(filetype):
         base_path = os.path.join("tests", "resources", "datasets")
         if filetype.lower() == "json":
             test_file = os.path.join(base_path, "TS.json")
-            output_name = "json_validation_output"
         else:
             test_file = os.path.join(base_path, "ae.xpt")
-            output_name = "xpt_validation_output"
         if not os.path.exists(test_file):
             raise FileNotFoundError(f"Test dataset not found: {test_file}")
         cache_path = DEFAULT_CACHE_PATH
@@ -823,6 +821,7 @@ def test_validate(filetype):
             version = "3.4"
             substandard = None
             controlled_terminology_package = set()
+            ts_path = os.path.join(base_path, "TS.json")
             json_output = os.path.join(temp_dir, "json_validation_output")
             xpt_output = os.path.join(temp_dir, "xpt_validation_output")
             output_format = {ReportTypes.XLSX.value}
@@ -868,6 +867,8 @@ def test_validate(filetype):
                 )
             )
             print("JSON validation completed successfully!")
+
+            output = xpt_output if filetype.lower() == "xpt" else json_output
             run_validation(
                 Validation_args(
                     cache_path,
