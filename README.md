@@ -72,7 +72,7 @@ Run `python core.py validate --help` to see the list of validation options.
   -v, --version TEXT              Standard version to validate against
                                   [required]
   -ss, --substandard TEXT         Substandard to validate against
-                                  [required for TIG]  
+                                  [required for TIG]
   -ct, --controlled-terminology-package TEXT
                                   Controlled terminology package to validate
                                   against, can provide more than one
@@ -175,7 +175,7 @@ To validate a folder using rules for SDTM-IG version 3.4 use the following comma
 CORE supports the following dataset file formats for validation:
 
 - **XPT** - SAS Transport Format (version 5)
-- **JSON** - Dataset-JSON (CDISC standard format)
+- **JSON** - Dataset-JSON > v1.1 (CDISC standard format)
 - **NDJSON** - Newline Delimited JSON datasets
 - **XLSX** - Excel format (Microsoft Excel files)
 
