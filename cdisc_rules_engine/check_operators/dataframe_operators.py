@@ -1258,80 +1258,134 @@ class DataframeType(BaseType):
     @type_operator(FIELD_DATAFRAME)
     def is_not_unique_relationship(self, other_value):
         """
-        Validates one-to-one relationship between
-        two columns (target and comparator) against a dataset.
-        One-to-one means that a pair of columns can be duplicated
-        but its integrity must not be violated:
-        one value of target always corresponds to
-        one value of comparator.
+        Validates one-to-one relationship between two columns (target and comparator)
+        against a dataset. One-to-one means that a pair of columns can be duplicated
+        but its integrity must not be violated: one value of target always corresponds
+        to one value of comparator.
+
+        A violation occurs when a NON-NULL value in either column maps to multiple
+        different values in the other column. Rows are flagged based on their non-null
+        values that participate in violations.
+
         Examples:
+            Valid dataset:
+                STUDYID STUDYDESC
+                1       A
+                2       B
+                3       C
+                1       A
+                2       B
 
-        Valid dataset:
-        STUDYID  STUDYDESC
-        1        A
-        2        B
-        3        C
-        1        A
-        2        B
-
-        Invalid dataset:
-        STUDYID  STUDYDESC
-        1        A
-        2        A
-        3        C
+            Invalid dataset:
+                STUDYID STUDYDESC
+                1       A
+                2       A
+                3       C
         """
         target = self.replace_prefix(other_value.get("target"))
         comparator = other_value.get("comparator")
+
         if isinstance(comparator, list):
             comparator = self.replace_all_prefixes(comparator)
         else:
             comparator = self.replace_prefix(comparator)
+
         df_subset = self.value[[target, comparator]].dropna(how="all")
         df_without_duplicates = df_subset.drop_duplicates()
-        violated_targets = self._find_relationship_violations(
+
+        violated_targets, violated_comparators = self._find_relationship_violations(
             df_without_duplicates, target, comparator
         )
+
         result = self.value.convert_to_series([False] * len(self.value))
+
+        # Flag rows where the non-null target value is violated
         if violated_targets:
             clean_targets = {
                 v for v in violated_targets if pd.notna(v) and v != "" and v is not None
             }
-            has_null_target = any(
-                pd.isna(v) or v == "" or v is None for v in violated_targets
-            )
             if clean_targets:
                 result = result | self.value[target].isin(clean_targets)
-            if has_null_target:
-                result = result | self.value[target].isna()
+
+        # Flag rows where the non-null comparator value is violated
+        if violated_comparators:
+            clean_comparators = {
+                v
+                for v in violated_comparators
+                if pd.notna(v) and v != "" and v is not None
+            }
+            if clean_comparators:
+                result = result | self.value[comparator].isin(clean_comparators)
+
         return result
 
     def _find_relationship_violations(self, df_without_duplicates, target, comparator):
-        """Find all target values that violate one-to-one relationship constraints."""
+        """Find all values that violate one-to-one relationship constraints.
+
+        Returns two sets:
+        - violated_targets: non-null target values that map to multiple comparators
+        - violated_comparators: non-null comparator values that map to multiple targets
+
+        Only non-null values can be in violation.
+        """
+        violated_targets = self._check_target_violations(
+            df_without_duplicates, target, comparator
+        )
+        violated_comparators = self._check_comparator_violations(
+            df_without_duplicates, target, comparator
+        )
+
+        return violated_targets, violated_comparators
+
+    def _check_target_violations(self, df_without_duplicates, target, comparator):
+        """Check for non-null target values that map to multiple comparators."""
         violated_targets = set()
         for target_val in df_without_duplicates[target].dropna().unique():
+            if target_val == "":
+                continue
+
             target_rows = df_without_duplicates[
                 df_without_duplicates[target] == target_val
             ]
-            comparator_values = target_rows[comparator]
-            unique_comparators = set()
-            for comp_val in comparator_values:
-                if pd.isna(comp_val) or comp_val == "" or comp_val is None:
-                    unique_comparators.add("NULL_PLACEHOLDER")
-                else:
-                    unique_comparators.add(comp_val)
-            if len(unique_comparators) > 1:
+
+            if self._has_multiple_mappings(target_rows[comparator]):
                 violated_targets.add(target_val)
+
+        return violated_targets
+
+    def _check_comparator_violations(self, df_without_duplicates, target, comparator):
+        """Check for non-null comparator values that map to multiple targets."""
+        violated_comparators = set()
+
         for comp_val in df_without_duplicates[comparator].dropna().unique():
             if comp_val == "" or pd.isna(comp_val):
                 continue
+
             comp_rows = df_without_duplicates[
                 df_without_duplicates[comparator] == comp_val
             ]
-            target_values = comp_rows[target]
-            if len(target_values) > 1:
-                for t_val in target_values:
-                    violated_targets.add(t_val)
-        return violated_targets
+
+            if self._has_multiple_mappings(comp_rows[target]):
+                violated_comparators.add(comp_val)
+
+        return violated_comparators
+
+    def _has_multiple_mappings(self, values):
+        """Check if a series of values contains multiple different values.
+
+        Returns True if there are multiple non-null values, or at least one
+        non-null value plus null.
+        """
+        unique_values = set()
+        has_null = False
+
+        for val in values:
+            if pd.isna(val) or val == "" or val is None:
+                has_null = True
+            else:
+                unique_values.add(val)
+
+        return len(unique_values) > 1 or (len(unique_values) >= 1 and has_null)
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
