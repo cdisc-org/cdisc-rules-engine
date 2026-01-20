@@ -94,6 +94,9 @@ class DatasetPreprocessor:
             else:
                 if self._is_split_domain(domain_name):
                     continue
+                target_domain_name: str = (
+                    self._dataset_metadata.domain or self._dataset_metadata.name
+                )
                 file_infos: list[SDTMDatasetMetadata] = [
                     item
                     for item in datasets
@@ -104,13 +107,14 @@ class DatasetPreprocessor:
                         or (
                             domain_name == "SUPP--"
                             and (not self._dataset_metadata.is_supp)
-                            and item.rdomain == self._dataset_metadata.domain
+                            and item.rdomain == target_domain_name
                         )
                     )
                 ]
 
             if not file_infos and not (
-                self._dataset_metadata.is_supp and domain_name == "SUPP--"
+                (self._dataset_metadata.is_supp and domain_name == "SUPP--")
+                or self._dataset_metadata.name == "RELREC"
             ):
                 raise PreprocessingError(
                     f"Failed to find related dataset for '{domain_name}' in preprocessor"
