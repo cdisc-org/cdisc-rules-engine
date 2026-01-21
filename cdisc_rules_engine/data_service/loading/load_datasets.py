@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import List
 
-from cdisc_rules_engine.constants.metadata_columns import SOURCE_ROW_NUMBER
+from cdisc_rules_engine.constants.metadata_columns import SOURCE_ROW_NUMBER, SOURCE_DS
 from cdisc_rules_engine.data_service.sql_interface import PostgresQLInterface
 from cdisc_rules_engine.models.dataset_metadata2 import DatasetMetadata2
 from cdisc_rules_engine.models.sql.table_schema import SqlColumnSchema, SqlTableSchema
@@ -38,6 +38,9 @@ class SqlDatasetLoader:
             source_row_column = SqlColumnSchema(name=SOURCE_ROW_NUMBER, hash=SOURCE_ROW_NUMBER, type="Num")
             schema.add_column(source_row_column)
 
+            source_ds_column = SqlColumnSchema(name=SOURCE_DS, hash=SOURCE_DS, type="Char")
+            schema.add_column(source_ds_column)
+
             pgi.create_table(schema)
             # TODO: INDEX
 
@@ -49,13 +52,20 @@ class SqlDatasetLoader:
 
                 if chunk_data and SOURCE_ROW_NUMBER in chunk_data[0]:
                     raise ValueError(
-                        f"Dataset file '{file_path.name}' contains reserved column 'source_row_number'. "
+                        f"Dataset file '{file_path.name}' contains reserved column '{SOURCE_ROW_NUMBER}'. "
+                        "This column is automatically generated and should not be in source data."
+                    )
+
+                if chunk_data and SOURCE_DS in chunk_data[0]:
+                    raise ValueError(
+                        f"Dataset file '{file_path.name}' contains reserved column '{SOURCE_DS}'. "
                         "This column is automatically generated and should not be in source data."
                     )
 
                 for row in chunk_data:
                     row_number += 1
                     row[SOURCE_ROW_NUMBER] = row_number
+                    row[SOURCE_DS] = table_name.upper()
                 pgi.insert_data(table_name, chunk_data)
 
             logger.info(f"Successfully loaded {file_path.name}")

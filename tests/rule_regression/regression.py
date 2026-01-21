@@ -14,6 +14,9 @@ from cdisc_rules_engine.data_service.postgresql_data_service import (
 from cdisc_rules_engine.data_service.loading.load_test_datasets import (
     SqlTestDatasetLoader,
 )
+from cdisc_rules_engine.data_service.sql_data_preprocessor import (
+    SqlDataPreprocessor,
+)
 from cdisc_rules_engine.enums.default_file_paths import DefaultFilePaths
 from cdisc_rules_engine.models.dataset_metadata2 import VariableMetadata
 from cdisc_rules_engine.models.test_dataset import TestDataset
@@ -360,6 +363,7 @@ def _initialize_data_service(
                 SqlTestDatasetLoader.load_test_dataset(ds.pgi, test_ds)
             )
             ds.datasets.append(ds_metadata)
+        SqlDataPreprocessor.run(ds, standards_context)
         return ds
 
     return PostgresQLDataService.from_list_of_testdatasets(

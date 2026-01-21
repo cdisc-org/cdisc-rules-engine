@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, List, Dict
 
 from cdisc_rules_engine.data_service.merges.join import SqlJoinMerge
 from cdisc_rules_engine.data_service.postgresql_data_service import (
@@ -67,6 +67,13 @@ class BaseStandardsContext(ABC):
         merge_spec: dict[str, Any],
         rule: dict,
     ) -> str:
+        pass
+
+    @abstractmethod
+    def detect_split_datasets(self, dataset_names: List[str]) -> Dict[str, List[str]]:
+        """
+        Detect split datasets by naming convention.
+        """
         pass
 
     def _do_join_merge(self, ds: PostgresQLDataService, original: str, merge_spec: dict) -> str:

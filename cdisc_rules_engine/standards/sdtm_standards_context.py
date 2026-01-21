@@ -1,4 +1,6 @@
-from typing import Any, List, Tuple
+import re
+from typing import Any, List, Tuple, Dict
+from collections import defaultdict
 
 from cdisc_rules_engine.constants.classes import (
     EVENTS,
@@ -683,3 +685,53 @@ class SdtmStandardsContext(BaseStandardsContext):
             merge_spec=merge_spec,
         )
         return result_schema.name
+
+    def detect_split_datasets(self, dataset_names: List[str]) -> Dict[str, List[str]]:
+        """
+        Detect split datasets by name.
+        """
+        split_groups = defaultdict(list)
+
+        datasets = [name.lower() for name in dataset_names]
+
+        for dataset in datasets:
+            unsplit_name = self._get_unsplit_name(dataset)
+
+            if unsplit_name != dataset and unsplit_name not in datasets:
+                split_groups[unsplit_name].append(dataset)
+
+        return {k: v for k, v in split_groups.items() if len(v) > 1}
+
+    @staticmethod
+    def _get_unsplit_name(dataset_name: str) -> str:
+        """
+        Extract the unsplit (logical) name from a dataset name following
+        SDTMIG v3.4 naming conventions.
+        """
+        dataset = dataset_name.lower()
+
+        # suppfa + parent domain (e.g., suppfacm -> suppfa)
+        if dataset.startswith("suppfa") and len(dataset) > 6:
+            return "suppfa"
+
+        # fa + parent domain (e.g., facm, faeg -> fa)
+        if dataset.startswith("fa") and len(dataset) == 4:
+            return "fa"
+
+        # supp + parent domain + alphanumeric suffix (e.g., suppae1 -> suppae)
+        if dataset.startswith("supp") and len(dataset) > 4:
+            match = re.match(r"^(supp[a-z]{2})([a-z0-9]+)$", dataset)
+            if match:
+                return match.group(1)
+
+        # relrec + alphanumeric suffix (e.g., relreca -> relrecb)
+        if dataset.startswith("relrec") and len(dataset) > 6:
+            return "relrec"
+
+        # 2-char parent domain + alphanumeric suffix (e.g., ae1 -> ae)
+        if len(dataset) > 2:
+            match = re.match(r"^([a-z]{2})([a-z0-9]+)$", dataset)
+            if match:
+                return match.group(1)
+
+        return dataset

@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, List, Dict
 
 from cdisc_rules_engine.data_service.postgresql_data_service import (
     BaseDatasetMetadata,
@@ -50,6 +50,9 @@ class DefaultStandardsContext(BaseStandardsContext):
     def within_rule_scope(self, scope: dict[str, Any], metadata: DatasetMetadata2):
         # TODO: Should do a domain check
         return True, ""
+
+    def detect_split_datasets(self, dataset_names: List[str]) -> Dict[str, List[str]]:
+        return {}
 
     def perform_merge(
         self,

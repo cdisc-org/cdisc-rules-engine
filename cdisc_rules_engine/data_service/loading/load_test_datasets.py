@@ -1,6 +1,6 @@
 from typing import List
 
-from cdisc_rules_engine.constants.metadata_columns import SOURCE_ROW_NUMBER
+from cdisc_rules_engine.constants.metadata_columns import SOURCE_ROW_NUMBER, SOURCE_DS
 from cdisc_rules_engine.data_service.sql_interface import PostgresQLInterface
 from cdisc_rules_engine.models.dataset_metadata2 import DatasetMetadata2
 from cdisc_rules_engine.models.sql.table_schema import SqlColumnSchema, SqlTableSchema
@@ -27,12 +27,22 @@ class SqlTestDatasetLoader:
                 "This column is automatically generated and should not be in test data."
             )
 
+        if row_dicts and SOURCE_DS in row_dicts[0]:
+            raise ValueError(
+                f"Test dataset '{table_name}' contains reserved column '{SOURCE_DS}'. "
+                "This column is automatically generated and should not be in test data."
+            )
+
         for idx, row in enumerate(row_dicts, start=1):
             row[SOURCE_ROW_NUMBER] = idx
+            row[SOURCE_DS] = table_name.upper()
 
         schema = SqlTableSchema.from_metadata(test_dataset, pgi)
         source_row_column = SqlColumnSchema(name=SOURCE_ROW_NUMBER, hash=SOURCE_ROW_NUMBER, type="Num")
         schema.add_column(source_row_column)
+
+        source_ds_column = SqlColumnSchema(name=SOURCE_DS, hash=SOURCE_DS, type="Char")
+        schema.add_column(source_ds_column)
 
         pgi.create_table(schema)
         pgi.insert_data(table_name=table_name, data=row_dicts)
