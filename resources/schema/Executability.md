@@ -1,4 +1,4 @@
-## Executability
+# Executability
 
 Indicates the extent to which the rule can be automatically executed and validated by the rules engine. This is informational metadata that describes the rule's execution capability.
 
