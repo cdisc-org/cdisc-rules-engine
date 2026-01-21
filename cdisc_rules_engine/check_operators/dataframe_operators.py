@@ -1259,28 +1259,11 @@ class DataframeType(BaseType):
     def is_not_unique_relationship(self, other_value):
         """
         Validates one-to-one relationship between two columns (target and comparator)
-        against a dataset. One-to-one means that a pair of columns can be duplicated
-        but its integrity must not be violated: one value of target always corresponds
-        to one value of comparator.
+        within a dataset. One-to-one means that a columns values can be duplicated
+        but it must always corresponds to one value of comparator.
 
         A violation occurs when a NON-NULL value in either column maps to multiple
-        different values in the other column. Rows are flagged based on their non-null
-        values that participate in violations.
-
-        Examples:
-            Valid dataset:
-                STUDYID STUDYDESC
-                1       A
-                2       B
-                3       C
-                1       A
-                2       B
-
-            Invalid dataset:
-                STUDYID STUDYDESC
-                1       A
-                2       A
-                3       C
+        different values in the other column
         """
         target = self.replace_prefix(other_value.get("target"))
         comparator = other_value.get("comparator")
