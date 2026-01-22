@@ -486,6 +486,7 @@ def validate(
             standard,
             version,
             substandard,
+            use_case,
             set(controlled_terminology_package),  # avoiding duplicates
             output,
             set(output_format),  # avoiding duplicates
