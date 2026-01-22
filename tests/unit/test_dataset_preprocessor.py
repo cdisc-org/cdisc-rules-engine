@@ -7,6 +7,7 @@ from cdisc_rules_engine.services.cache.in_memory_cache_service import (
     InMemoryCacheService,
 )
 from cdisc_rules_engine.services.data_services import LocalDataService
+from cdisc_rules_engine.utilities.data_processor import DataProcessor
 from cdisc_rules_engine.utilities.dataset_preprocessor import DatasetPreprocessor
 from cdisc_rules_engine.constants.rule_constants import ALL_KEYWORD
 from cdisc_rules_engine.models.rule_conditions import ConditionCompositeFactory
@@ -1125,7 +1126,6 @@ def test_preprocess_supp_wildcard_matches_all_supp_datasets(
 def test_preprocess_specific_suppae_dataset(
     mock_get_dataset: MagicMock,
 ):
-
     ae_dataset = PandasDataset(
         pd.DataFrame.from_dict(
             {
@@ -1196,3 +1196,44 @@ def test_preprocess_specific_suppae_dataset(
     assert result.data["AESPID"].values[0] == "SP001"
     assert "QNAM" not in result.data.columns
     assert "QVAL" not in result.data.columns
+
+
+@pytest.fixture
+def suppdm_with_race():
+    suppdm_data = {
+        "IDVAR": {0: "", 1: "", 2: ""},
+        "IDVARVAL": {0: "", 1: "", 2: ""},
+        "QEVAL": {0: "", 1: "", 2: ""},
+        "QLABEL": {0: "Race 1", 1: "Race 2", 2: "Race 3"},
+        "QNAM": {0: "RACE1", 1: "RACE2", 2: "RACE3"},
+        "QORIG": {0: "CRF", 1: "CRF", 2: "CRF"},
+        "QVAL": {0: "ASIAN", 1: "BLACK OR AFRICAN AMERICAN", 2: "WHITE"},
+        "RACE1": {0: "ASIAN", 1: None, 2: None},
+        "RACE2": {0: None, 1: "BLACK OR AFRICAN AMERICAN", 2: None},
+        "RACE3": {0: None, 1: None, 2: "WHITE"},
+        "RDOMAIN": {0: "DM", 1: "DM", 2: "DM"},
+        "STUDYID": {0: "CDISCPILOT01", 1: "CDISCPILOT01", 2: "CDISCPILOT01"},
+        "USUBJID": {0: "CDISC008", 1: "CDISC008", 2: "CDISC008"},
+    }
+    suppdm_df = PandasDataset(pd.DataFrame(suppdm_data))
+    return suppdm_df
+
+
+def test_data_processor_groups_qnam_suppdm_qvals(suppdm_with_race):
+    assert suppdm_with_race.shape[0] == 3
+    suppdm_df = DataProcessor().process_supp(suppdm_with_race).data
+    # expected to group data
+    assert suppdm_df.shape[0] == 1
+    assert {"RACE1", "RACE2", "RACE3"}.issubset(set(suppdm_df.columns))
+    assert suppdm_df.loc[0, ["RACE1", "RACE2", "RACE3"]].notna().all()
+
+
+def test_dm_merged_with_suppdm_without_dupes(suppdm_with_race):
+    dm = {
+        "STUDYID": {7: "CDISCPILOT01"},
+        "DOMAIN": {7: "DM"},
+        "USUBJID": {7: "CDISC008"},
+        "SUBJID": {7: "1445"},
+    }
+
+    assert dm.shape[0] == 3
