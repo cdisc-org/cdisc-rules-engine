@@ -9,6 +9,12 @@ class ExecutionStatus(BaseEnum):
     UNKNOWN_STATUS = "unknown_status"
 
 
+class SkippedReason(BaseEnum):
+    COLUMN_NOT_FOUND_IN_DATA = "Column not found in data"
+    DOMAIN_NOT_FOUND = "Domain not found"
+    SCHEMA_VALIDATION_IS_OFF = "Schema validation is off"
+    OUTSIDE_SCOPE = "Outside scope"
+
+
 class ExecutionError(BaseEnum):
     AN_UNKNOWN_EXCEPTION_HAS_OCCURRED = "An unknown exception has occurred"
-    COLUMN_NOT_FOUND_IN_DATA = "Column not found in data"

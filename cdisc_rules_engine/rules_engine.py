@@ -5,7 +5,11 @@ from business_rules import export_rule_data
 from business_rules.engine import run
 import os
 from cdisc_rules_engine.config import config as default_config
-from cdisc_rules_engine.enums.execution_status import ExecutionError, ExecutionStatus
+from cdisc_rules_engine.enums.execution_status import (
+    ExecutionError,
+    ExecutionStatus,
+    SkippedReason,
+)
 from cdisc_rules_engine.enums.rule_types import RuleTypes
 from cdisc_rules_engine.exceptions.custom_exceptions import (
     DatasetNotFoundError,
@@ -243,13 +247,22 @@ class RulesEngine:
                 logger.info(
                     f"Skipped dataset {dataset_metadata.name}. Reason: {reason}"
                 )
-                error_obj = ValidationErrorContainer(
-                    status=ExecutionStatus.SKIPPED.value,
+                error_obj = FailedValidationEntity(
+                    dataset=os.path.basename(dataset_metadata.full_path),
+                    error=SkippedReason.OUTSIDE_SCOPE.value,
                     message=reason,
-                    dataset=dataset_metadata.filename,
-                    domain=dataset_metadata.domain or dataset_metadata.rdomain or "",
                 )
-                return [error_obj.to_representation()]
+                return [
+                    ValidationErrorContainer(
+                        status=ExecutionStatus.SKIPPED.value,
+                        message=reason,
+                        dataset=dataset_metadata.filename,
+                        domain=dataset_metadata.domain
+                        or dataset_metadata.rdomain
+                        or "",
+                        errors=[error_obj],
+                    ).to_representation()
+                ]
         except Exception as e:
             logger.trace(e)
             logger.error(
@@ -486,7 +499,7 @@ class RulesEngine:
         elif isinstance(exception, (KeyError, ParserError)):
             error_obj = FailedValidationEntity(
                 dataset=os.path.basename(dataset_path),
-                error=ExecutionError.COLUMN_NOT_FOUND_IN_DATA.value,
+                error=SkippedReason.COLUMN_NOT_FOUND_IN_DATA.value,
                 message=exception.args[0],
             )
             message = "rule execution error"
@@ -573,7 +586,7 @@ class RulesEngine:
                 dataset=os.path.basename(dataset_path),
                 errors=errors,
                 message=message,
-                status=ExecutionStatus.SKIPPED.value,
+                status=ExecutionStatus.EXECUTION_ERROR.value,
             )
         elif isinstance(exception, FailedSchemaValidation):
             if self.validate_xml:
@@ -593,7 +606,7 @@ class RulesEngine:
             else:
                 message = "Skipped because schema validation is off"
                 error_obj = FailedValidationEntity(
-                    error="Schema validation is off",
+                    error=SkippedReason.SCHEMA_VALIDATION_IS_OFF.value,
                     message=message,
                     dataset=os.path.basename(dataset_path),
                 )
@@ -607,7 +620,7 @@ class RulesEngine:
         elif isinstance(exception, DomainNotFoundError):
             error_obj = FailedValidationEntity(
                 dataset=os.path.basename(dataset_path),
-                error="Domain not found",
+                error=SkippedReason.DOMAIN_NOT_FOUND.value,
                 message=str(exception),
             )
             message = "rule evaluation skipped - operation domain not found"
@@ -632,7 +645,7 @@ class RulesEngine:
                 dataset=os.path.basename(dataset_path),
                 errors=errors,
                 message=message,
-                status=ExecutionStatus.SKIPPED.value,
+                status=ExecutionStatus.EXECUTION_ERROR.value,
             )
         else:
             error_obj = FailedValidationEntity(
