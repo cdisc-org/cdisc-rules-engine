@@ -228,7 +228,19 @@ def _validate_no_arguments(logger) -> None:
     "-ss",
     "--substandard",
     default=None,
-    help="CDISC Substandard to validate against",
+    type=click.Choice(["SDTM", "SEND", "ADaM", "CDASH"], case_sensitive=False),
+    help="CDISC Substandard to validate against. Any of SDTM, SEND, ADaM, CDASH",
+)
+@click.option(
+    "-uc",
+    "--use-case",
+    required=False,
+    default=None,
+    type=click.Choice(["INDH", "PROD", "NONCLIN", "ANALYSIS"], case_sensitive=True),
+    help=(
+        "CDISC TIG Use Case for scoping a TIG Validation."
+        "Any of INDH, PROD, NONCLIN, or ANALYSIS."
+    ),
 )
 @click.option(
     "-ct",
@@ -375,6 +387,7 @@ def validate(
     standard: str,
     version: str,
     substandard: str,
+    use_case: str,
     controlled_terminology_package: tuple[str],
     output: str,
     output_format: tuple[str],
@@ -839,6 +852,7 @@ def test_validate(filetype):
                     None,
                     standard,
                     version,
+                    None,
                     None,
                     set(),
                     output,

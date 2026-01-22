@@ -24,7 +24,6 @@ from cdisc_rules_engine.constants.domains import (
     SUPPLEMENTARY_DOMAINS,
 )
 from cdisc_rules_engine.constants.rule_constants import ALL_KEYWORD
-from cdisc_rules_engine.constants.use_cases import USE_CASE_DOMAINS
 from cdisc_rules_engine.interfaces import ConditionInterface
 from cdisc_rules_engine.models.operation_params import OperationParams
 from cdisc_rules_engine.models.rule_conditions import AllowedConditionsKeys
@@ -274,6 +273,7 @@ class RuleProcessor:
         rule: dict,
         standard: str,
         standard_substandard: str,
+        use_case: str,
     ) -> bool:
         if standard.lower() != "tig":
             return True
@@ -281,25 +281,7 @@ class RuleProcessor:
         if not use_cases:
             return True
         use_cases = [uc.strip() for uc in use_cases.split(",")]
-        substandard = standard_substandard.upper()
-        if substandard not in USE_CASE_DOMAINS:
-            return False
-
-        domain_to_check = dataset_metadata.domain
-        if dataset_metadata.is_supp and dataset_metadata.rdomain:
-            domain_to_check = dataset_metadata.rdomain
-
-        # Handle ADaM datasets with AD prefix
-        if substandard == "ADAM" and domain_to_check.startswith("AD"):
-            return "ANALYSIS" in use_cases
-
-        allowed_domains = set()
-        for use_case in use_cases:
-            if use_case in USE_CASE_DOMAINS[substandard]:
-                allowed_domains.update(USE_CASE_DOMAINS[substandard][use_case])
-        if domain_to_check in allowed_domains:
-            return True
-        return False
+        return use_case in use_cases
 
     @classmethod
     def rule_applies_to_entity(
@@ -684,6 +666,7 @@ class RuleProcessor:
         datasets: Iterable[SDTMDatasetMetadata],
         standard,
         standard_substandard: str,
+        use_case: str,
     ) -> Tuple[bool, str]:
         """Check if rule is suitable and return reason if not"""
         rule_id = rule.get("core_id", "unknown")
@@ -698,7 +681,11 @@ class RuleProcessor:
         ):
             return self.log_suitable_for_validation(rule_id, dataset_name)
         if not self.rule_applies_to_use_case(
-            dataset_metadata, rule, standard, standard_substandard
+            dataset_metadata,
+            rule,
+            standard,
+            standard_substandard,
+            use_case,
         ):
             reason = (
                 f"Rule skipped - doesn't apply to use case for "
