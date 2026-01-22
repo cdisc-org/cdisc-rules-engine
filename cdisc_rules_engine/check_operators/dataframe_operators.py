@@ -1260,10 +1260,10 @@ class DataframeType(BaseType):
         """
         Validates one-to-one relationship between two columns (target and comparator)
         within a dataset. One-to-one means that a columns values can be duplicated
-        but it must always corresponds to one value of comparator.
+        but it must always corresponds to one value of comparator and vice versa.
 
         A violation occurs when a NON-NULL value in either column maps to multiple
-        different values in the other column
+        different values in the other column.
         """
         target = self.replace_prefix(other_value.get("target"))
         comparator = other_value.get("comparator")
@@ -1275,22 +1275,18 @@ class DataframeType(BaseType):
 
         df_subset = self.value[[target, comparator]].dropna(how="all")
         df_without_duplicates = df_subset.drop_duplicates()
-
         violated_targets, violated_comparators = self._find_relationship_violations(
             df_without_duplicates, target, comparator
         )
 
+        # flag violations from target and comparator
         result = self.value.convert_to_series([False] * len(self.value))
-
-        # Flag rows where the non-null target value is violated
         if violated_targets:
             clean_targets = {
                 v for v in violated_targets if pd.notna(v) and v != "" and v is not None
             }
             if clean_targets:
                 result = result | self.value[target].isin(clean_targets)
-
-        # Flag rows where the non-null comparator value is violated
         if violated_comparators:
             clean_comparators = {
                 v
@@ -1303,59 +1299,36 @@ class DataframeType(BaseType):
         return result
 
     def _find_relationship_violations(self, df_without_duplicates, target, comparator):
-        """Find all values that violate one-to-one relationship constraints.
-
+        """
+        Find all values that violate one-to-one relationship constraints.
         Returns two sets:
         - violated_targets: non-null target values that map to multiple comparators
         - violated_comparators: non-null comparator values that map to multiple targets
-
-        Only non-null values can be in violation.
         """
-        violated_targets = self._check_target_violations(
+        violated_targets = self._check_column_violations(
             df_without_duplicates, target, comparator
         )
-        violated_comparators = self._check_comparator_violations(
-            df_without_duplicates, target, comparator
+        violated_comparators = self._check_column_violations(
+            df_without_duplicates, comparator, target
         )
 
         return violated_targets, violated_comparators
 
-    def _check_target_violations(self, df_without_duplicates, target, comparator):
-        """Check for non-null target values that map to multiple comparators."""
-        violated_targets = set()
-        for target_val in df_without_duplicates[target].dropna().unique():
-            if target_val == "":
+    def _check_column_violations(self, df_without_duplicates, key_column, value_column):
+        violated_keys = set()
+        for key_val in df_without_duplicates[key_column].dropna().unique():
+            if key_val == "":
                 continue
-
-            target_rows = df_without_duplicates[
-                df_without_duplicates[target] == target_val
+            key_rows = df_without_duplicates[
+                df_without_duplicates[key_column] == key_val
             ]
-
-            if self._has_multiple_mappings(target_rows[comparator]):
-                violated_targets.add(target_val)
-
-        return violated_targets
-
-    def _check_comparator_violations(self, df_without_duplicates, target, comparator):
-        """Check for non-null comparator values that map to multiple targets."""
-        violated_comparators = set()
-
-        for comp_val in df_without_duplicates[comparator].dropna().unique():
-            if comp_val == "" or pd.isna(comp_val):
-                continue
-
-            comp_rows = df_without_duplicates[
-                df_without_duplicates[comparator] == comp_val
-            ]
-
-            if self._has_multiple_mappings(comp_rows[target]):
-                violated_comparators.add(comp_val)
-
-        return violated_comparators
+            if self._has_multiple_mappings(key_rows[value_column]):
+                violated_keys.add(key_val)
+        return violated_keys
 
     def _has_multiple_mappings(self, values):
-        """Check if a series of values contains multiple different values.
-
+        """
+        Check if a series of values contains multiple different values.
         Returns True if there are multiple non-null values, or at least one
         non-null value plus null.
         """
