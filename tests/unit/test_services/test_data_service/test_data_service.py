@@ -275,6 +275,7 @@ def test_get_dataset_class_associated_domains():
                 "sdtmig",
                 "3-4",
                 None,
+                None,
                 "",
                 "",
                 "",
