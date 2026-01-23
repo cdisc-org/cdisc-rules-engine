@@ -292,6 +292,7 @@ def run_single_rule_validation(
         standard=standard,
         standard_version=standard_version,
         standard_substandard=standard_substandard,
+        use_case=use_case,
         library_metadata=library_metadata,
     )
     engine.rule_processor = RuleProcessor(data_service, cache, library_metadata)
