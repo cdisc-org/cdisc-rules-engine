@@ -46,10 +46,6 @@ ItemGroupDef.Structure
 
 List of ItemGroupDef.ItemRef.ItemDef.Name in XML document order (as they appear in ItemRef, no sorting applied)
 
-## define_dataset_variable_order
-
-List of ItemGroupDef.ItemRef.ItemDef.Name, sorted by ItemRef OrderNumber when present, otherwise by XML document order
-
 ## define_variable_allowed_terms
 
 ItemGroupDef.ItemDef.CodeList.CodeListItem.Decode.TranslatedText
