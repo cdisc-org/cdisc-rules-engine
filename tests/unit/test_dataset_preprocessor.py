@@ -1228,12 +1228,56 @@ def test_data_processor_groups_qnam_suppdm_qvals(suppdm_with_race):
     assert suppdm_df.loc[0, ["RACE1", "RACE2", "RACE3"]].notna().all()
 
 
-def test_dm_merged_with_suppdm_without_dupes(suppdm_with_race):
+@patch("cdisc_rules_engine.services.data_services.LocalDataService.get_dataset")
+def test_dm_merged_with_suppdm_without_dupes(mock_get_dataset, suppdm_with_race):
+    mock_get_dataset.return_value = suppdm_with_race
+
     dm = {
         "STUDYID": {7: "CDISCPILOT01"},
         "DOMAIN": {7: "DM"},
         "USUBJID": {7: "CDISC008"},
         "SUBJID": {7: "1445"},
     }
+    dm_meta = SDTMDatasetMetadata(
+        name="DM",
+        first_record={"DOMAIN": "DM"},
+        filename="dm.json",
+        full_path="dm.json",
+    )
 
-    assert dm.shape[0] == 3
+    supp_dm_meta = SDTMDatasetMetadata(
+        name="SUPPDM",
+        first_record={"RDOMAIN": "DM"},
+        filename="suppdm.json",
+        full_path="suppdm.json",
+    )
+    dm_ds = PandasDataset(pd.DataFrame(dm))
+    rule_with_specific_supp = {
+        "core_id": "TestSupplementalIDVAR",
+        "datasets": [
+            {"domain_name": "SUPP--", "match_key": ["USUBJID"], "wildcard": "**"}
+        ],
+        "conditions": ConditionCompositeFactory.get_condition_composite(
+            {
+                "all": [
+                    {
+                        "name": "get_dataset",
+                        "operator": "equal_to",
+                        "value": {"target": "QVAL", "comparator": "test_value"},
+                    }
+                ]
+            }
+        ),
+    }
+    assert suppdm_with_race.data.shape[0] == 3
+    data_service = LocalDataService(MagicMock(), MagicMock(), MagicMock())
+    preprocessor = DatasetPreprocessor(
+        dm_ds,
+        dm_meta,
+        data_service,
+        InMemoryCacheService(),
+    )
+    result = preprocessor.preprocess(rule_with_specific_supp, [supp_dm_meta])
+    assert result.data.shape[0] == 1
+    assert {"RACE1", "RACE2", "RACE3"}.issubset(set(result.columns))
+    assert result.data.loc[0, ["RACE1", "RACE2", "RACE3"]].notna().all()
