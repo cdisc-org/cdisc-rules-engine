@@ -75,9 +75,12 @@ def get_variables_metadata_from_standard(domain, library_metadata):  # noqa
     model_details = library_metadata.model_metadata
     is_custom = domain not in standard_details.get("domains", {})
     variables_metadata = []
-    IG_class_details, IG_domain_details = get_class_and_domain_metadata(
-        standard_details, domain
-    )
+    if not is_custom:
+        IG_class_details, IG_domain_details = get_class_and_domain_metadata(
+            standard_details, domain
+        )
+    else:
+        return
     class_name = convert_library_class_name_to_ct_class(IG_class_details.get("name"))
     model_class_details = get_class_metadata(model_details, class_name)
     # Both custom and standard General Observations pull from model
