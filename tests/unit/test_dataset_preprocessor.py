@@ -1242,7 +1242,7 @@ def rule_with_specific_supp():
 
 
 def test_data_processor_groups_qnam_suppdm_qvals(suppdm_with_race):
-    assert suppdm_with_race.shape[0] == 3
+    assert suppdm_with_race.data.shape[0] == 3
     suppdm_df = DataProcessor().process_supp(suppdm_with_race).data
     # expected to group data
     assert suppdm_df.shape[0] == 1
