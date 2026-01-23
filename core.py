@@ -228,7 +228,7 @@ def _validate_no_arguments(logger) -> None:
     "-ss",
     "--substandard",
     default=None,
-    type=click.Choice(["SDTM", "SEND", "ADaM", "CDASH"], case_sensitive=False),
+    type=click.Choice(["sdtm", "send", "adam", "cdash"], case_sensitive=False),
     help="CDISC Substandard to validate against. Any of SDTM, SEND, ADaM, CDASH",
 )
 @click.option(
