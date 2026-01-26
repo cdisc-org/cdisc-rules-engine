@@ -553,9 +553,14 @@ def validate(
     ),
 )
 @click.option(
+    "-cse",
+    "--custom-standard-encoding",
+    help="Encoding for custom standard details. ",
+)
+@click.option(
     "-rcs",
     "--remove-custom-standard",
-    help=("Removes a custom standard and version from the cache. "),
+    help="Removes a custom standard and version from the cache. ",
     multiple=True,
 )
 @click.pass_context
@@ -568,6 +573,7 @@ def update_cache(
     remove_custom_rules: str,
     update_custom_rule: str,
     custom_standard: str,
+    custom_standard_encoding: str,
     remove_custom_standard: str,
 ):
     cache = CacheServiceFactory(config).get_cache_service()
@@ -580,6 +586,7 @@ def update_cache(
         remove_custom_rules,
         update_custom_rule,
         custom_standard,
+        custom_standard_encoding,
         remove_custom_standard,
         cache_path,
     )

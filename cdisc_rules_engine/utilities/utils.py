@@ -4,6 +4,8 @@ that can be reused.
 """
 
 import copy
+import json
+import locale
 import os
 import re
 import ast
@@ -502,3 +504,34 @@ def python_version_check():
             f"You are using Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}. "
             f"The application may still work, but you may experience unexpected errors or issues with validation."
         )
+
+
+def load_json_with_optional_encoding(path: str, encoding: str | None = None) -> dict:
+    tried = []
+    if encoding:
+        # If the file contains only ASCII characters, incorrect encodings may still succeed
+        try:
+            with open(path, "r", encoding=encoding) as f:
+                return json.load(f)
+        except (UnicodeDecodeError, json.JSONDecodeError) as e:
+            tried.append((encoding, e))
+
+    fallback_encodings = [
+        "utf-8-sig",  # UTF-8 + BOM
+        "utf-8",
+        locale.getpreferredencoding(False),
+    ]
+
+    for enc in fallback_encodings:
+        if enc == encoding:
+            continue
+
+        try:
+            with open(path, "r", encoding=enc) as f:
+                return json.load(f)
+        except (UnicodeDecodeError, json.JSONDecodeError) as e:
+            tried.append((enc, e))
+
+    tried_msg = ", ".join(enc for enc, _ in tried)
+
+    raise ValueError(f"Unable to load JSON file '{path}'. Tried encodings: {tried_msg}")
