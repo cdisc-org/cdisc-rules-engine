@@ -182,7 +182,7 @@ To validate a folder using rules for SDTM-IG version 3.4 use the following comma
 CORE supports the following dataset file formats for validation:
 
 - **XPT** - SAS Transport Format (version 5)
-- **JSON** - Dataset-JSON (CDISC standard format)
+- **JSON** - Dataset-JSON > v1.1 (CDISC standard format)
 - **NDJSON** - Newline Delimited JSON datasets
 - **XLSX** - Excel format (Microsoft Excel files)
 
