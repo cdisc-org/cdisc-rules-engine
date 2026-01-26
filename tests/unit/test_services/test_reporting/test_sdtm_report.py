@@ -133,4 +133,4 @@ def test_no_errors_when_none_value_in_one_of_the_records(mock_validation_results
     for i, error in enumerate(summary_data):
         assert error == summary_data[i]
     details = report.get_detailed_data()
-    assert len(details) == 2
+    assert len(details) == 3
