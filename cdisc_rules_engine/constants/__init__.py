@@ -17,3 +17,5 @@ XPT_MODIFIED_DATE_PATTERN: str = (
 NULL_FLAVORS = ["", None, {None}, [], {}, np.nan]
 
 KNOWN_REPORT_EXTENSIONS = [".json", ".xlsx", ".xls"]
+
+PYTHON_MINIMUM_VERSION = (3, 12)

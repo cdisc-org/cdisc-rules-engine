@@ -26,6 +26,7 @@ from cdisc_rules_engine.constants.domains import (
     SUPPLEMENTARY_DOMAINS,
 )
 from cdisc_rules_engine.constants.classes import SPECIAL_PURPOSE, SPECIAL_PURPOSE_MODEL
+from cdisc_rules_engine.constants import PYTHON_MINIMUM_VERSION
 from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 from cdisc_rules_engine.interfaces import ConditionInterface
 from cdisc_rules_engine.models.base_validation_entity import BaseValidationEntity
@@ -486,11 +487,18 @@ def set_max_errors_per_rule(args):
 
 
 def python_version_check():
-    python_version = sys.version_info
-    if python_version.major != 3 or python_version.minor != 12:
-        logger.warning(
-            f"This tool is designed for the Python version outlined in the top of the readme."
-            f"You are using Python {python_version.major}.{python_version.minor}.{python_version.micro} "
-            f"You may experience unexpected errors or issues with the validation"
+    current = sys.version_info[:2]
+
+    if current < PYTHON_MINIMUM_VERSION:
+        logger.error(
+            f"Python {PYTHON_MINIMUM_VERSION[0]}.{PYTHON_MINIMUM_VERSION[1]}+ is required. "
+            f"You are using Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}. "
+            f"Please upgrade Python to continue."
         )
-    return
+        sys.exit(1)
+    elif current != PYTHON_MINIMUM_VERSION:
+        logger.warning(
+            f"This tool was tested with Python {PYTHON_MINIMUM_VERSION[0]}.{PYTHON_MINIMUM_VERSION[1]}. "
+            f"You are using Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}. "
+            f"The application may still work, but you may experience unexpected errors or issues with validation."
+        )
