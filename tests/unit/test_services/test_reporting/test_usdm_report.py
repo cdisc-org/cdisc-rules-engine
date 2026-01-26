@@ -114,3 +114,22 @@ def test_get_summary_data(mock_validation_results):
     assert len(errors) == len(summary_data)
     for i, error in enumerate(errors):
         assert error == summary_data[i]
+
+
+def test_no_errors_when_none_value_in_one_of_the_records(mock_validation_results):
+    # forcing None and str comparison in summary and details
+    mock_validation_results[0].id = None
+    report = USDMReportData(
+        [],
+        ["test"],
+        mock_validation_results,
+        10.1,
+        MagicMock(
+            define_xml_path=None,
+            max_errors_per_rule=(None, False),
+        ),
+    )
+    summary_data = report.get_summary_data()
+    assert len(summary_data) == 2
+    for i, error in enumerate(summary_data):
+        assert error == summary_data[i]
