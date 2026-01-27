@@ -1,0 +1,134 @@
+{
+  "datasetJSONCreationDateTime": "2024-11-11T15:09:18",
+  "datasetJSONVersion": "1.1.0",
+  "fileOID": "www.cdisc.org/StudyMSGv2/1/Define-XML_2.1.0/2024-11-11/suppdm",
+  "dbLastModifiedDateTime": "2020-08-21T09:14:27",
+  "originator": "CDISC SDTM MSG Team",
+  "sourceSystem": {
+    "name": "SAS on X64_10PRO",
+    "version": "9.0401M7"
+  },
+  "studyOID": "cdisc.com/CDISCPILOT01",
+  "metaDataVersionOID": "MDV.MSGv2.0.SDTMIG.3.3.SDTM.1.7",
+  "metaDataRef": "define.xml",
+  "itemGroupOID": "IG.SUPPDM",
+  "records": 3,
+  "name": "SUPPDM",
+  "label": "Supplemental Qualifiers for DM",
+  "columns": [
+    {
+      "itemOID": "IT.SUPPDM.STUDYID",
+      "name": "STUDYID",
+      "label": "Study Identifier",
+      "dataType": "string",
+      "length": 12,
+      "keySequence": 1
+    },
+    {
+      "itemOID": "IT.SUPPDM.RDOMAIN",
+      "name": "RDOMAIN",
+      "label": "Related Domain Abbreviation",
+      "dataType": "string",
+      "length": 6,
+      "keySequence": 2
+    },
+    {
+      "itemOID": "IT.SUPPDM.USUBJID",
+      "name": "USUBJID",
+      "label": "Unique Subject Identifier",
+      "dataType": "string",
+      "length": 8,
+      "keySequence": 3
+    },
+    {
+      "itemOID": "IT.SUPPDM.IDVAR",
+      "name": "IDVAR",
+      "label": "Identifying Variable",
+      "dataType": "string",
+      "length": 200,
+      "keySequence": 4
+    },
+    {
+      "itemOID": "IT.SUPPDM.IDVARVAL",
+      "name": "IDVARVAL",
+      "label": "Identifying Variable Value",
+      "dataType": "string",
+      "length": 200,
+      "keySequence": 5
+    },
+    {
+      "itemOID": "IT.SUPPDM.QNAM",
+      "name": "QNAM",
+      "label": "Qualifier Variable Name",
+      "dataType": "string",
+      "length": 5,
+      "keySequence": 6
+    },
+    {
+      "itemOID": "IT.SUPPDM.QLABEL",
+      "name": "QLABEL",
+      "label": "Qualifier Variable Label",
+      "dataType": "string",
+      "length": 40
+    },
+    {
+      "itemOID": "IT.SUPPDM.QVAL",
+      "name": "QVAL",
+      "label": "Data Value",
+      "dataType": "string",
+      "length": 41
+    },
+    {
+      "itemOID": "IT.SUPPDM.QORIG",
+      "name": "QORIG",
+      "label": "Origin",
+      "dataType": "string",
+      "length": 13
+    },
+    {
+      "itemOID": "IT.SUPPDM.QEVAL",
+      "name": "QEVAL",
+      "label": "Evaluator",
+      "dataType": "string",
+      "length": 200
+    }
+  ],
+  "rows": [
+    [
+      "CDISCPILOT01",
+      "DM",
+      "CDISC008",
+      "",
+      "",
+      "RACE1",
+      "Race 1",
+      "ASIAN",
+      "CRF",
+      ""
+    ],
+    [
+      "CDISCPILOT01",
+      "DM",
+      "CDISC008",
+      "",
+      "",
+      "RACE2",
+      "Race 2",
+      "BLACK OR AFRICAN AMERICAN",
+      "CRF",
+      ""
+    ],
+    [
+      "CDISCPILOT01",
+      "DM",
+      "CDISC008",
+      "",
+      "",
+      "RACE3",
+      "Race 3",
+      "WHITE",
+      "CRF",
+      ""
+    ]
+  ]
+}
