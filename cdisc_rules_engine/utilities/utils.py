@@ -9,7 +9,6 @@ import locale
 import os
 import re
 import ast
-import sys
 import pandas as pd
 from datetime import datetime
 from typing import Callable, Iterable, List, Optional, Union
@@ -28,14 +27,12 @@ from cdisc_rules_engine.constants.domains import (
     SUPPLEMENTARY_DOMAINS,
 )
 from cdisc_rules_engine.constants.classes import SPECIAL_PURPOSE, SPECIAL_PURPOSE_MODEL
-from cdisc_rules_engine.constants import PYTHON_MINIMUM_VERSION
 from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 from cdisc_rules_engine.interfaces import ConditionInterface
 from cdisc_rules_engine.models.base_validation_entity import BaseValidationEntity
 from cdisc_rules_engine.check_operators.helpers import is_valid_date
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.constants.adam_products import ADAM_PRODUCTS
-from cdisc_rules_engine.services import logger
 
 
 def convert_file_size(size_in_bytes: int, desired_unit: str) -> float:
@@ -486,24 +483,6 @@ def set_max_errors_per_rule(args):
 
     per_dataset = bool(env_per_dataset or cli_per_dataset)
     return max_errors_per_rule, per_dataset
-
-
-def python_version_check():
-    current = sys.version_info[:2]
-
-    if current < PYTHON_MINIMUM_VERSION:
-        logger.error(
-            f"Python {PYTHON_MINIMUM_VERSION[0]}.{PYTHON_MINIMUM_VERSION[1]}+ is required. "
-            f"You are using Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}. "
-            f"Please upgrade Python to continue."
-        )
-        sys.exit(1)
-    elif current != PYTHON_MINIMUM_VERSION:
-        logger.warning(
-            f"This tool was tested with Python {PYTHON_MINIMUM_VERSION[0]}.{PYTHON_MINIMUM_VERSION[1]}. "
-            f"You are using Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}. "
-            f"The application may still work, but you may experience unexpected errors or issues with validation."
-        )
 
 
 def load_json_with_optional_encoding(path: str, encoding: str | None = None) -> dict:
