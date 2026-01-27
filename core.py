@@ -794,12 +794,15 @@ def list_ct(cache_path: str, subsets: set[str]):
 def test_validate(filetype):
     """**Release Test** validate command for executable."""
     try:
-        # All imports are available at module level
         base_path = os.path.join("tests", "resources", "datasets")
+        ts_path = os.path.join(base_path, "TS.json")
+
+        # Determine test file based on filetype
         if filetype.lower() == "json":
-            test_file = os.path.join(base_path, "TS.json")
+            test_file = ts_path
         else:
             test_file = os.path.join(base_path, "ae.xpt")
+
         if not os.path.exists(test_file):
             raise FileNotFoundError(f"Test dataset not found: {test_file}")
         if not os.path.exists(ts_path):
@@ -848,40 +851,14 @@ def test_validate(filetype):
             run_validation(make_args([ts_path], None, json_output))
             print("JSON validation completed successfully!")
 
-            output = xpt_output if filetype.lower() == "xpt" else json_output
-            run_validation(
-                Validation_args(
-                    cache_path,
-                    pool_size,
-                    [test_file],
-                    log_level,
-                    None,
-                    standard,
-                    version,
-                    None,
-                    set(),
-                    output,
-                    output_format,
-                    False,
-                    None,
-                    external_dictionaries,
-                    [],
-                    [],
-                    None,
-                    False,
-                    progress,
-                    None,
-                    False,
-                    (),
-                    None,
-                    max_report_errors,
-                )
-            )
+            # Second validation: Validate the specified filetype
+            output = json_output if filetype.lower() == "json" else xpt_output
+            run_validation(make_args([test_file], None, output))
             print(f"{filetype.upper()} validation completed successfully!")
+
         sys.exit(0)
     except Exception as e:
         import traceback
-
         print(f"{filetype.upper()} validation test failed: {str(e)}")
         print(traceback.format_exc())
         sys.exit(1)
