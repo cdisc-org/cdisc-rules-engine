@@ -1273,19 +1273,19 @@ class DataframeType(BaseType):
         Validates one-to-one relationship between two columns (target and comparator)
         within a dataset. One-to-one means that a columns values can be duplicated
         but it must always corresponds to one value of comparator and vice versa.
-
         A violation occurs when a NON-NULL value in either column maps to multiple
         different values in the other column.
         """
         target = self.replace_prefix(other_value.get("target"))
         comparator = other_value.get("comparator")
-
         if isinstance(comparator, list):
             comparator = self.replace_all_prefixes(comparator)
+            columns = [target] + comparator
         else:
             comparator = self.replace_prefix(comparator)
+            columns = [target, comparator]
 
-        df_subset = self.value[[target, comparator]].dropna(how="all")
+        df_subset = self.value[columns].dropna(how="all")
         df_without_duplicates = df_subset.drop_duplicates()
         violated_targets, violated_comparators = self._find_relationship_violations(
             df_without_duplicates, target, comparator
@@ -1306,7 +1306,15 @@ class DataframeType(BaseType):
                 if pd.notna(v) and v != "" and v is not None
             }
             if clean_comparators:
-                result = result | self.value[comparator].isin(clean_comparators)
+                if isinstance(comparator, list):
+                    # For multi-column comparators, match on tuple combinations
+                    for comp_tuple in clean_comparators:
+                        mask = self.value.convert_to_series([True] * len(self.value))
+                        for i, col in enumerate(comparator):
+                            mask = mask & (self.value[col] == comp_tuple[i])
+                        result = result | mask
+                else:
+                    result = result | self.value[comparator].isin(clean_comparators)
 
         return result
 
@@ -1323,20 +1331,56 @@ class DataframeType(BaseType):
         violated_comparators = self._check_column_violations(
             df_without_duplicates, comparator, target
         )
-
         return violated_targets, violated_comparators
 
     def _check_column_violations(self, df_without_duplicates, key_column, value_column):
         violated_keys = set()
-        for key_val in df_without_duplicates[key_column].dropna().unique():
-            if key_val == "":
-                continue
-            key_rows = df_without_duplicates[
-                df_without_duplicates[key_column] == key_val
-            ]
-            if self._has_multiple_mappings(key_rows[value_column]):
-                violated_keys.add(key_val)
+        if isinstance(key_column, list):
+            key_data = df_without_duplicates[key_column]
+            unique_keys = [tuple(row) for row in key_data.drop_duplicates().values]
+        else:
+            unique_keys = df_without_duplicates[key_column].dropna().unique()
+        for key_val in unique_keys:
+            if isinstance(key_column, list):
+                if any(v == "" or pd.isna(v) or v is None for v in key_val):
+                    continue
+                mask = pd.Series(
+                    [True] * len(df_without_duplicates),
+                    index=df_without_duplicates.index,
+                )
+                for i, col in enumerate(key_column):
+                    mask = mask & (df_without_duplicates[col] == key_val[i])
+                key_rows = df_without_duplicates[mask]
+            else:
+                if key_val == "":
+                    continue
+                key_rows = df_without_duplicates[
+                    df_without_duplicates[key_column] == key_val
+                ]
+
+            if isinstance(value_column, list):
+                value_tuples = [tuple(row) for row in key_rows[value_column].values]
+                if self._has_multiple_mappings_for_tuples(value_tuples):
+                    violated_keys.add(key_val)
+            else:
+                if self._has_multiple_mappings(key_rows[value_column]):
+                    violated_keys.add(key_val)
         return violated_keys
+
+    def _has_multiple_mappings_for_tuples(self, value_tuples):
+        """
+        Check if a list of tuples contains multiple different non-null tuples.
+        Returns True if there are multiple non-null tuples, or at least one
+        non-null tuple plus a null tuple.
+        """
+        unique_tuples = set()
+        has_null = False
+        for val_tuple in value_tuples:
+            if any(pd.isna(v) or v == "" or v is None for v in val_tuple):
+                has_null = True
+            else:
+                unique_tuples.add(val_tuple)
+        return len(unique_tuples) > 1 or (len(unique_tuples) >= 1 and has_null)
 
     def _has_multiple_mappings(self, values):
         """
@@ -1346,13 +1390,11 @@ class DataframeType(BaseType):
         """
         unique_values = set()
         has_null = False
-
         for val in values:
             if pd.isna(val) or val == "" or val is None:
                 has_null = True
             else:
                 unique_values.add(val)
-
         return len(unique_values) > 1 or (len(unique_values) >= 1 and has_null)
 
     @log_operator_execution
