@@ -1,4 +1,8 @@
-[![](./resources/assets/CORE_logo_sm.png)](https://www.cdisc.org)
+<p align="center">
+  <a href="https://www.cdisc.org">
+  <img src="./resources/assets/CORE_logo_sm.png">
+  </a>
+</p>
 
 [![](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3120) [![](https://img.shields.io/pypi/v/cdisc-rules-engine.svg)](https://pypi.org/project/cdisc-rules-engine) [![](https://img.shields.io/docker/v/cdiscdocker/cdisc-rules-engine?label=docker)](https://hub.docker.com/r/cdiscdocker/cdisc-rules-engine)
 
