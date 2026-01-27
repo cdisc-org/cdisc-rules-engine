@@ -1,9 +1,11 @@
 import re
+import pickle
 from datetime import datetime
 from typing import List, Dict, Any
-from cdisc_rules_engine.readers.base_reader import BaseReader
 from dataclasses import dataclass
 import pandas as pd
+
+from cdisc_rules_engine.readers.base_reader import BaseReader
 
 
 @dataclass
@@ -18,14 +20,15 @@ class CodelistMetadata:
 class CodelistReader(BaseReader):
     """
     Reader for CDISC Controlled Terminology codelist files.
-    Handles both codelist and code_list_item files in CSV and Excel formats.
+    Handles codelist files in CSV, Excel, and Pickle formats.
     """
 
     FILENAME_PATTERN = re.compile(
-        r"^(?P<standard_type>ADaM|SDTM)_CT_"
+        r"^(?P<standard_type>sdtm|SDTM)(_CT_|ct-)"
         r"(?P<version_date>\d{8}|\d{4}-\d{2}-\d{2})"
-        r"\.(?P<extension>csv|tsv|xlsx|xls)$"
+        r"\.(?P<extension>csv|tsv|xlsx|xls|pkl)$"
     )
+    # Removed ADAM for run-time as we don't have ADAM implemented yet.
 
     EXCEL_COLUMN_MAPPING = {
         "Code": "item_code",
@@ -47,7 +50,9 @@ class CodelistReader(BaseReader):
                 f"Filename does not match expected pattern: {self.file_path.name}\n"
                 "Expected formats:\n"
                 "  - <STANDARD>_CT_<YYYYMMDD>.<EXT>\n"
-                "  - <STANDARD>_CT_<YYYY-MM-DD>.<EXT>"
+                "  - <STANDARD>_CT_<YYYY-MM-DD>.<EXT>\n"
+                "  - <standard>ct-<YYYYMMDD>.<EXT>\n"
+                "  - <standard>ct-<YYYY-MM-DD>.<EXT>"
             )
 
         groups = match.groupdict()
@@ -83,12 +88,65 @@ class CodelistReader(BaseReader):
                 return df.where(df.notna(), None).to_dict("records")
             raise
 
+    def _read_pickle(self) -> List[Dict[str, Any]]:
+        """Read pickle file and flatten hierarchy to list of records."""
+        with open(self.file_path, "rb") as f:
+            data = pickle.load(f)
+
+        records = []
+        package = data.get("package", "")
+
+        for key, val in data.items():
+            if key in ["package", "submission_lookup"]:
+                continue
+
+            codelist_code = key
+            extensible = "Yes" if val.get("extensible") is True else "No"
+            name = val.get("name")
+            submission_value = val.get("submissionValue")
+            synonyms = "; ".join(val.get("synonyms", []))
+            definition = val.get("definition")
+            preferred_term = val.get("preferredTerm")
+
+            records.append(
+                {
+                    "item_code": codelist_code,
+                    "codelist_code": "",
+                    "extensible": extensible,
+                    "name": name,
+                    "value": submission_value,
+                    "synonym": synonyms,
+                    "definition": definition,
+                    "term": preferred_term,
+                    "standard_and_date": package,
+                }
+            )
+
+            for term in val.get("terms", []):
+                records.append(
+                    {
+                        "item_code": term.get("conceptId"),
+                        "codelist_code": codelist_code,
+                        "extensible": extensible,
+                        "name": name,
+                        "value": term.get("submissionValue"),
+                        "synonym": "; ".join(term.get("synonyms", [])),
+                        "definition": term.get("definition"),
+                        "term": term.get("preferredTerm"),
+                        "standard_and_date": package,
+                    }
+                )
+
+        return records
+
     def read(self) -> List[Dict[str, Any]]:
         """Read the file and return data formatted for SQL insertion."""
         if self.metadata.extension in ["xlsx", "xls"]:
             raw_data = self._read_excel_with_sheet()
         elif self.metadata.extension == "csv":
             raw_data = self._read_excel()
+        elif self.metadata.extension == "pkl":
+            raw_data = self._read_pickle()
         else:
             raise ValueError(f"Unsupported file extension: {self.metadata.extension}")
         return self._format_data(raw_data)
@@ -105,30 +163,6 @@ class CodelistReader(BaseReader):
                 "item_code": row.get("item_code"),
                 "codelist_code": row.get("codelist_code"),
                 "extensible": row.get("extensible"),
-                "name": row.get("name"),
-                "value": row.get("value"),
-                "synonym": row.get("synonym"),
-                "definition": row.get("definition"),
-                "term": row.get("term"),
-                "standard_and_date": row.get("standard_and_date"),
-            }
-            formatted_data.append(formatted_row)
-
-        return formatted_data
-
-    def _format_code_list_item_data(
-        self, raw_data: List[Dict[str, Any]]
-    ) -> List[Dict[str, Any]]:
-        """Format data for the code_list_item table."""
-        formatted_data = []
-        version_date = self._format_version_date(self.metadata.version_date)
-
-        for row in raw_data:
-            formatted_row = {
-                "standard_type": self.metadata.standard_type,
-                "version_date": version_date,
-                "item_code": row.get("item_code"),
-                "codelist_code": row.get("codelist_code"),
                 "name": row.get("name"),
                 "value": row.get("value"),
                 "synonym": row.get("synonym"),

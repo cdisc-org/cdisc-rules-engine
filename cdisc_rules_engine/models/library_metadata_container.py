@@ -114,9 +114,7 @@ class LibraryMetadataContainer:
         for version in {*versions}:
             ct_package_data = self._load_ct_package_data(ct_package_type, version)
             for codelist_code, codelist in ct_package_data.items():
-                for term in (
-                    codelist.get("terms", []) if isinstance(codelist, dict) else []
-                ):
+                for term in codelist.get("terms", []) if isinstance(codelist, dict) else []:
                     ct_terms["ct_package_type"].append(ct_package_type)
                     ct_terms["version"].append(version)
                     ct_terms["codelist_code"].append(codelist_code)

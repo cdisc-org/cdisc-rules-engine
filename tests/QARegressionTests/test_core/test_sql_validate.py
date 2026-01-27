@@ -619,6 +619,50 @@ class TestValidate(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertTrue(stderr == "")
 
+    def test_sql_validate_codelists(self):
+        args = [
+            "python",
+            "core.py",
+            "validate",
+            "-sql",
+            "-s",
+            "sdtmig",
+            "-v",
+            "3.4",
+            "-dp",
+            os.path.join("tests", "resources", "test_dataset.xpt"),
+            "-ct",
+            "sdtmct-2025-03-28",
+        ]
+        exit_code, stdout, stderr = run_command(args, False)
+        self.assertEqual(exit_code, 0)
+        self.assertFalse(self.error_keyword in stdout)
+        self.assertEqual(stderr, "")
+
+    def test_sql_validate_mult_codelists(self):
+        args = [
+            "python",
+            "core.py",
+            "validate",
+            "-sql",
+            "-s",
+            "sdtmig",
+            "-v",
+            "3.4",
+            "-dp",
+            os.path.join("tests", "resources", "test_dataset.xpt"),
+            "-ct",
+            "sdtmct-2025-03-28",
+            "-ct",
+            "sdtmct-2024-09-27",
+            "-ct",
+            "sdtmct-2024-03-29",
+        ]
+        exit_code, stdout, stderr = run_command(args, False)
+        self.assertEqual(exit_code, 0)
+        self.assertFalse(self.error_keyword in stdout)
+        self.assertEqual(stderr, "")
+
     def tearDown(self):
         tearDown()
 

@@ -78,7 +78,7 @@ def run_sql_validation(args: Validation_args, in_memory_postgres: bool = False):
     set_log_level(args)
 
     rules = get_rules(args)
-    library_metadata: LibraryMetadataContainer = get_library_metadata_from_cache(args)
+    library_metadata: LibraryMetadataContainer = get_library_metadata_from_cache(args, sql=True)
     standard = args.standard
     standard_version = args.version.replace(".", "-")
     standard_substandard = args.substandard
@@ -90,6 +90,8 @@ def run_sql_validation(args: Validation_args, in_memory_postgres: bool = False):
     data_service = PostgresQLDataService.from_dataset_paths(
         args.dataset_paths,
         standards_context=standards_context,
+        codelists=library_metadata.get_all_ct_package_metadata(),
+        cache_path=args.cache,
         sql_namespace=args.sql_namespace,
         use_pgserver=in_memory_postgres,
     )

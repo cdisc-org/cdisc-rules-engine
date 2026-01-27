@@ -48,6 +48,8 @@ WHITELISTED_RULES = {
     "CORE-000784",
 }
 
+TEST_CACHE_PATH = os.path.join(os.path.dirname(__file__), "..", "..", DefaultFilePaths.CACHE.value)
+
 
 def run_single_rule_regression(
     row: pd.Series,
@@ -321,7 +323,7 @@ def get_metadata(ig_specs: IGSpecification, define_xml_path: str):
     if key not in METADATA_CACHE:
         METADATA_CACHE[key] = get_library_metadata_from_cache(
             Validation_args(
-                cache=os.path.join(os.path.dirname(__file__), "..", "..", DefaultFilePaths.CACHE.value),
+                cache=TEST_CACHE_PATH,
                 pool_size=None,
                 dataset_paths=None,
                 log_level=None,
@@ -367,7 +369,7 @@ def _initialize_data_service(
         return ds
 
     return PostgresQLDataService.from_list_of_testdatasets(
-        data_test_datasets, standards_context, use_pgserver=use_pgserver
+        data_test_datasets, standards_context, use_pgserver=use_pgserver, cache_path=TEST_CACHE_PATH
     )
 
 
