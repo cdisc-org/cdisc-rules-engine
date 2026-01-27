@@ -802,70 +802,50 @@ def test_validate(filetype):
             test_file = os.path.join(base_path, "ae.xpt")
         if not os.path.exists(test_file):
             raise FileNotFoundError(f"Test dataset not found: {test_file}")
+        if not os.path.exists(ts_path):
+            raise FileNotFoundError(f"Test dataset not found: {ts_path}")
+
+        # Common validation parameters (in Validation_args order)
         cache_path = DEFAULT_CACHE_PATH
         pool_size = 10
         log_level = "disabled"
         standard = "sdtmig"
         version = "3.4"
+        substandard = None
+        controlled_terminology_package = set()
         output_format = {ReportTypes.XLSX.value}
+        raw_report = False
+        define_version = None
         external_dictionaries = ExternalDictionariesContainer({})
+        rules = []
+        exclude_rules = []
+        local_rules = None
+        custom_standard = False
         progress = ProgressParameterOptions.BAR.value
+        define_xml_path = None
+        validate_xml = False
+        max_report_rows = None
         max_report_errors = (0, False)
+        jsonata_custom_functions = ()
 
         with tempfile.TemporaryDirectory() as temp_dir:
-            cache_path = DEFAULT_CACHE_PATH
-            pool_size = 10
-            log_level = "disabled"
-            report_template = None
-            standard = "sdtmig"
-            version = "3.4"
-            substandard = None
-            controlled_terminology_package = set()
-            ts_path = os.path.join(base_path, "TS.json")
             json_output = os.path.join(temp_dir, "json_validation_output")
             xpt_output = os.path.join(temp_dir, "xpt_validation_output")
-            output_format = {ReportTypes.XLSX.value}
-            raw_report = False
-            define_version = None
-            external_dictionaries = ExternalDictionariesContainer({})
-            rules = []
-            exclude_rules = []
-            local_rules = None
-            custom_standard = False
-            progress = ProgressParameterOptions.BAR.value
-            define_xml_path = None
-            validate_xml = False
-            max_report_rows = None
-            max_report_errors = (0, False)
-            jsonata_custom_functions = ()
-            run_validation(
-                Validation_args(
-                    cache_path,
-                    pool_size,
-                    [ts_path],
-                    log_level,
-                    report_template,
-                    standard,
-                    version,
-                    substandard,
-                    controlled_terminology_package,
-                    json_output,
-                    output_format,
-                    raw_report,
-                    define_version,
-                    external_dictionaries,
-                    rules,
-                    exclude_rules,
-                    local_rules,
-                    custom_standard,
-                    progress,
-                    define_xml_path,
-                    validate_xml,
-                    jsonata_custom_functions,
-                    max_report_rows,
-                    max_report_errors,
+
+            # Helper function to create Validation_args with common params
+            def make_args(dataset_paths, report_template, output):
+                return Validation_args(
+                    cache_path, pool_size, dataset_paths, log_level,
+                    report_template, standard, version, substandard,
+                    controlled_terminology_package, output, output_format,
+                    raw_report, define_version, external_dictionaries,
+                    rules, exclude_rules, local_rules, custom_standard,
+                    progress, define_xml_path, validate_xml,
+                    jsonata_custom_functions, max_report_rows, max_report_errors
                 )
-            )
+
+            # First validation: Always validate TS.json (baseline test)
+            run_validation(make_args([ts_path], None, json_output))
             print("JSON validation completed successfully!")
 
             output = xpt_output if filetype.lower() == "xpt" else json_output
