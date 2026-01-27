@@ -1,0 +1,85 @@
+{
+  "datasetJSONCreationDateTime": "2024-11-11T15:09:17",
+  "datasetJSONVersion": "1.1.0",
+  "fileOID": "www.cdisc.org/StudyMSGv2/1/Define-XML_2.1.0/2024-11-11/relrec",
+  "dbLastModifiedDateTime": "2020-08-21T09:14:25",
+  "originator": "CDISC SDTM MSG Team",
+  "sourceSystem": {
+    "name": "SAS on X64_10PRO",
+    "version": "9.0401M7"
+  },
+  "studyOID": "cdisc.com/CDISCPILOT01",
+  "metaDataVersionOID": "MDV.MSGv2.0.SDTMIG.3.3.SDTM.1.7",
+  "metaDataRef": "define.xml",
+  "itemGroupOID": "IG.RELREC",
+  "records": 6,
+  "name": "RELREC",
+  "label": "Related Records",
+  "columns": [
+    {
+      "itemOID": "IT.RELREC.STUDYID",
+      "name": "STUDYID",
+      "label": "Study Identifier",
+      "dataType": "string",
+      "length": 12,
+      "keySequence": 1
+    },
+    {
+      "itemOID": "IT.RELREC.RDOMAIN",
+      "name": "RDOMAIN",
+      "label": "Related Domain Abbreviation",
+      "dataType": "string",
+      "length": 6,
+      "keySequence": 2
+    },
+    {
+      "itemOID": "IT.RELREC.USUBJID",
+      "name": "USUBJID",
+      "label": "Unique Subject Identifier",
+      "dataType": "string",
+      "length": 8,
+      "keySequence": 3
+    },
+    {
+      "itemOID": "IT.RELREC.IDVAR",
+      "name": "IDVAR",
+      "label": "Identifying Variable",
+      "dataType": "string",
+      "length": 200,
+      "keySequence": 4
+    },
+    {
+      "itemOID": "IT.RELREC.IDVARVAL",
+      "name": "IDVARVAL",
+      "label": "Identifying Variable Value",
+      "dataType": "string",
+      "length": 200,
+      "keySequence": 5
+    },
+    {
+      "itemOID": "IT.RELREC.RELTYPE",
+      "name": "RELTYPE",
+      "label": "Relationship Type",
+      "dataType": "string",
+      "length": 4
+    },
+    {
+      "itemOID": "IT.RELREC.RELID",
+      "name": "RELID",
+      "label": "Relationship Identifier",
+      "dataType": "string",
+      "length": 200,
+      "keySequence": 6
+    }
+  ],
+  "rows": [
+    ["CDISCPILOT01", "AE", "", "AELNKID", "", "ONE", "AEDS"],
+    ["CDISCPILOT01", "DS", "", "DSLNKID", "", "ONE", "AEDS"],
+    ["CDISCPILOT01", "AE", "", "AELNKID", "", "ONE", "AEDD"],
+    ["CDISCPILOT01", "DD", "", "DDLNKID", "", "ONE", "AEDD"],
+    ["CDISCPILOT01", "AE", "", "AELNKID", "", "ONE", "AEFA"],
+    ["CDISCPILOT01", "FA", "", "FALNKGRP", "", "MANY", "AEFA"],
+    ["CDISCPILOT01", "FA", "", "FALNKGRP", "", "MANY", "AEFA"],
+    ["CDISCPILOT01", "FA", "", "FALNKGRP", "", "MANY", "AEFA1"]
+  ]
+}
