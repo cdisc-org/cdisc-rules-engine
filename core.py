@@ -410,6 +410,7 @@ def validate(
     # Validate conditional options
     logger = logging.getLogger("validator")
     load_dotenv()
+
     validate_dataset_files_exist(dataset_path, logger, ctx)
 
     if raw_report is True:
@@ -878,21 +879,4 @@ cli.add_command(list_ct)
 
 if __name__ == "__main__":
     freeze_support()
-    import sys
-
-    current = sys.version_info[:2]
-    PYTHON_MINIMUM_VERSION = (3, 12)
-    if current < PYTHON_MINIMUM_VERSION:
-        print(
-            f"Python {PYTHON_MINIMUM_VERSION[0]}.{PYTHON_MINIMUM_VERSION[1]}+ is required. "
-            f"You are using Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}. "
-            f"Please upgrade Python to continue."
-        )
-        sys.exit(1)
-    elif current != PYTHON_MINIMUM_VERSION:
-        print(
-            f"This tool was tested wit hPython {PYTHON_MINIMUM_VERSION[0]}.{PYTHON_MINIMUM_VERSION[1]}. "
-            f"You are using Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}. "
-            f"The application may still work, but you may experience unexpected errors or issues with validation."
-        )
     cli()
