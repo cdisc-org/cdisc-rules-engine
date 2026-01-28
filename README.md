@@ -1,4 +1,8 @@
-[![](./resources/assets/CORE_logo_sm.png)](https://www.cdisc.org)
+<p align="center">
+  <a href="https://www.cdisc.org">
+  <img src="./resources/assets/CORE_logo_sm.png">
+  </a>
+</p>
 
 [![](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3120) [![](https://img.shields.io/pypi/v/cdisc-rules-engine.svg)](https://pypi.org/project/cdisc-rules-engine) [![](https://img.shields.io/docker/v/cdiscdocker/cdisc-rules-engine?label=docker)](https://hub.docker.com/r/cdiscdocker/cdisc-rules-engine)
 
@@ -112,7 +116,7 @@ This will show the list of validation options.
   -v, --version TEXT              Standard version to validate against
                                   [required]
   -ss, --substandard TEXT         Substandard to validate against
-                                  [required for TIG]  
+                                  [required for TIG]
   -ct, --controlled-terminology-package TEXT
                                   Controlled terminology package to validate
                                   against, can provide more than one
@@ -183,6 +187,13 @@ This will show the list of validation options.
                                   local rule yml and/or json rule files.
   -cs, --custom-standard       Adding this flag tells engine to use a custom standard specified with -s and -v
                                   that has been uploaded to the cache using update-cache
+  -cse, --custom-standard-encoding TEXT
+                                  Explicitly specify the file encoding to use
+                                  when reading custom standard files (JSON).
+                                  If not provided, the engine will attempt to
+                                  automatically detect the encoding by trying
+                                  common options (utf-8-sig, utf-8, system
+                                  default).
   -vo, --verbose-output           Specify this option to print rules as they
                                   are completed
   -p, --progress [verbose_output|disabled|percents|bar]
@@ -217,7 +228,7 @@ python core.py validate -s sdtmig -v 3-4 -d /full/path/to/datasets
 CORE supports the following dataset file formats for validation:
 
 - **XPT** - SAS Transport Format (version 5)
-- **JSON** - Dataset-JSON (CDISC standard format)
+- **JSON** - Dataset-JSON > v1.1 (CDISC standard format)
 - **NDJSON** - Newline Delimited JSON datasets
 - **XLSX** - Excel format (Microsoft Excel files)
 
