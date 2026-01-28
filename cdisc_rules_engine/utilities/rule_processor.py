@@ -2,7 +2,7 @@ import re
 import copy
 import os
 
-from typing import Iterable, List, Optional, Set, Union, Tuple
+from typing import Iterable, List, Optional, Union, Tuple
 from cdisc_rules_engine.enums.rule_types import RuleTypes
 from cdisc_rules_engine.interfaces.cache_service_interface import (
     CacheServiceInterface,
@@ -739,7 +739,7 @@ class RuleProcessor:
     @staticmethod
     def extract_target_names_from_rule(
         rule: dict, domain: str, column_names: List[str]
-    ) -> Set[str]:
+    ) -> List[str]:
         r"""
         Extracts target from each item of condition list.
 
@@ -754,13 +754,17 @@ class RuleProcessor:
             pattern: ^TSVAL\d+$ (starts with TSVAL and ends with number)
             additional columns: TSVAL1, TSVAL2, TSVAL3 etc.
         """
+        # flake8: noqa: C901
         output_variables: List[str] = rule.get("output_variables", [])
+        target_names: List[str] = []
+        seen: set[str] = set()
         if output_variables:
-            target_names: List[str] = [
-                var.replace("--", domain or "", 1) for var in output_variables
-            ]
+            for var in output_variables:
+                name = var.replace("--", domain or "", 1)
+                if name not in seen:
+                    seen.add(name)
+                    target_names.append(name)
         else:
-            target_names: List[str] = []
             conditions: ConditionInterface = rule["conditions"]
             for condition in conditions.values():
                 if condition.get("operator") == "not_exists":
@@ -774,14 +778,16 @@ class RuleProcessor:
                 )
                 if op_related_pattern is not None:
                     # if pattern exists -> return only matching column names
-                    target_names.extend(
-                        filter(
-                            lambda name: re.match(op_related_pattern, name),
-                            column_names,
-                        )
-                    )
+                    for name in column_names:
+                        if re.match(op_related_pattern, name):
+                            if name not in seen:
+                                seen.add(name)
+                                target_names.append(name)
                 else:
-                    target_names.append(target)
+                    if target not in seen:
+                        seen.add(target)
+                        target_names.append(target)
+
         return target_names
 
     @staticmethod
