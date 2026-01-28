@@ -85,7 +85,19 @@ class DataframeType(BaseType):
     def _assert_valid_value_and_cast(self, value):
         return value
 
+    def _regex_str_conversion(self, x):
+        """Convert value to string for regex operations.
+        Only converts non-null values. Returns NaN/None as-is.
+        """
+        if pd.notna(x):
+            if isinstance(x, int):
+                return str(x).strip()
+            elif isinstance(x, float):
+                return f"{x:.0f}" if x.is_integer() else str(x).strip()
+        return x
+
     def _custom_str_conversion(self, x):
+        """used to normalize numeric representations i.e. treat 200.00 as 200 for comparisons"""
         if pd.notna(x):
             if isinstance(x, str):
                 try:
@@ -750,7 +762,7 @@ class DataframeType(BaseType):
         comparator = other_value.get("comparator")
         prefix = other_value.get("prefix")
         converted_strings = self.value[target].map(
-            lambda x: self._custom_str_conversion(x)
+            lambda x: self._regex_str_conversion(x)
         )
         results = converted_strings.notna() & converted_strings.astype(str).map(
             lambda x: re.search(comparator, x[:prefix]) is not None
@@ -764,7 +776,7 @@ class DataframeType(BaseType):
         comparator = other_value.get("comparator")
         prefix = other_value.get("prefix")
         converted_strings = self.value[target].map(
-            lambda x: self._custom_str_conversion(x)
+            lambda x: self._regex_str_conversion(x)
         )
         results = converted_strings.notna() & ~converted_strings.astype(str).map(
             lambda x: re.search(comparator, x[:prefix]) is not None
@@ -778,7 +790,7 @@ class DataframeType(BaseType):
         comparator = other_value.get("comparator")
         suffix = other_value.get("suffix")
         converted_strings = self.value[target].map(
-            lambda x: self._custom_str_conversion(x)
+            lambda x: self._regex_str_conversion(x)
         )
         results = converted_strings.notna() & converted_strings.astype(str).map(
             lambda x: re.search(comparator, x[-suffix:]) is not None
@@ -792,7 +804,7 @@ class DataframeType(BaseType):
         comparator = other_value.get("comparator")
         suffix = other_value.get("suffix")
         converted_strings = self.value[target].map(
-            lambda x: self._custom_str_conversion(x)
+            lambda x: self._regex_str_conversion(x)
         )
         results = converted_strings.notna() & ~converted_strings.astype(str).map(
             lambda x: re.search(comparator, x[-suffix:]) is not None
@@ -805,7 +817,7 @@ class DataframeType(BaseType):
         target = self.replace_prefix(other_value.get("target"))
         comparator = other_value.get("comparator")
         converted_strings = self.value[target].map(
-            lambda x: self._custom_str_conversion(x)
+            lambda x: self._regex_str_conversion(x)
         )
         results = converted_strings.notna() & converted_strings.astype(str).str.match(
             comparator
@@ -818,7 +830,7 @@ class DataframeType(BaseType):
         target = self.replace_prefix(other_value.get("target"))
         comparator = other_value.get("comparator")
         converted_strings = self.value[target].map(
-            lambda x: self._custom_str_conversion(x)
+            lambda x: self._regex_str_conversion(x)
         )
         results = converted_strings.notna() & ~converted_strings.astype(str).str.match(
             comparator
@@ -1258,80 +1270,132 @@ class DataframeType(BaseType):
     @type_operator(FIELD_DATAFRAME)
     def is_not_unique_relationship(self, other_value):
         """
-        Validates one-to-one relationship between
-        two columns (target and comparator) against a dataset.
-        One-to-one means that a pair of columns can be duplicated
-        but its integrity must not be violated:
-        one value of target always corresponds to
-        one value of comparator.
-        Examples:
-
-        Valid dataset:
-        STUDYID  STUDYDESC
-        1        A
-        2        B
-        3        C
-        1        A
-        2        B
-
-        Invalid dataset:
-        STUDYID  STUDYDESC
-        1        A
-        2        A
-        3        C
+        Validates one-to-one relationship between two columns (target and comparator)
+        within a dataset. One-to-one means that a columns values can be duplicated
+        but it must always corresponds to one value of comparator and vice versa.
+        A violation occurs when a NON-NULL value in either column maps to multiple
+        different values in the other column.
         """
         target = self.replace_prefix(other_value.get("target"))
         comparator = other_value.get("comparator")
         if isinstance(comparator, list):
             comparator = self.replace_all_prefixes(comparator)
+            columns = [target] + comparator
         else:
             comparator = self.replace_prefix(comparator)
-        df_subset = self.value[[target, comparator]].dropna(how="all")
+            columns = [target, comparator]
+
+        df_subset = self.value[columns].dropna(how="all")
         df_without_duplicates = df_subset.drop_duplicates()
-        violated_targets = self._find_relationship_violations(
+        violated_targets, violated_comparators = self._find_relationship_violations(
             df_without_duplicates, target, comparator
         )
+
+        # flag violations from target and comparator
         result = self.value.convert_to_series([False] * len(self.value))
         if violated_targets:
             clean_targets = {
                 v for v in violated_targets if pd.notna(v) and v != "" and v is not None
             }
-            has_null_target = any(
-                pd.isna(v) or v == "" or v is None for v in violated_targets
-            )
             if clean_targets:
                 result = result | self.value[target].isin(clean_targets)
-            if has_null_target:
-                result = result | self.value[target].isna()
+        if violated_comparators:
+            clean_comparators = {
+                v
+                for v in violated_comparators
+                if pd.notna(v) and v != "" and v is not None
+            }
+            if clean_comparators:
+                if isinstance(comparator, list):
+                    # For multi-column comparators, match on tuple combinations
+                    for comp_tuple in clean_comparators:
+                        mask = self.value.convert_to_series([True] * len(self.value))
+                        for i, col in enumerate(comparator):
+                            mask = mask & (self.value[col] == comp_tuple[i])
+                        result = result | mask
+                else:
+                    result = result | self.value[comparator].isin(clean_comparators)
+
         return result
 
     def _find_relationship_violations(self, df_without_duplicates, target, comparator):
-        """Find all target values that violate one-to-one relationship constraints."""
-        violated_targets = set()
-        for target_val in df_without_duplicates[target].dropna().unique():
-            target_rows = df_without_duplicates[
-                df_without_duplicates[target] == target_val
-            ]
-            comparator_values = target_rows[comparator]
-            unique_comparators = set()
-            for comp_val in comparator_values:
-                if pd.isna(comp_val) or comp_val == "" or comp_val is None:
-                    unique_comparators.add("NULL_PLACEHOLDER")
-                else:
-                    unique_comparators.add(comp_val)
-            if len(unique_comparators) > 1:
-                violated_targets.add(target_val)
-        for comp_val in df_without_duplicates[comparator].dropna().unique():
-            if comp_val == "" or pd.isna(comp_val):
-                continue
-            comp_rows = df_without_duplicates[
-                df_without_duplicates[comparator] == comp_val
-            ]
-            target_values = comp_rows[target]
-            if len(target_values) > 1:
-                for t_val in target_values:
-                    violated_targets.add(t_val)
-        return violated_targets
+        """
+        Find all values that violate one-to-one relationship constraints.
+        Returns two sets:
+        - violated_targets: non-null target values that map to multiple comparators
+        - violated_comparators: non-null comparator values that map to multiple targets
+        """
+        violated_targets = self._check_column_violations(
+            df_without_duplicates, target, comparator
+        )
+        violated_comparators = self._check_column_violations(
+            df_without_duplicates, comparator, target
+        )
+        return violated_targets, violated_comparators
+
+    def _check_column_violations(self, df_without_duplicates, key_column, value_column):
+        violated_keys = set()
+        if isinstance(key_column, list):
+            key_data = df_without_duplicates[key_column]
+            unique_keys = [tuple(row) for row in key_data.drop_duplicates().values]
+        else:
+            unique_keys = df_without_duplicates[key_column].dropna().unique()
+        for key_val in unique_keys:
+            if isinstance(key_column, list):
+                if any(v == "" or pd.isna(v) or v is None for v in key_val):
+                    continue
+                mask = pd.Series(
+                    [True] * len(df_without_duplicates),
+                    index=df_without_duplicates.index,
+                )
+                for i, col in enumerate(key_column):
+                    mask = mask & (df_without_duplicates[col] == key_val[i])
+                key_rows = df_without_duplicates[mask]
+            else:
+                if key_val == "":
+                    continue
+                key_rows = df_without_duplicates[
+                    df_without_duplicates[key_column] == key_val
+                ]
+
+            if isinstance(value_column, list):
+                value_tuples = [tuple(row) for row in key_rows[value_column].values]
+                if self._has_multiple_mappings_for_tuples(value_tuples):
+                    violated_keys.add(key_val)
+            else:
+                if self._has_multiple_mappings(key_rows[value_column]):
+                    violated_keys.add(key_val)
+        return violated_keys
+
+    def _has_multiple_mappings_for_tuples(self, value_tuples):
+        """
+        Check if a list of tuples contains multiple different non-null tuples.
+        Returns True if there are multiple non-null tuples, or at least one
+        non-null tuple plus a null tuple.
+        """
+        unique_tuples = set()
+        has_null = False
+        for val_tuple in value_tuples:
+            if any(pd.isna(v) or v == "" or v is None for v in val_tuple):
+                has_null = True
+            else:
+                unique_tuples.add(val_tuple)
+        return len(unique_tuples) > 1 or (len(unique_tuples) >= 1 and has_null)
+
+    def _has_multiple_mappings(self, values):
+        """
+        Check if a series of values contains multiple different values.
+        Returns True if there are multiple non-null values, or at least one
+        non-null value plus null.
+        """
+        unique_values = set()
+        has_null = False
+        for val in values:
+            if pd.isna(val) or val == "" or val is None:
+                has_null = True
+            else:
+                unique_values.add(val)
+        return len(unique_values) > 1 or (len(unique_values) >= 1 and has_null)
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
