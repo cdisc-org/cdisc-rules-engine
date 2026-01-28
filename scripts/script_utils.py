@@ -86,9 +86,9 @@ def get_library_metadata_from_cache(args, sql=False) -> LibraryMetadataContainer
     ct_files = [file_name for file_name in cache_files if CodelistReader.FILENAME_PATTERN.match(file_name)]
     published_ct_packages = set()
     for file_name in ct_files:
-        ct_version = file_name
+        ct_version = file_name.split(".")[0]
         published_ct_packages.add(ct_version)
-        if args.controlled_terminology_package and ct_version.split(".")[0] in args.controlled_terminology_package:
+        if args.controlled_terminology_package and ct_version in args.controlled_terminology_package:
             ct_path = os.path.join(args.cache, file_name)
             if sql:
                 ct_package_data[ct_version] = ct_path
