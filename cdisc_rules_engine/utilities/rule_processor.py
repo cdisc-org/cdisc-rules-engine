@@ -737,6 +737,46 @@ class RuleProcessor:
         return self.log_suitable_for_validation(rule_id, dataset_name)
 
     @staticmethod
+    def _extract_targets_from_output_variables(rule: dict, domain: str) -> List[str]:
+        output_variables: List[str] = rule.get("output_variables", [])
+        target_names: List[str] = []
+        seen: set[str] = set()
+        for var in output_variables:
+            name = var.replace("--", domain or "", 1)
+            if name not in seen:
+                seen.add(name)
+                target_names.append(name)
+        return target_names
+
+    @staticmethod
+    def _extract_targets_from_conditions(
+        rule: dict, domain: str, column_names: List[str]
+    ) -> List[str]:
+        target_names: List[str] = []
+        seen: set[str] = set()
+        conditions: ConditionInterface = rule["conditions"]
+        for condition in conditions.values():
+            if condition.get("operator") == "not_exists":
+                continue
+            target: str = condition["value"].get("target")
+            if target is None:
+                continue
+            target = target.replace("--", domain or "")
+            op_related_pattern: str = RuleProcessor.get_operator_related_pattern(
+                condition.get("operator"), target
+            )
+            if op_related_pattern is not None:
+                for name in column_names:
+                    if re.match(op_related_pattern, name) and name not in seen:
+                        seen.add(name)
+                        target_names.append(name)
+            else:
+                if target not in seen:
+                    seen.add(target)
+                    target_names.append(target)
+        return target_names
+
+    @staticmethod
     def extract_target_names_from_rule(
         rule: dict, domain: str, column_names: List[str]
     ) -> List[str]:
@@ -754,41 +794,11 @@ class RuleProcessor:
             pattern: ^TSVAL\d+$ (starts with TSVAL and ends with number)
             additional columns: TSVAL1, TSVAL2, TSVAL3 etc.
         """
-        # flake8: noqa: C901
-        output_variables: List[str] = rule.get("output_variables", [])
-        target_names: List[str] = []
-        seen: set[str] = set()
-        if output_variables:
-            for var in output_variables:
-                name = var.replace("--", domain or "", 1)
-                if name not in seen:
-                    seen.add(name)
-                    target_names.append(name)
-        else:
-            conditions: ConditionInterface = rule["conditions"]
-            for condition in conditions.values():
-                if condition.get("operator") == "not_exists":
-                    continue
-                target: str = condition["value"].get("target")
-                if target is None:
-                    continue
-                target = target.replace("--", domain or "")
-                op_related_pattern: str = RuleProcessor.get_operator_related_pattern(
-                    condition.get("operator"), target
-                )
-                if op_related_pattern is not None:
-                    # if pattern exists -> return only matching column names
-                    for name in column_names:
-                        if re.match(op_related_pattern, name):
-                            if name not in seen:
-                                seen.add(name)
-                                target_names.append(name)
-                else:
-                    if target not in seen:
-                        seen.add(target)
-                        target_names.append(target)
-
-        return target_names
+        if rule.get("output_variables"):
+            return RuleProcessor._extract_targets_from_output_variables(rule, domain)
+        return RuleProcessor._extract_targets_from_conditions(
+            rule, domain, column_names
+        )
 
     @staticmethod
     def extract_referenced_variables_from_rule(rule: dict):
