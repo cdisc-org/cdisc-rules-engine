@@ -21,7 +21,7 @@ def test_get_rules_report_data(mock_validation_results):
                 "cdisc_rule_id": result.cdisc_rule_id,
                 "fda_rule_id": result.fda_rule_id,
                 "message": result.message,
-                "status": ExecutionStatus.SUCCESS.value.upper(),
+                "status": ExecutionStatus.ISSUE_REPORTED.value.upper(),
             }
         )
     expected_reports = sorted(expected_reports, key=lambda x: x["core_id"])

@@ -984,7 +984,7 @@ def mock_validation_results() -> list[RuleValidationResult]:
                 {
                     "domain": "AE",
                     "variables": ["AESTDY", "DOMAIN"],
-                    "executionStatus": ExecutionStatus.SUCCESS.value,
+                    "executionStatus": ExecutionStatus.ISSUE_REPORTED.value,
                     "errors": [
                         {
                             "row": 1,
@@ -1043,7 +1043,7 @@ def mock_validation_results() -> list[RuleValidationResult]:
                 {
                     "domain": "TT",
                     "variables": ["TTVAR1", "TTVAR2"],
-                    "executionStatus": ExecutionStatus.SUCCESS.value,
+                    "executionStatus": ExecutionStatus.ISSUE_REPORTED.value,
                     "errors": [
                         {
                             "row": 1,
