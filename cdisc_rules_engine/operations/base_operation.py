@@ -232,7 +232,7 @@ class BaseOperation:
             library_metadata=self.library_metadata,
             data_service=self.data_service,
             dataset=self.evaluation_dataset,
-            datatset_metadata=self.data_service.get_raw_dataset_metadata(
+            dataset_metadata=self.data_service.get_raw_dataset_metadata(
                 dataset_name=self.params.dataset_path, datasets=self.params.datasets
             ),
             datasets=self.params.datasets,
