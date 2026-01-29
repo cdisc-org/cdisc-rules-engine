@@ -12,6 +12,7 @@ from cdisc_rules_engine.enums.execution_status import (
 from cdisc_rules_engine.enums.rule_types import RuleTypes
 from cdisc_rules_engine.exceptions.custom_exceptions import (
     DatasetNotFoundError,
+    DateTimeParserError,
     DomainNotFoundInDefineXMLError,
     InvalidJSONFormat,
     RuleFormatError,
@@ -495,7 +496,7 @@ class RulesEngine:
                 message="Rule contains invalid operator",
             )
             message = "rule execution error"
-        elif isinstance(exception, (KeyError, ParserError)):
+        elif isinstance(exception, KeyError):
             error_obj = FailedValidationEntity(
                 dataset=filename,
                 error=SkippedReason.COLUMN_NOT_FOUND_IN_DATA.value,
@@ -509,6 +510,13 @@ class RulesEngine:
                 message=message,
                 status=ExecutionStatus.SKIPPED.value,
             )
+        elif isinstance(exception, ParserError):
+            error_obj = FailedValidationEntity(
+                dataset=filename,
+                error=DateTimeParserError.description,
+                message=exception.args[0],
+            )
+            message = "rule execution error"
         elif isinstance(exception, DomainNotFoundInDefineXMLError):
             error_obj = FailedValidationEntity(
                 dataset=filename,
