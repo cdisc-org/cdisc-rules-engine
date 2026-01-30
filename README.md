@@ -10,54 +10,94 @@
 
 Open source offering of the CDISC Rules Engine, a tool designed for validating clinical trial data against data standards.
 
-## Quick start
+## Quick Start
 
 **Need help?** Jump to [Troubleshooting & Support](#troubleshooting--support)
 
-Note: The Windows commands provided in this README are written for PowerShell. While most commands are compatible with both PowerShell and Command Prompt, some adjustments may be necessary when using Command Prompt. If you encounter any issues running these commands in Command Prompt, try using PowerShell or consult the Command Prompt documentation for equivalent commands.
+### Option 1: Use the Pre-built Executable (Recommended for Most Users)
 
-To quickly get up and running with CORE, users can download the latest executable version of the engine for their operating system from the [Releases](https://github.com/cdisc-org/cdisc-rules-engine/releases)
+**Best for:** Users who want to run CORE without installing Python or dependencies.
 
-Once downloaded, simply unzip the file and run the following command based on your Operating System:
+1. Download the latest executable for your operating system from [Releases](https://github.com/cdisc-org/cdisc-rules-engine/releases)
+2. Unzip the downloaded file
+3. Open a terminal in the unzipped directory
+4. Run validation using the commands for your OS as suggested below:
 
-### Windows:
-
-```
-.\core.exe validate -s <standard> -v <standard_version> -d path/to/datasets
-
-# ex: .\core.exe validate -s sdtmig -v 3-4 -d .\xpt\
-```
-
-### Linux/Mac:
-
-```
-./core validate -s <standard> -v <standard_version> -d path/to/datasets
-
-# ex: ./core validate -s sdtmig -v 3-4 -d .\xpt\
+**Windows (PowerShell):**
+```bash
+.\core.exe validate -s sdtmig -v 3-4 -d C:\path\to\datasets
 ```
 
-> **_NOTE:_** For Linux users, you will need to run this command from the executable root directory:
->
-> ```bash
-> chmod +x ./core
-> ```
->
-> For Mac users, you will need to remove the Apple signature quarantine in addition to making the app executable.
->
-> ```bash
-> xattr -rd com.apple.quarantine /path/to/core/root/dir
-> chmod +x ./core
-> ```
+> **Note for Windows users:** The Windows commands provided in this README are written for PowerShell. While most commands are compatible with both PowerShell and Command Prompt, some adjustments may be necessary when using Command Prompt. If you encounter any issues running these commands in Command Prompt, try using PowerShell or consult the Command Prompt documentation for equivalent commands.
+
+**Linux:**
+```bash
+# First, make it executable (one-time setup)
+chmod +x ./core
+
+# Then run validation
+./core validate -s sdtmig -v 3-4 -d /path/to/datasets
+```
+
+**Mac:**
+```bash
+# First, remove quarantine and make executable (one-time setup)
+xattr -rd com.apple.quarantine .
+chmod +x ./core
+
+# Then run validation
+./core validate -s sdtmig -v 3-4 -d /path/to/datasets
+```
+
+---
+
+### Option 2: Run from Source Code
+
+**Best for:** Developers, contributors, or users who need the latest features.
+
+**Prerequisites:** Python 3.12 installed on your system.
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/cdisc-org/cdisc-rules-engine.git
+   cd cdisc-rules-engine
+   ```
+
+2. Install dependencies:
+   ```bash
+   pip install -r requirements.txt -r requirements-dev.txt
+   ```
+
+3. Run validation:
+   ```bash
+   python core.py validate -s sdtmig -v 3-4 -d /path/to/datasets
+   ```
+
+---
 
 ## Command-line Interface
 
-**Note**: the following examples are applicable to the source code and have references to "`python core.py`". When using the executable version as described in the [Quick Start](#quick-start) above, instances of "`python core.py`" should be replaced with "`.\core.exe`" (Windows) or "`./core`" (Linux/Mac). You can also run directly on the source code by following the [Cloning](#cloning) instructions.
+All examples below use `python core.py` for source code users. **If you're using the executable**, replace `python core.py` with:
+- **Windows:** `.\core.exe`
+- **Linux/Mac:** `./core`
 
 ### Running a validation (`validate`)
 
-Clone the repository and run `python core.py --help` to see the full list of commands.
+Clone the repository and run:
 
-Run `python core.py validate --help` to see the list of validation options.
+```bash
+python core.py --help
+```
+
+This will display the full list of commands.
+
+Run:
+
+```bash
+python core.py validate --help
+```
+
+This will show the list of validation options.
 
 ```
   -ca, --cache TEXT               Relative path to cache files containing pre
@@ -177,7 +217,9 @@ Run `python core.py validate --help` to see the list of validation options.
 
 To validate a folder using rules for SDTM-IG version 3.4 use the following command:
 
-`python core.py validate -s sdtmig -v 3-4 -d path/to/datasets`
+```bash
+python core.py validate -s sdtmig -v 3-4 -d /path/to/datasets
+```
 
 **_NOTE:_** Before running a validation in the CLI, you must first populate the cache with rules to validate against. See the update-cache command below.
 
@@ -197,7 +239,9 @@ CORE supports the following dataset file formats for validation:
 
 #### Validate single rule
 
-`python core.py validate -s sdtmig -v 3-4 -dp <path to dataset json file> -lr <path to rule json file> --meddra ./meddra/ --whodrug ./whodrug/`
+```bash
+python core.py validate -s sdtmig -v 3-4 -dp /path/to/dataset.json -lr /path/to/rule.json --meddra /path/to/meddra/ --whodrug /path/to/whodrug/
+```
 
 Note: JSON dataset should match the format provided by the rule editor:
 
@@ -245,7 +289,7 @@ set DATASET_SIZE_THRESHOLD=0 && core.exe validate -rest -of -config -commands
 
 ##### Windows (PowerShell)
 
-```powershell
+```bash
 $env:DATASET_SIZE_THRESHOLD=0; core.exe validate -rest -of -config -commands
 ```
 
@@ -263,7 +307,11 @@ Create a `.env` file in the root directory of the release containing:
 DATASET_SIZE_THRESHOLD=0
 ```
 
-Then run normally: `core.exe validate -rest -of -config -commands
+Then run normally:
+
+```bash
+core.exe validate -rest -of -config -commands
+```
 
 ---
 
@@ -473,35 +521,53 @@ These steps should be run before running any tests or core commands using the no
 
 - Create a virtual environment:
 
-  `python -m venv <virtual_environment_name>`
+  ```bash
+  python -m venv <virtual_environment_name>
+  ```
 
-NOTE: if you have multiple versions of python on your machine, you can call python 3.12 for the virtual environment's creation instead of the above command:
-`python3.12 -m venv <virtual_environment_name>`
+  NOTE: if you have multiple versions of python on your machine, you can call python 3.12 for the virtual environment's creation instead of the above command:
+
+  ```bash
+  python3.12 -m venv <virtual_environment_name>
+  ```
 
 - Activate the virtual environment:
 
-`./<virtual_environment_name>/bin/activate` -- on linux/mac </br>
-`.\<virtual_environment_name>\Scripts\Activate` -- on windows
+  **Linux/Mac:**
 
-- Install the requirements.
+  ```bash
+  ./<virtual_environment_name>/bin/activate
+  ```
 
-`python -m pip install -r requirements-dev.txt` # From the root directory
+  **Windows:**
+
+  ```bash
+  .\<virtual_environment_name>\Scripts\Activate
+  ```
+
+- Install the requirements:
+
+  ```bash
+  python -m pip install -r requirements-dev.txt
+  ```
+
+  Run this from the root directory.
 
 ### Creating an executable version
 
 **Note:** Further directions to create your own executable are contained in [README_Build_Executable.md](README_Build_Executable.md) if you wish to build an unofficial release executable for your own use.
 
-**Linux**
+**Linux:**
 
-`pyinstaller core.py --icon=resources/assets/CORE_logo_sm.ico --add-data=venv/lib/python3.12/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates --add-data=resources/jsonata:resources/jsonata`
+```bash
+pyinstaller core.py --add-data=venv/lib/python3.12/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates --add-data=resources/jsonata:resources/jsonata
+```
 
-**Mac**
+**Windows:**
 
-`pyinstaller core.py --icon=resources/assets/CORE_logo_sm.icns --add-data=venv/lib/python3.12/site-packages/xmlschema/schemas:xmlschema/schemas --add-data=resources/cache:resources/cache --add-data=resources/templates:resources/templates --add-data=resources/jsonata:resources/jsonata`
-
-**Windows**
-
-`pyinstaller core.py --icon=resources/assets/CORE_logo_sm.ico --add-data=".venv/Lib/site-packages/xmlschema/schemas;xmlschema/schemas" --add-data="resources/cache;resources/cache" --add-data="resources/templates;resources/templates" --add-data="resources/jsonata;resources/jsonata"`
+```bash
+pyinstaller core.py --add-data=".venv/Lib/site-packages/xmlschema/schemas;xmlschema/schemas" --add-data="resources/cache;resources/cache" --add-data="resources/templates;resources/templates" --add-data="resources/jsonata;resources/jsonata"
+```
 
 _Note .venv should be replaced with path to python installation or virtual environment_
 
@@ -513,31 +579,45 @@ can be launched by running `core` script with all necessary CLI arguments.
 All non-python files should be listed in `MANIFEST.in` to be included in the distribution.
 Files must be in python package.
 
-**Unix/MacOS**
+**Unix/MacOS:**
 
-`python3 -m pip install --upgrade build`
-`python3 -m build`
+```bash
+python3 -m pip install --upgrade build
+python3 -m build
+```
 
-To install from dist folder
-`pip3 install {path_to_file}/cdisc_rules_engine-{version}-py3-none-any.whl`
+To install from dist folder:
 
-To upload built distributive to pypi
+```bash
+pip3 install {path_to_file}/cdisc_rules_engine-{version}-py3-none-any.whl
+```
 
-`python3 -m pip install --upgrade twine`
-`python3 -m twine upload --repository {repository_name} dist/*`
+To upload built distributive to pypi:
 
-**Windows(Untested)**
+```bash
+python3 -m pip install --upgrade twine
+python3 -m twine upload --repository {repository_name} dist/*
+```
 
-`py -m pip install --upgrade build`
-`py -m build`
+**Windows (Untested):**
 
-To install from dist folder
-`pip install {path_to_file}/cdisc_rules_engine-{version}-py3-none-any.whl`
+```bash
+py -m pip install --upgrade build
+py -m build
+```
 
-To upload built distributive to pypi
+To install from dist folder:
 
-`py -m pip install --upgrade twine`
-`py -m twine upload --repository {repository_name} dist/*`
+```bash
+pip install {path_to_file}/cdisc_rules_engine-{version}-py3-none-any.whl
+```
+
+To upload built distributive to pypi:
+
+```bash
+py -m pip install --upgrade twine
+py -m twine upload --repository {repository_name} dist/*
+```
 
 ## Contributing
 
@@ -547,9 +627,11 @@ This project uses the `black` code formatter, `flake8` linter for python and `pr
 It also uses `pre-commit` to run `black`, `flake8` and `prettier` when you commit.
 Both dependencies are added to _requirements-dev.txt_.
 
-Setting up `pre-commit` requires one extra step. After installing it you have to run
+Setting up `pre-commit` requires one extra step. After installing it you have to run:
 
-`pre-commit install`
+```bash
+pre-commit install
+```
 
 This installs `pre-commit` in your `.git/hooks` directory.
 
@@ -557,7 +639,9 @@ This installs `pre-commit` in your `.git/hooks` directory.
 
 From the root of the project run the following command (this will run both the unit and regression tests):
 
-`python -m pytest tests`
+```bash
+python -m pytest tests
+```
 
 ### Updating USDM JSON Schema
 
