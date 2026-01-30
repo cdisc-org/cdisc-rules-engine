@@ -36,7 +36,7 @@ def test_load_specified_rules_include(standard_context):
         substandard,
     )
 
-    returned_ids = {rule["core_id"] for rule in result}
+    returned_ids = {rule["core_id"] for rule in result[0] if isinstance(result, tuple)}
     assert returned_ids == {"CORE-0001", "CORE-0003"}
 
 
@@ -59,7 +59,7 @@ def test_load_specified_rules_exclude(standard_context):
         substandard,
     )
 
-    returned_ids = {rule["core_id"] for rule in result}
+    returned_ids = {rule["core_id"] for rule in result[0] if isinstance(result, tuple)}
     assert returned_ids == {"CORE-0001", "CORE-0003"}
 
 
