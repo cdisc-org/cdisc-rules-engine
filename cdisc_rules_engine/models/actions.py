@@ -535,11 +535,11 @@ class COREActions(BaseActions):
         for item in output_variables:
             if isinstance(item, dict) and "compared" in item:
                 children = item.get("compared", [])
-                if isinstance(children, list) and len(children) >= 2:
+                if isinstance(children, list):
                     valid_children = [c for c in children if isinstance(c, str)]
+                    flattened.extend(valid_children)
                     if len(valid_children) >= 2:
                         comparison_groups.append(valid_children)
-                        flattened.extend(valid_children)
             elif isinstance(item, str):
                 flattened.append(item)
 
