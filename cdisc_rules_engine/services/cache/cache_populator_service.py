@@ -1,6 +1,5 @@
 import asyncio
 import pickle
-import json
 from functools import partial
 from typing import Iterable, List, Optional
 import os
@@ -13,10 +12,12 @@ from cdisc_rules_engine.interfaces import (
     CacheServiceInterface,
 )
 from cdisc_rules_engine.services.cdisc_library_service import CDISCLibraryService
+from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.utilities.utils import (
     get_library_variables_metadata_cache_key,
     get_standard_details_cache_key,
     get_model_details_cache_key,
+    load_json_with_optional_encoding,
 )
 from scripts.script_utils import load_and_parse_rule
 from cdisc_rules_engine.constants.cache_constants import PUBLISHED_CT_PACKAGES
@@ -32,8 +33,10 @@ class CachePopulator:
         remove_custom_rules=None,
         update_custom_rule=None,
         custom_standards=None,
+        custom_standards_encoding: str = None,
         remove_custom_standards=None,
         cache_path="",
+        rules_only=False,
     ):
         self.cache = cache
         self.library_service = library_service
@@ -42,15 +45,20 @@ class CachePopulator:
         self.remove_custom_rules = remove_custom_rules
         self.update_custom_rule = update_custom_rule
         self.custom_standards = custom_standards
+        self.custom_standards_encoding = custom_standards_encoding
         self.remove_custom_standards = remove_custom_standards
         self.cache_path = cache_path
+        self.rules_only = rules_only
 
     async def update_cache(self):
-        coroutines = (
-            self.save_ct_packages_locally(),
-            self.save_rules_locally(),
-            self.save_standards_metadata_locally(),
-        )
+        if self.rules_only:
+            coroutines = (self.save_rules_locally(),)
+        else:
+            coroutines = (
+                self.save_ct_packages_locally(),
+                self.save_rules_locally(),
+                self.save_standards_metadata_locally(),
+            )
         await asyncio.gather(*coroutines)
 
     async def load_codelists(self, packages: List[str]):
@@ -112,6 +120,12 @@ class CachePopulator:
             rules_directory, rules_by_core_id, rules_lists
         )
         rules_directory.pop("tig/1-0", None)
+
+        # Prevent overwriting rules cache with empty rules
+        if not rules_directory or not rules_by_core_id:
+            logger.warning("No rules found, skipping cache update for rules")
+            return
+
         with open(
             os.path.join(self.cache_path, DefaultFilePaths.RULES_CACHE_FILE.value), "wb"
         ) as f:
@@ -195,6 +209,11 @@ class CachePopulator:
         item_dict = {
             item[cache_key]: self._remove_cache_key(item) for item in item_list
         }
+
+        if not item_dict:
+            logger.warning(f"No standards data to be saved for path {path.value}")
+            return
+
         with open(
             os.path.join(self.cache_path, path.value),
             "wb",
@@ -598,8 +617,9 @@ class CachePopulator:
         """Add or update a custom standard to the cache."""
         if not os.path.isfile(self.custom_standards):
             raise ValueError("Invalid standard filepath")
-        with open(self.custom_standards, "r") as f:
-            new_standard = json.load(f)
+        new_standard = load_json_with_optional_encoding(
+            self.custom_standards, self.custom_standards_encoding
+        )
 
         # Validate the input format
         if not isinstance(new_standard, dict):

@@ -1,36 +1,43 @@
+#!/usr/bin/env python3
+"""
+CLI entrypoint for the CDISC Rules Engine.
+"""
+
 import asyncio
 import codecs
 import json
 import logging
 import os
 import pickle
+import sys
 import tempfile
 from datetime import datetime
 from multiprocessing import freeze_support
-from dotenv import load_dotenv
+from pathlib import Path
 
 import click
-from pathlib import Path
+from dotenv import load_dotenv
+
 from cdisc_rules_engine.config import config
+from cdisc_rules_engine.enums.dataformat_types import DataFormatTypes
 from cdisc_rules_engine.enums.default_file_paths import DefaultFilePaths
 from cdisc_rules_engine.enums.progress_parameter_options import ProgressParameterOptions
 from cdisc_rules_engine.enums.report_types import ReportTypes
+from cdisc_rules_engine.models.external_dictionaries_container import (
+    DictionaryTypes,
+    ExternalDictionariesContainer,
+)
 from cdisc_rules_engine.models.validation_args import Validation_args
-from scripts.run_validation import run_validation
 from cdisc_rules_engine.services.cache.cache_populator_service import CachePopulator
 from cdisc_rules_engine.services.cache.cache_service_factory import CacheServiceFactory
 from cdisc_rules_engine.services.cdisc_library_service import CDISCLibraryService
-from cdisc_rules_engine.models.external_dictionaries_container import (
-    ExternalDictionariesContainer,
-    DictionaryTypes,
-)
 from cdisc_rules_engine.utilities.utils import (
     generate_report_filename,
     get_rules_cache_key,
     validate_dataset_files_exist,
 )
-from cdisc_rules_engine.enums.dataformat_types import DataFormatTypes
 from scripts.list_dataset_metadata_handler import list_dataset_metadata_handler
+from scripts.run_validation import run_validation
 from version import __version__
 
 VALIDATION_FORMATS_MESSAGE = (
@@ -120,7 +127,7 @@ def _validate_data_directory(
             f"Please provide either a single XLSX file or use other supported formats: "
             f"{VALIDATION_FORMATS_MESSAGE}"
         )
-        return None, None
+        return [], set()
 
     if not dataset_paths:
         if DataFormatTypes.XLSX.value in found_formats and len(found_formats) == 1:
@@ -136,7 +143,7 @@ def _validate_data_directory(
                 f"Supported formats: {VALIDATION_FORMATS_MESSAGE}\n"
                 f"Please ensure your directory contains files in one of these formats."
             )
-        return None, None
+        return [], set()
 
     return dataset_paths, found_formats
 
@@ -152,7 +159,7 @@ def _validate_dataset_paths(dataset_path: tuple[str], logger) -> tuple[list, set
             f"Please provide either a single XLSX file or use other supported formats: "
             f"{VALIDATION_FORMATS_MESSAGE}"
         )
-        return None, None
+        return [], set()
 
     if not dataset_paths:
         if DataFormatTypes.XLSX.value in found_formats and len(found_formats) == 1:
@@ -168,7 +175,7 @@ def _validate_dataset_paths(dataset_path: tuple[str], logger) -> tuple[list, set
                 f"Supported formats: {VALIDATION_FORMATS_MESSAGE}\n"
                 f"Please ensure your files are in one of these formats."
             )
-        return None, None
+        return [], set()
 
     return dataset_paths, found_formats
 
@@ -264,7 +271,7 @@ def _validate_no_arguments(logger) -> None:
     "--output-format",
     multiple=True,
     default=[ReportTypes.XLSX.value],
-    type=click.Choice(ReportTypes.values(), case_sensitive=False),
+    type=click.Choice(list(ReportTypes.values()), case_sensitive=False),
     help="Output file format",
 )
 @click.option(
@@ -328,7 +335,7 @@ def _validate_no_arguments(logger) -> None:
     "-p",
     "--progress",
     default=ProgressParameterOptions.BAR.value,
-    type=click.Choice(ProgressParameterOptions.values()),
+    type=click.Choice(list(ProgressParameterOptions.values())),
     help=(
         "Defines how to display the validation progress. "
         'By default a progress bar like "[████████████████████████████--------]   78%"'
@@ -451,10 +458,6 @@ def validate(
         logger.error("Cannot use both --rules and --exclude-rules flags together.")
         ctx.exit(2)
 
-    if exclude_rules and rules:
-        logger.error("Cannot use both --rules and --exclude-rules flags together.")
-        ctx.exit()
-
     cache_path: str = os.path.join(os.path.dirname(__file__), cache)
 
     # Construct ExternalDictionariesContainer:
@@ -480,11 +483,11 @@ def validate(
             )
             ctx.exit(2)
         dataset_paths, found_formats = _validate_data_directory(data, logger, filetype)
-        if dataset_paths is None:
+        if not dataset_paths:
             ctx.exit(2)
     elif dataset_path:
         dataset_paths, found_formats = _validate_dataset_paths(dataset_path, logger)
-        if dataset_paths is None:
+        if not dataset_paths:
             ctx.exit(2)
     else:
         _validate_no_arguments(logger)
@@ -536,7 +539,8 @@ def validate(
         "Can be provided in the environment "
         "variable CDISC_LIBRARY_API_KEY"
     ),
-    required=True,
+    required=False,
+    default=None,
 )
 @click.option(
     "-crd",
@@ -580,9 +584,14 @@ def validate(
     ),
 )
 @click.option(
+    "-cse",
+    "--custom-standard-encoding",
+    help="Encoding for custom standard details. ",
+)
+@click.option(
     "-rcs",
     "--remove-custom-standard",
-    help=("Removes a custom standard and version from the cache. "),
+    help="Removes a custom standard and version from the cache. ",
     multiple=True,
 )
 @click.pass_context
@@ -595,10 +604,14 @@ def update_cache(
     remove_custom_rules: str,
     update_custom_rule: str,
     custom_standard: str,
+    custom_standard_encoding: str,
     remove_custom_standard: str,
 ):
     cache = CacheServiceFactory(config).get_cache_service()
-    library_service = CDISCLibraryService(apikey, cache)
+    # CDISC library service should log failed requests instead of failing the
+    # cache update process
+    library_service = CDISCLibraryService(apikey, cache, raise_on_error=False)
+    update_rules_only = not apikey
     cache_populator = CachePopulator(
         cache,
         library_service,
@@ -607,9 +620,16 @@ def update_cache(
         remove_custom_rules,
         update_custom_rule,
         custom_standard,
+        custom_standard_encoding,
         remove_custom_standard,
         cache_path,
+        rules_only=update_rules_only,
     )
+
+    if update_rules_only:
+        logger = logging.getLogger("validator")
+        logger.warning("API key was not provided. Only CORE rules will be updated.")
+
     if custom_rule or custom_rules_directory:
         cache_populator.add_custom_rules()
     elif remove_custom_rules:
@@ -623,7 +643,7 @@ def update_cache(
     else:
         asyncio.run(cache_populator.update_cache())
 
-    print("Cache updated successfully")
+    print("Cache update complete")
 
 
 @click.command()
@@ -801,7 +821,7 @@ def version():
     required=False,
     multiple=True,
 )
-def list_ct(cache_path: str, subsets: tuple[str]):
+def list_ct(cache_path: str, subsets: set[str]):
     """
     Command to list the ct packages available in the cache.
     """
@@ -819,17 +839,6 @@ def list_ct(cache_path: str, subsets: tuple[str]):
 def test_validate(filetype):
     """**Release Test** validate command for executable."""
     try:
-        import sys
-        import os
-        from cdisc_rules_engine.models.validation_args import Validation_args
-        from cdisc_rules_engine.models.external_dictionaries_container import (
-            ExternalDictionariesContainer,
-        )
-        from cdisc_rules_engine.enums.report_types import ReportTypes
-        from cdisc_rules_engine.enums.progress_parameter_options import (
-            ProgressParameterOptions,
-        )
-
         base_path = os.path.join("tests", "resources", "datasets")
         if filetype.lower() == "json":
             test_file = os.path.join(base_path, "TS.json")

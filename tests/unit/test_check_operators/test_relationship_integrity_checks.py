@@ -207,6 +207,138 @@ def test_has_same_values(data, dataset_type, expected_result):
             DaskDataset,
             [True, True, True, False],
         ),
+        (
+            {
+                "STUDYID": ["TEST", "TEST-1", "TEST-2", "TEST-3"],
+                "VISITNUM": [1, 2, 1, 3],
+                "target": ["Consulting", None, "Consulting", "Treatment"],
+            },
+            "VISITNUM",
+            PandasDataset,
+            [False, False, False, False],
+        ),
+        (
+            {
+                "STUDYID": ["TEST", "TEST-1", "TEST-2", "TEST-3"],
+                "VISITNUM": [1, None, 2, 3],
+                "target": ["Consulting", "Surgery", "Surgery", "Treatment"],
+            },
+            "VISITNUM",
+            PandasDataset,
+            [False, True, True, False],
+        ),
+        (
+            {
+                "STUDYID": ["TEST", "TEST-1", "TEST-2"],
+                "VISITNUM": [1, None, 1],
+                "target": ["Consulting", "Consulting", "Consulting"],
+            },
+            "VISITNUM",
+            PandasDataset,
+            [True, True, True],
+        ),
+        (
+            {
+                "STUDYID": ["TEST", "TEST-1", "TEST-2"],
+                "VISITNUM": [1, 1, 1],
+                "target": ["Consulting", None, "Surgery"],
+            },
+            "VISITNUM",
+            DaskDataset,
+            [True, True, True],
+        ),
+        (
+            {
+                "STUDYID": ["TEST", "TEST-1", "TEST-2"],
+                "VISITNUM": [1, 2, ""],
+                "target": ["Consulting", "Surgery", "Treatment"],
+            },
+            "VISITNUM",
+            PandasDataset,
+            [False, False, False],
+        ),
+        (
+            {
+                "STUDYID": ["TEST", "TEST-1", "TEST-2"],
+                "VISITNUM": [1, "", 1],
+                "target": ["Consulting", "Consulting", "Consulting"],
+            },
+            "VISITNUM",
+            PandasDataset,
+            [True, True, True],
+        ),
+        (
+            {
+                "STUDYID": ["TEST", "TEST-1", "TEST-2", "TEST-3"],
+                "VISITNUM": [1, None, None, 2],
+                "target": ["Consulting", None, None, "Surgery"],
+            },
+            "VISITNUM",
+            DaskDataset,
+            [False, False, False, False],
+        ),
+        (
+            {
+                "STUDYID": ["TEST", "TEST-1", "TEST-2"],
+                "VISITNUM": [None, None, None],
+                "target": [None, None, None],
+            },
+            "VISITNUM",
+            PandasDataset,
+            [False, False, False],
+        ),
+        (
+            {
+                "STUDYID": ["TEST", "TEST-1", "TEST-2", "TEST-3", "TEST-4"],
+                "VISITNUM": [1, 1, 2, None, 2],
+                "target": ["A", "B", "A", "A", "C"],
+            },
+            "VISITNUM",
+            PandasDataset,
+            [True, True, True, True, True],
+        ),
+        (
+            {
+                "STUDYID": ["TEST", "TEST-1", "TEST-2", "TEST-3"],
+                "VISITNUM": [1, 2, 3, None],
+                "target": ["A", "B", "C", "D"],
+            },
+            "VISITNUM",
+            DaskDataset,
+            [False, False, False, False],
+        ),
+        (
+            {
+                "STUDYID": ["TEST", "TEST-1", "TEST-2"],
+                "VISITNUM": [None, "", 1],
+                "target": ["A", "B", "C"],
+            },
+            "VISITNUM",
+            PandasDataset,
+            [False, False, False],
+        ),
+        (
+            {
+                "STUDYID": ["TEST", "TEST-1", "TEST-2"],
+                "VISIT": ["V1", "V2", "V1"],
+                "VISITNUM": [1, 2, 1],
+                "target": ["A", "B", "A"],
+            },
+            ["VISIT", "VISITNUM"],
+            PandasDataset,
+            [False, False, False],
+        ),
+        (
+            {
+                "STUDYID": ["TEST", "TEST-1", "TEST-2", "TEST-3"],
+                "VISIT": ["V1", "V1", "V2", "V1"],
+                "VISITNUM": [1, 1, 2, 1],
+                "target": ["A", "B", "C", "A"],
+            },
+            ["VISIT", "VISITNUM"],
+            DaskDataset,
+            [True, True, False, True],
+        ),
     ],
 )
 def test_is_not_unique_relationship(data, comparator, dataset_type, expected_result):
