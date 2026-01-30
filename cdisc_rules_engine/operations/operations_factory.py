@@ -29,6 +29,7 @@ from cdisc_rules_engine.operations.max_date import MaxDate
 from cdisc_rules_engine.operations.maximum import Maximum
 from cdisc_rules_engine.operations.mean import Mean
 from cdisc_rules_engine.operations.domain_is_custom import DomainIsCustom
+from cdisc_rules_engine.operations.dataset_is_custom import DatasetIsCustom
 from cdisc_rules_engine.operations.domain_label import DomainLabel
 from cdisc_rules_engine.operations.standard_domains import StandardDomains
 from cdisc_rules_engine.operations.meddra_code_references_validator import (
@@ -121,6 +122,7 @@ class OperationsFactory(FactoryInterface):
         "variable_count": VariableCount,
         "variable_is_null": VariableIsNull,
         "domain_is_custom": DomainIsCustom,
+        "dataset_is_custom": DatasetIsCustom,
         "domain_label": DomainLabel,
         "standard_domains": StandardDomains,
         "required_variables": RequiredVariables,
