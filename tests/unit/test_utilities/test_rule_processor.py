@@ -1,4 +1,4 @@
-from typing import List, Set
+from typing import List
 from unittest.mock import MagicMock, patch
 
 import pandas as pd
@@ -1101,7 +1101,7 @@ def test_extract_target_names_from_rule():
     rule: dict = {
         "conditions": ConditionCompositeFactory.get_condition_composite(conditions),
     }
-    target_names: Set[str] = RuleProcessor.extract_target_names_from_rule(
+    target_names: List[str] = RuleProcessor.extract_target_names_from_rule(
         rule,
         "AE",
         [
@@ -1110,11 +1110,11 @@ def test_extract_target_names_from_rule():
             "TARGET",
         ],
     )
-    assert target_names == {
+    assert target_names == [
         "AESTDY",
         "USUBJID",
         "TARGET",
-    }
+    ]
 
 
 def test_extract_target_names_from_rule_output_variables():
@@ -1130,7 +1130,7 @@ def test_extract_target_names_from_rule_output_variables():
         "output_variables": ["AESTDY", "USUBJID", "TARGET"],
         "conditions": ConditionCompositeFactory.get_condition_composite(conditions),
     }
-    target_names: Set[str] = RuleProcessor.extract_target_names_from_rule(
+    target_names: List[str] = RuleProcessor.extract_target_names_from_rule(
         rule,
         "AE",
         [
@@ -1139,11 +1139,11 @@ def test_extract_target_names_from_rule_output_variables():
             "TARGET",
         ],
     )
-    assert target_names == {
+    assert target_names == [
         "AESTDY",
         "USUBJID",
         "TARGET",
-    }
+    ]
 
 
 @pytest.mark.parametrize(
