@@ -116,6 +116,10 @@ This will show the list of validation options.
   -v, --version TEXT              Standard version to validate against
                                   [required]
   -ss, --substandard TEXT         Substandard to validate against
+                                  "SDTM", "SEND", "ADaM", or "CDASH"
+                                  [required for TIG]
+  -uc, --use-case TEXT            Use Case for TIG Validation
+                                  "INDH", "PROD", "NONCLIN", or "ANALYSIS"
                                   [required for TIG]
   -ct, --controlled-terminology-package TEXT
                                   Controlled terminology package to validate

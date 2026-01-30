@@ -379,34 +379,35 @@ def test_rule_applies_to_class(
 
 
 @pytest.mark.parametrize(
-    "dataset_name, domain, rdomain, rule_use_case, standard, standard_substandard, outcome",
+    "dataset_name, domain, rdomain, rule_use_case, use_case, standard, standard_substandard, outcome",
     [
-        # Basic use case tests with string format "INDH, PROD"
-        ("AE", "AE", None, "INDH, PROD", "tig", "SDTM", True),
-        ("CM", "CM", None, "INDH", "tig", "SDTM", True),
-        ("TS", "TS", None, "INDH", "tig", "SDTM", True),
-        ("ES", "ES", None, "PROD", "tig", "SDTM", True),
-        ("ES", "ES", None, "INDH", "tig", "SDTM", False),
-        ("BW", "BW", None, "NONCLIN", "tig", "SEND", True),
-        ("BW", "BW", None, "INDH", "tig", "SEND", False),
+        # Basic use case tests - user provides "INDH" or "PROD"
+        ("AE", "AE", None, "INDH, PROD", "INDH", "tig", "SDTM", True),
+        ("AE", "AE", None, "INDH, PROD", "PROD", "tig", "SDTM", True),
+        ("CM", "CM", None, "INDH", "INDH", "tig", "SDTM", True),
+        ("TS", "TS", None, "INDH", "INDH", "tig", "SDTM", True),
+        ("ES", "ES", None, "PROD", "PROD", "tig", "SDTM", True),
+        ("ES", "ES", None, "PROD", "INDH", "tig", "SDTM", False),
+        ("BW", "BW", None, "NONCLIN", "NONCLIN", "tig", "SEND", True),
+        ("BW", "BW", None, "NONCLIN", "INDH", "tig", "SEND", False),
         # Tests for ADaM datasets
-        ("ADSL", "ADSL", None, "ANALYSIS", "tig", "ADAM", True),
-        ("ADAE", "ADAE", None, "ANALYSIS", "tig", "ADAM", True),
-        ("ADAE", "ADAE", None, "INDH", "tig", "ADAM", False),
+        ("ADSL", "ADSL", None, "ANALYSIS", "ANALYSIS", "tig", "ADAM", True),
+        ("ADAE", "ADAE", None, "ANALYSIS", "ANALYSIS", "tig", "ADAM", True),
+        ("ADAE", "ADAE", None, "ANALYSIS", "INDH", "tig", "ADAM", False),
         # Tests for supplementary datasets
-        ("SUPPAE", None, "AE", "INDH", "tig", "SDTM", True),
-        ("SUPPQS", None, "QS", "INDH", "tig", "SDTM", True),
-        ("SUPPEC", None, "EC", "INDH", "tig", "SDTM", True),
-        ("SUPP--", None, "AE", "INDH", "tig", "SDTM", True),
-        ("SUPPPT", None, "PT", "PROD", "tig", "SDTM", True),
-        # Tests for empty/None use cases (should always return True)
-        ("AE", "AE", None, "", "tig", "SDTM", True),
-        ("AE", "AE", None, None, "tig", "SDTM", True),
+        ("SUPPAE", None, "AE", "INDH", "INDH", "tig", "SDTM", True),
+        ("SUPPQS", None, "QS", "INDH", "INDH", "tig", "SDTM", True),
+        ("SUPPEC", None, "EC", "INDH", "INDH", "tig", "SDTM", True),
+        ("SUPP--", None, "AE", "INDH", "INDH", "tig", "SDTM", True),
+        ("SUPPPT", None, "PT", "PROD", "PROD", "tig", "SDTM", True),
+        # Tests for empty/None use cases in rule (should always return True)
+        ("AE", "AE", None, "", "INDH", "tig", "SDTM", True),
+        ("AE", "AE", None, None, "INDH", "tig", "SDTM", True),
         # Tests for non-TIG standard (should always return True)
-        ("AE", "AE", None, "INDH", "sdtmig", "SDTM", True),
-        ("BW", "BW", None, "NONCLIN", "sendct", "SEND", True),
-        # Tests for substandards not in USE_CASE_DOMAINS
-        ("AE", "AE", None, "INDH", "tig", "UNKNOWN", False),
+        ("AE", "AE", None, "INDH", "INDH", "sdtmig", "SDTM", True),
+        ("BW", "BW", None, "NONCLIN", "NONCLIN", "sendct", "SEND", True),
+        # Test case mismatch
+        ("AE", "AE", None, "INDH, PROD", "SAFETY", "tig", "SDTM", False),
     ],
 )
 def test_rule_applies_to_use_case(
@@ -417,6 +418,7 @@ def test_rule_applies_to_use_case(
     rule_use_case,
     standard,
     standard_substandard,
+    use_case,
     outcome,
 ):
     processor = RuleProcessor(mock_data_service, InMemoryCacheService())
@@ -429,7 +431,7 @@ def test_rule_applies_to_use_case(
     )
     assert (
         processor.rule_applies_to_use_case(
-            dataset_metadata, rule, standard, standard_substandard
+            dataset_metadata, rule, standard, standard_substandard, use_case
         )
         == outcome
     )
