@@ -323,7 +323,9 @@ core.exe validate -rest -of -config -commands
 
 ### Updating the Cache (`update-cache`)
 
-Update locally stored cache data (Requires an environment variable - `CDISC_LIBRARY_API_KEY`) This is stored in the .env folder in the root directory, the API key does not need quotations around it. When running a validation, CORE uses rules in the cache unless -lr is specified. Running the above command populates the cache with controlled terminology, rules, metadata, etc.
+Update locally stored cache data (An api-key can be provided through the environment variable - `CDISC_LIBRARY_API_KEY`. This is stored in the .env file in the root directory, the API key does not need quotations around it.) When running a validation, CORE uses rules in the cache unless -lr is specified. Running the above command populates the cache with controlled terminology, rules, metadata, etc.
+
+**Note:** If a valid api key is not provided, the rules in the cache will still be updated as they are accessible without a key. All other cache data requires a valid api key.
 
 ```bash
   python core.py update-cache
