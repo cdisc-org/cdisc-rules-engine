@@ -110,6 +110,19 @@ def test_extract_domain_metadata(filename):
                 "TSVCDREF",
                 "TSVCDVER",
             ],
+            "define_dataset_variable_order": [
+                "STUDYID",
+                "DOMAIN",
+                "TSSEQ",
+                "TSGRPID",
+                "TSPARMCD",
+                "TSPARM",
+                "TSVAL",
+                "TSVALNF",
+                "TSVALCD",
+                "TSVCDREF",
+                "TSVCDVER",
+            ],
             "define_dataset_key_sequence": ["STUDYID", "TSPARMCD", "TSVAL", "TSSEQ"],
             "define_dataset_has_no_data": False,
         }
@@ -135,6 +148,19 @@ def test_extract_dataset_metadata(filename):
             "define_dataset_structure": "One record per trial summary parameter value",
             "define_dataset_is_non_standard": "",
             "define_dataset_variables": [
+                "STUDYID",
+                "DOMAIN",
+                "TSSEQ",
+                "TSGRPID",
+                "TSPARMCD",
+                "TSPARM",
+                "TSVAL",
+                "TSVALNF",
+                "TSVALCD",
+                "TSVCDREF",
+                "TSVCDVER",
+            ],
+            "define_dataset_variable_order": [
                 "STUDYID",
                 "DOMAIN",
                 "TSSEQ",
@@ -209,7 +235,7 @@ def test_extract_variable_metadata(filename):
             assert variable["define_variable_order_number"] == index + 1
 
 
-@pytest.mark.parametrize("filename", [(test_define_file_path)])
+@pytest.mark.parametrize("filename", [test_define_file_path])
 def test_extract_variable_metadata_when_one_ordernumber_non_1_based(filename):
     """
     Unit test for DefineXMLReader.extract_domain_metadata function.
@@ -434,3 +460,49 @@ def test_extract_domain_metadata_nv_has_no_data(filename, has_no_data):
         # Check that at least one expected variable is present
         for v in ["NVSEQ", "NVTESTCD", "NVTEST"]:
             assert v in domain_metadata["define_dataset_variables"]
+
+
+@pytest.mark.parametrize(
+    "filename", [(test_define_file_path), (test_define_2_0_file_path)]
+)
+def test_extract_dataset_metadata_with_ordernumber(filename):
+    """
+    Unit test for DefineXMLReader.extract_dataset_metadata function.
+    Tests that define_dataset_variable_order respects OrderNumber attributes.
+    """
+    with open(filename, "rb") as file:
+        contents: bytes = file.read()
+        reader = DefineXMLReaderFactory.from_file_contents(contents)
+        dataset_metadata: dict = reader.extract_dataset_metadata(dataset_name="SE")
+        assert "define_dataset_variables" in dataset_metadata
+        assert "define_dataset_variable_order" in dataset_metadata
+        assert isinstance(dataset_metadata["define_dataset_variables"], list)
+        assert isinstance(dataset_metadata["define_dataset_variable_order"], list)
+        assert len(dataset_metadata["define_dataset_variables"]) == len(
+            dataset_metadata["define_dataset_variable_order"]
+        )
+        assert dataset_metadata["define_dataset_variable_order"][0] == "STUDYID"
+        assert dataset_metadata["define_dataset_variable_order"][1] == "DOMAIN"
+        assert dataset_metadata["define_dataset_variable_order"][2] == "USUBJID"
+        assert dataset_metadata["define_dataset_variable_order"][3] == "SESEQ"
+        assert dataset_metadata["define_dataset_variable_order"][4] == "ETCD"
+
+
+@pytest.mark.parametrize(
+    "filename", [(test_define_file_path), (test_define_2_0_file_path)]
+)
+def test_extract_dataset_metadata_without_ordernumber(filename):
+    """
+    Unit test for DefineXMLReader.extract_dataset_metadata function.
+    Tests that define_dataset_variable_order uses XML document order when OrderNumber is not present.
+    """
+    with open(filename, "rb") as file:
+        contents: bytes = file.read()
+        reader = DefineXMLReaderFactory.from_file_contents(contents)
+        dataset_metadata: dict = reader.extract_dataset_metadata(dataset_name="TS")
+        assert "define_dataset_variables" in dataset_metadata
+        assert "define_dataset_variable_order" in dataset_metadata
+        assert (
+            dataset_metadata["define_dataset_variable_order"]
+            == dataset_metadata["define_dataset_variables"]
+        )
