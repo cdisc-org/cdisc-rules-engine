@@ -25,7 +25,7 @@ Open source offering of the CDISC Rules Engine, a tool designed for validating c
 
 **Windows (PowerShell):**
 ```bash
-.\core.exe validate -s sdtmig -v 3-4 -d C:\full\path\to\datasets
+.\core.exe validate -s sdtmig -v 3-4 -d C:\path\to\datasets
 ```
 
 > **Note for Windows users:** The Windows commands provided in this README are written for PowerShell. While most commands are compatible with both PowerShell and Command Prompt, some adjustments may be necessary when using Command Prompt. If you encounter any issues running these commands in Command Prompt, try using PowerShell or consult the Command Prompt documentation for equivalent commands.
@@ -36,7 +36,7 @@ Open source offering of the CDISC Rules Engine, a tool designed for validating c
 chmod +x ./core
 
 # Then run validation
-./core validate -s sdtmig -v 3-4 -d /full/path/to/datasets
+./core validate -s sdtmig -v 3-4 -d /path/to/datasets
 ```
 
 **Mac:**
@@ -46,7 +46,7 @@ xattr -rd com.apple.quarantine .
 chmod +x ./core
 
 # Then run validation
-./core validate -s sdtmig -v 3-4 -d /full/path/to/datasets
+./core validate -s sdtmig -v 3-4 -d /path/to/datasets
 ```
 
 ---
@@ -70,7 +70,7 @@ chmod +x ./core
 
 3. Run validation:
    ```bash
-   python core.py validate -s sdtmig -v 3-4 -d /full/path/to/datasets
+   python core.py validate -s sdtmig -v 3-4 -d /path/to/datasets
    ```
 
 ---
@@ -218,7 +218,7 @@ This will show the list of validation options.
 To validate a folder using rules for SDTM-IG version 3.4 use the following command:
 
 ```bash
-python core.py validate -s sdtmig -v 3-4 -d /full/path/to/datasets
+python core.py validate -s sdtmig -v 3-4 -d /path/to/datasets
 ```
 
 **_NOTE:_** Before running a validation in the CLI, you must first populate the cache with rules to validate against. See the update-cache command below.
@@ -240,7 +240,7 @@ CORE supports the following dataset file formats for validation:
 #### Validate single rule
 
 ```bash
-python core.py validate -s sdtmig -v 3-4 -dp /full/path/to/dataset.json -lr /full/path/to/rule.json --meddra /full/path/to/meddra/ --whodrug /full/path/to/whodrug/
+python core.py validate -s sdtmig -v 3-4 -dp /path/to/dataset.json -lr /path/to/rule.json --meddra /path/to/meddra/ --whodrug /path/to/whodrug/
 ```
 
 Note: JSON dataset should match the format provided by the rule editor:
