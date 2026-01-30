@@ -53,7 +53,7 @@ class TestJSONataProcessor(TestCase):
             "executionStatus": "success",
             "dataset": None,
             "domain": None,
-            "variables": ["A", "B", "row"],
+            "variables": ["row", "A", "B"],
             "message": "A equals B",
             "errors": [
                 {
