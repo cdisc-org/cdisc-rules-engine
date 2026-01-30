@@ -30,9 +30,11 @@ def test_get_condition_composite():
             },
         }
     }
+    # factory produces composite which is not obliged to be the same as original input.
     composite = ConditionCompositeFactory.get_condition_composite(rule["conditions"])
     # check JSON serialization
-    assert composite.to_dict() == rule["conditions"]
+    not_composite_expected = {"all": [rule["conditions"]]}
+    assert composite.to_dict() == not_composite_expected
 
 
 @pytest.mark.parametrize(

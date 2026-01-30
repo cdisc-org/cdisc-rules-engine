@@ -28,11 +28,16 @@ class ConditionCompositeFactory:
                 )
 
             if key == AllowedConditionsKeys.NOT.value:
-                # "not" composite wraps a regular composite
-                return NotConditionComposite(
+                not_inner = cls.get_condition_composite(condition_list)
+                not_composite = NotConditionComposite(
                     key=key,
-                    condition_composite=cls.get_condition_composite(conditions["not"]),
+                    condition_composite=not_inner,
                 )
+                composite.add_conditions(
+                    AllowedConditionsKeys.ALL.value,
+                    [not_composite],
+                )
+                continue
             else:
                 # create a regular composite
                 conditions_to_add = []
