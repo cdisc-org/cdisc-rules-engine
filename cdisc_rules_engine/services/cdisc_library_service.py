@@ -16,13 +16,25 @@ from cdisc_rules_engine.utilities.utils import (
 
 
 class CDISCLibraryService:
-    def __init__(self, api_key, cache_service_obj):
-        self._api_key = api_key
+    def __init__(self, api_key, api_url, cache_service_obj):
+        self._api_key = api_key if api_key else ""
+        
+        if not api_url:  # covers None and empty string
+            api_url = "https://api.library.cdisc.org/api"
+        
+        # Validation: If using the default CDISC Library URL, API key is required
+        if api_url == "https://api.library.cdisc.org/api" and not self._api_key:
+            raise ValueError(
+                "CDISC_LIBRARY_API_KEY is required when using the default CDISC Library API URL. "
+                "Either provide an API key or specify a custom CDISC_LIBRARY_API_URL which does not require an API key."
+            )
+        
         self._client = CDISCLibraryClient(
-            self._api_key, base_api_url="https://api.library.cdisc.org/api"
+            self._api_key,
+            base_api_url=api_url,
         )
         self.cache = cache_service_obj
-
+        
     def cache_library_json(self, uri: str) -> dict:
         """
         Makes a library request to the provided URI,
