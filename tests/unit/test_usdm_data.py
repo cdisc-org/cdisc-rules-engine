@@ -1,5 +1,6 @@
 from typing import List
 from unittest.mock import patch, MagicMock
+from cdisc_rules_engine.enums.execution_status import ExecutionStatus
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 from cdisc_rules_engine.rules_engine import RulesEngine
@@ -107,7 +108,7 @@ def test_validate_rule_single_dataset_check(dataset_rule_greater_than: dict):
 
         assert validation_result == [
             {
-                "executionStatus": "success",
+                "executionStatus": ExecutionStatus.ISSUE_REPORTED.value,
                 "dataset": "USDM_EliLilly_NCT03421379_Diabetes.json",
                 "domain": "EC",
                 "variables": ["ECCOOLVAR"],

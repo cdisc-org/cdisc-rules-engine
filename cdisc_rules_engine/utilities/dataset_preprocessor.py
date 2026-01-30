@@ -16,7 +16,10 @@ from cdisc_rules_engine.utilities.utils import (
     get_sided_match_keys,
     get_dataset_name_from_details,
 )
-from cdisc_rules_engine.exceptions.custom_exceptions import PreprocessingError
+from cdisc_rules_engine.exceptions.custom_exceptions import (
+    DomainNotFoundError,
+    PreprocessingError,
+)
 import os
 import pandas as pd
 
@@ -116,7 +119,7 @@ class DatasetPreprocessor:
                 (self._dataset_metadata.is_supp and domain_name == "SUPP--")
                 or self._dataset_metadata.name == "RELREC"
             ):
-                raise PreprocessingError(
+                raise DomainNotFoundError(
                     f"Failed to find related dataset for '{domain_name}' in preprocessor"
                 )
 
@@ -583,6 +586,9 @@ class DatasetPreprocessor:
                         right_dataset_domain_details.get("join_type", "inner")
                     ),
                 )
+            except KeyError as e:
+                # Handle with COLUMN_NOT_FOUND_IN_DATA in rules_engine
+                raise e
             except Exception as e:
                 raise PreprocessingError(
                     f"Failed to merge datasets. "
