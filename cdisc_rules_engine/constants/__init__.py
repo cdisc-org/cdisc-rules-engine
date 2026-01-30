@@ -17,3 +17,7 @@ XPT_MODIFIED_DATE_PATTERN: str = (
 NULL_FLAVORS = ["", None, {None}, [], {}, np.nan]
 
 KNOWN_REPORT_EXTENSIONS = [".json", ".xlsx", ".xls"]
+
+VALIDATION_FORMATS_MESSAGE = (
+    "SAS V5 XPT, Dataset-JSON (JSON or NDJSON), or Excel (XLSX)"
+)
