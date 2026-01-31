@@ -18,7 +18,7 @@ from cdisc_rules_engine.services.data_readers.json_reader import JSONReader
 class DatasetNDJSONReader(DataReaderInterface):
 
     def get_schema(self) -> dict:
-        schema = JSONReader(encoding=self.encoding).from_file(
+        schema = JSONReader(encoding="utf-8").from_file(
             os.path.join("resources", "schema", "dataset-ndjson-schema.json")
         )
         return schema
