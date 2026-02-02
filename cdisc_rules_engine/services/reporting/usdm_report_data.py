@@ -100,7 +100,7 @@ class USDMReportData(BaseReportData):
         ]
         return sorted(
             entity_details_data,
-            key=lambda x: x.get("entity", "").lower(),
+            key=lambda x: (x.get("entity", "") or "").lower(),
         )
 
     def get_summary_data(self) -> list[dict]:
