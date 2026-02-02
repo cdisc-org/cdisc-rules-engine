@@ -36,7 +36,6 @@ from cdisc_rules_engine.utilities.utils import (
     validate_dataset_files_exist,
 )
 from cdisc_rules_engine.constants import VALIDATION_FORMATS_MESSAGE
-from cdisc_rules_engine.enums.dataformat_types import DataFormatTypes
 from scripts.list_dataset_metadata_handler import list_dataset_metadata_handler
 from scripts.run_validation import run_validation
 from version import __version__
