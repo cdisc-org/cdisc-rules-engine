@@ -26,14 +26,14 @@ class DatasetInterface(ABC):
 
     @classmethod
     @abstractmethod
-    def from_dict(self, data: dict, **kwargs):
+    def from_dict(cls, data: dict, **kwargs):
         """
         Create the underlying dataset from provided dictionary data
         """
 
     @classmethod
     @abstractmethod
-    def from_records(self, data: List[dict], **kwargs):
+    def from_records(cls, data: List[dict], **kwargs):
         """
         Create the underlying dataset from provided list of records
         """
