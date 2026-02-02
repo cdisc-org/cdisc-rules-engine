@@ -1,0 +1,258 @@
+{
+  "datasets": [
+    {
+      "filename": "StudyVersion.xpt",
+      "name": "StudyVersion",
+      "label": "Study Version",
+      "domain": "STUDYVERSION",
+      "variables": [
+        {
+          "name": "parent_entity",
+          "label": "Parent Entity Name",
+          "type": "String",
+          "length": null
+        },
+        {
+          "name": "parent_id",
+          "label": "Parent Entity Id",
+          "type": "String",
+          "length": null
+        },
+        {
+          "name": "parent_rel",
+          "label": "Name of Relationship from Parent Entity",
+          "type": "String",
+          "length": null
+        },
+        {
+          "name": "rel_type",
+          "label": "Type of Relationship",
+          "type": "String",
+          "length": null
+        },
+        {
+          "name": "id",
+          "label": "(Study Version Id)",
+          "type": "String",
+          "length": null
+        },
+        {
+          "name": "versionIdentifier",
+          "label": "Study Version Identifier",
+          "type": "String",
+          "length": null
+        },
+        {
+          "name": "rationale",
+          "label": "Study Rationale",
+          "type": "String",
+          "length": null
+        },
+        {
+          "name": "instanceType",
+          "label": "Instance Type",
+          "type": "String",
+          "length": null
+        },
+        {
+          "name": "studyPhase",
+          "label": "Trial Phase [Exists]",
+          "type": "Boolean",
+          "length": null
+        },
+        {
+          "name": "studyPhase.id",
+          "label": "Trial Phase / (Alias Code Id)",
+          "type": "String",
+          "length": null
+        },
+        {
+          "name": "studyPhase.standardCode",
+          "label": "Trial Phase / (Alias Code Standard Code) [Exists]",
+          "type": "Boolean",
+          "length": null
+        },
+        {
+          "name": "studyPhase.standardCode.id",
+          "label": "Trial Phase / (Alias Code Standard Code) / (Code Id)",
+          "type": "String",
+          "length": null
+        },
+        {
+          "name": "studyPhase.standardCode.code",
+          "label": "Trial Phase / (Alias Code Standard Code) / Code Value",
+          "type": "String",
+          "length": null
+        },
+        {
+          "name": "studyPhase.standardCode.codeSystem",
+          "label": "Trial Phase / (Alias Code Standard Code) / Code System Name",
+          "type": "String",
+          "length": null
+        },
+        {
+          "name": "studyPhase.standardCode.codeSystemVersion",
+          "label": "Trial Phase / (Alias Code Standard Code) / Code System Version",
+          "type": "String",
+          "length": null
+        },
+        {
+          "name": "studyPhase.standardCode.decode",
+          "label": "Trial Phase / (Alias Code Standard Code) / Decode",
+          "type": "String",
+          "length": null
+        },
+        {
+          "name": "studyPhase.standardCodeAliases",
+          "label": "Trial Phase / (Alias Code Standard Code Aliases) [Any Exists]",
+          "type": "Boolean",
+          "length": null
+        },
+        {
+          "name": "titles",
+          "label": "(Study Version Titles) [Any Exists]",
+          "type": "Boolean",
+          "length": null
+        }
+      ],
+      "records": {
+        "parent_entity": [
+          "Study",
+          "Study",
+          "Study",
+          "Study",
+          "Study",
+          "Study",
+          "Study"
+        ],
+        "parent_id": [
+          "Study_1",
+          "Study_1",
+          "Study_1",
+          "Study_1",
+          "Study_1",
+          "Study_1",
+          "Study_1"
+        ],
+        "parent_rel": [
+          "versions",
+          "versions",
+          "versions",
+          "versions",
+          "versions",
+          "versions",
+          "versions"
+        ],
+        "rel_type": [
+          "definition",
+          "definition",
+          "definition",
+          "definition",
+          "definition",
+          "definition",
+          "definition"
+        ],
+        "id": [
+          "StudyVersion_1",
+          "StudyVersion_2",
+          "StudyVersion_3",
+          "StudyVersion_5",
+          "StudyVersion_6",
+          "StudyVersion_8",
+          "StudyVersion_9"
+        ],
+        "versionIdentifier": ["2", "3", "4", "6", "7", "9", "10"],
+        "rationale": [
+          "The discontinuation rate associated with this oral dosing regimen was 58.6% in previous studies, and alternative clinical strategies have been sought to improve tolerance for the compound. To that end, development of a Transdermal Therapeutic System (TTS) has been initiated.",
+          "The discontinuation rate associated with this oral dosing regimen was 58.6% in previous studies, and alternative clinical strategies have been sought to improve tolerance for the compound. To that end, development of a Transdermal Therapeutic System (TTS) has been initiated.",
+          "The discontinuation rate associated with this oral dosing regimen was 58.6% in previous studies, and alternative clinical strategies have been sought to improve tolerance for the compound. To that end, development of a Transdermal Therapeutic System (TTS) has been initiated.",
+          "The discontinuation rate associated with this oral dosing regimen was 58.6% in previous studies, and alternative clinical strategies have been sought to improve tolerance for the compound. To that end, development of a Transdermal Therapeutic System (TTS) has been initiated.",
+          "The discontinuation rate associated with this oral dosing regimen was 58.6% in previous studies, and alternative clinical strategies have been sought to improve tolerance for the compound. To that end, development of a Transdermal Therapeutic System (TTS) has been initiated.",
+          "The discontinuation rate associated with this oral dosing regimen was 58.6% in previous studies, and alternative clinical strategies have been sought to improve tolerance for the compound. To that end, development of a Transdermal Therapeutic System (TTS) has been initiated.",
+          "The discontinuation rate associated with this oral dosing regimen was 58.6% in previous studies, and alternative clinical strategies have been sought to improve tolerance for the compound. To that end, development of a Transdermal Therapeutic System (TTS) has been initiated."
+        ],
+        "instanceType": [
+          "StudyVersion",
+          "StudyVersion",
+          "StudyVersion",
+          "StudyVersion",
+          "StudyVersion",
+          "StudyVersion",
+          "StudyVersion"
+        ],
+        "studyPhase": [true, true, true, true, true, true, true],
+        "studyPhase.id": [
+          "AliasCode_1",
+          "AliasCode_2",
+          "AliasCode_3",
+          "AliasCode_5",
+          "AliasCode_6",
+          "AliasCode_8",
+          "AliasCode_9"
+        ],
+        "studyPhase.standardCode": [true, true, true, true, true, true, true],
+        "studyPhase.standardCode.id": [
+          "Code_2",
+          "Code_3",
+          "Code_4",
+          "Code_6",
+          "Code_7",
+          "Code_9",
+          "Code_10"
+        ],
+        "studyPhase.standardCode.code": [
+          "C15601",
+          "C48660",
+          "C198366xx",
+          "C00001x",
+          "C15601",
+          "C198366xx",
+          "C199989"
+        ],
+        "studyPhase.standardCode.codeSystem": [
+          "http://www.cdisc.org",
+          "http://www.cdisc.org",
+          "http://www.cdisc.org",
+          "http://www.cdisc.org",
+          "http://www.cdisc.org",
+          "http://www.cdisc.org",
+          "http://www.cdisc.org"
+        ],
+        "studyPhase.standardCode.codeSystemVersion": [
+          "2023-12-15",
+          "2023-12-15",
+          "2023-12-15",
+          "2023-12-15",
+          "2023-12-15",
+          "2023-12-15",
+          "2023-12-15"
+        ],
+        "studyPhase.standardCode.decode": [
+          "Phase Ib Trial",
+          "N/A",
+          "Phase I/II/III Trial",
+          "Phase I Trial",
+          "Phase I/II/III Trial",
+          "PHASE IB TRIAL",
+          "PHASE 2 TRIAL"
+        ],
+        "studyPhase.standardCodeAliases": [
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false
+        ],
+        "titles": [true, true, true, true, true, true, true]
+      }
+    }
+  ],
+  "codelists": [
+    "sdtmct-2023-09-29",
+    "sdtmct-2023-12-15",
+    "sdtmct-2024-03-29",
+    "sdtmct-2024-09-27"
+  ]
+}
