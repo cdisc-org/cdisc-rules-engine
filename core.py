@@ -35,13 +35,12 @@ from cdisc_rules_engine.utilities.utils import (
     get_rules_cache_key,
     validate_dataset_files_exist,
 )
+from cdisc_rules_engine.constants import VALIDATION_FORMATS_MESSAGE
+from cdisc_rules_engine.enums.dataformat_types import DataFormatTypes
 from scripts.list_dataset_metadata_handler import list_dataset_metadata_handler
 from scripts.run_validation import run_validation
 from version import __version__
 
-VALIDATION_FORMATS_MESSAGE = (
-    "SAS V5 XPT, Dataset-JSON (JSON or NDJSON), or Excel (XLSX)"
-)
 DEFAULT_CACHE_PATH = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), DefaultFilePaths.CACHE.value
 )
