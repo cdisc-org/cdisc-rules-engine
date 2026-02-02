@@ -1,0 +1,116 @@
+Authorities:
+  - Organization: CDISC
+    Standards:
+      - Name: USDM
+        References:
+          - Citations:
+              - Cited Guidance:
+                  "A study version's study phase must be specified according to
+                  the extensible Trial Phase Response (C66737) SDTM codelist
+                  (e.g. an entry with a code or decode used from the codelist
+                  should be consistent with the full entry in the codelist)."
+                Document: "USDM_CORE_Rules.xlsx"
+            Origin: "USDM Conformance Rules"
+            Rule Identifier:
+              Id: "DDF00015"
+              Version: "1"
+            Version: "1.0"
+        Version: "3.0"
+Check:
+  not:
+    any:
+      - all:
+          - name: $code_for_pref_term
+            operator: empty
+          - name: $code_for_value
+            operator: empty
+          - name: $pref_term_for_code
+            operator: empty
+          - name: $value_for_code
+            operator: empty
+      - all:
+          - name: $pref_term_for_code
+            operator: non_empty
+          - name: $value_for_code
+            operator: non_empty
+          - any:
+              - name: $code_for_pref_term
+                operator: non_empty
+              - name: $code_for_value
+                operator: non_empty
+          - any:
+              - name: studyPhase.standardCode.code
+                operator: equal_to
+                value: $code_for_pref_term
+              - name: studyPhase.standardCode.code
+                operator: equal_to
+                value: $code_for_value
+          - any:
+              - name: studyPhase.standardCode.decode
+                operator: equal_to
+                value: $pref_term_for_code
+              - name: studyPhase.standardCode.decode
+                operator: equal_to
+                value: $value_for_code
+Core:
+  Id: "CORE-000409"
+  Status: Draft
+  Version: "1"
+Description: "A study version's study phase must be specified according to the
+  extensible Trial Phase Response (C66737) SDTM codelist (e.g. an entry with a
+  code or decode used from the codelist should be consistent with the full entry
+  in the codelist)."
+Executability: Fully Executable
+Operations:
+  - id: $codelist_code
+    map:
+      - output: C66737
+    operator: map
+  - codelist_code: $codelist_code
+    ct_package_type: SDTM
+    id: $value_for_code
+    operator: codelist_terms
+    term_code: studyPhase.standardCode.code
+    version: studyPhase.standardCode.codeSystemVersion
+    returntype: value
+  - codelist_code: $codelist_code
+    ct_package_type: SDTM
+    id: $pref_term_for_code
+    operator: codelist_terms
+    term_code: studyPhase.standardCode.code
+    version: studyPhase.standardCode.codeSystemVersion
+    returntype: pref_term
+  - codelist_code: $codelist_code
+    ct_package_type: SDTM
+    id: $code_for_pref_term
+    operator: codelist_terms
+    term_pref_term: studyPhase.standardCode.decode
+    version: studyPhase.standardCode.codeSystemVersion
+    returntype: code
+  - codelist_code: $codelist_code
+    ct_package_type: SDTM
+    id: $code_for_value
+    operator: codelist_terms
+    term_value: studyPhase.standardCode.decode
+    version: studyPhase.standardCode.codeSystemVersion
+    returntype: code
+Outcome:
+  Message: 'The study version''s study phase is not specified according to the
+    extensible Trial Phase Response (C66737) SDTM codelist - codeSystem is not
+    "http://www.cdisc.org", codeSystemVersion is not a valid terminology package
+    date, and/or the code or decode is found in the codelist (case insensitive)
+    but the corresponding decode or code does not match the codelist value (case
+    sensitive).'
+  Output Variables:
+    - $code_for_pref_term
+    - $code_for_value
+    - $pref_term_for_code
+    - $value_for_code
+    - studyPhase.standardCode.code
+    - studyPhase.standardCode.decode
+Rule Type: Record Data
+Scope:
+  Entities:
+    Include:
+      - "StudyVersion"
+Sensitivity: Record
