@@ -809,9 +809,13 @@ def list_ct(cache_path: str, subsets: set[str]):
 @click.command()
 @click.argument("filetype", type=click.Choice(["json", "xpt"], case_sensitive=False))
 def test_validate(filetype):
-    """**Release Test** validate command for executable."""
+    """
+    Verify CORE with a test validation.
+    Requires FILETYPE argument: 'json' or 'xpt'.
+    Report file is confirmed and automatically cleaned up. For actual validation, use 'validate' command.
+    """
     try:
-        base_path = os.path.join("tests", "resources", "datasets")
+        base_path = os.path.join("resources", "datasets")
         if filetype.lower() == "json":
             test_file = os.path.join(base_path, "TS.json")
             output_name = "json_validation_output"
