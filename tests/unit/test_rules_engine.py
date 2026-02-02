@@ -952,7 +952,7 @@ def test_validate_variable_metadata_wrong_metadata(
         {
             "domain": "EC",
             "dataset": "bundle",
-            "variables": ["variable_data_type", "variable_label", "variable_name"],
+            "variables": ["variable_name", "variable_label", "variable_data_type"],
             "executionStatus": ExecutionStatus.ISSUE_REPORTED.value,
             "errors": [
                 {
@@ -1289,7 +1289,7 @@ def test_validate_single_dataset_not_equal_to(
                     "executionStatus": ExecutionStatus.ISSUE_REPORTED.value,
                     "dataset": "ae.xpt",
                     "domain": "AE",
-                    "variables": ["dataset_label", "dataset_location", "dataset_name"],
+                    "variables": ["dataset_label", "dataset_name", "dataset_location"],
                     "message": "Dataset metadata does not correspond to Define XML",
                     "errors": [
                         {
@@ -1893,7 +1893,7 @@ def test_validate_split_dataset_variables_metadata(
             "domain": "EC",
             "dataset": "ec_2.xpt",
             "executionStatus": ExecutionStatus.ISSUE_REPORTED.value,
-            "variables": ["variable_data_type", "variable_label", "variable_name"],
+            "variables": ["variable_name", "variable_label", "variable_data_type"],
             "errors": [
                 {
                     "dataset": "ec_2.xpt",
@@ -2017,7 +2017,7 @@ def test_validate_record_in_parent_domain(
                 "executionStatus": ExecutionStatus.ISSUE_REPORTED.value,
                 "domain": "EC",
                 "dataset": "ec.xpt",
-                "variables": ["ECPRESP", "ECREASOC"],
+                "variables": ["ECREASOC", "ECPRESP"],
                 "message": "Dataset contents is wrong.",
                 "errors": [
                     {
@@ -2193,8 +2193,8 @@ def test_validate_dataset_contents_against_define_and_library_variable_metadata(
             "dataset": "filename",
             "domain": "AE",
             "variables": [
-                "AESER",
                 "AESEV",
+                "AESER",
             ],  # AELNKID must not be included since its core status is not "Perm"
             "message": RuleProcessor.extract_message_from_rule(
                 rule_check_dataset_against_library_and_define
@@ -2692,10 +2692,10 @@ def test_validate_variables_order_against_library_metadata(
             "variables": [
                 "$column_order_from_dataset",
                 "$column_order_from_library",
-                "AESEQ",
-                "AETERM",
                 "DOMAIN",
+                "AESEQ",
                 "STUDYID",
+                "AETERM",
             ],
             "message": "Order of variables is invalid",
             "errors": [
