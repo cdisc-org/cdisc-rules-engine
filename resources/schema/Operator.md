@@ -160,6 +160,8 @@ Complement of `equals_string_part`
 
 ### equals_string_part
 
+Checks that the values in the target column equal the result of parsing the value in the comparison column with a regex
+
 > RDOMAIN equals characters 5 and 6 of SUPP dataset name
 
 ```yaml
@@ -1097,7 +1099,7 @@ Check:
       operator: target_is_sorted_by
       value:
         - name: --STDTC
-          order: asc
+          sort_order: asc
           null_position: last
 ```
 
