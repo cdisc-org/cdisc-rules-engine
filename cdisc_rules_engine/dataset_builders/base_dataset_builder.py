@@ -202,6 +202,11 @@ class BaseDatasetBuilder:
         variables: List[dict] = sdtm_utilities.get_variables_metadata_from_standard(
             domain=self.dataset_metadata.unsplit_name,
             library_metadata=self.library_metadata,
+            data_service=self.data_service,
+            dataset=self.get_dataset_contents(),
+            datasets=self.datasets,
+            dataset_metadata=self.dataset_metadata,
+            dataset_path=self.dataset_path,
         )
         variables_metadata: dict = self.library_metadata.variables_metadata.get(
             domain, {}
