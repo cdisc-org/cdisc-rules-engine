@@ -16,10 +16,7 @@ from cdisc_rules_engine.utilities.utils import (
     get_sided_match_keys,
     get_dataset_name_from_details,
 )
-from cdisc_rules_engine.exceptions.custom_exceptions import (
-    DomainNotFoundError,
-    PreprocessingError,
-)
+from cdisc_rules_engine.exceptions.custom_exceptions import PreprocessingError
 import os
 import pandas as pd
 
