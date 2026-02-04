@@ -215,8 +215,7 @@ class SDTMReportData(BaseReportData):
                 dataset = result.get("dataset")
                 if (
                     result.get("errors")
-                    and result.get("executionStatus")
-                    == ExecutionStatus.ISSUE_REPORTED.value
+                    and result.get("executionStatus") != ExecutionStatus.SKIPPED.value
                 ):
                     summary_item = {
                         "dataset": dataset,

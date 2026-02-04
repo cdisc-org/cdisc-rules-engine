@@ -122,8 +122,7 @@ class USDMReportData(BaseReportData):
             for result in validation_result.results or []:
                 if (
                     result.get("errors")
-                    and result.get("executionStatus")
-                    == ExecutionStatus.ISSUE_REPORTED.value
+                    and result.get("executionStatus") != ExecutionStatus.SKIPPED.value
                 ):
                     summary_item = {
                         "entity": result.get("entity")
