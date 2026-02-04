@@ -71,29 +71,13 @@ from cdisc_rules_engine.services.cache.cache_service_factory import CacheService
         ),
     ],
 )
-def test_variable_is_null_comprehensive(
+def test_variable_is_null(
     data, target_var, expected, mock_data_service, operation_params: OperationParams
 ):
     config = ConfigService()
     cache = CacheServiceFactory(config).get_cache_service()
     operation_params.dataframe = data
     operation_params.target = target_var
-    operation_params.domain = "AE"
-    mock_data_service.get_dataset.return_value = data
-    mock_data_service.dataset_implementation = data.__class__
-    result = VariableIsNull(operation_params, data, cache, mock_data_service).execute()
-    assert operation_params.operation_id in result
-    for val in result[operation_params.operation_id]:
-        assert val == expected
-
-
-def test_variable_is_null(
-    data, expected, mock_data_service, operation_params: OperationParams
-):
-    config = ConfigService()
-    cache = CacheServiceFactory(config).get_cache_service()
-    operation_params.dataframe = data
-    operation_params.target = "AEVAR"
     operation_params.domain = "AE"
     mock_data_service.get_dataset.return_value = data
     mock_data_service.dataset_implementation = data.__class__
