@@ -55,6 +55,11 @@ class LocalDataService(BaseDataService):
         config: ConfigInterface = None,
         **kwargs,
     ):
+        """
+        Return the singleton instance. Reset the instance when encoding is
+        explicitly requested and differs from the cached one (e.g., validation
+        runs multiple times with different encodings in the same process).
+        """
         encoding = kwargs.get("encoding")
         if cls._instance is None or (
             encoding is not None and cls._instance.encoding != encoding

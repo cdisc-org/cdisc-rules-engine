@@ -36,7 +36,7 @@ from cdisc_rules_engine.utilities.utils import (
     get_rules_cache_key,
     validate_dataset_files_exist,
 )
-from cdisc_rules_engine.constants import VALIDATION_FORMATS_MESSAGE
+from cdisc_rules_engine.constants import VALIDATION_FORMATS_MESSAGE, DEFAULT_ENCODING
 from scripts.list_dataset_metadata_handler import list_dataset_metadata_handler
 from scripts.run_validation import run_validation
 from version import __version__
@@ -48,7 +48,7 @@ DEFAULT_CACHE_PATH = os.path.join(
 
 def validate_encoding(ctx, param, value):
     if value is None:
-        return "utf-8"
+        return DEFAULT_ENCODING
     try:
         codecs.lookup(value)
         return value
@@ -384,13 +384,13 @@ def _validate_no_arguments(logger) -> None:
 @click.option(
     "-e",
     "--encoding",
-    default="utf-8",
+    default=DEFAULT_ENCODING,
     required=False,
     callback=validate_encoding,
     help=(
-        "File encoding for reading datasets. "
-        "Defaults to utf-8. "
-        "Supported encodings: utf-8, utf-16, utf-32, cp1252, latin-1, etc."
+        f"File encoding for reading datasets. "
+        f"Defaults to {DEFAULT_ENCODING}. "
+        f"Supported encodings: utf-8, utf-16, utf-32, cp1252, latin-1, etc."
     ),
 )
 @click.pass_context

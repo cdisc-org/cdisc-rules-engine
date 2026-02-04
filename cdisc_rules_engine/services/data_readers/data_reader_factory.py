@@ -15,6 +15,7 @@ from cdisc_rules_engine.services.data_readers.parquet_reader import ParquetReade
 from cdisc_rules_engine.services.data_readers.json_reader import JSONReader
 from cdisc_rules_engine.enums.dataformat_types import DataFormatTypes
 from cdisc_rules_engine.models.dataset import PandasDataset
+from cdisc_rules_engine.constants import DEFAULT_ENCODING
 
 
 class DataReaderFactory(FactoryInterface):
@@ -54,7 +55,7 @@ class DataReaderFactory(FactoryInterface):
         service_name = name or self._default_service_name
         if service_name in self._reader_map:
             reader_class = self._reader_map[service_name]
-            encoding = self.encoding or "utf-8"
+            encoding = self.encoding or DEFAULT_ENCODING
             return reader_class(self.dataset_implementation, encoding=encoding)
         raise ValueError(
             f"Service name must be in {list(self._reader_map.keys())}, "

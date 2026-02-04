@@ -13,12 +13,13 @@ from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 import tempfile
 
 from cdisc_rules_engine.services.data_readers.json_reader import JSONReader
+from cdisc_rules_engine.constants import DEFAULT_ENCODING
 
 
 class DatasetNDJSONReader(DataReaderInterface):
 
     def get_schema(self) -> dict:
-        schema = JSONReader(encoding="utf-8").from_file(
+        schema = JSONReader(encoding=DEFAULT_ENCODING).from_file(
             os.path.join("resources", "schema", "dataset-ndjson-schema.json")
         )
         return schema

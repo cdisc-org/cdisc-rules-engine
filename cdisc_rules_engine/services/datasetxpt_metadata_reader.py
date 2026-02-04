@@ -3,6 +3,7 @@ import pyreadstat
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.config import config
 from cdisc_rules_engine.services.adam_variable_reader import AdamVariableReader
+from cdisc_rules_engine.constants import DEFAULT_ENCODING
 import os
 
 
@@ -14,7 +15,9 @@ class DatasetXPTMetadataReader:
 
     # TODO. Maybe in future it is worth having multiple constructors
     #  like from_bytes, from_file etc. But now there is no immediate need for that.
-    def __init__(self, file_path: str, file_name: str, encoding: str = None):
+    def __init__(
+        self, file_path: str, file_name: str, encoding: str = DEFAULT_ENCODING
+    ):
         file_size = os.path.getsize(file_path)
         if file_size > config.get_dataset_size_threshold():
             self._estimate_dataset_length = True
@@ -199,18 +202,10 @@ class DatasetXPTMetadataReader:
         }
         return adam_info_dict
 
-    @property
-    def _encoding(self):
-        return self.encoding or "utf-8"
-
     def _read_xport(self, **kwargs):
-        """Read XPT file with encoding, fallback to no encoding if TypeError."""
-        try:
-            return pyreadstat.read_xport(
-                self._file_path, encoding=self._encoding, **kwargs
-            )
-        except TypeError:
-            return pyreadstat.read_xport(self._file_path, **kwargs)
+        """Read XPT file using the configured encoding."""
+        encoding = self.encoding or DEFAULT_ENCODING
+        return pyreadstat.read_xport(self._file_path, encoding=encoding, **kwargs)
 
     def _read_xport_with_encoding(self):
         return self._read_xport(row_limit=self.row_limit)
