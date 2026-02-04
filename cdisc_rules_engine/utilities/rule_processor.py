@@ -833,8 +833,7 @@ class RuleProcessor:
                     )
                 else:
                     target_names.append(target)
-        target_names.sort()
-        return set(target_names)
+        return list(dict.fromkeys(target_names))
 
     @staticmethod
     def extract_referenced_variables_from_rule(rule: dict):

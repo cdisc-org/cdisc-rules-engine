@@ -1155,10 +1155,10 @@ def test_extract_target_names_from_rule_output_variables_with_compared():
             "$VAR5",
         ],
     }
-    target_names: Set[str] = RuleProcessor.extract_target_names_from_rule(
+    target_names: List[str] = RuleProcessor.extract_target_names_from_rule(
         rule, "AE", ["VAR1", "VAR2", "VAR3", "VAR4", "VAR5"]
     )
-    assert target_names == {"$VAR1", "$VAR2", "$VAR3", "$VAR4", "$VAR5"}
+    assert set(target_names) == {"$VAR1", "$VAR2", "$VAR3", "$VAR4", "$VAR5"}
 
 
 def test_extract_target_names_from_rule_output_variables_mixed_compared():
@@ -1171,10 +1171,10 @@ def test_extract_target_names_from_rule_output_variables_mixed_compared():
             {"compared": ["$VAR5", "$VAR6"]},
         ],
     }
-    target_names: Set[str] = RuleProcessor.extract_target_names_from_rule(
+    target_names: List[str] = RuleProcessor.extract_target_names_from_rule(
         rule, "AE", ["VAR1", "VAR2", "VAR3", "VAR4", "VAR5", "VAR6"]
     )
-    assert target_names == {"$VAR1", "$VAR2", "$VAR3", "$VAR4", "$VAR5", "$VAR6"}
+    assert set(target_names) == {"$VAR1", "$VAR2", "$VAR3", "$VAR4", "$VAR5", "$VAR6"}
 
 
 @pytest.mark.parametrize(
