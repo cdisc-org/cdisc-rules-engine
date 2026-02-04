@@ -63,8 +63,9 @@ def test_read_json_file_fails_with_wrong_encoding():
         os.unlink(temp_path)
 
 
-def test_read_json_file_succeeds_with_correct_encoding():
-    test_data = {
+def _minimal_dataset_json():
+    """Minimal valid Dataset-JSON with non-ASCII character for encoding tests."""
+    return {
         "datasetJSONVersion": "1.1",
         "datasetJSONCreationDateTime": "2024-01-01T00:00:00",
         "sourceSystem": {"name": "Test", "version": "1.0"},
@@ -85,15 +86,29 @@ def test_read_json_file_succeeds_with_correct_encoding():
         ],
         "rows": [["STUDY001"]],
     }
-    with tempfile.NamedTemporaryFile(mode="wb", suffix=".json", delete=False) as f:
-        json_str = json.dumps(test_data, ensure_ascii=False)
-        f.write(json_str.encode("cp1252"))
-        temp_path = f.name
 
+
+@pytest.mark.parametrize(
+    "encoding,label",
+    [
+        ("utf-8", "Test Dataset — utf-8"),
+        ("utf-16", "Test Dataset — utf-16"),
+        ("utf-32", "Test Dataset — utf-32"),
+        ("cp1252", "Test Dataset"),
+        ("latin-1", "Test Dataset latin-1 \xe9"),
+    ],
+)
+def test_read_json_file_succeeds_with_encoding(encoding, label):
+    """Test each encoding mentioned in README (utf-8, utf-16, utf-32, cp1252, latin-1)."""
+    test_data = _minimal_dataset_json()
+    test_data["label"] = label
+    with tempfile.NamedTemporaryFile(mode="wb", suffix=".json", delete=False) as f:
+        f.write(json.dumps(test_data, ensure_ascii=False).encode(encoding))
+        temp_path = f.name
     try:
-        reader = DatasetJSONReader(PandasDataset, encoding="cp1252")
+        reader = DatasetJSONReader(PandasDataset, encoding=encoding)
         result = reader.read_json_file(temp_path)
         assert result["name"] == "TEST"
-        assert len(result["rows"]) == 1
+        assert result["label"] == label
     finally:
         os.unlink(temp_path)
