@@ -2,7 +2,7 @@ import re
 import copy
 import os
 
-from typing import Iterable, List, Optional, Set, Union, Tuple
+from typing import Iterable, List, Optional, Union, Tuple
 from cdisc_rules_engine.enums.rule_types import RuleTypes
 from cdisc_rules_engine.interfaces.cache_service_interface import (
     CacheServiceInterface,
@@ -737,9 +737,49 @@ class RuleProcessor:
         return self.log_suitable_for_validation(rule_id, dataset_name)
 
     @staticmethod
+    def _extract_targets_from_output_variables(rule: dict, domain: str) -> List[str]:
+        output_variables: List[str] = rule.get("output_variables", [])
+        target_names: List[str] = []
+        seen: set[str] = set()
+        for var in output_variables:
+            name = var.replace("--", domain or "", 1)
+            if name not in seen:
+                seen.add(name)
+                target_names.append(name)
+        return target_names
+
+    @staticmethod
+    def _extract_targets_from_conditions(
+        rule: dict, domain: str, column_names: List[str]
+    ) -> List[str]:
+        target_names: List[str] = []
+        seen: set[str] = set()
+        conditions: ConditionInterface = rule["conditions"]
+        for condition in conditions.values():
+            if condition.get("operator") == "not_exists":
+                continue
+            target: str = condition["value"].get("target")
+            if target is None:
+                continue
+            target = target.replace("--", domain or "")
+            op_related_pattern: str = RuleProcessor.get_operator_related_pattern(
+                condition.get("operator"), target
+            )
+            if op_related_pattern is not None:
+                for name in column_names:
+                    if re.match(op_related_pattern, name) and name not in seen:
+                        seen.add(name)
+                        target_names.append(name)
+            else:
+                if target not in seen:
+                    seen.add(target)
+                    target_names.append(target)
+        return target_names
+
+    @staticmethod
     def extract_target_names_from_rule(
         rule: dict, domain: str, column_names: List[str]
-    ) -> Set[str]:
+    ) -> List[str]:
         r"""
         Extracts target from each item of condition list.
 
