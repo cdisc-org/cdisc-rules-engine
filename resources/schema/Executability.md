@@ -33,4 +33,3 @@ The rule can be partially executed but may report more violations than actually 
 ## Partially Executable - Possible Underreporting
 
 The rule can be partially executed but may miss some violations that should be reported.
-
