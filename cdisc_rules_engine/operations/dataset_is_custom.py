@@ -1,4 +1,6 @@
 from cdisc_rules_engine.operations.base_operation import BaseOperation
+from cdisc_rules_engine.utilities.utils import is_supp_domain
+from cdisc_rules_engine.constants.domains import SUPPLEMENTARY_DOMAINS
 
 
 class DatasetIsCustom(BaseOperation):
@@ -29,5 +31,22 @@ class DatasetIsCustom(BaseOperation):
                     ds_name = getattr(ds, "name", None)
                     break
 
-        # A dataset is considered custom if its name is not present in the library
+        if not ds_name:
+            return True
+
+        if is_supp_domain(ds_name):
+            # Determine explicit supplementary prefix (e.g. "SUPP" or "SQ")
+            supp_prefix = None
+            for prefix in SUPPLEMENTARY_DOMAINS:
+                if ds_name.startswith(prefix):
+                    supp_prefix = prefix
+                    break
+            # If any library dataset name starts with the same SUPP/SQ prefix as ds_name,
+            # then this dataset should *not* be treated as custom.
+            for lib_name in library_dataset_names:
+                if lib_name.startswith(supp_prefix):
+                    return False
+            return True
+
+        # For non-supplementary domains: dataset is custom if its name is not in library
         return ds_name not in library_dataset_names
