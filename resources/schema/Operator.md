@@ -446,6 +446,28 @@ Complement of `split_parts_have_equal_length`. Returns True when parts have uneq
   separator: "/"
 ```
 
+### is_title_case
+
+Validates that variable labels follow proper title case formatting rules using the titlecase PyPi library. Title case capitalizes the first word and all major words, while keeping articles (a, an, the), conjunctions (and, but, or), and prepositions (in, of, for) in lowercase unless they are the first word.
+
+> Check that AELABEL values are in proper title case
+
+```yaml
+- name: AELABEL
+  operator: is_title_case
+```
+
+### is_not_title_case
+
+Complement of `is_title_case`. Returns True when values are NOT in proper title case.
+
+> Flag AELABEL values that violate title case rules
+
+```yaml
+- name: AELABEL
+  operator: is_not_title_case
+```
+
 ## Date
 
 Date and time specific operations for comparing dates, validating date completeness, checking date formats, and validating ISO-8601 durations.
