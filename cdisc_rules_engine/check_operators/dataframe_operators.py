@@ -692,6 +692,8 @@ class DataframeType(BaseType):
         if isinstance(comparator, str) and not value_is_literal:
             # column name provided
             comparator = self.replace_prefix(comparator)
+        elif isinstance(comparator, list):
+            comparator = self.replace_all_prefixes(comparator)
         comparison_data = self.get_comparator_data(comparator, value_is_literal)
         target_data = self.value[target]
         if self.is_column_of_iterables(target_data):

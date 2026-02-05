@@ -259,45 +259,85 @@ def test_not_contains_all(data, comparator, dataset_type, expected_result):
 
 
 @pytest.mark.parametrize(
-    "data,comparator,dataset_type, expected_result",
+    "data, comparator, dataset_type, column_prefix_map, value_is_literal, expected_result",
     [
         (
             {"target": ["Ctt", "Btt", "A"], "VAR2": ["A", "btt", "lll"]},
             ["Ctt", "B", "A"],
             PandasDataset,
+            {},
+            True,
             [True, False, True],
         ),
         (
             {"target": ["Ctt", "Btt", "A"], "VAR2": ["A", "btt", "lll"]},
             ["Ctt", "B", "A"],
             DaskDataset,
+            {},
+            True,
             [True, False, True],
         ),
         (
             {"target": ["A", "B", "C"]},
             ["C", "Z", "A"],
             DaskDataset,
+            {},
+            True,
             [True, False, True],
         ),
         (
             {"target": [1, 2, 3], "VAR2": [[1, 2], [3], [3]]},
             "VAR2",
             PandasDataset,
+            {},
+            False,
             [True, False, True],
         ),
         (
             {"target": [1, 2, 3], "VAR2": [[1, 2], [3], [3]]},
             "VAR2",
             DaskDataset,
+            {},
+            False,
             [True, False, True],
+        ),
+        (
+            {
+                "target": ["TSPARM", "TSORRESU", "AGEU", "TSDOSU"],
+                "DOMAIN": ["TS", "TS", "DM", "TS"],
+            },
+            ["--ORRESU", "--STRESU", "--DOSU", "--TEST", "QLABEL", "--PARM"],
+            PandasDataset,
+            {"--": "TS"},
+            True,
+            [True, True, False, True],
+        ),
+        (
+            {
+                "target": ["TSPARM", "TSORRESU", "AGEU", "TSDOSU"],
+                "DOMAIN": ["TS", "TS", "DM", "TS"],
+            },
+            ["--ORRESU", "--STRESU", "--DOSU", "--TEST", "QLABEL", "--PARM"],
+            DaskDataset,
+            {"--": "TS"},
+            True,
+            [True, True, False, True],
         ),
     ],
 )
-def test_is_contained_by(data, comparator, dataset_type, expected_result):
+def test_is_contained_by(
+    data, comparator, dataset_type, column_prefix_map, value_is_literal, expected_result
+):
     df = dataset_type.from_dict(data)
-    dataframe_operator = DataframeType({"value": df})
+    dataframe_operator = DataframeType(
+        {"value": df, "column_prefix_map": column_prefix_map}
+    )
     result = dataframe_operator.is_contained_by(
-        {"target": "target", "comparator": comparator}
+        {
+            "target": "target",
+            "comparator": comparator,
+            "value_is_literal": value_is_literal,
+        }
     )
     assert result.equals(df.convert_to_series(expected_result))
 
