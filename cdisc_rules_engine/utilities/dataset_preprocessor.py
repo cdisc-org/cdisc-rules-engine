@@ -116,9 +116,11 @@ class DatasetPreprocessor:
                 (self._dataset_metadata.is_supp and domain_name == "SUPP--")
                 or self._dataset_metadata.name == "RELREC"
             ):
-                raise PreprocessingError(
-                    f"Failed to find related dataset for '{domain_name}' in preprocessor"
+                logger.info(
+                    f"Related dataset '{domain_name}' not found for {self._dataset_metadata.name}. "
+                    f"Skipping merge for this dataset."
                 )
+                continue
 
             for file_info in file_infos:
                 if file_info.domain in merged_domains:
