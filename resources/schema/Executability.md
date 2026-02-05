@@ -2,6 +2,18 @@
 
 Indicates the extent to which the rule can be automatically executed and validated by the rules engine. This is informational metadata that describes the rule's execution capability.
 
+### Example
+
+```yaml
+Executability: Fully Executable
+```
+
+### Notes
+
+- Executability is informational metadata and does not control whether a rule executes
+- All rules are executed by the engine regardless of their Executability value
+- The Executability value is included in validation reports to inform users about the rule's execution capability
+
 ## Fully Executable
 
 The rule can be fully executed and validated automatically by the rules engine.
@@ -22,14 +34,3 @@ The rule can be partially executed but may report more violations than actually 
 
 The rule can be partially executed but may miss some violations that should be reported.
 
-### Example
-
-```yaml
-Executability: Fully Executable
-```
-
-### Notes
-
-- Executability is informational metadata and does not control whether a rule executes
-- All rules are executed by the engine regardless of their Executability value
-- The Executability value is included in validation reports to inform users about the rule's execution capability
