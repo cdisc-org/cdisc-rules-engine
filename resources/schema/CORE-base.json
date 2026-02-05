@@ -400,29 +400,7 @@
       "type": "string"
     },
     "Executability": {
-      "anyOf": [
-        {
-          "const": "Fully Executable",
-          "title": "The rule can be fully executed and validated automatically by the rules engine"
-        },
-        {
-          "const": "Not Executable",
-          "title": "The rule cannot be executed automatically by the rules engine"
-        },
-        {
-          "const": "Partially Executable",
-          "title": "The rule can be partially executed, but may not capture all validation scenarios"
-        },
-        {
-          "const": "Partially Executable - Possible Overreporting",
-          "title": "The rule can be partially executed but may report more violations than actually exist"
-        },
-        {
-          "const": "Partially Executable - Possible Underreporting",
-          "title": "The rule can be partially executed but may miss some violations that should be reported"
-        }
-      ],
-      "markdownDescription": "Indicates the extent to which the rule can be automatically executed and validated by the rules engine"
+      "$ref": "Executability.json"
     },
     "Match Datasets": {
       "items": {
