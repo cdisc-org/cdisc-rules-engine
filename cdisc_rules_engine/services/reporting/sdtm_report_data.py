@@ -138,12 +138,14 @@ class SDTMReportData(BaseReportData):
         substandard = (
             self._args.substandard if hasattr(self._args, "substandard") else None
         )
+        use_case = self._args.use_case if hasattr(self._args, "use_case") else None
         self.data_sheets = {
             "Conformance Details": self.get_conformance_details_data(
                 define_version,
                 controlled_terminology,
                 dictionary_versions,
                 substandard=substandard,
+                use_case=use_case,
             ),
             "Dataset Details": self.get_dataset_details_data(),
             "Issue Summary": self.get_summary_data(),
@@ -151,7 +153,7 @@ class SDTMReportData(BaseReportData):
             "Rules Report": self.get_rules_report_data(),
         }
 
-    def get_conformance_details_data(
+    def get_conformance_details_data(  # noqa
         self,
         define_version,
         cdiscCt,
@@ -203,11 +205,15 @@ class SDTMReportData(BaseReportData):
         conformance_details.append(
             ReportMetadataItem("Version", 11, f"V{self._version}")
         )
+        if "use_case" in kwargs and kwargs["use_case"] is not None:
+            conformance_details.append(
+                ReportMetadataItem("TIG Use Case", 12, kwargs["use_case"])
+            )
         if cdiscCt:
             conformance_details.append(
                 ReportMetadataItem(
                     "CT Version",
-                    12,
+                    13,
                     (
                         ", ".join(cdiscCt)
                         if isinstance(cdiscCt, (list, tuple, set))
@@ -216,41 +222,41 @@ class SDTMReportData(BaseReportData):
                 )
             )
         else:
-            conformance_details.append(ReportMetadataItem("CT Version", 12, ""))
+            conformance_details.append(ReportMetadataItem("CT Version", 13, ""))
         conformance_details.append(
-            ReportMetadataItem("Define-XML Version", 13, define_version)
+            ReportMetadataItem("Define-XML Version", 14, define_version)
         )
 
         # Populate external dictionary versions
         unii_version = dictionary_versions.get(DictionaryTypes.UNII.value)
         if unii_version is not None:
             conformance_details.append(
-                ReportMetadataItem("UNII Version", 16, unii_version)
+                ReportMetadataItem("UNII Version", 15, unii_version)
             )
         medrt_version = dictionary_versions.get(DictionaryTypes.MEDRT.value)
         if medrt_version is not None:
             conformance_details.append(
-                ReportMetadataItem("Med-RT Version", 17, medrt_version)
+                ReportMetadataItem("Med-RT Version", 16, medrt_version)
             )
         meddra_version = dictionary_versions.get(DictionaryTypes.MEDDRA.value)
         if meddra_version is not None:
             conformance_details.append(
-                ReportMetadataItem("MedDRA Version", 18, meddra_version)
+                ReportMetadataItem("MedDRA Version", 17, meddra_version)
             )
         whodrug_version = dictionary_versions.get(DictionaryTypes.WHODRUG.value)
         if whodrug_version is not None:
             conformance_details.append(
-                ReportMetadataItem("WHODRUG Version", 19, whodrug_version)
+                ReportMetadataItem("WHODRUG Version", 18, whodrug_version)
             )
         snomed_version = dictionary_versions.get(DictionaryTypes.SNOMED.value)
         if snomed_version is not None:
             conformance_details.append(
-                ReportMetadataItem("SNOMED Version", 20, snomed_version)
+                ReportMetadataItem("SNOMED Version", 19, snomed_version)
             )
         loinc_version = dictionary_versions.get(DictionaryTypes.LOINC.value)
         if loinc_version is not None:
             conformance_details.append(
-                ReportMetadataItem("LOINC Version", 21, loinc_version)
+                ReportMetadataItem("LOINC Version", 20, loinc_version)
             )
         return conformance_details
 

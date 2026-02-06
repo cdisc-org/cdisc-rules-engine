@@ -400,14 +400,7 @@
       "type": "string"
     },
     "Executability": {
-      "enum": [
-        "Fully Executable",
-        "Not Executable",
-        "Partially Executable",
-        "Partially Executable - Possible Overreporting",
-        "Partially Executable - Possible Underreporting"
-      ],
-      "type": "string"
+      "$ref": "Executability.json"
     },
     "Match Datasets": {
       "items": {
@@ -642,7 +635,9 @@
   ],
   "if": {
     "properties": {
-      "Sensitivity": { "const": "Group" }
+      "Sensitivity": {
+        "const": "Group"
+      }
     }
   },
   "then": {
