@@ -781,11 +781,46 @@ class RuleProcessor:
             pattern: ^TSVAL\d+$ (starts with TSVAL and ends with number)
             additional columns: TSVAL1, TSVAL2, TSVAL3 etc.
         """
-        if rule.get("output_variables"):
-            return RuleProcessor._extract_targets_from_output_variables(rule, domain)
-        return RuleProcessor._extract_targets_from_conditions(
-            rule, domain, column_names
-        )
+        output_variables = rule.get("output_variables", [])
+        if output_variables:
+            flattened_vars: List[str] = []
+            for item in output_variables:
+                if isinstance(item, dict) and "compared" in item:
+                    children = item.get("compared", [])
+                    if isinstance(children, list):
+                        flattened_vars.extend(
+                            [c for c in children if isinstance(c, str)]
+                        )
+                elif isinstance(item, str):
+                    flattened_vars.append(item)
+
+            target_names: List[str] = [
+                var.replace("--", domain or "", 1) for var in flattened_vars
+            ]
+        else:
+            target_names: List[str] = []
+            conditions: ConditionInterface = rule["conditions"]
+            for condition in conditions.values():
+                if condition.get("operator") == "not_exists":
+                    continue
+                target: str = condition["value"].get("target")
+                if target is None:
+                    continue
+                target = target.replace("--", domain or "")
+                op_related_pattern: str = RuleProcessor.get_operator_related_pattern(
+                    condition.get("operator"), target
+                )
+                if op_related_pattern is not None:
+                    # if pattern exists -> return only matching column names
+                    target_names.extend(
+                        filter(
+                            lambda name: re.match(op_related_pattern, name),
+                            column_names,
+                        )
+                    )
+                else:
+                    target_names.append(target)
+        return list(dict.fromkeys(target_names))
 
     @staticmethod
     def extract_referenced_variables_from_rule(rule: dict):

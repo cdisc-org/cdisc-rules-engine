@@ -282,6 +282,47 @@ Mapping of Result property names to Report Issue Details Column Names:
 | instance_id         | instance_id          | Instance ID  |
 | path                | path                 | Path         |
 
+**Note:** Output variables must match their respective rule types. If an output variable is not available for a specific rule type, the report will display an appropriate message. For Variable Metadata Check rules (and their variants) and Dataset Metadata Check rules (and their variants), if an output variable is not available in the metadata context, the report will display "not available in metadata context" instead of the variable value.
+
+#### Output Variable Comparison
+
+You can use the `compared` syntax to compare multiple output variables. When using `compared`, the reporting engine will perform a set-based (order-independent) comparison between the variables and display formatted comparison results showing missing and extra items.
+
+**Syntax:**
+
+```yaml
+Outcome:
+  Message: "Comparison error message"
+  Output Variables:
+    - $variable1
+    - compared:
+        - $baseline_variable
+        - $comparison_variable1
+        - $comparison_variable2
+```
+
+**Behavior:**
+
+- The first variable in a `compared` block serves as the baseline for comparison
+- Each subsequent variable is compared against the baseline using set difference logic
+- Comparison results show:
+  - Items missing in the comparison variable (present in baseline but not in comparison)
+  - Items extra in the comparison variable (present in comparison but not in baseline)
+  - Raw values for all variables in the group
+- You can have multiple `compared` blocks in a single `Output Variables` list
+- Each `compared` block must contain at least 2 variables
+
+**Example:**
+
+```yaml
+Outcome:
+  Message: "Expected variables missing from dataset"
+  Output Variables:
+    - compared:
+        - $dataset_variables
+        - $expected_variables
+```
+
 ### Scope
 
 A JSONata rule will always run once for the entire JSON file, regardless of the Scope. The `Entity` determination must come from the rule's JSONata result property.

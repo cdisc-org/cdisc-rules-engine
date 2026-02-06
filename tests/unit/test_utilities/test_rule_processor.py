@@ -1148,6 +1148,37 @@ def test_extract_target_names_from_rule_output_variables():
     ]
 
 
+def test_extract_target_names_from_rule_output_variables_with_compared():
+    """Test extraction of target names when output_variables contains compared blocks."""
+    rule: dict = {
+        "output_variables": [
+            "$VAR1",
+            {"compared": ["$VAR2", "$VAR3", "$VAR4"]},
+            "$VAR5",
+        ],
+    }
+    target_names: List[str] = RuleProcessor.extract_target_names_from_rule(
+        rule, "AE", ["VAR1", "VAR2", "VAR3", "VAR4", "VAR5"]
+    )
+    assert set(target_names) == {"$VAR1", "$VAR2", "$VAR3", "$VAR4", "$VAR5"}
+
+
+def test_extract_target_names_from_rule_output_variables_mixed_compared():
+    """Test extraction with multiple compared blocks and mixed strings."""
+    rule: dict = {
+        "output_variables": [
+            "$VAR1",
+            {"compared": ["$VAR2", "$VAR3"]},
+            "$VAR4",
+            {"compared": ["$VAR5", "$VAR6"]},
+        ],
+    }
+    target_names: List[str] = RuleProcessor.extract_target_names_from_rule(
+        rule, "AE", ["VAR1", "VAR2", "VAR3", "VAR4", "VAR5", "VAR6"]
+    )
+    assert set(target_names) == {"$VAR1", "$VAR2", "$VAR3", "$VAR4", "$VAR5", "$VAR6"}
+
+
 @pytest.mark.parametrize(
     "conditions",
     [
