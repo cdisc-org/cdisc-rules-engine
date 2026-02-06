@@ -38,6 +38,7 @@ class OperationParams:
     ct_package_types: List[str] = None
     ct_version: str = None
     ct_package_type: str = None
+    domain_class: str = None
     term_code: str = None
     term_value: str = None
     term_pref_term: str = None
