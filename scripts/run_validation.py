@@ -95,6 +95,7 @@ def validate_single_rule(
         jsonata_custom_functions=args.jsonata_custom_functions,
         max_errors_per_rule=max_errors_per_rule,
         errors_per_dataset_flag=per_dataset_flag,
+        encoding=args.encoding,
     )
     results = engine.validate_single_rule(rule, datasets)
     results = list(itertools.chain(*results.values()))
@@ -150,6 +151,7 @@ def run_validation(args: Validation_args):
             standard_version=standard_version,
             standard_substandard=standard_substandard,
             library_metadata=library_metadata,
+            encoding=args.encoding,
         ).get_data_service(args.dataset_paths)
         # install dictionaries if needed
         dictionary_versions = fill_cache_with_dictionaries(

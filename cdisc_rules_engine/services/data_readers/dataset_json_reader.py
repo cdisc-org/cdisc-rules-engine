@@ -12,17 +12,19 @@ from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 import tempfile
 
 from cdisc_rules_engine.services.data_readers.json_reader import JSONReader
+from cdisc_rules_engine.constants import DEFAULT_ENCODING
 
 
 class DatasetJSONReader(DataReaderInterface):
+
     def get_schema(self) -> dict:
-        schema = JSONReader().from_file(
+        schema = JSONReader(encoding=DEFAULT_ENCODING).from_file(
             os.path.join("resources", "schema", "dataset.schema.json")
         )
         return schema
 
     def read_json_file(self, file_path: str) -> dict:
-        return JSONReader().from_file(file_path)
+        return JSONReader(encoding=self.encoding).from_file(file_path)
 
     def _raw_dataset_from_file(self, file_path) -> pd.DataFrame:
         # Load Dataset-JSON Schema

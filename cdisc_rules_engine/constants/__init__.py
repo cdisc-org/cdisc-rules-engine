@@ -21,3 +21,5 @@ KNOWN_REPORT_EXTENSIONS = [".json", ".xlsx", ".xls"]
 VALIDATION_FORMATS_MESSAGE = (
     "SAS V5 XPT, Dataset-JSON (JSON or NDJSON), or Excel (XLSX)"
 )
+
+DEFAULT_ENCODING: str = "utf-8"
