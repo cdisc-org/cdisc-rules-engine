@@ -1049,12 +1049,12 @@ def test_rule_with_domain_prefix_replacement(mock_get_dataset: MagicMock):
             [
                 {
                     "executionStatus": "success",
-                    "dataset": "bundle",
+                    "dataset": "STUDY",
                     "domain": "AE",
                     "variables": ["AE"],
                     "message": "Domain AE exists",
                     "errors": [
-                        {"value": {"AE": "ae.xpt"}, "dataset": "bundle", "row": 1}
+                        {"value": {"AE": "ae.xpt"}, "dataset": "STUDY", "row": ""}
                     ],
                 }
             ],

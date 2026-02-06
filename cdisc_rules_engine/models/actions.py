@@ -10,6 +10,7 @@ from cdisc_rules_engine.constants.metadata_columns import (
     SOURCE_ROW_NUMBER,
 )
 from cdisc_rules_engine.enums.sensitivity import Sensitivity
+from cdisc_rules_engine.enums.domain_presence_values import DomainPresenceValues
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.models.dataset_variable import DatasetVariable
 from cdisc_rules_engine.models.validation_error_container import (
@@ -62,6 +63,11 @@ class COREActions(BaseActions):
         error_object = self.generate_targeted_error_object(
             target_names, rows_with_error, message
         )
+        if "domain presence" in self.rule.get("rule_type", "").lower():
+            error_object.dataset = DomainPresenceValues.DATASET.value
+            for error in error_object.errors:
+                error.dataset = DomainPresenceValues.DATASET.value
+                error.row = DomainPresenceValues.RECORD.value
         self.output_container.append(error_object.to_representation())
 
     @rule_action(params={"message": FIELD_TEXT})

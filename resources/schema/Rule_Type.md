@@ -38,6 +38,7 @@ Columns are the columns within the original dataset along with the following col
 - `dataset_domain`
 - `define_dataset_class`
 - `define_dataset_domain`
+- `define_dataset_has_no_data`
 - `define_dataset_is_non_standard`
 - `define_dataset_key_sequence`
 - `define_dataset_label`
@@ -48,6 +49,8 @@ Columns are the columns within the original dataset along with the following col
 
 ## Dataset Metadata Check against Define XML
 
+Returns a dataset where each dataset is a row in the new dataset. The define xml dataset metadata is attached to each row.
+
 #### Columns
 
 - `dataset_size`
@@ -55,15 +58,17 @@ Columns are the columns within the original dataset along with the following col
 - `dataset_name`
 - `dataset_label`
 - `dataset_domain`
-- `define_dataset_name`
+- `dataset_columns`
+- `define_dataset_class`
+- `define_dataset_domain`
+- `define_dataset_has_no_data`
+- `define_dataset_is_non_standard`
+- `define_dataset_key_sequence`
 - `define_dataset_label`
 - `define_dataset_location`
-- `define_dataset_domain`
-- `define_dataset_class`
+- `define_dataset_name`
 - `define_dataset_structure`
-- `define_dataset_is_non_standard`
 - `define_dataset_variables`
-- `define_dataset_key_sequence`
 
 #### Rule Macro
 
@@ -92,14 +97,16 @@ any:
 
 #### Columns
 
-- `define_dataset_name`
+- `define_dataset_class`
+- `define_dataset_domain`
+- `define_dataset_has_no_data`
+- `define_dataset_is_non_standard`
+- `define_dataset_key_sequence`
 - `define_dataset_label`
 - `define_dataset_location`
-- `define_dataset_class`
+- `define_dataset_name`
 - `define_dataset_structure`
-- `define_dataset_is_non_standard`
 - `define_dataset_variables`
-- `define_dataset_key_sequence`
 
 ## Define Item Metadata Check
 
@@ -176,6 +183,41 @@ all:
   - name: PP
     operator: exists
   - name: PC
+    operator: not_exists
+```
+
+## Domain Presence Check against Define XML
+
+#### Columns
+
+One row per dataset defined in Define-XML:
+
+- `domain`
+- `filename` - The file name if dataset exists, null otherwise
+- `define_dataset_name`
+- `define_dataset_label`
+- `define_dataset_location`
+- `define_dataset_domain`
+- `define_dataset_class`
+- `define_dataset_structure`
+- `define_dataset_is_non_standard`
+- `define_dataset_has_no_data`
+- `define_dataset_key_sequence`
+- `define_dataset_variables`
+
+#### Example
+
+Check if SE domain is defined in Define-XML without HasNoData="Yes" but the dataset file doesn't exist:
+
+```yaml
+all:
+  - name: define_dataset_name
+    operator: equal_to
+    value: "SE"
+  - name: define_dataset_has_no_data
+    operator: equal_to
+    value: False
+  - name: filename
     operator: not_exists
 ```
 
