@@ -88,7 +88,7 @@ def test_dataset_is_custom_true_when_not_in_library():
     params = DummyParams(
         [
             DummyDataset("DM", "dm.xpt"),
-            DummyDataset("XX", "xx.xpt"),  # кастомный датасет
+            DummyDataset("XX", "xx.xpt"),
         ],
         "xx.xpt",
     )
