@@ -215,7 +215,7 @@ def get_standard_details_cache_key(
     if not standard_substandard:
         return f"standards/{standard_type}/{standard_version}"
     else:
-        return f"standards/{standard_type}/{standard_version}/{standard_substandard}"
+        return f"standards/{standard_type}/{standard_version}/{standard_substandard.lower()}"
 
 
 def normalize_adam_input(standard: str, version: str) -> tuple:

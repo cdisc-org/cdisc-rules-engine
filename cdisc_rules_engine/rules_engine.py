@@ -74,6 +74,7 @@ class RulesEngine:
         self.standard = kwargs.get("standard")
         self.standard_version = (kwargs.get("standard_version") or "").replace(".", "-")
         self.standard_substandard = kwargs.get("standard_substandard") or None
+        self.use_case = kwargs.get("use_case") or None
         self.library_metadata = kwargs.get("library_metadata")
         self.max_dataset_size = kwargs.get("max_dataset_size")
         self.dataset_paths = kwargs.get("dataset_paths")
@@ -224,6 +225,7 @@ class RulesEngine:
                 datasets,
                 self.standard,
                 self.standard_substandard,
+                self.use_case,
             )
             if is_suitable:
                 result: List[Union[dict, str]] = self.validate_rule(
