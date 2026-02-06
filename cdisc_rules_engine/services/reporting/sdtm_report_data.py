@@ -234,7 +234,7 @@ class SDTMReportData(BaseReportData):
 
         return sorted(
             summary_data,
-            key=lambda x: (x["dataset"], x["core_id"]),
+            key=lambda x: (x.get("dataset") or "", x.get("core_id") or ""),
         )
 
     def get_detailed_data(self, excel=False) -> list[dict]:
@@ -245,7 +245,7 @@ class SDTMReportData(BaseReportData):
             )
         return sorted(
             detailed_data,
-            key=lambda x: (x["core_id"], x["dataset"]),
+            key=lambda x: (x.get("core_id") or "", x.get("dataset") or ""),
         )
 
     def _generate_error_details(
@@ -325,7 +325,7 @@ class SDTMReportData(BaseReportData):
             rules_report.append(rules_item)
         return sorted(
             rules_report,
-            key=lambda x: x["core_id"],
+            key=lambda x: x.get("core_id") or "",
         )
 
     @staticmethod
