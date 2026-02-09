@@ -25,12 +25,14 @@ class DatasetIsCustom(BaseOperation):
         datasets = getattr(self.params, "datasets", []) or []
         dataset_path = getattr(self.params, "dataset_path", None)
         ds_name = None
-        if dataset_path:
-            for ds in datasets:
-                if getattr(ds, "filename", None) == dataset_path:
-                    ds_name = getattr(ds, "name", None)
-                    break
-
+        if not dataset_path:
+            raise ValueError(
+                "dataset_path parameter is required for DatasetIsCustom operation"
+            )
+        for ds in datasets:
+            if getattr(ds, "filename", None) == dataset_path:
+                ds_name = getattr(ds, "name", None)
+                break
         if not ds_name:
             return True
 
