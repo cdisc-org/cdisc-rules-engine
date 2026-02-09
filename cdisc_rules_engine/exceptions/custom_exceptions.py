@@ -100,3 +100,8 @@ class OperationError(EngineError):
 
 class DatasetBuilderError(EngineError):
     description = "Error occurred during dataset building"
+
+
+class DateTimeParserError(EngineError):
+    code = 400
+    description = "Failure to parse a datetime string"
