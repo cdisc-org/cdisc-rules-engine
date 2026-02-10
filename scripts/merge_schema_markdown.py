@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 Merge JSON schema files with their corresponding markdown descriptions.
 

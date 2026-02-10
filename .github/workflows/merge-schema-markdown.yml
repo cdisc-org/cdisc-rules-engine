@@ -38,13 +38,30 @@ jobs:
       - name: Check if there are changes
         id: verify_diff
         run: |
-          git diff --quiet resources/schema-with-descriptions/ || echo "changed=true" >> $GITHUB_OUTPUT
+          if [ -d "resources/schema-with-descriptions" ]; then
+            git add resources/schema-with-descriptions/
+            git diff --staged --quiet resources/schema-with-descriptions/ || echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
       
       - name: Commit and push merged schemas
-        if: steps.verify_diff.outputs.changed == 'true'
+        if: steps.verify_diff.outputs.changed == 'true' && github.event.pull_request.head.repo.full_name == github.repository
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add resources/schema-with-descriptions/
           git commit -m "Update merged schema files with markdown descriptions"
           git push
+      
+      - name: Comment on PR for forked contributions
+        if: steps.verify_diff.outputs.changed == 'true' && github.event.pull_request.head.repo.full_name != github.repository
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '⚠️ Schema files need to be merged with markdown descriptions. Please run `python scripts/merge_schema_markdown.py` locally and commit the changes.'
+            })
