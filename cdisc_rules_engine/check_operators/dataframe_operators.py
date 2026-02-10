@@ -1691,11 +1691,15 @@ class DataframeType(BaseType):
         target_values = group[target].tolist()
         comparator_values = group[comparator].tolist()
         is_sorted = pd.Series(True, index=group.index)
+        is_numeric = pd.api.types.is_numeric_dtype(group[comparator])
 
         def safe_compare(x, index):
             if pd.isna(x):
                 is_sorted.loc[index] = False
-                return "9999-12-31" if ascending else "0001-01-01"
+                if is_numeric:
+                    return float("inf") if ascending else float("-inf")
+                else:
+                    return "9999-12-31" if ascending else "0001-01-01"
             return x
 
         expected_order = sorted(
