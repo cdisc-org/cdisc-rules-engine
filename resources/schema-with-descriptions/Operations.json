@@ -1,0 +1,843 @@
+{
+  "$id": "Operations.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "anyOf": [
+    {
+      "properties": {
+        "operator": {
+          "const": "codelist_extensible",
+          "markdownDescription": "\nReturns a Series indicating whether a specified codelist is extensible. Used in conjunction with codelist_terms to determine if values outside the codelist are acceptable. From the above example, $extensible will contain a bool if the codelist PKUDUG is extensible in all rows of the column.\n\nIf ct_package_type, version, and codelist_code parameters are provided, it will instead attach a new column containing the extensible value for each combination provided in the source dataset.\n\nFor example, given the current dataset:\n\n```\nid \tcodeSystemVersion \t$codelist_code\n1 \t2024-09-27 \tC201264\n2 \t2024-09-27 \tC201265\n3 \t2023-03-29 \tC127262\n```\n\nand the following operation:\n\n```yaml\n- id: $codelist_extensible\n  operator: codelist_extensible\n  ct_package_type: DDF\n  version: codeSystemVersion\n  codelist_code: $codelist_code\n```\n\nThis will result in the following dataset:\n\n```\nid \tcodeSystemVersion \t$codelist_code \t$codelist_extensible\n1 \t2024-09-27 \tC201264 \tfalse\n2 \t2024-09-27 \tC201265 \tfalse\n3 \t2023-03-29 \tC127262 \ttrue\n```\n"
+        }
+      },
+      "required": [
+        "id",
+        "operator"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "codelist_terms",
+          "markdownDescription": "\nReturns a list of valid codelist/term values. Used for evaluating whether NCI codes, submission values or NCI preferred terms are valid based on controlled terminology. Expects three parameters: `codelists` which is a list of the codelist submission value(s) to retrieve, `level` which is the level of data (either \"codelist\" or \"term\") at which to return data from, and `returntype` which is the type of values to return: \"code\" for NCI Code(s), \"value\" for submission value(s), or \"pref_term\" for NCI preferred term(s).\n\n```yaml\n- Check:\n    - all:\n        - name: PPSTRESU\n          operator: is_not_contained_by\n          value: $terms\n        - name: $extensible\n          operator: equal_to\n          value: true\n- Operations:\n    - id: $terms\n      operator: codelist_terms\n      codelists:\n        - PKUDUG\n      level: term\n      returntype: value\n    - id: $extensible\n      codelist: PKUDUG\n      operator: codelist_extensible\n```\n\nIf `ct_package_type`, `version`, and `codelist_code` parameters are provided, it will instead attach a new column containing the term for each combination provided in the source dataset. If a column name is provided as:\n\n- `term_code`, it will find term information using the term codes in the specified column.\n- `term_value`, it will find term information using the term submission values in the specified column.\n- `term_pref_term`, it will find term information using the term preferred terms in the specified column.\n\nOnly one of `term_code`, `term_value` or `term_pref_term` can be provided. The term information returned will depend on the value of the `returntype` parameter, as described above. If `returntype` is not specified, specifying `term_code` will return the term submission value and specifying either `term_value` or `term_pref_term` will return the term code.\n\nFor example, given the current dataset:\n\n```\nid \tcodeSystemVersion  $codelist_code  code     decode\n1 \t2024-09-27         C201264         C201356  After\n2 \t2024-09-27         C201265         C201352  End to End\n3 \t2023-03-29         C127262         C51282   CLINIC\n```\n\nand the following operations:\n\n```yaml\n- id: $found_term_value\n  operator: codelist_terms\n  ct_package_type: DDF\n  version: codeSystemVersion\n  codelist_code: $codelist_code\n  term_code: code\n- id: $found_term_pref_term\n  operator: codelist_terms\n  ct_package_type: DDF\n  version: codeSystemVersion\n  codelist_code: $codelist_code\n  term_code: code\n  returntype: pref_term\n```\n\nThis will result in the following dataset:\n\n```\n id   codeSystemVersion  $codelist_code  code     decode      $found_term_value  $found_term_pref_term\n 1    2024-09-27         C201264         C201356  After       After              After Timing Type\n 2    2024-09-27         C201265         C201352  End to End  End to End         End to End\n 3    2023-03-31         C127262         C51282   CLINIC      CLINIC             Clinic\n```\n\nConversely, if given the same dataset, and the following operations:\n\n```yaml\n- id: $found_term_code1\n  operator: codelist_terms\n  ct_package_type: DDF\n  version: codeSystemVersion\n  codelist_code: $codelist_code\n  term_value: decode\n- id: $found_term_code2\n  operator: codelist_terms\n  ct_package_type: DDF\n  version: codeSystemVersion\n  codelist_code: $codelist_code\n  term_pref_term: decode\n```\n\nThis will result in the following dataset:\n\n```\n id   codeSystemVersion  $codelist_code  code     decode      $found_term_code1  $found_term_code2\n 1    2024-09-27         C201264         C201356  After       C201356\n 2    2024-09-27         C201265         C201352  End to End  C201352            C201352\n 3    2023-03-31         C127262         C51282   CLINIC      C51282             C51282\n```\n\nNote that `$found_term_code2` is:\n\n- `null` for the first record because \"After\" does not match any NCI preferred term in the C201264 codelist.\n- populated for the third record because matching is case-insensitive (i.e., \"CLINIC\" matches \"Clinic\").\n"
+        }
+      },
+      "required": [
+        "id",
+        "operator"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "define_extensible_codelists",
+          "markdownDescription": "\nReturns a list of valid extensible codelist term's submission values. Used for evaluating whether submission values are valid based on controlled terminology. Expects the parameter codelists which is a list of the codelist submission value(s) to retrieve. If the codelist argument is [\"All\"] will return all extensible terms for the CT in a list.\n\n```yaml\n{\n  \"id\": \"$ext_value\",\n  \"codelist\": [\"ALL\"],\n  \"operator\": \"define_extensible_codelists\",\n}\n```\n"
+        }
+      },
+      "required": [
+        "id",
+        "operator",
+        "codelists"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "define_variable_metadata",
+          "markdownDescription": "\nIf a target variable name is specified, returns the specified metadata in the define for the specified target variable.\n\nInput\n\n```yaml\n- operator: define_variable_metadata\n  attribute_name: define_variable_label\n  name: LBTESTCD\n  id: $LBTESTCD_VARIABLE_LABEL\n```\n\nOutput\n\n```\nLaboratory Test Code\n```\n\nIf no target variable name specified, returns a dictionary containing the specified metadata in the define for all variables.\n\nInput\n\n```yaml\n- operator: define_variable_metadata\n  attribute_name: define_variable_label\n  id: $VARIABLE_LABEL\n```\n\nOutput\n\n```\n{\n  \"STUDYID\": \"Study Identifier\",\n  \"USUBJID\": \"Unique Subject Identifier\",\n  \"LBTESTCD\": \"Laboratory Test Code\",\n  \"...\": \"...\"\n}\n```\n"
+        }
+      },
+      "required": [
+        "id",
+        "operator",
+        "attribute_name"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "distinct",
+          "markdownDescription": "\nGet a distinct list of values for the given name.\n\nIf a group list is specified, the distinct value list will be grouped by the variables within group.\nIf a filter object is provided, only values for records that match the filter criteria are included in the distinct values.\nIf `value_is_reference` is set to true, the target column contains the names of other columns, and the operation will check the referenced columns to ensure they exist in the associated dataset before adding them to the distinct list.\n\nIf group is provided, group_aliases may also be provided to assign new grouping variable names so that results grouped by the values in one set of grouping variables can be merged onto a dataset according to the same grouping value(s) stored in different set of grouping variables. When both group and group_aliases are provided, columns are renamed according to corresponding list position (i.e., the 1st column in group is renamed to the 1st column in group_aliases, etc.). If there are more columns listed in group than in group_aliases, only the group columns with corresponding group_aliases columns will be renamed. If there are more columns listed in group_aliases than in group, the extra column names in group_aliases will be ignored. See record_count for an example of the use of group_aliases.\n\n```yaml\nCheck:\n  all:\n    - name: SSSTRESC\n      operator: equal_to\n      value: DEAD\n      value_is_literal: true\n    - name: $ds_dsdecod\n      operator: does_not_contain\n      value: DEATH\n      value_is_literal: true\nOperations:\n  - operator: distinct\n    domain: DS\n    name: DSDECOD\n    id: $ds_dsdecod\n    group:\n      - USUBJID\n    filter:\n      CAT: \"CATEGORY 1\"\n      SCAT: \"SUBCATEGORY A\"\n```\n\n> below, `IDVAR` contains column names, the operation retrieves the value from each column for that row, checks the dataset associated with that column using the CO RDOMAIN. Columns that exist are added to the returns the distinct set.\n\n```yaml\nOperations:\n  - domain: CO\n    id: $rdomain_variables\n    name: IDVAR\n    operator: distinct\n    value_is_reference: true\n```\n"
+        }
+      },
+      "required": [
+        "id",
+        "operator",
+        "name"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "domain_is_custom",
+          "markdownDescription": "\nChecks whether the domain is in the set of domains within the provided standard.\n\nInput\n\nTarget Domain: XY\n\nProduct: sdtmig\n\nVersion: 3-4\n\n```yaml\nOperations:\n  - operator: domain_is_custom\n    id: $domain_is_custom\n```\n\nOutput\n\n```\ntrue\n```\n"
+        }
+      },
+      "required": [
+        "id",
+        "operator"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "domain_label",
+          "markdownDescription": "\nReturns the label for the domain the operation is executing on within the provided standard.\n\nInput.\n\nTarget Domain: LB\n\nProduct: sdtmig\n\nVersion: 3-4\n\n```yaml\nOperations:\n  - operator: domain_label\n    id: $domain_label\n```\n\nOutput\n\n```\nLaboratory Test Results\n```\n"
+        }
+      },
+      "required": [
+        "id",
+        "operator"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "dy",
+          "markdownDescription": "\nCalculates the number of days between the DTC and RFSTDTC. The Study Day value is incremented by 1 for each date following RFSTDTC. Dates prior to RFSTDTC are decreased by 1, with the date preceding RFSTDTC designated as Study Day -1 (there is no Study Day 0). All Study Day values are integers. Thus, to calculate Study Day:\n\n- --DY = (date portion of --DTC) - (date portion of RFSTDTC) + 1 if --DTC is on or after RFSTDTC\n- --DY = (date portion of --DTC) - (date portion of RFSTDTC) if --DTC precedes RFSTDTC\n\nThis algorithm should be used across all domains.\n\n```yaml\nCheck:\n  all:\n    - name: --DY\n      operator: non_empty\n    - name: --DTC\n      operator: is_complete_date\n    - name: RFSTDTC\n      operator: is_complete_date\n    - name: --DY\n      operator: not_equal_to\n      value: $dy\nOperations:\n  - name: --DTC\n    operator: dy\n    id: $dy\nMatch Datasets:\n  - Name: DM\n    Keys:\n      - USUBJID\n```\n"
+        }
+      },
+      "required": [
+        "id",
+        "operator",
+        "name"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "extract_metadata",
+          "markdownDescription": "\nReturns the requested dataset level metadata value for the current dataset. Possible name values are:\n\n- dataset_size\n- dataset_location\n- dataset_name\n- dataset_label\n- domain\n- is_ap\n- ap_suffix\n\nExample\n\nInput:\n\nTarget domain: LB\n\n```yaml\n- name: dataset_label\n  operator: extract_metadata\n  id: $dataset_label\n```\n\nOutput:\n\n```\nLaboratory Test Results\n```\n\nExample: ap_suffix\n\nExtracts the domain suffix (characters 3-4) from AP-related domains. For example, \"FA\" from \"APFA\" DOMAIN value.\n\nInput:\n\nTarget domain: APFA\n\n```yaml\n- name: ap_suffix\n  operator: extract_metadata\n  id: $ap_suffix\n```\n\nOutput:\n\n```\nFA\n```\n"
+        }
+      },
+      "required": [
+        "id",
+        "operator",
+        "name"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "expected_variables",
+          "markdownDescription": "\nReturns the expected (\"Core\" = Exp ) variables for the domain in the current standard Variable Metadata for custom domains will pull from the model while non-custom domains will be from the IG and Model.\n\nInput:\n\nTarget Domain: LB\n\nProduct: sdtmig\n\nVersion: 3-4\n\n```yaml\n- operator: expected_variables\n  id: $expected_variables\n```\n\nOutput:\n\n```\n[\"LBCAT\", \"LBORRES\", \"LBORRESU\", \"...\"]\n```\n"
+        }
+      },
+      "required": [
+        "id",
+        "operator"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "get_codelist_attributes",
+          "markdownDescription": "\nFetches controlled terminology attribute values from CT packages based on row-specific CT package and version references. The operation constructs CT package names based on the standard being validated and the values in the `name` and `version` columns (e.g., SDTMIG → \"sdtmct-{version}\"). When the `name` column contains \"CDISC\" or \"CDISC CT\", it uses the validation run's standard to determine the package prefix and the version found in the cell of the specified column. The operation extracts all codes matching the specified ct_attribute from the package.\n\n**Required Parameters:**\n\n- `ct_attribute`: Attribute to extract - `\"Term CCODE\"`, `\"Codelist CCODE\"`, `\"Term Value\"`, `\"Codelist Value\"`, or `\"Term Preferred Term\"`\n- `name`: Column containing CT reference (e.g., \"TSVCDREF\") - identifies which terminology system is referenced\n- `version`: Column containing CT version (e.g., \"TSVCDVER\")\n\n```yaml\n- id: $VALID_TERM_CODES\n  name: TSVCDREF\n  operator: get_codelist_attributes\n  ct_attribute: Term CCODE\n  version: TSVCDVER\n```\n\n**Note:** due to editor not containing the cache, if using this operator in rule editor, you must put the ctpackage versions contained within your data in the library tab for it work properly in editor.\n"
+        }
+      },
+      "required": [
+        "id",
+        "operator",
+        "name",
+        "ct_attribute",
+        "version"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "get_column_order_from_dataset",
+          "markdownDescription": "\nReturns list of dataset columns in order\n\n```yaml\nCheck:\n  all:\n    - name: $column_order_from_dataset\n      operator: is_not_ordered_by\n      value: $column_order_from_library\nOperations:\n  - id: $column_order_from_library\n    operator: get_column_order_from_library\n  - id: $column_order_from_dataset\n    operator: get_column_order_from_dataset\n```\n"
+        }
+      },
+      "required": [
+        "id",
+        "operator"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "get_column_order_from_library",
+          "markdownDescription": "\nFetches column order for a given domain from the CDISC library. The lists with column names are sorted in accordance to \"ordinal\" key of library metadata.\n\nRule Type: Variable Metadata Check\n\n```yaml\nCheck:\n  all:\n    - name: variable_name\n      operator: is_not_contained_by\n      value: $ig_variables\nOperations:\n  - id: $ig_variables\n    operator: get_column_order_from_library\n```\n"
+        }
+      },
+      "required": [
+        "id",
+        "operator"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "get_model_column_order",
+          "markdownDescription": "\nFetches column order for a given model class from the CDISC library. The lists with column names are sorted in accordance to \"ordinal\" key of library metadata.\n\nRule Type: Variable Metadata Check\n\n```yaml\nCheck:\n  all:\n    - name: variable_name\n      operator: is_not_contained_by\n      value: $model_variables\nOperations:\n  - id: $model_variables\n    operator: get_model_column_order\n```\n"
+        }
+      },
+      "required": [
+        "id",
+        "operator"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "get_model_filtered_variables",
+          "markdownDescription": "\nFetches variable level library model properties filtered by the provided key_name and key_value\n\nExample\n\nInput\n\nTarget Domain: LB\n\nProduct: sdtmig\n\nVersion: 3-4\n\n```yaml\n- operator: get_model_filtered_variables\n  id: $model_filtered_variables\n  key_name: \"role\"\n  key_value: \"Timing\"\n```\n\nOutput\n\n```\n[\"VISITNUM\", \"VISIT\", \"VISITDY\", \"TAETORD\", \"...\"]\n```\n"
+        }
+      },
+      "required": [
+        "id",
+        "operator",
+        "key_name",
+        "key_value"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "get_parent_model_column_order",
+          "markdownDescription": "\nFetches column order for a given SUPP's parent model class from the CDISC library. The lists with column names are sorted in accordance to \"ordinal\" key of library metadata.\n\n```yaml\nCheck:\n  all:\n    - operator: is_not_contained_by\n      value: $parent_model_variables\nOperations:\n  - id: $parent_model_variables\n    operator: get_parent_model_column_order\n```\n"
+        }
+      },
+      "required": [
+        "id",
+        "operator"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "get_dataset_filtered_variables",
+          "markdownDescription": "\nFilters variables from the dataset based on specified metadata criteria. Returns a list of variable names that exist in the dataset and match the filter criteria.\n\n```yaml\n- operation: get_dataset_filtered_variables\n  id: $timing_variables\n  key_name: \"role\"\n  key_value: \"Timing\"\n```\n"
+        }
+      },
+      "required": [
+        "id",
+        "operator",
+        "key_name",
+        "key_value"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "label_referenced_variable_metadata",
+          "markdownDescription": "\nGenerates a dataframe where each record in the dataframe is the library ig variable metadata corresponding with the variable label found in the column provided in name. The metadata column names are prefixed with the string provided in `id`.\n\nInput\n\nTarget Dataset: SUPPLB\n\nProduct: sdtmig\n\nVersion: 3-4\n\nDataset:\n\n```\n{\n  \"STUDYID\": [\"STUDY1\", \"STUDY1\", \"STUDY1\"],\n  \"USUBJID\": [\"SUBJ1\", \"SUBJ1\", \"SUBJ1\"],\n  \"QLABEL\": [\"Toxicity\", \"Viscosity\", \"Analysis Method\"]\n}\n```\n\nRule:\n\n```yaml\n- operator: label_referenced_variable_metadata\n  id: $qlabel_referenced_variable_metadata\n  name: \"QLABEL\"\n```\n\nOutput\n\n```\n{\n  \"STUDYID\": [\"STUDY1\", \"STUDY1\", \"STUDY1\"],\n  \"USUBJID\": [\"SUBJ1\", \"SUBJ1\", \"SUBJ1\"],\n  \"QLABEL\": [\"Toxicity\", \"Viscosity\", \"Analysis Method\"],\n  \"$qlabel_referenced_variable_metadata_name\": [\"LBTOX\", null, \"LBANMETH\"],\n  \"$qlabel_referenced_variable_metadata_role\": [\n    \"Variable Qualifier\",\n    null,\n    \"Record Qualifier\"\n  ],\n  \"$qlabel_referenced_variable_metadata_ordinal\": [44, null, 38],\n  \"$qlabel_referenced_variable_metadata_label\": [\"Toxicity\", null, \"Analysis Method\"]\n}\n```\n"
+        }
+      },
+      "required": [
+        "id",
+        "operator",
+        "name"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "map",
+          "markdownDescription": "\nAllows the creation of a lookup table to take the values from multiple input columns and map them to values in an output column. The map parameter contains a list of objects. Each dictionary contains column names as properties that match the column names in the source dataset and an output property that will be returned as a result.\n\nIf map has a single object and output is the only property specified on that object, this will function as a direct assignment.\n\nFor example, given the following current dataset:\n\n```\nid \tparent_entity \tparent_rel\n1 \tTiming \trelativeToFrom\n2 \tSomething \trelativeToFrom\n3 \tTiming \ttype\n```\n\nand the following operation:\n\n```yaml\nOperations:\n  - id: $codelist_code\n    operator: map\n    map:\n      - parent_entity: Timing\n        parent_rel: type\n        output: C201264\n      - parent_entity: Timing\n        parent_rel: relativeToFrom\n        output: C201265\n```\n\nThis will result in the following dataset:\n\n```\nid \tparent_entity \tparent_rel \t$codelist_code\n1 \tTiming \trelativeToFrom \tC201265\n2 \tSomething \trelativeToFrom \tNone\n3 \tTiming \ttype \tC201264\n```\n\nThe following operation:\n\n```yaml\nOperations:\n  - id: $codelist_code\n    operator: map\n    map:\n      - output: C201264\n```\n\nWill result in the following dataset:\n\n```\nid \tparent_entity \tparent_rel \t$codelist_code\n1 \tTiming \trelativeToFrom \tC201264\n2 \tSomething \trelativeToFrom \tC201264\n3 \tTiming \ttype \tC201264\n```\n"
+        }
+      },
+      "required": [
+        "id",
+        "operator",
+        "map"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "max",
+          "markdownDescription": "\nIf no group is provided, returns the max value in name. If group is provided, returns the max value in name, within each unique set of the grouping variables.\n\n```yaml\nCheck:\n  all:\n    - name: \"$max_age\"\n      operator: \"greater_than\"\n      value: \"MAXAGE\"\nOperations:\n  - operator: \"max\"\n    domain: \"DM\"\n    name: \"AGE\"\n    id: \"$max_age\"\n```\n"
+        }
+      },
+      "required": [
+        "id",
+        "operator",
+        "name"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "max_date",
+          "markdownDescription": "\nIf no group is provided, returns the max date value in name. If group is provided, returns the max date value in name, within each unique set of the grouping variables.\n\n```yaml\nCheck:\n  all:\n    - name: USUBJID\n      operator: is_contained_by\n      value: $ex_usubjid\n    - name: RFXENDTC\n      operator: not_equal_to\n      value: $max_ex_exstdtc\n    - name: RFXENDTC\n      operator: not_equal_to\n      value: $max_ex_exendtc\nOperations:\n  - operator: distinct\n    domain: EX\n    name: USUBJID\n    id: $ex_usubjid\n  - operator: max_date\n    domain: EX\n    name: EXSTDTC\n    id: $max_ex_exstdtc\n    group:\n      - USUBJID\n  - operator: max_date\n    domain: EX\n    name: EXENDTC\n    id: $max_ex_exendtc\n    group:\n      - USUBJID\n```\n"
+        }
+      },
+      "required": [
+        "id",
+        "operator",
+        "name"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "mean",
+          "markdownDescription": "\nExample: AAGE > mean(DM.AGE), where AAGE is a fictitious NSV\n\n```yaml\nCheck:\n  all:\n    - name: \"AAGE\"\n      operator: \"greater_than\"\n      value: \"$average_age\"\nOperations:\n  - operator: \"mean\"\n    domain: \"DM\"\n    name: \"AGE\"\n    id: \"$average_age\"\n```\n"
+        }
+      },
+      "required": [
+        "id",
+        "operator",
+        "name"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "min",
+          "markdownDescription": "\nIf no group is provided, returns the min value in name. If group is provided, returns the min value in name, within each unique set of the grouping variables.\n\n```yaml\nCheck:\n  all:\n    - name: \"$min_age\"\n      operator: \"less_than\"\n      value: \"MINAGE\"\nOperations:\n  - operator: \"min\"\n    domain: \"DM\"\n    name: \"AGE\"\n    id: \"$min_age\"\n```\n"
+        }
+      },
+      "required": [
+        "id",
+        "operator",
+        "name"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "min_date",
+          "markdownDescription": "\nIf no group is provided, returns the min date value in name. If group is provided, returns the min date value in name, within each unique set of the grouping variables.\n\nExample: RFSTDTC is greater than min AE.AESTDTC for the current USUBJID\n\n```yaml\nCheck:\n  all:\n    - name: \"RFSTDTC\"\n      operator: \"date_greater_than\"\n      value: \"$ae_aestdtc\"\nOperations:\n  - operator: \"min_date\"\n    domain: \"AE\"\n    name: \"AESTDTC\"\n    id: \"$ae_aestdtc\"\n    group:\n      - USUBJID\n```\n"
+        }
+      },
+      "required": [
+        "id",
+        "operator",
+        "name"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "name_referenced_variable_metadata",
+          "markdownDescription": "\nGenerates a dataframe where each record in the dataframe is the library ig variable metadata corresponding with the variable name found in the column provided in name. The metadata column names are prefixed with the string provided in `id`.\n\nInput\n\nTarget Dataset: SUPPLB\n\nProduct: sdtmig\n\nVersion: 3-4\n\nDataset:\n\n```\n{\n  \"STUDYID\": [\"STUDY1\", \"STUDY1\", \"STUDY1\"],\n  \"USUBJID\": [\"SUBJ1\", \"SUBJ1\", \"SUBJ1\"],\n  \"QNAM\": [\"Toxicity\", \"LBVISCOS\", \"Analysis Method\"]\n}\n```\n\nRule:\n\n```yaml\n- operator: name_referenced_variable_metadata\n  id: $qnam_referenced_variable_metadata\n  name: \"QNAM\"\n```\n\nOutput\n\n```\n{\n  \"STUDYID\": [\"STUDY1\", \"STUDY1\", \"STUDY1\"],\n  \"USUBJID\": [\"SUBJ1\", \"SUBJ1\", \"SUBJ1\"],\n  \"QNAM\": [\"LBTOX\", \"LBVISCOS\", \"LBANMETH\"],\n  \"$qnam_referenced_variable_metadata_name\": [\"LBTOX\", null, \"LBANMETH\"],\n  \"$qnam_referenced_variable_metadata_role\": [\n    \"Variable Qualifier\",\n    null,\n    \"Record Qualifier\"\n  ],\n  \"$qnam_referenced_variable_metadata_ordinal\": [44, null, 38],\n  \"$qnam_referenced_variable_metadata_label\": [\"Toxicity\", null, \"Analysis Method\"]\n}\n```\n"
+        }
+      },
+      "required": [
+        "id",
+        "operator",
+        "name"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "permissible_variables",
+          "markdownDescription": "\nReturns the permissible variables (\"Core\" = Perm ) for a given domain and standard Variable Metadata for custom domains will pull from the model while non-custom domains will be from the IG and Model.\n\nInput:\n\nTarget Domain: LB\n\nProduct: sdtmig\n\nVersion: 3-4\n\n```yaml\n- operator: permissible_variables\n  id: $permissible_variables\n```\n\nOutput:\n\n```\n[\"LBGRPID\", \"LBREFID\", \"LBSPID\", \"...\"]\n```\n"
+        }
+      },
+      "required": [
+        "id",
+        "operator"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "record_count",
+          "markdownDescription": "\nIf no filter or group is provided, returns the number of records in the dataset. If filter is provided, returns the number of records in the dataset that contain the value(s) in the corresponding column(s) provided in the filter. If group is provided, returns the number of rows matching each unique set of the grouping variables. These can be static column name(s) or can be derived from other operations like get_dataset_filtered_variables.\n\nIf both filter and group are provided, returns the number of records in the dataset that contain the value(s) in the corresponding column(s) provided in the filter that also match each unique set of the grouping variables.\n\n**Wildcard Filtering:** Filter values ending with % will match any records where the column value starts with the specified prefix. For example, RACE% will match RACE1, RACE2, RACE3, etc. This is useful for matching related variables with numeric or alphabetic suffixes.\n\n**Regex Transformation:** If regex is provided along with group, the regex pattern will be applied to transform grouping column values before grouping. The regex is only applied to columns where the pattern matches the data type. For example, using regex `^\\d{4}-\\d{2}-\\d{2}` on a column containing `2022-01-14T08:00` will extract `2022-01-14` for grouping purposes.\n\nIf group is provided, group_aliases may also be provided to assign new grouping variable names so that results grouped by the values in one set of grouping variables can be merged onto a dataset according to the same grouping value(s) stored in different set of grouping variables. When both group and group_aliases are provided, columns are renamed according to corresponding list position (i.e., the 1st column in group is renamed to the 1st column in group_aliases, etc.). If there are more columns listed in group than in group_aliases, only the group columns with corresponding group_aliases columns will be renamed. If there are more columns listed in group_aliases than in group, the extra column names in group_aliases will be ignored.\n\nExample: return the number of records in a dataset.\n\n```yaml\n- operator: record_count\n  id: $records_in_dataset\n```\n\nExample: return the number of records where STUDYID = \"CDISC01\" and FLAGVAR = \"Y\".\n\n```yaml\n- operator: record_count\n  id: $flagged_cdisc01_records_in_dataset\n  filter:\n    STUDYID: \"CDISC01\"\n    FLAGVAR: \"Y\"\n```\n\nExample: return the number of records grouped by USUBJID and timing variables, extracting only the date portion from datetime values.\n\n```yaml\n- operator: record_count\n  id: $records_per_usubjid_date\n  group:\n    - USUBJID\n    - --TESTCD\n    - $TIMING_VARIABLES\n  regex: \"^\\d{4}-\\d{2}-\\d{2}\"\n```\n\nExample: return the number of records where QNAM starts with \"RACE\" (matches RACE1, RACE2, RACE3, etc.) per USUBJID.\n\n```yaml\n- operation: record_count\n  id: $race_records_in_dataset\n  filter:\n    QNAM: \"RACE%\"\n  group:\n    - \"USUBJID\"\n```\n\nExample: return the number of records grouped by USUBJID.\n\n```yaml\n- operator: record_count\n  id: $records_per_usubjid\n  group:\n    - USUBJID\n```\n\nExample: return the number of records grouped by USUBJID where FLAGVAR = \"Y\".\n\n```yaml\n- operator: record_count\n  id: $flagged_records_per_usubjid\n  group:\n    - USUBJID\n  filter:\n    FLAGVAR: \"Y\"\n```\n\nExample: return the number of records grouped by USUBJID and IDVARVAL where QNAM = \"TEST1\" and IDVAR = \"GROUPID\", renaming the IDVARVAL column to GROUPID for subsequent merging.\n\n```yaml\n- operator: record_count\n  id: $test1_records_per_usubjid_groupid\n  group:\n    - USUBJID\n    - IDVARVAL\n  filter:\n    QNAM: \"TEST1\"\n    IDVAR: \"GROUPID\"\n  group_aliases:\n    - USUBJID\n    - GROUPID\n```\n\nExample: Group the StudyIdentifier dataset by parent_id and merge the result back to the context dataset StudyVersion using StudyVersion.id == StudyIdentifier.parent_id\n\n```yaml\nScope:\n  Entities:\n    Include:\n      - StudyVersion\nOperations:\n  - domain: StudyIdentifier\n    filter:\n      parent_entity: \"StudyVersion\"\n      parent_rel: \"studyIdentifiers\"\n      rel_type: \"definition\"\n      studyIdentifierScope.organizationType.code: \"C70793\"\n      studyIdentifierScope.organizationType.codeSystem: \"http://www.cdisc.org\"\n    group:\n      - parent_id\n    group_aliases:\n      - id\n    id: $num_sponsor_ids\n    operator: record_count\n```\n"
+        }
+      },
+      "required": [
+        "id",
+        "operator"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "required_variables",
+          "markdownDescription": "\nReturns the required variables ( \"Core\" = Req ) for a given domain and standard Variable Metadata for custom domains will pull from the model while non-custom domains will be from the IG and Model.\n\nInput:\n\nTarget Domain: LB\n\nProduct: sdtmig\n\nVersion: 3-4\n\n```yaml\n- operator: required_variables\n  id: $required_variables\n```\n\nOutput:\n\n```\n[\"STUDYID\", \"DOMAIN\", \"USUBJID\", \"LBSEQ\", \"LBTESTCD\", \"LBTEST\"]\n```\n"
+        }
+      },
+      "required": [
+        "id",
+        "operator"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "split_by",
+          "markdownDescription": "\nSplits a dataset column by a given delimiter\n\n```yaml\nOperations:\n  - name: PPSPEC\n    delimiter: ;\n    id: $ppspec_value\n    operator: split_by\n```\n"
+        }
+      },
+      "required": [
+        "id",
+        "operator",
+        "delimiter",
+        "name"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "study_domains",
+          "markdownDescription": "\nReturns a list of the domains in the study\n"
+        }
+      },
+      "required": [
+        "id",
+        "operator"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "dataset_names",
+          "markdownDescription": "\nReturns a list of the submitted dataset filenames in all uppercase\n\nex. if TS.xpt, AE.xpt, EC.xpt, and SUPPEC.xpt are submitted -> [TS, AE, EC, SUPPEC] will be returned\n"
+        }
+      },
+      "required": [
+        "id",
+        "operator"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "standard_domains",
+          "markdownDescription": "\nReturns a list of valid SDTM domain names from the standard metadata. This can be used to compare extracted suffixes from DOMAIN values or dataset names.\n\nInput\n\nProduct: sdtmig\n\nVersion: 3-4\n\n```yaml\nOperations:\n  - operator: standard_domains\n    id: $valid_domain_names\n```\n\nOutput\n\n```\n[\"AE\", \"CM\", \"DM\", \"FA\", \"LB\", \"QS\", ...]\n```\n"
+        }
+      },
+      "required": [
+        "id",
+        "operator"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "valid_codelist_dates",
+          "markdownDescription": "\nReturns the valid terminology package dates for a given standard.\n\nGiven a list of terminology packages:\n\n```\n[\n  \"sdtmct-2023-10-26\",\n  \"sdtmct-2023-12-13\",\n  \"adamct-2023-12-13\",\n  \"cdashct-2023-05-19\"\n]\n```\n\nand standard: sdtmig\n\nthe operation will return:\n\n```\n[\"2023-10-26\", \"2023-12-13\"]\n```\n\nBy default, the standard is as specified when running validation - as the validation runtime parameter and/or as specified in the rule header - and the list of terminology packages is obtained from the current cache. If required, the default standard may be overridden using the optional ct_package_types parameter. For example, given the same list of terminology packages, the following operation:\n\n```yaml\nOperations:\n  - operator: valid_codelist_dates\n    id: $valid_dates\n    ct_package_types:\n      - SDTM\n      - CDASH\n```\n\nwill return:\n\n```\n[\"2023-05-19\", \"2023-10-26\", \"2023-12-13\"]\n```\n"
+        }
+      },
+      "required": [
+        "id",
+        "operator"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "valid_define_external_dictionary_version"
+        }
+      },
+      "required": [
+        "id",
+        "operator",
+        "external_dictionary_type"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "valid_external_dictionary_value"
+        }
+      },
+      "required": [
+        "id",
+        "operator",
+        "name",
+        "external_dictionary_type",
+        "dictionary_term_type"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "valid_external_dictionary_code"
+        }
+      },
+      "required": [
+        "id",
+        "operator",
+        "name",
+        "external_dictionary_type",
+        "dictionary_term_type"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "valid_external_dictionary_code_term_pair"
+        }
+      },
+      "required": [
+        "id",
+        "operator",
+        "name",
+        "external_dictionary_type",
+        "external_dictionary_term_variable"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "valid_meddra_code_references"
+        }
+      },
+      "required": [
+        "id",
+        "operator"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "valid_meddra_code_term_pairs"
+        }
+      },
+      "required": [
+        "id",
+        "operator"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "valid_meddra_term_references"
+        }
+      },
+      "required": [
+        "id",
+        "operator"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "valid_whodrug_references"
+        }
+      },
+      "required": [
+        "id",
+        "operator",
+        "name"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "variable_count",
+          "markdownDescription": "\nReturns a mapping of variable names to the number of times that variable appears in a domain within the study.\n\nInput\n\n```\n{\n  \"AE\": [\"STUDYID\", \"DOMAIN\", \"USUBJID\", \"AETERM\", \"AEENDTC\"],\n  \"LB\": [\"STUDYID\", \"DOMAIN\", \"USUBJID\", \"LBTESTCD\", \"LBENDTC\"]\n}\n```\n\nOutput\n\n```\n{\n  \"STUDYID\": 2,\n  \"DOMAIN\": 2,\n  \"USUBJID\": 2,\n  \"--TERM\": 1,\n  \"--TESTCD\": 1,\n  \"--ENDTC\": 2\n}\n```\n"
+        }
+      },
+      "required": [
+        "id",
+        "operator"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "variable_exists",
+          "markdownDescription": "\nFlag an error if MIDS is in the dataset currently being evaluated and the TM domain is not present in the study\n\nRule Type: Domain Presence Check\n\n```yaml\nCheck:\n  all:\n    - name: $MIDS_EXISTS\n      operator: equal_to\n      value: true\n    - name: TM\n      operator: not_exists\nOperations:\n  - id: $MIDS_EXISTS\n    name: MIDS\n    operator: variable_exists\n```\n"
+        }
+      },
+      "required": [
+        "id",
+        "operator"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "variable_is_null",
+          "markdownDescription": "\nReturns true if a variable is missing from the dataset or if all values within the variable are null or empty string. This operation first checks if the target variable exists in the dataset, and if it does exist, evaluates whether all its values are null or empty.\nThe operation can work with both direct variable names and define metadata references (variables starting with \"define_variable\").\n\n```yaml\nOperations:\n  - operator: variable_is_null\n    name: USUBJID\n    id: $aeterm_is_null\n```\n"
+        }
+      },
+      "required": [
+        "id",
+        "operator"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "variable_names",
+          "markdownDescription": "\nReturns the set of variable names from the library for the given standard. This operation extracts all variable names across all domains in the specified standard's library metadata.\n\nInput:\n\nValidation Standard: sdtmig\nValidation Version: 3-4\n\n```yaml\n- operator: variable_names\n  id: $all_variables\n```\n\nOutput:\n\n```\n[\"STUDYID\", \"DOMAIN\", \"USUBJID\", \"SUBJID\", \"RFSTDTC\", \"RFENDTC\", \"SITEID\", \"AGE\", \"AGEU\", \"SEX\", \"RACE\", \"ETHNIC\", \"ARMCD\", \"ARM\", \"ACTARMCD\", \"ACTARM\", \"COUNTRY\", \"DMDTC\", \"DMDY\", \"AETERM\", \"AEDECOD\", \"AECAT\", \"AESCAT\", \"AEPRESP\", \"AEBODSYS\", \"AEBDSYCD\", \"AESOC\", \"AESOCCD\", \"AELLT\", \"AELLTCD\", \"AEHLT\", \"AEHLTCD\", \"AEHLGT\", \"AEHLGTCD\", \"AEPTCD\", \"AESTDTC\", \"AEENDTC\", \"AESTDY\", \"AEENDY\", \"AEDUR\", \"AESER\", \"AESEV\", \"AEACN\", \"AEREL\", \"AEOUT\", \"AESCAN\", \"AESCONG\", \"AESDISAB\", \"AESDTH\", \"AESHOSP\", \"AESLIFE\", \"AESOD\", \"AECONTRT\", \"AETOXGR\", \"LBTESTCD\", \"LBTEST\", \"LBCAT\", \"LBSCAT\", \"LBSPEC\", \"LBMETHOD\", \"LBORRES\", \"LBORRESU\", \"LBORNRLO\", \"LBORNRHI\", \"LBSTRESC\", \"LBSTRESN\", \"LBSTRESU\", \"LBSTNRLO\", \"LBSTNRHI\", \"LBNRIND\", \"LBNAM\", \"LBSPEC\", \"LBANTREG\", \"LBFAST\", \"LBDRVFL\", \"LBTOX\", \"LBTOXGR\", \"LBSTDTC\", \"LBENDTC\", \"LBSTDY\", \"LBENDY\", \"LBTPT\", \"LBTPTNUM\", \"LBELTM\", \"LBTPTREF\", \"LBRFTDTC\", \"...\"]\n```\n"
+        }
+      },
+      "required": [
+        "id",
+        "operator"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "variable_value_count",
+          "markdownDescription": "\nGiven a variable name, returns a mapping of variable values to the number of times that value appears in the variable within all datasets in the study.\n"
+        }
+      },
+      "required": [
+        "id",
+        "operator",
+        "name"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "whodrug_code_hierarchy"
+        }
+      },
+      "required": [
+        "id",
+        "operator"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "get_xhtml_errors",
+          "markdownDescription": "\nValidates XHTML fragments in the target column against the specified namespace.\n\n```yaml\nOperations:\n  - id: $xhtml_errors\n    name: text\n    operator: get_xhtml_errors\n    namespace: http://www.cdisc.org/ns/usdm/xhtml/v1.0\n```\n\nNote that a local XSD file is required for validation. The file must be stored in the folder indicated by the value of the `LOCAL_XSD_FILE_DIR` default file path and the mapping between the namespace and the local XSD file's `sub-folder/name` must be included in the value of the `LOCAL_XSD_FILE_MAP` default file path.\n"
+        }
+      },
+      "required": [
+        "id",
+        "operator",
+        "name",
+        "namespace"
+      ],
+      "type": "object"
+    }
+  ],
+  "properties": {
+    "attribute_name": {
+      "$ref": "MetaVariables.json"
+    },
+    "case_sensitive": {
+      "type": "boolean"
+    },
+    "codelist": {
+      "type": "string"
+    },
+    "codelist_code": {
+      "type": "string"
+    },
+    "codelists": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "ct_attribute": {
+      "type": "string"
+    },
+    "ct_package_type": {
+      "type": "string",
+      "enum": [
+        "ADAM",
+        "CDASH",
+        "COA",
+        "DDF",
+        "DEFINE-XML",
+        "GLOSSARY",
+        "MRCT",
+        "PROTOCOL",
+        "QRS",
+        "QS-FT",
+        "SDTM",
+        "SEND",
+        "TMF"
+      ]
+    },
+    "ct_package_types": {
+      "items": {
+        "$ref": "Operations.json#/properties/ct_package_type"
+      },
+      "type": "array"
+    },
+    "ct_packages": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "ct_version": {
+      "type": "string"
+    },
+    "delimiter": {
+      "type": "string"
+    },
+    "dictionary_term_type": {
+      "enum": [
+        "LLT",
+        "PT",
+        "HLT",
+        "HLGT",
+        "SOC"
+      ]
+    },
+    "domain": {
+      "anyOf": [
+        {
+          "$ref": "CORE-base.json#/$defs/Dataset"
+        },
+        {
+          "$ref": "CORE-base.json#/$defs/DataStructure"
+        }
+      ]
+    },
+    "external_dictionary_type": {
+      "enum": [
+        "meddra"
+      ]
+    },
+    "filter": {
+      "type": "object"
+    },
+    "filter_key": {
+      "type": "string"
+    },
+    "filter_value": {
+      "type": "string"
+    },
+    "group": {
+      "items": {
+        "$ref": "CORE-base.json#/$defs/VariableReference"
+      },
+      "type": "array"
+    },
+    "group_aliases": {
+      "items": {
+        "$ref": "CORE-base.json#/$defs/VariableReference"
+      },
+      "type": "array"
+    },
+    "id": {
+      "type": "string"
+    },
+    "key_name": {
+      "enum": [
+        "definition",
+        "examples",
+        "label",
+        "name",
+        "notes",
+        "ordinal",
+        "role",
+        "simpleDatatype",
+        "variableCcode"
+      ],
+      "type": "string"
+    },
+    "key_value": {
+      "type": "string"
+    },
+    "level": {
+      "type": "string",
+      "enum": [
+        "codelist",
+        "term"
+      ]
+    },
+    "map": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "output": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "output"
+        ]
+      }
+    },
+    "name": {
+      "type": "string"
+    },
+    "namespace": {
+      "type": "string"
+    },
+    "operator": {
+      "type": "string"
+    },
+    "regex": {
+      "type": "string"
+    },
+    "returntype": {
+      "type": "string",
+      "enum": [
+        "code",
+        "value",
+        "pref_term"
+      ]
+    },
+    "term_value": {
+      "type": "string"
+    },
+    "term_code": {
+      "type": "string"
+    },
+    "term_pref_term": {
+      "type": "string"
+    },
+    "value_is_reference": {
+      "type": "boolean"
+    },
+    "version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "operator"
+  ],
+  "type": "object"
+}

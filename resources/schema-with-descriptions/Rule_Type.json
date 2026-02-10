@@ -1,0 +1,106 @@
+{
+  "$id": "Rule_Type.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "anyOf": [
+    {
+      "const": "Dataset Contents Check against Define XML and Library Metadata",
+      "title": "Content data at record level, define xml metadata at variable level, and library metadata at variable level",
+      "markdownDescription": "\n#### Columns\n\nColumns are the columns within the original dataset\n\n#### Rule Macro\n\nAttach define xml metadata at variable level and library metadata at variable level\n"
+    },
+    {
+      "const": "Dataset Contents Check against Define XML",
+      "title": "Content data at record level, dataset metadata at dataset level, and define xml metadata at dataset level",
+      "markdownDescription": "\n#### Columns\n\nColumns are the columns within the original dataset along with the following columns:\n\n- `dataset_label`\n- `dataset_location`\n- `dataset_name`\n- `dataset_size`\n- `dataset_domain`\n- `define_dataset_class`\n- `define_dataset_domain`\n- `define_dataset_is_non_standard`\n- `define_dataset_key_sequence`\n- `define_dataset_label`\n- `define_dataset_location`\n- `define_dataset_name`\n- `define_dataset_structure`\n- `define_dataset_variables`\n"
+    },
+    {
+      "const": "Dataset Metadata Check",
+      "title": "Content metadata at dataset level",
+      "markdownDescription": "\n#### Columns\n\n- `dataset_label`\n- `dataset_location`\n- `dataset_name`\n- `dataset_size`\n\n#### Example\n\n```yaml\n- name: dataset_name\n  operator: longer_than\n  value: 6\n```\n"
+    },
+    {
+      "const": "Dataset Metadata Check against Define XML",
+      "title": "Content metadata at dataset level and define xml metadata at dataset level",
+      "markdownDescription": "\n#### Columns\n\n- `dataset_size`\n- `dataset_location`\n- `dataset_name`\n- `dataset_label`\n- `dataset_domain`\n- `define_dataset_name`\n- `define_dataset_label`\n- `define_dataset_location`\n- `define_dataset_domain`\n- `define_dataset_class`\n- `define_dataset_structure`\n- `define_dataset_is_non_standard`\n- `define_dataset_variables`\n- `define_dataset_key_sequence`\n\n#### Rule Macro\n\nAllows comparing content metadata to define xml metadata of the same name.\n\n#### Example\n\n```yaml\nall:\n  - name: dataset_name\n    operator: not_equal_to\n    value: define_dataset_name\n```\n\nOr\n\n```yaml\nany:\n  - name: dataset_name\n    operator: empty\n  - name: define_dataset_name\n    operator: empty\n```\n"
+    },
+    {
+      "const": "Define Item Group Metadata Check",
+      "title": "Define xml metadata at dataset level",
+      "markdownDescription": "\n#### Columns\n\n- `define_dataset_name`\n- `define_dataset_label`\n- `define_dataset_location`\n- `define_dataset_class`\n- `define_dataset_structure`\n- `define_dataset_is_non_standard`\n- `define_dataset_variables`\n- `define_dataset_key_sequence`\n"
+    },
+    {
+      "const": "Define Item Metadata Check",
+      "title": "Define xml metadata at variable level",
+      "markdownDescription": "\n#### Columns\n\n- `define_variable_name`\n- `define_variable_label`\n- `define_variable_data_type`\n- `define_variable_role`\n- `define_variable_size`\n- `define_variable_ccode`\n- `define_variable_format`\n- `define_variable_allowed_terms`\n- `define_variable_origin_type`\n- `define_variable_is_collected`\n- `define_variable_has_no_data`\n- `define_variable_order_number`\n- `define_variable_has_codelist`\n- `define_variable_codelist_coded_values`\n- `define_variable_codelist_coded_values`\n- `define_variable_has_comment`\n\n#### Rule Macro\n\nAttach variable codelist and codelist terms\n"
+    },
+    {
+      "const": "Define Item Metadata Check against Library Metadata",
+      "title": "Define xml metadata at variable level and corresponding library variable metadata",
+      "markdownDescription": "\n#### Columns\n\n- `define_variable_name`\n- `define_variable_label`\n- `define_variable_data_type`\n- `define_variable_role`\n- `define_variable_size`\n- `define_variable_ccode`\n- `define_variable_format`\n- `define_variable_allowed_terms`\n- `define_variable_origin_type`\n- `define_variable_is_collected`\n- `define_variable_has_no_data`\n- `define_variable_order_number`\n- `define_variable_has_codelist`\n- `define_variable_codelist_coded_values`\n- `define_variable_codelist_coded_codes`\n- `define_variable_mandatory`\n- `define_variable_has_comment`\n- `library_variable_name`\n- `library_variable_order_number`\n- `library_variable_label`\n- `library_variable_data_type`\n- `library_variable_role`\n- `library_variable_core`\n- `library_variable_ccode`\n\n#### Rule Macro\n\nAttach variable codelist and codelist terms\n"
+    },
+    {
+      "const": "Domain Presence Check",
+      "title": "Content domain presence at study level",
+      "markdownDescription": "\n#### Columns\n\nSingle row contains a column for each domain and the value of that column is the domain's file name\n\n| AE     | EC     |\n| ------ | ------ |\n| ae.xpt | ec.xpt |\n\n#### Example\n\n```yaml\nall:\n  - name: PP\n    operator: exists\n  - name: PC\n    operator: not_exists\n```\n"
+    },
+    {
+      "const": "JSON Schema Check",
+      "title": "Apply JSON schema validation to a JSON file",
+      "markdownDescription": "\n#### Columns:\n\n- `json_path`\n- `error_attribute`\n- `error_value`\n- `validator`\n- `validator_value`\n- `message`\n- `dataset`\n- `id`\n- `_path`\n"
+    },
+    {
+      "const": "JSONata",
+      "title": "Apply a JSONata query to a JSON file",
+      "markdownDescription": "\nApply a JSONata query to a JSON file. [JSONata documentation](https://docs.jsonata.org)\n"
+    },
+    {
+      "const": "Record Data",
+      "title": "Content data at record level. Most common Rule Type",
+      "markdownDescription": "\n#### Columns\n\nColumns are the columns within the original dataset\n\n#### Example\n\n```yaml\nall:\n  - name: --SCAT\n    operator: non_empty\n  - name: --SCAT\n    operator: equal_to\n    value: --CAT\n```\n"
+    },
+    {
+      "const": "Value Check against Define XML Variable",
+      "title": "Content data at value level and define xml metadata at variable level",
+      "markdownDescription": "\n#### Columns\n\n- `row_number`\n- `variable_name`\n- `variable_value`\n- `define_variable_name`\n- `define_variable_label`\n- `define_variable_data_type`\n- `define_variable_`...\n\n#### Example\n\n```yaml\nall:\n  - name: define_variable_ccode\n    operator: empty\n  - name: variable_value\n    operator: non_empty\n  - name: define_variable_has_codelist\n    operator: equal_to\n    value: true\n  - name: variable_value\n    operator: is_not_contained_by\n    value: define_variable_codelist_coded_values`\n```\n"
+    },
+    {
+      "const": "Value Check against Define XML VLM",
+      "title": "Content data at value level and define xml metadata at value level",
+      "markdownDescription": "\n#### Columns\n\n- `row_number`\n- `variable_name`\n- `variable_value`\n- `define_vlm_name`\n- `define_vlm_label`\n- `define_vlm_data_type`\n- `define_vlm_is_collected`\n- `define_vlm_role`\n- `define_vlm_size`\n- `define_vlm_ccode`\n- `define_vlm_format`\n- `define_vlm_allowed_terms`\n- `define_vlm_origin_type`\n- `define_vlm_has_no_data`\n- `define_vlm_order_number`\n- `define_vlm_length`\n- `define_vlm_has_codelist`\n- `define_vlm_codelist_coded_values`\n- `define_vlm_mandatory`\n- `define_variable_name`\n- `type_check`\n- `length_check`\n- `variable_value_length`\n\n#### Example\n\n```yaml\nall:\n  - name: define_vlm_ccode\n    operator: empty\n  - name: variable_value\n    operator: non_empty\n  - name: define_vlm_has_codelist\n    operator: equal_to\n    value: true\n  - name: variable_value\n    operator: is_not_contained_by\n    value: define_vlm_codelist_coded_values\n```\n\n```yaml\nall:\n  - name: variable_value\n    operator: empty\n  - name: define_vlm_mandatory\n    operator: equal_to\n    value: Yes\n```\n"
+    },
+    {
+      "const": "Value Level Metadata Check against Define XML",
+      "title": "Content data at record level and define xml metadata at value level",
+      "markdownDescription": "\n#### Columns\n\nColumns are the columns within the original dataset\n\n#### Rule Macro\n\nAttach define xml metadata at value level\n"
+    },
+    {
+      "const": "Variable Metadata Check",
+      "title": "Content metadata at variable level",
+      "markdownDescription": "\n#### Columns\n\n- `variable_name`\n- `variable_order_number`\n- `variable_label`\n- `variable_size`\n- `variable_data_type`\n- `variable_format`\n\n#### Example\n\n```yaml\n- name: variable_label\n  operator: longer_than\n  value: 40\n```\n"
+    },
+    {
+      "const": "Variable Metadata Check against Define XML",
+      "title": "Content metadata at variable level and define xml metadata at variable level",
+      "markdownDescription": "\n#### Columns\n\n- `variable_name`\n- `variable_order_number`\n- `variable_label`\n- `variable_`...\n- `define_variable_name`\n- `define_variable_label`\n- `define_variable_data_type`\n- `define_variable_is_collected`\n- `define_variable_role`\n- `define_variable_size`\n- `define_variable_ccode`\n- `define_variable_format`\n- `define_variable_allowed_terms`\n- `define_variable_origin_type`\n- `define_variable_has_no_data`\n- `define_variable_order_number`\n- `define_variable_length`\n- `define_variable_has_codelist`\n- `define_variable_codelist_coded_values`\n- `define_variable_codelist_coded_codes`\n- `define_variable_mandatory`\n- `define_variable_has_comment`\n\n#### Rule Macro\n\nAttach define xml metadata at variable level\n\n#### Example\n\n```yaml\n- name: variable_name\n  operator: not_equal_to\n  value: define_variable_name\n```\n"
+    },
+    {
+      "const": "Variable Metadata Check against Library Metadata",
+      "title": "Content metadata at the variable level and the corresponding library metadata",
+      "markdownDescription": "\n#### Columns\n\n- `variable_name`\n- `variable_order_number`\n- `variable_label`\n- `variable_size`\n- `variable_data_type`\n- `variable_format`\n- `variable_has_empty_values`\n- `library_variable_name`\n- `library_variable_role`\n- `library_variable_label`\n- `library_variable_core`\n- `library_variable_order_number`\n- `library_variable_data_type`\n- `library_variable_ccode`\n"
+    },
+    {
+      "const": "Variable Metadata Check against Define XML and Library Metadata",
+      "title": "Combines metadata at the variable level with corresponding define-xml metadata at variable level and corresponding library variable metadata"
+    },
+    {
+      "const": "Value Check with Dataset Metadata",
+      "title": "Content data at value level and dataset metadata at dataset level",
+      "markdownDescription": "\n#### Columns\n\n- `row_number`\n- `variable_name`\n- `variable_value`\n- `dataset_label`\n- `dataset_location`\n- `dataset_name`\n- `dataset_size`\n\n#### Example\n\n```yaml\nall:\n  - name: variable_name\n    operator: starts_with\n    value: \"DM\"\n  - name: dataset_name\n    operator: not_equal_to\n    value: \"DM\"\n```\n"
+    },
+    {
+      "const": "Value Check with Variable Metadata",
+      "title": "Content data at value level and variable metadata at variable level",
+      "markdownDescription": "\n#### Columns\n\n- `row_number`\n- `variable_name`\n- `variable_value`\n- `variable_order_number`\n- `variable_label`\n- `variable_size`\n- `variable_data_type`\n- `variable_format`\n- `variable_value_length`\n\n#### Example\n\n```yaml\nall:\n  - name: variable_data_type\n    operator: equal_to\n    value: char\n  - name: variable_value\n    operator: longer_than\n    value: 200\n```\n"
+    }
+  ],
+  "markdownDescription": "Determines how the primary dataset should be built before the rule is applied"
+}
