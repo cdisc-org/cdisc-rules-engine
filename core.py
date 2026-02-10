@@ -233,7 +233,19 @@ def _validate_no_arguments(logger) -> None:
     "-ss",
     "--substandard",
     default=None,
-    help="CDISC Substandard to validate against",
+    type=click.Choice(["sdtm", "send", "adam", "cdash"], case_sensitive=False),
+    help="CDISC Substandard to validate against. Any of SDTM, SEND, ADaM, CDASH",
+)
+@click.option(
+    "-uc",
+    "--use-case",
+    required=False,
+    default=None,
+    type=click.Choice(["INDH", "PROD", "NONCLIN", "ANALYSIS"], case_sensitive=True),
+    help=(
+        "CDISC TIG Use Case for scoping a TIG Validation."
+        "Any of INDH, PROD, NONCLIN, or ANALYSIS."
+    ),
 )
 @click.option(
     "-ct",
@@ -368,7 +380,7 @@ def _validate_no_arguments(logger) -> None:
     ),
 )
 @click.pass_context
-def validate(
+def validate(  # noqa
     ctx,
     cache: str,
     pool_size: int,
@@ -380,6 +392,7 @@ def validate(
     standard: str,
     version: str,
     substandard: str,
+    use_case: str,
     controlled_terminology_package: tuple[str],
     output: str,
     output_format: tuple[str],
@@ -431,6 +444,12 @@ def validate(
 
     cache_path: str = os.path.join(os.path.dirname(__file__), cache)
 
+    if standard.lower() == "tig":
+        if not substandard or not use_case:
+            logger.error(
+                "Standard 'tig' requires both --substandard and --use-case to be specified."
+            )
+            ctx.exit(2)
     # Construct ExternalDictionariesContainer:
     external_dictionaries = ExternalDictionariesContainer(
         {
@@ -474,6 +493,7 @@ def validate(
             standard,
             version,
             substandard,
+            use_case,
             set(controlled_terminology_package),  # avoiding duplicates
             output,
             set(output_format),  # avoiding duplicates
@@ -839,6 +859,7 @@ def test_validate(filetype):
                     None,
                     standard,
                     version,
+                    None,
                     None,
                     set(),
                     output,
