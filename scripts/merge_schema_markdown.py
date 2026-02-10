@@ -38,12 +38,19 @@ def parse_markdown_to_dict(md_content: str) -> Dict[str, str]:
     
     for line in lines:
         # Check for section headers (## or ###)
-        if line.startswith('## ') or line.startswith('### '):
+        if line.startswith('### '):
             # Save previous section if it exists
             if current_name:
                 descriptions[current_name] = '\n'.join(current_description)
-            # Start new section - remove the heading markers
-            current_name = line.lstrip('#').strip()
+            # Start new section - remove the ### prefix
+            current_name = line[4:].strip()
+            current_description = []
+        elif line.startswith('## '):
+            # Save previous section if it exists
+            if current_name:
+                descriptions[current_name] = '\n'.join(current_description)
+            # Start new section - remove the ## prefix
+            current_name = line[3:].strip()
             current_description = []
         elif not line.startswith('# '):
             # Add line to current section (skip lines starting with single #)
