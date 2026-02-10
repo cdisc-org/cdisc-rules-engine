@@ -428,7 +428,7 @@ def validate(  # noqa
     # Validate conditional options
     logger = logging.getLogger("validator")
     load_dotenv()
-
+    standard=standard.lower()
     validate_dataset_files_exist(dataset_path, logger, ctx)
 
     if raw_report is True:
