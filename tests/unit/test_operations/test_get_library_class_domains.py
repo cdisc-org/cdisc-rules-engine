@@ -27,7 +27,7 @@ def test_get_library_class_domains(operation_params: OperationParams):
                 ],
             },
             {
-                "name": "Events",
+                "name": "EVENTS",
                 "datasets": [
                     {"name": "AE"},
                     {"name": "CE"},
@@ -35,7 +35,7 @@ def test_get_library_class_domains(operation_params: OperationParams):
                 ],
             },
             {
-                "name": "Findings",
+                "name": "FINDINGS",
                 "datasets": [
                     {"name": "LB"},
                     {"name": "VS"},
@@ -85,7 +85,7 @@ def test_get_library_class_domains_no_filter(operation_params: OperationParams):
                 ],
             },
             {
-                "name": "Events",
+                "name": "EVENTS",
                 "datasets": [
                     {"name": "AE"},
                     {"name": "DS"},
