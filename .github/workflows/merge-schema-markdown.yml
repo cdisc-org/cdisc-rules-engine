@@ -11,6 +11,9 @@ on:
       - main
       - dev
 
+permissions:
+  contents: write
+
 jobs:
   merge-schema-markdown:
     runs-on: ubuntu-latest
@@ -20,7 +23,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          fetch-depth: 0
+          ref: ${{ github.head_ref || github.ref }}
       
       - name: Set up Python
         uses: actions/setup-python@v5
