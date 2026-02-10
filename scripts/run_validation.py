@@ -139,7 +139,7 @@ def run_validation(args: Validation_args):
             args
         )
         max_dataset_size = get_max_dataset_size(args.dataset_paths)
-        standard = args.standard
+        standard = args.standard.lower()
         standard_version = args.version.replace(".", "-")
         standard_substandard = args.substandard
         data_service = DataServiceFactory(
