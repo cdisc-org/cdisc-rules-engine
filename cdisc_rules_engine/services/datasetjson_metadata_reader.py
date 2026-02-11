@@ -6,6 +6,7 @@ import pandas as pd
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.services.adam_variable_reader import AdamVariableReader
 from cdisc_rules_engine.services.data_readers.json_reader import JSONReader
+from cdisc_rules_engine.constants import DEFAULT_ENCODING
 
 
 class DatasetJSONMetadataReader:
@@ -14,22 +15,27 @@ class DatasetJSONMetadataReader:
     from .json file.
     """
 
-    def __init__(self, file_path: str, file_name: str):
+    def __init__(
+        self, file_path: str, file_name: str, encoding: str = DEFAULT_ENCODING
+    ):
         self._metadata_container = {}
         self._file_path = file_path
         self._first_record = None
         self._dataset_name = file_name.split(".")[0].upper()
+        self.encoding = encoding
 
     def read(self) -> dict:
         """
         Extracts metadata from .json file.
         """
         # Load Dataset-JSON Schema
-        schema = JSONReader().from_file(
+        schema = JSONReader(encoding="utf-8").from_file(
             os.path.join("resources", "schema", "dataset.schema.json")
         )
 
-        datasetjson = JSONReader().from_file(self._file_path)
+        datasetjson = JSONReader(encoding=self.encoding or DEFAULT_ENCODING).from_file(
+            self._file_path
+        )
 
         try:
             jsonschema.validate(datasetjson, schema)
