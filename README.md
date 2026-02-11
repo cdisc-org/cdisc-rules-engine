@@ -65,7 +65,7 @@ chmod +x ./core
 
 2. Install dependencies:
    ```bash
-   pip install -r requirements.txt -r requirements-dev.txt
+   python -m pip install -r requirements-dev.txt
    ```
 
 3. Run validation:
@@ -206,6 +206,7 @@ This will show the list of validation options.
                                   "[████████████████████████████--------]
                                   78%"is printed.
   -jcf, --jsonata-custom-functions Pair containing a variable name and a Path to directory containing a set of custom JSONata functions. Can be specified multiple times
+  -e, --encoding TEXT            File encoding for reading datasets. If not specified, defaults to utf-8. Supported encodings: utf-8, utf-16, utf-32, cp1252, latin-1, etc.
   --help                          Show this message and exit.
 ```
 
@@ -240,6 +241,22 @@ CORE supports the following dataset file formats for validation:
 
 - Define-XML files should be provided via the `--define-xml-path` (or `-dxp`) option, not through the dataset directory (`-d` or `-dp`).
 - If you point to a folder containing unsupported file formats, CORE will display an error message indicating which formats are supported.
+
+#### File Encoding
+
+CORE defaults to utf-8 encoding when reading datasets. If your files use a different encoding, you must specify it using the `-e` or `--encoding` flag:
+
+```bash
+python core.py validate -s sdtmig -v 3-4 -dp path/to/dataset.xpt -e cp1252
+```
+
+The encoding name must be a valid Python codec name. Common encodings include:
+
+- `utf-8`, `utf-16`, `utf-32` - Unicode encodings
+- `cp1252` - Windows-1252 (commonly used for files exported from Excel or SAS)
+- `latin-1` - ISO-8859-1
+
+If an invalid encoding is specified, CORE will display an error message with the supported encoding names.
 
 #### Validate single rule
 
