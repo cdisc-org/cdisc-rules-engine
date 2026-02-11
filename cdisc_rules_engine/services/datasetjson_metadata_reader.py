@@ -29,7 +29,7 @@ class DatasetJSONMetadataReader:
         Extracts metadata from .json file.
         """
         # Load Dataset-JSON Schema
-        schema = JSONReader(encoding=DEFAULT_ENCODING).from_file(
+        schema = JSONReader(encoding="utf-8").from_file(
             os.path.join("resources", "schema", "dataset.schema.json")
         )
 

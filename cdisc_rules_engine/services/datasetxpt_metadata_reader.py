@@ -35,8 +35,11 @@ class DatasetXPTMetadataReader:
         """
         Extracts metadata from binary contents of .xpt file.
         """
+        encoding = self.encoding or DEFAULT_ENCODING
         try:
-            dataset, metadata = self._read_xport_with_encoding()
+            dataset, metadata = pyreadstat.read_xport(
+                self._file_path, encoding=encoding, row_limit=self.row_limit
+            )
         except (pyreadstat.ReadstatError, UnicodeDecodeError):
             return {
                 "variable_labels": [],
@@ -96,7 +99,10 @@ class DatasetXPTMetadataReader:
         return None
 
     def _calculate_dataset_length(self):
-        df, meta = self._read_xport_with_encoding_metadata_only()
+        encoding = self.encoding or DEFAULT_ENCODING
+        _, meta = pyreadstat.read_xport(
+            self._file_path, encoding=encoding, metadataonly=True
+        )
         row_size = sum(meta.variable_storage_width.values())
         total_size = os.path.getsize(self._file_path)
         start = self._read_header(self._file_path)
@@ -201,14 +207,3 @@ class DatasetXPTMetadataReader:
             "selection_algorithm": ad.selection_algorithm,
         }
         return adam_info_dict
-
-    def _read_xport(self, **kwargs):
-        """Read XPT file using the configured encoding."""
-        encoding = self.encoding or DEFAULT_ENCODING
-        return pyreadstat.read_xport(self._file_path, encoding=encoding, **kwargs)
-
-    def _read_xport_with_encoding(self):
-        return self._read_xport(row_limit=self.row_limit)
-
-    def _read_xport_with_encoding_metadata_only(self):
-        return self._read_xport(metadataonly=True)
