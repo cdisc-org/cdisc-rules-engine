@@ -65,7 +65,7 @@ chmod +x ./core
 
 2. Install dependencies:
    ```bash
-   pip install -r requirements.txt -r requirements-dev.txt
+   pip install -r requirements-dev.txt
    ```
 
 3. Run validation:
