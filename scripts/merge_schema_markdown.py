@@ -29,34 +29,34 @@ def parse_markdown_to_dict(md_content: str) -> Dict[str, str]:
     Returns:
         Dictionary mapping section names to their markdown content
     """
-    lines = md_content.split('\n')
+    lines = md_content.split("\n")
     descriptions = {}
     current_name = None
     current_description = []
 
     for line in lines:
         # Check for section headers (## or ###)
-        if line.startswith('### '):
+        if line.startswith("### "):
             # Save previous section if it exists
             if current_name:
-                descriptions[current_name] = '\n'.join(current_description)
+                descriptions[current_name] = "\n".join(current_description)
             # Start new section - remove the ### prefix
             current_name = line[4:].strip()
             current_description = []
-        elif line.startswith('## '):
+        elif line.startswith("## "):
             # Save previous section if it exists
             if current_name:
-                descriptions[current_name] = '\n'.join(current_description)
+                descriptions[current_name] = "\n".join(current_description)
             # Start new section - remove the ## prefix
             current_name = line[3:].strip()
             current_description = []
-        elif not line.startswith('# '):
+        elif not line.startswith("# "):
             # Add line to current section (skip lines starting with single #)
             current_description.append(line)
 
     # Save last section
     if current_name:
-        descriptions[current_name] = '\n'.join(current_description)
+        descriptions[current_name] = "\n".join(current_description)
 
     return descriptions
 
@@ -74,8 +74,8 @@ def attach_markdown_descriptions(obj: Any, descriptions: Dict[str, str]) -> None
     """
     if isinstance(obj, dict):
         # Check if this object has a 'const' key
-        if 'const' in obj and obj['const'] in descriptions:
-            obj['markdownDescription'] = descriptions[obj['const']]
+        if "const" in obj and obj["const"] in descriptions:
+            obj["markdownDescription"] = descriptions[obj["const"]]
 
         # Recursively process all values
         for value in obj.values():
@@ -87,7 +87,9 @@ def attach_markdown_descriptions(obj: Any, descriptions: Dict[str, str]) -> None
             attach_markdown_descriptions(item, descriptions)
 
 
-def merge_schema_with_markdown(schema_path: Path, markdown_path: Path) -> Dict[str, Any]:
+def merge_schema_with_markdown(
+    schema_path: Path, markdown_path: Path
+) -> Dict[str, Any]:
     """
     Merge a JSON schema file with its corresponding markdown file.
 
@@ -99,12 +101,12 @@ def merge_schema_with_markdown(schema_path: Path, markdown_path: Path) -> Dict[s
         The merged JSON schema with markdownDescription properties added
     """
     # Load JSON schema
-    with open(schema_path, 'r', encoding='utf-8') as f:
+    with open(schema_path, "r", encoding="utf-8") as f:
         schema = json.load(f)
 
     # Load and parse markdown if it exists
     if markdown_path.exists():
-        with open(markdown_path, 'r', encoding='utf-8') as f:
+        with open(markdown_path, "r", encoding="utf-8") as f:
             md_content = f.read()
 
         descriptions = parse_markdown_to_dict(md_content)
@@ -117,27 +119,27 @@ def main():
     """Main function to merge all schema files with their markdown descriptions."""
     # Define paths
     repo_root = Path(__file__).parent.parent
-    schema_dir = repo_root / 'resources' / 'schema' / 'rule'
-    output_dir = repo_root / 'resources' / 'schema' / 'rule-merged'
+    schema_dir = repo_root / "resources" / "schema" / "rule"
+    output_dir = repo_root / "resources" / "schema" / "rule-merged"
 
     # Create output directory
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # Find all JSON schema files
-    schema_files = list(schema_dir.glob('*.json'))
+    schema_files = list(schema_dir.glob("*.json"))
 
     print(f"Processing {len(schema_files)} schema files...")
 
     for schema_path in schema_files:
         # Get corresponding markdown file
-        md_path = schema_path.with_suffix('.md')
+        md_path = schema_path.with_suffix(".md")
 
         # Merge schema with markdown
         merged_schema = merge_schema_with_markdown(schema_path, md_path)
 
         # Write to output directory
         output_path = output_dir / schema_path.name
-        with open(output_path, 'w', encoding='utf-8') as f:
+        with open(output_path, "w", encoding="utf-8") as f:
             json.dump(merged_schema, f, indent=2, ensure_ascii=False)
 
         print(f"✓ Processed {schema_path.name}")
@@ -145,5 +147,5 @@ def main():
     print(f"\nMerged schemas written to: {output_dir}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
