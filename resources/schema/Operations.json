@@ -50,42 +50,54 @@
     },
     {
       "properties": {
-        "operator": { "const": "domain_is_custom" }
+        "operator": {
+          "const": "domain_is_custom"
+        }
       },
       "required": ["id", "operator"],
       "type": "object"
     },
     {
       "properties": {
-        "operator": { "const": "domain_label" }
+        "operator": {
+          "const": "domain_label"
+        }
       },
       "required": ["id", "operator"],
       "type": "object"
     },
     {
       "properties": {
-        "operator": { "const": "dy" }
+        "operator": {
+          "const": "dy"
+        }
       },
       "required": ["id", "operator", "name"],
       "type": "object"
     },
     {
       "properties": {
-        "operator": { "const": "extract_metadata" }
+        "operator": {
+          "const": "extract_metadata"
+        }
       },
       "required": ["id", "operator", "name"],
       "type": "object"
     },
     {
       "properties": {
-        "operator": { "const": "expected_variables" }
+        "operator": {
+          "const": "expected_variables"
+        }
       },
       "required": ["id", "operator"],
       "type": "object"
     },
     {
       "properties": {
-        "operator": { "const": "get_codelist_attributes" }
+        "operator": {
+          "const": "get_codelist_attributes"
+        }
       },
       "required": ["id", "operator", "name", "ct_attribute", "version"],
       "type": "object"
@@ -155,44 +167,65 @@
     },
     {
       "properties": {
-        "operator": { "const": "map" }
+        "operator": {
+          "const": "map"
+        }
       },
       "required": ["id", "operator", "map"],
       "type": "object"
     },
     {
       "properties": {
-        "operator": { "const": "max" }
+        "operator": {
+          "const": "max"
+        }
       },
       "required": ["id", "operator", "name"],
       "type": "object"
     },
     {
       "properties": {
-        "operator": { "const": "max_date" }
+        "operator": {
+          "const": "max_date"
+        }
       },
       "required": ["id", "operator", "name"],
       "type": "object"
     },
     {
       "properties": {
-        "operator": { "const": "mean" }
+        "operator": {
+          "const": "mean"
+        }
       },
       "required": ["id", "operator", "name"],
       "type": "object"
     },
     {
       "properties": {
-        "operator": { "const": "min" }
+        "operator": {
+          "const": "min"
+        }
       },
       "required": ["id", "operator", "name"],
       "type": "object"
     },
     {
       "properties": {
-        "operator": { "const": "min_date" }
+        "operator": {
+          "const": "min_date"
+        }
       },
       "required": ["id", "operator", "name"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
+          "const": "minus"
+        }
+      },
+      "required": ["id", "operator", "name", "value"],
       "type": "object"
     },
     {
@@ -215,42 +248,54 @@
     },
     {
       "properties": {
-        "operator": { "const": "record_count" }
+        "operator": {
+          "const": "record_count"
+        }
       },
       "required": ["id", "operator"],
       "type": "object"
     },
     {
       "properties": {
-        "operator": { "const": "required_variables" }
+        "operator": {
+          "const": "required_variables"
+        }
       },
       "required": ["id", "operator"],
       "type": "object"
     },
     {
       "properties": {
-        "operator": { "const": "split_by" }
+        "operator": {
+          "const": "split_by"
+        }
       },
       "required": ["id", "operator", "delimiter", "name"],
       "type": "object"
     },
     {
       "properties": {
-        "operator": { "const": "study_domains" }
+        "operator": {
+          "const": "study_domains"
+        }
       },
       "required": ["id", "operator"],
       "type": "object"
     },
     {
       "properties": {
-        "operator": { "const": "dataset_names" }
+        "operator": {
+          "const": "dataset_names"
+        }
       },
       "required": ["id", "operator"],
       "type": "object"
     },
     {
       "properties": {
-        "operator": { "const": "standard_domains" }
+        "operator": {
+          "const": "standard_domains"
+        }
       },
       "required": ["id", "operator"],
       "type": "object"
@@ -273,7 +318,6 @@
       "required": ["id", "operator", "external_dictionary_type"],
       "type": "object"
     },
-
     {
       "properties": {
         "operator": {
@@ -357,28 +401,36 @@
     },
     {
       "properties": {
-        "operator": { "const": "variable_count" }
+        "operator": {
+          "const": "variable_count"
+        }
       },
       "required": ["id", "operator"],
       "type": "object"
     },
     {
       "properties": {
-        "operator": { "const": "variable_exists" }
+        "operator": {
+          "const": "variable_exists"
+        }
       },
       "required": ["id", "operator"],
       "type": "object"
     },
     {
       "properties": {
-        "operator": { "const": "variable_is_null" }
+        "operator": {
+          "const": "variable_is_null"
+        }
       },
       "required": ["id", "operator"],
       "type": "object"
     },
     {
       "properties": {
-        "operator": { "const": "variable_names" }
+        "operator": {
+          "const": "variable_names"
+        }
       },
       "required": ["id", "operator"],
       "type": "object"
@@ -403,7 +455,9 @@
     },
     {
       "properties": {
-        "operator": { "const": "get_xhtml_errors" }
+        "operator": {
+          "const": "get_xhtml_errors"
+        }
       },
       "required": ["id", "operator", "name", "namespace"],
       "type": "object"
@@ -450,7 +504,9 @@
       ]
     },
     "ct_package_types": {
-      "items": { "$ref": "Operations.json#/properties/ct_package_type" },
+      "items": {
+        "$ref": "Operations.json#/properties/ct_package_type"
+      },
       "type": "array"
     },
     "ct_packages": {
@@ -481,7 +537,9 @@
     "external_dictionary_type": {
       "enum": ["meddra"]
     },
-    "filter": { "type": "object" },
+    "filter": {
+      "type": "object"
+    },
     "filter_key": {
       "type": "string"
     },
@@ -529,7 +587,9 @@
       "items": {
         "type": "object",
         "properties": {
-          "output": { "type": "string" }
+          "output": {
+            "type": "string"
+          }
         },
         "required": ["output"]
       }
@@ -557,6 +617,9 @@
       "type": "string"
     },
     "term_pref_term": {
+      "type": "string"
+    },
+    "value": {
       "type": "string"
     },
     "value_is_reference": {

@@ -397,6 +397,7 @@ class RuleProcessor:
                 term_value=operation.get("term_value"),
                 term_pref_term=operation.get("term_pref_term"),
                 namespace=operation.get("namespace"),
+                value=operation.get("value"),
                 value_is_reference=operation.get("value_is_reference", False),
                 delimiter=operation.get("delimiter"),
                 regex=operation.get("regex"),
