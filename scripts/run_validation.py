@@ -84,6 +84,7 @@ def validate_single_rule(
         standard=args.standard,
         standard_version=args.version.replace(".", "-"),
         standard_substandard=args.substandard,
+        use_case=args.use_case,
         external_dictionaries=args.external_dictionaries,
         ct_packages=args.controlled_terminology_package,
         define_xml_path=args.define_xml_path,
@@ -236,6 +237,7 @@ def run_single_rule_validation(
     standard: str = None,
     standard_version: str = "",
     standard_substandard: str = None,
+    use_case: str = None,
     codelists=[],
 ) -> dict:
     datasets = [DummyDataset(dataset_data) for dataset_data in datasets]
@@ -292,6 +294,7 @@ def run_single_rule_validation(
         standard=standard,
         standard_version=standard_version,
         standard_substandard=standard_substandard,
+        use_case=use_case,
         library_metadata=library_metadata,
     )
     engine.rule_processor = RuleProcessor(data_service, cache, library_metadata)
