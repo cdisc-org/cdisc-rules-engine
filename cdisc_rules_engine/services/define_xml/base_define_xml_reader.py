@@ -168,35 +168,26 @@ class BaseDefineXMLReader(ABC):
             domain_metadata = self._get_domain_metadata(metadata, domain_name, name)
             variables_metadata = []
             codelist_map = self._get_codelist_def_map(metadata.CodeList)
+            item_def_map = {item_def.OID: item_def for item_def in metadata.ItemDef}
+            value_by_oid_map = {vl.OID: vl for vl in metadata.ValueListDef}
             for index, itemref in enumerate(domain_metadata.ItemRef):
                 itemdef = [
                     item for item in metadata.ItemDef if item.OID == itemref.ItemOID
                 ]
-                if itemdef:
-                    vl_first_item = None
-                    if itemdef[0].ValueListRef:
-                        value_list = [
-                            x
-                            for x in metadata.ItemDef
-                            if x.ValueListRef
-                            and x.ValueListRef.ValueListOID
-                            == itemdef[0].ValueListRef.ValueListOID
-                        ]
-                        list_values = [
-                            x
-                            for x in metadata.ValueListDef
-                            if x.OID == value_list[0].ValueListRef.ValueListOID
-                        ][0].ItemRef
-                        list_codes = [x.ItemOID for x in list_values]
-                        item_references = [
-                            x for x in metadata.ItemDef if x.OID in list_codes
-                        ]
-                        vl_first_item = item_references[0]
-                    variables_metadata.append(
-                        self._get_item_def_representation(
-                            itemdef[0], itemref, codelist_map, index, vl_first_item
-                        )
+                if not itemdef:
+                    continue
+                vl_first_item = None
+                if itemdef and itemdef[0].ValueListRef:
+                    value_list_oid = itemdef[0].ValueListRef.ValueListOID
+                    value_list_def = value_by_oid_map.get(value_list_oid)
+                    if value_list_def and value_list_def.ItemRef:
+                        first_item_oid = value_list_def.ItemRef[0].ItemOID
+                        vl_first_item = item_def_map.get(first_item_oid)
+                variables_metadata.append(
+                    self._get_item_def_representation(
+                        itemdef[0], itemref, codelist_map, index, vl_first_item
                     )
+                )
         except ValueError as e:
             raise FailedSchemaValidation(str(e))
         logger.info(f"Extracted variables metadata = {variables_metadata}")
