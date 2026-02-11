@@ -339,9 +339,9 @@ class RulesEngine:
             self.rule_processor.add_comparator_to_rule_conditions(
                 rule, comparator=None, target_prefix="define_"
             )
-        elif rule.get("rule_type") in (
-            RuleTypes.VALUE_LEVEL_METADATA_CHECK_AGAINST_DEFINE.value,
-            RuleTypes.VARIABLE_METADATA_CHECK_AGAINST_DEFINE_XML_AND_LIBRARY.value,
+        elif (
+            rule.get("rule_type")
+            == RuleTypes.VALUE_LEVEL_METADATA_CHECK_AGAINST_DEFINE.value
         ):
             value_level_metadata: List[dict] = self.get_define_xml_value_level_metadata(
                 dataset_metadata.full_path, dataset_metadata.unsplit_name

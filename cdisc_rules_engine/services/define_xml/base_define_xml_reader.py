@@ -173,9 +173,28 @@ class BaseDefineXMLReader(ABC):
                     item for item in metadata.ItemDef if item.OID == itemref.ItemOID
                 ]
                 if itemdef:
+                    vl_first_item = None
+                    if itemdef[0].ValueListRef:
+                        value_list = [
+                            x
+                            for x in metadata.ItemDef
+                            if x.ValueListRef
+                            and x.ValueListRef.ValueListOID
+                            == itemdef[0].ValueListRef.ValueListOID
+                        ]
+                        list_values = [
+                            x
+                            for x in metadata.ValueListDef
+                            if x.OID == value_list[0].ValueListRef.ValueListOID
+                        ][0].ItemRef
+                        list_codes = [x.ItemOID for x in list_values]
+                        item_references = [
+                            x for x in metadata.ItemDef if x.OID in list_codes
+                        ]
+                        vl_first_item = item_references[0]
                     variables_metadata.append(
                         self._get_item_def_representation(
-                            itemdef[0], itemref, codelist_map, index
+                            itemdef[0], itemref, codelist_map, index, vl_first_item
                         )
                     )
         except ValueError as e:
@@ -338,7 +357,9 @@ class BaseDefineXMLReader(ABC):
         else:
             return index + 1
 
-    def _get_item_def_representation(self, itemdef, itemref, codelists, index) -> dict:
+    def _get_item_def_representation(
+        self, itemdef, itemref, codelists, index, first_list_element=None
+    ) -> dict:
         """
         Returns item def as a dictionary
         """
@@ -390,6 +411,10 @@ class BaseDefineXMLReader(ABC):
                 data["define_variable_codelist_coded_codes"].extend(
                     self._get_codelist_coded_codes(codelist)
                 )
+            elif first_list_element and first_list_element.CodeListRef:
+                oid = first_list_element.CodeListRef.CodeListOID
+                codelist = codelists.get(oid)
+                data["define_variable_ccode"] = self._get_codelist_ccode(codelist)
             if itemdef.Origin:
                 data["define_variable_origin_type"] = self._get_origin_type(itemdef)
             data["define_variable_has_no_data"] = getattr(itemref, "HasNoData", "")
