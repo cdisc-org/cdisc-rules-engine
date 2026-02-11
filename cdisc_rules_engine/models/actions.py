@@ -1,4 +1,4 @@
-from typing import List, Optional, Set, Hashable
+from typing import List, Optional, Set, Hashable, Iterable
 from os import path
 import pandas as pd
 from business_rules.actions import BaseActions, rule_action
@@ -10,6 +10,7 @@ from cdisc_rules_engine.constants.metadata_columns import (
     SOURCE_ROW_NUMBER,
 )
 from cdisc_rules_engine.enums.sensitivity import Sensitivity
+from cdisc_rules_engine.enums.domain_presence_values import DomainPresenceValues
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.models.dataset_variable import DatasetVariable
 from cdisc_rules_engine.models.validation_error_container import (
@@ -48,7 +49,8 @@ class COREActions(BaseActions):
     def generate_dataset_error_objects(self, message: str, results: pd.Series):
         # leave only those columns where errors have been found
         rows_with_error = self.variable.dataset.get_error_rows(results)
-        target_names: Set[str] = RuleProcessor.extract_target_names_from_rule(
+        # get targets in the order they appear in rule.output_variables
+        target_names: List[str] = RuleProcessor.extract_target_names_from_rule(
             self.rule,
             self.dataset_metadata.domain_cleaned,
             self.variable.dataset.columns.tolist(),
@@ -61,27 +63,40 @@ class COREActions(BaseActions):
         error_object = self.generate_targeted_error_object(
             target_names, rows_with_error, message
         )
+        if "domain presence" in self.rule.get("rule_type", "").lower():
+            error_object.dataset = DomainPresenceValues.DATASET.value
+            for error in error_object.errors:
+                error.dataset = DomainPresenceValues.DATASET.value
+                error.row = DomainPresenceValues.RECORD.value
         self.output_container.append(error_object.to_representation())
 
     @rule_action(params={"message": FIELD_TEXT})
     def generate_single_error(self, message):
         self.output_container.append(message)
 
-    def _get_target_names_from_list_values(self, target_names, rows_with_error):
-        expanded_target_names = set(target_names)
-        expanded_target_names.update(
-            value
-            for target in target_names
-            if target in rows_with_error
-            for candidate_list in rows_with_error[target]
-            if isinstance(candidate_list, list)
-            for value in candidate_list
-            if value in self.variable.dataset.columns
-        )
-        return expanded_target_names
+    def _get_target_names_from_list_values(
+        self, target_names: List[str], rows_with_error: pd.DataFrame
+    ) -> List[str]:
+        """Expand target names with column names found inside list values, preserving order.
+
+        New targets are appended in the order they are discovered, duplicates are ignored.
+        """
+        expanded: List[str] = list(target_names)
+        existing = set(expanded)
+        for target in target_names:
+            if target not in rows_with_error:
+                continue
+            for candidate_list in rows_with_error[target]:
+                if not isinstance(candidate_list, list):
+                    continue
+                for value in candidate_list:
+                    if value in self.variable.dataset.columns and value not in existing:
+                        expanded.append(value)
+                        existing.add(value)
+        return expanded
 
     def generate_targeted_error_object(  # noqa: C901
-        self, targets: Set[str], data: pd.DataFrame, message: str
+        self, targets: Iterable[str], data: pd.DataFrame, message: str
     ) -> ValidationErrorContainer:
         """
         Generates a targeted error object.
@@ -116,9 +131,12 @@ class COREActions(BaseActions):
             "message": "AESTDY and DOMAIN are equal to test",
         }
         """
+        # preserve incoming order for representation but use sets for membership tests
+        targets_list: List[str] = list(targets)
+        targets_set: Set[str] = set(targets_list)
         df_columns: set = set(data)
-        targets_in_dataset = targets.intersection(df_columns)
-        targets_not_in_dataset = targets.difference(df_columns)
+        targets_in_dataset = targets_set.intersection(df_columns)
+        targets_not_in_dataset = targets_set.difference(df_columns)
         all_targets_missing = (
             len(targets_in_dataset) == 0 and len(targets_not_in_dataset) > 0
         )
@@ -126,7 +144,7 @@ class COREActions(BaseActions):
             errors_df = data[list(targets_in_dataset)]
         else:
             errors_df = data
-        if not targets:
+        if not targets_set:
             errors_df = data
 
         if self.rule.get("sensitivity") == Sensitivity.DATASET.value:
@@ -200,7 +218,7 @@ class COREActions(BaseActions):
                     if self.dataset_metadata.is_supp
                     else (self.dataset_metadata.domain or self.dataset_metadata.name)
                 ),
-                targets=sorted(targets),
+                targets=targets_list,
                 message="Invalid or undefined sensitivity in the rule",
                 errors=[error_entity],
             )
@@ -217,7 +235,7 @@ class COREActions(BaseActions):
             dataset=", ".join(
                 sorted(set(error.dataset or "" for error in errors_list))
             ),
-            targets=sorted(targets),
+            targets=targets_list,
             errors=errors_list,
             message=message.replace("--", self.dataset_metadata.domain_cleaned or ""),
         )
@@ -324,13 +342,14 @@ class COREActions(BaseActions):
             USUBJID="N/A",
             SEQ=0,
         )
+        targets_list = list(targets)
         return ValidationErrorContainer(
             domain=(
                 f"SUPP{self.dataset_metadata.rdomain}"
                 if self.dataset_metadata.is_supp
                 else (self.dataset_metadata.domain or self.dataset_metadata.name)
             ),
-            targets=sorted(targets),
+            targets=targets_list,
             message=message,
             errors=[error_entity],
         )
@@ -485,8 +504,16 @@ class COREActions(BaseActions):
         )
         return error_object
 
-    def extract_target_names_from_value_level_metadata(self):
-        return set([item["define_variable_name"] for item in self.value_level_metadata])
+    def extract_target_names_from_value_level_metadata(self) -> List[str]:
+        """Return target names from value-level metadata preserving input order."""
+        seen = set()
+        ordered: List[str] = []
+        for item in self.value_level_metadata:
+            name = item.get("define_variable_name")
+            if name and name not in seen:
+                seen.add(name)
+                ordered.append(name)
+        return ordered
 
     @staticmethod
     def _sequence_exists(sequence: pd.Series, row_name: Hashable) -> bool:

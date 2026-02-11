@@ -2,7 +2,7 @@ import re
 import copy
 import os
 
-from typing import Iterable, List, Optional, Set, Union, Tuple
+from typing import Iterable, List, Optional, Union, Tuple
 from cdisc_rules_engine.enums.rule_types import RuleTypes
 from cdisc_rules_engine.interfaces.cache_service_interface import (
     CacheServiceInterface,
@@ -24,7 +24,6 @@ from cdisc_rules_engine.constants.domains import (
     SUPPLEMENTARY_DOMAINS,
 )
 from cdisc_rules_engine.constants.rule_constants import ALL_KEYWORD
-from cdisc_rules_engine.constants.use_cases import USE_CASE_DOMAINS
 from cdisc_rules_engine.interfaces import ConditionInterface
 from cdisc_rules_engine.models.operation_params import OperationParams
 from cdisc_rules_engine.models.rule_conditions import AllowedConditionsKeys
@@ -268,50 +267,13 @@ class RuleProcessor:
                 is_excluded = True
         return is_included and not is_excluded
 
-    def _is_custom_domain(self, domain: str) -> bool:
-        if self.library_metadata is None:
-            return False
-        return self.library_metadata.is_domain_custom(domain)
-
-    def _get_allowed_domains_for_use_cases(
-        self, use_cases: List[str], substandard: str
-    ) -> set:
-        allowed_domains = set()
-        for use_case in use_cases:
-            if use_case in USE_CASE_DOMAINS[substandard]:
-                allowed_domains.update(USE_CASE_DOMAINS[substandard][use_case])
-        return allowed_domains
-
-    def _get_domain_to_check(self, dataset_metadata: SDTMDatasetMetadata) -> str:
-        if dataset_metadata.is_supp and dataset_metadata.rdomain:
-            return dataset_metadata.rdomain
-        return dataset_metadata.domain
-
-    def _check_adam_domain(
-        self, domain: str, substandard: str, use_cases: List[str]
-    ) -> bool:
-        if substandard == "ADAM" and domain.startswith("AD"):
-            return "ANALYSIS" in use_cases
-        return False
-
-    def _check_domain_in_use_case(
-        self, domain: str, use_cases: List[str], substandard: str
-    ) -> bool:
-        allowed_domains = self._get_allowed_domains_for_use_cases(
-            use_cases, substandard
-        )
-        if domain in allowed_domains:
-            return True
-        if self._is_custom_domain(domain):
-            return True
-        return False
-
     def rule_applies_to_use_case(
         self,
         dataset_metadata: SDTMDatasetMetadata,
         rule: dict,
         standard: str,
         standard_substandard: str,
+        use_case: str,
     ) -> bool:
         if standard.lower() != "tig":
             return True
@@ -319,14 +281,7 @@ class RuleProcessor:
         if not use_cases:
             return True
         use_cases = [uc.strip() for uc in use_cases.split(",")]
-        substandard = standard_substandard.upper()
-        if substandard not in USE_CASE_DOMAINS:
-            return False
-
-        domain_to_check = self._get_domain_to_check(dataset_metadata)
-        if self._check_adam_domain(domain_to_check, substandard, use_cases):
-            return True
-        return self._check_domain_in_use_case(domain_to_check, use_cases, substandard)
+        return use_case in use_cases
 
     @classmethod
     def rule_applies_to_entity(
@@ -711,6 +666,7 @@ class RuleProcessor:
         datasets: Iterable[SDTMDatasetMetadata],
         standard,
         standard_substandard: str,
+        use_case: str,
     ) -> Tuple[bool, str]:
         """Check if rule is suitable and return reason if not"""
         rule_id = rule.get("core_id", "unknown")
@@ -725,7 +681,11 @@ class RuleProcessor:
         ):
             return self.log_suitable_for_validation(rule_id, dataset_name)
         if not self.rule_applies_to_use_case(
-            dataset_metadata, rule, standard, standard_substandard
+            dataset_metadata,
+            rule,
+            standard,
+            standard_substandard,
+            use_case,
         ):
             reason = (
                 f"Rule skipped - doesn't apply to use case for "
@@ -764,9 +724,49 @@ class RuleProcessor:
         return self.log_suitable_for_validation(rule_id, dataset_name)
 
     @staticmethod
+    def _extract_targets_from_output_variables(rule: dict, domain: str) -> List[str]:
+        output_variables: List[str] = rule.get("output_variables", [])
+        target_names: List[str] = []
+        seen: set[str] = set()
+        for var in output_variables:
+            name = var.replace("--", domain or "", 1)
+            if name not in seen:
+                seen.add(name)
+                target_names.append(name)
+        return target_names
+
+    @staticmethod
+    def _extract_targets_from_conditions(
+        rule: dict, domain: str, column_names: List[str]
+    ) -> List[str]:
+        target_names: List[str] = []
+        seen: set[str] = set()
+        conditions: ConditionInterface = rule["conditions"]
+        for condition in conditions.values():
+            if condition.get("operator") == "not_exists":
+                continue
+            target: str = condition["value"].get("target")
+            if target is None:
+                continue
+            target = target.replace("--", domain or "")
+            op_related_pattern: str = RuleProcessor.get_operator_related_pattern(
+                condition.get("operator"), target
+            )
+            if op_related_pattern is not None:
+                for name in column_names:
+                    if re.match(op_related_pattern, name) and name not in seen:
+                        seen.add(name)
+                        target_names.append(name)
+            else:
+                if target not in seen:
+                    seen.add(target)
+                    target_names.append(target)
+        return target_names
+
+    @staticmethod
     def extract_target_names_from_rule(
         rule: dict, domain: str, column_names: List[str]
-    ) -> Set[str]:
+    ) -> List[str]:
         r"""
         Extracts target from each item of condition list.
 
@@ -781,36 +781,11 @@ class RuleProcessor:
             pattern: ^TSVAL\d+$ (starts with TSVAL and ends with number)
             additional columns: TSVAL1, TSVAL2, TSVAL3 etc.
         """
-        output_variables: List[str] = rule.get("output_variables", [])
-        if output_variables:
-            target_names: List[str] = [
-                var.replace("--", domain or "", 1) for var in output_variables
-            ]
-        else:
-            target_names: List[str] = []
-            conditions: ConditionInterface = rule["conditions"]
-            for condition in conditions.values():
-                if condition.get("operator") == "not_exists":
-                    continue
-                target: str = condition["value"].get("target")
-                if target is None:
-                    continue
-                target = target.replace("--", domain or "")
-                op_related_pattern: str = RuleProcessor.get_operator_related_pattern(
-                    condition.get("operator"), target
-                )
-                if op_related_pattern is not None:
-                    # if pattern exists -> return only matching column names
-                    target_names.extend(
-                        filter(
-                            lambda name: re.match(op_related_pattern, name),
-                            column_names,
-                        )
-                    )
-                else:
-                    target_names.append(target)
-        target_names.sort()
-        return set(target_names)
+        if rule.get("output_variables"):
+            return RuleProcessor._extract_targets_from_output_variables(rule, domain)
+        return RuleProcessor._extract_targets_from_conditions(
+            rule, domain, column_names
+        )
 
     @staticmethod
     def extract_referenced_variables_from_rule(rule: dict):

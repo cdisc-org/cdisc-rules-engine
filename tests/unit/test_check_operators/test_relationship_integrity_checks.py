@@ -207,6 +207,138 @@ def test_has_same_values(data, dataset_type, expected_result):
             DaskDataset,
             [True, True, True, False],
         ),
+        (
+            {
+                "STUDYID": ["TEST", "TEST-1", "TEST-2", "TEST-3"],
+                "VISITNUM": [1, 2, 1, 3],
+                "target": ["Consulting", None, "Consulting", "Treatment"],
+            },
+            "VISITNUM",
+            PandasDataset,
+            [False, False, False, False],
+        ),
+        (
+            {
+                "STUDYID": ["TEST", "TEST-1", "TEST-2", "TEST-3"],
+                "VISITNUM": [1, None, 2, 3],
+                "target": ["Consulting", "Surgery", "Surgery", "Treatment"],
+            },
+            "VISITNUM",
+            PandasDataset,
+            [False, True, True, False],
+        ),
+        (
+            {
+                "STUDYID": ["TEST", "TEST-1", "TEST-2"],
+                "VISITNUM": [1, None, 1],
+                "target": ["Consulting", "Consulting", "Consulting"],
+            },
+            "VISITNUM",
+            PandasDataset,
+            [True, True, True],
+        ),
+        (
+            {
+                "STUDYID": ["TEST", "TEST-1", "TEST-2"],
+                "VISITNUM": [1, 1, 1],
+                "target": ["Consulting", None, "Surgery"],
+            },
+            "VISITNUM",
+            DaskDataset,
+            [True, True, True],
+        ),
+        (
+            {
+                "STUDYID": ["TEST", "TEST-1", "TEST-2"],
+                "VISITNUM": [1, 2, ""],
+                "target": ["Consulting", "Surgery", "Treatment"],
+            },
+            "VISITNUM",
+            PandasDataset,
+            [False, False, False],
+        ),
+        (
+            {
+                "STUDYID": ["TEST", "TEST-1", "TEST-2"],
+                "VISITNUM": [1, "", 1],
+                "target": ["Consulting", "Consulting", "Consulting"],
+            },
+            "VISITNUM",
+            PandasDataset,
+            [True, True, True],
+        ),
+        (
+            {
+                "STUDYID": ["TEST", "TEST-1", "TEST-2", "TEST-3"],
+                "VISITNUM": [1, None, None, 2],
+                "target": ["Consulting", None, None, "Surgery"],
+            },
+            "VISITNUM",
+            DaskDataset,
+            [False, False, False, False],
+        ),
+        (
+            {
+                "STUDYID": ["TEST", "TEST-1", "TEST-2"],
+                "VISITNUM": [None, None, None],
+                "target": [None, None, None],
+            },
+            "VISITNUM",
+            PandasDataset,
+            [False, False, False],
+        ),
+        (
+            {
+                "STUDYID": ["TEST", "TEST-1", "TEST-2", "TEST-3", "TEST-4"],
+                "VISITNUM": [1, 1, 2, None, 2],
+                "target": ["A", "B", "A", "A", "C"],
+            },
+            "VISITNUM",
+            PandasDataset,
+            [True, True, True, True, True],
+        ),
+        (
+            {
+                "STUDYID": ["TEST", "TEST-1", "TEST-2", "TEST-3"],
+                "VISITNUM": [1, 2, 3, None],
+                "target": ["A", "B", "C", "D"],
+            },
+            "VISITNUM",
+            DaskDataset,
+            [False, False, False, False],
+        ),
+        (
+            {
+                "STUDYID": ["TEST", "TEST-1", "TEST-2"],
+                "VISITNUM": [None, "", 1],
+                "target": ["A", "B", "C"],
+            },
+            "VISITNUM",
+            PandasDataset,
+            [False, False, False],
+        ),
+        (
+            {
+                "STUDYID": ["TEST", "TEST-1", "TEST-2"],
+                "VISIT": ["V1", "V2", "V1"],
+                "VISITNUM": [1, 2, 1],
+                "target": ["A", "B", "A"],
+            },
+            ["VISIT", "VISITNUM"],
+            PandasDataset,
+            [False, False, False],
+        ),
+        (
+            {
+                "STUDYID": ["TEST", "TEST-1", "TEST-2", "TEST-3"],
+                "VISIT": ["V1", "V1", "V2", "V1"],
+                "VISITNUM": [1, 1, 2, 1],
+                "target": ["A", "B", "C", "A"],
+            },
+            ["VISIT", "VISITNUM"],
+            DaskDataset,
+            [True, True, False, True],
+        ),
     ],
 )
 def test_is_not_unique_relationship(data, comparator, dataset_type, expected_result):
@@ -1121,6 +1253,124 @@ def test_target_is_sorted_by_multiple_within_not_sorted(dataset_class):
             ]
         )
     )
+
+
+_COMPARATOR_SMSTDTC = [
+    {"name": "SMSTDTC", "sort_order": "ASC", "null_position": "last"}
+]
+_INVALID_INPUT_DF = {
+    "USUBJID": ["001", "002"],
+    "MIDS": ["A1", "A2"],
+    "SMSTDTC": ["2005-01-01", "2006-01-01"],
+}
+
+
+@pytest.mark.parametrize("dataset_class", [PandasDataset, DaskDataset])
+def test_target_is_sorted_by_and_complement_multi_within(dataset_class):
+    data = {
+        "USUBJID": ["001", "001", "003", "003"],
+        "MIDSTYPE": ["DIAGNOSIS", "DIAGNOSIS", "RELAPSE", "RELAPSE"],
+        "MIDS": ["DIAG1", "DIAG2", "RELAPSE2", "RELAPSE1"],
+        "SMSTDTC": ["2005-01-01", "2006-01-01", "2005-01-01", "2006-01-01"],
+    }
+    other_value = {
+        "target": "MIDS",
+        "within": ["USUBJID", "MIDSTYPE"],
+        "comparator": _COMPARATOR_SMSTDTC,
+    }
+    sorted_expected = [True, True, False, False]
+    df = dataset_class.from_dict(data)
+    dt = DataframeType({"value": df})
+    assert dt.target_is_sorted_by(other_value).equals(
+        df.convert_to_series(sorted_expected)
+    )
+    assert dt.target_is_not_sorted_by(other_value).equals(
+        df.convert_to_series([not x for x in sorted_expected])
+    )
+
+
+@pytest.mark.parametrize(
+    "other_value,exc_type,match",
+    [
+        (
+            {"target": "MIDS", "comparator": _COMPARATOR_SMSTDTC},
+            ValueError,
+            "within parameter is required",
+        ),
+        (
+            {"target": "MIDS", "within": [], "comparator": _COMPARATOR_SMSTDTC},
+            ValueError,
+            "within must contain valid column names",
+        ),
+        ({"target": "MIDS", "within": "USUBJID"}, KeyError, "comparator"),
+        (
+            {
+                "target": "MIDS",
+                "within": "USUBJID",
+                "comparator": [{"sort_order": "ASC", "null_position": "last"}],
+            },
+            KeyError,
+            "name",
+        ),
+        (
+            {
+                "target": "MIDS",
+                "within": "USUBJID",
+                "comparator": [
+                    {
+                        "name": "NONEXISTENT",
+                        "sort_order": "ASC",
+                        "null_position": "last",
+                    }
+                ],
+            },
+            KeyError,
+            None,
+        ),
+    ],
+    ids=[
+        "missing_within",
+        "empty_within",
+        "missing_comparator",
+        "malformed_comparator",
+        "missing_column",
+    ],
+)
+def test_target_is_sorted_by_invalid_input_raises(other_value, exc_type, match):
+    df = PandasDataset.from_dict(_INVALID_INPUT_DF)
+    with pytest.raises(exc_type, match=match):
+        DataframeType({"value": df}).target_is_sorted_by(other_value)
+
+
+@pytest.mark.parametrize("dataset_class", [PandasDataset, DaskDataset])
+@pytest.mark.parametrize(
+    "data,expected",
+    [
+        ({"USUBJID": [], "MIDS": [], "SMSTDTC": []}, None),
+        ({"USUBJID": ["001"], "MIDS": ["DIAG1"], "SMSTDTC": ["2005-01-01"]}, [True]),
+        (
+            {
+                "USUBJID": ["001", "001"],
+                "MIDS": ["DIAG1", "DIAG2"],
+                "SMSTDTC": [None, None],
+            },
+            [False, False],
+        ),
+    ],
+    ids=["empty_df", "single_row", "all_null_comparator"],
+)
+def test_target_is_sorted_by_edge_cases(dataset_class, data, expected):
+    df = dataset_class.from_dict(data)
+    other_value = {
+        "target": "MIDS",
+        "within": "USUBJID",
+        "comparator": _COMPARATOR_SMSTDTC,
+    }
+    result = DataframeType({"value": df}).target_is_sorted_by(other_value)
+    if expected is None:
+        assert len(result) == 0
+    else:
+        assert result.equals(df.convert_to_series(expected))
 
 
 @pytest.mark.parametrize("dataset_class", [PandasDataset])

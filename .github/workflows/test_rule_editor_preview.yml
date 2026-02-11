@@ -14,10 +14,6 @@ on:
         required: false
         type: string
 
-concurrency:
-  group: deploy-dev-slot
-  cancel-in-progress: false
-
 jobs:
   end_to_end_test:
     runs-on: ubuntu-latest

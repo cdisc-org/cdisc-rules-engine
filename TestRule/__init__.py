@@ -88,6 +88,7 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:  # 
         standard = standards_data.get("product")
         standard_version = standards_data.get("version")
         standard_substandard = standards_data.get("substandard")
+        use_case = standards_data.get("use_case")
         standard, standard_version = normalize_adam_input(standard, standard_version)
         codelists = json_data.get("codelists", [])
         cache = InMemoryCacheService()
@@ -117,6 +118,7 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:  # 
             standard,
             standard_version,
             standard_substandard,
+            use_case,
             codelists,
         )
         result = convert_numpy_types(result)

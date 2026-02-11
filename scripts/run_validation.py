@@ -84,6 +84,7 @@ def validate_single_rule(
         standard=args.standard,
         standard_version=args.version.replace(".", "-"),
         standard_substandard=args.substandard,
+        use_case=args.use_case,
         external_dictionaries=args.external_dictionaries,
         ct_packages=args.controlled_terminology_package,
         define_xml_path=args.define_xml_path,
@@ -130,9 +131,10 @@ def run_validation(args: Validation_args):
     manager.start()
     created_files = []
     try:
+        created_files = []
         shared_cache = get_cache_service(manager)
         engine_logger.info(f"Populating cache, cache path: {args.cache}")
-        rules = get_rules(args)
+        rules, skipped_rule_ids = get_rules(args)
         library_metadata: LibraryMetadataContainer = get_library_metadata_from_cache(
             args
         )
@@ -191,6 +193,12 @@ def run_validation(args: Validation_args):
             progress_handler: Callable = get_progress_displayer(args)
             results = progress_handler(rules, validation_results, results)
 
+        for skipped_rule_id, message in skipped_rule_ids or []:
+            engine_logger.info(message)
+            results.append(
+                RuleValidationResult.from_skipped_rule(skipped_rule_id, message)
+            )
+
         # build all desired reports
         end = time.time()
         elapsed_time = end - start
@@ -227,6 +235,7 @@ def run_single_rule_validation(
     standard: str = None,
     standard_version: str = "",
     standard_substandard: str = None,
+    use_case: str = None,
     codelists=[],
 ) -> dict:
     datasets = [DummyDataset(dataset_data) for dataset_data in datasets]
@@ -283,6 +292,7 @@ def run_single_rule_validation(
         standard=standard,
         standard_version=standard_version,
         standard_substandard=standard_substandard,
+        use_case=use_case,
         library_metadata=library_metadata,
     )
     engine.rule_processor = RuleProcessor(data_service, cache, library_metadata)

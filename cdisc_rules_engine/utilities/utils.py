@@ -4,6 +4,8 @@ that can be reused.
 """
 
 import copy
+import json
+import locale
 import os
 import re
 import ast
@@ -48,25 +50,62 @@ def convert_file_size(size_in_bytes: int, desired_unit: str) -> float:
 
 def get_execution_status(results):
     """
-    If all results have skipped status, return skipped.
-    Else return success
+    If any result has an execution error, return execution error
+    Else if any result has an issue reported, return issue reported
+    Else if any result is successful, return issue successful
+    Else, result should have all skips, return issue skipped
     """
     if len(results) == 0:
         return ExecutionStatus.SUCCESS.value
-    if isinstance(results[0], BaseValidationEntity):
-        successful_results = [
-            entity for entity in results if entity.status == ExecutionStatus.SUCCESS
-        ]
-    else:
-        successful_results = [
-            result
-            for result in results
-            if result.get("executionStatus") == ExecutionStatus.SUCCESS.value
-        ]
-    if successful_results:
+    status = (
+        {
+            ExecutionStatus.SUCCESS: [],
+            ExecutionStatus.EXECUTION_ERROR: [],
+            ExecutionStatus.ISSUE_REPORTED: results,
+            ExecutionStatus.SKIPPED: [],
+        }
+        if isinstance(results[0], BaseValidationEntity)
+        else {
+            ExecutionStatus.SUCCESS: [
+                result
+                for result in results
+                if result.get("executionStatus") == ExecutionStatus.SUCCESS.value
+            ],
+            ExecutionStatus.EXECUTION_ERROR: [
+                result
+                for result in results
+                if result.get("executionStatus")
+                == ExecutionStatus.EXECUTION_ERROR.value
+            ],
+            ExecutionStatus.ISSUE_REPORTED: [
+                result
+                for result in results
+                if result.get("executionStatus") == ExecutionStatus.ISSUE_REPORTED.value
+            ],
+            ExecutionStatus.SKIPPED: [
+                result
+                for result in results
+                if result.get("executionStatus") == ExecutionStatus.SKIPPED.value
+            ],
+        }
+    )
+    if len(results) != (
+        len(status[ExecutionStatus.SUCCESS])
+        + len(status[ExecutionStatus.EXECUTION_ERROR])
+        + len(status[ExecutionStatus.ISSUE_REPORTED])
+        + len(status[ExecutionStatus.SKIPPED])
+    ):
+        return ExecutionStatus.UNKNOWN_STATUS.value
+    elif status[ExecutionStatus.EXECUTION_ERROR]:
+        return ExecutionStatus.EXECUTION_ERROR.value
+    elif status[ExecutionStatus.ISSUE_REPORTED]:
+        return ExecutionStatus.ISSUE_REPORTED.value
+    elif status[ExecutionStatus.SUCCESS]:
         return ExecutionStatus.SUCCESS.value
-    else:
+    elif status[ExecutionStatus.SKIPPED]:
         return ExecutionStatus.SKIPPED.value
+    else:
+        return ExecutionStatus.UNKNOWN_STATUS.value
 
 
 def get_standard_codelist_cache_key(standard: str, version: str) -> str:
@@ -176,7 +215,7 @@ def get_standard_details_cache_key(
     if not standard_substandard:
         return f"standards/{standard_type}/{standard_version}"
     else:
-        return f"standards/{standard_type}/{standard_version}/{standard_substandard}"
+        return f"standards/{standard_type}/{standard_version}/{standard_substandard.lower()}"
 
 
 def normalize_adam_input(standard: str, version: str) -> tuple:
@@ -481,3 +520,34 @@ def set_max_errors_per_rule(args):
 
     per_dataset = bool(env_per_dataset or cli_per_dataset)
     return max_errors_per_rule, per_dataset
+
+
+def load_json_with_optional_encoding(path: str, encoding: str | None = None) -> dict:
+    tried = []
+    if encoding:
+        # If the file contains only ASCII characters, incorrect encodings may still succeed
+        try:
+            with open(path, "r", encoding=encoding) as f:
+                return json.load(f)
+        except (UnicodeDecodeError, json.JSONDecodeError) as e:
+            tried.append((encoding, e))
+
+    fallback_encodings = [
+        "utf-8-sig",  # UTF-8 + BOM
+        "utf-8",
+        locale.getpreferredencoding(False),
+    ]
+
+    for enc in fallback_encodings:
+        if enc == encoding:
+            continue
+
+        try:
+            with open(path, "r", encoding=enc) as f:
+                return json.load(f)
+        except (UnicodeDecodeError, json.JSONDecodeError) as e:
+            tried.append((enc, e))
+
+    tried_msg = ", ".join(enc for enc, _ in tried)
+
+    raise ValueError(f"Unable to load JSON file '{path}'. Tried encodings: {tried_msg}")

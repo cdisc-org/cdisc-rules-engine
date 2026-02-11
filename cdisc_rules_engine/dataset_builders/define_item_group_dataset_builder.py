@@ -17,6 +17,7 @@ class DefineItemGroupDatasetBuilder(BaseDatasetBuilder):
             "define_dataset_variables"
             "define_dataset_variable_order"
             "define_dataset_key_sequence"
+            "define_dataset_has_no_data"
         """
         item_group_metadata: List[dict] = (
             self.get_define_xml_item_group_metadata_for_domain(

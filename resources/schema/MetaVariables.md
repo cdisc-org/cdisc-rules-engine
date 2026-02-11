@@ -36,7 +36,15 @@ ItemGroupDef.leaf.href
 
 ## define_dataset_name
 
+ItemGroupDef.Name
+
+## define_dataset_domain
+
 ItemGroupDef.Domain
+
+## define_dataset_has_no_data
+
+ItemGroupDef.HasNoData
 
 ## define_dataset_structure
 

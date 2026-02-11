@@ -30,6 +30,7 @@ def test_get_export(mock_validation_results):
         mock_args.standard = "sdtmig"
         mock_args.substandard = None
         mock_args.version = "3.4"
+        mock_args.use_case = None
         mock_args.dictionary_versions = {}
         datasets = [
             SDTMDatasetMetadata(
@@ -57,10 +58,11 @@ def test_get_export(mock_validation_results):
         assert wb["Conformance Details"]["B9"].value == "SDTMIG"
         assert wb["Conformance Details"]["B10"].value == "NAP"
         assert wb["Conformance Details"]["B11"].value == "V3.4"
-        assert wb["Conformance Details"]["B12"].value == ", ".join(
+        assert wb["Conformance Details"]["B12"].value == "NAP"
+        assert wb["Conformance Details"]["B13"].value == ", ".join(
             mock_args.controlled_terminology_package
         )
-        assert wb["Conformance Details"]["B13"].value == "2.1"
+        assert wb["Conformance Details"]["B14"].value == "2.1"
 
         # Check dataset details tab
         assert wb["Dataset Details"]["A2"].value == "test"  # filename
