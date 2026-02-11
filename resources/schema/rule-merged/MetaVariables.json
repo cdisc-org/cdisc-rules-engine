@@ -40,7 +40,7 @@
     },
     {
       "const": "define_dataset_name",
-      "markdownDescription": "\nItemGroupDef.Domain\n"
+      "markdownDescription": "\nItemGroupDef.Name\n"
     },
     {
       "const": "define_dataset_structure",

@@ -5,11 +5,11 @@ This directory contains a script to merge JSON schema files with their correspon
 ## Overview
 
 The `merge_schema_markdown.py` script:
-- Reads JSON schema files from `resources/schema/`
+- Reads JSON schema files from `resources/schema/rule/`
 - Finds matching markdown files (e.g., `Operator.json` → `Operator.md`)
 - Parses markdown sections (headers starting with `##` or `###`)
 - Adds `markdownDescription` properties to schema items where `const` values match section names
-- Outputs merged schemas to `resources/schema-with-descriptions/`
+- Outputs merged schemas to `resources/schema/rule-merged/`
 
 ## Usage
 
@@ -21,12 +21,12 @@ Run the script locally:
 python scripts/merge_schema_markdown.py
 ```
 
-This will process all schema files and output merged versions to `resources/schema-with-descriptions/`.
+This will process all schema files and output merged versions to `resources/schema/rule-merged/`.
 
 ### Automatic Execution
 
 The GitHub Action workflow (`.github/workflows/merge-schema-markdown.yml`) automatically runs when:
-- Files in `resources/schema/` are changed
+- Files in `resources/schema/rule/` are changed
 - On pull requests or pushes to main/dev branches
 
 The workflow will:
@@ -65,7 +65,7 @@ And `Rule_Type.md`:
 Columns are the columns within the original dataset
 ```
 
-The output `schema-with-descriptions/Rule_Type.json` will be:
+The output `rule-merged/Rule_Type.json` will be:
 ```json
 {
   "anyOf": [

@@ -3,10 +3,10 @@ name: Merge Schema with Markdown Descriptions
 on:
   pull_request:
     paths:
-      - 'resources/schema/**'
+      - 'resources/schema/rule/**'
   push:
     paths:
-      - 'resources/schema/**'
+      - 'resources/schema/rule/**'
     branches:
       - main
       - dev
@@ -38,9 +38,9 @@ jobs:
       - name: Check if there are changes
         id: verify_diff
         run: |
-          if [ -d "resources/schema-with-descriptions" ]; then
-            git add resources/schema-with-descriptions/
-            git diff --staged --quiet resources/schema-with-descriptions/ || echo "changed=true" >> $GITHUB_OUTPUT
+          if [ -d "resources/schema/rule-merged" ]; then
+            git add resources/schema/rule-merged/
+            git diff --staged --quiet resources/schema/rule-merged/ || echo "changed=true" >> $GITHUB_OUTPUT
           else
             echo "changed=true" >> $GITHUB_OUTPUT
           fi
@@ -50,7 +50,7 @@ jobs:
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add resources/schema-with-descriptions/
+          git add resources/schema/rule-merged/
           git commit -m "Update merged schema files with markdown descriptions"
           git push
       

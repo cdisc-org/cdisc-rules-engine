@@ -10,7 +10,7 @@
     {
       "const": "Dataset Contents Check against Define XML",
       "title": "Content data at record level, dataset metadata at dataset level, and define xml metadata at dataset level",
-      "markdownDescription": "\n#### Columns\n\nColumns are the columns within the original dataset along with the following columns:\n\n- `dataset_label`\n- `dataset_location`\n- `dataset_name`\n- `dataset_size`\n- `dataset_domain`\n- `define_dataset_class`\n- `define_dataset_domain`\n- `define_dataset_is_non_standard`\n- `define_dataset_key_sequence`\n- `define_dataset_label`\n- `define_dataset_location`\n- `define_dataset_name`\n- `define_dataset_structure`\n- `define_dataset_variables`\n"
+      "markdownDescription": "\n#### Columns\n\nColumns are the columns within the original dataset along with the following columns:\n\n- `dataset_label`\n- `dataset_location`\n- `dataset_name`\n- `dataset_size`\n- `dataset_domain`\n- `define_dataset_class`\n- `define_dataset_domain`\n- `define_dataset_has_no_data`\n- `define_dataset_is_non_standard`\n- `define_dataset_key_sequence`\n- `define_dataset_label`\n- `define_dataset_location`\n- `define_dataset_name`\n- `define_dataset_structure`\n- `define_dataset_variables`\n"
     },
     {
       "const": "Dataset Metadata Check",
@@ -20,12 +20,12 @@
     {
       "const": "Dataset Metadata Check against Define XML",
       "title": "Content metadata at dataset level and define xml metadata at dataset level",
-      "markdownDescription": "\n#### Columns\n\n- `dataset_size`\n- `dataset_location`\n- `dataset_name`\n- `dataset_label`\n- `dataset_domain`\n- `define_dataset_name`\n- `define_dataset_label`\n- `define_dataset_location`\n- `define_dataset_domain`\n- `define_dataset_class`\n- `define_dataset_structure`\n- `define_dataset_is_non_standard`\n- `define_dataset_variables`\n- `define_dataset_key_sequence`\n\n#### Rule Macro\n\nAllows comparing content metadata to define xml metadata of the same name.\n\n#### Example\n\n```yaml\nall:\n  - name: dataset_name\n    operator: not_equal_to\n    value: define_dataset_name\n```\n\nOr\n\n```yaml\nany:\n  - name: dataset_name\n    operator: empty\n  - name: define_dataset_name\n    operator: empty\n```\n"
+      "markdownDescription": "\nReturns a dataset where each dataset is a row in the new dataset. The define xml dataset metadata is attached to each row.\n\n#### Columns\n\n- `dataset_size`\n- `dataset_location`\n- `dataset_name`\n- `dataset_label`\n- `dataset_domain`\n- `dataset_columns`\n- `define_dataset_class`\n- `define_dataset_domain`\n- `define_dataset_has_no_data`\n- `define_dataset_is_non_standard`\n- `define_dataset_key_sequence`\n- `define_dataset_label`\n- `define_dataset_location`\n- `define_dataset_name`\n- `define_dataset_structure`\n- `define_dataset_variables`\n\n#### Rule Macro\n\nAllows comparing content metadata to define xml metadata of the same name.\n\n#### Example\n\n```yaml\nall:\n  - name: dataset_name\n    operator: not_equal_to\n    value: define_dataset_name\n```\n\nOr\n\n```yaml\nany:\n  - name: dataset_name\n    operator: empty\n  - name: define_dataset_name\n    operator: empty\n```\n"
     },
     {
       "const": "Define Item Group Metadata Check",
       "title": "Define xml metadata at dataset level",
-      "markdownDescription": "\n#### Columns\n\n- `define_dataset_name`\n- `define_dataset_label`\n- `define_dataset_location`\n- `define_dataset_class`\n- `define_dataset_structure`\n- `define_dataset_is_non_standard`\n- `define_dataset_variables`\n- `define_dataset_key_sequence`\n"
+      "markdownDescription": "\n#### Columns\n\n- `define_dataset_class`\n- `define_dataset_domain`\n- `define_dataset_has_no_data`\n- `define_dataset_is_non_standard`\n- `define_dataset_key_sequence`\n- `define_dataset_label`\n- `define_dataset_location`\n- `define_dataset_name`\n- `define_dataset_structure`\n- `define_dataset_variables`\n"
     },
     {
       "const": "Define Item Metadata Check",
@@ -41,6 +41,11 @@
       "const": "Domain Presence Check",
       "title": "Content domain presence at study level",
       "markdownDescription": "\n#### Columns\n\nSingle row contains a column for each domain and the value of that column is the domain's file name\n\n| AE     | EC     |\n| ------ | ------ |\n| ae.xpt | ec.xpt |\n\n#### Example\n\n```yaml\nall:\n  - name: PP\n    operator: exists\n  - name: PC\n    operator: not_exists\n```\n"
+    },
+    {
+      "const": "Domain Presence Check against Define XML",
+      "title": "Content domain presence at study level with define xml metadata at dataset level",
+      "markdownDescription": "\n#### Columns\n\nOne row per dataset defined in Define-XML:\n\n- `domain`\n- `filename` - The file name if dataset exists, null otherwise\n- `define_dataset_name`\n- `define_dataset_label`\n- `define_dataset_location`\n- `define_dataset_domain`\n- `define_dataset_class`\n- `define_dataset_structure`\n- `define_dataset_is_non_standard`\n- `define_dataset_has_no_data`\n- `define_dataset_key_sequence`\n- `define_dataset_variables`\n\n#### Example\n\nCheck if SE domain is defined in Define-XML without HasNoData=\"Yes\" but the dataset file doesn't exist:\n\n```yaml\nall:\n  - name: define_dataset_name\n    operator: equal_to\n    value: \"SE\"\n  - name: define_dataset_has_no_data\n    operator: equal_to\n    value: False\n  - name: filename\n    operator: not_exists\n```\n"
     },
     {
       "const": "JSON Schema Check",

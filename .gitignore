@@ -152,3 +152,6 @@ resources/cache/custom_rules.pkl
 /build-output
 .github/workflows/build_version.yml
 Dockerfile.build
+
+# Ignore generated Organization_Custom in merged directory
+resources/schema/rule-merged/Organization_Custom.json
