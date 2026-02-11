@@ -569,10 +569,6 @@
           "items": {
             "properties": {
               "name": { "$ref": "Operator.json#/properties/name" },
-              "null_position": {
-                "enum": ["first", "last"],
-                "type": "string"
-              },
               "order": { "$ref": "Operator.json#/properties/order" }
             },
             "type": "object"

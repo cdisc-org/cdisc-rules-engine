@@ -1087,7 +1087,7 @@ Complement of `is_ordered_by`
 
 ### target_is_sorted_by
 
-True if the values in `name` are ordered according to the values specified by `value` grouped by the values in `within`. Each `value` requires a variable `name`, ordering specified by `order`, and the null position specified by `null_position`. `within` accepts either a single column or an ordered list of columns.
+True if the values in `name` are ordered according to the values specified by `value` grouped by the values in `within`. Each `value` requires a variable `name` and an ordering of 'asc' or 'desc' specified by `order`. `within` accepts either a single column or an ordered list of columns.
 
 ```yaml
 Check:
@@ -1100,7 +1100,6 @@ Check:
       value:
         - name: --STDTC
           sort_order: asc
-          null_position: last
 ```
 
 ### target_is_not_sorted_by
