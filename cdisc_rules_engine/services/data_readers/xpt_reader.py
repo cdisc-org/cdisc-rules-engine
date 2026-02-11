@@ -10,18 +10,19 @@ from cdisc_rules_engine.interfaces import (
 
 
 class XPTReader(DataReaderInterface):
+
     def read(self, data):
-        df = pd.read_sas(BytesIO(data), format="xport", encoding="utf-8")
+        df = pd.read_sas(BytesIO(data), format="xport", encoding=self.encoding)
         df = self._format_floats(df)
         return df
 
     def _read_pandas(self, file_path):
-        data = pd.read_sas(file_path, format="xport", encoding="utf-8")
+        data = pd.read_sas(file_path, format="xport", encoding=self.encoding)
         return PandasDataset(self._format_floats(data))
 
     def to_parquet(self, file_path: str) -> str:
         temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".parquet")
-        dataset = pd.read_sas(file_path, chunksize=20000, encoding="utf-8")
+        dataset = pd.read_sas(file_path, chunksize=20000, encoding=self.encoding)
         created = False
         num_rows = 0
         for chunk in dataset:
