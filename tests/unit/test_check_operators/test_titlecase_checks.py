@@ -363,3 +363,74 @@ def test_is_title_case_numeric_values(data, dataset_type, expected_result):
     dataframe_type = DataframeType({"value": df})
     result = dataframe_type.is_title_case({"target": "target"})
     assert result.equals(df.convert_to_series(expected_result))
+
+
+@pytest.mark.parametrize(
+    "data,dataset_type,expected_result",
+    [
+        (
+            {
+                "target": [
+                    "  Subject ID  ",
+                    "  Adverse Event  ",
+                    "  Date of First Dose  ",
+                ]
+            },
+            PandasDataset,
+            [True, True, True],
+        ),
+        (
+            {
+                "target": [
+                    "  SUBJECT ID  ",
+                    "  adverse event  ",
+                    "  DATE OF FIRST DOSE  ",
+                ]
+            },
+            PandasDataset,
+            [False, False, False],
+        ),
+        (
+            {
+                "target": [
+                    "\tSubject ID\t",
+                    "\tAdverse Event\t",
+                    "\tDate of First Dose\t",
+                ]
+            },
+            PandasDataset,
+            [True, True, True],
+        ),
+        (
+            {"target": ["\tSUBJECT ID\t", "\tadverse event\t"]},
+            PandasDataset,
+            [False, False],
+        ),
+        (
+            {"target": ["\t  Subject ID  \t", "  \tAdverse Event\t  "]},
+            PandasDataset,
+            [True, True],
+        ),
+        (
+            {
+                "target": [
+                    "  Subject ID  ",
+                    "\tADVERSE EVENT\t",
+                    "  Date of First Dose  ",
+                ]
+            },
+            PandasDataset,
+            [True, False, True],
+        ),
+        (
+            {"target": ["  Subject ID  ", "\tAdverse Event\t"]},
+            DaskDataset,
+            [True, True],
+        ),
+    ],
+)
+def test_is_title_case_with_whitespace(data, dataset_type, expected_result):
+    df = dataset_type.from_dict(data)
+    dataframe_type = DataframeType({"value": df})
+    result = dataframe_type.is_title_case({"target": "target"})
+    assert result.equals(df.convert_to_series(expected_result))
