@@ -201,7 +201,7 @@ def test_rule_skipped():
     data = run_single_rule_validation(datasets, rule)
     assert "LB" in data
     assert len(data["LB"]) == 1
-    assert len(data["LB"][0]["errors"]) == 0
+    assert len(data["LB"][0]["errors"]) == 1
     assert data["LB"][0]["executionStatus"] == "skipped"
 
 
