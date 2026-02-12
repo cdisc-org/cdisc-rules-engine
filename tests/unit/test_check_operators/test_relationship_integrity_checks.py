@@ -910,6 +910,53 @@ def test_target_is_sorted_by_multiple_within(dataset_class):
 
 
 @pytest.mark.parametrize("dataset_class", [PandasDataset, DaskDataset])
+def test_target_is_sorted_by_multiple_within_numeric(dataset_class):
+    """Test target_is_sorted_by with multiple grouping columns and numeric comparator."""
+    df = dataset_class.from_dict(
+        {
+            "USUBJID": [
+                "CDISC001",
+                "CDISC001",
+                "CDISC001",
+                "CDISC001",
+                "CDISC002",
+                "CDISC002",
+            ],
+            "MIDSTYPE": ["A", "A", "B", "B", "A", "A"],
+            "MIDS": [1, 2, 1, 2, 1, 2],
+            "VISITNUM": [1, 2, 1, 2, 1, 2],
+        }
+    )
+    other_value = {
+        "target": "MIDS",
+        "within": ["USUBJID", "MIDSTYPE"],
+        "comparator": [{"name": "VISITNUM", "sort_order": "ASC"}],
+    }
+    result = DataframeType({"value": df}).target_is_sorted_by(other_value)
+    assert result.equals(df.convert_to_series([True] * 6))
+
+    df_invalid = dataset_class.from_dict(
+        {
+            "USUBJID": [
+                "CDISC001",
+                "CDISC001",
+                "CDISC001",
+                "CDISC001",
+                "CDISC002",
+                "CDISC002",
+            ],
+            "MIDSTYPE": ["A", "A", "B", "B", "A", "A"],
+            "MIDS": [2, 1, 1, 2, 2, 1],
+            "VISITNUM": [1, 2, 1, 2, 1, 2],
+        }
+    )
+    result = DataframeType({"value": df_invalid}).target_is_sorted_by(other_value)
+    assert result.equals(
+        df_invalid.convert_to_series([False, False, True, True, False, False])
+    )
+
+
+@pytest.mark.parametrize("dataset_class", [PandasDataset, DaskDataset])
 def test_target_is_sorted_by_with_nulls(dataset_class):
     """Test target_is_sorted_by handles null values correctly.
     Null in either target or comparator marks that row as False,
@@ -931,43 +978,6 @@ def test_target_is_sorted_by_with_nulls(dataset_class):
         {"value": df, "column_prefix_map": {"--": "SE"}}
     ).target_is_sorted_by(other_value)
     assert result.equals(pd.Series([True, False, True, False, False]))
-
-
-@pytest.mark.parametrize("dataset_class", [PandasDataset, DaskDataset])
-def test_target_is_sorted_by_multiple_comparators(dataset_class):
-    """Test target_is_sorted_by with multiple sort columns."""
-    df = dataset_class.from_dict(
-        {
-            "USUBJID": ["CDISC001", "CDISC002", "CDISC002", "CDISC001", "CDISC001"],
-            "SESEQ": [1, 2, 1, 3, 2],
-            "SESTDTC": [
-                "2006-06-02",
-                "2006-06-04",
-                "2006-06-01",
-                "2006-06-05",
-                "2006-06-03",
-            ],
-            "SEENDTC": [
-                "2006-06-02",
-                "2006-06-04",
-                "2006-06-01",
-                "2006-06-05",
-                "2006-06-03",
-            ],
-        }
-    )
-    other_value = {
-        "target": "--SEQ",
-        "within": "USUBJID",
-        "comparator": [
-            {"name": "--STDTC", "sort_order": "ASC"},
-            {"name": "--ENDTC", "sort_order": "ASC"},
-        ],
-    }
-    result = DataframeType(
-        {"value": df, "column_prefix_map": {"--": "SE"}}
-    ).target_is_sorted_by(other_value)
-    assert result.equals(pd.Series([True, True, True, True, True]))
 
 
 @pytest.mark.parametrize(

@@ -1407,14 +1407,16 @@ class DataframeType(BaseType):
     def is_ordered_set(self, other_value):
         target = self.replace_prefix(other_value.get("target"))
         value = other_value.get("comparator")
-        if not isinstance(value, str):
-            raise Exception("Comparator must be a single String value")
+        if not isinstance(value, (str, list)):
+            raise Exception("Comparator must be a String or list of Strings")
+        if isinstance(value, list) and not all(isinstance(v, str) for v in value):
+            raise Exception("All comparator values must be Strings")
         return self.value.is_column_sorted_within(value, target)
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
     def is_not_ordered_set(self, other_value):
-        return not self.is_ordered_set(other_value)
+        return ~self.is_ordered_set(other_value)
 
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)

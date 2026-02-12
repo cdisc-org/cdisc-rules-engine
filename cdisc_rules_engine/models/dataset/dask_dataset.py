@@ -2,7 +2,6 @@ from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
 import dask.dataframe as dd
 import dask.array as da
 import pandas as pd
-import numpy as np
 import re
 import dask
 from typing import List, Union
@@ -59,19 +58,20 @@ class DaskDataset(PandasDataset):
             raise
 
     def is_column_sorted_within(self, group, column):
-        return (
-            False
-            not in np.concatenate(
-                self._data.groupby(group, sort=False)[column]
-                .apply(
-                    lambda partition: sorted(partition.sort_index().values)
-                    == partition.sort_index().values
-                )
-                .compute()
-                .values
+        if isinstance(group, str):
+            group = [group]
+
+        def check_partition(partition):
+            sorted_vals = sorted(partition.values)
+            return pd.Series(
+                [a == b for a, b in zip(partition.values, sorted_vals)],
+                index=partition.index,
             )
-            .ravel()
-            .tolist()
+
+        return (
+            self._data.groupby(group, sort=False)[column]
+            .transform(check_partition)
+            .compute()
         )
 
     def __setitem__(self, key, value):
