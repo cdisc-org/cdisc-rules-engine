@@ -119,40 +119,109 @@ class USDMReportData(BaseReportData):
         """
         summary_data = []
         for validation_result in self._results:
-            if validation_result.execution_status == "success":
-                for result in validation_result.results or []:
-                    if (
-                        result.get("errors")
-                        and result.get("executionStatus") == "success"
-                    ):
-                        summary_item = {
-                            "entity": result.get("entity")
-                            or (result.get("dataset", "") or "").replace(".json", ""),
-                            "core_id": validation_result.id,
-                            "cdisc_rule_id": validation_result.cdisc_rule_id,
-                            "message": result.get("message"),
-                            "issues": len(result.get("errors")),
-                        }
-                        summary_data.append(summary_item)
+            for result in validation_result.results or []:
+                if (
+                    result.get("errors")
+                    and result.get("executionStatus") != ExecutionStatus.SKIPPED.value
+                ):
+                    summary_item = {
+                        "entity": result.get("entity")
+                        or (result.get("dataset", "") or "").replace(".json", ""),
+                        "core_id": validation_result.id,
+                        "cdisc_rule_id": validation_result.cdisc_rule_id,
+                        "message": result.get("message"),
+                        "issues": len(result.get("errors")),
+                    }
+                    summary_data.append(summary_item)
 
         return sorted(
             summary_data,
             key=lambda x: (x.get("entity") or "", x.get("core_id") or ""),
         )
 
-    def get_detailed_data(self, excel=False) -> list[dict]:
+    def get_detailed_data(self) -> list[dict]:
         detailed_data = []
         for validation_result in self._results:
             detailed_data = detailed_data + self._generate_error_details(
-                validation_result, excel
+                validation_result
             )
         return sorted(
             detailed_data,
             key=lambda x: (x.get("core_id") or "", x.get("entity") or ""),
         )
 
+    def _issue_details(
+        self, validation_result: RuleValidationResult, result: dict
+    ) -> list[dict]:
+        """
+        Generates the Issue details data that goes into the excel export.
+        Each row is represented by a list or a dict containing the following
+        information:
+        return [
+            "CORE-ID",
+            "Message",
+            "Executability",
+            "Dataset Name"
+            "USUBJID",
+            "Record",
+            "Sequence",
+            "Variable(s)",
+            "Value(s)"
+        ]
+        """
+        errors = []
+        variables = result.get("variables", [])
+        for error in [
+            error
+            for error in result.get("errors")
+            if result.get("executionStatus") == ExecutionStatus.ISSUE_REPORTED.value
+        ]:
+            values = []
+            for variable in variables:
+                raw_value = error.get("value", {}).get(variable)
+                if raw_value is None:
+                    values.append(None)
+                else:
+                    values.append(str(raw_value))
+            error_item = {
+                "core_id": validation_result.id,
+                "cdisc_rule_id": validation_result.cdisc_rule_id,
+                "message": result.get("message"),
+                "executability": validation_result.executability,
+                "entity": error.get("entity")
+                or error.get("dataset", "").replace(".json", ""),
+                "instance_id": error.get("instance_id"),
+                "path": error.get("path"),
+                "attributes": variables,
+                "values": self.process_values(values),
+            }
+            errors.append(error_item)
+        return errors
+
+    def _error_details(self, validation_result: RuleValidationResult, result: dict):
+        errors = []
+        for error in [
+            error
+            for error in result.get("errors")
+            if result.get("executionStatus") == ExecutionStatus.EXECUTION_ERROR.value
+        ]:
+            error_item = {
+                "core_id": validation_result.id,
+                "cdisc_rule_id": validation_result.cdisc_rule_id,
+                "message": (f"{result.get('message')} - {error.get('error')}"),
+                "executability": validation_result.executability,
+                "entity": error.get("entity")
+                or error.get("dataset", "").replace(".json", ""),
+                "instance_id": "",
+                "path": "",
+                "attributes": "",
+                "values": error.get("message"),
+            }
+            errors.append(error_item)
+        return errors
+
     def _generate_error_details(
-        self, validation_result: RuleValidationResult, excel
+        self, validation_result: RuleValidationResult
     ) -> list[dict]:
         """
         Generates the Issue details data that goes into the excel export.
@@ -172,29 +241,11 @@ class USDMReportData(BaseReportData):
         """
         errors = []
         for result in validation_result.results or []:
-            if result.get("errors", []) and result.get("executionStatus") == "success":
-                variables = result.get("variables", [])
-                for error in result.get("errors"):
-                    values = []
-                    for variable in variables:
-                        raw_value = error.get("value", {}).get(variable)
-                        if raw_value is None:
-                            values.append(None)
-                        else:
-                            values.append(str(raw_value))
-                    error_item = {
-                        "core_id": validation_result.id,
-                        "cdisc_rule_id": validation_result.cdisc_rule_id,
-                        "message": result.get("message"),
-                        "executability": validation_result.executability,
-                        "entity": error.get("entity")
-                        or error.get("dataset", "").replace(".json", ""),
-                        "instance_id": error.get("instance_id"),
-                        "path": error.get("path"),
-                        "attributes": variables,
-                        "values": self.process_values(values),
-                    }
-                    errors.append(error_item)
+            errors = (
+                errors
+                + self._issue_details(validation_result, result)
+                + self._error_details(validation_result, result)
+            )
         return errors
 
     def get_rules_report_data(self) -> list[dict]:
@@ -217,12 +268,9 @@ class USDMReportData(BaseReportData):
                 "version": "1",
                 "cdisc_rule_id": validation_result.cdisc_rule_id,
                 "message": validation_result.message,
-                "status": (
-                    ExecutionStatus.SUCCESS.value.upper()
-                    if validation_result.execution_status
-                    == ExecutionStatus.SUCCESS.value
-                    else ExecutionStatus.SKIPPED.value.upper()
-                ),
+                "status": ExecutionStatus(
+                    validation_result.execution_status
+                ).value.upper(),
             }
             rules_report.append(rules_item)
 
