@@ -108,6 +108,7 @@ test_set1 = (
     },
     {
         "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
+        "domains": {"AE"},
         "classes": [
             {
                 "name": "Events",
@@ -235,6 +236,7 @@ test_set2 = (
     },
     {
         "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
+        "domains": {"AE"},
         "classes": [
             {
                 "name": "Events",
