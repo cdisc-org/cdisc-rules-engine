@@ -183,7 +183,7 @@ class BaseDataService(DataServiceInterface, ABC):
             name = class_data.get("name")
             if name:
                 return convert_library_class_name_to_ct_class(name)
-        return self._handle_special_cases(
+        return self._handle_custom_domains(
             dataset, dataset_metadata, file_path, datasets
         )
 
@@ -229,7 +229,7 @@ class BaseDataService(DataServiceInterface, ABC):
         }
         return self.dataset_implementation.from_dict(metadata_to_return)
 
-    def _handle_special_cases(
+    def _handle_custom_domains(
         self,
         dataset: DatasetInterface,
         dataset_metadata: SDTMDatasetMetadata,
