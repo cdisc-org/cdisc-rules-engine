@@ -30,7 +30,7 @@ jobs:
           python-version: 3.12
 
       - name: Ensure setuptools is installed
-        run: python -m ensurepip --upgrade && python -m pip install --upgrade pip setuptools
+        run: python -m pip install --upgrade "pip<25" "setuptools<82"
 
       - name: Install dependencies
         run: pip install requests selenium webdriver-manager selenium-wire blinker==1.4 brotli
