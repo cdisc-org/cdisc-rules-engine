@@ -92,7 +92,10 @@ def get_variables_metadata_from_standard(  # noqa
         )
     else:
         class_name = data_service._handle_custom_domains(
-            dataset, dataset_metadata, dataset_path, datasets
+            data_service.get_dataset(dataset_name=dataset_metadata.full_path),
+            dataset_metadata,
+            dataset_path,
+            datasets,
         )
     model_class_details = get_class_metadata(model_details, class_name)
     # Both custom and standard General Observations pull from model
