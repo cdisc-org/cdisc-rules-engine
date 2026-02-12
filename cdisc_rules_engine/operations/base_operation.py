@@ -228,8 +228,15 @@ class BaseOperation:
         # self.params.domain is unsplit_name
         domain_for_library = self.params.domain
         return sdtm_utilities.get_variables_metadata_from_standard(
-            domain_for_library,
-            self.library_metadata,
+            domain=domain_for_library,
+            library_metadata=self.library_metadata,
+            data_service=self.data_service,
+            dataset=self.evaluation_dataset,
+            dataset_metadata=self.data_service.get_raw_dataset_metadata(
+                dataset_name=self.params.dataset_path, datasets=self.params.datasets
+            ),
+            datasets=self.params.datasets,
+            dataset_path=self.params.dataset_path,
         )
 
     def get_allowed_variable_permissibility(self, variable_metadata: dict):
@@ -286,6 +293,9 @@ class BaseOperation:
             dataset_path=self.params.dataset_path,
             data_service=self.data_service,
             library_metadata=self.library_metadata,
+            dataset_metadata=self.data_service.get_raw_dataset_metadata(
+                dataset_name=self.params.dataset_path, datasets=self.params.datasets
+            ),
         )
 
     @staticmethod
