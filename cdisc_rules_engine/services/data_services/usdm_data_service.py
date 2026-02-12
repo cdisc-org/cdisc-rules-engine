@@ -77,6 +77,7 @@ class USDMDataService(BaseDataService):
             cache_service, reader_factory, config, **kwargs
         )
         self.dataset_path: str = kwargs.get("dataset_path", "")
+        self.encoding: str = kwargs.get("encoding")
 
         with open(os.path.join("resources", "schema", "USDM.yaml")) as entity_dict:
             self.entity_dict: dict = safe_load(entity_dict)
@@ -107,7 +108,8 @@ class USDMDataService(BaseDataService):
                 reader_factory=DataReaderFactory(
                     dataset_implementation=kwargs.get(
                         "dataset_implementation", PandasDataset
-                    )
+                    ),
+                    encoding=kwargs.get("encoding"),
                 ),
                 config=config,
                 **kwargs,
@@ -477,12 +479,12 @@ class USDMDataService(BaseDataService):
         return extract_file_name_from_path_string(dataset_name).split(".")[0]
 
     @staticmethod
-    def is_valid_data(dataset_paths: Sequence[str]):
+    def is_valid_data(dataset_paths: Sequence[str], encoding: str = None):
         if (
             dataset_paths
             and len(dataset_paths) == 1
             and dataset_paths[0].lower().endswith(".json")
         ):
-            json = JSONReader().from_file(dataset_paths[0])
+            json = JSONReader(encoding=encoding).from_file(dataset_paths[0])
             return "study" in json and "datasetJSONVersion" not in json
         return False
