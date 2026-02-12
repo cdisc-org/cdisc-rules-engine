@@ -4,6 +4,7 @@ CLI entrypoint for the CDISC Rules Engine.
 """
 
 import asyncio
+import codecs
 import json
 import logging
 import os
@@ -35,7 +36,7 @@ from cdisc_rules_engine.utilities.utils import (
     get_rules_cache_key,
     validate_dataset_files_exist,
 )
-from cdisc_rules_engine.constants import VALIDATION_FORMATS_MESSAGE
+from cdisc_rules_engine.constants import VALIDATION_FORMATS_MESSAGE, DEFAULT_ENCODING
 from scripts.list_dataset_metadata_handler import list_dataset_metadata_handler
 from scripts.run_validation import run_validation
 from version import __version__
@@ -43,6 +44,19 @@ from version import __version__
 DEFAULT_CACHE_PATH = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), DefaultFilePaths.CACHE.value
 )
+
+
+def validate_encoding(ctx, param, value):
+    if value is None:
+        return DEFAULT_ENCODING
+    try:
+        codecs.lookup(value)
+        return value
+    except LookupError:
+        raise click.BadParameter(
+            f"Invalid encoding '{value}'. Please provide a valid encoding name "
+            f"(e.g., utf-8, utf-16, utf-32, cp1252, latin-1)."
+        )
 
 
 def valid_data_file(data_path: list) -> tuple[list, set]:
@@ -233,7 +247,19 @@ def _validate_no_arguments(logger) -> None:
     "-ss",
     "--substandard",
     default=None,
-    help="CDISC Substandard to validate against",
+    type=click.Choice(["sdtm", "send", "adam", "cdash"], case_sensitive=False),
+    help="CDISC Substandard to validate against. Any of SDTM, SEND, ADaM, CDASH",
+)
+@click.option(
+    "-uc",
+    "--use-case",
+    required=False,
+    default=None,
+    type=click.Choice(["INDH", "PROD", "NONCLIN", "ANALYSIS"], case_sensitive=True),
+    help=(
+        "CDISC TIG Use Case for scoping a TIG Validation."
+        "Any of INDH, PROD, NONCLIN, or ANALYSIS."
+    ),
 )
 @click.option(
     "-ct",
@@ -367,8 +393,20 @@ def _validate_no_arguments(logger) -> None:
         "If true, limits reported issues per dataset per rule."
     ),
 )
+@click.option(
+    "-e",
+    "--encoding",
+    default=DEFAULT_ENCODING,
+    required=False,
+    callback=validate_encoding,
+    help=(
+        f"File encoding for reading datasets. "
+        f"Defaults to {DEFAULT_ENCODING}. "
+        f"Supported encodings: utf-8, utf-16, utf-32, cp1252, latin-1, etc."
+    ),
+)
 @click.pass_context
-def validate(
+def validate(  # noqa
     ctx,
     cache: str,
     pool_size: int,
@@ -380,6 +418,7 @@ def validate(
     standard: str,
     version: str,
     substandard: str,
+    use_case: str,
     controlled_terminology_package: tuple[str],
     output: str,
     output_format: tuple[str],
@@ -403,6 +442,7 @@ def validate(
     jsonata_custom_functions: tuple[()] | tuple[tuple[str, str], ...],
     max_report_rows: int,
     max_errors_per_rule: tuple[int, bool],
+    encoding: str,
 ):
     """
     Validate data using CDISC Rules Engine
@@ -431,6 +471,12 @@ def validate(
 
     cache_path: str = os.path.join(os.path.dirname(__file__), cache)
 
+    if standard.lower() == "tig":
+        if not substandard or not use_case:
+            logger.error(
+                "Standard 'tig' requires both --substandard and --use-case to be specified."
+            )
+            ctx.exit(2)
     # Construct ExternalDictionariesContainer:
     external_dictionaries = ExternalDictionariesContainer(
         {
@@ -474,6 +520,7 @@ def validate(
             standard,
             version,
             substandard,
+            use_case,
             set(controlled_terminology_package),  # avoiding duplicates
             output,
             set(output_format),  # avoiding duplicates
@@ -490,6 +537,7 @@ def validate(
             jsonata_custom_functions,
             max_report_rows,
             max_errors_per_rule,
+            encoding,
         )
     )
 
@@ -844,6 +892,7 @@ def test_validate(filetype):
                     standard,
                     version,
                     None,
+                    None,
                     set(),
                     output,
                     output_format,
@@ -860,6 +909,7 @@ def test_validate(filetype):
                     (),
                     None,
                     max_report_errors,
+                    None,
                 )
             )
             print(f"{filetype.upper()} validation completed successfully!")
