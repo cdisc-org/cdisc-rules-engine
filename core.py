@@ -455,8 +455,10 @@ def validate(  # noqa
     # Validate conditional options
     logger = logging.getLogger("validator")
     load_dotenv()
-
     validate_dataset_files_exist(dataset_path, logger, ctx)
+
+    if not custom_standard:
+        standard = standard.lower()
 
     if raw_report is True:
         if not (len(output_format) == 1 and output_format[0] == ReportTypes.JSON.value):
@@ -471,7 +473,7 @@ def validate(  # noqa
 
     cache_path: str = os.path.join(os.path.dirname(__file__), cache)
 
-    if standard.lower() == "tig":
+    if standard == "tig":
         if not substandard or not use_case:
             logger.error(
                 "Standard 'tig' requires both --substandard and --use-case to be specified."
@@ -521,9 +523,9 @@ def validate(  # noqa
             version,
             substandard,
             use_case,
-            set(controlled_terminology_package),  # avoiding duplicates
+            set(controlled_terminology_package),
             output,
-            set(output_format),  # avoiding duplicates
+            set(output_format),
             raw_report,
             define_version,
             external_dictionaries,
