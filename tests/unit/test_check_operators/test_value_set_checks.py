@@ -2,6 +2,7 @@ from cdisc_rules_engine.check_operators.dataframe_operators import DataframeType
 import pytest
 from cdisc_rules_engine.models.dataset.dask_dataset import DaskDataset
 from cdisc_rules_engine.models.dataset.pandas_dataset import PandasDataset
+import pandas as pd
 
 
 @pytest.mark.parametrize(
@@ -97,10 +98,42 @@ def test_is_unique_set_with_regex(
 @pytest.mark.parametrize(
     "target, comparator, dataset_type, expected_result",
     [
-        ("SESEQ", "USUBJID", PandasDataset, True),
-        ("UNORDERED", "USUBJID", PandasDataset, False),
-        ("SESEQ", "USUBJID", DaskDataset, True),
-        ("UNORDERED", "USUBJID", DaskDataset, False),
+        (
+            "SESEQ",
+            "USUBJID",
+            PandasDataset,
+            pd.Series([True, True, True, True]),
+        ),
+        (
+            "UNORDERED",
+            "USUBJID",
+            PandasDataset,
+            pd.Series([False, True, False, True]),
+        ),
+        (
+            "SESEQ",
+            "USUBJID",
+            DaskDataset,
+            pd.Series([True, True, True, True]),
+        ),
+        (
+            "UNORDERED",
+            "USUBJID",
+            DaskDataset,
+            pd.Series([False, True, False, True]),
+        ),
+        (
+            "SESEQ",
+            ["USUBJID"],
+            PandasDataset,
+            pd.Series([True, True, True, True]),
+        ),
+        (
+            "UNORDERED",
+            ["USUBJID"],
+            PandasDataset,
+            pd.Series([False, True, False, True]),
+        ),
     ],
 )
 def test_is_ordered_set(target, comparator, dataset_type, expected_result):
@@ -109,7 +142,7 @@ def test_is_ordered_set(target, comparator, dataset_type, expected_result):
     result = DataframeType({"value": df}).is_ordered_set(
         {"target": target, "comparator": comparator}
     )
-    assert result == expected_result
+    pd.testing.assert_series_equal(result, expected_result, check_names=False)
 
 
 @pytest.mark.parametrize(

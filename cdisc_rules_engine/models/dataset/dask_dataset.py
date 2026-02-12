@@ -69,9 +69,10 @@ class DaskDataset(PandasDataset):
             )
 
         return (
-            self._data.groupby(group, sort=False)[column]
+            self._data.compute()
+            .groupby(group)[column]
             .transform(check_partition)
-            .compute()
+            .sort_index()
         )
 
     def __setitem__(self, key, value):
