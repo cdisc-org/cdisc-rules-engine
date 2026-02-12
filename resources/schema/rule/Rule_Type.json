@@ -35,6 +35,10 @@
       "title": "Content domain presence at study level"
     },
     {
+      "const": "Domain Presence Check against Define XML",
+      "title": "Content domain presence at study level with define xml metadata at dataset level"
+    },
+    {
       "const": "JSON Schema Check",
       "title": "Apply JSON schema validation to a JSON file"
     },

@@ -121,6 +121,7 @@ class BaseDatasetBuilder:
             "define_dataset_is_non_standard"
             "define_dataset_variables"
             "define_dataset_key_sequence"
+            "define_dataset_has_no_data"
         """
 
         define_xml_reader = DefineXMLReaderFactory.get_define_xml_reader(
@@ -142,6 +143,7 @@ class BaseDatasetBuilder:
             "define_dataset_is_non_standard"
             "define_dataset_variables"
             "define_dataset_key_sequence"
+            "define_dataset_has_no_data"
         """
 
         define_xml_reader = DefineXMLReaderFactory.get_define_xml_reader(
