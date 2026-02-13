@@ -76,6 +76,7 @@ model_metadata = {
 
 standard_metadata = {
     "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
+    "domains": {"AE"},
     "classes": [
         {
             "name": "Events",
@@ -117,16 +118,31 @@ def test_get_column_order_from_library(operation_params: OperationParams, datase
     operation_params.domain = "AE"
     operation_params.standard = "sdtmig"
     operation_params.standard_version = "3-4"
+    operation_params.datasets = [
+        SDTMDatasetMetadata(name="AE", first_record={"DOMAIN": "AE"})
+    ]
 
     # save model metadata to cache
     cache = InMemoryCacheService.get_instance()
     library_metadata = LibraryMetadataContainer(
-        standard_metadata=standard_metadata, model_metadata=model_metadata
+        standard_metadata=standard_metadata,  # USE updated version
+        model_metadata=model_metadata,
     )
     # execute operation
-    data_service = LocalDataService.get_instance(
-        cache_service=cache, config=ConfigService()
+    data_service = LocalDataService(
+        cache_service=cache,
+        config=ConfigService(),
+        reader_factory=DataReaderFactory(),
+        standard="sdtmig",
+        standard_version="3-4",
+        library_metadata=library_metadata,
     )
+
+    def mock_get_raw_metadata(*args, **kwargs):
+        return SDTMDatasetMetadata(name="AE", first_record={"DOMAIN": "AE"})
+
+    data_service.get_raw_dataset_metadata = mock_get_raw_metadata
+
     operation = LibraryModelColumnOrder(
         operation_params,
         operation_params.dataframe,
@@ -215,6 +231,7 @@ def test_get_column_order_from_library(operation_params: OperationParams, datase
             },
             {
                 "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
+                "domains": {"AE"},
                 "classes": [
                     {
                         "name": FINDINGS_ABOUT,
@@ -260,7 +277,9 @@ def test_get_findings_class_column_order_from_library(
     operation_params.domain = "AE"
     operation_params.standard = "sdtmig"
     operation_params.standard_version = "3-4"
-    operation_params.datasets = [SDTMDatasetMetadata(name="AE")]
+    operation_params.datasets = [
+        SDTMDatasetMetadata(name="AE", first_record={"DOMAIN": "AE"})
+    ]
 
     # save model metadata to cache
     cache = InMemoryCacheService.get_instance()
@@ -276,6 +295,11 @@ def test_get_findings_class_column_order_from_library(
         standard_version="3-4",
         library_metadata=library_metadata,
     )
+
+    def mock_get_raw_metadata(*args, **kwargs):
+        return SDTMDatasetMetadata(name="AE", first_record={"DOMAIN": "AE"})
+
+    data_service.get_raw_dataset_metadata = mock_get_raw_metadata
     operation = LibraryModelColumnOrder(
         operation_params,
         operation_params.dataframe,
