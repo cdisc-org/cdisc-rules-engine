@@ -21,32 +21,64 @@ Open source offering of the CDISC Rules Engine, a tool designed for validating c
 1. Download the latest executable for your operating system from [Releases](https://github.com/cdisc-org/cdisc-rules-engine/releases)
 2. Unzip the downloaded file
 3. Open a terminal in the unzipped directory
-4. Run validation using the commands for your OS as suggested below:
+4. **Verify the installation** (optional but recommended):
 
-**Windows (PowerShell):**
+   **Windows (PowerShell):**
+
 ```bash
-.\core.exe validate -s sdtmig -v 3-4 -d C:\path\to\datasets
+   .\core.exe --help
 ```
 
-> **Note for Windows users:** The Windows commands provided in this README are written for PowerShell. While most commands are compatible with both PowerShell and Command Prompt, some adjustments may be necessary when using Command Prompt. If you encounter any issues running these commands in Command Prompt, try using PowerShell or consult the Command Prompt documentation for equivalent commands.
+**Linux/Mac:**
+
+```bash
+   # First, make it executable (one-time setup)
+   chmod +x ./core
+
+   # Then verify
+   ./core --help
+```
+
+This displays all available commands and confirms the executable is working properly.
+
+**Mac users:** If you encounter security warnings, you may need to remove the quarantine attribute first:
+
+```bash
+   xattr -rd com.apple.quarantine .
+```
+
+5. **Run a test validation** (optional):
+
+   CORE includes built-in test commands to verify core functionality:
+
+```bash
+   # Windows
+   .\core.exe test-validate json
+
+   # Linux/Mac
+   ./core test-validate json
+```
+
+This confirms the executable is working correctly. Test results are automatically cleaned up after completion and cannot be accessed by the user.
+
+6. **Run your first validation:**
+
+   **Windows (PowerShell):**
+
+```bash
+   .\core.exe validate -s sdtmig -v 3-4 -d C:\path\to\datasets
+```
 
 **Linux:**
-```bash
-# First, make it executable (one-time setup)
-chmod +x ./core
 
-# Then run validation
-./core validate -s sdtmig -v 3-4 -d /path/to/datasets
+```bash
+   ./core validate -s sdtmig -v 3-4 -d /path/to/datasets
 ```
 
 **Mac:**
-```bash
-# First, remove quarantine and make executable (one-time setup)
-xattr -rd com.apple.quarantine .
-chmod +x ./core
 
-# Then run validation
-./core validate -s sdtmig -v 3-4 -d /path/to/datasets
+```bash
+   ./core validate -s sdtmig -v 3-4 -d /path/to/datasets
 ```
 
 ---
@@ -58,14 +90,16 @@ chmod +x ./core
 **Prerequisites:** Python 3.12 installed on your system.
 
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/cdisc-org/cdisc-rules-engine.git
    cd cdisc-rules-engine
    ```
 
 2. Install dependencies:
+
    ```bash
-   pip install -r requirements.txt -r requirements-dev.txt
+   python -m pip install -r requirements-dev.txt
    ```
 
 3. Run validation:
@@ -78,6 +112,7 @@ chmod +x ./core
 ## Command-line Interface
 
 All examples below use `python core.py` for source code users. **If you're using the executable**, replace `python core.py` with:
+
 - **Windows:** `.\core.exe`
 - **Linux/Mac:** `./core`
 
@@ -116,6 +151,10 @@ This will show the list of validation options.
   -v, --version TEXT              Standard version to validate against
                                   [required]
   -ss, --substandard TEXT         Substandard to validate against
+                                  "SDTM", "SEND", "ADaM", or "CDASH"
+                                  [required for TIG]
+  -uc, --use-case TEXT            Use Case for TIG Validation
+                                  "INDH", "PROD", "NONCLIN", or "ANALYSIS"
                                   [required for TIG]
   -ct, --controlled-terminology-package TEXT
                                   Controlled terminology package to validate
@@ -202,6 +241,7 @@ This will show the list of validation options.
                                   "[████████████████████████████--------]
                                   78%"is printed.
   -jcf, --jsonata-custom-functions Pair containing a variable name and a Path to directory containing a set of custom JSONata functions. Can be specified multiple times
+  -e, --encoding TEXT            File encoding for reading datasets. If not specified, defaults to utf-8. Supported encodings: utf-8, utf-16, utf-32, cp1252, latin-1, etc.
   --help                          Show this message and exit.
 ```
 
@@ -236,6 +276,22 @@ CORE supports the following dataset file formats for validation:
 
 - Define-XML files should be provided via the `--define-xml-path` (or `-dxp`) option, not through the dataset directory (`-d` or `-dp`).
 - If you point to a folder containing unsupported file formats, CORE will display an error message indicating which formats are supported.
+
+#### File Encoding
+
+CORE defaults to utf-8 encoding when reading datasets. If your files use a different encoding, you must specify it using the `-e` or `--encoding` flag:
+
+```bash
+python core.py validate -s sdtmig -v 3-4 -dp path/to/dataset.xpt -e cp1252
+```
+
+The encoding name must be a valid Python codec name. Common encodings include:
+
+- `utf-8`, `utf-16`, `utf-32` - Unicode encodings
+- `cp1252` - Windows-1252 (commonly used for files exported from Excel or SAS)
+- `latin-1` - ISO-8859-1
+
+If an invalid encoding is specified, CORE will display an error message with the supported encoding names.
 
 #### Validate single rule
 

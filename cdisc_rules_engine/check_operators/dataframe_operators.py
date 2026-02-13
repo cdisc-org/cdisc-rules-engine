@@ -337,6 +337,7 @@ class DataframeType(BaseType):
                 round_values=round_values,
             ),
             axis=1,
+            meta=(None, "bool"),
         )
 
     @log_operator_execution

@@ -67,12 +67,14 @@ class SDTMReportData(BaseReportData):
         substandard = (
             self._args.substandard if hasattr(self._args, "substandard") else None
         )
+        use_case = self._args.use_case if hasattr(self._args, "use_case") else None
         self.data_sheets = {
             "Conformance Details": self.get_conformance_details_data(
                 define_version,
                 controlled_terminology,
                 dictionary_versions,
                 substandard=substandard,
+                use_case=use_case,
             ),
             "Dataset Details": self.get_dataset_details_data(),
             "Issue Summary": self.get_summary_data(),
@@ -80,7 +82,7 @@ class SDTMReportData(BaseReportData):
             "Rules Report": self.get_rules_report_data(),
         }
 
-    def get_conformance_details_data(
+    def get_conformance_details_data(  # noqa
         self,
         define_version,
         cdiscCt,
@@ -132,11 +134,15 @@ class SDTMReportData(BaseReportData):
         conformance_details.append(
             ReportMetadataItem("Version", 11, f"V{self._version}")
         )
+        if "use_case" in kwargs and kwargs["use_case"] is not None:
+            conformance_details.append(
+                ReportMetadataItem("TIG Use Case", 12, kwargs["use_case"])
+            )
         if cdiscCt:
             conformance_details.append(
                 ReportMetadataItem(
                     "CT Version",
-                    12,
+                    13,
                     (
                         ", ".join(cdiscCt)
                         if isinstance(cdiscCt, (list, tuple, set))
@@ -145,41 +151,41 @@ class SDTMReportData(BaseReportData):
                 )
             )
         else:
-            conformance_details.append(ReportMetadataItem("CT Version", 12, ""))
+            conformance_details.append(ReportMetadataItem("CT Version", 13, ""))
         conformance_details.append(
-            ReportMetadataItem("Define-XML Version", 13, define_version)
+            ReportMetadataItem("Define-XML Version", 14, define_version)
         )
 
         # Populate external dictionary versions
         unii_version = dictionary_versions.get(DictionaryTypes.UNII.value)
         if unii_version is not None:
             conformance_details.append(
-                ReportMetadataItem("UNII Version", 16, unii_version)
+                ReportMetadataItem("UNII Version", 15, unii_version)
             )
         medrt_version = dictionary_versions.get(DictionaryTypes.MEDRT.value)
         if medrt_version is not None:
             conformance_details.append(
-                ReportMetadataItem("Med-RT Version", 17, medrt_version)
+                ReportMetadataItem("Med-RT Version", 16, medrt_version)
             )
         meddra_version = dictionary_versions.get(DictionaryTypes.MEDDRA.value)
         if meddra_version is not None:
             conformance_details.append(
-                ReportMetadataItem("MedDRA Version", 18, meddra_version)
+                ReportMetadataItem("MedDRA Version", 17, meddra_version)
             )
         whodrug_version = dictionary_versions.get(DictionaryTypes.WHODRUG.value)
         if whodrug_version is not None:
             conformance_details.append(
-                ReportMetadataItem("WHODRUG Version", 19, whodrug_version)
+                ReportMetadataItem("WHODRUG Version", 18, whodrug_version)
             )
         snomed_version = dictionary_versions.get(DictionaryTypes.SNOMED.value)
         if snomed_version is not None:
             conformance_details.append(
-                ReportMetadataItem("SNOMED Version", 20, snomed_version)
+                ReportMetadataItem("SNOMED Version", 19, snomed_version)
             )
         loinc_version = dictionary_versions.get(DictionaryTypes.LOINC.value)
         if loinc_version is not None:
             conformance_details.append(
-                ReportMetadataItem("LOINC Version", 21, loinc_version)
+                ReportMetadataItem("LOINC Version", 20, loinc_version)
             )
         return conformance_details
 
@@ -211,39 +217,106 @@ class SDTMReportData(BaseReportData):
         """
         summary_data = []
         for validation_result in self._results:
-            if validation_result.execution_status == "success":
-                for result in validation_result.results or []:
-                    dataset = result.get("dataset")
-                    if (
-                        result.get("errors")
-                        and result.get("executionStatus") == "success"
-                    ):
-                        summary_item = {
-                            "dataset": dataset,
-                            "core_id": validation_result.id,
-                            "message": result.get("message"),
-                            "issues": len(result.get("errors")),
-                        }
-                        summary_data.append(summary_item)
+            for result in validation_result.results or []:
+                dataset = result.get("dataset")
+                if (
+                    result.get("errors")
+                    and result.get("executionStatus") != ExecutionStatus.SKIPPED.value
+                ):
+                    summary_item = {
+                        "dataset": dataset,
+                        "core_id": validation_result.id,
+                        "message": result.get("message"),
+                        "issues": len(result.get("errors")),
+                    }
+                    summary_data.append(summary_item)
 
         return sorted(
             summary_data,
-            key=lambda x: (x["dataset"], x["core_id"]),
+            key=lambda x: (x.get("dataset") or "", x.get("core_id") or ""),
         )
 
-    def get_detailed_data(self, excel=False) -> list[dict]:
+    def get_detailed_data(self) -> list[dict]:
         detailed_data = []
         for validation_result in self._results:
             detailed_data = detailed_data + self._generate_error_details(
-                validation_result, excel
+                validation_result
             )
         return sorted(
             detailed_data,
-            key=lambda x: (x["core_id"], x["dataset"]),
+            key=lambda x: (x.get("core_id") or "", x.get("dataset") or ""),
         )
 
+    def _issue_details(
+        self, validation_result: RuleValidationResult, result: dict
+    ) -> list[dict]:
+        """
+        Generates the Issue details data that goes into the excel export.
+        Each row is represented by a list or a dict containing the following
+        information:
+        return [
+            "CORE-ID",
+            "Message",
+            "Executability",
+            "Dataset Name"
+            "USUBJID",
+            "Record",
+            "Sequence",
+            "Variable(s)",
+            "Value(s)"
+        ]
+        """
+        errors = []
+        variables = result.get("variables", [])
+        for error in [
+            error
+            for error in result.get("errors")
+            if result.get("executionStatus") == ExecutionStatus.ISSUE_REPORTED.value
+        ]:
+            values = []
+            for variable in variables:
+                raw_value = error.get("value", {}).get(variable)
+                if raw_value is None:
+                    values.append(None)
+                else:
+                    values.append(str(raw_value))
+            error_item = {
+                "core_id": validation_result.id,
+                "message": result.get("message"),
+                "executability": validation_result.executability,
+                "dataset": error.get("dataset"),
+                "USUBJID": error.get("USUBJID", ""),
+                "row": error.get("row", ""),
+                "SEQ": error.get("SEQ", ""),
+                "variables": variables,
+                "values": self.process_values(values),
+            }
+            errors.append(error_item)
+        return errors
+
+    def _error_details(self, validation_result: RuleValidationResult, result: dict):
+        errors = []
+        for error in [
+            error
+            for error in result.get("errors")
+            if result.get("executionStatus") == ExecutionStatus.EXECUTION_ERROR.value
+        ]:
+            error_item = {
+                "core_id": validation_result.id,
+                "message": (f"{result.get('message')} - {error.get('error')}"),
+                "executability": validation_result.executability,
+                "dataset": error.get("dataset"),
+                "USUBJID": "",
+                "row": "",
+                "SEQ": "",
+                "variables": "",
+                "values": error.get("message"),
+            }
+            errors.append(error_item)
+        return errors
+
     def _generate_error_details(
-        self, validation_result: RuleValidationResult, excel
+        self, validation_result: RuleValidationResult
     ) -> list[dict]:
         """
         Generates the Issue details data that goes into the excel export.
@@ -263,28 +336,11 @@ class SDTMReportData(BaseReportData):
         """
         errors = []
         for result in validation_result.results or []:
-            if result.get("errors", []) and result.get("executionStatus") == "success":
-                variables = result.get("variables", [])
-                for error in result.get("errors"):
-                    values = []
-                    for variable in variables:
-                        raw_value = error.get("value", {}).get(variable)
-                        if raw_value is None:
-                            values.append(None)
-                        else:
-                            values.append(str(raw_value))
-                    error_item = {
-                        "core_id": validation_result.id,
-                        "message": result.get("message"),
-                        "executability": validation_result.executability,
-                        "dataset": error.get("dataset"),
-                        "USUBJID": error.get("USUBJID", ""),
-                        "row": error.get("row", ""),
-                        "SEQ": error.get("SEQ", ""),
-                        "variables": variables,
-                        "values": self.process_values(values),
-                    }
-                    errors.append(error_item)
+            errors = (
+                errors
+                + self._issue_details(validation_result, result)
+                + self._error_details(validation_result, result)
+            )
         return errors
 
     def get_rules_report_data(self) -> list[dict]:
@@ -309,17 +365,14 @@ class SDTMReportData(BaseReportData):
                 "cdisc_rule_id": validation_result.cdisc_rule_id,
                 "fda_rule_id": validation_result.fda_rule_id,
                 "message": validation_result.message,
-                "status": (
-                    ExecutionStatus.SUCCESS.value.upper()
-                    if validation_result.execution_status
-                    == ExecutionStatus.SUCCESS.value
-                    else ExecutionStatus.SKIPPED.value.upper()
-                ),
+                "status": ExecutionStatus(
+                    validation_result.execution_status
+                ).value.upper(),
             }
             rules_report.append(rules_item)
         return sorted(
             rules_report,
-            key=lambda x: x["core_id"],
+            key=lambda x: x.get("core_id") or "",
         )
 
     @staticmethod

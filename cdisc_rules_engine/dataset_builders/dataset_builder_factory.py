@@ -56,6 +56,9 @@ from cdisc_rules_engine.dataset_builders.dataset_metadata_values_builder import 
 from cdisc_rules_engine.dataset_builders.variables_metadata_values_dataset_builder import (
     ValueCheckVariableMetadataDatasetBuilder,
 )
+from cdisc_rules_engine.dataset_builders.domain_list_with_define_builder import (
+    DomainListWithDefineDatasetBuilder,
+)
 from cdisc_rules_engine.dataset_builders.base_dataset_builder import BaseDatasetBuilder
 from cdisc_rules_engine.enums.rule_types import RuleTypes
 
@@ -67,6 +70,7 @@ class DatasetBuilderFactory(FactoryInterface):
         RuleTypes.DATASET_METADATA_CHECK_AGAINST_DEFINE.value: DatasetMetadataDefineDatasetBuilder,
         RuleTypes.VARIABLE_METADATA_CHECK.value: VariablesMetadataDatasetBuilder,
         RuleTypes.DOMAIN_PRESENCE_CHECK.value: DomainListDatasetBuilder,
+        RuleTypes.DOMAIN_PRESENCE_CHECK_AGAINST_DEFINE.value: DomainListWithDefineDatasetBuilder,
         RuleTypes.DEFINE_ITEM_METADATA_CHECK.value: DefineVariablesDatasetBuilder,
         RuleTypes.VARIABLE_METADATA_CHECK_AGAINST_DEFINE.value: VariablesMetadataWithDefineDatasetBuilder,
         RuleTypes.DATASET_CONTENTS_CHECK_AGAINST_DEFINE_AND_LIBRARY.value: ContentsDatasetBuilder,

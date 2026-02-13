@@ -1,0 +1,22 @@
+{
+  "$id": "Executability.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "oneOf": [
+    {
+      "const": "Fully Executable"
+    },
+    {
+      "const": "Not Executable"
+    },
+    {
+      "const": "Partially Executable"
+    },
+    {
+      "const": "Partially Executable - Possible Overreporting"
+    },
+    {
+      "const": "Partially Executable - Possible Underreporting"
+    }
+  ],
+  "markdownDescription": "Indicates the extent to which the rule can be automatically executed and validated by the rules engine"
+}

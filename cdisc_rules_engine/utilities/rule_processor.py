@@ -24,7 +24,6 @@ from cdisc_rules_engine.constants.domains import (
     SUPPLEMENTARY_DOMAINS,
 )
 from cdisc_rules_engine.constants.rule_constants import ALL_KEYWORD
-from cdisc_rules_engine.constants.use_cases import USE_CASE_DOMAINS
 from cdisc_rules_engine.interfaces import ConditionInterface
 from cdisc_rules_engine.models.operation_params import OperationParams
 from cdisc_rules_engine.models.rule_conditions import AllowedConditionsKeys
@@ -274,6 +273,7 @@ class RuleProcessor:
         rule: dict,
         standard: str,
         standard_substandard: str,
+        use_case: str,
     ) -> bool:
         if standard.lower() != "tig":
             return True
@@ -281,25 +281,7 @@ class RuleProcessor:
         if not use_cases:
             return True
         use_cases = [uc.strip() for uc in use_cases.split(",")]
-        substandard = standard_substandard.upper()
-        if substandard not in USE_CASE_DOMAINS:
-            return False
-
-        domain_to_check = dataset_metadata.domain
-        if dataset_metadata.is_supp and dataset_metadata.rdomain:
-            domain_to_check = dataset_metadata.rdomain
-
-        # Handle ADaM datasets with AD prefix
-        if substandard == "ADAM" and domain_to_check.startswith("AD"):
-            return "ANALYSIS" in use_cases
-
-        allowed_domains = set()
-        for use_case in use_cases:
-            if use_case in USE_CASE_DOMAINS[substandard]:
-                allowed_domains.update(USE_CASE_DOMAINS[substandard][use_case])
-        if domain_to_check in allowed_domains:
-            return True
-        return False
+        return use_case in use_cases
 
     @classmethod
     def rule_applies_to_entity(
@@ -370,54 +352,55 @@ class RuleProcessor:
 
             # get necessary operation
             operation_params = OperationParams(
+                attribute_name=operation.get("attribute_name", ""),
+                case_sensitive=operation.get("case_sensitive", True),
+                codelist=operation.get("codelist"),
+                codelist_code=operation.get("codelist_code"),
+                codelists=operation.get("codelists"),
                 core_id=rule.get("core_id"),
-                operation_id=operation.get("id"),
-                operation_name=operation.get("operator"),
-                dataframe=dataset_copy,
-                target=target,
-                original_target=original_target,
-                domain=domain,
-                dataset_path=dataset_path,
-                directory_path=get_directory_path(dataset_path),
-                datasets=datasets,
-                grouping=operation.get("group", []),
-                standard=standard,
-                standard_version=standard_version,
-                standard_substandard=standard_substandard,
-                external_dictionaries=external_dictionaries,
-                ct_version=operation.get("version"),
+                ct_attribute=operation.get("ct_attribute"),
                 ct_package_type=RuleProcessor._ct_package_type_api_name(
                     operation.get("ct_package_type")
                 ),
-                ct_attribute=operation.get("ct_attribute"),
                 ct_package_types=[
                     RuleProcessor._ct_package_type_api_name(ct_package_type)
                     for ct_package_type in operation.get("ct_package_types", [])
                 ],
-                attribute_name=operation.get("attribute_name", ""),
-                key_name=operation.get("key_name", ""),
-                key_value=operation.get("key_value", ""),
-                case_sensitive=operation.get("case_sensitive", True),
-                external_dictionary_type=operation.get("external_dictionary_type"),
+                ct_version=operation.get("version"),
+                dataframe=dataset_copy,
+                dataset_path=dataset_path,
+                datasets=datasets,
+                delimiter=operation.get("delimiter"),
+                dictionary_term_type=operation.get("dictionary_term_type"),
+                directory_path=get_directory_path(dataset_path),
+                domain=domain,
+                domain_class=operation.get("domain_class"),
+                external_dictionaries=external_dictionaries,
                 external_dictionary_term_variable=operation.get(
                     "external_dictionary_term_variable"
                 ),
-                dictionary_term_type=operation.get("dictionary_term_type"),
+                external_dictionary_type=operation.get("external_dictionary_type"),
                 filter=operation.get("filter", None),
+                grouping=operation.get("group", []),
                 grouping_aliases=operation.get("group_aliases"),
+                key_name=operation.get("key_name", ""),
+                key_value=operation.get("key_value", ""),
                 level=operation.get("level"),
-                returntype=operation.get("returntype"),
-                codelists=operation.get("codelists"),
-                codelist=operation.get("codelist"),
-                codelist_code=operation.get("codelist_code"),
                 map=operation.get("map"),
-                term_code=operation.get("term_code"),
-                term_value=operation.get("term_value"),
-                term_pref_term=operation.get("term_pref_term"),
                 namespace=operation.get("namespace"),
-                value_is_reference=operation.get("value_is_reference", False),
-                delimiter=operation.get("delimiter"),
+                operation_id=operation.get("id"),
+                operation_name=operation.get("operator"),
+                original_target=original_target,
                 regex=operation.get("regex"),
+                returntype=operation.get("returntype"),
+                standard=standard,
+                standard_substandard=standard_substandard,
+                standard_version=standard_version,
+                target=target,
+                term_code=operation.get("term_code"),
+                term_pref_term=operation.get("term_pref_term"),
+                term_value=operation.get("term_value"),
+                value_is_reference=operation.get("value_is_reference", False),
             )
             try:
                 # execute operation
@@ -684,6 +667,7 @@ class RuleProcessor:
         datasets: Iterable[SDTMDatasetMetadata],
         standard,
         standard_substandard: str,
+        use_case: str,
     ) -> Tuple[bool, str]:
         """Check if rule is suitable and return reason if not"""
         rule_id = rule.get("core_id", "unknown")
@@ -698,7 +682,11 @@ class RuleProcessor:
         ):
             return self.log_suitable_for_validation(rule_id, dataset_name)
         if not self.rule_applies_to_use_case(
-            dataset_metadata, rule, standard, standard_substandard
+            dataset_metadata,
+            rule,
+            standard,
+            standard_substandard,
+            use_case,
         ):
             reason = (
                 f"Rule skipped - doesn't apply to use case for "
