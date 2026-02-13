@@ -22,6 +22,8 @@ class SqlOperationParams:
     key_name: str = None
     key_value: str = None
     ct_package_types: List[str] = None
+    ct_version: str = None
+    ct_attribute: str = None
 
     # standard_substandard: str = None
     # attribute_name: str = None
@@ -29,11 +31,8 @@ class SqlOperationParams:
     # codelist: str = None
     # codelist_code: str = None
     # codelists: list = None
-    # ct_attribute: str = None
-    # ct_package_types: List[str] = None
     # ct_package: list = None
     # ct_packages: list = None
-    # ct_version: str = None
     # ct_package_type: str = None
     # term_code: str = None
     # term_value: str = None

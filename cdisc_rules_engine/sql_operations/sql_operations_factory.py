@@ -31,6 +31,7 @@ from cdisc_rules_engine.sql_operations.get_parent_model_column_order import SqlG
 from cdisc_rules_engine.sql_operations.domain_is_custom import SqlDomainIsCustomOperation
 from cdisc_rules_engine.sql_operations.valid_codelist_dates import SqlValidCodelistDates
 from cdisc_rules_engine.sql_operations.extract_metadata import SqlExtractMetadataOperation
+from cdisc_rules_engine.sql_operations.get_codelist_attributes import SqlGetCodelistAttributesOperation
 
 
 class SqlOperationsFactory:
@@ -44,7 +45,7 @@ class SqlOperationsFactory:
         "extract_metadata": SqlExtractMetadataOperation,
         "get_column_order_from_dataset": SqlDatasetColumnOrderOperation,
         "get_column_order_from_library": None,
-        "get_codelist_attributes": None,
+        "get_codelist_attributes": SqlGetCodelistAttributesOperation,
         "get_model_column_order": SqlGetModelColumnOrder,
         "get_model_filtered_variables": SqlGetModelFilteredVariables,
         "get_parent_model_column_order": SqlGetParentModelColumnOrderOperation,
