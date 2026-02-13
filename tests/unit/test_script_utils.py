@@ -1,11 +1,21 @@
 from types import SimpleNamespace
 from os import path
+from unittest.mock import MagicMock, patch
 
 import pytest
 
 import scripts.script_utils as script_utils
-from scripts.script_utils import load_rules_from_local, load_specified_rules
+from scripts.script_utils import (
+    fill_cache_with_dictionaries,
+    load_rules_from_local,
+    load_specified_rules,
+)
 from cdisc_rules_engine.utilities.utils import get_rules_cache_key
+from cdisc_rules_engine.exceptions.custom_exceptions import MissingDataError
+from cdisc_rules_engine.models.dictionaries.base_external_dictionary import (
+    ExternalDictionary,
+)
+from cdisc_rules_engine.models.dictionaries.dictionary_types import DictionaryTypes
 
 
 @pytest.fixture
@@ -193,3 +203,132 @@ def test_load_rules_from_local_exclude(monkeypatch, standard_context):
 
     returned_ids = {rule["core_id"] for rule in rules}
     assert returned_ids == {"CORE.Local.0001", "CORE.Local.0003"}
+
+
+def _make_args(mapping):
+    return SimpleNamespace(
+        external_dictionaries=SimpleNamespace(dictionary_path_mapping=mapping)
+    )
+
+
+_NO_EXTRACT = object()
+
+
+def _extract_meddra_fails_whodrug_ok(whodrug_terms):
+    def fn(_ds, dtype, _dpath):
+        if dtype == "meddra":
+            raise MissingDataError("Missing files")
+        return whodrug_terms
+
+    return fn
+
+
+@pytest.mark.parametrize(
+    "mapping,expected,extract_ret,raise_exc,warn_has,cache_with",
+    [
+        ({"meddra": ""}, {}, _NO_EXTRACT, None, None, None),
+        ({"meddra": None}, {}, _NO_EXTRACT, None, None, None),
+        ({}, {}, _NO_EXTRACT, None, None, None),
+        (
+            {DictionaryTypes.SNOMED.value: {"edition": "MAIN", "version": "2024-01"}},
+            {DictionaryTypes.SNOMED.value: "MAIN/MAIN/2024-01"},
+            _NO_EXTRACT,
+            None,
+            None,
+            None,
+        ),
+        (
+            {DictionaryTypes.SNOMED.value: {"edition": "MAIN"}},
+            {},
+            _NO_EXTRACT,
+            None,
+            None,
+            None,
+        ),
+        (
+            {"meddra": r".\bad_meddra"},
+            {},
+            MissingDataError("Required files not found"),
+            None,
+            [
+                "meddra",
+                r".\bad_meddra",
+                "could not be loaded",
+                "Required files not found",
+            ],
+            None,
+        ),
+        (
+            {"meddra": r".\valid_meddra"},
+            {"meddra": "26.0"},
+            ExternalDictionary(terms={"PT1": {}}, version="26.0"),
+            None,
+            None,
+            (r".\valid_meddra", "26.0"),
+        ),
+        (
+            {"meddra": r".\bad_meddra", "whodrug": r".\valid_whodrug"},
+            {"whodrug": "2024-01"},
+            "side_effect",
+            None,
+            None,
+            (r".\valid_whodrug", "2024-01"),
+        ),
+        (
+            {"meddra": r".\some_path"},
+            None,
+            OSError("Permission denied"),
+            OSError,
+            None,
+            None,
+        ),
+    ],
+    ids=[
+        "empty_path",
+        "none_path",
+        "empty_mapping",
+        "snomed_full",
+        "snomed_incomplete",
+        "missing_data_error",
+        "success",
+        "one_fails_others_ok",
+        "other_exception_propagates",
+    ],
+)
+def test_fill_cache_with_dictionaries(
+    mapping, expected, extract_ret, raise_exc, warn_has, cache_with
+):
+    """Unit test for fill_cache_with_dictionaries: falsy/SNOMED skip, MissingDataError skip+warn,
+    success, one-fails-others-succeed, other exception propagates (per reviewer request).
+    """
+    cache, args, ds = MagicMock(), _make_args(mapping), MagicMock()
+    with patch.object(script_utils, "extract_dictionary_terms") as ext:
+        if extract_ret is _NO_EXTRACT:
+            pass
+        elif extract_ret == "side_effect":
+            terms = ExternalDictionary(terms={}, version="2024-01")
+            ext.side_effect = _extract_meddra_fails_whodrug_ok(terms)
+        elif isinstance(extract_ret, BaseException):
+            ext.side_effect = extract_ret
+        else:
+            ext.return_value = extract_ret
+        with patch.object(script_utils, "engine_logger") as log:
+            if raise_exc:
+                with pytest.raises(raise_exc, match="Permission denied"):
+                    fill_cache_with_dictionaries(cache, args, ds)
+            else:
+                result = fill_cache_with_dictionaries(cache, args, ds)
+                assert result == expected
+            if warn_has:
+                log.warning.assert_called_once()
+                msg = log.warning.call_args[0][0]
+                for s in warn_has:
+                    assert s in msg or s in msg.lower()
+    if extract_ret is _NO_EXTRACT:
+        ext.assert_not_called()
+    if cache_with:
+        cache.add.assert_called_once()
+        assert cache.add.call_args[0][0] == cache_with[0]
+        assert cache.add.call_args[0][1].version == cache_with[1]
+    else:
+        cache.add.assert_not_called()
