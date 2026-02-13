@@ -192,8 +192,8 @@ all:
 
 One row per dataset defined in Define-XML:
 
-- `domain`
-- `filename` - The file name if dataset exists, null otherwise
+- `domain` - The domain if the dataset exists, empty otherwise
+- `filename` - The file name if dataset exists, empty otherwise
 - `define_dataset_name`
 - `define_dataset_label`
 - `define_dataset_location`
