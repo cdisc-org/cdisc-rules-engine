@@ -122,6 +122,13 @@
     },
     {
       "properties": {
+        "operator": { "const": "get_library_class_domains" }
+      },
+      "required": ["id", "operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
         "operator": {
           "const": "get_model_column_order"
         }
