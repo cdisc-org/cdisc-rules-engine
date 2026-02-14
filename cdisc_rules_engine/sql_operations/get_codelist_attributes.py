@@ -23,6 +23,7 @@ class SqlGetCodelistAttributesOperation(SqlBaseOperation):
         version = self.params.ct_version
         if version is None:
             raise ValueError("Version must be provided for codelist attribute retrieval.")
+        conditions = self.params.ct_conditions
 
         select_col_sql = self.data_service.pgi.schema.get_column_hash(ct_table, _COLUMN_MAP.get(attribute, "item_code"))
         version_date_col_sql = self.data_service.pgi.schema.get_column_hash(ct_table, "version_date")
@@ -38,5 +39,15 @@ class SqlGetCodelistAttributesOperation(SqlBaseOperation):
             WHERE {std_type_col_sql} IN ({types_list_sql})
               AND {version_date_col_sql} = '{version.lower()}'
         """
+
+        condition_sql = """"""
+        if conditions:
+            for condition in conditions:
+                for k, v in condition.items():
+                    _COLUMN_MAP.get(k)
+                    condition_sql += f""" AND {_COLUMN_MAP.get(k)} = '{v}'"""
+
+        if condition_sql:
+            query += condition_sql
 
         return SqlOperationResult(query=query, type="collection", subtype="Char")

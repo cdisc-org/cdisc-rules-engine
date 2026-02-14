@@ -63,6 +63,7 @@ class SQLRuleProcessor:
                 ct_package_types=operation.get("ct_package_types"),
                 ct_version=operation.get("version"),
                 ct_attribute=operation.get("ct_attribute"),
+                ct_conditions=operation.get("ct_conditions"),
             )
 
             operation = SqlOperationsFactory.get_service(rule_name, params=params, data_service=data_service)
