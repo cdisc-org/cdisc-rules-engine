@@ -96,6 +96,7 @@ events_timing_test = (
     },
     {
         "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
+        "domains": {"AE"},
         "classes": [
             {
                 "name": "Events",
@@ -130,7 +131,7 @@ events_timing_test = (
         "VISITNUM": [1, 2, 1],
         "VISIT": ["Day 1", "Day 7", "Day 1"],
     },
-    {"name": "AE"},
+    {"name": "AE", "first_record": {"DOMAIN": "AE"}},
     "role",
     "Timing",
     ["VISITNUM", "VISIT"],
@@ -188,6 +189,7 @@ events_identifier_test = (
     },
     {
         "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
+        "domains": {"AE"},
         "classes": [
             {
                 "name": "Events",
@@ -210,7 +212,7 @@ events_identifier_test = (
         "USUBJID": ["SUBJ001", "SUBJ002", "SUBJ003"],
         "AETERM": ["Headache", "Nausea", "Fatigue"],
     },
-    {"name": "AE"},
+    {"name": "AE", "first_record": {"DOMAIN": "AE"}},
     "role",
     "Identifier",
     ["STUDYID", "DOMAIN", "USUBJID", "AETERM"],
@@ -273,6 +275,7 @@ wildcard_test = (
     },
     {
         "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
+        "domains": {"AE"},
         "classes": [
             {
                 "name": "Events",
@@ -298,7 +301,7 @@ wildcard_test = (
         "AETERM": ["Headache", "Nausea"],
         "AESEQ": [1, 2],
     },
-    {"name": "AE"},
+    {"name": "AE", "first_record": {"DOMAIN": "AE"}},
     "role",
     "Identifier",
     ["STUDYID", "AESEQ"],
@@ -349,6 +352,7 @@ no_match_test = (
     },
     {
         "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
+        "domains": {"AE"},
         "classes": [
             {
                 "name": "Events",
@@ -370,7 +374,7 @@ no_match_test = (
         "AETERM": ["Headache", "Nausea"],
         "AESEQ": [1, 2],
     },
-    {"name": "AE"},
+    {"name": "AE", "first_record": {"DOMAIN": "AE"}},
     "role",
     "Timing",
     [],
@@ -438,6 +442,7 @@ findings_about_test = (
     },
     {
         "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
+        "domains": {"FA"},
         "classes": [
             {
                 "name": FINDINGS_ABOUT,
@@ -465,10 +470,10 @@ findings_about_test = (
         "FASEQ": [1, 2],
         "USUBJID": ["SUBJ001", "SUBJ002"],
     },
-    {"name": "FA"},
+    {"name": "FA", "first_record": {"DOMAIN": "FA"}},
     "role",
     "Identifier",
-    ["STUDYID", "DOMAIN", "USUBJID"],
+    ["STUDYID", "DOMAIN", "FASEQ", "USUBJID"],
 )
 
 
@@ -638,6 +643,7 @@ def test_get_dataset_filtered_variables_dask(
 
     standard_metadata = {
         "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
+        "domains": {"AE"},
         "classes": [
             {
                 "name": "Events",
@@ -752,6 +758,7 @@ def test_get_dataset_filtered_variables_empty_dataset(
 
     standard_metadata = {
         "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
+        "domains": {"AE"},
         "classes": [
             {
                 "name": "Events",
@@ -759,7 +766,11 @@ def test_get_dataset_filtered_variables_empty_dataset(
                     {
                         "name": "AE",
                         "datasetVariables": [
-                            {"name": "VISITNUM", "role": VariableRoles.TIMING.value},
+                            {
+                                "name": "VISITNUM",
+                                "role": VariableRoles.TIMING.value,
+                                "ordinal": 1,
+                            },
                         ],
                     }
                 ],
@@ -859,6 +870,7 @@ def test_get_dataset_filtered_variables_invalid_key(operation_params: OperationP
 
     standard_metadata = {
         "_links": {"model": {"href": "/mdr/sdtm/1-5"}},
+        "domains": {"AE"},
         "classes": [
             {
                 "name": "Events",
@@ -866,7 +878,11 @@ def test_get_dataset_filtered_variables_invalid_key(operation_params: OperationP
                     {
                         "name": "AE",
                         "datasetVariables": [
-                            {"name": "AETERM", "role": VariableRoles.IDENTIFIER.value},
+                            {
+                                "name": "AETERM",
+                                "role": VariableRoles.IDENTIFIER.value,
+                                "ordinal": 1,
+                            },
                         ],
                     }
                 ],

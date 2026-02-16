@@ -15,14 +15,15 @@ from cdisc_rules_engine.services.data_readers.json_reader import JSONReader
 
 
 class DatasetJSONReader(DataReaderInterface):
+
     def get_schema(self) -> dict:
-        schema = JSONReader().from_file(
+        schema = JSONReader(encoding="utf-8").from_file(
             os.path.join("resources", "schema", "dataset.schema.json")
         )
         return schema
 
     def read_json_file(self, file_path: str) -> dict:
-        return JSONReader().from_file(file_path)
+        return JSONReader(encoding=self.encoding).from_file(file_path)
 
     def _raw_dataset_from_file(self, file_path) -> pd.DataFrame:
         # Load Dataset-JSON Schema
