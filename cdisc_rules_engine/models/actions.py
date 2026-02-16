@@ -68,7 +68,6 @@ class COREActions(BaseActions):
             error_object.domain = DomainPresenceValues.DOMAIN.value
             for error in error_object.errors:
                 error.dataset = DomainPresenceValues.DATASET.value
-                error.domain = DomainPresenceValues.DATASET.value
                 error.row = DomainPresenceValues.RECORD.value
         self.output_container.append(error_object.to_representation())
 
