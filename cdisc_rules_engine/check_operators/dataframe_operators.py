@@ -857,7 +857,9 @@ class DataframeType(BaseType):
         parsed_id = str(uuid4())
         self.value[parsed_id] = parsed_data
         return self.value.apply(
-            lambda row: self._check_equality(row, target, parsed_id, value_is_literal),
+            lambda row: self._check_equality(
+                row, target, parsed_id, value_is_literal=False
+            ),
             axis=1,
         )
 
