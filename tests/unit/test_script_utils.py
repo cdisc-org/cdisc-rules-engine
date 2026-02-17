@@ -298,9 +298,8 @@ def _extract_meddra_fails_whodrug_ok(whodrug_terms):
 def test_fill_cache_with_dictionaries(
     mapping, expected, extract_ret, raise_exc, warn_has, cache_with
 ):
-    """Unit test for fill_cache_with_dictionaries: falsy/SNOMED skip, MissingDataError skip+warn,
-    success, one-fails-others-succeed, other exception propagates (per reviewer request).
-    """
+    """Parametrized: falsy/SNOMED skip, MissingDataError skip+warn, success,
+    one-fails-others-succeed, other exception propagates."""
     cache, args, ds = MagicMock(), _make_args(mapping), MagicMock()
     with patch.object(script_utils, "extract_dictionary_terms") as ext:
         if extract_ret is _NO_EXTRACT:
