@@ -34,14 +34,13 @@ class Minus(BaseOperation):
     """
 
     def _execute_operation(self):
-        name_ref = self.params.target  # minuend (list A)
-        value_ref = self.params.value  # subtrahend (list B)
+        name_ref = self.params.target
+        value_ref = self.params.value
 
         if not name_ref or name_ref not in self.evaluation_dataset.columns:
             return []
         list_a = self.evaluation_dataset[name_ref].iloc[0]
         if not value_ref or value_ref not in self.evaluation_dataset.columns:
-            # listA minus empty = all of listA (per Sam)
             return _normalize_to_list(list_a)
         list_b = self.evaluation_dataset[value_ref].iloc[0]
         return _set_difference_preserve_order(list_a, list_b)

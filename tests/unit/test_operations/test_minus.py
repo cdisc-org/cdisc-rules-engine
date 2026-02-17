@@ -17,20 +17,29 @@ def minus_params(operation_params: OperationParams) -> OperationParams:
     return operation_params
 
 
-def test_set_difference_preserve_order():
-    """Test set difference preserves order from first list."""
-    assert _set_difference_preserve_order(["a", "b", "c"], ["b"]) == ["a", "c"]
-    assert _set_difference_preserve_order(["a", "b", "c"], []) == ["a", "b", "c"]
-    assert _set_difference_preserve_order(["a", "b", "c"], ["a", "b", "c"]) == []
-    assert _set_difference_preserve_order(["A", "B", "C", "D"], ["B", "D"]) == [
-        "A",
-        "C",
-    ]
+@pytest.mark.parametrize(
+    "list_a,list_b,expected",
+    [
+        (["a", "b", "c"], ["b"], ["a", "c"]),
+        (["a", "b", "c"], [], ["a", "b", "c"]),
+        (["a", "b", "c"], ["a", "b", "c"], []),
+        (["A", "B", "C", "D"], ["B", "D"], ["A", "C"]),
+        (["a", "b", "b", "c"], ["b"], ["a", "c"]),
+        (["a", "a", "b"], ["b"], ["a", "a"]),
+        ("x", ["a"], ["x"]),
+        (["x"], "a", ["x"]),
+        ("a", "b", ["a"]),
+        (["a", "", "b"], [""], ["a", "b"]),
+        (["a", "", "b"], ["c"], ["a", "", "b"]),
+        ([""], [""], []),
+    ],
+)
+def test_set_difference_preserve_order(list_a, list_b, expected):
+    assert _set_difference_preserve_order(list_a, list_b) == expected
 
 
 @pytest.mark.parametrize("dataset_type", [PandasDataset, DaskDataset])
 def test_minus_operation(minus_params: OperationParams, dataset_type):
-    """Test minus operation computes set difference correctly."""
     eval_dataset = dataset_type.from_dict(
         {
             "$expected_variables": [
@@ -46,16 +55,13 @@ def test_minus_operation(minus_params: OperationParams, dataset_type):
 
     operation = Minus(minus_params, eval_dataset, MagicMock(), MagicMock())
     result = operation.execute()
-
-    expected = ["AEDECOD"]  # in expected but not in dataset
-    assert list(result[minus_params.operation_id].iloc[0]) == expected
+    assert list(result[minus_params.operation_id].iloc[0]) == ["AEDECOD"]
 
 
 @pytest.mark.parametrize("dataset_type", [PandasDataset, DaskDataset])
 def test_minus_empty_value_returns_all_of_name(
     minus_params: OperationParams, dataset_type
 ):
-    """When value is empty, minus returns all of name (per Sam)."""
     eval_dataset = dataset_type.from_dict(
         {
             "$expected_variables": [
@@ -75,22 +81,43 @@ def test_minus_empty_value_returns_all_of_name(
     assert list(result[minus_params.operation_id].iloc[0]) == ["A", "B", "C"]
 
 
+@pytest.mark.parametrize(
+    "expected_vars,dataset_vars,expected",
+    [
+        ([["a", "b", "b", "c"], ["a", "b", "b", "c"]], [["b"], ["b"]], ["a", "c"]),
+        ([["a", "a", "b"], ["a", "a", "b"]], [["b"], ["b"]], ["a", "a"]),
+        ([["a", "", "b"], ["a", "", "b"]], [[""], [""]], ["a", "b"]),
+        ([["a", "", "b"], ["a", "", "b"]], [["c"], ["c"]], ["a", "", "b"]),
+        ([[""], [""]], [[""], [""]], []),
+        (["x", "y"], [["a"], ["a"]], ["x"]),
+    ],
+)
+@pytest.mark.parametrize("dataset_type", [PandasDataset, DaskDataset])
+def test_minus_operation_edge_cases(
+    minus_params: OperationParams,
+    dataset_type,
+    expected_vars,
+    dataset_vars,
+    expected,
+):
+    eval_dataset = dataset_type.from_dict(
+        {
+            "$expected_variables": expected_vars,
+            "$dataset_variables": dataset_vars,
+        }
+    )
+    operation = Minus(minus_params, eval_dataset, MagicMock(), MagicMock())
+    result = operation.execute()
+    assert list(result[minus_params.operation_id].iloc[0]) == expected
+
+
 @pytest.mark.parametrize("dataset_type", [PandasDataset, DaskDataset])
 def test_minus_name_ref_missing_returns_empty(
     minus_params: OperationParams, dataset_type
 ):
-    """When name ref is missing from dataset columns, minus returns empty list."""
-    # Dataset has $dataset_variables but not $expected_variables
     eval_dataset = dataset_type.from_dict(
-        {
-            "$dataset_variables": [
-                ["STUDYID", "DOMAIN"],
-                ["STUDYID", "DOMAIN"],
-            ],
-        }
+        {"$dataset_variables": [["STUDYID", "DOMAIN"], ["STUDYID", "DOMAIN"]]}
     )
-
     operation = Minus(minus_params, eval_dataset, MagicMock(), MagicMock())
     result = operation.execute()
-
     assert list(result[minus_params.operation_id].iloc[0]) == []
