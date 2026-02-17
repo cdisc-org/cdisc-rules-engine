@@ -1050,7 +1050,7 @@ def test_rule_with_domain_prefix_replacement(mock_get_dataset: MagicMock):
                 {
                     "executionStatus": ExecutionStatus.ISSUE_REPORTED.value,
                     "dataset": "STUDY",
-                    "domain": "AE",
+                    "domain": "N/A",
                     "variables": ["AE"],
                     "message": "Domain AE exists",
                     "errors": [

@@ -10,6 +10,9 @@
     },
     {
       "const": "Group"
+    },
+    {
+      "const": "Study"
     }
   ],
   "markdownDescription": "Determines what level of granularity issues should be generated within the report"
