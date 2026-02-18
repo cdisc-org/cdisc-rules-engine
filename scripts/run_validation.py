@@ -18,6 +18,13 @@ from cdisc_rules_engine.models.rule_validation_result import RuleValidationResul
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
 from cdisc_rules_engine.models.validation_args import Validation_args
 from cdisc_rules_engine.rules_engine import RulesEngine
+from cdisc_rules_engine.exceptions.custom_exceptions import (
+    EngineError,
+    InvalidDatasetFormat,
+    INVALID_DATASET_FORMAT_REASON,
+    LibraryMetadataNotFoundError,
+    library_metadata_not_found_message,
+)
 from cdisc_rules_engine.services import logger as engine_logger
 from cdisc_rules_engine.services.cache import (
     InMemoryCacheService,
@@ -123,6 +130,37 @@ def initialize_logger(disabled, log_level):
         engine_logger.setLevel(log_level)
 
 
+def _get_datasets_or_raise(data_service):
+    try:
+        return data_service.get_datasets()
+    except EngineError:
+        raise
+    except Exception as e:
+        raise InvalidDatasetFormat(
+            f"Your data files could not be read. They {INVALID_DATASET_FORMAT_REASON} "
+            f"Underlying error: {e}"
+        ) from e
+
+
+def _convert_datasets_to_parquet_if_needed(
+    data_service, datasets, created_files, large_dataset_validation: bool
+):
+    if not (large_dataset_validation and data_service.standard != "usdm"):
+        return
+    engine_logger.warning(
+        "Large datasets must use parquet format, converting all datasets to parquet"
+    )
+    for dataset in datasets:
+        file_path = dataset.full_path
+        if file_path.endswith(".parquet"):
+            continue
+        num_rows, new_file = data_service.to_parquet(file_path)
+        created_files.append(new_file)
+        dataset.full_path = new_file
+        dataset.record_count = num_rows
+        dataset.original_path = file_path
+
+
 def run_validation(args: Validation_args):
     set_log_level(args)
     # fill cache
@@ -160,21 +198,13 @@ def run_validation(args: Validation_args):
         large_dataset_validation: bool = (
             data_service.dataset_implementation != PandasDataset
         )
-        datasets = data_service.get_datasets()
-        if large_dataset_validation and data_service.standard != "usdm":
-            # convert all files to parquet temp files
-            engine_logger.warning(
-                "Large datasets must use parquet format, converting all datasets to parquet"
-            )
-            for dataset in datasets:
-                file_path = dataset.full_path
-                if file_path.endswith(".parquet"):
-                    continue
-                num_rows, new_file = data_service.to_parquet(file_path)
-                created_files.append(new_file)
-                dataset.full_path = new_file
-                dataset.record_count = num_rows
-                dataset.original_path = file_path
+        datasets = _get_datasets_or_raise(data_service)
+        _convert_datasets_to_parquet_if_needed(
+            data_service,
+            datasets,
+            created_files,
+            large_dataset_validation,
+        )
         engine_logger.info(
             f"Running {len(rules)} rules against {len(datasets)} datasets"
         )
@@ -249,6 +279,12 @@ def run_single_rule_validation(
         standard, standard_version, standard_substandard
     )
     standard_metadata = cache.get(standard_details_cache_key)
+    if not standard_metadata and standard and standard_version:
+        raise LibraryMetadataNotFoundError(
+            library_metadata_not_found_message(
+                standard, standard_version, standard_substandard
+            )
+        )
     if standard_metadata:
         model_cache_key = get_model_details_cache_key_from_ig(standard_metadata)
         model_metadata = cache.get(model_cache_key)

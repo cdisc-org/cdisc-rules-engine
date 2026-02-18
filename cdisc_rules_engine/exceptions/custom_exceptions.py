@@ -40,6 +40,28 @@ class VariableMetadataNotFoundError(EngineError):
     )
 
 
+LIBRARY_METADATA_NOT_FOUND_HINT = (
+    "Check your standard/version (CLI) or Library tab values (editor)."
+)
+
+
+def library_metadata_not_found_message(standard, version, substandard=None):
+    version_display = (version or "").replace("-", ".")
+    sub_part = f" substandard {substandard}" if substandard else ""
+    return (
+        f"No library metadata found for standard '{standard}' "
+        f"version '{version_display}'{sub_part}. {LIBRARY_METADATA_NOT_FOUND_HINT}"
+    )
+
+
+class LibraryMetadataNotFoundError(EngineError):
+    code = 400
+    description = (
+        "Library metadata not found for the provided standard and version combination. "
+        f"{LIBRARY_METADATA_NOT_FOUND_HINT}"
+    )
+
+
 class DomainNotFoundError(EngineError):
     """Raised when a required domain is not found in the dataset"""
 
@@ -57,9 +79,22 @@ class InvalidDatasetFormat(EngineError):
     description = "Dataset data is malformed."
 
 
+INVALID_DATASET_FORMAT_REASON = (
+    "may be corrupted, incorrectly formatted, or encoded with an unexpected encoding."
+)
+
+
 class InvalidJSONFormat(EngineError):
     code = 400
     description = "JSON data is malformed."
+
+
+class ExcelTestDataError(EngineError):
+    code = 400
+    description = (
+        "Excel test data file is missing required sheets or column headers. "
+        "Sheet and column names are case-sensitive."
+    )
 
 
 class NumberOfAttemptsExceeded(EngineError):

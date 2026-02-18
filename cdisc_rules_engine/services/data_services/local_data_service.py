@@ -24,11 +24,14 @@ from cdisc_rules_engine.utilities.utils import (
     convert_file_size,
     extract_file_name_from_path_string,
 )
+from cdisc_rules_engine.exceptions.custom_exceptions import (
+    INVALID_DATASET_FORMAT_REASON,
+    InvalidDatasetFormat,
+)
 from .base_data_service import BaseDataService, cached_dataset
 from cdisc_rules_engine.enums.dataformat_types import DataFormatTypes
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from cdisc_rules_engine.models.dataset import PandasDataset
-from cdisc_rules_engine.services import logger
 import re
 
 
@@ -244,28 +247,13 @@ class LocalDataService(BaseDataService):
                     dataset_name=dataset_path
                 )
                 datasets.append(dataset_metadata)
+            except InvalidDatasetFormat:
+                raise
             except Exception as e:
-                logger.error(
-                    f"Failed to read metadata for dataset {dataset_path}. "
-                    f"Error: {type(e).__name__}: {e}. Skipping this dataset."
-                )
-                file_name = extract_file_name_from_path_string(dataset_path)
-                datasets.append(
-                    SDTMDatasetMetadata(
-                        name=(
-                            file_name.split(".")[0].upper()
-                            if "." in file_name
-                            else file_name.upper()
-                        ),
-                        first_record={},
-                        label="",
-                        modification_date="",
-                        filename=file_name,
-                        full_path=dataset_path,
-                        file_size=0,
-                        record_count=0,
-                    )
-                )
+                raise InvalidDatasetFormat(
+                    f"Your data file could not be read: {dataset_path}. "
+                    f"It {INVALID_DATASET_FORMAT_REASON} Underlying error: {e}"
+                ) from e
         return datasets
 
     @staticmethod
