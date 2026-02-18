@@ -9,3 +9,4 @@ class StandardTypes(BaseEnum):
     ADAM = "adam"
     CDASHIG = "cdashig"
     TIG = "tig"
+    USDM = "usdm"
