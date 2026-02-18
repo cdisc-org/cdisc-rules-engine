@@ -1311,32 +1311,19 @@ Operations:
 
 ### variable_is_null
 
-Returns true if a variable is missing from the dataset or if all values within the variable are null or empty string. This operation first checks if the target variable exists in the dataset, and if it does exist, evaluates whether all its values are null or empty.
+Returns true if a variable is missing from the dataset or if all values within the variable are null or empty string. This operation first checks if the target variable exists in the dataset, and if it does exist, evaluates whether all its vaes are null or empty.
 The operation supports two sources via the `source` parameter:
 
 - **`submission`** : checks against the raw submission dataset
 - **`evaluation`** (default): checks against the evaluation dataset built based on the rule type
-  The operation supports two levels via the `level` parameter:
-- **`dataset`** (default): returns a single boolean broadcast to all rows — `true` if the variable is missing or all values are all null or empty string
-- **`row`**: returns a boolean Series — `true` for each row where the value in the target variable is null or empty string. May only be used on the evaluation dataset.
 
 ```yaml
-
 # Dataset level check - is this variable entirely null/missing from the source data?
 Operations:
   - operator: variable_is_null
     name: USUBJID
     id: $usubjid_is_null
     source: submission
-    level: dataset
-
-# Row level check - is USUBJID blank on this row?
-Operations:
-  - operator: variable_is_null
-    name: USUBJID
-    id: $usubjid_is_null
-    source: evaluation
-    level: row
 ```
 
 ### get_xhtml_errors

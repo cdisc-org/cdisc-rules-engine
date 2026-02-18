@@ -555,6 +555,7 @@ Attach define xml metadata at variable level
 - `variable_data_type`
 - `variable_format`
 - `variable_has_empty_values`
+- `variable_is_empty`
 - `library_variable_name`
 - `library_variable_role`
 - `library_variable_label`
@@ -572,6 +573,8 @@ Attach define xml metadata at variable level
 - `variable_size`
 - `variable_order_number`
 - `variable_data_type`
+- `variable_has_empty_values`
+- `variable_is_empty`
 - `define_variable_name`
 - `define_variable_label`
 - `define_variable_data_type`
@@ -597,7 +600,6 @@ Attach define xml metadata at variable level
 - `library_variable_order_number`
 - `library_variable_data_type`
 - `library_variable_ccode`
-- `variable_has_empty_values`
 
 ## JSON Schema Check
 

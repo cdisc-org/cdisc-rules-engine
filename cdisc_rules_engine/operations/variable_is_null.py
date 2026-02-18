@@ -12,21 +12,10 @@ class VariableIsNull(BaseOperation):
         else:
             dataframe = self.evaluation_dataset
 
-        if self.params.level == "row":
-            return self._is_variable_null_by_row(dataframe, self.params.target)
-        else:
-            return self._is_target_variable_null(dataframe, self.params.target)
+        return self._is_target_variable_null(dataframe, self.params.target)
 
     def _is_target_variable_null(self, dataframe, target_variable: str) -> bool:
         if target_variable not in dataframe:
             return True
         series = dataframe[target_variable]
         return (series.isnull() | (series == "")).all()
-
-    def _is_variable_null_by_row(self, dataframe, target_variable: str):
-        if target_variable not in dataframe:
-            return self.data_service.dataset_implementation().convert_to_series(
-                [True] * len(dataframe)
-            )
-        series = dataframe[target_variable]
-        return series.isnull() | (series == "")

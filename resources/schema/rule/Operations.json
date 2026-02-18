@@ -380,7 +380,7 @@
       "properties": {
         "operator": { "const": "variable_is_null" }
       },
-      "required": ["id", "operator", "source", "level"],
+      "required": ["id", "operator", "source"],
       "type": "object"
     },
     {
