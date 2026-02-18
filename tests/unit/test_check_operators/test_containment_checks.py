@@ -34,7 +34,7 @@ def test_contains(data, comparator, dataset_type, expected_result):
     "data,comparator,dataset_type,expected_result",
     [
         (
-            {"target": ["Ctt", "Btt", "A"], "VAR2": ["a", "btt", "lll"]},
+            {"target": ["A", "Btt", "Ctt"], "VAR2": ["a", "btt", "lll"]},
             "VAR2",
             DaskDataset,
             [True, True, False],
@@ -92,7 +92,7 @@ def test_does_not_contain(data, comparator, dataset_type, expected_result):
     "data,comparator,dataset_type,expected_result",
     [
         (
-            {"target": ["Ctt", "Btt", "A"], "VAR2": ["a", "btt", "lll"]},
+            {"target": ["A", "Btt", "Ctt"], "VAR2": ["a", "btt", "lll"]},
             "VAR2",
             DaskDataset,
             [False, False, True],
