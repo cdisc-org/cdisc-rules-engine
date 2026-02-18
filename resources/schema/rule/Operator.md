@@ -448,7 +448,8 @@ Complement of `split_parts_have_equal_length`. Returns True when parts have uneq
 
 ### is_title_case
 
-Validates that variable labels follow proper title case formatting rules using the titlecase PyPi library. Title case capitalizes the first word and all major words, while keeping articles (a, an, the), conjunctions (and, but, or), and prepositions (in, of, for) in lowercase unless they are the first word.
+Validates that variable labels follow proper title case formatting rules using the titlecase PyPi library. Title case capitalizes the first word and all major words, while keeping articles (a, an, the), conjunctions (and, but, or), and prepositions (in, of, for) in lowercase unless they are the first word.  
+NOTE: The titlecase library may produce false positives or false negatives in syntactic edge cases (e.g. hyphenated words, slash-separated terms, uncommon prepositions).
 
 > Check that AELABEL values are in proper title case
 
