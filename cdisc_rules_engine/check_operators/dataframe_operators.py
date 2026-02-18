@@ -15,7 +15,7 @@ from cdisc_rules_engine.check_operators.helpers import (
     apply_rounding,
     is_in,
 )
-from cdisc_rules_engine.enums.dataset_label_acronyms import DatasetLabelAcronyms
+from cdisc_rules_engine.enums.dataset_title_case import DatasetTitleCase
 from cdisc_rules_engine.constants import NULL_FLAVORS
 from cdisc_rules_engine.utilities.utils import dates_overlap, parse_date
 import numpy as np
@@ -1932,9 +1932,12 @@ class DataframeType(BaseType):
         Checks if target column values are in proper title case.
         """
         target = self.replace_prefix(other_value.get("target"))
-        acronyms = DatasetLabelAcronyms.Acronyms.value
+        acronyms = DatasetTitleCase.Acronyms.value
+        lowercase_exceptions = DatasetTitleCase.Lowercase_Exceptions.value
 
         def acronym_callback(word, **kwargs):
+            if word.lower() in lowercase_exceptions:
+                return word.lower()
             if any(word.upper() == acr.upper() for acr in acronyms):
                 return word.upper()
             return None
