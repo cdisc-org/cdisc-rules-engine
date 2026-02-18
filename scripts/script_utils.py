@@ -80,11 +80,12 @@ def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:  # noqa
         standard_metadata = data.get(standard_details_cache_key, {})
 
     if not standard_metadata and not args.custom_standard:
-        raise LibraryMetadataNotFoundError(
-            library_metadata_not_found_message(
-                args.standard, args.version, args.substandard
+        if args.standard and args.standard.lower() != "usdm":
+            raise LibraryMetadataNotFoundError(
+                library_metadata_not_found_message(
+                    args.standard, args.version, args.substandard
+                )
             )
-        )
 
     if standard_metadata:
         model_cache_key = get_model_details_cache_key_from_ig(standard_metadata)
