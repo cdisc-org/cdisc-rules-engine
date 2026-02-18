@@ -160,6 +160,7 @@ Attach variable codelist and codelist terms
 - `library_variable_data_type`
 - `library_variable_role`
 - `library_variable_core`
+- `library_variable_has_codelist`
 - `library_variable_ccode`
 
 #### Rule Macro
@@ -561,6 +562,7 @@ Attach define xml metadata at variable level
 - `library_variable_core`
 - `library_variable_order_number`
 - `library_variable_data_type`
+- `library_variable_has_codelist`
 - `library_variable_ccode`
 
 ## Variables Metadata Check against Define XML and Library Metadata
@@ -596,6 +598,7 @@ Attach define xml metadata at variable level
 - `library_variable_core`
 - `library_variable_order_number`
 - `library_variable_data_type`
+- `library_variable_has_codelist`
 - `library_variable_ccode`
 - `variable_has_empty_values`
 

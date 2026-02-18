@@ -133,6 +133,7 @@
     },
     { "const": "filename" },
     { "const": "library_variable_core" },
+    { "const": "library_variable_has_codelist" },
     { "const": "library_variable_data_type" },
     { "const": "library_variable_label" },
     { "const": "library_variable_name" },

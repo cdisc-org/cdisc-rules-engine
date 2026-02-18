@@ -215,12 +215,14 @@ class BaseDatasetBuilder:
         )
         for variable in variables:
             variable["ccode"] = ""
+            variable["has_codelist"] = False
             variable_metadata: Optional[dict] = variables_metadata.get(variable["name"])
             if variable_metadata:
                 if "_links" in variable and "codelist" in variable["_links"]:
                     first_codelist = variable["_links"]["codelist"][0]
                     codelist_code = first_codelist["href"].split("/")[-1]
                     variable["ccode"] = codelist_code
+                    variable["has_codelist"] = True
             if "role" not in variable:
                 variable["role"] = ""
             if "core" not in variable:

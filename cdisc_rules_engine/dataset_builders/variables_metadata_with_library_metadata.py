@@ -19,6 +19,7 @@ class VariablesMetadataWithLibraryMetadataDatasetBuilder(BaseDatasetBuilder):
         library_variable_role,
         library_variable_core,
         library_variable_ccode,
+        library_variable_has_codelist
         library_variable_order_number
         """
         # get dataset metadata and execute the rule
@@ -49,6 +50,7 @@ class VariablesMetadataWithLibraryMetadataDatasetBuilder(BaseDatasetBuilder):
                     "library_variable_role",
                     "library_variable_core",
                     "library_variable_ccode",
+                    "library_variable_has_codelist",
                     "library_variable_order_number",
                 ]
             ],
