@@ -100,7 +100,7 @@ class USDMReportData(BaseReportData):
         ]
         return sorted(
             entity_details_data,
-            key=lambda x: x.get("entity", "").lower(),
+            key=lambda x: (x.get("entity", "") or "").lower(),
         )
 
     def get_summary_data(self) -> list[dict]:
@@ -136,7 +136,7 @@ class USDMReportData(BaseReportData):
 
         return sorted(
             summary_data,
-            key=lambda x: (x.get("entity"), x["core_id"]),
+            key=lambda x: (x.get("entity") or "", x.get("core_id") or ""),
         )
 
     def get_detailed_data(self) -> list[dict]:
@@ -147,7 +147,7 @@ class USDMReportData(BaseReportData):
             )
         return sorted(
             detailed_data,
-            key=lambda x: (x["core_id"], x.get("entity")),
+            key=lambda x: (x.get("core_id") or "", x.get("entity") or ""),
         )
 
     def _issue_details(
@@ -276,5 +276,5 @@ class USDMReportData(BaseReportData):
 
         return sorted(
             rules_report,
-            key=lambda x: x["core_id"],
+            key=lambda x: x.get("core_id") or "",
         )
