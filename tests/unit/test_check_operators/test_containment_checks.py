@@ -40,8 +40,14 @@ def test_contains(data, comparator, dataset_type, expected_result):
             [True, True, False],
         ),
         (
-            {"target": [["A", "B", "C"], ["A", "B", "L"], ["L", "Q", "R"]]},
-            "l",
+            {
+                "target": [
+                    ["A", "B", "C"],
+                    ["A", "left hind limb", "L"],
+                    ["L", "NON-ULCERATED left hind limb", "R"],
+                ]
+            },
+            "LEFT HIND LIMB",
             PandasDataset,
             [False, True, True],
         ),
@@ -560,3 +566,39 @@ def test_is_column_of_iterables(column_data, expected):
     dataframe_operator = DataframeType({"value": df})
     result = dataframe_operator.is_column_of_iterables(df["col"])
     assert result == expected
+
+
+@pytest.mark.parametrize(
+    "data,target_col,comparator_col,dataset_type,expected_result",
+    [
+        (
+            {
+                "PMSTRESC": [
+                    "2.0",
+                    "2.0",
+                    "NON-ULCERATED left hind limb",
+                    "LEFT LEG",
+                ],
+                "PMLOC": [
+                    "LEFT HIND LIMB ",
+                    "LEFT HIND LIMB ",
+                    "LEFT HIND LIMB",
+                    "left leg",
+                ],
+            },
+            "PMSTRESC",
+            "PMLOC",
+            PandasDataset,
+            [False, False, True, True],
+        ),
+    ],
+)
+def test_contains_case_insensitive_column_vs_column(
+    data, target_col, comparator_col, dataset_type, expected_result
+):
+    df = dataset_type.from_dict(data)
+    dataframe_operator = DataframeType({"value": df})
+    result = dataframe_operator.contains_case_insensitive(
+        {"target": target_col, "comparator": comparator_col}
+    )
+    assert result.equals(df.convert_to_series(expected_result))
