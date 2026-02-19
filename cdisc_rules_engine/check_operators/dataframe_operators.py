@@ -1891,8 +1891,6 @@ class DataframeType(BaseType):
             str_value = str(value).strip()
             expected = titlecase(str_value, callback=acronym_callback)
             expected = expected[0].upper() + expected[1:]
-            if str_value != expected:
-                print(f"MISMATCH: {repr(str_value)} != {repr(expected)}")
             return str_value == expected
 
         results = self.value[target].apply(check_title_case)
