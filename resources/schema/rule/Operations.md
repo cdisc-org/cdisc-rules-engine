@@ -1311,7 +1311,7 @@ Operations:
 
 ### variable_is_null
 
-Returns true if a variable is missing from the dataset or if all values within the variable are null or empty string. This operation first checks if the target variable exists in the dataset, and if it does exist, evaluates whether all its vaes are null or empty.
+Returns true if a variable is missing from the dataset or if all values within the variable are null or empty string. This operation first checks if the target variable exists in the dataset, and if it does exist, evaluates whether all its values are null or empty.
 The operation supports two sources via the `source` parameter:
 
 - **`submission`** : checks against the raw submission dataset
