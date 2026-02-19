@@ -60,12 +60,12 @@ def test_is_title_case_basic(data, dataset_type, expected_result):
             [False, False, False],
         ),
         (
-            {"target": ["Unique Subject ID", "Primary Study ID"]},
+            {"target": ["Unique Subject ID", " Primary Study ID"]},
             PandasDataset,
             [True, True],
         ),
         (
-            {"target": ["Subject ID", "Study ID"]},
+            {"target": ["Subject ID", " Study ID"]},
             DaskDataset,
             [True, True],
         ),
