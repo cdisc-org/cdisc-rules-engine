@@ -1,0 +1,109 @@
+name: Rule-related Feature Request
+description: A request for a new feature or enhancement related to a rule
+projects:
+  - cdisc-org/19
+type: Feature
+body:
+  - type: dropdown
+    id: standard
+    validations:
+      required: true
+    attributes:
+      label: Standard
+      multiple: true
+      options:
+        - CDISC ADaM
+        - CDISC Define-XML
+        - CDISC SDTM/SDTMIG
+        - CDISC SEND
+        - CDISC USDM
+        - FDA BR SDTM
+        - FDA BR SDTMIG
+        - FDA BR SEND
+        - FDA VR SDTMIG
+        - FDA VR SENDIG
+        - Custom
+  - type: input
+    id: reference_rule_id
+    validations:
+      required: true
+    attributes:
+      label: Reference Rule ID(s)
+  - type: input
+    id: core_id
+    attributes:
+      label: Conformance Rule ID(s) (if published in CORE)
+      value: CORE-
+  - type: input
+    id: jira
+    attributes:
+      label: JIRA Ticket
+      value: https://jira.cdisc.org/projects/CORERULES/issues/CORERULES-
+  - type: markdown
+    attributes:
+      value: "In the next fields, please provide a [Minimal Reproducible Example](https://stackoverflow.com/help/minimal-reproducible-example)."
+  - type: textarea
+    id: rule
+    validations:
+      required: true
+    attributes:
+      label: Proposed Rule YAML
+      render: YAML
+      value: |
+        Authorities: 
+          - Organization: 
+            Standards:
+              - Name: 
+                References:
+                  - Citations:
+                      - Cited Guidance: 
+                        Document: 
+                        Item: 
+                        Section: 
+                    Origin: 
+                    Rule Identifier: 
+                      Id: 
+                      Version: 
+                    Version: 
+                Version:
+        Check:
+          all:
+            - name: 
+              operator: 
+              value: 
+        Core:
+          Id: 
+          Status: 
+          Version: '1'
+        Description: 
+        Executability: Fully Executable
+        Match Datasets:
+          - Keys:
+              - 
+            Name: 
+        Operations:
+          - id: 
+            operator: 
+        Outcome:
+          Message: 
+          Output Variables:
+            -
+        Rule Type: 
+        Scope:
+        Sensitivity:
+  - type: textarea
+    id: test_data
+    validations:
+      required: true
+    attributes:
+      label: Attach any sample test data file(s)
+  - type: textarea
+    id: expected
+    validations:
+      required: true
+    attributes:
+      label: Expected output
+  - type: textarea
+    id: additional_info
+    attributes:
+      label: Any Additional Information
