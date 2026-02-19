@@ -21,4 +21,4 @@ class VariableIsNull(BaseOperation):
         if target_variable not in dataframe:
             return True
         series = dataframe[target_variable]
-        return series.mask(series == "").isnull().all()
+        return (series.isnull() | (series == "")).all()

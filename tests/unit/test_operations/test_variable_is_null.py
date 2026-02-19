@@ -8,41 +8,76 @@ from cdisc_rules_engine.services.cache.cache_service_factory import CacheService
 
 
 @pytest.mark.parametrize(
-    "data, expected",
+    "data, target_var, expected",
     [
         (
-            PandasDataset.from_dict({"AEVAR": ["A", "B", "C"]}),
+            PandasDataset.from_dict({"VAR1": ["A", "B", "C"], "VAR2": [1, 2, 3]}),
+            "VAR1",
             False,
         ),
         (
-            DaskDataset.from_dict({"AEVAR": [1, 2, 3]}),
+            PandasDataset.from_dict({"VAR1": ["", None, "C"], "VAR2": [1, 2, 3]}),
+            "VAR1",
             False,
         ),
         (
-            DaskDataset.from_dict({"AEVAR": ["", None, "C"]}),
+            DaskDataset.from_dict({"VAR1": ["", None, "C"], "VAR2": [1, 2, 3]}),
+            "VAR1",
             False,
         ),
         (
-            PandasDataset.from_dict({"AEVAR": [None, None, 3]}),
-            False,
-        ),
-        (
-            PandasDataset.from_dict({"AEVAR": ["", None]}),
+            PandasDataset.from_dict({"VAR1": ["", None, ""], "VAR2": [1, 2, 3]}),
+            "VAR1",
             True,
         ),
         (
-            DaskDataset.from_dict({"BCVAR": ["A", "B", "C"]}),
+            DaskDataset.from_dict({"VAR1": ["", None, ""], "VAR2": [1, 2, 3]}),
+            "VAR1",
+            True,
+        ),
+        (
+            PandasDataset.from_dict(
+                {"VAR1": [None, None, None, "X"], "VAR2": [1, 2, 3, 4]}
+            ),
+            "VAR1",
+            False,
+        ),
+        (
+            PandasDataset.from_dict(
+                {"VAR1": ["", "", "", "data"], "VAR2": [1, 2, 3, 4]}
+            ),
+            "VAR1",
+            False,
+        ),
+        (
+            PandasDataset.from_dict({"VAR1": [None, None, None], "VAR2": [1, 2, 3]}),
+            "VAR1",
+            True,
+        ),
+        (
+            PandasDataset.from_dict({"VAR2": ["A", "B", "C"]}),
+            "VAR1",
+            True,
+        ),
+        (
+            DaskDataset.from_dict({"VAR2": ["A", "B", "C"]}),
+            "VAR1",
+            True,
+        ),
+        (
+            PandasDataset.from_dict({"VAR2": ["A", "B", "C"]}),
+            "NONEXISTENT",
             True,
         ),
     ],
 )
 def test_variable_is_null(
-    data, expected, mock_data_service, operation_params: OperationParams
+    data, target_var, expected, mock_data_service, operation_params: OperationParams
 ):
     config = ConfigService()
     cache = CacheServiceFactory(config).get_cache_service()
     operation_params.dataframe = data
-    operation_params.target = "AEVAR"
+    operation_params.target = target_var
     operation_params.domain = "AE"
     mock_data_service.get_dataset.return_value = data
     mock_data_service.dataset_implementation = data.__class__
