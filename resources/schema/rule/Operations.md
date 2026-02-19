@@ -894,6 +894,16 @@ Output
 }
 ```
 
+### get_library_class_domains
+
+Returns the list of domain for a given class from the CDISC Library Implementation Guide. This operation retrieves all domains that belong to a specified class (e.g., "TRIAL DESIGN", "FINDINGS", "EVENTS") based on the current standard and version. The operation uses the standard and version from the validation context as well as the optional `domain_class` parameter which is the name of the class to filter by (e.g., "TRIAL DESIGN", "FINDINGS", "EVENTS", "INTERVENTIONS). NOTE: Class names are case-sensitive and should match the Library metadata format. If no `domain_class` parameter is provided, the operation returns all domains across all classes in the Implementation Guide:
+
+```yaml
+- operator: get_library_class_domains
+  id: $trial_design_domains
+  domain_class: "TRIAL DESIGN"
+```
+
 ## Define.XML Metadata Operations
 
 Operations for working with Define.XML metadata and variable references.

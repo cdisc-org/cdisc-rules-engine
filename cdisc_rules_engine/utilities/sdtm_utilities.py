@@ -16,6 +16,7 @@ from cdisc_rules_engine.models.library_metadata_container import (
 )
 import copy
 from cdisc_rules_engine.models.sdtm_dataset_metadata import SDTMDatasetMetadata
+from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
 from typing import Iterable, Tuple, List, Optional
 
 
@@ -53,7 +54,15 @@ def get_tabulation_model_type_and_version(model_link: dict) -> Tuple:
     return model_type, model_version
 
 
-def get_variables_metadata_from_standard(domain, library_metadata):  # noqa
+def get_variables_metadata_from_standard(  # noqa
+    domain,
+    library_metadata,
+    data_service,
+    dataset: DatasetInterface,
+    dataset_metadata: SDTMDatasetMetadata,
+    dataset_path: str,
+    datasets: Iterable[SDTMDatasetMetadata],
+):
     add_AP = False
     original_domain = domain
     if (
@@ -70,15 +79,24 @@ def get_variables_metadata_from_standard(domain, library_metadata):  # noqa
         domain = domain[2:]
         original_domain = domain
         add_AP = True
-
     standard_details = library_metadata.standard_metadata
     model_details = library_metadata.model_metadata
     is_custom = domain not in standard_details.get("domains", {})
     variables_metadata = []
-    IG_class_details, IG_domain_details = get_class_and_domain_metadata(
-        standard_details, domain
-    )
-    class_name = convert_library_class_name_to_ct_class(IG_class_details.get("name"))
+    if not is_custom:
+        IG_class_details, IG_domain_details = get_class_and_domain_metadata(
+            standard_details, domain
+        )
+        class_name = convert_library_class_name_to_ct_class(
+            IG_class_details.get("name")
+        )
+    else:
+        class_name = data_service._handle_custom_domains(
+            data_service.get_dataset(dataset_name=dataset_metadata.full_path),
+            dataset_metadata,
+            dataset_path,
+            datasets,
+        )
     model_class_details = get_class_metadata(model_details, class_name)
     # Both custom and standard General Observations pull from model
     if is_custom or class_name in DETECTABLE_CLASSES:
@@ -282,11 +300,13 @@ def get_variables_metadata_from_standard_model(  # noqa
     dataset_path: str,
     data_service: DataServiceInterface,
     library_metadata: LibraryMetadataContainer,
+    dataset_metadata: SDTMDatasetMetadata,
 ) -> List[dict]:
     """
     gets class via the IG then uses the class to get the variables via the model
     classes outside of general observation, we check the model for their definition
     if they are not there, differ to the standard definition of the domain
+    if custom, IDs class and uses class variables.
     """
     add_AP = False
     original_domain = domain
@@ -306,11 +326,18 @@ def get_variables_metadata_from_standard_model(  # noqa
         add_AP = True
     standard_details = library_metadata.standard_metadata
     model_details = library_metadata.model_metadata
-
-    IG_class_details, IG_domain_details = get_class_and_domain_metadata(
-        standard_details, domain
-    )
-    class_name = convert_library_class_name_to_ct_class(IG_class_details.get("name"))
+    is_custom = domain not in standard_details.get("domains", {})
+    if not is_custom:
+        IG_class_details, IG_domain_details = get_class_and_domain_metadata(
+            standard_details, domain
+        )
+        class_name = convert_library_class_name_to_ct_class(
+            IG_class_details.get("name")
+        )
+    else:
+        class_name = data_service._handle_custom_domains(
+            dataframe, dataset_metadata, dataset_path, datasets
+        )
     if class_name in DETECTABLE_CLASSES:
         model_class_details = get_class_metadata(model_details, class_name)
         (

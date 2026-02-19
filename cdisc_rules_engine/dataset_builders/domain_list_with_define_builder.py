@@ -31,11 +31,11 @@ class DomainListWithDefineDatasetBuilder(BaseDatasetBuilder):
         records = []
         for define_item in all_define_metadata:
             domain_name = define_item.get("define_dataset_name", "")
+            filename = domain_files.get(domain_name)
             record = {
-                "domain": domain_name,
-                "filename": domain_files.get(domain_name),
                 **define_item,
+                "domain": domain_name if filename is not None else None,
+                "filename": filename,
             }
             records.append(record)
-
         return self.dataset_implementation.from_records(records)
