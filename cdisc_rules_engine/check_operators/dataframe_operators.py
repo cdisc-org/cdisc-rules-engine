@@ -1067,7 +1067,7 @@ class DataframeType(BaseType):
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
     def invalid_date(self, other_value):
-        target = self.replace_prefix(other_value.get("target"))
+        target = other_value.get("target")
         results = ~vectorized_is_valid(self.value[target])
         return self.value.convert_to_series(results)
 
@@ -1134,7 +1134,7 @@ class DataframeType(BaseType):
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
     def is_complete_date(self, other_value):
-        target = self.replace_prefix(other_value.get("target"))
+        target = other_value.get("target")
         results = vectorized_is_complete_date(self.value[target])
         return self.value.convert_to_series(results)
 
@@ -1874,7 +1874,7 @@ class DataframeType(BaseType):
         """
         Checks if target column values are in proper title case.
         """
-        target = self.replace_prefix(other_value.get("target"))
+        target = other_value.get("target")
         acronyms = DatasetTitleCase.Acronyms.value
         lowercase_exceptions = DatasetTitleCase.Lowercase_Exceptions.value
 
@@ -1890,6 +1890,9 @@ class DataframeType(BaseType):
                 return True
             str_value = str(value).strip()
             expected = titlecase(str_value, callback=acronym_callback)
+            expected = expected[0].upper() + expected[1:]
+            if str_value != expected:
+                print(f"MISMATCH: {repr(str_value)} != {repr(expected)}")
             return str_value == expected
 
         results = self.value[target].apply(check_title_case)
