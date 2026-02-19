@@ -183,6 +183,19 @@
     {
       "properties": {
         "operator": {
+          "const": "get_library_class_domains",
+          "markdownDescription": "\nReturns the list of domain for a given class from the CDISC Library Implementation Guide. This operation retrieves all domains that belong to a specified class (e.g., \"TRIAL DESIGN\", \"FINDINGS\", \"EVENTS\") based on the current standard and version. The operation uses the standard and version from the validation context as well as the optional `domain_class` parameter which is the name of the class to filter by (e.g., \"TRIAL DESIGN\", \"FINDINGS\", \"EVENTS\", \"INTERVENTIONS). NOTE: Class names are case-sensitive and should match the Library metadata format. If no `domain_class` parameter is provided, the operation returns all domains across all classes in the Implementation Guide:\n\n```yaml\n- operator: get_library_class_domains\n  id: $trial_design_domains\n  domain_class: \"TRIAL DESIGN\"\n```\n"
+        }
+      },
+      "required": [
+        "id",
+        "operator"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": {
           "const": "get_model_column_order",
           "markdownDescription": "\nFetches column order for a given model class from the CDISC library. The lists with column names are sorted in accordance to \"ordinal\" key of library metadata.\n\nRule Type: Variable Metadata Check\n\n```yaml\nCheck:\n  all:\n    - name: variable_name\n      operator: is_not_contained_by\n      value: $model_variables\nOperations:\n  - id: $model_variables\n    operator: get_model_column_order\n```\n"
         }
