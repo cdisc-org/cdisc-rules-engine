@@ -96,13 +96,13 @@ body:
     validations:
       required: true
     attributes:
-      label: Sample Test Data File
+      label: Attach any sample test data file(s)
   - type: textarea
     id: output
     validations:
       required: true
     attributes:
-      label: Output report and/or log file
+      label: Attach any output report and/or log file(s)
   - type: textarea
     id: expected
     validations:
