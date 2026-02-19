@@ -387,7 +387,7 @@ Update locally stored cache data (An api-key can be provided through the environ
 
 To obtain an api key, please follow the instructions found here: <https://wiki.cdisc.org/display/LIBSUPRT/Getting+Started%3A+Access+to+CDISC+Library+API+using+API+Key+Authentication>. Please note it can take up to an hour after sign up to have an api key issued
 
-This will show the list of cache update options.
+The update-cache command options are:
 
 ```
   -c, --cache-path TEXT                   Relative path to cache. Optional. Only required if the cache has been
