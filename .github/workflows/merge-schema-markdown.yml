@@ -3,8 +3,7 @@ name: Merge Schema with Markdown Descriptions
 on:
   workflow_dispatch: 
   push:
-    paths:
-      - 'resources/schema/rule/**'
+
 
 jobs:
   merge-schema-markdown:
