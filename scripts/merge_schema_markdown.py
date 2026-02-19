@@ -140,7 +140,8 @@ def main():
         # Write to output directory
         output_path = output_dir / schema_path.name
         with open(output_path, "w", encoding="utf-8") as f:
-            json.dump(merged_schema, f, indent=2, ensure_ascii=False)
+            json.dump(merged_schema, f, indent=2)
+            f.write("\n")
 
         print(f"✓ Processed {schema_path.name}")
 

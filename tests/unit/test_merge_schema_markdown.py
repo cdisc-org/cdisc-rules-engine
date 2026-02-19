@@ -3,14 +3,10 @@ Tests for the schema markdown merge script.
 """
 
 import json
-import sys
 import tempfile
 from pathlib import Path
 
-# Add scripts directory to path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / "scripts"))
-
-from merge_schema_markdown import (  # noqa: E402
+from scripts.merge_schema_markdown import (
     parse_markdown_to_dict,
     attach_markdown_descriptions,
     merge_schema_with_markdown,

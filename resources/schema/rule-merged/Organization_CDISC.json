@@ -22,9 +22,7 @@
                           "const": "Failure"
                         }
                       },
-                      "required": [
-                        "Type"
-                      ],
+                      "required": ["Type"],
                       "type": "object"
                     },
                     "Origin": {
@@ -40,9 +38,7 @@
                       "type": "object"
                     },
                     "Version": {
-                      "enum": [
-                        "5.0"
-                      ]
+                      "enum": ["5.0"]
                     }
                   },
                   "type": "object"
@@ -51,12 +47,7 @@
                 "type": "array"
               },
               "Version": {
-                "enum": [
-                  "1.0",
-                  "1.1",
-                  "1.2",
-                  "1.3"
-                ]
+                "enum": ["1.0", "1.1", "1.2", "1.3"]
               }
             },
             "type": "object"
@@ -75,9 +66,7 @@
                           "const": "Success"
                         }
                       },
-                      "required": [
-                        "Type"
-                      ],
+                      "required": ["Type"],
                       "type": "object"
                     },
                     "Origin": {
@@ -90,19 +79,13 @@
                           "type": "string"
                         },
                         "Version": {
-                          "enum": [
-                            "1",
-                            "2",
-                            "3"
-                          ]
+                          "enum": ["1", "2", "3"]
                         }
                       },
                       "type": "object"
                     },
                     "Version": {
-                      "enum": [
-                        "2.0"
-                      ]
+                      "enum": ["2.0"]
                     }
                   },
                   "type": "object"
@@ -111,11 +94,7 @@
                 "type": "array"
               },
               "Version": {
-                "enum": [
-                  "3.2",
-                  "3.3",
-                  "3.4"
-                ]
+                "enum": ["3.2", "3.3", "3.4"]
               }
             },
             "type": "object"
@@ -134,9 +113,7 @@
                           "const": "Success"
                         }
                       },
-                      "required": [
-                        "Type"
-                      ],
+                      "required": ["Type"],
                       "type": "object"
                     },
                     "Origin": {
@@ -152,9 +129,7 @@
                       "type": "object"
                     },
                     "Version": {
-                      "enum": [
-                        "5.0"
-                      ]
+                      "enum": ["5.0"]
                     }
                   },
                   "type": "object"
@@ -163,11 +138,7 @@
                 "type": "array"
               },
               "Version": {
-                "enum": [
-                  "3.0",
-                  "3.1",
-                  "3.1.1"
-                ]
+                "enum": ["3.0", "3.1", "3.1.1"]
               }
             },
             "type": "object"
@@ -186,9 +157,7 @@
                           "const": "Success"
                         }
                       },
-                      "required": [
-                        "Type"
-                      ],
+                      "required": ["Type"],
                       "type": "object"
                     },
                     "Origin": {
@@ -204,9 +173,7 @@
                       "type": "object"
                     },
                     "Version": {
-                      "enum": [
-                        "5.0"
-                      ]
+                      "enum": ["5.0"]
                     }
                   },
                   "type": "object"
@@ -215,10 +182,7 @@
                 "type": "array"
               },
               "Version": {
-                "enum": [
-                  "1.1",
-                  "1.2"
-                ]
+                "enum": ["1.1", "1.2"]
               }
             },
             "type": "object"
@@ -237,9 +201,7 @@
                           "const": "Success"
                         }
                       },
-                      "required": [
-                        "Type"
-                      ],
+                      "required": ["Type"],
                       "type": "object"
                     },
                     "Origin": {
@@ -255,9 +217,7 @@
                       "type": "object"
                     },
                     "Version": {
-                      "enum": [
-                        "5.0"
-                      ]
+                      "enum": ["5.0"]
                     }
                   },
                   "type": "object"
@@ -266,9 +226,7 @@
                 "type": "array"
               },
               "Version": {
-                "enum": [
-                  "1.0"
-                ]
+                "enum": ["1.0"]
               }
             },
             "type": "object"
@@ -287,9 +245,7 @@
                           "const": "Success"
                         }
                       },
-                      "required": [
-                        "Type"
-                      ],
+                      "required": ["Type"],
                       "type": "object"
                     },
                     "Origin": {
@@ -305,9 +261,7 @@
                       "type": "object"
                     },
                     "Version": {
-                      "enum": [
-                        "1.0"
-                      ]
+                      "enum": ["1.0"]
                     }
                   },
                   "type": "object"
@@ -316,24 +270,13 @@
                 "type": "array"
               },
               "Version": {
-                "enum": [
-                  "1.0"
-                ]
+                "enum": ["1.0"]
               },
               "Substandard": {
-                "enum": [
-                  "SDTM",
-                  "SEND",
-                  "ADaM",
-                  "CDASH"
-                ]
+                "enum": ["SDTM", "SEND", "ADaM", "CDASH"]
               }
             },
-            "required": [
-              "Name",
-              "Version",
-              "Substandard"
-            ],
+            "required": ["Name", "Version", "Substandard"],
             "type": "object"
           },
           {
@@ -354,17 +297,13 @@
                           "type": "string"
                         },
                         "Version": {
-                          "enum": [
-                            "1"
-                          ]
+                          "enum": ["1"]
                         }
                       },
                       "type": "object"
                     },
                     "Version": {
-                      "enum": [
-                        "1.0"
-                      ]
+                      "enum": ["1.0"]
                     }
                   },
                   "type": "object"
@@ -373,10 +312,7 @@
                 "type": "array"
               },
               "Version": {
-                "enum": [
-                  "3.0",
-                  "4.0"
-                ]
+                "enum": ["3.0", "4.0"]
               }
             },
             "type": "object"
