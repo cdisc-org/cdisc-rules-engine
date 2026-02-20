@@ -5,6 +5,7 @@ import re
 
 SCHEMA_DIR = Path(__file__).parent.parent / "resources" / "schema" / "rule-merged"
 OUTPUT_PATH = SCHEMA_DIR / "CORE-bundled.json"
+BASE_SCHEMA_NAME = "CORE-base.json"
 
 
 def load_schema(path: Path) -> Dict[str, Any]:
@@ -28,13 +29,13 @@ def find_refs(obj: Any) -> set:
     return refs
 
 
-def rewrite_refs(obj: Any, ref_map: Dict[str, str], base_schema_name: str):
+def rewrite_refs(obj: Any, ref_map: Dict[str, str]):
     """Recursively update $ref values using ref_map and fix base schema $defs refs."""
     if isinstance(obj, dict):
         for k, v in obj.items():
             if k == "$ref" and isinstance(v, str):
                 # Always rewrite refs like '#/$defs/CORE-base.json/$defs/VariableName' to '#/$defs/VariableName'
-                pattern = rf"#\/\$defs\/{re.escape(base_schema_name)}\/\$defs\/([A-Za-z0-9_.-]+)"
+                pattern = rf"#\/\$defs\/{re.escape(BASE_SCHEMA_NAME)}\/\$defs\/([A-Za-z0-9_.-]+)"
                 fixed = re.sub(pattern, r"#/$defs/\1", v)
                 m = re.match(r"^(.*\.json)(#.*)?$", fixed)
                 if m:
@@ -51,16 +52,16 @@ def rewrite_refs(obj: Any, ref_map: Dict[str, str], base_schema_name: str):
                 else:
                     obj[k] = fixed
             else:
-                rewrite_refs(v, ref_map, base_schema_name)
+                rewrite_refs(v, ref_map)
     elif isinstance(obj, list):
         for item in obj:
-            rewrite_refs(item, ref_map, base_schema_name)
+            rewrite_refs(item, ref_map)
 
 
-def bundle_schemas(base_schema_name: str):
+def bundle_schemas():
     """Bundle all referenced schemas into a single schema file."""
     schema_files = {f.name: f for f in SCHEMA_DIR.glob("*.json")}
-    base_schema_path = schema_files[base_schema_name]
+    base_schema_path = schema_files[BASE_SCHEMA_NAME]
     base_schema = load_schema(base_schema_path)
     bundled = base_schema.copy()
     bundled["$defs"] = bundled.get("$defs", {}).copy()
@@ -83,12 +84,12 @@ def bundle_schemas(base_schema_name: str):
         new_refs = find_refs(schema)
         if defs:
             for def_key, def_val in defs.items():
-                rewrite_refs(def_val, ref_map, base_schema_name)
+                rewrite_refs(def_val, ref_map)
                 bundled["$defs"].setdefault(def_key, def_val)
             for def_val in defs.values():
                 new_refs.update(find_refs(def_val))
-        rewrite_refs(schema, ref_map, base_schema_name)
-        if ref_file != base_schema_name:
+        rewrite_refs(schema, ref_map)
+        if ref_file != BASE_SCHEMA_NAME:
             bundled["$defs"][ref_file] = schema
         ref_map[ref] = (
             f"#/$defs/{ref_file}{ref_fragment[1:] if ref_fragment.startswith('#/') else ''}"
@@ -98,7 +99,7 @@ def bundle_schemas(base_schema_name: str):
         unresolved.update(r for r in new_refs if r not in ref_map)
 
     # Update all $ref values and fix base refs in one pass
-    rewrite_refs(bundled, ref_map, base_schema_name)
+    rewrite_refs(bundled, ref_map)
 
     with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
         json.dump(bundled, f, indent=2, sort_keys=True)
@@ -107,4 +108,4 @@ def bundle_schemas(base_schema_name: str):
 
 
 if __name__ == "__main__":
-    bundle_schemas("CORE-base.json")
+    bundle_schemas()
