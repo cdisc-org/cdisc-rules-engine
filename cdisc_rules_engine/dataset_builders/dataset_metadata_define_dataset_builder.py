@@ -1,5 +1,8 @@
 from cdisc_rules_engine.services import logger
 from cdisc_rules_engine.dataset_builders.base_dataset_builder import BaseDatasetBuilder
+from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import (
+    DefineXMLReaderFactory,
+)
 import numpy as np
 
 
@@ -27,9 +30,13 @@ class DatasetMetadataDefineDatasetBuilder(BaseDatasetBuilder):
         define_dataset_class - dataset class
         define_dataset_structure - dataset structure
         define_dataset_is_non_standard - whether a dataset is a standard
-        define_dataset_variables - dataset variables
-        define_dataset_key_sequence - dataset key sequence
-        define_dataset_has_no_data
+        define_dataset_variables - list of variables in the dataset
+        define_dataset_variable_order - ordered list of variables in the dataset
+        (ordered by OrderNumber if present, otherwise by XML document order)
+        define_dataset_key_sequence - ordered list of key sequence variables in the dataset
+        define_dataset_has_no_data - whether a dataset has no data
+
+        ...,
         """
         # 1. Build define xml dataframe
         define_df = self._get_define_xml_dataframe()
@@ -63,13 +70,44 @@ class DatasetMetadataDefineDatasetBuilder(BaseDatasetBuilder):
             "define_dataset_class",
             "define_dataset_structure",
             "define_dataset_is_non_standard",
+            "define_dataset_variables",
+            "define_dataset_variable_order",
+            "define_dataset_key_sequence",
             "define_dataset_has_no_data",
         ]
         define_metadata = self.get_define_metadata()
         if not define_metadata:
             logger.info(f"No define_metadata is provided for {__name__}.")
             return self.dataset_implementation(columns=define_col_order)
-        return self.dataset_implementation.from_records(define_metadata)
+        define_xml_reader = DefineXMLReaderFactory.get_define_xml_reader(
+            self.dataset_path, self.define_xml_path, self.data_service, self.cache
+        )
+        enriched_metadata = []
+        for basic_metadata in define_metadata:
+            dataset_name = basic_metadata.get("define_dataset_name")
+            if dataset_name:
+                try:
+                    full_metadata = define_xml_reader.extract_dataset_metadata(
+                        dataset_name
+                    )
+                    enriched_metadata.append(full_metadata)
+                except Exception as e:
+                    logger.trace(e)
+                    logger.error(
+                        f"Error extracting metadata for {dataset_name}: {str(e)}"
+                    )
+                    basic_metadata["define_dataset_variables"] = None
+                    basic_metadata["define_dataset_variable_order"] = None
+                    basic_metadata["define_dataset_key_sequence"] = None
+                    basic_metadata["define_dataset_has_no_data"] = None
+                    enriched_metadata.append(basic_metadata)
+            else:
+                basic_metadata["define_dataset_variables"] = None
+                basic_metadata["define_dataset_variable_order"] = None
+                basic_metadata["define_dataset_key_sequence"] = None
+                basic_metadata["define_dataset_has_no_data"] = None
+                enriched_metadata.append(basic_metadata)
+        return self.dataset_implementation.from_records(enriched_metadata)
 
     def _ensure_required_columns(self, dataset_df, dataset_col_order):
         if "dataset_size" not in dataset_df.columns:

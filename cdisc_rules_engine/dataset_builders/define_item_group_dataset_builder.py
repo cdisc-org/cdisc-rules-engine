@@ -15,6 +15,7 @@ class DefineItemGroupDatasetBuilder(BaseDatasetBuilder):
             "define_dataset_structure"
             "define_dataset_is_non_standard"
             "define_dataset_variables"
+            "define_dataset_variable_order"
             "define_dataset_key_sequence"
             "define_dataset_has_no_data"
         """

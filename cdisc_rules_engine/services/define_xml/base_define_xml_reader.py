@@ -120,6 +120,11 @@ class BaseDefineXMLReader(ABC):
                 for item in dataset_metadata.ItemRef
                 if item.ItemOID in item_mapping
             ]
+            dataset_metadata_dict["define_dataset_variable_order"] = (
+                self._get_ordered_dataset_variables(
+                    dataset_metadata.ItemRef, item_mapping
+                )
+            )
             dataset_metadata_dict["define_dataset_key_sequence"] = (
                 self.get_dataset_key_sequence(dataset_name)
             )
@@ -148,6 +153,11 @@ class BaseDefineXMLReader(ABC):
                 for item in domain_metadata.ItemRef
                 if item.ItemOID in item_mapping
             ]
+            domain_metadata_dict["define_dataset_variable_order"] = (
+                self._get_ordered_dataset_variables(
+                    domain_metadata.ItemRef, item_mapping
+                )
+            )
             domain_metadata_dict["define_dataset_key_sequence"] = (
                 self.get_domain_key_sequence(domain_name)
             )
@@ -337,6 +347,17 @@ class BaseDefineXMLReader(ABC):
             return itemref.OrderNumber
         else:
             return index + 1
+
+    def _get_ordered_dataset_variables(self, item_refs, item_mapping):
+        item_refs_with_order = []
+        for index, item_ref in enumerate(item_refs):
+            if item_ref.ItemOID in item_mapping:
+                order_number = self._get_order_number(item_ref, index)
+                item_def = item_mapping.get(item_ref.ItemOID)
+                if item_def:
+                    item_refs_with_order.append((order_number, item_def.Name))
+        item_refs_with_order.sort(key=lambda x: x[0])
+        return [var_name for _, var_name in item_refs_with_order]
 
     def _get_item_def_representation(self, itemdef, itemref, codelists, index) -> dict:
         """

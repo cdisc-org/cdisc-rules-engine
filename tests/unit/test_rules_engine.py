@@ -1336,6 +1336,9 @@ def test_validate_single_dataset_not_equal_to(
     ],
 )
 @patch(
+    "cdisc_rules_engine.services.define_xml.define_xml_reader_factory.DefineXMLReaderFactory.get_define_xml_reader"
+)
+@patch(
     "cdisc_rules_engine.dataset_builders.base_dataset_builder."
     + "BaseDatasetBuilder.get_define_metadata"
 )
@@ -1345,6 +1348,7 @@ def test_validate_single_dataset_not_equal_to(
 def test_validate_dataset_metadata_against_define_xml(
     mock_get_dataset_metadata: MagicMock,
     mock_get_define_xml_metadata_for_domain: MagicMock,
+    mock_get_define_xml_reader: MagicMock,
     define_xml_validation_rule: dict,
     define_xml_metadata: dict,
     dataset_mock: PandasDataset,
@@ -1354,6 +1358,9 @@ def test_validate_dataset_metadata_against_define_xml(
     Unit test for Define XML validation.
     Creates an invalid dataset and validates it against Define XML.
     """
+    mock_reader = MagicMock()
+    mock_reader.extract_dataset_metadata.side_effect = Exception("Mock exception")
+    mock_get_define_xml_reader.return_value = mock_reader
     mock_get_define_xml_metadata_for_domain.return_value = define_xml_metadata
     mock_get_dataset_metadata.return_value = dataset_mock
 
