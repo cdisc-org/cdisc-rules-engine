@@ -625,9 +625,16 @@ class DataframeType(BaseType):
                 comparison_data, self.value[target]
             )
         elif self.value.is_series(comparison_data):
-            results = self._series_is_in(
-                self.convert_string_data_to_lower(self.value[target]),
-                self.convert_string_data_to_lower(comparison_data),
+            # column vs column case: perform element-wise case-insensitive substring check
+            target_series = self.convert_string_data_to_lower(self.value[target])
+            comparison_series = self.convert_string_data_to_lower(comparison_data)
+            results = target_series.combine(
+                comparison_series,
+                lambda t, c: (
+                    vectorized_case_insensitive_is_in(c, [t])[0]
+                    if pd.notna(t) and pd.notna(c)
+                    else False
+                ),
             )
         else:
             results = vectorized_case_insensitive_is_in(
