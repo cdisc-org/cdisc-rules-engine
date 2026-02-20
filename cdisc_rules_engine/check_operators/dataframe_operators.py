@@ -15,7 +15,7 @@ from cdisc_rules_engine.check_operators.helpers import (
     apply_rounding,
     is_in,
 )
-
+from cdisc_rules_engine.enums.dataset_title_case import DatasetTitleCase
 from cdisc_rules_engine.constants import NULL_FLAVORS
 from cdisc_rules_engine.utilities.utils import dates_overlap, parse_date
 import numpy as np
@@ -23,6 +23,7 @@ import dask.dataframe as dd
 import pandas as pd
 import re
 import operator
+from titlecase import titlecase
 from uuid import uuid4
 from cdisc_rules_engine.models.dataset.dask_dataset import DaskDataset
 from cdisc_rules_engine.models.dataset.dataset_interface import DatasetInterface
@@ -1073,7 +1074,7 @@ class DataframeType(BaseType):
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
     def invalid_date(self, other_value):
-        target = self.replace_prefix(other_value.get("target"))
+        target = other_value.get("target")
         results = ~vectorized_is_valid(self.value[target])
         return self.value.convert_to_series(results)
 
@@ -1140,7 +1141,7 @@ class DataframeType(BaseType):
     @log_operator_execution
     @type_operator(FIELD_DATAFRAME)
     def is_complete_date(self, other_value):
-        target = self.replace_prefix(other_value.get("target"))
+        target = other_value.get("target")
         results = vectorized_is_complete_date(self.value[target])
         return self.value.convert_to_series(results)
 
@@ -1873,3 +1874,39 @@ class DataframeType(BaseType):
     @type_operator(FIELD_DATAFRAME)
     def is_not_ordered_subset_of(self, other_value: dict):
         return ~self.is_ordered_subset_of(other_value)
+
+    @log_operator_execution
+    @type_operator(FIELD_DATAFRAME)
+    def is_title_case(self, other_value: dict):
+        """
+        Checks if target column values are in proper title case.
+        """
+        target = other_value.get("target")
+        acronyms = DatasetTitleCase.Acronyms.value
+        lowercase_exceptions = DatasetTitleCase.Lowercase_Exceptions.value
+
+        def acronym_callback(word, **kwargs):
+            if word.lower() in lowercase_exceptions:
+                return word.lower()
+            if any(word.upper() == acr.upper() for acr in acronyms):
+                return word.upper()
+            return None
+
+        def check_title_case(value):
+            if pd.isna(value) or value == "" or value in NULL_FLAVORS:
+                return True
+            str_value = str(value).strip()
+            expected = titlecase(str_value, callback=acronym_callback)
+            expected = expected[0].upper() + expected[1:]
+            return str_value == expected
+
+        results = self.value[target].apply(check_title_case)
+        return self.value.convert_to_series(results)
+
+    @log_operator_execution
+    @type_operator(FIELD_DATAFRAME)
+    def is_not_title_case(self, other_value: dict):
+        """
+        Checks if target column values are NOT in proper title case.
+        """
+        return ~self.is_title_case(other_value)
