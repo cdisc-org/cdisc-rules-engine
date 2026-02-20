@@ -367,7 +367,6 @@ class RulesEngine:
                 dataset_metadata.full_path, dataset_metadata.unsplit_name
             )
             kwargs["value_level_metadata"] = value_level_metadata
-
         elif (
             rule.get("rule_type")
             == RuleTypes.DATASET_CONTENTS_CHECK_AGAINST_DEFINE_AND_LIBRARY.value

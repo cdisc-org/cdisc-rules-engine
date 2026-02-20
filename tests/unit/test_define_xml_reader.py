@@ -2,8 +2,10 @@
 This module contains unit tests for DefineXMLReader class.
 """
 
+import os.path
 from pathlib import Path
 from typing import List
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -434,3 +436,80 @@ def test_extract_domain_metadata_nv_has_no_data(filename, has_no_data):
         # Check that at least one expected variable is present
         for v in ["NVSEQ", "NVTESTCD", "NVTEST"]:
             assert v in domain_metadata["define_dataset_variables"]
+
+
+@pytest.fixture
+def define_xml_reader() -> BaseDefineXMLReader:
+    with open(os.path.join(resources_path.joinpath("define.xml")), "rb") as file:
+        contents: bytes = file.read()
+        reader = DefineXMLReaderFactory.from_file_contents(contents)
+        return reader
+
+
+def test_ccode_taken_from_itemdef_codelist(define_xml_reader):
+    codelist_item = object()
+    codelists = {"CL.ITEM": codelist_item}
+
+    itemdef = MagicMock()
+    itemdef.CodeListRef = MagicMock(CodeListOID="CL.ITEM")
+
+    first_list_element = MagicMock()
+    first_list_element.CodeListRef = MagicMock(CodeListOID="CL.VL")
+
+    itemref = MagicMock()
+
+    def fake_get_ccode(codelist):
+        if codelist is codelist_item:
+            return "CCODE_FROM_ITEMDEF"
+        return "WRONG"
+
+    define_xml_reader._get_codelist_ccode = MagicMock(side_effect=fake_get_ccode)
+    define_xml_reader._get_codelist_allowed_terms = MagicMock(return_value=[])
+    define_xml_reader._get_codelist_coded_values = MagicMock(return_value=[])
+    define_xml_reader._get_codelist_coded_codes = MagicMock(return_value=[])
+
+    result = define_xml_reader._get_item_def_representation(
+        itemdef, itemref, codelists, 0, first_list_element
+    )
+
+    assert result["define_variable_ccode"] == "CCODE_FROM_ITEMDEF"
+
+
+def test_ccode_taken_from_value_list_first_item(define_xml_reader):
+
+    codelist_vl = object()
+    codelists = {"CL.VL": codelist_vl}
+
+    # itemdef без CodeListRef
+    itemdef = MagicMock()
+    itemdef.CodeListRef = None
+
+    # first_list_element с CodeListRef
+    first_list_element = MagicMock()
+    first_list_element.CodeListRef = MagicMock(CodeListOID="CL.VL")
+
+    itemref = MagicMock()
+
+    define_xml_reader._get_codelist_ccode = MagicMock(return_value="CCODE_FROM_VL")
+
+    result = define_xml_reader._get_item_def_representation(
+        itemdef, itemref, codelists, 0, first_list_element
+    )
+
+    assert result["define_variable_ccode"] == "CCODE_FROM_VL"
+
+
+def test_no_ccode_when_no_codelists(define_xml_reader):
+    itemdef = MagicMock()
+    itemdef.CodeListRef = None
+
+    first_list_element = MagicMock()
+    first_list_element.CodeListRef = None
+
+    itemref = MagicMock()
+
+    result = define_xml_reader._get_item_def_representation(
+        itemdef, itemref, {}, 0, first_list_element
+    )
+
+    assert result["define_variable_ccode"] == ""
