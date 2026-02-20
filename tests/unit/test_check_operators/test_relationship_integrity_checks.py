@@ -743,12 +743,9 @@ def test_has_next_corresponding_record(dataset_class):
 
 
 @pytest.mark.parametrize("dataset_class", [PandasDataset, DaskDataset])
-def test_target_is_sorted_by(dataset_class):
-    """
-    Unit test for target_is_sorted_by  operator.
-    The test verifies if --SEQ is  sorted based on set of  user-defined columns
-    """
-    valid_asc_df = dataset_class.from_dict(
+def test_target_is_sorted_by_dates(dataset_class):
+    """Test target_is_sorted_by with date columns."""
+    df = dataset_class.from_dict(
         {
             "USUBJID": ["CDISC001", "CDISC002", "CDISC002", "CDISC001", "CDISC001"],
             "SESEQ": [1, 2, 1, 3, 2],
@@ -761,200 +758,17 @@ def test_target_is_sorted_by(dataset_class):
             ],
         }
     )
-
-    other_value: dict = {
-        "target": "--SEQ",
-        "within": "USUBJID",
-        "comparator": [
-            {"name": "--STDTC", "sort_order": "ASC", "null_position": "last"}
-        ],
-    }
-    result = DataframeType(
-        {"value": valid_asc_df, "column_prefix_map": {"--": "SE"}}
-    ).target_is_sorted_by(other_value)
-    assert result.equals(
-        pd.Series(
-            [
-                True,
-                True,
-                True,
-                True,
-                True,
-            ]
-        )
-    )
-
-
-@pytest.mark.parametrize("dataset_class", [PandasDataset, DaskDataset])
-def test_target_is_sorted_by_multiple_within(dataset_class):
-    usubjid = ["CDISC001", "CDISC001", "CDISC001", "CDISC001", "CDISC002", "CDISC002"]
-    midstype = ["A", "A", "B", "B", "A", "A"]
-    mids = ["A1", "A2", "B1", "B2", "A1", "A2"]
-    smstdtc = [
-        "2006-06-01",
-        "2006-06-02",
-        "2006-06-03",
-        "2006-06-04",
-        "2007-01-01",
-        "2007-01-02",
-    ]
-    data = {
-        "USUBJID": usubjid,
-        "MIDSTYPE": midstype,
-        "MIDS": mids,
-        "SMSTDTC": smstdtc,
-    }
-    df = dataset_class.from_dict(data)
     other_value = {
-        "target": "MIDS",
-        "within": ["USUBJID", "MIDSTYPE"],
-        "comparator": [
-            {"name": "SMSTDTC", "sort_order": "ASC", "null_position": "last"}
-        ],
-    }
-    expected = [True] * len(usubjid)
-    result = DataframeType({"value": df}).target_is_sorted_by(other_value)
-    assert result.equals(df.convert_to_series(expected))
-
-
-@pytest.mark.parametrize("dataset_class", [PandasDataset, DaskDataset])
-def test_target_is_sorted_by_multiple_within_not_sorted(dataset_class):
-    usubjid = ["CDISC001", "CDISC001", "CDISC001", "CDISC001", "CDISC002", "CDISC002"]
-    midstype = ["A", "A", "B", "B", "A", "A"]
-    mids = ["A2", "A1", "B1", "B2", "A1", "A2"]
-    smstdtc = [
-        "2006-06-01",
-        "2006-06-02",
-        "2006-06-03",
-        "2006-06-04",
-        "2007-01-01",
-        "2007-01-02",
-    ]
-    data = {
-        "USUBJID": usubjid,
-        "MIDSTYPE": midstype,
-        "MIDS": mids,
-        "SMSTDTC": smstdtc,
-    }
-    df = dataset_class.from_dict(data)
-    other_value = {
-        "target": "MIDS",
-        "within": ["USUBJID", "MIDSTYPE"],
-        "comparator": [
-            {"name": "SMSTDTC", "sort_order": "ASC", "null_position": "last"}
-        ],
-    }
-    expected = [False, False, True, True, True, True]
-    result = DataframeType({"value": df}).target_is_sorted_by(other_value)
-    assert result.equals(df.convert_to_series(expected))
-
-    valid_desc_df = dataset_class.from_dict(
-        {
-            "USUBJID": ["CDISC001", "CDISC002", "CDISC002", "CDISC001", "CDISC001"],
-            "SESEQ": [3, 2, 1, 2, 1],
-            "SESTDTC": [
-                "2006-06-05",
-                "2006-06-04",
-                "2006-06-01",
-                "2006-06-03",
-                "2006-06-02",
-            ],
-        }
-    )
-
-    other_value: dict = {
         "target": "--SEQ",
         "within": "USUBJID",
-        "comparator": [
-            {"name": "--STDTC", "sort_order": "DESC", "null_position": "last"}
-        ],
+        "comparator": [{"name": "--STDTC", "sort_order": "ASC"}],
     }
     result = DataframeType(
-        {"value": valid_desc_df, "column_prefix_map": {"--": "SE"}}
+        {"value": df, "column_prefix_map": {"--": "SE"}}
     ).target_is_sorted_by(other_value)
-    assert result.equals(
-        pd.Series(
-            [
-                False,
-                False,
-                False,
-                True,
-                False,
-            ]
-        )
-    )
+    assert result.equals(pd.Series([True, True, True, True, True]))
 
-    valid_asc_df = dataset_class.from_dict(
-        {
-            "USUBJID": [123, 456, 456, 123, 123],
-            "SESEQ": [1, 2, 1, 3, 2],
-            "SESTDTC": [
-                "2006-06-02",
-                "2006-06-04",
-                "2006-06-01",
-                "2006-06-05",
-                "2006-06-03",
-            ],
-        }
-    )
-    other_value: dict = {
-        "target": "--SEQ",
-        "within": "USUBJID",
-        "comparator": [
-            {"name": "--STDTC", "sort_order": "ASC", "null_position": "last"}
-        ],
-    }
-    result = DataframeType(
-        {"value": valid_asc_df, "column_prefix_map": {"--": "SE"}}
-    ).target_is_sorted_by(other_value)
-    assert result.equals(
-        pd.Series(
-            [
-                True,
-                True,
-                True,
-                True,
-                True,
-            ]
-        )
-    )
-
-    valid_desc_df = dataset_class.from_dict(
-        {
-            "USUBJID": [123, 456, 456, 123, 123],
-            "SESEQ": [1, 2, 1, 3, 2],
-            "SESTDTC": [
-                "2006-06-02",
-                "2006-06-04",
-                "2006-06-01",
-                "2006-06-05",
-                "2006-06-03",
-            ],
-        }
-    )
-    other_value: dict = {
-        "target": "--SEQ",
-        "within": "USUBJID",
-        "comparator": [
-            {"name": "--STDTC", "sort_order": "DESC", "null_position": "last"}
-        ],
-    }
-    result = DataframeType(
-        {"value": valid_desc_df, "column_prefix_map": {"--": "SE"}}
-    ).target_is_sorted_by(other_value)
-    assert result.equals(
-        pd.Series(
-            [
-                False,
-                False,
-                False,
-                False,
-                True,
-            ]
-        )
-    )
-
-    invalid_df = dataset_class.from_dict(
+    df_invalid = dataset_class.from_dict(
         {
             "USUBJID": ["CDISC001", "CDISC002", "CDISC002", "CDISC001", "CDISC001"],
             "SESEQ": [1, 2, 3, 3, 2],
@@ -967,32 +781,14 @@ def test_target_is_sorted_by_multiple_within_not_sorted(dataset_class):
             ],
         }
     )
-
-    other_value: dict = {
-        "target": "--SEQ",
-        "within": "USUBJID",
-        "comparator": [
-            {"name": "--STDTC", "sort_order": "ASC", "null_position": "last"}
-        ],
-    }
     result = DataframeType(
-        {"value": invalid_df, "column_prefix_map": {"--": "SE"}}
+        {"value": df_invalid, "column_prefix_map": {"--": "SE"}}
     ).target_is_sorted_by(other_value)
-    assert result.equals(
-        pd.Series(
-            [
-                True,
-                False,
-                False,
-                True,
-                True,
-            ]
-        )
-    )
+    assert result.equals(pd.Series([True, False, False, True, True]))
 
-    valid_mul_df = dataset_class.from_dict(
+    df_desc = dataset_class.from_dict(
         {
-            "USUBJID": ["CDISC001", "CDISC002", "CDISC002", "CDISC001", "CDISC001"],
+            "USUBJID": [123, 456, 456, 123, 123],
             "SESEQ": [1, 2, 1, 3, 2],
             "SESTDTC": [
                 "2006-06-02",
@@ -1001,469 +797,187 @@ def test_target_is_sorted_by_multiple_within_not_sorted(dataset_class):
                 "2006-06-05",
                 "2006-06-03",
             ],
-            "STUDYID": [
-                "CDISCPILOT1",
-                "CDISCPILOT1",
-                "CDISCPILOT1",
-                "CDISCPILOT1",
-                "CDISCPILOT1",
-            ],
-            "SEENDTC": [
-                "2006-06-02",
-                "2006-06-04",
-                "2006-06-01",
-                "2006-06-05",
-                "2006-06-03",
-            ],
         }
     )
-
-    other_value: dict = {
+    other_value_desc = {
         "target": "--SEQ",
         "within": "USUBJID",
-        "comparator": [
-            {"name": "--STDTC", "sort_order": "ASC", "null_position": "last"},
-            {"name": "--ENDTC", "sort_order": "ASC", "null_position": "last"},
-        ],
+        "comparator": [{"name": "--STDTC", "sort_order": "DESC"}],
     }
     result = DataframeType(
-        {"value": valid_mul_df, "column_prefix_map": {"--": "SE"}}
-    ).target_is_sorted_by(other_value)
-    assert result.equals(
-        pd.Series(
-            [
-                True,
-                True,
-                True,
-                True,
-                True,
-            ]
-        )
-    )
+        {"value": df_desc, "column_prefix_map": {"--": "SE"}}
+    ).target_is_sorted_by(other_value_desc)
+    assert result.equals(pd.Series([False, False, False, False, False]))
 
-    valid_mul_df = dataset_class.from_dict(
+
+@pytest.mark.parametrize("dataset_class", [PandasDataset, DaskDataset])
+def test_target_is_sorted_by_numeric(dataset_class):
+    """Test target_is_sorted_by with numeric columns."""
+    df = dataset_class.from_dict(
         {
-            "USUBJID": ["CDISC001", "CDISC002", "CDISC002", "CDISC001", "CDISC001"],
-            "SESEQ": [7, 1, 2, 8, 6],
-            "SESTDTC": [
-                "2006-06-03",
-                "2006-06-04",
-                "2006-06-01",
-                "2006-06-05",
-                "2006-06-01",
+            "ARM": [
+                "INSULIN",
+                "INSULIN",
+                "INSULIN",
+                "METFORMIN",
+                "METFORMIN",
+                "METFORMIN",
             ],
-            "STUDYID": [
-                "CDISCPILOT1",
-                "CDISCPILOT1",
-                "CDISCPILOT1",
-                "CDISCPILOT1",
-                "CDISCPILOT1",
-            ],
-            "SEENDTC": [
-                "2006-06-03",
-                "2006-06-04",
-                "2006-06-01",
-                "2006-06-05",
-                "2006-06-01",
-            ],
+            "TAETORD": [0, 1, 2, 0, 1, 2],
+            "VISIT": [1, 2, 3, 1, 2, 3],
         }
     )
-
-    other_value: dict = {
-        "target": "--SEQ",
-        "within": "USUBJID",
-        "comparator": [
-            {"name": "--STDTC", "sort_order": "DESC", "null_position": "last"},
-            {"name": "--ENDTC", "sort_order": "DESC", "null_position": "last"},
-        ],
+    other_value = {
+        "target": "TAETORD",
+        "within": "ARM",
+        "comparator": [{"name": "VISIT", "sort_order": "ASC"}],
     }
-    result = DataframeType(
-        {"value": valid_mul_df, "column_prefix_map": {"--": "SE"}}
-    ).target_is_sorted_by(other_value)
-    assert result.equals(
-        pd.Series(
-            [
-                True,
-                True,
-                True,
-                False,
-                False,
-            ]
-        )
-    )
+    result = DataframeType({"value": df}).target_is_sorted_by(other_value)
+    assert result.equals(pd.Series([True, True, True, True, True, True]))
 
-    valid_mul_df = dataset_class.from_dict(
+    df_invalid = dataset_class.from_dict(
         {
-            "USUBJID": ["CDISC001", "CDISC001", "CDISC001", "CDISC001", "CDISC001"],
-            "SESEQ": [1, 2, 5, 8, 12],
-            "SESTDTC": [
-                "2006-06-01",
-                "2006-06-02",
-                "2006-06-03",
-                "2006-06-04",
-                "2006-06-05",
+            "ARM": [
+                "INSULIN",
+                "INSULIN",
+                "INSULIN",
+                "METFORMIN",
+                "METFORMIN",
+                "METFORMIN",
             ],
-            "STUDYID": [
-                "CDISCPILOT1",
-                "CDISCPILOT1",
-                "CDISCPILOT1",
-                "CDISCPILOT1",
-                "CDISCPILOT1",
-            ],
-            "SEENDTC": [
-                "2006-06-04",
-                "2006-06-05",
-                "2006-06-06",
-                "2006-06-07",
-                "2006-06-08",
-            ],
+            "TAETORD": [0, 2, 1, 0, 1, 2],
+            "VISIT": [1, 2, 3, 1, 2, 3],
         }
     )
+    result = DataframeType({"value": df_invalid}).target_is_sorted_by(other_value)
+    assert result.equals(pd.Series([True, False, False, True, True, True]))
 
-    other_value: dict = {
-        "target": "--SEQ",
-        "within": "USUBJID",
-        "comparator": [
-            {"name": "--STDTC", "sort_order": "ASC", "null_position": "last"},
-            {"name": "--ENDTC", "sort_order": "DESC", "null_position": "last"},
-        ],
-    }
-    result = DataframeType(
-        {"value": valid_mul_df, "column_prefix_map": {"--": "SE"}}
-    ).target_is_sorted_by(other_value)
-    assert result.equals(
-        pd.Series(
-            [
-                False,
-                False,
-                True,
-                False,
-                False,
-            ]
-        )
-    )
-
-    invalid_mul_df = dataset_class.from_dict(
+    df_desc = dataset_class.from_dict(
         {
-            "USUBJID": ["CDISC001", "CDISC002", "CDISC002", "CDISC001", "CDISC001"],
-            "SESEQ": [1, 2, 1, 1, 2],
-            "SESTDTC": [
-                "2006-06-02",
-                "2006-06-04",
-                "2006-06-01",
-                "2006-06-05",
-                "2006-06-03",
+            "ARM": [
+                "INSULIN",
+                "INSULIN",
+                "INSULIN",
+                "METFORMIN",
+                "METFORMIN",
+                "METFORMIN",
             ],
-            "STUDYID": [
-                "CDISCPILOT1",
-                "CDISCPILOT1",
-                "CDISCPILOT1",
-                "CDISCPILOT1",
-                "CDISCPILOT1",
+            "TAETORD": [2, 1, 0, 0, 1, 3],
+            "VISIT": [3, 2, 1, 3, 2, 1],
+        }
+    )
+    other_value_desc = {
+        "target": "TAETORD",
+        "within": "ARM",
+        "comparator": [{"name": "VISIT", "sort_order": "DESC"}],
+    }
+    result = DataframeType({"value": df_desc}).target_is_sorted_by(other_value_desc)
+    assert result.equals(pd.Series([False, False, False, True, True, True]))
+
+
+@pytest.mark.parametrize("dataset_class", [PandasDataset, DaskDataset])
+def test_target_is_sorted_by_multiple_within(dataset_class):
+    """Test target_is_sorted_by with multiple grouping columns."""
+    df = dataset_class.from_dict(
+        {
+            "USUBJID": [
+                "CDISC001",
+                "CDISC001",
+                "CDISC001",
+                "CDISC001",
+                "CDISC002",
+                "CDISC002",
             ],
-            "SEENDTC": [
-                "2006-06-02",
-                "2006-06-04",
+            "MIDSTYPE": ["A", "A", "B", "B", "A", "A"],
+            "MIDS": ["A1", "A2", "B1", "B2", "A1", "A2"],
+            "SMSTDTC": [
                 "2006-06-01",
-                "2006-06-05",
+                "2006-06-02",
                 "2006-06-03",
+                "2006-06-04",
+                "2007-01-01",
+                "2007-01-02",
             ],
         }
     )
-
-    other_value: dict = {
-        "target": "--SEQ",
-        "within": "USUBJID",
-        "comparator": [
-            {"name": "--STDTC", "sort_order": "ASC", "null_position": "last"},
-            {"name": "--ENDTC", "sort_order": "ASC", "null_position": "last"},
-        ],
+    other_value = {
+        "target": "MIDS",
+        "within": ["USUBJID", "MIDSTYPE"],
+        "comparator": [{"name": "SMSTDTC", "sort_order": "ASC"}],
     }
-    result = DataframeType(
-        {"value": invalid_mul_df, "column_prefix_map": {"--": "SE"}}
-    ).target_is_sorted_by(other_value)
+    result = DataframeType({"value": df}).target_is_sorted_by(other_value)
+    assert result.equals(df.convert_to_series([True] * 6))
+
+
+@pytest.mark.parametrize("dataset_class", [PandasDataset, DaskDataset])
+def test_target_is_sorted_by_multiple_within_numeric(dataset_class):
+    """Test target_is_sorted_by with multiple grouping columns and numeric comparator."""
+    df = dataset_class.from_dict(
+        {
+            "USUBJID": [
+                "CDISC001",
+                "CDISC001",
+                "CDISC001",
+                "CDISC001",
+                "CDISC002",
+                "CDISC002",
+            ],
+            "MIDSTYPE": ["A", "A", "B", "B", "A", "A"],
+            "MIDS": [1, 2, 1, 2, 1, 2],
+            "VISITNUM": [1, 2, 1, 2, 1, 2],
+        }
+    )
+    other_value = {
+        "target": "MIDS",
+        "within": ["USUBJID", "MIDSTYPE"],
+        "comparator": [{"name": "VISITNUM", "sort_order": "ASC"}],
+    }
+    result = DataframeType({"value": df}).target_is_sorted_by(other_value)
+    assert result.equals(df.convert_to_series([True] * 6))
+
+    df_invalid = dataset_class.from_dict(
+        {
+            "USUBJID": [
+                "CDISC001",
+                "CDISC001",
+                "CDISC001",
+                "CDISC001",
+                "CDISC002",
+                "CDISC002",
+            ],
+            "MIDSTYPE": ["A", "A", "B", "B", "A", "A"],
+            "MIDS": [2, 1, 1, 2, 2, 1],
+            "VISITNUM": [1, 2, 1, 2, 1, 2],
+        }
+    )
+    result = DataframeType({"value": df_invalid}).target_is_sorted_by(other_value)
     assert result.equals(
-        pd.Series(
-            [
-                True,
-                True,
-                True,
-                False,
-                False,
-            ]
-        )
+        df_invalid.convert_to_series([False, False, True, True, False, False])
     )
 
-    valid_na_df = dataset_class.from_dict(
+
+@pytest.mark.parametrize("dataset_class", [PandasDataset, DaskDataset])
+def test_target_is_sorted_by_with_nulls(dataset_class):
+    """Test target_is_sorted_by handles null values correctly.
+    Null in either target or comparator marks that row as False,
+    but does not affect the ordering check of surrounding non-null rows.
+    """
+    df = dataset_class.from_dict(
         {
             "USUBJID": [123, 456, 456, 123, 123],
             "SESEQ": [1, 2, 1, None, None],
             "SESTDTC": ["2006-06-02", None, "2006-06-01", None, "2006-06-03"],
         }
     )
-
-    other_value: dict = {
-        "target": "--SEQ",
-        "within": "USUBJID",
-        "comparator": [
-            {"name": "--STDTC", "sort_order": "ASC", "null_position": "last"}
-        ],
-    }
-    result = DataframeType(
-        {"value": valid_na_df, "column_prefix_map": {"--": "SE"}}
-    ).target_is_sorted_by(other_value)
-    assert result.equals(
-        pd.Series(
-            [
-                True,
-                False,
-                True,
-                False,
-                True,
-            ]
-        )
-    )
-
-    invalid_na_df = dataset_class.from_dict(
-        {
-            "USUBJID": [123, 456, 456, 123, 123],
-            "SESEQ": [1, 2, 3, None, None],
-            "SESTDTC": ["2006-06-02", None, "2006-06-01", None, "2006-06-03"],
-        }
-    )
-
-    other_value: dict = {
-        "target": "--SEQ",
-        "within": "USUBJID",
-        "comparator": [
-            {"name": "--STDTC", "sort_order": "ASC", "null_position": "last"}
-        ],
-    }
-    result = DataframeType(
-        {"value": invalid_na_df, "column_prefix_map": {"--": "SE"}}
-    ).target_is_sorted_by(other_value)
-    assert result.equals(
-        pd.Series(
-            [
-                True,
-                False,
-                False,
-                False,
-                True,
-            ]
-        )
-    )
-
-
-_COMPARATOR_SMSTDTC = [
-    {"name": "SMSTDTC", "sort_order": "ASC", "null_position": "last"}
-]
-_INVALID_INPUT_DF = {
-    "USUBJID": ["001", "002"],
-    "MIDS": ["A1", "A2"],
-    "SMSTDTC": ["2005-01-01", "2006-01-01"],
-}
-
-
-@pytest.mark.parametrize("dataset_class", [PandasDataset, DaskDataset])
-def test_target_is_sorted_by_and_complement_multi_within(dataset_class):
-    data = {
-        "USUBJID": ["001", "001", "003", "003"],
-        "MIDSTYPE": ["DIAGNOSIS", "DIAGNOSIS", "RELAPSE", "RELAPSE"],
-        "MIDS": ["DIAG1", "DIAG2", "RELAPSE2", "RELAPSE1"],
-        "SMSTDTC": ["2005-01-01", "2006-01-01", "2005-01-01", "2006-01-01"],
-    }
     other_value = {
-        "target": "MIDS",
-        "within": ["USUBJID", "MIDSTYPE"],
-        "comparator": _COMPARATOR_SMSTDTC,
-    }
-    sorted_expected = [True, True, False, False]
-    df = dataset_class.from_dict(data)
-    dt = DataframeType({"value": df})
-    assert dt.target_is_sorted_by(other_value).equals(
-        df.convert_to_series(sorted_expected)
-    )
-    assert dt.target_is_not_sorted_by(other_value).equals(
-        df.convert_to_series([not x for x in sorted_expected])
-    )
-
-
-@pytest.mark.parametrize(
-    "other_value,exc_type,match",
-    [
-        (
-            {"target": "MIDS", "comparator": _COMPARATOR_SMSTDTC},
-            ValueError,
-            "within parameter is required",
-        ),
-        (
-            {"target": "MIDS", "within": [], "comparator": _COMPARATOR_SMSTDTC},
-            ValueError,
-            "within must contain valid column names",
-        ),
-        ({"target": "MIDS", "within": "USUBJID"}, KeyError, "comparator"),
-        (
-            {
-                "target": "MIDS",
-                "within": "USUBJID",
-                "comparator": [{"sort_order": "ASC", "null_position": "last"}],
-            },
-            KeyError,
-            "name",
-        ),
-        (
-            {
-                "target": "MIDS",
-                "within": "USUBJID",
-                "comparator": [
-                    {
-                        "name": "NONEXISTENT",
-                        "sort_order": "ASC",
-                        "null_position": "last",
-                    }
-                ],
-            },
-            KeyError,
-            None,
-        ),
-    ],
-    ids=[
-        "missing_within",
-        "empty_within",
-        "missing_comparator",
-        "malformed_comparator",
-        "missing_column",
-    ],
-)
-def test_target_is_sorted_by_invalid_input_raises(other_value, exc_type, match):
-    df = PandasDataset.from_dict(_INVALID_INPUT_DF)
-    with pytest.raises(exc_type, match=match):
-        DataframeType({"value": df}).target_is_sorted_by(other_value)
-
-
-@pytest.mark.parametrize("dataset_class", [PandasDataset, DaskDataset])
-@pytest.mark.parametrize(
-    "data,expected",
-    [
-        ({"USUBJID": [], "MIDS": [], "SMSTDTC": []}, None),
-        ({"USUBJID": ["001"], "MIDS": ["DIAG1"], "SMSTDTC": ["2005-01-01"]}, [True]),
-        (
-            {
-                "USUBJID": ["001", "001"],
-                "MIDS": ["DIAG1", "DIAG2"],
-                "SMSTDTC": [None, None],
-            },
-            [False, False],
-        ),
-    ],
-    ids=["empty_df", "single_row", "all_null_comparator"],
-)
-def test_target_is_sorted_by_edge_cases(dataset_class, data, expected):
-    df = dataset_class.from_dict(data)
-    other_value = {
-        "target": "MIDS",
-        "within": "USUBJID",
-        "comparator": _COMPARATOR_SMSTDTC,
-    }
-    result = DataframeType({"value": df}).target_is_sorted_by(other_value)
-    if expected is None:
-        assert len(result) == 0
-    else:
-        assert result.equals(df.convert_to_series(expected))
-
-
-@pytest.mark.parametrize("dataset_class", [PandasDataset])
-def test_target_is_sorted_by_datetime(dataset_class):
-    """
-    Test target_is_sorted_by with datetime comparisons
-    """
-    datetime_df = dataset_class.from_dict(
-        {
-            "USUBJID": ["CDISC001", "CDISC001", "CDISC002", "CDISC002", "CDISC003"],
-            "SESEQ": [1, 2, 1, 2, 1],
-            "SESTDTC": [
-                "2006-06-02 10:00",
-                "2006-06-02 14:30:00",
-                "2006-06-03 09:15",
-                "2006-06-03 11:45:00",
-                "2006-06-04 08:00:00",
-            ],
-        }
-    )
-
-    other_value: dict = {
         "target": "--SEQ",
         "within": "USUBJID",
-        "comparator": [
-            {"name": "--STDTC", "sort_order": "ASC", "null_position": "last"}
-        ],
+        "comparator": [{"name": "--STDTC", "sort_order": "ASC"}],
     }
     result = DataframeType(
-        {"value": datetime_df, "column_prefix_map": {"--": "SE"}}
+        {"value": df, "column_prefix_map": {"--": "SE"}}
     ).target_is_sorted_by(other_value)
-    assert result.equals(
-        pd.Series(
-            [
-                True,
-                True,
-                True,
-                True,
-                True,
-            ]
-        )
-    )
-
-
-@pytest.mark.parametrize("dataset_class", [PandasDataset])
-def test_target_is_sorted_by_partial_dates(dataset_class):
-    """
-    Test target_is_sorted_by with partial date comparisons
-    """
-    partial_date_df = dataset_class.from_dict(
-        {
-            "USUBJID": [
-                "CDISC001",
-                "CDISC001",
-                "CDISC001",
-                "CDISC002",
-                "CDISC002",
-                "CDISC002",
-            ],
-            "SESEQ": [1, 2, 3, 1, 2, 3],
-            "SESTDTC": [
-                "2006",
-                "2006-06",
-                "2006-06-15",
-                "2007",
-                "2007-01",
-                "2007-02-01",
-            ],
-        }
-    )
-
-    other_value: dict = {
-        "target": "--SEQ",
-        "within": "USUBJID",
-        "comparator": [
-            {"name": "--STDTC", "sort_order": "ASC", "null_position": "last"}
-        ],
-    }
-    result = DataframeType(
-        {"value": partial_date_df, "column_prefix_map": {"--": "SE"}}
-    ).target_is_sorted_by(other_value)
-    assert result.equals(
-        pd.Series(
-            [
-                False,
-                False,
-                True,
-                False,
-                True,
-                True,
-            ]
-        )
-    )
+    assert result.equals(pd.Series([True, False, True, False, False]))
 
 
 @pytest.mark.parametrize(

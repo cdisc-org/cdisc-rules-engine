@@ -1059,7 +1059,7 @@ Complement of `has_next_corresponding_record`
 
 ### is_ordered_set
 
-True if the dataset rows are in ascending order of the values within `name`, grouped by the values within `value`
+True if the dataset rows are in ascending order of the values within `name`, grouped by the values within `value`. Value can either be a single column or multiple.
 
 ```yaml
 Check:
@@ -1067,6 +1067,16 @@ Check:
     - name: --SEQ
       operator: is_ordered_set
       value: USUBJID
+```
+
+```yaml
+Check:
+  all:
+    - name: --SEQ
+      operator: is_ordered_set
+      value:
+        - USUBJID
+        - "--TESTCD"
 ```
 
 ### is_ordered_by
@@ -1087,7 +1097,7 @@ Complement of `is_ordered_by`
 
 ### target_is_sorted_by
 
-True if the values in `name` are ordered according to the values specified by `value` grouped by the values in `within`. Each `value` requires a variable `name`, ordering specified by `order`, and the null position specified by `null_position`. `within` accepts either a single column or an ordered list of columns.
+True if the values in `name` are ordered according to the values specified by `value` in ascending/descending order, grouped by the values in `within`. Each `value` requires a variable `name` and an ordering of 'asc' or 'desc' specified by `order`. `within` accepts either a single column or an ordered list of columns. Columns can be either number or Char Dates in ISO8601 'YYYY-MM-DD' format
 
 ```yaml
 Check:
@@ -1100,7 +1110,6 @@ Check:
       value:
         - name: --STDTC
           sort_order: asc
-          null_position: last
 ```
 
 ### target_is_not_sorted_by

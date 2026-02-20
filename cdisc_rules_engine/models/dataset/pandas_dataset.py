@@ -85,13 +85,17 @@ class PandasDataset(DatasetInterface):
         return grouped_data.size()
 
     def is_column_sorted_within(self, group, column):
-        return (
-            False
-            not in self.groupby(group)[column]
-            .apply(list)
-            .map(lambda x: sorted(x) == x)
-            .values
-        )
+        if isinstance(group, str):
+            group = [group]
+
+        def check_partition(partition):
+            sorted_vals = sorted(partition.values)
+            return pd.Series(
+                [a == b for a, b in zip(partition.values, sorted_vals)],
+                index=partition.index,
+            )
+
+        return self.groupby(group)[column].transform(check_partition)
 
     def concat(self, other: Union[DatasetInterface, List[DatasetInterface]], **kwargs):
         if isinstance(other, list):
