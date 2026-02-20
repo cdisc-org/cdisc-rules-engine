@@ -3,6 +3,7 @@ from unittest.mock import MagicMock
 
 import pytest
 from cdisc_rules_engine.config.config import ConfigService
+from cdisc_rules_engine.exceptions.custom_exceptions import InvalidDatasetFormat
 
 from cdisc_rules_engine.services.data_services import LocalDataService
 from cdisc_rules_engine.models.dataset import PandasDataset
@@ -85,3 +86,20 @@ def test_get_variables_metdata(dataset_implementation):
     ]
     for key in expected_keys:
         assert key in data
+
+
+def test_get_datasets_raises_invalid_dataset_format_when_file_cannot_be_read():
+    """get_datasets() raises InvalidDatasetFormat with user-friendly message when a file cannot be read."""
+    mock_cache = MagicMock()
+    mock_cache.get_dataset.return_value = None
+    data_service = LocalDataService(
+        mock_cache, MagicMock(), MagicMock(), dataset_paths=["/bad/path.xpt"]
+    )
+    with pytest.raises(InvalidDatasetFormat) as exc_info:
+        data_service.get_datasets()
+    assert "Your data file could not be read" in str(exc_info.value)
+    assert "/bad/path.xpt" in str(exc_info.value)
+    assert (
+        "corrupted" in str(exc_info.value).lower()
+        or "formatted" in str(exc_info.value).lower()
+    )

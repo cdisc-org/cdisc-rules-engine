@@ -27,6 +27,10 @@ from cdisc_rules_engine.utilities.utils import (
 from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import (
     DefineXMLReaderFactory,
 )
+from cdisc_rules_engine.exceptions.custom_exceptions import (
+    LibraryMetadataNotFoundError,
+    library_metadata_not_found_message,
+)
 
 
 def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:  # noqa
@@ -74,6 +78,14 @@ def get_library_metadata_from_cache(args) -> LibraryMetadataContainer:  # noqa
     with open(standards_file, "rb") as f:
         data = pickle.load(f)
         standard_metadata = data.get(standard_details_cache_key, {})
+
+    if not standard_metadata and not args.custom_standard:
+        if args.standard and args.standard.lower() != "usdm":
+            raise LibraryMetadataNotFoundError(
+                library_metadata_not_found_message(
+                    args.standard, args.version, args.substandard
+                )
+            )
 
     if standard_metadata:
         model_cache_key = get_model_details_cache_key_from_ig(standard_metadata)

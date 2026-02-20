@@ -14,7 +14,7 @@ from cdisc_rules_engine.models.dataset_types import DatasetTypes
 from cdisc_rules_engine.models.variable_metadata_container import (
     VariableMetadataContainer,
 )
-from cdisc_rules_engine.services import logger
+from cdisc_rules_engine.exceptions.custom_exceptions import ExcelTestDataError
 from cdisc_rules_engine.services.data_readers.data_reader_factory import (
     DataReaderFactory,
 )
@@ -24,6 +24,11 @@ DATASETS_SHEET_NAME = "Datasets"
 DATASET_FILENAME_COLUMN = "Filename"
 DATASET_LABEL_COLUMN = "Label"
 DATASET_NAME_COLUMN = "Dataset Name"
+
+DATASETS_SHEET_REQUIRED_COLUMNS = (
+    DATASET_FILENAME_COLUMN,
+    DATASET_LABEL_COLUMN,
+)
 
 
 class ExcelDataService(BaseDataService):
@@ -125,15 +130,19 @@ class ExcelDataService(BaseDataService):
         """
         Returns dataset metadata as DatasetMetadata instance.
         """
-        datasets_worksheet = pd.read_excel(
-            self.dataset_path,
-            sheet_name=DATASETS_SHEET_NAME,
-            na_values=[""],
-            keep_default_na=False,
-        )
-        metadata = datasets_worksheet[
-            datasets_worksheet[DATASET_FILENAME_COLUMN] == dataset_name
-        ]
+        _worksheet = kwargs.get("_worksheet")
+        if _worksheet is not None:
+            metadata = _worksheet[_worksheet[DATASET_FILENAME_COLUMN] == dataset_name]
+        else:
+            datasets_worksheet = pd.read_excel(
+                self.dataset_path,
+                sheet_name=DATASETS_SHEET_NAME,
+                na_values=[""],
+                keep_default_na=False,
+            )
+            metadata = datasets_worksheet[
+                datasets_worksheet[DATASET_FILENAME_COLUMN] == dataset_name
+            ]
         dataset = self.get_dataset(dataset_name=dataset_name)
         first_record = dataset.data.iloc[0].to_dict() if not dataset.empty else {}
         return SDTMDatasetMetadata(
@@ -199,23 +208,42 @@ class ExcelDataService(BaseDataService):
 
     def get_datasets(self) -> List[dict]:
         try:
-            worksheet = pd.read_excel(
-                self.dataset_path,
-                sheet_name=DATASETS_SHEET_NAME,
-                na_values=[""],
-                keep_default_na=False,
-            )
-        except TypeError as e:
-            logger.error(
-                f"Failed to read datasets from the Excel file at {self.dataset_path}. "
-                f"Ensure the file is in the correct format. "
-                f"Try opening and saving the file in Microsoft Excel. "
-                f"Error: {str(e)}"
-            )
+            with pd.ExcelFile(self.dataset_path) as xl:
+                sheet_names = xl.sheet_names
+                if DATASETS_SHEET_NAME not in sheet_names:
+                    available = ", ".join(repr(s) for s in sheet_names) or "(none)"
+                    raise ExcelTestDataError(
+                        f"The workbook does not contain a sheet named "
+                        f"'{DATASETS_SHEET_NAME}'. Make sure there is a 'Datasets' tab "
+                        f"(case-sensitive). Available sheet names: {available}."
+                    )
+                worksheet = xl.parse(
+                    DATASETS_SHEET_NAME,
+                    na_values=[""],
+                    keep_default_na=False,
+                )
+        except ExcelTestDataError:
             raise
+        except Exception as e:
+            raise ExcelTestDataError(
+                f"Cannot read the Excel file. Ensure it is a valid .xlsx workbook. "
+                f"Details: {e}"
+            ) from e
+
+        missing_cols = sorted(
+            set(DATASETS_SHEET_REQUIRED_COLUMNS) - set(worksheet.columns)
+        )
+        if missing_cols:
+            raise ExcelTestDataError(
+                f"The '{DATASETS_SHEET_NAME}' sheet is missing required column(s): "
+                f"{missing_cols}. Column headers are case-sensitive. "
+                f"Required: '{DATASET_FILENAME_COLUMN}', '{DATASET_LABEL_COLUMN}', "
+                f"and optionally '{DATASET_NAME_COLUMN}'."
+            )
+
         datasets = [
-            self.get_raw_dataset_metadata(dataset_name=dataset_filename)
-            for dataset_filename in worksheet[DATASET_FILENAME_COLUMN]
+            self.get_raw_dataset_metadata(dataset_name=fn, _worksheet=worksheet)
+            for fn in worksheet[DATASET_FILENAME_COLUMN]
         ]
         return datasets
 

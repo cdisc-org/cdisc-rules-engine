@@ -6,6 +6,13 @@ from cdisc_rules_engine.utilities.utils import normalize_adam_input
 from cdisc_rules_engine.services.cdisc_library_service import CDISCLibraryService
 from cdisc_rules_engine.services.cache.cache_populator_service import CachePopulator
 from scripts.run_validation import run_single_rule_validation
+from cdisc_rules_engine.exceptions.custom_exceptions import (
+    LibraryMetadataNotFoundError,
+    library_metadata_not_found_message,
+)
+from cdisc_library_client.custom_exceptions import (
+    ResourceNotFoundException as LibraryResourceNotFoundException,
+)
 import json
 import os
 import asyncio
@@ -17,11 +24,18 @@ class BadRequestError(Exception):
     pass
 
 
+_DATASETS_TAB_GUIDANCE = (
+    "Make sure there is a 'Datasets' tab in your test data workbook (name is "
+    "case-sensitive). The 'Datasets' tab must have column headers: 'Filename', "
+    "'Label', and 'Dataset Name' (also case-sensitive)."
+)
+_REQUIRED_DATASET_KEYS = {"filename", "label", "domain", "records", "variables"}
+
+
 def validate_datasets_payload(datasets):
-    required_keys = {"filename", "label", "domain", "records", "variables"}
     missing_keys = set()
     for dataset in datasets:
-        for key in required_keys:
+        for key in _REQUIRED_DATASET_KEYS:
             if key not in dataset:
                 missing_keys.add(key)
 
@@ -32,19 +46,38 @@ def validate_datasets_payload(datasets):
                 )
 
     if missing_keys:
-        raise KeyError(
-            f"one or more datasets missing the following keys {missing_keys}"
+        missing_list = sorted(missing_keys)
+        raise BadRequestError(
+            f"Test data is missing required dataset properties: {missing_list}. "
+            f"This usually means the 'Datasets' sheet in your Excel file is missing "
+            f"or has incorrect column headers. {_DATASETS_TAB_GUIDANCE}"
         )
 
 
 def handle_exception(e: Exception):
-    if isinstance(e, KeyError):
+    if isinstance(e, BadRequestError):
         return func.HttpResponse(
-            json.dumps({"error": "KeyError", "message": str(e)}), status_code=400
+            json.dumps({"error": "BadRequestError", "message": str(e)}),
+            status_code=400,
         )
-    elif isinstance(e, BadRequestError):
+    if isinstance(e, LibraryMetadataNotFoundError):
+        msg = getattr(e, "message", None) or getattr(e, "description", None) or str(e)
         return func.HttpResponse(
-            json.dumps({"error": "BadRequestError", "message": str(e)}), status_code=400
+            json.dumps(
+                {
+                    "error": "LibraryMetadataNotFoundError",
+                    "message": msg,
+                }
+            ),
+            status_code=400,
+        )
+    if isinstance(e, KeyError):
+        msg = str(e)
+        if "rule" in msg.lower() or "datasets" in msg.lower():
+            msg = f"{msg} Ensure the request body includes the required JSON keys."
+        return func.HttpResponse(
+            json.dumps({"error": "BadRequestError", "message": msg}),
+            status_code=400,
         )
     else:
         return func.HttpResponse(
@@ -97,11 +130,18 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:  # 
         asyncio.run(cache_populator.load_available_ct_packages())
         if standards_data or codelists:
             if standards_data:
-                asyncio.run(
-                    cache_populator.load_standard(
-                        standard, standard_version, standard_substandard
+                try:
+                    asyncio.run(
+                        cache_populator.load_standard(
+                            standard, standard_version, standard_substandard
+                        )
                     )
-                )
+                except LibraryResourceNotFoundException:
+                    raise LibraryMetadataNotFoundError(
+                        library_metadata_not_found_message(
+                            standard, standard_version, standard_substandard
+                        )
+                    )
             asyncio.run(cache_populator.load_codelists(codelists))
         if not rule:
             raise KeyError("'rule' required in request")
