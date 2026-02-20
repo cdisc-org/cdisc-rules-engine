@@ -57,6 +57,20 @@
     },
     {
       "properties": {
+        "operator": { "const": "related_domain_is_custom" }
+      },
+      "required": ["id", "operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operator": { "const": "dataset_is_custom" }
+      },
+      "required": ["id", "operator"],
+      "type": "object"
+    },
+    {
+      "properties": {
         "operator": { "const": "domain_label" }
       },
       "required": ["id", "operator"],

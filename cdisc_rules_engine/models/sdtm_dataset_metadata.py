@@ -12,22 +12,27 @@ class SDTMDatasetMetadata(DatasetMetadata):
 
     """
     Examples
-    | name     | unsplit_name | is_supp | domain | rdomain | is_ap | ap_suffix |
-    | -------- | ------------ | ------- | ------ | ------- | ----- | --------- |
-    | QS       | QS           | False   | QS     | None    | False |           |
-    | QSX      | QS           | False   | QS     | None    | False |           |
-    | QSXX     | QS           | False   | QS     | None    | False |           |
-    | SUPPQS   | SUPPQS       | True    | None   | QS      | False |           |
-    | SUPPQSX  | SUPPQS       | True    | None   | QS      | False |           |
-    | SUPPQSXX | SUPPQS       | True    | None   | QS      | False |           |
-    | APQS     | APQS         | False   | APQS   | None    | True  | QS        |
-    | APQSX    | APQS         | False   | APQS   | None    | True  | QS        |
-    | APQSXX   | APQS         | False   | APQS   | None    | True  | QS        |
-    | SQAPQS   | SQAPQS       | True    | None   | APQS    | True  |           |
-    | SQAPQSX  | SQAPQS       | True    | None   | APQS    | True  |           |
-    | SQAPQSXX | SQAPQS       | True    | None   | APQS    | True  |           |
-    | RELREC   | RELREC       | False   | None   | None    | False |           |
-    """
+    | name     | unsplit_name | is_supp | domain | rdomain | is_ap | ap_suffix | dataset_is_custom | related_domain	| related_domain_is_custom |
+    | -------- | ------------ | ------- | ------ | ------- | ----- | --------- | ----------------- | -------------- | ------------------------ |
+    | QS       | QS           | False   | QS     | None    | False |           | False             |                |                          |
+    | QSX      | QS           | False   | QS     | None    | False |           | False             |                |                          |
+    | QSXX     | QS           | False   | QS     | None    | False |           | False             |                |                          |
+    | SUPPQS   | SUPPQS       | True    | None   | QS      | False |           | False             | QS             |                          |
+    | SUPPQSX  | SUPPQS       | True    | None   | QS      | False |           | False             | QS             |                          |
+    | SUPPQSXX | SUPPQS       | True    | None   | QS      | False |           | False             | QS             |                          |
+    | APQS     | APQS         | False   | APQS   | None    | True  | QS        | False             | QS             |                          |
+    | APQSX    | APQS         | False   | APQS   | None    | True  | QS        | False             | QS             |                          |
+    | APQSXX   | APQS         | False   | APQS   | None    | True  | QS        | False             | QS             |                          |
+    | SQAPQS   | SQAPQS       | True    | None   | APQS    | True  |           | False             | QS             |                          |
+    | SQAPQSX  | SQAPQS       | True    | None   | APQS    | True  |           | False             | QS             |                          |
+    | SQAPQSXX | SQAPQS       | True    | None   | APQS    | True  |           | False             |                |                          |
+    | RELREC   | RELREC       | False   | None   | None    | False |           | False             |                |                          |
+    | XX	   | XX	          | False	| XX	 | None    | False |           | True              |                |                          |		
+    | SUPPXX   | SUPPXX	      | True	| None   | XX	   | False |           | False             | XX             | True                     |
+    | APXX	   | APXX	      | False	| APXX	 | None    | True  | XX	       | False	           | XX             | True                     |
+    | SQAPXX   | SQAPXX	      | True	| None   | APXX	   | True  |     	   | False             | XX	            | True                     |
+    | FA	   | FA	          | False	| FA	 | None    | False |           | False             |                |                          |
+    """  # noqa: E501 W291
 
     @property
     def domain(self) -> Union[str, None]:
