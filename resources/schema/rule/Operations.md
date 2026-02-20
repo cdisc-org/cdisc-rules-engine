@@ -750,6 +750,22 @@ Operations:
     operator: get_column_order_from_dataset
 ```
 
+### minus
+
+Computes set difference: elements in `name` that are not in `subtract`. Uses [set difference](<https://en.wikipedia.org/wiki/Set_(mathematics)#Set_difference>) semantics (A ∖ B). Preserves order from the first list. Both `name` and `subtract` must reference other operation results (e.g., `$expected_variables`, `$dataset_variables`). When `subtract` is empty or missing, returns all elements from `name`. Can be computed and added to output variables to display missing elements in error results.
+
+```yaml
+Operations:
+  - id: $expected_variables
+    operator: expected_variables
+  - id: $dataset_variables
+    operator: get_column_order_from_dataset
+  - id: $expected_minus_dataset
+    name: $expected_variables
+    operator: minus
+    subtract: $dataset_variables
+```
+
 ### label_referenced_variable_metadata
 
 Generates a dataframe where each record in the dataframe is the library ig variable metadata corresponding with the variable label found in the column provided in name. The metadata column names are prefixed with the string provided in `id`.
