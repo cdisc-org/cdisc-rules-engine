@@ -391,6 +391,7 @@ class RuleProcessor:
                 operation_id=operation.get("id"),
                 operation_name=operation.get("operator"),
                 original_target=original_target,
+                subtract=operation.get("subtract"),
                 value=operation.get("value"),
                 regex=operation.get("regex"),
                 returntype=operation.get("returntype"),

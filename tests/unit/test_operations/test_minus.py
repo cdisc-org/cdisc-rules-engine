@@ -13,7 +13,7 @@ def minus_params(operation_params: OperationParams) -> OperationParams:
     """Configure operation_params for minus operation tests."""
     operation_params.operation_id = "$expected_minus_dataset"
     operation_params.target = "$expected_variables"
-    operation_params.value = "$dataset_variables"
+    operation_params.subtract = "$dataset_variables"
     return operation_params
 
 
@@ -59,7 +59,7 @@ def test_minus_operation(minus_params: OperationParams, dataset_type):
 
 
 @pytest.mark.parametrize("dataset_type", [PandasDataset, DaskDataset])
-def test_minus_empty_value_returns_all_of_name(
+def test_minus_empty_subtract_returns_all_of_name(
     minus_params: OperationParams, dataset_type
 ):
     eval_dataset = dataset_type.from_dict(

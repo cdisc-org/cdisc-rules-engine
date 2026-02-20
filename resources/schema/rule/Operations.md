@@ -752,9 +752,7 @@ Operations:
 
 ### minus
 
-Computes set difference: elements in `name` that are not in `value`. Uses [set difference](<https://en.wikipedia.org/wiki/Set_(mathematics)#Set_difference>) semantics (A ∖ B). Preserves order from the first list. Both `name` and `value` must reference other operation results (e.g., `$expected_variables`, `$dataset_variables`).
-
-When `value` is empty or missing, returns all elements from `name`.
+Computes set difference: elements in `name` that are not in `subtract`. Uses [set difference](<https://en.wikipedia.org/wiki/Set_(mathematics)#Set_difference>) semantics (A ∖ B). Preserves order from the first list. Both `name` and `subtract` must reference other operation results (e.g., `$expected_variables`, `$dataset_variables`). When `subtract` is empty or missing, returns all elements from `name`. Can be computed and added to output variables to display missing elements in error results.
 
 ```yaml
 Operations:
@@ -765,17 +763,7 @@ Operations:
   - id: $expected_minus_dataset
     name: $expected_variables
     operator: minus
-    value: $dataset_variables
-Check:
-  all:
-    - name: $expected_minus_dataset
-      operator: non_empty
-Outcome:
-  Message: At least one expected variable is missing from dataset
-  Output Variables:
-    - $dataset_variables
-    - $expected_variables
-    - $expected_minus_dataset
+    subtract: $dataset_variables
 ```
 
 ### label_referenced_variable_metadata

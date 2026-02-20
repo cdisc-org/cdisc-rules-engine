@@ -232,7 +232,7 @@
           "const": "minus"
         }
       },
-      "required": ["id", "operator", "name", "value"],
+      "required": ["id", "operator", "name", "subtract"],
       "type": "object"
     },
     {
@@ -616,6 +616,9 @@
     "returntype": {
       "type": "string",
       "enum": ["code", "value", "pref_term"]
+    },
+    "subtract": {
+      "type": "string"
     },
     "term_value": {
       "type": "string"

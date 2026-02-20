@@ -1,6 +1,6 @@
 """
-Set difference operation: name minus value.
-Returns elements in name that are not in value, preserving order from name.
+Set difference operation: name minus subtract.
+Returns elements in name that are not in subtract, preserving order from name.
 """
 
 from cdisc_rules_engine.operations.base_operation import BaseOperation
@@ -28,19 +28,19 @@ def _set_difference_preserve_order(list_a: list, list_b: list) -> list:
 
 class Minus(BaseOperation):
     """
-    Operation that computes set difference: name minus value.
-    name (minuend) and value (subtrahend) reference other operation results.
-    Returns elements in name that are not in value.
+    Operation that computes set difference: name minus subtract.
+    name (minuend) and subtract (subtrahend) reference other operation results.
+    Returns elements in name that are not in subtract.
     """
 
     def _execute_operation(self):
         name_ref = self.params.target
-        value_ref = self.params.value
+        subtract_ref = self.params.subtract
 
         if not name_ref or name_ref not in self.evaluation_dataset.columns:
             return []
         list_a = self.evaluation_dataset[name_ref].iloc[0]
-        if not value_ref or value_ref not in self.evaluation_dataset.columns:
+        if not subtract_ref or subtract_ref not in self.evaluation_dataset.columns:
             return _normalize_to_list(list_a)
-        list_b = self.evaluation_dataset[value_ref].iloc[0]
+        list_b = self.evaluation_dataset[subtract_ref].iloc[0]
         return _set_difference_preserve_order(list_a, list_b)
