@@ -387,6 +387,35 @@ Update locally stored cache data (An api-key can be provided through the environ
 
 To obtain an api key, please follow the instructions found here: <https://wiki.cdisc.org/display/LIBSUPRT/Getting+Started%3A+Access+to+CDISC+Library+API+using+API+Key+Authentication>. Please note it can take up to an hour after sign up to have an api key issued
 
+The update-cache command options are:
+
+```
+  -c, --cache-path TEXT                   Relative path to cache. Optional. Only required if the cache has been
+                                          moved from its default location.
+  --apikey TEXT                           CDISC Library api key.
+                                          Can also be provided as an environment
+                                          variable CDISC_LIBRARY_API_KEY
+  -crd, --custom-rules-directory TEXT     Relative path to directory containing local
+                                          rules in yaml or JSON formats to be added
+                                          to the cache
+  -cr, --custom-rule TEXT                 Relative path to rule file in yaml or JSON
+                                          formats to be added to the cache.
+                                          Can be specified multiple times.
+  -rcr, --remove-custom-rules TEXT        Remove rules from the cache. Can be a single
+                                          rule ID, a comma-separated list of IDs,
+                                          or 'ALL' to remove all custom rules.
+  -ucr, --update-custom-rule TEXT         Relative path to rule file in yaml or JSON
+                                          formats. Rule will be updated in cache
+                                          with this file.
+  -cs, --custom-standard TEXT             Relative path to JSON file containing custom
+                                          standard details. Will update the standard
+                                          if it already exists.
+  -cse, --custom-standard-encoding TEXT   Encoding for custom standard details.
+  -rcs, --remove-custom-standard TEXT     Removes a custom standard and version from
+                                          the cache. Can be specified multiple times.
+  --help                                  Show this message and exit.
+```
+
 ##### Custom Standards and Rules
 
 ###### Custom Rules Management

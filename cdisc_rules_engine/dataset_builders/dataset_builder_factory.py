@@ -73,7 +73,6 @@ class DatasetBuilderFactory(FactoryInterface):
         RuleTypes.DOMAIN_PRESENCE_CHECK_AGAINST_DEFINE.value: DomainListWithDefineDatasetBuilder,
         RuleTypes.DEFINE_ITEM_METADATA_CHECK.value: DefineVariablesDatasetBuilder,
         RuleTypes.VARIABLE_METADATA_CHECK_AGAINST_DEFINE.value: VariablesMetadataWithDefineDatasetBuilder,
-        RuleTypes.DATASET_CONTENTS_CHECK_AGAINST_DEFINE_AND_LIBRARY.value: ContentsDatasetBuilder,
         RuleTypes.VALUE_LEVEL_METADATA_CHECK_AGAINST_DEFINE.value: ContentsDatasetBuilder,
         RuleTypes.DEFINE_ITEM_GROUP_METADATA_CHECK.value: DefineItemGroupDatasetBuilder,
         RuleTypes.VALUE_CHECK_AGAINST_DEFINE_XML_VARIABLE.value: ContentsDefineVariablesDatasetBuilder,

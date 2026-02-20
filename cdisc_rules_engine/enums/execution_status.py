@@ -4,9 +4,9 @@ from cdisc_rules_engine.enums.base_enum import BaseEnum
 class ExecutionStatus(BaseEnum):
     SUCCESS = "success"
     SKIPPED = "skipped"
-    EXECUTION_ERROR = "execution_error"
-    ISSUE_REPORTED = "issue_reported"
-    UNKNOWN_STATUS = "unknown_status"
+    EXECUTION_ERROR = "execution error"
+    ISSUE_REPORTED = "issue reported"
+    UNKNOWN_STATUS = "unknown status"
 
 
 class SkippedReason(BaseEnum):

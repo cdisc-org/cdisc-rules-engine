@@ -368,29 +368,6 @@ class RulesEngine:
             )
             kwargs["value_level_metadata"] = value_level_metadata
 
-        elif (
-            rule.get("rule_type")
-            == RuleTypes.DATASET_CONTENTS_CHECK_AGAINST_DEFINE_AND_LIBRARY.value
-        ):
-            library_metadata: dict = self.library_metadata.variables_metadata.get(
-                dataset_metadata.domain, {}
-            )
-            define_metadata: List[dict] = builder.get_define_xml_variables_metadata()
-            targets: List[str] = (
-                self.data_processor.filter_dataset_columns_by_metadata_and_rule(
-                    dataset.columns.tolist(), define_metadata, library_metadata, rule
-                )
-            )
-            rule_copy = deepcopy(rule)
-            updated_conditions = RuleProcessor.duplicate_conditions_for_all_targets(
-                rule_copy["conditions"], targets
-            )
-            rule_copy["conditions"].set_conditions(updated_conditions)
-            # When duplicating conditions,
-            # rule should be copied to prevent updates to concurrent rule executions
-            return self.execute_rule(
-                rule_copy, dataset, datasets, dataset_metadata, **kwargs
-            )
         elif rule.get("rule_type") == RuleTypes.JSONATA.value:
             return JSONataProcessor.execute_jsonata_rule(
                 rule, dataset, self.jsonata_custom_functions

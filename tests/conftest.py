@@ -1060,28 +1060,6 @@ def mock_validation_results() -> list[RuleValidationResult]:
 
 
 @pytest.fixture(scope="function")
-def rule_check_dataset_against_library_and_define() -> dict:
-    return {
-        "core_id": "MockRule",
-        "standards": [{"Name": "SDTMIG", "Version": "3.3"}],
-        "classes": {"Include": [ALL_KEYWORD]},
-        "domains": {"Include": ["AE"]},
-        "rule_type": "Dataset Contents Check against Define XML and Library Metadata",
-        "variable_origin_type": "Collected",
-        "variable_core_status": "Perm",
-        "conditions": ConditionCompositeFactory.get_condition_composite(
-            {"any": [{"name": "get_dataset", "operator": "empty"}]}
-        ),
-        "actions": [
-            {
-                "name": "generate_dataset_error_objects",
-                "params": {"message": "Variable metadata is wrong."},
-            }
-        ],
-    }
-
-
-@pytest.fixture(scope="function")
 def rule_check_dataset_contents_against_library_metadata() -> dict:
     return {
         "core_id": "MockRule",
