@@ -62,6 +62,7 @@ class PostgresQLDataService:
         use_pgserver: bool = False,
         codelists: Optional[List[Union[str, Dict]]] = None,
         cache_path: Optional[str] = None,
+        define_xml_path: Optional[str] = None,
     ) -> "PostgresQLDataService":
         """
         Create a PostgresQLDataService instance with an initialized database.
@@ -78,6 +79,8 @@ class PostgresQLDataService:
         populate_codelists(pgi, cache_path, codelists)
         populate_standards(pgi)
 
+        instance._update_define_xml_path(define_xml_path)
+
         return instance
 
     @classmethod
@@ -87,12 +90,13 @@ class PostgresQLDataService:
         standards_context: BaseStandardsContext,
         use_pgserver: bool = False,
         cache_path: Optional[str] = None,
+        define_xml_path: Optional[str] = None,
     ) -> "PostgresQLDataService":
         """
         Constructor for tests, passing in TestDataset
         and create corresponding SQL tables
         """
-        instance = cls.instance(use_pgserver=use_pgserver, cache_path=cache_path)
+        instance = cls.instance(use_pgserver=use_pgserver, cache_path=cache_path, define_xml_path=define_xml_path)
         instance.datasets += [
             standards_context.transform_dataset_metadata(SqlTestDatasetLoader.load_test_dataset(instance.pgi, ds))
             for ds in test_datasets
@@ -107,6 +111,7 @@ class PostgresQLDataService:
         standards_context,
         codelists: Optional[List[Union[str, Dict]]] = None,
         cache_path: Optional[str] = None,
+        define_xml_path: Optional[str] = None,
         sql_namespace: Optional[str] = None,
         use_pgserver: bool = False,
     ) -> "PostgresQLDataService":
@@ -115,6 +120,7 @@ class PostgresQLDataService:
             use_pgserver=use_pgserver,
             codelists=codelists,
             cache_path=cache_path,
+            define_xml_path=define_xml_path,
         )
 
         instance.datasets.extend(
@@ -167,3 +173,13 @@ class PostgresQLDataService:
 
     def read_data(self, file_path: str) -> IOBase:
         return open(file_path, "rb")
+
+    def get_define_xml_contents(self, dataset_name: str) -> bytes:
+        """
+        Reads local define xml file as bytes
+        """
+        with open(dataset_name, "rb") as f:
+            return f.read()
+
+    def _update_define_xml_path(self, define_xml_path: str):
+        self.define_xml_path = define_xml_path

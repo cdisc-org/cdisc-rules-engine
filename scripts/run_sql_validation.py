@@ -92,6 +92,7 @@ def run_sql_validation(args: Validation_args, in_memory_postgres: bool = False):
         standards_context=standards_context,
         codelists=library_metadata.get_all_ct_package_metadata(),
         cache_path=args.cache,
+        define_xml_path=args.define_xml_path,
         sql_namespace=args.sql_namespace,
         use_pgserver=in_memory_postgres,
     )

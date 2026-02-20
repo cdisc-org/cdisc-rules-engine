@@ -32,6 +32,9 @@ from cdisc_rules_engine.sql_operations.domain_is_custom import SqlDomainIsCustom
 from cdisc_rules_engine.sql_operations.valid_codelist_dates import SqlValidCodelistDates
 from cdisc_rules_engine.sql_operations.extract_metadata import SqlExtractMetadataOperation
 from cdisc_rules_engine.sql_operations.get_codelist_attributes import SqlGetCodelistAttributesOperation
+from cdisc_rules_engine.sql_operations.get_define_variables_metadata import (
+    SqlGetDefineVariablesMetadata,
+)
 
 
 class SqlOperationsFactory:
@@ -76,7 +79,7 @@ class SqlOperationsFactory:
         "valid_codelist_dates": SqlValidCodelistDates,
         "label_referenced_variable_metadata": None,
         "name_referenced_variable_metadata": None,
-        "define_variable_metadata": None,
+        "define_variable_metadata": SqlGetDefineVariablesMetadata,
         "valid_external_dictionary_value": None,
         "valid_external_dictionary_code": None,
         "valid_external_dictionary_code_term_pair": None,

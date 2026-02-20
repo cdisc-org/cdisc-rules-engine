@@ -7,6 +7,9 @@ from cdisc_rules_engine.data_service.postgresql_data_service import (
     PostgresQLDataService,
 )
 from cdisc_rules_engine.models.dataset_metadata2 import DatasetMetadata2
+from cdisc_rules_engine.services.define_xml.define_xml_reader_factory import (
+    DefineXMLReaderFactory,
+)
 
 
 class BaseStandardsContext(ABC):
@@ -95,3 +98,13 @@ class BaseStandardsContext(ABC):
         )
 
         return joined_schema.name
+
+    def get_define_xml_variables_metadata(self, ds: PostgresQLDataService, domain_name: str) -> List[dict]:
+        """
+        Gets Define XML variables metadata.
+        """
+
+        define_xml_reader = DefineXMLReaderFactory.get_define_xml_reader(
+            ds.define_xml_path, ds.define_xml_path, ds, None
+        )
+        return define_xml_reader.extract_variables_metadata(domain_name=domain_name)
