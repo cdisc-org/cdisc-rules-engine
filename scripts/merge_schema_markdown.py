@@ -5,7 +5,7 @@ Merge JSON schema files with their corresponding markdown descriptions.
 This script:
 1. Finds all .json schema files in the resources/schema directory
 2. Looks for corresponding .md files with the same base name
-3. Parses markdown sections (starting with ##)
+3. Parses markdown sections (starting with #)
 4. Finds 'const' values in JSON schemas that match section names
 5. Adds 'markdownDescription' properties to matching schema items
 6. Outputs merged schemas to a new directory
@@ -21,17 +21,13 @@ SCHEMA_DIR = REPO_ROOT / "resources" / "schema" / "rule"
 OUTPUT_DIR = REPO_ROOT / "resources" / "schema" / "rule-merged"
 
 
-def _save_section(
-    level: int,
-    name: str,
-    description: List[str],
-    level_descriptions: List[Dict[str, str]],
+def _ensure_and_save(
+    level_descriptions: List[Dict[str, str]], level: int, name: str, content: List[str]
 ) -> None:
-    """Save a section to the appropriate level dictionary."""
+    """Ensure level_descriptions has enough dicts and save the section."""
     idx = level - 1
-    while len(level_descriptions) <= idx:
-        level_descriptions.append({})
-    level_descriptions[idx][name] = "\n".join(description)
+    level_descriptions.extend([{} for _ in range(idx - len(level_descriptions) + 1)])
+    level_descriptions[idx][name] = "\n".join(content)
 
 
 def parse_markdown_to_dict(md_content: str) -> List[Dict[str, str]]:
@@ -49,77 +45,49 @@ def parse_markdown_to_dict(md_content: str) -> List[Dict[str, str]]:
         E.g., result[0] contains # headers, result[1] contains ## headers, etc.
     """
     lines = md_content.split("\n")
-    # Store dictionaries for each level (index 0 = level 1, index 1 = level 2, etc.)
     level_descriptions = []
-    # Track current section for each level
     current_names = {}
     current_descriptions = {}
 
     for line in lines:
         if line.startswith("#"):
-            # Count the number of # characters
             level = len(line) - len(line.lstrip("#"))
-            if level >= 1:
-                # Add this header line to all parent sections (those with level < current level)
-                for parent_level in list(current_names.keys()):
-                    if parent_level < level:
-                        current_descriptions[parent_level].append(line)
+            for existing_level, name in list(current_names.items()):
+                if existing_level < level:
+                    current_descriptions[existing_level].append(line)
+                else:
+                    _ensure_and_save(
+                        level_descriptions,
+                        existing_level,
+                        name,
+                        current_descriptions[existing_level],
+                    )
+                    del current_names[existing_level]
+                    del current_descriptions[existing_level]
 
-                # Save all sections at this level or deeper that are currently open
-                for existing_level in list(current_names.keys()):
-                    if existing_level >= level:
-                        _save_section(
-                            existing_level,
-                            current_names[existing_level],
-                            current_descriptions[existing_level],
-                            level_descriptions,
-                        )
-                        # Clear this level
-                        del current_names[existing_level]
-                        del current_descriptions[existing_level]
-
-                # Start new section at this level
-                current_names[level] = line.lstrip("#").strip()
-                current_descriptions[level] = []
+            current_names[level] = line.lstrip("#").strip()
+            current_descriptions[level] = []
         else:
-            # Add line to all currently open sections
-            for level in current_names:
-                current_descriptions[level].append(line)
+            for desc_list in current_descriptions.values():
+                desc_list.append(line)
 
-    # Save any remaining open sections
     for level, name in current_names.items():
-        _save_section(level, name, current_descriptions[level], level_descriptions)
+        _ensure_and_save(level_descriptions, level, name, current_descriptions[level])
 
     return level_descriptions
 
 
 def attach_markdown_descriptions(obj: Any, descriptions: List[Dict[str, str]]) -> None:
-    """
-    Recursively traverse a JSON object and add markdownDescription properties.
-
-    When a 'const' key is found with a value that matches a description key,
-    adds 'markdownDescription' to the parent object. Searches through all
-    header levels starting from the highest level (##).
-
-    Args:
-        obj: JSON object (dict, list, or primitive)
-        descriptions: List of dictionaries of markdown descriptions, one per level
-    """
+    """Recursively add markdownDescription properties to objects with 'const' keys."""
     if isinstance(obj, dict):
-        # Check if this object has a 'const' key
         if "const" in obj:
-            # Search through all levels to find a matching description
             for level_dict in descriptions:
                 if obj["const"] in level_dict:
                     obj["markdownDescription"] = level_dict[obj["const"]]
                     break
-
-        # Recursively process all values
         for value in obj.values():
             attach_markdown_descriptions(value, descriptions)
-
     elif isinstance(obj, list):
-        # Recursively process all list items
         for item in obj:
             attach_markdown_descriptions(item, descriptions)
 
@@ -127,51 +95,30 @@ def attach_markdown_descriptions(obj: Any, descriptions: List[Dict[str, str]]) -
 def merge_schema_with_markdown(
     schema_path: Path, markdown_path: Path
 ) -> Dict[str, Any]:
-    """
-    Merge a JSON schema file with its corresponding markdown file.
-
-    Args:
-        schema_path: Path to the JSON schema file
-        markdown_path: Path to the markdown file
-
-    Returns:
-        The merged JSON schema with markdownDescription properties added
-    """
-    # Load JSON schema
-    with open(schema_path, "r", encoding="utf-8") as f:
+    """Merge a JSON schema file with its corresponding markdown file."""
+    with open(schema_path, encoding="utf-8") as f:
         schema = json.load(f)
 
-    # Load and parse markdown if it exists
     if markdown_path.exists():
-        with open(markdown_path, "r", encoding="utf-8") as f:
-            md_content = f.read()
-
-        descriptions = parse_markdown_to_dict(md_content)
-        attach_markdown_descriptions(schema, descriptions)
+        with open(markdown_path, encoding="utf-8") as f:
+            attach_markdown_descriptions(schema, parse_markdown_to_dict(f.read()))
 
     return schema
 
 
 def main():
-    """Main function to merge all schema files with their markdown descriptions."""
-    # Create output directory
+    """Merge all schema files with their markdown descriptions."""
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-    # Find all JSON schema files
     schema_files = list(SCHEMA_DIR.glob("*.json"))
-
     print(f"Processing {len(schema_files)} schema files...")
 
     for schema_path in schema_files:
-        # Get corresponding markdown file
-        md_path = schema_path.with_suffix(".md")
+        merged_schema = merge_schema_with_markdown(
+            schema_path, schema_path.with_suffix(".md")
+        )
 
-        # Merge schema with markdown
-        merged_schema = merge_schema_with_markdown(schema_path, md_path)
-
-        # Write to output directory
-        output_path = OUTPUT_DIR / schema_path.name
-        with open(output_path, "w", encoding="utf-8") as f:
+        with open(OUTPUT_DIR / schema_path.name, "w", encoding="utf-8") as f:
             json.dump(merged_schema, f, indent=2)
             f.write("\n")
 
