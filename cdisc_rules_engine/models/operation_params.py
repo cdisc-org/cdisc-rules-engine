@@ -56,6 +56,7 @@ class OperationParams:
     original_target: str = None
     regex: str = None
     returntype: str = None
+    source: str = None
     target: str = None
     value_is_reference: bool = False
     namespace: str = None

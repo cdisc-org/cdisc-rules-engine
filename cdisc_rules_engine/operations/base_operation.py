@@ -173,10 +173,10 @@ class BaseOperation:
     def _is_wildcard_pattern(self, value: str) -> bool:
         if not isinstance(value, str):
             return False
-        return value.endswith("%")
+        return value.endswith("&")
 
     def _apply_wildcard_filter(self, series: pd.Series, pattern: str) -> pd.Series:
-        prefix = pattern.rstrip("%")
+        prefix = pattern.rstrip("&")
         result = series.str.startswith(prefix, na=False)
         return result
 
